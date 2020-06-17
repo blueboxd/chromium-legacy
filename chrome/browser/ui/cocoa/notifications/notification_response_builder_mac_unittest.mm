@@ -43,6 +43,7 @@ class NotificationResponseBuilderMacTest : public testing::Test {
     [builder setNotificationId:@"notificationId"];
     [builder setProfileId:@"profileId"];
     [builder setIncognito:false];
+    [builder setCreatorPid:@1];
     [builder
         setNotificationType:[NSNumber numberWithInt:static_cast<int>(type)]];
     [builder

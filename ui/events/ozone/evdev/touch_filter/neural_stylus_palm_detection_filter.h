@@ -46,6 +46,10 @@ class COMPONENT_EXPORT(EVDEV) NeuralStylusPalmDetectionFilter
   static bool CompatibleWithNeuralStylusPalmDetectionFilter(
       const EventDeviceInfo& devinfo);
 
+  static bool CompatibleWithNeuralStylusPalmDetectionFilter(
+      const EventDeviceInfo& devinfo,
+      const std::string& ozone_params_switch_string);
+
   static const int kFeaturesPerSample;
   static const int kExtraFeaturesForNeighbor;
 

@@ -357,11 +357,7 @@ Polymer({
    * @private
    */
   showInstallButton_(state) {
-    if (this.configurePageAccessible_()) {
-      return state === State.CONFIGURE || state === State.ERROR;
-    } else {
-      return state === State.PROMPT || state === State.ERROR;
-    }
+    return state === State.CONFIGURE || state === State.ERROR;
   },
 
   /**
@@ -384,7 +380,7 @@ Polymer({
    * @private
    */
   showNextButton_(state) {
-    return this.configurePageAccessible_() && state === State.PROMPT;
+    return state === State.PROMPT;
   },
 
   /**
@@ -393,9 +389,6 @@ Polymer({
    * @private
    */
   getInstallButtonLabel_(state) {
-    if (!this.configurePageAccessible_() && state === State.PROMPT) {
-      return loadTimeData.getString('install');
-    }
     switch (state) {
       case State.CONFIGURE:
         return loadTimeData.getString('install');
@@ -514,22 +507,8 @@ Polymer({
   /**
    * @private
    */
-  configurePageAccessible_() {
-    return this.showDiskResizing_() || this.showUsernameSelection_();
-  },
-
-  /**
-   * @private
-   */
   showDiskResizing_() {
     return loadTimeData.getBoolean('diskResizingEnabled');
-  },
-
-  /**
-   * @private
-   */
-  showUsernameSelection_() {
-    return loadTimeData.getBoolean('crostiniCustomUsername');
   },
 
   /**
@@ -538,7 +517,7 @@ Polymer({
   getConfigureMessageTitle_() {
     // If the flags only allow username config, then we show a username specific
     // subtitle instead of a generic configure subtitle.
-    if (this.showUsernameSelection_() && !this.showDiskResizing_())
+    if (!this.showDiskResizing_())
       return loadTimeData.getString('usernameMessage');
     return loadTimeData.getString('configureMessage');
   },

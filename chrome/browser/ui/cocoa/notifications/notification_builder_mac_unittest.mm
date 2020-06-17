@@ -25,6 +25,7 @@ TEST(NotificationBuilderMacTest, TestNotificationNoButtons) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder setCreatorPid:@1];
   [builder
       setNotificationType:[NSNumber
                               numberWithInteger:static_cast<int>(
@@ -58,6 +59,7 @@ TEST(NotificationBuilderMacTest, TestNotificationOneButton) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder setCreatorPid:@1];
   [builder
       setNotificationType:[NSNumber
                               numberWithInteger:static_cast<int>(
@@ -97,6 +99,7 @@ TEST(NotificationBuilderMacTest, TestNotificationTwoButtons) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder setCreatorPid:@1];
   [builder
       setNotificationType:[NSNumber
                               numberWithInteger:static_cast<int>(
@@ -136,6 +139,7 @@ TEST(NotificationBuilderMacTest, TestNotificationExtensionNoButtons) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder setCreatorPid:@1];
   [builder setNotificationType:[NSNumber
                                    numberWithInteger:static_cast<int>(
                                                          NotificationHandler::
@@ -160,6 +164,7 @@ TEST(NotificationBuilderMacTest, TestNotificationExtensionButtons) {
   [builder setNotificationId:@"notificationId"];
   [builder setProfileId:@"profileId"];
   [builder setIncognito:false];
+  [builder setCreatorPid:@1];
   [builder setNotificationType:[NSNumber
                                    numberWithInteger:static_cast<int>(
                                                          NotificationHandler::
@@ -186,6 +191,7 @@ TEST(NotificationBuilderMacTest, TestUserInfo) {
   [builder setOrigin:@"https://www.miguel.com"];
   [builder setNotificationId:@"Notification1"];
   [builder setIncognito:true];
+  [builder setCreatorPid:@1];
   [builder
       setNotificationType:[NSNumber
                               numberWithInteger:static_cast<int>(
@@ -224,6 +230,7 @@ TEST(NotificationBuilderMacTest, TestBuildDictionary) {
     [sourceBuilder setNotificationId:@"notificationId"];
     [sourceBuilder setProfileId:@"profileId"];
     [sourceBuilder setIncognito:false];
+    [sourceBuilder setCreatorPid:@1];
     [sourceBuilder
         setNotificationType:
             [NSNumber

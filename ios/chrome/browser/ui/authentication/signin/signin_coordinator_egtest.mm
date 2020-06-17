@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_constants.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_app_interface.h"
 #import "ios/chrome/browser/ui/signin_interaction/signin_interaction_controller_egtest_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
@@ -26,13 +25,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-#if defined(CHROME_EARL_GREY_2)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc++98-compat-extra-semi"
-GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(SigninInteractionControllerAppInterface);
-#pragma clang diagnostic pop
-#endif  // defined(CHROME_EARL_GREY_2)
 
 using chrome_test_util::BookmarksNavigationBarDoneButton;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
@@ -83,11 +75,6 @@ id<GREYMatcher> identityChooserButtonMatcherWithEmail(NSString* userEmail) {
 }
 
 void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
-  // The ChromeSigninView's activity indicator must be hidden as the import
-  // data UI is presented on top of the activity indicator and Earl Grey cannot
-  // interact with any UI while an animation is active.
-  [SigninInteractionControllerAppInterface setActivityIndicatorShown:NO];
-
   // Set up the fake identities.
   FakeChromeIdentity* fakeIdentity1 = [SigninEarlGreyUtils fakeIdentity1];
   FakeChromeIdentity* fakeIdentity2 = [SigninEarlGreyUtils fakeIdentity2];
@@ -119,17 +106,16 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
-  [SigninInteractionControllerAppInterface setActivityIndicatorShown:YES];
 }
 
 }  // namespace
 
 // Sign-in interaction tests that work both with Unified Consent enabled or
 // disabled.
-@interface SigninInteractionControllerTestCase : ChromeTestCase
+@interface SigninCoordinatorTestCase : ChromeTestCase
 @end
 
-@implementation SigninInteractionControllerTestCase
+@implementation SigninCoordinatorTestCase
 
 - (void)setUp {
   [super setUp];
@@ -255,11 +241,6 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 // that the authentication flow is correctly canceled and dismissed.
 // crbug.com/462202
 - (void)testSignInCancelAuthenticationFlow {
-  // The ChromeSigninView's activity indicator must be hidden as the import
-  // data UI is presented on top of the activity indicator and Earl Grey cannot
-  // interact with any UI while an animation is active.
-  [SigninInteractionControllerAppInterface setActivityIndicatorShown:NO];
-
   // Set up the fake identities.
   FakeChromeIdentity* fakeIdentity1 = [SigninEarlGreyUtils fakeIdentity1];
   FakeChromeIdentity* fakeIdentity2 = [SigninEarlGreyUtils fakeIdentity2];
@@ -311,7 +292,6 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
   [SigninEarlGreyUtils checkSignedOut];
-  [SigninInteractionControllerAppInterface setActivityIndicatorShown:YES];
 }
 
 // Opens the sign in screen from the bookmarks and then cancel it by tapping on

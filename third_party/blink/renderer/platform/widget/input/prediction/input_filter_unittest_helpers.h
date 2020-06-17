@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/platform/widget/input/prediction/input_filter.h"
 
+#include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

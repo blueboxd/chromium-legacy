@@ -120,7 +120,6 @@ def UpdateXcodeProject(project_dir, configurations, root_dir):
       build_config_template = project.objects[value['buildConfigurations'][0]]
       build_config_template['buildSettings']['CONFIGURATION_BUILD_DIR'] = \
           '$(PROJECT_DIR)/../$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)'
-      build_config_template['buildSettings']['CODE_SIGN_IDENTITY'] = ''
 
       value['buildConfigurations'] = []
       for configuration in configurations:
@@ -276,7 +275,7 @@ def ConvertGnXcodeProject(root_dir, input_dir, output_dir, configurations):
 
   # Update the project (supports legacy name "products.xcodeproj" or the new
   # project name "all.xcodeproj").
-  for project_name in ('products.xcodeproj', 'all.xcodeproj'):
+  for project_name in ('all.xcodeproj', 'products.xcodeproj'):
     if os.path.exists(os.path.join(input_dir, project_name)):
       UpdateXcodeProject(
           os.path.join(input_dir, project_name),
@@ -285,11 +284,16 @@ def ConvertGnXcodeProject(root_dir, input_dir, output_dir, configurations):
       CopyTreeIfChanged(os.path.join(input_dir, project_name),
                         os.path.join(output_dir, project_name))
 
+    else:
+      shutil.rmtree(os.path.join(output_dir, project_name), ignore_errors=True)
+
   # Copy all.xcworkspace if it exists (will be removed in a future gn version).
   workspace_name = 'all.xcworkspace'
   if os.path.exists(os.path.join(input_dir, workspace_name)):
     CopyTreeIfChanged(os.path.join(input_dir, workspace_name),
                       os.path.join(output_dir, workspace_name))
+  else:
+    shutil.rmtree(os.path.join(output_dir, workspace_name), ignore_errors=True)
 
 
 def Main(args):
@@ -313,8 +317,18 @@ def Main(args):
     sys.stderr.write('Input directory does not exists.\n')
     return 1
 
-  required = set(['products.xcodeproj', 'all.xcworkspace'])
-  if not required.issubset(os.listdir(args.input)):
+  # Depending on the version of "gn", there should be either one project file
+  # named "all.xcodeproj" or a project file named "products.xcodeproj" and a
+  # workspace named "all.xcworkspace".
+  required_files_sets = [
+      set(("all.xcodeproj",)),
+      set(("products.xcodeproj", "all.xcworkspace")),
+  ]
+
+  for required_files in required_files_sets:
+    if required_files.issubset(os.listdir(args.input)):
+      break
+  else:
     sys.stderr.write(
         'Input directory does not contain all necessary Xcode projects.\n')
     return 1

@@ -12,12 +12,10 @@
   position: relative;
 }
 
-#forgotPasswordDlg {
-  --cr-dialog-native: {
-    color: var(--primary-text-color);
-    font-size: 15px;
-    width: 384px;
-  }
+#forgotPasswordDlg::part(dialog) {
+  color: var(--primary-text-color);
+  font-size: 15px;
+  width: 384px;
 }
 
 cr-input {

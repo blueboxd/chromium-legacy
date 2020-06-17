@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_samples.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/passwords/password_auto_sign_in_view.h"
 #include "chrome/browser/ui/views/passwords/password_save_update_view.h"
+#include "chrome/browser/ui/views/passwords/password_save_update_with_account_store_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -54,6 +56,22 @@ bool IsBubbleShowing() {
              ->IsVisible();
 }
 
+views::View* GetUsernameTextfield(const PasswordBubbleViewBase* bubble) {
+  // Depending on the state of kEnablePasswordsAccountStorage, |bubble| is
+  // either a PasswordSaveUpdateView or a
+  // PasswordSaveUpdateWithAccountStoreView.
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordsAccountStorage)) {
+    const PasswordSaveUpdateWithAccountStoreView* save_bubble =
+        static_cast<const PasswordSaveUpdateWithAccountStoreView*>(bubble);
+    return save_bubble->GetUsernameTextfieldForTest();
+  } else {
+    const PasswordSaveUpdateView* save_bubble =
+        static_cast<const PasswordSaveUpdateView*>(bubble);
+    return save_bubble->GetUsernameTextfieldForTest();
+  }
+}
+
 }  // namespace
 
 namespace metrics_util = password_manager::metrics_util;
@@ -83,9 +101,8 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
   EXPECT_FALSE(IsBubbleShowing());
   SetupPendingPassword();
   EXPECT_TRUE(IsBubbleShowing());
-  const PasswordSaveUpdateView* bubble =
-      static_cast<const PasswordSaveUpdateView*>(
-          PasswordBubbleViewBase::manage_password_bubble());
+  const PasswordBubbleViewBase* bubble =
+      PasswordBubbleViewBase::manage_password_bubble();
   EXPECT_FALSE(bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());
@@ -99,11 +116,10 @@ IN_PROC_BROWSER_TEST_F(PasswordBubbleInteractiveUiTest, BasicOpenAndClose) {
       browser()->tab_strip_model()->GetActiveWebContents())
       ->ShowManagePasswordsBubble(true /* user_action */);
   EXPECT_TRUE(IsBubbleShowing());
-  bubble = static_cast<const PasswordSaveUpdateView*>(
-      PasswordBubbleViewBase::manage_password_bubble());
+  bubble = PasswordBubbleViewBase::manage_password_bubble();
   // A pending password with empty username should initially focus on the
   // username field.
-  EXPECT_EQ(bubble->GetUsernameTextfieldForTest(),
+  EXPECT_EQ(GetUsernameTextfield(bubble),
             bubble->GetFocusManager()->GetFocusedView());
   PasswordBubbleViewBase::CloseCurrentBubble();
   EXPECT_FALSE(IsBubbleShowing());

@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/track/vtt/vtt_tokenizer.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/html/parser/html_entity_parser.h"
 #include "third_party/blink/renderer/core/html/parser/markup_tokenizer_inlines.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"

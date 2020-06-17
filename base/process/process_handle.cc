@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <ostream>
+
 #include "base/check.h"
 #include "build/build_config.h"
 

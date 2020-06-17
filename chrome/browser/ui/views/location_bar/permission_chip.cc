@@ -14,8 +14,10 @@
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "components/permissions/permission_request.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -256,8 +258,8 @@ const gfx::VectorIcon& PermissionChip::GetPermissionIconId() {
 base::string16 PermissionChip::GetPermissionMessage() {
   auto requests = delegate_->Requests();
 
-  // TODO(olesiamarukhno): Update this to use real strings.
   return requests.size() == 1
-             ? requests[0]->GetMessageTextFragment() + base::ASCIIToUTF16("?")
-             : base::ASCIIToUTF16("Use camera & microphone?");
+             ? requests[0]->GetChipText()
+             : l10n_util::GetStringUTF16(
+                   IDS_MEDIA_CAPTURE_VIDEO_AND_AUDIO_PERMISSION_CHIP);
 }

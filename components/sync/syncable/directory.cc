@@ -1500,7 +1500,6 @@ void Directory::UnmarkDirtyEntry(WriteTransaction* trans, Entry* entry) {
 }
 
 void Directory::OnCatastrophicError() {
-  UMA_HISTOGRAM_BOOLEAN("Sync.DirectoryCatastrophicError", true);
   ReadTransaction trans(FROM_HERE, this);
   OnUnrecoverableError(&trans, FROM_HERE,
                        "Catastrophic error detected, Sync DB is unrecoverable");

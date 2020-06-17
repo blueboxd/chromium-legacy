@@ -20548,7 +20548,7 @@ Called by update_document_policy_enum.py.-->
   <int value="671" label="ReportDeviceTimezoneInfo"/>
   <int value="672" label="SystemProxySettings"/>
   <int value="673" label="UserDataSnapshotRetentionLimit"/>
-  <int value="674" label="DeviceLoginScreenChromeVariations"/>
+  <int value="674" label="DeviceChromeVariations"/>
   <int value="675" label="NativeWindowOcclusionEnabled"/>
   <int value="676" label="DeviceLoginScreenPrivacyScreenEnabled"/>
   <int value="677" label="PrivacyScreenEnabled"/>
@@ -20558,8 +20558,8 @@ Called by update_document_policy_enum.py.-->
   <int value="681" label="RequiredClientCertificateForDevice"/>
   <int value="682" label="ReportDeviceMemoryInfo"/>
   <int value="683" label="UseLegacyFormControls"/>
-  <int value="684" label="SafeBrowsingEnhancedProtection"/>
-  <int value="685" label="AdvancedProtectionExtraSecurityAllowed"/>
+  <int value="684" label="SafeBrowsingProtectionLevel"/>
+  <int value="685" label="AdvancedProtectionAllowed"/>
   <int value="686" label="ReportDeviceBacklightInfo"/>
   <int value="687" label="ScrollToTextFragmentEnabled"/>
   <int value="688" label="ManagedGuestSessionAutoLaunchNotificationReduced"/>
@@ -20593,6 +20593,7 @@ Called by update_document_policy_enum.py.-->
   <int value="716" label="CrostiniPortForwardingAllowed"/>
   <int value="717" label="VirtualKeyboardFeatures"/>
   <int value="718" label="PinUnlockAutosubmitEnabled"/>
+  <int value="719" label="SamlLockScreenReauthenticationEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -23340,6 +23341,7 @@ Called by update_extension_histograms.py.-->
   <int value="1479" label="INPUT_IME_SETASSISTIVEWINDOWPROPERTIES"/>
   <int value="1480" label="PASSWORDSPRIVATE_MOVEPASSWORDTOACCOUNT"/>
   <int value="1481" label="AUTOTESTPRIVATE_DISABLESWITCHACCESSDIALOG"/>
+  <int value="1482" label="ENTERPRISE_NETWORKINGATTRIBUTES_GETNETWORKDETAILS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -23903,6 +23905,7 @@ Called by update_extension_histograms.py.-->
   <int value="224" label="kPrinting"/>
   <int value="225" label="kCrashReportPrivate"/>
   <int value="226" label="kAutofillAssistantPrivate"/>
+  <int value="227" label="kEnterpriseNetworkingAttributes"/>
 </enum>
 
 <enum name="ExtensionPolicyReinstallReason">
@@ -27771,6 +27774,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3318" label="DynamicImportModuleScriptRelativeClassicSameOrigin"/>
   <int value="3319"
       label="DynamicImportModuleScriptRelativeClassicCrossOrigin"/>
+  <int value="3320" label="V8WasmBulkMemory"/>
+  <int value="3321" label="V8WasmRefTypes"/>
+  <int value="3322" label="V8WasmMultiValue"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -39710,6 +39716,8 @@ from previous Chrome versions.
   <int value="-1183321008" label="ImeDecoderWithSandbox:disabled"/>
   <int value="-1183009666" label="OfflinePagesLimitlessPrefetching:disabled"/>
   <int value="-1182777927" label="ShareButtonInTopToolbar:enabled"/>
+  <int value="-1182087678"
+      label="CrossOriginOpenerPolicyAccessReporting:disabled"/>
   <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1176748003"
@@ -41316,6 +41324,8 @@ from previous Chrome versions.
   <int value="638865852" label="UsePreferredIntervalForVideo:disabled"/>
   <int value="640174751" label="AndroidMultipleDisplay:enabled"/>
   <int value="642037198" label="SoleIntegration:disabled"/>
+  <int value="643068614"
+      label="CrossOriginOpenerPolicyAccessReporting:enabled"/>
   <int value="643725031" label="disable-touch-feedback"/>
   <int value="644084236" label="CloseButtonsInactiveTabs:enabled"/>
   <int value="644189071" label="PermissionsBlacklist:enabled"/>
@@ -54553,7 +54563,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="24" label="SafeBrowsing"/>
   <int value="25" label="PasswordProtection"/>
   <int value="26" label="NetworkFileShares"/>
-  <int value="27" label="ChromeReportingExtension"/>
+  <int value="27" label="CloudReporting"/>
   <int value="28" label="BrowserSwitcher"/>
   <int value="29" label="PluginVm"/>
   <int value="30" label="SAML"/>

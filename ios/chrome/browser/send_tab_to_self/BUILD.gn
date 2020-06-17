@@ -5,8 +5,8 @@
 source_set("send_tab_to_self") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "ios_send_tab_to_self_infobar_delegate.cc",
     "ios_send_tab_to_self_infobar_delegate.h",
+    "ios_send_tab_to_self_infobar_delegate.mm",
     "send_tab_to_self_browser_agent.h",
     "send_tab_to_self_browser_agent.mm",
     "send_tab_to_self_util.h",

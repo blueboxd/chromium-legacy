@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_type_policy.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/v8_create_html_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_create_script_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_create_url_callback.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"

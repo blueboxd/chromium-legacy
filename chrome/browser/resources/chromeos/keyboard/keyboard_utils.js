@@ -95,9 +95,9 @@ keyboard.onKeyDown_ = function(event) {
   //
   // See crbug.com/1083145
   // eslint-disable-next-line no-restricted-properties
-  if (document.activeElement === document.getElementById('oobe-network-md') &&
+  if (document.activeElement === document.getElementById('network-selection') &&
       document.activeElement.shadowRoot.activeElement.tagName ==
-      'NETWORK-SELECT-LOGIN') {
+          'NETWORK-SELECT-LOGIN') {
     return;
   }
 

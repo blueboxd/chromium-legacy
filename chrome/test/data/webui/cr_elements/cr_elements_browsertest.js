@@ -124,7 +124,13 @@ CrElementsDrawerTest.prototype = {
   ]),
 };
 
-TEST_F('CrElementsDrawerTest', 'Drawer', function() {
+// https://crbug.com/1096016 - flaky on Mac
+GEN('#if defined(OS_MACOSX)');
+GEN('#define MAYBE_Drawer DISABLED_Drawer');
+GEN('#else');
+GEN('#define MAYBE_Drawer Drawer');
+GEN('#endif');
+TEST_F('CrElementsDrawerTest', 'MAYBE_Drawer', function() {
   mocha.run();
 });
 

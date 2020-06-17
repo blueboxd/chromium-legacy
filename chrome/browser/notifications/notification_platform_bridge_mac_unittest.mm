@@ -4,6 +4,7 @@
 
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
+#include <unistd.h>
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
@@ -62,6 +63,7 @@ class NotificationPlatformBridgeMacTest : public BrowserWithTestWindowTest {
         setProfileId:base::SysUTF8ToNSString(
                          NotificationPlatformBridge::GetProfileId(profile()))];
     [builder setIncognito:profile()->IsOffTheRecord()];
+    [builder setCreatorPid:@(getpid())];
     [builder setNotificationType:
                  [NSNumber numberWithInteger:
                                static_cast<int>(

@@ -808,6 +808,11 @@ const char kCrossOriginOpenerPolicyReportingName[] =
 const char kCrossOriginOpenerPolicyReportingDescription[] =
     "Enables Cross Origin Opener Policy reporting.";
 
+const char kCrossOriginOpenerPolicyAccessReportingName[] =
+    "Cross Origin Opener Policy access reporting";
+const char kCrossOriginOpenerPolicyAccessReportingDescription[] =
+    "Enables Cross Origin Opener Policy access reporting.";
+
 const char kDisableKeepaliveFetchName[] = "Disable fetch with keepalive set";
 const char kDisableKeepaliveFetchDescription[] =
     "Disable fetch with keepalive set "
@@ -3367,10 +3372,6 @@ const char kCrostiniDiskResizingDescription[] =
 const char kCrostiniShowMicSettingName[] = "Allow Crostini mic setting";
 const char kCrostiniShowMicSettingDescription[] =
     "Adds the option to allow Crostini to access the mic";
-
-const char kCrostiniUsernameName[] = "Allow picking your Crostini username";
-const char kCrostiniUsernameDescription[] =
-    "Allow picking your Crostini username";
 
 const char kCrostiniUseBusterImageName[] = "New Crostini containers use Buster";
 const char kCrostiniUseBusterImageDescription[] =

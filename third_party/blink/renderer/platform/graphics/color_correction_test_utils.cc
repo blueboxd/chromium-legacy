@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/color_correction_test_utils.h"
 
+#include "base/notreached.h"
 #include "base/sys_byteorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"

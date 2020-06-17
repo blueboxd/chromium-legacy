@@ -553,9 +553,11 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::ConsumePseudo(
         context_->Count(WebFeature::kHasBeforeOrAfterPseudoElement);
         break;
       case CSSSelector::kPseudoMarker:
-        context_->Count(WebFeature::kHasMarkerPseudoElement);
-        if (!RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
-          return nullptr;
+        if (context_->Mode() != kUASheetMode) {
+          context_->Count(WebFeature::kHasMarkerPseudoElement);
+          if (!RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
+            return nullptr;
+        }
         break;
       default:;
     }

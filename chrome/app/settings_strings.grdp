@@ -295,17 +295,14 @@
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and settings entry used for managing passwords.">
     Passwords
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable once final strings are available. Also add screenshot file. -->
-  <message name="IDS_SETTINGS_DEVICE_PASSWORDS" translateable="false" desc="Name for the passwords section used for managing passwords/exceptions stored on the device.">
-    Passwords on this device
+  <message name="IDS_SETTINGS_DEVICE_PASSWORDS" desc="Name for the passwords section used for managing passwords/exceptions stored on the device.">
+    Passwords
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable once final strings are available. Also add screenshot file. -->
-  <message name="IDS_SETTINGS_DEVICE_PASSWORDS_ON_DEVICE_ONLY_HEADING" translateable="false" desc="Title of a subsection in the 'device passwords' page displaying passwords/exceptions that are stored only on the device.">
-    On this device only
+  <message name="IDS_SETTINGS_DEVICE_PASSWORDS_ON_DEVICE_ONLY_HEADING" desc="Title of a subsection in the 'device passwords' page displaying passwords/exceptions that are stored only on the device.">
+    Passwords on this device only
   </message>
-  <!-- TODO(crbug.com/1062344): Make it translateable once final strings are available. Also add screenshot file. -->
-  <message name="IDS_SETTINGS_DEVICE_PASSWORDS_ON_DEVICE_AND_ACCOUNT_HEADING" translateable="false" desc="Title of a subsection in the 'device passwords' page displaying passwords/exceptions that are stored both on the device and in the account.">
-    On this device and in your Google Account
+  <message name="IDS_SETTINGS_DEVICE_PASSWORDS_ON_DEVICE_AND_ACCOUNT_HEADING" desc="Title of a subsection in the 'device passwords' page displaying passwords/exceptions that are stored both on the device and in the account.">
+    Passwords on this device and in your Google Account
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS" desc="Name for the check passwords subsection and settings entry used to perform a password bulk check.">
     Check passwords

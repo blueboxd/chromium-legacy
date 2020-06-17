@@ -462,5 +462,26 @@ TEST_F(ShowGenericUiActionTest, RequestLogins) {
   EXPECT_EQ(*user_model_.GetValue("login_options"), expected_value);
 }
 
+TEST_F(ShowGenericUiActionTest, ElementPreconditionMissesIdentifier) {
+  auto* element_check =
+      proto_.mutable_periodic_element_checks()->add_element_checks();
+  element_check->mutable_element_condition()
+      ->mutable_match()
+      ->add_filters()
+      ->set_css_selector("selector");
+
+  EXPECT_CALL(mock_action_delegate_, OnSetGenericUi(_, _)).Times(0);
+  EXPECT_CALL(mock_action_delegate_, ClearGenericUi()).Times(1);
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(AllOf(
+          Property(&ProcessedActionProto::status, INVALID_ACTION),
+          Property(&ProcessedActionProto::show_generic_ui_result,
+                   Property(&ShowGenericUiProto::Result::model,
+                            Property(&ModelProto::values, SizeIs(0))))))));
+
+  Run();
+}
+
 }  // namespace
 }  // namespace autofill_assistant

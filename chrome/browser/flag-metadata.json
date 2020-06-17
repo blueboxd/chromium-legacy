@@ -688,6 +688,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "cross-origin-opener-policy-access-reporting",
+    "owners": [ "ahemery", "arthursonzogni", "clamy", "pmeuleman" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "cross-origin-opener-policy-reporting",
     "owners": [ "ahemery", "clamy", "pmeuleman" ],
     "expiry_milestone": 85
@@ -726,11 +731,6 @@
     "name": "crostini-use-buster-image",
     "owners": [ "davidmunro@google.com", "benwells" ],
     "expiry_milestone": 86
-  },
-  {
-    "name": "crostini-username",
-    "owners": [ "davidmunro@google.com", "lxj" ],
-    "expiry_milestone": 83
   },
   {
     "name": "crostini-webui-upgrader",

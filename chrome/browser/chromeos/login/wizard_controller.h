@@ -380,7 +380,7 @@ class WizardController {
 
   // Time when the EULA was accepted. Used to measure the duration from the EULA
   // acceptance until the Sign-In screen is displayed.
-  base::Time time_eula_accepted_;
+  base::TimeTicks time_eula_accepted_;
 
   // Whether OOBE has yet been marked as completed.
   bool oobe_marked_completed_ = false;
@@ -417,7 +417,7 @@ class WizardController {
   std::unique_ptr<DemoSetupController> demo_setup_controller_;
 
   // Maps screen names to last time of their shows.
-  std::map<OobeScreenId, base::Time> screen_show_times_;
+  std::map<OobeScreenId, base::TimeTicks> screen_show_times_;
 
   // Tests check result of timezone resolve.
   bool timezone_resolved_ = false;

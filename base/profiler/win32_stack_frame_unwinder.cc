@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 namespace base {

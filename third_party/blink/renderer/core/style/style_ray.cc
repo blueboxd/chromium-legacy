@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/style/style_ray.h"
 
+#include "base/notreached.h"
+
 namespace blink {
 
 scoped_refptr<StyleRay> StyleRay::Create(float angle,

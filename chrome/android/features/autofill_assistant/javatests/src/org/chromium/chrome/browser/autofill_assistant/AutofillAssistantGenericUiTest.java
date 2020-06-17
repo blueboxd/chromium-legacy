@@ -37,6 +37,7 @@ import static org.hamcrest.Matchers.iterableWithSize;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.hasTypefaceSpan;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.isImportantForAccessibility;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.startAutofillAssistant;
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.tapElement;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewAssertionTrue;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.withMinimumSize;
@@ -82,8 +83,12 @@ import org.chromium.chrome.browser.autofill_assistant.proto.DateList;
 import org.chromium.chrome.browser.autofill_assistant.proto.DateProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DividerViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DrawableProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto.Rectangle;
+import org.chromium.chrome.browser.autofill_assistant.proto.ElementConditionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.EndActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.EventProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.FocusElementProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.GenericUserInterfaceProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ImageViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.InfoPopupProto;
@@ -100,6 +105,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.OnViewClickedEventPr
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ProcessedActionStatusProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.PromptProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.SelectorProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetModelValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetUserActionsProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.SetViewEnabledProto;
@@ -108,6 +114,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ShapeDrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowCalendarPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiProto.PeriodicElementChecks;
+import org.chromium.chrome.browser.autofill_assistant.proto.ShowGenericUiProto.PeriodicElementChecks.ElementCheck;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowInfoPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ShowListPopupProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.StringList;
@@ -2602,5 +2610,105 @@ public class AutofillAssistantGenericUiTest {
             waitUntilViewAssertionTrue(
                     withText("Hello World"), doesNotExist(), DEFAULT_MAX_TIME_TO_POLL);
         }
+    }
+
+    /**
+     * Sets a precondition on the DOM and triggers it.
+     */
+    @Test
+    @MediumTest
+    public void testElementCondition() throws Exception {
+        List<InteractionProto> interactions = new ArrayList<>();
+
+        // When touch_area_one_present becomes false, end the action
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "touch_area_one_present")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setBooleanNot(BooleanNotProto.newBuilder().setValue(
+                                                ValueReferenceProto.newBuilder().setModelIdentifier(
+                                                        "touch_area_one_present")))
+                                        .setResultModelIdentifier("end_action")))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "end_action")))
+                        .addCallbacks(CallbackProto.newBuilder()
+                                              .setEndAction(EndActionProto.newBuilder().setStatus(
+                                                      ProcessedActionStatusProto.ACTION_APPLIED))
+                                              .setConditionModelIdentifier("end_action"))
+                        .build());
+
+        GenericUserInterfaceProto genericUserInterface =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(
+                                ViewProto.newBuilder()
+                                        .setTextView(TextViewProto.newBuilder().setText("Text"))
+                                        .setIdentifier("textView"))
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder())
+                        .build();
+
+        SelectorProto touch_area_one =
+                (SelectorProto) SelectorProto.newBuilder()
+                        .addFilters(
+                                SelectorProto.Filter.newBuilder().setCssSelector("#touch_area_one"))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setFocusElement(FocusElementProto.newBuilder()
+                                                 .setElement(touch_area_one)
+                                                 .setTouchableElementArea(
+                                                         ElementAreaProto.newBuilder().addTouchable(
+                                                                 Rectangle.newBuilder().addElements(
+                                                                         touch_area_one))))
+                        .build());
+
+        ElementCheck touch_area_one_present =
+                (ElementCheck) ElementCheck.newBuilder()
+                        .setModelIdentifier("touch_area_one_present")
+                        .setElementCondition(
+                                ElementConditionProto.newBuilder().setMatch(touch_area_one))
+                        .build();
+
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setShowGenericUi(
+                                ShowGenericUiProto.newBuilder()
+                                        .setGenericUserInterface(genericUserInterface)
+                                        .setPeriodicElementChecks(
+                                                PeriodicElementChecks.newBuilder().addElementChecks(
+                                                        touch_area_one_present)))
+                        .build());
+
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder().setMessage("Prompt").addChoices(
+                                 PromptProto.Choice.newBuilder()))
+                         .build());
+
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("autofill_assistant_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Text"), isCompletelyDisplayed());
+        onView(withText("Prompt")).check(doesNotExist());
+        tapElement(mTestRule, "touch_area_one");
+        waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
     }
 }

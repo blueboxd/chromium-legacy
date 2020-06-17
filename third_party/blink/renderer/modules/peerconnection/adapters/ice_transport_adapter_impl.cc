@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/quic_packet_transport_adapter.h"
 #include "third_party/webrtc/api/ice_transport_factory.h"
 

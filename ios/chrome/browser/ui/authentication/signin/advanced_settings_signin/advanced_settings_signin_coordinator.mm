@@ -125,7 +125,7 @@ using l10n_util::GetNSString;
 }
 
 - (BOOL)isSettingsViewPresented {
-  // TODO(crbug.com/971989): Remove this method.
+  // This coordinator presents the Google services settings.
   return YES;
 }
 

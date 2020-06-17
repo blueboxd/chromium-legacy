@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/editing/state_machines/backward_code_point_state_machine.h"
 
+#include "base/notreached.h"
+
 namespace blink {
 
 enum class BackwardCodePointStateMachine::BackwardCodePointState {

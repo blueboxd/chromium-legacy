@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/extensions/api/enterprise_reporting_private/device_info_fetcher.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
@@ -35,6 +34,10 @@ namespace {
 void LogReportError(const std::string& reason) {
   VLOG(1) << "Enterprise report is not uploaded: " << reason;
 }
+void LogReportErrorCode(const std::string& reason, long int code) {
+  VLOG(1) << "Enterprise report is not uploaded: " << reason
+          << " code: " << code;
+}
 
 }  // namespace
 
@@ -48,8 +51,7 @@ const char kEndpointVerificationRetrievalFailed[] =
     "Failed to retrieve the endpoint verification data.";
 const char kEndpointVerificationStoreFailed[] =
     "Failed to store the endpoint verification data.";
-// const char kEndpointVerificationSecretRetrievalFailed[] = "Failed to retrieve
-// the endpoint verification secret.";
+const char kEndpointVerificationSecretRetrievalFailed[] = "%ld";
 
 }  // namespace enterprise_reporting
 
@@ -193,15 +195,17 @@ EnterpriseReportingPrivateGetPersistentSecretFunction::Run() {
 
 void EnterpriseReportingPrivateGetPersistentSecretFunction::OnDataRetrieved(
     const std::string& data,
-    bool status) {
-  if (status) {
+    long int status) {
+  if (status == 0) {  // Success.
     VLOG(1) << "The Endpoint Verification secret was retrieved.";
     Respond(OneArgument(std::make_unique<base::Value>(base::Value::BlobStorage(
         reinterpret_cast<const uint8_t*>(data.data()),
         reinterpret_cast<const uint8_t*>(data.data() + data.size())))));
   } else {
-    LogReportError("Endpoint Verification secret retrieval error.");
-    Respond(Error(enterprise_reporting::kEndpointVerificationRetrievalFailed));
+    LogReportErrorCode("Endpoint Verification secret retrieval error.", status);
+    Respond(Error(base::StringPrintf(
+        enterprise_reporting::kEndpointVerificationSecretRetrievalFailed,
+        static_cast<long int>(status))));
   }
 }
 
@@ -231,15 +235,24 @@ EnterpriseReportingPrivateGetDeviceDataFunction::Run() {
 
 void EnterpriseReportingPrivateGetDeviceDataFunction::OnDataRetrieved(
     const std::string& data,
-    bool status) {
-  if (status) {
-    VLOG(1) << "The Endpoint Verification data was retrieved.";
-    Respond(OneArgument(std::make_unique<base::Value>(base::Value::BlobStorage(
-        reinterpret_cast<const uint8_t*>(data.data()),
-        reinterpret_cast<const uint8_t*>(data.data() + data.size())))));
-  } else {
-    LogReportError("Endpoint Verification data retrieval error.");
-    Respond(Error(enterprise_reporting::kEndpointVerificationRetrievalFailed));
+    RetrieveDeviceDataStatus status) {
+  switch (status) {
+    case RetrieveDeviceDataStatus::kSuccess:
+      VLOG(1) << "The Endpoint Verification data was retrieved.";
+      Respond(
+          OneArgument(std::make_unique<base::Value>(base::Value::BlobStorage(
+              reinterpret_cast<const uint8_t*>(data.data()),
+              reinterpret_cast<const uint8_t*>(data.data() + data.size())))));
+      return;
+    case RetrieveDeviceDataStatus::kDataRecordNotFound:
+      VLOG(1) << "The Endpoint Verification data is not present.";
+      Respond(NoArguments());
+      return;
+    default:
+      LogReportErrorCode("Endpoint Verification data retrieval error.",
+                         static_cast<long int>(status));
+      Respond(
+          Error(enterprise_reporting::kEndpointVerificationRetrievalFailed));
   }
 }
 

@@ -16,6 +16,9 @@ const int kDefaultSAMLOfflineSigninTimeLimit = 14 * 24 * 60 * 60;  // 14 days.
 const bool kDefaultSamlInSessionPasswordChangeEnabled = false;
 const int kDefaultSamlPasswordExpirationAdvanceWarningDays = 14;
 
+// Online reauthentication on the lock screen.
+const bool kDefaultSamlLockScreenReauthenticationEnabled = false;
+
 }  // namespace
 
 namespace chromeos {
@@ -30,6 +33,9 @@ void RegisterSamlProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       prefs::kSamlPasswordExpirationAdvanceWarningDays,
       kDefaultSamlPasswordExpirationAdvanceWarningDays);
+
+  registry->RegisterBooleanPref(prefs::kSamlLockScreenReauthenticationEnabled,
+                                kDefaultSamlLockScreenReauthenticationEnabled);
 
   SamlPasswordAttributes::RegisterProfilePrefs(registry);
 }

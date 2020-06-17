@@ -19,6 +19,7 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -244,12 +245,26 @@ void CrostiniApps::OnRegistryUpdated(
 }
 
 void CrostiniApps::OnAppIconUpdated(const std::string& app_id,
-                                    ui::ScaleFactor scale_factor) {
+                                    ui::ScaleFactor scale_factor,
+                                    const std::string& compressed_icon_data) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kCrostini;
   app->app_id = app_id;
   app->icon_key = NewIconKey(app_id);
-  Publish(std::move(app), subscribers_);
+
+  auto range = app_icon_callbacks_.equal_range(app_id);
+  for (auto it = range.first; it != range.second; it++) {
+    apps::mojom::IconCompression icon_compression;
+    int32_t size_hint_in_dip;
+    IconEffects icon_effects;
+    LoadIconCallback callback;
+    std::tie(icon_compression, size_hint_in_dip, icon_effects, callback) =
+        std::move(it->second);
+
+    LoadIconFromCompressedData(icon_compression, size_hint_in_dip, icon_effects,
+                               compressed_icon_data, std::move(callback));
+  }
+  app_icon_callbacks_.erase(range.first, range.second);
 }
 
 void CrostiniApps::OnCrostiniEnabledChanged() {
@@ -276,29 +291,31 @@ void CrostiniApps::LoadIconFromVM(const std::string app_id,
                                   ui::ScaleFactor scale_factor,
                                   IconEffects icon_effects,
                                   LoadIconCallback callback) {
-  if (!allow_placeholder_icon) {
-    // Treat this as failure. We still run the callback, with a nullptr to
-    // indicate failure.
-    std::move(callback).Run(nullptr);
-    return;
+  if (allow_placeholder_icon) {
+    // If a placeholder icon is allowed, pass back the crostini penguin while we
+    // load the real icon from the VM.
+    constexpr bool is_placeholder_icon = true;
+    LoadIconFromResource(icon_compression, size_hint_in_dip,
+                         IDR_LOGO_CROSTINI_DEFAULT_192, is_placeholder_icon,
+                         icon_effects, std::move(callback));
+  } else {
+    // If we don't pass back a fallback icon, we need to store the callback to
+    // use later.
+    LoadIconCallback wrapped_callback =
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            std::move(callback), apps::mojom::IconValue::New());
+    app_icon_callbacks_.emplace(
+        app_id,
+        std::forward_as_tuple(std::move(icon_compression), size_hint_in_dip,
+                              icon_effects, std::move(wrapped_callback)));
   }
-
-  // Provide a placeholder icon.
-  constexpr bool is_placeholder_icon = true;
-  LoadIconFromResource(icon_compression, size_hint_in_dip,
-                       IDR_LOGO_CROSTINI_DEFAULT_192, is_placeholder_icon,
-                       icon_effects, std::move(callback));
 
   // Ask the VM to load the icon (and write a cached copy to the file system).
   // The "Maybe" is because multiple requests for the same icon will be merged,
-  // calling OnAppIconUpdated only once. In OnAppIconUpdated, we'll publish a
-  // new IconKey, and subscribers can re-schedule new LoadIcon calls, with new
+  // calling OnAppIconUpdated only once. In OnAppIconUpdated, the cached
+  // callbacks will be run, we'll publish a new IconKey, and subscribers who
+  // received a placeholder icon can re-schedule new LoadIcon calls, with new
   // LoadIconCallback's, that will pick up that cached copy.
-  //
-  // TODO(crbug.com/826982): add a safeguard to prevent an infinite loop where
-  // OnAppIconUpdated somehow doesn't write the cached icon file where we
-  // expect, leading to another MaybeRequestIcon call, leading to another
-  // OnAppIconUpdated call, leading to another MaybeRequestIcon call, etc.
   registry_->MaybeRequestIcon(app_id, scale_factor);
 }
 

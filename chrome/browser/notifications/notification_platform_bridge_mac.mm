@@ -302,6 +302,8 @@ void NotificationPlatformBridgeMac::Display(
   [builder setNotificationId:base::SysUTF8ToNSString(notification.id())];
   [builder setProfileId:base::SysUTF8ToNSString(GetProfileId(profile))];
   [builder setIncognito:profile->IsOffTheRecord()];
+  [builder setCreatorPid:[NSNumber numberWithInteger:static_cast<NSInteger>(
+                                                         getpid())]];
   [builder
       setNotificationType:[NSNumber numberWithInteger:static_cast<NSInteger>(
                                                           notification_type)]];
@@ -414,6 +416,8 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
       ![response objectForKey:notification_constants::kNotificationId] ||
       ![response objectForKey:notification_constants::kNotificationProfileId] ||
       ![response objectForKey:notification_constants::kNotificationIncognito] ||
+      ![response
+          objectForKey:notification_constants::kNotificationCreatorPid] ||
       ![response objectForKey:notification_constants::kNotificationType]) {
     LOG(ERROR) << "Missing required key";
     return false;
@@ -429,6 +433,12 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
       [response objectForKey:notification_constants::kNotificationProfileId];
   NSNumber* notification_type =
       [response objectForKey:notification_constants::kNotificationType];
+  NSNumber* creator_pid =
+      [response objectForKey:notification_constants::kNotificationCreatorPid];
+
+  if (creator_pid.unsignedIntValue != static_cast<NSInteger>(getpid())) {
+    return false;
+  }
 
   if (button_index.intValue <
           notification_constants::kNotificationInvalidButtonIndex ||

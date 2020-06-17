@@ -2709,11 +2709,12 @@ ValidationType HttpCache::Transaction::RequiresValidation() {
   if (effective_load_flags_ & LOAD_SKIP_CACHE_VALIDATION)
     return VALIDATION_NONE;
 
+  TimeDelta response_time_in_cache =
+      cache_->clock_->Now() - response_.response_time;
   if (response_.unused_since_prefetch &&
       !(effective_load_flags_ & LOAD_PREFETCH) &&
-      response_.headers->GetCurrentAge(
-          response_.request_time, response_.response_time,
-          cache_->clock_->Now()) < TimeDelta::FromMinutes(kPrefetchReuseMins)) {
+      (response_time_in_cache < TimeDelta::FromMinutes(kPrefetchReuseMins)) &&
+      (response_time_in_cache >= TimeDelta())) {
     // The first use of a resource after prefetch within a short window skips
     // validation.
     return VALIDATION_NONE;

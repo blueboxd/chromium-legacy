@@ -2654,6 +2654,9 @@ enum WebFeature {
   kFetchAPINonGetOrHeadOpaqueResponseWithRedirect = 3317,
   kDynamicImportModuleScriptRelativeClassicSameOrigin = 3318,
   kDynamicImportModuleScriptRelativeClassicCrossOrigin = 3319,
+  kV8WasmBulkMemory = 3320,
+  kV8WasmRefTypes = 3321,
+  kV8WasmMultiValue = 3322,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

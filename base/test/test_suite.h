@@ -22,6 +22,10 @@
 #include "base/test/trace_to_file.h"
 #endif  // BUILDFLAG(ENABLE_BASE_TRACING)
 
+namespace logging {
+class ScopedLogAssertHandler;
+}
+
 namespace testing {
 class TestInfo;
 }

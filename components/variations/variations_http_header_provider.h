@@ -68,12 +68,6 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // entry in the returned vector will be unique.
   std::vector<VariationID> GetVariationsVector(IDCollectionKey key);
 
-  // Returns the collection of variation ids matching any of the given
-  // |keys|. Each entry in the returned vector will be unique.
-  // TODO(rogerm): rename/move to private impl function.
-  std::vector<VariationID> GetVariationsVector(
-      const std::set<IDCollectionKey>& key);
-
   // Returns the collection of variations ids for all Google Web Properties
   // related keys.
   std::vector<VariationID> GetVariationsVectorForWebPropertiesKeys();
@@ -130,11 +124,11 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsString);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
-                           GetVariationsVectorByKey);
-  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
-                           GetVariationsVectorByKeySet);
+                           GetVariationsVector);
   FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
                            GetVariationsVectorForWebPropertiesKeys);
+  FRIEND_TEST_ALL_PREFIXES(VariationsHttpHeaderProviderTest,
+                           GetVariationsVectorImpl);
 
   VariationsHttpHeaderProvider();
   ~VariationsHttpHeaderProvider() override;
@@ -188,6 +182,11 @@ class VariationsHttpHeaderProvider : public base::FieldTrialList::Observer,
   // Returns the currently active set of variation ids, which includes any
   // default values, synthetic variations and actual field trial variations.
   std::set<VariationIDEntry> GetAllVariationIds();
+
+  // Returns the collection of variation ids matching any of the given
+  // |keys|. Each entry in the returned vector will be unique.
+  std::vector<VariationID> GetVariationsVectorImpl(
+      const std::set<IDCollectionKey>& key);
 
   // Guards access to variables below.
   base::Lock lock_;

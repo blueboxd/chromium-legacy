@@ -102,8 +102,10 @@ TEST_F(ServiceWorkerContextWrapperTest, HasRegistration) {
 
   // Now test that registrations are recognized.
   wrapper_->WaitForRegistrationsInitializedForTest();
-  EXPECT_TRUE(wrapper_->HasRegistrationForOrigin(GURL("https://example.com")));
-  EXPECT_FALSE(wrapper_->HasRegistrationForOrigin(GURL("https://example.org")));
+  EXPECT_TRUE(wrapper_->HasRegistrationForOrigin(
+      url::Origin::Create(GURL("https://example.com"))));
+  EXPECT_FALSE(wrapper_->HasRegistrationForOrigin(
+      url::Origin::Create(GURL("https://example.org"))));
 }
 
 }  // namespace content

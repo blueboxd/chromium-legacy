@@ -61,7 +61,6 @@
 #import "ios/chrome/browser/ui/main/browser_view_wrangler.h"
 #import "ios/chrome/browser/ui/promos/signin_promo_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/signin_interaction/signin_interaction_coordinator.h"
 #include "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 #import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/multi_window_support.h"
@@ -145,14 +144,8 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // A flag that keeps track of the UI initialization for the controlled scene.
 @property(nonatomic, assign) BOOL hasInitializedUI;
 
-// The SigninInteractionCoordinator to present Sign In UI. It is created the
-// first time Sign In UI is needed to be presented and should not be destroyed
-// while the UI is presented.
-@property(nonatomic, strong)
-    SigninInteractionCoordinator* signinInteractionCoordinator;
-
 // Returns YES if the settings are presented, either from
-// self.settingsNavigationController or from SigninInteractionCoordinator.
+// self.settingsNavigationController or from SigninCoordinator.
 @property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
     BOOL settingsViewPresented;
 
@@ -268,7 +261,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 - (BOOL)isSettingsViewPresented {
   return self.settingsNavigationController ||
-         self.signinInteractionCoordinator.isSettingsViewPresented;
+         self.signinCoordinator.isSettingsViewPresented;
 }
 
 #pragma mark - SceneStateObserver
@@ -680,8 +673,10 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   }
 
   // The UI should be stopped before the models they observe are stopped.
-  [self.signinInteractionCoordinator cancel];
-  self.signinInteractionCoordinator = nil;
+  [self.signinCoordinator
+      interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
+               completion:nil];
+  self.signinCoordinator = nil;
 
   [self.historyCoordinator stop];
   self.historyCoordinator = nil;
@@ -896,7 +891,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Remove showing settings from MainController.
 - (void)showAutofillSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (self.settingsNavigationController)
     return;
 
@@ -915,7 +910,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // This dispatch is necessary to give enough time for the tools menu to
   // disappear before taking a screenshot.
   dispatch_async(dispatch_get_main_queue(), ^{
-    DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+    DCHECK(!self.signinCoordinator);
     if (self.settingsNavigationController)
       return;
     Browser* browser = self.mainInterface.browser;
@@ -947,47 +942,43 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Do not pass |baseViewController| through dispatcher.
 - (void)showSignin:(ShowSigninCommand*)command
     baseViewController:(UIViewController*)baseViewController {
-  if (!self.signinInteractionCoordinator) {
-    Browser* mainBrowser = self.mainInterface.browser;
-    self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
-  }
+  DCHECK(!self.signinCoordinator);
+  Browser* mainBrowser = self.mainInterface.browser;
 
   switch (command.operation) {
     case AUTHENTICATION_OPERATION_REAUTHENTICATE:
-      [self.signinInteractionCoordinator
-          reAuthenticateWithAccessPoint:command.accessPoint
-                            promoAction:command.promoAction
-               presentingViewController:baseViewController
-                             completion:command.callback];
+      self.signinCoordinator = [SigninCoordinator
+          reAuthenticationCoordinatorWithBaseViewController:baseViewController
+                                                    browser:mainBrowser
+                                                accessPoint:command.accessPoint
+                                                promoAction:command
+                                                                .promoAction];
       break;
     case AUTHENTICATION_OPERATION_SIGNIN:
-      [self.signinInteractionCoordinator signInWithIdentity:command.identity
-                                                accessPoint:command.accessPoint
-                                                promoAction:command.promoAction
-                                   presentingViewController:baseViewController
-                                                 completion:command.callback];
+      self.signinCoordinator = [SigninCoordinator
+          userSigninCoordinatorWithBaseViewController:baseViewController
+                                              browser:mainBrowser
+                                             identity:command.identity
+                                          accessPoint:command.accessPoint
+                                          promoAction:command.promoAction];
       break;
     case AUTHENTICATION_OPERATION_ADD_ACCOUNT:
-      [self.signinInteractionCoordinator
-          addAccountWithAccessPoint:command.accessPoint
-                        promoAction:command.promoAction
-           presentingViewController:baseViewController
-                         completion:command.callback];
+      self.signinCoordinator = [SigninCoordinator
+          addAccountCoordinatorWithBaseViewController:baseViewController
+                                              browser:mainBrowser
+                                          accessPoint:command.accessPoint];
       break;
   }
+  [self startSigninCoordinatorWithCompletion:command.callback];
 }
 
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController {
   Browser* mainBrowser = self.mainInterface.browser;
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
-  }
-  [self.signinInteractionCoordinator
-      showAdvancedSigninSettingsWithPresentingViewController:
-          baseViewController];
+  self.signinCoordinator = [SigninCoordinator
+      advancedSettingsSigninCoordinatorWithBaseViewController:baseViewController
+                                                      browser:mainBrowser];
+  [self startSigninCoordinatorWithCompletion:nil];
 }
 
 - (void)
@@ -997,32 +988,24 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                           (syncer::KeyRetrievalTriggerForUMA)
                                               retrievalTrigger {
   Browser* mainBrowser = self.mainInterface.browser;
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
-  }
-  [self.signinInteractionCoordinator
-      showTrustedVaultReauthenticationWithPresentingViewController:
+  self.signinCoordinator = [SigninCoordinator
+      trustedVaultReAuthenticationCoordiantorWithBaseViewController:
           baseViewController
-                                                  retrievalTrigger:
-                                                      retrievalTrigger];
+                                                            browser:mainBrowser
+                                                   retrievalTrigger:
+                                                       retrievalTrigger];
+  [self startSigninCoordinatorWithCompletion:nil];
 }
 
 // TODO(crbug.com/779791) : Remove settings commands from MainController.
 - (void)showAddAccountFromViewController:(UIViewController*)baseViewController {
-  Browser* mainBrowser = self.mainInterface.browser;
-  if (!self.signinInteractionCoordinator) {
-    self.signinInteractionCoordinator =
-        [[SigninInteractionCoordinator alloc] initWithBrowser:mainBrowser];
-  }
+  self.signinCoordinator = [SigninCoordinator
+      addAccountCoordinatorWithBaseViewController:baseViewController
+                                          browser:self.mainInterface.browser
+                                      accessPoint:signin_metrics::AccessPoint::
+                                                      ACCESS_POINT_UNKNOWN];
 
-  [self.signinInteractionCoordinator
-      addAccountWithAccessPoint:signin_metrics::AccessPoint::
-                                    ACCESS_POINT_UNKNOWN
-                    promoAction:signin_metrics::PromoAction::
-                                    PROMO_ACTION_NO_SIGNIN_PROMO
-       presentingViewController:baseViewController
-                     completion:nil];
+  [self startSigninCoordinatorWithCompletion:nil];
 }
 
 - (void)setIncognitoContentVisible:(BOOL)incognitoContentVisible {
@@ -1042,7 +1025,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 }
 
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (self.settingsNavigationController)
     return;
   [[DeferredInitializationRunner sharedInstance]
@@ -1080,7 +1063,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Remove show settings from MainController.
 - (void)showAccountsSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (!baseViewController) {
     DCHECK_EQ(self.currentInterface.viewController,
               self.mainCoordinator.activeViewController);
@@ -1109,7 +1092,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Remove Google services settings from MainController.
 - (void)showGoogleServicesSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (!baseViewController) {
     DCHECK_EQ(self.currentInterface.viewController,
               self.mainCoordinator.activeViewController);
@@ -1137,7 +1120,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showSyncPassphraseSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSyncPassphraseSettingsFromViewController:baseViewController];
@@ -1161,7 +1144,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     // dispatched command.
     baseViewController = self.currentInterface.viewController;
   }
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showSavedPasswordsSettingsFromViewController:baseViewController];
@@ -1179,7 +1162,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showProfileSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showProfileSettingsFromViewController:baseViewController];
@@ -1198,7 +1181,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // TODO(crbug.com/779791) : Remove show settings commands from MainController.
 - (void)showCreditCardSettingsFromViewController:
     (UIViewController*)baseViewController {
-  DCHECK(!self.signinInteractionCoordinator.isSettingsViewPresented);
+  DCHECK(!self.signinCoordinator);
   if (self.settingsNavigationController) {
     [self.settingsNavigationController
         showCreditCardSettingsFromViewController:baseViewController];
@@ -1550,7 +1533,7 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   ProceduralBlock completionWithBVC = ^{
     DCHECK(self.currentInterface.viewController);
     DCHECK(!self.tabSwitcherIsActive);
-    DCHECK(!self.signinInteractionCoordinator.isActive);
+    DCHECK(!self.signinCoordinator);
     // This will dismiss the SSO view controller.
     [self.interfaceProvider.currentInterface
         clearPresentedStateWithCompletion:completion
@@ -1560,34 +1543,28 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
     // |self.currentInterface.bvc| may exist but tab switcher should be
     // active.
     DCHECK(self.tabSwitcherIsActive);
-    // This will dismiss the SSO view controller.
-    [self.signinInteractionCoordinator cancelAndDismiss];
-    // History coordinator can be started on top of the tab grid. This is not
-    // true of the other tab switchers.
+    DCHECK(!self.signinCoordinator);
+    // History coordinator can be started on top of the tab grid.
+    // This is not true of the other tab switchers.
     DCHECK(self.mainCoordinator);
     [self.mainCoordinator stopChildCoordinatorsWithCompletion:completion];
   };
 
-  // As a top level rule, if the settings are showing, they need to be
-  // dismissed. Then, based on whether the BVC is present or not, a different
-  // completion callback is called.
-  if (!self.tabSwitcherIsActive && self.isSettingsViewPresented) {
+  // Select a completion based on whether the BVC is shown.
+  ProceduralBlock chosenCompletion =
+      self.tabSwitcherIsActive ? completionWithoutBVC : completionWithBVC;
+
+  if (self.isSettingsViewPresented) {
     // In this case, the settings are up and the BVC is showing. Close the
-    // settings then call the BVC completion.
-    [self closeSettingsAnimated:NO completion:completionWithBVC];
-  } else if (self.isSettingsViewPresented) {
-    // In this case, the settings are up but the BVC is not showing. Close the
-    // settings then call the no-BVC completion.
-    [self closeSettingsAnimated:NO completion:completionWithoutBVC];
-  } else if (!self.tabSwitcherIsActive) {
-    // In this case, the settings are not shown but the BVC is showing. Call the
-    // BVC completion.
-    [self.signinInteractionCoordinator cancel];
-    completionWithBVC();
-  } else {
-    // In this case, neither the settings nor the BVC are shown. Call the no-BVC
+    // settings then call the chosen completion.
+    [self closeSettingsAnimated:NO completion:chosenCompletion];
+  } else if (self.signinCoordinator) {
+    // The sign-in screen is showing, interrupt it and call the chosen
     // completion.
-    completionWithoutBVC();
+    [self interruptSigninCoordinatorAnimated:NO completion:chosenCompletion];
+  } else {
+    // Does not require a special case. Run the chosen completion.
+    chosenCompletion();
   }
 
   // Verify that no modal views are left presented.
@@ -1838,32 +1815,29 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                                    completion:completion];
       self.settingsNavigationController = nil;
     };
-    // |self.signinInteractionCoordinator| can be presented on top of the
-    // settings, to present the Trusted Vault reauthentication.
-    // |self.signinInteractionCoordinator| has to be closed first.
-    if (self.signinInteractionCoordinator.isActive) {
-      [self.signinInteractionCoordinator
-          abortAndDismissSettingsViewAnimated:animated
-                                   completion:dismissSettings];
+    // |self.signinCoordinator| can be presented on top of the settings, to
+    // present the Trusted Vault reauthentication |self.signinCoordinator| has
+    // to be closed first.
+    if (self.signinCoordinator) {
+      [self interruptSigninCoordinatorAnimated:animated
+                                    completion:dismissSettings];
     } else if (dismissSettings) {
       dismissSettings();
     }
     return;
   }
-  // |self.signinInteractionCoordinator| can also present settings, like
+  // |self.signinCoordinator| can also present settings, like
   // the advanced sign-in settings navigation controller. If the settings has
-  // to be cloase, it is thus the responsibility of the main controller to
-  // dismiss the the advanced sign-in settings by dismssing the settings
-  // presented by |self.signinInteractionCoordinator|.
+  // to be closed, it is thus the responsibility of the main controller to
+  // dismiss the advanced sign-in settings by dismssing the settings
+  // presented by |self.signinCoordinator|.
   // To reproduce this case:
   //  - open Bookmark view
   //  - start sign-in
   //  - tap on "Settings" to open the advanced sign-in settings
   //  - tap on "Manage Your Google Account"
-  DCHECK(self.signinInteractionCoordinator.isSettingsViewPresented);
-  [self.signinInteractionCoordinator
-      abortAndDismissSettingsViewAnimated:animated
-                               completion:completion];
+  DCHECK(self.signinCoordinator);
+  [self interruptSigninCoordinatorAnimated:animated completion:completion];
 }
 
 - (UIViewController*)topPresentedViewController {
@@ -1871,6 +1845,34 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   // privately.
   return top_view_controller::TopPresentedViewControllerFrom(
       self.mainCoordinator.viewController);
+}
+
+// Interrupts the sign-in coordinator actions and dismisses its views either
+// with or without animation.
+- (void)interruptSigninCoordinatorAnimated:(BOOL)animated
+                                completion:(ProceduralBlock)completion {
+  SigninCoordinatorInterruptAction action =
+      animated ? SigninCoordinatorInterruptActionDismissWithAnimation
+               : SigninCoordinatorInterruptActionDismissWithoutAnimation;
+  [self.signinCoordinator interruptWithAction:action completion:completion];
+}
+
+// Starts the sign-in coordinator with a default cleanup completion.
+- (void)startSigninCoordinatorWithCompletion:
+    (signin_ui::CompletionCallback)completion {
+  DCHECK(self.signinCoordinator);
+  __weak SceneController* weakSelf = self;
+  self.signinCoordinator.signinCompletion =
+      ^(SigninCoordinatorResult result, SigninCompletionInfo*) {
+        [weakSelf.signinCoordinator stop];
+        weakSelf.signinCoordinator = nil;
+
+        if (completion) {
+          completion(result == SigninCoordinatorResultSuccess);
+        }
+      };
+
+  [self.signinCoordinator start];
 }
 
 #pragma mark - WebStateListObserving

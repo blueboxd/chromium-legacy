@@ -13,6 +13,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/stack_trace.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"

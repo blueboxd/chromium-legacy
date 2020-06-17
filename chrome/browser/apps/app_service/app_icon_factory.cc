@@ -292,6 +292,7 @@ class IconLoadingPipeline : public base::RefCounted<IconLoadingPipeline> {
 
   // The image file must be compressed using the default encoding.
   void LoadCompressedIconFromFile(const base::FilePath& path);
+  void LoadIconFromCompressedData(const std::string& compressed_icon_data);
 
   void LoadIconFromResource(int icon_resource);
 
@@ -437,6 +438,17 @@ void IconLoadingPipeline::LoadCompressedIconFromFile(
       CompressedDataToImageSkiaCallback(
           base::BindOnce(&IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                          base::WrapRefCounted(this))));
+}
+
+void IconLoadingPipeline::LoadIconFromCompressedData(
+    const std::string& compressed_icon_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::vector<uint8_t> data(compressed_icon_data.begin(),
+                            compressed_icon_data.end());
+  CompressedDataToImageSkiaCallback(
+      base::BindOnce(&IconLoadingPipeline::MaybeApplyEffectsAndComplete,
+                     base::WrapRefCounted(this)))
+      .Run(std::move(data));
 }
 
 void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
@@ -714,6 +726,22 @@ void LoadIconFromFileWithFallback(
           icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
           kInvalidIconResource, std::move(fallback), std::move(callback));
   icon_loader->LoadCompressedIconFromFile(path);
+}
+
+void LoadIconFromCompressedData(
+    apps::mojom::IconCompression icon_compression,
+    int size_hint_in_dip,
+    IconEffects icon_effects,
+    const std::string& compressed_icon_data,
+    apps::mojom::Publisher::LoadIconCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  constexpr bool is_placeholder_icon = false;
+
+  scoped_refptr<IconLoadingPipeline> icon_loader =
+      base::MakeRefCounted<IconLoadingPipeline>(
+          icon_compression, size_hint_in_dip, is_placeholder_icon, icon_effects,
+          kInvalidIconResource, std::move(callback));
+  icon_loader->LoadIconFromCompressedData(compressed_icon_data);
 }
 
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,

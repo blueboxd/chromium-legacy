@@ -144,9 +144,6 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   source->AddBoolean(
       "diskResizingEnabled",
       base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing));
-  source->AddBoolean(
-      "crostiniCustomUsername",
-      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername));
   source->AddString("defaultContainerUsername",
                     crostini::DefaultContainerUserNameForProfile(profile));
 

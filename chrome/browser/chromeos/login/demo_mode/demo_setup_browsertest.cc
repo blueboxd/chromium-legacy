@@ -121,7 +121,7 @@ std::string ScreenToContentQuery(OobeScreenId screen) {
   if (screen == DemoPreferencesScreenView::kScreenId)
     return "$('demo-preferences-content')";
   if (screen == NetworkScreenView::kScreenId)
-    return "$('oobe-network-md')";
+    return "$('network-selection')";
   if (screen == EulaView::kScreenId)
     return "$('oobe-eula-md')";
   if (screen == ArcTermsOfServiceScreenView::kScreenId)

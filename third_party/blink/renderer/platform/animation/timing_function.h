@@ -26,6 +26,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_ANIMATION_TIMING_FUNCTION_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "base/notreached.h"
 #include "cc/animation/timing_function.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"

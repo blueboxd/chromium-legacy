@@ -14,10 +14,14 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
+#include "base/values.h"
 #include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_model.h"
 #include "ui/events/ozone/evdev/touch_filter/neural_stylus_palm_detection_filter_util.h"
+#include "ui/events/ozone/features.h"
 
 namespace ui {
 namespace {
@@ -390,12 +394,22 @@ std::string NeuralStylusPalmDetectionFilter::FilterNameForTesting() const {
   return kFilterName;
 }
 
+bool NeuralStylusPalmDetectionFilter::
+    CompatibleWithNeuralStylusPalmDetectionFilter(
+        const EventDeviceInfo& devinfo) {
+  return NeuralStylusPalmDetectionFilter::
+      CompatibleWithNeuralStylusPalmDetectionFilter(
+          devinfo, base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                       kOzoneNNPalmSwitchName));
+}
+
 const std::vector<int> NeuralStylusPalmDetectionFilter::kRequiredAbsMtCodes = {
     ABS_MT_POSITION_X, ABS_MT_POSITION_Y, ABS_MT_TOUCH_MAJOR};
 
 bool NeuralStylusPalmDetectionFilter::
     CompatibleWithNeuralStylusPalmDetectionFilter(
-        const EventDeviceInfo& devinfo) {
+        const EventDeviceInfo& devinfo,
+        const std::string& ozone_params_switch_string) {
   if (devinfo.HasStylus()) {
     return false;
   }
@@ -425,6 +439,33 @@ bool NeuralStylusPalmDetectionFilter::
   // Only work with internal touchscreens.
   if (devinfo.device_type() != INPUT_DEVICE_INTERNAL) {
     return false;
+  }
+
+  // Check the switch string.
+
+  base::Optional<base::Value> value =
+      base::JSONReader::Read(ozone_params_switch_string);
+  if (value != base::nullopt && !ozone_params_switch_string.empty()) {
+    if (!value->is_dict()) {
+      return false;
+    }
+    // If the key isn't set, default to false.
+    if (value->FindKey(kOzoneNNPalmTouchCompatibleProperty) == nullptr) {
+      return false;
+    }
+    std::string* touch_string_val =
+        value->FindStringKey(kOzoneNNPalmTouchCompatibleProperty);
+    if (touch_string_val != nullptr) {
+      if (*touch_string_val == "false") {
+        return false;
+      } else if (*touch_string_val == "true") {
+        return true;
+      } else {
+        LOG(DFATAL) << "Unexpected value for nnpalm touch compatible. expected "
+                       "\"true\" or \"false\" . Got: "
+                    << *touch_string_val;
+      }
+    }
   }
   return true;
 }

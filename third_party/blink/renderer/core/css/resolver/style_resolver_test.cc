@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/html/html_style_element.h"
@@ -481,6 +482,83 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
 
   const CSSValueList* bg_img_list = To<CSSValueList>(computed_value);
   EXPECT_TRUE(To<CSSImageValue>(bg_img_list->Item(0)).IsCachePending());
+}
+
+TEST_F(StyleResolverTest, CSSMarkerPseudoElement) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      b::before {
+        content: "[before]";
+        display: list-item;
+      }
+      #marker ::marker {
+        color: blue;
+      }
+    </style>
+    <ul>
+      <li style="list-style: decimal outside"><b></b></li>
+      <li style="list-style: decimal inside"><b></b></li>
+      <li style="list-style: disc outside"><b></b></li>
+      <li style="list-style: disc inside"><b></b></li>
+      <li style="list-style: '- ' outside"><b></b></li>
+      <li style="list-style: '- ' inside"><b></b></li>
+      <li style="list-style: linear-gradient(blue, cyan) outside"><b></b></li>
+      <li style="list-style: linear-gradient(blue, cyan) inside"><b></b></li>
+      <li style="list-style: none outside"><b></b></li>
+      <li style="list-style: none inside"><b></b></li>
+    </ul>
+  )HTML");
+  StaticElementList* lis = GetDocument().QuerySelectorAll("li");
+  EXPECT_EQ(lis->length(), 10U);
+
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  for (unsigned i = 0; i < lis->length(); ++i) {
+    Element* li = lis->item(i);
+    PseudoElement* marker = li->GetPseudoElement(kPseudoIdMarker);
+    PseudoElement* before =
+        li->QuerySelector("b")->GetPseudoElement(kPseudoIdBefore);
+    PseudoElement* nested_marker = before->GetPseudoElement(kPseudoIdMarker);
+
+    // Check that UA styles for list markers don't set HasPseudoElementStyle
+    const ComputedStyle* li_style = li->GetComputedStyle();
+    EXPECT_FALSE(li_style->HasPseudoElementStyle(kPseudoIdMarker));
+    EXPECT_FALSE(li_style->HasAnyPseudoElementStyles());
+    const ComputedStyle* before_style = before->GetComputedStyle();
+    EXPECT_FALSE(before_style->HasPseudoElementStyle(kPseudoIdMarker));
+    EXPECT_FALSE(before_style->HasAnyPseudoElementStyles());
+
+    if (i >= 8) {
+      EXPECT_FALSE(marker);
+      EXPECT_FALSE(nested_marker);
+      continue;
+    }
+
+    // Check that list markers have UA styles
+    EXPECT_TRUE(marker);
+    EXPECT_TRUE(nested_marker);
+    EXPECT_EQ(marker->GetComputedStyle()->GetUnicodeBidi(),
+              UnicodeBidi::kIsolate);
+    EXPECT_EQ(nested_marker->GetComputedStyle()->GetUnicodeBidi(),
+              UnicodeBidi::kIsolate);
+  }
+
+  GetDocument().body()->SetIdAttribute("marker");
+  GetDocument().View()->UpdateAllLifecyclePhases(DocumentUpdateReason::kTest);
+  for (unsigned i = 0; i < lis->length(); ++i) {
+    Element* li = lis->item(i);
+    PseudoElement* before =
+        li->QuerySelector("b")->GetPseudoElement(kPseudoIdBefore);
+
+    // Check that author styles for list markers do set HasPseudoElementStyle
+    const ComputedStyle* li_style = li->GetComputedStyle();
+    EXPECT_TRUE(li_style->HasPseudoElementStyle(kPseudoIdMarker));
+    EXPECT_TRUE(li_style->HasAnyPseudoElementStyles());
+
+    // But ::marker styles don't match a ::before::marker
+    const ComputedStyle* before_style = before->GetComputedStyle();
+    EXPECT_FALSE(before_style->HasPseudoElementStyle(kPseudoIdMarker));
+    EXPECT_FALSE(before_style->HasAnyPseudoElementStyles());
+  }
 }
 
 }  // namespace blink

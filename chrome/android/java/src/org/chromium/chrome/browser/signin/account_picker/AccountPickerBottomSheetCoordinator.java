@@ -9,6 +9,8 @@ import android.content.Context;
 import androidx.annotation.MainThread;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -17,6 +19,16 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 public class AccountPickerBottomSheetCoordinator {
     private final AccountPickerCoordinator mAccountPickerCoordinator;
+    private final BottomSheetController mBottomSheetController;
+    private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
+        @Override
+        public void onSheetStateChanged(int newState) {
+            super.onSheetStateChanged(newState);
+            if (newState == BottomSheetController.SheetState.HIDDEN) {
+                AccountPickerBottomSheetCoordinator.this.destroy();
+            }
+        }
+    };
 
     /**
      * Constructs the AccountPickerBottomSheetCoordinator and shows the
@@ -29,16 +41,19 @@ public class AccountPickerBottomSheetCoordinator {
         AccountPickerBottomSheetView view = new AccountPickerBottomSheetView(context);
         mAccountPickerCoordinator = new AccountPickerCoordinator(
                 view.getAccountPickerItemView(), accountPickerListener, null);
+        mBottomSheetController = bottomSheetController;
         PropertyModel model = AccountPickerBottomSheetProperties.createModel();
         PropertyModelChangeProcessor.create(model, view, AccountPickerBottomSheetViewBinder::bind);
-        bottomSheetController.requestShowContent(view, true);
+        mBottomSheetController.addObserver(mBottomSheetObserver);
+        mBottomSheetController.requestShowContent(view, true);
     }
 
     /**
      * Releases the resources used by AccountPickerBottomSheetCoordinator.
      */
     @MainThread
-    public void destroy() {
+    private void destroy() {
         mAccountPickerCoordinator.destroy();
+        mBottomSheetController.removeObserver(mBottomSheetObserver);
     }
 }

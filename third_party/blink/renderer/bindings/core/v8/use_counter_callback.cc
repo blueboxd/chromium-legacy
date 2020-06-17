@@ -330,6 +330,15 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kVarRedeclaredCatchBinding:
       blink_feature = WebFeature::kV8VarRedeclaredCatchBinding;
       break;
+    case v8::Isolate::kWasmRefTypes:
+      blink_feature = WebFeature::kV8WasmRefTypes;
+      break;
+    case v8::Isolate::kWasmBulkMemory:
+      blink_feature = WebFeature::kV8WasmBulkMemory;
+      break;
+    case v8::Isolate::kWasmMultiValue:
+      blink_feature = WebFeature::kV8WasmMultiValue;
+      break;
 
     default:
       // This can happen if V8 has added counters that this version of Blink

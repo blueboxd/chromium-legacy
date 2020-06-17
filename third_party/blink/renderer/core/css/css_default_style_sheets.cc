@@ -135,6 +135,7 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   text_track_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
   webxr_overlay_style_sheet_.Clear();
+  marker_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
                          LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
@@ -153,6 +154,7 @@ void CSSDefaultStyleSheets::InitializeDefaultStyles() {
   default_quirks_style_ = MakeGarbageCollected<RuleSet>();
   default_print_style_ = MakeGarbageCollected<RuleSet>();
   default_forced_color_style_ = MakeGarbageCollected<RuleSet>();
+  default_pseudo_element_style_ = MakeGarbageCollected<RuleSet>();
 
   default_style_->AddRulesFromSheet(DefaultStyleSheet(), ScreenEval());
   default_quirks_style_->AddRulesFromSheet(QuirksStyleSheet(), ScreenEval());
@@ -286,6 +288,23 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   return changed_default_style;
 }
 
+bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForPseudoElement(
+    PseudoId pseudo_id) {
+  switch (pseudo_id) {
+    case kPseudoIdMarker: {
+      if (marker_style_sheet_)
+        return false;
+      marker_style_sheet_ =
+          ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_MARKER_CSS));
+      default_pseudo_element_style_->AddRulesFromSheet(MarkerStyleSheet(),
+                                                       ScreenEval());
+      return true;
+    }
+    default:
+      return false;
+  }
+}
+
 void CSSDefaultStyleSheets::SetMediaControlsStyleSheetLoader(
     std::unique_ptr<UAStyleSheetLoader> loader) {
   media_controls_style_sheet_loader_.swap(loader);
@@ -327,6 +346,7 @@ void CSSDefaultStyleSheets::Trace(Visitor* visitor) const {
   visitor->Trace(default_view_source_style_);
   visitor->Trace(default_forced_color_style_);
   visitor->Trace(default_style_sheet_);
+  visitor->Trace(default_pseudo_element_style_);
   visitor->Trace(mobile_viewport_style_sheet_);
   visitor->Trace(television_viewport_style_sheet_);
   visitor->Trace(xhtml_mobile_profile_style_sheet_);
@@ -337,6 +357,7 @@ void CSSDefaultStyleSheets::Trace(Visitor* visitor) const {
   visitor->Trace(text_track_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
   visitor->Trace(webxr_overlay_style_sheet_);
+  visitor->Trace(marker_style_sheet_);
 }
 
 }  // namespace blink

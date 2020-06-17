@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ENUMERATION_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SVG_SVG_ENUMERATION_MAP_H_
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 

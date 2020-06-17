@@ -94,10 +94,8 @@ TEST_F(CommitProcessorTest, ShouldGatherNigoriOnlyContribution) {
   EXPECT_CALL(nigori_contributor_, GetContribution(kMaxEntries))
       .WillOnce(ReturnContributionWithEntries(/*num_entries=*/1));
 
-  // Priority user types should be gathered, but none are returned in this test.
-  EXPECT_CALL(sharing_message_contributor_, GetContribution(kMaxEntries - 1));
-
-  // Non-priority user types shouldn't even be gathered.
+  // No user types should be gathered and combined with NIGORI.
+  EXPECT_CALL(sharing_message_contributor_, GetContribution(_)).Times(0);
   EXPECT_CALL(bookmark_contributor_, GetContribution(_)).Times(0);
   EXPECT_CALL(preference_contributor_, GetContribution(_)).Times(0);
 

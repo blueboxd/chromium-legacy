@@ -1045,6 +1045,7 @@ _CONFIG = [
             'base::MD5.*',
             'base::MessageLoopCurrent',
             'base::Passed',
+            'base::PowerObserver',
             'base::RetainedRef',
             'base::StringPrintf',
             'base::Value',

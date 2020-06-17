@@ -204,7 +204,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceDataMissing) {
                                              browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(function->GetResultList());
-  EXPECT_EQ(1u, function->GetResultList()->GetSize());
+  EXPECT_EQ(0u, function->GetResultList()->GetSize());
   EXPECT_TRUE(function->GetError().empty());
 }
 
@@ -282,11 +282,8 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
                                              std::move(values2), browser(),
                                              extensions::api_test_utils::NONE);
   ASSERT_TRUE(get_function2->GetResultList());
-  EXPECT_TRUE(get_function2->GetResultList()->Get(0, &single_result));
+  EXPECT_EQ(0u, get_function2->GetResultList()->GetSize());
   EXPECT_TRUE(get_function2->GetError().empty());
-  ASSERT_TRUE(single_result);
-  ASSERT_TRUE(single_result->is_blob());
-  EXPECT_EQ(base::Value::BlobStorage(), single_result->GetBlob());
 }
 
 // TODO(pastarmovj): Remove once implementation for the other platform exists.

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
 
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"

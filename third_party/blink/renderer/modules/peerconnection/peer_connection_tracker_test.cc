@@ -127,6 +127,8 @@ class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
             /*force_encoded_audio_insertable_streams=*/false,
             /*force_encoded_video_insertable_streams=*/false) {}
   MOCK_METHOD0(CloseClientPeerConnection, void());
+  MOCK_METHOD1(OnThermalStateChange,
+               void(base::PowerObserver::DeviceThermalState));
 
  private:
   blink::MockPeerConnectionDependencyFactory dependency_factory_;
@@ -187,6 +189,41 @@ TEST_F(PeerConnectionTrackerTest, OnSuspend) {
   CreateAndRegisterPeerConnectionHandler();
   EXPECT_CALL(*mock_handler_, CloseClientPeerConnection());
   tracker_->OnSuspend();
+}
+
+TEST_F(PeerConnectionTrackerTest, OnThermalStateChange) {
+  CreateTrackerWithMocks();
+  CreateAndRegisterPeerConnectionHandler();
+
+  EXPECT_CALL(
+      *mock_handler_,
+      OnThermalStateChange(base::PowerObserver::DeviceThermalState::kUnknown))
+      .Times(1);
+  tracker_->OnThermalStateChange(blink::mojom::DeviceThermalState::kUnknown);
+
+  EXPECT_CALL(
+      *mock_handler_,
+      OnThermalStateChange(base::PowerObserver::DeviceThermalState::kNominal))
+      .Times(1);
+  tracker_->OnThermalStateChange(blink::mojom::DeviceThermalState::kNominal);
+
+  EXPECT_CALL(
+      *mock_handler_,
+      OnThermalStateChange(base::PowerObserver::DeviceThermalState::kFair))
+      .Times(1);
+  tracker_->OnThermalStateChange(blink::mojom::DeviceThermalState::kFair);
+
+  EXPECT_CALL(
+      *mock_handler_,
+      OnThermalStateChange(base::PowerObserver::DeviceThermalState::kSerious))
+      .Times(1);
+  tracker_->OnThermalStateChange(blink::mojom::DeviceThermalState::kSerious);
+
+  EXPECT_CALL(
+      *mock_handler_,
+      OnThermalStateChange(base::PowerObserver::DeviceThermalState::kCritical))
+      .Times(1);
+  tracker_->OnThermalStateChange(blink::mojom::DeviceThermalState::kCritical);
 }
 
 TEST_F(PeerConnectionTrackerTest, AddTransceiverWithOptionalValuesPresent) {

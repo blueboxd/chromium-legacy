@@ -303,6 +303,8 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
       // the size of the legend instead of the border.
       intrinsic_block_size_ = legend_margin_box_block_size;
 
+      is_legend_past_border_ = true;
+
       // Don't adjust the block-start offset of the fragment border if it broke.
       if (BreakToken() || (ConstraintSpace().HasKnownFragmentainerBlockSize() &&
                            legend_margin_box_block_size >
@@ -345,11 +347,12 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutFieldsetContent(
 
   NGBreakStatus break_status = NGBreakStatus::kContinue;
   if (ConstraintSpace().HasBlockFragmentation()) {
+    bool has_container_separation = is_legend_past_border_;
     // TODO(almaher): The legend should be treated as out-of-flow.
     break_status = BreakBeforeChildIfNeeded(
         ConstraintSpace(), fieldset_content, *result.get(),
         ConstraintSpace().FragmentainerOffsetAtBfc() + intrinsic_block_size_,
-        /*has_container_separation*/ has_legend, &container_builder_);
+        has_container_separation, &container_builder_);
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         result->FinalBreakAfter(), fieldset_content.Style().BreakAfter());
     container_builder_.SetPreviousBreakAfter(break_after);

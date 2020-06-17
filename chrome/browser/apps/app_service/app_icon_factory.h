@@ -81,6 +81,14 @@ void LoadIconFromFileWithFallback(
     base::OnceCallback<void(apps::mojom::Publisher::LoadIconCallback)>
         fallback);
 
+// Creates an icon with the specified effects from |compressed_icon_data|.
+void LoadIconFromCompressedData(
+    apps::mojom::IconCompression icon_compression,
+    int size_hint_in_dip,
+    IconEffects icon_effects,
+    const std::string& compressed_icon_data,
+    apps::mojom::Publisher::LoadIconCallback callback);
+
 // Loads an icon from a compiled-into-the-binary resource, with a resource_id
 // named IDR_XXX, for some value of XXX.
 void LoadIconFromResource(apps::mojom::IconCompression icon_compression,

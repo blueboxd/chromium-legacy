@@ -28,6 +28,10 @@
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
 
+#if defined(OS_ANDROID)
+#include "components/prefs/android/pref_service_android.h"
+#endif
+
 namespace {
 
 class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
@@ -466,6 +470,15 @@ void PrefService::AddPrefObserverAllPrefs(PrefObserver* obs) {
 void PrefService::RemovePrefObserverAllPrefs(PrefObserver* obs) {
   pref_notifier_->RemovePrefObserverAllPrefs(obs);
 }
+
+#if defined(OS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> PrefService::GetJavaObject() {
+  if (!pref_service_android_) {
+    pref_service_android_ = std::make_unique<PrefServiceAndroid>(this);
+  }
+  return pref_service_android_->GetJavaObject();
+}
+#endif
 
 void PrefService::Set(const std::string& path, const base::Value& value) {
   SetUserPrefValue(path, value.Clone());

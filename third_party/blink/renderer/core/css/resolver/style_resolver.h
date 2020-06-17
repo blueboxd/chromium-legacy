@@ -104,12 +104,16 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
   // These methods will give back the set of rules that matched for a given
   // element (or a pseudo-element).
   enum CSSRuleFilter {
-    kUAAndUserCSSRules = 1 << 1,
-    kAuthorCSSRules = 1 << 2,
-    kEmptyCSSRules = 1 << 3,
-    kCrossOriginCSSRules = 1 << 4,
+    kUACSSRules = 1 << 1,
+    kUserCSSRules = 1 << 2,
+    kAuthorCSSRules = 1 << 3,
+    kEmptyCSSRules = 1 << 4,
+    kCrossOriginCSSRules = 1 << 5,
+    kUAAndUserCSSRules = kUACSSRules | kUserCSSRules,
     kAllButEmptyCSSRules =
         kUAAndUserCSSRules | kAuthorCSSRules | kCrossOriginCSSRules,
+    kAllButUACSSRules =
+        kUserCSSRules | kAuthorCSSRules | kEmptyCSSRules | kCrossOriginCSSRules,
     kAllCSSRules = kAllButEmptyCSSRules | kEmptyCSSRules,
   };
   RuleIndexList* CssRulesForElement(
@@ -161,6 +165,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
                                     unsigned rules_to_include);
   void MatchRuleSet(ElementRuleCollector&, RuleSet*);
   void MatchUARules(const Element&, ElementRuleCollector&);
+  void MatchUAPseudoElementRules(ElementRuleCollector&);
   void MatchUserRules(ElementRuleCollector&);
   // This matches `::part` selectors. It looks in ancestor scopes as far as
   // part mapping requires.

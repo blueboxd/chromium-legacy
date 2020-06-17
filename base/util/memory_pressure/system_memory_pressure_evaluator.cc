@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 
 #if defined(OS_CHROMEOS)
+#include "base/logging.h"
 #include "base/system/sys_info.h"
 #include "base/util/memory_pressure/system_memory_pressure_evaluator_chromeos.h"
 #elif defined(OS_FUCHSIA)

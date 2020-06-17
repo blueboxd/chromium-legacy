@@ -141,6 +141,8 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     return container_builder_.Abort(NGLayoutResult::kOutOfFragmentainerSpace);
   }
 
+  intrinsic_block_size_ += BorderScrollbarPadding().block_end;
+
   // Figure out how much space we've already been able to process in previous
   // fragments, if this multicol container participates in an outer
   // fragmentation context.
@@ -153,7 +155,7 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   LayoutUnit block_size;
   if (border_box_size.block_size == kIndefiniteSize) {
     // Get the block size from the contents if it's auto.
-    block_size = intrinsic_block_size_ + BorderScrollbarPadding().block_end;
+    block_size = intrinsic_block_size_;
   } else {
     // TODO(mstensho): end border and padding may overflow the parent
     // fragmentainer, and we should avoid that.

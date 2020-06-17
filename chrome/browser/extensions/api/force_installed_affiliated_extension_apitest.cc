@@ -110,14 +110,18 @@ void ForceInstalledAffiliatedExtensionApiTest::SetUpOnMainThread() {
   ExtensionApiTest::SetUpOnMainThread();
 }
 
-void ForceInstalledAffiliatedExtensionApiTest::ForceInstallExtension(
+const extensions::Extension*
+ForceInstalledAffiliatedExtensionApiTest::ForceInstallExtension(
     const extensions::ExtensionId& extension_id,
     const std::string& update_manifest_path) {
   policy_test_utils::SetExtensionInstallForcelistPolicy(
       extension_id, embedded_test_server()->GetURL(update_manifest_path),
       profile(), &policy_provider_);
-  ASSERT_TRUE(ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
-      extension_id));
+  const extensions::Extension* extension =
+      ExtensionRegistry::Get(profile())->enabled_extensions().GetByID(
+          extension_id);
+  DCHECK(extension);
+  return extension;
 }
 
 void ForceInstalledAffiliatedExtensionApiTest::TestExtension(

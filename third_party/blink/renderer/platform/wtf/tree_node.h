@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TREE_NODE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TREE_NODE_H_
 
+#include "base/check_op.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace WTF {

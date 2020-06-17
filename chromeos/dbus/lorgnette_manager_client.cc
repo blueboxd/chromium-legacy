@@ -47,7 +47,7 @@ class LorgnetteManagerClientImpl : public LorgnetteManagerClient {
   void ListScanners(
       DBusMethodCallback<lorgnette::ListScannersResponse> callback) override {
     dbus::MethodCall method_call(lorgnette::kManagerServiceInterface,
-                                 lorgnette::kListScannersProtoMethod);
+                                 lorgnette::kListScannersMethod);
     lorgnette_daemon_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&LorgnetteManagerClientImpl::OnListScanners,

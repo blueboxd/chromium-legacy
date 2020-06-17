@@ -15,7 +15,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -84,13 +83,6 @@ public class AccountPickerBottomSheetTest {
                 new AccountPickerBottomSheetCoordinator(mActivityTestRule.getActivity(),
                         mActivityTestRule.getActivity().getBottomSheetController(),
                         mAccountPickerListenerMock);
-    }
-
-    @After
-    public void tearDown() {
-        if (mAccountPickerBottomSheetCoordinator != null) {
-            TestThreadUtils.runOnUiThreadBlocking(mAccountPickerBottomSheetCoordinator::destroy);
-        }
     }
 
     @Test

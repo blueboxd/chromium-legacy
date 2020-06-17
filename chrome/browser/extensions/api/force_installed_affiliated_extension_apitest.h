@@ -24,6 +24,8 @@ class CommandLine;
 
 namespace extensions {
 
+class Extension;
+
 // TODO(https://crbug.com/1082195) Create force-installed extension and user
 // affiliation test mixins to replace this class.
 
@@ -40,8 +42,9 @@ class ForceInstalledAffiliatedExtensionApiTest : public ExtensionApiTest {
   void SetUpInProcessBrowserTestFixture() override;
   void SetUpOnMainThread() override;
 
-  void ForceInstallExtension(const extensions::ExtensionId& extension_id,
-                             const std::string& update_manifest_path);
+  const extensions::Extension* ForceInstallExtension(
+      const extensions::ExtensionId& extension_id,
+      const std::string& update_manifest_path);
 
   // Sets |custom_arg_value|, loads |page_url| and waits for an extension API
   // test pass/fail notification.

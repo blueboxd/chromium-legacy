@@ -19,32 +19,41 @@ namespace content {
 // implementation favours convenience and simplicity over performance. To use it
 // follow this example:
 
-// #include "base/no_destructor.h"
-// #include "content/common/state_transitions.h"
-//
+// In foo.h
+// ---------
 // enum class State {
 //   kState1,
 //   kState2,
 //   kState3,
 // };
 //
-// #if DCHECK_IS_ON()
+// // This may require exporting the symbol (e.g. CONTENT_EXPORT) if it will be
+// // used by any other components: one common way this can happen is if the
+// // enum is logged in tests (e.g. via gtest's EXPECT_* macros).
+// std::ostream& operator<<(std::ostream& o, const State& s);
+// ---------
+//
+// In foo.cc
+// ---------
+// #include "base/no_destructor.h"
+// #include "content/common/state_transitions.h"
+//
 // std::ostream& operator<<(std::ostream& o, const State& s) {
 //   return o << static_cast<int>(s);
 // }
-// #endif  // DCHECK_IS_ON()
 //
 // void DCheckStateTransition(State old_state, State new_state) {
 // #if DCHECK_IS_ON()
-//   static const base::NoDestructor<StateTransitions<LifecycleState>>
+//   static const base::NoDestructor<StateTransitions<State>>
 //       transitions(
-//           StateTransitions<LifecycleState>(
+//           StateTransitions<State>(
 //               {{kState1, {kState2, kState3}},
 //               {kState2, {kState3}},
 //               {kState3, {}}}));
 //   DCHECK_STATE_TRANSITION(transitions, old_state, new_state);
 // #endif  // DCHECK_IS_ON()
 // }
+// ---------
 
 template <typename State>
 struct StateTransitions {

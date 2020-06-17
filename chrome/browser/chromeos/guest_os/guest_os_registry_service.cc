@@ -899,17 +899,20 @@ void GuestOsRegistryService::OnContainerAppIcon(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InstallIconFromFileThread, icon_path, icons[0].content),
       base::BindOnce(&GuestOsRegistryService::OnIconInstalled,
-                     weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
+                     weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor,
+                     icons[0].content));
 }
 
-void GuestOsRegistryService::OnIconInstalled(const std::string& app_id,
-                                             ui::ScaleFactor scale_factor,
-                                             bool success) {
+void GuestOsRegistryService::OnIconInstalled(
+    const std::string& app_id,
+    ui::ScaleFactor scale_factor,
+    const std::string& compressed_icon_data,
+    bool success) {
   if (!success)
     return;
 
   for (Observer& obs : observers_)
-    obs.OnAppIconUpdated(app_id, scale_factor);
+    obs.OnAppIconUpdated(app_id, scale_factor, compressed_icon_data);
 }
 
 void GuestOsRegistryService::MigrateTerminal() const {

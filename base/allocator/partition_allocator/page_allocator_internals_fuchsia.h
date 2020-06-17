@@ -17,7 +17,7 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace base {
 

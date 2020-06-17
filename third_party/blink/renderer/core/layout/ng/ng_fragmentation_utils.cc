@@ -282,6 +282,14 @@ void FinishFragmentation(NGBlockNode node,
                            border_padding,
                            builder->InitialBorderBoxSize().inline_size))
         builder->SetIsAtBlockEnd();
+
+      // If we're going to break just because of floats or out-of-flow child
+      // breaks, no break appeal will have been recorded so far, since we only
+      // update the appeal at same-flow breakpoints, and since we start off by
+      // assuming the lowest appeal, upgrade it now. There's nothing here that
+      // makes breaking inside less appealing than perfect.
+      if (!builder->HasInflowChildBreakInside())
+        builder->SetBreakAppeal(kBreakAppealPerfect);
     }
     return;
   }

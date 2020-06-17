@@ -189,9 +189,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoAfter:
       return kPseudoIdAfter;
     case kPseudoMarker:
-      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()
-                 ? kPseudoIdMarker
-                 : kPseudoIdNone;
+      return kPseudoIdMarker;
     case kPseudoBackdrop:
       return kPseudoIdBackdrop;
     case kPseudoScrollbar:
@@ -526,8 +524,12 @@ CSSSelector::PseudoType CSSSelector::ParsePseudoType(const AtomicString& name,
 PseudoId CSSSelector::ParsePseudoId(const String& name) {
   unsigned name_without_colons_start =
       name[0] == ':' ? (name[1] == ':' ? 2 : 1) : 0;
-  return GetPseudoId(ParsePseudoType(
+  PseudoId pseudo_id = GetPseudoId(ParsePseudoType(
       AtomicString(name.Substring(name_without_colons_start)), false));
+  if (pseudo_id == kPseudoIdMarker &&
+      !RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
+    return kPseudoIdNone;
+  return pseudo_id;
 }
 
 void CSSSelector::UpdatePseudoPage(const AtomicString& value) {

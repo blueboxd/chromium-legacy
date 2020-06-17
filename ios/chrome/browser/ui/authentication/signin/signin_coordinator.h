@@ -26,9 +26,8 @@ enum class KeyRetrievalTriggerForUMA;
 // This completion needs to be set before calling -[SigninCoordinator start].
 @property(nonatomic, copy) SigninCoordinatorCompletionCallback signinCompletion;
 
-// Returns YES if the Google services settings view is presented.
-// TODO(crbug.com/971989): This property exists for the implementation
-// transition.
+// Returns YES if the Advanced settings sign-in. This view has to present the
+// Google services settings.
 @property(nonatomic, assign, readonly, getter=isSettingsViewPresented)
     BOOL settingsViewPresented;
 

@@ -74,12 +74,12 @@ void ProfileStatisticsAggregator::StartAggregator() {
       browsing_data::HistoryCounter::GetUpdatedWebHistoryServiceCallback(),
       /*sync_service=*/nullptr));
 
-  // Initiate stored password counting.
+  // Initiate stored password counting. Only count local passwords.
   scoped_refptr<password_manager::PasswordStore> password_store =
       PasswordStoreFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
   AddCounter(std::make_unique<browsing_data::PasswordsCounter>(
-      password_store, /*sync_service=*/nullptr));
+      password_store, /*account_store=*/nullptr, /*sync_service=*/nullptr));
 
   // Initiate autofill counting.
   scoped_refptr<autofill::AutofillWebDataService> autofill_service =

@@ -48,7 +48,8 @@ TestCertificateProviderExtensionLoginScreenMixin::
         bool load_extension_immediately)
     : InProcessBrowserTestMixin(host),
       device_state_mixin_(device_state_mixin),
-      load_extension_immediately_(load_extension_immediately) {
+      load_extension_immediately_(load_extension_immediately),
+      feature_allowlist_(kTestCertProviderExtensionId) {
   base::FilePath test_data_dir;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   embedded_test_server_.ServeFilesFromDirectory(test_data_dir);

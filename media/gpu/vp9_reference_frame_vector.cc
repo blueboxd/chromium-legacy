@@ -4,6 +4,8 @@
 
 #include "media/gpu/vp9_reference_frame_vector.h"
 
+#include <bitset>
+
 #include "media/gpu/vp9_picture.h"
 
 namespace media {

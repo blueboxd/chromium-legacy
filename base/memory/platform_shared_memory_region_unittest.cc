@@ -21,6 +21,7 @@
 #include "base/debug/proc_maps_linux.h"
 #elif defined(OS_WIN)
 #include <windows.h>
+#include "base/logging.h"
 #elif defined(OS_FUCHSIA)
 #include <lib/zx/object.h>
 #include <lib/zx/process.h>

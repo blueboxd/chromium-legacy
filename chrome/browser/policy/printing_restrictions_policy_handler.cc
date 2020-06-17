@@ -206,7 +206,8 @@ bool PrintingPaperSizeDefaultPolicyHandler::GetValue(
     const base::Value** result) {
   const base::Value* value;
   if (!CheckAndGetValue(policies, errors, &value)) {
-    *result = nullptr;
+    if (result)
+      *result = nullptr;
     return false;
   }
   if (result)

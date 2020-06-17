@@ -15,10 +15,10 @@
 #include "components/password_manager/core/browser/password_store_consumer.h"
 
 namespace browsing_data {
-
-class PasswordsCounter : public browsing_data::BrowsingDataCounter,
-                         public password_manager::PasswordStoreConsumer,
-                         public password_manager::PasswordStore::Observer {
+namespace {
+class PasswordStoreFetcher;
+}
+class PasswordsCounter : public browsing_data::BrowsingDataCounter {
  public:
   // A subclass of SyncResult that stores the result value, a boolean
   // representing whether the datatype is synced, and a vector of example
@@ -26,55 +26,58 @@ class PasswordsCounter : public browsing_data::BrowsingDataCounter,
   class PasswordsResult : public SyncResult {
    public:
     PasswordsResult(const BrowsingDataCounter* source,
-                    ResultInt value,
+                    ResultInt profile_passwords,
+                    ResultInt account_passwords,
                     bool sync_enabled,
-                    std::vector<std::string> domain_examples);
+                    std::vector<std::string> domain_examples,
+                    std::vector<std::string> account_domain_examples);
     ~PasswordsResult() override;
+
+    ResultInt account_passwords() const { return account_passwords_; }
 
     const std::vector<std::string>& domain_examples() const {
       return domain_examples_;
     }
 
+    const std::vector<std::string>& account_domain_examples() const {
+      return account_domain_examples_;
+    }
+
    private:
+    ResultInt account_passwords_ = 0;
     std::vector<std::string> domain_examples_;
+    std::vector<std::string> account_domain_examples_;
 
     DISALLOW_COPY_AND_ASSIGN(PasswordsResult);
   };
 
   explicit PasswordsCounter(
-      scoped_refptr<password_manager::PasswordStore> store,
+      scoped_refptr<password_manager::PasswordStore> profile_store,
+      scoped_refptr<password_manager::PasswordStore> account_store,
       syncer::SyncService* sync_service);
   ~PasswordsCounter() override;
 
   const char* GetPrefName() const override;
-
  protected:
   virtual std::unique_ptr<PasswordsResult> MakeResult();
 
   bool is_sync_active() { return sync_tracker_.IsSyncActive(); }
-  int num_passwords() { return num_passwords_; }
-  const std::vector<std::string>& domain_examples() { return domain_examples_; }
+  int num_passwords();
+  int num_account_passwords();
+  const std::vector<std::string>& domain_examples();
+  const std::vector<std::string>& account_domain_examples();
 
  private:
   void OnInitialized() override;
-
-  // Counting is done asynchronously in a request to PasswordStore.
-  // This callback returns the results, which are subsequently reported.
-  void OnGetPasswordStoreResults(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
-
-  // Called when the contents of the password store change. Triggers new
-  // counting.
-  void OnLoginsChanged(
-      const password_manager::PasswordStoreChangeList& changes) override;
+  void OnFetchDone();
 
   void Count() override;
 
   base::CancelableTaskTracker cancelable_task_tracker_;
-  scoped_refptr<password_manager::PasswordStore> store_;
+  std::unique_ptr<PasswordStoreFetcher> profile_store_fetcher_;
+  std::unique_ptr<PasswordStoreFetcher> account_store_fetcher_;
   SyncTracker sync_tracker_;
-  int num_passwords_;
-  std::vector<std::string> domain_examples_;
+  int remaining_tasks_ = 0;
 };
 
 }  // namespace browsing_data

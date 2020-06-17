@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 

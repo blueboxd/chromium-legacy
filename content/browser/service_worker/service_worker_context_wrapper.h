@@ -331,7 +331,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   ServiceWorkerContextCore* context();
 
   // Whether |origin| has any registrations. Must be called on UI thread.
-  bool HasRegistrationForOrigin(const GURL& origin) const;
+  bool HasRegistrationForOrigin(const url::Origin& origin) const;
   void WaitForRegistrationsInitializedForTest();
 
   // This must be called on the core thread, and the |callback| also runs on
@@ -580,7 +580,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // accessed on UI thread.
   // TODO(http://crbug.com/824858): This can be removed when service workers are
   // fully converted to running on the UI thread.
-  base::flat_map<GURL, base::flat_set<int64_t>> registrations_for_origin_;
+  base::flat_map<url::Origin, base::flat_set<int64_t>>
+      registrations_for_origin_;
   bool registrations_initialized_ = false;
   base::OnceClosure on_registrations_initialized_;
 

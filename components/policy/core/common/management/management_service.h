@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_POLICY_CORE_COMMON_MANAGEMENT_MANAGEMENT_SERVICE_H_
 #define COMPONENTS_POLICY_CORE_COMMON_MANAGEMENT_MANAGEMENT_SERVICE_H_
 
+#include <memory>
+
 #include "base/containers/flat_set.h"
 #include "components/policy/policy_export.h"
 

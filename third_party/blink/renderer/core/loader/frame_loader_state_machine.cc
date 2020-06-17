@@ -29,6 +29,7 @@
 
 #include "third_party/blink/renderer/core/loader/frame_loader_state_machine.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 

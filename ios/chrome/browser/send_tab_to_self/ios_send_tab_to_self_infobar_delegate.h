@@ -30,7 +30,7 @@ class IOSSendTabToSelfInfoBarDelegate : public ConfirmInfoBarDelegate {
  private:
 
   // ConfirmInfoBarDelegate:
-  infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
+  InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
   int GetButtons() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   int GetIconId() const override;
@@ -39,11 +39,19 @@ class IOSSendTabToSelfInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool Accept() override;
   bool Cancel() override;
 
+  // Send the notice of conclusion of this infobar to other windows.
+  void SendConclusionNotification();
+
   // The entry that was share to this device. Must outlive this instance.
   const SendTabToSelfEntry* entry_ = nullptr;
 
   // The SendTabToSelfModel that holds the |entry_|. Must outlive this instance.
   SendTabToSelfModel* model_ = nullptr;
+
+  // Registration with NSNotificationCenter for this window.
+  __strong id<NSObject> registration_ = nil;
+
+  base::WeakPtrFactory<IOSSendTabToSelfInfoBarDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IOSSendTabToSelfInfoBarDelegate);
 };

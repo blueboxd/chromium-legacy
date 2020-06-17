@@ -7,7 +7,9 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/json/json_reader.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
@@ -47,6 +49,19 @@ std::string FetchNeuralPalmRadiusPolynomial(const EventDeviceInfo& devinfo,
     return param_string;
   }
 
+  // look at the command line.
+  base::Optional<base::Value> ozone_switch_value = base::JSONReader::Read(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          kOzoneNNPalmSwitchName));
+  if (ozone_switch_value != base::nullopt && ozone_switch_value->is_dict()) {
+    std::string* switch_string_value =
+        ozone_switch_value->FindStringKey(kOzoneNNPalmRadiusPolynomialProperty);
+    if (switch_string_value != nullptr) {
+      return *switch_string_value;
+    }
+  }
+
+  // TODO(robsc): Remove this when comfortable.
 #if defined(OS_CHROMEOS)
   // We should really only be running in chromeos anyway; We do a check here
   // temporarily for hatch and reef.  These numbers should live in config on

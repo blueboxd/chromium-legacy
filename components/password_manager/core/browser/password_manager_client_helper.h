@@ -49,6 +49,12 @@ class PasswordManagerClientHelper {
   // is the case for first run experience, and only for non-incognito mode.
   bool ShouldPromptToEnableAutoSignIn() const;
 
+  // Returns whether the user should be prompted to move the submitted password
+  // to the account-scoped store. This is the case if the password is movable,
+  // the corresponding feature flag is enabled, and only for non-incognito mode.
+  bool ShouldPromptToMovePasswordToAccount(
+      const PasswordFormManagerForUI& submitted_manager) const;
+
   PasswordManagerClient* delegate_;
 
   // Set during 'NotifyUserCouldBeAutoSignedIn' in order to store the

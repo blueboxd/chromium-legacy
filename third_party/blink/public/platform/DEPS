@@ -1,5 +1,7 @@
 include_rules = [
     "+base/atomicops.h",
+    "+base/check.h",
+    "+base/check_op.h",
     "+base/containers/flat_set.h",
     "+base/containers/span.h",
     "+base/files/file.h",
@@ -11,6 +13,7 @@ include_rules = [
     "+base/memory/scoped_refptr.h",
     "+base/memory/weak_ptr.h",
     "+base/metrics",
+    "+base/notreached.h",
     "+base/optional.h",
     "+base/single_thread_task_runner.h",
     "+base/strings",

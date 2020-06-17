@@ -104,10 +104,13 @@ TEST_F(PasswordManagerClientHelperTest, PromptAutosigninAfterSuccessfulLogin) {
       CreateFormManager(&form, /*is_movable=*/true));
 }
 
-TEST_F(PasswordManagerClientHelperTest, PromptAutosigninDisabledInIncognito) {
+TEST_F(PasswordManagerClientHelperTest,
+       PromptAutosigninAndMoveDisabledInIncognito) {
   EXPECT_CALL(*client(), IsIncognito)
       .Times(AnyNumber())
       .WillRepeatedly(Return(true));
+  // In Incognito, both the auto-signin and the "Move password to account?"
+  // bubbles should be disabled.
   EXPECT_CALL(*client(), PromptUserToEnableAutosignin).Times(0);
   EXPECT_CALL(*client(), PromptUserToMovePasswordToAccount).Times(0);
 

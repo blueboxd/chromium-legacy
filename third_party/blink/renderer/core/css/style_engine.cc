@@ -1431,6 +1431,16 @@ void StyleEngine::EnsureUAStyleForElement(const Element& element) {
   }
 }
 
+void StyleEngine::EnsureUAStyleForPseudoElement(PseudoId pseudo_id) {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  if (CSSDefaultStyleSheets::Instance()
+          .EnsureDefaultStyleSheetsForPseudoElement(pseudo_id)) {
+    global_rule_set_->MarkDirty();
+    UpdateActiveStyle();
+  }
+}
+
 bool StyleEngine::HasRulesForId(const AtomicString& id) const {
   DCHECK(IsMaster());
   DCHECK(global_rule_set_);

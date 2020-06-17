@@ -10,6 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 
 namespace base {
 

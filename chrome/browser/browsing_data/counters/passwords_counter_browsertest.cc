@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browsing_data/core/counters/passwords_counter.h"
+#include <memory>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/passwords_helper.h"
@@ -15,6 +16,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browsing_data/core/browsing_data_utils.h"
+#include "components/browsing_data/core/counters/passwords_counter.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,8 +29,6 @@ using browsing_data::BrowsingDataCounter;
 
 class PasswordsCounterTest : public InProcessBrowserTest {
  public:
-  PasswordsCounterTest() {}
-
   void SetUpOnMainThread() override {
     finished_ = false;
     time_ = base::Time::Now();
@@ -85,7 +85,7 @@ class PasswordsCounterTest : public InProcessBrowserTest {
     // At this point, the calculation on DB thread should have finished, and
     // a callback should be scheduled on the UI thread. Process the tasks until
     // we get a finished result.
-    run_loop_.reset(new base::RunLoop());
+    run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
   }
 
@@ -159,6 +159,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, SameDomain) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       ProfileSyncServiceFactory::GetForProfile(profile));
   counter.Init(
       profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
@@ -180,6 +182,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, Blacklisted) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       ProfileSyncServiceFactory::GetForProfile(profile));
 
   counter.Init(
@@ -203,6 +207,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PrefChanged) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       ProfileSyncServiceFactory::GetForProfile(profile));
   counter.Init(
       profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
@@ -223,6 +229,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, StoreChanged) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       ProfileSyncServiceFactory::GetForProfile(profile));
   counter.Init(
       profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
@@ -257,6 +265,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, PeriodChanged) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       ProfileSyncServiceFactory::GetForProfile(profile));
   counter.Init(
       profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,
@@ -304,6 +314,8 @@ IN_PROC_BROWSER_TEST_F(PasswordsCounterTest, MostCommonDomains) {
   browsing_data::PasswordsCounter counter(
       PasswordStoreFactory::GetForProfile(profile,
                                           ServiceAccessType::EXPLICIT_ACCESS),
+      AccountPasswordStoreFactory::GetForProfile(
+          profile, ServiceAccessType::EXPLICIT_ACCESS),
       ProfileSyncServiceFactory::GetForProfile(profile));
   counter.Init(
       profile->GetPrefs(), browsing_data::ClearBrowsingDataTab::ADVANCED,

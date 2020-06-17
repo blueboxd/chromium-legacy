@@ -205,33 +205,21 @@ class ExtensionUpdateAvailabilityObserver final
   base::RunLoop run_loop_;
 };
 
-// Class for testing sign-in profile apps/extensions that are installed via the
-// device policy under different browser channels.
-class SigninProfileExtensionsPolicyPerChannelTest
-    : public SigninProfileExtensionsPolicyTestBase,
-      public testing::WithParamInterface<version_info::Channel> {
+// Class for testing sign-in profile apps/extensions.
+class SigninProfileExtensionsPolicyTest
+    : public SigninProfileExtensionsPolicyTestBase {
  protected:
-  SigninProfileExtensionsPolicyPerChannelTest();
+  SigninProfileExtensionsPolicyTest()
+      : SigninProfileExtensionsPolicyTestBase(version_info::Channel::STABLE) {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyPerChannelTest);
+  DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyTest);
 };
-
-SigninProfileExtensionsPolicyPerChannelTest::
-    SigninProfileExtensionsPolicyPerChannelTest()
-    : SigninProfileExtensionsPolicyTestBase(GetParam()) {}
-
-content::StoragePartition* GetStoragePartitionForSigninExtension(
-    Profile* profile,
-    const std::string& extension_id) {
-  return extensions::util::GetStoragePartitionForExtensionId(
-      extension_id, profile, /*can_create=*/false);
-}
 
 }  // namespace
 
-// Tests that a whitelisted app gets installed on any browser channel.
-IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
+// Tests that a whitelisted app gets installed.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        WhitelistedAppInstallation) {
   Profile* profile = GetInitialProfile();
 
@@ -249,48 +237,25 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
   EXPECT_TRUE(extension->is_platform_app());
 }
 
-// Tests that a non-whitelisted app is installed only when on Dev, Canary or
-// "unknown" (trunk) channels, but not on Beta or Stable channels.
-IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
+// Tests that a non-whitelisted app is forbidden from installation.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        NotWhitelistedAppInstallation) {
   Profile* profile = GetInitialProfile();
 
-  extensions::TestExtensionRegistryObserver registry_observer(
-      extensions::ExtensionRegistry::Get(profile), kNotWhitelistedAppId);
   ExtensionInstallErrorObserver install_error_observer(profile,
                                                        kNotWhitelistedAppId);
-
   AddExtensionForForceInstallation(kNotWhitelistedAppId,
                                    kNotWhitelistedUpdateManifestPath);
-
-  switch (channel_) {
-    case version_info::Channel::UNKNOWN:
-    case version_info::Channel::CANARY:
-    case version_info::Channel::DEV: {
-      registry_observer.WaitForExtensionLoaded();
-      const extensions::Extension* extension =
-          extensions::ExtensionRegistry::Get(profile)
-              ->enabled_extensions()
-              .GetByID(kNotWhitelistedAppId);
-      ASSERT_TRUE(extension);
-      EXPECT_TRUE(extension->is_platform_app());
-      break;
-    }
-    case version_info::Channel::BETA:
-    case version_info::Channel::STABLE: {
-      install_error_observer.Wait();
-      EXPECT_FALSE(
-          extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
-              kNotWhitelistedAppId));
-      break;
-    }
-  }
+  install_error_observer.Wait();
+  EXPECT_FALSE(
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          kNotWhitelistedAppId));
 }
 
-// Tests that a whitelisted extension is installed on any browser channel.
-// Force-installed extensions on the sign-in screen should also automatically
-// have the |login_screen_extension| type.
-IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
+// Tests that a whitelisted extension is installed. Force-installed extensions
+// on the sign-in screen should also automatically have the
+// |login_screen_extension| type.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        WhitelistedExtensionInstallation) {
   Profile* profile = GetInitialProfile();
 
@@ -308,9 +273,8 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
   EXPECT_TRUE(extension->is_login_screen_extension());
 }
 
-// Tests that a non-whitelisted extension (as opposed to an app) is forbidden
-// from installation regardless of the browser channel.
-IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
+// Tests that a non-whitelisted extension is forbidden from installation.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
                        NotWhitelistedExtensionInstallation) {
   Profile* profile = GetInitialProfile();
 
@@ -323,30 +287,6 @@ IN_PROC_BROWSER_TEST_P(SigninProfileExtensionsPolicyPerChannelTest,
       extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
           kNotWhitelistedExtensionId));
 }
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         SigninProfileExtensionsPolicyPerChannelTest,
-                         testing::Values(version_info::Channel::UNKNOWN,
-                                         version_info::Channel::CANARY,
-                                         version_info::Channel::DEV,
-                                         version_info::Channel::BETA,
-                                         version_info::Channel::STABLE));
-
-namespace {
-
-// Class for testing sign-in profile apps/extensions under the "unknown" browser
-// channel, which allows to bypass the troublesome whitelist checks.
-class SigninProfileExtensionsPolicyTest
-    : public SigninProfileExtensionsPolicyTestBase {
- protected:
-  SigninProfileExtensionsPolicyTest()
-      : SigninProfileExtensionsPolicyTestBase(version_info::Channel::UNKNOWN) {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SigninProfileExtensionsPolicyTest);
-};
-
-}  // namespace
 
 // Tests that the extension system enables non-standard extensions in the
 // sign-in profile.
@@ -361,26 +301,27 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, ExtensionsEnabled) {
 IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, BackgroundPage) {
   EXPECT_FALSE(
       chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
-  ExtensionBackgroundPageReadyObserver page_observer(kNotWhitelistedAppId);
-  AddExtensionForForceInstallation(kNotWhitelistedAppId,
-                                   kNotWhitelistedUpdateManifestPath);
+  ExtensionBackgroundPageReadyObserver page_observer(kWhitelistedAppId);
+  AddExtensionForForceInstallation(kWhitelistedAppId,
+                                   kWhitelistedAppUpdateManifestPath);
   page_observer.Wait();
   EXPECT_TRUE(chromeos::ProfileHelper::SigninProfileHasLoginScreenExtensions());
 }
 
-// Tests installation of multiple sign-in profile apps.
-IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest, MultipleApps) {
+// Tests installation of multiple sign-in profile apps/extensions.
+IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
+                       MultipleAppsOrExtensions) {
   Profile* profile = GetInitialProfile();
 
   extensions::TestExtensionRegistryObserver registry_observer1(
       extensions::ExtensionRegistry::Get(profile), kWhitelistedAppId);
   extensions::TestExtensionRegistryObserver registry_observer2(
-      extensions::ExtensionRegistry::Get(profile), kNotWhitelistedAppId);
+      extensions::ExtensionRegistry::Get(profile), kWhitelistedExtensionId);
 
   AddExtensionForForceInstallation(kWhitelistedAppId,
                                    kWhitelistedAppUpdateManifestPath);
-  AddExtensionForForceInstallation(kNotWhitelistedAppId,
-                                   kNotWhitelistedUpdateManifestPath);
+  AddExtensionForForceInstallation(kWhitelistedExtensionId,
+                                   kWhitelistedExtensionUpdateManifestPath);
 
   registry_observer1.WaitForExtensionLoaded();
   registry_observer2.WaitForExtensionLoaded();
@@ -405,9 +346,11 @@ IN_PROC_BROWSER_TEST_F(SigninProfileExtensionsPolicyTest,
   page_observer_for_extension.Wait();
 
   content::StoragePartition* storage_partition_for_app =
-      GetStoragePartitionForSigninExtension(profile, kWhitelistedAppId);
+      extensions::util::GetStoragePartitionForExtensionId(
+          kWhitelistedAppId, profile, /*can_create=*/false);
   content::StoragePartition* storage_partition_for_extension =
-      GetStoragePartitionForSigninExtension(profile, kWhitelistedExtensionId);
+      extensions::util::GetStoragePartitionForExtensionId(
+          kWhitelistedExtensionId, profile, /*can_create=*/false);
   content::StoragePartition* default_storage_partition =
       content::BrowserContext::GetDefaultStoragePartition(profile);
 

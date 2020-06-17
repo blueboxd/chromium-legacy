@@ -26,8 +26,6 @@
 
 #include "base/stl_util.h"  // for base::size()
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
 {% for property in properties %}
@@ -38,22 +36,22 @@ const StylePropertyShorthand& {{property.name.to_lower_camel_case()}}Shorthand()
     &Get{{longhand_id}}(),
     {% endfor %}
   };
-
-  DEFINE_STATIC_LOCAL(const StylePropertyShorthand, shorthand,
-        (CSSPropertyID::{{property.enum_key}}, longhands, base::size(longhands)));
+  static const StylePropertyShorthand shorthand(
+      CSSPropertyID::{{property.enum_key}}, longhands, base::size(longhands));
   return shorthand;
 }
 {% endfor %}
 
 // TODO(ericwilligers): Retire this when offset-position and offset-anchor ship
 const StylePropertyShorthand& offsetShorthandWithoutPositionAnchor() {
-  static const CSSProperty* offsetProperties[] = {
+  static const CSSProperty* longhands[] = {
     &GetCSSPropertyOffsetPath(),
     &GetCSSPropertyOffsetDistance(),
     &GetCSSPropertyOffsetRotate(),
   };
-  DEFINE_STATIC_LOCAL(const StylePropertyShorthand, offsetLonghands, (CSSPropertyID::kOffset, offsetProperties, base::size(offsetProperties)));
-  return offsetLonghands;
+  static const StylePropertyShorthand shorthand(
+      CSSPropertyID::kOffset, longhands, base::size(longhands));
+  return shorthand;
 }
 
 // TODO(https://crbug.com/1094236): Remove this override once text-decoration-thickness ships.
@@ -63,9 +61,8 @@ const StylePropertyShorthand& textDecorationShorthandWithoutThickness() {
     &GetCSSPropertyTextDecorationStyle(),
     &GetCSSPropertyTextDecorationColor(),
   };
-
-  DEFINE_STATIC_LOCAL(const StylePropertyShorthand, shorthand,
-        (CSSPropertyID::kTextDecoration, longhands, base::size(longhands)));
+  static const StylePropertyShorthand shorthand(
+      CSSPropertyID::kTextDecoration, longhands, base::size(longhands));
   return shorthand;
 }
 

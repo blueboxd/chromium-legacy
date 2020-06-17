@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_exception.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {

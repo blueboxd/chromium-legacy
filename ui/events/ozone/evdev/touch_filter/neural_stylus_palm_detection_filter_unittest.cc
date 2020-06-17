@@ -83,6 +83,17 @@ TEST_F(NeuralStylusPalmDetectionFilterTest, EventDeviceSimpleTest) {
               NeuralStylusPalmDetectionFilter::
                   CompatibleWithNeuralStylusPalmDetectionFilter(devinfo))
         << "Failed on " << it.first.name;
+    EXPECT_EQ(false, NeuralStylusPalmDetectionFilter::
+                         CompatibleWithNeuralStylusPalmDetectionFilter(
+                             devinfo, "{\"touch-compatible\": \"false\"}"));
+    EXPECT_EQ(false,
+              NeuralStylusPalmDetectionFilter::
+                  CompatibleWithNeuralStylusPalmDetectionFilter(devinfo, "{}"));
+    if (it.second) {
+      EXPECT_EQ(true, NeuralStylusPalmDetectionFilter::
+                          CompatibleWithNeuralStylusPalmDetectionFilter(
+                              devinfo, "{\"touch-compatible\": \"true\"}"));
+    }
   }
 }
 

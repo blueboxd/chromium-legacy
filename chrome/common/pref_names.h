@@ -737,6 +737,7 @@ extern const char
 extern const char kKnownUserParentAccessCodeConfig[];
 extern const char kSamlInSessionPasswordChangeEnabled[];
 extern const char kSamlPasswordExpirationAdvanceWarningDays[];
+extern const char kSamlLockScreenReauthenticationEnabled[];
 extern const char kLastRsuDeviceIdUploaded[];
 #endif  // defined(OS_CHROMEOS)
 

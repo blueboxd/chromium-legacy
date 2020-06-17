@@ -3681,6 +3681,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCrossOriginOpenerPolicyReportingDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kCrossOriginOpenerPolicyReporting)},
 
+    {"cross-origin-opener-policy-access-reporting",
+     flag_descriptions::kCrossOriginOpenerPolicyAccessReportingName,
+     flag_descriptions::kCrossOriginOpenerPolicyAccessReportingDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(
+         network::features::kCrossOriginOpenerPolicyAccessReporting)},
+
     {"disable-keepalive-fetch", flag_descriptions::kDisableKeepaliveFetchName,
      flag_descriptions::kDisableKeepaliveFetchDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kDisableKeepaliveFetch)},
@@ -5370,9 +5377,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"crostini-disk-resizing", flag_descriptions::kCrostiniDiskResizingName,
      flag_descriptions::kCrostiniDiskResizingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kCrostiniDiskResizing)},
-    {"crostini-username", flag_descriptions::kCrostiniUsernameName,
-     flag_descriptions::kCrostiniUsernameDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kCrostiniUsername)},
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_ANDROID)

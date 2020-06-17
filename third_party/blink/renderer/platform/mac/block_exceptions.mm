@@ -25,6 +25,7 @@
 
 #import "third_party/blink/renderer/platform/mac/block_exceptions.h"
 
+#include "base/notreached.h"
 #import "third_party/blink/renderer/platform/wtf/assertions.h"
 
 void ReportBlockedObjCException(NSException* exception) {

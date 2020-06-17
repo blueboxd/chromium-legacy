@@ -6,6 +6,8 @@ package org.chromium.components.browser_ui.site_settings;
 
 import static org.chromium.components.browser_ui.settings.SearchUtils.handleSearchNavigation;
 import static org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge.SITE_WILDCARD;
+import static org.chromium.components.content_settings.PrefNames.BLOCK_THIRD_PARTY_COOKIES;
+import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -53,6 +55,8 @@ import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.browser_context.BrowserContextHandle;
 import org.chromium.components.embedder_support.util.UrlUtilities;
+import org.chromium.components.prefs.PrefService;
+import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -518,6 +522,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         BrowserContextHandle browserContextHandle =
                 getSiteSettingsClient().getBrowserContextHandle();
+        PrefService prefService = UserPrefs.get(browserContextHandle);
         if (BINARY_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
@@ -551,7 +556,7 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
             setCookieSettingsPreference((CookieSettingsState) newValue);
             getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            getPrefs().setBlockThirdPartyCookies((boolean) newValue);
+            prefService.setBoolean(BLOCK_THIRD_PARTY_COOKIES, (boolean) newValue);
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
             getPrefs().setNotificationsVibrateEnabled((boolean) newValue);
         } else if (NOTIFICATIONS_QUIET_UI_TOGGLE_KEY.equals(preference.getKey())) {
@@ -595,8 +600,10 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         WebsitePreferenceBridge.setCategoryEnabled(
                 getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES,
                 allowCookies);
-        getPrefs().setCookieControlsMode(mode);
-        getPrefs().setBlockThirdPartyCookies(mode == CookieControlsMode.BLOCK_THIRD_PARTY);
+        PrefService prefService = UserPrefs.get(getSiteSettingsClient().getBrowserContextHandle());
+        prefService.setInteger(COOKIE_CONTROLS_MODE, mode);
+        prefService.setBoolean(
+                BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.BLOCK_THIRD_PARTY);
     }
 
     private boolean cookieSettingsExceptionShouldBlock() {
@@ -1075,10 +1082,12 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
                 new FourStateCookieSettingsPreference.Params();
         params.allowCookies = WebsitePreferenceBridge.isCategoryEnabled(
                 getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES);
-        params.blockThirdPartyCookies = getPrefs().getBlockThirdPartyCookies();
-        params.cookieControlsMode = getPrefs().getCookieControlsMode();
+        PrefService prefService = UserPrefs.get(getSiteSettingsClient().getBrowserContextHandle());
+        params.blockThirdPartyCookies = prefService.getBoolean(BLOCK_THIRD_PARTY_COOKIES);
+        params.cookieControlsMode = prefService.getInteger(COOKIE_CONTROLS_MODE);
         params.cookiesContentSettingEnforced = mCategory.isManaged();
-        params.thirdPartyBlockingEnforced = getPrefs().isBlockThirdPartyCookiesManaged();
+        params.thirdPartyBlockingEnforced =
+                prefService.isManagedPreference(BLOCK_THIRD_PARTY_COOKIES);
         fourStateCookieToggle.setState(params);
     }
 
@@ -1125,14 +1134,15 @@ public class SingleCategorySettings extends SiteSettingsPreferenceFragment
         ChromeBaseCheckBoxPreference thirdPartyCookiesPref =
                 (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
                         THIRD_PARTY_COOKIES_TOGGLE_KEY);
-        thirdPartyCookiesPref.setChecked(getPrefs().getBlockThirdPartyCookies());
+        PrefService prefService = UserPrefs.get(getSiteSettingsClient().getBrowserContextHandle());
+        thirdPartyCookiesPref.setChecked(prefService.getBoolean(BLOCK_THIRD_PARTY_COOKIES));
         thirdPartyCookiesPref.setEnabled(WebsitePreferenceBridge.isCategoryEnabled(
                 getSiteSettingsClient().getBrowserContextHandle(), ContentSettingsType.COOKIES));
         thirdPartyCookiesPref.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
                 getSiteSettingsClient().getManagedPreferenceDelegate()) {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return getPrefs().isBlockThirdPartyCookiesManaged();
+                return prefService.isManagedPreference(BLOCK_THIRD_PARTY_COOKIES);
             }
         });
     }

@@ -26,6 +26,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -44,6 +45,7 @@ class CSSDefaultStyleSheets final
   CSSDefaultStyleSheets();
 
   bool EnsureDefaultStyleSheetsForElement(const Element&);
+  bool EnsureDefaultStyleSheetsForPseudoElement(PseudoId);
   bool EnsureDefaultStyleSheetForXrOverlay();
   void EnsureDefaultStyleSheetForFullscreen();
 
@@ -55,6 +57,9 @@ class CSSDefaultStyleSheets final
   RuleSet* DefaultViewSourceStyle();
   RuleSet* DefaultForcedColorStyle() {
     return default_forced_color_style_.Get();
+  }
+  RuleSet* DefaultPseudoElementStyle() {
+    return default_pseudo_element_style_.Get();
   }
 
   StyleSheetContents* EnsureMobileViewportStyleSheet();
@@ -71,6 +76,7 @@ class CSSDefaultStyleSheets final
   StyleSheetContents* FullscreenStyleSheet() {
     return fullscreen_style_sheet_.Get();
   }
+  StyleSheetContents* MarkerStyleSheet() { return marker_style_sheet_.Get(); }
 
   CORE_EXPORT void PrepareForLeakDetection();
 
@@ -102,6 +108,7 @@ class CSSDefaultStyleSheets final
   Member<RuleSet> default_print_style_;
   Member<RuleSet> default_view_source_style_;
   Member<RuleSet> default_forced_color_style_;
+  Member<RuleSet> default_pseudo_element_style_;
 
   Member<StyleSheetContents> default_style_sheet_;
   Member<StyleSheetContents> mobile_viewport_style_sheet_;
@@ -114,6 +121,7 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> text_track_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
   Member<StyleSheetContents> webxr_overlay_style_sheet_;
+  Member<StyleSheetContents> marker_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
   DISALLOW_COPY_AND_ASSIGN(CSSDefaultStyleSheets);

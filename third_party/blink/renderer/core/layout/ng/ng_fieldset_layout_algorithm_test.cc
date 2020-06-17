@@ -1905,6 +1905,60 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation) {
 }
 
 // Tests that a fieldset with a large border and a small legend fragment
+// correctly. In this case, since the legend doesn't stick below the block-start
+// border, there's no class C breakpoint before the fieldset contents.
+// Therefore, prefer breaking before the fieldset to breaking before the child
+// DIV.
+TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderFragmentation2) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #fieldset { margin:0; border:30px solid; padding:0px; width:100px; }
+      #legend { padding:0; width:10px; height:5px; }
+    </style>
+    <div id="container" style="width:300px;">
+      <div style="width:33px; height:70px;"></div>
+      <fieldset id="fieldset">
+        <legend id="legend"></legend>
+        <div style="width:44px; height:30px; break-inside:avoid;"></div>
+      </fieldset>
+    </div>
+  )HTML");
+
+  LayoutUnit kFragmentainerSpaceAvailable(100);
+
+  NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
+  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
+
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
+      NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(node, space);
+  ASSERT_TRUE(fragment->BreakToken());
+
+  String dump = DumpFragmentTree(fragment.get());
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:300x100
+    offset:0,0 size:33x70
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+
+  fragment = NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(
+      node, space, fragment->BreakToken());
+  EXPECT_FALSE(fragment->BreakToken());
+
+  dump = DumpFragmentTree(fragment.get());
+  expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:300x90
+    offset:0,0 size:160x90
+      offset:30,12.5 size:10x5
+      offset:30,30 size:100x30
+        offset:0,0 size:44x30
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
+// Tests that a fieldset with a large border and a small legend fragment
 // correctly. In this case, the legend block offset is not adjusted because the
 // legend breaks after attempting to adjust the offset.
 TEST_F(NGFieldsetLayoutAlgorithmTest, SmallerLegendLargeBorderWithBreak) {

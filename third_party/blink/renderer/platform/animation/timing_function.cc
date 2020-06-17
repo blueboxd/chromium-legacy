@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {

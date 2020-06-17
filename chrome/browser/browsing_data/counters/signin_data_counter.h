@@ -20,9 +20,11 @@ class SigninDataCounter : public PasswordsCounter {
    public:
     SigninDataResult(const SigninDataCounter* source,
                      ResultInt num_passwords,
+                     ResultInt num_account_passwords,
                      ResultInt num_webauthn_credentials,
                      bool sync_enabled,
-                     std::vector<std::string> domain_examples);
+                     std::vector<std::string> domain_examples,
+                     std::vector<std::string> account_domain_examples);
     ~SigninDataResult() override;
 
     ResultInt WebAuthnCredentialsValue() const {
@@ -34,7 +36,8 @@ class SigninDataCounter : public PasswordsCounter {
   };
 
   explicit SigninDataCounter(
-      scoped_refptr<password_manager::PasswordStore> password_store,
+      scoped_refptr<password_manager::PasswordStore> profile_store,
+      scoped_refptr<password_manager::PasswordStore> account_store,
       syncer::SyncService* sync_service,
       std::unique_ptr<::device::fido::PlatformCredentialStore>
           opt_platform_credential_store);

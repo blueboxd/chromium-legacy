@@ -32,18 +32,17 @@
 namespace blink {
 
 class StylePropertyShorthand {
-    USING_FAST_MALLOC(StylePropertyShorthand);
  public:
   constexpr StylePropertyShorthand()
-      : properties_(0),
+      : properties_(nullptr),
         length_(0),
         shorthand_id_(CSSPropertyID::kInvalid) {}
 
   constexpr StylePropertyShorthand(CSSPropertyID id,
                                    const CSSProperty** properties,
-                                   unsigned numProperties)
+                                   unsigned num_properties)
       : properties_(properties),
-        length_(numProperties),
+        length_(num_properties),
         shorthand_id_(id) {}
 
   const CSSProperty** properties() const { return properties_; }

@@ -37,6 +37,13 @@ public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     }
 
     /**
+     * Adds an account of the given accountName to the fake AccountManagerFacade.
+     */
+    public Account addAccount(String accountName) {
+        return mAccountManagerTestRule.addAccount(accountName);
+    }
+
+    /**
      * Add and sign in an account with the default name.
      */
     public Account addAndSignInTestAccount() {

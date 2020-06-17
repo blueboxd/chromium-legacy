@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/text/math_transform.h"
 
+#include "base/check.h"
 #include "third_party/blink/renderer/platform/wtf/text/ascii_ctype.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
 

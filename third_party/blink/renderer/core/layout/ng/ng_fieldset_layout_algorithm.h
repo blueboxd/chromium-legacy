@@ -75,6 +75,13 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   // If true, this indicates that the legend broke during the current layout
   // pass.
   bool legend_broke_ = false;
+
+  // If true, the legend is taller than the block-start border, so that it
+  // sticks below it, allowing for a class C breakpoint [1] before any fieldset
+  // content.
+  //
+  // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
+  bool is_legend_past_border_ = false;
 };
 
 }  // namespace blink

@@ -252,6 +252,42 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
   return l10n_util::GetStringUTF16(message_id);
 }
 
+#if !defined(OS_ANDROID)
+base::string16 PermissionRequestImpl::GetChipText() const {
+  int message_id;
+  switch (content_settings_type_) {
+    case ContentSettingsType::GEOLOCATION:
+      message_id = IDS_GEOLOCATION_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::NOTIFICATIONS:
+      message_id = IDS_NOTIFICATION_PERMISSIONS_CHIP;
+      break;
+    case ContentSettingsType::MIDI_SYSEX:
+      message_id = IDS_MIDI_SYSEX_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::MEDIASTREAM_MIC:
+      message_id = IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::MEDIASTREAM_CAMERA:
+      message_id = IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::CLIPBOARD_READ_WRITE:
+      message_id = IDS_CLIPBOARD_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::VR:
+      message_id = IDS_VR_PERMISSION_CHIP;
+      break;
+    case ContentSettingsType::AR:
+      message_id = IDS_AR_PERMISSION_CHIP;
+      break;
+    default:
+      NOTREACHED();
+      return base::string16();
+  }
+  return l10n_util::GetStringUTF16(message_id);
+}
+#endif
+
 base::string16 PermissionRequestImpl::GetMessageTextWarningFragment() const {
   if (content_settings_type_ == ContentSettingsType::PLUGINS)
     return l10n_util::GetStringUTF16(IDS_FLASH_PERMISSION_WARNING_FRAGMENT);

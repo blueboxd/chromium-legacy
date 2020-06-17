@@ -27,7 +27,6 @@ CrostiniInstallerBrowserTest.prototype = {
   featureList: {
     enabled: [
       'network::features::kOutOfBlinkCors',
-      'chromeos::features::kCrostiniUsername',
     ]
   },
 };

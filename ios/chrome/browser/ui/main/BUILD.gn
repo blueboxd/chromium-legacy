@@ -71,7 +71,6 @@ source_set("scene") {
     "//ios/chrome/browser/ui/history",
     "//ios/chrome/browser/ui/promos",
     "//ios/chrome/browser/ui/settings:settings_root",
-    "//ios/chrome/browser/ui/signin_interaction",
     "//ios/chrome/browser/ui/tab_grid",
     "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",

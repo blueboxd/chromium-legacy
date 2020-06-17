@@ -30,6 +30,7 @@
 
 #include <math.h>
 #include <algorithm>
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 

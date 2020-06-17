@@ -341,6 +341,10 @@
     "dependencies": ["permission:enterprise.deviceAttributes"],
     "contexts": ["blessed_extension"]
   },
+  "enterprise.networkingAttributes": {
+    "dependencies": ["permission:enterprise.networkingAttributes"],
+    "contexts": ["blessed_extension"]
+  },
   "enterprise.platformKeys": {
     "dependencies": ["permission:enterprise.platformKeys"],
     "contexts": ["blessed_extension"],

@@ -82,6 +82,7 @@ if (is_chromeos) {
     "certificate_provider_internal.idl",
     "echo_private.json",
     "enterprise_device_attributes.idl",
+    "enterprise_networking_attributes.idl",
     "enterprise_platform_keys.idl",
     "enterprise_platform_keys_internal.idl",
     "enterprise_platform_keys_private.json",

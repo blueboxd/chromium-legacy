@@ -13,6 +13,7 @@ include_rules = [
     "+base/lazy_instance.h",
     # TODO(crbug.com/787254): Remove the use of base::MessageLoopCurrent.
     "+base/message_loop/message_loop_current.h",
+    "+base/power_monitor/power_observer.h",
     # TODO(crbug.com/787254): Replace base::SequenceChecker by base::ThreadChecker.
     "+base/sequence_checker.h",
     # TODO(crbug.com/787254): Replace StringPrintf uses here.

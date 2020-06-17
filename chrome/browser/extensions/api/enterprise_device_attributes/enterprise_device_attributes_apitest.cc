@@ -97,7 +97,9 @@ IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
                                ->FindUser(affiliated_account_id_)
                                ->IsAffiliated());
 
-  ForceInstallExtension(kTestExtensionID, kUpdateManifestPath);
+  const Extension* extension =
+      ForceInstallExtension(kTestExtensionID, kUpdateManifestPath);
+  const GURL test_url = extension->GetResourceURL("basic.html");
 
   // Device attributes are available only for affiliated user.
   std::string expected_directory_device_id = is_affiliated ? kDeviceId : "";
@@ -106,15 +108,13 @@ IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
   std::string expected_annotated_location =
       is_affiliated ? kAnnotatedLocation : "";
   std::string expected_hostname = is_affiliated ? kHostname : "";
-  TestExtension(CreateBrowser(profile()),
-                GURL(base::StringPrintf("chrome-extension://%s/basic.html",
-                                        kTestExtensionID)),
+  TestExtension(CreateBrowser(profile()), test_url,
                 BuildCustomArg(expected_directory_device_id,
                                expected_serial_number, expected_asset_id,
                                expected_annotated_location, expected_hostname));
 }
 
-// Both cases of affiliated and non-affiliated on the device user are tested.
+// Both cases of affiliated and non-affiliated users are tested.
 INSTANTIATE_TEST_SUITE_P(AffiliationCheck,
                          EnterpriseDeviceAttributesTest,
                          ::testing::Bool());
@@ -132,10 +132,10 @@ IN_PROC_BROWSER_TEST_F(
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_device_attributes");
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile());
   const extensions::Extension* extension =
-      GetExtensionByPath(registry->enabled_extensions(), extension_path);
+      extensions::ExtensionRegistry::Get(profile())
+          ->enabled_extensions()
+          .GetByID(kTestExtensionID);
   ASSERT_FALSE(extension->install_warnings().empty());
   EXPECT_EQ(
       "'enterprise.deviceAttributes' is not allowed for specified install "

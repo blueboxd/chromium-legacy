@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <sstream>
+
 #include "base/format_macros.h"
 #include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"

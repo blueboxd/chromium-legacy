@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/send_tab_to_self/ios_send_tab_to_self_infobar_delegate.h"
 
+#import <Foundation/Foundation.h>
+
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -15,6 +17,17 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace {
+
+NSString* kSendTabToSendConclusionNotification =
+    @"SendTabToSendConclusionNotification";
+
+}  // namespace
+
 namespace send_tab_to_self {
 
 // static
@@ -24,14 +37,43 @@ IOSSendTabToSelfInfoBarDelegate::Create(const SendTabToSelfEntry* entry,
   return std::make_unique<IOSSendTabToSelfInfoBarDelegate>(entry, model);
 }
 
-IOSSendTabToSelfInfoBarDelegate::~IOSSendTabToSelfInfoBarDelegate() {}
+IOSSendTabToSelfInfoBarDelegate::~IOSSendTabToSelfInfoBarDelegate() {
+  [[NSNotificationCenter defaultCenter]
+      removeObserver:registration_
+                name:kSendTabToSendConclusionNotification
+              object:nil];
+}
 
 IOSSendTabToSelfInfoBarDelegate::IOSSendTabToSelfInfoBarDelegate(
     const SendTabToSelfEntry* entry,
     SendTabToSelfModel* model)
-    : entry_(entry), model_(model) {
+    : entry_(entry), model_(model), weak_ptr_factory_(this) {
   DCHECK(entry);
   DCHECK(model);
+
+  base::WeakPtr<IOSSendTabToSelfInfoBarDelegate> weakPtr =
+      weak_ptr_factory_.GetWeakPtr();
+  // Observe for conclusion notification from other instances.
+  registration_ = [[NSNotificationCenter defaultCenter]
+      addObserverForName:kSendTabToSendConclusionNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification* note) {
+                if (!weakPtr)
+                  return;
+
+                // Ignore the notification if it was sent by |weakPtr| (i.e. the
+                // instance that responded first to the send to self infobar)
+                if (note.object == weakPtr->registration_)
+                  return;
+
+                infobars::InfoBar* infobar = weakPtr->infobar();
+                infobars::InfoBarManager* owner = infobar->owner();
+                if (!owner)
+                  return;
+
+                owner->RemoveInfoBar(infobar);
+              }];
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -64,12 +106,21 @@ bool IOSSendTabToSelfInfoBarDelegate::Accept() {
   model_->MarkEntryOpened(entry_->GetGUID());
   infobar()->owner()->OpenURL(entry_->GetURL(),
                               WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  SendConclusionNotification();
   return true;
 }
 
 bool IOSSendTabToSelfInfoBarDelegate::Cancel() {
   model_->DismissEntry(entry_->GetGUID());
+  SendConclusionNotification();
   return true;
+}
+
+void IOSSendTabToSelfInfoBarDelegate::SendConclusionNotification() {
+  [[NSNotificationCenter defaultCenter]
+      postNotificationName:kSendTabToSendConclusionNotification
+                    object:registration_
+                  userInfo:nil];
 }
 
 }  // namespace send_tab_to_self

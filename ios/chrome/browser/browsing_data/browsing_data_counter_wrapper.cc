@@ -48,6 +48,7 @@ CreateCounterForBrowserStateAndPref(ChromeBrowserState* browser_state,
     return std::make_unique<browsing_data::PasswordsCounter>(
         IOSChromePasswordStoreFactory::GetForBrowserState(
             browser_state, ServiceAccessType::EXPLICIT_ACCESS),
+        /*account_store=*/nullptr,
         ProfileSyncServiceFactory::GetForBrowserState(browser_state));
   }
 

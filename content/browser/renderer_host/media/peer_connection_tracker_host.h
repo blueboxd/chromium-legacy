@@ -36,6 +36,8 @@ class PeerConnectionTrackerHost
 
   // base::PowerObserver override.
   void OnSuspend() override;
+  void OnThermalStateChange(
+      base::PowerObserver::DeviceThermalState new_state) override;
 
   // These methods call out to blink::mojom::PeerConnectionManager on renderer
   // side.

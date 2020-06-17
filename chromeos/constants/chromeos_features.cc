@@ -96,10 +96,6 @@ const base::Feature kCrostiniDiskResizing{"CrostiniDiskResizing",
 const base::Feature kCrostiniUseBusterImage{"CrostiniUseBusterImage",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables Crostini Username picking.
-const base::Feature kCrostiniUsername{"CrostiniUsername",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the option to share the mic with Crostini or not
 const base::Feature kCrostiniShowMicSetting{"CrostiniShowMicSetting",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

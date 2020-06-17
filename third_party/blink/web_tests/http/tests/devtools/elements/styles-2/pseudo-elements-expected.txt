@@ -44,6 +44,11 @@ element.style { ()
 [$#inspected::marker$] { (<style>)
     content: "MARKER";
 
+[expanded] 
+[$::marker$] { (user agent stylesheet)
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+
 
 Running: dumpBeforeStyles
 [expanded] 
@@ -61,6 +66,11 @@ Running: dumpMarkerStyles
 [expanded] 
 [$#inspected::marker$] { (<style>)
     content: "MARKER";
+
+[expanded] 
+[$::marker$] { (user agent stylesheet)
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
 
 
 Running: removeAfter

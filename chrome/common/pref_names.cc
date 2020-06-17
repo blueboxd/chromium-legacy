@@ -2292,6 +2292,10 @@ const char kSamlInSessionPasswordChangeEnabled[] =
 const char kSamlPasswordExpirationAdvanceWarningDays[] =
     "saml.password_expiration_advance_warning_days";
 
+// Enable online signin on the lock screen.
+const char kSamlLockScreenReauthenticationEnabled[] =
+    "saml.lock_screen_reauthentication_enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

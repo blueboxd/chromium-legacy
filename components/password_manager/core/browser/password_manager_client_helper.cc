@@ -40,9 +40,7 @@ void PasswordManagerClientHelper::NotifySuccessfulLoginWithExistingPassword(
   // Check if it is necessary to prompt user to enable auto sign-in.
   if (possible_auto_sign_in_) {
     delegate_->PromptUserToEnableAutosignin();
-  } else if (base::FeatureList::IsEnabled(
-                 password_manager::features::kEnablePasswordsAccountStorage) &&
-             submitted_manager->IsMovableToAccountStore()) {
+  } else if (ShouldPromptToMovePasswordToAccount(*submitted_manager)) {
     delegate_->PromptUserToMovePasswordToAccount(std::move(submitted_manager));
   }
 }
@@ -81,6 +79,14 @@ bool PasswordManagerClientHelper::ShouldPromptToEnableAutoSignIn() const {
                  delegate_->GetPrefs()) &&
          delegate_->GetPrefs()->GetBoolean(
              password_manager::prefs::kCredentialsEnableAutosignin) &&
+         !delegate_->IsIncognito();
+}
+
+bool PasswordManagerClientHelper::ShouldPromptToMovePasswordToAccount(
+    const PasswordFormManagerForUI& submitted_manager) const {
+  return base::FeatureList::IsEnabled(
+             password_manager::features::kEnablePasswordsAccountStorage) &&
+         submitted_manager.IsMovableToAccountStore() &&
          !delegate_->IsIncognito();
 }
 

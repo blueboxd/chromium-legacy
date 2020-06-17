@@ -45,9 +45,10 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
   size_t num_entries =
       GatherCommitContributionsForType(NIGORI, max_entries, cookie_jar_mismatch,
                                        cookie_jar_empty, &contributions);
-  if (num_entries > 0 && phase_ == GatheringPhase::kRegular) {
-    // Encryptable (regular) entities cannot get combined in the same commit
-    // with NIGORI.
+  if (num_entries > 0) {
+    // Encryptable entities cannot get combined in the same commit with NIGORI.
+    // NIGORI commits are rare so to keep it simple and to play it safe, the
+    // processor does not combine any other entities with NIGORI.
     return contributions;
   }
 

@@ -6,6 +6,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/logging.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 

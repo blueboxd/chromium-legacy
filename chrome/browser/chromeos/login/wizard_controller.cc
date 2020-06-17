@@ -622,7 +622,7 @@ void WizardController::ShowLoginScreen() {
     return;
 
   if (!time_eula_accepted_.is_null()) {
-    base::TimeDelta delta = base::Time::Now() - time_eula_accepted_;
+    base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
   }
   VLOG(1) << "Showing login screen.";
@@ -799,7 +799,7 @@ void WizardController::OnScreenExit(OobeScreenId screen,
   DCHECK(current_screen_->screen_id() == screen);
 
   RecordUMAHistogramForOOBEStepCompletionTime(
-      screen, exit_reason, base::Time::Now() - screen_show_times_[screen]);
+      screen, exit_reason, base::TimeTicks::Now() - screen_show_times_[screen]);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -913,7 +913,7 @@ void WizardController::OnEulaScreenExit(EulaScreen::Result result) {
 }
 
 void WizardController::OnEulaAccepted(bool usage_statistics_reporting_enabled) {
-  time_eula_accepted_ = base::Time::Now();
+  time_eula_accepted_ = base::TimeTicks::Now();
   StartupUtils::MarkEulaAccepted();
   ChangeMetricsReportingStateWithReply(
       usage_statistics_reporting_enabled,
@@ -1430,7 +1430,7 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     return;
 
   // Record show time for UMA.
-  screen_show_times_[new_current->screen_id()] = base::Time::Now();
+  screen_show_times_[new_current->screen_id()] = base::TimeTicks::Now();
 
   // First remember how far have we reached so that we can resume if needed.
   if (is_out_of_box_ && !demo_setup_controller_ &&

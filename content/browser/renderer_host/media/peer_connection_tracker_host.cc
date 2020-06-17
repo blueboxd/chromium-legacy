@@ -143,6 +143,12 @@ void PeerConnectionTrackerHost::OnSuspend() {
   tracker_->OnSuspend();
 }
 
+void PeerConnectionTrackerHost::OnThermalStateChange(
+    base::PowerObserver::DeviceThermalState new_state) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  tracker_->OnThermalStateChange(new_state);
+}
+
 void PeerConnectionTrackerHost::StartEventLog(int lid, int output_period_ms) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   tracker_->StartEventLog(lid, output_period_ms);

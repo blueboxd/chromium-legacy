@@ -2007,7 +2007,7 @@ void ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck(
 }
 
 bool ServiceWorkerContextWrapper::HasRegistrationForOrigin(
-    const GURL& origin) const {
+    const url::Origin& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return !registrations_initialized_ ||
          registrations_for_origin_.find(origin) !=
@@ -2030,7 +2030,7 @@ void ServiceWorkerContextWrapper::OnRegistrationUpdated(
   registrations_initialized_ = true;
 
   for (const auto& registration : registrations) {
-    GURL origin = registration.scope.GetOrigin();
+    url::Origin origin = url::Origin::Create(registration.scope);
     int64_t registration_id = registration.registration_id;
     if (registration.delete_flag == ServiceWorkerRegistrationInfo::IS_DELETED) {
       auto& registration_ids = registrations_for_origin_[origin];

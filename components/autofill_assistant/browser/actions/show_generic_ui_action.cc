@@ -83,7 +83,6 @@ void WriteLoginOptionsToUserModel(
   }
   user_model->SetValue(proto.model_identifier(), model_value);
 }
-
 }  // namespace
 
 ShowGenericUiAction::ShowGenericUiAction(ActionDelegate* delegate,
@@ -110,13 +109,21 @@ void ShowGenericUiAction::InternalProcessAction(
     EndAction(false, INVALID_ACTION, nullptr);
     return;
   }
+  for (const auto& element_check :
+       proto_.show_generic_ui().periodic_element_checks().element_checks()) {
+    if (element_check.model_identifier().empty()) {
+      VLOG(1) << "Invalid action: ElementCheck with empty model_identifier";
+      EndAction(false, INVALID_ACTION, nullptr);
+      return;
+    }
+  }
 
   delegate_->Prompt(/* user_actions = */ nullptr,
                     /* disable_force_expand_sheet = */ false);
   delegate_->SetGenericUi(
       std::make_unique<GenericUserInterfaceProto>(
           proto_.show_generic_ui().generic_user_interface()),
-      base::BindOnce(&ShowGenericUiAction::EndAction,
+      base::BindOnce(&ShowGenericUiAction::OnEndActionInteraction,
                      weak_ptr_factory_.GetWeakPtr()));
 
   // Note: it is important to write autofill profiles etc. to the model AFTER
@@ -145,6 +152,88 @@ void ShowGenericUiAction::InternalProcessAction(
   }
   delegate_->GetPersonalDataManager()->AddObserver(this);
   OnPersonalDataChanged();
+  for (const auto& element_check :
+       proto_.show_generic_ui().periodic_element_checks().element_checks()) {
+    preconditions_.emplace_back(std::make_unique<ElementPrecondition>(
+        element_check.element_condition()));
+  }
+  if (std::any_of(
+          preconditions_.begin(), preconditions_.end(),
+          [&](const auto& precondition) { return !precondition->empty(); })) {
+    has_pending_wait_for_dom_ = true;
+    delegate_->WaitForDom(
+        base::TimeDelta::Max(), false,
+        base::BindRepeating(&ShowGenericUiAction::RegisterChecks,
+                            weak_ptr_factory_.GetWeakPtr()),
+        base::BindOnce(&ShowGenericUiAction::OnDoneWaitForDom,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void ShowGenericUiAction::RegisterChecks(
+    BatchElementChecker* checker,
+    base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback) {
+  if (!callback_) {
+    // Action is done; checks aren't necessary anymore.
+    std::move(wait_for_dom_callback).Run(OkClientStatus());
+    return;
+  }
+
+  for (size_t i = 0; i < preconditions_.size(); i++) {
+    preconditions_[i]->Check(
+        checker, base::BindOnce(&ShowGenericUiAction::OnPreconditionResult,
+                                weak_ptr_factory_.GetWeakPtr(), i));
+  }
+  // Let WaitForDom know we're still waiting for elements.
+  checker->AddAllDoneCallback(base::BindOnce(
+      &ShowGenericUiAction::OnElementChecksDone, weak_ptr_factory_.GetWeakPtr(),
+      std::move(wait_for_dom_callback)));
+}
+
+void ShowGenericUiAction::OnPreconditionResult(
+    size_t precondition_index,
+    const ClientStatus& status,
+    const std::vector<std::string>& ignored_payloads) {
+  delegate_->GetUserModel()->SetValue(proto_.show_generic_ui()
+                                          .periodic_element_checks()
+                                          .element_checks(precondition_index)
+                                          .model_identifier(),
+                                      SimpleValue(status.ok()));
+}
+
+void ShowGenericUiAction::OnElementChecksDone(
+    base::OnceCallback<void(const ClientStatus&)> wait_for_dom_callback) {
+  // Calling wait_for_dom_callback with successful status is a way of asking the
+  // WaitForDom to end gracefully and call OnDoneWaitForDom with the status.
+  // Note that it is possible for WaitForDom to decide not to call
+  // OnDoneWaitForDom, if an interrupt triggers at the same time, so we cannot
+  // cancel the prompt and choose the suggestion just yet.
+  if (should_end_action_) {
+    std::move(wait_for_dom_callback).Run(OkClientStatus());
+    return;
+  }
+  // Let WaitForDom know we're still waiting for an element.
+  std::move(wait_for_dom_callback).Run(ClientStatus(ELEMENT_RESOLUTION_FAILED));
+}
+
+void ShowGenericUiAction::OnDoneWaitForDom(const ClientStatus& status) {
+  if (!callback_) {
+    return;
+  }
+  EndAction(true, status.proto_status(), delegate_->GetUserModel());
+}
+
+void ShowGenericUiAction::OnEndActionInteraction(
+    bool view_inflation_successful,
+    ProcessedActionStatusProto status,
+    const UserModel* user_model) {
+  // If WaitForDom was called, we end the action the next time the callback
+  // is called in order to end WaitForDom gracefully.
+  if (has_pending_wait_for_dom_) {
+    should_end_action_ = true;
+    return;
+  }
+  EndAction(view_inflation_successful, status, user_model);
 }
 
 void ShowGenericUiAction::EndAction(bool view_inflation_successful,

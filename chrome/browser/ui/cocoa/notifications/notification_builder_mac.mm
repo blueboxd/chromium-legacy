@@ -118,6 +118,11 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
                         forKey:notification_constants::kNotificationIncognito];
 }
 
+- (void)setCreatorPid:(NSNumber*)pid {
+  [_notificationData setObject:pid
+                        forKey:notification_constants::kNotificationCreatorPid];
+}
+
 - (void)setNotificationType:(NSNumber*)notificationType {
   [_notificationData setObject:notificationType
                         forKey:notification_constants::kNotificationType];
@@ -239,6 +244,11 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
       objectForKey:notification_constants::kNotificationProfileId];
 
   DCHECK([_notificationData
+      objectForKey:notification_constants::kNotificationCreatorPid]);
+  NSNumber* creatorPid = [_notificationData
+      objectForKey:notification_constants::kNotificationCreatorPid];
+
+  DCHECK([_notificationData
       objectForKey:notification_constants::kNotificationIncognito]);
   NSNumber* incognito = [_notificationData
       objectForKey:notification_constants::kNotificationIncognito];
@@ -249,9 +259,9 @@ NSString* const kNotificationSettingsButtonTag = @"settingsButton";
     notification_constants::kNotificationProfileId : profileId,
     notification_constants::kNotificationIncognito : incognito,
     notification_constants::kNotificationType : type,
+    notification_constants::kNotificationCreatorPid : creatorPid,
     notification_constants::kNotificationHasSettingsButton : showSettingsButton,
   };
-
   return toast.autorelease();
 }
 

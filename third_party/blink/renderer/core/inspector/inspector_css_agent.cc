@@ -995,8 +995,16 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kAfterLastInternalPseudoId;
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
+    if (pseudo_id == kPseudoIdMarker &&
+        !RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
+      continue;
+    // If the pseudo-element doesn't exist, exclude UA rules to avoid cluttering
+    // all elements.
+    unsigned rules_to_include = element->GetPseudoElement(pseudo_id)
+                                    ? StyleResolver::kAllCSSRules
+                                    : StyleResolver::kAllButUACSSRules;
     RuleIndexList* matched_rules = style_resolver.PseudoCSSRulesForElement(
-        element, pseudo_id, StyleResolver::kAllCSSRules);
+        element, pseudo_id, rules_to_include);
     if (matched_rules && matched_rules->size()) {
       pseudo_id_matches->fromJust()->emplace_back(
           protocol::CSS::PseudoElementMatches::create()

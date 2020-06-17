@@ -822,7 +822,7 @@ cr.define('cr.login', function() {
         } else if (headerName == LOCATION_HEADER) {
           // If the "choose what to sync" checkbox was clicked, then the
           // continue URL will contain a source=3 field.
-          assert(header.value);
+          assert(header.value !== undefined);
           const location = decodeURIComponent(header.value);
           this.chooseWhatToSync_ = !!location.match(/(\?|&)source=3($|&)/);
         }

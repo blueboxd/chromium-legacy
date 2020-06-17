@@ -75,11 +75,6 @@
         text-align: inherit;
         text-overflow: ellipsis;
         width: 100%;
-
-        /* Avoid using the mixin. Use ::part(input) instead.
-         * Necessary for backward compatibility with Polymer1/SDv0 (only used by
-         * OOBE). TODO(crbug.com/955194): Remove this once fixed.*/
-         @apply --cr-input-input;
       }
 
       /* Underline styling below. */

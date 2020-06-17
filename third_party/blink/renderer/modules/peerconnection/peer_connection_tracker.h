@@ -225,6 +225,7 @@ class MODULES_EXPORT PeerConnectionTracker
 
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, CreatingObject);
   FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnSuspend);
+  FRIEND_TEST_ALL_PREFIXES(PeerConnectionTrackerTest, OnThermalStateChange);
 
   explicit PeerConnectionTracker(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
@@ -249,6 +250,8 @@ class MODULES_EXPORT PeerConnectionTracker
 
   // PeerConnectionTracker implementation.
   void OnSuspend() override;
+  void OnThermalStateChange(
+      mojom::blink::DeviceThermalState thermal_state) override;
   void StartEventLog(int peer_connection_local_id,
                      int output_period_ms) override;
   void StopEventLog(int peer_connection_local_id) override;

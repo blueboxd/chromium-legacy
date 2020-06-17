@@ -1222,6 +1222,17 @@ message ShowGenericUiProto {
   // manager) will be provided and auto-updated in the specified
   // |model_identifier|.
   optional RequestLoginOptions request_login_options = 5;
+
+  message PeriodicElementChecks {
+    message ElementCheck {
+      // The element condition to be checked during the action.
+      optional ElementConditionProto element_condition = 1;
+      // The model identifier to write the result to.
+      optional string model_identifier = 2;
+    }
+    repeated ElementCheck element_checks = 1;
+  }
+  optional PeriodicElementChecks periodic_element_checks = 6;
 }
 
 // Allow choosing one or more possibility. If FocusElement was called just

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/common/extensions/api/enterprise_reporting_private.h"
 #include "components/policy/core/common/cloud/dm_token.h"
 #include "extensions/browser/extension_function.h"
@@ -104,7 +105,7 @@ class EnterpriseReportingPrivateGetPersistentSecretFunction
   ExtensionFunction::ResponseAction Run() override;
 
   // Callback once the data was retrieved from the file.
-  void OnDataRetrieved(const std::string& data, bool status);
+  void OnDataRetrieved(const std::string& data, long int status);
 };
 
 class EnterpriseReportingPrivateGetDeviceDataFunction
@@ -126,7 +127,8 @@ class EnterpriseReportingPrivateGetDeviceDataFunction
   ExtensionFunction::ResponseAction Run() override;
 
   // Callback once the data was retrieved from the file.
-  void OnDataRetrieved(const std::string& data, bool status);
+  void OnDataRetrieved(const std::string& data,
+                       RetrieveDeviceDataStatus status);
 };
 
 class EnterpriseReportingPrivateSetDeviceDataFunction

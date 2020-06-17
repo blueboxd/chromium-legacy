@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/power_monitor/power_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -210,6 +211,12 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   // Tells the |client_| to close RTCPeerConnection.
   // Make it virtual for testing purpose.
   virtual void CloseClientPeerConnection();
+  // Invoked when a new thermal state is received from the OS.
+  // Virtual for testing purposes.
+  // TODO(https://crbug.com/1094844): When ThermalResource is implemented, have
+  // it make use of this signal.
+  virtual void OnThermalStateChange(
+      base::PowerObserver::DeviceThermalState thermal_state) {}
 
   // Start recording an event log.
   void StartEventLog(int output_period_ms);

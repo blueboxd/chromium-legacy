@@ -150,7 +150,6 @@ using signin_metrics::PromoAction;
 #pragma mark - Properties
 
 - (BOOL)isSettingsViewPresented {
-  // TODO(crbug.com/971989): Remove this method.
   return NO;
 }
 

@@ -12,6 +12,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/process/memory.h"
 #include "base/process/process_iterator.h"
 

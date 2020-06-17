@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/win/com_init_util.h"

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "extensions/common/features/simple_feature.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace chromeos {
@@ -67,6 +68,10 @@ class TestCertificateProviderExtensionLoginScreenMixin final
   bool load_extension_immediately_;
   std::unique_ptr<TestCertificateProviderExtension>
       test_certificate_provider_extension_;
+
+  // Bypass "signin_screen" feature only enabled for whitelisted extensions.
+  extensions::SimpleFeature::ScopedThreadUnsafeAllowlistForTest
+      feature_allowlist_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_CERTIFICATE_PROVIDER_TEST_CERTIFICATE_PROVIDER_EXTENSION_LOGIN_SCREEN_MIXIN_H_

@@ -12,12 +12,10 @@ oobe-dialog {
   height: 100%;
 }
 
-cr-dialog {
-  --cr-dialog-native: {
-    max-width: 640px;
-    min-width: 512px;
-    width: calc(100% - var(--oobe-dialog-content-padding) * 2);
-  }
+cr-dialog::part(dialog)  {
+  max-width: 640px;
+  min-width: 512px;
+  width: calc(100% - var(--oobe-dialog-content-padding) * 2);
 }
 
 webview {

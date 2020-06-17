@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include <ostream>
 #include <type_traits>
 
 #include "base/check.h"

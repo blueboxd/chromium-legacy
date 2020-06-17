@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/html/forms/step_range.h"
 
 #include <float.h>
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"

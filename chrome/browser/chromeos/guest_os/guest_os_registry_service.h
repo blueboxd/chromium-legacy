@@ -127,7 +127,8 @@ class GuestOsRegistryService : public KeyedService {
     // Called when an icon has been installed for the specified app so loading
     // of that icon should be requested again.
     virtual void OnAppIconUpdated(const std::string& app_id,
-                                  ui::ScaleFactor scale_factor) {}
+                                  ui::ScaleFactor scale_factor,
+                                  const std::string& compressed_icon_data) {}
 
    protected:
     virtual ~Observer() = default;
@@ -203,6 +204,7 @@ class GuestOsRegistryService : public KeyedService {
   // Callback for our internal call for saving out icon data.
   void OnIconInstalled(const std::string& app_id,
                        ui::ScaleFactor scale_factor,
+                       const std::string& compressed_icon_data,
                        bool success);
   // Removes all the icons installed for an application.
   void RemoveAppData(const std::string& app_id);

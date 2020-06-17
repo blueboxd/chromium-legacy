@@ -43,9 +43,7 @@ void CrostiniInstallerPageHandler::Install(int64_t disk_size_bytes,
   if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniDiskResizing)) {
     options.disk_size_bytes = disk_size_bytes;
   }
-  if (base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsername)) {
-    options.container_username = username;
-  }
+  options.container_username = username;
   installer_ui_delegate_->Install(
       std::move(options),
       base::BindRepeating(&CrostiniInstallerPageHandler::OnProgressUpdate,

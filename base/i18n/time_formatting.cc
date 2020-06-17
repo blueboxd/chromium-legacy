@@ -10,6 +10,7 @@
 
 #include "base/i18n/unicodestring.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "third_party/icu/source/common/unicode/utypes.h"

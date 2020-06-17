@@ -486,4 +486,56 @@ TEST_F(UseCounterHelperTest, MaximumCSSSampleId) {
             max_sample_id);
 }
 
+TEST_F(UseCounterHelperTest, CSSMarkerPseudoElementUA) {
+  // Check that UA styles for list markers are not counted.
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kHasMarkerPseudoElement;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.body()->setInnerHTML(R"HTML(
+    <style>
+      li::before {
+        content: "[before]";
+        display: list-item;
+      }
+    </style>
+    <ul>
+      <li style="list-style: decimal outside"></li>
+      <li style="list-style: decimal inside"></li>
+      <li style="list-style: disc outside"></li>
+      <li style="list-style: disc inside"></li>
+      <li style="list-style: '- ' outside"></li>
+      <li style="list-style: '- ' inside"></li>
+      <li style="list-style: linear-gradient(blue, cyan) outside"></li>
+      <li style="list-style: linear-gradient(blue, cyan) inside"></li>
+      <li style="list-style: none outside"></li>
+      <li style="list-style: none inside"></li>
+    </ul>
+  )HTML");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSMarkerPseudoElementAuthor) {
+  // Check that author styles for list markers are counted.
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kHasMarkerPseudoElement;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.body()->setInnerHTML(R"HTML(
+    <style>
+      li::marker {
+        color: blue;
+      }
+    </style>
+    <ul>
+      <li></li>
+    </ul>
+  )HTML");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
 }  // namespace blink

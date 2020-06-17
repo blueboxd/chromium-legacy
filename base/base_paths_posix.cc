@@ -20,6 +20,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/nix/xdg_util.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "build/build_config.h"

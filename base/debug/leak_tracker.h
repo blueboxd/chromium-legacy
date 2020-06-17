@@ -15,6 +15,7 @@
 #endif
 
 #ifdef ENABLE_LEAK_TRACKER
+#include "base/check_op.h"
 #include "base/containers/linked_list.h"
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"

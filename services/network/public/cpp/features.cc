@@ -106,6 +106,12 @@ const base::Feature kCrossOriginOpenerPolicy {
 const base::Feature kCrossOriginOpenerPolicyReporting{
     "CrossOriginOpenerPolicyReporting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables Cross-Origin Opener Policy (COOP) access reporting.
+// https://github.com/camillelamy/explainers/blob/master/coop_reporting.md#report-blocked-accesses-to-other-windows
+const base::Feature kCrossOriginOpenerPolicyAccessReporting{
+    "CrossOriginOpenerPolicyAccessReporting",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Cross-Origin Embedder Policy (COEP).
 // https://github.com/mikewest/corpp
 // Currently this feature is enabled for all platforms except WebView.

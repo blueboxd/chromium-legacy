@@ -227,8 +227,8 @@ autofill::Suggestion CreateEntryToOptInToAccountStorageThenFill() {
 
 // Entry for opting in to password account storage and then generating password.
 autofill::Suggestion CreateEntryToOptInToAccountStorageThenGenerate() {
-  autofill::Suggestion suggestion(l10n_util::GetStringUTF16(
-      IDS_PASSWORD_MANAGER_OPT_INTO_ACCOUNT_STORED_GENERATION));
+  autofill::Suggestion suggestion(
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD));
   suggestion.frontend_id =
       autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE;
   suggestion.icon = "google";

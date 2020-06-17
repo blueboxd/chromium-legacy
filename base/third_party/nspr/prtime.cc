@@ -65,13 +65,14 @@
  * Unit tests are in base/time/pr_time_unittest.cc.
  */
 
-#include <limits.h>
-
-#include "base/logging.h"
 #include "base/third_party/nspr/prtime.h"
+
+#include "base/check.h"
 #include "build/build_config.h"
 
+#include <ctype.h>
 #include <errno.h>  /* for EINVAL */
+#include <limits.h>
 #include <string.h>
 #include <time.h>
 

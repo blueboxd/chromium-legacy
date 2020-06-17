@@ -457,6 +457,9 @@ extern const char kCrossOriginOpenerPolicyDescription[];
 extern const char kCrossOriginOpenerPolicyReportingName[];
 extern const char kCrossOriginOpenerPolicyReportingDescription[];
 
+extern const char kCrossOriginOpenerPolicyAccessReportingName[];
+extern const char kCrossOriginOpenerPolicyAccessReportingDescription[];
+
 extern const char kDisableKeepaliveFetchName[];
 extern const char kDisableKeepaliveFetchDescription[];
 
@@ -1956,9 +1959,6 @@ extern const char kCrostiniDiskResizingDescription[];
 
 extern const char kCrostiniShowMicSettingName[];
 extern const char kCrostiniShowMicSettingDescription[];
-
-extern const char kCrostiniUsernameName[];
-extern const char kCrostiniUsernameDescription[];
 
 extern const char kCrostiniUseBusterImageName[];
 extern const char kCrostiniUseBusterImageDescription[];

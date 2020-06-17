@@ -43,6 +43,15 @@ extern const base::FeatureParam<double> kHeuristicHoldThresholdSeconds;
 COMPONENT_EXPORT(EVENTS_OZONE)
 extern const base::FeatureParam<int> kHeuristicStrokeCount;
 
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const char kOzoneNNPalmSwitchName[];
+
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const char kOzoneNNPalmTouchCompatibleProperty[];
+
+COMPONENT_EXPORT(EVENTS_OZONE)
+extern const char kOzoneNNPalmRadiusPolynomialProperty[];
+
 }  // namespace ui
 
 #endif  // UI_EVENTS_OZONE_FEATURES_H_

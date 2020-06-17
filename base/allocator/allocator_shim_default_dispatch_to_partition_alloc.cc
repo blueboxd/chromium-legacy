@@ -10,8 +10,8 @@
 
 namespace {
 
-base::PartitionRootGeneric& Allocator() {
-  static base::NoDestructor<base::PartitionRootGeneric> allocator;
+base::ThreadSafePartitionRoot& Allocator() {
+  static base::NoDestructor<base::ThreadSafePartitionRoot> allocator;
   allocator->Init();
   return *allocator;
 }
@@ -67,7 +67,7 @@ size_t PartitionGetSizeEstimate(const AllocatorDispatch*,
                                 void* address,
                                 void* context) {
   // TODO(lizeb): Returns incorrect values for aligned allocations.
-  return base::PartitionAllocGetSize(address);
+  return base::PartitionAllocGetSize<base::internal::ThreadSafe>(address);
 }
 
 }  // namespace

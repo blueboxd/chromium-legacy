@@ -18,6 +18,12 @@ ContentSettingsType PermissionRequest::GetContentSettingsType() const {
   return ContentSettingsType::DEFAULT;
 }
 
+#if !defined(OS_ANDROID)
+base::string16 PermissionRequest::GetChipText() const {
+  return base::string16();
+}
+#endif
+
 base::string16 PermissionRequest::GetMessageTextWarningFragment() const {
   return base::string16();
 }

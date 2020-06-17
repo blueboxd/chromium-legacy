@@ -4930,6 +4930,28 @@
     ]
   },
 
+  "SamlLockScreenReauthenticationEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "SamlLockScreenReauthenticationEnabled": true
+        },
+        "prefs": { "saml.lock_screen_reauthentication_enabled": {
+          "value": true }
+        }
+      },
+      {
+        "policies": {
+          "SamlLockScreenReauthenticationEnabled": false
+        },
+        "prefs": {"saml.lock_screen_reauthentication_enabled": {
+          "value": false }
+        }
+      }
+    ]
+  },
+
   "VmManagementCliAllowed": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

@@ -21,6 +21,18 @@ class DictionaryValue;
 
 namespace extensions {
 
+// Result of the retrieve operation
+enum class RetrieveDeviceDataStatus {
+  // The operation finished successfully.
+  kSuccess,
+  // The path for device data can not be identified.
+  kDataDirectoryUnknown,
+  // The requested device data record does not exist.
+  kDataRecordNotFound,
+  // The requested device data record can not be read.
+  kDataRecordRetrievalError,
+};
+
 // Transfer the input from Json file to protobuf. Return nullptr if the input
 // is not valid.
 std::unique_ptr<enterprise_management::ChromeDesktopReportRequest>
@@ -40,7 +52,8 @@ void StoreDeviceData(const std::string& id,
 // completion with the data retrieved if the second parameter is true.
 void RetrieveDeviceData(
     const std::string& id,
-    base::OnceCallback<void(const std::string&, bool)> callback);
+    base::OnceCallback<void(const std::string&, RetrieveDeviceDataStatus)>
+        callback);
 
 // Get the Endpoint Verification secret (symmetric key) for this system. If no
 // password exists in the Registry then one is generated, stored in the
@@ -48,7 +61,7 @@ void RetrieveDeviceData(
 // If one exists then it is fetched from the Registry and returned.
 // If an error occurs then the second parameter is false.
 void RetrieveDeviceSecret(
-    base::OnceCallback<void(const std::string&, bool)> callback);
+    base::OnceCallback<void(const std::string&, long int)> callback);
 
 }  // namespace extensions
 

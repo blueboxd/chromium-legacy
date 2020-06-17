@@ -12,13 +12,6 @@ package org.chromium.components.browser_ui.site_settings;
  */
 // TODO(crbug.com/1071603): Remove this once PrefServiceBridge is componentized.
 public interface SiteSettingsPrefClient {
-    boolean getBlockThirdPartyCookies();
-    void setBlockThirdPartyCookies(boolean newValue);
-    boolean isBlockThirdPartyCookiesManaged();
-
-    int getCookieControlsMode();
-    void setCookieControlsMode(int newValue);
-
     boolean getEnableQuietNotificationPermissionUi();
     void setEnableQuietNotificationPermissionUi(boolean newValue);
     void clearEnableNotificationPermissionUi();

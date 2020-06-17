@@ -115,9 +115,7 @@ void RunWelcomeScreenChecks() {
 }
 
 void RunNetworkSelectionScreenChecks() {
-  test::OobeJS().ExpectTrue(
-      "!$('oobe-network-md').$.networkDialog.querySelector('oobe-next-button'"
-      ").disabled");
+  test::OobeJS().ExpectEnabledPath({"network-selection", "nextButton"});
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -130,7 +128,7 @@ void RunEulaScreenChecks() {
   test::OobeJS()
       .CreateVisibilityWaiter(true, {"oobe-eula-md", "eulaDialog"})
       ->Wait();
-  test::OobeJS().ExpectTrue("!$('oobe-eula-md').$.acceptButton.disabled");
+  test::OobeJS().ExpectEnabledPath({"oobe-eula-md", "acceptButton"});
 
   EXPECT_TRUE(ash::LoginScreenTestApi::IsShutdownButtonShown);
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());
@@ -186,12 +184,9 @@ void RunFingerprintScreenChecks() {
 void RunDiscoverScreenChecks() {
   test::OobeJS().ExpectVisible("discover");
   test::OobeJS().ExpectVisible("discover-impl");
-  test::OobeJS().ExpectTrue(
-      "!$('discover-impl').root.querySelector('discover-pin-setup-module')."
-      "hidden");
-  test::OobeJS().ExpectTrue(
-      "!$('discover-impl').root.querySelector('discover-pin-setup-module').$."
-      "setup.hidden");
+  test::OobeJS().ExpectVisiblePath({"discover-impl", "pin-setup-impl"});
+  test::OobeJS().ExpectVisiblePath(
+      {"discover-impl", "pin-setup-impl", "setup"});
 
   EXPECT_FALSE(ash::LoginScreenTestApi::IsShutdownButtonShown());
   EXPECT_FALSE(ash::LoginScreenTestApi::IsGuestButtonShown());

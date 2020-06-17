@@ -112,13 +112,11 @@
     </div>
     <div id="configure-message" hidden="[[!eq_(state_, State.CONFIGURE)]]">
       <div id="configure-message-title">[[getConfigureMessageTitle_()]]</div>
-      <div hidden="[[!showUsernameSelection_()]]">
-        <cr-input label="Username" id="username" type="text"
-            value="{{username_}}" maxlength="[[MAX_USERNAME_LENGTH]]"
-            invalid="[[!eq_(usernameError_, '')]]"
-            error-message="[[usernameError_]]">
-        </cr-input>
-      </div>
+      <cr-input label="Username" id="username" type="text"
+          value="{{username_}}" maxlength="[[MAX_USERNAME_LENGTH]]"
+          invalid="[[!eq_(usernameError_, '')]]"
+          error-message="[[usernameError_]]">
+      </cr-input>
       <div id='disk-size-section' hidden="[[!showDiskResizing_()]]">
         <div id="disk-size-message">
           <div style="color:var(--cr-primary-text-color)">

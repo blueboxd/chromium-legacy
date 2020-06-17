@@ -6,6 +6,8 @@
 
 #include <lib/fdio/limits.h>
 
+#include "base/notreached.h"
+
 namespace base {
 
 size_t GetMaxFds() {

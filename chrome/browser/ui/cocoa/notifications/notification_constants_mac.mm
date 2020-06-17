@@ -14,6 +14,7 @@ NSString* const kNotificationIncognito = @"notificationIncognito";
 NSString* const kNotificationType = @"notificationType";
 NSString* const kNotificationHasSettingsButton =
     @"notificationHasSettingsButton";
+NSString* const kNotificationCreatorPid = @"notificationCreatorPid";
 
 // Only applicable to the NotificationResponseBuilder
 NSString* const kNotificationOperation = @"notificationOperation";

@@ -37,7 +37,6 @@ class AppDistributionProvider {
   // is used to detect "legacy" users that installed Chrome before Firebase
   // was integrated and thus should not have Firebase enabled.
   virtual void InitializeFirebase(base::Time install_date, bool is_first_run);
-  virtual void InitializeFirebase(int64_t install_date, bool is_first_run);
 };
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_DISTRIBUTION_APP_DISTRIBUTION_PROVIDER_H_

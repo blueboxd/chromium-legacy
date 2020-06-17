@@ -29,18 +29,8 @@
     "session_types": ["kiosk"]
   },
   "signin_screen": [ {
-    "blacklist": [
-      // https://crbug.com/626342
-      "9E527CDA9D7C50844E8A5DB964A54A640AE48F98"   // Chrome remote desktop
-    ],
-    // Allow developers to test new features.
-    "channel": "dev",
-    "component_extensions_auto_granted": false,
-    "extension_types": ["platform_app"],
-    "location": "policy",
-    "platforms": ["chromeos"]
-  }, {
     "channel": "canary",
+    "component_extensions_auto_granted": false,
     "platforms": ["chromeos"],
     "location": "unpacked",
     "whitelist": [

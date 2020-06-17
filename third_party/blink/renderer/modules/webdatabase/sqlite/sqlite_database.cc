@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_database.h"
 
+#include "base/notreached.h"
 #include "third_party/blink/renderer/modules/webdatabase/database_authorizer.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sandboxed_vfs.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_log.h"

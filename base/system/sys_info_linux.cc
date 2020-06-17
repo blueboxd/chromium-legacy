@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <sstream>
 
 #include "base/check.h"
 #include "base/files/file_util.h"

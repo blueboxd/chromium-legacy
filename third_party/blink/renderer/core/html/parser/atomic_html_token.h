@@ -29,6 +29,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/html/parser/compact_html_token.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"

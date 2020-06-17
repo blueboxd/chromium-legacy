@@ -4,6 +4,7 @@
 
 #include "base/win/scoped_variant.h"
 
+#include "base/check.h"
 #include "base/logging.h"
 
 namespace base {

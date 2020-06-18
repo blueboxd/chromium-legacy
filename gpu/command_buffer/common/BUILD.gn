@@ -34,6 +34,14 @@ group("raster") {
   }
 }
 
+group("mailbox") {
+  if (is_component_build) {
+    public_deps = [ "//gpu:mailbox" ]
+  } else {
+    public_deps = [ ":mailbox_sources" ]
+  }
+}
+
 group("webgpu") {
   public_deps = [ ":webgpu_sources" ]
 }
@@ -68,8 +76,6 @@ jumbo_source_set("common_sources") {
     "gpu_memory_buffer_support.h",
     "id_allocator.cc",
     "id_allocator.h",
-    "mailbox.cc",
-    "mailbox.h",
     "mailbox_holder.cc",
     "mailbox_holder.h",
     "presentation_feedback_utils.cc",
@@ -92,6 +98,7 @@ jumbo_source_set("common_sources") {
   configs += [ "//gpu:gpu_implementation" ]
 
   public_deps = [
+    ":mailbox",
     "//base/util/type_safety",
     "//mojo/public/cpp/system",
     "//ui/gfx:memory_buffer",
@@ -103,6 +110,16 @@ jumbo_source_set("common_sources") {
   # TODO(piman): needed for gpu_memory_buffer_support.cc. Split common vs gles2
   # specifics.
   configs += [ "//third_party/khronos:khronos_headers" ]
+}
+
+source_set("mailbox_sources") {
+  visibility = [ "//gpu/*" ]
+  defines = [ "IS_GPU_MAILBOX_IMPL" ]
+  sources = [
+    "mailbox.cc",
+    "mailbox.h",
+  ]
+  deps = [ "//base" ]
 }
 
 source_set("gles2_sources") {

@@ -9,7 +9,6 @@ import android.view.View;
 
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -17,7 +16,8 @@ import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolba
 import org.chromium.chrome.browser.thinwebview.ThinWebView;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewConstraints;
 import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.styles.R;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.LoadUrlParams;

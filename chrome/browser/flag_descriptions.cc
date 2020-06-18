@@ -1985,6 +1985,11 @@ const char kStorageAccessAPIDescription[] =
     "Enables the Storage Access API, allowing websites to request storage "
     "access when it would otherwise be restricted.";
 
+const char kStoragePressureEventName[] = "Enable storage pressure Event";
+const char kStoragePressureEventDescription[] =
+    "If enabled, Chrome will dispatch a DOM event, informing applications "
+    "about storage pressure (low disk space)";
+
 const char kStoragePressureUIName[] = "Enable storage pressure UI";
 const char kStoragePressureUIDescription[] =
     "If enabled, Chrome will trigger system notifications to warn about "

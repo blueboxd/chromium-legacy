@@ -1225,6 +1225,7 @@
     "only",
 
     // (prefers-reduced-motion:) media feature
+    // (prefers-reduced-data:) media feature
     "reduce",
 
     // (forced-colors:) media feature

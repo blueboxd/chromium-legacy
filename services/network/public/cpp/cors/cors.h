@@ -168,6 +168,19 @@ COMPONENT_EXPORT(NETWORK_CPP)
 bool CalculateCredentialsFlag(mojom::CredentialsMode credentials_mode,
                               mojom::FetchResponseType response_tainting);
 
+// TODO(toyoshim): Consider finding a more organized way to ensure adopting CORS
+// checks against all URLLoaderFactory and URLLoader inheritances.
+// Calculates mojom::FetchResponseType for non HTTP/HTTPS schemes those are out
+// of web standards. This adopts a simplified step 5 of
+// https://fetch.spec.whatwg.org/#main-fetch. |mode| is one of the
+// network::ResourceRequest to provide a CORS mode for the request.
+// |is_request_considered_same_origin| specifies if the request has a special
+// permission to bypass CORS checks.
+COMPONENT_EXPORT(NETWORK_CPP)
+mojom::FetchResponseType CalculateResponseType(
+    mojom::RequestMode mode,
+    bool is_request_considered_same_origin);
+
 }  // namespace cors
 
 }  // namespace network

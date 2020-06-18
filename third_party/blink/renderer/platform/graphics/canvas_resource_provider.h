@@ -264,6 +264,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
  private:
   virtual sk_sp<SkSurface> CreateSkSurface() const = 0;
   virtual scoped_refptr<CanvasResource> CreateResource();
+  virtual bool UseOopRasterization() { return false; }
   bool use_hardware_decode_cache() const {
     return IsAccelerated() && context_provider_wrapper_;
   }

@@ -75,4 +75,10 @@ WebGLRenderingContextBase* webglRenderingContextBaseFromUnion(
   }
 }
 
+base::Optional<device::Pose> CreatePose(
+    const blink::TransformationMatrix& matrix) {
+  return device::Pose::Create(
+      gfx::Transform(TransformationMatrix::ToSkMatrix44(matrix)));
+}
+
 }  // namespace blink

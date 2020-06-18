@@ -318,7 +318,7 @@ RTCRtpReceiverImpl::DtlsTransportInformation() {
 }
 
 MediaStreamComponent* RTCRtpReceiverImpl::Track() const {
-  return internal_->state().track_ref()->web_track();
+  return internal_->state().track_ref()->track();
 }
 
 Vector<String> RTCRtpReceiverImpl::StreamIds() const {

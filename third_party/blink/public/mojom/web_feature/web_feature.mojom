@@ -2657,6 +2657,8 @@ enum WebFeature {
   kV8WasmBulkMemory = 3320,
   kV8WasmRefTypes = 3321,
   kV8WasmMultiValue = 3322,
+  kHiddenBackfaceWithPossible3D = 3323,
+  kHiddenBackfaceWithPreserve3D = 3324,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

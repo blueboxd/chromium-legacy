@@ -843,12 +843,13 @@ class TestManagementAPIDelegate : public ManagementAPIDelegate {
 
 // A delegate that allows a child to try to install an extension and tracks
 // whether the parent permission dialog would have opened.
-class TestSupervisedUserServiceDelegate : public SupervisedUserServiceDelegate {
+class TestSupervisedUserExtensionsDelegate
+    : public SupervisedUserExtensionsDelegate {
  public:
-  TestSupervisedUserServiceDelegate() = default;
-  ~TestSupervisedUserServiceDelegate() override = default;
+  TestSupervisedUserExtensionsDelegate() = default;
+  ~TestSupervisedUserExtensionsDelegate() override = default;
 
-  // SupervisedUserServiceDelegate:
+  // SupervisedUserExtensionsDelegate:
   bool IsChild(content::BrowserContext* context) const override { return true; }
 
   bool IsSupervisedChildWhoMayInstallExtensions(
@@ -940,15 +941,15 @@ class ManagementApiSupervisedUserTest : public ManagementApiUnitTest {
 
     management_api_ = ManagementAPI::GetFactoryInstance()->Get(profile());
 
-    // Install a SupervisedUserServiceDelegate to sense the dialog state.
-    supervised_user_delegate_ = new TestSupervisedUserServiceDelegate;
-    management_api_->set_supervised_user_service_delegate_for_test(
+    // Install a SupervisedUserExtensionsDelegate to sense the dialog state.
+    supervised_user_delegate_ = new TestSupervisedUserExtensionsDelegate;
+    management_api_->set_supervised_user_extensions_delegate_for_test(
         base::WrapUnique(supervised_user_delegate_));
   }
 
   std::unique_ptr<content::WebContents> web_contents_;
   ManagementAPI* management_api_ = nullptr;
-  TestSupervisedUserServiceDelegate* supervised_user_delegate_ = nullptr;
+  TestSupervisedUserExtensionsDelegate* supervised_user_delegate_ = nullptr;
 };
 
 TEST_F(ManagementApiSupervisedUserTest, SetEnabled_BlockedByParent) {
@@ -1295,7 +1296,7 @@ TEST_F(ManagementApiSupervisedUserTest,
   // Now try again with parent approval, and this should succeed.
   {
     supervised_user_delegate_->set_next_parent_permission_dialog_result(
-        SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+        SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
             kParentPermissionReceived);
     std::string error;
     bool success = RunSetEnabledFunction(web_contents_.get(), extension_id,
@@ -1347,7 +1348,7 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_UnsupportedRequirement) {
   // Parent approval should fail because of the unsupported requirements.
   {
     supervised_user_delegate_->set_next_parent_permission_dialog_result(
-        SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+        SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
             kParentPermissionReceived);
     std::string error;
     bool success = RunSetEnabledFunction(web_contents_.get(), extension->id(),
@@ -1382,7 +1383,7 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabledDisabled_UmaMetrics) {
 
   // The parent will approve.
   supervised_user_delegate_->set_next_parent_permission_dialog_result(
-      SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
           kParentPermissionReceived);
 
   RunSetEnabledFunction(web_contents_.get(), extension->id(),
@@ -1469,7 +1470,7 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup, SetEnabled_ParentApproves) {
 
   // The parent will approve.
   supervised_user_delegate_->set_next_parent_permission_dialog_result(
-      SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
           kParentPermissionReceived);
 
   // Simulate a call to chrome.management.setEnabled(). It should succeed.
@@ -1494,7 +1495,7 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup, SetEnabled_ParentDenies) {
 
   // The parent will deny the next dialog.
   supervised_user_delegate_->set_next_parent_permission_dialog_result(
-      SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
           kParentPermissionCanceled);
 
   // Simulate a call to chrome.management.setEnabled(). It should not succeed.
@@ -1520,7 +1521,7 @@ TEST_F(ManagementApiSupervisedUserTestWithSetup, SetEnabled_DialogFails) {
   // The next dialog will close due to a failure (e.g. network failure while
   // looking up parent information).
   supervised_user_delegate_->set_next_parent_permission_dialog_result(
-      SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+      SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
           kParentPermissionFailed);
 
   // Simulate a call to chrome.management.setEnabled(). It should not succeed.

@@ -10,7 +10,7 @@
 
 #include <string>
 
-#include "gpu/gpu_export.h"
+#include "base/component_export.h"
 
 // From gl2/gl2ext.h.
 #ifndef GL_MAILBOX_SIZE_CHROMIUM
@@ -26,7 +26,7 @@ namespace gpu {
 // name is valid.
 // See src/gpu/GLES2/extensions/CHROMIUM/CHROMIUM_texture_mailbox.txt for more
 // details.
-struct GPU_EXPORT Mailbox {
+struct COMPONENT_EXPORT(GPU_MAILBOX) Mailbox {
   using Name = int8_t[GL_MAILBOX_SIZE_CHROMIUM];
 
   Mailbox();

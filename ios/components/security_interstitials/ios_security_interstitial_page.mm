@@ -72,6 +72,10 @@ std::string IOSSecurityInterstitialPage::GetHtmlContents() const {
   load_time_data.SetBoolean(
       "committed_interstitials_enabled",
       base::FeatureList::IsEnabled(web::features::kSSLCommittedInterstitials));
+  // Interstitial pages on iOS get reloaded to prevent loading from cache, since
+  // loading from cache breaks JavaScript commands. Set as |load_time_data|
+  // for safety.
+  load_time_data.SetString("url_to_reload", request_url_.spec());
   PopulateInterstitialStrings(&load_time_data);
   webui::SetLoadTimeDataDefaults(client_->GetApplicationLocale(),
                                  &load_time_data);

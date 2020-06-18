@@ -2540,6 +2540,20 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     }
   }
 
+  if (HasHiddenBackface()) {
+    bool preserve_3d =
+        (Parent() && Parent()->StyleRef().UsedTransformStyle3D() ==
+                         ETransformStyle3D::kPreserve3d);
+    if (style_->HasTransform() || preserve_3d) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHiddenBackfaceWithPossible3D);
+    }
+    if (preserve_3d) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kHiddenBackfaceWithPreserve3D);
+    }
+  }
+
   // First assume the outline will be affected. It may be updated when we know
   // it's not affected.
   bool has_outline = style_->HasOutline();

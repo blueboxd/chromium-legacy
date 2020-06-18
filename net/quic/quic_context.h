@@ -165,6 +165,8 @@ struct NET_EXPORT QuicParams {
   // The initial rtt that will be used in crypto handshake if no cached
   // smoothed rtt is present.
   base::TimeDelta initial_rtt_for_handshake;
+  // If true, QUIC with TLS will not try 0-RTT connection.
+  bool disable_tls_zero_rtt = false;
 };
 
 // QuicContext contains QUIC-related variables that are shared across all of the

@@ -25,6 +25,7 @@ source_set("crash_report") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    ":constants",
     "//base",
     "//components/crash/core/common",
     "//components/upload_list",
@@ -35,6 +36,10 @@ source_set("crash_report") {
     "//ios/web",
     "//third_party/breakpad:client",
   ]
+}
+
+source_set("constants") {
+  sources = [ "crash_reporter_breadcrumb_constants.h" ]
 }
 
 source_set("crash_report_internal") {
@@ -82,6 +87,7 @@ source_set("unit_tests") {
     "crash_restore_helper_unittest.mm",
   ]
   deps = [
+    ":constants",
     ":crash_report",
     ":crash_report_internal",
     "//base",

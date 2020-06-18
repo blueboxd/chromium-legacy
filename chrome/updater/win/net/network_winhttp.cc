@@ -113,6 +113,7 @@ int64_t NetworkFetcherWinHTTP::GetContentSize() const {
 void NetworkFetcherWinHTTP::PostRequest(
     const GURL& url,
     const std::string& post_data,
+    const std::string& content_type,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     FetchStartedCallback fetch_started_callback,
     FetchProgressCallback fetch_progress_callback,
@@ -128,7 +129,7 @@ void NetworkFetcherWinHTTP::PostRequest(
   CrackUrl(url, &is_https_, &host_, &port_, &path_for_request_);
 
   verb_ = L"POST";
-  content_type_ = L"Content-Type: application/json\r\n";
+  content_type_ = base::SysUTF8ToWide(content_type);
   write_data_callback_ =
       base::BindRepeating(&NetworkFetcherWinHTTP::WriteDataToMemory, this);
 

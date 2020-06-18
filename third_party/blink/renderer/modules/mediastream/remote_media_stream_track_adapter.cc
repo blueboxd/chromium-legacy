@@ -100,7 +100,7 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack(
       observed_track().get(), main_thread);
   auto* source_ptr = source.get();
   source_ptr->SetOwner(track()->Source());
-  track()->Source()->SetPlatformSource(std::move(source));
+  track()->Source()->SetPlatformSource(std::move(source));  // Takes ownership.
 
   WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = id();

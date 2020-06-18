@@ -59,8 +59,10 @@
 #ifdef CHROMIUM_OPENCV
 #include "emd_wrapper.h"
 
+#include <algorithm>
 #include <vector>
 #include <cassert>
+#include <cstring>
 
 #include "base/numerics/checked_math.h"
 #else

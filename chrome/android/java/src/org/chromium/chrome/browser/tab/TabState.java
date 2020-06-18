@@ -14,6 +14,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crypto.CipherFactory;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.util.ColorUtils;
@@ -262,7 +263,7 @@ public class TabState {
         tabState.themeColor = TabThemeColorHelper.isUsingColorFromTabContents(tab)
                 ? TabThemeColorHelper.getColor(tab)
                 : TabState.UNSPECIFIED_THEME_COLOR;
-        tabState.rootId = tabImpl.getRootId();
+        tabState.rootId = CriticalPersistedTabData.from(tabImpl).getRootId();
         return tabState;
     }
 

@@ -30,7 +30,7 @@ source_set("lib") {
     ":buildflags",
     "//base",
     "//components/speech",
-    "//content/browser/speech/proto",
+    "//content/public/browser:proto",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network/public/cpp",
@@ -53,7 +53,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chrome/test:test_support",
     "//components/speech",
-    "//content/browser/speech/proto",
+    "//content/public/browser:proto",
     "//testing/gmock",
     "//testing/gtest",
   ]

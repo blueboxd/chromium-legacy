@@ -7,6 +7,7 @@
 #include "base/callback_helpers.h"
 #include "base/guid.h"
 #include "base/optional.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "content/browser/background_fetch/storage/cache_entry_handler_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
@@ -17,7 +18,6 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
 namespace content {

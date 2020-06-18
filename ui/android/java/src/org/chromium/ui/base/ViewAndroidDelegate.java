@@ -437,7 +437,16 @@ public class ViewAndroidDelegate {
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void requestUnbufferedDispatch(MotionEvent event) {
         ViewGroup container = getContainerViewGroup();
-        if (container != null) container.requestUnbufferedDispatch(event);
+        if (container != null) {
+            for (int i = 0; i < event.getPointerCount(); i++) {
+                // This is a workaround for crbug.com/1064161.
+                // TODO(smaier) remove this if LG fixes the stylus bug.
+                if (event.getToolType(i) == MotionEvent.TOOL_TYPE_STYLUS) {
+                    return;
+                }
+            }
+            container.requestUnbufferedDispatch(event);
+        }
     }
 
     @CalledByNative

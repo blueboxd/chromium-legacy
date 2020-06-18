@@ -624,6 +624,21 @@ bool CalculateCredentialsFlag(mojom::CredentialsMode credentials_mode,
   }
 }
 
+mojom::FetchResponseType CalculateResponseType(
+    mojom::RequestMode mode,
+    bool is_request_considered_same_origin) {
+  if (is_request_considered_same_origin ||
+      mode == network::mojom::RequestMode::kNavigate ||
+      mode == network::mojom::RequestMode::kSameOrigin) {
+    return network::mojom::FetchResponseType::kBasic;
+  } else if (mode == network::mojom::RequestMode::kNoCors) {
+    return network::mojom::FetchResponseType::kOpaque;
+  } else {
+    DCHECK(network::cors::IsCorsEnabledRequestMode(mode)) << mode;
+    return network::mojom::FetchResponseType::kCors;
+  }
+}
+
 }  // namespace cors
 
 }  // namespace network

@@ -123,10 +123,10 @@ bool IsPluginVmRunning(Profile* profile) {
                  ->vm_state() ==
              vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING &&
          ChromeLauncherController::instance()->IsOpen(
-             ash::ShelfID(kPluginVmAppId));
+             ash::ShelfID(kPluginVmShelfAppId));
 }
 
-bool IsPluginVmWindow(const aura::Window* window) {
+bool IsPluginVmAppWindow(const aura::Window* window) {
   const std::string* app_id = exo::GetShellApplicationId(window);
   if (!app_id)
     return false;

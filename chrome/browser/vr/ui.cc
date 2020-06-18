@@ -427,9 +427,9 @@ void Ui::OnPause() {
 }
 
 void Ui::OnMenuButtonClicked() {
-  // Menu button clicks should be a no-op when browsing mode is disabled.
-  if (model_->browsing_disabled)
+  if (!model_->gvr_input_support) {
     return;
+  }
 
   if (model_->reposition_window_enabled()) {
     model_->pop_mode(kModeRepositionWindow);
@@ -609,12 +609,12 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
     model_->push_mode(mode);
   }
 
-  model_->browsing_disabled = ui_initial_state.browsing_disabled;
   model_->waiting_for_background = ui_initial_state.assets_supported;
   model_->supports_selection = ui_initial_state.supports_selection;
   model_->needs_keyboard_update = ui_initial_state.needs_keyboard_update;
   model_->standalone_vr_device = ui_initial_state.is_standalone_vr_device;
   model_->controllers.push_back(ControllerModel());
+  model_->gvr_input_support = ui_initial_state.gvr_input_support;
 }
 
 void Ui::AcceptDoffPromptForTesting() {

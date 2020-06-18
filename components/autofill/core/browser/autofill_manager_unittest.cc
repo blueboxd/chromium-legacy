@@ -4998,9 +4998,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromLegacyServer) {
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
-  std::vector<std::string> signatures;
-  signatures.push_back(form_structure->FormSignatureAsStr());
-  signatures.push_back(form_structure2->FormSignatureAsStr());
+  FormAndFieldSignatures signatures =
+      test::GetEncodedSignatures({form_structure, form_structure2});
 
   base::HistogramTester histogram_tester;
   autofill_manager_->OnLoadedServerPredictionsForTest(response_string,
@@ -5103,8 +5102,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictionsFromApi) {
   std::string encoded_response_string;
   base::Base64Encode(response_string, &encoded_response_string);
 
-  std::vector<std::string> signatures = {form_structure->FormSignatureAsStr(),
-                                         form_structure2->FormSignatureAsStr()};
+  FormAndFieldSignatures signatures =
+      test::GetEncodedSignatures({form_structure, form_structure2});
 
   // Run method under test.
   base::HistogramTester histogram_tester;
@@ -5146,6 +5145,8 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   // |form_structure| will be owned by |autofill_manager_|.
   TestFormStructure* form_structure = new TestFormStructure(form);
   form_structure->DetermineHeuristicTypes();
+  FormAndFieldSignatures signatures =
+      test::GetEncodedSignatures(*form_structure);
   autofill_manager_->AddSeenFormStructure(
       std::unique_ptr<TestFormStructure>(form_structure));
 
@@ -5164,9 +5165,6 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
 
   std::string response_string_base64;
   base::Base64Encode(response_string, &response_string_base64);
-
-  std::vector<std::string> signatures;
-  signatures.push_back(form_structure->FormSignatureAsStr());
 
   // Reset the manager (such as during a navigation).
   autofill_manager_->Reset();
@@ -5228,12 +5226,9 @@ TEST_F(AutofillManagerTest, DetermineHeuristicsWithOverallPrediction) {
   std::string response_string_base64;
   base::Base64Encode(response_string, &response_string_base64);
 
-  std::vector<std::string> signatures;
-  signatures.push_back(form_structure->FormSignatureAsStr());
-
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictionsForTest(response_string_base64,
-                                                      signatures);
+  autofill_manager_->OnLoadedServerPredictionsForTest(
+      response_string_base64, test::GetEncodedSignatures(*form_structure));
   // Verify that FormStructure::ParseQueryResponse was called (here and below).
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
                                      AutofillMetrics::QUERY_RESPONSE_RECEIVED,

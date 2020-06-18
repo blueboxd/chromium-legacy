@@ -202,15 +202,7 @@ Polymer({
    * @private
    */
   i18nAllowIDAttr_(id) {
-    const opts = {
-      'attrs': {
-        'id'(node, value) {
-          return node.tagName == 'A';
-        }
-      }
-    };
-
-    return this.i18nAdvanced(id, opts);
+    return this.i18nAdvanced(id, {attrs: ['id']});
   },
 
   /**

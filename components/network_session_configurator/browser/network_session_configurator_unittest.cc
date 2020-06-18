@@ -94,6 +94,7 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_FALSE(quic_params_.allow_server_migration);
   EXPECT_TRUE(params_.quic_host_allowlist.empty());
   EXPECT_TRUE(quic_params_.retransmittable_on_wire_timeout.is_zero());
+  EXPECT_FALSE(quic_params_.disable_tls_zero_rtt);
 
   EXPECT_EQ(net::DefaultSupportedQuicVersions(),
             quic_params_.supported_versions);
@@ -441,6 +442,18 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(quic_params_.allow_port_migration);
+}
+
+TEST_F(NetworkSessionConfiguratorTest,
+       QuicDisableTlsZeroRttFromFieldTrialParams) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["disable_tls_zero_rtt"] = "true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(quic_params_.disable_tls_zero_rtt);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {

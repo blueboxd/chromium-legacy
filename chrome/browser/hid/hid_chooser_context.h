@@ -13,8 +13,10 @@
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/unguessable_token.h"
 #include "components/permissions/chooser_context_base.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -28,12 +30,22 @@ class Value;
 
 // Manages the internal state and connection to the device service for the
 // Human Interface Device (HID) chooser UI.
-class HidChooserContext : public permissions::ChooserContextBase {
+class HidChooserContext : public permissions::ChooserContextBase,
+                          public device::mojom::HidManagerClient {
  public:
   explicit HidChooserContext(Profile* profile);
   HidChooserContext(const HidChooserContext&) = delete;
   HidChooserContext& operator=(const HidChooserContext&) = delete;
   ~HidChooserContext() override;
+
+  // This observer can be used to be notified when HID devices are connected or
+  // disconnected.
+  class DeviceObserver : public base::CheckedObserver {
+   public:
+    virtual void OnDeviceAdded(const device::mojom::HidDeviceInfo&);
+    virtual void OnDeviceRemoved(const device::mojom::HidDeviceInfo&);
+    virtual void OnHidManagerConnectionError();
+  };
 
   // permissions::ChooserContextBase implementation:
   bool IsValidObject(const base::Value& object) override;
@@ -56,19 +68,39 @@ class HidChooserContext : public permissions::ChooserContextBase {
                            const url::Origin& embedding_origin,
                            const device::mojom::HidDeviceInfo& device);
 
+  // For ScopedObserver.
+  void AddDeviceObserver(DeviceObserver* observer);
+  void RemoveDeviceObserver(DeviceObserver* observer);
+
+  // Forward HidManager::GetDevices.
+  void GetDevices(device::mojom::HidManager::GetDevicesCallback callback);
+
   device::mojom::HidManager* GetHidManager();
 
+  // Sets |manager| as the HidManager and registers this context as a
+  // HidManagerClient. Calls |callback| with the set of enumerated devices once
+  // the client is registered and the initial enumeration is complete.
   void SetHidManagerForTesting(
-      mojo::PendingRemote<device::mojom::HidManager> manager);
+      mojo::PendingRemote<device::mojom::HidManager> manager,
+      device::mojom::HidManager::GetDevicesCallback callback);
+
   base::WeakPtr<HidChooserContext> AsWeakPtr();
 
  private:
+  // device::mojom::HidManagerClient implementation:
+  void DeviceAdded(device::mojom::HidDeviceInfoPtr device_info) override;
+  void DeviceRemoved(device::mojom::HidDeviceInfoPtr device_info) override;
+
   void EnsureHidManagerConnection();
   void SetUpHidManagerConnection(
       mojo::PendingRemote<device::mojom::HidManager> manager);
+  void InitDeviceList(std::vector<device::mojom::HidDeviceInfoPtr> devices);
   void OnHidManagerConnectionError();
 
   const bool is_incognito_;
+  bool is_initialized_ = false;
+  base::queue<device::mojom::HidManager::GetDevicesCallback>
+      pending_get_devices_requests_;
 
   // Tracks the set of devices to which an origin (potentially embedded in
   // another origin) has access to. Key is (requesting_origin,
@@ -80,6 +112,9 @@ class HidChooserContext : public permissions::ChooserContextBase {
   std::map<std::string, device::mojom::HidDeviceInfoPtr> devices_;
 
   mojo::Remote<device::mojom::HidManager> hid_manager_;
+  mojo::AssociatedReceiver<device::mojom::HidManagerClient> client_receiver_{
+      this};
+  base::ObserverList<DeviceObserver> device_observer_list_;
 
   base::WeakPtrFactory<HidChooserContext> weak_factory_{this};
 };

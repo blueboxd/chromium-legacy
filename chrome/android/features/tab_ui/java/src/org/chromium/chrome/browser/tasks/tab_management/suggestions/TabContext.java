@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import org.chromium.chrome.browser.engagement.SiteEngagementService;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.NavigationEntry;
@@ -209,8 +209,9 @@ public class TabContext {
 
             if (relatedTabs.size() > 1) {
                 List<Tab> nonClosingTabs = getNonClosingTabs(relatedTabs);
-                existingGroups.add(new TabGroupInfo(
-                        ((TabImpl) currentTab).getRootId(), createTabInfoList(nonClosingTabs)));
+                existingGroups.add(
+                        new TabGroupInfo(CriticalPersistedTabData.from(currentTab).getRootId(),
+                                createTabInfoList(nonClosingTabs)));
             } else {
                 if (currentTab.isClosing()) continue;
                 ungroupedTabs.add(TabInfo.createFromTab(currentTab));

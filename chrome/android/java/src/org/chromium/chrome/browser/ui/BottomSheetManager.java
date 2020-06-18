@@ -22,11 +22,11 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerInternal;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -72,9 +72,9 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     private int mTabModalToken = TokenHolder.INVALID_TOKEN;
 
     /**
-     * A handle to the {@link BottomSheetControllerInternal} this class manages interactions with.
+     * A handle to the {@link ManagedBottomSheetController} this class manages interactions with.
      */
-    private BottomSheetControllerInternal mSheetController;
+    private ManagedBottomSheetController mSheetController;
 
     /** A mechanism for accessing the currently active tab. */
     private ActivityTabProvider mTabProvider;
@@ -107,7 +107,7 @@ class BottomSheetManager extends EmptyBottomSheetObserver implements Destroyable
     /** The token used to enable browser controls persistence. */
     private int mPersistentControlsToken;
 
-    public BottomSheetManager(BottomSheetControllerInternal controller,
+    public BottomSheetManager(ManagedBottomSheetController controller,
             ActivityTabProvider tabProvider,
             BrowserControlsVisibilityManager controlsVisibilityManager,
             FullscreenManager fullscreenManager, Supplier<ModalDialogManager> dialogManager,

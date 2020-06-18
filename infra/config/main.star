@@ -13,9 +13,6 @@ lucicfg.check_version(
     message = 'Update depot_tools',
 )
 
-luci.builder.defaults.resultdb.set(resultdb.settings(enable=False))
-
-
 # Enable LUCI Realms support.
 lucicfg.enable_experiment('crbug.com/1085650')
 

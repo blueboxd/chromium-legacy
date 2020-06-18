@@ -42,7 +42,7 @@ WebRtcMediaStreamTrackAdapterMap::AdapterRef::~AdapterRef() {
       DCHECK(adapter->is_initialized());
       if (type_ == Type::kLocal) {
         map_->local_track_adapters_.EraseByPrimary(
-            adapter->web_track().UniqueId());
+            adapter->track()->UniqueId());
       } else {
         map_->remote_track_adapters_.EraseByPrimary(adapter->webrtc_track());
       }
@@ -66,9 +66,9 @@ void WebRtcMediaStreamTrackAdapterMap::AdapterRef::InitializeOnMainThread() {
   adapter_->InitializeOnMainThread();
   if (type_ == WebRtcMediaStreamTrackAdapterMap::AdapterRef::Type::kRemote) {
     base::AutoLock scoped_lock(map_->lock_);
-    if (!map_->remote_track_adapters_.FindBySecondary(web_track().UniqueId())) {
+    if (!map_->remote_track_adapters_.FindBySecondary(track()->UniqueId())) {
       map_->remote_track_adapters_.SetSecondaryKey(webrtc_track(),
-                                                   web_track().UniqueId());
+                                                   track()->UniqueId());
     }
   }
 }
@@ -88,10 +88,10 @@ WebRtcMediaStreamTrackAdapterMap::~WebRtcMediaStreamTrackAdapterMap() {
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
 WebRtcMediaStreamTrackAdapterMap::GetLocalTrackAdapter(
-    const blink::WebMediaStreamTrack& web_track) {
+    MediaStreamComponent* component) {
   base::AutoLock scoped_lock(lock_);
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapter>* adapter_ptr =
-      local_track_adapters_.FindByPrimary(web_track.UniqueId());
+      local_track_adapters_.FindByPrimary(component->UniqueId());
   if (!adapter_ptr)
     return nullptr;
   return base::WrapUnique(
@@ -112,12 +112,12 @@ WebRtcMediaStreamTrackAdapterMap::GetLocalTrackAdapter(
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
 WebRtcMediaStreamTrackAdapterMap::GetOrCreateLocalTrackAdapter(
-    const blink::WebMediaStreamTrack& web_track) {
-  DCHECK(!web_track.IsNull());
+    MediaStreamComponent* component) {
+  DCHECK(component);
   DCHECK(main_thread_->BelongsToCurrentThread());
   base::AutoLock scoped_lock(lock_);
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapter>* adapter_ptr =
-      local_track_adapters_.FindByPrimary(web_track.UniqueId());
+      local_track_adapters_.FindByPrimary(component->UniqueId());
   if (adapter_ptr) {
     return base::WrapUnique(
         new AdapterRef(this, AdapterRef::Type::kLocal, *adapter_ptr));
@@ -129,11 +129,11 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateLocalTrackAdapter(
     // is blocked waiting for |lock_| we end up in a deadlock.
     base::AutoUnlock scoped_unlock(lock_);
     new_adapter = blink::WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
-        factory_, main_thread_, web_track);
+        factory_, main_thread_, component);
   }
   DCHECK(new_adapter->is_initialized());
-  local_track_adapters_.Insert(web_track.UniqueId(), new_adapter);
-  local_track_adapters_.SetSecondaryKey(web_track.UniqueId(),
+  local_track_adapters_.Insert(component->UniqueId(), new_adapter);
+  local_track_adapters_.SetSecondaryKey(component->UniqueId(),
                                         new_adapter->webrtc_track());
   return base::WrapUnique(
       new AdapterRef(this, AdapterRef::Type::kLocal, new_adapter));
@@ -146,10 +146,10 @@ size_t WebRtcMediaStreamTrackAdapterMap::GetLocalTrackCount() const {
 
 std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
 WebRtcMediaStreamTrackAdapterMap::GetRemoteTrackAdapter(
-    const blink::WebMediaStreamTrack& web_track) {
+    MediaStreamComponent* component) {
   base::AutoLock scoped_lock(lock_);
   scoped_refptr<blink::WebRtcMediaStreamTrackAdapter>* adapter_ptr =
-      remote_track_adapters_.FindBySecondary(web_track.UniqueId());
+      remote_track_adapters_.FindBySecondary(component->UniqueId());
   if (!adapter_ptr)
     return nullptr;
   DCHECK((*adapter_ptr)->is_initialized());

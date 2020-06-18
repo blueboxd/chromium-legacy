@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -162,6 +163,8 @@ public class CompositorViewHolder extends FrameLayout
     private boolean mHasDrawnOnce;
 
     private boolean mIsInVr;
+
+    private boolean mControlsResizeView;
 
     // Indicates if ContentCaptureConsumer should be created, we only try to create it once.
     private boolean mShouldCreateContentCaptureConsumer = true;
@@ -721,7 +724,7 @@ public class CompositorViewHolder extends FrameLayout
                 ? mFullscreenManager.getTopControlsMinHeight()
                         + mFullscreenManager.getBottomControlsMinHeight()
                 : 0;
-        int controlsHeight = controlsResizeView()
+        int controlsHeight = mControlsResizeView
                 ? getTopControlsHeightPixels() + getBottomControlsHeightPixels()
                 : totalMinHeight;
 
@@ -811,6 +814,9 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     private void onUpdateViewportSize() {
+        if (mFullscreenManager != null) {
+            mControlsResizeView = BrowserControlsUtils.controlsResizeView(mFullscreenManager);
+        }
         // Reflect the changes that may have happened in in view/control size.
         Point viewportSize = getViewportSize();
         setSize(getWebContents(), getContentView(), viewportSize.x, viewportSize.y);
@@ -1021,7 +1027,7 @@ public class CompositorViewHolder extends FrameLayout
      * @return {@code true} if browser controls shrink Blink view's size.
      */
     public boolean controlsResizeView() {
-        return mFullscreenManager != null && mFullscreenManager.controlsResizeView();
+        return mControlsResizeView;
     }
 
     @Override

@@ -186,7 +186,7 @@ class ChannelWin : public Channel,
 
  private:
   // May run on any thread.
-  ~ChannelWin() override {}
+  ~ChannelWin() override = default;
 
   void StartOnIOThread() {
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);

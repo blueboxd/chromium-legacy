@@ -774,6 +774,10 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
  private:
   gfx::Rect ideal_bounds(int i) const { return tab_strip_->ideal_bounds(i); }
 
+  gfx::Rect ideal_bounds(tab_groups::TabGroupId group) const {
+    return tab_strip_->ideal_bounds(group);
+  }
+
   void SetNewTabButtonVisible(bool visible) {
     tab_strip_->new_tab_button_->SetVisible(visible);
   }
@@ -831,7 +835,14 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
 
     base::Optional<int> insertion_index;
     for (int i = start; i <= last_tab; ++i) {
-      if (dragged_x < ideal_bounds(i).CenterPoint().x()) {
+      int current_center = ideal_bounds(i).CenterPoint().x();
+      base::Optional<tab_groups::TabGroupId> current_group =
+          tab_strip_->tab_at(i)->group();
+      if (current_group.has_value() &&
+          tab_strip_->controller()->IsGroupCollapsed(current_group.value())) {
+        current_center = ideal_bounds(current_group.value()).CenterPoint().x();
+      }
+      if (dragged_x < current_center) {
         insertion_index = i;
         break;
       }
@@ -873,8 +884,20 @@ class TabStrip::TabDragContextImpl : public TabDragContext {
       const gfx::Rect& dragged_bounds,
       int candidate_index,
       base::Optional<tab_groups::TabGroupId> dragging_group) const {
-    if (!dragging_group.has_value())
+    if (!dragging_group.has_value()) {
+      // Collapsed tabs occupy the same space and need additional checks to
+      // ensure we do not drag into a collapsed group.
+      base::Optional<tab_groups::TabGroupId> candidate_group =
+          tab_strip_->tab_at(candidate_index)->group();
+      if (candidate_group.has_value() &&
+          tab_strip_->controller()->IsGroupCollapsed(candidate_group.value()) &&
+          tab_strip_->controller()->GetActiveIndex() < candidate_index) {
+        return tab_strip_->controller()
+            ->ListTabsInGroup(candidate_group.value())
+            .back();
+      }
       return candidate_index;
+    }
 
     const std::vector<int> dragging_tabs =
         tab_strip_->controller()->ListTabsInGroup(dragging_group.value());
@@ -1527,6 +1550,10 @@ void TabStrip::OnWidgetActivationChanged(views::Widget* widget, bool active) {
 
 void TabStrip::SetTabNeedsAttention(int model_index, bool attention) {
   tab_at(model_index)->SetTabNeedsAttention(attention);
+}
+
+const gfx::Rect& TabStrip::ideal_bounds(tab_groups::TabGroupId group) const {
+  return layout_helper_->group_header_ideal_bounds().at(group);
 }
 
 int TabStrip::GetModelIndexOf(const TabSlotView* view) const {

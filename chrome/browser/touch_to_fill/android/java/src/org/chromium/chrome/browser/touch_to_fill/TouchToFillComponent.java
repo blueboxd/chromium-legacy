@@ -9,7 +9,7 @@ import android.content.Context;
 import androidx.annotation.IntDef;
 
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -27,8 +27,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetContent;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
@@ -99,7 +99,7 @@ public class SendTabToSelfShareActivityTest {
 
         SendTabToSelfShareActivity shareActivity = new SendTabToSelfShareActivity();
         SendTabToSelfShareActivity.setBottomSheetContentForTesting(mBottomSheetContent);
-        shareActivity.handleShareAction(mChromeActivity);
+        shareActivity.handleAction(mChromeActivity);
         verify(mBottomSheetController).requestShowContent(any(BottomSheetContent.class), eq(true));
     }
 }

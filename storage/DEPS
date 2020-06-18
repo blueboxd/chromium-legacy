@@ -1,5 +1,6 @@
 include_rules = [
   "+components/services/filesystem",
+  "+components/services/storage",
   "+crypto",
   "+mojo",
   "+net",

@@ -99,16 +99,11 @@ class MessageView {
     DCHECK_GT(message_->data_num_bytes(), offset_);
   }
 
-  MessageView(MessageView&& other) { *this = std::move(other); }
+  MessageView(MessageView&& other) = default;
 
-  MessageView& operator=(MessageView&& other) {
-    message_ = std::move(other.message_);
-    offset_ = other.offset_;
-    handles_ = std::move(other.handles_);
-    return *this;
-  }
+  MessageView& operator=(MessageView&& other) = default;
 
-  ~MessageView() {}
+  ~MessageView() = default;
 
   const void* data() const {
     return static_cast<const char*>(message_->data()) + offset_;

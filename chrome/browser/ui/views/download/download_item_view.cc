@@ -1138,21 +1138,7 @@ void DownloadItemView::ShowWarningDialog() {
     save_button_ = AddChildView(std::move(save_button));
   }
 
-  if (model_->GetDangerType() !=
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED &&
-      model_->GetDangerType() !=
-          download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE &&
-      model_->GetDangerType() !=
-          download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK &&
-      model_->GetDangerType() !=
-          download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
-    auto discard_button = views::MdTextButton::Create(
-        this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
-    discard_button_ = AddChildView(std::move(discard_button));
-  }
-
-  if (model_->GetDangerType() ==
-      download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
+  if (danger_type == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
     auto scan_button = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
     scan_button_ = AddChildView(std::move(scan_button));
@@ -1163,6 +1149,11 @@ void DownloadItemView::ShowWarningDialog() {
             model_->GetFileNameToReportUser().LossyDisplayName()),
         false);
   } else {
+    if (!ChromeDownloadManagerDelegate::IsDangerTypeBlocked(danger_type)) {
+      auto discard_button = views::MdTextButton::Create(
+          this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
+      discard_button_ = AddChildView(std::move(discard_button));
+    }
     UpdateAccessibleAlert(model_->GetWarningText(font_list_, kTextWidth), true);
   }
 

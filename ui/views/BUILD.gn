@@ -1010,8 +1010,6 @@ jumbo_source_set("test_support") {
     ]
     if (use_x11) {
       sources += [
-        "test/desktop_screen_x11_test_api.cc",
-        "test/desktop_screen_x11_test_api.h",
         "test/test_desktop_screen_x11.cc",
         "test/test_desktop_screen_x11.h",
         "test/ui_controls_factory_desktop_aurax11.cc",

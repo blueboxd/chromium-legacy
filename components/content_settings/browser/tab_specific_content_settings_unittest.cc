@@ -47,7 +47,6 @@ class TabSpecificContentSettingsTest
   void SetUp() override {
     RenderViewHostTestHarness::SetUp();
     HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
-    security_state::RegisterProfilePrefs(prefs_.registry());
     settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(
         &prefs_, false, false, false, false);
     TabSpecificContentSettings::CreateForWebContents(

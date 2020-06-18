@@ -367,7 +367,7 @@ int main(int argc, char** argv) {
   media::test::VideoEncoderTestEnvironment* test_environment =
       media::test::VideoEncoderTestEnvironment::Create(
           video_path, video_metadata_path, false, base::FilePath(output_folder),
-          codec);
+          codec, false /* output_bitstream */);
   if (!test_environment)
     return EXIT_FAILURE;
 

@@ -617,6 +617,10 @@ bool ExtensionFunction::HasOptionalArgument(size_t index) {
 
 void ExtensionFunction::WriteToConsole(blink::mojom::ConsoleMessageLevel level,
                                        const std::string& message) {
+  // TODO(crbug.com/1096166): Service Worker-based extensions don't have a
+  // RenderFrameHost.
+  if (!render_frame_host_)
+    return;
   // Only the main frame handles dev tools messages.
   WebContents::FromRenderFrameHost(render_frame_host_)
       ->GetMainFrame()

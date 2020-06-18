@@ -52,7 +52,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/api/management/supervised_user_service_delegate.h"
 #include "extensions/browser/api/system_display/display_info_provider.h"
 #include "extensions/browser/api/virtual_keyboard_private/virtual_keyboard_delegate.h"
 #include "extensions/browser/api/web_request/web_request_info.h"
@@ -60,6 +59,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_helper.h"
+#include "extensions/browser/supervised_user_extensions_delegate.h"
 #include "extensions/browser/value_store/value_store_factory.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "printing/buildflags/buildflags.h"
@@ -79,7 +79,7 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
 // flag to #if defined(OS_CHROMEOS)
-#include "chrome/browser/supervised_user/supervised_user_service_management_api_delegate.h"
+#include "chrome/browser/supervised_user/supervised_user_extensions_delegate_impl.h"
 #endif
 
 namespace extensions {
@@ -334,10 +334,10 @@ ManagementAPIDelegate* ChromeExtensionsAPIClient::CreateManagementAPIDelegate()
   return new ChromeManagementAPIDelegate;
 }
 
-std::unique_ptr<SupervisedUserServiceDelegate>
-ChromeExtensionsAPIClient::CreateSupervisedUserServiceDelegate() const {
+std::unique_ptr<SupervisedUserExtensionsDelegate>
+ChromeExtensionsAPIClient::CreateSupervisedUserExtensionsDelegate() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  return std::make_unique<SupervisedUserServiceManagementAPIDelegate>();
+  return std::make_unique<SupervisedUserExtensionsDelegateImpl>();
 #else
   return nullptr;
 #endif

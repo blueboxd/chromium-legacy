@@ -57,7 +57,7 @@ suite('SharedPaths', function() {
 
   test('Remove', async function() {
     await setPrefs({'path1': ['PvmDefault'], 'path2': ['PvmDefault']});
-    assertEquals(2, page.shadowRoot.querySelectorAll('.settings-box').length);
+    assertEquals(3, page.shadowRoot.querySelectorAll('.settings-box').length);
     assertEquals(2, page.shadowRoot.querySelectorAll('.list-item').length);
     assertFalse(page.$.pluginVmInstructionsRemove.hidden);
     assertTrue(!!page.$$('.list-item cr-icon-button'));

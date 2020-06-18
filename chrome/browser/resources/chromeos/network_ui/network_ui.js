@@ -5,23 +5,14 @@
 /**
  * @fileoverview Builds UI elements shown in chrome://networks debugging page.
  */
-const networkUI = {};
-
-/** @typedef {chromeos.networkConfig.mojom.NetworkStateProperties} */
-networkUI.NetworkStateProperties;
-
-/** @typedef {chromeos.networkConfig.mojom.DeviceStateProperties} */
-networkUI.DeviceStateProperties;
 
 /**
- * @typedef {networkUI.NetworkStateProperties|networkUI.DeviceStateProperties}
+ * @typedef {!OncMojo.DeviceStateProperties|!OncMojo.NetworkStateProperties}
  */
-networkUI.StateProperties;
+OncMojo.StateProperties;
 
-const NetworkUI = (function() {
+cr.define('network_ui', function() {
   'use strict';
-
-  const mojom = chromeos.networkConfig.mojom;
 
   // Properties to display in the network state table. Each entry can be either
   // a single state field or an array of state fields. If more than one is
@@ -41,7 +32,7 @@ const NetworkUI = (function() {
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @type {?mojom.CrosNetworkConfigRemote}
+   * @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
    */
   let networkConfig = null;
 
@@ -86,7 +77,7 @@ const NetworkUI = (function() {
    * nested property, e.g. 'WiFi.Security'. If any part of a nested key is
    * missing, this will return undefined.
    *
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    * @param {string} key The ONC key for the property.
    * @return {*} The value associated with the property or undefined if the
    *     key (any part of it) is not defined.
@@ -107,7 +98,7 @@ const NetworkUI = (function() {
   /**
    * Creates a cell with a button for expanding a network state table row.
    *
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    * @return {!HTMLTableCellElement} The created td element that displays the
    *     given value.
    */
@@ -127,7 +118,7 @@ const NetworkUI = (function() {
   /**
    * Creates a cell with an icon representing the network state.
    *
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    * @return {!HTMLTableCellElement} The created td element that displays the
    *     icon.
    */
@@ -159,7 +150,7 @@ const NetworkUI = (function() {
    * Creates a row in the network state table.
    *
    * @param {Array} stateFields The state fields to use for the row.
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    * @return {!HTMLTableRowElement} The created tr element that contains the
    *     network state information.
    */
@@ -192,7 +183,7 @@ const NetworkUI = (function() {
    *
    * @param {string} tablename The name of the table to be created.
    * @param {!Array<string>} stateFields The list of fields for the table.
-   * @param {!Array<!networkUI.StateProperties>} states
+   * @param {!Array<!OncMojo.StateProperties>} states
    */
   const createStateTable = function(tablename, stateFields, states) {
     const table = $(tablename);
@@ -226,7 +217,7 @@ const NetworkUI = (function() {
   };
 
   /**
-   * @param {!mojom.NetworkType} type
+   * @param {!chromeos.networkConfig.mojom.NetworkType} type
    * @return {string} A valid HTMLElement id.
    */
   const idFromType = function(type) {
@@ -236,7 +227,7 @@ const NetworkUI = (function() {
   /**
    * This callback function is triggered when visible networks are received.
    *
-   * @param {!Array<!networkUI.NetworkStateProperties>} states
+   * @param {!Array<!OncMojo.NetworkStateProperties>} states
    */
   const onVisibleNetworksReceived = function(states) {
     createStateTable('network-state-table', NETWORK_STATE_FIELDS, states);
@@ -245,7 +236,7 @@ const NetworkUI = (function() {
   /**
    * This callback function is triggered when favorite networks are received.
    *
-   * @param {!Array<!networkUI.NetworkStateProperties>} states
+   * @param {!Array<!OncMojo.NetworkStateProperties>} states
    */
   const onFavoriteNetworksReceived = function(states) {
     createStateTable('favorite-state-table', FAVORITE_STATE_FIELDS, states);
@@ -254,7 +245,7 @@ const NetworkUI = (function() {
   /**
    * This callback function is triggered when device states are received.
    *
-   * @param {!Array<!networkUI.DeviceStateProperties>} states
+   * @param {!Array<!OncMojo.DeviceStateProperties>} states
    */
   const onDeviceStatesReceived = function(states) {
     createStateTable('device-state-table', DEVICE_STATE_FIELDS, states);
@@ -271,7 +262,7 @@ const NetworkUI = (function() {
    * state information for a row.
    *
    * @param {!HTMLElement} btn The button that was clicked.
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    */
   const toggleExpandRow = function(btn, state) {
     const cell = btn.parentNode;
@@ -289,7 +280,7 @@ const NetworkUI = (function() {
   /**
    * Creates the expanded row for displaying the complete state as JSON.
    *
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    * @param {!HTMLTableRowElement} baseRow The unexpanded row associated with
    *     the new row.
    * @return {!HTMLTableRowElement} The created tr element for the expanded row.
@@ -358,7 +349,7 @@ const NetworkUI = (function() {
 
   /**
    * Requests network details and calls showDetail with the result.
-   * @param {!networkUI.StateProperties} state
+   * @param {!OncMojo.StateProperties} state
    * @param {string} selectedId
    * @param {!HTMLTableCellElement} detailCell
    */
@@ -374,7 +365,7 @@ const NetworkUI = (function() {
 
   /**
    * @param {!HTMLTableCellElement} detailCell
-   * @param {!networkUI.NetworkStateProperties|!networkUI.DeviceStateProperties|
+   * @param {!OncMojo.NetworkStateProperties|!OncMojo.DeviceStateProperties|
    *     !chromeos.networkConfig.mojom.ManagedProperties|
    *     !chrome.networkingPrivate.NetworkProperties} state
    * @param {!Object=} error
@@ -488,6 +479,7 @@ const NetworkUI = (function() {
    * Requests an update of all network info.
    */
   const requestNetworks = function() {
+    const mojom = chromeos.networkConfig.mojom;
     networkConfig
         .getNetworkStateList({
           filter: mojom.FilterType.kVisible,
@@ -563,7 +555,8 @@ const NetworkUI = (function() {
 
     // Otherwise, connect.
     networkConfig.startConnect(networkState.guid).then(response => {
-      if (response.result == mojom.StartConnectResult.kSuccess) {
+      if (response.result ==
+          chromeos.networkConfig.mojom.StartConnectResult.kSuccess) {
         return;
       }
       console.error(
@@ -573,10 +566,21 @@ const NetworkUI = (function() {
     });
   };
 
+  const selectTabFromHash = function() {
+    const selectedTab = window.location.hash.substring(1);
+    if (!selectedTab)
+      return;
+    const tabpanel = document.querySelector('tabpanels > #' + selectedTab);
+    if (tabpanel) {
+      tabpanel.selected = true;
+    }
+  };
+
   /**
    * Gets network information from WebUI and sets custom items.
    */
-  document.addEventListener('DOMContentLoaded', function() {
+  function onLoad() {
+    cr.ui.decorate('tabbox', cr.ui.TabBox);
     const select = document.querySelector('network-select');
     select.customItems = [
       {customItemName: 'Add WiFi', polymerIcon: 'cr:add', customData: 'WiFi'},
@@ -587,19 +591,28 @@ const NetworkUI = (function() {
     $('add-new-wifi-button').onclick = showAddNewWifi;
     $('refresh').onclick = requestNetworks;
     $('get-property-format').onchange = requestNetworks;
+
+    document.addEventListener('custom-item-selected', function(event) {
+      chrome.send('addNetwork', [event.detail.customData]);
+    });
+
+    window.addEventListener('hashchange', function(event) {
+      selectTabFromHash();
+    });
+    selectTabFromHash();
+
     init();
     requestNetworks();
     requestGlobalPolicy();
-  });
-
-  document.addEventListener('custom-item-selected', function(event) {
-    chrome.send('addNetwork', [event.detail.customData]);
-  });
+  }
 
   return {
     getShillNetworkPropertiesResult: getShillNetworkPropertiesResult,
     getShillDevicePropertiesResult: getShillDevicePropertiesResult,
     getShillEthernetEAPResult: getShillEthernetEAPResult,
-    openCellularActivationUiResult: openCellularActivationUiResult
+    openCellularActivationUiResult: openCellularActivationUiResult,
+    onLoad: onLoad
   };
-})();
+});
+
+document.addEventListener('DOMContentLoaded', network_ui.onLoad);

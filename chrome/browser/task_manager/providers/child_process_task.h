@@ -24,9 +24,24 @@ namespace task_manager {
 // a plugin or a GPU process, ... etc.
 class ChildProcessTask : public Task {
  public:
+  // ChildProcessData has a ProcessType but that's not always granular enough to
+  // correctly determine what string to show as the name of the task. This enum
+  // is used to provide that information.
+  enum class ProcessSubtype {
+    kNoSubtype,
+    // The "spare" render process, a render process used so that there is always
+    // a render process ready to go.
+    kSpareRenderProcess,
+    // A render process that is unknown and for which no provider is available.
+    // Should not be used; all processes should be shown in the Task Manager.
+    // See https://crbug.com/739782 .
+    kUnknownRenderProcess,
+  };
+
   // Creates a child process task given its |data| which is
   // received from observing |content::BrowserChildProcessObserver|.
-  explicit ChildProcessTask(const content::ChildProcessData& data);
+  ChildProcessTask(const content::ChildProcessData& data,
+                   ProcessSubtype subtype);
 
   ~ChildProcessTask() override;
 

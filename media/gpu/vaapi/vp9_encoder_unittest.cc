@@ -9,6 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "media/filters/vp9_parser.h"
 #include "media/gpu/vaapi/vp9_rate_control.h"

@@ -19,6 +19,7 @@ namespace content {
 
 class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
+class RenderWidgetHostImpl;
 class WebContentsImpl;
 
 namespace protocol {
@@ -86,6 +87,8 @@ class EmulationHandler : public DevToolsDomainHandler,
   WebContentsImpl* GetWebContents();
   void UpdateTouchEventEmulationState();
   void UpdateDeviceEmulationState();
+  void UpdateDeviceEmulationStateForHost(
+      RenderWidgetHostImpl* render_widget_host);
 
   bool touch_emulation_enabled_;
   std::string touch_emulation_configuration_;

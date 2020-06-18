@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
+#include "base/notreached.h"
 
 namespace media {
 

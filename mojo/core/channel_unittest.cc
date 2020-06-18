@@ -56,13 +56,13 @@ class TestChannel : public Channel {
   void Write(MessagePtr message) override {}
 
  protected:
-  ~TestChannel() override {}
+  ~TestChannel() override = default;
 };
 
 // Not using GMock as I don't think it supports movable types.
 class MockChannelDelegate : public Channel::Delegate {
  public:
-  MockChannelDelegate() {}
+  MockChannelDelegate() = default;
 
   size_t GetReceivedPayloadSize() const { return payload_size_; }
 

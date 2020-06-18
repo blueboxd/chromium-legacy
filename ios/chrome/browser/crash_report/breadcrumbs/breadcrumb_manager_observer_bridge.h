@@ -5,15 +5,20 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_OBSERVER_BRIDGE_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_BREADCRUMB_MANAGER_OBSERVER_BRIDGE_H_
 
+#import <Foundation/Foundation.h>
+
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 class BreadcrumbManager;
 class BreadcrumbManagerKeyedService;
 
 // Protocol mirroring BreadcrumbManagerObserver
-@protocol BreadcrumbManagerObserving
+@protocol BreadcrumbManagerObserving <NSObject>
+@optional
 - (void)breadcrumbManager:(BreadcrumbManager*)manager
               didAddEvent:(NSString*)string;
+
+- (void)breadcrumbManagerDidRemoveOldEvents:(BreadcrumbManager*)manager;
 @end
 
 // A C++ bridge class to handle receiving notifications from the C++ class
@@ -42,6 +47,7 @@ class BreadcrumbManagerObserverBridge : public BreadcrumbManagerObserver {
   // BreadcrumbManagerObserver implementation:
   void EventAdded(BreadcrumbManager* manager,
                   const std::string& event) override;
+  void OldEventsRemoved(BreadcrumbManager* manager) override;
 
   BreadcrumbManager* breadcrumb_manager_ = nullptr;
   BreadcrumbManagerKeyedService* breadcrumb_manager_service_ = nullptr;

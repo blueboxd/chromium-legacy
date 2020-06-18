@@ -3887,6 +3887,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
+    {"enable-storage-pressure-event",
+     flag_descriptions::kStoragePressureEventName,
+     flag_descriptions::kStoragePressureEventDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kStoragePressureEvent)},
+
     {"enable-storage-pressure-ui", flag_descriptions::kStoragePressureUIName,
      flag_descriptions::kStoragePressureUIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kStoragePressureUI)},

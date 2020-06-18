@@ -54,9 +54,9 @@ void Sleep(MojoDeadline deadline) {
       base::TimeDelta::FromMicroseconds(static_cast<int64_t>(deadline)));
 }
 
-Stopwatch::Stopwatch() {}
+Stopwatch::Stopwatch() = default;
 
-Stopwatch::~Stopwatch() {}
+Stopwatch::~Stopwatch() = default;
 
 void Stopwatch::Start() {
   start_time_ = base::TimeTicks::Now();

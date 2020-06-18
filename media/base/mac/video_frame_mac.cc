@@ -9,6 +9,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "media/base/video_frame.h"
 
 namespace media {

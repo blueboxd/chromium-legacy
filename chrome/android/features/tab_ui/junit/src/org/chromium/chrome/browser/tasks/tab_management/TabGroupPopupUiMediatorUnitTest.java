@@ -10,7 +10,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -34,15 +33,16 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.toolbar.top.ToolbarPhone;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -583,11 +583,7 @@ public class TabGroupPopupUiMediatorUnitTest {
 
     // TODO(yuezhanggg): Pull methods below to a utility class.
     private TabImpl prepareTab(int id, String title) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(id).when(tab).getId();
-        doReturn(id).when(tab).getRootId();
-        doReturn("").when(tab).getUrlString();
-        doReturn(title).when(tab).getTitle();
+        TabImpl tab = TabUiUnitTestUtils.prepareTab(id, title, "");
         doReturn(true).when(tab).isIncognito();
         return tab;
     }
@@ -595,7 +591,8 @@ public class TabGroupPopupUiMediatorUnitTest {
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when(((TabImpl) tab)).getRootId();
+            CriticalPersistedTabData criticalPersistedTabData = CriticalPersistedTabData.from(tab);
+            doReturn(rootId).when(criticalPersistedTabData).getRootId();
         }
     }
 }

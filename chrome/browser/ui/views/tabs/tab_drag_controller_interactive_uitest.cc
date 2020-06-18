@@ -2245,22 +2245,22 @@ class DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// Creates a browser with three tabs where the second tab is in a collapsed
-// group. Drag the third tab to the second tab. The third tab should swap places
-// with the collapsed group header.
+// Creates a browser with four tabs where the second and third tab is in a
+// collapsed group. Drag the fourth tab to the left past the group header. The
+// fourth tab should swap places with the collapsed group header.
 IN_PROC_BROWSER_TEST_P(
     DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled,
     DragTabLeftPastCollapsedGroupHeader) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
 
-  AddTabsAndResetBrowser(browser(), 2);
-  tab_groups::TabGroupId group = model->AddToNewGroup({1});
+  AddTabsAndResetBrowser(browser(), 3);
+  tab_groups::TabGroupId group = model->AddToNewGroup({1, 2});
   StopAnimating(tab_strip);
 
-  EXPECT_EQ(3, model->count());
+  EXPECT_EQ(4, model->count());
   EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
-              testing::ElementsAre(1));
+              testing::ElementsAre(1, 2));
   EXPECT_FALSE(model->IsGroupCollapsed(group));
   tab_strip->controller()->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
@@ -2268,34 +2268,34 @@ IN_PROC_BROWSER_TEST_P(
 
   // Dragging the last tab to the left should cause it to swap places with the
   // collapsed group header.
-  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(2))));
+  ASSERT_TRUE(PressInput(GetCenterInScreenCoordinates(tab_strip->tab_at(3))));
   ASSERT_TRUE(DragInputTo(
-      test::GetLeftCenterInScreenCoordinates(tab_strip->tab_at(2))));
+      test::GetLeftCenterInScreenCoordinates(tab_strip->tab_at(3))));
   ASSERT_TRUE(ReleaseInput());
   StopAnimating(tab_strip);
 
-  EXPECT_EQ("0 2 1", IDString(model));
+  EXPECT_EQ("0 3 1 2", IDString(model));
   EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
-              testing::ElementsAre(2));
+              testing::ElementsAre(2, 3));
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 }
 
-// Creates a browser with three tabs where the second tab is in a collapsed
-// group. Drag the first tab to the second tab. The first tab should swap places
-// with the collapsed group header.
+// Creates a browser with four tabs where the second and third tab is in a
+// collapsed group. Drag the first tab to the right past the group header. The
+// first tab should swap places with the collapsed group header.
 IN_PROC_BROWSER_TEST_P(
     DetachToBrowserTabDragControllerTestWithTabGroupsCollapseEnabled,
     DragTabRightPastCollapsedGroupHeader) {
   TabStrip* tab_strip = GetTabStripForBrowser(browser());
   TabStripModel* model = browser()->tab_strip_model();
 
-  AddTabsAndResetBrowser(browser(), 2);
-  tab_groups::TabGroupId group = model->AddToNewGroup({1});
+  AddTabsAndResetBrowser(browser(), 3);
+  tab_groups::TabGroupId group = model->AddToNewGroup({1, 2});
   StopAnimating(tab_strip);
 
-  EXPECT_EQ(3, model->count());
+  EXPECT_EQ(4, model->count());
   EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
-              testing::ElementsAre(1));
+              testing::ElementsAre(1, 2));
   EXPECT_FALSE(model->IsGroupCollapsed(group));
   tab_strip->controller()->ToggleTabGroupCollapsedState(group);
   StopAnimating(tab_strip);
@@ -2310,9 +2310,9 @@ IN_PROC_BROWSER_TEST_P(
   ASSERT_TRUE(ReleaseInput());
   StopAnimating(tab_strip);
 
-  EXPECT_EQ("1 0 2", IDString(model));
+  EXPECT_EQ("1 2 0 3", IDString(model));
   EXPECT_THAT(model->group_model()->GetTabGroup(group)->ListTabs(),
-              testing::ElementsAre(0));
+              testing::ElementsAre(0, 1));
   EXPECT_TRUE(model->IsGroupCollapsed(group));
 }
 

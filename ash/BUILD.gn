@@ -21,7 +21,11 @@ assert(use_ozone)
 
 component("ash") {
   # All targets in this file are allowed to access any the headers in ash.
-  friend = [ ":*" ]
+  friend = [
+    ":*",
+    "//components/exo:*",
+    "//components/exo/wayland:*",
+  ]
 
   public = [
     "public/ash_interfaces.h",
@@ -416,6 +420,8 @@ component("ash") {
     "hud_display/data_source.h",
     "hud_display/graph.cc",
     "hud_display/graph.h",
+    "hud_display/graphs_container_view.cc",
+    "hud_display/graphs_container_view.h",
     "hud_display/hud_display.cc",
     "hud_display/hud_display.h",
     "hud_display/memory_status.cc",
@@ -1478,11 +1484,9 @@ component("ash") {
 
   public_deps = [
     "//ash/public/cpp",
-    "//ash/public/cpp/external_arc",
     "//ash/public/cpp/vector_icons",
     "//ash/resources/vector_icons",
     "//ash/strings",
-    "//ash/wayland",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//components/discardable_memory/public/mojom",
     "//mojo/public/cpp/bindings",
@@ -1526,6 +1530,7 @@ component("ash") {
     "//cc/paint:paint",
     "//chromeos/assistant:buildflags",
     "//chromeos/components/quick_answers",
+    "//services/viz/public/mojom",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
     "//chromeos/audio",
@@ -1559,8 +1564,6 @@ component("ash") {
     "//components/country_codes",
     "//components/device_event_log",
     "//components/discardable_memory/service",
-    "//components/exo",
-    "//components/exo/wayland",
     "//components/media_message_center",
     "//components/onc",
     "//components/password_manager/core/browser:hash_password_manager",
@@ -1645,11 +1648,7 @@ component("ash") {
     "//ui/base/idle",
   ]
 
-  allow_circular_includes_from = [
-    "//ash/assistant/ui",
-    "//components/exo",
-    "//components/exo/wayland",
-  ]
+  allow_circular_includes_from = [ "//ash/assistant/ui" ]
 
   if (enable_cros_ambient_mode_backend) {
     sources += [
@@ -1837,6 +1836,7 @@ test("ash_unittests") {
     "assistant/assistant_screen_context_controller_impl_unittest.cc",
     "assistant/assistant_setup_controller_unittest.cc",
     "assistant/assistant_state_controller_unittest.cc",
+    "assistant/assistant_suggestions_controller_impl_unittest.cc",
     "assistant/model/assistant_query_history_unittest.cc",
     "assistant/ui/assistant_web_container_view_unittest.cc",
     "assistant/ui/main_stage/assistant_onboarding_view_unittest.cc",
@@ -2227,8 +2227,6 @@ test("ash_unittests") {
     "//chromeos/system",
     "//components/account_id",
     "//components/arc:notification_test_support",
-    "//components/exo",
-    "//components/exo:test_support",
     "//components/media_message_center",
     "//components/password_manager/core/browser:hash_password_manager",
     "//components/prefs:test_support",

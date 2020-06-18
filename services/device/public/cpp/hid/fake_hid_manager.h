@@ -20,6 +20,8 @@ namespace device {
 class FakeHidConnection : public mojom::HidConnection {
  public:
   explicit FakeHidConnection(mojom::HidDeviceInfoPtr device);
+  FakeHidConnection(FakeHidConnection&) = delete;
+  FakeHidConnection& operator=(FakeHidConnection&) = delete;
   ~FakeHidConnection() override;
 
   // mojom::HidConnection implementation:
@@ -41,6 +43,8 @@ class FakeHidConnection : public mojom::HidConnection {
 class FakeHidManager : public mojom::HidManager {
  public:
   FakeHidManager();
+  FakeHidManager(FakeHidManager&) = delete;
+  FakeHidManager& operator=(FakeHidManager&) = delete;
   ~FakeHidManager() override;
 
   void Bind(mojo::PendingReceiver<mojom::HidManager> receiver);
@@ -74,6 +78,7 @@ class FakeHidManager : public mojom::HidManager {
       uint16_t usage);
   void AddDevice(mojom::HidDeviceInfoPtr device);
   void RemoveDevice(const std::string& guid);
+  void SimulateConnectionError();
 
  private:
   std::map<std::string, mojom::HidDeviceInfoPtr> devices_;

@@ -45,8 +45,8 @@ void RevalidateCreateOptions(
 
 class SharedBufferDispatcherTest : public testing::Test {
  public:
-  SharedBufferDispatcherTest() {}
-  ~SharedBufferDispatcherTest() override {}
+  SharedBufferDispatcherTest() = default;
+  ~SharedBufferDispatcherTest() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SharedBufferDispatcherTest);

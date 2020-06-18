@@ -33,6 +33,9 @@
 
 namespace media_feeds {
 
+using SafeSearchCheckedType =
+    media_history::MediaHistoryKeyedService::SafeSearchCheckedType;
+
 namespace {
 
 constexpr size_t kCacheSize = 2;
@@ -184,16 +187,18 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
     run_loop.Run();
   }
 
-  void SimulateOnCheckURLDone(const int64_t id,
-                              const GURL& url,
-                              safe_search_api::Classification classification,
-                              bool uncertain) {
+  void SimulateOnCheckURLDone(
+      const media_history::MediaHistoryKeyedService::SafeSearchID id,
+      const GURL& url,
+      safe_search_api::Classification classification,
+      bool uncertain) {
     GetMediaFeedsService()->OnCheckURLDone(id, url, url, classification,
                                            uncertain);
   }
 
-  bool AddInflightSafeSearchCheck(const int64_t id,
-                                  const std::set<GURL>& urls) {
+  bool AddInflightSafeSearchCheck(
+      const media_history::MediaHistoryKeyedService::SafeSearchID id,
+      const std::set<GURL>& urls) {
     return GetMediaFeedsService()->AddInflightSafeSearchCheck(id, urls);
   }
 
@@ -229,6 +234,27 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 
     run_loop.Run();
     return out;
+  }
+
+  void DiscoverFeedAndPerformSafeSearchCheck(const GURL& feed_url) {
+    SetSafeSearchEnabled(true);
+    safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+    base::RunLoop run_loop;
+    GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+        run_loop.QuitClosure());
+
+    // Store a Media Feed.
+    GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+    WaitForDB();
+
+    // Wait for the service and DB to finish.
+    run_loop.Run();
+    WaitForDB();
+
+    // Return to the default state.
+    safe_search_checker()->ClearResponses();
+    SetSafeSearchEnabled(false);
   }
 
   std::vector<media_feeds::mojom::MediaFeedItemPtr> GetItemsForMediaFeedSync(
@@ -555,15 +581,11 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_NotFoundError) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
-  base::HistogramTester histogram_tester;
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
 
+  base::HistogramTester histogram_tester;
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -608,15 +630,11 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllSafe) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
-  base::HistogramTester histogram_tester;
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
 
+  base::HistogramTester histogram_tester;
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ true);
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -661,15 +679,11 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_AllUnsafe) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
-  base::HistogramTester histogram_tester;
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
 
+  base::HistogramTester histogram_tester;
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpFailedResponse();
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -714,12 +728,8 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Request) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -763,13 +773,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Pref) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -808,13 +815,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Inflight) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -859,13 +863,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_CheckTwice_Committed) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -882,10 +883,12 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
                                            pending_items[0]->urls));
   }
 
-  SimulateOnCheckURLDone(1, GURL(kFirstItemActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/false);
-  SimulateOnCheckURLDone(1, GURL(kFirstItemPlayNextActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemPlayNextActionURL),
                          safe_search_api::Classification::UNSAFE,
                          /*uncertain=*/false);
 
@@ -905,13 +908,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUnsafe) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -928,10 +928,12 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
                                            pending_items[0]->urls));
   }
 
-  SimulateOnCheckURLDone(1, GURL(kFirstItemActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/false);
-  SimulateOnCheckURLDone(1, GURL(kFirstItemPlayNextActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemPlayNextActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/true);
 
@@ -951,13 +953,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_SafeUncertain) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   std::vector<media_feeds::mojom::MediaFeedItemPtr> items;
@@ -974,10 +973,12 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
                                            pending_items[0]->urls));
   }
 
-  SimulateOnCheckURLDone(1, GURL(kFirstItemActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemActionURL),
                          safe_search_api::Classification::UNSAFE,
                          /*uncertain=*/false);
-  SimulateOnCheckURLDone(1, GURL(kFirstItemPlayNextActionURL),
+  SimulateOnCheckURLDone(std::make_pair(SafeSearchCheckedType::kFeedItem, 1),
+                         GURL(kFirstItemPlayNextActionURL),
                          safe_search_api::Classification::SAFE,
                          /*uncertain=*/true);
 
@@ -997,17 +998,14 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Mixed_UnsafeUncertain) {
 }
 
 TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
+  DiscoverFeedAndPerformSafeSearchCheck(GURL("https://www.google.com/feed"));
+
   SetSafeSearchEnabled(true);
 
   base::test::ScopedFeatureList features;
   features.InitAndDisableFeature(media::kMediaFeedsSafeSearch);
 
   base::HistogramTester histogram_tester;
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(
-      GURL("https://www.google.com/feed"));
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -1052,13 +1050,10 @@ TEST_F(MediaFeedsServiceTest, SafeSearch_Failed_Feature) {
 
 TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   const GURL feed_url("https://www.google.com/feed");
+  DiscoverFeedAndPerformSafeSearchCheck(feed_url);
 
   SetSafeSearchEnabled(true);
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
-  WaitForDB();
 
   base::RunLoop run_loop;
   GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
@@ -1097,12 +1092,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
 
 TEST_F(MediaFeedsServiceTest, FetcherShouldDeleteFeedIfGone) {
   const GURL feed_url("https://www.google.com/feed");
+  DiscoverFeedAndPerformSafeSearchCheck(feed_url);
 
   safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
-
-  // Store a Media Feed.
-  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
-  WaitForDB();
 
   // Store some media feed items.
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
@@ -1964,6 +1956,46 @@ TEST_F(MediaFeedsServiceTest,
     ASSERT_EQ(1u, feeds.size());
     EXPECT_EQ(media_feeds::mojom::ResetReason::kNone, feeds[0]->reset_reason);
   }
+}
+
+TEST_F(MediaFeedsServiceTest, DiscoverFeed_SafeSearch_Enabled) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(true);
+  safe_search_checker()->SetUpValidResponse(/* is_porn= */ false);
+
+  base::RunLoop run_loop;
+  GetMediaFeedsService()->SetSafeSearchCompletionCallbackForTest(
+      run_loop.QuitClosure());
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  // Wait for the service and DB to finish.
+  run_loop.Run();
+  WaitForDB();
+
+  // The feed should have been updated to be safe.
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(1u, feeds.size());
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kSafe,
+            feeds[0]->safe_search_result);
+}
+
+TEST_F(MediaFeedsServiceTest, DiscoverFeed_SafeSearch_Disabled) {
+  const GURL feed_url("https://www.google.com/feed");
+
+  SetSafeSearchEnabled(false);
+
+  // Store a Media Feed.
+  GetMediaFeedsService()->DiscoverMediaFeed(feed_url);
+  WaitForDB();
+
+  auto feeds = GetMediaFeedsSync();
+  ASSERT_EQ(1u, feeds.size());
+  EXPECT_EQ(media_feeds::mojom::SafeSearchResult::kUnknown,
+            feeds[0]->safe_search_result);
 }
 
 // Runs the Media Feeds tests from the spec. The file names start with success

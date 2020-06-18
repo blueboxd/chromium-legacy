@@ -31,7 +31,7 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
  public:
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
     virtual void OnAcceptInvitee(const ports::NodeName& from_node,
                                  const ports::NodeName& inviter_name,
                                  const ports::NodeName& token) = 0;

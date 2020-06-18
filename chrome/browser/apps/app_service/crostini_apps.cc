@@ -247,11 +247,6 @@ void CrostiniApps::OnRegistryUpdated(
 void CrostiniApps::OnAppIconUpdated(const std::string& app_id,
                                     ui::ScaleFactor scale_factor,
                                     const std::string& compressed_icon_data) {
-  apps::mojom::AppPtr app = apps::mojom::App::New();
-  app->app_type = apps::mojom::AppType::kCrostini;
-  app->app_id = app_id;
-  app->icon_key = NewIconKey(app_id);
-
   auto range = app_icon_callbacks_.equal_range(app_id);
   for (auto it = range.first; it != range.second; it++) {
     apps::mojom::IconCompression icon_compression;

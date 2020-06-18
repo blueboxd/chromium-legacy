@@ -256,19 +256,20 @@ void TabGroupEditorBubbleView::UpdateGroup() {
   TabGroup* tab_group =
       browser_->tab_strip_model()->group_model()->GetTabGroup(group_);
 
-  const tab_groups::TabGroupColorId current_color =
-      tab_group->visual_data()->color();
+  const tab_groups::TabGroupVisualData* current_visual_data =
+      tab_group->visual_data();
   const tab_groups::TabGroupColorId updated_color =
       selected_element.has_value() ? colors_[selected_element.value()].first
-                                   : current_color;
+                                   : current_visual_data->color();
 
-  if (current_color != updated_color) {
+  if (current_visual_data->color() != updated_color) {
     base::RecordAction(
         base::UserMetricsAction("TabGroups_TabGroupBubble_ColorChanged"));
   }
 
   tab_groups::TabGroupVisualData new_data(title_field_->GetText(),
-                                          updated_color);
+                                          updated_color,
+                                          current_visual_data->is_collapsed());
   tab_group->SetVisualData(new_data, true);
 }
 

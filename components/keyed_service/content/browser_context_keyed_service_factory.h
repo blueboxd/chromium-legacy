@@ -7,6 +7,8 @@
 
 #include <memory>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service_export.h"
@@ -47,6 +49,34 @@ class KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   // not be empty.
   KeyedService* SetTestingFactoryAndUse(content::BrowserContext* context,
                                         TestingFactory testing_factory);
+
+  // A variant of |TestingFactory| for supplying a subclass of
+  // KeyedService for a given BrowserContext.
+  template <typename Derived>
+  using TestingSubclassFactory =
+      base::RepeatingCallback<std::unique_ptr<Derived>(
+          content::BrowserContext* context)>;
+
+  // Like |SetTestingFactoryAndUse|, but instead takes a factory for a
+  // subclass of KeyedService and returns a pointer to this subclass.
+  // This allows callers to avoid using static_cast in both directions:
+  // casting up to KeyedService in their factory, and casting down to
+  // their subclass on the returned pointer.
+  template <typename Derived>
+  Derived* SetTestingSubclassFactoryAndUse(
+      content::BrowserContext* context,
+      TestingSubclassFactory<Derived> derived_factory) {
+    TestingFactory upcast_factory = base::BindRepeating(
+        [](TestingSubclassFactory<Derived> derived_factory,
+           content::BrowserContext* context) {
+          return std::unique_ptr<KeyedService>(
+              derived_factory.Run(context).release());
+        },
+        std::move(derived_factory));
+
+    return static_cast<Derived*>(
+        SetTestingFactoryAndUse(context, std::move(upcast_factory)));
+  }
 
  protected:
   // BrowserContextKeyedServiceFactories must communicate with a

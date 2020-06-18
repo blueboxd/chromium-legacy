@@ -36,7 +36,6 @@ source_set("wayland") {
     "wayland_touch_delegate.cc",
     "wayland_touch_delegate.h",
     "wayland_watcher.cc",
-    "wayland_watcher.h",
     "wl_compositor.cc",
     "wl_compositor.h",
     "wl_data_device_manager.cc",
@@ -125,6 +124,7 @@ source_set("wayland") {
 
     if (is_chromeos) {
       deps += [
+        "//ash",
         "//ash/public/cpp",
         "//ui/events/ozone/layout",
       ]

@@ -242,5 +242,8 @@
     <message name="IDS_AX_ROLE_DESCRIPTION_PDF_HIGHLIGHT" desc="Accessibility role description for PDF highlight">
       Highlight
     </message>
+    <message name="IDS_AX_ROLE_DESCRIPTION_PDF_POPUP_NOTE" desc="Accessibility role description for popup note annotation associated with a PDF highlight">
+      Note
+    </message>
   </if>
 </grit-part>

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
+#include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
@@ -54,8 +55,10 @@ class AssistiveWindowControllerTest : public ChromeAshTestBase {
 
 TEST_F(AssistiveWindowControllerTest, ConfirmedLength0SetsSuggestionViewBound) {
   // Sets up suggestion_view with confirmed_length = 0.
-  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(suggestion_,
-                                                                    0, false);
+  ui::ime::SuggestionDetails details;
+  details.text = suggestion_;
+  details.confirmed_length = 0;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(details);
   ui::ime::SuggestionWindowView* suggestion_view =
       controller_->GetSuggestionWindowViewForTesting();
   EXPECT_EQ(
@@ -71,8 +74,10 @@ TEST_F(AssistiveWindowControllerTest, ConfirmedLength0SetsSuggestionViewBound) {
 TEST_F(AssistiveWindowControllerTest,
        ConfirmedLengthNot0DoesNotSetSuggestionViewBound) {
   // Sets up suggestion_view with confirmed_length = 1.
-  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(suggestion_,
-                                                                    1, false);
+  ui::ime::SuggestionDetails details;
+  details.text = suggestion_;
+  details.confirmed_length = 1;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(details);
   ui::ime::SuggestionWindowView* suggestion_view =
       controller_->GetSuggestionWindowViewForTesting();
   EXPECT_EQ(
@@ -88,8 +93,10 @@ TEST_F(AssistiveWindowControllerTest,
 TEST_F(AssistiveWindowControllerTest,
        SuggestionViewBoundIsResetAfterHideSuggestionThenShowAgain) {
   // Sets up suggestion_view with confirmed_length = 1.
-  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(suggestion_,
-                                                                    1, false);
+  ui::ime::SuggestionDetails details;
+  details.text = suggestion_;
+  details.confirmed_length = 1;
+  ui::IMEBridge::Get()->GetAssistiveWindowHandler()->ShowSuggestion(details);
   EXPECT_EQ(
       1u,
       ui::IMEBridge::Get()->GetAssistiveWindowHandler()->GetConfirmedLength());

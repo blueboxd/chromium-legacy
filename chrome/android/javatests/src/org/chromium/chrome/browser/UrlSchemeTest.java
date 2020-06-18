@@ -34,6 +34,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URLEncoder;
 
 /** Test suite for different Android URL schemes. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -138,6 +139,85 @@ public class UrlSchemeTest {
                 return mActivityTestRule.getActivity().getActivityTab().getTitle().equals("fail");
             }
         });
+    }
+
+    private String loadContentUrlToMakeCorsToContent(final String api, final String mode)
+            throws Throwable {
+        final String resource = "content_url_make_cors_to_content.html";
+        final String imageUrl = createContentUrl("google.png");
+
+        mActivityTestRule.loadUrl(createContentUrl(resource) + "?api=" + api + "&mode=" + mode
+                + "&url=" + URLEncoder.encode(imageUrl));
+
+        // Make sure the CORS request fail in the page.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
+                        "running");
+            }
+        });
+
+        // Make sure that content provider was asked to provide the content.
+        ensureResourceRequestCountInContentProviderNotLessThan(resource, 1);
+
+        return mActivityTestRule.getActivity().getActivityTab().getTitle();
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"CORS"})
+    public void testContentUrlCanNotMakeXhrRequestToContentUrl() throws Throwable {
+        // The XMLHttpRequest can carry content:// URLs, but CORS requests for content:// are not
+        // permitted.
+        Assert.assertEquals("error", loadContentUrlToMakeCorsToContent("xhr", ""));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"CORS"})
+    public void testContentUrlCanNotMakeFetchCorsRequestToContentUrl() throws Throwable {
+        // The Fetch API does not support content:// scheme.
+        Assert.assertEquals("error", loadContentUrlToMakeCorsToContent("fetch", "cors"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"CORS"})
+    public void testContentUrlCanNotMakeFetchSameOriginRequestToContentUrl() throws Throwable {
+        // The Fetch API does not support content:// scheme.
+        Assert.assertEquals("error", loadContentUrlToMakeCorsToContent("fetch", "same-origin"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"CORS"})
+    public void testContentUrlCanNotMakeFetchNoCorsRequestToContentUrl() throws Throwable {
+        // The Fetch API does not support content:// scheme.
+        Assert.assertEquals("error", loadContentUrlToMakeCorsToContent("fetch", "no-cors"));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"CORS"})
+    public void testContentUrlToLoadWorkerFromContent() throws Throwable {
+        final String resource = "content_url_load_content_worker.html";
+
+        mActivityTestRule.loadUrl(createContentUrl(resource));
+
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !mActivityTestRule.getActivity().getActivityTab().getTitle().equals(
+                        "running");
+            }
+        });
+
+        // Make sure that content provider was asked to provide the content.
+        ensureResourceRequestCountInContentProviderNotLessThan(resource, 1);
+
+        Assert.assertEquals(
+                "exception", mActivityTestRule.getActivity().getActivityTab().getTitle());
     }
 
     /**

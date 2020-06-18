@@ -13,7 +13,7 @@
 
 namespace updater {
 
-bool GetProductDirectory(base::FilePath* path) {
+bool GetBaseDirectory(base::FilePath* path) {
   constexpr int kPathKey =
 #if defined(OS_WIN)
       base::DIR_LOCAL_APP_DATA;
@@ -31,7 +31,7 @@ bool GetProductDirectory(base::FilePath* path) {
       app_data_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
           .AppendASCII(PRODUCT_FULLNAME_STRING);
   if (!base::CreateDirectory(product_data_dir)) {
-    LOG(ERROR) << "Can't create product directory.";
+    LOG(ERROR) << "Can't create base directory.";
     return false;
   }
 
@@ -39,11 +39,28 @@ bool GetProductDirectory(base::FilePath* path) {
   return true;
 }
 
+bool GetVersionedDirectory(base::FilePath* path) {
+  base::FilePath product_dir;
+  if (!GetBaseDirectory(&product_dir)) {
+    LOG(ERROR) << "Failed to get the base directory.";
+    return false;
+  }
+
+  const auto versioned_dir = product_dir.AppendASCII(UPDATER_VERSION_STRING);
+  if (!base::CreateDirectory(versioned_dir)) {
+    LOG(ERROR) << "Can't create versioned directory.";
+    return false;
+  }
+
+  *path = versioned_dir;
+  return true;
+}
+
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_APP_DATA.
 void InitLogging(const base::FilePath::StringType& filename) {
   logging::LoggingSettings settings;
   base::FilePath log_dir;
-  GetProductDirectory(&log_dir);
+  GetBaseDirectory(&log_dir);
   const base::FilePath log_file = log_dir.Append(filename);
   settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;

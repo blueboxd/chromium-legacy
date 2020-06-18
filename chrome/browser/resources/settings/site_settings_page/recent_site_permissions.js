@@ -16,7 +16,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {routes} from '../route.js';
 import {Route, RouteObserverBehavior, Router} from '../router.m.js';
-import {AllSitesAction, ContentSetting, ContentSettingsTypes, SiteSettingSource} from '../site_settings/constants.js';
+import {AllSitesAction2, ContentSetting, ContentSettingsTypes, SiteSettingSource} from '../site_settings/constants.js';
 import {SiteSettingsBehavior} from '../site_settings/site_settings_behavior.js';
 import {RawSiteException, RecentSitePermissions} from '../site_settings/site_settings_prefs_browser_proxy.js';
 
@@ -302,7 +302,7 @@ Polymer({
     const origin = this.recentSitePermissionsList_[e.model.index].origin;
     Router.getInstance().navigateTo(
         routes.SITE_SETTINGS_SITE_DETAILS, new URLSearchParams({site: origin}));
-    this.browserProxy.recordAction(AllSitesAction.ENTER_SITE_DETAILS);
+    this.browserProxy.recordAction(AllSitesAction2.ENTER_SITE_DETAILS);
     this.lastSelected_ = {
       index: e.model.index,
       origin: e.model.item.origin,

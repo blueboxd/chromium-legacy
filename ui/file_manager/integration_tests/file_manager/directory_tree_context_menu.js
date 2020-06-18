@@ -1858,6 +1858,6 @@
     // Check currently focused element.
     const focusedElement =
         await remoteCall.callRemoteTestUtil('getActiveElement', appId, []);
-    chrome.test.assertEq('menuitem', focusedElement.attributes.role);
+    chrome.test.assertEq('menuitem', focusedElement.attributes['role']);
   };
 })();

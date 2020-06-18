@@ -7,21 +7,8 @@ body {
   flex-direction: column;
 }
 
-div {
-  margin: 10px 0;
-}
-
-#select-div {
-  display: flex;
-  height: 100px;
-  width: 500px;
-}
-
 .state-table {
   border-collapse: collapse;
-}
-
-.state-table tr {
   min-width: 800px;
 }
 
@@ -56,8 +43,4 @@ div {
 .state-table-icon-cell {
   height: 32px;
   width: 32px;
-}
-
-network-select {
-  flex: 1;
 }

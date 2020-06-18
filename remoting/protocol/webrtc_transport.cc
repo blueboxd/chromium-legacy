@@ -561,7 +561,9 @@ bool WebrtcTransport::ProcessTransportInfo(XmlElement* transport_info) {
     // SetRemoteDescription() might overwrite any bitrate caps previously set,
     // so (re)apply them here. This might happen if ICE state were already
     // connected and OnStatsDelivered() had already set the caps.
-    SetPeerConnectionBitrates(MaxBitrateForConnection());
+    int min_bitrate_bps, max_bitrate_bps;
+    std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
+    SetPeerConnectionBitrates(min_bitrate_bps, max_bitrate_bps);
   }
 
   XmlElement* candidate_element;
@@ -693,7 +695,9 @@ void WebrtcTransport::OnAudioTransceiverCreated(
 void WebrtcTransport::OnVideoTransceiverCreated(
     rtc::scoped_refptr<webrtc::RtpTransceiverInterface> transceiver) {
   video_transceiver_ = transceiver;
-  SetSenderBitrates(MaxBitrateForConnection());
+  int min_bitrate_bps, max_bitrate_bps;
+  std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
+  SetSenderBitrates(min_bitrate_bps, max_bitrate_bps);
 }
 
 void WebrtcTransport::OnLocalSessionDescriptionCreated(
@@ -936,12 +940,13 @@ void WebrtcTransport::OnStatsDelivered(
   // (~600kbps).
   // Set the global bitrate caps in addition to the VideoSender bitrates. The
   // global caps affect the probing configuration used by b/w estimator.
-  int max_bitrate_bps = MaxBitrateForConnection();
-  SetPeerConnectionBitrates(max_bitrate_bps);
-  SetSenderBitrates(max_bitrate_bps);
+  int min_bitrate_bps, max_bitrate_bps;
+  std::tie(min_bitrate_bps, max_bitrate_bps) = BitratesForConnection();
+  SetPeerConnectionBitrates(min_bitrate_bps, max_bitrate_bps);
+  SetSenderBitrates(min_bitrate_bps, max_bitrate_bps);
 }
 
-int WebrtcTransport::MaxBitrateForConnection() {
+std::tuple<int, int> WebrtcTransport::BitratesForConnection() {
   int max_bitrate_bps = kMaxBitrateBps;
   if (connection_relayed_.value_or(false)) {
     int turn_max_rate_kbps = transport_context_->GetTurnMaxRateKbps();
@@ -955,16 +960,54 @@ int WebrtcTransport::MaxBitrateForConnection() {
       max_bitrate_bps = turn_max_rate_kbps * 1000;
     }
   }
-  return max_bitrate_bps;
+
+  base::Optional<int> max_bitrate_from_options =
+      session_options().GetInt("Max-Bitrate");
+  if (max_bitrate_from_options.has_value()) {
+    if (*max_bitrate_from_options >= 0 &&
+        *max_bitrate_from_options <= max_bitrate_bps) {
+      VLOG(0) << "Client sets max bitrate to " << *max_bitrate_from_options
+              << " bps.";
+      max_bitrate_bps = *max_bitrate_from_options;
+    } else {
+      LOG(WARNING) << "Max bitrate setting  " << *max_bitrate_from_options
+                   << " bps ignored since it's not in the range of "
+                   << "[0, " << max_bitrate_bps << "].";
+    }
+  }
+
+  int min_bitrate_bps = 0;
+  base::Optional<int> min_bitrate_from_options =
+      session_options().GetInt("Min-Bitrate");
+  if (min_bitrate_from_options.has_value()) {
+    if (min_bitrate_from_options >= 0 &&
+        min_bitrate_from_options <= max_bitrate_bps) {
+      VLOG(0) << "Client sets min bitrate to " << *min_bitrate_from_options
+              << " bps.";
+      min_bitrate_bps = *min_bitrate_from_options;
+    } else {
+      LOG(WARNING) << "Min bitrate setting  " << *min_bitrate_from_options
+                   << " bps ignored since it's not in the range of "
+                   << "[0, " << max_bitrate_bps << "].";
+    }
+  }
+  return {min_bitrate_bps, max_bitrate_bps};
 }
 
-void WebrtcTransport::SetPeerConnectionBitrates(int max_bitrate_bps) {
+void WebrtcTransport::SetPeerConnectionBitrates(int min_bitrate_bps,
+                                                int max_bitrate_bps) {
+  DCHECK_LE(min_bitrate_bps, max_bitrate_bps);
   webrtc::BitrateSettings bitrate;
+  if (min_bitrate_bps > 0) {
+    bitrate.min_bitrate_bps = min_bitrate_bps;
+  }
   bitrate.max_bitrate_bps = max_bitrate_bps;
   peer_connection()->SetBitrate(bitrate);
 }
 
-void WebrtcTransport::SetSenderBitrates(int max_bitrate_bps) {
+void WebrtcTransport::SetSenderBitrates(int min_bitrate_bps,
+                                        int max_bitrate_bps) {
+  DCHECK_LE(min_bitrate_bps, max_bitrate_bps);
   // Only set the cap on the VideoSender, because the AudioSender (via the
   // Opus codec) is already configured with a lower bitrate.
   rtc::scoped_refptr<webrtc::RtpSenderInterface> sender = GetVideoSender();
@@ -985,6 +1028,9 @@ void WebrtcTransport::SetSenderBitrates(int max_bitrate_bps) {
                << sender->id();
   }
 
+  if (min_bitrate_bps > 0) {
+    parameters.encodings[0].min_bitrate_bps = min_bitrate_bps;
+  }
   parameters.encodings[0].max_bitrate_bps = max_bitrate_bps;
   webrtc::RTCError result = sender->SetParameters(parameters);
   DCHECK(result.ok()) << "SetParameters() failed: " << result.message();

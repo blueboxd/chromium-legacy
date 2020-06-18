@@ -5,6 +5,7 @@ embeddedObject
 ++++++++pdfActionableHighlight name='Hello' roleDescription='Highlight' restriction=readOnly
 ++++++++++staticText name='Hello' restriction=readOnly
 ++++++++++++inlineTextBox name='Hello' restriction=readOnly
+++++++++++note name='Text Note' roleDescription='Note' restriction=readOnly
 ++++++++staticText name=', nice ' restriction=readOnly
 ++++++++++inlineTextBox name=', nice ' restriction=readOnly
 ++++++++pdfActionableHighlight name='meeting' roleDescription='Highlight' restriction=readOnly

@@ -58,7 +58,7 @@ class DataPipeProducerDispatcher::PortObserverThunk
       : dispatcher_(dispatcher) {}
 
  private:
-  ~PortObserverThunk() override {}
+  ~PortObserverThunk() override = default;
 
   // NodeController::PortObserver:
   void OnPortStatusChanged() override { dispatcher_->OnPortStatusChanged(); }

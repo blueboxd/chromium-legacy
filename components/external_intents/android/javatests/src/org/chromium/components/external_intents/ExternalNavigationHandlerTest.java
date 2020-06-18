@@ -945,16 +945,52 @@ public class ExternalNavigationHandlerTest {
 
     @Test
     @SmallTest
+    public void testFallbackUrl_SubframeFallbackToMarketApp() {
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
+        String intent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/apps/details?id=com.imdb.mobile"
+                + "&referrer=mypage;end";
+        checkUrl(intent)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.LINK)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
+                mDelegate.startActivityIntent.getDataString());
+
+        redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
+        String intentBadUrl = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
+                + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
+                + "https://play.google.com/store/search?q=pub:imdb;end";
+        checkUrl(intentBadUrl)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.LINK)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
     public void testFallbackUrl_RedirectToIntentToMarket() {
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+
         RedirectHandler redirectHandler = RedirectHandler.create();
 
-        redirectHandler.updateNewUrlLoading(PageTransition.TYPED, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, true, 0, 0);
         checkUrl("http://goo.gl/abcdefg")
-                .withPageTransition(PageTransition.TYPED)
+                .withPageTransition(PageTransition.LINK)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
 
-        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, true, true, 0, 0);
         String realIntent = "intent:///name/nm0000158#Intent;scheme=imdb;package=com.imdb.mobile;"
                 + "S." + ExternalNavigationHandler.EXTRA_BROWSER_FALLBACK_URL + "="
                 + "https://play.google.com/store/apps/details?id=com.imdb.mobile"
@@ -969,6 +1005,44 @@ public class ExternalNavigationHandlerTest {
 
         Assert.assertEquals("market://details?id=com.imdb.mobile&referrer=mypage",
                 mDelegate.startActivityIntent.getDataString());
+    }
+
+    @Test
+    @SmallTest
+    public void testFallbackUrl_DontFallbackForAutoSubframe() {
+        // IMDB app isn't installed.
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
+                              .withIsWebApk(true));
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.AUTO_SUBFRAME, true, true, 0, 0);
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withIsMainFrame(false)
+                .withHasUserGesture(true)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.AUTO_SUBFRAME)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
+    public void testFallbackUrl_NoExternalFallbackWithoutGesture() {
+        mDelegate.add(new IntentActivity(IMDB_WEBPAGE_FOR_TOM_HANKS, WEBAPK_PACKAGE_NAME)
+                              .withIsWebApk(true));
+
+        RedirectHandler redirectHandler = RedirectHandler.create();
+        redirectHandler.updateNewUrlLoading(PageTransition.LINK, false, false, 0, 0);
+
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withHasUserGesture(false)
+                .withRedirectHandler(redirectHandler)
+                .withPageTransition(PageTransition.LINK)
+                .withReferrer(SEARCH_RESULT_URL_FOR_TOM_HANKS)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
     @Test
@@ -2259,6 +2333,7 @@ public class ExternalNavigationHandlerTest {
         private boolean mHasUserGesture;
         private RedirectHandler mRedirectHandler;
         private boolean mIsRendererInitiated;
+        private boolean mIsMainFrame = true;
 
         private ExternalNavigationTestParams(String url) {
             mUrl = url;
@@ -2311,6 +2386,11 @@ public class ExternalNavigationHandlerTest {
             return this;
         }
 
+        public ExternalNavigationTestParams withIsMainFrame(boolean isMainFrame) {
+            mIsMainFrame = isMainFrame;
+            return this;
+        }
+
         public void expecting(
                 @OverrideUrlLoadingResult int expectedOverrideResult, int otherExpectation) {
             boolean expectStartIncognito = (otherExpectation & START_INCOGNITO) != 0;
@@ -2331,7 +2411,7 @@ public class ExternalNavigationHandlerTest {
                             .setApplicationMustBeInForeground(mChromeAppInForegroundRequired)
                             .setRedirectHandler(mRedirectHandler)
                             .setIsBackgroundTabNavigation(mIsBackgroundTabNavigation)
-                            .setIsMainFrame(true)
+                            .setIsMainFrame(mIsMainFrame)
                             .setNativeClientPackageName(mDelegate.getReferrerWebappPackageName())
                             .setHasUserGesture(mHasUserGesture)
                             .setIsRendererInitiated(mIsRendererInitiated)

@@ -22,6 +22,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/renderer_id.h"
@@ -826,6 +827,29 @@ std::string TenYearsFromNow() {
   base::Time::Exploded now;
   AutofillClock::Now().LocalExplode(&now);
   return base::NumberToString(now.year + 10);
+}
+
+FormAndFieldSignatures GetEncodedSignatures(const FormStructure& form) {
+  FormAndFieldSignatures signatures;
+  signatures.emplace_back(form.form_signature(),
+                          std::vector<autofill::FieldSignature>{});
+  for (const auto& field : form) {
+    if (form.ShouldSkipFieldVisibleForTesting(*field))
+      continue;
+    signatures.back().second.push_back(field->GetFieldSignature());
+  }
+  return signatures;
+}
+
+FormAndFieldSignatures GetEncodedSignatures(
+    const std::vector<FormStructure*>& forms) {
+  FormAndFieldSignatures all_signatures;
+  for (const FormStructure* form : forms) {
+    FormAndFieldSignatures form_signatures = GetEncodedSignatures(*form);
+    std::move(form_signatures.begin(), form_signatures.end(),
+              std::back_inserter(all_signatures));
+  }
+  return all_signatures;
 }
 
 }  // namespace test

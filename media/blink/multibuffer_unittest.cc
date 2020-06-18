@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/logging.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
 #include "media/base/test_random.h"

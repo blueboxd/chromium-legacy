@@ -417,13 +417,13 @@ TEST_F(OmniboxPopupModelTest, PopupInlineAutocompleteAndTemporaryText) {
   EXPECT_EQ(base::UTF8ToUTF16("a2"), model()->text());
   EXPECT_TRUE(model()->is_temporary_text());
 
-  // Tab down to header above the third match, expect that we keep the temporary
-  // text of the second match for now.
+  // Tab down to header above the third match, expect that we have an empty
+  // string for our temporary text.
   popup_model()->StepSelection(OmniboxPopupModel::kForward,
                                OmniboxPopupModel::kStateOrLine);
   EXPECT_EQ(Selection(2, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
             model()->popup_model()->selection());
-  EXPECT_EQ(base::UTF8ToUTF16("a2"), model()->text());
+  EXPECT_EQ(base::string16(), model()->text());
   EXPECT_TRUE(model()->is_temporary_text());
 
   // Now tab down to the third match, and expect that we update the temporary
@@ -435,13 +435,13 @@ TEST_F(OmniboxPopupModelTest, PopupInlineAutocompleteAndTemporaryText) {
   EXPECT_EQ(base::UTF8ToUTF16("a3"), model()->text());
   EXPECT_TRUE(model()->is_temporary_text());
 
-  // Now tab backwards to the header again, expect we still have the temporary
-  // text from the third match.
+  // Now tab backwards to the header again, expect that we have an empty string
+  // for our temporary text.
   popup_model()->StepSelection(OmniboxPopupModel::kBackward,
                                OmniboxPopupModel::kStateOrLine);
   EXPECT_EQ(Selection(2, OmniboxPopupModel::HEADER_BUTTON_FOCUSED),
             model()->popup_model()->selection());
-  EXPECT_EQ(base::UTF8ToUTF16("a3"), model()->text());
+  EXPECT_EQ(base::string16(), model()->text());
   EXPECT_TRUE(model()->is_temporary_text());
 
   // Now tab backwards to the second match, expect we update the temporary text

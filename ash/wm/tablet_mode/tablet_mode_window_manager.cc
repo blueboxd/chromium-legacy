@@ -23,6 +23,7 @@
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/scoped_skip_user_session_blocked_check.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_toggle_fullscreen_event_handler.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_state.h"
@@ -34,6 +35,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/display/screen.h"
 
 namespace ash {
@@ -121,10 +123,14 @@ class ScopedObserveWindowAnimation {
     if (!window_)
       return;
 
-    // Stops observing if |window_| is not animating, or if it is not tracked by
-    // TabletModeWindowManager. When this object is destroyed while exiting
-    // tablet mode, |window_| is no longer tracked, so skip that check.
-    if (window_->layer()->GetAnimator()->is_animating() &&
+    const bool is_animating =
+        window_->layer()->GetAnimator()->IsAnimatingProperty(
+            TabletModeController::GetObservedTabletTransitionProperty());
+    // Stops observing if |window_| is not animating the property we care about,
+    // or if it is not tracked by TabletModeWindowManager. When this object is
+    // destroyed while exiting tablet mode, |window_| is no longer tracked, so
+    // skip that check.
+    if (is_animating &&
         (exiting_tablet_mode_ || manager_->IsTrackingWindow(window_))) {
       return;
     }

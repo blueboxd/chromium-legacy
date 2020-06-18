@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom-forward.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom-forward.h"
 #include "content/browser/indexed_db/indexed_db_external_object.h"
 #include "content/common/content_export.h"
@@ -23,7 +24,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/unique_associated_receiver_set.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom-forward.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/origin.h"
 

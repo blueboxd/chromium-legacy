@@ -28,25 +28,19 @@ XRPlane::XRPlane(uint64_t id,
                   plane_data.orientation),
               mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(
                   plane_data.polygon),
-              timestamp) {
-  // No need for else - if mojo_from_plane is not present, the
-  // default-constructed unique ptr is fine. It would signify that the plane
-  // exists and is tracked by the underlying system, but its current location is
-  // unknown.
-  if (plane_data.mojo_from_plane) {
-    SetMojoFromPlane(mojo::ConvertTo<blink::TransformationMatrix>(
-        plane_data.mojo_from_plane));
-  }
-}
+              plane_data.mojo_from_plane,
+              timestamp) {}
 
 XRPlane::XRPlane(uint64_t id,
                  XRSession* session,
                  const base::Optional<Orientation>& orientation,
                  const HeapVector<Member<DOMPointReadOnly>>& polygon,
+                 const base::Optional<device::Pose>& mojo_from_plane,
                  double timestamp)
     : id_(id),
       polygon_(polygon),
       orientation_(orientation),
+      mojo_from_plane_(mojo_from_plane),
       session_(session),
       last_changed_time_(timestamp) {
   DVLOG(3) << __func__;
@@ -69,7 +63,7 @@ base::Optional<TransformationMatrix> XRPlane::MojoFromObject() const {
     return base::nullopt;
   }
 
-  return *mojo_from_plane_;
+  return mojo_from_plane_->ToTransform().matrix();
 }
 
 String XRPlane::orientation() const {
@@ -132,7 +126,8 @@ ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
 
   auto space_from_mojo = mojo_from_space.Inverse();
   // We'll create an anchor located at the current plane's pose:
-  auto space_from_anchor = space_from_mojo * (*mojo_from_plane_);
+  auto space_from_anchor =
+      space_from_mojo * (mojo_from_plane_->ToTransform().matrix());
 
   return session_->CreatePlaneAnchorHelper(
       script_state, space_from_anchor,
@@ -147,22 +142,11 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneData& plane_data,
 
   orientation_ = mojo::ConvertTo<base::Optional<blink::XRPlane::Orientation>>(
       plane_data.orientation);
-  if (plane_data.mojo_from_plane) {
-    SetMojoFromPlane(mojo::ConvertTo<blink::TransformationMatrix>(
-        plane_data.mojo_from_plane));
-  } else {
-    mojo_from_plane_ = nullptr;
-  }
+
+  mojo_from_plane_ = plane_data.mojo_from_plane;
+
   polygon_ =
       mojo::ConvertTo<HeapVector<Member<DOMPointReadOnly>>>(plane_data.polygon);
-}
-
-void XRPlane::SetMojoFromPlane(const TransformationMatrix& mojo_from_plane) {
-  if (mojo_from_plane_) {
-    *mojo_from_plane_ = mojo_from_plane;
-  } else {
-    mojo_from_plane_ = std::make_unique<TransformationMatrix>(mojo_from_plane);
-  }
 }
 
 void XRPlane::Trace(Visitor* visitor) const {

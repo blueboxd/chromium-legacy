@@ -744,9 +744,6 @@ void Scheduler::DrawIfPossible() {
   state_machine_.DidDraw(result);
   compositor_timing_history_->DidDraw(
       drawing_with_new_active_tree,
-      client_->CompositedAnimationsCount(),
-      client_->MainThreadAnimationsCount(), client_->CurrentFrameHadRAF(),
-      client_->NextFrameHasPendingRAF(),
       client_->HasCustomPropertyAnimations());
 }
 
@@ -762,9 +759,6 @@ void Scheduler::DrawForced() {
   state_machine_.DidDraw(result);
   compositor_timing_history_->DidDraw(
       drawing_with_new_active_tree,
-      client_->CompositedAnimationsCount(),
-      client_->MainThreadAnimationsCount(), client_->CurrentFrameHadRAF(),
-      client_->NextFrameHasPendingRAF(),
       client_->HasCustomPropertyAnimations());
 }
 

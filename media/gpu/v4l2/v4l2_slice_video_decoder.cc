@@ -588,7 +588,7 @@ void V4L2SliceVideoDecoder::OutputFrame(scoped_refptr<VideoFrame> frame,
                                         const gfx::Rect& visible_rect,
                                         base::TimeDelta timestamp) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DVLOGF(4) << "timestamp: " << timestamp;
+  DVLOGF(4) << "timestamp: " << timestamp.InMilliseconds() << " msec";
 
   // Set the timestamp at which the decode operation started on the
   // |frame|. If the frame has been outputted before (e.g. because of VP9

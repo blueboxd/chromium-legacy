@@ -206,10 +206,6 @@ void Animation::DelegateAnimationEvent(const AnimationEvent& event) {
   }
 }
 
-size_t Animation::TickingKeyframeModelsCount() const {
-  return keyframe_effect_->TickingKeyframeModelsCount();
-}
-
 bool Animation::AffectsCustomProperty() const {
   return keyframe_effect_->AffectsCustomProperty();
 }

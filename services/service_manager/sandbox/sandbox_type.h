@@ -30,6 +30,9 @@ enum class SandboxType {
 
   // The PDF conversion service process used in printing.
   kPdfConversion,
+
+  // The icon reader service.
+  kIconReader,
 #endif
 
 #if defined(OS_FUCHSIA)

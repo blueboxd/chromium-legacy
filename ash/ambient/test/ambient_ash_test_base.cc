@@ -26,7 +26,6 @@ void AmbientAshTestBase::SetUp() {
   ambient_client_ = std::make_unique<TestAmbientClient>();
 
   AshTestBase::SetUp();
-  UpdateDisplay("200x100");
 
   // Need to reset first and then assign the TestPhotoClient because can only
   // have one instance of AmbientBackendController.

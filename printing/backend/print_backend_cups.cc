@@ -164,7 +164,8 @@ bool PrintBackendCUPS::GetPrinterSemanticCapsAndDefaults(
   if (!GetPrinterCapsAndDefaults(printer_name, &info))
     return false;
 
-  return ParsePpdCapabilities(printer_name, locale(), info.printer_capabilities,
+  ScopedDestination dest = GetNamedDest(printer_name);
+  return ParsePpdCapabilities(dest.get(), locale(), info.printer_capabilities,
                               printer_info);
 }
 

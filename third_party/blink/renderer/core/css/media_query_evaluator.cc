@@ -736,6 +736,20 @@ static bool PrefersReducedMotionMediaFeatureEval(
          media_values.PrefersReducedMotion();
 }
 
+static bool PrefersReducedDataMediaFeatureEval(
+    const MediaQueryExpValue& value,
+    MediaFeaturePrefix,
+    const MediaValues& media_values) {
+  if (!value.IsValid())
+    return media_values.PrefersReducedData();
+
+  if (!value.is_id)
+    return false;
+
+  return (value.id == CSSValueID::kNoPreference) ^
+         media_values.PrefersReducedData();
+}
+
 static bool AnyPointerMediaFeatureEval(const MediaQueryExpValue& value,
                                        MediaFeaturePrefix,
                                        const MediaValues& media_values) {

@@ -2348,7 +2348,18 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+
+  FormAndFieldSignatures expected_signatures;
+  expected_signatures.push_back(
+      {form_structure.form_signature(),
+       {
+           form_structure.field(0)->GetFieldSignature(),
+           form_structure.field(1)->GetFieldSignature(),
+           form_structure.field(2)->GetFieldSignature(),
+           form_structure.field(3)->GetFieldSignature(),
+           form_structure.field(4)->GetFieldSignature()
+           // field 5 is checkable, and hence skipped.
+       }});
 
   // Prepare the expected proto string.
   AutofillQueryContents query;
@@ -2370,13 +2381,11 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  const std::string kSignature1 = form_structure.FormSignatureAsStr();
-
   AutofillQueryContents encoded_query;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
-  ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  FormAndFieldSignatures encoded_signatures;
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
+  EXPECT_EQ(encoded_signatures, expected_signatures);
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -2387,11 +2396,13 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   FormStructure form_structure2(form);
   forms.push_back(&form_structure2);
 
+  FormAndFieldSignatures expected_signatures2 = expected_signatures;
+
   AutofillQueryContents encoded_query2;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query2));
-  ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kSignature1, encoded_signatures[0]);
+  FormAndFieldSignatures encoded_signatures2;
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query2,
+                                                &encoded_signatures2));
+  EXPECT_EQ(encoded_signatures2, expected_signatures2);
 
   encoded_query2.SerializeToString(&encoded_query_string);
   EXPECT_EQ(expected_query_string, encoded_query_string);
@@ -2405,6 +2416,21 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   FormStructure form_structure3(form);
   forms.push_back(&form_structure3);
+
+  FormAndFieldSignatures expected_signatures3 = expected_signatures2;
+  expected_signatures3.push_back(
+      {form_structure3.form_signature(),
+       {form_structure3.field(0)->GetFieldSignature(),
+        form_structure3.field(1)->GetFieldSignature(),
+        form_structure3.field(2)->GetFieldSignature(),
+        form_structure3.field(3)->GetFieldSignature(),
+        form_structure3.field(4)->GetFieldSignature(),
+        // field 5 is checkable, and hence skipped.
+        form_structure3.field(6)->GetFieldSignature(),
+        form_structure3.field(7)->GetFieldSignature(),
+        form_structure3.field(8)->GetFieldSignature(),
+        form_structure3.field(9)->GetFieldSignature(),
+        form_structure3.field(10)->GetFieldSignature()}});
 
   // Add the second form to the expected proto.
   query_form = query.add_form();
@@ -2428,14 +2454,29 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
   AutofillQueryContents encoded_query3;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query3));
-  ASSERT_EQ(2U, encoded_signatures.size());
-  EXPECT_EQ(kSignature1, encoded_signatures[0]);
-  const std::string kSignature2 = form_structure3.FormSignatureAsStr();
-  EXPECT_EQ(kSignature2, encoded_signatures[1]);
+  FormAndFieldSignatures encoded_signatures3;
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query3,
+                                                &encoded_signatures3));
+  EXPECT_EQ(encoded_signatures3, expected_signatures3);
 
   encoded_query3.SerializeToString(&encoded_query_string);
+  EXPECT_EQ(expected_query_string, encoded_query_string);
+
+  // |form_structures4| will have the same signature as |form_structure3|.
+  form.fields.back().name = ASCIIToUTF16("address123456789");
+
+  FormStructure form_structure4(form);
+  forms.push_back(&form_structure4);
+
+  FormAndFieldSignatures expected_signatures4 = expected_signatures3;
+
+  AutofillQueryContents encoded_query4;
+  FormAndFieldSignatures encoded_signatures4;
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query4,
+                                                &encoded_signatures4));
+  EXPECT_EQ(encoded_signatures4, expected_signatures4);
+
+  encoded_query4.SerializeToString(&encoded_query_string);
   EXPECT_EQ(expected_query_string, encoded_query_string);
 
   FormData malformed_form(form);
@@ -2449,22 +2490,25 @@ TEST_F(FormStructureTest, EncodeQueryRequest) {
 
   FormStructure malformed_form_structure(malformed_form);
   forms.push_back(&malformed_form_structure);
-  AutofillQueryContents encoded_query4;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query4));
-  ASSERT_EQ(2U, encoded_signatures.size());
-  EXPECT_EQ(kSignature1, encoded_signatures[0]);
-  EXPECT_EQ(kSignature2, encoded_signatures[1]);
 
-  encoded_query4.SerializeToString(&encoded_query_string);
+  FormAndFieldSignatures expected_signatures5 = expected_signatures4;
+
+  AutofillQueryContents encoded_query5;
+  FormAndFieldSignatures encoded_signatures5;
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query5,
+                                                &encoded_signatures5));
+  EXPECT_EQ(encoded_signatures5, expected_signatures5);
+
+  encoded_query5.SerializeToString(&encoded_query_string);
   EXPECT_EQ(expected_query_string, encoded_query_string);
 
   // Check that we fail if there are only bad form(s).
   std::vector<FormStructure*> bad_forms;
   bad_forms.push_back(&malformed_form_structure);
-  AutofillQueryContents encoded_query5;
-  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_signatures,
-                                                 &encoded_query5));
+  AutofillQueryContents encoded_query6;
+  FormAndFieldSignatures encoded_signatures6;
+  EXPECT_FALSE(FormStructure::EncodeQueryRequest(bad_forms, &encoded_query6,
+                                                 &encoded_signatures6));
 }
 
 TEST_F(FormStructureTest, EncodeUploadRequest_SubmissionIndicatorEvents_Match) {
@@ -2667,10 +2711,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
   ////////////////
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload));
+      available_field_types, false, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -2682,7 +2728,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload2));
+      available_field_types, true, std::string(), true, &encoded_upload2,
+      &signatures));
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -2735,7 +2782,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMatchingValidities) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3));
+      available_field_types, false, std::string(), true, &encoded_upload3,
+      &signatures));
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -2860,10 +2908,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithNonMatchingValidities) {
   ////////////////
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload));
+      available_field_types, false, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -2993,10 +3043,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithMultipleValidities) {
   ////////////////
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload));
+      available_field_types, false, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3079,6 +3131,18 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
         possible_field_types_validities[i]);
   }
 
+  FormAndFieldSignatures expected_signatures;
+  expected_signatures.push_back(
+      {form_structure->form_signature(),
+       {
+           form_structure->field(0)->GetFieldSignature(),
+           form_structure->field(1)->GetFieldSignature(),
+           form_structure->field(2)->GetFieldSignature(),
+           form_structure->field(3)->GetFieldSignature(),
+           form_structure->field(4)->GetFieldSignature()
+           // Field 5 is checkable and hence skipped.
+       }});
+
   ServerFieldTypeSet available_field_types;
   available_field_types.insert(NAME_FIRST);
   available_field_types.insert(NAME_LAST);
@@ -3117,10 +3181,13 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload));
+      available_field_types, false, std::string(), true, &encoded_upload,
+      &signatures));
+  EXPECT_EQ(signatures, expected_signatures);
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3132,7 +3199,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload2));
+      available_field_types, true, std::string(), true, &encoded_upload2,
+      &signatures));
+  EXPECT_EQ(signatures, expected_signatures);
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -3164,6 +3233,13 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
         possible_field_types_validities[i]);
   }
 
+  expected_signatures[0].first = form_structure->form_signature();
+  // Field 5 is checkable and hence skipped.
+  expected_signatures[0].second.push_back(
+      form_structure->field(6)->GetFieldSignature());
+  expected_signatures[0].second.push_back(
+      form_structure->field(7)->GetFieldSignature());
+
   // Adjust the expected proto string.
   upload.set_form_signature(form_structure->form_signature().value());
   upload.set_autofill_used(false);
@@ -3185,7 +3261,9 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3));
+      available_field_types, false, std::string(), true, &encoded_upload3,
+      &signatures));
+  EXPECT_EQ(signatures, expected_signatures);
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -3213,7 +3291,8 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
 
   AutofillUploadContents encoded_upload4;
   EXPECT_FALSE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload4));
+      available_field_types, false, std::string(), true, &encoded_upload4,
+      &signatures));
 }
 
 TEST_F(FormStructureTest,
@@ -3333,10 +3412,11 @@ TEST_F(FormStructureTest,
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
-  EXPECT_TRUE(form_structure->EncodeUploadRequest(available_field_types, true,
-                                                  "42", true, &encoded_upload));
+  EXPECT_TRUE(form_structure->EncodeUploadRequest(
+      available_field_types, true, "42", true, &encoded_upload, &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3417,8 +3497,10 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithAutocomplete) {
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   AutofillUploadContents encoded_upload;
+  FormAndFieldSignatures signatures;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3517,10 +3599,12 @@ TEST_F(FormStructureTest, EncodeUploadRequestWithPropertiesMask) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3599,11 +3683,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_ObservedSubmissionFalse) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
       available_field_types, true, std::string(),
-      /* observed_submission= */ false, &encoded_upload));
+      /* observed_submission= */ false, &encoded_upload, &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3675,10 +3760,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithLabels) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3755,10 +3842,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithCssClassesAndIds) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3833,10 +3922,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_WithFormName) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -3915,10 +4006,12 @@ TEST_F(FormStructureTest, EncodeUploadRequestPartialMetadata) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -4008,10 +4101,12 @@ TEST_F(FormStructureTest, EncodeUploadRequest_DisabledMetadataTrial) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, true, std::string(), true, &encoded_upload));
+      available_field_types, true, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -4084,10 +4179,12 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
-  EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload));
+  EXPECT_TRUE(form_structure.EncodeUploadRequest(available_field_types, false,
+                                                 std::string(), true,
+                                                 &encoded_upload, &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -4117,7 +4214,8 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload2));
+      available_field_types, false, std::string(), true, &encoded_upload2,
+      &signatures));
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4170,7 +4268,8 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3));
+      available_field_types, false, std::string(), true, &encoded_upload3,
+      &signatures));
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4201,7 +4300,8 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload4;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload4));
+      available_field_types, false, std::string(), true, &encoded_upload4,
+      &signatures));
 
   encoded_upload4.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4268,7 +4368,8 @@ TEST_F(FormStructureTest, CheckDataPresence) {
 
   AutofillUploadContents encoded_upload5;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload5));
+      available_field_types, false, std::string(), true, &encoded_upload5,
+      &signatures));
 
   encoded_upload5.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4369,10 +4470,12 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   std::string expected_upload_string;
   ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
+  FormAndFieldSignatures signatures;
 
   AutofillUploadContents encoded_upload;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload));
+      available_field_types, false, std::string(), true, &encoded_upload,
+      &signatures));
 
   std::string encoded_upload_string;
   encoded_upload.SerializeToString(&encoded_upload_string);
@@ -4395,7 +4498,8 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload2;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload2));
+      available_field_types, false, std::string(), true, &encoded_upload2,
+      &signatures));
 
   encoded_upload2.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4412,7 +4516,8 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload3;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload3));
+      available_field_types, false, std::string(), true, &encoded_upload3,
+      &signatures));
 
   encoded_upload3.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4437,7 +4542,8 @@ TEST_F(FormStructureTest, CheckMultipleTypes) {
 
   AutofillUploadContents encoded_upload4;
   EXPECT_TRUE(form_structure->EncodeUploadRequest(
-      available_field_types, false, std::string(), true, &encoded_upload4));
+      available_field_types, false, std::string(), true, &encoded_upload4,
+      &signatures));
 
   encoded_upload4.SerializeToString(&encoded_upload_string);
   EXPECT_EQ(expected_upload_string, encoded_upload_string);
@@ -4464,10 +4570,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_PasswordsRevealed) {
   FormStructure form_structure(form);
   form_structure.set_passwords_were_revealed(true);
   AutofillUploadContents upload;
+  FormAndFieldSignatures signatures;
   EXPECT_TRUE(form_structure.EncodeUploadRequest(
       {{}} /* available_field_types */, false /* form_was_autofilled */,
       std::string() /* login_form_signature */, true /* observed_submission */,
-      &upload));
+      &upload, &signatures));
   EXPECT_EQ(true, upload.passwords_revealed());
 }
 
@@ -4486,10 +4593,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_IsFormTag) {
     FormStructure form_structure(form);
     form_structure.set_passwords_were_revealed(true);
     AutofillUploadContents upload;
+    FormAndFieldSignatures signatures;
     EXPECT_TRUE(form_structure.EncodeUploadRequest(
         {{}} /* available_field_types */, false /* form_was_autofilled */,
         std::string() /* login_form_signature */,
-        true /* observed_submission */, &upload));
+        true /* observed_submission */, &upload, &signatures));
     EXPECT_EQ(is_form_tag, upload.has_form_tag());
   }
 }
@@ -4541,10 +4649,11 @@ TEST_F(FormStructureTest, EncodeUploadRequest_RichMetadata) {
       std::make_unique<RandomizedEncoder>(encoder));
 
   AutofillUploadContents upload;
+  FormAndFieldSignatures signatures;
   ASSERT_TRUE(form_structure.EncodeUploadRequest(
       {{}} /* available_field_types */, false /* form_was_autofilled */,
       std::string() /* login_form_signature */, true /* observed_submission */,
-      &upload));
+      &upload, &signatures));
 
   const auto form_signature = form_structure.form_signature();
 
@@ -4685,7 +4794,9 @@ TEST_F(FormStructureTest, Metadata_OnlySendFullUrlWithUserConsent) {
     FormStructure form_structure(form);
     form_structure.set_randomized_encoder(RandomizedEncoder::Create(&prefs));
     AutofillUploadContents upload = AutofillUploadContents();
-    form_structure.EncodeUploadRequest({}, true, "", true, &upload);
+    FormAndFieldSignatures signatures;
+    form_structure.EncodeUploadRequest({}, true, "", true, &upload,
+                                       &signatures);
 
     EXPECT_EQ(has_consent, upload.randomized_form_metadata().has_url());
   }
@@ -4811,7 +4922,7 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+  FormAndFieldSignatures encoded_signatures;
   AutofillQueryContents encoded_query;
 
   // Create the expected query and serialize it to a string.
@@ -4826,12 +4937,12 @@ TEST_F(FormStructureTest, SkipFieldTest) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  const char kExpectedSignature[] = "18006745212084723782";
+  const FormSignature kExpectedSignature(18006745212084723782UL);
 
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
   ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kExpectedSignature, encoded_signatures[0]);
+  EXPECT_EQ(kExpectedSignature, encoded_signatures.front().first);
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -4863,7 +4974,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   std::vector<FormStructure*> forms;
   FormStructure form_structure(form);
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+  FormAndFieldSignatures encoded_signatures;
   AutofillQueryContents encoded_query;
 
   // Create the expected query and serialize it to a string.
@@ -4880,8 +4991,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLabels) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
+  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -4918,7 +5029,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+  FormAndFieldSignatures encoded_signatures;
   AutofillQueryContents encoded_query;
 
   // Create the expected query and serialize it to a string.
@@ -4935,8 +5046,8 @@ TEST_F(FormStructureTest, EncodeQueryRequest_WithLongLabels) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
+  EXPECT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -4967,7 +5078,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+  FormAndFieldSignatures encoded_signatures;
   AutofillQueryContents encoded_query;
 
   // Create the expected query and serialize it to a string.
@@ -4982,12 +5093,12 @@ TEST_F(FormStructureTest, EncodeQueryRequest_MissingNames) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  const char kExpectedSignature[] = "16416961345885087496";
+  const FormSignature kExpectedSignature(16416961345885087496UL);
 
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
   ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kExpectedSignature, encoded_signatures[0]);
+  EXPECT_EQ(kExpectedSignature, encoded_signatures.front().first);
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -5018,7 +5129,7 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+  FormAndFieldSignatures encoded_signatures;
   AutofillQueryContents encoded_query;
 
   // Create the expected query and serialize it to a string.
@@ -5033,12 +5144,12 @@ TEST_F(FormStructureTest, EncodeQueryRequest_DisabledMetadataTrial) {
   std::string expected_query_string;
   ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
-  const char kExpectedSignature[] = "7635954436925888745";
+  const FormSignature kExpectedSignature(7635954436925888745UL);
 
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
   ASSERT_EQ(1U, encoded_signatures.size());
-  EXPECT_EQ(kExpectedSignature, encoded_signatures[0]);
+  EXPECT_EQ(kExpectedSignature, encoded_signatures.front().first);
 
   std::string encoded_query_string;
   encoded_query.SerializeToString(&encoded_query_string);
@@ -5088,6 +5199,73 @@ TEST_F(FormStructureTest, PossibleValues) {
 
 // Tests proper resolution heuristic, server and html field types when the
 // server returns NO_SERVER_DATA, UNKNOWN_TYPE, and a valid type.
+TEST_F(FormStructureTest, ParseQueryResponse_TooManyTypes) {
+  FormData form_data;
+  FormFieldData field;
+  form_data.url = GURL("http://foo.com");
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("fname");
+  form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lname");
+  form_data.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("email");
+  field.name = ASCIIToUTF16("email");
+  field.autocomplete_attribute = "address-level2";
+  form_data.fields.push_back(field);
+
+  FormStructure form(form_data);
+  form.DetermineHeuristicTypes();
+
+  // Setup the query response.
+  AutofillQueryResponseContents response;
+  std::string response_string;
+  response.add_field()->set_overall_type_prediction(NAME_FIRST);
+  response.add_field()->set_overall_type_prediction(NAME_LAST);
+  response.add_field()->set_overall_type_prediction(ADDRESS_HOME_LINE1);
+  response.add_field()->set_overall_type_prediction(EMAIL_ADDRESS);
+  response.add_field()->set_overall_type_prediction(UNKNOWN_TYPE);
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
+  // Parse the response and update the field type predictions.
+  std::vector<FormStructure*> forms{&form};
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
+  ASSERT_EQ(form.field_count(), 3U);
+
+  // Validate field 0.
+  EXPECT_EQ(NAME_FIRST, form.field(0)->heuristic_type());
+  EXPECT_EQ(NAME_FIRST, form.field(0)->server_type());
+  EXPECT_EQ(HTML_TYPE_UNSPECIFIED, form.field(0)->html_type());
+  EXPECT_EQ(NAME_FIRST, form.field(0)->Type().GetStorableType());
+
+  // Validate field 1.
+  EXPECT_EQ(NAME_LAST, form.field(1)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->server_type());
+  EXPECT_EQ(HTML_TYPE_UNSPECIFIED, form.field(1)->html_type());
+  EXPECT_EQ(NAME_LAST, form.field(1)->Type().GetStorableType());
+
+  // Validate field 2. Note: HTML_TYPE_ADDRESS_LEVEL2 -> City
+  EXPECT_EQ(EMAIL_ADDRESS, form.field(2)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form.field(2)->server_type());
+  EXPECT_EQ(HTML_TYPE_ADDRESS_LEVEL2, form.field(2)->html_type());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form.field(2)->Type().GetStorableType());
+
+  // Also check the extreme case of an empty form.
+  FormStructure empty_form{FormData()};
+  std::vector<FormStructure*> empty_forms{&empty_form};
+  FormStructure::ParseQueryResponse(response_string, empty_forms,
+                                    test::GetEncodedSignatures(empty_forms),
+                                    nullptr);
+  ASSERT_EQ(empty_form.field_count(), 0U);
+}
+
+// Tests proper resolution heuristic, server and html field types when the
+// server returns NO_SERVER_DATA, UNKNOWN_TYPE, and a valid type.
 TEST_F(FormStructureTest, ParseQueryResponse_UnknownType) {
   FormData form_data;
   FormFieldData field;
@@ -5120,7 +5298,8 @@ TEST_F(FormStructureTest, ParseQueryResponse_UnknownType) {
 
   // Parse the response and update the field type predictions.
   std::vector<FormStructure*> forms{&form};
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   ASSERT_EQ(form.field_count(), 3U);
 
   // Validate field 0.
@@ -5197,7 +5376,8 @@ TEST_F(FormStructureTest, ParseQueryResponse) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   ASSERT_GE(forms[1]->field_count(), 2U);
@@ -5281,7 +5461,8 @@ TEST_F(FormStructureTest, ParseApiQueryResponse) {
   base::Base64Encode(response_string, &encoded_response_string);
 
   FormStructure::ParseApiQueryResponse(std::move(encoded_response_string),
-                                       forms, nullptr);
+                                       forms, test::GetEncodedSignatures(forms),
+                                       nullptr);
 
   // Verify that the form fields are properly filled with data retrieved from
   // the query.
@@ -5324,6 +5505,7 @@ TEST_F(FormStructureTest, ParseApiQueryResponseWhenCannotParseProtoFromString) {
 
   std::string response_string = "invalid string that cannot be parsed";
   FormStructure::ParseApiQueryResponse(std::move(response_string), forms,
+                                       test::GetEncodedSignatures(forms),
                                        nullptr);
 
   // Verify that the form fields remain intact because ParseApiQueryResponse
@@ -5366,7 +5548,8 @@ TEST_F(FormStructureTest, ParseApiQueryResponseWhenPayloadNotBase64) {
   std::string response_string;
   ASSERT_TRUE(api_response.SerializeToString(&response_string));
 
-  FormStructure::ParseApiQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseApiQueryResponse(
+      response_string, forms, test::GetEncodedSignatures(forms), nullptr);
 
   // Verify that the form fields remain intact because ParseApiQueryResponse
   // could not parse the server's response that was badly encoded.
@@ -5402,7 +5585,8 @@ TEST_F(FormStructureTest, ParseQueryResponse_AuthorDefinedTypes) {
 
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_GE(forms[0]->field_count(), 2U);
   // Server type is parsed from the response and is the end result type.
@@ -5451,7 +5635,8 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeLoneField) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Test that the expiry month field is rationalized away.
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
   EXPECT_EQ(NAME_FULL, forms[0]->field(0)->Type().GetStorableType());
@@ -5491,7 +5676,8 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeCCName) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Test that the name fields are rationalized.
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(3U, forms[0]->field_count());
   EXPECT_EQ(NAME_FIRST, forms[0]->field(0)->Type().GetStorableType());
@@ -5542,7 +5728,8 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_1) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Test that the extra month field is rationalized away.
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(5U, forms[0]->field_count());
   EXPECT_EQ(CREDIT_CARD_NAME_FULL,
@@ -5593,7 +5780,8 @@ TEST_F(FormStructureTest, ParseQueryResponse_RationalizeMultiMonth_2) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Test that the extra month field is rationalized away.
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
   EXPECT_EQ(CREDIT_CARD_NAME_FULL,
@@ -5680,7 +5868,8 @@ TEST_F(FormStructureTest, RationalizePhoneNumber_RunsOncePerSection) {
   FormStructure form_structure(form);
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   EXPECT_FALSE(form_structure.phone_rationalized_["fullName_1-default"]);
   form_structure.RationalizePhoneNumbersInSection("fullName_1-default");
@@ -5732,7 +5921,8 @@ TEST_F(FormStructureTest, RationalizeRepeatedFields_OneAddress) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(3U, forms[0]->field_count());
@@ -5784,7 +5974,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_TwoAddresses) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -5842,7 +6033,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_ThreeAddresses) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(5U, forms[0]->field_count());
@@ -5908,7 +6100,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FourAddresses) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -5983,7 +6176,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_OneAddressEachSection) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   // Billing
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -6125,7 +6319,8 @@ TEST_F(
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(15U, forms[0]->field_count());
@@ -6210,7 +6405,8 @@ TEST_F(FormStructureTest,
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
   // Billing
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -6301,7 +6497,8 @@ TEST_F(
   std::string response_string;
   ASSERT_TRUE(response.SerializeToString(&response_string));
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(9U, forms[0]->field_count());
@@ -6395,7 +6592,8 @@ TEST_F(FormStructureTest,
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(10U, forms[0]->field_count());
@@ -6521,7 +6719,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_CountryStateNoHeuristics) {
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(14U, forms[0]->field_count());
@@ -6652,7 +6851,8 @@ TEST_F(FormStructureTest,
   ASSERT_TRUE(response.SerializeToString(&response_string));
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(14U, forms[0]->field_count());
@@ -6726,7 +6926,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_FirstFieldRationalized) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(5U, forms[0]->field_count());
@@ -6794,7 +6995,8 @@ TEST_F(FormStructureTest, RationalizeRepreatedFields_LastFieldRationalized) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(6U, forms[0]->field_count());
@@ -6865,7 +7067,8 @@ TEST_P(ParameterizedFormStructureTest,
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -6930,7 +7133,8 @@ TEST_P(ParameterizedFormStructureTest, NoServerDataCCFields_CVC_NoOverwrite) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -7005,7 +7209,8 @@ TEST_P(ParameterizedFormStructureTest, WithServerDataCCFields_CVC_NoOverwrite) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -7091,7 +7296,8 @@ TEST_P(RationalizationFieldTypeFilterTest, Rationalization_Rules_Filter_Out) {
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -7151,7 +7357,8 @@ TEST_P(RationalizationFieldTypeRelationshipsTest,
   forms.push_back(&form_structure);
 
   // Will call RationalizeFieldTypePredictions
-  FormStructure::ParseQueryResponse(response_string, forms, nullptr);
+  FormStructure::ParseQueryResponse(response_string, forms,
+                                    test::GetEncodedSignatures(forms), nullptr);
 
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
@@ -7181,11 +7388,11 @@ TEST_F(FormStructureTest, AllowBigForms) {
 
   std::vector<FormStructure*> forms;
   forms.push_back(&form_structure);
-  std::vector<std::string> encoded_signatures;
+  FormAndFieldSignatures encoded_signatures;
 
   AutofillQueryContents encoded_query;
-  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_signatures,
-                                                &encoded_query));
+  ASSERT_TRUE(FormStructure::EncodeQueryRequest(forms, &encoded_query,
+                                                &encoded_signatures));
   EXPECT_EQ(1u, encoded_signatures.size());
 }
 
@@ -7213,12 +7420,14 @@ TEST_F(FormStructureTest, CreateForPasswordManagerUpload) {
           FormSignature(1234),
           {FieldSignature(1), FieldSignature(10), FieldSignature(100)});
   AutofillUploadContents upload;
+  FormAndFieldSignatures signatures;
   EXPECT_EQ(FormSignature(1234u), form->form_signature());
   ASSERT_EQ(3u, form->field_count());
   ASSERT_EQ(FieldSignature(100u), form->field(2)->GetFieldSignature());
   EXPECT_TRUE(form->EncodeUploadRequest(
       {} /* available_field_types */, false /* form_was_autofilled */,
-      "" /*login_form_signature*/, true /*observed_submission*/, &upload));
+      "" /*login_form_signature*/, true /*observed_submission*/, &upload,
+      &signatures));
 }
 
 // Tests if a new logical form is started with the second appearance of a field

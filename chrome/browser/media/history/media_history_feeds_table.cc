@@ -69,6 +69,7 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
                          "reset_reason INTEGER DEFAULT 0, "
                          "reset_token BLOB, "
                          "cookie_name_filter TEXT, "
+                         "safe_search_result INTEGER DEFAULT 0, "
                          "CONSTRAINT fk_origin "
                          "FOREIGN KEY (origin_id) "
                          "REFERENCES origin(id) "
@@ -90,6 +91,12 @@ sql::InitStatus MediaHistoryFeedsTable::CreateTableIfNonExistent() {
     success = DB()->Execute(
         "CREATE INDEX IF NOT EXISTS mediaFeed_fetch_time_index ON "
         "mediaFeed (last_fetch_time_s)");
+  }
+
+  if (success) {
+    success = DB()->Execute(
+        "CREATE INDEX IF NOT EXISTS mediaFeed_safe_search_result ON "
+        "mediaFeed (safe_search_result)");
   }
 
   if (!success) {
@@ -189,7 +196,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.last_display_time_s, "
       "mediaFeed.reset_reason, "
       "mediaFeed.user_identifier, "
-      "mediaFeed.cookie_name_filter ");
+      "mediaFeed.cookie_name_filter, "
+      "mediaFeed.safe_search_result");
 
   sql::Statement statement;
 
@@ -265,6 +273,9 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
         static_cast<media_feeds::mojom::FetchResult>(statement.ColumnInt64(5));
     feed->reset_reason =
         static_cast<media_feeds::mojom::ResetReason>(statement.ColumnInt64(15));
+    feed->safe_search_result =
+        static_cast<media_feeds::mojom::SafeSearchResult>(
+            statement.ColumnInt64(18));
 
     if (!IsKnownEnumValue(feed->user_status)) {
       base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
@@ -281,6 +292,12 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
     if (!IsKnownEnumValue(feed->reset_reason)) {
       base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
                                     FeedReadResult::kBadResetReason);
+      continue;
+    }
+
+    if (!IsKnownEnumValue(feed->safe_search_result)) {
+      base::UmaHistogramEnumeration(kFeedReadResultHistogramName,
+                                    FeedReadResult::kBadSafeSearchResult);
       continue;
     }
 
@@ -652,6 +669,48 @@ base::Optional<int64_t> MediaHistoryFeedsTable::GetFeedForOrigin(
     return statement.ColumnInt64(0);
 
   return base::nullopt;
+}
+
+MediaHistoryKeyedService::PendingSafeSearchCheckList
+MediaHistoryFeedsTable::GetPendingSafeSearchCheckItems() {
+  MediaHistoryKeyedService::PendingSafeSearchCheckList items;
+
+  if (!CanAccessDatabase())
+    return items;
+
+  sql::Statement statement(DB()->GetUniqueStatement(
+      "SELECT id, url FROM mediaFeed WHERE safe_search_result = ?"));
+  statement.BindInt64(
+      0, static_cast<int>(media_feeds::mojom::SafeSearchResult::kUnknown));
+
+  DCHECK(statement.is_valid());
+
+  while (statement.Step()) {
+    auto check =
+        std::make_unique<MediaHistoryKeyedService::PendingSafeSearchCheck>(
+            MediaHistoryKeyedService::SafeSearchCheckedType::kFeed,
+            statement.ColumnInt64(0));
+
+    GURL url(statement.ColumnString(1));
+    if (url.is_valid())
+      check->urls.insert(url);
+
+    if (!check->urls.empty())
+      items.push_back(std::move(check));
+  }
+
+  return items;
+}
+
+bool MediaHistoryFeedsTable::StoreSafeSearchResult(
+    int64_t feed_id,
+    media_feeds::mojom::SafeSearchResult result) {
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      "UPDATE mediaFeed SET safe_search_result = ? WHERE id = ?"));
+  statement.BindInt64(0, static_cast<int>(result));
+  statement.BindInt64(1, feed_id);
+  return statement.Run();
 }
 
 }  // namespace media_history

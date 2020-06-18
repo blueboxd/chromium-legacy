@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vp9_rate_control.h"
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/libvpx/source/libvpx/vp9/ratectrl_rtc.h"
 

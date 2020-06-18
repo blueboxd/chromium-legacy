@@ -30,7 +30,6 @@
 #include "components/download/public/common/download_item_impl_delegate.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/mock_download_file.h"
-#include "components/download/public/common/mock_download_item.h"
 #include "crypto/secure_hash.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -2599,10 +2598,6 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
 
   item_->Cancel(true);
   task_environment_.RunUntilIdle();
-}
-
-TEST(MockDownloadItem, Compiles) {
-  MockDownloadItem mock_item;
 }
 
 }  // namespace download

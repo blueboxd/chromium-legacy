@@ -148,11 +148,7 @@ class CC_EXPORT ProxyImpl : public LayerTreeHostImplClient,
   void ScheduledActionBeginMainFrameNotExpectedUntil(
       base::TimeTicks time) override;
   void FrameIntervalUpdated(base::TimeDelta interval) override {}
-  size_t CompositedAnimationsCount() const override;
-  size_t MainThreadAnimationsCount() const override;
   bool HasCustomPropertyAnimations() const override;
-  bool CurrentFrameHadRAF() const override;
-  bool NextFrameHasPendingRAF() const override;
 
   DrawResult DrawInternal(bool forced_draw);
 

@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.autofill_assistant.overlay.AssistantOverlayCo
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 /**
  * The main coordinator for the Autofill Assistant, responsible for instantiating all other

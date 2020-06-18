@@ -78,6 +78,7 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     color_gamut = MediaValues::CalculateColorGamut(frame);
     preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
     prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
+    prefers_reduced_data = MediaValues::CalculatePrefersReducedData(frame);
     forced_colors = MediaValues::CalculateForcedColors();
     navigation_controls = MediaValues::CalculateNavigationControls(frame);
     screen_spanning = MediaValues::CalculateScreenSpanning(frame);
@@ -197,6 +198,10 @@ PreferredColorScheme MediaValuesCached::GetPreferredColorScheme() const {
 
 bool MediaValuesCached::PrefersReducedMotion() const {
   return data_.prefers_reduced_motion;
+}
+
+bool MediaValuesCached::PrefersReducedData() const {
+  return data_.prefers_reduced_data;
 }
 
 ForcedColors MediaValuesCached::GetForcedColors() const {

@@ -98,11 +98,9 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
                 return
             log_artifact = root_node["artifacts"].pop("log", None)
             if log_artifact:
-                self._write_log_artifact(results_dir, path_so_far, log_artifact)
-                # TODO(lpz): Adding the "actual_text" artifact below breaks the
-                # results viewer link on the builder. Investigate why.
-                # Add the path for the artifact file to the json output.
-                # root_node["artifacts"]["actual_text"] = artifact_subpath
+                artifact_subpath = self._write_log_artifact(
+                    results_dir, path_so_far, log_artifact)
+                root_node["artifacts"]["actual_text"] = [artifact_subpath]
 
             # TODO(lpz): For now we just discard the screenshot artifact to keep
             # the output file size small. Writing screenshots to disk will be

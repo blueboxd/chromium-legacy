@@ -55,6 +55,7 @@ class NetworkFetcher {
   virtual void PostRequest(
       const GURL& url,
       const std::string& post_data,
+      const std::string& content_type,
       const base::flat_map<std::string, std::string>& post_additional_headers,
       ResponseStartedCallback response_started_callback,
       ProgressCallback progress_callback,

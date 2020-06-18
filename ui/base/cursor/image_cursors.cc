@@ -4,14 +4,7 @@
 
 #include "ui/base/cursor/image_cursors.h"
 
-#include <float.h>
-#include <stddef.h>
-
 #include "base/check.h"
-#include "base/notreached.h"
-#include "base/stl_util.h"
-#include "base/strings/string16.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -21,7 +14,7 @@ namespace ui {
 
 namespace {
 
-const mojom::CursorType kImageCursorIds[] = {
+constexpr mojom::CursorType kImageCursorIds[] = {
     mojom::CursorType::kNull,
     mojom::CursorType::kPointer,
     mojom::CursorType::kNoDrop,
@@ -56,49 +49,30 @@ const mojom::CursorType kImageCursorIds[] = {
     mojom::CursorType::kGrabbing,
 };
 
-const mojom::CursorType kAnimatedCursorIds[] = {mojom::CursorType::kWait,
-                                                mojom::CursorType::kProgress};
+constexpr mojom::CursorType kAnimatedCursorIds[] = {
+    mojom::CursorType::kWait, mojom::CursorType::kProgress};
 
 }  // namespace
 
-ImageCursors::ImageCursors() : cursor_size_(CursorSize::kNormal) {}
+ImageCursors::ImageCursors()
+    : cursor_loader_(CursorLoader::Create()),
+      cursor_size_(CursorSize::kNormal) {}
 
-ImageCursors::~ImageCursors() {
-}
-
-void ImageCursors::Initialize() {
-  if (!cursor_loader_)
-    cursor_loader_.reset(CursorLoader::Create());
-}
+ImageCursors::~ImageCursors() = default;
 
 float ImageCursors::GetScale() const {
-  if (!cursor_loader_) {
-    NOTREACHED();
-    // Returning default on release build as it's not serious enough to crash
-    // even if this ever happens.
-    return 1.0f;
-  }
   return cursor_loader_->scale();
 }
 
 display::Display::Rotation ImageCursors::GetRotation() const {
-  if (!cursor_loader_) {
-    NOTREACHED();
-    // Returning default on release build as it's not serious enough to crash
-    // even if this ever happens.
-    return display::Display::ROTATE_0;
-  }
   return cursor_loader_->rotation();
 }
 
 bool ImageCursors::SetDisplay(const display::Display& display,
                               float scale_factor) {
-  if (!cursor_loader_) {
-    cursor_loader_.reset(CursorLoader::Create());
-  } else if (cursor_loader_->rotation() == display.panel_rotation() &&
-             cursor_loader_->scale() == scale_factor) {
+  if (cursor_loader_->rotation() == display.panel_rotation() &&
+      cursor_loader_->scale() == scale_factor)
     return false;
-  }
 
   cursor_loader_->set_rotation(display.panel_rotation());
   cursor_loader_->set_scale(scale_factor);
@@ -111,25 +85,21 @@ void ImageCursors::ReloadCursors() {
 
   cursor_loader_->UnloadAll();
 
-  for (size_t i = 0; i < base::size(kImageCursorIds); ++i) {
+  for (auto cursor_id : kImageCursorIds) {
     int resource_id = -1;
     gfx::Point hot_point;
-    bool success =
-        GetCursorDataFor(cursor_size_, kImageCursorIds[i], device_scale_factor,
-                         &resource_id, &hot_point);
+    bool success = GetCursorDataFor(
+        cursor_size_, cursor_id, device_scale_factor, &resource_id, &hot_point);
     DCHECK(success);
-    cursor_loader_->LoadImageCursor(kImageCursorIds[i], resource_id, hot_point);
+    cursor_loader_->LoadImageCursor(cursor_id, resource_id, hot_point);
   }
-  for (size_t i = 0; i < base::size(kAnimatedCursorIds); ++i) {
+  for (auto cursor_id : kAnimatedCursorIds) {
     int resource_id = -1;
     gfx::Point hot_point;
-    bool success =
-        GetAnimatedCursorDataFor(cursor_size_, kAnimatedCursorIds[i],
-                                 device_scale_factor, &resource_id, &hot_point);
+    bool success = GetAnimatedCursorDataFor(
+        cursor_size_, cursor_id, device_scale_factor, &resource_id, &hot_point);
     DCHECK(success);
-    cursor_loader_->LoadAnimatedCursor(kAnimatedCursorIds[i],
-                                       resource_id,
-                                       hot_point,
+    cursor_loader_->LoadAnimatedCursor(cursor_id, resource_id, hot_point,
                                        kAnimatedCursorFrameDelayMs);
   }
 }
@@ -140,16 +110,11 @@ void ImageCursors::SetCursorSize(CursorSize cursor_size) {
 
   cursor_size_ = cursor_size;
 
-  if (cursor_loader_.get())
-    ReloadCursors();
+  ReloadCursors();
 }
 
 void ImageCursors::SetPlatformCursor(gfx::NativeCursor* cursor) {
   cursor_loader_->SetPlatformCursor(cursor);
-}
-
-base::WeakPtr<ImageCursors> ImageCursors::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 }  // namespace ui

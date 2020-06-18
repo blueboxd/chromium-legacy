@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/power_monitor/power_monitor.h"
 #include "base/process/process.h"

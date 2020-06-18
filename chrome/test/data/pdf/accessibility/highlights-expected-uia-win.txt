@@ -4,6 +4,7 @@ Pane
 ++++++Group IsControlElement=false
 ++++++++Custom Name='Hello'
 ++++++++++Text Name='Hello' IsControlElement=false
+++++++++++Group Name='Text Note'
 ++++++++Text Name=', nice '
 ++++++++Custom Name='meeting'
 ++++++++++Text Name='meeting' IsControlElement=false

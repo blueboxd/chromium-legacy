@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/modules/xr/xr_session_event.h"
 #include "third_party/blink/renderer/modules/xr/xr_system.h"
 #include "third_party/blink/renderer/modules/xr/xr_transient_input_hit_test_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_utils.h"
 #include "third_party/blink/renderer/modules/xr/xr_view.h"
 #include "third_party/blink/renderer/modules/xr/xr_webgl_layer.h"
 #include "third_party/blink/renderer/modules/xr/xr_world_information.h"
@@ -141,9 +142,12 @@ std::unique_ptr<TransformationMatrix> getPoseMatrix(
   if (!pose)
     return nullptr;
 
+  device::Pose device_pose =
+      device::Pose(pose->position.value_or(gfx::Point3F()),
+                   pose->orientation.value_or(gfx::Quaternion()));
+
   return std::make_unique<TransformationMatrix>(
-      mojo::TypeConverter<TransformationMatrix,
-                          device::mojom::blink::VRPosePtr>::Convert(pose));
+      device_pose.ToTransform().matrix());
 }
 
 base::Optional<device::mojom::blink::EntityTypeForHitTest>
@@ -602,34 +606,26 @@ ScriptPromise XRSession::CreateAnchorHelper(
     return ScriptPromise();
   }
 
-  TransformationMatrix::DecomposedType decomposed_native_origin_from_anchor;
-  if (!native_origin_from_anchor.Decompose(
-          decomposed_native_origin_from_anchor)) {
+  auto maybe_native_origin_from_anchor_pose =
+      CreatePose(native_origin_from_anchor);
+
+  if (!maybe_native_origin_from_anchor_pose) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kUnableToDecomposeMatrix);
     return ScriptPromise();
   }
 
-  // TODO(https://crbug.com/929841): Remove negation in quaternion once the bug
-  // is fixed.
-  device::mojom::blink::PosePtr pose_ptr = device::mojom::blink::Pose::New(
-      gfx::Quaternion(-decomposed_native_origin_from_anchor.quaternion_x,
-                      -decomposed_native_origin_from_anchor.quaternion_y,
-                      -decomposed_native_origin_from_anchor.quaternion_z,
-                      decomposed_native_origin_from_anchor.quaternion_w),
-      blink::FloatPoint3D(decomposed_native_origin_from_anchor.translate_x,
-                          decomposed_native_origin_from_anchor.translate_y,
-                          decomposed_native_origin_from_anchor.translate_z));
-
   DVLOG(3) << __func__
-           << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
-           << ", pose_ptr->position = " << pose_ptr->position.ToString();
+           << ": maybe_native_origin_from_anchor_pose->orientation()= "
+           << maybe_native_origin_from_anchor_pose->orientation().ToString()
+           << ", maybe_native_origin_from_anchor_pose->position()= "
+           << maybe_native_origin_from_anchor_pose->position().ToString();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   xr_->xrEnvironmentProviderRemote()->CreateAnchor(
-      native_origin_information.Clone(), std::move(pose_ptr),
+      native_origin_information.Clone(), *maybe_native_origin_from_anchor_pose,
       WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
                 WrapPersistent(resolver)));
 
@@ -660,34 +656,27 @@ ScriptPromise XRSession::CreatePlaneAnchorHelper(
     return ScriptPromise();
   }
 
-  TransformationMatrix::DecomposedType decomposed_native_origin_from_anchor;
-  if (!native_origin_from_anchor.Decompose(
-          decomposed_native_origin_from_anchor)) {
+  auto maybe_native_origin_from_anchor_pose =
+      CreatePose(native_origin_from_anchor);
+
+  if (!maybe_native_origin_from_anchor_pose) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kUnableToDecomposeMatrix);
     return ScriptPromise();
   }
 
-  // TODO(https://crbug.com/929841): Remove negation in quaternion once the bug
-  // is fixed.
-  device::mojom::blink::PosePtr pose_ptr = device::mojom::blink::Pose::New(
-      gfx::Quaternion(-decomposed_native_origin_from_anchor.quaternion_x,
-                      -decomposed_native_origin_from_anchor.quaternion_y,
-                      -decomposed_native_origin_from_anchor.quaternion_z,
-                      decomposed_native_origin_from_anchor.quaternion_w),
-      blink::FloatPoint3D(decomposed_native_origin_from_anchor.translate_x,
-                          decomposed_native_origin_from_anchor.translate_y,
-                          decomposed_native_origin_from_anchor.translate_z));
-
   DVLOG(3) << __func__
-           << ": pose_ptr->orientation = " << pose_ptr->orientation.ToString()
-           << ", pose_ptr->position = " << pose_ptr->position.ToString();
+           << ": maybe_native_origin_from_anchor_pose->orientation()= "
+           << maybe_native_origin_from_anchor_pose->orientation().ToString()
+           << ", maybe_native_origin_from_anchor_pose->position()= "
+           << maybe_native_origin_from_anchor_pose->position().ToString();
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
   xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
-      native_origin_information.Clone(), std::move(pose_ptr), plane_id,
+      native_origin_information.Clone(), *maybe_native_origin_from_anchor_pose,
+      plane_id,
       WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
                 WrapPersistent(resolver)));
 

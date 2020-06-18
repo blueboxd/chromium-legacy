@@ -4,6 +4,8 @@
 
 #include "ash/assistant/model/assistant_suggestions_model.h"
 
+#include <algorithm>
+
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "base/unguessable_token.h"
 
@@ -43,12 +45,30 @@ AssistantSuggestionsModel::GetConversationStarterById(
 
 std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
 AssistantSuggestionsModel::GetConversationStarters() const {
+  // Transform |conversation_starters_| to a vector of *const* starters.
   std::vector<const AssistantSuggestion*> conversation_starters;
-
-  for (auto& conversation_starter : conversation_starters_)
-    conversation_starters.push_back(conversation_starter.get());
-
+  std::transform(conversation_starters_.begin(), conversation_starters_.end(),
+                 std::back_inserter(conversation_starters),
+                 [](const auto& starter) { return starter.get(); });
   return conversation_starters;
+}
+
+void AssistantSuggestionsModel::SetOnboardingSuggestions(
+    std::vector<AssistantSuggestionPtr> onboarding_suggestions) {
+  onboarding_suggestions_.clear();
+  onboarding_suggestions_.swap(onboarding_suggestions);
+
+  NotifyOnboardingSuggestionsChanged();
+}
+
+std::vector<const chromeos::assistant::mojom::AssistantSuggestion*>
+AssistantSuggestionsModel::GetOnboardingSuggestions() const {
+  // Transform |onboarding_suggestions_| to a vector of *const* suggestions.
+  std::vector<const AssistantSuggestion*> onboarding_suggestions;
+  std::transform(onboarding_suggestions_.begin(), onboarding_suggestions_.end(),
+                 std::back_inserter(onboarding_suggestions),
+                 [](const auto& suggestion) { return suggestion.get(); });
+  return onboarding_suggestions;
 }
 
 void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
@@ -57,6 +77,14 @@ void AssistantSuggestionsModel::NotifyConversationStartersChanged() {
 
   for (AssistantSuggestionsModelObserver& observer : observers_)
     observer.OnConversationStartersChanged(conversation_starters);
+}
+
+void AssistantSuggestionsModel::NotifyOnboardingSuggestionsChanged() {
+  const std::vector<const AssistantSuggestion*> onboarding_suggestions =
+      GetOnboardingSuggestions();
+
+  for (AssistantSuggestionsModelObserver& observer : observers_)
+    observer.OnOnboardingSuggestionsChanged(onboarding_suggestions);
 }
 
 }  // namespace ash

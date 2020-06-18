@@ -193,9 +193,9 @@ int Setup(bool is_machine) {
     LOG(ERROR) << "GetTempDir failed.";
     return -1;
   }
-  base::FilePath product_dir;
-  if (!GetProductDirectory(&product_dir)) {
-    LOG(ERROR) << "GetProductDirectory failed.";
+  base::FilePath versioned_dir;
+  if (!GetVersionedDirectory(&versioned_dir)) {
+    LOG(ERROR) << "GetVersionedDirectory failed.";
     return -1;
   }
   base::FilePath exe_path;
@@ -218,10 +218,10 @@ int Setup(bool is_machine) {
   }
 
   // All source files are installed in a flat directory structure inside the
-  // install directory, hence the BaseName function call below.
+  // versioned directory, hence the BaseName function call below.
   std::unique_ptr<WorkItemList> install_list(WorkItem::CreateWorkItemList());
   for (const auto& file : setup_files) {
-    const base::FilePath target_path = product_dir.Append(file.BaseName());
+    const base::FilePath target_path = versioned_dir.Append(file.BaseName());
     const base::FilePath source_path = source_dir.Append(file);
     install_list->AddCopyTreeWorkItem(source_path, target_path, temp_dir,
                                       WorkItem::ALWAYS);
@@ -241,16 +241,18 @@ int Setup(bool is_machine) {
 
   static constexpr base::FilePath::StringPieceType kUpdaterExe =
       FILE_PATH_LITERAL("updater.exe");
-  AddComServerWorkItems(key, product_dir.Append(kUpdaterExe),
+  AddComServerWorkItems(key, versioned_dir.Append(kUpdaterExe),
                         install_list.get());
 
-  if (is_machine)
-    AddComServiceWorkItems(product_dir.Append(kUpdaterExe), install_list.get());
+  if (is_machine) {
+    AddComServiceWorkItems(versioned_dir.Append(kUpdaterExe),
+                           install_list.get());
+  }
 
-  AddComInterfacesWorkItems(key, product_dir.Append(kUpdaterExe),
+  AddComInterfacesWorkItems(key, versioned_dir.Append(kUpdaterExe),
                             install_list.get());
 
-  base::CommandLine run_updater_wake_command(product_dir.Append(kUpdaterExe));
+  base::CommandLine run_updater_wake_command(versioned_dir.Append(kUpdaterExe));
   run_updater_wake_command.AppendSwitch(kWakeSwitch);
 
 #if !defined(NDEBUG)

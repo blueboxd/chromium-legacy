@@ -6421,6 +6421,25 @@ Unknown properties are collapsed to zero. -->
   <int value="12" label="Unknown"/>
 </enum>
 
+<enum name="BlueZResultOfPerProfileConnection">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown Error"/>
+  <int value="2" label="Already Connected"/>
+  <int value="3" label="Busy Connecting"/>
+  <int value="4" label="Connection Refused"/>
+  <int value="5" label="Connect Canceled"/>
+  <int value="6" label="Remote Unavailable"/>
+  <int value="7" label="Profile Not Supported"/>
+</enum>
+
+<enum name="BlueZResultOfPerProfileProbing">
+  <int value="0" label="Success"/>
+  <int value="1" label="Unknown Error"/>
+  <int value="2" label="Unable To Register Interface"/>
+  <int value="3" label="Unable To Create New Device"/>
+  <int value="4" label="Profile Not Supported"/>
+</enum>
+
 <enum name="BlueZTypeOfDiscovery">
   <int value="1" label="BR/EDR"/>
   <int value="2" label="LE"/>
@@ -20594,6 +20613,7 @@ Called by update_document_policy_enum.py.-->
   <int value="717" label="VirtualKeyboardFeatures"/>
   <int value="718" label="PinUnlockAutosubmitEnabled"/>
   <int value="719" label="SamlLockScreenReauthenticationEnabled"/>
+  <int value="720" label="DeletePrintJobHistoryAllowed"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -21073,6 +21093,11 @@ Called by update_document_policy_enum.py.-->
 <enum name="EventTimestampValidity">
   <int value="0" label="Invalid time base"/>
   <int value="1" label="Valid time base"/>
+</enum>
+
+<enum name="EvkkEncryptionType">
+  <int value="0" label="EVKK was wrapped with Scrypt"/>
+  <int value="1" label="EVKK was wrapped with TPM"/>
 </enum>
 
 <enum name="EVWhitelistStatus">
@@ -27777,6 +27802,8 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3320" label="V8WasmBulkMemory"/>
   <int value="3321" label="V8WasmRefTypes"/>
   <int value="3322" label="V8WasmMultiValue"/>
+  <int value="3323" label="HiddenBackfaceWithPossible3D"/>
+  <int value="3324" label="HiddenBackfaceWithPreserve3D"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -33052,6 +33079,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 </enum>
 
 <enum name="GpuTextureResultR16_L16">
+  <obsolete>
+    Removed 06/2020. Both LUMINANCE_F16 and R16_EXT must be supported for now.
+  </obsolete>
   <summary>
     Keeps track of how many users have R16_EXT or/and LUMINANCE_F16, and also
     how many have none of the two.
@@ -40446,6 +40476,7 @@ from previous Chrome versions.
   <int value="-364587218" label="ResourceLoadScheduler:enabled"/>
   <int value="-364325011" label="enable-files-quick-view"/>
   <int value="-364267715" label="disable-native-cups"/>
+  <int value="-363885137" label="StoragePressureEvent:disabled"/>
   <int value="-362821234" label="ExperimentalUi:enabled"/>
   <int value="-362022976" label="disable-quirks-client"/>
   <int value="-361948582" label="material-security-verbose"/>
@@ -41383,6 +41414,7 @@ from previous Chrome versions.
   <int value="705407202" label="AutofillSaveCardImprovedUserConsent:disabled"/>
   <int value="705712478" label="EnablePalmOnToolTypePalm:disabled"/>
   <int value="705713283" label="EasyUnlockPromotions:disabled"/>
+  <int value="706280254" label="StoragePressureEvent:enabled"/>
   <int value="709138900" label="InstantStart:enabled"/>
   <int value="709850261" label="disable-touch-editing"/>
   <int value="710700286" label="ImmersiveFullscreen:disabled"/>
@@ -44496,6 +44528,7 @@ Called by update_use_counter_css.py.-->
   <int value="3" label="Bad logo"/>
   <int value="4" label="Bad user identifier"/>
   <int value="5" label="Bad reset reason"/>
+  <int value="6" label="Bad safe search result"/>
 </enum>
 
 <enum name="MediaFeedSafeSearchResult">
@@ -61743,6 +61776,13 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="32" label="BACKGROUND_FETCH_SUCCESS"/>
   <int value="33" label="PERIODIC_SYNC"/>
   <int value="34" label="CONTENT_DELETE"/>
+</enum>
+
+<enum name="ServiceWorkerOfflineCapability">
+  <int value="0" label="kNoServiceWorker"/>
+  <int value="1" label="kServiceWorkerNoFetchHandler"/>
+  <int value="2" label="kServiceWorkerNoOfflineSupport"/>
+  <int value="3" label="kServiceWorkerWithOfflineSupport"/>
 </enum>
 
 <enum name="ServiceWorkerPreparationType">

@@ -16,12 +16,12 @@
   // Navigate to a the same domain to see that the cookies are reported.
   const sendCookieUrl = 'https://cookie.test:8443/inspector-protocol/network/resources/hello-world.html';
   const response1 = await helper.navigateWithExtraInfo(sendCookieUrl);
-  testRunner.log(`requestWillBeSentExtraInfo request cookies on same domain: ${JSON.stringify(response1.requestExtraInfo.params.associatedCookies, null, 2)}`);
+  testRunner.log(response1.requestExtraInfo.params.associatedCookies, 'requestWillBeSentExtraInfo request cookies on same domain:');
 
   // Navigate to a subdomain to see that only the cookies are reported (one as blocked now).
   const subdomainUrl = 'https://subdomain.cookie.test:8443/inspector-protocol/network/resources/hello-world.html';
   const response2 = await helper.navigateWithExtraInfo(subdomainUrl);
-  testRunner.log(`requestWillBeSentExtraInfo request cookies on subdomain: ${JSON.stringify(response2.requestExtraInfo.params.associatedCookies, null, 2)}`);
+  testRunner.log(response2.requestExtraInfo.params.associatedCookies, 'requestWillBeSentExtraInfo request cookies on subdomain');
 
   testRunner.completeTest();
 })

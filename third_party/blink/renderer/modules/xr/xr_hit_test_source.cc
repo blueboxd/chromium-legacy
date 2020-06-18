@@ -48,9 +48,9 @@ void XRHitTestSource::Update(
 
   for (auto& result : hit_test_results) {
     DVLOG(3) << __func__ << ": processing hit test result, position="
-             << result->mojo_from_result->position.ToString()
+             << result->mojo_from_result.position().ToString()
              << ", orientation="
-             << result->mojo_from_result->orientation.ToString()
+             << result->mojo_from_result.orientation().ToString()
              << ", plane_id=" << result->plane_id;
     last_frame_results_.emplace_back(result->Clone());
   }

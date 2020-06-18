@@ -387,12 +387,17 @@ TEST_F(TranslateRankerImplTest, EnableLogging) {
       GetRankerForTest(0.0f);
   std::vector<metrics::TranslateEventProto> flushed_events;
 
-  // Logging is disabled by default. No events will be cached.
+  // UMA logging is disabled by default. No events will be cached.
   ranker->RecordTranslateEvent(0, kUkmSourceId0, &translate_event1_);
   ranker->RecordTranslateEvent(1, kUkmSourceId0, &translate_event2_);
 
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
+
+  // Make sure UKM logging still works.
+  auto entries = GetTestUkmRecorder()->GetEntriesByName(
+      ukm::builders::Translate::kEntryName);
+  EXPECT_EQ(2u, entries.size());
 
   // Once we enable logging, events will be cached.
   ranker->EnableLogging(true);
@@ -403,6 +408,10 @@ TEST_F(TranslateRankerImplTest, EnableLogging) {
   EXPECT_EQ(2U, flushed_events.size());
   flushed_events.clear();
 
+  entries = GetTestUkmRecorder()->GetEntriesByName(
+      ukm::builders::Translate::kEntryName);
+  EXPECT_EQ(4u, entries.size());
+
   // Turning logging back off, caching is disabled once again.
   ranker->EnableLogging(false);
   ranker->RecordTranslateEvent(0, kUkmSourceId0, &translate_event1_);
@@ -411,6 +420,10 @@ TEST_F(TranslateRankerImplTest, EnableLogging) {
   // Logging is disabled, so no events should be cached.
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
+
+  entries = GetTestUkmRecorder()->GetEntriesByName(
+      ukm::builders::Translate::kEntryName);
+  EXPECT_EQ(6u, entries.size());
 }
 
 TEST_F(TranslateRankerImplTest, EnableLoggingClearsCache) {

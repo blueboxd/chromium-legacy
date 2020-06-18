@@ -55,7 +55,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_test_util.h"
 #include "chrome/browser/ui/supervised_user/parent_permission_dialog.h"
-#include "chrome/browser/ui/views/parent_permission_dialog_view.h"
+#include "chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h"
 #include "components/account_id/account_id.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "extensions/common/extension_builder.h"

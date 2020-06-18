@@ -28,7 +28,7 @@ class PluginVmPolicySubscription;
 
 // This is used by both the Plugin VM app and its installer.
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
-constexpr char kPluginVmAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
+constexpr char kPluginVmShelfAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
 
 // Name of the Plugin VM.
 constexpr char kPluginVmName[] = "PvmDefault";
@@ -74,7 +74,7 @@ void ShowPluginVmInstallerView(Profile* profile);
 
 // Checks if an window is for the Plugin VM app. Note that it returns false for
 // the Plugin VM installer.
-bool IsPluginVmWindow(const aura::Window* window);
+bool IsPluginVmAppWindow(const aura::Window* window);
 
 // Retrieves the license key to be used for Plugin VM. If
 // none is set this will return an empty string.

@@ -50,6 +50,13 @@ public interface FullscreenManager {
     void exitPersistentFullscreenMode();
 
     /**
+     * Enter fullscreen.
+     * @param tab {@link Tab} that goes into fullscreen.
+     * @param options Fullscreen options.
+     */
+    void onEnterFullscreen(Tab tab, FullscreenOptions options);
+
+    /**
      * Exit fullscreen.
      * @param tab {@link Tab} that goes out of fullscreen.
      */

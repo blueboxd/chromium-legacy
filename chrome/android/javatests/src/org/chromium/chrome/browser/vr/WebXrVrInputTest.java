@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 
@@ -37,11 +36,9 @@ import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.vr.mock.MockVrDaydreamApi;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr.util.PermissionUtils;
-import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -53,7 +50,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -373,57 +369,6 @@ public class WebXrVrInputTest {
     }
 
     /**
-     * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
-     * a WebXR immersive session when VR browsing is disabled.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    public void testAppButtonNoopsWhenBrowsingDisabled_WebXr() throws ExecutionException {
-        appButtonNoopsTestImpl("generic_webxr_page", mWebXrVrTestFramework);
-    }
-
-    /**
-     * Verifies that pressing the Daydream controller's 'app' button does not cause the user to exit
-     * a WebXR immersive session when VR browsing isn't supported by the Activity.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.WAA,
-            XrActivityRestriction.SupportedActivity.CCT})
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    public void
-    testAppButtonNoopsWhenBrowsingNotSupported_WebXr() throws ExecutionException {
-        appButtonNoopsTestImpl("generic_webxr_page", mWebXrVrTestFramework);
-    }
-
-    private void appButtonNoopsTestImpl(String url, WebXrVrTestFramework framework)
-            throws ExecutionException {
-        VrShellDelegateUtils.getDelegateInstance().setVrBrowsingDisabled(true);
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
-        framework.enterSessionWithUserGestureOrFail();
-
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
-        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
-
-        NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
-        Assert.assertFalse("App button left Chrome",
-                TestThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() {
-                        return mockApi.getExitFromVrCalled()
-                                || mockApi.getLaunchVrHomescreenCalled();
-                    }
-                }));
-        assertAppButtonEffect(false /* shouldHaveExited */, framework);
-        VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(null);
-        framework.assertNoJavaScriptErrors();
-    }
-
-    /**
      * Verifies that pressing the Daydream controller's 'app' button causes the user to exit
      * a WebXR presentation even when the page is not submitting frames.
      */
@@ -587,64 +532,5 @@ public class WebXrVrInputTest {
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, false /* visible */, () -> {});
-    }
-
-    /**
-     * Tests that permission requests while in a WebXR for VR exclusive session work as expected.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    // TODO(https://crbug.com/901494): Make this run everywhere when permissions are
-    // unbroken.
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
-    public void testInSessionPermissionRequests() {
-        testInSessionPermissionRequestsImpl();
-    }
-
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
-    @CommandLineFlags.Add({"enable-features=WebXR"})
-    @XrActivityRestriction({XrActivityRestriction.SupportedActivity.CTA})
-    public void testInSessionPermissionRequestsIncognito() {
-        mWebXrVrTestFramework.openIncognitoTab("about:blank");
-        testInSessionPermissionRequestsImpl();
-    }
-
-    private void testInSessionPermissionRequestsImpl() {
-        // Note that we need to pass in the WebContents to use throughout this because automatically
-        // using the first tab's WebContents doesn't work in Incognito.
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "generic_webxr_permission_page", PAGE_LOAD_TIMEOUT_S);
-        mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
-        NativeUiUtils.enableMockedInput();
-        NativeUiUtils.performActionAndWaitForVisibilityStatus(
-                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, true /* visible */, () -> {
-                    WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
-                            POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
-                });
-        NativeUiUtils.waitForUiQuiescence();
-        // Click outside the prompt and ensure that it gets dismissed.
-        NativeUiUtils.clickElement(
-                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.55f, 0.0f));
-        WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
-
-        // Accept the permission this time and ensure it propogates to the page.
-        NativeUiUtils.performActionAndWaitForVisibilityStatus(
-                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, true /* visible */, () -> {
-                    WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
-                            POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
-                });
-        NativeUiUtils.waitForUiQuiescence();
-        NativeUiUtils.clickElement(
-                UserFriendlyElementName.WEB_XR_HOSTED_CONTENT, new PointF(0.4f, -0.4f));
-        WebXrVrTestFramework.waitOnJavaScriptStep(mTestRule.getWebContents());
-        Assert.assertTrue("Could not grant permission while in WebXR immersive session",
-                WebXrVrTestFramework
-                        .runJavaScriptOrFail("lastPermissionRequestSucceeded",
-                                POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents())
-                        .equals("true"));
     }
 }

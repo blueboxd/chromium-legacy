@@ -207,7 +207,6 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
   void SetMutationUpdate(
       std::unique_ptr<MutatorOutputState> output_state) override;
 
-  size_t CompositedAnimationsCount() const override;
   size_t MainThreadAnimationsCount() const override;
   bool HasCustomPropertyAnimations() const override;
   bool CurrentFrameHadRAF() const override;

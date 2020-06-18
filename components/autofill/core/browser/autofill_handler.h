@@ -190,12 +190,14 @@ class AutofillHandler {
   virtual void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
                              const base::TimeTicks timestamp) = 0;
 
-  // Returns nullptr if no cached form structure is found with a matching
-  // renderer ID. Runs in logarithmic time.
-  FormStructure* FindCachedFormBySignature(FormSignature form_signature) const;
+  // Returns the number of FormStructures with the given |form_signature| and
+  // appends them to |form_structures|. Runs in linear time.
+  size_t FindCachedFormsBySignature(
+      FormSignature form_signature,
+      std::vector<FormStructure*>* form_structures) const;
 
   // Returns nullptr if no cached form structure is found with a matching
-  // signature. Runs in linear time.
+  // |renderer_id|. Runs in logarithmic time.
   FormStructure* FindCachedFormByRendererId(FormRendererId renderer_id) const;
 
   // Parses the |form| with the server data retrieved from the |cached_form|

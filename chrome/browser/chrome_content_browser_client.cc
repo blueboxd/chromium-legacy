@@ -934,10 +934,9 @@ bool URLHasExtensionBackgroundPermission(
 
 #endif
 
-mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
-GetPrerenderCanceler(const base::Callback<content::WebContents*()>& wc_getter) {
-  mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
-      canceler;
+mojo::PendingRemote<prerender::mojom::PrerenderCanceler> GetPrerenderCanceler(
+    const base::Callback<content::WebContents*()>& wc_getter) {
+  mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler;
   prerender::PrerenderContents::FromWebContents(wc_getter.Run())
       ->AddPrerenderCancelerReceiver(canceler.InitWithNewPipeAndPassReceiver());
   return canceler;
@@ -3739,6 +3738,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kPdfConversion:
     case service_manager::SandboxType::kSharingService:
     case service_manager::SandboxType::kVideoCapture:
+    case service_manager::SandboxType::kIconReader:
       // Should never reach here.
       CHECK(0);
       return base::string16();

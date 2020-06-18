@@ -3024,13 +3024,13 @@ void PaintLayerScrollableArea::InvalidatePaintOfScrollControlsIfNeeded(
     SetScrollCornerAndResizerVisualRect(scroll_corner_and_resizer_visual_rect);
     if (LayoutCustomScrollbarPart* scroll_corner = ScrollCorner()) {
       ObjectPaintInvalidator(*scroll_corner)
-          .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-              PaintInvalidationReason::kScrollControl);
+          .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+              *scroll_corner, PaintInvalidationReason::kScrollControl);
     }
     if (LayoutCustomScrollbarPart* resizer = Resizer()) {
       ObjectPaintInvalidator(*resizer)
-          .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-              PaintInvalidationReason::kScrollControl);
+          .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+              *resizer, PaintInvalidationReason::kScrollControl);
     }
     if (!GraphicsLayerForScrollCorner()) {
       context.painting_layer->SetNeedsRepaint();

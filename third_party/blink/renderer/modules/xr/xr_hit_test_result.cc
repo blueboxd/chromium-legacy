@@ -18,8 +18,7 @@ XRHitTestResult::XRHitTestResult(
     XRSession* session,
     const device::mojom::blink::XRHitResult& hit_result)
     : session_(session),
-      mojo_from_this_(std::make_unique<TransformationMatrix>(
-          mojo::ConvertTo<TransformationMatrix>(hit_result.mojo_from_result))),
+      mojo_from_this_(hit_result.mojo_from_result),
       plane_id_(hit_result.plane_id != 0
                     ? base::Optional<uint64_t>(hit_result.plane_id)
                     : base::nullopt) {}
@@ -28,7 +27,8 @@ XRPose* XRHitTestResult::getPose(XRSpace* other) {
   auto maybe_other_space_native_from_mojo = other->NativeFromMojo();
   DCHECK(maybe_other_space_native_from_mojo);
 
-  auto mojo_from_this = *mojo_from_this_;
+  blink::TransformationMatrix mojo_from_this =
+      mojo_from_this_.ToTransform().matrix();
 
   auto other_native_from_mojo = *maybe_other_space_native_from_mojo;
   auto other_offset_from_other_native = other->OffsetFromNativeMatrix();
@@ -74,7 +74,8 @@ ScriptPromise XRHitTestResult::createAnchor(ScriptState* script_state,
   DCHECK(mojo_from_space.IsInvertible());
 
   auto space_from_mojo = mojo_from_space.Inverse();
-  auto space_from_anchor = space_from_mojo * (*mojo_from_this_);
+  auto space_from_anchor =
+      space_from_mojo * (mojo_from_this_.ToTransform().matrix());
 
   if (plane_id_) {
     DVLOG(2) << __func__

@@ -37,13 +37,13 @@ std::unique_ptr<UpdaterPrefs> CreateGlobalPrefs() {
   if (!lock)
     return nullptr;
 
-  base::FilePath product_data_dir;
-  if (!GetProductDirectory(&product_data_dir))
+  base::FilePath global_prefs_dir;
+  if (!GetBaseDirectory(&global_prefs_dir))
     return nullptr;
 
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
-      product_data_dir.Append(FILE_PATH_LITERAL("prefs.json"))));
+      global_prefs_dir.Append(FILE_PATH_LITERAL("prefs.json"))));
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());
@@ -53,14 +53,13 @@ std::unique_ptr<UpdaterPrefs> CreateGlobalPrefs() {
 }
 
 std::unique_ptr<UpdaterPrefs> CreateLocalPrefs() {
-  base::FilePath product_data_dir;
-  if (!GetProductDirectory(&product_data_dir))
+  base::FilePath local_prefs_dir;
+  if (!GetVersionedDirectory(&local_prefs_dir))
     return nullptr;
 
   PrefServiceFactory pref_service_factory;
   pref_service_factory.set_user_prefs(base::MakeRefCounted<JsonPrefStore>(
-      product_data_dir.AppendASCII(UPDATER_VERSION_STRING)
-          .Append(FILE_PATH_LITERAL("prefs.json"))));
+      local_prefs_dir.Append(FILE_PATH_LITERAL("prefs.json"))));
 
   auto pref_registry = base::MakeRefCounted<PrefRegistrySimple>();
   update_client::RegisterPrefs(pref_registry.get());

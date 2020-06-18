@@ -576,6 +576,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // globally-used spare RenderProcessHost at any time.
   static RenderProcessHost* GetSpareRenderProcessHostForTesting();
 
+  // Registers a callback to be notified when the spare RenderProcessHost is
+  // changed. If a new spare RenderProcessHost is created, the callback is made
+  // when the host is ready (RenderProcessHostObserver::RenderProcessReady). If
+  // the spare RenderProcessHost is promoted to be a "real" RenderProcessHost or
+  // discarded for any reason, the callback is made with a null pointer.
+  static std::unique_ptr<
+      base::CallbackList<void(RenderProcessHost*)>::Subscription>
+  RegisterSpareRenderProcessHostChangedCallback(
+      const base::RepeatingCallback<void(RenderProcessHost*)>& cb);
+
   // Flag to run the renderer in process.  This is primarily
   // for debugging purposes.  When running "in process", the
   // browser maintains a single RenderProcessHost which communicates

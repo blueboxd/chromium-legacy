@@ -61,11 +61,15 @@ void GetAssertionTask::Cancel() {
 // static
 bool GetAssertionTask::StringFixupPredicate(
     const std::vector<const cbor::Value*>& path) {
+  // This filters out all elements that are not string-keyed, direct children
+  // of key 0x04, which is the `user` element of a getAssertion response.
   if (path.size() != 2 || !path[0]->is_unsigned() ||
       path[0]->GetUnsigned() != 4 || !path[1]->is_string()) {
     return false;
   }
 
+  // Of those string-keyed children, only `name` and `displayName` may have
+  // truncated UTF-8 in their values.
   const std::string& user_key = path[1]->GetString();
   return user_key == "name" || user_key == "displayName";
 }

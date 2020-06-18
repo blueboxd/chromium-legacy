@@ -472,14 +472,6 @@ bool KeyframeEffect::HasTickingKeyframeModel() const {
   return false;
 }
 
-size_t KeyframeEffect::TickingKeyframeModelsCount() const {
-  size_t ticking_keyframe_models_count = 0;
-  for (const auto& it : keyframe_models_)
-    if (!it->is_finished())
-      ticking_keyframe_models_count++;
-  return ticking_keyframe_models_count;
-}
-
 bool KeyframeEffect::AffectsCustomProperty() const {
   for (const auto& it : keyframe_models_)
     if (it->target_property_id() == TargetProperty::CSS_CUSTOM_PROPERTY)

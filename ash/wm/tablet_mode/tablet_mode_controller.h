@@ -24,6 +24,7 @@
 #include "base/timer/timer.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "ui/aura/window_occlusion_tracker.h"
+#include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_observer.h"
 #include "ui/compositor/layer_tree_owner.h"
@@ -75,10 +76,6 @@ class ASH_EXPORT TabletModeController
       public ui::LayerAnimationObserver,
       public ui::LayerObserver {
  public:
-  // Enable or disable using a screenshot for testing as it makes the
-  // initialization flow async, which makes most tests harder to write.
-  static void SetUseScreenshotForTest(bool use_screenshot);
-
   // Used for keeping track if the user wants the machine to behave as a
   // clamshell/tablet regardless of hardware orientation.
   // TODO(oshima): Move this to common place.
@@ -90,6 +87,15 @@ class ASH_EXPORT TabletModeController
 
   // Public so it can be used by unit tests.
   constexpr static char kLidAngleHistogramName[] = "Ash.TouchView.LidAngle";
+
+  // Enable or disable using a screenshot for testing as it makes the
+  // initialization flow async, which makes most tests harder to write.
+  static void SetUseScreenshotForTest(bool use_screenshot);
+
+  // Returns the the animation property that we observe when transitioning from
+  // clamshell to tablet mode.
+  static ui::LayerAnimationElement::AnimatableProperty
+  GetObservedTabletTransitionProperty();
 
   TabletModeController();
   ~TabletModeController() override;

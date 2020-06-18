@@ -24,7 +24,11 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_quota_client.h"
 #include "storage/browser/test/mock_quota_manager.h"
+#include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/quota/quota_types.mojom-shared.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 using blink::mojom::StorageType;
 
@@ -43,8 +47,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
   IndexedDBQuotaClientTest()
       : kOriginA(url::Origin::Create(GURL("http://host"))),
         kOriginB(url::Origin::Create(GURL("http://host:8000"))),
-        kOriginOther(url::Origin::Create(GURL("http://other"))),
-        usage_(0) {
+        kOriginOther(url::Origin::Create(GURL("http://other"))) {
     CreateTempDir();
     auto quota_manager = base::MakeRefCounted<storage::MockQuotaManager>(
         /*in_memory=*/false, temp_dir_.GetPath(),
@@ -76,66 +79,67 @@ class IndexedDBQuotaClientTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
-                         const url::Origin& origin,
-                         StorageType type) {
-    usage_ = -1;
+  static int64_t GetOriginUsage(scoped_refptr<storage::QuotaClient> client,
+                                const url::Origin& origin,
+                                StorageType type) {
+    int result = -1;
     base::RunLoop loop;
     client->GetOriginUsage(origin, type,
                            base::BindLambdaForTesting([&](int64_t usage) {
-                             usage_ = usage;
+                             result = usage;
                              loop.Quit();
                            }));
     loop.Run();
-    EXPECT_GT(usage_, -1);
-    return usage_;
+    EXPECT_GT(result, -1);
+    return result;
   }
 
-  const std::set<url::Origin>& GetOriginsForType(
+  static std::set<url::Origin> GetOriginsForType(
       scoped_refptr<storage::QuotaClient> client,
       StorageType type) {
-    origins_.clear();
+    std::set<url::Origin> result;
     base::RunLoop loop;
     client->GetOriginsForType(
         type,
         base::BindLambdaForTesting([&](const std::set<url::Origin>& origins) {
-          origins_ = origins;
+          result = origins;
           loop.Quit();
         }));
     loop.Run();
-    return origins_;
+    return result;
   }
 
-  const std::set<url::Origin>& GetOriginsForHost(
+  static std::set<url::Origin> GetOriginsForHost(
       scoped_refptr<storage::QuotaClient> client,
       StorageType type,
       const std::string& host) {
-    origins_.clear();
+    std::set<url::Origin> result;
     base::RunLoop loop;
     client->GetOriginsForHost(
         type, host,
         base::BindLambdaForTesting([&](const std::set<url::Origin>& origins) {
-          origins_ = origins;
+          result = origins;
           loop.Quit();
         }));
     loop.Run();
-    return origins_;
+    return result;
   }
 
-  blink::mojom::QuotaStatusCode DeleteOrigin(
+  static blink::mojom::QuotaStatusCode DeleteOriginData(
       scoped_refptr<storage::QuotaClient> client,
       const url::Origin& origin,
       StorageType type) {
-    delete_status_ = blink::mojom::QuotaStatusCode::kUnknown;
+    blink::mojom::QuotaStatusCode result =
+        blink::mojom::QuotaStatusCode::kUnknown;
     base::RunLoop loop;
     client->DeleteOriginData(
         origin, type,
         base::BindLambdaForTesting([&](blink::mojom::QuotaStatusCode code) {
-          delete_status_ = code;
+          result = code;
           loop.Quit();
         }));
     loop.Run();
-    return delete_status_;
+    return result;
   }
 
   IndexedDBContextImpl* idb_context() { return idb_context_.get(); }
@@ -173,10 +177,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
-  int64_t usage_;
-  std::set<url::Origin> origins_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
-  blink::mojom::QuotaStatusCode delete_status_;
   base::WeakPtrFactory<IndexedDBQuotaClientTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBQuotaClientTest);
@@ -239,7 +240,7 @@ TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
   EXPECT_EQ(50, GetOriginUsage(client, kOriginB, kTemp));
 
   blink::mojom::QuotaStatusCode delete_status =
-      DeleteOrigin(client, kOriginA, kTemp);
+      DeleteOriginData(client, kOriginA, kTemp);
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk, delete_status);
   EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(client, kOriginB, kTemp));

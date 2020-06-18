@@ -83,7 +83,7 @@ void AppServiceAppWindowCrostiniTracker::OnWindowVisibilityChanged(
   // Crostini shouldn't need to know about ARC app windows.
   if (wm::GetTransientParent(window) ||
       arc::GetWindowTaskId(window) != arc::kNoTaskId ||
-      plugin_vm::IsPluginVmWindow(window)) {
+      plugin_vm::IsPluginVmAppWindow(window)) {
     return;
   }
 
@@ -202,7 +202,7 @@ std::string AppServiceAppWindowCrostiniTracker::GetShelfAppId(
   // Crostini shouldn't need to know about ARC app windows.
   if (wm::GetTransientParent(window) ||
       arc::GetWindowTaskId(window) != arc::kNoTaskId ||
-      plugin_vm::IsPluginVmWindow(window)) {
+      plugin_vm::IsPluginVmAppWindow(window)) {
     return std::string();
   }
 

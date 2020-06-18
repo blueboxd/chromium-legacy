@@ -16,7 +16,7 @@ import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -181,7 +181,7 @@ public class PseudoTab {
      */
     public int getRootId() {
         if (mTab != null && mTab.get() != null) {
-            return ((TabImpl) mTab.get()).getRootId();
+            return CriticalPersistedTabData.from(mTab.get()).getRootId();
         }
         assert mTabId != null;
         return TabAttributeCache.getRootId(mTabId);

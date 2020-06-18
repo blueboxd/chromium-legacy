@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/graphics/color_space_gamut.h"
+#include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
 
 namespace blink {
@@ -202,6 +203,18 @@ bool MediaValues::CalculatePrefersReducedMotion(LocalFrame* frame) {
       return value.id == CSSValueID::kReduce;
   }
   return frame->GetSettings()->GetPrefersReducedMotion();
+}
+
+bool MediaValues::CalculatePrefersReducedData(LocalFrame* frame) {
+  DCHECK(frame);
+  DCHECK(frame->GetSettings());
+  if (const auto* overrides = frame->GetPage()->GetMediaFeatureOverrides()) {
+    MediaQueryExpValue value = overrides->GetOverride("prefers-reduced-data");
+    if (value.IsValid())
+      return value.id == CSSValueID::kReduce;
+  }
+  return (GetNetworkStateNotifier().SaveDataEnabled() &&
+          !frame->GetSettings()->GetDataSaverHoldbackWebApi());
 }
 
 ForcedColors MediaValues::CalculateForcedColors() {

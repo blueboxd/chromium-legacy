@@ -59,7 +59,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
   // Reports a set of memory metrics to UMA.
 
   const ProcessData& browser = *ChromeBrowser();
-  int extension_count = 0;
   int renderer_count = 0;
   for (size_t index = 0; index < browser.processes.size(); index++) {
     int num_open_fds = browser.processes[index].num_open_fds;
@@ -87,7 +86,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
               UMA_HISTOGRAM_COUNTS_10000("Memory.Extension.OpenFDs",
                                          num_open_fds);
             }
-            extension_count++;
             continue;
           case ProcessMemoryInformation::RENDERER_CHROME:
             if (num_open_fds != -1)
@@ -171,7 +169,6 @@ void MetricsMemoryDetails::UpdateHistograms() {
 
   UMA_HISTOGRAM_COUNTS_100("Memory.ProcessCount",
                            static_cast<int>(browser.processes.size()));
-  UMA_HISTOGRAM_COUNTS_100("Memory.ExtensionProcessCount", extension_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
 
   size_t initialized_and_not_dead_rphs, all_rphs;

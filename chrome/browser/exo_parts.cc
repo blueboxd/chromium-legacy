@@ -7,6 +7,8 @@
 #include "base/memory/ptr_util.h"
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/external_arc/keyboard/arc_input_method_surface_manager.h"
+#include "ash/public/cpp/external_arc/message_center/arc_notification_surface_manager_impl.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/exo/file_helper.h"
+#include "components/exo/server/wayland_server_controller.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/drop_data.h"
@@ -113,11 +116,16 @@ std::unique_ptr<ExoParts> ExoParts::CreateIfNecessary() {
 }
 
 ExoParts::~ExoParts() {
-  ash::Shell::Get()->DestroyWaylandServer();
+  ash::Shell::Get()->UntrackTrackInputMethodBounds(
+      ash::ArcInputMethodBoundsTracker::Get());
+  wayland_server_.reset();
 }
 
 ExoParts::ExoParts() {
-  std::unique_ptr<ChromeFileHelper> file_helper =
-      std::make_unique<ChromeFileHelper>();
-  ash::Shell::Get()->InitWaylandServer(std::move(file_helper));
+  wayland_server_ = exo::WaylandServerController::CreateIfNecessary(
+      std::make_unique<ChromeFileHelper>(),
+      std::make_unique<ash::ArcNotificationSurfaceManagerImpl>(),
+      std::make_unique<ash::ArcInputMethodSurfaceManager>());
+  ash::Shell::Get()->TrackInputMethodBounds(
+      ash::ArcInputMethodBoundsTracker::Get());
 }

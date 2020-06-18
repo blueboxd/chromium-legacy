@@ -3748,6 +3748,8 @@ static_library("browser") {
       "task_manager/providers/per_profile_worker_task_tracker.h",
       "task_manager/providers/render_process_host_task_provider.cc",
       "task_manager/providers/render_process_host_task_provider.h",
+      "task_manager/providers/spare_render_process_host_task_provider.cc",
+      "task_manager/providers/spare_render_process_host_task_provider.h",
       "task_manager/providers/task.cc",
       "task_manager/providers/task.h",
       "task_manager/providers/task_provider.cc",
@@ -4039,8 +4041,10 @@ static_library("browser") {
     ]
     deps += [
       "//ash/public/cpp",
+      "//ash/public/cpp/external_arc",
       "//chrome/browser/chromeos",
       "//chromeos/components/account_manager",
+      "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/components/quick_answers",
       "//chromeos/components/sync_wifi",
       "//chromeos/services/assistant/public/cpp",
@@ -4120,6 +4124,8 @@ static_library("browser") {
       "sync/roaming_profile_directory_deleter_win.h",
       "taskbar/taskbar_decorator_win.cc",
       "taskbar/taskbar_decorator_win.h",
+      "win/icon_reader_service.cc",
+      "win/icon_reader_service.h",
       "win/parental_controls.cc",
       "win/parental_controls.h",
       "win/util_win_service.cc",
@@ -5522,10 +5528,10 @@ static_library("browser") {
   }
   if (enable_supervised_users && enable_extensions) {
     sources += [
+      "supervised_user/supervised_user_extensions_delegate_impl.cc",
+      "supervised_user/supervised_user_extensions_delegate_impl.h",
       "supervised_user/supervised_user_extensions_metrics_recorder.cc",
       "supervised_user/supervised_user_extensions_metrics_recorder.h",
-      "supervised_user/supervised_user_service_management_api_delegate.cc",
-      "supervised_user/supervised_user_service_management_api_delegate.h",
     ]
   }
 
@@ -5561,7 +5567,7 @@ static_library("browser") {
   if (enable_wayland_server) {
     deps += [
       "//components/exo",
-      "//components/exo/wayland",
+      "//components/exo/server",
     ]
     sources += [
       "exo_parts.cc",
@@ -6013,6 +6019,8 @@ static_library("test_support") {
       "chooser_controller/fake_usb_chooser_controller.h",
       "download/test_download_shelf.cc",
       "download/test_download_shelf.h",
+      "hid/mock_hid_device_observer.cc",
+      "hid/mock_hid_device_observer.h",
       "profile_resetter/profile_resetter_test_base.cc",
       "profile_resetter/profile_resetter_test_base.h",
       "sessions/session_restore_test_helper.cc",

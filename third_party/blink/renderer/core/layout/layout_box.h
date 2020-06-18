@@ -1558,8 +1558,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // Returns true if the box intersects the viewport visible to the user.
   bool IntersectsVisibleViewport() const;
 
-  bool HasNonCompositedScrollbars() const final;
-
   void EnsureIsReadyForPaintInvalidation() override;
   void ClearPaintFlags() override;
 

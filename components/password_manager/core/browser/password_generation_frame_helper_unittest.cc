@@ -15,6 +15,7 @@
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/proto/password_requirements.pb.h"
 #include "components/autofill/core/common/form_data.h"
@@ -306,8 +307,10 @@ TEST_F(PasswordGenerationFrameHelperTest, ProcessPasswordRequirements) {
 
     std::string response_string;
     ASSERT_TRUE(response.SerializeToString(&response_string));
-    autofill::FormStructure::ParseQueryResponse(response_string, forms,
-                                                nullptr);
+
+    autofill::FormStructure::ParseQueryResponse(
+        response_string, forms, autofill::test::GetEncodedSignatures(forms),
+        nullptr);
 
     GetGenerationHelper()->PrefetchSpec(origin.GetOrigin());
 

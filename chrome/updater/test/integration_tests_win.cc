@@ -52,7 +52,8 @@ base::FilePath GetProductPath() {
   if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &app_data_dir))
     return base::FilePath();
   return app_data_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
-      .AppendASCII(PRODUCT_FULLNAME_STRING);
+      .AppendASCII(PRODUCT_FULLNAME_STRING)
+      .AppendASCII(UPDATER_VERSION_STRING);
 }
 
 base::FilePath GetExecutablePath() {

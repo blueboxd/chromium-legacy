@@ -2314,11 +2314,11 @@ void RTCPeerConnectionHandler::OnAddReceiverPlanB(
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DCHECK(receiver_state.is_initialized());
   TRACE_EVENT0("webrtc", "RTCPeerConnectionHandler::OnAddReceiverPlanB");
-  auto web_track = receiver_state.track_ref()->web_track();
+  auto* track = receiver_state.track_ref()->track();
   // Update metrics.
   track_metrics_.AddTrack(MediaStreamTrackMetrics::Direction::kReceive,
-                          MediaStreamTrackMetricsKind(web_track),
-                          web_track.Id().Utf8());
+                          MediaStreamTrackMetricsKind(track),
+                          track->Id().Utf8());
   for (const auto& stream_id : receiver_state.stream_ids()) {
     // New remote stream?
     if (!IsRemoteStream(rtp_receivers_, stream_id)) {

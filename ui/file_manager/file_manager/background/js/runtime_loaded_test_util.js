@@ -30,6 +30,17 @@
 let ElementObject;
 
 /**
+ * Object containing common key modifiers: shift, alt, and ctrl.
+ *
+ * @typedef {{
+ *   shift: (boolean|undefined),
+ *   alt: (boolean|undefined),
+ *   ctrl: (boolean|undefined),
+ * }}
+ */
+let KeyModifiers;
+
+/**
  * Extract the information of the given element.
  * @param {Element} element Element to be extracted.
  * @param {Window} contentWindow Window to be tested.
@@ -514,8 +525,8 @@ test.util.sync.fakeKeyDown =
  *     If targetQuery is an array, |targetQuery[0]| specifies the first
  *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
  *     the first element, and so on.
- * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
- *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @param {KeyModifiers=} opt_keyModifiers Object containing common key
+ *     modifiers : shift, alt, and ctrl.
  * @param {number=} opt_button Mouse button number as per spec, e.g.: 2 for
  *     right-click.
  * @param {Object=} opt_eventProperties Additional properties to pass to each
@@ -576,8 +587,8 @@ test.util.sync.fakeMouseClick =
  *     If targetQuery is an array, |targetQuery[0]| specifies the first
  *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
  *     the first element, and so on.
- * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
- *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @param {KeyModifiers=} opt_keyModifiers Object containing common key
+ *     modifiers : shift, alt, and ctrl.
  * @return {boolean} True if the event was sent to the target, false otherwise.
  */
 test.util.sync.fakeMouseOver =
@@ -604,8 +615,8 @@ test.util.sync.fakeMouseOver =
  *     If targetQuery is an array, |targetQuery[0]| specifies the first
  *     element(s), |targetQuery[1]| specifies elements inside the shadow DOM of
  *     the first element, and so on.
- * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
- *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @param {KeyModifiers=} opt_keyModifiers Object containing common key
+ *     modifiers : shift, alt, and ctrl.
  * @return {boolean} True if the event is sent to the target, false otherwise.
  */
 test.util.sync.fakeMouseOut =
@@ -637,8 +648,8 @@ test.util.sync.fakeMouseOut =
  *
  * @param {Window} contentWindow Window to be tested.
  * @param {string} targetQuery Query to specify the element.
- * @param {{shift: boolean, alt: boolean, ctrl: boolean}=} opt_keyModifiers
- *     Object containing common key modifiers : shift, alt, and ctrl.
+ * @param {KeyModifiers=} opt_keyModifiers Object containing common key
+ *     modifiers : shift, alt, and ctrl.
  * @return {boolean} True if the event is sent to the target, false
  *     otherwise.
  */

@@ -9,10 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "chrome/browser/hid/hid_chooser_context.h"
 #include "content/public/browser/hid_chooser.h"
 #include "services/device/public/mojom/hid.mojom-forward.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
@@ -25,7 +26,8 @@ class RenderFrameHost;
 class HidChooserContext;
 
 // HidChooserController provides data for the WebHID API permission prompt.
-class HidChooserController : public ChooserController {
+class HidChooserController : public ChooserController,
+                             public HidChooserContext::DeviceObserver {
  public:
   // Construct a chooser controller for Human Interface Devices (HID).
   // |render_frame_host| is used to initialize the chooser strings and to access
@@ -36,6 +38,8 @@ class HidChooserController : public ChooserController {
   HidChooserController(content::RenderFrameHost* render_frame_host,
                        std::vector<blink::mojom::HidDeviceFilterPtr> filters,
                        content::HidChooser::Callback callback);
+  HidChooserController(HidChooserController&) = delete;
+  HidChooserController& operator=(HidChooserController&) = delete;
   ~HidChooserController() override;
 
   // ChooserController:
@@ -50,6 +54,12 @@ class HidChooserController : public ChooserController {
   void Close() override;
   void OpenHelpCenterUrl() const override;
 
+  // HidChooserContext::DeviceObserver:
+  void OnDeviceAdded(const device::mojom::HidDeviceInfo& device_info) override;
+  void OnDeviceRemoved(
+      const device::mojom::HidDeviceInfo& device_info) override;
+  void OnHidManagerConnectionError() override;
+
  private:
   void OnGotDevices(std::vector<device::mojom::HidDeviceInfoPtr> devices);
   bool DisplayDevice(const device::mojom::HidDeviceInfo& device) const;
@@ -59,6 +69,12 @@ class HidChooserController : public ChooserController {
   // representing the physical device. If the chooser item does not yet exist, a
   // new item is appended. Returns true if an item was appended.
   bool AddDeviceInfo(const device::mojom::HidDeviceInfo& device_info);
+
+  // Remove |device_info| from |device_map_|. The device info is removed from
+  // the chooser item representing the physical device. If this would cause the
+  // item to be empty, the chooser item is removed. Does nothing if the device
+  // is not in the chooser item. Returns true if an item was removed.
+  bool RemoveDeviceInfo(const device::mojom::HidDeviceInfo& device_info);
 
   std::vector<blink::mojom::HidDeviceFilterPtr> filters_;
   content::HidChooser::Callback callback_;
@@ -80,9 +96,13 @@ class HidChooserController : public ChooserController {
   // in the chooser.
   std::vector<std::string> items_;
 
-  base::WeakPtrFactory<HidChooserController> weak_factory_{this};
+  ScopedObserver<HidChooserContext,
+                 HidChooserContext::DeviceObserver,
+                 &HidChooserContext::AddDeviceObserver,
+                 &HidChooserContext::RemoveDeviceObserver>
+      observer_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(HidChooserController);
+  base::WeakPtrFactory<HidChooserController> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_HID_HID_CHOOSER_CONTROLLER_H_

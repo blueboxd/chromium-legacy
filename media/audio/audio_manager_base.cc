@@ -26,6 +26,7 @@
 #include "media/audio/fake_audio_output_stream.h"
 #include "media/base/media_switches.h"
 
+#include "base/logging.h"
 #include "media/audio/audio_input_stream_data_interceptor.h"
 
 namespace media {

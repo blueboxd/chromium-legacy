@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"

@@ -14,7 +14,6 @@ settings_namespace_rewrites = [
   "settings.AccountManagerBrowserProxy|AccountManagerBrowserProxy",
   "settings.Account|Account",
   "settings.ALL_SITES_DIALOG|ALL_SITES_DIALOG",
-  "settings.AllSitesAction|AllSitesAction",
   "settings.AllSitesAction2|AllSitesAction2",
   "settings.AndroidInfoBrowserProxy|AndroidInfoBrowserProxy",
   "settings.AndroidSmsInfo|AndroidSmsInfo",

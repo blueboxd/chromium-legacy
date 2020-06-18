@@ -6,19 +6,23 @@
 #define CHROME_BROWSER_PROFILES_PROFILE_ACTIVITY_METRICS_RECORDER_H_
 
 #include <stddef.h>
+#include <string>
 
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
 class Browser;
-class Profile;
 
 class ProfileActivityMetricsRecorder
     : public BrowserListObserver,
-      public metrics::DesktopSessionDurationTracker::Observer {
+      public metrics::DesktopSessionDurationTracker::Observer,
+      public ProfileObserver {
  public:
   // Initializes a |ProfileActivityMetricsRecorder| object and starts
   // tracking/recording.
@@ -34,6 +38,9 @@ class ProfileActivityMetricsRecorder
   void OnSessionEnded(base::TimeDelta session_length,
                       base::TimeTicks session_end) override;
 
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
+
  private:
   ProfileActivityMetricsRecorder();
   ~ProfileActivityMetricsRecorder() override;
@@ -45,6 +52,8 @@ class ProfileActivityMetricsRecorder
   base::TimeTicks last_profile_session_end_;
 
   base::ActionCallback action_callback_;
+
+  ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileActivityMetricsRecorder);
 };

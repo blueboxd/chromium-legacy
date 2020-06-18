@@ -17,6 +17,14 @@ DecodedDrawImage::DecodedDrawImage(sk_sp<const SkImage> image,
       filter_quality_(filter_quality),
       is_budgeted_(is_budgeted) {}
 
+DecodedDrawImage::DecodedDrawImage(const gpu::Mailbox& mailbox,
+                                   SkFilterQuality filter_quality)
+    : mailbox_(mailbox),
+      src_rect_offset_(SkSize::MakeEmpty()),
+      scale_adjustment_(SkSize::Make(1.f, 1.f)),
+      filter_quality_(filter_quality),
+      is_budgeted_(true) {}
+
 DecodedDrawImage::DecodedDrawImage(
     base::Optional<uint32_t> transfer_cache_entry_id,
     const SkSize& src_rect_offset,

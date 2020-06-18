@@ -37,7 +37,8 @@ namespace task_manager {
 namespace {
 
 base::string16 GetLocalizedTitle(const base::string16& title,
-                                 int process_type) {
+                                 int process_type,
+                                 ChildProcessTask::ProcessSubtype subtype) {
   base::string16 result_title = title;
   if (result_title.empty()) {
     switch (process_type) {
@@ -93,10 +94,15 @@ base::string16 GetLocalizedTitle(const base::string16& title,
                                         result_title);
     }
     case content::PROCESS_TYPE_RENDERER: {
-      if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kTaskManagerShowExtraRenderers)) {
-        return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_RENDERER_PREFIX,
-                                          result_title);
+      switch (subtype) {
+        case ChildProcessTask::ProcessSubtype::kSpareRenderProcess:
+          return l10n_util::GetStringUTF16(
+              IDS_TASK_MANAGER_SPARE_RENDERER_PREFIX);
+        case ChildProcessTask::ProcessSubtype::kUnknownRenderProcess:
+          return l10n_util::GetStringUTF16(
+              IDS_TASK_MANAGER_UNKNOWN_RENDERER_PREFIX);
+        default:
+          break;
       }
       FALLTHROUGH;
     }
@@ -159,8 +165,9 @@ bool UsesV8Memory(int process_type) {
 
 gfx::ImageSkia* ChildProcessTask::s_icon_ = nullptr;
 
-ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data)
-    : Task(GetLocalizedTitle(data.name, data.process_type),
+ChildProcessTask::ChildProcessTask(const content::ChildProcessData& data,
+                                   ProcessSubtype subtype)
+    : Task(GetLocalizedTitle(data.name, data.process_type, subtype),
            FetchIcon(IDR_PLUGINS_FAVICON, &s_icon_),
            data.GetProcess().Handle()),
       process_resources_sampler_(CreateProcessResourcesSampler(data.id)),

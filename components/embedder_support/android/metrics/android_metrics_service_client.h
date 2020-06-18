@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/metrics/field_trial.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -136,6 +137,9 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
+  // Runs |closure| when CollectFinalMetricsForLog() is called.
+  void SetCollectFinalMetricsForLogClosureForTesting(base::OnceClosure closure);
+
   metrics::MetricsStateManager* metrics_state_manager() const {
     return metrics_state_manager_.get();
   }
@@ -226,6 +230,8 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // When non-zero, this overrides the default value in
   // GetStandardUploadInterval().
   base::TimeDelta overridden_upload_interval_;
+
+  base::OnceClosure collect_final_metrics_for_log_closure_;
 
   // MetricsServiceClient may be created before the UI thread is promoted to
   // BrowserThread::UI. Use |sequence_checker_| to enforce that the

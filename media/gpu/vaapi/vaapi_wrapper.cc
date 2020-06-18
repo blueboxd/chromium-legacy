@@ -301,19 +301,6 @@ bool IsBlackListedDriver(const std::string& va_vendor_string,
   if (!IsModeEncoding(mode))
     return false;
 
-  // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
-  // default.
-  if (VendorStringToImplementationType(va_vendor_string) ==
-          VAImplementation::kMesaGallium &&
-      base::Contains(va_vendor_string, "AMD STONEY") &&
-      !base::FeatureList::IsEnabled(kVaapiH264AMDEncoder)) {
-    constexpr VAProfile kH264Profiles[] = {VAProfileH264Baseline,
-                                           VAProfileH264Main, VAProfileH264High,
-                                           VAProfileH264ConstrainedBaseline};
-    if (base::Contains(kH264Profiles, va_profile))
-      return true;
-  }
-
   // TODO(posciak): Remove once VP8 encoding is to be enabled by default.
   if (va_profile == VAProfileVP8Version0_3 &&
       !base::FeatureList::IsEnabled(kVaapiVP8Encoder)) {

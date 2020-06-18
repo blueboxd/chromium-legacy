@@ -702,6 +702,8 @@ class CORE_EXPORT LocalFrameView final
 
   bool HasDominantVideoElement() const;
 
+  PaintLayer* GetFullScreenOverlayLayer() const;
+
  protected:
   void FrameRectsChanged(const IntRect&) override;
   void SelfVisibleChanged() override;

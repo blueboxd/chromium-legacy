@@ -12,8 +12,10 @@
 #include "chrome/browser/chromeos/printing/print_management/print_job_info_mojom_conversions.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 
 namespace chromeos {
@@ -30,7 +32,8 @@ using printing_manager::mojom::PrintJobsObserver;
 PrintingManager::PrintingManager(
     PrintJobHistoryService* print_job_history_service,
     HistoryService* history_service,
-    CupsPrintJobManager* cups_print_job_manager)
+    CupsPrintJobManager* cups_print_job_manager,
+    PrefService* pref_service)
     : print_job_history_service_(print_job_history_service),
       history_service_(history_service),
       cups_print_job_manager_(cups_print_job_manager) {
@@ -38,6 +41,9 @@ PrintingManager::PrintingManager(
   DCHECK(cups_print_job_manager_);
   history_service_->AddObserver(this);
   cups_print_job_manager_->AddObserver(this);
+
+  delete_print_job_history_allowed_.Init(prefs::kDeletePrintJobHistoryAllowed,
+                                         pref_service);
 }
 
 PrintingManager::~PrintingManager() {
@@ -54,7 +60,7 @@ void PrintingManager::GetPrintJobs(GetPrintJobsCallback callback) {
 }
 
 void PrintingManager::DeleteAllPrintJobs(DeleteAllPrintJobsCallback callback) {
-  if (IsHistoryDeletionPreventedByPolicy()) {
+  if (!IsHistoryDeletionAllowedByPolicy()) {
     std::move(callback).Run(/*success=*/false);
     return;
   }
@@ -83,11 +89,16 @@ void PrintingManager::ObservePrintJobs(
   std::move(callback).Run();
 }
 
+void PrintingManager::GetDeletePrintJobHistoryAllowedByPolicy(
+    GetDeletePrintJobHistoryAllowedByPolicyCallback callback) {
+  return std::move(callback).Run(IsHistoryDeletionAllowedByPolicy());
+}
+
 void PrintingManager::OnURLsDeleted(HistoryService* history_service,
                                     const DeletionInfo& deletion_info) {
   // We only handle deletion of all history because it is an explicit action by
   // user to explicitly remove all their history-related content.
-  if (IsHistoryDeletionPreventedByPolicy() || !deletion_info.IsAllHistory()) {
+  if (!IsHistoryDeletionAllowedByPolicy() || !deletion_info.IsAllHistory()) {
     return;
   }
 
@@ -189,11 +200,8 @@ void PrintingManager::BindInterface(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-// TODO(crbug/1053704): Implement the policy and check for the policy here.
-bool PrintingManager::IsHistoryDeletionPreventedByPolicy() {
-  NOTIMPLEMENTED()
-      << "IsHistoryDeletionPreventedByPolicy is not yet implemented";
-  return true;
+bool PrintingManager::IsHistoryDeletionAllowedByPolicy() {
+  return delete_print_job_history_allowed_.GetValue();
 }
 
 void PrintingManager::Shutdown() {

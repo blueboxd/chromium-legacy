@@ -48,6 +48,7 @@ class NetworkFetcherWinHTTP
   void PostRequest(
       const GURL& url,
       const std::string& post_data,
+      const std::string& content_type,
       const base::flat_map<std::string, std::string>& post_additional_headers,
       FetchStartedCallback fetch_started_callback,
       FetchProgressCallback fetch_progress_callback,
@@ -129,7 +130,7 @@ class NetworkFetcherWinHTTP
   std::string path_for_request_;
 
   base::StringPiece16 verb_;
-  base::StringPiece16 content_type_;
+  base::string16 content_type_;
   WriteDataCallback write_data_callback_;
   HRESULT net_error_ = S_OK;
   std::string etag_;

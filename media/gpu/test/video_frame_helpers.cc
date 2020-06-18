@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind_helpers.h"
+#include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"

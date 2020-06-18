@@ -48,7 +48,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
     virtual void OnPortStatusChanged() = 0;
 
    protected:
-    ~PortObserver() override {}
+    ~PortObserver() override = default;
   };
 
   // |core| owns and out-lives us.

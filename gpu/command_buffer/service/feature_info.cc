@@ -170,35 +170,6 @@ bool IsWebGLDrawBuffersSupported(bool webglCompatibilityContext,
 
 }  // anonymous namespace.
 
-namespace {
-
-enum GpuTextureResultR16_L16 {
-  // Values synced with 'GpuTextureResultR16_L16' in
-  // src/tools/metrics/histograms/histograms.xml
-  kHaveNone = 0,
-  kHaveR16 = 1,
-  kHaveL16 = 2,
-  kHaveR16AndL16 = 3,
-  kMax = kHaveR16AndL16
-};
-
-// TODO(riju): For UMA, remove after crbug.com/759456 is resolved.
-bool g_r16_is_present;
-bool g_l16_is_present;
-
-GpuTextureResultR16_L16 GpuTextureUMAHelper() {
-  if (g_r16_is_present && g_l16_is_present) {
-    return GpuTextureResultR16_L16::kHaveR16AndL16;
-  } else if (g_r16_is_present) {
-    return GpuTextureResultR16_L16::kHaveR16;
-  } else if (g_l16_is_present) {
-    return GpuTextureResultR16_L16::kHaveL16;
-  }
-  return GpuTextureResultR16_L16::kHaveNone;
-}
-
-}  // anonymous namespace.
-
 FeatureInfo::FeatureFlags::FeatureFlags() = default;
 
 FeatureInfo::FeatureInfo() {
@@ -1471,7 +1442,6 @@ void FeatureInfo::InitializeFeatures() {
        gfx::HasExtension(extensions, "GL_EXT_texture_norm16"))) {
     AddExtensionString("GL_EXT_texture_norm16");
     feature_flags_.ext_texture_norm16 = true;
-    g_r16_is_present = true;
 
     validators_.pixel_type.AddValue(GL_UNSIGNED_SHORT);
     validators_.pixel_type.AddValue(GL_SHORT);
@@ -1520,10 +1490,6 @@ void FeatureInfo::InitializeFeatures() {
     // So didn't expose all buffer formats here.
     feature_flags_.gpu_memory_buffer_formats.Add(gfx::BufferFormat::R_16);
   }
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "GPU.TextureR16Ext_LuminanceF16", GpuTextureUMAHelper(),
-      static_cast<int>(GpuTextureResultR16_L16::kMax) + 1);
 
   if (enable_es3 && gfx::HasExtension(extensions, "GL_EXT_window_rectangles")) {
     AddExtensionString("GL_EXT_window_rectangles");
@@ -1955,9 +1921,6 @@ void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
     validators_.texture_internal_format_storage.AddValue(
         GL_LUMINANCE_ALPHA16F_EXT);
   }
-
-  g_l16_is_present =
-      enable_texture_half_float && feature_flags_.ext_texture_storage;
 }
 
 bool FeatureInfo::IsES3Capable() const {

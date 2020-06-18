@@ -20,6 +20,8 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/variations/variations_http_header_provider.h"
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -30,7 +32,6 @@ class PrefService;
 namespace autofill {
 
 class AutofillDriver;
-class FormStructure;
 class LogManager;
 
 const size_t kMaxAPIQueryGetSize = 10240;  // 10 KiB
@@ -52,10 +53,10 @@ class AutofillDownloadManager {
    public:
     // Called when field type predictions are successfully received from the
     // server. |response| contains the server response for the forms
-    // represented by |form_signatures|.
+    // represented by |signatures|.
     virtual void OnLoadedServerPredictions(
         std::string response,
-        const std::vector<std::string>& form_signatures) = 0;
+        const FormAndFieldSignatures& signatures) = 0;
 
     // These notifications are used to help with testing.
     // Called when heuristic either successfully considered for upload and
@@ -65,7 +66,7 @@ class AutofillDownloadManager {
     // |form_signature| - the signature of the requesting form.
     // |request_type| - type of request that failed.
     // |http_error| - HTTP error code.
-    virtual void OnServerRequestError(const std::string& form_signature,
+    virtual void OnServerRequestError(FormSignature form_signature,
                                       RequestType request_type,
                                       int http_error) {}
 
@@ -135,7 +136,8 @@ class AutofillDownloadManager {
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadManagerTest, RetryLimit_Query);
 
   struct FormRequestData;
-  typedef std::list<std::pair<std::string, std::string> > QueryRequestCache;
+  typedef std::list<std::pair<FormAndFieldSignatures, std::string>>
+      QueryRequestCache;
 
   // Returns the URL and request method to use when issuing the request
   // described by |request_data|. If the returned method is GET, the URL
@@ -163,11 +165,11 @@ class AutofillDownloadManager {
 
   // Caches query request. |forms_in_query| is a vector of form signatures in
   // the query. |query_data| is the successful data returned over the wire.
-  void CacheQueryRequest(const std::vector<std::string>& forms_in_query,
+  void CacheQueryRequest(const FormAndFieldSignatures& forms_in_query,
                          const std::string& query_data);
   // Returns true if query is in the cache, while filling |query_data|, false
   // otherwise. |forms_in_query| is a vector of form signatures in the query.
-  bool CheckCacheForQueryRequest(const std::vector<std::string>& forms_in_query,
+  bool CheckCacheForQueryRequest(const FormAndFieldSignatures& forms_in_query,
                                  std::string* query_data) const;
   // Concatenates |forms_in_query| into one signature.
   std::string GetCombinedSignature(

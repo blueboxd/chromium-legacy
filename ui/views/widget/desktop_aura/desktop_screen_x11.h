@@ -20,10 +20,6 @@
 namespace views {
 class DesktopScreenX11Test;
 
-namespace test {
-class DesktopScreenX11TestApi;
-}
-
 // Screen implementation that talks to XRandR
 class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
                                       public ui::XEventDispatcher,
@@ -67,7 +63,6 @@ class VIEWS_EXPORT DesktopScreenX11 : public display::Screen,
 
  private:
   friend class DesktopScreenX11Test;
-  friend class test::DesktopScreenX11TestApi;
 
   // ui::XDisplayManager::Delegate:
   void OnXDisplayListUpdated() override;

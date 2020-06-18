@@ -31,7 +31,6 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/prefs/pref_service.h"
-#include "components/security_state/core/security_state_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -242,18 +241,6 @@ void TabSpecificContentSettings::WebContentsHandler::ReadyToCommitNavigation(
   if (!WillNavigationCreateNewTabSpecificContentSettingsOnCommit(
           navigation_handle)) {
     return;
-  }
-
-  PrefService* prefs = delegate_->GetPrefs();
-  if (prefs &&
-      !prefs->GetBoolean(
-          security_state::prefs::kStricterMixedContentTreatmentEnabled)) {
-    auto* render_frame_host = navigation_handle->GetRenderFrameHost();
-    mojo::AssociatedRemote<content_settings::mojom::ContentSettingsAgent>
-        content_settings_agent;
-    render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
-        &content_settings_agent);
-    content_settings_agent->SetDisabledMixedContentUpgrades();
   }
 
   // There may be content settings that were updated for the navigated URL.

@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_INSTALLABLE_INSTALLABLE_METRICS_H_
 
 #include "base/macros.h"
+#include "base/time/time.h"
+#include "content/public/browser/service_worker_context.h"
 
 namespace content {
 class WebContents;
@@ -79,6 +81,21 @@ enum class WebappInstallSource {
   COUNT,
 };
 
+// This is the result of the promotability check that is recorded in the
+// Webapp.CheckServiceWorker.Status histogram.
+// Do not reorder or reuse any values in this enum. New values must be added to
+// the end only.
+enum class ServiceWorkerOfflineCapability {
+  kNoServiceWorker,
+  kServiceWorkerNoFetchHandler,
+  // Service worker with a fetch handler but no offline support.
+  kServiceWorkerNoOfflineSupport,
+  // Service worker with a fetch handler with offline support.
+  kServiceWorkerWithOfflineSupport,
+  // Note: kMaxValue is needed only for histograms.
+  kMaxValue = kServiceWorkerWithOfflineSupport,
+};
+
 class InstallableMetrics {
  public:
   // Records |source| in the Webapp.Install.InstallSource histogram.
@@ -94,6 +111,21 @@ class InstallableMetrics {
   static WebappInstallSource GetInstallSource(
       content::WebContents* web_contents,
       InstallTrigger trigger);
+
+  // Records |time| in the Webapp.CheckServiceWorker.Time histogram.
+  static void RecordCheckServiceWorkerTime(base::TimeDelta time);
+
+  // Records |status| in the Webapp.CheckServiceWorker.Status histogram.
+  static void RecordCheckServiceWorkerStatus(
+      ServiceWorkerOfflineCapability status);
+
+  // Converts ServiceWorkerCapability to ServiceWorkerOfflineCapability.
+  static ServiceWorkerOfflineCapability ConvertFromServiceWorkerCapability(
+      content::ServiceWorkerCapability capability);
+
+  // Converts OfflineCapability to ServiceWorkerOfflineCapability.
+  static ServiceWorkerOfflineCapability ConvertFromOfflineCapability(
+      content::OfflineCapability capability);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InstallableMetrics);

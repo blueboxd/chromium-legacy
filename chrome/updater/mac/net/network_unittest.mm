@@ -108,7 +108,7 @@ TEST_F(ChromeUpdaterNetworkMacTest, NetworkFetcherMacPostRequest) {
   const GURL url = test_server.GetURL("/echo");
 
   fetcher->PostRequest(
-      url, "", {},
+      url, {}, {}, {},
       base::BindOnce(&ChromeUpdaterNetworkMacTest::StartedCallback,
                      base::Unretained(this)),
       base::BindRepeating(&ChromeUpdaterNetworkMacTest::ProgressCallback,

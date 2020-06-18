@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "media/base/audio_bus.h"
 #include "media/base/limits.h"
 #include "media/base/timestamp_constants.h"

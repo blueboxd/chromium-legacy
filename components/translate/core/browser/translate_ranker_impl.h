@@ -142,7 +142,7 @@ class TranslateRankerImpl : public TranslateRanker {
   std::unique_ptr<assist_ranker::RankerModel> model_;
 
   // Tracks whether or not translate event logging is enabled.
-  bool is_logging_enabled_ = true;
+  bool is_uma_logging_enabled_ = true;
 
   // Tracks whether or not translate ranker querying is enabled.
   bool is_query_enabled_ = true;

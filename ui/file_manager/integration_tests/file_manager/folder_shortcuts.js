@@ -16,7 +16,7 @@
 
   /**
    * Entry set used for the folder shortcut tests.
-   * @type {Array<TestEntryInfo>}
+   * @type {!Array<TestEntryInfo>}
    */
   const FOLDER_ENTRY_SET = [
     ENTRIES.directoryA,

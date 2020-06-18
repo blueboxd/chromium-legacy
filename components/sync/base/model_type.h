@@ -285,7 +285,7 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
 }
 
 // This is the subset of UserTypes() that have priority over other types.  These
-// types are synced before other user types and are never encrypted.
+// types are synced before other user types.
 constexpr ModelTypeSet PriorityUserTypes() {
   return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
                       SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,

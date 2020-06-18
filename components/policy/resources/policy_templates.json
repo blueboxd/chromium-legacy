@@ -1030,6 +1030,7 @@
         'ExternalPrintServersWhitelist',
         'PrinterTypeDenyList',
         'PrintRasterizationMode',
+        'DeletePrintJobHistoryAllowed',
       ]
     },
     {
@@ -20891,6 +20892,28 @@
       When this policy is not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will be in Full mode.'''
     },
     {
+      'name': 'DeletePrintJobHistoryAllowed',
+      'owners': ['jimmyxgong@chromium.org', 'file://printing/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': False,
+      'id': 720,
+      'caption': '''Allow print job history to be deleted''',
+      'tags': [],
+      'desc': '''Controls whether print job history can be deleted.
+
+      Locally stored print jobs can be deleted through the print management app or through deleting the users's browser history.
+
+      When this policy is enabled or unset, the user will be able to delete their print job history through the print mangement app or through deleting their browser history.
+
+      When this policy is disabled, the user will not be able to delete their print job history through the print management app or through deleting their browser history.'''
+    },
+    {
       'name': 'AmbientAuthenticationInPrivateModesEnabled',
       'owners': ['rhalavati@chromium.org', 'roagarwal@chromium.org', 'chrome-privacy-core@google.com'],
       'type': 'int-enum',
@@ -20975,11 +20998,13 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
+      'deprecated': True,
       'example_value': True,
       'id': 652,
       'caption': '''Enable stricter treatment for mixed content''',
       'tags': [],
-      'desc': '''This policy controls the treatment for mixed content (HTTP content in HTTPS sites) in the browser.
+      'desc': '''This policy has been removed as of M85, please use <ph name="POLICY_NAME">InsecureContentAllowedForUrls</ph> to allow insecure content on a per-site basis instead.
+       This policy controls the treatment for mixed content (HTTP content in HTTPS sites) in the browser.
        If the policy is set to true or unset, audio and video mixed content will be autoupgraded to HTTPS (i.e. the URL will be rewritten as HTTPS, without a fallback if the resource is not available over HTTPS) and a 'Not Secure' warning will be shown in the URL bar for image mixed content.
        If the policy is set to false, autoupgrades will be disabled for audio and video, and no warning will be shown for images.
        This policy does not affect other types of mixed content other than audio, video, and images.
@@ -22344,6 +22369,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 719,
+  'highest_id_currently_used': 720,
   'highest_atomic_group_id_currently_used': 38
 }

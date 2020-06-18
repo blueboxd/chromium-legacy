@@ -3,127 +3,170 @@
 
 <head>
   <meta charset="utf-8">
-  <title id="network">$i18n{titleText}</title>
+  <title>$i18n{titleText}</title>
+
+  <link rel="stylesheet" href="chrome://resources/css/tabs.css">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="chrome://network/network_ui.css">
+
   <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
   <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_icon.html">
   <link rel="import" href="chrome://resources/cr_components/chromeos/network/network_select.html">
   <link rel="import" href="chrome://resources/cr_components/chromeos/network_health/network_health_summary.html">
   <link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
 
+  <script src="chrome://resources/js/cr.js"></script>
+  <script src="chrome://resources/js/cr/ui.js"></script>
+  <script src="chrome://resources/js/cr/ui/tabs.js"></script>
   <script src="chrome://resources/js/load_time_data.js"></script>
   <script src="chrome://resources/js/util.js"></script>
+
   <script src="chrome://network/strings.js"></script>
-  <script src="chrome://network/network_ui.js"></script>
 
   <style>
+    tabpanel > div {
+      margin-bottom: 10px;
+    }
+
+    #global-policy {
+      white-space: pre-wrap;
+    }
+
     #cellular-error-text {
       color: red;
+    }
+
+    #select-div {
+      display: flex;
+      height: 400px;
+      width: 500px;
+    }
+
+    network-select {
+      flex: 1;
     }
   </style>
 </head>
 
 <body>
-  <div>$i18n{autoRefreshText}</div>
-  <span>$i18nRaw{deviceLogLinkText}</span>
 
-  <div>
-    <h2>$i18n{cellularActivationLabel}</h2>
-    <cr-button class="action-button" id="cellular-activation-button">
-      $i18n{cellularActivationButtonText}
-    </cr-button>
-    <div id="cellular-error-text" hidden>$i18n{noCellularErrorText}</div>
-  </div>
+<tabbox id="network-ui">
+  <tabs>
+    <tab>General</tab>
+    <tab>Network Health</tab>
+    <tab>Network Select</tab>
+  </tabs>
+  <tabpanels>
+    <tabpanel id="general">
+      <h2>$i18n{titleText}</h2>
+      <div>$i18n{autoRefreshText}</div>
+      <span>$i18nRaw{deviceLogLinkText}</span>
 
-  <div>
-    <h2>$i18n{addNewWifiLabel}</h2>
-    <cr-button class="action-button" id="add-new-wifi-button">
-      $i18n{addNewWifiButtonText}
-    </cr-button>
-  </div>
+      <div>
+        <h2>$i18n{cellularActivationLabel}</h2>
+        <cr-button class="action-button" id="cellular-activation-button">
+          $i18n{cellularActivationButtonText}
+        </cr-button>
+        <div id="cellular-error-text" hidden>$i18n{noCellularErrorText}</div>
+      </div>
 
-  <h2>$i18n{globalPolicyLabel}</h2>
-  <div id="global-policy"></div>
+      <div>
+        <h2>$i18n{addNewWifiLabel}</h2>
+        <cr-button class="action-button" id="add-new-wifi-button">
+          $i18n{addNewWifiButtonText}
+        </cr-button>
+      </div>
 
-  <div id="select-div">
-    <network-select></network-select>
-  </div>
-  <div>
-    <cr-button class="action-button" id="refresh">
-      $i18n{networkRefreshText}
-    </cr-button>
-  </div>
+      <h2>$i18n{globalPolicyLabel}</h2>
+      <div id="global-policy"></div>
+      <div>
+        <cr-button class="action-button" id="refresh">
+          $i18n{networkRefreshText}
+        </cr-button>
+      </div>
 
+      <h2>$i18n{networkListsLabel}</h2>
 
-  <h2>$i18n{networkHealthLabel}</h2>
-  <network-health-summary></network-health-summary>
+      <div>$i18n{clickToExpandText}</div>
+      <div>
+        <span>$i18n{propertyFormatText}</span>
+        <select id="get-property-format">
+          <option value="normal">$i18n{normalFormatOption}</option>
+          <option value="managed">$i18n{managedFormatOption}</option>
+          <option value="state">$i18n{stateFormatOption}</option>
+          <option value="shill">$i18n{shillFormatOption}</option>
+        </select>
+      </div>
 
-  <h2>$i18n{networkListsLabel}</h2>
+      <h3>$i18n{devicesLabel}</h3>
+      <table id="device-state-table" class="state-table">
+        <tr class="state-table-header">
+          <td></td>
+          <td></td>
+          <td>Type</td>
+          <td>State</td>
+        </tr>
+      </table>
 
-  <div>$i18n{clickToExpandText}</div>
-  <div>
-    <span>$i18n{propertyFormatText}</span>
-    <select id="get-property-format">
-      <option value="normal">$i18n{normalFormatOption}</option>
-      <option value="managed">$i18n{managedFormatOption}</option>
-      <option value="state">$i18n{stateFormatOption}</option>
-      <option value="shill">$i18n{shillFormatOption}</option>
-    </select>
-  </div>
+      <h3>$i18n{visibleNetworksLabel}</h3>
+      <table id="network-state-table" class="state-table">
+        <tr class="state-table-header">
+          <td></td>
+          <td></td>
+          <td>GUID</td>
+          <td>Name</td>
+          <td>Type</td>
+          <td>State</td>
+          <td>Connect?</td>
+          <td>Error</td>
+          <td>Security</td>
+          <td>Tech</td>
+          <td>Activation</td>
+          <td>Roam</td>
+          <td>Frequency</td>
+          <td>Strength</td>
+        </tr>
+      </table>
 
-  <h3>$i18n{devicesLabel}</h3>
-  <table id="device-state-table" class="state-table">
-    <tr class="state-table-header">
-      <td></td>
-      <td></td>
-      <td>Type</td>
-      <td>State</td>
-    </tr>
-  </table>
+      <h3>$i18n{ethernetEapNetworkLabel}</h3>
+      <table id="ethernet-eap-state-table" class="state-table">
+        <tr class="state-table-header">
+          <td></td>
+          <td></td>
+          <td>GUID</td>
+          <td>Name</td>
+          <td>Type</td>
+          <td>ONC Source</td>
+        </tr>
+      </table>
 
-  <h3>$i18n{visibleNetworksLabel}</h3>
-  <table id="network-state-table" class="state-table">
-    <tr class="state-table-header">
-      <td></td>
-      <td></td>
-      <td>GUID</td>
-      <td>Name</td>
-      <td>Type</td>
-      <td>State</td>
-      <td>Connect?</td>
-      <td>Error</td>
-      <td>Security</td>
-      <td>Tech</td>
-      <td>Activation</td>
-      <td>Roam</td>
-      <td>Frequency</td>
-      <td>Strength</td>
-    </tr>
-  </table>
+      <h3>$i18n{favoriteNetworksLabel}</h3>
+      <table id="favorite-state-table" class="state-table">
+        <tr class="state-table-header">
+          <td></td>
+          <td></td>
+          <td>GUID</td>
+          <td>Name</td>
+          <td>Type</td>
+          <td>ONC Source</td>
+        </tr>
+      </table>
 
-  <h3>$i18n{ethernetEapNetworkLabel}</h3>
-  <table id="ethernet-eap-state-table" class="state-table">
-    <tr class="state-table-header">
-      <td></td>
-      <td></td>
-      <td>GUID</td>
-      <td>Name</td>
-      <td>Type</td>
-      <td>ONC Source</td>
-    </tr>
-  </table>
+    </tabpanel>
+    <tabpanel id="health">
+      <h2>$i18n{networkHealthLabel}</h2>
+      <network-health-summary></network-health-summary>
+    </tabpanel>
 
-  <h3>$i18n{favoriteNetworksLabel}</h3>
-  <table id="favorite-state-table" class="state-table">
-    <tr class="state-table-header">
-      <td></td>
-      <td></td>
-      <td>GUID</td>
-      <td>Name</td>
-      <td>Type</td>
-      <td>ONC Source</td>
-    </tr>
-  </table>
+    <tabpanel id="select">
+      <div id="select-div">
+        <network-select></network-select>
+      </div>
+    </tabpanel>
+  </tabpanels>
+</tabbox>
+
+<script src="network_ui.js"></script>
+
 </body>
 </html>

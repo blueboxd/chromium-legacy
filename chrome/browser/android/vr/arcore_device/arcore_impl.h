@@ -154,11 +154,11 @@ class ArCoreImpl : public ArCore {
 
   void CreateAnchor(
       const mojom::XRNativeOriginInformation& native_origin_information,
-      const mojom::Pose& native_origin_from_anchor,
+      const device::Pose& native_origin_from_anchor,
       CreateAnchorCallback callback) override;
   void CreatePlaneAttachedAnchor(
       const mojom::XRNativeOriginInformation& native_origin_information,
-      const mojom::Pose& native_origin_from_anchor,
+      const device::Pose& native_origin_from_anchor,
       uint64_t plane_id,
       CreateAnchorCallback callback) override;
 
@@ -230,7 +230,6 @@ class ArCoreImpl : public ArCore {
   // Returns true if the given native origin exists, false otherwise.
   bool NativeOriginExists(
       const mojom::XRNativeOriginInformation& native_origin_information,
-      const gfx::Transform& mojo_from_viewer,
       const std::vector<mojom::XRInputSourceStatePtr>& input_state);
 
   // Returns mojo_from_native_origin transform given native origin

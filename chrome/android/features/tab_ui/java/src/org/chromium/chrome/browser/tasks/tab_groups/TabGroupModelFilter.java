@@ -20,6 +20,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -732,7 +733,7 @@ public class TabGroupModelFilter extends TabModelFilter {
     }
 
     private static int getRootId(Tab tab) {
-        return ((TabImpl) tab).getRootId();
+        return CriticalPersistedTabData.from(tab).getRootId();
     }
 
     private boolean isMoveTabOutOfGroup(Tab movedTab) {

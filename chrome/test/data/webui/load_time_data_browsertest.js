@@ -25,11 +25,9 @@ TEST_F('LoadTimeDataTest', 'sanitizeInnerHtml', function() {
       '<a href="chrome://foo"></a>',
       loadTimeData.sanitizeInnerHtml('<a href="chrome://foo"></a>'));
   assertThrows(() => {
-    loadTimeData.sanitizeInnerHtml('<div></div>');
-  }, 'DIV is not supported');
-  assertEquals(
-      '<div></div>',
-      loadTimeData.sanitizeInnerHtml('<div></div>', {tags: ['div']}));
+    loadTimeData.sanitizeInnerHtml('<iframe></iframe>');
+  }, 'IFRAME is not supported');
+  assertEquals('<div></div>', loadTimeData.sanitizeInnerHtml('<div></div>'));
 });
 
 TEST_F('LoadTimeDataTest', 'getStringPieces', function() {

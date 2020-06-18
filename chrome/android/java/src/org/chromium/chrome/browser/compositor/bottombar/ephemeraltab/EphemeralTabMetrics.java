@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.StateChangeReason;
 
 /**
  * Metrics util class for ephemeral tab.

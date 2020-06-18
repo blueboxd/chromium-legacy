@@ -99,9 +99,9 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanging(
       ash::ShelfID::Deserialize(window->GetProperty(ash::kShelfIDKey));
 
   if (shelf_id.IsNull()) {
-    if (!plugin_vm::IsPluginVmWindow(window))
+    if (!plugin_vm::IsPluginVmAppWindow(window))
       return;
-    shelf_id = ash::ShelfID(plugin_vm::kPluginVmAppId);
+    shelf_id = ash::ShelfID(plugin_vm::kPluginVmShelfAppId);
     window->SetProperty(ash::kShelfIDKey,
                         new std::string(shelf_id.Serialize()));
     window->SetProperty(ash::kAppIDKey, new std::string(shelf_id.app_id));
@@ -147,7 +147,7 @@ void InternalAppWindowShelfController::RegisterAppWindow(
     // Plugin VM is only allowed on the primary profile. If the user switches
     // profile while it is launching, we associate it with the primary profile,
     // which hides the window, and don't show it on the shelf.
-    if (shelf_id.app_id == plugin_vm::kPluginVmAppId)
+    if (shelf_id.app_id == plugin_vm::kPluginVmShelfAppId)
       window_owner = user_manager::UserManager::Get()->GetPrimaryUser();
     else
       window_owner = user_manager::UserManager::Get()->GetActiveUser();

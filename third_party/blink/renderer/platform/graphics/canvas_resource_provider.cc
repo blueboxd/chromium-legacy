@@ -50,7 +50,8 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
                       cc::ImageDecodeCache* cache_f16,
                       const gfx::ColorSpace& target_color_space,
                       SkColorType target_color_type,
-                      bool is_hardware_decode_cache);
+                      bool is_hardware_decode_cache,
+                      bool use_oop_raster);
   ~CanvasImageProvider() override = default;
 
   // cc::ImageProvider implementation.
@@ -66,7 +67,7 @@ class CanvasResourceProvider::CanvasImageProvider : public cc::ImageProvider {
   bool is_hardware_decode_cache_;
   bool cleanup_task_pending_ = false;
   Vector<ScopedResult> locked_images_;
-  cc::PlaybackImageProvider playback_image_provider_n32_;
+  base::Optional<cc::PlaybackImageProvider> playback_image_provider_n32_;
   base::Optional<cc::PlaybackImageProvider> playback_image_provider_f16_;
 
   base::WeakPtrFactory<CanvasImageProvider> weak_factory_{this};
@@ -199,10 +200,10 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
             nullptr /* resource_dispatcher */),
         is_accelerated_(is_accelerated),
         shared_image_usage_flags_(shared_image_usage_flags),
-        use_oop_rasterization_(ContextProviderWrapper()
-                                   ->ContextProvider()
-                                   ->GetCapabilities()
-                                   .supports_oop_raster) {
+        use_oop_rasterization_(is_accelerated && ContextProviderWrapper()
+                                                     ->ContextProvider()
+                                                     ->GetCapabilities()
+                                                     .supports_oop_raster) {
     resource_ = NewOrRecycledResource();
     if (resource_)
       EnsureWriteAccess();
@@ -276,6 +277,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
         ColorParams(), IsOriginTopLeft(), is_accelerated_,
         shared_image_usage_flags_);
   }
+
+  bool UseOopRasterization() final { return use_oop_rasterization_; }
 
   void NotifyTexParamsModified(const CanvasResource* resource) override {
     if (!is_accelerated_ || use_oop_rasterization_)
@@ -906,17 +909,23 @@ CanvasResourceProvider::CanvasImageProvider::CanvasImageProvider(
     cc::ImageDecodeCache* cache_f16,
     const gfx::ColorSpace& target_color_space,
     SkColorType canvas_color_type,
-    bool is_hardware_decode_cache)
-    : is_hardware_decode_cache_(is_hardware_decode_cache),
-      playback_image_provider_n32_(cache_n32,
-                                   target_color_space,
-                                   cc::PlaybackImageProvider::Settings()) {
+    bool is_hardware_decode_cache,
+    bool use_oop_raster)
+    : is_hardware_decode_cache_(is_hardware_decode_cache) {
+  base::Optional<cc::PlaybackImageProvider::Settings> settings =
+      cc::PlaybackImageProvider::Settings();
+  settings->use_oop_raster = use_oop_raster;
+
+  playback_image_provider_n32_.emplace(cache_n32, target_color_space,
+                                       std::move(settings));
   // If the image provider may require to decode to half float instead of
   // uint8, create a f16 PlaybackImageProvider with the passed cache.
   if (canvas_color_type == kRGBA_F16_SkColorType) {
     DCHECK(cache_f16);
+    settings = cc::PlaybackImageProvider::Settings();
+    settings->use_oop_raster = use_oop_raster;
     playback_image_provider_f16_.emplace(cache_f16, target_color_space,
-                                         cc::PlaybackImageProvider::Settings());
+                                         std::move(settings));
   }
 }
 
@@ -935,7 +944,7 @@ CanvasResourceProvider::CanvasImageProvider::GetRasterContent(
         playback_image_provider_f16_->GetRasterContent(draw_image);
   } else {
     scoped_decoded_image =
-        playback_image_provider_n32_.GetRasterContent(draw_image);
+        playback_image_provider_n32_->GetRasterContent(draw_image);
   }
 
   // Holding onto locked images here is a performance optimization for the
@@ -1054,7 +1063,8 @@ CanvasResourceProvider::GetOrCreateCanvasImageProvider() {
       cache_f16 = ImageDecodeCacheF16();
     canvas_image_provider_ = std::make_unique<CanvasImageProvider>(
         ImageDecodeCacheRGBA8(), cache_f16, gfx::ColorSpace::CreateSRGB(),
-        color_params_.GetSkColorType(), use_hardware_decode_cache());
+        color_params_.GetSkColorType(), use_hardware_decode_cache(),
+        UseOopRasterization());
   }
   return canvas_image_provider_.get();
 }
@@ -1193,16 +1203,8 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
 void CanvasResourceProvider::Clear() {
   // We don't have an SkCanvas in OOPR mode so we can't do the clear below, plus
   // OOPR already clears the canvas in BeginRaster.
-  if (IsAccelerated()) {
-    if (!ContextProviderWrapper())
-      return;
-
-    if (ContextProviderWrapper()
-            ->ContextProvider()
-            ->GetCapabilities()
-            .supports_oop_raster) {
-      return;
-    }
+  if (UseOopRasterization()) {
+    return;
   }
 
   // Clear the background transparent or opaque, as required. This should only

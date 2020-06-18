@@ -73,6 +73,11 @@ component("raster") {
   public_deps = [ "//gpu/command_buffer/client:raster_sources" ]
 }
 
+component("mailbox") {
+  defines = [ "IS_GPU_MAILBOX_IMPL" ]
+  public_deps = [ "//gpu/command_buffer/common:mailbox_sources" ]
+}
+
 component("webgpu") {
   public_deps = [ "//gpu/command_buffer/client:webgpu_sources" ]
 }

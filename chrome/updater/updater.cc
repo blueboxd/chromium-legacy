@@ -53,7 +53,7 @@ namespace {
 void InitLogging(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
   base::FilePath log_dir;
-  GetProductDirectory(&log_dir);
+  GetBaseDirectory(&log_dir);
   const auto log_file = log_dir.Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;

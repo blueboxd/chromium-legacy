@@ -22,6 +22,7 @@
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
 #include "chrome/browser/task_manager/providers/fallback_task_provider.h"
 #include "chrome/browser/task_manager/providers/render_process_host_task_provider.h"
+#include "chrome/browser/task_manager/providers/spare_render_process_host_task_provider.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_task_provider.h"
 #include "chrome/browser/task_manager/providers/worker_task_provider.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
@@ -94,10 +95,14 @@ TaskManagerImpl::TaskManagerImpl()
   // process if no other provider is shown for it.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTaskManagerShowExtraRenderers)) {
+    task_providers_.push_back(
+        std::make_unique<SpareRenderProcessHostTaskProvider>());
     task_providers_.push_back(std::make_unique<WorkerTaskProvider>());
     task_providers_.push_back(std::make_unique<WebContentsTaskProvider>());
   } else {
     std::vector<std::unique_ptr<TaskProvider>> primary_subproviders;
+    primary_subproviders.push_back(
+        std::make_unique<SpareRenderProcessHostTaskProvider>());
     primary_subproviders.push_back(std::make_unique<WorkerTaskProvider>());
     primary_subproviders.push_back(std::make_unique<WebContentsTaskProvider>());
     task_providers_.push_back(std::make_unique<FallbackTaskProvider>(

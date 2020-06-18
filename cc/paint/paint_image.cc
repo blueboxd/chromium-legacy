@@ -118,6 +118,11 @@ const sk_sp<SkImage>& PaintImage::GetRasterSkImage() const {
   return cached_sk_image_;
 }
 
+gpu::Mailbox PaintImage::GetMailbox() const {
+  DCHECK(texture_backing_);
+  return texture_backing_->GetMailbox();
+}
+
 PaintImage PaintImage::MakeSubset(const gfx::Rect& subset) const {
   DCHECK(!subset.IsEmpty());
 
@@ -291,6 +296,14 @@ SkAlphaType PaintImage::GetAlphaType() const {
   if (GetSkImage())
     return GetSkImage()->alphaType();
   return kUnknown_SkAlphaType;
+}
+
+bool PaintImage::IsTextureBacked() const {
+  if (texture_backing_)
+    return true;
+  if (cached_sk_image_)
+    return cached_sk_image_->isTextureBacked();
+  return false;
 }
 
 int PaintImage::width() const {

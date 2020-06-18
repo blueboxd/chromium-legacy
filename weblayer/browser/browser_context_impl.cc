@@ -20,7 +20,6 @@
 #include "components/prefs/pref_service_factory.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/security_state/core/security_state.h"
 #include "components/site_isolation/pref_names.h"
 #include "components/site_isolation/site_isolation_policy.h"
 #include "components/translate/core/browser/translate_pref_names.h"
@@ -246,7 +245,6 @@ void BrowserContextImpl::RegisterPrefs(
   StatefulSSLHostStateDelegate::RegisterProfilePrefs(pref_registry);
   HostContentSettingsMap::RegisterProfilePrefs(pref_registry);
   safe_browsing::RegisterProfilePrefs(pref_registry);
-  security_state::RegisterProfilePrefs(pref_registry);
   language::LanguagePrefs::RegisterProfilePrefs(pref_registry);
   translate::TranslatePrefs::RegisterProfilePrefs(pref_registry);
   blocked_content::SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(

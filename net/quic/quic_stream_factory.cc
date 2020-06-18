@@ -1097,6 +1097,8 @@ QuicStreamFactory::QuicStreamFactory(
               features::kPartitionHttpServerPropertiesByNetworkIsolationKey)) {
   DCHECK(transport_security_state_);
   DCHECK(http_server_properties_);
+  if (params_.disable_tls_zero_rtt)
+    SetQuicReloadableFlag(quic_enable_zero_rtt_for_tls, false);
   InitializeMigrationOptions();
 }
 

@@ -64,9 +64,9 @@ bool PresenterImageGL::Initialize(
     SkiaOutputSurfaceDependency* deps,
     uint32_t shared_image_usage) {
   auto mailbox = gpu::Mailbox::GenerateForSharedImage();
-  // TODO(penghuang): This should pass the surface handle for ChromeOS
+
   if (!factory->CreateSharedImage(mailbox, format, size, color_space,
-                                  gpu::kNullSurfaceHandle,
+                                  deps->GetSurfaceHandle(),
                                   shared_image_usage)) {
     DLOG(ERROR) << "CreateSharedImage failed.";
     return false;

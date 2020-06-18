@@ -571,6 +571,7 @@ try_.chromium_mac_ios_builder(
     use_clang_coverage = True,
     coverage_exclude_sources = 'ios_test_files_and_test_utils',
     coverage_test_types = ['unit'],
+    os = os.MAC_10_15,
     properties = {
         'xcode_build_version': '11e146',
     },
@@ -598,15 +599,20 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = 'ios13-beta-simulator',
     executable = 'recipe:chromium_trybot',
+    caches = [xcode_cache.x11e608c],
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11e608c'
+    }
 )
 
 try_.chromium_mac_ios_builder(
     name = 'ios13-sdk-simulator',
     executable = 'recipe:chromium_trybot',
-    caches = [xcode_cache.x11e146],
+    caches = [xcode_cache.x11e608c],
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e146'
+        'xcode_build_version': '11e608c'
     }
 )
 

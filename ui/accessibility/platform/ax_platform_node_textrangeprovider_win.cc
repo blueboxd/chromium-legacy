@@ -172,6 +172,11 @@ HRESULT AXPlatformNodeTextRangeProviderWin::CompareEndpoints(
 HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     TextUnit unit) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_EXPANDTOENCLOSINGUNIT);
+  return ExpandToEnclosingUnitImpl(unit);
+}
+
+HRESULT AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnitImpl(
+    TextUnit unit) {
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL();
   NormalizeTextRange();
 
@@ -627,8 +632,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
   // Move the start of the text range forward or backward in the document by the
   // requested number of text unit boundaries.
   int start_units_moved = 0;
-  HRESULT hr = MoveEndpointByUnit(TextPatternRangeEndpoint_Start, unit, count,
-                                  &start_units_moved);
+  HRESULT hr = MoveEndpointByUnitImpl(TextPatternRangeEndpoint_Start, unit,
+                                      count, &start_units_moved);
 
   bool succeeded_move = SUCCEEDED(hr) && start_units_moved != 0;
   if (succeeded_move) {
@@ -640,8 +645,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
         // by one text unit to expand the text range from the degenerate range
         // state.
         int current_start_units_moved = 0;
-        hr = MoveEndpointByUnit(TextPatternRangeEndpoint_Start, unit, -1,
-                                &current_start_units_moved);
+        hr = MoveEndpointByUnitImpl(TextPatternRangeEndpoint_Start, unit, -1,
+                                    &current_start_units_moved);
         start_units_moved -= 1;
         succeeded_move = SUCCEEDED(hr) && current_start_units_moved == -1 &&
                          start_units_moved > 0;
@@ -650,8 +655,8 @@ HRESULT AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
         // forward by one text unit to expand the text range from the degenerate
         // state.
         int end_units_moved = 0;
-        hr = MoveEndpointByUnit(TextPatternRangeEndpoint_End, unit, 1,
-                                &end_units_moved);
+        hr = MoveEndpointByUnitImpl(TextPatternRangeEndpoint_End, unit, 1,
+                                    &end_units_moved);
         succeeded_move = SUCCEEDED(hr) && end_units_moved == 1;
       }
 
@@ -660,7 +665,7 @@ HRESULT AXPlatformNodeTextRangeProviderWin::Move(TextUnit unit,
       // sure to bring back the end endpoint to the end of the start's anchor.
       if (start_->anchor_id() != end_->anchor_id() &&
           (unit == TextUnit_Character || unit == TextUnit_Word)) {
-        ExpandToEnclosingUnit(unit);
+        ExpandToEnclosingUnitImpl(unit);
       }
     }
   }
@@ -683,6 +688,14 @@ HRESULT AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnit(
     int count,
     int* units_moved) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_TEXTRANGE_MOVEENDPOINTBYUNIT);
+  return MoveEndpointByUnitImpl(endpoint, unit, count, units_moved);
+}
+
+HRESULT AXPlatformNodeTextRangeProviderWin::MoveEndpointByUnitImpl(
+    TextPatternRangeEndpoint endpoint,
+    TextUnit unit,
+    int count,
+    int* units_moved) {
   UIA_VALIDATE_TEXTRANGEPROVIDER_CALL_1_OUT(units_moved);
 
   // Per MSDN, MoveEndpointByUnit with zero count has no effect.

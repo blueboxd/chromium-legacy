@@ -15,12 +15,10 @@
 #include "base/test/test_timeouts.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_dependency_factory.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
 namespace blink {
@@ -40,21 +38,20 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
     return dependency_factory_->GetWebRtcSignalingTaskRunner();
   }
 
-  blink::WebMediaStreamTrack CreateLocalTrack(const std::string& id) {
-    blink::WebMediaStreamSource web_source;
-    web_source.Initialize(
-        blink::WebString::FromUTF8(id), blink::WebMediaStreamSource::kTypeAudio,
-        blink::WebString::FromUTF8("local_audio_track"), false);
-    blink::MediaStreamAudioSource* audio_source =
-        new blink::MediaStreamAudioSource(
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting(), true);
+  MediaStreamComponent* CreateLocalTrack(const std::string& id) {
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8(id), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("local_audio_track"), false);
+    MediaStreamAudioSource* audio_source = new MediaStreamAudioSource(
+        scheduler::GetSingleThreadTaskRunnerForTesting(), true);
     // Takes ownership of |audio_source|.
-    web_source.SetPlatformSource(base::WrapUnique(audio_source));
+    audio_source->SetOwner(source);
+    source->SetPlatformSource(base::WrapUnique(audio_source));
 
-    blink::WebMediaStreamTrack web_track;
-    web_track.Initialize(web_source.Id(), web_source);
-    audio_source->ConnectToTrack(web_track);
-    return web_track;
+    auto* component =
+        MakeGarbageCollected<MediaStreamComponent>(source->Id(), source);
+    audio_source->ConnectToTrack(component);
+    return component;
   }
 
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
@@ -120,17 +117,17 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 };
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
-  blink::WebMediaStreamTrack web_track = CreateLocalTrack("local_track");
+  MediaStreamComponent* track = CreateLocalTrack("local_track");
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-      adapter_ref = map_->GetOrCreateLocalTrackAdapter(web_track);
+      adapter_ref = map_->GetOrCreateLocalTrackAdapter(track);
   EXPECT_TRUE(adapter_ref->is_initialized());
   EXPECT_EQ(adapter_ref->GetAdapterForTesting(),
-            map_->GetLocalTrackAdapter(web_track)->GetAdapterForTesting());
+            map_->GetLocalTrackAdapter(track)->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
 
   // "GetOrCreate" for already existing track.
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-      adapter_ref2 = map_->GetOrCreateLocalTrackAdapter(web_track);
+      adapter_ref2 = map_->GetOrCreateLocalTrackAdapter(track);
   EXPECT_EQ(adapter_ref->GetAdapterForTesting(),
             adapter_ref2->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
@@ -143,7 +140,7 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, AddAndRemoveLocalTrackAdapter) {
   // dispose it.
   adapter_ref.reset();
   EXPECT_EQ(0u, map_->GetLocalTrackCount());
-  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(web_track));
+  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(track));
   // Allow the disposing of track to occur.
   RunMessageLoopsUntilIdle();
 }
@@ -207,13 +204,12 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
   // Local and remote tracks should be able to use the same id without conflict.
   const char* id = "id";
 
-  blink::WebMediaStreamTrack local_web_track = CreateLocalTrack(id);
+  MediaStreamComponent* local_track = CreateLocalTrack(id);
   std::unique_ptr<blink::WebRtcMediaStreamTrackAdapterMap::AdapterRef>
-      local_adapter = map_->GetOrCreateLocalTrackAdapter(local_web_track);
+      local_adapter = map_->GetOrCreateLocalTrackAdapter(local_track);
   EXPECT_TRUE(local_adapter->is_initialized());
-  EXPECT_EQ(
-      local_adapter->GetAdapterForTesting(),
-      map_->GetLocalTrackAdapter(local_web_track)->GetAdapterForTesting());
+  EXPECT_EQ(local_adapter->GetAdapterForTesting(),
+            map_->GetLocalTrackAdapter(local_track)->GetAdapterForTesting());
   EXPECT_EQ(1u, map_->GetLocalTrackCount());
 
   scoped_refptr<blink::MockWebRtcAudioTrack> remote_webrtc_track =
@@ -233,15 +229,15 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest,
   remote_adapter.reset();
   EXPECT_EQ(0u, map_->GetLocalTrackCount());
   EXPECT_EQ(0u, map_->GetRemoteTrackCount());
-  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(local_web_track));
+  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(local_track));
   EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(remote_webrtc_track.get()));
   // Allow the disposing of tracks to occur.
   RunMessageLoopsUntilIdle();
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingLocalTrackAdapter) {
-  blink::WebMediaStreamTrack local_web_track = CreateLocalTrack("missing");
-  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(local_web_track));
+  MediaStreamComponent* local_track = CreateLocalTrack("missing");
+  EXPECT_EQ(nullptr, map_->GetLocalTrackAdapter(local_track));
 }
 
 TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingRemoteTrackAdapter) {

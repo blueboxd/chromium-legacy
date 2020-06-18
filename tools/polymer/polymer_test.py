@@ -154,32 +154,54 @@ class PolymerModulizerTest(unittest.TestCase):
       self.assertEquals(expected_js, actual_js)
 
     cases = [
-      # Relative paths cases.
-      # Case where relative path to polymer.html is used.
-      ['../../html/polymer.html',
-       'import {Polymer, html} from \'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js\';'
-      ],
-      # Case where relative path to file in the same folder is used.
-      ['foo.html', 'import \'./foo.m.js\';'],
-      # Case where relative path to file in the same subtree is used.
-      ['path/to/subfolder/foo.html', 'import \'./path/to/subfolder/foo.m.js\';'],
-      # Case where relative path to file in ui/webui/resources/html/ is used.
-      ['../../html/foo.html', 'import {Foo} from \'../../js/foo.m.js\';'],
+        # Relative paths cases.
+        # Case where relative path to polymer.html is used.
+        [
+            '../../html/polymer.html',
+            'import {Polymer, html} from \'//resources/polymer/v3_0/polymer/polymer_bundled.min.js\';'
+        ],
+        # Case where relative path to file in the same folder is used.
+        ['foo.html', 'import \'./foo.m.js\';'],
+        # Case where relative path to file in the same subtree is used.
+        [
+            'path/to/subfolder/foo.html',
+            'import \'./path/to/subfolder/foo.m.js\';'
+        ],
+        # Case where relative path to file in ui/webui/resources/html/ is used.
+        ['../../html/foo.html', 'import {Foo} from \'../../js/foo.m.js\';'],
 
-      # chrome:// paths cases.
-      # Case where absolute path to a Polymer UI element is used.
-      ['chrome://resources/polymer/v1_0/path/to/folder/foo.html',
-       'import \'chrome://resources/polymer/v3_0/path/to/folder/foo.js\';'
-      ],
-      # Case where chrome:// path to polymer.html is used.
-      ['chrome://resources/html/polymer.html',
-       'import {Polymer, html} from \'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js\';'
-      ],
-      # Case where chrome://resources/html/ path to something other than
-      # polymer.html is used.
-      ['chrome://resources/html/bar.html',
-       'import \'chrome://resources/js/bar.m.js\';'
-      ],
+        # chrome:// paths cases.
+        # Case where absolute path to a Polymer UI element is used.
+        [
+            'chrome://resources/polymer/v1_0/path/to/folder/foo.html',
+            'import \'//resources/polymer/v3_0/path/to/folder/foo.js\';'
+        ],
+        # Case where chrome:// path to polymer.html is used.
+        [
+            'chrome://resources/html/polymer.html',
+            'import {Polymer, html} from \'//resources/polymer/v3_0/polymer/polymer_bundled.min.js\';'
+        ],
+        # Case where chrome://resources/html/ path to something other than
+        # polymer.html is used.
+        [
+            'chrome://resources/html/bar.html',
+            'import \'//resources/js/bar.m.js\';'
+        ],
+
+        # Scheme-relative paths cases.
+        # Case where absolute path to a Polymer UI element is used.
+        [
+            '//resources/polymer/v1_0/path/to/folder/foo.html',
+            'import \'//resources/polymer/v3_0/path/to/folder/foo.js\';'
+        ],
+        # Case where path to polymer.html is used.
+        [
+            '//resources/html/polymer.html',
+            'import {Polymer, html} from \'//resources/polymer/v3_0/polymer/polymer_bundled.min.js\';'
+        ],
+        # Case where //resources/html/ path to something other than
+        # polymer.html is used.
+        ['//resources/html/bar.html', 'import \'//resources/js/bar.m.js\';'],
     ]
 
     for [html, js_expected] in cases:

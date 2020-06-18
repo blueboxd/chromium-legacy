@@ -5785,18 +5785,6 @@ bool LayoutBox::ShouldBeConsideredAsReplaced() const {
   return IsA<HTMLImageElement>(element);
 }
 
-bool LayoutBox::HasNonCompositedScrollbars() const {
-  if (PaintLayerScrollableArea* scrollable_area = GetScrollableArea()) {
-    if (scrollable_area->HasHorizontalScrollbar() &&
-        !scrollable_area->LayerForHorizontalScrollbar())
-      return true;
-    if (scrollable_area->HasVerticalScrollbar() &&
-        !scrollable_area->LayerForVerticalScrollbar())
-      return true;
-  }
-  return false;
-}
-
 void LayoutBox::UpdateFragmentationInfoForChild(LayoutBox& child) {
   LayoutState* layout_state = View()->GetLayoutState();
   DCHECK(layout_state->IsPaginated());

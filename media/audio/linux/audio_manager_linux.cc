@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/media_switches.h"

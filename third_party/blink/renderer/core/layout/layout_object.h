@@ -2273,8 +2273,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // setNeedsRepaint before calling this function.
   virtual void InvalidateDisplayItemClients(PaintInvalidationReason) const;
 
-  virtual bool HasNonCompositedScrollbars() const { return false; }
-
   // Called before setting style for existing/new anonymous child. Override to
   // set custom styles for the child. For new anonymous child, |child| is null.
   virtual void UpdateAnonymousChildStyle(const LayoutObject* child,

@@ -149,22 +149,6 @@ MojoResult ConvertNetErrorToMojoResult(net::Error net_error) {
   }
 }
 
-network::mojom::FetchResponseType CalculateResponseType(
-    network::mojom::RequestMode mode,
-    bool is_allowed_access) {
-  // Though file:// is out of web standards, let's roughly follow the step 5 of
-  // https://fetch.spec.whatwg.org/#main-fetch.
-  if (is_allowed_access || mode == network::mojom::RequestMode::kNavigate ||
-      mode == network::mojom::RequestMode::kSameOrigin) {
-    return network::mojom::FetchResponseType::kBasic;
-  } else if (mode == network::mojom::RequestMode::kNoCors) {
-    return network::mojom::FetchResponseType::kOpaque;
-  } else {
-    DCHECK(network::cors::IsCorsEnabledRequestMode(mode)) << mode;
-    return network::mojom::FetchResponseType::kCors;
-  }
-}
-
 class FileURLDirectoryLoader
     : public network::mojom::URLLoader,
       public net::DirectoryLister::DirectoryListerDelegate {
@@ -841,7 +825,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
   // check that takes --allow-file-access-from-files into account.
   // CORS is not available for the file scheme, but can be exceptionally
   // permitted by the access lists.
-  bool is_allowed_access =
+  bool is_request_considered_same_origin =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableWebSecurity) ||
       (request.request_initiator &&
@@ -853,7 +837,8 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
              network::cors::OriginAccessList::AccessState::kAllowed)));
 
   network::mojom::FetchResponseType response_type =
-      CalculateResponseType(request.mode, is_allowed_access);
+      network::cors::CalculateResponseType(request.mode,
+                                           is_request_considered_same_origin);
 
   CreateLoaderAndStartInternal(request, response_type, std::move(loader),
                                std::move(client));

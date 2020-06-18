@@ -472,7 +472,7 @@ def builder(
       dimensions = dimensions,
       properties = properties,
       resultdb_settings = resultdb.settings(
-          enable = luci.builder.defaults.resultdb.get().enable,
+          enable = True,
           bq_exports = defaults.get_value(
               'resultdb_bigquery_exports', resultdb_bigquery_exports),
       ),

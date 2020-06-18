@@ -14,7 +14,9 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.complex_tasks.endpoint_fetcher.EndpointFetcher;
 import org.chromium.chrome.browser.complex_tasks.endpoint_fetcher.EndpointResponse;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.signin.ChromeSigninController;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -125,8 +127,17 @@ public class TabSuggestionsServerFetcher implements TabSuggestionsFetcher {
 
     @Override
     public boolean isEnabled() {
-        // Disabled until server is ready for production traffic
-        // Must not be enabled until crbug.com/1083463 is completed
-        return false;
+        return isSignedIn() && isServerFetcherFlagEnabled();
+    }
+
+    @VisibleForTesting
+    protected boolean isSignedIn() {
+        return ChromeSigninController.get().isSignedIn();
+    }
+
+    @VisibleForTesting
+    protected boolean isServerFetcherFlagEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.CLOSE_TAB_SUGGESTIONS, "server_fetcher_enabled", false);
     }
 }

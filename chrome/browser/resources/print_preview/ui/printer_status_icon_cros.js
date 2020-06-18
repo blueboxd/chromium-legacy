@@ -10,6 +10,14 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 Polymer({
   is: 'printer-status-icon-cros',
 
+  properties: {
+    /** Determines color of the background badge. */
+    background: String,
+
+    /** Determines color of the status badge. */
+    status: String,
+  },
+
   _template: html`{__html_template__}`,
 
 });

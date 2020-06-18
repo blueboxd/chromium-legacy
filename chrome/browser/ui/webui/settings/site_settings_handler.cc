@@ -95,14 +95,6 @@ constexpr char kPlaceholder[] = "placeholder";
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
-enum class AllSitesAction {
-  kLoadPage = 0,
-  kResetPermissions = 1,
-  kClearData = 2,
-  kEnterSiteDetails = 3,
-  kMaxValue = kEnterSiteDetails,
-};
-
 enum class AllSitesAction2 {
   kLoadPage = 0,
   kResetSiteGroupPermissions = 1,

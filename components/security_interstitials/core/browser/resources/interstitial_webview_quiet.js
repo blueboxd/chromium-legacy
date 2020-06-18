@@ -15,6 +15,9 @@ function onResize() {
   if (window.matchMedia(mediaQuery).matches) {
     const hiddenDetails = $('details').classList.add(HIDDEN_CLASS);
     $('main-content').classList.remove(HIDDEN_CLASS);
+    $('icon').setAttribute('aria-label', loadTimeData.getString('heading'));
+  } else {
+    $('icon').removeAttribute('aria-label');
   }
 }
 

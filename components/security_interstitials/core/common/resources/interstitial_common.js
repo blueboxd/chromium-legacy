@@ -135,6 +135,7 @@ function preventDefaultOnPoundLinkClicks() {
   });
 }
 
+// <if expr="is_ios">
 /**
  * Ensures interstitial pages on iOS aren't loaded from cache, which breaks
  * the commands due to ErrorRetryStateMachine::DidFailProvisionalNavigation
@@ -144,15 +145,14 @@ function setupIosRefresh() {
   if (!loadTimeData.getBoolean('committed_interstitials_enabled')) {
     return;
   }
-  const params = new URLSearchParams(window.location.search.substring(1));
-  const failedUrl = decodeURIComponent(params.get('url') || '');
   const load = () => {
-    window.location.replace(failedUrl);
+    window.location.replace(loadTimeData.getString('url_to_reload'));
   };
   window.addEventListener('pageshow', function(e) {
     window.onpageshow = load;
   }, {once: true});
 }
+// </if>
 
 // <if expr="is_ios">
 document.addEventListener('DOMContentLoaded', setupIosRefresh);

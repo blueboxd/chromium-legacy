@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/browser/logging/log_protobufs.h"
 #include "components/autofill/core/browser/proto/legacy_proto_bridge.h"
@@ -587,7 +586,7 @@ bool GetAPIQueryPayload(const AutofillQueryContents& query,
 }  // namespace
 
 struct AutofillDownloadManager::FormRequestData {
-  std::vector<std::string> form_signatures;
+  FormAndFieldSignatures signatures;
   RequestType request_type;
   std::string payload;
   int num_attempts = 0;
@@ -640,9 +639,8 @@ bool AutofillDownloadManager::StartQueryRequest(
 
   // Encode the query for the requested forms.
   AutofillQueryContents query;
-  FormRequestData request_data;
-  if (!FormStructure::EncodeQueryRequest(forms, &request_data.form_signatures,
-                                         &query)) {
+  FormAndFieldSignatures signatures;
+  if (!FormStructure::EncodeQueryRequest(forms, &query, &signatures)) {
     return false;
   }
 
@@ -665,17 +663,27 @@ bool AutofillDownloadManager::StartQueryRequest(
     return false;
   }
 
+  FormRequestData request_data;
+  request_data.signatures = std::move(signatures);
   request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
   request_data.payload = std::move(payload);
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_SENT);
 
   std::string query_data;
-  if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
+  if (CheckCacheForQueryRequest(request_data.signatures, &query_data)) {
     DVLOG(1) << "AutofillDownloadManager: query request has been retrieved "
-             << "from the cache, form signatures: "
-             << GetCombinedSignature(request_data.form_signatures);
+             << "from the cache, form signatures:" <<
+        [&request_data] {
+          std::string form_sigs;
+          for (const auto& form_and_fields : request_data.signatures) {
+            base::StrAppend(
+                &form_sigs,
+                {" ", base::NumberToString(form_and_fields.first.value())});
+          }
+          return form_sigs;
+        }();
     observer_->OnLoadedServerPredictions(std::move(query_data),
-                                         request_data.form_signatures);
+                                         request_data.signatures);
     return true;
   }
 
@@ -710,9 +718,10 @@ bool AutofillDownloadManager::StartUploadRequest(
     return false;
 
   AutofillUploadContents upload;
+  FormAndFieldSignatures signatures;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 login_form_signature, observed_submission,
-                                &upload)) {
+                                &upload, &signatures)) {
     return false;
   }
 
@@ -743,7 +752,7 @@ bool AutofillDownloadManager::StartUploadRequest(
   }
 
   FormRequestData request_data;
-  request_data.form_signatures.push_back(form.FormSignatureAsStr());
+  request_data.signatures = std::move(signatures);
   request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
   request_data.payload = std::move(payload);
 
@@ -925,55 +934,33 @@ bool AutofillDownloadManager::StartRequest(FormRequestData request_data) {
 }
 
 void AutofillDownloadManager::CacheQueryRequest(
-    const std::vector<std::string>& forms_in_query,
+    const FormAndFieldSignatures& forms_in_query,
     const std::string& query_data) {
-  std::string signature = GetCombinedSignature(forms_in_query);
   for (auto it = cached_forms_.begin(); it != cached_forms_.end(); ++it) {
-    if (it->first == signature) {
+    if (it->first == forms_in_query) {
       // We hit the cache, move to the first position and return.
-      std::pair<std::string, std::string> data = *it;
+      auto data = *it;
       cached_forms_.erase(it);
       cached_forms_.push_front(data);
       return;
     }
   }
-  std::pair<std::string, std::string> data;
-  data.first = signature;
-  data.second = query_data;
-  cached_forms_.push_front(data);
+  cached_forms_.emplace_front(forms_in_query, query_data);
   while (cached_forms_.size() > max_form_cache_size_)
     cached_forms_.pop_back();
 }
 
 bool AutofillDownloadManager::CheckCacheForQueryRequest(
-    const std::vector<std::string>& forms_in_query,
+    const FormAndFieldSignatures& forms_in_query,
     std::string* query_data) const {
-  std::string signature = GetCombinedSignature(forms_in_query);
   for (const auto& it : cached_forms_) {
-    if (it.first == signature) {
+    if (it.first == forms_in_query) {
       // We hit the cache, fill the data and return.
       *query_data = it.second;
       return true;
     }
   }
   return false;
-}
-
-std::string AutofillDownloadManager::GetCombinedSignature(
-    const std::vector<std::string>& forms_in_query) const {
-  size_t total_size = forms_in_query.size();
-  for (size_t i = 0; i < forms_in_query.size(); ++i)
-    total_size += forms_in_query[i].length();
-  std::string signature;
-
-  signature.reserve(total_size);
-
-  for (size_t i = 0; i < forms_in_query.size(); ++i) {
-    if (i)
-      signature.append(",");
-    signature.append(forms_in_query[i]);
-  }
-  return signature;
 }
 
 // static
@@ -995,7 +982,7 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
   std::unique_ptr<network::SimpleURLLoader> simple_loader = std::move(*it);
   url_loaders_.erase(it);
 
-  CHECK(request_data.form_signatures.size());
+  CHECK(request_data.signatures.size() > 0);
   int response_code = -1;  // Invalid response code.
   if (simple_loader->ResponseInfo() && simple_loader->ResponseInfo()->headers) {
     response_code = simple_loader->ResponseInfo()->headers->response_code();
@@ -1024,7 +1011,7 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
              << response_code << " and error message from the server "
              << error_message;
 
-    observer_->OnServerRequestError(request_data.form_signatures[0],
+    observer_->OnServerRequestError(request_data.signatures.front().first,
                                     request_data.request_type, response_code);
 
     LogFailingPayloadSize(request_data.request_type,
@@ -1053,11 +1040,11 @@ void AutofillDownloadManager::OnSimpleLoaderComplete(
   }
 
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY) {
-    CacheQueryRequest(request_data.form_signatures, *response_body);
+    CacheQueryRequest(request_data.signatures, *response_body);
     UMA_HISTOGRAM_BOOLEAN("Autofill.Query.WasInCache",
                           simple_loader->LoadedFromCache());
     observer_->OnLoadedServerPredictions(std::move(*response_body),
-                                         request_data.form_signatures);
+                                         request_data.signatures);
     return;
   }
 

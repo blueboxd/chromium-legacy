@@ -34,12 +34,10 @@ class VariationsSeedStore {
   // |initial_seed| may be null. If not null, then it will be stored in this
   // seed store. This is used by Android Chrome to supply the first run seed,
   // and by Android WebView to supply the seed on every run.
-  // |on_initial_seed_stored| will be called the first time a seed is stored.
   // |signature_verification_enabled| can be used in unit tests to disable
   // signature checks on the seed.
   VariationsSeedStore(PrefService* local_state,
                       std::unique_ptr<SeedResponse> initial_seed,
-                      base::OnceCallback<void()> on_initial_seed_stored,
                       bool signature_verification_enabled);
   virtual ~VariationsSeedStore();
 
@@ -204,8 +202,6 @@ class VariationsSeedStore {
 
   // Cached serial number from the most recently fetched variations seed.
   std::string latest_serial_number_;
-
-  base::OnceCallback<void()> on_initial_seed_stored_;
 
   // Whether to validate signatures on the seed. Always on except in tests.
   bool signature_verification_enabled_ = true;

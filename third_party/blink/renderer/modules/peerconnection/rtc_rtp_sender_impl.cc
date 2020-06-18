@@ -500,7 +500,7 @@ webrtc::DtlsTransportInformation RTCRtpSenderImpl::DtlsTransportInformation() {
 
 MediaStreamComponent* RTCRtpSenderImpl::Track() const {
   const auto& track_ref = internal_->state().track_ref();
-  return track_ref ? track_ref->web_track() : blink::WebMediaStreamTrack();
+  return track_ref ? track_ref->track() : nullptr;
 }
 
 Vector<String> RTCRtpSenderImpl::StreamIds() const {

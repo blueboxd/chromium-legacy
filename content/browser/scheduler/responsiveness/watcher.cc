@@ -100,7 +100,7 @@ void Watcher::DidRunTask(const base::PendingTask* task,
     *mismatched_task_identifiers += 1;
     // Mismatches can happen, so just ignore them for now. See
     // https://crbug.com/929813 and https://crbug.com/931874 for details.
-    return currently_running_metadata_ui_.clear();
+    return currently_running_metadata->clear();
   }
 
   const Metadata metadata = currently_running_metadata->back();

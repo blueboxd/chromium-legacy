@@ -98,7 +98,8 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationViewImpl
 
   // Creates an image button with an icon that matches |action| and adds it
   // to |button_row_|. When clicked it will trigger |action| on the session.
-  // |accessible_name| is the text used for screen readers.
+  // |accessible_name| is the text used for screen readers and the
+  // button's tooltip.
   void CreateMediaButton(media_session::mojom::MediaSessionAction action,
                          const base::string16& accessible_name);
 

@@ -8,25 +8,44 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_tab_helper.h"
 #import "ios/chrome/browser/main/browser.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/alert_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
+#import "ios/chrome/browser/overlays/public/web_content_area/java_script_dialog_overlay.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
+using java_script_dialog_overlays::JavaScriptDialogRequest;
+
+const char kBreadcrumbOverlay[] = "Overlay";
+const char kBreadcrumbOverlayActivated[] = "#activated";
+const char kBreadcrumbOverlayHttpAuth[] = "#http-auth";
+const char kBreadcrumbOverlayAlert[] = "#alert";
+const char kBreadcrumbOverlayAppLaunch[] = "#app-launch";
+const char kBreadcrumbOverlayJsAlert[] = "#js-alert";
+const char kBreadcrumbOverlayJsConfirm[] = "#js-confirm";
+const char kBreadcrumbOverlayJsPrompt[] = "#js-prompt";
+
 BROWSER_USER_DATA_KEY_IMPL(BreadcrumbManagerBrowserAgent)
 
 BreadcrumbManagerBrowserAgent::BreadcrumbManagerBrowserAgent(Browser* browser)
-    : browser_(browser) {
+    : browser_(browser), overlay_observer_(this) {
   static int next_unique_id = 1;
   unique_id_ = next_unique_id++;
 
   browser_->AddObserver(this);
   browser_->GetWebStateList()->AddObserver(this);
+
+  overlay_observer_.Add(
+      OverlayPresenter::FromBrowser(browser, OverlayModality::kWebContentArea));
 }
 
 BreadcrumbManagerBrowserAgent::~BreadcrumbManagerBrowserAgent() = default;
@@ -151,4 +170,43 @@ void BreadcrumbManagerBrowserAgent::BatchOperationEnded(
     }
   }
   batch_operation_.reset();
+}
+
+void BreadcrumbManagerBrowserAgent::WillShowOverlay(OverlayPresenter* presenter,
+                                                    OverlayRequest* request,
+                                                    bool initial_presentation) {
+  std::vector<std::string> event = {kBreadcrumbOverlay};
+  if (request->GetConfig<HTTPAuthOverlayRequestConfig>()) {
+    event.push_back(kBreadcrumbOverlayHttpAuth);
+  } else if (request->GetConfig<
+                 app_launcher_overlays::AppLaunchConfirmationRequest>()) {
+    event.push_back(kBreadcrumbOverlayAppLaunch);
+  } else if (auto* js_dialog = request->GetConfig<JavaScriptDialogRequest>()) {
+    switch (js_dialog->type()) {
+      case web::JAVASCRIPT_DIALOG_TYPE_ALERT:
+        event.push_back(kBreadcrumbOverlayJsAlert);
+        break;
+      case web::JAVASCRIPT_DIALOG_TYPE_CONFIRM:
+        event.push_back(kBreadcrumbOverlayJsConfirm);
+        break;
+      case web::JAVASCRIPT_DIALOG_TYPE_PROMPT:
+        event.push_back(kBreadcrumbOverlayJsPrompt);
+        break;
+    }
+  } else if (request->GetConfig<alert_overlays::AlertRequest>()) {
+    event.push_back(kBreadcrumbOverlayAlert);
+  } else {
+    NOTREACHED();  // Missing breadcrumbs for the dialog.
+  }
+
+  if (!initial_presentation) {
+    event.push_back(kBreadcrumbOverlayActivated);
+  }
+
+  LogEvent(base::JoinString(event, " "));
+}
+
+void BreadcrumbManagerBrowserAgent::OverlayPresenterDestroyed(
+    OverlayPresenter* presenter) {
+  overlay_observer_.Remove(presenter);
 }

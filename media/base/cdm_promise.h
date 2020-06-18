@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/cdm_key_information.h"

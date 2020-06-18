@@ -11,12 +11,7 @@
       + encodeURIComponent('name=value; SameSite=Strict');
   await session.evaluate(`fetch('${setCookieUrl}', {method: 'POST', credentials: 'include'})`);
   const issue = await dp.Audits.onceIssueAdded();
-  // Clear request id.
-  const replacer = (key, value) => {
-    if (key === "requestId") return "<request-id>";
-    return value;
-  };
-  testRunner.log(`Inspector issue: ${JSON.stringify(issue.params, replacer, 2)}\n`);
+  testRunner.log(issue.params, 'Inspector issue:');
 
   testRunner.completeTest();
 });

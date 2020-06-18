@@ -203,7 +203,8 @@ public class WebXrVrTransitionTest {
         // TODO(bsheedy): Make this less hacky if there's ever an explicit way to check if the
         // DON flow is currently active https://crbug.com/758296
         CriteriaHelper.pollUiThread(() -> {
-            return uiDevice.getCurrentPackageName().equals("com.google.vr.vrcore");
+            String currentPackageName = uiDevice.getCurrentPackageName();
+            return currentPackageName != null && currentPackageName.equals("com.google.vr.vrcore");
         }, "DON flow did not start", POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         uiDevice.pressBack();
         framework.waitOnJavaScriptStep();

@@ -603,7 +603,6 @@ message SystemProfileProto {
   // for this session.
   optional string variations_seed_version = 28;
 
-  // TODO(b/148689907): Deprecate this field once the analysis has been done.
   // Whether the client_id in the log matches the client_id we used to assign
   // field trials.
   optional bool client_id_was_used_for_trial_assignment = 33;

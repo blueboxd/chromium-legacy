@@ -18257,6 +18257,59 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PasswordProtection.Interstitial.ResetPassword">
+  <owner>bdea@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    Reported when the user clicks on the reset password button on the
+    interstitial.
+  </description>
+</action>
+
+<action name="PasswordProtection.ModalWarning.ChangePasswordButtonClicked">
+  <owner>bdea@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    Reported when the user clicked on the change password button on the password
+    protection modal warning.
+  </description>
+</action>
+
+<action name="PasswordProtection.ModalWarning.CloseWarning">
+  <owner>bdea@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    Reported when the user closed the password protection modal warning.
+  </description>
+</action>
+
+<action name="PasswordProtection.ModalWarning.IgnoreButtonClicked">
+  <owner>bdea@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    Reported when the user clicked on the ignore button on the password
+    protection modal warning.
+  </description>
+</action>
+
+<action name="PasswordProtection.PageInfo.ChangePasswordButtonClicked">
+  <owner>bdea@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    Reported when the user clicks on the change password button on the page info
+    bubble.
+  </description>
+</action>
+
+<action name="PasswordProtection.PageInfo.MarkSiteAsLegitimate">
+  <owner>bdea@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <description>
+    Reported when the user clicks on the mark site as legitimate button on the
+    page info bubble.
+  </description>
+</action>
+
 <action name="Paste">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -24475,6 +24528,24 @@ should be able to be added at any place in this file.
 
     This user action is of special interest to the chrome-analysis-team@. Do not
     change its semantics or retire it without talking to them first.
+  </description>
+</action>
+
+<action name="TouchMode.EnteredNonTouchMode">
+  <owner>collinbaker@chromium.org</owner>
+  <owner>chrome-desktop-ui@google.com</owner>
+  <description>
+    The user switched away from primarily using touch input or the browser
+    started in non-touch mode.
+  </description>
+</action>
+
+<action name="TouchMode.EnteredTouchMode">
+  <owner>collinbaker@chromium.org</owner>
+  <owner>chrome-desktop-ui@google.com</owner>
+  <description>
+    The user switched to primarily using touch input or the browser started in
+    touch mode.
   </description>
 </action>
 

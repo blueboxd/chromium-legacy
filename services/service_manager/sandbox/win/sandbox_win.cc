@@ -952,7 +952,8 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
   if (sandbox_type == SandboxType::kNetwork ||
-      sandbox_type == SandboxType::kAudio) {
+      sandbox_type == SandboxType::kAudio ||
+      sandbox_type == SandboxType::kIconReader) {
     mitigations |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
   }
   // TODO(wfh): Relax strict handle checks for network process until root cause
@@ -1128,6 +1129,8 @@ std::string SandboxWin::GetSandboxTypeInEnglish(SandboxType sandbox_type) {
       return "Sharing";
     case SandboxType::kVideoCapture:
       return "Video Capture";
+    case SandboxType::kIconReader:
+      return "Icon Reader";
   }
 }
 

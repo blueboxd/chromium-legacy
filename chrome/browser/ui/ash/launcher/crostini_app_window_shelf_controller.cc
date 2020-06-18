@@ -176,7 +176,7 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanging(
   // know about them.
   if (wm::GetTransientParent(window) ||
       arc::GetWindowTaskId(window) != arc::kNoTaskId ||
-      plugin_vm::IsPluginVmWindow(window)) {
+      plugin_vm::IsPluginVmAppWindow(window)) {
     DCHECK(aura_window_to_app_window_.find(window) ==
            aura_window_to_app_window_.end());
     auto it = observed_windows_.find(window);

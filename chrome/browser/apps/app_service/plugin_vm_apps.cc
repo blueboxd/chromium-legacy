@@ -87,7 +87,7 @@ void PopulatePermissions(apps::mojom::App* app, Profile* profile) {
 
 apps::mojom::AppPtr GetPluginVmApp(Profile* profile, bool allowed) {
   apps::mojom::AppPtr app = apps::PublisherBase::MakeApp(
-      apps::mojom::AppType::kPluginVm, plugin_vm::kPluginVmAppId,
+      apps::mojom::AppType::kPluginVm, plugin_vm::kPluginVmShelfAppId,
       allowed ? apps::mojom::Readiness::kReady
               : apps::mojom::Readiness::kDisabledByPolicy,
       l10n_util::GetStringUTF8(IDS_PLUGIN_VM_APP_NAME),
@@ -167,7 +167,7 @@ void PluginVmApps::Launch(const std::string& app_id,
                           int32_t event_flags,
                           apps::mojom::LaunchSource launch_source,
                           int64_t display_id) {
-  DCHECK_EQ(plugin_vm::kPluginVmAppId, app_id);
+  DCHECK_EQ(plugin_vm::kPluginVmShelfAppId, app_id);
   if (plugin_vm::IsPluginVmEnabled(profile_)) {
     plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)->LaunchPluginVm(
         base::DoNothing());
@@ -189,7 +189,7 @@ void PluginVmApps::SetPermission(const std::string& app_id,
 
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kPluginVm;
-  app->app_id = plugin_vm::kPluginVmAppId;
+  app->app_id = plugin_vm::kPluginVmShelfAppId;
   PopulatePermissions(app.get(), profile_);
   Publish(std::move(app), subscribers_);
 }
@@ -216,7 +216,7 @@ void PluginVmApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::MENU_CLOSE, IDS_SHELF_CONTEXT_MENU_CLOSE, &menu_items);
   }
 
-  if (app_id == plugin_vm::kPluginVmAppId &&
+  if (app_id == plugin_vm::kPluginVmShelfAppId &&
       plugin_vm::IsPluginVmRunning(profile_)) {
     AddCommandItem(ash::SHUTDOWN_GUEST_OS, IDS_PLUGIN_VM_SHUT_DOWN_MENU_ITEM,
                    &menu_items);
@@ -232,7 +232,7 @@ void PluginVmApps::OnPluginVmAllowedChanged(bool is_allowed) {
 
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kPluginVm;
-  app->app_id = plugin_vm::kPluginVmAppId;
+  app->app_id = plugin_vm::kPluginVmShelfAppId;
   SetAppAllowed(app.get(), is_allowed);
   Publish(std::move(app), subscribers_);
 }
@@ -241,7 +241,7 @@ void PluginVmApps::OnPluginVmConfiguredChanged() {
   // Only changed fields need to be republished.
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kPluginVm;
-  app->app_id = plugin_vm::kPluginVmAppId;
+  app->app_id = plugin_vm::kPluginVmShelfAppId;
   SetShowInAppManagement(app.get(), plugin_vm::IsPluginVmConfigured(profile_));
   Publish(std::move(app), subscribers_);
 }

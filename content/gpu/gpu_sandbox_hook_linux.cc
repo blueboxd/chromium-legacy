@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_file.h"
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"

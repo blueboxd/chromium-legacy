@@ -334,6 +334,9 @@ APP_LIST_EXPORT bool IsCommandIdAnAppLaunch(int command_id);
 APP_LIST_EXPORT void ReportPaginationSmoothness(bool is_tablet_mode,
                                                 int smoothness);
 
+APP_LIST_EXPORT void ReportCardifiedSmoothness(bool is_entering_cardified,
+                                               int smoothness);
+
 }  // namespace ash
 
 #endif  // ASH_APP_LIST_APP_LIST_METRICS_H_

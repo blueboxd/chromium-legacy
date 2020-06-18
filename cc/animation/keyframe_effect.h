@@ -108,7 +108,6 @@ class CC_ANIMATION_EXPORT KeyframeEffect {
   // Returns true if there are any KeyframeModels that have neither finished
   // nor aborted.
   bool HasTickingKeyframeModel() const;
-  size_t TickingKeyframeModelsCount() const;
 
   bool AffectsCustomProperty() const;
 

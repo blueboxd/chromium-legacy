@@ -112,9 +112,8 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
                          builder);
 
   // SplitSettingsSync strings.
-  RememberLocalizedValue("syncConsentScreenTitleWithDevice",
-                         IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE,
-                         builder);
+  RememberLocalizedValue("syncConsentScreenSubtitle",
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE, builder);
   RememberLocalizedValue("syncConsentScreenOsSyncName",
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME, builder);
   RememberLocalizedValue("syncConsentScreenOsSyncDescription",
@@ -124,9 +123,9 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
                          IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
                          builder);
   RememberLocalizedValue("syncConsentScreenAccept",
-                         IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT, builder);
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2, builder);
   RememberLocalizedValue("syncConsentScreenDecline",
-                         IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE, builder);
+                         IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE2, builder);
 }
 
 void SyncConsentScreenHandler::Bind(SyncConsentScreen* screen) {
@@ -227,10 +226,6 @@ void SyncConsentScreenHandler::Continue(
   int consent_confirmation_id;
   GetConsentIDs(known_string_ids_, consent_description, consent_confirmation,
                 &consent_description_ids, &consent_confirmation_id);
-  // Manually add this ID because the string contains a runtime substitution,
-  // so it's not included in GetConsentIDs().
-  consent_description_ids.push_back(
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE);
   screen_->OnContinue(consent_description_ids, consent_confirmation_id, choice);
 
   SyncConsentScreen::SyncConsentScreenTestDelegate* test_delegate =

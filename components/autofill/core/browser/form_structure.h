@@ -49,6 +49,11 @@ enum class PasswordAttribute {
   kPasswordAttributesCount
 };
 
+// The structure of forms and fields, represented by their signatures, on a
+// page. These are sequence containers to reflect their order in the DOM.
+using FormAndFieldSignatures =
+    std::vector<std::pair<FormSignature, std::vector<FieldSignature>>>;
+
 struct FormData;
 struct FormDataPredictions;
 
@@ -65,42 +70,40 @@ class FormStructure {
   // types.
   void DetermineHeuristicTypes(LogManager* log_manager = nullptr);
 
-  // Encodes the proto |upload| request from this FormStructure.
+  // Encodes the proto |upload| request from this FormStructure, and stores
+  // the (single) FormSignature and the signatures of the fields to be uploaded
+  // in |encoded_signatures|.
   // In some cases, a |login_form_signature| is included as part of the upload.
   // This field is empty when sending upload requests for non-login forms.
   bool EncodeUploadRequest(const ServerFieldTypeSet& available_field_types,
                            bool form_was_autofilled,
                            const std::string& login_form_signature,
                            bool observed_submission,
-                           autofill::AutofillUploadContents* upload) const;
+                           autofill::AutofillUploadContents* upload,
+                           FormAndFieldSignatures* encoded_signatures) const;
 
-  // Encodes the proto |query| request for the set of |forms| that are valid
-  // (see implementation for details on which forms are not included in the
-  // query). The form signatures used in the Query request are output in
-  // |encoded_signatures|. All valid fields are encoded in |query|.
+  // Encodes the proto |query| request for the list of |forms| and their fields
+  // that are valid. The queried FormSignatures and FieldSignatures are stored
+  // in |encoded_signatures| in the same order as in |query|. In case multiple
+  // FormStructures have the same FormSignature, only the first one is included
+  // in |query| and |encoded_signatures|.
   static bool EncodeQueryRequest(const std::vector<FormStructure*>& forms,
-                                 std::vector<std::string>* encoded_signatures,
-                                 autofill::AutofillQueryContents* query);
+                                 autofill::AutofillQueryContents* query,
+                                 FormAndFieldSignatures* encoded_signatures);
 
   // Parses response as AutofillQueryResponseContents proto and calls
   // ProcessQueryResponse.
-  static void ParseQueryResponse(std::string response,
-                                 const std::vector<FormStructure*>& forms,
-                                 AutofillMetrics::FormInteractionsUkmLogger*);
+  static void ParseQueryResponse(
+      std::string response,
+      const std::vector<FormStructure*>& forms,
+      const FormAndFieldSignatures& encoded_signatures,
+      AutofillMetrics::FormInteractionsUkmLogger*);
 
   static void ParseApiQueryResponse(
       base::StringPiece payload,
       const std::vector<FormStructure*>& forms,
+      const FormAndFieldSignatures& encoded_signatures,
       AutofillMetrics::FormInteractionsUkmLogger*);
-
-  // Parses the field types from the server query response. |forms| must be the
-  // same as the one passed to EncodeQueryRequest when constructing the query.
-  // |form_interactions_ukm_logger| is used to provide logs to UKM and can be
-  // null in tests.
-  static void ProcessQueryResponse(
-      const AutofillQueryResponseContents& response,
-      const std::vector<FormStructure*>& forms,
-      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   // Returns predictions using the details from the given |form_structures| and
   // their fields' predicted types.
@@ -380,6 +383,20 @@ class FormStructure {
 
   FormRendererId unique_renderer_id() const { return unique_renderer_id_; }
 
+  bool ShouldSkipFieldVisibleForTesting(const FormFieldData& field) const {
+    return ShouldSkipField(field);
+  }
+
+  static void ProcessQueryResponseForTesting(
+      const AutofillQueryResponseContents& response,
+      const std::vector<FormStructure*>& forms,
+      const FormAndFieldSignatures& encoded_signatures,
+      AutofillMetrics::FormInteractionsUkmLogger*
+          form_interactions_ukm_logger) {
+    ProcessQueryResponse(response, forms, encoded_signatures,
+                         form_interactions_ukm_logger);
+  }
+
  private:
   friend class AutofillMergeTest;
   friend class FormStructureTest;
@@ -433,6 +450,16 @@ class FormStructure {
     // Points to a vector of indexes that belong to the same section.
     size_t current_section_ptr = 0;
   };
+
+  // Parses the field types from the server query response. |forms| must be the
+  // same as the one passed to EncodeQueryRequest when constructing the query.
+  // |form_interactions_ukm_logger| is used to provide logs to UKM and can be
+  // null in tests.
+  static void ProcessQueryResponse(
+      const AutofillQueryResponseContents& response,
+      const std::vector<FormStructure*>& forms,
+      const FormAndFieldSignatures& encoded_signatures,
+      AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger);
 
   FormStructure(FormSignature form_signature,
                 const std::vector<FieldSignature>& field_signatures);
@@ -498,12 +525,11 @@ class FormStructure {
   // when it considers necessary.
   void RationalizeFieldTypePredictions();
 
-  // Encodes information about this form and its fields into |query_form|.
-  void EncodeFormForQuery(
-      autofill::AutofillQueryContents::Form* query_form) const;
+  void EncodeFormForQuery(autofill::AutofillQueryContents::Form* query_form,
+                          FormAndFieldSignatures* encoded_signatures) const;
 
-  // Encodes information about this form and its fields into |upload|.
-  void EncodeFormForUpload(autofill::AutofillUploadContents* upload) const;
+  void EncodeFormForUpload(autofill::AutofillUploadContents* upload,
+                           FormAndFieldSignatures* encoded_signatures) const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
@@ -664,6 +690,7 @@ class FormStructure {
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form);
 std::ostream& operator<<(std::ostream& buffer, const FormStructure& form);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_STRUCTURE_H_

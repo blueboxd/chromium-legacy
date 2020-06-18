@@ -719,6 +719,8 @@ if (use_libfuzzer) {
       # TODO(crbug.com/896313): Reduce the dependency on "browser".
       ":browser",
       "//base:base",
+      "//components/autofill/core/browser",
+      "//components/autofill/core/browser:test_support",
       "//components/autofill/core/browser/proto",
       "//components/autofill/core/common",
       "//third_party/libprotobuf-mutator",

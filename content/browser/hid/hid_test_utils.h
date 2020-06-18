@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_HID_HID_TEST_UTILS_H_
 #define CONTENT_BROWSER_HID_HID_TEST_UTILS_H_
 
+#include <memory>
+#include <vector>
+
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -19,6 +22,8 @@ namespace content {
 class MockHidDelegate : public HidDelegate {
  public:
   MockHidDelegate();
+  MockHidDelegate(MockHidDelegate&) = delete;
+  MockHidDelegate& operator=(MockHidDelegate&) = delete;
   ~MockHidDelegate() override;
 
   // Simulates opening the HID device chooser dialog and selecting an item. The
@@ -28,6 +33,14 @@ class MockHidDelegate : public HidDelegate {
       RenderFrameHost* frame,
       std::vector<blink::mojom::HidDeviceFilterPtr> filters,
       HidChooser::Callback callback) override;
+
+  void AddObserver(Observer* observer) override;
+  void RemoveObserver(Observer* observer) override;
+
+  // MockHidDelegate does not register to receive device connection events. Use
+  // these methods to broadcast device connections to all delegate observers.
+  void OnDeviceAdded(const device::mojom::HidDeviceInfo& device);
+  void OnDeviceRemoved(const device::mojom::HidDeviceInfo& device);
 
   MOCK_METHOD0(RunChooserInternal,
                std::vector<device::mojom::HidDeviceInfoPtr>());
@@ -42,7 +55,7 @@ class MockHidDelegate : public HidDelegate {
                device::mojom::HidManager*(content::WebContents* web_contents));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockHidDelegate);
+  base::ObserverList<Observer> observer_list_;
 };
 
 // Test implementation of ContentBrowserClient for HID tests. The test client
@@ -50,6 +63,8 @@ class MockHidDelegate : public HidDelegate {
 class HidTestContentBrowserClient : public ContentBrowserClient {
  public:
   HidTestContentBrowserClient();
+  HidTestContentBrowserClient(HidTestContentBrowserClient&) = delete;
+  HidTestContentBrowserClient& operator=(HidTestContentBrowserClient&) = delete;
   ~HidTestContentBrowserClient() override;
 
   MockHidDelegate& delegate() { return delegate_; }
@@ -59,8 +74,6 @@ class HidTestContentBrowserClient : public ContentBrowserClient {
 
  private:
   MockHidDelegate delegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(HidTestContentBrowserClient);
 };
 
 }  // namespace content

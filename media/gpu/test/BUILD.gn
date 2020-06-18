@@ -69,7 +69,10 @@ source_set("test_helpers") {
     "video_test_helpers.cc",
     "video_test_helpers.h",
   ]
-  public_deps = [ ":helpers" ]
+  public_deps = [
+    ":helpers",
+    "//media:test_support",
+  ]
   deps = [
     "//media/gpu",
     "//testing/gtest",
@@ -136,6 +139,8 @@ static_library("video_encoder") {
   sources = [
     "bitstream_helpers.cc",
     "bitstream_helpers.h",
+    "video_encoder/bitstream_file_writer.cc",
+    "video_encoder/bitstream_file_writer.h",
     "video_encoder/bitstream_validator.cc",
     "video_encoder/bitstream_validator.h",
     "video_encoder/decoder_buffer_validator.cc",

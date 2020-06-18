@@ -8,16 +8,17 @@
 #include <string>
 #include <vector>
 
+#include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
@@ -122,7 +123,7 @@ SkColor GetSuggestionTextColor(int index) {
 class SuggestionView : public views::Button, public views::ButtonListener {
  public:
   SuggestionView(AssistantViewDelegate* delegate,
-                 AssistantSuggestionPtr suggestion,
+                 const AssistantSuggestion* suggestion,
                  int index)
       : views::Button(this),
         delegate_(delegate),
@@ -148,7 +149,7 @@ class SuggestionView : public views::Button, public views::ButtonListener {
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    delegate_->OnSuggestionChipPressed(suggestion_.get());
+    delegate_->OnSuggestionChipPressed(suggestion_);
   }
 
  private:
@@ -202,7 +203,7 @@ class SuggestionView : public views::Button, public views::ButtonListener {
   }
 
   AssistantViewDelegate* const delegate_;
-  const AssistantSuggestionPtr suggestion_;
+  const AssistantSuggestion* const suggestion_;
   const int index_;
 
   views::ImageView* icon_;  // Owned by view hierarchy.
@@ -222,12 +223,16 @@ AssistantOnboardingView::AssistantOnboardingView(
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());
+  AssistantSuggestionsController::Get()->GetModel()->AddObserver(this);
   AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
 AssistantOnboardingView::~AssistantOnboardingView() {
   if (AssistantUiController::Get())
     AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+
+  if (AssistantSuggestionsController::Get())
+    AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
 }
 
 const char* AssistantOnboardingView::GetClassName() const {
@@ -244,7 +249,13 @@ void AssistantOnboardingView::ChildPreferredSizeChanged(views::View* child) {
 
 void AssistantOnboardingView::OnAssistantControllerDestroying() {
   AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
   assistant_controller_observer_.Remove(AssistantController::Get());
+}
+
+void AssistantOnboardingView::OnOnboardingSuggestionsChanged(
+    const std::vector<const AssistantSuggestion*>& onboarding_suggestions) {
+  UpdateSuggestions();
 }
 
 void AssistantOnboardingView::OnUiVisibilityChanged(
@@ -256,7 +267,6 @@ void AssistantOnboardingView::OnUiVisibilityChanged(
     UpdateGreeting();
 }
 
-// TODO(dmblack): Implement suggestions.
 void AssistantOnboardingView::InitLayout() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -291,14 +301,17 @@ void AssistantOnboardingView::InitLayout() {
   AddChildView(std::move(intro));
 
   // Suggestions.
-  InitSuggestions();
+  UpdateSuggestions();
 }
 
-void AssistantOnboardingView::InitSuggestions() {
-  auto* grid = AddChildView(std::make_unique<views::View>());
-  grid->SetBorder(views::CreateEmptyBorder(kSuggestionsMarginTopDip, 0, 0, 0));
+void AssistantOnboardingView::UpdateSuggestions() {
+  if (grid_)
+    RemoveChildViewT(grid_);
 
-  auto* layout = grid->SetLayoutManager(std::make_unique<views::GridLayout>());
+  grid_ = AddChildView(std::make_unique<views::View>());
+  grid_->SetBorder(views::CreateEmptyBorder(kSuggestionsMarginTopDip, 0, 0, 0));
+
+  auto* layout = grid_->SetLayoutManager(std::make_unique<views::GridLayout>());
   auto* columns = layout->AddColumnSet(kSuggestionsColumnSetId);
 
   // Initialize columns.
@@ -315,16 +328,10 @@ void AssistantOnboardingView::InitSuggestions() {
         /*fixed_width=*/0, /*min_width=*/0);
   }
 
-  // TODO(dmblack): Populate suggestions from model.
-  std::vector<AssistantSuggestionPtr> suggestions;
-  suggestions.push_back(AssistantSuggestion::New(
-      /*id=*/base::UnguessableToken::Create(),
-      /*type=*/AssistantSuggestionType::kBetterOnboarding,
-      /*text=*/"Square root of 144",
-      /*icon_url=*/
-      GURL("https://www.gstatic.com/images/branding/product/2x/"
-           "googleg_48dp.png"),
-      /*action_url=*/GURL()));
+  const std::vector<const AssistantSuggestion*> suggestions =
+      AssistantSuggestionsController::Get()
+          ->GetModel()
+          ->GetOnboardingSuggestions();
 
   // Initialize suggestions.
   for (size_t i = 0; i < suggestions.size() && i < kSuggestionsMaxCount; ++i) {
@@ -340,8 +347,8 @@ void AssistantOnboardingView::InitSuggestions() {
                          /*column_set_id=*/kSuggestionsColumnSetId);
       }
     }
-    layout->AddView(std::make_unique<SuggestionView>(
-        delegate_, std::move(suggestions[i]), i));
+    layout->AddView(
+        std::make_unique<SuggestionView>(delegate_, suggestions.at(i), i));
   }
 }
 

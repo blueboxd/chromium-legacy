@@ -33,6 +33,10 @@ class CC_EXPORT PlaybackImageProvider : public ImageProvider {
     // The frame index to use for the given image id. If no index is provided,
     // the frame index provided in the PaintImage will be used.
     base::flat_map<PaintImage::Id, size_t> image_to_current_frame_index;
+
+    // Indicates that the consumer of decoded images is paint serialization
+    // for OOP raster.
+    bool use_oop_raster = false;
   };
 
   // If no settings are provided, all images are skipped during rasterization.

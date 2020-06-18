@@ -349,18 +349,26 @@ void BrowserTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
 
 void BrowserTabStripController::ToggleTabGroupCollapsedState(
     const tab_groups::TabGroupId group) {
-  // If the active tab is in the group that is toggling to collapse, the active
-  // tab should switch to the next available tab. If there are no available tabs
-  // for the active tab to switch to, the group will not toggle to collapse.
   const bool is_currently_collapsed = IsGroupCollapsed(group);
-  if (!is_currently_collapsed &&
-      model_->GetTabGroupForTab(GetActiveIndex()) == group) {
-    const base::Optional<int> next_active =
-        model_->GetNextExpandedActiveTab(GetActiveIndex(), group);
-    if (!next_active.has_value())
-      return;
-    model_->ActivateTabAt(next_active.value(),
-                          {TabStripModel::GestureType::kOther});
+  if (!is_currently_collapsed) {
+    if (model_->GetTabGroupForTab(GetActiveIndex()) == group) {
+      // If the active tab is in the group that is toggling to collapse, the
+      // active tab should switch to the next available tab. If there are no
+      // available tabs for the active tab to switch to, the group will not
+      // toggle to collapse.
+      const base::Optional<int> next_active =
+          model_->GetNextExpandedActiveTab(GetActiveIndex(), group);
+      if (!next_active.has_value())
+        return;
+      model_->ActivateTabAt(next_active.value(),
+                            {TabStripModel::GestureType::kOther});
+    } else {
+      // If the active tab is not in the group that is toggling to collapse,
+      // reactive the active tab to deselect any other potentially selected
+      // tabs.
+      model_->ActivateTabAt(GetActiveIndex(),
+                            {TabStripModel::GestureType::kOther});
+    }
   }
 
   std::vector<int> tabs_in_group = ListTabsInGroup(group);

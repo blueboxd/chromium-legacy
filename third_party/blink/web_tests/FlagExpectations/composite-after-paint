@@ -46,11 +46,8 @@ paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html 
 crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 
-virtual/android/fullscreen/video-overlay-scroll.html [ Failure ]
-
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
-fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html [ Failure ]
 
 printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
@@ -66,9 +63,6 @@ paint/invalidation/raster-under-invalidation-checking.html [ Failure ]
 # No composited scrolling for overflow:hidden (on marquee).
 compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 
-# Subpixel or invisible color differences that look benign, but we can't rebaseline ref tests.
-fullscreen/rendering/backdrop-object.html [ Failure ]
-
 # Passes on bot, timeouts locally.
 virtual/threaded/fast/events/pinch/scroll-visual-viewport-send-boundary-events.html [ Pass Timeout ]
 
@@ -79,9 +73,6 @@ http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
 # Outline paints incorrectly with columns.
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
-
-# Ad frame highlight size is incorrect
-crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]

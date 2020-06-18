@@ -3,6 +3,8 @@
         color: #fff;
         display: flex;
         font-size: 0.81rem;
+
+        --page-selector-spacing: 4px;
       }
 
       :host ::selection {
@@ -11,12 +13,10 @@
 
       #pageselector::part(input),
       #pagelength {
-        box-sizing: content-box;
-        padding: 0 3px;
         /* --page-length-digits is set through JavaScript. 1px is added because
          * the unit 'ch' does not provide exact whole number pixels, and
          * therefore seems to have 1px-off bugginess. */
-        width: calc(var(--page-length-digits) * 1ch + 1px);
+        width: calc(max(2, var(--page-length-digits)) * 1ch + 1px);
       }
 
       #pageselector {
@@ -29,12 +29,18 @@
 
       #pageselector::part(input) {
         background: rgba(0, 0, 0, 0.5);
+        box-sizing: content-box;
         caret-color: var(--cr-input-color);
+        padding: 0 var(--page-selector-spacing);
+      }
+
+      #divider {
+        margin: 0 var(--page-selector-spacing);
       }
     </style>
     <cr-input id="pageselector" value="[[pageNo]]" on-mouseup="select"
         on-value-changed="onInputValueChange_" on-change="pageNoCommitted"
         aria-label$="$i18n{labelPageNumber}">
     </cr-input>
-    /
+    <span id="divider">/</span>
     <span id="pagelength">[[docLength]]</span>

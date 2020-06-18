@@ -272,6 +272,7 @@ NetworkFetcher::~NetworkFetcher() = default;
 void NetworkFetcher::PostRequest(
     const GURL& url,
     const std::string& post_data,
+    const std::string& content_type,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     ResponseStartedCallback response_started_callback,
     ProgressCallback progress_callback,
@@ -296,6 +297,8 @@ void NetworkFetcher::PostRequest(
   [urlRequest setHTTPMethod:@"POST"];
   [urlRequest setHTTPBody:[base::SysUTF8ToNSString(post_data)
                               dataUsingEncoding:NSUTF8StringEncoding]];
+  [urlRequest addValue:base::SysUTF8ToNSString(content_type)
+      forHTTPHeaderField:@"Content-Type"];
   VLOG(1) << "Posting data: " << post_data.c_str();
 
   NSURLSessionDataTask* dataTask = [session dataTaskWithRequest:urlRequest];

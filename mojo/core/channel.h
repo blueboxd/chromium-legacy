@@ -252,7 +252,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // was created (see Channel::Create).
   class Delegate {
    public:
-    virtual ~Delegate() {}
+    virtual ~Delegate() = default;
 
     // Notify of a received message. |payload| is not owned and must not be
     // retained; it will be null if |payload_size| is 0. |handles| are

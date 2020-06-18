@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/base_paths.h"
+#include "base/logging.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"

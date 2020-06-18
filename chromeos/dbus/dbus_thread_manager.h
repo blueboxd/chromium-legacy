@@ -29,7 +29,6 @@ class ArcAppfuseProviderClient;
 class ArcKeymasterClient;
 class ArcMidisClient;
 class ArcObbMounterClient;
-class ArcOemCryptoClient;
 class CecServiceClient;
 class ChunneldClient;
 class CiceroneClient;
@@ -122,7 +121,6 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DBusThreadManager {
   ArcKeymasterClient* GetArcKeymasterClient();
   ArcMidisClient* GetArcMidisClient();
   ArcObbMounterClient* GetArcObbMounterClient();
-  ArcOemCryptoClient* GetArcOemCryptoClient();
   CecServiceClient* GetCecServiceClient();
   ChunneldClient* GetChunneldClient();
   CiceroneClient* GetCiceroneClient();

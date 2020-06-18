@@ -57,7 +57,7 @@ PluginVmEngagementMetricsService::PluginVmEngagementMetricsService(
     return;
   guest_os_engagement_metrics_ =
       std::make_unique<guest_os::GuestOsEngagementMetrics>(
-          profile->GetPrefs(), base::BindRepeating(IsPluginVmWindow),
+          profile->GetPrefs(), base::BindRepeating(IsPluginVmAppWindow),
           prefs::kEngagementPrefsPrefix, kUmaPrefix);
 }
 

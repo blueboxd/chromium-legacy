@@ -77,7 +77,6 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/default_search_policy_handler.h"
 #include "components/search_engines/search_engines_pref_names.h"
-#include "components/security_state/core/security_state_pref_names.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/sync/base/pref_names.h"
@@ -594,9 +593,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPaymentMethodQueryEnabled,
     payments::kCanMakePaymentEnabled,
     base::Value::Type::BOOLEAN },
-  { key::kStricterMixedContentTreatmentEnabled,
-    security_state::prefs::kStricterMixedContentTreatmentEnabled,
-    base::Value::Type::BOOLEAN },
   { key::kDNSInterceptionChecksEnabled,
     prefs::kDNSInterceptionChecksEnabled,
     base::Value::Type::BOOLEAN },
@@ -1106,6 +1102,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::INTEGER },
   { key::kLoginDisplayPasswordButtonEnabled,
     chromeos::prefs::kLoginDisplayPasswordButtonEnabled,
+    base::Value::Type::BOOLEAN },
+  { key::kDeletePrintJobHistoryAllowed,
+    prefs::kDeletePrintJobHistoryAllowed,
     base::Value::Type::BOOLEAN },
 
 #else  // defined(OS_CHROMEOS)

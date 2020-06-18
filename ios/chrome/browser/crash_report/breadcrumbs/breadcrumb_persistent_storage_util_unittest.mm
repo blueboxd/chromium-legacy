@@ -15,6 +15,9 @@
 using breadcrumb_persistent_storage_util::
     GetBreadcrumbPersistentStorageFilePath;
 
+using breadcrumb_persistent_storage_util::
+    GetBreadcrumbPersistentStorageTempFilePath;
+
 // Test fixture to test BreadcrumbPersistentStorageUtil.
 typedef ChromeWebTest BreadcrumbPersistentStorageUtilTest;
 
@@ -22,12 +25,20 @@ typedef ChromeWebTest BreadcrumbPersistentStorageUtilTest;
 TEST_F(BreadcrumbPersistentStorageUtilTest, UniqueStorage) {
   base::FilePath path1 =
       GetBreadcrumbPersistentStorageFilePath(GetBrowserState());
+  base::FilePath tempFilePath1 =
+      GetBreadcrumbPersistentStorageTempFilePath(GetBrowserState());
+  // Verify that the temp file path is different.
+  EXPECT_NE(path1, tempFilePath1);
+
   std::unique_ptr<TestChromeBrowserState> local_browser_state =
       TestChromeBrowserState::Builder().Build();
   base::FilePath path2 =
       GetBreadcrumbPersistentStorageFilePath(local_browser_state.get());
+  base::FilePath tempFilePath2 =
+      GetBreadcrumbPersistentStorageTempFilePath(local_browser_state.get());
 
   EXPECT_NE(path1, path2);
+  EXPECT_NE(tempFilePath1, tempFilePath2);
 }
 
 // Tests that the BrowserState returned by
@@ -36,10 +47,16 @@ TEST_F(BreadcrumbPersistentStorageUtilTest, UniqueStorage) {
 TEST_F(BreadcrumbPersistentStorageUtilTest, UniqueIncognitoStorage) {
   base::FilePath path1 =
       GetBreadcrumbPersistentStorageFilePath(GetBrowserState());
+  base::FilePath tempFilePath1 =
+      GetBreadcrumbPersistentStorageTempFilePath(GetBrowserState());
+
   ChromeBrowserState* off_the_record_browser_state =
       chrome_browser_state_->GetOffTheRecordChromeBrowserState();
   base::FilePath path2 =
       GetBreadcrumbPersistentStorageFilePath(off_the_record_browser_state);
+  base::FilePath tempFilePath2 =
+      GetBreadcrumbPersistentStorageTempFilePath(off_the_record_browser_state);
 
   EXPECT_NE(path1, path2);
+  EXPECT_NE(tempFilePath1, tempFilePath2);
 }

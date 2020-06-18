@@ -93,6 +93,7 @@ test("weblayer_browsertests") {
     "//components/network_session_configurator/common",
     "//components/network_time",
     "//components/page_load_metrics/browser:browser",
+    "//components/prefs",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/sessions:test_support",
     "//components/site_isolation",

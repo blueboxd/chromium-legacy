@@ -82,11 +82,14 @@ _chrome_redirects = {
     'chrome://resources/polymer/v1_0/': POLYMER_V1_DIR,
     'chrome://resources/html/': 'ui/webui/resources/html/',
     'chrome://resources/cr_elements/': 'ui/webui/resources/cr_elements/',
+    '//resources/polymer/v1_0/': POLYMER_V1_DIR,
+    '//resources/html/': 'ui/webui/resources/html/',
+    '//resources/cr_elements/': 'ui/webui/resources/cr_elements/',
 }
 
 _chrome_reverse_redirects = {
-  POLYMER_V3_DIR: 'chrome://resources/polymer/v3_0/',
-  'ui/webui/resources/': 'chrome://resources/',
+    POLYMER_V3_DIR: '//resources/polymer/v3_0/',
+    'ui/webui/resources/': '//resources/',
 }
 
 
@@ -104,8 +107,8 @@ class Dependency:
     self.html_file = src
     self.html_path = dst
 
-    self.input_format = (
-        'chrome' if self.html_path.startswith('chrome://') else 'relative')
+    self.input_format = ('chrome' if self.html_path.startswith('chrome://')
+                         or self.html_path.startswith('//') else 'relative')
     self.output_format = self.input_format
 
     self.html_path_normalized = self._to_html_normalized()

@@ -5,6 +5,7 @@
 #include "chrome/browser/download/download_shelf_context_menu.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/download_danger_type.h"
@@ -49,12 +50,8 @@ ui::SimpleMenuModel* DownloadShelfContextMenu::GetMenuModel() {
 
   if (download_->IsMixedContent()) {
     model = GetMixedContentDownloadMenuModel();
-  } else if (download_->GetDangerType() ==
-                 download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
-             download_->GetDangerType() ==
-                 download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
-             download_->GetDangerType() ==
-                 download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK) {
+  } else if (ChromeDownloadManagerDelegate::IsDangerTypeBlocked(
+                 download_->GetDangerType())) {
     model = GetInterruptedMenuModel(is_download);
   } else if (download_->GetDangerType() ==
              download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {

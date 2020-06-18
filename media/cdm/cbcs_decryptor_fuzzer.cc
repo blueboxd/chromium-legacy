@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "crypto/symmetric_key.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/encryption_pattern.h"

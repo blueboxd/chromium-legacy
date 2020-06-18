@@ -1,0 +1,4 @@
+include_rules = [
+  "+components/arc/mojom",
+  "+content/public/browser",
+]

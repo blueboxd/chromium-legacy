@@ -28,26 +28,6 @@
 #include "ui/gfx/vector_icon_types.h"
 #endif
 
-namespace {
-
-bool ShouldUpdateEditModelForSelectionChange(
-    OmniboxPopupModel::Selection old_selection,
-    OmniboxPopupModel::Selection new_selection) {
-  // Never update the edit model if we're moving ONTO a header.
-  if (new_selection.state == OmniboxPopupModel::HEADER_BUTTON_FOCUSED)
-    return false;
-
-  // Always update the edit model if we're moving OFF a header.
-  if (old_selection.state == OmniboxPopupModel::HEADER_BUTTON_FOCUSED)
-    return true;
-
-  // Otherwise, only update the edit model for line number changes.
-  // Updating the edit model for mere state changes breaks keyword mode.
-  return old_selection.line != new_selection.line;
-}
-
-}  // namespace
-
 ///////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupModel::Selection
 
@@ -186,24 +166,30 @@ void OmniboxPopupModel::SetSelection(Selection new_selection,
     view_->ProvideButtonFocusHint(selected_line());
   }
 
-  // When the selected line changes, we should also update the edit model with
-  // new data for this match, assuming we meet some nuanced conditions.
-  if (!ShouldUpdateEditModelForSelectionChange(old_selection, selection_))
-    return;
-
   base::string16 keyword;
   bool is_keyword_hint;
   TemplateURLService* service = edit_model_->client()->GetTemplateURLService();
   match.GetKeywordUIState(service, &keyword, &is_keyword_hint);
 
-  if (reset_to_default) {
-    edit_model_->OnPopupDataChanged(match.inline_autocompletion,
-                                    /*is_temporary_text=*/false, keyword,
-                                    is_keyword_hint);
-  } else {
-    edit_model_->OnPopupDataChanged(match.fill_into_edit,
+  if (selection_.state == HEADER_BUTTON_FOCUSED) {
+    // If the new selection is a Header, the temporary text is an empty string.
+    edit_model_->OnPopupDataChanged(base::string16(),
                                     /*is_temporary_text=*/true, keyword,
                                     is_keyword_hint);
+  } else if (old_selection.line != selection_.line ||
+             old_selection.state == HEADER_BUTTON_FOCUSED) {
+    // Otherwise, only update the edit model for line number changes, or
+    // when the old selection was a Header. Updating the edit model for every
+    // state change breaks keyword mode.
+    if (reset_to_default) {
+      edit_model_->OnPopupDataChanged(match.inline_autocompletion,
+                                      /*is_temporary_text=*/false, keyword,
+                                      is_keyword_hint);
+    } else {
+      edit_model_->OnPopupDataChanged(match.fill_into_edit,
+                                      /*is_temporary_text=*/true, keyword,
+                                      is_keyword_hint);
+    }
   }
 }
 

@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer.h"
 
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#import "ios/web/public/test/web_task_environment.h"
 #include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -24,12 +25,18 @@ class FakeBreadcrumbManagerObserver : public BreadcrumbManagerObserver {
   // BreadcrumbManagerObserver
   void EventAdded(BreadcrumbManager* manager,
                   const std::string& event) override {
-    last_received_manager_ = manager;
-    last_received_event_ = event;
+    event_added_last_received_manager_ = manager;
+    event_added_last_received_event_ = event;
   }
 
-  BreadcrumbManager* last_received_manager_ = nullptr;
-  std::string last_received_event_;
+  void OldEventsRemoved(BreadcrumbManager* manager) override {
+    old_events_removed_last_received_manager_ = manager;
+  }
+
+  BreadcrumbManager* event_added_last_received_manager_ = nullptr;
+  std::string event_added_last_received_event_;
+
+  BreadcrumbManager* old_events_removed_last_received_manager_ = nullptr;
 };
 
 }
@@ -42,6 +49,10 @@ class BreadcrumbManagerObserverTest : public PlatformTest {
     manager_.RemoveObserver(&observer_);
   }
 
+  web::WebTaskEnvironment task_env_{
+      web::WebTaskEnvironment::Options::DEFAULT,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+
   BreadcrumbManager manager_;
   FakeBreadcrumbManagerObserver observer_;
 };
@@ -49,13 +60,29 @@ class BreadcrumbManagerObserverTest : public PlatformTest {
 // Tests that |BreadcrumbManagerObserver::EventAdded| is called when an event to
 // added to |manager_|.
 TEST_F(BreadcrumbManagerObserverTest, EventAdded) {
-  ASSERT_FALSE(observer_.last_received_manager_);
-  ASSERT_TRUE(observer_.last_received_event_.empty());
+  ASSERT_FALSE(observer_.event_added_last_received_manager_);
+  ASSERT_TRUE(observer_.event_added_last_received_event_.empty());
 
   std::string event = "event";
   manager_.AddEvent(event);
 
-  EXPECT_EQ(&manager_, observer_.last_received_manager_);
+  EXPECT_EQ(&manager_, observer_.event_added_last_received_manager_);
   // A timestamp will be prepended to the event passed to |AddEvent|.
-  EXPECT_NE(std::string::npos, observer_.last_received_event_.find(event));
+  EXPECT_NE(std::string::npos,
+            observer_.event_added_last_received_event_.find(event));
+}
+
+// Tests that |BreadcumbManager::OldEventsRemoved| is called when old events are
+// dropped from |manager_|.
+TEST_F(BreadcrumbManagerObserverTest, OldEventsRemoved) {
+  ASSERT_FALSE(observer_.old_events_removed_last_received_manager_);
+
+  std::string event = "event";
+  manager_.AddEvent(event);
+  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
+  manager_.AddEvent(event);
+  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
+  manager_.AddEvent(event);
+
+  EXPECT_EQ(&manager_, observer_.old_events_removed_last_received_manager_);
 }

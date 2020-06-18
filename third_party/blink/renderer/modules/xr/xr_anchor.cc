@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/modules/xr/xr_anchor.h"
-#include "third_party/blink/renderer/modules/xr/type_converters.h"
 #include "third_party/blink/renderer/modules/xr/xr_object_space.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/modules/xr/xr_system.h"
@@ -21,28 +20,17 @@ namespace blink {
 XRAnchor::XRAnchor(uint64_t id,
                    XRSession* session,
                    const device::mojom::blink::XRAnchorData& anchor_data)
-    : id_(id), is_deleted_(false), session_(session) {
-  // No need for else - if mojo_from_anchor is not present, the
-  // default-constructed unique ptr is fine. It would signify that the anchor
-  // exists and is tracked by the underlying system, but its current location is
-  // unknown.
-  if (anchor_data.mojo_from_anchor) {
-    SetMojoFromAnchor(mojo::ConvertTo<blink::TransformationMatrix>(
-        anchor_data.mojo_from_anchor));
-  }
-}
+    : id_(id),
+      is_deleted_(false),
+      session_(session),
+      mojo_from_anchor_(anchor_data.mojo_from_anchor) {}
 
 void XRAnchor::Update(const device::mojom::blink::XRAnchorData& anchor_data) {
   if (is_deleted_) {
     return;
   }
 
-  if (anchor_data.mojo_from_anchor) {
-    SetMojoFromAnchor(mojo::ConvertTo<blink::TransformationMatrix>(
-        anchor_data.mojo_from_anchor));
-  } else {
-    mojo_from_anchor_ = nullptr;
-  }
+  mojo_from_anchor_ = anchor_data.mojo_from_anchor;
 }
 
 uint64_t XRAnchor::id() const {
@@ -69,26 +57,17 @@ base::Optional<TransformationMatrix> XRAnchor::MojoFromObject() const {
     return base::nullopt;
   }
 
-  return *mojo_from_anchor_;
+  return mojo_from_anchor_->ToTransform().matrix();
 }
 
 void XRAnchor::Delete() {
   if (!is_deleted_) {
     session_->xr()->xrEnvironmentProviderRemote()->DetachAnchor(id_);
-    mojo_from_anchor_ = nullptr;
+    mojo_from_anchor_ = base::nullopt;
     anchor_space_ = nullptr;
   }
 
   is_deleted_ = true;
-}
-
-void XRAnchor::SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor) {
-  if (mojo_from_anchor_) {
-    *mojo_from_anchor_ = mojo_from_anchor;
-  } else {
-    mojo_from_anchor_ =
-        std::make_unique<TransformationMatrix>(mojo_from_anchor);
-  }
 }
 
 void XRAnchor::Trace(Visitor* visitor) const {

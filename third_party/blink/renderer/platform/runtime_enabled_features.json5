@@ -1455,6 +1455,10 @@
       name: "PreferNonCompositedScrolling",
       settable_from_internals: true,
     },
+    {
+      name: 'PrefersReducedData',
+      status: 'experimental',
+    },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.
     {

@@ -4,6 +4,7 @@
 
 #include "media/gpu/test/video_encoder/decoder_buffer_validator.h"
 
+#include "base/logging.h"
 #include "media/base/decoder_buffer.h"
 #include "media/gpu/h264_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"

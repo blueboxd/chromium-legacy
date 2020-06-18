@@ -5,6 +5,7 @@
 #include "media/gpu/chromeos/fourcc.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "media/gpu/macros.h"
 

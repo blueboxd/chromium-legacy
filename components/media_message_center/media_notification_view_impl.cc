@@ -554,6 +554,7 @@ void MediaNotificationViewImpl::CreateMediaButton(
   button->set_tag(static_cast<int>(action));
   button->SetPreferredSize(kMediaButtonSize);
   button->SetAccessibleName(accessible_name);
+  button->SetTooltipText(accessible_name);
   button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
   button_row_->AddChildView(std::move(button));
 }

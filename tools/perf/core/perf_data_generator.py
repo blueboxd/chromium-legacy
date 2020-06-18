@@ -113,7 +113,7 @@ FYI_BUILDERS = {
         'platform':
         'android-chrome',
         'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
+            'pool': 'chrome.tests.perf-fyi',
             'os': 'Android',
             'device_type': 'bullhead',
             'device_os': 'MMB29Q',
@@ -127,7 +127,7 @@ FYI_BUILDERS = {
         'platform': 'android-chrome',
         'browser': 'bin/monochrome_64_32_bundle',
         'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
+            'pool': 'chrome.tests.perf-fyi',
             'os': 'Android',
             'device_type': 'walleye',
             'device_os': 'O',
@@ -144,7 +144,7 @@ FYI_BUILDERS = {
         'platform':
         'android-chrome-bundle',
         'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
+            'pool': 'chrome.tests.perf-fyi',
             'os': 'Android',
             'device_type': 'walleye',
             'device_os': 'O',
@@ -166,7 +166,7 @@ FYI_BUILDERS = {
             'gpu': '10de',
             'id': 'build186-b7',
             'os': 'Ubuntu-14.04',
-            'pool': 'chrome.tests.perf-fyi.template',
+            'pool': 'chrome.tests.perf-fyi',
         },
     },
     'win-10_laptop_low_end-perf_HP-Candidate': {
@@ -178,7 +178,7 @@ FYI_BUILDERS = {
         'platform': 'win',
         'target_bits': 64,
         'dimension': {
-            'pool': 'chrome.tests.perf-fyi.template',
+            'pool': 'chrome.tests.perf-fyi',
             'id': 'build370-a7',
             # TODO(crbug.com/971204): Explicitly set the gpu to None to make
             # chromium_swarming recipe_module ignore this dimension.
@@ -282,7 +282,7 @@ BUILDERS = {
         ],
         'dimension': {
             'os': 'Ubuntu-16.04',
-            'pool': 'chrome.tests.template',
+            'pool': 'chrome.tests',
         },
         'perf_trigger':
         False,
@@ -334,7 +334,7 @@ BUILDERS = {
         ],
         'dimension': {
             'os': 'Ubuntu-16.04',
-            'pool': 'chrome.tests.template',
+            'pool': 'chrome.tests',
         },
         'perf_trigger':
         False,
@@ -362,7 +362,7 @@ BUILDERS = {
             'device_os': 'OMB1.180119.001',
             'device_type': 'gobo',
             'device_os_flavor': 'google',
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             'os': 'Android',
         },
     },
@@ -372,7 +372,7 @@ BUILDERS = {
         }],
         'platform': 'android-webview-google',
         'dimension': {
-            'pool': 'chrome.tests.perf-webview.template',
+            'pool': 'chrome.tests.perf-webview',
             'os': 'Android',
             'device_type': 'gobo',
             'device_os': 'OMB1.180119.001',
@@ -391,7 +391,7 @@ BUILDERS = {
         'platform':
         'android',
         'dimension': {
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             'os': 'Android',
             'device_type': 'hammerhead',
             'device_os': 'M4B30Z',
@@ -408,7 +408,7 @@ BUILDERS = {
         'platform':
         'android-webview',
         'dimension': {
-            'pool': 'chrome.tests.perf-webview.template',
+            'pool': 'chrome.tests.perf-webview',
             'os': 'Android',
             'device_type': 'bullhead',
             'device_os': 'MOB30K',
@@ -421,7 +421,7 @@ BUILDERS = {
         }],
         'platform': 'android-webview-google',
         'dimension': {
-            'pool': 'chrome.tests.perf-webview.template',
+            'pool': 'chrome.tests.perf-webview',
             'os': 'Android',
             'device_type': 'walleye',
             'device_os': 'OPM1.171019.021',
@@ -434,7 +434,7 @@ BUILDERS = {
         }],
         'platform': 'android-weblayer',
         'dimension': {
-            'pool': 'chrome.tests.perf-weblayer.template',
+            'pool': 'chrome.tests.perf-weblayer',
             'os': 'Android',
             'device_type': 'walleye',
             'device_os': 'OPM1.171019.021',
@@ -447,7 +447,7 @@ BUILDERS = {
         }],
         'platform': 'android-chrome',
         'dimension': {
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             'os': 'Android',
             'device_type': 'walleye',
             'device_os': 'OPM1.171019.021',
@@ -468,7 +468,7 @@ BUILDERS = {
         'target_bits':
         64,
         'dimension': {
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             # Explicitly set GPU driver version and Windows OS version such
             # that we can be informed if this
             # version ever changes or becomes inconsistent. It is important
@@ -494,7 +494,7 @@ BUILDERS = {
         'target_bits':
         64,
         'dimension': {
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             # Explicitly set GPU driver version and Windows OS version such
             # that we can be informed if this
             # version ever changes or becomes inconsistent. It is important
@@ -515,7 +515,7 @@ BUILDERS = {
         'dimension': {
             'gpu': '102b:0532-6.1.7600.16385',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             'synthetic_product_name': 'PowerEdge R210 II (Dell Inc.)',
         },
     },
@@ -535,7 +535,7 @@ BUILDERS = {
         'dimension': {
             'gpu': '10de:1cb3-23.21.13.8792',
             'os': 'Windows-2008ServerR2-SP1',
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             'synthetic_product_name': 'PowerEdge R220 [01] (Dell Inc.)'
         },
     },
@@ -556,7 +556,7 @@ BUILDERS = {
             'os':
             'Mac-10.12.6',
             'pool':
-            'chrome.tests.perf.template',
+            'chrome.tests.perf',
             'synthetic_product_name':
             'MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G'
         },
@@ -575,7 +575,7 @@ BUILDERS = {
         'dimension': {
             'gpu': '10de:1cb3-384.90',
             'os': 'Ubuntu-14.04',
-            'pool': 'chrome.tests.perf.template',
+            'pool': 'chrome.tests.perf',
             'synthetic_product_name': 'PowerEdge R230 (Dell Inc.)'
         },
     },
@@ -596,7 +596,7 @@ BUILDERS = {
             'os':
             'Mac-10.13.3',
             'pool':
-            'chrome.tests.perf.template',
+            'chrome.tests.perf',
             'synthetic_product_name':
             'MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G',
         },

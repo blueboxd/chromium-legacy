@@ -415,23 +415,7 @@ void SingleThreadProxy::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
     scheduler_on_impl_thread_->SetVideoNeedsBeginFrames(needs_begin_frames);
 }
 
-size_t SingleThreadProxy::CompositedAnimationsCount() const {
-  return 0;
-}
-
-size_t SingleThreadProxy::MainThreadAnimationsCount() const {
-  return 0;
-}
-
 bool SingleThreadProxy::HasCustomPropertyAnimations() const {
-  return false;
-}
-
-bool SingleThreadProxy::CurrentFrameHadRAF() const {
-  return false;
-}
-
-bool SingleThreadProxy::NextFrameHasPendingRAF() const {
   return false;
 }
 

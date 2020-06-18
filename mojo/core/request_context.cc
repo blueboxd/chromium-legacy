@@ -110,7 +110,7 @@ RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(
 RequestContext::WatchNotifyFinalizer::WatchNotifyFinalizer(
     const WatchNotifyFinalizer& other) = default;
 
-RequestContext::WatchNotifyFinalizer::~WatchNotifyFinalizer() {}
+RequestContext::WatchNotifyFinalizer::~WatchNotifyFinalizer() = default;
 
 }  // namespace core
 }  // namespace mojo

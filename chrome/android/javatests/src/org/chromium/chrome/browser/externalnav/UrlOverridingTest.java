@@ -99,6 +99,8 @@ public class UrlOverridingTest {
             BASE_PATH + "navigation_to_cct_via_intent_uri.html";
     private static final String NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI =
             BASE_PATH + "navigation_to_file_scheme_via_intent_uri.html";
+    private static final String SUBFRAME_REDIRECT_WITH_PLAY_FALLBACK =
+            BASE_PATH + "subframe_navigation_with_play_fallback.html";
 
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
@@ -511,5 +513,13 @@ public class UrlOverridingTest {
         mActivityTestRule.startMainActivityOnBlankPage();
         String originalUrl = mTestServer.getURL(NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI);
         loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, null, false, "empty_scheme");
+    }
+
+    @Test
+    @LargeTest
+    public void testSubframeLoadCannotLaunchPlayApp() throws TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        loadUrlAndWaitForIntentUrl(
+                mTestServer.getURL(SUBFRAME_REDIRECT_WITH_PLAY_FALLBACK), false, false);
     }
 }

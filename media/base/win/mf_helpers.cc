@@ -4,6 +4,8 @@
 
 #include "media/base/win/mf_helpers.h"
 
+#include "base/check_op.h"
+
 namespace media {
 
 Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(

@@ -49,6 +49,7 @@ import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
@@ -526,7 +527,8 @@ public class TabGridDialogMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of tab1.
         doReturn(CUSTOMIZED_DIALOG_TITLE).when(mTabGroupTitleEditor).getTabGroupTitle(TAB1_ID);
 
-        assertThat(mTabGroupTitleEditor.getTabGroupTitle(mTab1.getRootId()),
+        assertThat(mTabGroupTitleEditor.getTabGroupTitle(
+                           CriticalPersistedTabData.from(mTab1).getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE));
         mTabModelObserverCaptor.getValue().willCloseTab(newTab, false);
 
@@ -1013,11 +1015,7 @@ public class TabGridDialogMediatorUnitTest {
     }
 
     private TabImpl prepareTab(int id, String title) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(id).when(tab).getId();
-        doReturn(id).when(tab).getRootId();
-        doReturn("").when(tab).getUrlString();
-        doReturn(title).when(tab).getTitle();
+        TabImpl tab = TabUiUnitTestUtils.prepareTab(id, title, "");
         doReturn(true).when(tab).isIncognito();
         return tab;
     }
@@ -1025,7 +1023,8 @@ public class TabGridDialogMediatorUnitTest {
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when(((TabImpl) tab)).getRootId();
+            CriticalPersistedTabData criticalPersistedTabData = CriticalPersistedTabData.from(tab);
+            doReturn(rootId).when(criticalPersistedTabData).getRootId();
         }
     }
 }

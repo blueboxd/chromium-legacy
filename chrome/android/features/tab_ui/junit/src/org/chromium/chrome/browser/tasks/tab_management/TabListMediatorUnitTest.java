@@ -77,7 +77,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.UserDataHost;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
@@ -93,6 +92,7 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
@@ -371,7 +371,8 @@ public class TabListMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of tab1.
         getGroupTitleSharedPreferences()
                 .edit()
-                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .putString(String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()),
+                        CUSTOMIZED_DIALOG_TITLE1)
                 .apply();
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
 
@@ -1126,8 +1127,10 @@ public class TabListMediatorUnitTest {
         doReturn(mTab1).when(mTabModel).getTabAt(POSITION2);
         doReturn(mTab2).when(mTabModel).getTabAt(POSITION1);
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
-        doReturn(TAB1_ID).when(mTab1).getRootId();
-        doReturn(TAB1_ID).when(mTab2).getRootId();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        doReturn(TAB1_ID).when(criticalPersistedTabData1).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData2).getRootId();
 
         assertThat(mModel.size(), equalTo(2));
         assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
@@ -1148,8 +1151,10 @@ public class TabListMediatorUnitTest {
         doReturn(mTab1).when(mTabModel).getTabAt(POSITION2);
         doReturn(mTab2).when(mTabModel).getTabAt(POSITION1);
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
-        doReturn(TAB1_ID).when(mTab1).getRootId();
-        doReturn(TAB1_ID).when(mTab2).getRootId();
+        CriticalPersistedTabData criticalPersistedTabData1 = CriticalPersistedTabData.from(mTab1);
+        CriticalPersistedTabData criticalPersistedTabData2 = CriticalPersistedTabData.from(mTab2);
+        doReturn(TAB1_ID).when(criticalPersistedTabData1).getRootId();
+        doReturn(TAB1_ID).when(criticalPersistedTabData2).getRootId();
 
         assertThat(mModel.size(), equalTo(2));
         assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
@@ -1322,9 +1327,11 @@ public class TabListMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of tab1.
         getGroupTitleSharedPreferences()
                 .edit()
-                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .putString(String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()),
+                        CUSTOMIZED_DIALOG_TITLE1)
                 .apply();
-        assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(mTab1.getRootId()),
+        assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(
+                           CriticalPersistedTabData.from(mTab1).getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
 
         // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID.
@@ -1342,9 +1349,11 @@ public class TabListMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of tab1.
         getGroupTitleSharedPreferences()
                 .edit()
-                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .putString(String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()),
+                        CUSTOMIZED_DIALOG_TITLE1)
                 .apply();
-        assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(mTab1.getRootId()),
+        assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(
+                           CriticalPersistedTabData.from(mTab1).getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
 
         // Mock that tab1 is a single tab.
@@ -1362,9 +1371,11 @@ public class TabListMediatorUnitTest {
         // Mock that we have a stored title stored with reference to root ID of tab1.
         getGroupTitleSharedPreferences()
                 .edit()
-                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .putString(String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()),
+                        CUSTOMIZED_DIALOG_TITLE1)
                 .apply();
-        assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(mTab1.getRootId()),
+        assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(
+                           CriticalPersistedTabData.from(mTab1).getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
 
         // Mock that tab1 and tab2 are in the same group and group root id is TAB1_ID.
@@ -1401,12 +1412,13 @@ public class TabListMediatorUnitTest {
         TabGroupTitleEditor tabGroupTitleEditor = mMediator.getTabGroupTitleEditor();
 
         assertNull(getGroupTitleSharedPreferences().getString(
-                String.valueOf(mTab1.getRootId()), null));
+                String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()), null));
 
-        tabGroupTitleEditor.storeTabGroupTitle(mTab1.getRootId(), CUSTOMIZED_DIALOG_TITLE1);
+        tabGroupTitleEditor.storeTabGroupTitle(
+                CriticalPersistedTabData.from(mTab1).getRootId(), CUSTOMIZED_DIALOG_TITLE1);
         assertEquals(CUSTOMIZED_DIALOG_TITLE1,
                 getGroupTitleSharedPreferences().getString(
-                        String.valueOf(mTab1.getRootId()), null));
+                        String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()), null));
     }
 
     @Test
@@ -1417,15 +1429,16 @@ public class TabListMediatorUnitTest {
 
         getGroupTitleSharedPreferences()
                 .edit()
-                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .putString(String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()),
+                        CUSTOMIZED_DIALOG_TITLE1)
                 .apply();
         assertEquals(CUSTOMIZED_DIALOG_TITLE1,
                 getGroupTitleSharedPreferences().getString(
-                        String.valueOf(mTab1.getRootId()), null));
+                        String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()), null));
 
-        tabGroupTitleEditor.deleteTabGroupTitle(mTab1.getRootId());
+        tabGroupTitleEditor.deleteTabGroupTitle(CriticalPersistedTabData.from(mTab1).getRootId());
         assertNull(getGroupTitleSharedPreferences().getString(
-                String.valueOf(mTab1.getRootId()), null));
+                String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()), null));
     }
 
     @Test
@@ -2212,13 +2225,8 @@ public class TabListMediatorUnitTest {
     }
 
     private TabImpl prepareTab(int id, String title, String url) {
-        TabImpl tab = mock(TabImpl.class);
+        TabImpl tab = TabUiUnitTestUtils.prepareTab(id, title, url);
         when(tab.getView()).thenReturn(mock(View.class));
-        when(tab.getUserDataHost()).thenReturn(new UserDataHost());
-        doReturn(id).when(tab).getId();
-        doReturn(id).when(tab).getRootId();
-        doReturn(url).when(tab).getUrlString();
-        doReturn(title).when(tab).getTitle();
         doReturn(true).when(tab).isIncognito();
         when(mTitleProvider.getTitle(PseudoTab.fromTab(tab))).thenReturn(title);
         return tab;
@@ -2289,7 +2297,8 @@ public class TabListMediatorUnitTest {
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when((TabImpl) tab).getRootId();
+            CriticalPersistedTabData criticalPersistedTabData = CriticalPersistedTabData.from(tab);
+            doReturn(rootId).when(criticalPersistedTabData).getRootId();
         }
     }
 }

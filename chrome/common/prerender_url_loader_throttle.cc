@@ -24,11 +24,9 @@ const char kPurposeHeaderName[] = "Purpose";
 const char kPurposeHeaderValue[] = "prefetch";
 
 void CallCancelPrerenderForUnsupportedScheme(
-    mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
-        canceler,
+    mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler,
     const GURL& url) {
-  mojo::Remote<components::prerender::common::mojom::PrerenderCanceler>(
-      std::move(canceler))
+  mojo::Remote<prerender::mojom::PrerenderCanceler>(std::move(canceler))
       ->CancelPrerenderForUnsupportedScheme(url);
 }
 
@@ -43,8 +41,7 @@ bool IsNoStoreResponse(const network::mojom::URLResponseHead& response_head) {
 PrerenderURLLoaderThrottle::PrerenderURLLoaderThrottle(
     PrerenderMode mode,
     const std::string& histogram_prefix,
-    mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
-        canceler)
+    mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler)
     : mode_(mode),
       histogram_prefix_(histogram_prefix),
       canceler_(std::move(canceler)) {

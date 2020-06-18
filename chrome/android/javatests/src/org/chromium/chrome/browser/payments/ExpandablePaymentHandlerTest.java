@@ -220,7 +220,9 @@ public class ExpandablePaymentHandlerTest {
         createPaymentHandlerAndShow(mDefaultIsIncognito);
         waitForUiShown();
 
-        onView(withId(R.id.bottom_sheet_control_container)).perform(swipeDown());
+        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id
+                               .bottom_sheet_control_container))
+                .perform(swipeDown());
         waitForUiClosed();
     }
 
@@ -302,7 +304,7 @@ public class ExpandablePaymentHandlerTest {
         PaymentHandlerCoordinator paymentHandler = createPaymentHandlerAndShow(mDefaultIsIncognito);
         waitForUiShown();
 
-        onView(withId(R.id.bottom_sheet))
+        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet))
                 .check(matches(
                         withContentDescription("Payment handler sheet. Swipe down to close.")));
 
@@ -312,7 +314,7 @@ public class ExpandablePaymentHandlerTest {
         onView(withId(R.id.title))
                 .check(matches(isDisplayed()))
                 .check(matches(withText("Max Pay")));
-        onView(withId(R.id.bottom_sheet))
+        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet))
                 .check(matches(isDisplayed()))
                 .check(matches(
                         withContentDescription("Payment handler sheet. Swipe down to close.")));

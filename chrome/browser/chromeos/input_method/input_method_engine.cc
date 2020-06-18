@@ -319,9 +319,7 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
 }
 
 bool InputMethodEngine::SetSuggestion(int context_id,
-                                      const base::string16& text,
-                                      const size_t confirmed_length,
-                                      const bool show_tab,
+                                      const ui::ime::SuggestionDetails& details,
                                       std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
@@ -335,7 +333,7 @@ bool InputMethodEngine::SetSuggestion(int context_id,
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler)
-    aw_handler->ShowSuggestion(text, confirmed_length, show_tab);
+    aw_handler->ShowSuggestion(details);
   return true;
 }
 

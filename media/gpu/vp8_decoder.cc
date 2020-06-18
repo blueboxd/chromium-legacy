@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "media/gpu/vp8_decoder.h"
+
+#include "base/logging.h"
+#include "base/notreached.h"
 #include "media/base/limits.h"
 
 namespace media {

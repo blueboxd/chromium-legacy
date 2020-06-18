@@ -46,6 +46,8 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_keyed_service.h"
+#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_keyed_service_factory.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
 #include "ios/chrome/browser/crash_report/breakpad_helper.h"
 #include "ios/chrome/browser/crash_report/crash_keys_helper.h"
@@ -284,6 +286,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 - (void)scheduleAppDistributionPings;
 // Asynchronously schedule the init of the memoryDebuggerManager.
 - (void)scheduleMemoryDebuggingTools;
+// Starts logging breadcrumbs.
+- (void)startLoggingBreadcrumbs;
 // Asynchronously kick off regular free memory checks.
 - (void)startFreeMemoryMonitoring;
 // Asynchronously schedules the reset of the failed startup attempt counter.
@@ -488,9 +492,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   self.mainBrowserState = chromeBrowserState;
 
   if (base::FeatureList::IsEnabled(kLogBreadcrumbs)) {
-    breakpad::MonitorBreadcrumbManagerService(
-        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
-            self.mainBrowserState));
+    [self startLoggingBreadcrumbs];
   }
 
   // Force an obvious initialization of the AuthenticationService. This must
@@ -952,6 +954,37 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // No need for a post-task or a deferred initialisation as the memory
   // monitoring already happens on a background sequence.
   StartFreeMemoryMonitor();
+}
+
+- (void)startLoggingBreadcrumbs {
+  BreadcrumbManagerKeyedService* breadcrumbService =
+      BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+          self.mainBrowserState);
+  breakpad::MonitorBreadcrumbManagerService(breadcrumbService);
+
+  __weak __typeof(self) weakSelf = self;
+  BreadcrumbPersistentStorageKeyedService* persistentStorageService =
+      BreadcrumbPersistentStorageKeyedServiceFactory::GetForBrowserState(
+          self.mainBrowserState);
+  // Get stored persistent breadcrumbs from last run and set them on the
+  // breadcrumb manager.
+  persistentStorageService->GetStoredEvents(
+      base::BindOnce(^(std::vector<std::string> events) {
+        __strong __typeof(weakSelf) strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf.mainBrowserState) {
+          return;
+        }
+
+        BreadcrumbManagerKeyedServiceFactory::GetForBrowserState(
+            strongSelf.mainBrowserState)
+            ->SetPreviousEvents(events);
+
+        // Notify persistent breadcrumb service to clear old breadcrumbs and
+        // start storing breadcrumbs for this session.
+        BreadcrumbPersistentStorageKeyedServiceFactory::GetForBrowserState(
+            strongSelf.mainBrowserState)
+            ->StartStoringEvents();
+      }));
 }
 
 - (void)scheduleLowPriorityStartupTasks {

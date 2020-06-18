@@ -74,7 +74,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_prefs.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/external_arc/keyboard/arc_input_method_surface_manager.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -128,7 +127,6 @@
 #include "ash/tray_action/tray_action.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
-#include "ash/wayland/wayland_server_controller.h"
 #include "ash/wm/ash_focus_rules.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/cursor_manager_chromeos.h"
@@ -173,7 +171,6 @@
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/usb/usbguard_client.h"
 #include "chromeos/system/devicemode.h"
-#include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -372,25 +369,16 @@ display::DisplayConfigurator* Shell::display_configurator() {
   return display_manager_->configurator();
 }
 
-void Shell::InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper) {
-  wayland_server_controller_ =
-      WaylandServerController::CreateIfNecessary(std::move(file_helper));
-  if (wayland_server_controller_) {
-    system_tray_model()
-        ->virtual_keyboard()
-        ->SetInputMethodBoundsTrackerObserver(
-            wayland_server_controller_->arc_input_method_surface_manager());
-  }
+void Shell::TrackInputMethodBounds(ArcInputMethodBoundsTracker* tracker) {
+  system_tray_model()->virtual_keyboard()->SetInputMethodBoundsTrackerObserver(
+      tracker);
 }
 
-void Shell::DestroyWaylandServer() {
-  if (wayland_server_controller_) {
-    system_tray_model()
-        ->virtual_keyboard()
-        ->RemoveInputMethodBoundsTrackerObserver(
-            wayland_server_controller_->arc_input_method_surface_manager());
-  }
-  wayland_server_controller_.reset();
+void Shell::UntrackTrackInputMethodBounds(
+    ArcInputMethodBoundsTracker* tracker) {
+  system_tray_model()
+      ->virtual_keyboard()
+      ->RemoveInputMethodBoundsTrackerObserver(tracker);
 }
 
 views::NonClientFrameView* Shell::CreateDefaultNonClientFrameView(
@@ -604,9 +592,6 @@ Shell::~Shell() {
     observer.OnShellDestroying();
 
   desks_controller_->Shutdown();
-
-  // Wayland depends upon some ash specific objects. Destroy it early on.
-  wayland_server_controller_.reset();
 
   user_metrics_recorder_->OnShellShuttingDown();
 

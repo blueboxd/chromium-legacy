@@ -965,7 +965,7 @@ void BindIndicatorTranscienceForWin(
   e->RefreshVisible();
 
   SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                     !model->browsing_disabled);
+                     model->gvr_input_support);
 
   for (const auto& spec : GetIndicatorSpecs()) {
     SetVisibleInLayout(
@@ -1043,7 +1043,7 @@ void BindIndicatorTranscience(
   e->SetVisible(true);
   e->RefreshVisible();
   SetVisibleInLayout(scene->GetUiElementByName(kWebVrExclusiveScreenToast),
-                     !model->browsing_disabled && !in_long_press);
+                     model->gvr_input_support && !in_long_press);
 
   auto specs = GetIndicatorSpecs();
   for (const auto& spec : specs) {

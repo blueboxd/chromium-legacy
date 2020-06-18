@@ -407,8 +407,8 @@ void CustomScrollbar::PositionScrollbarParts() {
 void CustomScrollbar::InvalidateDisplayItemClientsOfScrollbarParts() {
   for (auto& part : parts_) {
     ObjectPaintInvalidator(*part.value)
-        .InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-            PaintInvalidationReason::kScrollControl);
+        .SlowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
+            *part.value, PaintInvalidationReason::kScrollControl);
   }
 }
 

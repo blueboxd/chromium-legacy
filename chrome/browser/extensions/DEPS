@@ -35,7 +35,8 @@ specific_include_rules = {
     "+services/network/cross_origin_read_blocking.h"
   ],
   "webstore_private_apitest.cc" : [
-    "+chrome/browser/ui/views/parent_permission_dialog_view.h",
+    # TODO(crbug/1095814): Remove this layering violation.
+    "+chrome/browser/ui/views/supervised_user/parent_permission_dialog_view.h",
   ],
 
   # This DEPS violation snuck in while there was a bug in the checkdeps tool.

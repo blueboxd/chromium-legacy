@@ -5,9 +5,9 @@
 #import "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_observer_bridge.h"
 
 #import "base/strings/sys_string_conversions.h"
-#include "base/test/task_environment.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
+#import "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -27,7 +27,9 @@ class BreadcrumbManagerObserverBridgeTest : public PlatformTest {
         &breadcrumb_manager_, mock_observer_);
   }
 
-  base::test::TaskEnvironment task_environment_;
+  web::WebTaskEnvironment task_env_{
+      web::WebTaskEnvironment::Options::DEFAULT,
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   BreadcrumbManager breadcrumb_manager_;
   id mock_observer_;
   std::unique_ptr<BreadcrumbManagerObserverBridge> observer_bridge_;
@@ -47,6 +49,24 @@ TEST_F(BreadcrumbManagerObserverBridgeTest, EventAdded) {
                                   didAddEvent:event_parameter_validator]);
 
   breadcrumb_manager_.AddEvent(event);
+
+  [mock_observer_ verify];
+}
+
+// Tests |breadcrumbManagerDidRemoveOldEvents:| forwarding.
+TEST_F(BreadcrumbManagerObserverBridgeTest, OldEventsRemoved) {
+  OCMExpect([mock_observer_ breadcrumbManager:&breadcrumb_manager_
+                                  didAddEvent:OCMOCK_ANY]);
+  OCMExpect([mock_observer_
+      breadcrumbManagerDidRemoveOldEvents:&breadcrumb_manager_]);
+
+  // Oldest event will be dropped becuase it is old enough and there are two
+  // newer buckets.
+  breadcrumb_manager_.AddEvent("event1");
+  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
+  breadcrumb_manager_.AddEvent("event2");
+  task_env_.FastForwardBy(base::TimeDelta::FromHours(1));
+  breadcrumb_manager_.AddEvent("event3");
 
   [mock_observer_ verify];
 }

@@ -543,6 +543,9 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
         nullptr /* site_instance */);
     spare_render_process_host_->AddObserver(this);
     spare_render_process_host_->Init();
+
+    // The spare render process isn't ready, so wait and do the "spare render
+    // process changed" callback in RenderProcessReady().
   }
 
   RenderProcessHost* MaybeTakeSpareRenderProcessHost(
@@ -665,11 +668,21 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
 
       // Drop reference to the RenderProcessHost object.
       spare_render_process_host_ = nullptr;
+      spare_render_process_host_changed_callback_list_.Notify(nullptr);
     }
   }
 
   RenderProcessHost* spare_render_process_host() {
     return spare_render_process_host_;
+  }
+
+  std::unique_ptr<base::CallbackList<void(RenderProcessHost*)>::Subscription>
+  RegisterSpareRenderProcessHostChangedCallback(
+      const base::RepeatingCallback<void(RenderProcessHost*)>& cb) {
+    // Do an initial notification, as the subscriber will need to know what the
+    // current spare host is.
+    cb.Run(spare_render_process_host_);
+    return spare_render_process_host_changed_callback_list_.Add(cb);
   }
 
  private:
@@ -680,6 +693,14 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
     if (spare_render_process_host_ && spare_render_process_host_ == host) {
       spare_render_process_host_->RemoveObserver(this);
       spare_render_process_host_ = nullptr;
+      spare_render_process_host_changed_callback_list_.Notify(nullptr);
+    }
+  }
+
+  void RenderProcessReady(RenderProcessHost* host) override {
+    if (host == spare_render_process_host_) {
+      spare_render_process_host_changed_callback_list_.Notify(
+          spare_render_process_host_);
     }
   }
 
@@ -692,6 +713,11 @@ class SpareRenderProcessHostManager : public RenderProcessHostObserver {
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
     ReleaseSpareRenderProcessHost(host);
   }
+
+  // The clients who want to know when the spare render process host has
+  // changed.
+  base::CallbackList<void(RenderProcessHost*)>
+      spare_render_process_host_changed_callback_list_;
 
   // This is a bare pointer, because RenderProcessHost manages the lifetime of
   // all its instances; see GetAllHosts().
@@ -891,8 +917,7 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
 };
 
 bool ShouldUseSiteProcessTracking(BrowserContext* browser_context,
-                                  StoragePartition* dest_partition,
-                                  const SiteInfo& site_info) {
+                                  StoragePartition* dest_partition) {
   // TODO(alexmos): Sites should be tracked separately for each
   // StoragePartition.  For now, track them only in the default one.
   StoragePartition* default_partition =
@@ -910,7 +935,7 @@ bool ShouldTrackProcessForSite(BrowserContext* browser_context,
     return false;
 
   return ShouldUseSiteProcessTracking(
-      browser_context, render_process_host->GetStoragePartition(), site_info);
+      browser_context, render_process_host->GetStoragePartition());
 }
 
 bool ShouldFindReusableProcessHostForSite(BrowserContext* browser_context,
@@ -919,10 +944,8 @@ bool ShouldFindReusableProcessHostForSite(BrowserContext* browser_context,
     return false;
 
   return ShouldUseSiteProcessTracking(
-      browser_context,
-      BrowserContext::GetStoragePartitionForSite(browser_context,
-                                                 site_info.site_url()),
-      site_info);
+      browser_context, BrowserContext::GetStoragePartitionForSite(
+                           browser_context, site_info.site_url()));
 }
 
 const void* const kUnmatchedServiceWorkerProcessTrackerKey =
@@ -3081,6 +3104,14 @@ void RenderProcessHostImpl::NotifySpareManagerAboutRecentlyUsedBrowserContext(
 RenderProcessHost* RenderProcessHost::GetSpareRenderProcessHostForTesting() {
   return SpareRenderProcessHostManager::GetInstance()
       .spare_render_process_host();
+}
+
+// static
+std::unique_ptr<base::CallbackList<void(RenderProcessHost*)>::Subscription>
+RenderProcessHost::RegisterSpareRenderProcessHostChangedCallback(
+    const base::RepeatingCallback<void(RenderProcessHost*)>& cb) {
+  return SpareRenderProcessHostManager::GetInstance()
+      .RegisterSpareRenderProcessHostChangedCallback(cb);
 }
 
 // static

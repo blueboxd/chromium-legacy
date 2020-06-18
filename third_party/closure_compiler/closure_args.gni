@@ -48,6 +48,7 @@ js_modules_args = [
   # gen/ui/webui/resources are js_module_roots.
   "module_resolution=BROWSER_WITH_TRANSFORMED_PREFIXES",
   "browser_resolver_prefix_replacements=\"chrome://resources/=./\"",
+  "browser_resolver_prefix_replacements=\"//resources/=./\"",
 
   # Turn off primarily because cr.define() should not be used in any JS Modules
   # based code, and secondarily because of b/133333578.
@@ -57,9 +58,12 @@ js_modules_args = [
 polymer3_args = js_modules_args + [
                   "browser_resolver_prefix_replacements=\"../polymer/polymer_bundled.min.js=../polymer/polymer_bundled.js\"",
                   "browser_resolver_prefix_replacements=\"chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js=../../third_party/polymer/v3_0/components-chromium/polymer/polymer_bundled.js\"",
+                  "browser_resolver_prefix_replacements=\"//resources/polymer/v3_0/polymer/polymer_bundled.min.js=../../third_party/polymer/v3_0/components-chromium/polymer/polymer_bundled.js\"",
                   "browser_resolver_prefix_replacements=\"chrome://resources/polymer/v3_0/=../../third_party/polymer/v3_0/components-chromium/\"",
+                  "browser_resolver_prefix_replacements=\"//resources/polymer/v3_0/=../../third_party/polymer/v3_0/components-chromium/\"",
 
                   "hide_warnings_for=externs.zip",
+
                   # TODO(crbug.com/1093048): Add the leading '../../' back to
                   # the path once the CrOS chroot no longer uses symlinks when
                   # building chrome.

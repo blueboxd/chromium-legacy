@@ -190,14 +190,18 @@ class FakePrintingMetadataProvider {
     /** @private {!Map<string, !PromiseResolver>} */
     this.resolverMap_ = new Map();
 
-    /** @type {!Array<chromeos.printing.printingManager.mojom.PrintJobInfo>} */
+    /**
+     * @private {!Array<chromeos.printing.printingManager.mojom.PrintJobInfo>}
+     */
     this.printJobs_ = [];
 
     /** @private boolean */
     this.shouldAttemptCancel_ = true;
+    this.isAllowedByPolicy_ = true;
 
     /**
-     * @type {?chromeos.printing.printingManager.mojom.PrintJobsObserverRemote}
+     * @private
+     *     {?chromeos.printing.printingManager.mojom.PrintJobsObserverRemote}
      */
     this.printJobsObserverRemote_;
 
@@ -207,7 +211,7 @@ class FakePrintingMetadataProvider {
   resetForTest() {
     this.printJobs_ = [];
     this.shouldAttemptCancel_ = true;
-
+    this.isAllowedByPolicy_ = true;
     if (this.printJobsObserverRemote_) {
       this.printJobsObserverRemote_ = null;
     }
@@ -216,6 +220,8 @@ class FakePrintingMetadataProvider {
     this.resolverMap_.set('deleteAllPrintJobs', new PromiseResolver());
     this.resolverMap_.set('observePrintJobs', new PromiseResolver());
     this.resolverMap_.set('cancelPrintJob', new PromiseResolver());
+    this.resolverMap_.set(
+        'getDeletePrintJobHistoryAllowedByPolicy', new PromiseResolver());
   }
 
   /**
@@ -272,6 +278,13 @@ class FakePrintingMetadataProvider {
   }
 
   /**
+   * @param {boolean} isAllowedByPolicy
+   */
+  setDeletePrintJobPolicy(isAllowedByPolicy) {
+    this.isAllowedByPolicy_ = isAllowedByPolicy;
+  }
+
+  /**
    * @param {chromeos.printing.printingManager.mojom.PrintJobInfo} job
    */
   addPrintJob(job) {
@@ -323,6 +336,14 @@ class FakePrintingMetadataProvider {
       this.printJobs_ = [];
       this.methodCalled('deleteAllPrintJobs');
       resolve({success: true});
+    });
+  }
+
+  /** @return {!Promise<{isAllowedByPolicy: boolean}>} */
+  getDeletePrintJobHistoryAllowedByPolicy() {
+    return new Promise(resolve => {
+      this.methodCalled('getDeletePrintJobHistoryAllowedByPolicy');
+      resolve({isAllowedByPolicy: this.isAllowedByPolicy_});
     });
   }
 
@@ -460,6 +481,26 @@ suite('PrintManagementTest', () => {
         .then(() => {
           flush();
           assertTrue(page.$$('#clearAllButton').disabled);
+          assertTrue(!page.$$('#policyIcon'));
+        });
+  });
+
+  test('ClearAllButtonDisabledByPolicy', () => {
+    const expectedArr = [createJobEntry(
+        'newest', 'titleA',
+        convertToMojoTime(new Date(Date.UTC(2020, 3, 1, 1, 1, 1))),
+        createCompletedPrintJobInfo(CompletionStatus.PRINTED),
+        /*activeInfo=*/ null)];
+    // Set policy to prevent user from deleting history.
+    mojoApi_.setDeletePrintJobPolicy(/*isAllowedByPolicy=*/ false);
+    return initializePrintManagementApp(expectedArr)
+        .then(() => {
+          return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          flush();
+          assertTrue(page.$$('#clearAllButton').disabled);
+          assertTrue(!!page.$$('#policyIcon'));
         });
   });
 
@@ -484,6 +525,9 @@ suite('PrintManagementTest', () => {
     return initializePrintManagementApp(expectedArr)
         .then(() => {
           return mojoApi_.whenCalled('getPrintJobs');
+        })
+        .then(() => {
+          return mojoApi_.whenCalled('getDeletePrintJobHistoryAllowedByPolicy');
         })
         .then(() => {
           flush();

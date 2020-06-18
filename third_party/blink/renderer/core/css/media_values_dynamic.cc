@@ -148,6 +148,10 @@ bool MediaValuesDynamic::PrefersReducedMotion() const {
   return CalculatePrefersReducedMotion(frame_);
 }
 
+bool MediaValuesDynamic::PrefersReducedData() const {
+  return CalculatePrefersReducedData(frame_);
+}
+
 ForcedColors MediaValuesDynamic::GetForcedColors() const {
   return CalculateForcedColors();
 }

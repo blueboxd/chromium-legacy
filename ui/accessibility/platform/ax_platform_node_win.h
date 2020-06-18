@@ -1060,6 +1060,11 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // IRawElementProviderSimple support method.
   bool IsPatternProviderSupported(PATTERNID pattern_id);
 
+  // Prefer GetPropertyValueImpl when calling internally. We should avoid
+  // calling external APIs internally as it will cause the histograms to become
+  // innaccurate.
+  HRESULT GetPropertyValueImpl(PROPERTYID property_id, VARIANT* result);
+
   // Helper to return the runtime id (without going through a SAFEARRAY)
   using RuntimeIdArray = std::array<int, 2>;
   void GetRuntimeIdArray(RuntimeIdArray& runtime_id);

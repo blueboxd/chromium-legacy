@@ -39,6 +39,7 @@
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -153,9 +154,12 @@ bool HasActiveInternalDisplay() {
              display::Display::InternalDisplayId());
 }
 
-bool IsTransformAnimationSequence(ui::LayerAnimationSequence* sequence) {
+// Returns true if |sequence| has the same properties as the ones we care about
+// for the tablet transition animation.
+bool ShouldObserveSequence(ui::LayerAnimationSequence* sequence) {
   DCHECK(sequence);
-  return sequence->properties() & ui::LayerAnimationElement::TRANSFORM;
+  return sequence->properties() &
+         TabletModeController::GetObservedTabletTransitionProperty();
 }
 
 std::unique_ptr<ui::Layer> CreateLayerFromScreenshotResult(
@@ -388,6 +392,12 @@ constexpr char TabletModeController::kLidAngleHistogramName[];
 // static
 void TabletModeController::SetUseScreenshotForTest(bool use_screenshot) {
   use_screenshot_for_test = use_screenshot;
+}
+
+// static
+ui::LayerAnimationElement::AnimatableProperty
+TabletModeController::GetObservedTabletTransitionProperty() {
+  return ui::LayerAnimationElement::TRANSFORM;
 }
 
 TabletModeController::TabletModeController()
@@ -747,7 +757,7 @@ void TabletModeController::OnLayerAnimationStarted(
 
 void TabletModeController::OnLayerAnimationAborted(
     ui::LayerAnimationSequence* sequence) {
-  if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
+  if (!fps_counter_ || !ShouldObserveSequence(sequence))
     return;
 
   StopObservingAnimation(/*record_stats=*/false, /*delete_screenshot=*/true);
@@ -760,7 +770,7 @@ void TabletModeController::OnLayerAnimationEnded(
   // stats/screenshot in those cases.
   // TODO(sammiequon): We may want to remove the |fps_counter_| check and
   // simplify things since those are edge cases.
-  if (!fps_counter_ || !IsTransformAnimationSequence(sequence))
+  if (!fps_counter_ || !ShouldObserveSequence(sequence))
     return;
 
   StopObservingAnimation(/*record_stats=*/true, /*delete_screenshot=*/true);
@@ -768,7 +778,7 @@ void TabletModeController::OnLayerAnimationEnded(
 
 void TabletModeController::OnLayerAnimationScheduled(
     ui::LayerAnimationSequence* sequence) {
-  if (!IsTransformAnimationSequence(sequence))
+  if (!ShouldObserveSequence(sequence))
     return;
 
   if (!fps_counter_) {

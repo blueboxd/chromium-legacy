@@ -67,7 +67,7 @@ int RunClientFunction(base::OnceCallback<int(MojoHandle)> handler,
 
 }  // namespace
 
-MultiprocessTestHelper::MultiprocessTestHelper() {}
+MultiprocessTestHelper::MultiprocessTestHelper() = default;
 
 MultiprocessTestHelper::~MultiprocessTestHelper() {
   CHECK(!test_child_.IsValid());

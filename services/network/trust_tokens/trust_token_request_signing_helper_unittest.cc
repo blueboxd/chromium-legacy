@@ -500,9 +500,9 @@ TEST_F(TrustTokenRequestSigningHelperTest, SignAndVerifyTimestampHeader) {
   std::string signature_string;
   ASSERT_NO_FATAL_FAILURE(
       AssertHasSignatureAndExtract(*my_request, &signature_string));
-  std::string retrieved_url_spec;
+  std::string retrieved_timestamp;
   ASSERT_NO_FATAL_FAILURE(AssertDecodesToCborAndExtractField(
-      signature_string, "sec-time", &retrieved_url_spec));
+      signature_string, "sec-time", &retrieved_timestamp));
 }
 
 // Test a round-trip sign-and-verify additionally signing over the destination

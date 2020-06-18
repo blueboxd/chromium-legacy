@@ -196,17 +196,6 @@ by a child template that "extends" this file.
             android:taskAffinity=""
             android:excludeFromRecents="true"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density">
-            <!-- TODO(mthiesse, b/72214458): This is a duplication of the icon metadata below.
-                 Daydream will actually ignore the metadata here, and use the metadata on the
-                 activity-alias. However, play store apk validation fails to find the icons on the
-                 alias, so we need to include them here to pass validation. -->
-            {% if enable_vr == "true" %}
-            <meta-data android:name="com.google.android.vr.icon"
-                android:resource="@drawable/daydream_icon_foreground" />
-            <meta-data android:name="com.google.android.vr.icon_background"
-                android:resource="@drawable/daydream_icon_background" />
-            {% endif %}
-            {{ self.supports_vr() }}
         </activity>
         <activity-alias android:name="com.google.android.apps.chrome.IntentDispatcher"
             android:targetActivity="org.chromium.chrome.browser.document.ChromeLauncherActivity"
@@ -214,9 +203,6 @@ by a child template that "extends" this file.
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.NOTIFICATION_PREFERENCES" />
-                {% if enable_vr == "true" %}
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
             </intent-filter>
             <!-- Matches the common case of intents with no MIME type.
                  Make sure to keep in sync with the next filter.  -->
@@ -225,9 +211,6 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                {% if enable_vr == "true" %}
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
                 {% if channel in ['stable', 'default'] %}<data android:scheme="googlechrome" />{% endif %}
                 <data android:scheme="http" />
                 <data android:scheme="https" />
@@ -264,9 +247,6 @@ by a child template that "extends" this file.
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                {% if enable_vr == "true" %}
-                <category android:name="com.google.intent.category.DAYDREAM" />
-                {% endif %}
                 <data android:scheme="file"/>
                 <data android:scheme="content"/>
                 <data android:host="*" />
@@ -324,12 +304,6 @@ by a child template that "extends" this file.
             </intent-filter>
             <meta-data android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
-            {% if enable_vr == "true" %}
-            <meta-data android:name="com.google.android.vr.icon"
-                android:resource="@drawable/daydream_icon_foreground" />
-            <meta-data android:name="com.google.android.vr.icon_background"
-                android:resource="@drawable/daydream_icon_background" />
-            {% endif %}
         </activity-alias>
 
         <activity android:name="org.chromium.chrome.browser.media.MediaLauncherActivity"

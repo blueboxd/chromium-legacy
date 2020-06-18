@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.printing;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeAccessorActivity;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.printing.PrintingController;
 import org.chromium.printing.PrintingControllerImpl;
@@ -16,9 +16,9 @@ import org.chromium.printing.PrintingControllerImpl;
 /**
  * A simple activity that allows Chrome to expose print as an option in the share menu.
  */
-public class PrintShareActivity extends ShareActivity {
+public class PrintShareActivity extends ChromeAccessorActivity {
     @Override
-    protected void handleShareAction(ChromeActivity triggeringActivity) {
+    protected void handleAction(ChromeActivity triggeringActivity) {
         triggeringActivity.onMenuOrKeyboardAction(R.id.print_id, true);
     }
 

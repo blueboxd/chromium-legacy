@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelMetadata;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
@@ -79,6 +80,7 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Integration tests of Instant Start which requires 2-stage initialization for Clank startup.
@@ -577,14 +579,20 @@ public class InstantStartTest {
                         .getCurrentTabModelFilter()
                         .getCount());
         Assert.assertEquals(3,
-                mActivityTestRule.getActivity()
-                        .getTabModelSelector()
-                        .getTabModelFilterProvider()
-                        .getCurrentTabModelFilter()
-                        .getRelatedTabList(2)
-                        .size());
+                getRelatedTabListSizeOnUiThread(mActivityTestRule.getActivity()
+                                                        .getTabModelSelector()
+                                                        .getTabModelFilterProvider()
+                                                        .getCurrentTabModelFilter()));
         // TODO(crbug.com/1065314): fix thumbnail changing in post-native rendering and make sure
         //  post-native GTS looks the same.
+    }
+
+    private int getRelatedTabListSizeOnUiThread(TabModelFilter tabModelFilter)
+            throws InterruptedException {
+        AtomicInteger res = new AtomicInteger();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { res.set(tabModelFilter.getRelatedTabList(2).size()); });
+        return res.get();
     }
 
     @Test

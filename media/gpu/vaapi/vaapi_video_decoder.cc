@@ -401,8 +401,13 @@ void VaapiVideoDecoder::ApplyResolutionChange() {
   CHECK(format);
   auto format_fourcc = Fourcc::FromVideoPixelFormat(*format);
   CHECK(format_fourcc);
-  frame_pool_->Initialize(*format_fourcc, pic_size_, visible_rect, natural_size,
-                          decoder_->GetRequiredNumOfPictures());
+  if (!frame_pool_->Initialize(*format_fourcc, pic_size_, visible_rect,
+                               natural_size,
+                               decoder_->GetRequiredNumOfPictures())) {
+    DLOG(WARNING) << "Failed Initialize()ing the frame pool.";
+    SetState(State::kError);
+    return;
+  }
 
   // All pending decode operations will be completed before triggering a
   // resolution change, so we can safely destroy the context here.

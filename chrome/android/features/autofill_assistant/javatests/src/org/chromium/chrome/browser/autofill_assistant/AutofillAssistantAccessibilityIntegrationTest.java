@@ -249,14 +249,15 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         onView(withText("Title 1")).check(matches(isDisplayed()));
         onView(withText("Title 20")).check(matches(not(isDisplayed())));
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
-        onView(withId(R.id.bottom_sheet_content))
+        onView(withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content))
                 .check(matches(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_one"))));
 
         // Enabling accessibility restricts the height, the element can now be tapped and will be
         // removed.
         setAccessibilityEnabledForTesting(true);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_one"), is(true));
-        waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
+        waitUntilViewMatchesCondition(
+                withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_one"))));
         tapElement(mTestRule, "touch_area_one");
         waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_one"));
@@ -265,13 +266,15 @@ public class AutofillAssistantAccessibilityIntegrationTest {
         // fill the entire screen again, preventing the tap on the element.
         setAccessibilityEnabledForTesting(false);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
-        waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
+        waitUntilViewMatchesCondition(
+                withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content),
                 fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four")));
 
         // Enabling accessibility again to make sure element can actually be removed.
         setAccessibilityEnabledForTesting(true);
         assertThat(checkElementExists(mTestRule.getWebContents(), "touch_area_four"), is(true));
-        waitUntilViewMatchesCondition(withId(R.id.bottom_sheet_content),
+        waitUntilViewMatchesCondition(
+                withId(org.chromium.components.browser_ui.bottomsheet.R.id.bottom_sheet_content),
                 not(fullyCovers(getAbsoluteBoundingRect(mTestRule, "touch_area_four"))));
         tapElement(mTestRule, "touch_area_four");
         waitUntil(() -> !checkElementExists(mTestRule.getWebContents(), "touch_area_four"));

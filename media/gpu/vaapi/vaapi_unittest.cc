@@ -15,6 +15,7 @@
 
 #include "base/files/file.h"
 #include "base/files/scoped_file.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/process/launch.h"
 #include "base/stl_util.h"

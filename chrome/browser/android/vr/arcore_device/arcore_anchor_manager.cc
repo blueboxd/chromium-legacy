@@ -48,21 +48,20 @@ mojom::XRAnchorsDataPtr ArCoreAnchorManager::GetAnchorsData() const {
         AR_TRACKING_STATE_TRACKING) {
       // pose
       ArAnchor_getPose(arcore_session_, anchor.get(), ar_pose_.get());
-      mojom::Pose pose =
-          GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
+      device::Pose pose = GetPoseFromArPose(arcore_session_, ar_pose_.get());
 
       DVLOG(3) << __func__ << ": anchor_id: " << anchor_id.GetUnsafeValue()
-               << ", position=" << pose.position.ToString()
-               << ", orientation=" << pose.orientation.ToString();
+               << ", position=" << pose.position().ToString()
+               << ", orientation=" << pose.orientation().ToString();
 
-      updated_anchors.push_back(mojom::XRAnchorData::New(
-          anchor_id.GetUnsafeValue(), device::mojom::Pose::New(pose)));
+      updated_anchors.push_back(
+          mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(), pose));
     } else {
       DVLOG(3) << __func__ << ": anchor_id: " << anchor_id.GetUnsafeValue()
                << ", position=untracked, orientation=untracked";
 
       updated_anchors.push_back(
-          mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(), nullptr));
+          mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(), base::nullopt));
     }
   }
 
@@ -288,10 +287,9 @@ base::Optional<gfx::Transform> ArCoreAnchorManager::GetMojoFromAnchor(
   }
 
   ArAnchor_getPose(arcore_session_, it->second.anchor.get(), ar_pose_.get());
-  mojom::Pose mojo_pose =
-      GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
+  device::Pose pose = GetPoseFromArPose(arcore_session_, ar_pose_.get());
 
-  return mojo::ConvertTo<gfx::Transform>(mojo_pose);
+  return pose.ToTransform();
 }
 
 ArCoreAnchorManager::AnchorInfo::AnchorInfo(

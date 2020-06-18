@@ -25,9 +25,12 @@ namespace {
 
 // This is an ECDSA prime256v1 named-curve key.
 constexpr int kKeyVersion = 10;
-const char kKeyPubBytesBase64[] =
+constexpr char kKeyPubBytesBase64[] =
     "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEzOqC8cKNUYIi0UkNu0smZKDW8w5/"
     "0EmEw1KQ6Aj/5JWBMdUVm13EIVwFwPlkO/U6vXa+iu4wyUB89GFaldJ7Bg==";
+
+// The content type for all protocol requests.
+constexpr char kContentType[] = "application/json";
 
 }  // namespace
 
@@ -96,7 +99,7 @@ void RequestSender::SendInternal() {
                        std::string(), std::string(), 0));
   }
   network_fetcher_->PostRequest(
-      url, request_body_, request_extra_headers_,
+      url, request_body_, kContentType, request_extra_headers_,
       base::BindOnce(&RequestSender::OnResponseStarted, base::Unretained(this)),
       base::BindRepeating([](int64_t current) {}),
       base::BindOnce(&RequestSender::OnNetworkFetcherComplete,

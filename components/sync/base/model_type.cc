@@ -450,15 +450,18 @@ ModelTypeSet EncryptableUserTypes() {
                 "If adding an unencryptable type, remove from "
                 "encryptable_user_types below.");
   ModelTypeSet encryptable_user_types = UserTypes();
-  // Priority user types are never encrypted because they may get synced before
-  // encryption is ready.
-  encryptable_user_types.RemoveAll(PriorityUserTypes());
   // Wallet data is not encrypted since it actually originates on the server.
   encryptable_user_types.Remove(AUTOFILL_WALLET_DATA);
-  // We never encrypt history delete directives.
-  encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
   // Commit-only types are never encrypted since they are consumed server-side.
   encryptable_user_types.RemoveAll(CommitOnlyTypes());
+  // Other types that are never encrypted because consumed server-side.
+  encryptable_user_types.Remove(HISTORY_DELETE_DIRECTIVES);
+  encryptable_user_types.Remove(DEVICE_INFO);
+  // Never encrypted because also written server-side.
+  encryptable_user_types.Remove(PRIORITY_PREFERENCES);
+  encryptable_user_types.Remove(OS_PRIORITY_PREFERENCES);
+  encryptable_user_types.Remove(SUPERVISED_USER_SETTINGS);
+  encryptable_user_types.Remove(SUPERVISED_USER_WHITELISTS);
   // Proxy types have no sync representation and are therefore not encrypted.
   // Note however that proxy types map to one or more protocol types, which
   // may or may not be encrypted themselves.

@@ -43,8 +43,7 @@ std::unique_ptr<blink::URLLoaderThrottle> PrerenderHelper::MaybeCreateThrottle(
   if (!prerender_helper)
     return nullptr;
 
-  mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
-      canceler;
+  mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler;
   render_frame->GetBrowserInterfaceBroker()->GetInterface(
       canceler.InitWithNewPipeAndPassReceiver());
 

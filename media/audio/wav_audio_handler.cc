@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/sys_byteorder.h"
 #include "build/build_config.h"
 #include "media/base/audio_bus.h"

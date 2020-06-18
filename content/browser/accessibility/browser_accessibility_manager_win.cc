@@ -489,7 +489,7 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
   auto* provider = ToBrowserAccessibilityWin(node)->GetCOM();
   base::win::ScopedVariant new_value;
   if (SUCCEEDED(
-          provider->GetPropertyValue(uia_property, new_value.Receive()))) {
+          provider->GetPropertyValueImpl(uia_property, new_value.Receive()))) {
     ::UiaRaiseAutomationPropertyChangedEvent(provider, uia_property, old_value,
                                              new_value);
   }

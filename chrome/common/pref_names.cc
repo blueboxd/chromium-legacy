@@ -1429,6 +1429,11 @@ const char kPrintJobHistoryExpirationPeriod[] =
 // they use the chrome.printing.submitJob() function.
 const char kPrintingAPIExtensionsWhitelist[] =
     "printing.printing_api_extensions_whitelist";
+
+// Boolean flag which represents whether the user's print job history can be
+// deleted.
+const char kDeletePrintJobHistoryAllowed[] =
+    "printing.delete_print_job_history_allowed";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content

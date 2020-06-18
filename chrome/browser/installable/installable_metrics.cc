@@ -67,3 +67,41 @@ WebappInstallSource InstallableMetrics::GetInstallSource(
   NOTREACHED();
   return WebappInstallSource::COUNT;
 }
+
+// static
+void InstallableMetrics::RecordCheckServiceWorkerTime(base::TimeDelta time) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Webapp.CheckServiceWorker.Time", time);
+}
+
+// static
+void InstallableMetrics::RecordCheckServiceWorkerStatus(
+    ServiceWorkerOfflineCapability status) {
+  UMA_HISTOGRAM_ENUMERATION("Webapp.CheckServiceWorker.Status", status);
+}
+
+// static
+ServiceWorkerOfflineCapability
+    InstallableMetrics::ConvertFromServiceWorkerCapability(
+        content::ServiceWorkerCapability capability) {
+  switch (capability) {
+    case content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER:
+      return ServiceWorkerOfflineCapability::kServiceWorkerWithOfflineSupport;
+    case content::ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER:
+      return ServiceWorkerOfflineCapability::kServiceWorkerNoFetchHandler;
+    case content::ServiceWorkerCapability::NO_SERVICE_WORKER:
+      return ServiceWorkerOfflineCapability::kNoServiceWorker;
+  }
+  NOTREACHED();
+}
+
+// static
+ServiceWorkerOfflineCapability InstallableMetrics::ConvertFromOfflineCapability(
+    content::OfflineCapability capability) {
+  switch (capability) {
+    case content::OfflineCapability::kSupported:
+      return ServiceWorkerOfflineCapability::kServiceWorkerWithOfflineSupport;
+    case content::OfflineCapability::kUnsupported:
+      return ServiceWorkerOfflineCapability::kServiceWorkerNoOfflineSupport;
+  }
+  NOTREACHED();
+}

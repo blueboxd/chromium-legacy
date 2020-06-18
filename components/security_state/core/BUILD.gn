@@ -14,14 +14,11 @@ jumbo_static_library("core") {
     "insecure_input_event_data.h",
     "security_state.cc",
     "security_state.h",
-    "security_state_pref_names.cc",
-    "security_state_pref_names.h",
   ]
 
   public_deps = [
     ":features",
     "//base",
-    "//components/prefs",
     "//net",
     "//url",
   ]

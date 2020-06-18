@@ -91,10 +91,6 @@ class CC_EXPORT CompositorTimingHistory {
   void DidActivate();
   void WillDraw();
   void DidDraw(bool used_new_active_tree,
-               size_t composited_animations_count,
-               size_t main_thread_animations_count,
-               bool current_frame_had_raf,
-               bool next_frame_has_pending_raf,
                bool has_custom_property_animations);
   void DidSubmitCompositorFrame(
       uint32_t frame_token,
@@ -140,7 +136,6 @@ class CC_EXPORT CompositorTimingHistory {
   bool compositor_drawing_continuously_;
   base::TimeTicks begin_main_frame_end_time_prev_;
   base::TimeTicks new_active_tree_draw_end_time_prev_;
-  base::TimeTicks new_active_tree_draw_end_time_prev_committing_continuously_;
   base::TimeTicks draw_end_time_prev_;
 
   // If you add any history here, please remember to reset it in
@@ -179,10 +174,7 @@ class CC_EXPORT CompositorTimingHistory {
   CompositorFrameReportingController* compositor_frame_reporting_controller_;
 
   // Used only for reporting animation targeted UMA.
-  bool previous_frame_had_composited_animations_ = false;
-  bool previous_frame_had_main_thread_animations_ = false;
   bool previous_frame_had_custom_property_animations_ = false;
-  bool previous_frame_had_raf_ = false;
 
   TreePriority tree_priority_ = SAME_PRIORITY_FOR_BOTH_TREES;
 };

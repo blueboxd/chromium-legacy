@@ -346,6 +346,11 @@ bool ShouldQuicMigrateIdleSessions(
       GetVariationParam(quic_trial_params, "migrate_idle_sessions"), "true");
 }
 
+bool ShouldQuicDisableTlsZeroRtt(const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "disable_tls_zero_rtt"), "true");
+}
+
 int GetQuicRetransmittableOnWireTimeoutMilliseconds(
     const VariationParameters& quic_trial_params) {
   int value;
@@ -528,6 +533,10 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
           base::TimeDelta::FromMilliseconds(
               initial_rtt_for_handshake_milliseconds);
     }
+
+    quic_params->disable_tls_zero_rtt =
+        ShouldQuicDisableTlsZeroRtt(quic_trial_params);
+
     int retransmittable_on_wire_timeout_milliseconds =
         GetQuicRetransmittableOnWireTimeoutMilliseconds(quic_trial_params);
     if (retransmittable_on_wire_timeout_milliseconds > 0) {

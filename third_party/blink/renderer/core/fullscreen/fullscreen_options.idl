@@ -14,5 +14,5 @@ dictionary FullscreenOptions {
   FullscreenNavigationUI navigationUI = "auto";
 
   // https://github.com/webscreens/window-placement
-  [RuntimeEnabled=WindowPlacement] Screen? screen;
+  [RuntimeEnabled=WindowPlacement] Screen screen;
 };

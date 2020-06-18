@@ -21,6 +21,9 @@ class BreadcrumbManagerObserver : public base::CheckedObserver {
   virtual void EventAdded(BreadcrumbManager* manager,
                           const std::string& event) {}
 
+  // Called when old events have been removed.
+  virtual void OldEventsRemoved(BreadcrumbManager* manager) {}
+
  protected:
   BreadcrumbManagerObserver() = default;
 

@@ -41,11 +41,6 @@ JSONReader::ValueWithError::~ValueWithError() = default;
 JSONReader::ValueWithError& JSONReader::ValueWithError::operator=(
     ValueWithError&& other) = default;
 
-JSONReader::JSONReader(int options, size_t max_depth)
-    : parser_(new internal::JSONParser(options, max_depth)) {}
-
-JSONReader::~JSONReader() = default;
-
 // static
 Optional<Value> JSONReader::Read(StringPiece json,
                                  int options,
@@ -54,6 +49,7 @@ Optional<Value> JSONReader::Read(StringPiece json,
   return parser.Parse(json);
 }
 
+// static
 std::unique_ptr<Value> JSONReader::ReadDeprecated(StringPiece json,
                                                   int options,
                                                   size_t max_depth) {
@@ -75,29 +71,6 @@ JSONReader::ValueWithError JSONReader::ReadAndReturnValueWithError(
     ret.error_column = parser.error_column();
   }
   return ret;
-}
-
-// static
-std::unique_ptr<Value> JSONReader::ReadAndReturnErrorDeprecated(
-    StringPiece json,
-    int options,
-    int* error_code_out,
-    std::string* error_msg_out,
-    int* error_line_out,
-    int* error_column_out) {
-  ValueWithError ret = ReadAndReturnValueWithError(json, options);
-  if (ret.value)
-    return Value::ToUniquePtrValue(std::move(*ret.value));
-
-  if (error_code_out)
-    *error_code_out = ret.error_code;
-  if (error_msg_out)
-    *error_msg_out = ret.error_message;
-  if (error_line_out)
-    *error_line_out = ret.error_line;
-  if (error_column_out)
-    *error_column_out = ret.error_column;
-  return nullptr;
 }
 
 // static
@@ -130,19 +103,6 @@ std::string JSONReader::ErrorCodeToString(JsonParseError error_code) {
   }
   NOTREACHED();
   return std::string();
-}
-
-Optional<Value> JSONReader::ReadToValue(StringPiece json) {
-  return parser_->Parse(json);
-}
-
-std::unique_ptr<Value> JSONReader::ReadToValueDeprecated(StringPiece json) {
-  Optional<Value> value = parser_->Parse(json);
-  return value ? std::make_unique<Value>(std::move(*value)) : nullptr;
-}
-
-std::string JSONReader::GetErrorMessage() const {
-  return parser_->GetErrorMessage();
 }
 
 }  // namespace base

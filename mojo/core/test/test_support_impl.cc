@@ -41,9 +41,9 @@ base::FilePath ResolveSourceRootRelativePath(const char* relative_path) {
 
 }  // namespace
 
-TestSupportImpl::TestSupportImpl() {}
+TestSupportImpl::TestSupportImpl() = default;
 
-TestSupportImpl::~TestSupportImpl() {}
+TestSupportImpl::~TestSupportImpl() = default;
 
 void TestSupportImpl::LogPerfResult(const char* test_name,
                                     const char* sub_test_name,

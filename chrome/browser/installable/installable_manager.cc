@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/common/chrome_features.h"
@@ -675,10 +676,12 @@ void InstallableManager::CheckServiceWorker() {
   service_worker_context_->CheckHasServiceWorker(
       manifest().scope,
       base::BindOnce(&InstallableManager::OnDidCheckHasServiceWorker,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(),
+                     base::TimeTicks::Now()));
 }
 
 void InstallableManager::OnDidCheckHasServiceWorker(
+    base::TimeTicks check_service_worker_start_time,
     content::ServiceWorkerCapability capability) {
   if (!GetWebContents())
     return;
@@ -689,7 +692,8 @@ void InstallableManager::OnDidCheckHasServiceWorker(
         service_worker_context_->CheckOfflineCapability(
             manifest().scope,
             base::BindOnce(&InstallableManager::OnDidCheckOfflineCapability,
-                           weak_factory_.GetWeakPtr()));
+                           weak_factory_.GetWeakPtr(),
+                           check_service_worker_start_time));
         return;
       } else {
         worker_->has_worker = true;
@@ -715,11 +719,17 @@ void InstallableManager::OnDidCheckHasServiceWorker(
       break;
   }
 
+  InstallableMetrics::RecordCheckServiceWorkerTime(
+      check_service_worker_start_time - base::TimeTicks::Now());
+  InstallableMetrics::RecordCheckServiceWorkerStatus(
+      InstallableMetrics::ConvertFromServiceWorkerCapability(capability));
+
   worker_->fetched = true;
   WorkOnTask();
 }
 
 void InstallableManager::OnDidCheckOfflineCapability(
+    base::TimeTicks check_service_worker_start_time,
     content::OfflineCapability capability) {
   switch (capability) {
     case content::OfflineCapability::kSupported:
@@ -730,6 +740,11 @@ void InstallableManager::OnDidCheckOfflineCapability(
       worker_->error = NOT_OFFLINE_CAPABLE;
       break;
   }
+
+  InstallableMetrics::RecordCheckServiceWorkerTime(
+      check_service_worker_start_time - base::TimeTicks::Now());
+  InstallableMetrics::RecordCheckServiceWorkerStatus(
+      InstallableMetrics::ConvertFromOfflineCapability(capability));
 
   worker_->fetched = true;
   WorkOnTask();

@@ -32,9 +32,10 @@ NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_egtests";
 NSString* const kMultitaskingEarlGreyTestTargetName =
     @"ios_chrome_multitasking_egtests";
 #elif defined(CHROME_EARL_GREY_2)
-NSString* const kFlakyEarlGreyTestTargetSuffix = @"_flaky_eg2tests_module";
+NSString* const kFlakyEarlGreyTestTargetSuffix =
+    @"_flaky_eg2tests_module-Runner";
 NSString* const kMultitaskingEarlGreyTestTargetName =
-    @"ios_chrome_multitasking_eg2tests_module";
+    @"ios_chrome_multitasking_eg2tests_module-Runner";
 #else
 #error Must define either CHROME_EARL_GREY_1 or CHROME_EARL_GREY_2.
 #endif

@@ -370,24 +370,8 @@ void ProxyImpl::SetVideoNeedsBeginFrames(bool needs_begin_frames) {
     scheduler_->SetVideoNeedsBeginFrames(needs_begin_frames);
 }
 
-size_t ProxyImpl::CompositedAnimationsCount() const {
-  return host_impl_->mutator_host()->CompositedAnimationsCount();
-}
-
-size_t ProxyImpl::MainThreadAnimationsCount() const {
-  return host_impl_->mutator_host()->MainThreadAnimationsCount();
-}
-
 bool ProxyImpl::HasCustomPropertyAnimations() const {
   return host_impl_->mutator_host()->HasCustomPropertyAnimations();
-}
-
-bool ProxyImpl::CurrentFrameHadRAF() const {
-  return host_impl_->mutator_host()->CurrentFrameHadRAF();
-}
-
-bool ProxyImpl::NextFrameHasPendingRAF() const {
-  return host_impl_->mutator_host()->NextFrameHasPendingRAF();
 }
 
 bool ProxyImpl::IsInsideDraw() {

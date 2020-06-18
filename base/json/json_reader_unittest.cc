@@ -647,10 +647,10 @@ TEST(JSONReaderTest, ReadFromFile) {
   std::string input;
   ASSERT_TRUE(ReadFileToString(path.AppendASCII("bom_feff.json"), &input));
 
-  JSONReader reader;
-  Optional<Value> root(reader.ReadToValue(input));
-  ASSERT_TRUE(root) << reader.GetErrorMessage();
-  EXPECT_TRUE(root->is_dict());
+  JSONReader::ValueWithError root =
+      JSONReader::ReadAndReturnValueWithError(input);
+  ASSERT_TRUE(root.value) << root.error_message;
+  EXPECT_TRUE(root.value->is_dict());
 }
 
 // Tests that the root of a JSON object can be deleted safely while its
@@ -736,19 +736,21 @@ TEST(JSONReaderTest, InvalidSanity) {
   };
 
   for (size_t i = 0; i < base::size(kInvalidJson); ++i) {
-    JSONReader reader;
     LOG(INFO) << "Sanity test " << i << ": <" << kInvalidJson[i] << ">";
-    EXPECT_FALSE(reader.ReadToValue(kInvalidJson[i]));
-    EXPECT_NE("", reader.GetErrorMessage());
+    JSONReader::ValueWithError root =
+        JSONReader::ReadAndReturnValueWithError(kInvalidJson[i]);
+    EXPECT_FALSE(root.value);
+    EXPECT_NE("", root.error_message);
   }
 }
 
 TEST(JSONReaderTest, IllegalTrailingNull) {
   const char json[] = {'"', 'n', 'u', 'l', 'l', '"', '\0'};
   std::string json_string(json, sizeof(json));
-  JSONReader reader;
-  EXPECT_FALSE(reader.ReadToValue(json_string));
-  EXPECT_NE("", reader.GetErrorMessage());
+  JSONReader::ValueWithError root =
+      JSONReader::ReadAndReturnValueWithError(json_string);
+  EXPECT_FALSE(root.value);
+  EXPECT_NE("", root.error_message);
 }
 
 TEST(JSONReaderTest, ASCIIControlCodes) {
@@ -833,10 +835,18 @@ TEST(JSONReaderTest, DecodeNegativeEscapeSequence) {
 
 // Verifies invalid code points are replaced.
 TEST(JSONReaderTest, ReplaceInvalidCharacters) {
-  // U+D800 is a lone surrogate.
-  const std::string invalid = "\"\xED\xA0\x80\"";
+  // U+D800 is a lone high surrogate.
+  const std::string invalid_high = "\"\xED\xA0\x80\"";
   Optional<Value> value =
-      JSONReader::Read(invalid, JSON_REPLACE_INVALID_CHARACTERS);
+      JSONReader::Read(invalid_high, JSON_REPLACE_INVALID_CHARACTERS);
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->is_string());
+  // Expect three U+FFFD (one for each UTF-8 byte in the invalid code point).
+  EXPECT_EQ("\xEF\xBF\xBD\xEF\xBF\xBD\xEF\xBF\xBD", value->GetString());
+
+  // U+DFFF is a lone low surrogate.
+  const std::string invalid_low = "\"\xED\xBF\xBF\"";
+  value = JSONReader::Read(invalid_low, JSON_REPLACE_INVALID_CHARACTERS);
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->is_string());
   // Expect three U+FFFD (one for each UTF-8 byte in the invalid code point).
@@ -844,10 +854,17 @@ TEST(JSONReaderTest, ReplaceInvalidCharacters) {
 }
 
 TEST(JSONReaderTest, ReplaceInvalidUTF16EscapeSequence) {
-  // U+D800 is a lone surrogate.
-  const std::string invalid = "\"_\\uD800_\"";
+  // U+D800 is a lone high surrogate.
+  const std::string invalid_high = "\"_\\uD800_\"";
   Optional<Value> value =
-      JSONReader::Read(invalid, JSON_REPLACE_INVALID_CHARACTERS);
+      JSONReader::Read(invalid_high, JSON_REPLACE_INVALID_CHARACTERS);
+  ASSERT_TRUE(value);
+  ASSERT_TRUE(value->is_string());
+  EXPECT_EQ("_\xEF\xBF\xBD_", value->GetString());
+
+  // U+DFFF is a lone low surrogate.
+  const std::string invalid_low = "\"_\\uDFFF_\"";
+  value = JSONReader::Read(invalid_low, JSON_REPLACE_INVALID_CHARACTERS);
   ASSERT_TRUE(value);
   ASSERT_TRUE(value->is_string());
   EXPECT_EQ("_\xEF\xBF\xBD_", value->GetString());

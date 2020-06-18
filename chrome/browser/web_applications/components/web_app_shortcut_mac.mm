@@ -924,11 +924,27 @@ bool WebAppShortcutCreator::BuildShortcut(
   return result;
 }
 
+// Returns a reference to the static UpdateShortcuts lock.
+// See https://crbug.com/1090548 for more info.
+base::Lock& GetUpdateShortcutsLock() {
+  static base::NoDestructor<base::Lock> lock;
+  return *lock;
+}
+
 void WebAppShortcutCreator::CreateShortcutsAt(
     const std::vector<base::FilePath>& dst_app_paths,
     std::vector<base::FilePath>* updated_paths) const {
   DCHECK(updated_paths && updated_paths->empty());
   DCHECK(!dst_app_paths.empty());
+
+  // CreateShortcutsAt() modifies the app shim on disk, first by deleting
+  // the destination app shim (if it exists), then by copying a new app shim
+  // from the source app to the destination.  To ensure that process works,
+  // we must guarantee that no more than one CreateShortcutsAt() call will
+  // ever run at a time.  We have an UpdateShortcuts lock for this purpose,
+  // so check that lock has been acquired on this thread before proceeding.
+  // See https://crbug.com/1090548 for more info.
+  GetUpdateShortcutsLock().AssertAcquired();
 
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.CreateUniqueTempDir()) {
@@ -1012,6 +1028,13 @@ bool WebAppShortcutCreator::UpdateShortcuts(
       LOG(ERROR) << "Failed to localize " << applications_dir.value();
     }
   }
+
+  // Acquire the UpdateShortcuts lock.  This ensures only a single
+  // UpdateShortcuts call at a time will run at once past here.  Not
+  // protecting against that can result in multiple CreateShortcutsAt()
+  // calls deleting and creating the app shim folder at once.
+  // See https://crbug.com/1090548 for more info.
+  base::AutoLock auto_lock(GetUpdateShortcutsLock());
 
   // Get the list of paths to (re)create by bundle id (wherever it was moved
   // or copied by the user).

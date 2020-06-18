@@ -10,6 +10,7 @@
 
 #include "base/optional.h"
 #include "cc/paint/paint_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkFilterQuality.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -29,6 +30,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
                    const SkSize& scale_adjustment,
                    SkFilterQuality filter_quality,
                    bool is_budgeted);
+  DecodedDrawImage(const gpu::Mailbox& mailbox, SkFilterQuality filter_quality);
   DecodedDrawImage(base::Optional<uint32_t> transfer_cache_entry_id,
                    const SkSize& src_rect_offset,
                    const SkSize& scale_adjustment,
@@ -62,6 +64,7 @@ class CC_PAINT_EXPORT DecodedDrawImage {
 
  private:
   sk_sp<const SkImage> image_;
+  gpu::Mailbox mailbox_;
   base::Optional<uint32_t> transfer_cache_entry_id_;
   SkSize src_rect_offset_;
   SkSize scale_adjustment_;

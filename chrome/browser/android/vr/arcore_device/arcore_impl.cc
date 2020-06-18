@@ -12,6 +12,7 @@
 #include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 #include "chrome/browser/android/vr/arcore_device/type_converters.h"
+#include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 #include "ui/display/display.h"
@@ -802,7 +803,6 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromReferenceSpace(
 
 bool ArCoreImpl::NativeOriginExists(
     const mojom::XRNativeOriginInformation& native_origin_information,
-    const gfx::Transform& mojo_from_viewer,
     const std::vector<mojom::XRInputSourceStatePtr>& input_state) {
   switch (native_origin_information.which()) {
     case mojom::XRNativeOriginInformation::Tag::INPUT_SOURCE_ID:
@@ -1023,7 +1023,7 @@ bool ArCoreImpl::RequestHitTest(
                                   raw_pose[3]);
       gfx::Point3F position(raw_pose[4], raw_pose[5], raw_pose[6]);
 
-      mojo_hit->mojo_from_result = mojom::Pose::New(orientation, position);
+      mojo_hit->mojo_from_result = device::Pose(position, orientation);
 
       DVLOG(3) << __func__
                << ": adding hit test result, position=" << position.ToString()
@@ -1041,42 +1041,36 @@ bool ArCoreImpl::RequestHitTest(
 
 void ArCoreImpl::CreateAnchor(
     const mojom::XRNativeOriginInformation& native_origin_information,
-    const mojom::Pose& native_origin_from_anchor,
+    const device::Pose& native_origin_from_anchor,
     CreateAnchorCallback callback) {
   DVLOG(2) << __func__ << ": native_origin_information.which()="
            << static_cast<uint32_t>(native_origin_information.which())
-           << ", native_origin_from_anchor.position="
-           << native_origin_from_anchor.position.ToString()
-           << ", native_origin_from_anchor.orientation="
-           << native_origin_from_anchor.orientation.ToString();
-
-  gfx::Transform native_origin_from_anchor_transform =
-      mojo::ConvertTo<gfx::Transform>(native_origin_from_anchor);
+           << ", native_origin_from_anchor.position()="
+           << native_origin_from_anchor.position().ToString()
+           << ", native_origin_from_anchor.orientation()="
+           << native_origin_from_anchor.orientation().ToString();
 
   create_anchor_requests_.emplace_back(native_origin_information,
-                                       native_origin_from_anchor_transform,
+                                       native_origin_from_anchor.ToTransform(),
                                        std::move(callback));
 }
 
 void ArCoreImpl::CreatePlaneAttachedAnchor(
     const mojom::XRNativeOriginInformation& native_origin_information,
-    const mojom::Pose& native_origin_from_anchor,
+    const device::Pose& native_origin_from_anchor,
     uint64_t plane_id,
     CreateAnchorCallback callback) {
   DVLOG(2) << __func__ << ": native_origin_information.which()="
            << static_cast<uint32_t>(native_origin_information.which())
            << ", plane_id=" << plane_id
-           << ", native_origin_from_anchor.position="
-           << native_origin_from_anchor.position.ToString()
-           << ", native_origin_from_anchor.orientation="
-           << native_origin_from_anchor.orientation.ToString();
-
-  gfx::Transform native_origin_from_anchor_transform =
-      mojo::ConvertTo<gfx::Transform>(native_origin_from_anchor);
+           << ", native_origin_from_anchor.position()="
+           << native_origin_from_anchor.position().ToString()
+           << ", native_origin_from_anchor.orientation()="
+           << native_origin_from_anchor.orientation().ToString();
 
   create_plane_attached_anchor_requests_.emplace_back(
-      native_origin_information, native_origin_from_anchor_transform, plane_id,
-      std::move(callback));
+      native_origin_information, native_origin_from_anchor.ToTransform(),
+      plane_id, std::move(callback));
 }
 
 void ArCoreImpl::ProcessAnchorCreationRequests(
@@ -1140,8 +1134,7 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
     mojom::XRNativeOriginInformation native_origin_information =
         create_anchor.GetNativeOriginInformation();
 
-    if (!NativeOriginExists(native_origin_information, mojo_from_viewer,
-                            input_state)) {
+    if (!NativeOriginExists(native_origin_information, input_state)) {
       DVLOG(3) << __func__
                << ": failing anchor creation request, native origin does not "
                   "exist";
@@ -1164,14 +1157,11 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
       continue;
     }
 
-    gfx::Transform mojo_from_anchor = *maybe_mojo_from_native_origin *
-                                      create_anchor.GetNativeOriginFromAnchor();
+    base::Optional<device::Pose> mojo_from_anchor =
+        device::Pose::Create(*maybe_mojo_from_native_origin *
+                             create_anchor.GetNativeOriginFromAnchor());
 
-    // TODO(https://crbug.com/1071224): Introduce & use a type that will handle
-    // conversions from poses to transforms.
-    gfx::DecomposedTransform decomposed_mojo_from_anchor;
-    if (!gfx::DecomposeTransform(&decomposed_mojo_from_anchor,
-                                 mojo_from_anchor)) {
+    if (!mojo_from_anchor) {
       // Fail the call now, failure to decompose is unlikely to resolve itself.
       DVLOG(3)
           << __func__
@@ -1181,13 +1171,9 @@ void ArCoreImpl::ProcessAnchorCreationRequestsHelper(
       continue;
     }
 
-    base::Optional<AnchorId> maybe_anchor_id =
-        std::forward<FunctionType>(create_anchor_function)(
-            create_anchor,
-            gfx::Point3F(decomposed_mojo_from_anchor.translate[0],
-                         decomposed_mojo_from_anchor.translate[1],
-                         decomposed_mojo_from_anchor.translate[2]),
-            decomposed_mojo_from_anchor.quaternion);
+    base::Optional<AnchorId> maybe_anchor_id = std::forward<FunctionType>(
+        create_anchor_function)(create_anchor, mojo_from_anchor->position(),
+                                mojo_from_anchor->orientation());
 
     if (!maybe_anchor_id) {
       // Fail the call now, failure to create anchor in ARCore SDK is unlikely

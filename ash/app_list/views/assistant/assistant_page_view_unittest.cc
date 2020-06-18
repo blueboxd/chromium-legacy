@@ -237,20 +237,28 @@ class AssistantInteractionCounter
 }  // namespace
 
 TEST_F(AssistantPageViewTest, ShouldStartInPeekingState) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      chromeos::assistant::features::kAssistantBetterOnboarding);
+  EXPECT_FALSE(chromeos::assistant::features::IsBetterOnboardingEnabled());
 
   ShowAssistantUi();
 
   EXPECT_EQ(AppListViewState::kPeeking, app_list_view()->app_list_state());
 }
 
-TEST_F(AssistantPageViewTest, ShouldStartInHalfState) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      chromeos::assistant::features::kAssistantBetterOnboarding);
+// Tests the |AssistantPageView| with better onboarding enabled.
+class AssistantPageViewBetterOnboardingTest : public AssistantPageViewTest {
+ public:
+  AssistantPageViewBetterOnboardingTest() {
+    feature_list_.InitAndEnableFeature(
+        chromeos::assistant::features::kAssistantBetterOnboarding);
+  }
 
+  ~AssistantPageViewBetterOnboardingTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(AssistantPageViewBetterOnboardingTest, ShouldStartInHalfState) {
   ShowAssistantUi();
 
   EXPECT_EQ(AppListViewState::kHalf, app_list_view()->app_list_state());

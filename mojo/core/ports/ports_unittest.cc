@@ -44,7 +44,7 @@ class TestMessage : public UserMessage {
 
   TestMessage(const base::StringPiece& payload)
       : UserMessage(&kUserMessageTypeInfo), payload_(payload) {}
-  ~TestMessage() override {}
+  ~TestMessage() override = default;
 
   const std::string& payload() const { return payload_; }
 
@@ -69,7 +69,7 @@ class TestNode;
 
 class MessageRouter {
  public:
-  virtual ~MessageRouter() {}
+  virtual ~MessageRouter() = default;
 
   virtual void ForwardEvent(TestNode* from_node,
                             const NodeName& node_name,

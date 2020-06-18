@@ -57,9 +57,8 @@ class XRPlane : public ScriptWrappable {
           XRSession* session,
           const base::Optional<Orientation>& orientation,
           const HeapVector<Member<DOMPointReadOnly>>& polygon,
+          const base::Optional<device::Pose>& mojo_from_plane,
           double timestamp);
-
-  void SetMojoFromPlane(const TransformationMatrix& mojo_from_plane);
 
   const uint64_t id_;
   HeapVector<Member<DOMPointReadOnly>> polygon_;
@@ -67,7 +66,7 @@ class XRPlane : public ScriptWrappable {
 
   // Plane center's pose in device (mojo) space.  Nullptr if the pose of the
   // anchor is unknown in the current frame.
-  std::unique_ptr<TransformationMatrix> mojo_from_plane_;
+  base::Optional<device::Pose> mojo_from_plane_;
 
   Member<XRSession> session_;
 

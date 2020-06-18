@@ -14,6 +14,12 @@ namespace gfx {
 class Rect;
 }  // namespace gfx
 
+namespace ui {
+namespace ime {
+struct SuggestionDetails;
+}  // namespace ime
+}  // namespace ui
+
 namespace chromeos {
 
 struct AssistiveWindowProperties;
@@ -27,9 +33,7 @@ class COMPONENT_EXPORT(UI_BASE_IME) IMEAssistiveWindowHandlerInterface {
   virtual void SetAssistiveWindowProperties(
       const AssistiveWindowProperties& window) {}
 
-  virtual void ShowSuggestion(const base::string16& text,
-                              const size_t confirmed_length,
-                              const bool show_tab) {}
+  virtual void ShowSuggestion(const ui::ime::SuggestionDetails& details) {}
 
   virtual void ShowMultipleSuggestions(
       const std::vector<base::string16>& suggestions) {}

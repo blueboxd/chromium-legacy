@@ -155,10 +155,10 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
 
   auto launcher_item_controller =
       std::make_unique<AppWindowLauncherItemController>(
-          ash::ShelfID(kPluginVmAppId));
+          ash::ShelfID(kPluginVmShelfAppId));
   ui::test::MockBaseWindow mock_window;
   launcher_item_controller->AddWindow(&mock_window);
-  shelf_model.SetShelfItemDelegate(ash::ShelfID(kPluginVmAppId),
+  shelf_model.SetShelfItemDelegate(ash::ShelfID(kPluginVmShelfAppId),
                                    std::move(launcher_item_controller));
   vm_tools::cicerone::LaunchContainerApplicationResponse response;
   response.set_success(true);

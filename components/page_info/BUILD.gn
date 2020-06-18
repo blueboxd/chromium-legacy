@@ -19,6 +19,7 @@ static_library("page_info") {
     "//components/content_settings/core/browser",
     "//components/password_manager/core/browser",
     "//components/permissions",
+    "//components/prefs",
     "//components/safe_browsing:buildflags",
     "//components/safe_browsing/content/password_protection",
     "//components/safe_browsing/content/password_protection:password_protection_metrics_util",

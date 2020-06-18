@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "content/public/browser/google_streaming_api.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/escape.h"

@@ -3874,26 +3874,6 @@ TEST_F(ElementAnimationsTest, RemoveAndReAddAnimationToTicking) {
   EXPECT_EQ(1u, host_->ticking_animations_for_testing().size());
 }
 
-TEST_F(ElementAnimationsTest, TickingKeyframeModelsCount) {
-  CreateTestLayer(false, false);
-  AttachTimelineAnimationLayer();
-
-  // Add an animation and ensure the animation is in the host's ticking
-  // animations.
-  animation_->AddKeyframeModel(CreateKeyframeModel(
-      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.5f)),
-      2, TargetProperty::OPACITY));
-  EXPECT_EQ(1u, animation_->TickingKeyframeModelsCount());
-  EXPECT_EQ(1u, host_->CompositedAnimationsCount());
-  animation_->AddKeyframeModel(CreateKeyframeModel(
-      std::unique_ptr<AnimationCurve>(new FakeTransformTransition(1)), 1,
-      TargetProperty::TRANSFORM));
-  EXPECT_EQ(2u, animation_->TickingKeyframeModelsCount());
-  EXPECT_EQ(2u, host_->CompositedAnimationsCount());
-  animation_->keyframe_effect()->RemoveFromTicking();
-  EXPECT_EQ(0u, host_->CompositedAnimationsCount());
-}
-
 // This test verifies that finished keyframe models don't get copied over to
 // impl thread.
 TEST_F(ElementAnimationsTest, FinishedKeyframeModelsNotCopiedToImpl) {

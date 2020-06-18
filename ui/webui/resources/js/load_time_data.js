@@ -19,9 +19,9 @@
 
 /**
  * @typedef {{
- *   substitutions: (Array<string>|undefined),
- *   attrs: (Object<function(Node, string):boolean>|undefined),
- *   tags: (Array<string>|undefined),
+ *   substitutions: (!Array<string>|undefined),
+ *   attrs: (!Array<string>|undefined),
+ *   tags: (!Array<string>|undefined),
  * }}
  */
 /* #export */ let SanitizeInnerHtmlOpts;

@@ -99,6 +99,16 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
       AXBoundaryBehavior boundary_behavior,
       ax::mojom::MoveDirection boundary_direction);
 
+  // Prefer these *Impl methods when functionality is needed internally. We
+  // should avoid calling external APIs internally as it will cause the
+  // histograms to become innaccurate.
+  HRESULT MoveEndpointByUnitImpl(TextPatternRangeEndpoint endpoint,
+                                 TextUnit unit,
+                                 int count,
+                                 int* units_moved);
+
+  IFACEMETHODIMP ExpandToEnclosingUnitImpl(TextUnit unit);
+
   base::string16 GetString(int max_count,
                            size_t* appended_newlines_count = nullptr);
   AXPlatformNodeWin* owner() const;

@@ -31,6 +31,7 @@ NetworkFetcher::~NetworkFetcher() {
 void NetworkFetcher::PostRequest(
     const GURL& url,
     const std::string& post_data,
+    const std::string& content_type,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     ResponseStartedCallback response_started_callback,
     ProgressCallback progress_callback,
@@ -38,7 +39,7 @@ void NetworkFetcher::PostRequest(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   post_request_complete_callback_ = std::move(post_request_complete_callback);
   network_fetcher_->PostRequest(
-      url, post_data, post_additional_headers,
+      url, post_data, content_type, post_additional_headers,
       std::move(response_started_callback), std::move(progress_callback),
       base::BindOnce(&NetworkFetcher::PostRequestComplete,
                      base::Unretained(this)));

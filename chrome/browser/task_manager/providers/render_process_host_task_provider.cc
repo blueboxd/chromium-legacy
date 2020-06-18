@@ -85,7 +85,8 @@ void RenderProcessHostTaskProvider::CreateTask(
   ChildProcessData data(content::PROCESS_TYPE_RENDERER);
   data.SetProcess(host->GetProcess().Duplicate());
   data.id = host->GetID();
-  task = std::make_unique<ChildProcessTask>(data);
+  task = std::make_unique<ChildProcessTask>(
+      data, ChildProcessTask::ProcessSubtype::kUnknownRenderProcess);
   NotifyObserverTaskAdded(task.get());
 }
 

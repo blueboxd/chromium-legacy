@@ -6,7 +6,7 @@
 /**
  * Lanuches file manager and stubs out the formatVolume private api.
  *
- * @return {string} Files app window ID.
+ * @return {!Promise<string>} Files app window ID.
  */
 async function setupFormatDialogTest() {
   const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS);
@@ -171,7 +171,7 @@ async function checkSuccess(appId, label, format) {
       'inputText', appId, [driveFormatQuery, format]);
 
   // Check error message is not there.
-  let driveNameElement = await remoteCall.waitForElement(
+  const driveNameElement = await remoteCall.waitForElement(
       appId, ['files-format-dialog', 'cr-dialog[open] cr-input#label']);
   chrome.test.assertFalse(
       driveNameElement.attributes.hasOwnProperty('invalid'));

@@ -95,8 +95,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 
   window_watcher_ = std::make_unique<WindowWatcher>();
 
-  Shell::Get()->InitWaylandServer(nullptr);
-
   if (!parameters_.ui_task) {
     // Install Rewriter so that function keys are properly re-mapped.
     auto* event_rewriter_controller = EventRewriterController::Get();

@@ -61,7 +61,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
     return nullptr;
   }
 
-  VideoPixelFormat format = frame_layout_->fourcc().ToVideoPixelFormat();
+  const VideoPixelFormat format = frame_layout_->fourcc().ToVideoPixelFormat();
   const gfx::Size& coded_size = frame_layout_->size();
   if (free_frames_.empty()) {
     if (GetTotalNumFrames_Locked() >= max_num_frames_)
@@ -134,7 +134,8 @@ base::Optional<GpuBufferLayout> PlatformVideoFramePool::Initialize(
         create_frame_cb_.Run(gpu_memory_buffer_factory_, format, coded_size,
                              visible_rect_, natural_size_, base::TimeDelta());
     if (!frame) {
-      VLOGF(1) << "Failed to create video frame";
+      VLOGF(1) << "Failed to create video frame " << format << " (fourcc "
+               << fourcc.ToString() << ")";
       return base::nullopt;
     }
     frame_layout_ = GpuBufferLayout::Create(fourcc, frame->coded_size(),

@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "chrome/services/speech/speech_recognition_service_impl.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "content/public/browser/google_streaming_api.pb.h"
 #include "content/public/test/browser_task_environment.h"
 #include "media/base/bind_to_current_loop.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

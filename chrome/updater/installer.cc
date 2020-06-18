@@ -36,7 +36,7 @@ static constexpr base::TaskTraits kTaskTraitsBlockWithSyncPrimitives = {
 // identified by the |app_id|.
 base::FilePath GetAppInstallDir(const std::string& app_id) {
   base::FilePath app_install_dir;
-  if (GetProductDirectory(&app_install_dir)) {
+  if (GetBaseDirectory(&app_install_dir)) {
     app_install_dir = app_install_dir.AppendASCII(kAppsDir);
     app_install_dir = app_install_dir.AppendASCII(app_id);
   }

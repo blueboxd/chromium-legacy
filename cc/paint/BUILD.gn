@@ -107,6 +107,7 @@ cc_component("paint") {
 
   deps = [
     "//base",
+    "//gpu/command_buffer/common:mailbox",
     "//ui/gfx/animation",
     "//ui/gfx/ipc/color",
   ]

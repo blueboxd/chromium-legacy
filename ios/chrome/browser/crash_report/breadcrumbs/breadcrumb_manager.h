@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/observer_list.h"
-#import "base/time/time.h"
+#include "base/time/time.h"
 
 class BreadcrumbManagerObserver;
 
@@ -21,11 +21,21 @@ class BreadcrumbManagerObserver;
 // stale data.
 class BreadcrumbManager {
  public:
+  // Returns the number of collected breadcrumb events which are still relevant.
+  // Note: This method may drop old events so the value can change even when no
+  // new events have been added, but time has passed.
+  size_t GetEventCount();
+
   // Returns a list of the collected breadcrumb events which are still relevant
   // up to |event_count_limit|. Passing zero for |event_count_limit| signifies
   // no limit. Events returned will have a timestamp prepended to the original
   // |event| string representing when |AddEvent| was called.
+  // Note: This method may drop old events so the returned events can change
+  // even if no new events have been added, but time has passed.
   const std::list<std::string> GetEvents(size_t event_count_limit);
+
+  // Sets previous events by inserting them before all existing events.
+  void SetPreviousEvents(const std::vector<std::string>& events);
 
   // Logs a breadcrumb event with message data |event|.
   // NOTE: |event| must not include newline characters as newlines are used by
@@ -47,6 +57,9 @@ class BreadcrumbManager {
   // guaranteed to be removed. Explicitly, stale events will be retained while
   // newer events are limited.
   void DropOldEvents();
+
+  // Creation time of the BreadcrumbManager.
+  const base::Time start_time_;
 
   // List of events, paired with the time which they were logged to minute
   // resolution. Newer events are at the end of the list.

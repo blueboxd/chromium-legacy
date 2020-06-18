@@ -18,8 +18,6 @@
 #include "net/cert/x509_certificate.h"
 #include "url/gurl.h"
 
-class PrefRegistrySimple;
-
 // Provides helper methods and data types that are used to determine the
 // high-level security information about a page or request.
 //
@@ -234,8 +232,6 @@ SecurityLevel GetSecurityLevel(
 // and its certificate has any major errors.
 bool HasMajorCertificateError(
     const VisibleSecurityState& visible_security_state);
-
-void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
 // Returns true for a valid |url| with a cryptographic scheme, e.g., HTTPS, WSS.
 bool IsSchemeCryptographic(const GURL& url);

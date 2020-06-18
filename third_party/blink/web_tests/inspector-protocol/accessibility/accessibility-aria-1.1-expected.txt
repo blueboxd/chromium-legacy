@@ -1,286 +1,286 @@
 Tests ARIA 1.1 accessibility markup.
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "textbox"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "relatedElement",
-        "nativeSource": "label"
-      },
-      {
-        "type": "placeholder",
-        "attribute": "placeholder"
-      },
-      {
-        "type": "placeholder",
-        "attribute": "aria-placeholder"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "editable",
-      "value": {
-        "type": "token",
-        "value": "plaintext"
-      }
-    },
-    {
-      "name": "settable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "multiline",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "readonly",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "required",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "errormessage",
-      "value": {
-        "type": "idref",
-        "relatedNodes": [
-          {
-            "idref": "err",
-            "nodeResult": "h3#err"
-          }
+    domNode : input
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                type : relatedElement
+            }
+            [3] : {
+                attribute : placeholder
+                type : placeholder
+            }
+            [4] : {
+                attribute : aria-placeholder
+                type : placeholder
+            }
+            [5] : {
+                attribute : title
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "input"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : editable
+            value : {
+                type : token
+                value : plaintext
+            }
+        }
+        [3] : {
+            name : settable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [4] : {
+            name : multiline
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [5] : {
+            name : readonly
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [6] : {
+            name : required
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [7] : {
+            name : errormessage
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : err
+                        nodeResult : h3#err
+                    }
+                ]
+                type : idref
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : textbox
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "img"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Label",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "value": {
-          "type": "computedString",
-          "value": "Label"
-        },
-        "attribute": "aria-label",
-        "attributeValue": {
-          "type": "string",
-          "value": "Label"
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "alt",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "details",
-      "value": {
-        "type": "idrefList",
-        "value": "d",
-        "relatedNodes": [
-          {
-            "idref": "d",
-            "nodeResult": "div#d"
-          }
+    domNode : img
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                attributeValue : {
+                    type : string
+                    value : Label
+                }
+                type : attribute
+                value : {
+                    type : computedString
+                    value : Label
+                }
+            }
+            [2] : {
+                attribute : alt
+                superseded : true
+                type : attribute
+            }
+            [3] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : Label
     }
-  ],
-  "domNode": "img"
-}
-{
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "button"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Select All",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "relatedElement",
-        "nativeSource": "label"
-      },
-      {
-        "type": "contents",
-        "value": {
-          "type": "computedString",
-          "value": "Select All"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : details
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : d
+                        nodeResult : div#d
+                    }
+                ]
+                type : idrefList
+                value : d
+            }
         }
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
     ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "keyshortcuts",
-      "value": {
-        "type": "string",
-        "value": "Ctrl+A"
-      }
+    role : {
+        type : role
+        value : img
     }
-  ],
-  "domNode": "button"
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "checkbox"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "relatedElement",
-        "nativeSource": "label"
-      },
-      {
-        "type": "contents"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "checked",
-      "value": {
-        "type": "tristate",
-        "value": "true"
-      }
-    },
-    {
-      "name": "roledescription",
-      "value": {
-        "type": "string",
-        "value": "Lightswitch"
-      }
+    domNode : button
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                type : relatedElement
+            }
+            [3] : {
+                type : contents
+                value : {
+                    type : computedString
+                    value : Select All
+                }
+            }
+            [4] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : Select All
     }
-  ],
-  "domNode": "input"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : keyshortcuts
+            value : {
+                type : string
+                value : Ctrl+A
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : button
+    }
+}
+{
+    domNode : input
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                type : relatedElement
+            }
+            [3] : {
+                type : contents
+            }
+            [4] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
+    }
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : checked
+            value : {
+                type : tristate
+                value : true
+            }
+        }
+        [3] : {
+            name : roledescription
+            value : {
+                type : string
+                value : Lightswitch
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : checkbox
+    }
 }
 

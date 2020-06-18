@@ -1737,14 +1737,12 @@ TEST_P(TabletModeControllerScreenshotTest, FromOverviewNoScreenshot) {
   ShellTestApi().WaitForOverviewAnimationState(
       OverviewAnimationState::kEnterAnimationComplete);
 
-  // Enter tablet mode. This triggers an overview exit, so |window2| will be
-  // animating from the overview exit animation. Therefore, we do not show the
-  // screenshot.
+  // Enter tablet mode while in overview. There should be no screenshot at any
+  // time.
   TabletMode::Waiter waiter(/*enable=*/true);
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_TRUE(IsShelfOpaque());
-  EXPECT_TRUE(window2->layer()->GetAnimator()->is_animating());
 
   waiter.Wait();
   EXPECT_FALSE(IsScreenshotShown());
@@ -1856,6 +1854,27 @@ TEST_P(TabletModeControllerScreenshotTest, NoCrashWhenExitingWithoutWaiting) {
   SetTabletMode(true);
   EXPECT_FALSE(IsScreenshotShown());
   EXPECT_FALSE(IsShelfOpaque());
+}
+
+// Tests that the screenshot gets deleted after transition with a transient
+// child as the top window that is not resizeable but positionable. Note that
+// creating such windows is not desirable, but is possible so we need this
+// regression test. See https://crbug.com/1096128.
+TEST_P(TabletModeControllerScreenshotTest, TransientChildTypeWindow) {
+  // Create a window with a transient child that is of WINDOW_TYPE_POPUP.
+  auto window = CreateTestWindow(gfx::Rect(200, 200));
+  auto child = CreateTestWindow(gfx::Rect(200, 200));
+  child->SetProperty(aura::client::kResizeBehaviorKey,
+                     aura::client::kResizeBehaviorCanResize);
+  ::wm::AddTransientChild(window.get(), child.get());
+
+  window->layer()->GetAnimator()->StopAnimating();
+  child->layer()->GetAnimator()->StopAnimating();
+
+  SetTabletMode(true);
+  ShellTestApi().WaitForWindowFinishAnimating(child.get());
+  EXPECT_FALSE(IsScreenshotShown());
+  EXPECT_TRUE(IsShelfOpaque());
 }
 
 INSTANTIATE_TEST_SUITE_P(All, TabletModeControllerTest, testing::Bool());

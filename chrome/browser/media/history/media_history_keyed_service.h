@@ -190,15 +190,20 @@ class MediaHistoryKeyedService : public KeyedService,
   void GetURLsInTableForTest(const std::string& table,
                              base::OnceCallback<void(std::set<GURL>)> callback);
 
-  // Represents a Media Feed Item that needs to be checked against Safe Search.
-  // Contains the ID of the feed item and a set of URLs that should be checked.
+  // Represents an object that needs to be checked against Safe Search.
+  // Contains the ID of the item and a set of URLs that should be checked.
+  enum class SafeSearchCheckedType {
+    kFeed,
+    kFeedItem,
+  };
+  using SafeSearchID = std::pair<SafeSearchCheckedType, int64_t>;
   struct PendingSafeSearchCheck {
-    explicit PendingSafeSearchCheck(int64_t id);
+    PendingSafeSearchCheck(SafeSearchCheckedType type, int64_t id);
     ~PendingSafeSearchCheck();
     PendingSafeSearchCheck(const PendingSafeSearchCheck&) = delete;
     PendingSafeSearchCheck& operator=(const PendingSafeSearchCheck&) = delete;
 
-    int64_t const id;
+    SafeSearchID const id;
     std::set<GURL> urls;
   };
   using PendingSafeSearchCheckList =
@@ -206,10 +211,10 @@ class MediaHistoryKeyedService : public KeyedService,
   void GetPendingSafeSearchCheckMediaFeedItems(
       base::OnceCallback<void(PendingSafeSearchCheckList)> callback);
 
-  // Store the Safe Search check results for multiple Media Feed Items. The
-  // map key is the ID of the feed item.
+  // Store the Safe Search check results for multiple object. The map key is
+  // the ID of the object.
   void StoreMediaFeedItemSafeSearchResults(
-      std::map<int64_t, media_feeds::mojom::SafeSearchResult> results);
+      std::map<SafeSearchID, media_feeds::mojom::SafeSearchResult> results);
 
   // Posts an empty task to the database thread. The callback will be called
   // on the calling thread when the empty task is completed. This can be used
@@ -322,7 +327,8 @@ class MediaHistoryKeyedService : public KeyedService,
                       media_feeds::mojom::ResetReason reason);
 
   // Saves a newly discovered media feed in the media history store.
-  void DiscoverMediaFeed(const GURL& url);
+  void DiscoverMediaFeed(const GURL& url,
+                         base::OnceClosure callback = base::DoNothing());
 
  private:
   class StoreHolder;

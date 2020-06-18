@@ -12,6 +12,10 @@
     --cr-centered-card-max-width: 960px;
   }
 
+  #clearAllContainer {
+    display: flex;
+  }
+
   #fileNameColumn {
     width: 368px;
   }
@@ -39,6 +43,11 @@
     padding-top: 24px;
   }
 
+  #policyIcon {
+    margin-inline-end: 10px;
+    padding-top: 7px;
+  }
+
   h1 {
     font-size: 200%;
     font-weight: 500;
@@ -50,12 +59,18 @@
 <div class="main-container cr-centered-card-container">
   <div id="headerContainer">
     <h1>[[i18n('printJobTitle')]]</h1>
-    <!-- TODO(crbug/1075701): Add an icon to this button when it becomes
-        available -->
-    <cr-button id="clearAllButton" on-click="onClearHistoryClicked_"
-        disabled="[[!printJobs_.length]]">
-      [[i18n('clearAllHistoryLabel')]]
-    </cr-button>
+    <div id="clearAllContainer">
+      <template is="dom-if" if="[[!deletePrintJobHistoryAllowedByPolicy_]]">
+        <cr-policy-indicator id="policyIcon" indicator-type="userPolicy">
+        </cr-policy-indicator>
+      </template>
+      <cr-button id="clearAllButton" on-click="onClearHistoryClicked_"
+          disabled="[[shouldDisableClearAllButton_(printJobs_,
+                      deletePrintJobHistoryAllowedByPolicy_)]]"
+          hidden="[[!showClearAllButton_]]">
+        [[i18n('clearAllHistoryLabel')]]
+      </cr-button>
+    </div>
   </div>
 
   <template is="dom-if" if="[[showClearAllDialog_]]" restamp>

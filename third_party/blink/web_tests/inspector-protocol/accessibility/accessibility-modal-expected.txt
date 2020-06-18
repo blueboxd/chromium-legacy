@@ -1,231 +1,232 @@
 Tests accessibility values in modal dialog.
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "dialog"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "modal",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
+    domNode : dialog#modal
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "dialog#modal"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : modal
+            value : {
+                type : boolean
+                value : true
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : dialog
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "button"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "contents"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
+    domNode : div
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                type : contents
+            }
+            [3] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
+    }
+    nodeId : <string>
+    properties : [
     ]
-  },
-  "properties": [],
-  "domNode": "div"
+    role : {
+        type : role
+        value : button
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "dialog"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "modal",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
+    domNode : div
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "div"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : modal
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : dialog
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "dialog"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "modal",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
+    domNode : div
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "div"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : modal
+            value : {
+                type : boolean
+                value : true
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : dialog
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "alertdialog"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "modal",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
+    domNode : div
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "div"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : modal
+            value : {
+                type : boolean
+                value : true
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : alertdialog
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": true,
-  "ignoredReasons": [
-    {
-      "name": "notRendered",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
+    domNode : dialog
+    ignored : true
+    ignoredReasons : [
+        [0] : {
+            name : notRendered
+            value : {
+                type : boolean
+                value : true
+            }
+        }
+    ]
+    nodeId : <string>
+    role : {
+        type : internalRole
+        value : Ignored
     }
-  ],
-  "role": {
-    "type": "internalRole",
-    "value": "Ignored"
-  },
-  "domNode": "dialog"
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "dialog"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "modal",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
+    domNode : dialog
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "dialog"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : modal
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : dialog
+    }
 }
 

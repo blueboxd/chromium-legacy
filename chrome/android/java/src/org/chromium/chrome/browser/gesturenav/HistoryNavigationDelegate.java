@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.gesturenav;
 
 import org.chromium.base.supplier.Supplier;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
 /**
  * Provides navigation-related configuration.

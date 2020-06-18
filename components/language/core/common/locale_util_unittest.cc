@@ -217,18 +217,15 @@ TEST_F(LocaleUtilTest, ConvertToActualUILocale) {
   EXPECT_TRUE(is_ui);
   EXPECT_EQ("nb", locale);
 
-  //---------------------------------------------------------------------------
-  // Languages that have their base language is a UI language.
-  //---------------------------------------------------------------------------
   locale = "it-IT";
   is_ui = language::ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
-  EXPECT_EQ("it", locale);
+  EXPECT_EQ("it-IT", locale);
 
   locale = "de-DE";
   is_ui = language::ConvertToActualUILocale(&locale);
   EXPECT_TRUE(is_ui);
-  EXPECT_EQ("de", locale);
+  EXPECT_EQ("de-DE", locale);
 
 //---------------------------------------------------------------------------
 // Languages that cannot be used as display UI.

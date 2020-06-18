@@ -29,6 +29,8 @@ Polymer({
 
     /**
      * The device type (e.g. "Chromebook" or "Chromebox").
+     * TODO(jamescook): Delete this after M85 once we're sure UX doesn't want
+     * the device type in the dialog.
      * @private
      */
     deviceType_: String,

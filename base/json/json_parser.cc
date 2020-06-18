@@ -589,10 +589,13 @@ bool JSONParser::DecodeUTF16(uint32_t* out_code_point) {
   // If this is a high surrogate, consume the next code unit to get the
   // low surrogate.
   if (CBU16_IS_SURROGATE(code_unit16_high)) {
-    // Make sure this is the high surrogate. If not, it's an encoding
-    // error.
-    if (!CBU16_IS_SURROGATE_LEAD(code_unit16_high))
-      return false;
+    // Make sure this is the high surrogate.
+    if (!CBU16_IS_SURROGATE_LEAD(code_unit16_high)) {
+      if ((options_ & JSON_REPLACE_INVALID_CHARACTERS) == 0)
+        return false;
+      *out_code_point = kUnicodeReplacementPoint;
+      return true;
+    }
 
     // Make sure that the token has more characters to consume the
     // lower surrogate.

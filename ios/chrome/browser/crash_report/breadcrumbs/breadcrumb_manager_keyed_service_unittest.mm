@@ -23,8 +23,7 @@ namespace {
 // Creates a new BreadcrumbManagerKeyedService for |browser_state|.
 std::unique_ptr<KeyedService> BuildBreadcrumbManagerKeyedService(
     web::BrowserState* browser_state) {
-  return std::make_unique<BreadcrumbManagerKeyedService>(
-      ChromeBrowserState::FromBrowserState(browser_state));
+  return std::make_unique<BreadcrumbManagerKeyedService>(browser_state);
 }
 }
 

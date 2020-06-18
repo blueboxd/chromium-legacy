@@ -4,6 +4,7 @@
 
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/icons.m.js';
+import 'chrome://resources/cr_elements/policy/cr_policy_indicator.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
@@ -104,9 +105,22 @@ Polymer({
     listBlurred_: Boolean,
 
     /** @private */
+    showClearAllButton_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
+    /** @private */
     showClearAllDialog_: {
       type: Boolean,
       value: false,
+    },
+
+    /** @private */
+    deletePrintJobHistoryAllowedByPolicy_: {
+      type: Boolean,
+      value: true,
     },
   },
 
@@ -118,11 +132,17 @@ Polymer({
   /** @override */
   created() {
     this.mojoInterfaceProvider_ = getMetadataProvider();
+
+    window.CrPolicyStrings = {
+      controlledSettingPolicy:
+          loadTimeData.getString('clearAllPrintJobPolicyIndicatorToolTip'),
+    };
   },
 
   /** @override */
   attached() {
     this.startObservingPrintJobs_();
+    this.fetchDeletePrintJobHistoryPolicy_();
   },
 
   /** @override */
@@ -145,6 +165,23 @@ Polymer({
         .then(() => {
           this.getPrintJobs_();
         });
+  },
+
+  /** @private */
+  fetchDeletePrintJobHistoryPolicy_() {
+    this.mojoInterfaceProvider_.getDeletePrintJobHistoryAllowedByPolicy()
+        .then(/*@type {!{isAllowedByPolicy: boolean}}*/(param) => {
+            this.onGetDeletePrintHistoryPolicy_(param)});
+  },
+
+  /**
+   * @param {!{isAllowedByPolicy: boolean}} responseParam
+   * @private
+   */
+  onGetDeletePrintHistoryPolicy_(responseParam) {
+    this.showClearAllButton_ = true;
+    this.deletePrintJobHistoryAllowedByPolicy_ =
+        responseParam.isAllowedByPolicy;
   },
 
   /**
@@ -254,5 +291,14 @@ Polymer({
     return this.ongoingPrintJobs_.findIndex(
         arr_job => arr_job.id === expectedId
     );
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldDisableClearAllButton_() {
+    return !this.deletePrintJobHistoryAllowedByPolicy_ ||
+        !this.printJobs_.length;
   },
 });

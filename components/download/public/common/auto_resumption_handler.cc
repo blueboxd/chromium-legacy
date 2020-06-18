@@ -174,6 +174,9 @@ void AutoResumptionHandler::OnDownloadDestroyed(download::DownloadItem* item) {
 }
 
 void AutoResumptionHandler::ResumeDownloadImmediately() {
+  if (!config_->is_auto_resumption_enabled_in_native)
+    return;
+
   for (auto* download : std::move(downloads_to_retry_)) {
     if (SatisfiesNetworkRequirements(download))
       download->Resume(false);

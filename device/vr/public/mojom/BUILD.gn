@@ -48,8 +48,13 @@ mojom_component("mojom") {
         mojom = "device.mojom.RgbTupleF32"
         cpp = "::device::RgbTupleF32"
       },
+      {
+        mojom = "device.mojom.Pose"
+        cpp = "::device::Pose"
+      },
     ]
     traits_headers = [ "//device/vr/public/mojom/vr_service_mojom_traits.h" ]
+    traits_public_deps = [ ":vr_public_typemaps" ]
   }
 
   cpp_typemaps = [ shared_cpp_typemap ]
@@ -65,5 +70,23 @@ mojom_component("test_mojom") {
   public_deps = [
     "//ui/gfx/geometry/mojom",
     "//ui/gfx/mojom",
+  ]
+}
+
+component("vr_public_typemaps") {
+  output_name = "device_vr_public_typemaps"
+
+  defines = [ "IS_VR_PUBLIC_TYPEMAPS_IMPL" ]
+
+  sources = [
+    "pose.cc",
+    "pose.h",
+  ]
+
+  deps = [
+    "//base:base",
+    "//skia",
+    "//ui/gfx:geometry_skia",
+    "//ui/gfx/geometry:geometry",
   ]
 }

@@ -217,6 +217,9 @@ class TabStrip : public views::AccessiblePaneView,
     return tabs_.ideal_bounds(tab_data_index);
   }
 
+  // Retrieves the ideal bounds for the Tab Group Header at the specified group.
+  const gfx::Rect& ideal_bounds(tab_groups::TabGroupId group) const;
+
   // Returns the Tab at |index|.
   // TODO(pkasting): Make const correct
   Tab* tab_at(int index) const { return tabs_.view_at(index); }

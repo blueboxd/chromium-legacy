@@ -28,7 +28,7 @@
               "device_os_flavor": "google",
               "device_type": "hammerhead",
               "os": "Android",
-              "pool": "chrome.tests.perf.template"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 7200,
@@ -75,7 +75,7 @@
               "device_os_flavor": "aosp",
               "device_type": "bullhead",
               "os": "Android",
-              "pool": "chrome.tests.perf-webview.template"
+              "pool": "chrome.tests.perf-webview"
             }
           ],
           "expiration": 7200,
@@ -121,7 +121,7 @@
             {
               "gpu": "10de:1cb3-23.21.13.8792",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf.template",
+              "pool": "chrome.tests.perf",
               "synthetic_product_name": "PowerEdge R220 [01] (Dell Inc.)"
             }
           ],
@@ -167,7 +167,7 @@
             {
               "gpu": "102b:0532-6.1.7600.16385",
               "os": "Windows-2008ServerR2-SP1",
-              "pool": "chrome.tests.perf.template",
+              "pool": "chrome.tests.perf",
               "synthetic_product_name": "PowerEdge R210 II (Dell Inc.)"
             }
           ],
@@ -211,7 +211,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -236,7 +236,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -261,7 +261,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -286,7 +286,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -311,7 +311,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -336,7 +336,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -361,7 +361,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -399,7 +399,7 @@
               "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
-              "pool": "chrome.tests.perf.template"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 7200,
@@ -445,7 +445,7 @@
               "device_os_flavor": "google",
               "device_type": "gobo",
               "os": "Android",
-              "pool": "chrome.tests.perf-webview.template"
+              "pool": "chrome.tests.perf-webview"
             }
           ],
           "expiration": 7200,
@@ -496,7 +496,7 @@
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.tests.perf.template"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 7200,
@@ -550,7 +550,7 @@
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.tests.perf-weblayer.template"
+              "pool": "chrome.tests.perf-weblayer"
             }
           ],
           "expiration": 7200,
@@ -600,7 +600,7 @@
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.tests.perf-webview.template"
+              "pool": "chrome.tests.perf-webview"
             }
           ],
           "expiration": 7200,
@@ -651,7 +651,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -676,7 +676,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -701,7 +701,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -726,7 +726,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -751,7 +751,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -776,7 +776,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -801,7 +801,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -826,7 +826,7 @@
           "dimension_sets": [
             {
               "os": "Ubuntu-16.04",
-              "pool": "chrome.tests.template"
+              "pool": "chrome.tests"
             }
           ],
           "expiration": 7200,
@@ -872,7 +872,7 @@
             {
               "gpu": "10de:1cb3-384.90",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf.template",
+              "pool": "chrome.tests.perf",
               "synthetic_product_name": "PowerEdge R230 (Dell Inc.)"
             }
           ],
@@ -931,7 +931,7 @@
             {
               "gpu": "8086:1626",
               "os": "Mac-10.12.6",
-              "pool": "chrome.tests.perf.template",
+              "pool": "chrome.tests.perf",
               "synthetic_product_name": "MacBookAir7,2_x86-64-i5-5350U_Intel Broadwell HD Graphics 6000_8192_APPLE SSD SM0128G"
             }
           ],
@@ -990,7 +990,7 @@
             {
               "gpu": "1002:6821-4.0.20-3.2.8",
               "os": "Mac-10.13.3",
-              "pool": "chrome.tests.perf.template",
+              "pool": "chrome.tests.perf",
               "synthetic_product_name": "MacBookPro11,5_x86-64-i7-4870HQ_AMD Radeon R8 M370X 4.0.20 [3.2.8]_Intel Haswell Iris Pro Graphics 5200 4.0.20 [3.2.8]_16384_APPLE SSD SM0512G"
             }
           ],
@@ -1054,7 +1054,7 @@
             {
               "gpu": "8086:5912-23.20.16.4877",
               "os": "Windows-10-16299.309",
-              "pool": "chrome.tests.perf.template",
+              "pool": "chrome.tests.perf",
               "synthetic_product_name": "OptiPlex 7050 (Dell Inc.)"
             }
           ],
@@ -1113,7 +1113,7 @@
             {
               "gpu": "8086:1616-20.19.15.5070",
               "os": "Windows-10-18363.476",
-              "pool": "chrome.tests.perf.template"
+              "pool": "chrome.tests.perf"
             }
           ],
           "expiration": 7200,

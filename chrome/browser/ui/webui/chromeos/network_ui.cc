@@ -173,7 +173,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     AllowJavascript();
     CallJavascriptFunction(
-        base::StringPrintf("NetworkUI.%sResult", kGetNetworkProperties),
+        base::StringPrintf("network_ui.%sResult", kGetNetworkProperties),
         return_arg_list);
   }
 
@@ -210,7 +210,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     AllowJavascript();
     if (list.empty()) {
       CallJavascriptFunction(
-          base::StringPrintf("NetworkUI.%sResult", kGetEthernetEAP));
+          base::StringPrintf("network_ui.%sResult", kGetEthernetEAP));
       return;
     }
     const NetworkState* eap = list.front();
@@ -219,7 +219,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     properties.SetStringKey("name", eap->name());
     properties.SetStringKey("type", eap->type());
     CallJavascriptFunction(
-        base::StringPrintf("NetworkUI.%sResult", kGetEthernetEAP), properties);
+        base::StringPrintf("network_ui.%sResult", kGetEthernetEAP), properties);
   }
 
   void OpenCellularActivationUi(const base::ListValue* arg_list) {
@@ -231,7 +231,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     AllowJavascript();
     CallJavascriptFunction(
-        base::StringPrintf("NetworkUI.%sResult", kOpenCellularActivationUi),
+        base::StringPrintf("network_ui.%sResult", kOpenCellularActivationUi),
         base::Value(cellular_network != nullptr));
   }
 
@@ -273,7 +273,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     AllowJavascript();
     CallJavascriptFunction(
-        base::StringPrintf("NetworkUI.%sResult", kGetDeviceProperties),
+        base::StringPrintf("network_ui.%sResult", kGetDeviceProperties),
         return_arg_list);
   }
 
@@ -293,7 +293,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
 
     AllowJavascript();
     CallJavascriptFunction(
-        base::StringPrintf("NetworkUI.%sResult", function_name.c_str()),
+        base::StringPrintf("network_ui.%sResult", function_name.c_str()),
         return_arg_list);
   }
 
@@ -315,8 +315,6 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   localized_strings->SetString("titleText",
                                l10n_util::GetStringUTF16(IDS_NETWORK_UI_TITLE));
 
-  localized_strings->SetString("titleText",
-                               l10n_util::GetStringUTF16(IDS_NETWORK_UI_TITLE));
   localized_strings->SetString(
       "autoRefreshText",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_AUTO_REFRESH));

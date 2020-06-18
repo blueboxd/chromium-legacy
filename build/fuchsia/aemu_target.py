@@ -11,7 +11,9 @@ import logging
 
 from common import GetEmuRootForPlatform
 
+
 class AemuTarget(qemu_target.QemuTarget):
+
   def __init__(self, output_dir, target_cpu, system_log_file, emu_type,
                cpu_cores, require_kvm, ram_size_mb, enable_graphics,
                hardware_gpu):
@@ -60,7 +62,7 @@ class AemuTarget(qemu_target.QemuTarget):
     # All args after -fuchsia flag gets passed to QEMU
     aemu_command.extend([
         '-feature', aemu_features, '-window-size', '1024x600', '-gpu',
-        gpu_target, '-fuchsia'
+        gpu_target, '-verbose', '-fuchsia'
     ])
 
     aemu_command.extend(self._BuildQemuConfig())
@@ -74,12 +76,19 @@ class AemuTarget(qemu_target.QemuTarget):
     logging.info(' '.join(aemu_command))
     return aemu_command
 
+  def _GetVulkanIcdFile(self):
+    return os.path.join(GetEmuRootForPlatform(self._emu_type), 'lib64',
+                        'vulkan', 'vk_swiftshader_icd.json')
+
   def _SetEnv(self):
     env = os.environ.copy()
     aemu_logging_env = {
         "ANDROID_EMU_VK_LOG_CALLS": "1",
+        "ANDROID_EMU_VK_NO_CLEANUP": "1",
         "ANDROID_EMUGL_LOG_PRINT": "1",
-        "ANDROID_EMUGL_FINE_LOG": "1",
+        "ANDROID_EMUGL_VERBOSE": "1",
+        "VK_ICD_FILENAMES": self._GetVulkanIcdFile(),
+        "VK_LOADER_DEBUG": "info,error",
     }
     env.update(aemu_logging_env)
     return env

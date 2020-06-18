@@ -45,10 +45,19 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
   // Returns all cached conversation starters.
   std::vector<const AssistantSuggestion*> GetConversationStarters() const;
 
+  // Sets the cache of onboarding suggestions.
+  void SetOnboardingSuggestions(
+      std::vector<AssistantSuggestionPtr> onboarding_suggestions);
+
+  // Returns all cached onboarding suggestions.
+  std::vector<const AssistantSuggestion*> GetOnboardingSuggestions() const;
+
  private:
   void NotifyConversationStartersChanged();
+  void NotifyOnboardingSuggestionsChanged();
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
+  std::vector<AssistantSuggestionPtr> onboarding_suggestions_;
 
   mutable base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 

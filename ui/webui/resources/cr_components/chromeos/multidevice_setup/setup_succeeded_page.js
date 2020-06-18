@@ -36,10 +36,7 @@ Polymer({
 
   /** @private */
   getMessageHtml_() {
-    const validNodeFn = (node, value) => node.tagName === 'A';
-    return this.i18nAdvanced(
-        'setupSucceededPageMessage',
-        {attrs: {'id': validNodeFn, 'href': validNodeFn}});
+    return this.i18nAdvanced('setupSucceededPageMessage', {attrs: ['id']});
   },
 
   /** @override */

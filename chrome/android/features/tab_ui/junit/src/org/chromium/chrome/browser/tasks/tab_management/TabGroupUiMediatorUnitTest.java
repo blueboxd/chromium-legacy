@@ -158,9 +158,7 @@ public class TabGroupUiMediatorUnitTest {
     private InOrder mVisibilityControllerInOrder;
 
     private TabImpl prepareTab(int tabId, int rootId) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(tabId).when(tab).getId();
-        doReturn(rootId).when(tab).getRootId();
+        TabImpl tab = TabUiUnitTestUtils.prepareTab(tabId, rootId);
         doReturn(tab).when(mTabModelSelector).getTabById(tabId);
         return tab;
     }

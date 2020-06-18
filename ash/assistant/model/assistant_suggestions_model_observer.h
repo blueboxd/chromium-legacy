@@ -25,6 +25,10 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModelObserver
   virtual void OnConversationStartersChanged(
       const std::vector<const AssistantSuggestion*>& conversation_starters) {}
 
+  // Invoked when the cache of onboarding suggestions has changed.
+  virtual void OnOnboardingSuggestionsChanged(
+      const std::vector<const AssistantSuggestion*>& onboarding_suggestions) {}
+
  protected:
   ~AssistantSuggestionsModelObserver() override = default;
 };

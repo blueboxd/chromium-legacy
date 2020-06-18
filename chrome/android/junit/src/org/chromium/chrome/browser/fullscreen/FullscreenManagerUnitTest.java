@@ -70,6 +70,7 @@ public class FullscreenManagerUnitTest {
 
     private UserDataHost mUserDataHost = new UserDataHost();
     private ChromeFullscreenManager mFullscreenManager;
+    private boolean mControlsResizeView;
 
     @Before
     public void setUp() {
@@ -96,6 +97,9 @@ public class FullscreenManagerUnitTest {
         mFullscreenManager.initialize(mControlContainer, mActivityTabProvider, mTabModelSelector,
                 R.dimen.control_container_height);
         mFullscreenManager.addObserver(mBrowserControlsStateProviderObserver);
+        mFullscreenManager.setViewportSizeDelegate(() -> {
+            mControlsResizeView = BrowserControlsUtils.controlsResizeView(mFullscreenManager);
+        });
         when(mFullscreenManager.getTab()).thenReturn(mTab);
     }
 
@@ -128,13 +132,13 @@ public class FullscreenManagerUnitTest {
         final int topHeight = 100;
         final int topMinHeight = 0;
 
-        TabModelSelectorTabObserver tabFullscreenObserver =
-                mFullscreenManager.getTabFullscreenObserverForTesting();
+        TabModelSelectorTabObserver tabControlsObserver =
+                mFullscreenManager.getTabControlsObserverForTesting();
 
         mFullscreenManager.setTopControlsHeight(topHeight, topMinHeight);
 
         // Send initial offsets.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 100,
                 /*topControlsMinHeightOffsetY*/ 0, /*bottomControlsMinHeightOffsetY*/ 0);
         // Initially, the controls should be fully visible.
@@ -142,20 +146,20 @@ public class FullscreenManagerUnitTest {
                 BrowserControlsUtils.areBrowserControlsFullyVisible(mFullscreenManager));
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
 
         // Scroll to fully hidden.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -100,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -100,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 0,
                 /*topControlsMinHeightOffsetY*/ 0, /*bottomControlsMinHeightOffsetY*/ 0);
         assertTrue("Browser controls aren't at min-height.",
                 mFullscreenManager.areBrowserControlsAtMinHeight());
         assertFalse("ControlsResizeView is true,"
                         + " but it should be false when the controls are hidden.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
 
         // Now, scroll back to fully visible.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 100,
                 /*topControlsMinHeightOffsetY*/ 0, /*bottomControlsMinHeightOffsetY*/ 0);
         assertFalse("Browser controls are hidden when they should be fully visible.",
@@ -165,7 +169,7 @@ public class FullscreenManagerUnitTest {
         // #controlsResizeView should be flipped back to true.
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
     }
 
     @Test
@@ -179,14 +183,14 @@ public class FullscreenManagerUnitTest {
         final int bottomHeight = 60;
         final int bottomMinHeight = 0;
 
-        TabModelSelectorTabObserver tabFullscreenObserver =
-                mFullscreenManager.getTabFullscreenObserverForTesting();
+        TabModelSelectorTabObserver tabControlsObserver =
+                mFullscreenManager.getTabControlsObserverForTesting();
 
         mFullscreenManager.setTopControlsHeight(topHeight, topMinHeight);
         mFullscreenManager.setBottomControlsHeight(bottomHeight, bottomMinHeight);
 
         // Send initial offsets.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 100,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         // Initially, the controls should be fully visible.
@@ -194,20 +198,20 @@ public class FullscreenManagerUnitTest {
                 BrowserControlsUtils.areBrowserControlsFullyVisible(mFullscreenManager));
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
 
         // Scroll all the way to the min-height.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -75,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -75,
                 /*bottomControlsOffsetY*/ 60, /*contentOffsetY*/ 25,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         assertTrue("Browser controls aren't at min-height.",
                 mFullscreenManager.areBrowserControlsAtMinHeight());
         assertFalse("ControlsResizeView is true,"
                         + " but it should be false when the controls are at min-height.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
 
         // Now, scroll back to fully visible.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 100,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         assertFalse("Browser controls are at min-height when they should be fully visible.",
@@ -217,7 +221,7 @@ public class FullscreenManagerUnitTest {
         // #controlsResizeView should be flipped back to true.
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
     }
 
     @Test
@@ -231,41 +235,41 @@ public class FullscreenManagerUnitTest {
         final int bottomHeight = 60;
         final int bottomMinHeight = 0;
 
-        TabModelSelectorTabObserver tabFullscreenObserver =
-                mFullscreenManager.getTabFullscreenObserverForTesting();
+        TabModelSelectorTabObserver tabControlsObserver =
+                mFullscreenManager.getTabControlsObserverForTesting();
 
         mFullscreenManager.setTopControlsHeight(topHeight, topMinHeight);
         mFullscreenManager.setBottomControlsHeight(bottomHeight, bottomMinHeight);
 
         // Send initial offsets.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ 0,
                 /*bottomControlsOffsetY*/ 0, /*contentOffsetY*/ 100,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         assertTrue("ControlsResizeView is false,"
                         + " but it should be true when the controls are fully visible.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
 
         // Scroll a little hide the controls partially.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -25,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -25,
                 /*bottomControlsOffsetY*/ 20, /*contentOffsetY*/ 75,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
-        assertTrue("ControlsResizeView is false, but it should still be true.",
-                mFullscreenManager.controlsResizeView());
+        assertTrue(
+                "ControlsResizeView is false, but it should still be true.", mControlsResizeView);
 
         // Scroll controls all the way to the min-height.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -75,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -75,
                 /*bottomControlsOffsetY*/ 60, /*contentOffsetY*/ 25,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
         assertFalse("ControlsResizeView is true,"
                         + " but it should've flipped to false since the controls are idle now.",
-                mFullscreenManager.controlsResizeView());
+                mControlsResizeView);
 
         // Scroll controls to show a little more.
-        tabFullscreenObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -50,
+        tabControlsObserver.onBrowserControlsOffsetChanged(mTab, /*topControlsOffsetY*/ -50,
                 /*bottomControlsOffsetY*/ 40, /*contentOffsetY*/ 50,
                 /*topControlsMinHeightOffsetY*/ 25, /*bottomControlsMinHeightOffsetY*/ 0);
-        assertFalse("ControlsResizeView is true, but it should still be false.",
-                mFullscreenManager.controlsResizeView());
+        assertFalse(
+                "ControlsResizeView is true, but it should still be false.", mControlsResizeView);
     }
 
     // --- controlsResizeView tests

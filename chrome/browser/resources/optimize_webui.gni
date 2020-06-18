@@ -103,12 +103,5 @@ template("unpak") {
       "--pak_file",
       rebase_path("$target_gen_dir/${invoker.pak_file}", root_build_dir),
     ]
-
-    if (defined(invoker.pak_base_dir)) {
-      args += [
-        "--pak_base_dir",
-        rebase_path("$target_gen_dir/${invoker.pak_base_dir}", root_build_dir),
-      ]
-    }
   }
 }

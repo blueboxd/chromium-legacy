@@ -54,10 +54,9 @@ namespace prerender {
 
 class PrerenderManager;
 
-class PrerenderContents
-    : public content::NotificationObserver,
-      public content::WebContentsObserver,
-      public components::prerender::common::mojom::PrerenderCanceler {
+class PrerenderContents : public content::NotificationObserver,
+                          public content::WebContentsObserver,
+                          public prerender::mojom::PrerenderCanceler {
  public:
   // PrerenderContents::Create uses the currently registered Factory to create
   // the PrerenderContents. Factory is intended for testing.
@@ -234,8 +233,7 @@ class PrerenderContents
   int64_t network_bytes() { return network_bytes_; }
 
   void AddPrerenderCancelerReceiver(
-      mojo::PendingReceiver<
-          components::prerender::common::mojom::PrerenderCanceler> receiver);
+      mojo::PendingReceiver<prerender::mojom::PrerenderCanceler> receiver);
 
  protected:
   PrerenderContents(PrerenderManager* prerender_manager,
@@ -292,10 +290,10 @@ class PrerenderContents
       bool success,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
 
-  // components::prerender::common::mojom::PrerenderCanceler:
+  // prerender::mojom::PrerenderCanceler:
   void CancelPrerenderForUnsupportedScheme(const GURL& url) override;
 
-  mojo::ReceiverSet<components::prerender::common::mojom::PrerenderCanceler>
+  mojo::ReceiverSet<prerender::mojom::PrerenderCanceler>
       prerender_canceler_receiver_set_;
 
   base::ObserverList<Observer>::Unchecked observer_list_;

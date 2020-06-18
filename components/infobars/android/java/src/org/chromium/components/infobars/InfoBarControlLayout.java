@@ -24,6 +24,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.SwitchCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.widget.DualControlLayout;
 import org.chromium.components.browser_ui.widget.RadioButtonLayout;
 
@@ -72,8 +73,8 @@ public final class InfoBarControlLayout extends ViewGroup {
             if (convertView instanceof TextView) {
                 view = (TextView) convertView;
             } else {
-                view = (TextView) LayoutInflater.from(getContext())
-                               .inflate(R.layout.infobar_control_spinner_drop_down, parent, false);
+                view = (TextView) inflateLayout(
+                        getContext(), R.layout.infobar_control_spinner_drop_down, parent);
             }
 
             view.setText(getItem(position).toString());
@@ -86,8 +87,8 @@ public final class InfoBarControlLayout extends ViewGroup {
             if (convertView instanceof DualControlLayout) {
                 view = (DualControlLayout) convertView;
             } else {
-                view = (DualControlLayout) LayoutInflater.from(getContext())
-                               .inflate(R.layout.infobar_control_spinner_view, parent, false);
+                view = (DualControlLayout) inflateLayout(
+                        getContext(), R.layout.infobar_control_spinner_view, parent);
             }
 
             // Set up the spinner label.  The text it displays won't change.
@@ -303,9 +304,8 @@ public final class InfoBarControlLayout extends ViewGroup {
      * @param titleMessage     Message to display on Infobar title.
      */
     public View addIconTitle(int iconResourceId, CharSequence titleMessage) {
-        LinearLayout layout =
-                (LinearLayout) LayoutInflater.from(getContext())
-                        .inflate(R.layout.infobar_control_icon_with_description, this, false);
+        LinearLayout layout = (LinearLayout) inflateLayout(
+                getContext(), R.layout.infobar_control_icon_with_description, this);
         addView(layout, new ControlLayoutParams());
 
         ImageView iconView = (ImageView) layout.findViewById(R.id.control_icon);
@@ -355,9 +355,8 @@ public final class InfoBarControlLayout extends ViewGroup {
      */
     public View addIcon(int iconResourceId, int iconColorId, CharSequence primaryMessage,
             CharSequence secondaryMessage, int resourceId) {
-        LinearLayout layout =
-                (LinearLayout) LayoutInflater.from(getContext())
-                        .inflate(R.layout.infobar_control_icon_with_description, this, false);
+        LinearLayout layout = (LinearLayout) inflateLayout(
+                getContext(), R.layout.infobar_control_icon_with_description, this);
         addView(layout, new ControlLayoutParams());
 
         ImageView iconView = (ImageView) layout.findViewById(R.id.control_icon);
@@ -401,8 +400,8 @@ public final class InfoBarControlLayout extends ViewGroup {
      */
     public View addSwitch(int iconResourceId, int iconColorId, CharSequence toggleMessage,
             int toggleId, boolean isChecked) {
-        LinearLayout switchLayout = (LinearLayout) LayoutInflater.from(getContext())
-                                            .inflate(R.layout.infobar_control_toggle, this, false);
+        LinearLayout switchLayout =
+                (LinearLayout) inflateLayout(getContext(), R.layout.infobar_control_toggle, this);
         addView(switchLayout, new ControlLayoutParams());
 
         ImageView iconView = (ImageView) switchLayout.findViewById(R.id.control_icon);
@@ -448,8 +447,8 @@ public final class InfoBarControlLayout extends ViewGroup {
      * Creates a standard spinner and adds it to the layout.
      */
     public <T> Spinner addSpinner(int spinnerId, ArrayAdapter<T> arrayAdapter) {
-        Spinner spinner = (Spinner) LayoutInflater.from(getContext())
-                                  .inflate(R.layout.infobar_control_spinner, this, false);
+        Spinner spinner =
+                (Spinner) inflateLayout(getContext(), R.layout.infobar_control_spinner, this);
         spinner.setAdapter(arrayAdapter);
         addView(spinner, new ControlLayoutParams());
         spinner.setId(spinnerId);
@@ -464,8 +463,7 @@ public final class InfoBarControlLayout extends ViewGroup {
         params.mMustBeFullWidth = true;
 
         TextView descriptionView =
-                (TextView) LayoutInflater.from(getContext())
-                        .inflate(R.layout.dialog_control_description, this, false);
+                (TextView) inflateLayout(getContext(), R.layout.dialog_control_description, this);
         addView(descriptionView, params);
 
         descriptionView.setText(message);
@@ -483,8 +481,8 @@ public final class InfoBarControlLayout extends ViewGroup {
         ControlLayoutParams params = new ControlLayoutParams();
         params.mMustBeFullWidth = true;
 
-        TextView messageView = (TextView) LayoutInflater.from(getContext())
-                                       .inflate(R.layout.infobar_control_message, this, false);
+        TextView messageView =
+                (TextView) inflateLayout(getContext(), R.layout.infobar_control_message, this);
         addView(messageView, params);
 
         messageView.setText(mainMessage);
@@ -498,5 +496,12 @@ public final class InfoBarControlLayout extends ViewGroup {
     @VisibleForTesting
     static ControlLayoutParams getControlLayoutParams(View child) {
         return (ControlLayoutParams) child.getLayoutParams();
+    }
+
+    private static View inflateLayout(Context context, int layoutId, ViewGroup root) {
+        // LayoutInflater may trigger accessing the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            return LayoutInflater.from(context).inflate(layoutId, root, false);
+        }
     }
 }

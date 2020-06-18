@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/observer_list_types.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/hid_chooser.h"
 #include "services/device/public/mojom/hid.mojom-forward.h"
@@ -25,6 +26,18 @@ class WebContents;
 class CONTENT_EXPORT HidDelegate {
  public:
   virtual ~HidDelegate() = default;
+
+  class Observer : public base::CheckedObserver {
+   public:
+    // Events forwarded from HidChooserContext::DeviceObserver:
+    virtual void OnDeviceAdded(const device::mojom::HidDeviceInfo&) = 0;
+    virtual void OnDeviceRemoved(const device::mojom::HidDeviceInfo&) = 0;
+    virtual void OnHidManagerConnectionError() = 0;
+
+    // Event forwarded from permissions::ChooserContextBase::PermissionObserver:
+    virtual void OnPermissionRevoked(const url::Origin& requesting_origin,
+                                     const url::Origin& embedding_origin) = 0;
+  };
 
   // Shows a chooser for the user to select a HID device. |callback| will be
   // run when the prompt is closed. Deleting the returned object will cancel the
@@ -58,6 +71,9 @@ class CONTENT_EXPORT HidDelegate {
   // possible.
   virtual device::mojom::HidManager* GetHidManager(
       WebContents* web_contents) = 0;
+
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 };
 
 }  // namespace content

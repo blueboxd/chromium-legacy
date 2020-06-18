@@ -118,7 +118,7 @@ Broker::Broker(PlatformHandle handle, bool wait_for_channel_handle)
   }
 }
 
-Broker::~Broker() {}
+Broker::~Broker() = default;
 
 PlatformChannelEndpoint Broker::GetInviterEndpoint() {
   return std::move(inviter_endpoint_);

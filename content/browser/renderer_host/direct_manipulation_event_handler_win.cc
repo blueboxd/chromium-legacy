@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/direct_manipulation_event_handler_win.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/renderer_host/direct_manipulation_helper_win.h"
 #include "ui/base/ui_base_features.h"

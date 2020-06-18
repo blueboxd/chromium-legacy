@@ -54,7 +54,6 @@ class TestVariationsSeedStore : public VariationsSeedStore {
   explicit TestVariationsSeedStore(PrefService* local_state)
       : VariationsSeedStore(local_state,
                             nullptr,
-                            base::DoNothing(),
                             /*signature_verification_enabled=*/false) {}
   ~TestVariationsSeedStore() override = default;
 

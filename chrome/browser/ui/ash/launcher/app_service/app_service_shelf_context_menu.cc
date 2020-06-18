@@ -146,7 +146,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
       if (item().id.app_id == crostini::GetTerminalId()) {
         crostini::CrostiniManager::GetForProfile(controller()->profile())
             ->StopVm(crostini::kCrostiniDefaultVmName, base::DoNothing());
-      } else if (item().id.app_id == plugin_vm::kPluginVmAppId) {
+      } else if (item().id.app_id == plugin_vm::kPluginVmShelfAppId) {
         plugin_vm::PluginVmManagerFactory::GetForProfile(
             controller()->profile())
             ->StopPluginVm(plugin_vm::kPluginVmName, /*force=*/false);

@@ -19,11 +19,22 @@
   }
 
   #status-badge {
-    background-color: var(--google-grey-500);
     height: var(--status-badge-radius);
     left: calc(var(--background-badge-left) + (var(--background-badge-radius) - var(--status-badge-radius))/2);
     top: calc(var(--background-badge-top) + (var(--background-badge-radius) - var(--status-badge-radius))/2);
     width: var(--status-badge-radius);
+  }
+
+  :host-context([status='green']) #status-badge {
+    background-color: var(--google-green-700);
+  }
+
+  :host-context([status='grey']) #status-badge {
+    background-color: var(--google-grey-500);
+  }
+
+  :host-context([status='red']) #status-badge {
+    background-color: var(--google-red-600);
   }
 
   :host-context([dir='rtl']) #status-badge {
@@ -31,11 +42,18 @@
   }
 
   #background-badge {
-    background-color: var(--google-grey-refresh-100);
     height: var(--background-badge-radius);
     left: var(--background-badge-left);
     top: var(--background-badge-top);
     width: var(--background-badge-radius);
+  }
+
+  :host-context([background='grey']) #background-badge {
+    background-color: var(--google-grey-refresh-100);
+  }
+
+  :host-context([background='white']) #background-badge {
+    background-color: white;
   }
 
   :host-context([dir='rtl']) #background-badge {

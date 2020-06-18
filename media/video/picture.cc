@@ -4,6 +4,7 @@
 
 #include "media/video/picture.h"
 
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/macros.h"
 

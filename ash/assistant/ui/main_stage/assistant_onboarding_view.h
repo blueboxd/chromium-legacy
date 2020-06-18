@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_ONBOARDING_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_ONBOARDING_VIEW_H_
 
+#include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
@@ -23,6 +24,7 @@ class AssistantViewDelegate;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
     : public views::View,
       public AssistantControllerObserver,
+      public AssistantSuggestionsModelObserver,
       public AssistantUiModelObserver {
  public:
   explicit AssistantOnboardingView(AssistantViewDelegate* delegate);
@@ -38,6 +40,11 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
   // AssistantController:
   void OnAssistantControllerDestroying() override;
 
+  // AssistantSuggestionsModelObserver:
+  void OnOnboardingSuggestionsChanged(
+      const std::vector<const AssistantSuggestion*>& onboarding_suggestions)
+      override;
+
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
       AssistantVisibility new_visibility,
@@ -47,11 +54,12 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOnboardingView
 
  private:
   void InitLayout();
-  void InitSuggestions();
   void UpdateGreeting();
+  void UpdateSuggestions();
 
   AssistantViewDelegate* const delegate_;  // Owned by AssistantController.
   views::Label* greeting_ = nullptr;       // Owned by view hierarchy.
+  views::View* grid_ = nullptr;            // Owned by view hierarchy.
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};

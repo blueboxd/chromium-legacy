@@ -129,12 +129,7 @@ Polymer({
     this.$$('.promo-text').innerHTML =
         this.i18nAdvanced('cloudPrintPromotion', {
           substitutions: ['<a is="action-link" class="sign-in">', '</a>'],
-          attrs: {
-            'is': (node, v) => v === 'action-link',
-            'class': (node, v) => v === 'sign-in',
-            'tabindex': (node, v) => v === '0',
-            'role': (node, v) => v === 'link',
-          },
+          attrs: ['is', 'class', 'tabindex', 'role'],
         });
   },
 

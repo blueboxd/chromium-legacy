@@ -58,6 +58,8 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
       {"unknownPrinterError", IDS_PRINT_MANAGEMENT_UNKNOWN_ERROR_STATUS},
       {"noPrintJobInProgress",
        IDS_PRINT_MANAGEMENT_NO_PRINT_JOBS_IN_PROGRESS_MESSAGE},
+      {"clearAllPrintJobPolicyIndicatorToolTip",
+       IDS_PRINT_MANAGEMENT_CLEAR_ALL_POLICY_PRINT_JOB_INDICATOR_MESSAGE},
   };
 
   for (const auto& str : kLocalizedStrings) {

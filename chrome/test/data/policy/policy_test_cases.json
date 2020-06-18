@@ -490,6 +490,16 @@
     ]
   },
 
+  "DeletePrintJobHistoryAllowed": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {"DeletePrintJobHistoryAllowed": false},
+        "prefs": { "printing.delete_print_job_history_allowed": {} }
+      }
+    ]
+  },
+
   "PrintingAPIExtensionsWhitelist": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [
@@ -7279,15 +7289,7 @@
     ]
   },
   "StricterMixedContentTreatmentEnabled" : {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "policy_pref_mapping_test": [
-      {
-        "policies": { "StricterMixedContentTreatmentEnabled": false },
-        "prefs": {
-          "security_state.stricter_mixed_content_treatment_enabled": {}
-        }
-      }
-    ]
+    "note": "This policy has been removed, as of M85."
   },
   "UserDataSnapshotRetentionLimit" : {
     "os": ["win", "linux", "mac"],

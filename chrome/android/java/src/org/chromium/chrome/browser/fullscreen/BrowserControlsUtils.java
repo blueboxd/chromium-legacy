@@ -29,4 +29,24 @@ public class BrowserControlsUtils {
     public static boolean drawControlsAsTexture(BrowserControlsStateProvider stateProvider) {
         return stateProvider.getBrowserControlHiddenRatio() > 0;
     }
+
+    /**
+     * TODO(jinsukkim): Move this to CompositorViewHolder.
+     * @return {@code true} if browser controls shrink Blink view's size. Note that this
+     *         is valid only when the browser controls are in idle state i.e. not scrolling
+     *         or animating.
+     */
+    public static boolean controlsResizeView(BrowserControlsStateProvider stateProvider) {
+        return stateProvider.getContentOffset() > stateProvider.getTopControlsMinHeight()
+                || getBottomContentOffset(stateProvider)
+                > stateProvider.getBottomControlsMinHeight();
+    }
+
+    /**
+     * @return The content offset from the bottom of the screen, or the visible height of the bottom
+     *         controls, in px.
+     */
+    public static int getBottomContentOffset(BrowserControlsStateProvider stateProvider) {
+        return stateProvider.getBottomControlsHeight() - stateProvider.getBottomControlOffset();
+    }
 }

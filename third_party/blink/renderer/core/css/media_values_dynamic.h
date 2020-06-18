@@ -49,6 +49,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   ColorSpaceGamut ColorGamut() const override;
   PreferredColorScheme GetPreferredColorScheme() const override;
   bool PrefersReducedMotion() const override;
+  bool PrefersReducedData() const override;
   ForcedColors GetForcedColors() const override;
   NavigationControls GetNavigationControls() const override;
   ScreenSpanning GetScreenSpanning() const override;

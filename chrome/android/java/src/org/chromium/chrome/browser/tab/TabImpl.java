@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.paint_preview.PaintPreviewHelper;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.rlz.RevenueStats;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.ui.TabObscuringHandler;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -112,13 +113,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * Tab id to be used as a source tab in SyncedTabDelegate.
      */
     private final int mSourceTabId;
-
-    /**
-     * By default, this id inherits from the tab that caused it to be opened, or it equals to tab
-     * id. This is used to restore the relationship that defined by {@link TabModelFilter} between
-     * this tab and other tabs. This id can be re-set whenever is needed.
-     */
-    private int mRootId;
 
     private boolean mIsClosing;
     private boolean mIsShowingErrorPage;
@@ -245,7 +239,6 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             mParentId = parent.getId();
             mSourceTabId = parent.isIncognito() == incognito ? mParentId : INVALID_TAB_ID;
         }
-        mRootId = mId;
 
         // Override the configuration for night mode to always stay in light mode until all UIs in
         // Tab are inflated from activity context instead of application context. This is to
@@ -726,19 +719,15 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
      * @param rootId New relationship id to be set.
      */
     public void setRootId(int rootId) {
-        if (rootId == mRootId) return;
-        mRootId = rootId;
+        // TODO(crbug.com/1091802) - move setRootId() out of TabImpl as well and use
+        // CriticalPersistedTabData UserData interface
+        CriticalPersistedTabData criticalPersistedTabData = CriticalPersistedTabData.from(this);
+        if (rootId == criticalPersistedTabData.getRootId()) return;
+        criticalPersistedTabData.setRootId(rootId);
         mIsTabStateDirty = true;
         for (TabObserver observer : mObservers) {
             observer.onRootIdChanged(this, rootId);
         }
-    }
-
-    /**
-     * @return Tab's relationship id.
-     */
-    public int getRootId() {
-        return mRootId;
     }
 
     /**
@@ -881,7 +870,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         mUrl = new GURL(state.contentsState.getVirtualUrlFromState());
         mTitle = state.contentsState.getDisplayTitleFromState();
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
-        mRootId = state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId;
+        CriticalPersistedTabData.from(this).setRootId(
+                state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId);
     }
 
     /**

@@ -128,14 +128,16 @@ class SyncConsentTest : public OobeBaseTest {
     OobeBaseTest::SetUpOnMainThread();
     if (features::IsSplitSettingsSyncEnabled()) {
       expected_consent_ids_ = {
+          IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE,
+          IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME,
           IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION,
-          IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE,
-          IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT,
+          IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE2,
+          IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2,
       };
     } else {
       expected_consent_ids_ = {
@@ -439,23 +441,23 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   // Consent was recorded for the confirmation button.
   EXPECT_EQ(SyncConsentScreen::CONSENT_GIVEN,
             consent_recorded_waiter.consent_given_);
-  EXPECT_EQ("Yes, I'm in",
-            consent_recorded_waiter.consent_confirmation_string_);
-  EXPECT_EQ(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT,
+  EXPECT_EQ("Got it", consent_recorded_waiter.consent_confirmation_string_);
+  EXPECT_EQ(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2,
             consent_recorded_waiter.consent_confirmation_id_);
 
   // Consent was recorded for all descriptions, including the confirmation
   // button label.
   std::vector<int> expected_ids = {
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE_WITH_DEVICE,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_BROWSER_SYNC_NAME,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_CHROME_SYNC_DESCRIPTION,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_NAME,
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION,
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT,
-      IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2,
+      IDS_LOGIN_SYNC_CONSENT_SCREEN_DECLINE2,
   };
   EXPECT_THAT(consent_recorded_waiter.consent_description_ids_,
               testing::UnorderedElementsAreArray(expected_ids));
@@ -554,7 +556,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, LanguageSwitch) {
               UnorderedElementsAreArray(GetLocalizedExpectedConsentStrings()));
   EXPECT_THAT(
       consent_recorded_waiter.consent_confirmation_string_,
-      Eq(GetLocalizedConsentString(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT)));
+      Eq(GetLocalizedConsentString(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2)));
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, LanguageVariant) {
@@ -574,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, LanguageVariant) {
               UnorderedElementsAreArray(GetLocalizedExpectedConsentStrings()));
   EXPECT_THAT(
       consent_recorded_waiter.consent_confirmation_string_,
-      Eq(GetLocalizedConsentString(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT)));
+      Eq(GetLocalizedConsentString(IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT2)));
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,

@@ -25,7 +25,13 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
  public:
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
-    mock_tracker_ = InjectTrackerForProfile(GetProfile());
+    mock_tracker_ =
+        feature_engagement::TrackerFactory::GetInstance()
+            ->SetTestingSubclassFactoryAndUse(
+                GetProfile(), base::BindRepeating([](content::BrowserContext*) {
+                  return std::make_unique<
+                      feature_engagement::test::MockTracker>();
+                }));
 
     // Other features call into the IPH backend. We don't want to fail
     // on their calls, so allow them. Our test cases will set
@@ -38,19 +44,6 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
 
  protected:
   feature_engagement::test::MockTracker* mock_tracker_;
-
- private:
-  static feature_engagement::test::MockTracker* InjectTrackerForProfile(
-      Profile* profile) {
-    KeyedService* const tracker =
-        feature_engagement::TrackerFactory::GetInstance()
-            ->SetTestingFactoryAndUse(profile, base::Bind(MakeTracker));
-    return static_cast<feature_engagement::test::MockTracker*>(tracker);
-  }
-
-  static std::unique_ptr<KeyedService> MakeTracker(content::BrowserContext*) {
-    return std::make_unique<feature_engagement::test::MockTracker>();
-  }
 };
 
 TEST_F(TabGroupsIPHControllerTest, NotifyEventAndTriggerOnSixthTabOpened) {

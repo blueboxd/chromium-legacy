@@ -61,6 +61,10 @@ class ChromeDownloadManagerDelegate
   // disable SafeBrowsing checks for |item|.
   static void DisableSafeBrowsing(download::DownloadItem* item);
 
+  // True when |danger_type| is one that is blocked for policy reasons (e.g.
+  // "file too large") as opposed to malicious content reasons.
+  static bool IsDangerTypeBlocked(download::DownloadDangerType danger_type);
+
   void SetDownloadManager(content::DownloadManager* dm);
 
 #if defined(OS_ANDROID)

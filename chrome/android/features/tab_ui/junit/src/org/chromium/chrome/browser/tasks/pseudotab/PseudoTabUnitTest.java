@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tasks.pseudotab;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.eq;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -22,10 +22,12 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -60,6 +62,9 @@ public class PseudoTabUnitTest {
     @Mock
     TabModelFilterProvider mTabModelFilterProvider;
 
+    @Mock
+    CriticalPersistedTabData mCriticalPersistedTabData;
+
     private TabImpl mTab1;
     private TabImpl mTab2;
     private TabImpl mTab3;
@@ -68,9 +73,9 @@ public class PseudoTabUnitTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
 
-        mTab1 = prepareTab(TAB1_ID);
-        mTab2 = prepareTab(TAB2_ID);
-        mTab3 = prepareTab(TAB3_ID);
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, mCriticalPersistedTabData);
+        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, mCriticalPersistedTabData);
+        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, mCriticalPersistedTabData);
 
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
     }
@@ -259,7 +264,7 @@ public class PseudoTabUnitTest {
     @Test
     public void getRootId_real() {
         int rootId = 1337;
-        doReturn(rootId).when(mTab1).getRootId();
+        doReturn(rootId).when(mCriticalPersistedTabData).getRootId();
 
         PseudoTab tab = PseudoTab.fromTabId(TAB1_ID);
         Assert.assertEquals(Tab.INVALID_TAB_ID, tab.getRootId());
@@ -418,9 +423,4 @@ public class PseudoTabUnitTest {
         Assert.assertEquals(TAB2_ID, related.get(1).getId());
     }
 
-    private TabImpl prepareTab(int id) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(id).when(tab).getId();
-        return tab;
-    }
 }

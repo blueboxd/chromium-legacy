@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/big_endian.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/pacing/paced_sender.h"

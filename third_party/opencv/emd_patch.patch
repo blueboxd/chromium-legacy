@@ -1,16 +1,18 @@
-diff --git b/third_party/opencv/src/emd.cpp a/third_party/opencv/src/emd.cpp
-index 20ab6feafbc8..30b19f676705 100644
---- b/third_party/opencv/src/emd.cpp
-+++ a/third_party/opencv/src/emd.cpp
-@@ -56,12 +56,34 @@
+diff --git a/third_party/opencv/src/emd.cpp b/third_party/opencv/src/emd.cpp
+index 20ab6feafbc8..d7b29707a90b 100644
+--- a/third_party/opencv/src/emd.cpp
++++ b/third_party/opencv/src/emd.cpp
+@@ -56,12 +56,36 @@
      E-Mail: rubner@cs.stanford.edu   URL: http://vision.stanford.edu/~rubner
      ==========================================================================
  */
 +#ifdef CHROMIUM_OPENCV
 +#include "emd_wrapper.h"
 +
++#include <algorithm>
 +#include <vector>
 +#include <cassert>
++#include <cstring>
 +
 +#include "base/numerics/checked_math.h"
 +#else
@@ -37,7 +39,7 @@ index 20ab6feafbc8..30b19f676705 100644
  /* CvNode1D is used for lists, representing 1D sparse array */
  typedef struct CvNode1D
  {
-@@ -144,8 +166,25 @@ static float icvDistL2( const float *x, const float *y, void *user_param );
+@@ -144,8 +168,25 @@ static float icvDistL2( const float *x, const float *y, void *user_param );
  static float icvDistL1( const float *x, const float *y, void *user_param );
  static float icvDistC( const float *x, const float *y, void *user_param );
  
@@ -64,7 +66,7 @@ index 20ab6feafbc8..30b19f676705 100644
              const CvArr* signature_arr2,
              int dist_type,
              CvDistanceFunction dist_func,
-@@ -164,6 +203,23 @@ CV_IMPL float cvCalcEMD2( const CvArr* signature_arr1,
+@@ -164,6 +205,23 @@ CV_IMPL float cvCalcEMD2( const CvArr* signature_arr1,
      int result = 0;
      float eps, min_delta;
      CvNode2D *xp = 0;
@@ -88,7 +90,7 @@ index 20ab6feafbc8..30b19f676705 100644
      CvMat sign_stub1, *signature1 = (CvMat*)signature_arr1;
      CvMat sign_stub2, *signature2 = (CvMat*)signature_arr2;
      CvMat cost_stub, *cost = &cost_stub;
-@@ -245,12 +301,19 @@ CV_IMPL float cvCalcEMD2( const CvArr* signature_arr1,
+@@ -245,12 +303,19 @@ CV_IMPL float cvCalcEMD2( const CvArr* signature_arr1,
              CV_Error( CV_StsBadFlag, "Bad or unsupported metric type" );
          }
      }
@@ -108,7 +110,7 @@ index 20ab6feafbc8..30b19f676705 100644
  
      if( result > 0 && lower_bound )
      {
-@@ -307,8 +370,10 @@ CV_IMPL float cvCalcEMD2( const CvArr* signature_arr1,
+@@ -307,8 +372,10 @@ CV_IMPL float cvCalcEMD2( const CvArr* signature_arr1,
          if( ci >= 0 && cj >= 0 )
          {
              total_cost += (double)val * state.cost[i][j];
@@ -119,7 +121,7 @@ index 20ab6feafbc8..30b19f676705 100644
          }
      }
  
-@@ -357,7 +422,11 @@ static int icvInitEMD( const float* signature1, int size1,
+@@ -357,7 +424,11 @@ static int icvInitEMD( const float* signature1, int size1,
      }
  
      /* allocate buffers */
@@ -131,7 +133,7 @@ index 20ab6feafbc8..30b19f676705 100644
  
      state->buffer = buffer = _buffer.data();
      buffer_end = buffer + buffer_size;
-@@ -1146,7 +1215,89 @@ icvDistC( const float *x, const float *y, void *user_param )
+@@ -1146,7 +1217,89 @@ icvDistC( const float *x, const float *y, void *user_param )
      return (float)s;
  }
  
@@ -221,7 +223,7 @@ index 20ab6feafbc8..30b19f676705 100644
  float cv::EMD( InputArray _signature1, InputArray _signature2,
                 int distType, InputArray _cost,
                 float* lowerBound, OutputArray _flow )
-@@ -1177,5 +1328,6 @@ float cv::wrapperEMD(InputArray _signature1, InputArray _signature2,
+@@ -1177,5 +1330,6 @@ float cv::wrapperEMD(InputArray _signature1, InputArray _signature2,
  {
      return EMD(_signature1, _signature2, distType, _cost, lowerBound.get(), _flow);
  }

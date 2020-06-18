@@ -12,6 +12,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 import org.json.JSONException;
@@ -193,5 +194,21 @@ public class TabSuggestionsServerFetcherUnitTest {
         mTabSuggestionsServerFetcher.fetch(TAB_CONTEXT_GROUP_ALL,
                 (res) -> { Assert.assertEquals(0, res.tabSuggestions.size()); });
         verifyEndpointArguments();
+    }
+
+    @Test
+    public void testServerFetcherEnabled() {
+        for (boolean isSignedIn : new boolean[] {false, true}) {
+            for (boolean isServerFetcherFlagEnabled : new boolean[] {false, true}) {
+                TabSuggestionsServerFetcher fetcher = spy(new TabSuggestionsServerFetcher());
+                doReturn(isSignedIn).when(fetcher).isSignedIn();
+                doReturn(isServerFetcherFlagEnabled).when(fetcher).isServerFetcherFlagEnabled();
+                if (isSignedIn && isServerFetcherFlagEnabled) {
+                    Assert.assertTrue(fetcher.isEnabled());
+                } else {
+                    Assert.assertFalse(fetcher.isEnabled());
+                }
+            }
+        }
     }
 }

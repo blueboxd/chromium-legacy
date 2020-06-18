@@ -322,19 +322,7 @@
         android:name="org.chromium.chrome.browser.document.ChromeLauncherActivity"
         android:relinquishTaskIdentity="true"
         android:taskAffinity=""
-        android:theme="@style/LauncherTheme">
-      <intent-filter>
-        <action android:name="org.chromium.chrome.browser.dummy.action"/>
-        <category android:name="com.google.intent.category.CARDBOARD"/>
-        <category android:name="com.google.intent.category.DAYDREAM"/>
-      </intent-filter>
-      <meta-data
-          android:name="com.google.android.vr.icon"
-          android:resource="@drawable/daydream_icon_foreground"/>
-      <meta-data
-          android:name="com.google.android.vr.icon_background"
-          android:resource="@drawable/daydream_icon_background"/>
-    </activity>
+        android:theme="@style/LauncherTheme"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|density"
         android:exported="false"
@@ -634,7 +622,6 @@
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
         <category android:name="android.intent.category.NOTIFICATION_PREFERENCES"/>
-        <category android:name="com.google.intent.category.DAYDREAM"/>
       </intent-filter>
       <intent-filter>
         <action android:name="android.intent.action.MEDIA_SEARCH"/>
@@ -647,7 +634,6 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="com.google.intent.category.DAYDREAM"/>
         <data android:host="*"/>
         <data android:mimeType="*/*"/>
         <data android:pathPattern="/.*\\.mht"/>
@@ -659,7 +645,6 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="com.google.intent.category.DAYDREAM"/>
         <data android:host="*"/>
         <data android:pathPattern="/.*\\.mht"/>
         <data android:pathPattern="/.*\\.mhtml"/>
@@ -670,7 +655,6 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="com.google.intent.category.DAYDREAM"/>
         <data android:mimeType="application/xhtml+xml"/>
         <data android:mimeType="text/html"/>
         <data android:mimeType="text/plain"/>
@@ -685,7 +669,6 @@
         <action android:name="android.intent.action.VIEW"/>
         <category android:name="android.intent.category.BROWSABLE"/>
         <category android:name="android.intent.category.DEFAULT"/>
-        <category android:name="com.google.intent.category.DAYDREAM"/>
         <data android:scheme="about"/>
         <data android:scheme="googlechrome"/>
         <data android:scheme="http"/>
@@ -720,12 +703,6 @@
         <action android:name="com.sec.android.airview.HOVER"/>
       </intent-filter>
       <meta-data android:name="android.app.searchable" android:resource="@xml/searchable"/>
-      <meta-data
-          android:name="com.google.android.vr.icon"
-          android:resource="@drawable/daydream_icon_foreground"/>
-      <meta-data
-          android:name="com.google.android.vr.icon_background"
-          android:resource="@drawable/daydream_icon_background"/>
     </activity-alias>
     <activity-alias
         android:exported="true"

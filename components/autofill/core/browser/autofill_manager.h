@@ -278,8 +278,8 @@ class AutofillManager : public AutofillHandler,
   // purposes only.
   void OnLoadedServerPredictionsForTest(
       std::string response,
-      const std::vector<std::string>& form_signatures) {
-    OnLoadedServerPredictions(response, form_signatures);
+      const FormAndFieldSignatures& signatures) {
+    OnLoadedServerPredictions(response, signatures);
   }
 
   // A public wrapper that calls |MakeFrontendID| for testing purposes only.
@@ -428,7 +428,7 @@ class AutofillManager : public AutofillHandler,
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
       std::string response,
-      const std::vector<std::string>& form_signatures) override;
+      const FormAndFieldSignatures& signatures) override;
 
   // CreditCardAccessManager::Accessor
   void OnCreditCardFetched(

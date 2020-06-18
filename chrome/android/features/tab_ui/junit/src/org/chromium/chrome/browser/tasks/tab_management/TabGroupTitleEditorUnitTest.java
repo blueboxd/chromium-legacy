@@ -22,8 +22,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
@@ -84,10 +86,10 @@ public class TabGroupTitleEditorUnitTest {
 
         MockitoAnnotations.initMocks(this);
 
-        mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
-        mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
-        mTab3 = prepareTab(TAB3_ID, TAB3_TITLE);
-        mTab4 = prepareTab(TAB4_ID, TAB4_TITLE);
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_TITLE);
+        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_TITLE);
+        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_TITLE);
+        mTab4 = TabUiUnitTestUtils.prepareTab(TAB4_ID, TAB4_TITLE);
         doReturn(mTabModel).when(mTabModelSelector).getCurrentModel();
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -129,7 +131,7 @@ public class TabGroupTitleEditorUnitTest {
         assertThat(mStorage.size(), equalTo(1));
 
         // Mock that tab1, tab2, new tab are in the same group and group root id is TAB1_ID.
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        TabImpl newTab = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabs, TAB1_ID);
 
@@ -148,7 +150,7 @@ public class TabGroupTitleEditorUnitTest {
         mTabGroupTitleEditor.storeTabGroupTitle(TAB1_ID, CUSTOMIZED_TITLE1);
 
         // Mock that tab1, tab2, new tab are in the same group and group root id is TAB1_ID.
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        TabImpl newTab = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> groupBeforeClosure = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(groupBeforeClosure, TAB1_ID);
 
@@ -247,7 +249,7 @@ public class TabGroupTitleEditorUnitTest {
         mTabGroupTitleEditor.storeTabGroupTitle(TAB1_ID, CUSTOMIZED_TITLE1);
 
         // Mock that tab1, tab2 and newTab are in the same group and group root id is TAB1_ID.
-        TabImpl newTab = prepareTab(TAB3_ID, TAB3_TITLE);
+        TabImpl newTab = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_TITLE);
         List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1, mTab2, newTab));
         createTabGroup(tabs, TAB1_ID);
 
@@ -264,15 +266,13 @@ public class TabGroupTitleEditorUnitTest {
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when((TabImpl) tab).getRootId();
+            CriticalPersistedTabData criticalPersistedTabData =
+                    mock(CriticalPersistedTabData.class);
+            UserDataHost userDataHost = new UserDataHost();
+            userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+            doReturn(userDataHost).when(tab).getUserDataHost();
+            doReturn(rootId).when(criticalPersistedTabData).getRootId();
         }
     }
 
-    private TabImpl prepareTab(int tabId, String title) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(tabId).when(tab).getId();
-        doReturn(tabId).when(tab).getRootId();
-        doReturn(title).when(tab).getTitle();
-        return tab;
-    }
 }

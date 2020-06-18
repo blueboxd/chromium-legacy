@@ -135,21 +135,6 @@ static void SetPaintingLayerNeedsRepaintDuringTraverse(
 }
 
 void ObjectPaintInvalidator::
-    InvalidateDisplayItemClientsIncludingNonCompositingDescendants(
-        PaintInvalidationReason reason) {
-  // This is valid because we want to invalidate the client in the display item
-  // list of the current backing.
-  DisableCompositingQueryAsserts disabler;
-
-  SlowSetPaintingLayerNeedsRepaint();
-  TraverseNonCompositingDescendantsInPaintOrder(
-      object_, [reason](const LayoutObject& object) {
-        SetPaintingLayerNeedsRepaintDuringTraverse(object);
-        object.InvalidateDisplayItemClients(reason);
-      });
-}
-
-void ObjectPaintInvalidator::
     InvalidatePaintIncludingNonCompositingDescendants() {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   SlowSetPaintingLayerNeedsRepaint();

@@ -42,6 +42,8 @@
 #elif defined(OS_WIN)
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "chrome/browser/win/conflicts/module_event_sink_impl.h"
+#elif defined(OS_CHROMEOS)
+#include "chromeos/components/cdm_factory_daemon/cdm_factory_daemon_proxy.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -274,8 +276,15 @@ void ChromeContentBrowserClient::BindBadgeServiceReceiverFromServiceWorker(
 
 void ChromeContentBrowserClient::BindGpuHostReceiver(
     mojo::GenericPendingReceiver receiver) {
-  if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>())
+  if (auto r = receiver.As<metrics::mojom::CallStackProfileCollector>()) {
     metrics::CallStackProfileCollector::Create(std::move(r));
+    return;
+  }
+
+#if defined(OS_CHROMEOS)
+  if (auto r = receiver.As<chromeos::cdm::mojom::CdmFactoryDaemon>())
+    chromeos::CdmFactoryDaemonProxy::Create(std::move(r));
+#endif  // OS_CHROMEOS
 }
 
 void ChromeContentBrowserClient::BindUtilityHostReceiver(

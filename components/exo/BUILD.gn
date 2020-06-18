@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//testing/test.gni")
 
-source_set("exo") {
+static_library("exo") {
   sources = [
     "buffer.cc",
     "buffer.h",
@@ -104,6 +104,7 @@ source_set("exo") {
 
   if (is_chromeos) {
     deps += [
+      "//ash",
       "//ash/keyboard/ui",
       "//ash/public/cpp",
       "//chromeos/constants",

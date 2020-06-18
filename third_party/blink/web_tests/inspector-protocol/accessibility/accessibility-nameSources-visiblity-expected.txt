@@ -1,921 +1,921 @@
 Tests name sources in invisible nodes.
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "link"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "1 2 7",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "contents",
-        "value": {
-          "type": "computedString",
-          "value": "1 2 7"
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
+    domNode : div#link1
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                type : contents
+                value : {
+                    type : computedString
+                    value : 1 2 7
+                }
+            }
+            [3] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 1 2 7
     }
-  ],
-  "domNode": "div#link1"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : link
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "textbox"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "1 2 7",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "1 2 7"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "label2",
-          "relatedNodes": [
-            {
-              "idref": "label2",
-              "text": "1 2 7",
-              "nodeResult": "div#label2"
+    domNode : input#input2
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : label2
+                            nodeResult : div#label2
+                            text : 1 2 7
+                        }
+                    ]
+                    type : idrefList
+                    value : label2
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : 1 2 7
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "placeholder",
-        "attribute": "placeholder",
-        "superseded": true
-      },
-      {
-        "type": "placeholder",
-        "attribute": "aria-placeholder",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "editable",
-      "value": {
-        "type": "token",
-        "value": "plaintext"
-      }
-    },
-    {
-      "name": "settable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "multiline",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "readonly",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "required",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "label2",
-            "text": "1 2 7",
-            "nodeResult": "div#label2"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                attribute : placeholder
+                superseded : true
+                type : placeholder
+            }
+            [4] : {
+                attribute : aria-placeholder
+                superseded : true
+                type : placeholder
+            }
+            [5] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : 1 2 7
     }
-  ],
-  "domNode": "input#input2"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : editable
+            value : {
+                type : token
+                value : plaintext
+            }
+        }
+        [3] : {
+            name : settable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [4] : {
+            name : multiline
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [5] : {
+            name : readonly
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [6] : {
+            name : required
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [7] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : label2
+                        nodeResult : div#label2
+                        text : 1 2 7
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : textbox
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "textbox"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "1 2 3 4 6 7",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "1 2 3 4 6 7"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "3a 3b 3c 3d 3e 3f 3g",
-          "relatedNodes": [
-            {
-              "idref": "3a",
-              "text": "1",
-              "nodeResult": "p#3a"
-            },
-            {
-              "idref": "3b",
-              "text": "2",
-              "nodeResult": "td#3b"
-            },
-            {
-              "idref": "3c",
-              "text": "3",
-              "nodeResult": "td#3c"
-            },
-            {
-              "idref": "3d",
-              "text": "4",
-              "nodeResult": "td#3d"
-            },
-            {
-              "idref": "3e",
-              "text": "",
-              "nodeResult": "tr#3e"
-            },
-            {
-              "idref": "3f",
-              "text": "6",
-              "nodeResult": "tr#3f"
-            },
-            {
-              "idref": "3g",
-              "text": "7",
-              "nodeResult": "p#3g"
+    domNode : input#input3
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : 3a
+                            nodeResult : p#3a
+                            text : 1
+                        }
+                        [1] : {
+                            idref : 3b
+                            nodeResult : td#3b
+                            text : 2
+                        }
+                        [2] : {
+                            idref : 3c
+                            nodeResult : td#3c
+                            text : 3
+                        }
+                        [3] : {
+                            idref : 3d
+                            nodeResult : td#3d
+                            text : 4
+                        }
+                        [4] : {
+                            idref : 3e
+                            nodeResult : tr#3e
+                            text : 
+                        }
+                        [5] : {
+                            idref : 3f
+                            nodeResult : tr#3f
+                            text : 6
+                        }
+                        [6] : {
+                            idref : 3g
+                            nodeResult : p#3g
+                            text : 7
+                        }
+                    ]
+                    type : idrefList
+                    value : 3a 3b 3c 3d 3e 3f 3g
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : 1 2 3 4 6 7
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "placeholder",
-        "attribute": "placeholder",
-        "superseded": true
-      },
-      {
-        "type": "placeholder",
-        "attribute": "aria-placeholder",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "editable",
-      "value": {
-        "type": "token",
-        "value": "plaintext"
-      }
-    },
-    {
-      "name": "settable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "multiline",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "readonly",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "required",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "3a",
-            "text": "1",
-            "nodeResult": "p#3a"
-          },
-          {
-            "idref": "3b",
-            "text": "2",
-            "nodeResult": "td#3b"
-          },
-          {
-            "idref": "3c",
-            "text": "3",
-            "nodeResult": "td#3c"
-          },
-          {
-            "idref": "3d",
-            "text": "4",
-            "nodeResult": "td#3d"
-          },
-          {
-            "idref": "3e",
-            "text": "",
-            "nodeResult": "tr#3e"
-          },
-          {
-            "idref": "3f",
-            "text": "6",
-            "nodeResult": "tr#3f"
-          },
-          {
-            "idref": "3g",
-            "text": "7",
-            "nodeResult": "p#3g"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                attribute : placeholder
+                superseded : true
+                type : placeholder
+            }
+            [4] : {
+                attribute : aria-placeholder
+                superseded : true
+                type : placeholder
+            }
+            [5] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : 1 2 3 4 6 7
     }
-  ],
-  "domNode": "input#input3"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : editable
+            value : {
+                type : token
+                value : plaintext
+            }
+        }
+        [3] : {
+            name : settable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [4] : {
+            name : multiline
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [5] : {
+            name : readonly
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [6] : {
+            name : required
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [7] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : 3a
+                        nodeResult : p#3a
+                        text : 1
+                    }
+                    [1] : {
+                        idref : 3b
+                        nodeResult : td#3b
+                        text : 2
+                    }
+                    [2] : {
+                        idref : 3c
+                        nodeResult : td#3c
+                        text : 3
+                    }
+                    [3] : {
+                        idref : 3d
+                        nodeResult : td#3d
+                        text : 4
+                    }
+                    [4] : {
+                        idref : 3e
+                        nodeResult : tr#3e
+                        text : 
+                    }
+                    [5] : {
+                        idref : 3f
+                        nodeResult : tr#3f
+                        text : 6
+                    }
+                    [6] : {
+                        idref : 3g
+                        nodeResult : p#3g
+                        text : 7
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : textbox
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "textbox"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "1 2 7",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "1 2 7"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "label4",
-          "relatedNodes": [
-            {
-              "idref": "label4",
-              "text": "1 2 7",
-              "nodeResult": "div#label4"
+    domNode : input#input4
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : label4
+                            nodeResult : div#label4
+                            text : 1 2 7
+                        }
+                    ]
+                    type : idrefList
+                    value : label4
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : 1 2 7
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "placeholder",
-        "attribute": "placeholder",
-        "superseded": true
-      },
-      {
-        "type": "placeholder",
-        "attribute": "aria-placeholder",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "editable",
-      "value": {
-        "type": "token",
-        "value": "plaintext"
-      }
-    },
-    {
-      "name": "settable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "multiline",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "readonly",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "required",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "label4",
-            "text": "1 2 7",
-            "nodeResult": "div#label4"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                attribute : placeholder
+                superseded : true
+                type : placeholder
+            }
+            [4] : {
+                attribute : aria-placeholder
+                superseded : true
+                type : placeholder
+            }
+            [5] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : 1 2 7
     }
-  ],
-  "domNode": "input#input4"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : editable
+            value : {
+                type : token
+                value : plaintext
+            }
+        }
+        [3] : {
+            name : settable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [4] : {
+            name : multiline
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [5] : {
+            name : readonly
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [6] : {
+            name : required
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [7] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : label4
+                        nodeResult : div#label4
+                        text : 1 2 7
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : textbox
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "button"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Hidden text",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "Hidden text"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "hidden1",
-          "relatedNodes": [
-            {
-              "idref": "hidden1",
-              "text": "Hidden text",
-              "nodeResult": "p#hidden1"
+    domNode : button#button1
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : hidden1
+                            nodeResult : p#hidden1
+                            text : Hidden text
+                        }
+                    ]
+                    type : idrefList
+                    value : hidden1
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : Hidden text
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "contents",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "hidden1",
-            "text": "Hidden text",
-            "nodeResult": "p#hidden1"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                superseded : true
+                type : contents
+            }
+            [4] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : Hidden text
     }
-  ],
-  "domNode": "button#button1"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : hidden1
+                        nodeResult : p#hidden1
+                        text : Hidden text
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : button
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "button"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Before After",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "Before After"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "heading2",
-          "relatedNodes": [
-            {
-              "idref": "heading2",
-              "text": "Before After",
-              "nodeResult": "h3#heading2"
+    domNode : button#button2
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : heading2
+                            nodeResult : h3#heading2
+                            text : Before After
+                        }
+                    ]
+                    type : idrefList
+                    value : heading2
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : Before After
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "contents",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "heading2",
-            "text": "Before After",
-            "nodeResult": "h3#heading2"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                superseded : true
+                type : contents
+            }
+            [4] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : Before After
     }
-  ],
-  "domNode": "button#button2"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : heading2
+                        nodeResult : h3#heading2
+                        text : Before After
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : button
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "button"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Text within hidden subtree",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "Text within hidden subtree"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "hidden3",
-          "relatedNodes": [
-            {
-              "idref": "hidden3",
-              "text": "Text within hidden subtree",
-              "nodeResult": "p#hidden3"
+    domNode : button#button3
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : hidden3
+                            nodeResult : p#hidden3
+                            text : Text within hidden subtree
+                        }
+                    ]
+                    type : idrefList
+                    value : hidden3
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : Text within hidden subtree
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "contents",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "hidden3",
-            "text": "Text within hidden subtree",
-            "nodeResult": "p#hidden3"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                superseded : true
+                type : contents
+            }
+            [4] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : Text within hidden subtree
     }
-  ],
-  "domNode": "button#button3"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : hidden3
+                        nodeResult : p#hidden3
+                        text : Text within hidden subtree
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : button
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "button"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Before After",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "Before After"
-        },
-        "attribute": "aria-labelledby",
-        "attributeValue": {
-          "type": "idrefList",
-          "value": "heading4",
-          "relatedNodes": [
-            {
-              "idref": "heading4",
-              "text": "Before After",
-              "nodeResult": "h3#heading4"
+    domNode : button#button4
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                attributeValue : {
+                    relatedNodes : [
+                        [0] : {
+                            idref : heading4
+                            nodeResult : h3#heading4
+                            text : Before After
+                        }
+                    ]
+                    type : idrefList
+                    value : heading4
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : Before After
+                }
             }
-          ]
-        }
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label",
-        "superseded": true
-      },
-      {
-        "type": "relatedElement",
-        "superseded": true,
-        "nativeSource": "label"
-      },
-      {
-        "type": "contents",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "idref": "heading4",
-            "text": "Before After",
-            "nodeResult": "h3#heading4"
-          }
+            [1] : {
+                attribute : aria-label
+                superseded : true
+                type : attribute
+            }
+            [2] : {
+                nativeSource : label
+                superseded : true
+                type : relatedElement
+            }
+            [3] : {
+                superseded : true
+                type : contents
+            }
+            [4] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : Before After
     }
-  ],
-  "domNode": "button#button4"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        idref : heading4
+                        nodeResult : h3#heading4
+                        text : Before After
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : button
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "textbox"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "Before After",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "relatedElement",
-        "value": {
-          "type": "computedString",
-          "value": "Before After"
-        },
-        "nativeSource": "labelfor",
-        "nativeSourceValue": {
-          "type": "nodeList",
-          "relatedNodes": [
-            {
-              "backendDOMNodeId": "<number>",
-              "text": "Before After"
+    domNode : input#input5
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
             }
-          ]
-        }
-      },
-      {
-        "type": "placeholder",
-        "attribute": "placeholder",
-        "superseded": true
-      },
-      {
-        "type": "placeholder",
-        "attribute": "aria-placeholder",
-        "superseded": true
-      },
-      {
-        "type": "attribute",
-        "attribute": "title",
-        "superseded": true
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "invalid",
-      "value": {
-        "type": "token",
-        "value": "false"
-      }
-    },
-    {
-      "name": "focusable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "editable",
-      "value": {
-        "type": "token",
-        "value": "plaintext"
-      }
-    },
-    {
-      "name": "settable",
-      "value": {
-        "type": "booleanOrUndefined",
-        "value": true
-      }
-    },
-    {
-      "name": "multiline",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "readonly",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "required",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "labelledby",
-      "value": {
-        "type": "nodeList",
-        "relatedNodes": [
-          {
-            "text": "Before After",
-            "nodeResult": "label"
-          }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                nativeSource : labelfor
+                nativeSourceValue : {
+                    relatedNodes : [
+                        [0] : {
+                            backendDOMNodeId : <number>
+                            text : Before After
+                        }
+                    ]
+                    type : nodeList
+                }
+                type : relatedElement
+                value : {
+                    type : computedString
+                    value : Before After
+                }
+            }
+            [3] : {
+                attribute : placeholder
+                superseded : true
+                type : placeholder
+            }
+            [4] : {
+                attribute : aria-placeholder
+                superseded : true
+                type : placeholder
+            }
+            [5] : {
+                attribute : title
+                superseded : true
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : Before After
     }
-  ],
-  "domNode": "input#input5"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : invalid
+            value : {
+                type : token
+                value : false
+            }
+        }
+        [1] : {
+            name : focusable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [2] : {
+            name : editable
+            value : {
+                type : token
+                value : plaintext
+            }
+        }
+        [3] : {
+            name : settable
+            value : {
+                type : booleanOrUndefined
+                value : true
+            }
+        }
+        [4] : {
+            name : multiline
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [5] : {
+            name : readonly
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [6] : {
+            name : required
+            value : {
+                type : boolean
+                value : false
+            }
+        }
+        [7] : {
+            name : labelledby
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        nodeResult : label
+                        text : Before After
+                    }
+                ]
+                type : nodeList
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : textbox
+    }
 }
 

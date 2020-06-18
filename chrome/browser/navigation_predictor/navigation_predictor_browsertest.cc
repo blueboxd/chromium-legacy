@@ -431,8 +431,7 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
       "NavigationPredictor.LinkClickedPrerenderResult", 1);
 }
 
-// Simulate a click at the anchor element in off-the-record profile. Metrics
-// should not be recorded.
+// Simulate a click at the anchor element in off-the-record profile.
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        ClickAnchorElementOffTheRecord) {
   auto test_ukm_recorder = std::make_unique<ukm::TestAutoSetUkmRecorder>();
@@ -449,13 +448,13 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
   EXPECT_TRUE(content::ExecuteScript(
       incognito->tab_strip_model()->GetActiveWebContents(),
       "document.getElementById('google').click();"));
+  content::WaitForLoadStop(
+      incognito->tab_strip_model()->GetActiveWebContents());
 
-  // Check that the page was loaded from cache.
   auto entries = test_ukm_recorder->GetMergedEntriesByName(
       ukm::builders::PageLoad::kEntryName);
-  EXPECT_EQ(0u, entries.size());
+  EXPECT_EQ(1u, entries.size());
 }
-
 
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
                        AnchorElementClickedOnSearchEnginePage) {

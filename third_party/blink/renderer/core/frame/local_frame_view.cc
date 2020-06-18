@@ -77,6 +77,7 @@
 #include "third_party/blink/renderer/core/html/forms/text_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/html/portal/document_portals.h"
 #include "third_party/blink/renderer/core/html/portal/html_portal_element.h"
@@ -122,6 +123,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/frame_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
@@ -2839,28 +2841,43 @@ void LocalFrameView::PaintTree() {
             BuildDarkModeSettings(*settings, *GetLayoutView()));
       }
 
-      PaintInternal(graphics_context, kGlobalPaintNormalPhase,
-                    CullRect::Infinite());
+      bool painted_full_screen_overlay = false;
+      if (frame_->IsMainFrame()) {
+        PaintLayer* full_screen_layer = GetFullScreenOverlayLayer();
+        if (full_screen_layer) {
+          PaintLayerPainter(*full_screen_layer)
+              .Paint(graphics_context, CullRect::Infinite(),
+                     kGlobalPaintNormalPhase, 0);
+          painted_full_screen_overlay = true;
+          visual_viewport_needs_repaint_ = false;
+        }
+      }
 
+      if (!painted_full_screen_overlay) {
+        PaintInternal(graphics_context, kGlobalPaintNormalPhase,
+                      CullRect::Infinite());
+
+        GetPage()->GetValidationMessageClient().PaintOverlay(graphics_context);
+        ForAllNonThrottledLocalFrameViews(
+            [&graphics_context](LocalFrameView& view) {
+              view.frame_->PaintFrameColorOverlay(graphics_context);
+            });
+
+        // Devtools overlays query the inspected page's paint data so this
+        // update needs to be after other paintings.
+        if (has_dev_tools_overlays)
+          web_local_frame_impl->PaintDevToolsOverlays(graphics_context);
+
+        if (frame_->IsMainFrame()) {
+          frame_->GetPage()->GetVisualViewport().Paint(graphics_context);
+          visual_viewport_needs_repaint_ = false;
+        }
+      }
+
+      // Link highlights paint after all other paintings.
       GetPage()->GetLinkHighlight().Paint(graphics_context);
 
-      GetPage()->GetValidationMessageClient().PaintOverlay(graphics_context);
-      ForAllNonThrottledLocalFrameViews(
-          [&graphics_context](LocalFrameView& view) {
-            view.frame_->PaintFrameColorOverlay(graphics_context);
-          });
-
-      // Devtools overlays query the inspected page's paint data so this update
-      // needs to be after other paintings.
-      if (has_dev_tools_overlays)
-        web_local_frame_impl->PaintDevToolsOverlays(graphics_context);
-
-      if (frame_->IsMainFrame()) {
-        frame_->GetPage()->GetVisualViewport().Paint(graphics_context);
-        visual_viewport_needs_repaint_ = false;
-      } else {
-        DCHECK(!visual_viewport_needs_repaint_);
-      }
+      DCHECK(!visual_viewport_needs_repaint_);
 
       paint_controller_->CommitNewDisplayItems();
     }
@@ -4597,6 +4614,54 @@ StickyAdDetector& LocalFrameView::EnsureStickyAdDetector() {
     sticky_ad_detector_ = std::make_unique<StickyAdDetector>();
   }
   return *sticky_ad_detector_.get();
+}
+
+static PaintLayer* GetFullScreenOverlayVideoLayer(Document& document) {
+  // Recursively find the document that is in fullscreen.
+  Document* content_document = &document;
+  Element* fullscreen_element =
+      Fullscreen::FullscreenElementFrom(*content_document);
+  while (auto* frame_owner =
+             DynamicTo<HTMLFrameOwnerElement>(fullscreen_element)) {
+    content_document = frame_owner->contentDocument();
+    if (!content_document)
+      return nullptr;
+    fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
+  }
+  auto* video_element = DynamicTo<HTMLVideoElement>(fullscreen_element);
+  if (!video_element || !video_element->UsesOverlayFullscreenVideo())
+    return nullptr;
+  return video_element->GetLayoutBoxModelObject()->Layer();
+}
+
+static PaintLayer* GetXrOverlayLayer(Document& document) {
+  // immersive-ar DOM overlay mode is very similar to fullscreen video, using
+  // the AR camera image instead of a video element as a background that's
+  // separately composited in the browser. The fullscreened DOM content is shown
+  // on top of that, same as HTML video controls.
+  if (!document.IsXrOverlay())
+    return nullptr;
+
+  Element* fullscreen_element = Fullscreen::FullscreenElementFrom(document);
+  if (!fullscreen_element)
+    return nullptr;
+
+  const auto* object = fullscreen_element->GetLayoutBoxModelObject();
+  if (!object) {
+    // Currently, only HTML fullscreen elements are supported for this mode,
+    // not others such as SVG or MathML.
+    DVLOG(1) << "no LayoutBoxModelObject for element " << fullscreen_element;
+    return nullptr;
+  }
+
+  return object->Layer();
+}
+
+PaintLayer* LocalFrameView::GetFullScreenOverlayLayer() const {
+  DCHECK(frame_->IsMainFrame());
+  if (auto* layer = GetXrOverlayLayer(*frame_->GetDocument()))
+    return layer;
+  return GetFullScreenOverlayVideoLayer(*frame_->GetDocument());
 }
 
 }  // namespace blink

@@ -69,8 +69,8 @@ def FillXcodeVersion(settings, developer_dir):
 
 def FillMachineOSBuild(settings):
   """Fills OS build number into |settings|."""
-  machine_os_build = subprocess.check_output(['sw_vers',
-                                              '-buildVersion']).strip()
+  machine_os_build = subprocess.check_output(['sw_vers', '-buildVersion'],
+                                             universal_newlines=True).strip()
   settings['machine_os_build'] = machine_os_build
 
   # The reported build number is made up from the kernel major version number,

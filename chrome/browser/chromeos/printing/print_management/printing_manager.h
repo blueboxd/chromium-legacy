@@ -11,9 +11,12 @@
 #include "chromeos/components/print_management/mojom/printing_manager.mojom.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_member.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+
+class PrefService;
 
 namespace chromeos {
 class DeletionInfo;
@@ -30,7 +33,8 @@ class PrintingManager
  public:
   PrintingManager(PrintJobHistoryService* print_job_history_service,
                   history::HistoryService* history_service,
-                  CupsPrintJobManager* cups_print_job_manager);
+                  CupsPrintJobManager* cups_print_job_manager,
+                  PrefService* pref_service);
 
   ~PrintingManager() override;
 
@@ -45,6 +49,8 @@ class PrintingManager
       ObservePrintJobsCallback callback) override;
   void CancelPrintJob(const std::string& id,
                       CancelPrintJobCallback callback) override;
+  void GetDeletePrintJobHistoryAllowedByPolicy(
+      GetDeletePrintJobHistoryAllowedByPolicyCallback callback) override;
 
   void BindInterface(
       mojo::PendingReceiver<printing_manager::mojom::PrintingMetadataProvider>
@@ -78,9 +84,8 @@ class PrintingManager
   // local database.
   void OnPrintJobsDeleted(bool success);
 
-  // Returns true if the policy pref is enabled to prevent history deletions.
-  // TODO(crbug/1053704): Add the policy pref and implement this function.
-  bool IsHistoryDeletionPreventedByPolicy();
+  // Returns true if the policy pref is enabled to allow history deletions.
+  bool IsHistoryDeletionAllowedByPolicy();
 
   // Stores |job| to local cache and notifies observers of an update to |job|.
   void UpdatePrintJob(base::WeakPtr<CupsPrintJob> job);
@@ -104,6 +109,10 @@ class PrintingManager
 
   mojo::Receiver<printing_manager::mojom::PrintingMetadataProvider> receiver_{
       this};
+
+  // Policy-controlled pref that determines whether print job history can be
+  // deleted.
+  BooleanPrefMember delete_print_job_history_allowed_;
 
   // Not owned, this is the intermediate layer to interact with the print
   // job local database.

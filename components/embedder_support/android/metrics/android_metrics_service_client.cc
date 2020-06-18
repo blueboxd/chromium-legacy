@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/rtl.h"
 #include "base/metrics/persistent_histogram_allocator.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
 #include "base/task/task_traits.h"
@@ -38,6 +39,7 @@
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -45,6 +47,10 @@
 namespace metrics {
 
 namespace {
+
+// This specifies the amount of time to wait for all renderers to send their
+// data.
+const int kMaxHistogramGatheringWaitDuration = 60000;  // 60 seconds.
 
 const int kMaxHistogramStorageKiB = 100 << 10;  // 100 MiB
 
@@ -356,7 +362,20 @@ std::string AndroidMetricsServiceClient::GetVersionString() {
 
 void AndroidMetricsServiceClient::CollectFinalMetricsForLog(
     base::OnceClosure done_callback) {
-  std::move(done_callback).Run();
+  // Merge histograms from metrics providers into StatisticsRecorder.
+  base::StatisticsRecorder::ImportProvidedHistograms();
+
+  base::TimeDelta timeout =
+      base::TimeDelta::FromMilliseconds(kMaxHistogramGatheringWaitDuration);
+
+  // Set up the callback task to call after we receive histograms from all
+  // child processes. |timeout| specifies how long to wait before absolutely
+  // calling us back on the task.
+  content::FetchHistogramsAsynchronously(base::ThreadTaskRunnerHandle::Get(),
+                                         std::move(done_callback), timeout);
+
+  if (collect_final_metrics_for_log_closure_)
+    std::move(collect_final_metrics_for_log_closure_).Run();
 }
 
 std::unique_ptr<MetricsLogUploader> AndroidMetricsServiceClient::CreateUploader(
@@ -409,6 +428,11 @@ void AndroidMetricsServiceClient::Observe(
     default:
       NOTREACHED();
   }
+}
+
+void AndroidMetricsServiceClient::SetCollectFinalMetricsForLogClosureForTesting(
+    base::OnceClosure closure) {
+  collect_final_metrics_for_log_closure_ = std::move(closure);
 }
 
 int AndroidMetricsServiceClient::GetSampleBucketValue() {

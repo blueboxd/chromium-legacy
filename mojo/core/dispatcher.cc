@@ -16,12 +16,12 @@
 namespace mojo {
 namespace core {
 
-Dispatcher::DispatcherInTransit::DispatcherInTransit() {}
+Dispatcher::DispatcherInTransit::DispatcherInTransit() = default;
 
 Dispatcher::DispatcherInTransit::DispatcherInTransit(
     const DispatcherInTransit& other) = default;
 
-Dispatcher::DispatcherInTransit::~DispatcherInTransit() {}
+Dispatcher::DispatcherInTransit::~DispatcherInTransit() = default;
 
 MojoResult Dispatcher::WatchDispatcher(scoped_refptr<Dispatcher> dispatcher,
                                        MojoHandleSignals signals,
@@ -190,9 +190,9 @@ scoped_refptr<Dispatcher> Dispatcher::Deserialize(
   }
 }
 
-Dispatcher::Dispatcher() {}
+Dispatcher::Dispatcher() = default;
 
-Dispatcher::~Dispatcher() {}
+Dispatcher::~Dispatcher() = default;
 
 }  // namespace core
 }  // namespace mojo

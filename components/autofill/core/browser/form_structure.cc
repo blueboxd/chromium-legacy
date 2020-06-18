@@ -676,8 +676,11 @@ bool FormStructure::EncodeUploadRequest(
     bool form_was_autofilled,
     const std::string& login_form_signature,
     bool observed_submission,
-    AutofillUploadContents* upload) const {
+    AutofillUploadContents* upload,
+    FormAndFieldSignatures* encoded_signatures) const {
   DCHECK(AllTypesCaptured(*this, available_field_types));
+  encoded_signatures->clear();
+
   upload->set_submission(observed_submission);
   upload->set_client_version(kClientVersion);
   upload->set_form_signature(form_signature().value());
@@ -724,36 +727,38 @@ bool FormStructure::EncodeUploadRequest(
   if (IsMalformed())
     return false;  // Malformed form, skip it.
 
-  EncodeFormForUpload(upload);
+  EncodeFormForUpload(upload, encoded_signatures);
   return true;
 }
 
 // static
 bool FormStructure::EncodeQueryRequest(
     const std::vector<FormStructure*>& forms,
-    std::vector<std::string>* encoded_signatures,
-    AutofillQueryContents* query) {
+    AutofillQueryContents* query,
+    FormAndFieldSignatures* encoded_signatures) {
   DCHECK(encoded_signatures);
   encoded_signatures->clear();
   encoded_signatures->reserve(forms.size());
 
   query->set_client_version(kClientVersion);
 
-  // Some badly formatted web sites repeat forms - detect that and encode only
-  // one form as returned data would be the same for all the repeated forms.
-  std::set<std::string> processed_forms;
+  // If a page contains repeated forms, detect that and encode only one form as
+  // the returned data would be the same for all the repeated forms.
+  // TODO(crbug/1064709#c11): the statement is not entirely correct because
+  // (1) distinct forms can have identical form signatures because we truncate
+  // (large) numbers in the form signature calculation while these are
+  // considered for field signatures; (2) for dynamic forms we will hold on to
+  // the original form signature.
+  std::set<FormSignature> processed_forms;
   for (const auto* form : forms) {
-    std::string signature(form->FormSignatureAsStr());
-    if (processed_forms.find(signature) != processed_forms.end())
+    if (processed_forms.find(form->form_signature()) != processed_forms.end())
       continue;
-    processed_forms.insert(signature);
+    processed_forms.insert(form->form_signature());
     UMA_HISTOGRAM_COUNTS_1000("Autofill.FieldCount", form->field_count());
     if (form->IsMalformed())
       continue;
 
-    form->EncodeFormForQuery(query->add_form());
-
-    encoded_signatures->push_back(signature);
+    form->EncodeFormForQuery(query->add_form(), encoded_signatures);
   }
 
   return !encoded_signatures->empty();
@@ -763,6 +768,7 @@ bool FormStructure::EncodeQueryRequest(
 void FormStructure::ParseQueryResponse(
     std::string payload,
     const std::vector<FormStructure*>& forms,
+    const FormAndFieldSignatures& encoded_signatures,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   AutofillMetrics::LogServerQueryMetric(
       AutofillMetrics::QUERY_RESPONSE_RECEIVED);
@@ -774,12 +780,14 @@ void FormStructure::ParseQueryResponse(
 
   VLOG(1) << "Autofill query response was successfully parsed:\n" << response;
 
-  ProcessQueryResponse(response, forms, form_interactions_ukm_logger);
+  ProcessQueryResponse(response, forms, encoded_signatures,
+                       form_interactions_ukm_logger);
 }
 
 void FormStructure::ParseApiQueryResponse(
     base::StringPiece payload,
     const std::vector<FormStructure*>& forms,
+    const FormAndFieldSignatures& encoded_signatures,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   AutofillMetrics::LogServerQueryMetric(
       AutofillMetrics::QUERY_RESPONSE_RECEIVED);
@@ -799,34 +807,52 @@ void FormStructure::ParseApiQueryResponse(
           << response;
 
   ProcessQueryResponse(CreateLegacyResponseFromApiResponse(response), forms,
-                       form_interactions_ukm_logger);
+                       encoded_signatures, form_interactions_ukm_logger);
 }
 
 // static
 void FormStructure::ProcessQueryResponse(
     const AutofillQueryResponseContents& response,
     const std::vector<FormStructure*>& forms,
+    const FormAndFieldSignatures& encoded_signatures,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_RESPONSE_PARSED);
 
   bool heuristics_detected_fillable_field = false;
   bool query_response_overrode_heuristics = false;
 
+  // Align the server response to the |encoded_signatures|.
+  auto field_types = [&response, &encoded_signatures] {
+    std::map<std::pair<FormSignature, FieldSignature>,
+             ::autofill::AutofillQueryResponseContents_Field>
+        field_types;
+    auto current_field = response.field().begin();
+    for (const auto& form_and_fields : encoded_signatures) {
+      FormSignature form = form_and_fields.first;
+      for (const auto& field : form_and_fields.second) {
+        // In some cases *successful* response does not return all the
+        // fields.
+        if (current_field == response.field().end())
+          return field_types;
+        field_types[std::make_pair(form, field)] = *current_field++;
+      }
+    }
+    return field_types;
+  }();
+
   // Copy the field types into the actual form.
-  auto current_field = response.field().begin();
   for (FormStructure* form : forms) {
     bool query_response_has_no_server_data = true;
     for (auto& field : form->fields_) {
-      if (form->ShouldSkipField(*field))
+      auto it = field_types.find(
+          std::make_pair(form->form_signature(), field->GetFieldSignature()));
+      if (it == field_types.end())
         continue;
 
-      // In some cases *successful* response does not return all the fields.
-      // Quit the update of the types then.
-      if (current_field == response.field().end())
-        break;
+      const auto& current_field = it->second;
 
-      ServerFieldType field_type = static_cast<ServerFieldType>(
-          current_field->overall_type_prediction());
+      ServerFieldType field_type =
+          static_cast<ServerFieldType>(current_field.overall_type_prediction());
       query_response_has_no_server_data &= field_type == NO_SERVER_DATA;
 
       ServerFieldType heuristic_type = field->heuristic_type();
@@ -836,23 +862,21 @@ void FormStructure::ProcessQueryResponse(
       field->set_server_type(field_type);
       std::vector<AutofillQueryResponseContents::Field::FieldPrediction>
           server_predictions;
-      if (current_field->predictions_size() == 0) {
+      if (current_field.predictions_size() == 0) {
         AutofillQueryResponseContents::Field::FieldPrediction field_prediction;
         field_prediction.set_type(field_type);
         server_predictions.push_back(field_prediction);
       } else {
-        server_predictions.assign(current_field->predictions().begin(),
-                                  current_field->predictions().end());
+        server_predictions.assign(current_field.predictions().begin(),
+                                  current_field.predictions().end());
       }
       field->set_server_predictions(std::move(server_predictions));
 
       if (heuristic_type != field->Type().GetStorableType())
         query_response_overrode_heuristics = true;
 
-      if (current_field->has_password_requirements())
-        field->SetPasswordRequirements(current_field->password_requirements());
-
-      ++current_field;
+      if (current_field.has_password_requirements())
+        field->SetPasswordRequirements(current_field.password_requirements());
     }
 
     AutofillMetrics::LogServerResponseHasDataForForm(
@@ -1847,10 +1871,13 @@ void FormStructure::RationalizeFieldTypePredictions() {
 }
 
 void FormStructure::EncodeFormForQuery(
-    AutofillQueryContents::Form* query_form) const {
+    AutofillQueryContents::Form* query_form,
+    FormAndFieldSignatures* encoded_signatures) const {
   DCHECK(!IsMalformed());
 
   query_form->set_signature(form_signature().value());
+  encoded_signatures->emplace_back();
+  encoded_signatures->back().first = form_signature();
 
   if (is_rich_query_enabled_) {
     EncodeFormMetadataForQuery(*this, query_form->mutable_form_metadata());
@@ -1861,8 +1888,8 @@ void FormStructure::EncodeFormForQuery(
       continue;
 
     AutofillQueryContents::Form::Field* added_field = query_form->add_field();
-
     added_field->set_signature(field->GetFieldSignature().value());
+    encoded_signatures->back().second.push_back(field->GetFieldSignature());
 
     if (is_rich_query_enabled_) {
       EncodeFieldMetadataForQuery(*field,
@@ -1878,8 +1905,13 @@ void FormStructure::EncodeFormForQuery(
   }
 }
 
-void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
+void FormStructure::EncodeFormForUpload(
+    AutofillUploadContents* upload,
+    FormAndFieldSignatures* encoded_signatures) const {
   DCHECK(!IsMalformed());
+
+  encoded_signatures->emplace_back();
+  encoded_signatures->back().first = form_signature();
 
   if (randomized_encoder_) {
     PopulateRandomizedFormMetadata(*randomized_encoder_, *this,
@@ -1896,6 +1928,7 @@ void FormStructure::EncodeFormForUpload(AutofillUploadContents* upload) const {
       continue;
 
     auto* added_field = upload->add_field();
+    encoded_signatures->back().second.push_back(field->GetFieldSignature());
 
     for (const auto& field_type : field->possible_types()) {
       added_field->add_autofill_type(field_type);

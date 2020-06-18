@@ -39,17 +39,15 @@ class XRAnchor : public ScriptWrappable {
   void Trace(Visitor* visitor) const override;
 
  private:
-  void SetMojoFromAnchor(const TransformationMatrix& mojo_from_anchor);
-
   const uint64_t id_;
 
   bool is_deleted_;
 
   Member<XRSession> session_;
 
-  // Anchor's pose in device (mojo) space. Nullptr if the pose of the anchor is
+  // Anchor's pose in device (mojo) space. Nullopt if the pose of the anchor is
   // unknown in the current frame.
-  std::unique_ptr<TransformationMatrix> mojo_from_anchor_;
+  base::Optional<device::Pose> mojo_from_anchor_;
 
   // Cached anchor space - it will be created by `anchorSpace()` if it's not
   // set.

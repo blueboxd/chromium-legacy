@@ -25,6 +25,7 @@
 #include "chrome/browser/android/vr/arcore_device/arcore_session_utils.h"
 #include "chrome/browser/android/vr/arcore_device/type_converters.h"
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
+#include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "ui/display/display.h"
@@ -786,30 +787,28 @@ void ArCoreGl::UnsubscribeFromHitTest(uint64_t subscription_id) {
 
 void ArCoreGl::CreateAnchor(
     mojom::XRNativeOriginInformationPtr native_origin_information,
-    mojom::PosePtr native_origin_from_anchor,
+    const device::Pose& native_origin_from_anchor,
     CreateAnchorCallback callback) {
   DVLOG(2) << __func__;
 
   DCHECK(native_origin_information);
-  DCHECK(native_origin_from_anchor);
 
-  arcore_->CreateAnchor(*native_origin_information, *native_origin_from_anchor,
+  arcore_->CreateAnchor(*native_origin_information, native_origin_from_anchor,
                         std::move(callback));
 }
 
 void ArCoreGl::CreatePlaneAnchor(
     mojom::XRNativeOriginInformationPtr native_origin_information,
-    mojom::PosePtr native_origin_from_anchor,
+    const device::Pose& native_origin_from_anchor,
     uint64_t plane_id,
     CreatePlaneAnchorCallback callback) {
   DVLOG(2) << __func__ << ": plane_id=" << plane_id;
 
   DCHECK(native_origin_information);
-  DCHECK(native_origin_from_anchor);
   DCHECK(plane_id);
 
   arcore_->CreatePlaneAttachedAnchor(*native_origin_information,
-                                     *native_origin_from_anchor, plane_id,
+                                     native_origin_from_anchor, plane_id,
                                      std::move(callback));
 }
 
@@ -843,21 +842,21 @@ void ArCoreGl::ProcessFrame(
   DCHECK(is_initialized_);
 
   if (frame_data->pose) {
+    DCHECK(frame_data->pose->position);
+    DCHECK(frame_data->pose->orientation);
+
     frame_data->input_state = GetInputSourceStates();
 
-    // TODO(https://crbug.com/1071224): Simplify code by introducing a
-    // device::Pose class that would handle conversions from pose to transform &
-    // vice versa.
-    gfx::Transform mojo_from_viewer =
-        mojo::ConvertTo<gfx::Transform>(frame_data->pose);
+    device::Pose mojo_from_viewer(*frame_data->pose->position,
+                                  *frame_data->pose->orientation);
 
     // Get results for hit test subscriptions.
     frame_data->hit_test_subscription_results =
-        arcore_->GetHitTestSubscriptionResults(mojo_from_viewer,
+        arcore_->GetHitTestSubscriptionResults(mojo_from_viewer.ToTransform(),
                                                *frame_data->input_state);
 
     arcore_->ProcessAnchorCreationRequests(
-        mojo_from_viewer, *frame_data->input_state,
+        mojo_from_viewer.ToTransform(), *frame_data->input_state,
         frame_data->time_delta + base::TimeTicks());
   }
 

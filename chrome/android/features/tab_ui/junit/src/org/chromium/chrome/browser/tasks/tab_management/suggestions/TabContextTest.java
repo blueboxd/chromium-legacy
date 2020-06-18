@@ -19,11 +19,13 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.UserDataHost;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileJni;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -93,7 +95,11 @@ public class TabContextTest {
             String referrerUrl, long getTimestampMillis) {
         TabImpl tab = mock(TabImpl.class);
         doReturn(id).when(tab).getId();
-        doReturn(rootId).when(tab).getRootId();
+        UserDataHost userDataHost = new UserDataHost();
+        doReturn(userDataHost).when(tab).getUserDataHost();
+        CriticalPersistedTabData criticalPersistedTabData = mock(CriticalPersistedTabData.class);
+        userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+        doReturn(rootId).when(criticalPersistedTabData).getRootId();
         doReturn(title).when(tab).getTitle();
         doReturn(url).when(tab).getUrlString();
         doReturn(originalUrl).when(tab).getOriginalUrl();

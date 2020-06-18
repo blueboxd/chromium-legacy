@@ -1,88 +1,89 @@
 Tests accessibility values of ignored nodes in model dialog.
 {
-  "nodeId": "<string>",
-  "ignored": true,
-  "ignoredReasons": [
-    {
-      "name": "activeModalDialog",
-      "value": {
-        "type": "idref",
-        "relatedNodes": [
-          {
-            "nodeResult": "dialog"
-          }
+    domNode : div
+    ignored : true
+    ignoredReasons : [
+        [0] : {
+            name : activeModalDialog
+            value : {
+                relatedNodes : [
+                    [0] : {
+                        nodeResult : dialog
+                    }
+                ]
+                type : idref
+            }
+        }
+    ]
+    nodeId : <string>
+    role : {
+        type : internalRole
+        value : Ignored
+    }
+}
+{
+    domNode : dialog
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
         ]
-      }
+        type : computedString
+        value : 
     }
-  ],
-  "role": {
-    "type": "internalRole",
-    "value": "Ignored"
-  },
-  "domNode": "div"
+    nodeId : <string>
+    properties : [
+        [0] : {
+            name : modal
+            value : {
+                type : boolean
+                value : true
+            }
+        }
+    ]
+    role : {
+        type : role
+        value : dialog
+    }
 }
 {
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "dialog"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
-    ]
-  },
-  "properties": [
-    {
-      "name": "modal",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
+    domNode : div
+    ignored : false
+    name : {
+        sources : [
+            [0] : {
+                attribute : aria-labelledby
+                type : relatedElement
+            }
+            [1] : {
+                attribute : aria-label
+                type : attribute
+            }
+            [2] : {
+                attribute : title
+                type : attribute
+            }
+        ]
+        type : computedString
+        value : 
     }
-  ],
-  "domNode": "dialog"
-}
-{
-  "nodeId": "<string>",
-  "ignored": false,
-  "role": {
-    "type": "role",
-    "value": "generic"
-  },
-  "name": {
-    "type": "computedString",
-    "value": "",
-    "sources": [
-      {
-        "type": "relatedElement",
-        "attribute": "aria-labelledby"
-      },
-      {
-        "type": "attribute",
-        "attribute": "aria-label"
-      },
-      {
-        "type": "attribute",
-        "attribute": "title"
-      }
+    nodeId : <string>
+    properties : [
     ]
-  },
-  "properties": [],
-  "domNode": "div"
+    role : {
+        type : role
+        value : generic
+    }
 }
 

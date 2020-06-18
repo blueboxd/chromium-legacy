@@ -28,7 +28,7 @@ namespace {
 
 // Appearance.
 constexpr int kHorizontalMarginDip = 16;
-constexpr int kVerticalMarginDip = 16;
+constexpr int kVerticalMarginDip = 64;
 constexpr int kAssistantContainerViewPreferredHeightDip = 128;
 
 // TODO(meilinw): temporary values for dev purpose, need to be updated with the

@@ -1965,8 +1965,13 @@ std::pair<int, int> ScrollableShelfView::CalculateTappableIconIndices(
     const int end_of_last_visible_view =
         last_visible_view_index * space_needed_for_button +
         shelf_view_->GetButtonSize() - scroll_distance_on_main_axis;
-    if (end_of_last_visible_view > visible_size)
+
+    // It is very rare but |visible_size| may be smaller than
+    // |space_needed_for_button| as reported in https://crbug.com/1094363.
+    if (end_of_last_visible_view > visible_size &&
+        last_visible_view_index > first_visible_view_index) {
       last_visible_view_index--;
+    }
   } else {
     DCHECK_EQ(layout_strategy, kShowLeftArrowButton);
     last_visible_view_index = visible_views_indices.size() - 1;

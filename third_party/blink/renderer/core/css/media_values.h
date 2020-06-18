@@ -83,6 +83,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual ColorSpaceGamut ColorGamut() const = 0;
   virtual PreferredColorScheme GetPreferredColorScheme() const = 0;
   virtual bool PrefersReducedMotion() const = 0;
+  virtual bool PrefersReducedData() const = 0;
   virtual ForcedColors GetForcedColors() const = 0;
   virtual NavigationControls GetNavigationControls() const = 0;
   virtual ScreenSpanning GetScreenSpanning() const = 0;
@@ -108,6 +109,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
   static PreferredColorScheme CalculatePreferredColorScheme(LocalFrame*);
   static bool CalculatePrefersReducedMotion(LocalFrame*);
+  static bool CalculatePrefersReducedData(LocalFrame*);
   static ForcedColors CalculateForcedColors();
   static NavigationControls CalculateNavigationControls(LocalFrame*);
   static ScreenSpanning CalculateScreenSpanning(LocalFrame*);

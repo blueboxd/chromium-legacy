@@ -112,15 +112,13 @@ UpdateSeedDateResult GetSeedDateChangeState(
 }  // namespace
 
 VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
-    : VariationsSeedStore(local_state, nullptr, base::DoNothing(), true) {}
+    : VariationsSeedStore(local_state, nullptr, true) {}
 
 VariationsSeedStore::VariationsSeedStore(
     PrefService* local_state,
     std::unique_ptr<SeedResponse> initial_seed,
-    base::OnceCallback<void()> on_initial_seed_stored,
     bool signature_verification_enabled)
     : local_state_(local_state),
-      on_initial_seed_stored_(std::move(on_initial_seed_stored)),
       signature_verification_enabled_(signature_verification_enabled) {
 #if defined(OS_ANDROID)
   if (initial_seed)
@@ -401,10 +399,18 @@ void VariationsSeedStore::ClearPrefs(SeedType seed_type) {
 void VariationsSeedStore::ImportInitialSeed(
     std::unique_ptr<SeedResponse> initial_seed) {
   if (initial_seed->data.empty()) {
+    // Note: This is an expected case on non-first run starts.
     RecordFirstRunSeedImportResult(
         FirstRunSeedImportResult::FAIL_NO_FIRST_RUN_SEED);
     return;
   }
+
+  // Clear the Java-side seed prefs. At this point, the seed has
+  // already been fetched from the Java side, so it's no longer
+  // needed there. This is done regardless if we fail or succeed
+  // below - since if we succeed, we're good to go and if we fail,
+  // we probably don't want to keep around the bad content anyway.
+  android::ClearJavaFirstRunPrefs();
 
   if (initial_seed->date == 0) {
     RecordFirstRunSeedImportResult(
@@ -508,14 +514,12 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
     return false;
   }
 
-  // This callback is only useful on Chrome for Android.
-  if (!on_initial_seed_stored_.is_null()) {
-    // If currently we do not have any stored pref then we mark seed storing as
-    // successful on the Java side to avoid repeated seed fetches and clear
-    // preferences on the Java side.
-    if (local_state_->GetString(prefs::kVariationsCompressedSeed).empty())
-      std::move(on_initial_seed_stored_).Run();
-  }
+#if defined(OS_ANDROID)
+  // If currently we do not have any stored pref then we mark seed storing as
+  // successful on the Java side to avoid repeated seed fetches.
+  if (local_state_->GetString(prefs::kVariationsCompressedSeed).empty())
+    android::MarkVariationsSeedAsStored();
+#endif
 
   // Update the saved country code only if one was returned from the server.
   if (!country_code.empty())

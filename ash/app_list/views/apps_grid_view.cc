@@ -46,6 +46,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -2348,6 +2349,10 @@ void AppsGridView::AnimateCardifiedState() {
           base::TimeDelta::FromMilliseconds(kEndCardifiedAnimationDuration));
       animator.AddObserver(this);
     }
+    ui::AnimationThroughputReporter reporter(
+        background_card->GetAnimator(),
+        metrics_util::ForSmoothness(
+            base::BindRepeating(&ReportCardifiedSmoothness, cardified_state_)));
     background_card->SetOpacity(cardified_state_ ? kBackgroundCardOpacityShow
                                                  : kBackgroundCardOpacityHide);
   }

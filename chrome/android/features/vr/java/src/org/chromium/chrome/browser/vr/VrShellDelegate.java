@@ -406,14 +406,6 @@ public class VrShellDelegate
                     if (!sRegisteredVrAssetsComponent) {
                         registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewer());
                     }
-
-                    // Registering the daydream intent has to be done on the UI thread. Note that
-                    // this call is slow (~10ms at time of writing).
-                    if (isVrBrowsingEnabled(activity, vrSupportLevel)
-                            && ApplicationStatus.getStateForActivity(activity)
-                                    == ActivityState.RESUMED) {
-                        registerDaydreamIntent(activity);
-                    }
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (RejectedExecutionException ex) {
@@ -428,11 +420,6 @@ public class VrShellDelegate
      * from being launched from the background when the device enters VR.
      */
     public static void maybeUnregisterVrEntryHook() {
-        // Daydream is not supported on pre-N devices.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
-        if (sInstance != null) return; // Will be handled in onPause.
-        if (!sRegisteredDaydreamHook) return;
-        unregisterDaydreamIntent();
     }
 
     public static void onMultiWindowModeChanged(boolean isInMultiWindowMode) {
@@ -736,28 +723,8 @@ public class VrShellDelegate
         return PendingIntent.getBroadcast(activity, 0, vrIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
-    /**
-     * Registers the Intent to fire after phone inserted into a headset.
-     */
-    private static void registerDaydreamIntent(final ChromeActivity activity) {
-        if (sRegisteredDaydreamHook) return;
-        if (!getVrDaydreamApi().registerDaydreamIntent(getEnterVrPendingIntent(activity))) return;
-        sRegisteredDaydreamHook = true;
-    }
-
-    /**
-     * Unregisters the Intent which registered by this context if any.
-     */
-    private static void unregisterDaydreamIntent() {
-        if (!sRegisteredDaydreamHook) return;
-        getVrDaydreamApi().unregisterDaydreamIntent();
-        sRegisteredDaydreamHook = false;
-    }
-
     private static boolean isVrBrowsingSupported(ChromeActivity activity) {
-        return VrModuleProvider.getDelegate().activitySupportsVrBrowsing(activity)
-                && !VrModuleProvider.getDelegate().willChangeDensityInVr(activity)
-                && isDaydreamCurrentViewer();
+        return false;
     }
 
     /**
@@ -1442,18 +1409,15 @@ public class VrShellDelegate
             StrictMode.setThreadPolicy(oldPolicy);
         }
 
-        if (isVrBrowsingEnabled()) {
-            // Perform slow initialization asynchronously.
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    if (!mPaused) registerDaydreamIntent(mActivity);
-                    if (!sRegisteredVrAssetsComponent) {
-                        registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewerInternal());
-                    }
+        // Perform slow initialization asynchronously.
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (!sRegisteredVrAssetsComponent) {
+                    registerVrAssetsComponentIfDaydreamUser(isDaydreamCurrentViewerInternal());
                 }
-            });
-        }
+            }
+        });
 
         if (mDonSucceeded) {
             handleDonFlowSuccess();
@@ -1515,7 +1479,6 @@ public class VrShellDelegate
         if (VrDelegate.DEBUG_LOGS) Log.i(TAG, "onPause");
         mPaused = true;
         if (mCancellingEntryAnimation) return;
-        unregisterDaydreamIntent();
         if (getVrSupportLevel() <= VrSupportLevel.VR_NEEDS_UPDATE) return;
 
         if (mInVr) mVrShell.pause();

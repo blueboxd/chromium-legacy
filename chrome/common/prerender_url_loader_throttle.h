@@ -25,8 +25,7 @@ class PrerenderURLLoaderThrottle
   PrerenderURLLoaderThrottle(
       PrerenderMode mode,
       const std::string& histogram_prefix,
-      mojo::PendingRemote<
-          components::prerender::common::mojom::PrerenderCanceler> canceler);
+      mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler);
   ~PrerenderURLLoaderThrottle() override;
 
   // Called when the prerender is used. This will unpaused requests and set the
@@ -62,8 +61,7 @@ class PrerenderURLLoaderThrottle
   int redirect_count_ = 0;
   blink::mojom::ResourceType resource_type_;
 
-  mojo::PendingRemote<components::prerender::common::mojom::PrerenderCanceler>
-      canceler_;
+  mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler_;
 
   // The throttle changes most request priorities to IDLE during prerendering.
   // The priority is reset back to the original priority when prerendering is

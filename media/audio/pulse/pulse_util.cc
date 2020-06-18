@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/notreached.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/branding_buildflags.h"
 #include "media/audio/audio_device_description.h"

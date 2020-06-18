@@ -1369,6 +1369,10 @@ VideoCodecProfile V4L2Device::V4L2ProfileToVideoCodecProfile(VideoCodec codec,
           return H264PROFILE_EXTENDED;
         case V4L2_MPEG_VIDEO_H264_PROFILE_HIGH:
           return H264PROFILE_HIGH;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_STEREO_HIGH:
+          return H264PROFILE_STEREOHIGH;
+        case V4L2_MPEG_VIDEO_H264_PROFILE_MULTIVIEW_HIGH:
+          return H264PROFILE_MULTIVIEWHIGH;
       }
       break;
     case kCodecVP8:

@@ -7,7 +7,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/debug/stack_trace.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/hid_chooser.h"
@@ -24,6 +26,7 @@ HidService::HidService(RenderFrameHost* render_frame_host,
     : FrameServiceBase(render_frame_host, std::move(receiver)) {
   watchers_.set_disconnect_handler(base::BindRepeating(
       &HidService::OnWatcherConnectionError, base::Unretained(this)));
+  delegate_observer_.Add(GetContentClient()->browser()->GetHidDelegate());
 }
 
 HidService::~HidService() {
@@ -112,6 +115,49 @@ void HidService::DecrementActiveFrameCount() {
   auto* web_contents_impl = static_cast<WebContentsImpl*>(
       WebContents::FromRenderFrameHost(render_frame_host()));
   web_contents_impl->DecrementHidActiveFrameCount();
+}
+
+void HidService::OnDeviceAdded(
+    const device::mojom::HidDeviceInfo& device_info) {
+  if (!GetContentClient()->browser()->GetHidDelegate()->HasDevicePermission(
+          WebContents::FromRenderFrameHost(render_frame_host()), origin(),
+          device_info)) {
+    return;
+  }
+
+  for (auto& client : clients_)
+    client->DeviceAdded(device_info.Clone());
+}
+
+void HidService::OnDeviceRemoved(
+    const device::mojom::HidDeviceInfo& device_info) {
+  if (!GetContentClient()->browser()->GetHidDelegate()->HasDevicePermission(
+          WebContents::FromRenderFrameHost(render_frame_host()), origin(),
+          device_info)) {
+    return;
+  }
+
+  for (auto& client : clients_)
+    client->DeviceRemoved(device_info.Clone());
+}
+
+void HidService::OnHidManagerConnectionError() {
+  // Close the connection with Blink.
+  clients_.Clear();
+
+  // Remove self from HidDelegate's observer list.
+  delegate_observer_.RemoveAll();
+}
+
+void HidService::OnPermissionRevoked(const url::Origin& requesting_origin,
+                                     const url::Origin& embedding_origin) {
+  if (requesting_origin_ != requesting_origin ||
+      embedding_origin_ != embedding_origin) {
+    return;
+  }
+
+  // TODO(mattreynolds): Close connection between Blink and the device if the
+  // device lost permission.
 }
 
 void HidService::FinishGetDevices(

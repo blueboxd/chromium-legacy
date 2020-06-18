@@ -12,7 +12,6 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.timeline import chrome_trace_config
 from telemetry.web_perf import timeline_based_measurement
 from contrib.vr_benchmarks import shared_vr_page_state as vr_state
-from contrib.vr_benchmarks import vr_browsing_mode_pages
 from contrib.vr_benchmarks import webxr_sample_pages
 
 
@@ -173,51 +172,3 @@ class _BaseBrowsingBenchmark(_BaseVRBenchmark):
         '--touch-events=enabled',
         '--enable-vr-shell',
     ])
-
-
-@benchmark.Info(emails=['tiborg@chromium.org'])
-class XrBrowsingStatic(_BaseBrowsingBenchmark):
-  """Benchmark for testing the VR Browsing Mode performance on sample pages."""
-
-  def CreateStorySet(self, options):
-    del options
-    return vr_browsing_mode_pages.VrBrowsingModePageSet()
-
-  @classmethod
-  def Name(cls):
-    return 'xr.browsing.static'
-
-
-@benchmark.Info(emails=['tiborg@chromium.org', 'bsheedy@chromium.org'])
-class XrBrowsingWprStatic(_BaseBrowsingBenchmark):
-  """Benchmark for testing the VR Browsing Mode performance on WPR pages."""
-
-  def CreateStorySet(self, options):
-    del options
-    return vr_browsing_mode_pages.VrBrowsingModeWprPageSet()
-
-  @classmethod
-  def Name(cls):
-    return 'xr.browsing.wpr.static'
-
-
-@benchmark.Info(emails=['tiborg@chromium.org', 'bsheedy@chromium.org'])
-class XrBrowsingWprSmoothness(_BaseBrowsingBenchmark):
-  """Benchmark for testing VR browser scrolling smoothness and throughput."""
-
-  def CreateCoreTimelineBasedMeasurementOptions(self):
-    category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
-    options = timeline_based_measurement.Options(category_filter)
-    options.config.chrome_trace_config.EnableUMAHistograms(
-        'Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin4',
-        'Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin4')
-    options.SetTimelineBasedMetrics(['renderingMetric', 'umaMetric'])
-    return options
-
-  def CreateStorySet(self, options):
-    del options
-    return vr_browsing_mode_pages.VrBrowsingModeWprSmoothnessPageSet()
-
-  @classmethod
-  def Name(cls):
-    return 'xr.browsing.wpr.smoothness'

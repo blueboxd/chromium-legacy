@@ -243,8 +243,6 @@ jumbo_static_library("test_support") {
     "../public/test/web_contents_tester.h",
     "../public/test/web_ui_browsertest_util.cc",
     "../public/test/web_ui_browsertest_util.h",
-    "appcache_test_helper.cc",
-    "appcache_test_helper.h",
     "content_browser_sanity_checker.cc",
     "content_browser_sanity_checker.h",
     "content_test_suite.cc",
@@ -381,10 +379,10 @@ jumbo_static_library("test_support") {
     "//components/viz/host",
     "//content/app:for_content_tests",
     "//content/browser:for_content_tests",
-    "//content/browser/speech/proto",
     "//content/child:for_content_tests",
     "//content/gpu",
     "//content/public/browser",
+    "//content/public/browser:proto",
     "//content/public/child",
     "//content/public/common",
     "//content/public/common:client_hints_mojom",
@@ -1447,7 +1445,7 @@ test("content_browsertests") {
       "../browser/storage_service_sandbox_browsertest.cc",
       "../browser/zoom_browsertest.cc",
     ]
-    deps += [ "//content/browser/speech/proto" ]
+    deps += [ "//content/public/browser:proto" ]
   }
   if (is_posix) {
     deps += [ "//services/tracing:test_utils" ]
@@ -1625,6 +1623,8 @@ test("content_unittests") {
     "../browser/appcache/appcache_service_unittest.cc",
     "../browser/appcache/appcache_storage_impl_unittest.cc",
     "../browser/appcache/appcache_storage_unittest.cc",
+    "../browser/appcache/appcache_test_helper.cc",
+    "../browser/appcache/appcache_test_helper.h",
     "../browser/appcache/appcache_unittest.cc",
     "../browser/appcache/appcache_update_job_unittest.cc",
     "../browser/appcache/chrome_appcache_service_unittest.cc",
@@ -2112,11 +2112,11 @@ test("content_unittests") {
     "//content/browser/devtools:devtools_background_services_proto",
     "//content/browser/notifications:notification_proto",
     "//content/browser/service_worker:service_worker_proto",
-    "//content/browser/speech/proto",
     "//content/child:for_content_tests",
     "//content/common:buildflags",
     "//content/gpu",
     "//content/public/browser",
+    "//content/public/browser:proto",
     "//content/public/child",
     "//content/public/common",
     "//content/public/common:service_names",

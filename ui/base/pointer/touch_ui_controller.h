@@ -5,6 +5,7 @@
 #ifndef UI_BASE_POINTER_TOUCH_UI_CONTROLLER_H_
 #define UI_BASE_POINTER_TOUCH_UI_CONTROLLER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/callback_list.h"
@@ -63,6 +64,8 @@ class COMPONENT_EXPORT(UI_BASE) TouchUiController {
 
  private:
   TouchUiState SetTouchUiState(TouchUiState touch_ui_state);
+
+  void TouchUiChanged();
 
   bool tablet_mode_ = false;
   TouchUiState touch_ui_state_;

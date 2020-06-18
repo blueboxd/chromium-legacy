@@ -102,6 +102,7 @@ NetworkFetcherImpl::~NetworkFetcherImpl() = default;
 void NetworkFetcherImpl::PostRequest(
     const GURL& url,
     const std::string& post_data,
+    const std::string& content_type,
     const base::flat_map<std::string, std::string>& post_additional_headers,
     ResponseStartedCallback response_started_callback,
     ProgressCallback progress_callback,
@@ -119,7 +120,9 @@ void NetworkFetcherImpl::PostRequest(
   simple_url_loader_->SetRetryOptions(
       kMaxRetriesOnNetworkChange,
       network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
-  simple_url_loader_->AttachStringForUpload(post_data, "application/json");
+  // The `Content-Type` header set by |AttachStringForUpload| overwrites any
+  // `Content-Type` header present in the |ResourceRequest| above.
+  simple_url_loader_->AttachStringForUpload(post_data, content_type);
   simple_url_loader_->SetOnResponseStartedCallback(base::BindOnce(
       &NetworkFetcherImpl::OnResponseStartedCallback, base::Unretained(this),
       std::move(response_started_callback)));

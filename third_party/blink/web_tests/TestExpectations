@@ -5583,7 +5583,6 @@ crbug.com/931646 [ Win7 ] http/tests/preload/meta-viewport-link-headers-imagesrc
 
 # These started failing when network service was enabled by default.
 crbug.com/933880 external/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
-crbug.com/933880 http/tests/inspector-protocol/network/interception-take-stream.js [ Failure ]
 crbug.com/933880 http/tests/inspector-protocol/network/xhr-interception-auth-fail.js [ Failure ]
 # This passes in content_shell but not in chrome with network service disabled,
 # because content_shell does not add the about: handler. With network service
@@ -6536,7 +6535,6 @@ crbug.com/1056022 [ Fuchsia ] http/tests/eventsource/eventsource-bad-mime-type.h
 # Sheriff 2020-02-28
 crbug.com/1056879 [ Win7 ] external/wpt/webxr/xrSession_requestAnimationFrame_getViewerPose.https.html [ Pass Failure Timeout ]
 crbug.com/1053861 http/tests/devtools/network/network-initiator-chain.js [ Pass Failure ]
-crbug.com/1047648 external/wpt/html/canvas/offscreen/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
 
 crbug.com/1057822 http/tests/misc/synthetic-gesture-initiated-in-cross-origin-frame.html [ Pass Failure Crash ]
 crbug.com/1057807 http/tests/misc/destroy-middle-click-locked-target-crash.html [ Pass Timeout ]
@@ -6745,8 +6743,7 @@ crbug.com/1093003 [ Mac ] external/wpt/html/rendering/replaced-elements/embedded
 
 # Sheriff 2020-06-10
 crbug.com/1093429 [ Mac ] external/wpt/webrtc/RTCPeerConnection-getStats.https.html [ Failure ]
-crbug.com/1093709 [ Mac ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
-crbug.com/1093709 [ Linux ] external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
+crbug.com/1093709 external/wpt/html/canvas/offscreen/manual/the-offscreen-canvas/offscreencanvas.resize.html [ Pass Failure ]
 
 # Sheriff 2020-06-11
 crbug.com/1093026 [ Linux ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Pass Failure ]

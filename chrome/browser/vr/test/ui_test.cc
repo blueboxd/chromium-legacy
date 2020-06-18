@@ -103,6 +103,7 @@ void UiTest::CreateScene(const UiInitialState& state) {
 void UiTest::CreateScene(InWebVr in_web_vr) {
   UiInitialState state;
   state.in_web_vr = in_web_vr;
+  state.gvr_input_support = true;
   CreateScene(state);
 }
 

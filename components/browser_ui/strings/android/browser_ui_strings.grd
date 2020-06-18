@@ -520,6 +520,12 @@
       <message name="IDS_SHARE_LINK_CHOOSER_TITLE" desc="title for the share dialog when sharing the current address [CHAR-LIMIT=27]">
         Share via
       </message>
+
+      <!-- BottomSheet -->
+      <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the bottom sheet is focused informing the user that the sheet can be closed by swiping down.">
+        Swipe down to close.
+      </message>
+
     </messages>
   </release>
 </grit>

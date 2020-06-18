@@ -289,14 +289,6 @@ void ConnectToQuarantineService(
                               std::move(receiver));
 }
 
-bool IsDangerTypeBlocked(download::DownloadDangerType danger_type) {
-  return (danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
-          danger_type ==
-              download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
-          danger_type ==
-              download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK);
-}
-
 void OnCheckExistingDownloadPathDone(
     std::unique_ptr<DownloadTargetInfo> target_info,
     content::DownloadTargetCallback callback,
@@ -518,6 +510,15 @@ void ChromeDownloadManagerDelegate::DisableSafeBrowsing(DownloadItem* item) {
   }
   state->CompleteDownload();
 #endif
+}
+
+// static
+bool ChromeDownloadManagerDelegate::IsDangerTypeBlocked(
+    download::DownloadDangerType danger_type) {
+  return danger_type == download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE ||
+         danger_type ==
+             download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED ||
+         danger_type == download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK;
 }
 
 bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(

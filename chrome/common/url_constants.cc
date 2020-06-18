@@ -16,7 +16,7 @@ const char kAutomaticSettingsResetLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_automatic_settings_reset";
 
 const char kAdvancedProtectionDownloadLearnMoreURL[] =
-    "https://support.google.com/accounts/?p=ap_faq";
+    "https://support.google.com/accounts/accounts?p=safe-browsing";
 
 const char kBluetoothAdapterOffHelpURL[] =
     "https://support.google.com/chrome?p=bluetooth";

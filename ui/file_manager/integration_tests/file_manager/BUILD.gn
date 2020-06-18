@@ -14,7 +14,14 @@ js_type_check("closure_compile") {
     ":create_new_folder",
     ":crostini",
     ":directory_tree",
+    ":directory_tree_context_menu",
+    ":drive_specific",
     ":file_dialog",
+    ":file_display",
+    ":file_list",
+    ":files_tooltip",
+    ":folder_shortcuts",
+    ":format_dialog",
   ]
 }
 
@@ -25,11 +32,6 @@ js_library("background") {
     "//ui/file_manager/integration_tests:remote_call",
     "//ui/file_manager/integration_tests:test_util",
   ]
-}
-
-js_library("file_dialog") {
-  testonly = true
-  deps = []
 }
 
 js_library("breadcrumbs") {
@@ -58,6 +60,46 @@ js_library("crostini") {
 }
 
 js_library("directory_tree") {
+  testonly = true
+  deps = []
+}
+
+js_library("directory_tree_context_menu") {
+  testonly = true
+  deps = []
+}
+
+js_library("drive_specific") {
+  testonly = true
+  deps = []
+}
+
+js_library("file_dialog") {
+  testonly = true
+  deps = []
+}
+
+js_library("file_display") {
+  testonly = true
+  deps = []
+}
+
+js_library("file_list") {
+  testonly = true
+  deps = []
+}
+
+js_library("files_tooltip") {
+  testonly = true
+  deps = []
+}
+
+js_library("folder_shortcuts") {
+  testonly = true
+  deps = []
+}
+
+js_library("format_dialog") {
   testonly = true
   deps = []
 }

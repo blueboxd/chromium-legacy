@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/test/bind_test_util.h"
 #include "content/browser/hid/hid_test_utils.h"
@@ -30,6 +33,8 @@ const char kCrossOriginTestUrl[] = "https://www.chromium.org";
 class FakeHidConnectionClient : public device::mojom::HidConnectionClient {
  public:
   FakeHidConnectionClient() = default;
+  FakeHidConnectionClient(FakeHidConnectionClient&) = delete;
+  FakeHidConnectionClient& operator=(FakeHidConnectionClient&) = delete;
   ~FakeHidConnectionClient() override = default;
 
   void Bind(
@@ -43,17 +48,37 @@ class FakeHidConnectionClient : public device::mojom::HidConnectionClient {
 
  private:
   mojo::Receiver<device::mojom::HidConnectionClient> receiver_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHidConnectionClient);
 };
 
+class MockHidManagerClient : public device::mojom::HidManagerClient {
+ public:
+  MockHidManagerClient() = default;
+  MockHidManagerClient(MockHidManagerClient&) = delete;
+  MockHidManagerClient& operator=(MockHidManagerClient&) = delete;
+  ~MockHidManagerClient() override = default;
+
+  void Bind(mojo::PendingAssociatedReceiver<device::mojom::HidManagerClient>
+                receiver) {
+    receiver_.Bind(std::move(receiver));
+  }
+
+  MOCK_METHOD1(DeviceAdded, void(device::mojom::HidDeviceInfoPtr device_info));
+  MOCK_METHOD1(DeviceRemoved,
+               void(device::mojom::HidDeviceInfoPtr device_info));
+
+ private:
+  mojo::AssociatedReceiver<device::mojom::HidManagerClient> receiver_{this};
+};
+
+// Main test fixture.
 class HidServiceTest : public RenderViewHostImplTestHarness {
  public:
   HidServiceTest() {
     ON_CALL(hid_delegate(), GetHidManager)
         .WillByDefault(testing::Return(&hid_manager_));
   }
-
+  HidServiceTest(HidServiceTest&) = delete;
+  HidServiceTest& operator=(HidServiceTest&) = delete;
   ~HidServiceTest() override = default;
 
   void SetUp() override {
@@ -69,8 +94,17 @@ class HidServiceTest : public RenderViewHostImplTestHarness {
       SetBrowserClientForTesting(original_client_);
   }
 
+  void ConnectDevice(const device::mojom::HidDeviceInfo& device) {
+    hid_manager_.AddDevice(device.Clone());
+    hid_delegate().OnDeviceAdded(device);
+  }
+
+  void DisconnectDevice(const device::mojom::HidDeviceInfo& device) {
+    hid_manager_.RemoveDevice(device.guid);
+    hid_delegate().OnDeviceRemoved(device);
+  }
+
   MockHidDelegate& hid_delegate() { return test_client_.delegate(); }
-  device::FakeHidManager* hid_manager() { return &hid_manager_; }
   FakeHidConnectionClient* connection_client() { return &connection_client_; }
 
  private:
@@ -78,8 +112,6 @@ class HidServiceTest : public RenderViewHostImplTestHarness {
   ContentBrowserClient* original_client_ = nullptr;
   device::FakeHidManager hid_manager_;
   FakeHidConnectionClient connection_client_;
-
-  DISALLOW_COPY_AND_ASSIGN(HidServiceTest);
 };
 
 }  // namespace
@@ -93,7 +125,7 @@ TEST_F(HidServiceTest, GetDevicesWithPermission) {
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
-  hid_manager()->AddDevice(std::move(device_info));
+  ConnectDevice(*device_info);
 
   EXPECT_CALL(hid_delegate(), HasDevicePermission)
       .WillOnce(testing::Return(true));
@@ -118,7 +150,7 @@ TEST_F(HidServiceTest, GetDevicesWithoutPermission) {
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
-  hid_manager()->AddDevice(std::move(device_info));
+  ConnectDevice(*device_info);
 
   EXPECT_CALL(hid_delegate(), HasDevicePermission)
       .WillOnce(testing::Return(false));
@@ -145,7 +177,7 @@ TEST_F(HidServiceTest, RequestDevice) {
   device_info->guid = kTestGuid;
   std::vector<device::mojom::HidDeviceInfoPtr> device_infos;
   device_infos.push_back(device_info.Clone());
-  hid_manager()->AddDevice(std::move(device_info));
+  ConnectDevice(*device_info);
 
   EXPECT_CALL(hid_delegate(), CanRequestDevicePermission)
       .WillOnce(testing::Return(true));
@@ -175,7 +207,7 @@ TEST_F(HidServiceTest, OpenAndCloseHidConnection) {
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
-  hid_manager()->AddDevice(std::move(device_info));
+  ConnectDevice(*device_info);
 
   mojo::PendingRemote<device::mojom::HidConnectionClient> hid_connection_client;
   connection_client()->Bind(
@@ -217,7 +249,7 @@ TEST_F(HidServiceTest, OpenAndNavigateCrossOrigin) {
 
   auto device_info = device::mojom::HidDeviceInfo::New();
   device_info->guid = kTestGuid;
-  hid_manager()->AddDevice(std::move(device_info));
+  ConnectDevice(*device_info);
 
   mojo::PendingRemote<device::mojom::HidConnectionClient> hid_connection_client;
   connection_client()->Bind(

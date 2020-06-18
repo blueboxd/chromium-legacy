@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"

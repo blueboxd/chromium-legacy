@@ -24,8 +24,7 @@ std::pair<gfx::Quaternion, gfx::Point3F> GetPositionAndOrientationFromArPose(
     const ArSession* session,
     const ArPose* pose);
 
-device::mojom::Pose GetMojomPoseFromArPose(const ArSession* session,
-                                           const ArPose* pose);
+device::Pose GetPoseFromArPose(const ArSession* session, const ArPose* pose);
 
 device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
     const ArSession* session,

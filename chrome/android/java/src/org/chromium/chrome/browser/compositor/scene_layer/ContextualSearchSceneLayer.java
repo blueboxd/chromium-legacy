@@ -138,8 +138,9 @@ public class ContextualSearchSceneLayer extends SceneOverlayLayer {
 
         WebContents panelWebContents = panel.getWebContents();
 
-        int roundedBarTopResourceId =
-                OverlayPanel.isNewLayout() ? R.drawable.top_round : INVALID_RESOURCE_ID;
+        int roundedBarTopResourceId = OverlayPanel.isNewLayout()
+                ? org.chromium.components.browser_ui.styles.R.drawable.top_round
+                : INVALID_RESOURCE_ID;
         int separatorLineColor = panel.getSeparatorLineColor();
         // The panel shadow goes all the way around in the old layout, but in the new layout
         // the top_round resource also includes the shadow so we only need a side shadow.

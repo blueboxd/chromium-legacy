@@ -436,14 +436,14 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
 
   bool should_enable = params->enabled;
 
-  const SupervisedUserServiceDelegate* supervised_user_service_delegate =
+  const SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
       ManagementAPI::GetFactoryInstance()
           ->Get(browser_context())
-          ->GetSupervisedUserServiceDelegate();
+          ->GetSupervisedUserExtensionsDelegate();
 
   const bool is_supervised_child_who_may_install_extensions =
-      supervised_user_service_delegate
-          ? supervised_user_service_delegate
+      supervised_user_extensions_delegate
+          ? supervised_user_extensions_delegate
                 ->IsSupervisedChildWhoMayInstallExtensions(browser_context())
           : false;
 
@@ -476,8 +476,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
 #if defined(OS_CHROMEOS)
     // On ChromeOS, if this is a child, show the dialog indicating that enabling
     // extensions has been blocked by a parent.
-    if (supervised_user_service_delegate &&
-        supervised_user_service_delegate->IsChild(browser_context())) {
+    if (supervised_user_extensions_delegate &&
+        supervised_user_extensions_delegate->IsChild(browser_context())) {
       AddRef();  // Matched in OnBlockedByParentDialogDone().
       ShowBlockedByParentDialog(target_extension);
       return RespondLater();
@@ -518,7 +518,7 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
     if (prompt_parent_for_approval &&
         // Don't re-prompt the parent for extensions that have already been
         // approved for a child.
-        !supervised_user_service_delegate->IsExtensionAllowedByParent(
+        !supervised_user_extensions_delegate->IsExtensionAllowedByParent(
             *target_extension, browser_context())) {
       LOG(ERROR) << "ManagementSetEnabledFunction::Run:  prompting for parent "
                     "approval";
@@ -574,20 +574,20 @@ ManagementSetEnabledFunction::RequestParentPermission(
   // Show parental approval prompt.
   auto callback = base::BindOnce(
       &ManagementSetEnabledFunction::OnParentPermissionDone, this);
-  SupervisedUserServiceDelegate* supervised_user_service_delegate =
+  SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
       ManagementAPI::GetFactoryInstance()
           ->Get(browser_context())
-          ->GetSupervisedUserServiceDelegate();
-  DCHECK(supervised_user_service_delegate);
-  supervised_user_service_delegate->ShowParentPermissionDialogForExtension(
+          ->GetSupervisedUserExtensionsDelegate();
+  DCHECK(supervised_user_extensions_delegate);
+  supervised_user_extensions_delegate->ShowParentPermissionDialogForExtension(
       *extension, browser_context(), web_contents, std::move(callback));
   return RespondLater();
 }
 
 void ManagementSetEnabledFunction::OnParentPermissionDone(
-    SupervisedUserServiceDelegate::ParentPermissionDialogResult result) {
+    SupervisedUserExtensionsDelegate::ParentPermissionDialogResult result) {
   switch (result) {
-    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+    case SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
         kParentPermissionReceived: {
       const ManagementAPIDelegate* delegate =
           ManagementAPI::GetFactoryInstance()
@@ -598,13 +598,13 @@ void ManagementSetEnabledFunction::OnParentPermissionDone(
       break;
     }
 
-    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+    case SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
         kParentPermissionCanceled: {
       Respond(Error(keys::kUserDidNotReEnableError));
       break;
     }
 
-    case SupervisedUserServiceDelegate::ParentPermissionDialogResult::
+    case SupervisedUserExtensionsDelegate::ParentPermissionDialogResult::
         kParentPermissionFailed: {
       Respond(Error(keys::kParentPermissionFailedError));
       break;
@@ -616,12 +616,12 @@ void ManagementSetEnabledFunction::ShowBlockedByParentDialog(
     const Extension* extension) {
 #if defined(OS_CHROMEOS)
   DCHECK(extension);
-  SupervisedUserServiceDelegate* supervised_user_service_delegate =
+  SupervisedUserExtensionsDelegate* supervised_user_extensions_delegate =
       ManagementAPI::GetFactoryInstance()
           ->Get(browser_context())
-          ->GetSupervisedUserServiceDelegate();
+          ->GetSupervisedUserExtensionsDelegate();
 
-  supervised_user_service_delegate
+  supervised_user_extensions_delegate
       ->RecordExtensionEnableBlockedByParentDialogUmaMetric();
 
   content::WebContents* contents = GetSenderWebContents();
@@ -634,7 +634,7 @@ void ManagementSetEnabledFunction::ShowBlockedByParentDialog(
     OnBlockedByParentDialogDone();
     return;
   }
-  supervised_user_service_delegate
+  supervised_user_extensions_delegate
       ->ShowExtensionEnableBlockedByParentDialogForExtension(
           extension, contents,
           base::BindOnce(
@@ -1180,8 +1180,9 @@ void ManagementEventRouter::BroadcastEvent(
 ManagementAPI::ManagementAPI(content::BrowserContext* context)
     : browser_context_(context),
       delegate_(ExtensionsAPIClient::Get()->CreateManagementAPIDelegate()),
-      supervised_user_service_delegate_(
-          ExtensionsAPIClient::Get()->CreateSupervisedUserServiceDelegate()) {
+      supervised_user_extensions_delegate_(
+          ExtensionsAPIClient::Get()
+              ->CreateSupervisedUserExtensionsDelegate()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
   event_router->RegisterObserver(this, management::OnInstalled::kEventName);
   event_router->RegisterObserver(this, management::OnUninstalled::kEventName);

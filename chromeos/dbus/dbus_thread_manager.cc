@@ -16,7 +16,6 @@
 #include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
-#include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/chunneld_client.h"
 #include "chromeos/dbus/cicerone_client.h"
@@ -131,11 +130,6 @@ ArcMidisClient* DBusThreadManager::GetArcMidisClient() {
 
 ArcObbMounterClient* DBusThreadManager::GetArcObbMounterClient() {
   return clients_browser_ ? clients_browser_->arc_obb_mounter_client_.get()
-                          : nullptr;
-}
-
-ArcOemCryptoClient* DBusThreadManager::GetArcOemCryptoClient() {
-  return clients_browser_ ? clients_browser_->arc_oemcrypto_client_.get()
                           : nullptr;
 }
 

@@ -64,6 +64,7 @@ import org.chromium.ui.UiSwitches;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /** End-to-end tests for TabGroupPopupUi component. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -188,7 +189,7 @@ public class TabGroupPopupUiTest {
 
     @Test
     @MediumTest
-    public void testTabStripUpdate() {
+    public void testTabStripUpdate() throws InterruptedException {
         launchActivity();
         final ChromeTabbedActivity cta = mActivityTestRule.getActivity();
 
@@ -212,14 +213,20 @@ public class TabGroupPopupUiTest {
         onView(withId(R.id.tab_list_view))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
-                        getCurrentTabIndexInGroup(cta), click()));
+                        getCurrentTabIndexInGroupOnUiThread(cta), click()));
         verifyShowingTabStrip(cta, 3);
-
         onView(withId(R.id.tab_list_view))
                 .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
-                        getCurrentTabIndexInGroup(cta), click()));
+                        getCurrentTabIndexInGroupOnUiThread(cta), click()));
         verifyShowingTabStrip(cta, 2);
+    }
+
+    private int getCurrentTabIndexInGroupOnUiThread(final ChromeTabbedActivity cta)
+            throws InterruptedException {
+        final AtomicInteger res = new AtomicInteger();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { res.set(getCurrentTabIndexInGroup(cta)); });
+        return res.get();
     }
 
     @Test

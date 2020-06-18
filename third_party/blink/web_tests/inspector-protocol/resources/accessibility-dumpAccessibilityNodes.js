@@ -277,21 +277,12 @@ function rewriteRelatedNodes(msg, nodeId)
 
 function dumpNode(msg)
 {
-    function stripIds(key, value)
-    {
-        var stripKeys = ["id", "backendDOMNodeId", "nodeId", "parentId"];
-        if (stripKeys.indexOf(key) !== -1)
-            return "<" + typeof(value) + ">";
-        var deleteKeys = ["selected"];
-        if (deleteKeys.indexOf(key) !== -1)
-            return undefined;
-        return value;
-    }
     if (!msg.result || !msg.result.nodes || msg.result.nodes.length !== 1) {
         testRunner.log("Expected exactly one node in " + JSON.stringify(msg, null, "  "));
         return;
     }
-    testRunner.log(JSON.stringify(msg.result.nodes[0], stripIds, "  "));
+    delete msg.result.nodes[0]['selected'];
+    testRunner.log(msg.result.nodes[0], null, ["id", "backendDOMNodeId", "nodeId", "parentId"]);
 }
 
 function dumpTreeStructure(msg)
@@ -314,7 +305,6 @@ function dumpTreeStructure(msg)
         return string;
     }
 
-    var rawMsg = JSON.stringify(msg, null, "  ");
     var nodeMap = {};
     if ("result" in msg && "nodes" in msg.result) {
         for (var node of msg.result.nodes)

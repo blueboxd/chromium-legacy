@@ -97,9 +97,9 @@ int Uninstall(bool is_machine) {
     DeleteComService();
   DeleteComServer(key);
 
-  base::FilePath product_dir;
-  if (!GetProductDirectory(&product_dir)) {
-    LOG(ERROR) << "GetProductDirectory failed.";
+  base::FilePath versioned_dir;
+  if (!GetVersionedDirectory(&versioned_dir)) {
+    LOG(ERROR) << "GetVersionedDirectory failed.";
     return -1;
   }
 
@@ -109,7 +109,7 @@ int Uninstall(bool is_machine) {
   if (!size || size >= MAX_PATH)
     return -1;
 
-  base::FilePath script_path = product_dir.AppendASCII(kUninstallScript);
+  base::FilePath script_path = versioned_dir.AppendASCII(kUninstallScript);
 
   base::string16 cmdline = cmd_path;
   base::StringAppendF(&cmdline, L" /Q /C \"%ls\"", script_path.value().c_str());

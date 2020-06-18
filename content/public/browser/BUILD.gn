@@ -6,6 +6,7 @@ import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//ppapi/buildflags/buildflags.gni")
+import("//third_party/protobuf/proto_library.gni")
 import("//third_party/webrtc/webrtc.gni")
 
 if (is_android) {
@@ -538,4 +539,8 @@ if (is_android) {
   java_cpp_enum("contacts_picker_properties_requested_javagen") {
     sources = [ "contacts_picker_properties_requested.h" ]
   }
+}
+
+proto_library("proto") {
+  sources = [ "google_streaming_api.proto" ]
 }

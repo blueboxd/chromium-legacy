@@ -47,7 +47,7 @@ class MessagePipeDispatcher::PortObserverThunk
       : dispatcher_(dispatcher) {}
 
  private:
-  ~PortObserverThunk() override {}
+  ~PortObserverThunk() override = default;
 
   // NodeController::PortObserver:
   void OnPortStatusChanged() override { dispatcher_->OnPortStatusChanged(); }
@@ -63,8 +63,8 @@ class MessagePipeDispatcher::PortObserverThunk
 // the next available message on a port, for debug logging only.
 class PeekSizeMessageFilter : public ports::MessageFilter {
  public:
-  PeekSizeMessageFilter() {}
-  ~PeekSizeMessageFilter() override {}
+  PeekSizeMessageFilter() = default;
+  ~PeekSizeMessageFilter() override = default;
 
   // ports::MessageFilter:
   bool Match(const ports::UserMessageEvent& message_event) override {

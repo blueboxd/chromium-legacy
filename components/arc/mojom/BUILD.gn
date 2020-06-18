@@ -41,8 +41,6 @@ if (is_chromeos) {
       "midis.mojom",
       "net.mojom",
       "obb_mounter.mojom",
-      "oemcrypto.mojom",
-      "oemcrypto_daemon.mojom",
       "pip.mojom",
       "policy.mojom",
       "power.mojom",
@@ -69,6 +67,7 @@ if (is_chromeos) {
       ":camera_intent",
       ":media",
       ":notifications",
+      ":oemcrypto",
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//mojo/public/mojom/base",
       "//printing/mojom",
@@ -109,6 +108,10 @@ if (is_chromeos) {
     ]
 
     public_deps = [ "//ui/gfx/geometry/mojom" ]
+  }
+
+  mojom("oemcrypto") {
+    sources = [ "oemcrypto.mojom" ]
   }
 
   source_set("mojom_traits") {

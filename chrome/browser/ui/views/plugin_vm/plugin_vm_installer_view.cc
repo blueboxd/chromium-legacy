@@ -77,7 +77,8 @@ void plugin_vm::ShowPluginVmInstallerView(Profile* profile) {
     views::DialogDelegate::CreateDialogWidget(g_plugin_vm_installer_view,
                                               nullptr, nullptr);
     g_plugin_vm_installer_view->GetWidget()->GetNativeWindow()->SetProperty(
-        ash::kShelfIDKey, ash::ShelfID(plugin_vm::kPluginVmAppId).Serialize());
+        ash::kShelfIDKey,
+        ash::ShelfID(plugin_vm::kPluginVmShelfAppId).Serialize());
   }
   g_plugin_vm_installer_view->SetButtonRowInsets(kButtonRowInsets);
   g_plugin_vm_installer_view->GetWidget()->Show();

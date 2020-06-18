@@ -133,8 +133,8 @@ void PluginVmManagerImpl::LaunchPluginVm(LaunchPluginVmCallback callback) {
     ChromeLauncherController::instance()
         ->GetShelfSpinnerController()
         ->AddSpinnerToShelf(
-            kPluginVmAppId,
-            std::make_unique<ShelfSpinnerItemController>(kPluginVmAppId));
+            kPluginVmShelfAppId,
+            std::make_unique<ShelfSpinnerItemController>(kPluginVmShelfAppId));
   }
 
   // Launching Plugin Vm goes through the following steps:
@@ -243,7 +243,8 @@ void PluginVmManagerImpl::OnVmStateChanged(
     // The previous seneschal handle is no longer valid.
     seneschal_server_handle_ = 0;
 
-    ChromeLauncherController::instance()->Close(ash::ShelfID(kPluginVmAppId));
+    ChromeLauncherController::instance()->Close(
+        ash::ShelfID(kPluginVmShelfAppId));
   }
 
   auto* engagement_metrics_service =
@@ -514,7 +515,7 @@ void PluginVmManagerImpl::LaunchFailed(PluginVmLaunchResult result) {
 
   ChromeLauncherController::instance()
       ->GetShelfSpinnerController()
-      ->CloseSpinner(kPluginVmAppId);
+      ->CloseSpinner(kPluginVmShelfAppId);
 
   pending_start_vm_ = false;
   pending_vm_tools_installed_ = false;

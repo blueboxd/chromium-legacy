@@ -107,7 +107,6 @@ class CC_ANIMATION_EXPORT Animation : public base::RefCounted<Animation> {
   // to be dispatched.
   void DispatchAndDelegateAnimationEvent(const AnimationEvent& event);
 
-  size_t TickingKeyframeModelsCount() const;
   bool AffectsCustomProperty() const;
 
   void SetNeedsPushProperties();

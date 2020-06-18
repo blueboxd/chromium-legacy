@@ -547,4 +547,42 @@ TEST_F(MatchedPropertiesCacheTest, EnsuredInDisplayNone) {
   EXPECT_TRUE(cache.Find(key1, *style, *ensured_parent));
 }
 
+TEST_F(MatchedPropertiesCacheTest, EnsuredOutsideFlatTree) {
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  auto ensured_style = CreateStyle();
+  ensured_style->SetIsEnsuredOutsideFlatTree();
+
+  TestKey key1("display:block", 1);
+
+  cache.Add(key1, *style, *parent);
+  EXPECT_TRUE(cache.Find(key1, *style, *parent));
+  EXPECT_TRUE(cache.Find(key1, *ensured_style, *parent));
+
+  cache.Add(key1, *ensured_style, *parent);
+  EXPECT_FALSE(cache.Find(key1, *style, *parent));
+  EXPECT_TRUE(cache.Find(key1, *ensured_style, *parent));
+}
+
+TEST_F(MatchedPropertiesCacheTest, EnsuredOutsideFlatTreeAndDisplayNone) {
+  TestCache cache(GetDocument());
+
+  auto parent = CreateStyle();
+  auto parent_none = CreateStyle();
+  auto style = CreateStyle();
+  auto style_flat = CreateStyle();
+  parent_none->SetIsEnsuredInDisplayNone();
+  style_flat->SetIsEnsuredOutsideFlatTree();
+
+  TestKey key1("display:block", 1);
+
+  cache.Add(key1, *style, *parent_none);
+  EXPECT_TRUE(cache.Find(key1, *style_flat, *parent));
+
+  cache.Add(key1, *style_flat, *parent);
+  EXPECT_TRUE(cache.Find(key1, *style, *parent_none));
+}
+
 }  // namespace blink

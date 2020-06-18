@@ -4,6 +4,8 @@
 
 #include "chrome/browser/task_manager/providers/child_process_task_provider.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/process/process.h"
 #include "chrome/browser/task_manager/providers/child_process_task.h"
@@ -129,7 +131,8 @@ void ChildProcessTaskProvider::CreateTask(
   }
 
   // Create the task and notify the observer.
-  task.reset(new ChildProcessTask(data));
+  task = std::make_unique<ChildProcessTask>(
+      data, ChildProcessTask::ProcessSubtype::kNoSubtype);
   tasks_by_child_id_[task->GetChildProcessUniqueID()] = task.get();
   NotifyObserverTaskAdded(task.get());
 }

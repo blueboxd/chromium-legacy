@@ -58,11 +58,11 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
   // recycling, and bind destruction callback at original frames.
   VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame);
 
- private:
-  friend class PlatformVideoFramePoolTest;
-
   // Returns the number of frames in the pool for testing purposes.
   size_t GetPoolSizeForTesting();
+
+ private:
+  friend class PlatformVideoFramePoolTest;
 
   // Thunk to post OnFrameReleased() to |task_runner|.
   // Because this thunk may be called in any thread, We don't want to

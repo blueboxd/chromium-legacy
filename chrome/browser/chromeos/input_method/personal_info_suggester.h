@@ -25,6 +25,9 @@ namespace chromeos {
 const char kPersonalInfoSuggesterTabAcceptanceCount[] =
     "personal_info_suggester_tab_acceptance_count";
 const int kMaxTabAcceptanceCount = 10;
+const char kPersonalInfoSuggesterShowSettingCount[] =
+    "personal_info_suggester_show_setting_count";
+const int kMaxShowSettingCount = 10;
 
 AssistiveType ProposeAssistiveAction(const base::string16& text);
 
@@ -86,7 +89,12 @@ class PersonalInfoSuggester : public Suggester {
 
   void AcceptSuggestion();
 
-  int GetTabAcceptanceCount();
+  int GetPrefValue(const std::string& pref_name);
+
+  // Increment int value for the given pref_name by 1 every time the function is
+  // called. The function has no effect after the int value becomes equal to the
+  // max_value.
+  void IncrementPrefValueTilCapped(const std::string& pref_name, int max_value);
 
   SuggestionHandlerInterface* const suggestion_handler_;
 

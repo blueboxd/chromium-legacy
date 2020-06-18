@@ -92,13 +92,15 @@ bool CachedMatchedProperties::DependenciesEqual(
     const StyleResolverState& state) {
   if (!state.ParentStyle())
     return false;
-  if (parent_computed_style->IsEnsuredInDisplayNone() &&
-      !state.ParentStyle()->IsEnsuredInDisplayNone()) {
-    // If we cached a ComputedStyle in a display:none subtree we would not have
-    // triggered fetches for external resources and have StylePendingImages in
-    // the ComputedStyle. Instead of having to inspect the cached ComputedStyle
-    // for such resources, don't use a cached ComputedStyle when it was cached
-    // in display:none but is now rendered.
+  if ((parent_computed_style->IsEnsuredInDisplayNone() ||
+       computed_style->IsEnsuredOutsideFlatTree()) &&
+      !state.ParentStyle()->IsEnsuredInDisplayNone() &&
+      !state.Style()->IsEnsuredOutsideFlatTree()) {
+    // If we cached a ComputedStyle in a display:none subtree, or outside the
+    // flat tree,  we would not have triggered fetches for external resources
+    // and have StylePendingImages in the ComputedStyle. Instead of having to
+    // inspect the cached ComputedStyle for such resources, don't use a cached
+    // ComputedStyle when it was cached in display:none but is now rendered.
     return false;
   }
 

@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -212,13 +212,13 @@ public class TabGroupUiCoordinator implements TabGroupUiMediator.ResetHandler, T
         if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled()) {
             int namedGroupCount = 0;
             for (int i = 0; i < normalFilter.getTabGroupCount(); i++) {
-                int rootId = ((TabImpl) normalFilter.getTabAt(i)).getRootId();
+                int rootId = CriticalPersistedTabData.from(normalFilter.getTabAt(i)).getRootId();
                 if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
                     namedGroupCount += 1;
                 }
             }
             for (int i = 0; i < incognitoFilter.getTabGroupCount(); i++) {
-                int rootId = ((TabImpl) incognitoFilter.getTabAt(i)).getRootId();
+                int rootId = CriticalPersistedTabData.from(incognitoFilter.getTabAt(i)).getRootId();
                 if (TabGroupUtils.getTabGroupTitle(rootId) != null) {
                     namedGroupCount += 1;
                 }

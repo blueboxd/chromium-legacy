@@ -43,6 +43,14 @@ constexpr char kPaginationTransitionAnimationSmoothnessInClamshell[] =
 constexpr char kAppListSearchResultOpenSourceHistogram[] =
     "Apps.AppListSearchResultOpenedSource";
 
+// The UMA histogram that logs smoothness of cardified animation.
+constexpr char kCardifiedStateAnimationSmoothnessEnter[] =
+    "Apps.AppList.CardifiedStateAnimation.AnimationSmoothness."
+    "EnterCardifiedState";
+constexpr char kCardifiedStateAnimationSmoothnessExit[] =
+    "Apps.AppList.CardifiedStateAnimation.AnimationSmoothness."
+    "ExitCardifiedState";
+
 // The UMA hisotogram that logs the action user performs on zero state
 // search result.
 constexpr char kAppListZeroStateSearchResultUserActionHistogram[] =
@@ -317,6 +325,16 @@ void ReportPaginationSmoothness(bool is_tablet_mode, int smoothness) {
   } else {
     UMA_HISTOGRAM_PERCENTAGE(
         kPaginationTransitionAnimationSmoothnessInClamshell, smoothness);
+  }
+}
+
+void ReportCardifiedSmoothness(bool is_entering_cardified, int smoothness) {
+  if (is_entering_cardified) {
+    UMA_HISTOGRAM_PERCENTAGE(kCardifiedStateAnimationSmoothnessEnter,
+                             smoothness);
+  } else {
+    UMA_HISTOGRAM_PERCENTAGE(kCardifiedStateAnimationSmoothnessExit,
+                             smoothness);
   }
 }
 

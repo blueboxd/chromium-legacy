@@ -1388,21 +1388,22 @@ void AutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
 
 void AutofillManager::OnLoadedServerPredictions(
     std::string response,
-    const std::vector<std::string>& form_signatures) {
-  // Get the current valid FormStructures represented by |form_signatures|.
+    const FormAndFieldSignatures& signatures) {
+  // Get the current valid FormStructures represented by |signatures|.
   std::vector<FormStructure*> queried_forms;
-  queried_forms.reserve(form_signatures.size());
-  for (const std::string& signature : form_signatures) {
-    // The |signature| is the direct string representation of the FormSignature.
-    // Convert it to a uint64_t to do the lookup.
-    FormSignature form_signature;
-    if (base::StringToUint64(signature, &form_signature.value())) {
-      FormStructure* form_structure = FindCachedFormBySignature(form_signature);
-      if (form_structure) {
-        queried_forms.push_back(form_structure);
-      }
-    }
+  queried_forms.reserve(signatures.size());
+  for (const auto& p : signatures) {
+    FindCachedFormsBySignature(p.first, &queried_forms);
   }
+
+  // Each form signature in |signatures| is supposed to be unique, and therefore
+  // appear only once. This ensures that FindCachedFormsBySignature() produces
+  // an output without duplicates in the forms.
+  // TODO(crbug/1064709): |queried_forms| could be a set data structure; their
+  // order should be irrelevant.
+  DCHECK_EQ(queried_forms.size(),
+            std::set<FormStructure*>(queried_forms.begin(), queried_forms.end())
+                .size());
 
   // If there are no current forms corresponding to the queried signatures, drop
   // the query response.
@@ -1413,10 +1414,12 @@ void AutofillManager::OnLoadedServerPredictions(
   if (base::FeatureList::IsEnabled(features::kAutofillUseApi)) {
     // Parse response from API.
     FormStructure::ParseApiQueryResponse(std::move(response), queried_forms,
+                                         signatures,
                                          form_interactions_ukm_logger_.get());
   } else {
     // Parse response from legacy server.
     FormStructure::ParseQueryResponse(std::move(response), queried_forms,
+                                      signatures,
                                       form_interactions_ukm_logger_.get());
   }
 

@@ -28,6 +28,7 @@ namespace ash {
 
 namespace {
 
+using chromeos::assistant::features::IsBetterOnboardingEnabled;
 using chromeos::assistant::features::IsConversationStartersV2Enabled;
 using chromeos::assistant::mojom::AssistantSuggestion;
 using chromeos::assistant::mojom::AssistantSuggestionPtr;
@@ -72,6 +73,10 @@ AssistantSuggestionPtr ToAssistantSuggestionPtr(
 // AssistantSuggestionsControllerImpl ------------------------------------------
 
 AssistantSuggestionsControllerImpl::AssistantSuggestionsControllerImpl() {
+  // Onboarding suggestions are only applicable if the feature is enabled.
+  if (IsBetterOnboardingEnabled())
+    UpdateOnboardingSuggestions();
+
   // In conversation starters V2, we only update conversation starters when the
   // Assistant UI is becoming visible so as to maximize freshness.
   if (!IsConversationStartersV2Enabled())
@@ -246,6 +251,32 @@ void AssistantSuggestionsControllerImpl::ProvideConversationStarters() {
   }
 
   model_.SetConversationStarters(std::move(conversation_starters));
+}
+
+// TODO(dmblack): Replace w/ actual suggestions.
+void AssistantSuggestionsControllerImpl::UpdateOnboardingSuggestions() {
+  DCHECK(IsBetterOnboardingEnabled());
+  std::vector<AssistantSuggestionPtr> onboarding_suggestions;
+
+  auto AddOnboardingSuggestion =
+      [&onboarding_suggestions](const std::string& text) {
+        onboarding_suggestions.push_back(AssistantSuggestion::New(
+            /*id=*/base::UnguessableToken::Create(),
+            /*type=*/AssistantSuggestionType::kBetterOnboarding, text,
+            /*icon_url=*/
+            GURL("https://www.gstatic.com/images/branding/product/2x/"
+                 "googleg_48dp.png"),
+            /*action_url=*/GURL()));
+      };
+
+  AddOnboardingSuggestion("First suggestion");
+  AddOnboardingSuggestion("Second suggestion");
+  AddOnboardingSuggestion("Third suggestion");
+  AddOnboardingSuggestion("Fourth suggestion");
+  AddOnboardingSuggestion("Fifth suggestion");
+  AddOnboardingSuggestion("Sixth suggestion");
+
+  model_.SetOnboardingSuggestions(std::move(onboarding_suggestions));
 }
 
 }  // namespace ash

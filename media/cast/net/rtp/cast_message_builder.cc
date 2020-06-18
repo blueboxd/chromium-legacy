@@ -4,6 +4,7 @@
 
 #include "media/cast/net/rtp/cast_message_builder.h"
 
+#include "base/logging.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/rtp/framer.h"
 

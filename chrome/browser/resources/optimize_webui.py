@@ -58,25 +58,29 @@ _POLYMER_PATH = os.path.join(
 
 # These files are already combined and minified.
 _BASE_EXCLUDES = [
-  # Common excludes for both Polymer 2 and 3.
-  'chrome://resources/polymer/v1_0/web-animations-js/' +
-      'web-animations-next-lite.min.js',
-  'chrome://resources/css/roboto.css',
-  'chrome://resources/css/text_defaults.css',
-  'chrome://resources/css/text_defaults_md.css',
-  'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html',
-
   # Excludes applying only to Polymer 2.
   'chrome://resources/html/polymer.html',
   'chrome://resources/polymer/v1_0/polymer/polymer.html',
   'chrome://resources/polymer/v1_0/polymer/polymer-micro.html',
   'chrome://resources/polymer/v1_0/polymer/polymer-mini.html',
-  'chrome://resources/js/load_time_data.js',
+  'chrome://resources/js/load_time_data.js'
+]
+for excluded_file in [
+  # Common excludes for both Polymer 2 and 3.
+  'resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js',
+  'resources/css/roboto.css',
+  'resources/css/text_defaults.css',
+  'resources/css/text_defaults_md.css',
+  'resources/mojo/mojo/public/js/mojo_bindings_lite.html',
 
   # Excludes applying only to Polymer 3.
-  'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js',
-  'chrome://resources/js/load_time_data.m.js',
-]
+  'resources/polymer/v3_0/polymer/polymer_bundled.min.js',
+  'resources/js/load_time_data.m.js',
+]:
+     # Exclude both the chrome://resources form and the scheme-relative form for
+     # files used in Polymer 3.
+     _BASE_EXCLUDES.append("chrome://" + excluded_file)
+     _BASE_EXCLUDES.append("//" + excluded_file)
 
 _VULCANIZE_BASE_ARGS = [
   '--inline-css',
@@ -85,15 +89,19 @@ _VULCANIZE_BASE_ARGS = [
   '--strip-comments',
 ]
 
-_URL_MAPPINGS = [
-    ('chrome://resources/cr_components/', _CR_COMPONENTS_PATH),
-    ('chrome://resources/cr_elements/', _CR_ELEMENTS_PATH),
-    ('chrome://resources/css/', _CSS_RESOURCES_PATH),
-    ('chrome://resources/html/', _HTML_RESOURCES_PATH),
-    ('chrome://resources/js/', _JS_RESOURCES_PATH),
-    ('chrome://resources/polymer/v1_0/', _POLYMER_PATH),
-    ('chrome://resources/images/', _IMAGES_RESOURCES_PATH)
-]
+_URL_MAPPINGS = []
+for (redirect_url, file_path) in [
+    ('resources/cr_components/', _CR_COMPONENTS_PATH),
+    ('resources/cr_elements/', _CR_ELEMENTS_PATH),
+    ('resources/css/', _CSS_RESOURCES_PATH),
+    ('resources/html/', _HTML_RESOURCES_PATH),
+    ('resources/js/', _JS_RESOURCES_PATH),
+    ('resources/polymer/v1_0/', _POLYMER_PATH),
+    ('resources/images/', _IMAGES_RESOURCES_PATH),
+]:
+  # Redirect both the chrome://resources form and the scheme-relative form.
+  _URL_MAPPINGS.append(('chrome://' + redirect_url, file_path))
+  _URL_MAPPINGS.append(('//' + redirect_url, file_path))
 
 
 _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
@@ -123,7 +131,7 @@ def _update_dep_file(in_folder, args, manifest):
   # Add a slash in front of every dependency that is not a chrome:// URL, so
   # that we can map it to the correct source file path below.
   request_list = map(
-      lambda dep: '/' + dep if not dep.startswith('chrome://') else dep,
+      lambda dep: '/' + dep if not (dep.startswith('chrome://') or dep.startswith('//')) else dep,
       request_list)
 
   # Undo the URL mappings applied by vulcanize to get file paths relative to
@@ -138,7 +146,7 @@ def _update_dep_file(in_folder, args, manifest):
 
   # If the input was a folder holding an unpacked .pak file, the generated
   # depfile should not list files already in the .pak file.
-  if args.input.endswith('.unpak'):
+  if args.input.endswith('unpak'):
     filter_url = args.input
     deps = [d for d in deps if not d.startswith(filter_url)]
 
@@ -210,10 +218,9 @@ def _bundle_v3(tmp_out_dir, in_path, out_path, manifest_out_path, args,
   # arbitrary names?
   bundled_paths = []
   for index, js_file in enumerate(args.js_module_in_files):
-    base_file_name = os.path.basename(js_file)
-    expected_name = '%s.rollup.js' % base_file_name[:-len('.js')]
+    expected_name = '%s.rollup.js' % js_file[:-len('.js')]
     assert args.js_out_files[index] == expected_name, \
-           'Output file corresponding to %s should be named %s' % \
+           'Output file corresponding to %s should be named %s.rollup.js' % \
            (js_file, expected_name)
     bundled_paths.append(os.path.join(tmp_out_dir, expected_name))
 

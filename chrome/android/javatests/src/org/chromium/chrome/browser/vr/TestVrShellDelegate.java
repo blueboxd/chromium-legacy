@@ -23,7 +23,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private Runnable mOnVSyncPausedCallback;
     private static TestVrShellDelegate sInstance;
     private static Description sTestDescription;
-    private boolean mDisableVrBrowsing;
     private boolean mExpectingBroadcast;
     private boolean mExpectingIntent;
     private Boolean mAllow2dIntents;
@@ -115,16 +114,6 @@ public class TestVrShellDelegate extends VrShellDelegate {
 
     public int getLastUiOperationResultForTesting(int actionType) {
         return getVrShell().getLastUiOperationResultForTesting(actionType);
-    }
-
-    @Override
-    protected boolean isVrBrowsingEnabled() {
-        if (mDisableVrBrowsing) return false;
-        return super.isVrBrowsingEnabled();
-    }
-
-    public void setVrBrowsingDisabled(boolean disabled) {
-        mDisableVrBrowsing = disabled;
     }
 
     public void setVrShellOnVSyncPausedCallback(Runnable callback) {

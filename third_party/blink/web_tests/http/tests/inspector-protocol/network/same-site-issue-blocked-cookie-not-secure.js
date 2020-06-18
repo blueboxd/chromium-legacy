@@ -10,12 +10,7 @@
       + encodeURIComponent('name=value; SameSite=None');
   await session.evaluate(`fetch('${setCookieUrl}', {method: 'POST', credentials: 'include'})`);
   const issue = await issuePromise;
-  // Clear request id.
-  const replacer = (key, value) => {
-    if (key === "requestId") return "<request-id>";
-    return value;
-  };
-  testRunner.log(`Inspector issue: ${JSON.stringify(issue.params, replacer, 2)}\n`);
+  testRunner.log(issue.params, 'Inspector issue:');
 
   testRunner.completeTest();
 })

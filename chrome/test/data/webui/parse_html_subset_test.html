@@ -30,7 +30,7 @@ function testSupportedTags() {
 
 function testInvalidTags() {
   parseAndAssertThrows('<unknown_tag>x</unknown_tag>');
-  parseAndAssertThrows('<img>');
+  parseAndAssertThrows('<style>*{color:red;}</style>');
   parseAndAssertThrows('<script>alert(1)<' + '/script>');
 }
 
@@ -68,35 +68,23 @@ function testAnchorTarget() {
 }
 
 function testInvalidTarget() {
-  parseAndAssertThrows('<form target="_evil">', ['form']);
-  parseAndAssertThrows('<iframe target="_evil">', ['iframe']);
   parseAndAssertThrows('<a href="https://google.com" target="foo">Google</a>');
 }
 
 function testCustomTags() {
-  parseHtmlSubset('yo <I>ho</i><bR>yo <EM>ho</em>', ['i', 'EM', 'Br']);
+  parseHtmlSubset('<img>', ['IMG']);
 }
 
 function testInvalidCustomTags() {
-  parseAndAssertThrows("a pirate's<script>lifeForMe();<" + '/script>', ['br']);
+  parseAndAssertThrows('a pirate\'s<script>alert();<' + '/script>', ['script']);
 }
 
 function testCustomAttributes() {
-  function returnsTruthy(node, value) {
-    assertEquals('A', node.tagName);
-    assertEquals('fancy', value);
-    return true;
-  }
   parseHtmlSubset('<a class="fancy">I\'m fancy!</a>', null,
-      {class: returnsTruthy});
+      ['class']);
 }
 
 function testInvalidCustomAttributes() {
-  function returnsFalsey() {
-    return false;
-  }
-  parseAndAssertThrows('<a class="fancy">I\'m fancy!</a>', null,
-      {class: returnsFalsey});
   parseAndAssertThrows('<a class="fancy">I\'m fancy!</a>');
 }
 

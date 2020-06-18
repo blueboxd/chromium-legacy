@@ -41,6 +41,17 @@ BreadcrumbManagerObserverBridge::~BreadcrumbManagerObserverBridge() {
 
 void BreadcrumbManagerObserverBridge::EventAdded(BreadcrumbManager* manager,
                                                  const std::string& event) {
-  [observer_ breadcrumbManager:manager
-                   didAddEvent:base::SysUTF8ToNSString(event)];
+  if ([observer_ respondsToSelector:@selector(breadcrumbManager:
+                                                    didAddEvent:)]) {
+    [observer_ breadcrumbManager:manager
+                     didAddEvent:base::SysUTF8ToNSString(event)];
+  }
+}
+
+void BreadcrumbManagerObserverBridge::OldEventsRemoved(
+    BreadcrumbManager* manager) {
+  if ([observer_
+          respondsToSelector:@selector(breadcrumbManagerDidRemoveOldEvents:)]) {
+    [observer_ breadcrumbManagerDidRemoveOldEvents:manager];
+  }
 }

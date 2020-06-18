@@ -11,7 +11,7 @@ function setUpPage() {
   loadTimeData.data = {
     'allowedByDefault': allowedByDefault,
     'customAttr': '<a is="action-link">Take action!</a>',
-    'customTag': "<x-foo>I'm an X, foo!</x-foo>",
+    'optionalTag': '<img>',
     'javascriptHref': '<a href="javascript:alert(1)">teh hax</a>',
     'script': '<script>alert(/xss/)</scr' + 'ipt>',
     'text': text,
@@ -24,7 +24,7 @@ function testI18n() {
   assertEquals(nonBreakingSpace, I18nBehavior.i18n('nonBreakingSpace'));
 
   assertThrows(function() { I18nBehavior.i18n('customAttr'); });
-  assertThrows(function() { I18nBehavior.i18n('customTag'); });
+  assertThrows(function() { I18nBehavior.i18n('optionalTag'); });
   assertThrows(function() { I18nBehavior.i18n('javascriptHref'); });
   assertThrows(function() { I18nBehavior.i18n('script'); });
 }
@@ -33,14 +33,8 @@ function testI18nAdvanced() {
   assertEquals(
       allowedByDefault,
       I18nBehavior.i18nAdvanced('allowedByDefault'));
-  I18nBehavior.i18nAdvanced('customAttr', {
-    attrs: {
-      is: function(el, val) {
-        return el.tagName == 'A' && val == 'action-link';
-      },
-    },
-  });
-  I18nBehavior.i18nAdvanced('customTag', {tags: ['X-FOO']});
+  I18nBehavior.i18nAdvanced('customAttr', {attrs: ['is']});
+  I18nBehavior.i18nAdvanced('optionalTag', {tags: ['img']});
 }
 
 function testI18nDynamic() {

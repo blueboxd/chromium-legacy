@@ -26,11 +26,14 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.UserDataHost;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiUnitTestUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -87,9 +90,9 @@ public class TabGroupUtilsUnitTest {
 
         MockitoAnnotations.initMocks(this);
 
-        mTab1 = prepareTab(TAB1_ID, TAB1_TITLE);
-        mTab2 = prepareTab(TAB2_ID, TAB2_TITLE);
-        mTab3 = prepareTab(TAB3_ID, TAB3_TITLE);
+        mTab1 = TabUiUnitTestUtils.prepareTab(TAB1_ID, TAB1_TITLE, "");
+        mTab2 = TabUiUnitTestUtils.prepareTab(TAB2_ID, TAB2_TITLE, "");
+        mTab3 = TabUiUnitTestUtils.prepareTab(TAB3_ID, TAB3_TITLE, "");
 
         doReturn(mTabModelFilterProvider).when(mTabModelSelector).getTabModelFilterProvider();
         doReturn(mTabGroupModelFilter).when(mTabModelFilterProvider).getCurrentTabModelFilter();
@@ -144,7 +147,8 @@ public class TabGroupUtilsUnitTest {
     @Test
     public void testGetTabGroupTitle() {
         // Mock that we have a stored tab group title with reference to TAB1_ID.
-        when(mSharedPreferences.getString(String.valueOf(mTab1.getRootId()), null))
+        when(mSharedPreferences.getString(
+                     String.valueOf(CriticalPersistedTabData.from(mTab1).getRootId()), null))
                 .thenReturn(TAB1_TITLE);
 
         assertThat(TabGroupUtils.getTabGroupTitle(TAB1_ID), equalTo(TAB1_TITLE));
@@ -158,19 +162,15 @@ public class TabGroupUtilsUnitTest {
         verify(mPutStringEditor).apply();
     }
 
-    private TabImpl prepareTab(int id, String title) {
-        TabImpl tab = mock(TabImpl.class);
-        doReturn(id).when(tab).getId();
-        doReturn(id).when(tab).getRootId();
-        doReturn("").when(tab).getUrlString();
-        doReturn(title).when(tab).getTitle();
-        return tab;
-    }
-
     private void createTabGroup(List<Tab> tabs, int rootId) {
         for (Tab tab : tabs) {
             when(mTabGroupModelFilter.getRelatedTabList(tab.getId())).thenReturn(tabs);
-            doReturn(rootId).when(((TabImpl) tab)).getRootId();
+            CriticalPersistedTabData criticalPersistedTabData =
+                    mock(CriticalPersistedTabData.class);
+            UserDataHost userDataHost = new UserDataHost();
+            userDataHost.setUserData(CriticalPersistedTabData.class, criticalPersistedTabData);
+            doReturn(userDataHost).when(tab).getUserDataHost();
+            doReturn(rootId).when(criticalPersistedTabData).getRootId();
         }
     }
 }

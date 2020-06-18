@@ -4,12 +4,8 @@
 
 package org.chromium.chrome.browser.vr;
 
-import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
-import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
-import android.graphics.PointF;
 import android.os.Build;
 import android.view.View;
 import android.widget.TextView;
@@ -32,10 +28,7 @@ import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.vr.keyboard.GvrKeyboardLoaderClient;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
-import org.chromium.chrome.browser.vr.util.NativeUiUtils;
-import org.chromium.chrome.browser.vr.util.VrBrowserTransitionUtils;
 import org.chromium.chrome.browser.vr.util.VrInfoBarUtils;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr.util.VrTestRuleUtils;
@@ -65,12 +58,9 @@ public class VrInstallUpdateInfoBarTest {
 
     private ChromeActivityTestRule mVrTestRule;
 
-    private VrBrowserTestFramework mVrBrowserTestFramework;
-
     public VrInstallUpdateInfoBarTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mVrTestRule = callable.call();
         mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mVrTestRule);
-        mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
     }
 
     /**
@@ -160,43 +150,5 @@ public class VrInstallUpdateInfoBarTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testInfoBarNotPresentWhenVrServicesNotSupported() {
         infoBarTestHelper(VrCoreCompatibility.VR_NOT_SUPPORTED);
-    }
-
-    /**
-     * Tests that the install/upgrade prompt for the keyboard appears when clicking on the URL
-     * bar without the keyboard installed.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testKeyboardInstallUpgradePromptUrlBar() {
-        testKeyboardInstallUpgradeImpl(UserFriendlyElementName.URL);
-    }
-
-    /**
-     * Tests that the install/upgrade prompt for the keyboard appears when interacting with a web
-     * text input field without the keyboard installed.
-     */
-    @Test
-    @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
-    public void testKeyboardInstallUpgradePromptWebInput() {
-        testKeyboardInstallUpgradeImpl(UserFriendlyElementName.CONTENT_QUAD);
-    }
-
-    private void testKeyboardInstallUpgradeImpl(final int uiElementToClick) {
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_web_input_editing"),
-                PAGE_LOAD_TIMEOUT_S);
-        GvrKeyboardLoaderClient.setFailLoadForTesting(true);
-        VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        // The prompt takes significantly longer to show when clicking on the web content, so we
-        // can't just wait for quiescence since that gets reached before the prompt shows (not sure
-        // what's causing a UI change other than the prompt). Instead, explicitly wait for the
-        // prompt to become visible before waiting for quiescence.
-        NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
-            NativeUiUtils.performActionAndWaitForVisibilityStatus(
-                    UserFriendlyElementName.EXIT_PROMPT, true /* visible */,
-                    () -> { NativeUiUtils.clickElement(uiElementToClick, new PointF()); });
-        });
     }
 }

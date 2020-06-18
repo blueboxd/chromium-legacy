@@ -156,12 +156,43 @@ void HidChooserController::OpenHelpCenterUrl() const {
   NOTIMPLEMENTED();
 }
 
+void HidChooserController::OnDeviceAdded(
+    const device::mojom::HidDeviceInfo& device) {
+  if (!DisplayDevice(device))
+    return;
+
+  if (AddDeviceInfo(device) && view())
+    view()->OnOptionAdded(items_.size() - 1);
+  return;
+}
+
+void HidChooserController::OnDeviceRemoved(
+    const device::mojom::HidDeviceInfo& device) {
+  auto id = PhysicalDeviceIdFromDeviceInfo(device);
+  auto items_it = std::find(items_.begin(), items_.end(), id);
+  if (items_it == items_.end())
+    return;
+  size_t index = std::distance(items_.begin(), items_it);
+
+  if (RemoveDeviceInfo(device) && view())
+    view()->OnOptionRemoved(index);
+}
+
+void HidChooserController::OnHidManagerConnectionError() {
+  observer_.RemoveAll();
+}
+
 void HidChooserController::OnGotDevices(
     std::vector<device::mojom::HidDeviceInfoPtr> devices) {
   for (auto& device : devices) {
     if (DisplayDevice(*device))
       AddDeviceInfo(*device);
   }
+
+  // Listen to HidChooserContext for OnDeviceAdded/Removed events after the
+  // enumeration.
+  if (chooser_context_)
+    observer_.Add(chooser_context_.get());
 
   if (view())
     view()->OnOptionsInitialized();
@@ -246,5 +277,23 @@ bool HidChooserController::AddDeviceInfo(
   // A new device was connected. Append it to the end of the chooser list.
   device_map_[id].push_back(device.Clone());
   items_.push_back(id);
+  return true;
+}
+
+bool HidChooserController::RemoveDeviceInfo(
+    const device::mojom::HidDeviceInfo& device) {
+  auto id = PhysicalDeviceIdFromDeviceInfo(device);
+  auto find_it = device_map_.find(id);
+  DCHECK(find_it != device_map_.end());
+  auto& device_infos = find_it->second;
+  base::EraseIf(device_infos,
+                [&device](const device::mojom::HidDeviceInfoPtr& d) {
+                  return d->guid == device.guid;
+                });
+  if (!device_infos.empty())
+    return false;
+  // A device was disconnected. Remove it from the chooser list.
+  device_map_.erase(find_it);
+  base::Erase(items_, id);
   return true;
 }

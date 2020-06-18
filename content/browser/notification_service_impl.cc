@@ -5,6 +5,7 @@
 #include "content/browser/notification_service_impl.h"
 
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/threading/thread_local.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_types.h"

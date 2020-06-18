@@ -603,6 +603,10 @@ const base::Feature kSiteIsolationEnforcementForFileSystemApi{
 const base::Feature kSpareRendererForSitePerProcess{
     "SpareRendererForSitePerProcess", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables Storage Pressure Event.
+const base::Feature kStoragePressureEvent{"StoragePressureEvent",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Storage Pressure notifications and settings pages.
 const base::Feature kStoragePressureUI{"StoragePressureUI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

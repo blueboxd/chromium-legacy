@@ -156,7 +156,7 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
                                          const GURL& model_url,
                                          ukm::UkmRecorder* ukm_recorder)
     : ukm_recorder_(ukm_recorder),
-      is_logging_enabled_(false),
+      is_uma_logging_enabled_(false),
       is_query_enabled_(base::FeatureList::IsEnabled(kTranslateRankerQuery)),
       is_enforcement_enabled_(
           base::FeatureList::IsEnabled(kTranslateRankerEnforcement)),
@@ -216,11 +216,11 @@ GURL TranslateRankerImpl::GetModelURL() {
 }
 
 void TranslateRankerImpl::EnableLogging(bool value) {
-  if (value != is_logging_enabled_) {
+  if (value != is_uma_logging_enabled_) {
     DVLOG(3) << "Cleared translate events cache.";
     event_cache_.clear();
   }
-  is_logging_enabled_ = value;
+  is_uma_logging_enabled_ = value;
 }
 
 uint32_t TranslateRankerImpl::GetModelVersion() const {
@@ -344,11 +344,11 @@ void TranslateRankerImpl::AddTranslateEvent(
     const metrics::TranslateEventProto& event,
     ukm::SourceId ukm_source_id) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  if (is_logging_enabled_) {
+  if (ukm_source_id != ukm::kInvalidSourceId) {
+    SendEventToUKM(event, ukm_source_id);
+  }
+  if (is_uma_logging_enabled_) {
     DVLOG(3) << "Adding translate ranker event.";
-    if (ukm_source_id != ukm::kInvalidSourceId) {
-      SendEventToUKM(event, ukm_source_id);
-    }
     event_cache_.push_back(event);
   }
 }

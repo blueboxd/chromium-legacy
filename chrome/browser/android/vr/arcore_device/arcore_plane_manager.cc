@@ -19,13 +19,12 @@ std::pair<gfx::Quaternion, gfx::Point3F> GetPositionAndOrientationFromArPose(
           gfx::Point3F(pose_raw[4], pose_raw[5], pose_raw[6])};
 }
 
-device::mojom::Pose GetMojomPoseFromArPose(const ArSession* session,
-                                           const ArPose* pose) {
-  device::mojom::Pose result;
-  std::tie(result.orientation, result.position) =
+device::Pose GetPoseFromArPose(const ArSession* session, const ArPose* pose) {
+  std::pair<gfx::Quaternion, gfx::Point3F> orientation_and_position =
       GetPositionAndOrientationFromArPose(session, pose);
 
-  return result;
+  return device::Pose(orientation_and_position.second,
+                      orientation_and_position.first);
 }
 
 device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
@@ -231,8 +230,7 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
 
       // pose
       ArPlane_getCenterPose(arcore_session_, ar_plane, ar_pose_.get());
-      mojom::Pose pose =
-          GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
+      device::Pose pose = GetPoseFromArPose(arcore_session_, ar_pose_.get());
 
       // polygon
       int32_t polygon_size;
@@ -252,20 +250,20 @@ mojom::XRPlaneDetectionDataPtr ArCorePlaneManager::GetDetectedPlanesData()
       }
 
       DVLOG(3) << __func__ << ": plane_id: " << plane_id.GetUnsafeValue()
-               << ", position=" << pose.position.ToString()
-               << ", orientation=" << pose.orientation.ToString();
+               << ", position=" << pose.position().ToString()
+               << ", orientation=" << pose.orientation().ToString();
 
       updated_planes.push_back(mojom::XRPlaneData::New(
           plane_id.GetUnsafeValue(),
-          mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
-          device::mojom::Pose::New(pose), std::move(vertices)));
+          mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type), pose,
+          std::move(vertices)));
     } else {
       DVLOG(3) << __func__ << ": plane_id: " << plane_id.GetUnsafeValue()
                << ", position=untracked, orientation=untracked";
 
       updated_planes.push_back(mojom::XRPlaneData::New(
           plane_id.GetUnsafeValue(), device::mojom::XRPlaneOrientation::UNKNOWN,
-          nullptr, std::vector<mojom::XRPlanePointDataPtr>{}));
+          base::nullopt, std::vector<mojom::XRPlanePointDataPtr>{}));
     }
   }
 
@@ -315,10 +313,9 @@ base::Optional<gfx::Transform> ArCorePlaneManager::GetMojoFromPlane(
   const ArPlane* plane = ArAsPlane(it->second.plane.get());
 
   ArPlane_getCenterPose(arcore_session_, plane, ar_pose_.get());
-  mojom::Pose mojo_pose =
-      GetMojomPoseFromArPose(arcore_session_, ar_pose_.get());
+  device::Pose pose = GetPoseFromArPose(arcore_session_, ar_pose_.get());
 
-  return mojo::ConvertTo<gfx::Transform>(mojo_pose);
+  return pose.ToTransform();
 }
 
 device::internal::ScopedArCoreObject<ArAnchor*>

@@ -28,7 +28,7 @@
               "device_os_flavor": "google",
               "device_type": "bullhead",
               "os": "Android",
-              "pool": "chrome.tests.perf-fyi.template"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 7200,
@@ -75,7 +75,7 @@
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.tests.perf-fyi.template"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 7200,
@@ -127,7 +127,7 @@
               "device_os_flavor": "google",
               "device_type": "walleye",
               "os": "Android",
-              "pool": "chrome.tests.perf-fyi.template"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 7200,
@@ -232,7 +232,7 @@
               "gpu": "10de",
               "id": "build186-b7",
               "os": "Ubuntu-14.04",
-              "pool": "chrome.tests.perf-fyi.template"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 7200,
@@ -290,7 +290,7 @@
               "gpu": null,
               "id": "build370-a7",
               "os": "Windows-10",
-              "pool": "chrome.tests.perf-fyi.template"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 7200,

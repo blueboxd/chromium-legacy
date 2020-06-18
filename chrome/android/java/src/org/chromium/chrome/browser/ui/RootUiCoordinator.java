@@ -63,12 +63,12 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.system.StatusBarColorController;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerFactory;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetControllerInternal;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
-import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerFactory;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
+import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -126,7 +126,7 @@ public class RootUiCoordinator
     private VrModeObserver mVrModeObserver;
 
     private BottomSheetManager mBottomSheetManager;
-    private BottomSheetControllerInternal mBottomSheetController;
+    private ManagedBottomSheetController mBottomSheetController;
     private SnackbarManager mBottomSheetSnackbarManager;
 
     private ScrimView mScrimView;
@@ -626,7 +626,8 @@ public class RootUiCoordinator
         // TODO(1093999): Componentize SnackbarManager so BottomSheetController can own this.
         Callback<View> sheetInitializedCallback = (view) -> {
             mBottomSheetSnackbarManager = new SnackbarManager(mActivity,
-                    view.findViewById(R.id.bottom_sheet_snackbar_container),
+                    view.findViewById(org.chromium.components.browser_ui.bottomsheet.R.id
+                                              .bottom_sheet_snackbar_container),
                     mActivity.getWindowAndroid());
         };
 
@@ -654,7 +655,7 @@ public class RootUiCoordinator
     }
 
     /** @return The {@link BottomSheetController} for this activity. */
-    public BottomSheetControllerInternal getBottomSheetController() {
+    public ManagedBottomSheetController getBottomSheetController() {
         return mBottomSheetController;
     }
 

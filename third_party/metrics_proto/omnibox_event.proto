@@ -14,7 +14,7 @@ package metrics;
 import "omnibox_input_type.proto";
 
 // Stores information about an omnibox interaction.
-// Next tag: 21
+// Next tag: 22
 message OmniboxEventProto {
   // The timestamp for the event, in seconds.
   // This value comes from Chromium's TimeTicks::Now(), which is an abstract
@@ -387,4 +387,8 @@ message OmniboxEventProto {
                             // or tabbing to it.
   }
   optional KeywordModeEntryMethod keyword_mode_entry_method = 20;
+
+  // Whether the omnibox input is a search query that is started
+  // by clicking on a image tile.
+  optional bool is_query_started_from_tile = 21;
 }

@@ -70,8 +70,7 @@ public class ExternalNavigationHandler {
     private static final String TAG = "UrlHandler";
 
     // Enables debug logging on a local build.
-    // TODO(jochen): switch this back to false.
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static final String WTAI_URL_PREFIX = "wtai://wp/";
     private static final String WTAI_MC_URL_PREFIX = "wtai://wp/mc;";
@@ -161,6 +160,17 @@ public class ExternalNavigationHandler {
     @VisibleForTesting
     static final String INTENT_ACTION_HISTOGRAM = "Android.Intent.OverrideUrlLoadingIntentAction";
 
+    // Helper class to return a boolean by reference.
+    private static class MutableBoolean {
+        private Boolean mValue = null;
+        public void set(boolean value) {
+            mValue = value;
+        }
+        public Boolean get() {
+            return mValue;
+        }
+    }
+
     private final ExternalNavigationDelegate mDelegate;
 
     /**
@@ -218,9 +228,16 @@ public class ExternalNavigationHandler {
                 && !UrlUtilities.isValidForIntentFallbackNavigation(browserFallbackUrl)) {
             browserFallbackUrl = null;
         }
+
+        // TODO(https://crbug.com/1096099): Refactor shouldOverrideUrlLoadingInternal, splitting it
+        // up to separate out the notions wanting to fire an external intent vs being able to.
+        MutableBoolean canLaunchExternalFallbackResult = new MutableBoolean();
+
         long time = SystemClock.elapsedRealtime();
         @OverrideUrlLoadingResult
-        int result = shouldOverrideUrlLoadingInternal(params, targetIntent, browserFallbackUrl);
+        int result = shouldOverrideUrlLoadingInternal(
+                params, targetIntent, browserFallbackUrl, canLaunchExternalFallbackResult);
+        assert canLaunchExternalFallbackResult.get() != null;
         RecordHistogram.recordTimesHistogram(
                 "Android.StrictMode.OverrideUrlLoadingTime", SystemClock.elapsedRealtime() - time);
 
@@ -237,31 +254,64 @@ public class ExternalNavigationHandler {
                 && (params.getRedirectHandler() == null
                         // For instance, if this is a chained fallback URL, we ignore it.
                         || !params.getRedirectHandler().shouldNotOverrideUrlLoading())) {
-            result = handleFallbackUrl(params, targetIntent, browserFallbackUrl);
+            result = handleFallbackUrl(params, targetIntent, browserFallbackUrl,
+                    canLaunchExternalFallbackResult.get());
         }
         if (DEBUG) printDebugShouldOverrideUrlLoadingResult(result);
         return result;
     }
 
-    private @OverrideUrlLoadingResult int handleFallbackUrl(
-            ExternalNavigationParams params, Intent targetIntent, String browserFallbackUrl) {
+    private @OverrideUrlLoadingResult int handleFallbackUrl(ExternalNavigationParams params,
+            Intent targetIntent, String browserFallbackUrl, boolean canLaunchExternalFallback) {
         if (mDelegate.isIntentToInstantApp(targetIntent)) {
             RecordHistogram.recordEnumeratedHistogram("Android.InstantApps.DirectInstantAppsIntent",
                     AiaIntent.FALLBACK_USED, AiaIntent.NUM_ENTRIES);
         }
-        // Launch WebAPK if it can handle the URL.
-        try {
-            Intent intent = Intent.parseUri(browserFallbackUrl, Intent.URI_INTENT_SCHEME);
-            sanitizeQueryIntentActivitiesIntent(intent);
-            List<ResolveInfo> resolvingInfos = queryIntentActivities(intent);
-            if (!isAlreadyInTargetWebApk(resolvingInfos, params)
-                    && launchWebApkIfSoleIntentHandler(resolvingInfos, intent)) {
-                return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+
+        if (canLaunchExternalFallback) {
+            if (shouldBlockAllExternalAppLaunches(params) || params.isIncognito()) {
+                throw new SecurityException("Context is not allowed to launch an external app.");
             }
-        } catch (Exception e) {
-            if (DEBUG) Log.i(TAG, "Could not parse fallback url as intent");
+            // Launch WebAPK if it can handle the URL.
+            try {
+                Intent intent = Intent.parseUri(browserFallbackUrl, Intent.URI_INTENT_SCHEME);
+                sanitizeQueryIntentActivitiesIntent(intent);
+                List<ResolveInfo> resolvingInfos = queryIntentActivities(intent);
+                if (!isAlreadyInTargetWebApk(resolvingInfos, params)
+                        && launchWebApkIfSoleIntentHandler(resolvingInfos, intent)) {
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                }
+            } catch (Exception e) {
+                if (DEBUG) Log.i(TAG, "Could not parse fallback url as intent");
+            }
+
+            // If the fallback URL is a link to Play Store, send the user to Play Store app
+            // instead: crbug.com/638672.
+            Pair<String, String> appInfo = maybeGetPlayStoreAppIdAndReferrer(browserFallbackUrl);
+            if (appInfo != null) {
+                String marketReferrer = TextUtils.isEmpty(appInfo.second)
+                        ? ContextUtils.getApplicationContext().getPackageName()
+                        : appInfo.second;
+                return sendIntentToMarket(appInfo.first, marketReferrer, params);
+            }
         }
-        return clobberCurrentTabWithFallbackUrl(browserFallbackUrl, params);
+
+        // For subframes, we don't support fallback url for now.
+        // http://crbug.com/364522.
+        if (!params.isMainFrame()) {
+            if (DEBUG) Log.i(TAG, "Don't support fallback url in subframes");
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // NOTE: any further redirection from fall-back URL should not override URL loading.
+        // Otherwise, it can be used in chain for fingerprinting multiple app installation
+        // status in one shot. In order to prevent this scenario, we notify redirection
+        // handler that redirection from the current navigation should stay in this app.
+        if (params.getRedirectHandler() != null) {
+            params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
+        }
+        if (DEBUG) Log.i(TAG, "clobberCurrentTab called");
+        return clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl());
     }
 
     private void printDebugShouldOverrideUrlLoadingResult(int result) {
@@ -298,6 +348,19 @@ public class ExternalNavigationHandler {
             }
         }
         return true;
+    }
+
+    /**
+     * https://crbug.com/1094442: Don't allow any external navigation on AUTO_SUBFRAME navigation
+     * (eg. initial ad frame navigation).
+     */
+    private boolean blockExternalNavFromAutoSubframe(ExternalNavigationParams params) {
+        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
+        if (pageTransitionCore == PageTransition.AUTO_SUBFRAME) {
+            if (DEBUG) Log.i(TAG, "Auto navigation in subframe");
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -966,15 +1029,20 @@ public class ExternalNavigationHandler {
         return false;
     }
 
+    // Check if we're navigating under conditions that should never launch an external app.
+    private boolean shouldBlockAllExternalAppLaunches(ExternalNavigationParams params) {
+        return blockExternalNavFromAutoSubframe(params) || blockExternalNavWhileBackgrounded(params)
+                || blockExternalNavFromBackgroundTab(params) || ignoreBackForwardNav(params);
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent targetIntent,
-            @Nullable String browserFallbackUrl) {
+            @Nullable String browserFallbackUrl, MutableBoolean canLaunchExternalFallbackResult) {
         sanitizeQueryIntentActivitiesIntent(targetIntent);
+        // Don't allow external fallback URLs by default.
+        canLaunchExternalFallbackResult.set(false);
 
-        if (blockExternalNavWhileBackgrounded(params) || blockExternalNavFromBackgroundTab(params)
-                || ignoreBackForwardNav(params)) {
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
+        if (shouldBlockAllExternalAppLaunches(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
         if (handleWithAutofillAssistant(params, targetIntent, browserFallbackUrl)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
@@ -1055,6 +1123,10 @@ public class ExternalNavigationHandler {
         if (!maybeSetSmsPackage(targetIntent)) maybeRecordPhoneIntentMetrics(targetIntent);
 
         if (hasIntentScheme) recordIntentActionMetrics(targetIntent);
+
+        // From this point on, we have determined it is safe to launch an External App from a
+        // fallback URL, provided the user isn't in incognito.
+        if (!params.isIncognito()) canLaunchExternalFallbackResult.set(true);
 
         Intent debugIntent = new Intent(targetIntent);
         List<ResolveInfo> resolvingInfos = queryIntentActivities(targetIntent);
@@ -1181,44 +1253,6 @@ public class ExternalNavigationHandler {
             if (DEBUG) Log.i(TAG, "Intent to Play Store.");
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
-    }
-
-    /**
-     * Clobber the current tab with fallback URL.
-     *
-     * @param browserFallbackUrl The fallback URL.
-     * @param params The external navigation params.
-     * @return {@link OverrideUrlLoadingResult} if the tab was clobbered, or we launched an
-     *         intent.
-     */
-    private @OverrideUrlLoadingResult int clobberCurrentTabWithFallbackUrl(
-            String browserFallbackUrl, ExternalNavigationParams params) {
-        // If the fallback URL is a link to Play Store, send the user to Play Store app
-        // instead: crbug.com/638672.
-        Pair<String, String> appInfo = maybeGetPlayStoreAppIdAndReferrer(browserFallbackUrl);
-        if (appInfo != null) {
-            String marketReferrer = TextUtils.isEmpty(appInfo.second)
-                    ? ContextUtils.getApplicationContext().getPackageName()
-                    : appInfo.second;
-            return sendIntentToMarket(appInfo.first, marketReferrer, params);
-        }
-
-        // For subframes, we don't support fallback url for now.
-        // http://crbug.com/364522.
-        if (!params.isMainFrame()) {
-            if (DEBUG) Log.i(TAG, "Don't support fallback url in subframes");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        // NOTE: any further redirection from fall-back URL should not override URL loading.
-        // Otherwise, it can be used in chain for fingerprinting multiple app installation
-        // status in one shot. In order to prevent this scenario, we notify redirection
-        // handler that redirection from the current navigation should stay in this app.
-        if (params.getRedirectHandler() != null) {
-            params.getRedirectHandler().setShouldNotOverrideUrlLoadingOnCurrentRedirectChain();
-        }
-        if (DEBUG) Log.i(TAG, "clobberCurrentTab called");
-        return clobberCurrentTab(browserFallbackUrl, params.getReferrerUrl());
     }
 
     /**

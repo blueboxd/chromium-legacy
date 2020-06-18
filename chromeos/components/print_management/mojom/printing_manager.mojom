@@ -131,4 +131,8 @@ interface PrintingMetadataProvider {
   // a print job. Returns true if cancelling the print job was attempted.
   // Returns false if cancelling the print job was not attempted.
   CancelPrintJob(string id) => (bool attempted_cancel);
+
+  // Returns true if the user is allowed to delete their own print job history
+  // (default value is true for non-managed users).
+  GetDeletePrintJobHistoryAllowedByPolicy() => (bool is_allowed_by_policy);
 };

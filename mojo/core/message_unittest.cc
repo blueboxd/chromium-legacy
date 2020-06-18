@@ -30,7 +30,7 @@ using MessageTest = test::MojoTestBase;
 // handles.
 class TestMessageBase {
  public:
-  virtual ~TestMessageBase() {}
+  virtual ~TestMessageBase() = default;
 
   static MojoMessageHandle MakeMessageHandle(
       std::unique_ptr<TestMessageBase> message) {

@@ -423,7 +423,7 @@
           'bullhead',
         ],
         'test_suites': {
-          'gtest_tests': 'android_lollipop_marshmallow_gtests',
+          'gtest_tests': 'android_marshmallow_wpr_gtests',
         },
         'os_type': 'android',
       },
@@ -700,11 +700,8 @@
           'walleye',
         ],
         'additional_compile_targets': [
-          'chrome_modern_public_bundle__base_libs_and_assets_expectations',
-          'monochrome_public_bundle__base_libs_and_assets_expectations',
+          'validate_expectations',
           'monochrome_static_initializers',
-          'trichrome_chrome_bundle__base_libs_and_assets_expectations',
-          'trichrome_library_apk_libs_and_assets_expectations',
           'weblayer_shell',
         ],
         'test_suites': {
@@ -1766,6 +1763,23 @@
           'isolated_scripts': 'skia_renderer_isolated_scripts',
         },
       },
+      'Mac Builder Next': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'chromium_mac_scripts',
+        }
+      },
+      'Mac10.15 Tests': {
+        'mixins': [
+            'mac_10.15',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
+        },
+      },
       'Mojo Android': {
         'swarming': {
           'dimension_sets': [
@@ -2016,7 +2030,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_11e608c',
         ],
         'test_suites': {
           'isolated_scripts': 'ios13_beta_simulator_tests'
@@ -2035,7 +2049,7 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_11e608c',
         ],
         'test_suites': {
           'isolated_scripts': 'ios13_sdk_simulator_tests'
@@ -4215,15 +4229,6 @@
         'mixins': [
             'mac_10.14',
             'no_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-        },
-      },
-      'Mac10.15 Tests': {
-        'mixins': [
-            'mac_10.15',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',

@@ -33,7 +33,7 @@ namespace core {
 class AtomicFlag {
  public:
   AtomicFlag() : flag_(0) {}
-  ~AtomicFlag() {}
+  ~AtomicFlag() = default;
 
   void Set(bool value) { base::subtle::Release_Store(&flag_, value ? 1 : 0); }
 

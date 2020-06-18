@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -35,7 +36,8 @@ void AddField(const std::string& label,
 // forms vectors, so it can be changed if needed.
 DEFINE_BINARY_PROTO_FUZZER(const AutofillQueryResponseContents& response) {
   std::vector<FormStructure*> forms;
-  FormStructure::ProcessQueryResponse(response, forms, nullptr);
+  FormStructure::ProcessQueryResponseForTesting(
+      response, forms, test::GetEncodedSignatures(forms), nullptr);
 
   FormData form_data;
   AddField("username", "username", "text", &form_data);
@@ -43,7 +45,8 @@ DEFINE_BINARY_PROTO_FUZZER(const AutofillQueryResponseContents& response) {
 
   FormStructure form(form_data);
   forms.push_back(&form);
-  FormStructure::ProcessQueryResponse(response, forms, nullptr);
+  FormStructure::ProcessQueryResponseForTesting(
+      response, forms, test::GetEncodedSignatures(forms), nullptr);
 }
 
 }  // namespace

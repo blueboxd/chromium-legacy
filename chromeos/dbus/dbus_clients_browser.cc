@@ -10,7 +10,6 @@
 #include "chromeos/dbus/arc_keymaster_client.h"
 #include "chromeos/dbus/arc_midis_client.h"
 #include "chromeos/dbus/arc_obb_mounter_client.h"
-#include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/cec_service_client.h"
 #include "chromeos/dbus/chunneld_client.h"
 #include "chromeos/dbus/cicerone_client.h"
@@ -26,7 +25,6 @@
 #include "chromeos/dbus/fake_arc_keymaster_client.h"
 #include "chromeos/dbus/fake_arc_midis_client.h"
 #include "chromeos/dbus/fake_arc_obb_mounter_client.h"
-#include "chromeos/dbus/fake_arc_oemcrypto_client.h"
 #include "chromeos/dbus/fake_cec_service_client.h"
 #include "chromeos/dbus/fake_chunneld_client.h"
 #include "chromeos/dbus/fake_cicerone_client.h"
@@ -86,8 +84,6 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
   arc_midis_client_ = CREATE_DBUS_CLIENT(ArcMidisClient, use_real_clients);
   arc_obb_mounter_client_ =
       CREATE_DBUS_CLIENT(ArcObbMounterClient, use_real_clients);
-  arc_oemcrypto_client_ =
-      CREATE_DBUS_CLIENT(ArcOemCryptoClient, use_real_clients);
   cec_service_client_ = CREATE_DBUS_CLIENT(CecServiceClient, use_real_clients);
   cros_disks_client_ = CREATE_DBUS_CLIENT(CrosDisksClient, use_real_clients);
   chunneld_client_ = CREATE_DBUS_CLIENT(ChunneldClient, use_real_clients);
@@ -127,7 +123,6 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   arc_keymaster_client_->Init(system_bus);
   arc_midis_client_->Init(system_bus);
   arc_obb_mounter_client_->Init(system_bus);
-  arc_oemcrypto_client_->Init(system_bus);
   cec_service_client_->Init(system_bus);
   chunneld_client_->Init(system_bus);
   cicerone_client_->Init(system_bus);

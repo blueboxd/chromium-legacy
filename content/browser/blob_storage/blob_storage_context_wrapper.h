@@ -8,11 +8,11 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 
 namespace content {
 

@@ -5,7 +5,6 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_keyed_service_factory.h"
 
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
-#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_keyed_service.h"
 #include "ios/web/public/browser_state.h"
 
@@ -20,7 +19,7 @@ BreadcrumbPersistentStorageKeyedServiceFactory::GetInstance() {
 // static
 BreadcrumbPersistentStorageKeyedService*
 BreadcrumbPersistentStorageKeyedServiceFactory::GetForBrowserState(
-    ChromeBrowserState* browser_state) {
+    web::BrowserState* browser_state) {
   return static_cast<BreadcrumbPersistentStorageKeyedService*>(
       GetInstance()->GetServiceForBrowserState(browser_state, true));
 }

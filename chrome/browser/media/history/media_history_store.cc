@@ -34,7 +34,7 @@
 
 namespace {
 
-constexpr int kCurrentVersionNumber = 3;
+constexpr int kCurrentVersionNumber = 4;
 constexpr int kCompatibleVersionNumber = 1;
 
 constexpr base::FilePath::CharType kMediaHistoryDatabaseName[] =
@@ -111,6 +111,26 @@ int MigrateFrom2To3(sql::Database* db, sql::MetaTable* meta_table) {
     return target_version;
   }
   return 2;
+}
+
+int MigrateFrom3To4(sql::Database* db, sql::MetaTable* meta_table) {
+  // Version 4 adds a new column to mediaFeed.
+  const int target_version = 3;
+
+  // The mediaFeed table might not exist if the feature is disabled.
+  if (!db->DoesTableExist("mediaFeed")) {
+    meta_table->SetVersionNumber(target_version);
+    return target_version;
+  }
+
+  static const char k3To4Sql[] =
+      "ALTER TABLE mediaFeed ADD COLUMN safe_search_result INTEGER DEFAULT 0;";
+  sql::Transaction transaction(db);
+  if (transaction.Begin() && db->Execute(k3To4Sql) && transaction.Commit()) {
+    meta_table->SetVersionNumber(target_version);
+    return target_version;
+  }
+  return 3;
 }
 
 bool IsCauseFromExpiration(const net::CookieChangeCause& cause) {
@@ -393,6 +413,8 @@ sql::InitStatus MediaHistoryStore::CreateOrUpgradeIfNeeded() {
     cur_version = MigrateFrom1To2(db_.get(), meta_table_.get());
   if (cur_version == 2)
     cur_version = MigrateFrom2To3(db_.get(), meta_table_.get());
+  if (cur_version == 3)
+    cur_version = MigrateFrom3To4(db_.get(), meta_table_.get());
 
   if (cur_version == kCurrentVersionNumber)
     return sql::INIT_OK;
@@ -835,14 +857,19 @@ MediaHistoryKeyedService::PendingSafeSearchCheckList
 MediaHistoryStore::GetPendingSafeSearchCheckMediaFeedItems() {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
 
-  if (!CanAccessDatabase() || !feed_items_table_)
+  if (!CanAccessDatabase() || !feed_items_table_ || !feeds_table_)
     return MediaHistoryKeyedService::PendingSafeSearchCheckList();
 
-  return feed_items_table_->GetPendingSafeSearchCheckItems();
+  auto items = feeds_table_->GetPendingSafeSearchCheckItems();
+  for (auto& item : feed_items_table_->GetPendingSafeSearchCheckItems())
+    items.push_back(std::move(item));
+
+  return items;
 }
 
 void MediaHistoryStore::StoreMediaFeedItemSafeSearchResults(
-    std::map<int64_t, media_feeds::mojom::SafeSearchResult> results) {
+    std::map<MediaHistoryKeyedService::SafeSearchID,
+             media_feeds::mojom::SafeSearchResult> results) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!CanAccessDatabase())
     return;
@@ -857,8 +884,19 @@ void MediaHistoryStore::StoreMediaFeedItemSafeSearchResults(
 
   std::set<int64_t> feed_ids;
   for (auto& entry : results) {
-    auto feed_id =
-        feed_items_table_->StoreSafeSearchResult(entry.first, entry.second);
+    if (entry.first.first ==
+        MediaHistoryKeyedService::SafeSearchCheckedType::kFeed) {
+      if (!feeds_table_->StoreSafeSearchResult(entry.first.second,
+                                               entry.second)) {
+        DB()->RollbackTransaction();
+        return;
+      }
+
+      continue;
+    }
+
+    auto feed_id = feed_items_table_->StoreSafeSearchResult(entry.first.second,
+                                                            entry.second);
 
     if (!feed_id.has_value()) {
       DB()->RollbackTransaction();

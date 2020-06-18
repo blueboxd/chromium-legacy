@@ -42,10 +42,6 @@ class DisplayConfigurator;
 class DisplayManager;
 }  // namespace display
 
-namespace exo {
-class FileHelper;
-}  // namespace exo
-
 namespace gfx {
 class Insets;
 class Point;
@@ -186,10 +182,10 @@ class TrayBluetoothHelper;
 class VideoActivityNotifier;
 class VideoDetector;
 class WallpaperControllerImpl;
-class WaylandServerController;
 class WindowCycleController;
 class WindowPositioner;
 class WindowTreeHostManager;
+class ArcInputMethodBoundsTracker;
 
 enum class LoginStatus;
 
@@ -263,9 +259,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Returns true if a system-modal dialog window is currently open.
   static bool IsSystemModalWindowOpen();
 
-  // If necessary, initializes the Wayland server.
-  void InitWaylandServer(std::unique_ptr<exo::FileHelper> file_helper);
-  void DestroyWaylandServer();
+  // Track/Untrack InputMethod bounds.
+  void TrackInputMethodBounds(ArcInputMethodBoundsTracker* tracker);
+  void UntrackTrackInputMethodBounds(ArcInputMethodBoundsTracker* tracker);
 
   // Creates a default views::NonClientFrameView for use by windows in the
   // Ash environment.
@@ -709,7 +705,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<LockStateController> lock_state_controller_;
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
-  std::unique_ptr<WaylandServerController> wayland_server_controller_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;

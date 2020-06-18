@@ -82,7 +82,7 @@ class MockAutofillDownloadManager : public AutofillDownloadManager {
   class StubObserver : public AutofillDownloadManager::Observer {
     void OnLoadedServerPredictions(
         std::string response,
-        const std::vector<std::string>& form_signatures) override {}
+        const autofill::FormAndFieldSignatures& form_signatures) override {}
   };
 
   StubObserver fake_observer;

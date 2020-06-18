@@ -17,7 +17,7 @@
 #include "base/sys_byteorder.h"
 #include "base/test/task_environment.h"
 #include "content/browser/speech/audio_buffer.h"
-#include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "content/public/browser/google_streaming_api.pb.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"

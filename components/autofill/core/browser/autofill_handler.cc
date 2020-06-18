@@ -239,14 +239,18 @@ bool AutofillHandler::GetCachedFormAndField(const FormData& form,
   return *autofill_field != nullptr;
 }
 
-FormStructure* AutofillHandler::FindCachedFormBySignature(
-    FormSignature form_signature) const {
+size_t AutofillHandler::FindCachedFormsBySignature(
+    FormSignature form_signature,
+    std::vector<FormStructure*>* form_structures) const {
+  size_t hits_num = 0;
   for (const auto& p : form_structures_) {
     if (p.second->form_signature() == form_signature) {
-      return p.second.get();
+      ++hits_num;
+      if (form_structures)
+        form_structures->push_back(p.second.get());
     }
   }
-  return nullptr;
+  return hits_num;
 }
 
 FormStructure* AutofillHandler::FindCachedFormByRendererId(

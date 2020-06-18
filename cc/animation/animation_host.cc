@@ -759,13 +759,6 @@ void AnimationHost::SetMutationUpdate(
   }
 }
 
-size_t AnimationHost::CompositedAnimationsCount() const {
-  size_t composited_animations_count = 0;
-  for (const auto& it : ticking_animations_)
-    composited_animations_count += it->TickingKeyframeModelsCount();
-  return composited_animations_count;
-}
-
 void AnimationHost::SetAnimationCounts(
     size_t total_animations_count,
     bool current_frame_had_raf,

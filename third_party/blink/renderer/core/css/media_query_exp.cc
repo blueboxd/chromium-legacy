@@ -82,6 +82,11 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
   if (media_feature == media_feature_names::kPrefersReducedMotionMediaFeature)
     return ident == CSSValueID::kNoPreference || ident == CSSValueID::kReduce;
 
+  if (RuntimeEnabledFeatures::PrefersReducedDataEnabled() &&
+      media_feature == media_feature_names::kPrefersReducedDataMediaFeature) {
+    return ident == CSSValueID::kNoPreference || ident == CSSValueID::kReduce;
+  }
+
   if (RuntimeEnabledFeatures::ForcedColorsEnabled()) {
     if (media_feature == media_feature_names::kForcedColorsMediaFeature) {
       return ident == CSSValueID::kNone || ident == CSSValueID::kActive;
@@ -216,6 +221,9 @@ static inline bool FeatureWithoutValue(
              media_feature_names::kPrefersColorSchemeMediaFeature ||
          media_feature ==
              media_feature_names::kPrefersReducedMotionMediaFeature ||
+         (media_feature ==
+              media_feature_names::kPrefersReducedDataMediaFeature &&
+          RuntimeEnabledFeatures::PrefersReducedDataEnabled()) ||
          (media_feature == media_feature_names::kForcedColorsMediaFeature &&
           RuntimeEnabledFeatures::ForcedColorsEnabled()) ||
          (media_feature ==

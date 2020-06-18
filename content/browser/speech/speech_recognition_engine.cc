@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/speech/audio_buffer.h"
-#include "content/browser/speech/proto/google_streaming_api.pb.h"
+#include "content/public/browser/google_streaming_api.pb.h"
 #include "google_apis/google_api_keys.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"

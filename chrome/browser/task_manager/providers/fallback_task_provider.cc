@@ -110,6 +110,11 @@ void FallbackTaskProvider::ShowTaskLater(Task* task) {
 }
 
 void FallbackTaskProvider::ShowPendingTask(Task* task) {
+  // Pending tasks belong to the secondary source, and showing one means that
+  // Chromium is missing a primary task provider. TODO(avi): DCHECK here with a
+  // reference to https://crbug.com/739782 in that there is a primary provider
+  // needed that isn't present. https://crbug.com/1083509
+
   pending_shown_tasks_.erase(task);
   ShowTask(task);
 }

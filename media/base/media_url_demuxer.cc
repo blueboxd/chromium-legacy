@@ -5,6 +5,7 @@
 #include "media/base/media_url_demuxer.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 
 namespace media {

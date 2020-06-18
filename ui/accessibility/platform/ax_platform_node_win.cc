@@ -643,7 +643,7 @@ void AXPlatformNodeWin::NotifyAccessibilityEvent(ax::mojom::Event event_type) {
     ::VariantInit(old_value.Receive());
     base::win::ScopedVariant new_value;
     ::VariantInit(new_value.Receive());
-    GetPropertyValue((*uia_property), new_value.Receive());
+    GetPropertyValueImpl((*uia_property), new_value.Receive());
     ::UiaRaiseAutomationPropertyChangedEvent(this, (*uia_property), old_value,
                                              new_value);
   }
@@ -4011,7 +4011,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
     // Collapse all unknown property IDs into a single bucket.
     base::UmaHistogramSparse("Accessibility.WinAPIs.GetPropertyValue", 0);
   }
+  return GetPropertyValueImpl(property_id, result);
+}
 
+HRESULT AXPlatformNodeWin::GetPropertyValueImpl(PROPERTYID property_id,
+                                                VARIANT* result) {
   UIA_VALIDATE_CALL_1_ARG(result);
 
   result->vt = VT_EMPTY;

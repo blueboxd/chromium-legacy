@@ -456,7 +456,7 @@ void ServiceWorkerRegistry::UpdateToActiveState(int64_t registration_id,
                                                 const GURL& origin,
                                                 StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->UpdateToActiveState(
+  GetRemoteStorageControl()->UpdateToActiveState(
       registration_id, origin,
       base::BindOnce(&ServiceWorkerRegistry::DidUpdateToActiveState,
                      weak_factory_.GetWeakPtr(), origin, std::move(callback)));
@@ -1381,6 +1381,20 @@ bool ServiceWorkerRegistry::ShouldPurgeOnShutdown(const url::Origin& origin) {
     return false;
   return special_storage_policy_->IsStorageSessionOnly(origin.GetURL()) &&
          !special_storage_policy_->IsStorageProtected(origin.GetURL());
+}
+
+mojo::Remote<storage::mojom::ServiceWorkerStorageControl>&
+ServiceWorkerRegistry::GetRemoteStorageControl() {
+  DCHECK(!(remote_storage_control_.is_bound() &&
+           !remote_storage_control_.is_connected()))
+      << "Rebinding is not supported yet.";
+
+  if (!remote_storage_control_.is_bound()) {
+    storage_control_->Bind(
+        remote_storage_control_.BindNewPipeAndPassReceiver());
+  }
+
+  return remote_storage_control_;
 }
 
 }  // namespace content

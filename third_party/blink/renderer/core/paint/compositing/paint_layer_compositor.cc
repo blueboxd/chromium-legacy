@@ -38,9 +38,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
-#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
-#include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -97,23 +95,6 @@ void PaintLayerCompositor::SetCompositingModeEnabled(bool enable) {
 void PaintLayerCompositor::UpdateAcceleratedCompositingSettings() {
   if (auto* root_layer = RootLayer())
     root_layer->SetNeedsCompositingInputsUpdate();
-}
-
-static LayoutVideo* FindFullscreenVideoLayoutObject(Document& document) {
-  // Recursively find the document that is in fullscreen.
-  Element* fullscreen_element = Fullscreen::FullscreenElementFrom(document);
-  Document* content_document = &document;
-  while (auto* frame_owner =
-             DynamicTo<HTMLFrameOwnerElement>(fullscreen_element)) {
-    content_document = frame_owner->contentDocument();
-    if (!content_document)
-      return nullptr;
-    fullscreen_element = Fullscreen::FullscreenElementFrom(*content_document);
-  }
-  if (!IsA<HTMLVideoElement>(fullscreen_element))
-    return nullptr;
-  LayoutObject* layout_object = fullscreen_element->GetLayoutObject();
-  return To<LayoutVideo>(layout_object);
 }
 
 void PaintLayerCompositor::UpdateIfNeededRecursive(
@@ -229,18 +210,6 @@ void PaintLayerCompositor::SetNeedsCompositingUpdate(
     return;
 
   Lifecycle().EnsureStateAtMost(DocumentLifecycle::kLayoutClean);
-}
-
-GraphicsLayer* PaintLayerCompositor::OverlayFullscreenVideoGraphicsLayer()
-    const {
-  LayoutVideo* video =
-      FindFullscreenVideoLayoutObject(layout_view_.GetDocument());
-  if (!video || !video->Layer()->HasCompositedLayerMapping() ||
-      !video->VideoElement()->UsesOverlayFullscreenVideo()) {
-    return nullptr;
-  }
-
-  return video->Layer()->GetCompositedLayerMapping()->MainGraphicsLayer();
 }
 
 void PaintLayerCompositor::UpdateWithoutAcceleratedCompositing(
@@ -548,36 +517,6 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
   return nullptr;
 }
 
-GraphicsLayer* PaintLayerCompositor::GetXrOverlayLayer() const {
-  // immersive-ar DOM overlay mode is very similar to fullscreen video, using
-  // the AR camera image instead of a video element as a background that's
-  // separately composited in the browser. The fullscreened DOM content is shown
-  // on top of that, same as HTML video controls.
-  DCHECK(IsMainFrame());
-  if (!layout_view_.GetDocument().IsXrOverlay())
-    return nullptr;
-
-  Element* fullscreen_element =
-      Fullscreen::FullscreenElementFrom(layout_view_.GetDocument());
-  if (!fullscreen_element)
-    return nullptr;
-
-  LayoutBoxModelObject* box = fullscreen_element->GetLayoutBoxModelObject();
-  if (!box) {
-    // Currently, only HTML fullscreen elements are supported for this mode,
-    // not others such as SVG or MathML.
-    DVLOG(1) << "no LayoutBoxModelObject for element " << fullscreen_element;
-    return nullptr;
-  }
-
-  // The fullscreen element will be in its own layer due to
-  // CompositingReasonFinder treating this scenario as a direct_reason.
-  PaintLayer* layer = box->Layer();
-  DCHECK(layer);
-  GraphicsLayer* full_screen_layer = layer->GraphicsLayerBacking(box);
-  return full_screen_layer;
-}
-
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
   if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup() ||
       !IsMainFrame())
@@ -585,10 +524,11 @@ GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
 
   // Start from the full screen overlay layer if exists. Other layers will be
   // skipped during painting.
-  if (auto* layer = GetXrOverlayLayer())
-    return layer;
-  if (auto* layer = OverlayFullscreenVideoGraphicsLayer())
-    return layer;
+  if (PaintLayer* layer =
+          layout_view_.GetFrameView()->GetFullScreenOverlayLayer()) {
+    if (layer->HasCompositedLayerMapping())
+      return layer->GetCompositedLayerMapping()->MainGraphicsLayer();
+  }
 
   return RootGraphicsLayer();
 }

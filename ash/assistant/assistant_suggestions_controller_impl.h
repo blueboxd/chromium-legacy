@@ -50,6 +50,8 @@ class AssistantSuggestionsControllerImpl
   void FetchConversationStarters();
   void ProvideConversationStarters();
 
+  void UpdateOnboardingSuggestions();
+
   AssistantSuggestionsModel model_;
 
   ScopedObserver<AssistantController, AssistantControllerObserver>

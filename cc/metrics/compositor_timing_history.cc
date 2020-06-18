@@ -46,10 +46,6 @@ class CompositorTimingHistory::UMAReporter {
   // crbug.com/758439: the following functions are used to report timing in
   // certain conditions targeting blink / compositor animations.
   // Only the renderer would get the meaningful data.
-  virtual void AddDrawIntervalWithCompositedAnimations(
-      base::TimeDelta duration) = 0;
-  virtual void AddDrawIntervalWithMainThreadAnimations(
-      base::TimeDelta duration) = 0;
   virtual void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta duration) = 0;
 };
@@ -310,18 +306,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
                                              interval);
   }
 
-  void AddDrawIntervalWithCompositedAnimations(
-      base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.DrawIntervalWithCompositedAnimations", interval);
-  }
-
-  void AddDrawIntervalWithMainThreadAnimations(
-      base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.DrawIntervalWithMainThreadAnimations", interval);
-  }
-
   void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
@@ -396,12 +380,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   // browser rendering fps is not at 60.
   void AddDrawInterval(base::TimeDelta interval) override {}
 
-  void AddDrawIntervalWithCompositedAnimations(
-      base::TimeDelta interval) override {}
-
-  void AddDrawIntervalWithMainThreadAnimations(
-      base::TimeDelta interval) override {}
-
   void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta interval) override {}
 
@@ -456,10 +434,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
   ~NullUMAReporter() override = default;
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
   void AddDrawInterval(base::TimeDelta interval) override {}
-  void AddDrawIntervalWithCompositedAnimations(
-      base::TimeDelta inverval) override {}
-  void AddDrawIntervalWithMainThreadAnimations(
-      base::TimeDelta inverval) override {}
   void AddDrawIntervalWithCustomPropertyAnimations(
       base::TimeDelta inverval) override {}
   void AddBeginImplFrameLatency(base::TimeDelta delta) override {}
@@ -861,10 +835,6 @@ void CompositorTimingHistory::WillDraw() {
 }
 
 void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
-                                      size_t composited_animations_count,
-                                      size_t main_thread_animations_count,
-                                      bool current_frame_had_raf,
-                                      bool next_frame_has_pending_raf,
                                       bool has_custom_property_animations) {
   DCHECK_NE(base::TimeTicks(), draw_start_time_);
   base::TimeTicks draw_end_time = Now();
@@ -898,42 +868,16 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
           TRACE_ID_LOCAL(g_num_long_draw_intervals), draw_end_time);
       g_num_long_draw_intervals++;
     }
-    if (composited_animations_count > 0 &&
-        previous_frame_had_composited_animations_)
-      uma_reporter_->AddDrawIntervalWithCompositedAnimations(draw_interval);
     if (has_custom_property_animations &&
         previous_frame_had_custom_property_animations_)
       uma_reporter_->AddDrawIntervalWithCustomPropertyAnimations(draw_interval);
   }
-  previous_frame_had_composited_animations_ = composited_animations_count > 0;
   previous_frame_had_custom_property_animations_ =
       has_custom_property_animations;
   draw_end_time_prev_ = draw_end_time;
 
-  if (used_new_active_tree) {
-    bool current_main_frame_had_visual_update =
-        main_thread_animations_count > 0 || current_frame_had_raf;
-    bool previous_main_frame_had_visual_update =
-        previous_frame_had_main_thread_animations_ || previous_frame_had_raf_;
-    if (current_main_frame_had_visual_update &&
-        previous_main_frame_had_visual_update) {
-      base::TimeDelta draw_interval =
-          draw_end_time - new_active_tree_draw_end_time_prev_;
-      uma_reporter_->AddDrawIntervalWithMainThreadAnimations(draw_interval);
-    }
-    previous_frame_had_main_thread_animations_ =
-        main_thread_animations_count > 0;
-    // It's possible that two consecutive main frames both run a rAF but are
-    // separated by idle time (for example: calling requestAnimationFrame from a
-    // setInterval function, with nothing else producing a main frame
-    // in-between). To avoid incorrectly counting those cases as long draw
-    // intervals, we only update previous_frame_had_raf_ if the current frame
-    // also already has a future raf scheduled.
-    previous_frame_had_raf_ =
-        current_frame_had_raf && next_frame_has_pending_raf;
-
+  if (used_new_active_tree)
     new_active_tree_draw_end_time_prev_ = draw_end_time;
-  }
   draw_start_time_ = base::TimeTicks();
 }
 

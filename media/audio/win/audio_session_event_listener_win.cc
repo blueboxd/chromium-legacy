@@ -4,6 +4,8 @@
 
 #include "media/audio/win/audio_session_event_listener_win.h"
 
+#include "base/logging.h"
+
 namespace media {
 
 AudioSessionEventListener::AudioSessionEventListener(

@@ -1953,9 +1953,6 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedTransformAnimation) {
   EXPECT_EQ(CheckCanStartElementOnCompositor(*target),
             CompositorAnimations::kNoFailure);
   EXPECT_EQ(document->Timeline().AnimationsNeedingUpdateCount(), 1u);
-  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
-  EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
 }
 
 TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
@@ -1990,9 +1987,6 @@ TEST_P(AnimationCompositorAnimationsTest, CompositedScaleAnimation) {
   EXPECT_EQ(CheckCanStartElementOnCompositor(*target),
             CompositorAnimations::kNoFailure);
   EXPECT_EQ(document->Timeline().AnimationsNeedingUpdateCount(), 1u);
-  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
-  EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,
@@ -2025,9 +2019,6 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(cc_transform->is_currently_animating);
   // Make sure the animation is started on the compositor.
   EXPECT_EQ(document->Timeline().AnimationsNeedingUpdateCount(), 1u);
-  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->MainThreadAnimationsCount(), 0u);
-  EXPECT_EQ(host->CompositedAnimationsCount(), 1u);
   // Make sure the backface-visibility is correctly set, both in blink and on
   // the cc::Layer.
   EXPECT_FALSE(transform->Matrix().IsIdentity());  // Rotated
@@ -2075,9 +2066,6 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(CheckCanStartElementOnCompositor(*target) &
               CompositorAnimations::kTargetHasInvalidCompositingState);
   EXPECT_EQ(document->Timeline().AnimationsNeedingUpdateCount(), 4u);
-  cc::AnimationHost* host = document->View()->GetCompositorAnimationHost();
-  EXPECT_EQ(host->MainThreadAnimationsCount(), 4u);
-  EXPECT_EQ(host->CompositedAnimationsCount(), 0u);
 }
 
 // Regression test for https://crbug.com/999333. We were relying on the Document

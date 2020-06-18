@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/credit_card_cloud_token_data.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 
@@ -281,6 +282,16 @@ void FillQueryField(AutofillPageQueryRequest_Form_Field* field,
                     unsigned signature,
                     const char* name,
                     const char* control_type);
+
+// Creates the structure of signatures that would be encoded by
+// FormStructure::EncodeUploadRequest() and FormStructure::EncodeQueryRequest()
+// and consumed by FormStructure::ParseQueryResponse() and
+// FormStructure::ParseApiQueryResponse().
+//
+// Perhaps a neater way would be to move this to TestFormStructure.
+FormAndFieldSignatures GetEncodedSignatures(const FormStructure& form);
+FormAndFieldSignatures GetEncodedSignatures(
+    const std::vector<FormStructure*>& forms);
 
 // Calls the required functions on the given external delegate to cause the
 // delegate to display a popup.

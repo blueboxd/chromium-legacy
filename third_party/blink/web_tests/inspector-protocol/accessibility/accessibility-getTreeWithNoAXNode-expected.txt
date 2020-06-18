@@ -5,21 +5,21 @@ WebArea
     article
       *Ignored
 {
-  "nodeId": "<string>",
-  "ignored": true,
-  "ignoredReasons": [
-    {
-      "name": "notRendered",
-      "value": {
-        "type": "boolean",
-        "value": true
-      }
+    domNode : div#hidden
+    ignored : true
+    ignoredReasons : [
+        [0] : {
+            name : notRendered
+            value : {
+                type : boolean
+                value : true
+            }
+        }
+    ]
+    nodeId : <string>
+    role : {
+        type : internalRole
+        value : Ignored
     }
-  ],
-  "role": {
-    "type": "internalRole",
-    "value": "Ignored"
-  },
-  "domNode": "div#hidden"
 }
 

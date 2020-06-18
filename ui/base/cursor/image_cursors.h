@@ -8,8 +8,6 @@
 #include <memory>
 
 #include "base/component_export.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/base/cursor/cursor_size.h"
 #include "ui/display/display.h"
 #include "ui/gfx/native_widget_types.h"
@@ -23,15 +21,9 @@ class CursorLoader;
 class COMPONENT_EXPORT(UI_BASE_CURSOR) ImageCursors {
  public:
   ImageCursors();
+  ImageCursors(const ImageCursors&) = delete;
+  ImageCursors& operator=(const ImageCursors&) = delete;
   ~ImageCursors();
-
-  // Creates the |cursor_loader_|. This is optional as |cursor_loader_| is
-  // lazily created if Initialize() isn't explictly called.
-  // However note that it matters which thread is used to create
-  // |cursor_loader_| (see CursorLoaderOzone,  crbug.com/741106). Thus explicit
-  // call to Initialize may be useful to ensure initialization happens on the
-  // right thread.
-  void Initialize();
 
   // Returns the scale and rotation of the currently loaded cursor.
   float GetScale() const;
@@ -47,17 +39,12 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) ImageCursors {
   // Sets the platform cursor based on the native type of |cursor|.
   void SetPlatformCursor(gfx::NativeCursor* cursor);
 
-  base::WeakPtr<ImageCursors> GetWeakPtr();
-
  private:
   // Reloads the all loaded cursors in the cursor loader.
   void ReloadCursors();
 
   std::unique_ptr<CursorLoader> cursor_loader_;
   CursorSize cursor_size_;
-  base::WeakPtrFactory<ImageCursors> weak_ptr_factory_{this};
-
-  DISALLOW_COPY_AND_ASSIGN(ImageCursors);
 };
 
 }  // namespace ui

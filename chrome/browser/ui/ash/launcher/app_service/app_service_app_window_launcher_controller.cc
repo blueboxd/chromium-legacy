@@ -221,7 +221,7 @@ void AppServiceAppWindowLauncherController::OnWindowVisibilityChanged(
     crostini_tracker_->OnWindowVisibilityChanged(window, shelf_id.app_id);
 
   // This will match both the Plugin VM App window and installer.
-  if (shelf_id.app_id == plugin_vm::kPluginVmAppId) {
+  if (shelf_id.app_id == plugin_vm::kPluginVmShelfAppId) {
     // Plugin VM can only be used on the primary profile.
     MultiUserWindowManagerHelper::GetWindowManager()->SetWindowOwner(
         window,
@@ -564,8 +564,8 @@ ash::ShelfID AppServiceAppWindowLauncherController::GetShelfId(
       return ash::ShelfID(shelf_app_id);
   }
 
-  if (plugin_vm::IsPluginVmWindow(window))
-    return ash::ShelfID(plugin_vm::kPluginVmAppId);
+  if (plugin_vm::IsPluginVmAppWindow(window))
+    return ash::ShelfID(plugin_vm::kPluginVmShelfAppId);
 
   ash::ShelfID shelf_id;
   if (arc_tracker_)

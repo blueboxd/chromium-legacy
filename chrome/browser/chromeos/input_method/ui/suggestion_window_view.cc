@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
+#include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -139,15 +140,15 @@ void SuggestionWindowView::MakeVisible() {
   SizeToContents();
 }
 
-void SuggestionWindowView::Show(const base::string16& text,
-                                const size_t confirmed_length,
-                                const bool show_tab) {
+void SuggestionWindowView::Show(const SuggestionDetails& details) {
   MaybeInitializeSuggestionViews(1);
   candidate_views_[0]->SetEnabled(true);
-  candidate_views_[0]->SetView(text, confirmed_length, show_tab);
-  candidate_views_[0]->SetMinWidth(
-      setting_link_view_->GetPreferredSize().width());
-  setting_link_view_->SetVisible(true);
+  candidate_views_[0]->SetView(details);
+  if (details.show_setting_link) {
+    candidate_views_[0]->SetMinWidth(
+        setting_link_view_->GetPreferredSize().width());
+  }
+  setting_link_view_->SetVisible(details.show_setting_link);
   MakeVisible();
 }
 

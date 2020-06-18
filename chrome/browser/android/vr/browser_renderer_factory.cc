@@ -61,6 +61,9 @@ std::unique_ptr<BrowserRenderer> BrowserRendererFactory::Create(
         base::BindRepeating(&KeyboardDelegate::UpdateInput,
                             base::Unretained(keyboard_delegate.get())));
   }
+
+  params->ui_initial_state.gvr_input_support = !params->cardboard_gamepad;
+
   auto audio_delegate = std::make_unique<SoundsManagerAudioDelegate>();
   auto ui = ui_factory->Create(
       vr_gl_thread, vr_gl_thread, std::move(keyboard_delegate),

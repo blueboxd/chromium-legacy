@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
+#include "base/logging.h"
 #include "base/numerics/ranges.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_bus.h"

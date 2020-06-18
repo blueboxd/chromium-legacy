@@ -14,6 +14,7 @@
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
+#include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkYUVAIndex.h"
 #include "third_party/skia/include/core/SkYUVASizeInfo.h"
@@ -238,6 +239,7 @@ class CC_PAINT_EXPORT PaintImage {
 
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
+  gpu::Mailbox GetMailbox() const;
   AnimationType animation_type() const { return animation_type_; }
   CompletionState completion_state() const { return completion_state_; }
   bool is_multipart() const { return is_multipart_; }
@@ -260,9 +262,7 @@ class CC_PAINT_EXPORT PaintImage {
     return paint_worklet_input_ ? false : GetSkImage()->isLazyGenerated();
   }
   bool IsPaintWorklet() const { return !!paint_worklet_input_; }
-  bool IsTextureBacked() const {
-    return paint_worklet_input_ ? false : GetSkImage()->isTextureBacked();
-  }
+  bool IsTextureBacked() const;
   int width() const;
   int height() const;
   SkColorSpace* color_space() const {

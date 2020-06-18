@@ -11,8 +11,15 @@
 
 namespace updater {
 
-// Returns a directory where updater files or its data is stored.
-bool GetProductDirectory(base::FilePath* path);
+// Returns the base directory common to all versions of the updater. For
+// instance, this function may return %localappdata%\Chromium\ChromiumUpdater
+// for a User install.
+bool GetBaseDirectory(base::FilePath* path);
+
+// Returns a versioned directory under which the running version of the updater
+// stores its files and data. For instance, this function may return
+// %localappdata%\Chromium\ChromiumUpdater\1.2.3.4 for a User install.
+bool GetVersionedDirectory(base::FilePath* path);
 
 // Initializes logging for an executable.
 void InitLogging(const base::FilePath::StringType& filename);

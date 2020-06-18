@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"

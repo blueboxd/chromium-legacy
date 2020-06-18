@@ -9,14 +9,17 @@
 #include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
 
 class BreadcrumbPersistentStorageKeyedService;
-class ChromeBrowserState;
+
+namespace web {
+class BrowserState;
+}  // namespace web
 
 class BreadcrumbPersistentStorageKeyedServiceFactory
     : public BrowserStateKeyedServiceFactory {
  public:
   static BreadcrumbPersistentStorageKeyedServiceFactory* GetInstance();
   static BreadcrumbPersistentStorageKeyedService* GetForBrowserState(
-      ChromeBrowserState* browser_state);
+      web::BrowserState* browser_state);
 
  private:
   friend class base::NoDestructor<

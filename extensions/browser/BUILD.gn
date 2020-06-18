@@ -335,6 +335,7 @@ jumbo_source_set("browser_sources") {
     "state_store.h",
     "suggest_permission_util.cc",
     "suggest_permission_util.h",
+    "supervised_user_extensions_delegate.h",
     "task_queue_util.cc",
     "task_queue_util.h",
     "ui_util.cc",

@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
+#include "chrome/browser/chromeos/printing/print_management/printing_manager_factory.h"
 #include "chrome/browser/chromeos/scheduler_configuration_manager.h"
 #include "chrome/browser/component_updater/component_updater_prefs.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry.h"
@@ -137,7 +138,6 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/security_state/core/security_state.h"
 #include "components/sessions/core/session_id_generator.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -549,6 +549,10 @@ const char kPreviewsLPROriginProbeCache[] =
 const char kSupervisedUsersNextId[] = "LocallyManagedUsersNextId";
 #endif  // defined(OS_CHROMEOS)
 
+// Deprecated 6/2020
+const char kStricterMixedContentTreatmentEnabled[] =
+    "security_state.stricter_mixed_content_treatment_enabled";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -650,6 +654,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterDictionaryPref(kPreviewsLPRHostBlacklist);
   registry->RegisterDictionaryPref(kPreviewsLPRProbeCache);
   registry->RegisterDictionaryPref(kPreviewsLPROriginProbeCache);
+
+  registry->RegisterBooleanPref(kStricterMixedContentTreatmentEnabled, true);
 }
 
 }  // namespace
@@ -901,7 +907,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   safe_browsing::RegisterProfilePrefs(registry);
   blocked_content::SafeBrowsingTriggeredPopupBlocker::RegisterProfilePrefs(
       registry);
-  security_state::RegisterProfilePrefs(registry);
   SessionStartupPref::RegisterProfilePrefs(registry);
   SharingSyncPreference::RegisterProfilePrefs(registry);
   sync_sessions::SessionSyncPrefs::RegisterProfilePrefs(registry);
@@ -1040,6 +1045,8 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::quick_unlock::FingerprintStorage::RegisterProfilePrefs(registry);
   chromeos::quick_unlock::PinStoragePrefs::RegisterProfilePrefs(registry);
   chromeos::Preferences::RegisterProfilePrefs(registry);
+  chromeos::printing::print_management::PrintingManagerFactory ::
+      RegisterProfilePrefs(registry);
   chromeos::PrintJobHistoryService::RegisterProfilePrefs(registry);
   chromeos::EnterprisePrintersProvider::RegisterProfilePrefs(registry);
   chromeos::parent_access::ParentAccessService::RegisterProfilePrefs(registry);
@@ -1289,4 +1296,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kPreviewsLPRHostBlacklist);
   profile_prefs->ClearPref(kPreviewsLPRProbeCache);
   profile_prefs->ClearPref(kPreviewsLPROriginProbeCache);
+
+  // Added 6/2020
+  profile_prefs->ClearPref(kStricterMixedContentTreatmentEnabled);
 }

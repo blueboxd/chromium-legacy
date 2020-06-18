@@ -6,9 +6,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/test/assistant_ash_test_base.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/session/session_types.h"
 #include "ash/public/cpp/session/user_info.h"
@@ -18,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/unguessable_token.h"
 #include "chromeos/services/assistant/public/cpp/default_assistant_interaction_subscriber.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -34,6 +38,20 @@ using chromeos::assistant::mojom::Assistant;
 using chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
 using chromeos::assistant::mojom::AssistantInteractionType;
 using chromeos::assistant::mojom::AssistantQuerySource;
+using chromeos::assistant::mojom::AssistantSuggestion;
+using chromeos::assistant::mojom::AssistantSuggestionPtr;
+using chromeos::assistant::mojom::AssistantSuggestionType;
+
+// Helpers ---------------------------------------------------------------------
+
+template <typename T>
+void FindChildByClassName(views::View* parent, T** result) {
+  DCHECK_EQ(nullptr, *result);
+  for (auto* child : parent->children()) {
+    if (child->GetClassName() == T::kViewClassName)
+      *result = static_cast<T*>(child);
+  }
+}
 
 // Mocks -----------------------------------------------------------------------
 
@@ -86,18 +104,22 @@ class AssistantOnboardingViewTest : public AssistantAshTestBase {
  public:
   AssistantOnboardingViewTest()
       : AssistantAshTestBase(
-            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
-  ~AssistantOnboardingViewTest() override = default;
-
-  // AssistantAshTestBase:
-  void SetUp() override {
-    AssistantAshTestBase::SetUp();
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     feature_list_.InitAndEnableFeature(
         chromeos::assistant::features::kAssistantBetterOnboarding);
   }
 
+  ~AssistantOnboardingViewTest() override = default;
+
   void AdvanceClock(base::TimeDelta time_delta) {
     task_environment()->AdvanceClock(time_delta);
+  }
+
+  void SetOnboardingSuggestions(
+      std::vector<AssistantSuggestionPtr> onboarding_suggestions) {
+    const_cast<AssistantSuggestionsModel*>(
+        AssistantSuggestionsController::Get()->GetModel())
+        ->SetOnboardingSuggestions(std::move(onboarding_suggestions));
   }
 
   views::Label* greeting_label() {
@@ -220,7 +242,7 @@ TEST_F(AssistantOnboardingViewTest, ShouldHaveExpectedIntro) {
 TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionPresses) {
   // Show Assistant UI and verify onboarding suggestions exist.
   ShowAssistantUi();
-  ASSERT_GT(suggestions_grid()->children().size(), 0u);
+  ASSERT_FALSE(suggestions_grid()->children().empty());
 
   // Expect a text interaction originating from the onboarding feature...
   MockAssistantInteractionSubscriber subscriber(assistant_service());
@@ -232,6 +254,30 @@ TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionPresses) {
 
   // ...when an onboarding suggestion is pressed.
   TapOnAndWait(suggestions_grid()->children().at(0));
+}
+
+TEST_F(AssistantOnboardingViewTest, ShouldHandleSuggestionUpdates) {
+  // Show Assistant UI and verify suggestions exist.
+  ShowAssistantUi();
+  EXPECT_FALSE(suggestions_grid()->children().empty());
+
+  // Manually create a suggestion.
+  AssistantSuggestionPtr suggestion = AssistantSuggestion::New();
+  suggestion->id = base::UnguessableToken();
+  suggestion->type = AssistantSuggestionType::kBetterOnboarding;
+  suggestion->text = "Forced suggestion";
+
+  // Force a model update.
+  std::vector<AssistantSuggestionPtr> suggestions;
+  suggestions.push_back(std::move(suggestion));
+  SetOnboardingSuggestions(std::move(suggestions));
+
+  // Verify view state is updated to reflect model state.
+  ASSERT_EQ(suggestions_grid()->children().size(), 1u);
+  views::Label* label = nullptr;
+  FindChildByClassName(suggestions_grid()->children().at(0), &label);
+  ASSERT_NE(nullptr, label);
+  EXPECT_EQ(label->GetText(), base::UTF8ToUTF16("Forced suggestion"));
 }
 
 }  // namespace ash

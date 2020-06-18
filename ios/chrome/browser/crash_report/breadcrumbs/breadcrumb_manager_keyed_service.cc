@@ -8,6 +8,11 @@
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager.h"
 #include "ios/web/public/browser_state.h"
 
+void BreadcrumbManagerKeyedService::SetPreviousEvents(
+    const std::vector<std::string>& events) {
+  breadcrumb_manager_->SetPreviousEvents(events);
+}
+
 void BreadcrumbManagerKeyedService::AddEvent(const std::string& event) {
   std::string event_log =
       base::StringPrintf("%s%s", browsing_mode_.c_str(), event.c_str());
@@ -22,6 +27,10 @@ void BreadcrumbManagerKeyedService::AddObserver(
 void BreadcrumbManagerKeyedService::RemoveObserver(
     BreadcrumbManagerObserver* observer) {
   breadcrumb_manager_->RemoveObserver(observer);
+}
+
+size_t BreadcrumbManagerKeyedService::GetEventCount() {
+  return breadcrumb_manager_->GetEventCount();
 }
 
 const std::list<std::string> BreadcrumbManagerKeyedService::GetEvents(

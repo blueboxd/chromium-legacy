@@ -104,7 +104,7 @@ void PluginVmServiceProvider::ShowSettingsPage(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (request.subpage_path() == kShowSettingsPageDetails) {
     chrome::ShowAppManagementPage(
-        profile, plugin_vm::kPluginVmAppId,
+        profile, plugin_vm::kPluginVmShelfAppId,
         AppManagementEntryPoint::kDBusServicePluginVm);
   } else if (request.subpage_path() == kShowSettingsPageSharedPaths) {
     chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(

@@ -66,7 +66,7 @@ void FocusAllPluginVmWindows() {
   DCHECK(shelf_model);
   AppWindowLauncherItemController* launcher_item_controller =
       shelf_model->GetAppWindowLauncherItemController(
-          ash::ShelfID(kPluginVmAppId));
+          ash::ShelfID(kPluginVmShelfAppId));
   if (!launcher_item_controller) {
     return;
   }

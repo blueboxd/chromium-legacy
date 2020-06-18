@@ -267,14 +267,6 @@ std::unique_ptr<SeedResponse> MaybeImportFirstRunSeed(
   return nullptr;
 }
 
-// Called when the VariationsSeedStore first stores a seed.
-void OnInitialSeedStored() {
-#if defined(OS_ANDROID)
-  android::MarkVariationsSeedAsStored();
-  android::ClearJavaFirstRunPrefs();
-#endif
-}
-
 }  // namespace
 
 #if defined(OS_CHROMEOS)
@@ -377,7 +369,6 @@ VariationsService::VariationsService(
                            std::make_unique<VariationsSeedStore>(
                                local_state,
                                MaybeImportFirstRunSeed(local_state),
-                               base::BindOnce(&OnInitialSeedStored),
                                /*signature_verification_enabled=*/true),
                            ui_string_overrider),
       last_request_was_http_retry_(false) {

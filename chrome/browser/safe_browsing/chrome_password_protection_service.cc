@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -85,6 +87,8 @@
 #include "chrome/browser/safe_browsing/android/password_reuse_controller_android.h"
 #endif
 
+using base::RecordAction;
+using base::UserMetricsAction;
 using content::BrowserThread;
 using sync_pb::GaiaPasswordReuse;
 using sync_pb::UserEventSpecifics;
@@ -891,16 +895,22 @@ void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
       GetNavigationIDFromPrefsByOrigin(profile_->GetPrefs(), origin);
 
   if (action == WarningAction::CHANGE_PASSWORD) {
+    RecordAction(UserMetricsAction(
+        "PasswordProtection.ModalWarning.ChangePasswordButtonClicked"));
     LogDialogMetricsOnChangePassword(web_contents, password_type, navigation_id,
                                      outcome, verdict_type, verdict_token);
     OpenChangePasswordUrl(web_contents, password_type);
   } else if (action == WarningAction::IGNORE_WARNING &&
              password_type.is_account_syncing()) {
+    RecordAction(UserMetricsAction(
+        "PasswordProtection.ModalWarning.IgnoreButtonClicked"));
     // No need to change state.
     MaybeLogPasswordReuseDialogInteraction(
         navigation_id, PasswordReuseDialogInteraction::WARNING_ACTION_IGNORED);
   } else if (action == WarningAction::CLOSE &&
              password_type.is_account_syncing()) {
+    RecordAction(
+        UserMetricsAction("PasswordProtection.ModalWarning.CloseWarning"));
     // No need to change state.
     MaybeLogPasswordReuseDialogInteraction(
         navigation_id, PasswordReuseDialogInteraction::WARNING_UI_IGNORED);
@@ -968,11 +978,15 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
   const Origin origin = Origin::Create(url);
 
   if (action == WarningAction::CHANGE_PASSWORD) {
+    RecordAction(UserMetricsAction(
+        "PasswordProtection.PageInfo.ChangePasswordButtonClicked"));
     OpenChangePasswordUrl(web_contents, password_type);
     return;
   }
 
   if (action == WarningAction::MARK_AS_LEGITIMATE) {
+    RecordAction(
+        UserMetricsAction("PasswordProtection.PageInfo.MarkSiteAsLegitimate"));
     // TODO(vakh): There's no good enum to report this dialog interaction.
     // This needs to be investigated.
     UpdateSecurityState(SB_THREAT_TYPE_SAFE, password_type, web_contents);
@@ -1006,6 +1020,8 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
 void ChromePasswordProtectionService::HandleResetPasswordOnInterstitial(
     content::WebContents* web_contents,
     WarningAction action) {
+  RecordAction(
+      UserMetricsAction("PasswordProtection.Interstitial.ResetPassword"));
   // Opens enterprise change password page in current tab for user to change
   // password.
   OpenUrl(web_contents, GetEnterpriseChangePasswordURL(),

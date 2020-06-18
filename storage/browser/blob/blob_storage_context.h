@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/memory_dump_provider.h"
+#include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -29,7 +30,6 @@
 #include "storage/browser/blob/blob_memory_controller.h"
 #include "storage/browser/blob/blob_storage_constants.h"
 #include "storage/browser/blob/blob_storage_registry.h"
-#include "storage/browser/blob/mojom/blob_storage_context.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 
 class GURL;

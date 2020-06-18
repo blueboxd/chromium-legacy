@@ -64,9 +64,9 @@ TEST_F(FormJsTest, KeyUpEventFocused) {
        "var ev = new KeyboardEvent('keyup', {bubbles:true});"
        "e.dispatchEvent(ev);");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
-  WaitForCondition(^bool {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return block_observer->form_activity_info() != nullptr;
-  });
+  }));
   autofill::TestFormActivityInfo* info = observer_->form_activity_info();
   ASSERT_TRUE(info);
   EXPECT_EQ("keyup", info->form_activity.type);
@@ -97,9 +97,9 @@ TEST_F(FormJsTest, FocusMainFrame) {
   ASSERT_FALSE(observer_->form_activity_info());
   ExecuteJavaScript(@"document.getElementById('id1').focus();");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
-  WaitForCondition(^bool {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return block_observer->form_activity_info() != nullptr;
-  });
+  }));
   autofill::TestFormActivityInfo* info = observer_->form_activity_info();
   ASSERT_TRUE(info);
   EXPECT_EQ("focus", info->form_activity.type);
@@ -135,9 +135,9 @@ TEST_F(FormJsTest, FocusSameOriginIFrame) {
       @"document.getElementById('frame1').contentDocument.getElementById('id1')"
       @".focus()");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
-  WaitForCondition(^bool {
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return block_observer->form_activity_info() != nullptr;
-  });
+  }));
   autofill::TestFormActivityInfo* info = observer_->form_activity_info();
   ASSERT_TRUE(info);
   EXPECT_EQ("focus", info->form_activity.type);
@@ -172,10 +172,10 @@ TEST_F(FormJsTest, AddForm) {
       @"document.body.appendChild(form);");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
   __block autofill::TestFormActivityInfo* info = nil;
-  WaitForCondition(^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     info = block_observer->form_activity_info();
     return info != nil;
-  });
+  }));
   EXPECT_EQ("form_changed", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
 }
@@ -190,10 +190,10 @@ TEST_F(FormJsTest, AddInput) {
       @"document.getElementById('formId').appendChild(input);");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
   __block autofill::TestFormActivityInfo* info = nil;
-  WaitForCondition(^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     info = block_observer->form_activity_info();
     return info != nil;
-  });
+  }));
   EXPECT_EQ("form_changed", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
 }
@@ -208,10 +208,10 @@ TEST_F(FormJsTest, AddSelect) {
       @"document.getElementById('formId').appendChild(select);");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
   __block autofill::TestFormActivityInfo* info = nil;
-  WaitForCondition(^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     info = block_observer->form_activity_info();
     return info != nil;
-  });
+  }));
   EXPECT_EQ("form_changed", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
 }
@@ -229,10 +229,10 @@ TEST_F(FormJsTest, AddOption) {
       @"document.getElementById('select1').appendChild(option);");
   autofill::TestFormActivityObserver* block_observer = observer_.get();
   __block autofill::TestFormActivityInfo* info = nil;
-  WaitForCondition(^{
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     info = block_observer->form_activity_info();
     return info != nil;
-  });
+  }));
   EXPECT_EQ("form_changed", info->form_activity.type);
   EXPECT_FALSE(info->form_activity.input_missing);
 }

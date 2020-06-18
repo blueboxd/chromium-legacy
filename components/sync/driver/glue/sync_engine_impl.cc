@@ -240,12 +240,6 @@ void SyncEngineImpl::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {
   }
 }
 
-void SyncEngineImpl::FlushDirectory() const {
-  DCHECK(IsInitialized());
-  sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::SaveChanges, backend_));
-}
-
 void SyncEngineImpl::RequestBufferedProtocolEventsAndEnableForwarding() {
   sync_task_runner_->PostTask(
       FROM_HERE,

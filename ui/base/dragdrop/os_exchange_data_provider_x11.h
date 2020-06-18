@@ -19,7 +19,8 @@ class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderX11
  public:
   // |x_window| is the window the cursor is over, and |selection| is the set of
   // data being offered.
-  OSExchangeDataProviderX11(XID x_window, const SelectionFormatMap& selection);
+  OSExchangeDataProviderX11(x11::Window x_window,
+                            const SelectionFormatMap& selection);
 
   // Creates a Provider for sending drag information. This creates its own,
   // hidden X11 window to own send data.

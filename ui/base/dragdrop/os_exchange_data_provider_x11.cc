@@ -15,7 +15,7 @@
 namespace ui {
 
 OSExchangeDataProviderX11::OSExchangeDataProviderX11(
-    XID x_window,
+    x11::Window x_window,
     const SelectionFormatMap& selection)
     : XOSExchangeDataProvider(x_window, selection) {}
 
@@ -72,7 +72,7 @@ void OSExchangeDataProviderX11::SetFileContents(
 bool OSExchangeDataProviderX11::DispatchXEvent(x11::Event* x11_event) {
   XEvent* xev = &x11_event->xlib_event();
   if (xev->type == x11::SelectionRequestEvent::opcode &&
-      xev->xany.window == x_window()) {
+      xev->xany.window == static_cast<uint32_t>(x_window())) {
     selection_owner().OnSelectionRequest(*x11_event);
     return true;
   }

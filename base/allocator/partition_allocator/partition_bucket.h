@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/base_export.h"
@@ -63,7 +64,7 @@ struct PartitionBucket {
     // Caller must check that the size is not above the kGenericMaxDirectMapped
     // limit before calling. This also guards against integer overflow in the
     // calculation here.
-    DCHECK(size <= kGenericMaxDirectMapped);
+    PA_DCHECK(size <= kGenericMaxDirectMapped);
     return (size + kSystemPageOffsetMask) & kSystemPageBaseMask;
   }
 

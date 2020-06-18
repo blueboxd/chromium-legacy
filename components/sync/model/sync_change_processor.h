@@ -20,16 +20,14 @@ class Location;
 
 namespace syncer {
 
-class LocalChangeObserver;
-
 // An interface for services that handle receiving SyncChanges.
 class SyncChangeProcessor {
  public:
   // Whether a context change should force a datatype refresh or not.
   enum ContextRefreshStatus { NO_REFRESH, REFRESH_NEEDED };
 
-  SyncChangeProcessor();
-  virtual ~SyncChangeProcessor();
+  SyncChangeProcessor() = default;
+  virtual ~SyncChangeProcessor() = default;
 
   // Process a list of SyncChanges.
   // Returns: base::nullopt if no error was encountered, otherwise a
@@ -48,21 +46,6 @@ class SyncChangeProcessor {
   // WARNING: This can be a potentially slow & memory intensive operation and
   // should only be used when absolutely necessary / sparingly.
   virtual SyncDataList GetAllSyncData(ModelType type) const = 0;
-
-  // Updates the context for |type|, triggering an optional context refresh.
-  // Default implementation does nothing. A type's context is a per-client blob
-  // that can affect all SyncData sent to/from the server, much like a cookie.
-  // TODO(zea): consider pulling the refresh logic into a separate method
-  // unrelated to datatype implementations.
-  virtual SyncError UpdateDataTypeContext(ModelType type,
-                                          ContextRefreshStatus refresh_status,
-                                          const std::string& context);
-
-  // Adds an observer of local sync changes. This observer is notified when
-  // local sync changes are applied. |observer| is not owned by the
-  // SyncChangeProcessor.
-  virtual void AddLocalChangeObserver(LocalChangeObserver* observer);
-  virtual void RemoveLocalChangeObserver(LocalChangeObserver* observer);
 };
 
 }  // namespace syncer

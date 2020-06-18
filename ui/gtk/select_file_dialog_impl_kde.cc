@@ -75,7 +75,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
     KDialogParams(const std::string& type,
                   const std::string& title,
                   const base::FilePath& default_path,
-                  XID parent,
+                  gfx::AcceleratedWidget parent,
                   bool file_operation,
                   bool multiple_selection)
         : type(type),
@@ -88,7 +88,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
     std::string type;
     std::string title;
     base::FilePath default_path;
-    XID parent;
+    gfx::AcceleratedWidget parent;
     bool file_operation;
     bool multiple_selection;
   };
@@ -106,7 +106,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
   void GetKDialogCommandLine(const std::string& type,
                              const std::string& title,
                              const base::FilePath& default_path,
-                             XID parent,
+                             gfx::AcceleratedWidget parent,
                              bool file_operation,
                              bool multiple_selection,
                              base::CommandLine* command_line);
@@ -130,22 +130,22 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
   void CreateSelectFolderDialog(Type type,
                                 const std::string& title,
                                 const base::FilePath& default_path,
-                                XID parent,
+                                gfx::AcceleratedWidget parent,
                                 void* params);
 
   void CreateFileOpenDialog(const std::string& title,
                             const base::FilePath& default_path,
-                            XID parent,
+                            gfx::AcceleratedWidget parent,
                             void* params);
 
   void CreateMultiFileOpenDialog(const std::string& title,
                                  const base::FilePath& default_path,
-                                 XID parent,
+                                 gfx::AcceleratedWidget parent,
                                  void* params);
 
   void CreateSaveAsDialog(const std::string& title,
                           const base::FilePath& default_path,
-                          XID parent,
+                          gfx::AcceleratedWidget parent,
                           void* params);
 
   // Common function for OnSelectSingleFileDialogResponse and
@@ -155,15 +155,15 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
                               std::unique_ptr<KDialogOutputParams> results);
 
   void OnSelectSingleFileDialogResponse(
-      XID parent,
+      gfx::AcceleratedWidget parent,
       void* params,
       std::unique_ptr<KDialogOutputParams> results);
   void OnSelectMultiFileDialogResponse(
-      XID parent,
+      gfx::AcceleratedWidget parent,
       void* params,
       std::unique_ptr<KDialogOutputParams> results);
   void OnSelectSingleFolderDialogResponse(
-      XID parent,
+      gfx::AcceleratedWidget parent,
       void* params,
       std::unique_ptr<KDialogOutputParams> results);
 
@@ -172,7 +172,7 @@ class SelectFileDialogImplKDE : public SelectFileDialogImpl {
 
   // The set of all parent windows for which we are currently running
   // dialogs. This should only be accessed on the UI thread.
-  std::set<XID> parents_;
+  std::set<gfx::AcceleratedWidget> parents_;
 
   // A task runner for blocking pipe reads.
   scoped_refptr<base::SequencedTaskRunner> pipe_task_runner_;
@@ -218,13 +218,13 @@ SelectFileDialogImplKDE::SelectFileDialogImplKDE(
          desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE5);
 }
 
-SelectFileDialogImplKDE::~SelectFileDialogImplKDE() {}
+SelectFileDialogImplKDE::~SelectFileDialogImplKDE() = default;
 
 bool SelectFileDialogImplKDE::IsRunning(gfx::NativeWindow parent_window) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (parent_window && parent_window->GetHost()) {
-    XID xid = parent_window->GetHost()->GetAcceleratedWidget();
-    return parents_.find(xid) != parents_.end();
+    auto window = parent_window->GetHost()->GetAcceleratedWidget();
+    return parents_.find(window) != parents_.end();
   }
 
   return false;
@@ -243,13 +243,13 @@ void SelectFileDialogImplKDE::SelectFileImpl(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   type_ = type;
 
-  XID window_xid = x11::None;
+  gfx::AcceleratedWidget window = gfx::kNullAcceleratedWidget;
   if (owning_window && owning_window->GetHost()) {
     // |owning_window| can be null when user right-clicks on a downloadable item
     // and chooses 'Open Link in New Tab' when 'Ask where to save each file
     // before downloading.' preference is turned on. (http://crbug.com/29213)
-    window_xid = owning_window->GetHost()->GetAcceleratedWidget();
-    parents_.insert(window_xid);
+    window = owning_window->GetHost()->GetAcceleratedWidget();
+    parents_.insert(window);
   }
 
   std::string title_string = base::UTF16ToUTF8(title);
@@ -264,17 +264,17 @@ void SelectFileDialogImplKDE::SelectFileImpl(
     case SELECT_FOLDER:
     case SELECT_UPLOAD_FOLDER:
     case SELECT_EXISTING_FOLDER:
-      CreateSelectFolderDialog(type, title_string, default_path, window_xid,
+      CreateSelectFolderDialog(type, title_string, default_path, window,
                                params);
       return;
     case SELECT_OPEN_FILE:
-      CreateFileOpenDialog(title_string, default_path, window_xid, params);
+      CreateFileOpenDialog(title_string, default_path, window, params);
       return;
     case SELECT_OPEN_MULTI_FILE:
-      CreateMultiFileOpenDialog(title_string, default_path, window_xid, params);
+      CreateMultiFileOpenDialog(title_string, default_path, window, params);
       return;
     case SELECT_SAVEAS_FILE:
-      CreateSaveAsDialog(title_string, default_path, window_xid, params);
+      CreateSaveAsDialog(title_string, default_path, window, params);
       return;
     case SELECT_NONE:
       NOTREACHED();
@@ -290,12 +290,11 @@ std::string SelectFileDialogImplKDE::GetMimeTypeFilterString() {
   DCHECK(pipe_task_runner_->RunsTasksInCurrentSequence());
   // We need a filter set because the same mime type can appear multiple times.
   std::set<std::string> filter_set;
-  for (size_t i = 0; i < file_types_.extensions.size(); ++i) {
-    for (size_t j = 0; j < file_types_.extensions[i].size(); ++j) {
-      if (!file_types_.extensions[i][j].empty()) {
-        std::string mime_type =
-            base::nix::GetFileMimeType(base::FilePath("name").ReplaceExtension(
-                file_types_.extensions[i][j]));
+  for (auto& extensions : file_types_.extensions) {
+    for (auto& extension : extensions) {
+      if (!extension.empty()) {
+        std::string mime_type = base::nix::GetFileMimeType(
+            base::FilePath("name").ReplaceExtension(extension));
         filter_set.insert(mime_type);
       }
     }
@@ -335,18 +334,18 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(
     const std::string& type,
     const std::string& title,
     const base::FilePath& path,
-    XID parent,
+    gfx::AcceleratedWidget parent,
     bool file_operation,
     bool multiple_selection,
     base::CommandLine* command_line) {
   CHECK(command_line);
 
   // Attach to the current Chrome window.
-  if (parent != x11::None) {
+  if (parent != gfx::kNullAcceleratedWidget) {
     command_line->AppendSwitchNative(
         desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ? "--embed"
                                                         : "--attach",
-        base::NumberToString(parent));
+        base::NumberToString(static_cast<uint32_t>(parent)));
   }
 
   // Set the correct title for the dialog.
@@ -404,7 +403,7 @@ void SelectFileDialogImplKDE::CreateSelectFolderDialog(
     Type type,
     const std::string& title,
     const base::FilePath& default_path,
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params) {
   int title_message_id = (type == SELECT_UPLOAD_FOLDER)
                              ? IDS_SELECT_UPLOAD_FOLDER_DIALOG_TITLE
@@ -425,7 +424,7 @@ void SelectFileDialogImplKDE::CreateSelectFolderDialog(
 void SelectFileDialogImplKDE::CreateFileOpenDialog(
     const std::string& title,
     const base::FilePath& default_path,
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params) {
   pipe_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -442,7 +441,7 @@ void SelectFileDialogImplKDE::CreateFileOpenDialog(
 void SelectFileDialogImplKDE::CreateMultiFileOpenDialog(
     const std::string& title,
     const base::FilePath& default_path,
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params) {
   pipe_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -459,7 +458,7 @@ void SelectFileDialogImplKDE::CreateMultiFileOpenDialog(
 void SelectFileDialogImplKDE::CreateSaveAsDialog(
     const std::string& title,
     const base::FilePath& default_path,
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params) {
   pipe_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE,
@@ -496,7 +495,7 @@ void SelectFileDialogImplKDE::SelectSingleFileHelper(
 }
 
 void SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse(
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params,
     std::unique_ptr<KDialogOutputParams> results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -505,7 +504,7 @@ void SelectFileDialogImplKDE::OnSelectSingleFileDialogResponse(
 }
 
 void SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse(
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params,
     std::unique_ptr<KDialogOutputParams> results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -514,7 +513,7 @@ void SelectFileDialogImplKDE::OnSelectSingleFolderDialogResponse(
 }
 
 void SelectFileDialogImplKDE::OnSelectMultiFileDialogResponse(
-    XID parent,
+    gfx::AcceleratedWidget parent,
     void* params,
     std::unique_ptr<KDialogOutputParams> results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

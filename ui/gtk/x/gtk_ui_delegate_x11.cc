@@ -33,17 +33,20 @@ GdkKeymap* GtkUiDelegateX11::GetGdkKeymap() {
 
 GdkWindow* GtkUiDelegateX11::GetGdkWindow(gfx::AcceleratedWidget window_id) {
   GdkDisplay* display = GetGdkDisplay();
-  GdkWindow* gdk_window = gdk_x11_window_lookup_for_display(display, window_id);
+  GdkWindow* gdk_window = gdk_x11_window_lookup_for_display(
+      display, static_cast<uint32_t>(window_id));
   if (gdk_window)
     g_object_ref(gdk_window);
   else
-    gdk_window = gdk_x11_window_foreign_new_for_display(display, window_id);
+    gdk_window = gdk_x11_window_foreign_new_for_display(
+        display, static_cast<uint32_t>(window_id));
   return gdk_window;
 }
 
 bool GtkUiDelegateX11::SetGdkWindowTransientFor(GdkWindow* window,
                                                 gfx::AcceleratedWidget parent) {
-  XSetTransientForHint(xdisplay_, GDK_WINDOW_XID(window), parent);
+  XSetTransientForHint(xdisplay_, GDK_WINDOW_XID(window),
+                       static_cast<uint32_t>(parent));
   return true;
 }
 

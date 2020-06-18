@@ -31,15 +31,7 @@ class OverlayMediaNotificationFrameView : public views::NonClientFrameView {
     return bounds();
   }
   int NonClientHitTest(const gfx::Point& point) override {
-    if (!bounds().Contains(point))
-      return HTNOWHERE;
-
-    // TODO(steimel): This should be smarter, but we need to figure out how we
-    // want to handle dragging vs click-to-go-to-tab.
-    if (GetDraggingBounds().Contains(point))
-      return HTCAPTION;
-
-    return HTCLIENT;
+    return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
   }
   void GetWindowMask(const gfx::Size& size, SkPath* window_mask) override {}
   void ResetWindowControls() override {}

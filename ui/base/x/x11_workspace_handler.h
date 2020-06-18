@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11WorkspaceHandler
   XDisplay* xdisplay_;
 
   // The native root window.
-  ::Window x_root_window_;
+  x11::Window x_root_window_;
 
   // Events selected on x_root_window_.
   std::unique_ptr<ui::XScopedEventSelector> x_root_window_events_;

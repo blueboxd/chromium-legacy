@@ -28,7 +28,7 @@ void AmbientViewDelegateImpl::RemoveObserver(
 }
 
 AmbientBackendModel* AmbientViewDelegateImpl::GetAmbientBackendModel() {
-  return ambient_controller_->GetAmbientBackendModel();
+  return ambient_controller_->ambient_backend_model();
 }
 
 void AmbientViewDelegateImpl::OnBackgroundPhotoEvents() {

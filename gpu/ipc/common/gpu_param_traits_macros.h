@@ -12,6 +12,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/gpu_command_buffer_traits.h"
+#include "gpu/ipc/common/surface_handle.h"
 #include "ipc/ipc_message_macros.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "url/ipc/url_param_traits.h"
@@ -31,5 +32,9 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::SwapBuffersCompleteParams)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(viz::ResourceFormat, viz::RESOURCE_FORMAT_MAX)
+
+#if defined(USE_X11)
+IPC_ENUM_TRAITS(gpu::SurfaceHandle)
+#endif
 
 #endif  // GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_

@@ -81,7 +81,6 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ == service_manager::SandboxType::kXrCompositing ||
         sandbox_type_ == service_manager::SandboxType::kProxyResolver ||
         sandbox_type_ == service_manager::SandboxType::kPdfConversion ||
-        sandbox_type_ == service_manager::SandboxType::kIconReader ||
 #endif
         sandbox_type_ == service_manager::SandboxType::kUtility ||
         sandbox_type_ == service_manager::SandboxType::kNetwork ||
@@ -150,31 +149,6 @@ class UtilitySandboxedProcessLauncherDelegate
       if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
         return false;
       return true;
-    }
-
-    if (sandbox_type_ == service_manager::SandboxType::kIconReader) {
-      policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                            sandbox::USER_LOCKDOWN);
-      policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
-      policy->SetIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
-      policy->SetLockdownDefaultDacl();
-      policy->SetAlternateDesktop(true);
-
-      sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
-      flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
-      if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
-        return false;
-
-      // Allow file read. These should match IconLoader::GroupForFilepath().
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      L"\\??\\*.exe");
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      L"\\??\\*.dll");
-      policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES,
-                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                      L"\\??\\*.ico");
     }
 
     if (sandbox_type_ == service_manager::SandboxType::kXrCompositing &&

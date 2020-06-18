@@ -15,6 +15,7 @@
 #include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/disk_data_allocator.h"
@@ -339,6 +340,11 @@ void ParkableStringManager::RecordStatisticsAfter5Minutes() const {
                                  ratio_percentage);
   }
 
+  // May not be usable, e.g. Incognito, permission or write failure.
+  if (base::FeatureList::IsEnabled(features::kParkableStringsToDisk)) {
+    base::UmaHistogramBoolean("Memory.ParkableString.DiskIsUsable.5min",
+                              data_allocator().may_write());
+  }
   // These metrics only make sense if the disk allocator is used.
   if (data_allocator().may_write()) {
     base::UmaHistogramTimes("Memory.ParkableString.DiskWriteTime.5min",

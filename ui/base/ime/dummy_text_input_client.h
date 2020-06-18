@@ -62,6 +62,12 @@ class DummyTextInputClient : public TextInputClient {
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 #endif
 
+#if defined(OS_CHROMEOS)
+  // Set the autocorrect range
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           const gfx::Range& range) override;
+#endif
+
 #if defined(OS_WIN)
   void GetActiveTextInputControlLayoutBounds(
       base::Optional<gfx::Rect>* control_bounds,

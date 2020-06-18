@@ -560,6 +560,8 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
         return ConsumePageRule(stream);
       case kCSSAtRuleProperty:
         return ConsumePropertyRule(stream);
+      case kCSSAtRuleScrollTimeline:
+        return ConsumeScrollTimelineRule(stream);
       default:
         ConsumeErroneousAtRule(stream);
         return nullptr;  // Parse error, unrecognised or not-allowed at-rule
@@ -915,6 +917,36 @@ StyleRuleProperty* CSSParserImpl::ConsumePropertyRule(
       name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
 }
 
+StyleRuleScrollTimeline* CSSParserImpl::ConsumeScrollTimelineRule(
+    CSSParserTokenStream& stream) {
+  wtf_size_t prelude_offset_start = stream.LookAheadOffset();
+  CSSParserTokenRange prelude = ConsumeAtRulePrelude(stream);
+  wtf_size_t prelude_offset_end = stream.LookAheadOffset();
+  if (!ConsumeEndOfPreludeForAtRuleWithBlock(stream))
+    return nullptr;
+  CSSParserTokenStream::BlockGuard guard(stream);
+
+  if (!RuntimeEnabledFeatures::CSSScrollTimelineEnabled())
+    return nullptr;
+
+  const CSSParserToken& name_token = prelude.ConsumeIncludingWhitespace();
+  if (!prelude.AtEnd())
+    return nullptr;
+  if (!css_parsing_utils::IsTimelineName(name_token))
+    return nullptr;
+  String name = name_token.Value().ToString();
+
+  if (observer_) {
+    observer_->StartRuleHeader(StyleRule::kScrollTimeline,
+                               prelude_offset_start);
+    observer_->EndRuleHeader(prelude_offset_end);
+  }
+
+  ConsumeDeclarationList(stream, StyleRule::kScrollTimeline);
+  return MakeGarbageCollected<StyleRuleScrollTimeline>(
+      name, CreateCSSPropertyValueSet(parsed_properties_, context_->Mode()));
+}
+
 StyleRuleKeyframe* CSSParserImpl::ConsumeKeyframeStyleRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
@@ -984,6 +1016,7 @@ void CSSParserImpl::ConsumeDeclarationList(CSSParserTokenStream& stream,
 
   bool use_observer = observer_ && (rule_type == StyleRule::kStyle ||
                                     rule_type == StyleRule::kProperty ||
+                                    rule_type == StyleRule::kScrollTimeline ||
                                     rule_type == StyleRule::kKeyframe);
   if (use_observer) {
     observer_->StartRuleBody(stream.Offset());
@@ -1072,7 +1105,8 @@ void CSSParserImpl::ConsumeDeclaration(CSSParserTokenRange range,
 
   CSSPropertyID unresolved_property = CSSPropertyID::kInvalid;
   AtRuleDescriptorID atrule_id = AtRuleDescriptorID::Invalid;
-  if (rule_type == StyleRule::kFontFace || rule_type == StyleRule::kProperty) {
+  if (rule_type == StyleRule::kFontFace || rule_type == StyleRule::kProperty ||
+      rule_type == StyleRule::kScrollTimeline) {
     if (important)  // Invalid
       return;
     atrule_id = lhs.ParseAsAtRuleDescriptorID();

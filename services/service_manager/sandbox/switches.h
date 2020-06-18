@@ -35,7 +35,6 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kVideoCaptureSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kPdfConversionSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProxyResolverSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kIconReaderSandbox[];
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)

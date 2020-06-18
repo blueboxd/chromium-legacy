@@ -7,6 +7,7 @@
 #include <array>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/time/time.h"
 #include "components/offline_pages/core/offline_clock.h"

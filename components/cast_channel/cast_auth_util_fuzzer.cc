@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "base/notreached.h"
 #include "components/cast_channel/cast_auth_util.h"
 #include "components/cast_channel/fuzz_proto/fuzzer_inputs.pb.h"
 #include "net/cert/x509_certificate.h"

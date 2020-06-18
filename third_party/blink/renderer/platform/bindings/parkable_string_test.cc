@@ -18,6 +18,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
@@ -1054,6 +1055,8 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
 TEST_F(ParkableStringTest, ReportTotalDiskTime) {
   base::ScopedMockElapsedTimersForTest mock_elapsed_timers;
   base::HistogramTester histogram_tester;
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(features::kParkableStringsToDisk);
 
   ParkableString parkable(MakeLargeString().ReleaseImpl());
   ParkAndWait(parkable);
@@ -1075,6 +1078,11 @@ TEST_F(ParkableStringTest, ReportTotalDiskTime) {
   // The string is read kNumIterations times.
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.DiskReadTime.5min",
                                       mock_elapsed_time_ms * kNumIterations, 1);
+
+  // The string is only written once despite the multiple parking/unparking
+  // calls.
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.DiskIsUsable.5min",
+                                      true, 1);
 
   // The string is only written once despite the multiple parking/unparking
   // calls.

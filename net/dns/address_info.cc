@@ -5,6 +5,7 @@
 #include "net/dns/address_info.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/sys_byteorder.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"

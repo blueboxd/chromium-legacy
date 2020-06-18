@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/feed/core/proto/v2/packing.pb.h"

@@ -9,6 +9,28 @@
 
 namespace blink {
 
+const LayoutObject* NGLogicalLineItem::GetLayoutObject() const {
+  if (inline_item)
+    return inline_item->GetLayoutObject();
+  if (const NGPhysicalFragment* fragment = PhysicalFragment())
+    return fragment->GetLayoutObject();
+  return nullptr;
+}
+
+LayoutObject* NGLogicalLineItem::GetMutableLayoutObject() const {
+  if (inline_item)
+    return inline_item->GetLayoutObject();
+  if (const NGPhysicalFragment* fragment = PhysicalFragment())
+    return fragment->GetMutableLayoutObject();
+  return nullptr;
+}
+
+const Node* NGLogicalLineItem::GetNode() const {
+  if (const LayoutObject* layout_object = GetLayoutObject())
+    return layout_object->GetNode();
+  return nullptr;
+}
+
 const ComputedStyle* NGLogicalLineItem::Style() const {
   if (const auto* fragment = PhysicalFragment())
     return &fragment->Style();
@@ -37,6 +59,7 @@ void NGLogicalLineItems::CreateTextFragments(WritingMode writing_mode,
                              std::move(child.shape_result), child.text_offset,
                              child.MarginSize());
       }
+      text_builder.SetIsHiddenForPaint(child.is_hidden_for_paint);
       DCHECK(!child.fragment);
       child.fragment = text_builder.ToTextFragment();
     }
@@ -69,11 +92,6 @@ void NGLogicalLineItems::WillInsertChild(unsigned insert_before) {
       ++child.children_count;
     ++index;
   }
-}
-
-void NGLogicalLineItems::InsertChild(unsigned index) {
-  WillInsertChild(index);
-  children_.insert(index, NGLogicalLineItem());
 }
 
 void NGLogicalLineItems::MoveInInlineDirection(LayoutUnit delta) {

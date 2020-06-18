@@ -40,6 +40,7 @@ AccountStorageAuthHelper::AccountStorageAuthHelper(
 AccountStorageAuthHelper::~AccountStorageAuthHelper() = default;
 
 void AccountStorageAuthHelper::TriggerOptInReauth(
+    signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
   SigninViewController* signin_view_controller =
       signin_view_controller_getter_.Run();
@@ -67,7 +68,7 @@ void AccountStorageAuthHelper::TriggerOptInReauth(
   }
 
   reauth_abort_handle_ = signin_view_controller->ShowReauthPrompt(
-      primary_account_id,
+      primary_account_id, access_point,
       base::BindOnce(&AccountStorageAuthHelper::OnOptInReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(reauth_callback)));

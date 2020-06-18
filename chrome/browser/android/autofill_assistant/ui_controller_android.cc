@@ -1561,14 +1561,9 @@ void UiControllerAndroid::OnGenericUserInterfaceChanged(
   // Try to inflate user interface from proto.
   if (generic_ui != nullptr) {
     generic_ui_controller_ = CreateGenericUiControllerForProto(*generic_ui);
-    if (generic_ui_controller_ == nullptr) {
-      // If creation of generic UI fails, end the action.
-      LOG(ERROR) << "Failed to show generic ui: view inflation failed";
-      EndActionProto action_failed;
-      action_failed.set_status(INVALID_ACTION);
-      ui_delegate_->GetBasicInteractions()->EndAction(
-          /* view_inflation_successful = */ false, action_failed);
-    }
+    ClientStatus status(generic_ui_controller_ ? ACTION_APPLIED
+                                               : INVALID_ACTION);
+    ui_delegate_->GetBasicInteractions()->NotifyViewInflationFinished(status);
   } else {
     generic_ui_controller_.reset();
   }

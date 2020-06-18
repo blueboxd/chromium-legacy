@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
@@ -94,6 +95,14 @@ autofill::PasswordForm MakePasswordForm(const std::string& signon_realm) {
   form.username_value = base::UTF8ToUTF16("username_value");
   form.password_element = base::UTF8ToUTF16("password_element");
   form.signon_realm = signon_realm;
+  return form;
+}
+
+autofill::PasswordForm MakeBlacklistedForm(const std::string& signon_realm) {
+  autofill::PasswordForm form;
+  form.url = GURL("http://www.origin.com");
+  form.signon_realm = signon_realm;
+  form.blacklisted_by_user = true;
   return form;
 }
 
@@ -896,17 +905,21 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotNotifyOnSyncDisableIfProfileStore) {
 }
 
 TEST_F(PasswordSyncBridgeTest, ShouldNotifyUnsyncedCredentialsIfAccountStore) {
+  base::HistogramTester histogram_tester;
   ON_CALL(*mock_password_store_sync(), IsAccountStore())
       .WillByDefault(Return(true));
 
   const std::string kPrimaryKeyUnsyncedCredentialStr = "1000";
   const std::string kPrimaryKeySyncedCredentialStr = "1001";
   const std::string kPrimaryKeyUnsyncedDeletionStr = "1002";
+  const std::string kPrimaryKeyUnsyncedBlacklistStr = "1003";
   ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedCredentialStr))
       .WillByDefault(Return(true));
   ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeySyncedCredentialStr))
       .WillByDefault(Return(false));
   ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedDeletionStr))
+      .WillByDefault(Return(true));
+  ON_CALL(mock_processor(), IsEntityUnsynced(kPrimaryKeyUnsyncedBlacklistStr))
       .WillByDefault(Return(true));
 
   sync_pb::EntityMetadata is_deletion_metadata;
@@ -925,6 +938,9 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotifyUnsyncedCredentialsIfAccountStore) {
         batch->AddMetadata(
             kPrimaryKeyUnsyncedDeletionStr,
             std::make_unique<sync_pb::EntityMetadata>(is_deletion_metadata));
+        batch->AddMetadata(kPrimaryKeyUnsyncedBlacklistStr,
+                           std::make_unique<sync_pb::EntityMetadata>(
+                               is_not_deletion_metadata));
         return batch;
       });
 
@@ -932,25 +948,35 @@ TEST_F(PasswordSyncBridgeTest, ShouldNotifyUnsyncedCredentialsIfAccountStore) {
   // because the deletion is supposed to have already removed such form.
   const int kPrimaryKeyUnsyncedCredential = 1000;
   const int kPrimaryKeySyncedCredential = 1001;
+  const int kPrimaryKeyUnsyncedBlacklist = 1003;
   autofill::PasswordForm unsynced_credential = MakePasswordForm(kSignonRealm1);
   autofill::PasswordForm synced_credential = MakePasswordForm(kSignonRealm2);
+  autofill::PasswordForm unsynced_blacklist =
+      MakeBlacklistedForm(kSignonRealm3);
   fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedCredential,
                                    unsynced_credential);
   fake_db()->AddLoginForPrimaryKey(kPrimaryKeySyncedCredential,
                                    synced_credential);
+  fake_db()->AddLoginForPrimaryKey(kPrimaryKeyUnsyncedBlacklist,
+                                   unsynced_blacklist);
 
   // The notification should only contain new credentials that are unsynced,
-  // ignoring both synced ones and deletion entries.
+  // ignoring both synced ones, deletion entries and blacklists.
   EXPECT_CALL(*mock_password_store_sync(),
               NotifyUnsyncedCredentialsWillBeDeleted(
                   UnorderedElementsAre(unsynced_credential)));
 
   // The content of the metadata change list does not matter in this case.
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountStorage.UnsyncedPasswordsFoundDuringSignOut", 1,
+      1);
 }
 
 TEST_F(PasswordSyncBridgeTest,
        ShouldNotNotifyUnsyncedCredentialsIfProfileStore) {
+  base::HistogramTester histogram_tester;
   ON_CALL(*mock_password_store_sync(), IsAccountStore())
       .WillByDefault(Return(false));
 
@@ -980,6 +1006,9 @@ TEST_F(PasswordSyncBridgeTest,
 
   // The content of the metadata change list does not matter in this case.
   bridge()->ApplyStopSyncChanges(bridge()->CreateMetadataChangeList());
+
+  histogram_tester.ExpectTotalCount(
+      "PasswordManager.AccountStorage.UnsyncedPasswordsFoundDuringSignOut", 0);
 }
 
 }  // namespace password_manager

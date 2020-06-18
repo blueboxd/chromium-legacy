@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/pref_registry/pref_registry_syncable.h"

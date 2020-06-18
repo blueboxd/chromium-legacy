@@ -130,8 +130,9 @@ gfx::Size WidgetTest::GetNativeWidgetMinimumContentSize(Widget* widget) {
   long supplied_return;  // NOLINT(runtime/int)
   XGetWMNormalHints(
       gfx::GetXDisplay(),
-      widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget(), &hints,
-      &supplied_return);
+      static_cast<uint32_t>(
+          widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget()),
+      &hints, &supplied_return);
   return gfx::Size(hints.min_width, hints.min_height);
 #else
   NOTREACHED();

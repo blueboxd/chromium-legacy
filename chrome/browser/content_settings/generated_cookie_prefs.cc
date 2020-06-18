@@ -204,14 +204,14 @@ extensions::settings_private::SetPrefResult SetAllCookieSettings(
 
   auto* pref_service = profile->GetPrefs();
   if (pref_service->FindPreference(prefs::kBlockThirdPartyCookies)
-          ->IsUserControlled()) {
+          ->IsUserModifiable()) {
     pref_service->SetBoolean(
         prefs::kBlockThirdPartyCookies,
         controls_mode == CookieControlsMode::kBlockThirdParty);
     setting_changed = true;
   }
   if (pref_service->FindPreference(prefs::kCookieControlsMode)
-          ->IsUserControlled()) {
+          ->IsUserModifiable()) {
     pref_service->SetInteger(prefs::kCookieControlsMode,
                              static_cast<int>(controls_mode));
     setting_changed = true;

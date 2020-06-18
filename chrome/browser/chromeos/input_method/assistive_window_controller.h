@@ -72,7 +72,9 @@ class AssistiveWindowController : public views::WidgetObserver,
   void SetBounds(const gfx::Rect& cursor_bounds) override;
   void SetAssistiveWindowProperties(
       const AssistiveWindowProperties& window) override;
-  void ShowSuggestion(const ui::ime::SuggestionDetails& details) override;
+  void ShowSuggestion(const base::string16& text,
+                      const size_t confirmed_length,
+                      const bool show_tab) override;
   void ShowMultipleSuggestions(
       const std::vector<base::string16>& suggestions) override;
   void HighlightSuggestionCandidate(int index) override;

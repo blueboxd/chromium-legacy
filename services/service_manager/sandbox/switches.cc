@@ -36,7 +36,6 @@ const char kVideoCaptureSandbox[] = "video_capture";
 const char kPdfConversionSandbox[] = "pdf_conversion";
 const char kProxyResolverSandbox[] = "proxy_resolver";
 const char kXrCompositingSandbox[] = "xr_compositing";
-const char kIconReaderSandbox[] = "icon_reader";
 #endif  // OS_WIN
 
 #if defined(OS_CHROMEOS)

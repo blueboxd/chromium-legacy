@@ -48,6 +48,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kKeyframes,
     kKeyframe,
     kNamespace,
+    kScrollTimeline,
     kSupports,
     kViewport,
   };
@@ -63,6 +64,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   bool IsPageRule() const { return GetType() == kPage; }
   bool IsPropertyRule() const { return GetType() == kProperty; }
   bool IsStyleRule() const { return GetType() == kStyle; }
+  bool IsScrollTimelineRule() const { return GetType() == kScrollTimeline; }
   bool IsSupportsRule() const { return GetType() == kSupports; }
   bool IsViewportRule() const { return GetType() == kViewport; }
   bool IsImportRule() const { return GetType() == kImport; }
@@ -210,6 +212,30 @@ class StyleRuleProperty : public StyleRuleBase {
   Member<CSSPropertyValueSet> properties_;
 };
 
+class StyleRuleScrollTimeline : public StyleRuleBase {
+ public:
+  StyleRuleScrollTimeline(const String& name, const CSSPropertyValueSet*);
+  StyleRuleScrollTimeline(const StyleRuleScrollTimeline&);
+  ~StyleRuleScrollTimeline();
+
+  StyleRuleScrollTimeline* Copy() const {
+    return MakeGarbageCollected<StyleRuleScrollTimeline>(*this);
+  }
+
+  void TraceAfterDispatch(blink::Visitor*) const;
+
+  const String& GetName() const { return name_; }
+  const CSSValue* GetSource() const;
+  const CSSValue* GetOrientation() const;
+  const CSSValue* GetStart() const;
+  const CSSValue* GetEnd() const;
+  const CSSValue* GetTimeRange() const;
+
+ private:
+  String name_;
+  Member<const CSSPropertyValueSet> properties_;
+};
+
 class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
  public:
   const HeapVector<Member<StyleRuleBase>>& ChildRules() const {
@@ -337,6 +363,13 @@ template <>
 struct DowncastTraits<StyleRuleProperty> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsPropertyRule();
+  }
+};
+
+template <>
+struct DowncastTraits<StyleRuleScrollTimeline> {
+  static bool AllowFrom(const StyleRuleBase& rule) {
+    return rule.IsScrollTimelineRule();
   }
 };
 

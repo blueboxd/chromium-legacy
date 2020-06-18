@@ -102,7 +102,10 @@ static_library("test_support") {
     "bookmark_test_util.h",
   ]
 
-  deps = [ ":browser" ]
+  deps = [
+    ":browser",
+    "//base",
+  ]
 }
 
 bundle_data("unit_tests_bundle_data") {

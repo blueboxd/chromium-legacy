@@ -4,6 +4,7 @@
 
 #include "components/sync/nigori/cryptographer.h"
 
+#include "base/check.h"
 #include "base/logging.h"
 
 namespace syncer {

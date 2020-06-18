@@ -276,7 +276,3 @@ bool LocationBarModelImpl::ShouldDisplayURL() const {
 bool LocationBarModelImpl::IsOfflinePage() const {
   return delegate_->IsOfflinePage();
 }
-
-bool LocationBarModelImpl::ShouldPreventElision() const {
-  return delegate_->ShouldPreventElision();
-}

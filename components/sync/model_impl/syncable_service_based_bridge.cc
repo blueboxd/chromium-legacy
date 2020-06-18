@@ -24,9 +24,6 @@
 namespace syncer {
 namespace {
 
-// Same as kInvalidId in syncable/base_node.h.
-constexpr int64_t kInvalidNodeId = 0;
-
 std::unique_ptr<EntityData> ConvertPersistedToEntityData(
     const ClientTagHash& client_tag_hash,
     sync_pb::PersistedEntityData data) {
@@ -214,29 +211,6 @@ class LocalChangeProcessor : public SyncChangeProcessor {
     // datatypes (that are integrated with this bridge).
     NOTREACHED();
     return SyncDataList();
-  }
-
-  SyncError UpdateDataTypeContext(ModelType type,
-                                  ContextRefreshStatus refresh_status,
-                                  const std::string& context) override {
-    // This function is not supported and not exercised by anyone, since
-    // the USS flow doesn't use it.
-    // TODO(crbug.com/870624): Remove this function altogether when the
-    // directory codebase is removed.
-    NOTREACHED();
-    return SyncError();
-  }
-
-  void AddLocalChangeObserver(LocalChangeObserver* observer) override {
-    // This function is not supported and not exercised by the relevant
-    // datatypes (that are integrated with this bridge).
-    NOTREACHED();
-  }
-
-  void RemoveLocalChangeObserver(LocalChangeObserver* observer) override {
-    // This function is not supported and not exercised by the relevant
-    // datatypes (that are integrated with this bridge).
-    NOTREACHED();
   }
 
  private:
@@ -530,9 +504,9 @@ base::Optional<ModelError> SyncableServiceBasedBridge::StartSyncableService() {
   initial_sync_data.reserve(in_memory_store_.size());
   for (const std::pair<const std::string, sync_pb::EntitySpecifics>& record :
        in_memory_store_) {
-    initial_sync_data.push_back(SyncData::CreateRemoteData(
-        /*id=*/kInvalidNodeId, std::move(record.second),
-        /*client_tag_hash=*/record.first));
+    initial_sync_data.push_back(
+        SyncData::CreateRemoteData(std::move(record.second),
+                                   /*client_tag_hash=*/record.first));
   }
 
   auto error_callback =
@@ -573,9 +547,8 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
                  << ": Processing deletion with storage key: " << storage_key;
         output_sync_change_list.emplace_back(
             FROM_HERE, SyncChange::ACTION_DELETE,
-            SyncData::CreateRemoteData(
-                /*id=*/kInvalidNodeId, in_memory_store_[storage_key],
-                /*client_tag_hash=*/""));
+            SyncData::CreateRemoteData(in_memory_store_[storage_key],
+                                       /*client_tag_hash=*/""));
 
         // For tombstones, there is no actual data, which means no client tag
         // hash either, but the processor provides the storage key.
@@ -601,9 +574,8 @@ SyncChangeList SyncableServiceBasedBridge::StoreAndConvertRemoteChanges(
 
         output_sync_change_list.emplace_back(
             FROM_HERE, ConvertToSyncChangeType(change->type()),
-            SyncData::CreateRemoteData(
-                /*id=*/kInvalidNodeId, change->data().specifics,
-                change->data().client_tag_hash.value()));
+            SyncData::CreateRemoteData(change->data().specifics,
+                                       change->data().client_tag_hash.value()));
 
         batch->WriteData(
             storage_key,

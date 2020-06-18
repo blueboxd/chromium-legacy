@@ -1811,6 +1811,14 @@ bool Textfield::SetCompositionFromExistingText(
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+bool Textfield::SetAutocorrectRange(const base::string16& autocorrect_text,
+                                    const gfx::Range& range) {
+  // TODO(crbug.com/1091088) Implement autocorrect range textfield handling.
+  return false;
+}
+#endif
+
 #if defined(OS_WIN)
 void Textfield::GetActiveTextInputControlLayoutBounds(
     base::Optional<gfx::Rect>* control_bounds,

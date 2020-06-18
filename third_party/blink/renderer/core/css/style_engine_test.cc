@@ -2787,6 +2787,23 @@ TEST_F(StyleEngineTest, AtPropertyUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleProperty));
 }
 
+TEST_F(StyleEngineTest, AtScrollTimelineUseCount) {
+  ScopedCSSScrollTimelineForTest scoped_feature(true);
+
+  GetDocument().body()->setInnerHTML("<div>No @scroll-timline</div>");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScrollTimeline));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @scroll-timeline foo { }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleScrollTimeline));
+}
+
 TEST_F(StyleEngineTest, MediaQueryAffectedByViewportSanityCheck) {
   GetDocument().body()->setInnerHTML("<audio controls>");
   UpdateAllLifecyclePhases();

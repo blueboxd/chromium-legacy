@@ -59,7 +59,7 @@ class OobeUI;
 
 class WebKioskController : public AppLaunchSplashScreenView::Delegate,
                            public KioskProfileLoader::Delegate,
-                           public WebKioskAppLauncher::Delegate {
+                           public KioskAppLauncher::Delegate {
  public:
   WebKioskController(LoginDisplayHost* host, OobeUI* oobe_ui);
   ~WebKioskController() override;
@@ -91,10 +91,13 @@ class WebKioskController : public AppLaunchSplashScreenView::Delegate,
 
   // WebKioskAppLauncher:
   void InitializeNetwork() override;
-  void OnAppStartedInstalling() override;
+  bool IsShowingNetworkConfigScreen() const override;
+  bool IsNetworkReady() const override;
+  bool ShouldSkipAppInstallation() const override;
+  void OnAppInstalling() override;
   void OnAppPrepared() override;
   void OnAppLaunched() override;
-  void OnAppLaunchFailed(KioskAppLaunchError::Error error) override;
+  void OnLaunchFailed(KioskAppLaunchError::Error error) override;
 
   void OnAppInstallFailed();
   void CleanUp();
@@ -142,7 +145,7 @@ class WebKioskController : public AppLaunchSplashScreenView::Delegate,
 
   // Used to prepare and launch the actual web kiosk app, is created after
   // profile initialization.
-  std::unique_ptr<WebKioskAppLauncher> app_launcher_;
+  std::unique_ptr<KioskAppLauncher> app_launcher_;
   // Used to login into kiosk user profile.
   std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
 

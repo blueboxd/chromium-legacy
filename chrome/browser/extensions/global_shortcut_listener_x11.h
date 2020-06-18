@@ -48,7 +48,7 @@ class GlobalShortcutListenerX11 : public GlobalShortcutListener,
 
   // The x11 default display and the native root window.
   ::Display* x_display_;
-  ::Window x_root_window_;
+  x11::Window x_root_window_;
 
   // A set of registered accelerators.
   typedef std::set<ui::Accelerator> RegisteredHotKeys;

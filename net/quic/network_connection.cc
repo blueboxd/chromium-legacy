@@ -4,6 +4,7 @@
 
 #include "net/quic/network_connection.h"
 
+#include "base/logging.h"
 #include "net/base/network_interfaces.h"
 
 namespace net {

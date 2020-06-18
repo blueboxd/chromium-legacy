@@ -170,7 +170,6 @@ class SharedImageBackingAHB : public ClearTrackingSharedImageBacking {
       MemoryTypeTracker* tracker) override;
 
  private:
-  gles2::Texture* GenGLTexture();
   const base::android::ScopedHardwareBufferHandle hardware_buffer_handle_;
 
   // Not guarded by |lock_| as we do not use legacy_texture_ in threadsafe
@@ -582,7 +581,8 @@ bool SharedImageBackingAHB::ProduceLegacyMailbox(
   DCHECK(!is_writing_);
   DCHECK_EQ(size_t{0}, active_readers_.size());
   DCHECK(hardware_buffer_handle_.is_valid());
-  legacy_texture_ = GenGLTexture();
+  legacy_texture_ = GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D,
+                                 color_space(), size(), ClearedRect());
   if (!legacy_texture_)
     return false;
   // Make sure our |legacy_texture_| has the right initial cleared rect.
@@ -602,7 +602,15 @@ SharedImageBackingAHB::ProduceGLTexture(SharedImageManager* manager,
                                         MemoryTypeTracker* tracker) {
   // Use same texture for all the texture representations generated from same
   // backing.
-  auto* texture = GenGLTexture();
+  DCHECK(hardware_buffer_handle_.is_valid());
+
+  // Note that we are not using GL_TEXTURE_EXTERNAL_OES target(here and all
+  // other places in this file) since sksurface
+  // doesn't supports it. As per the egl documentation -
+  // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt
+  // if GL_OES_EGL_image is supported then <target> may also be TEXTURE_2D.
+  auto* texture = GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D,
+                               color_space(), size(), ClearedRect());
   if (!texture)
     return nullptr;
 
@@ -633,8 +641,9 @@ SharedImageBackingAHB::ProduceSkia(
         tracker);
   }
   DCHECK(context_state->GrContextIsGL());
-
-  auto* texture = GenGLTexture();
+  DCHECK(hardware_buffer_handle_.is_valid());
+  auto* texture = GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D,
+                               color_space(), size(), ClearedRect());
   if (!texture)
     return nullptr;
   auto gl_representation =
@@ -757,64 +766,6 @@ void SharedImageBackingAHB::EndOverlayAccess() {
 
   auto fence_fd = overlay_image_->TakeEndFence();
   read_sync_fd_ = gl::MergeFDs(std::move(read_sync_fd_), std::move(fence_fd));
-}
-
-gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
-  DCHECK(hardware_buffer_handle_.is_valid());
-
-  // Target for AHB backed egl images.
-  // Note that we are not using GL_TEXTURE_EXTERNAL_OES target since sksurface
-  // doesn't supports it. As per the egl documentation -
-  // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt
-  // if GL_OES_EGL_image is supported then <target> may also be TEXTURE_2D.
-  GLenum target = GL_TEXTURE_2D;
-  GLenum get_target = GL_TEXTURE_BINDING_2D;
-
-  // Create a gles2 texture using the AhardwareBuffer.
-  gl::GLApi* api = gl::g_current_gl_context;
-  GLuint service_id = 0;
-  api->glGenTexturesFn(1, &service_id);
-  GLint old_texture_binding = 0;
-  api->glGetIntegervFn(get_target, &old_texture_binding);
-  api->glBindTextureFn(target, service_id);
-  api->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  api->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  // Create an egl image using AHardwareBuffer.
-  auto egl_image = base::MakeRefCounted<gl::GLImageAHardwareBuffer>(size());
-  if (!egl_image->Initialize(hardware_buffer_handle_.get(), false)) {
-    LOG(ERROR) << "Failed to create EGL image";
-    api->glBindTextureFn(target, old_texture_binding);
-    api->glDeleteTexturesFn(1, &service_id);
-    return nullptr;
-  }
-  if (!egl_image->BindTexImage(target)) {
-    LOG(ERROR) << "Failed to bind egl image";
-    api->glBindTextureFn(target, old_texture_binding);
-    api->glDeleteTexturesFn(1, &service_id);
-    return nullptr;
-  }
-  egl_image->SetColorSpace(color_space());
-
-  // Create a gles2 Texture.
-  auto* texture = new gles2::Texture(service_id);
-  texture->SetLightweightRef();
-  texture->SetTarget(target, 1);
-  texture->sampler_state_.min_filter = GL_LINEAR;
-  texture->sampler_state_.mag_filter = GL_LINEAR;
-  texture->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-  texture->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-
-  texture->SetLevelInfo(target, 0, egl_image->GetInternalFormat(),
-                        size().width(), size().height(), 1, 0,
-                        egl_image->GetDataFormat(), egl_image->GetDataType(),
-                        ClearedRect());
-  texture->SetLevelImage(target, 0, egl_image.get(), gles2::Texture::BOUND);
-  texture->SetImmutable(true, false);
-  api->glBindTextureFn(target, old_texture_binding);
-  return texture;
 }
 
 SharedImageBackingFactoryAHB::SharedImageBackingFactoryAHB(

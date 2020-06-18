@@ -398,11 +398,11 @@ TEST_F(GeneratedCookiePrefsTest, PrimarySettingPref) {
   // Setup a baseline content setting and preference state.
   map->SetDefaultContentSetting(ContentSettingsType::COOKIES,
                                 ContentSetting::CONTENT_SETTING_ALLOW);
-  prefs->SetUserPref(prefs::kBlockThirdPartyCookies,
-                     std::make_unique<base::Value>(false));
-  prefs->SetUserPref(prefs::kCookieControlsMode,
-                     std::make_unique<base::Value>(
-                         static_cast<int>(CookieControlsMode::kOff)));
+  prefs->SetDefaultPrefValue(prefs::kBlockThirdPartyCookies,
+                             base::Value(false));
+  prefs->SetDefaultPrefValue(
+      prefs::kCookieControlsMode,
+      base::Value(static_cast<int>(CookieControlsMode::kOff)));
 
   // Check that each of the four possible preference values sets the correct
   // state and is correctly reflected in a newly returned PrefObject.

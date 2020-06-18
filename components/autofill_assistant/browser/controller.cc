@@ -320,10 +320,13 @@ void Controller::RequireUI() {
 
 void Controller::SetGenericUi(
     std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
-        end_action_callback) {
+    base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+    base::OnceCallback<void(const ClientStatus&)>
+        view_inflation_finished_callback) {
   generic_user_interface_ = std::move(generic_ui);
   basic_interactions_.SetEndActionCallback(std::move(end_action_callback));
+  basic_interactions_.SetViewInflationFinishedCallback(
+      std::move(view_inflation_finished_callback));
   for (ControllerObserver& observer : observers_) {
     observer.OnGenericUserInterfaceChanged(generic_user_interface_.get());
   }
@@ -331,7 +334,7 @@ void Controller::SetGenericUi(
 
 void Controller::ClearGenericUi() {
   generic_user_interface_.reset();
-  basic_interactions_.ClearEndActionCallback();
+  basic_interactions_.ClearCallbacks();
   for (ControllerObserver& observer : observers_) {
     observer.OnGenericUserInterfaceChanged(nullptr);
   }

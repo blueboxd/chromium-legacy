@@ -22,15 +22,15 @@ namespace ui {
 
 class XWindowEventManager;
 
-// Ensures events in |event_mask| are selected on |xid| for the duration of this
-// object's lifetime.
+// Ensures events in |event_mask| are selected on |window| for the duration of
+// this object's lifetime.
 class EVENTS_X_EXPORT XScopedEventSelector {
  public:
-  XScopedEventSelector(XID xid, uint32_t event_mask);
+  XScopedEventSelector(x11::Window window, uint32_t event_mask);
   ~XScopedEventSelector();
 
  private:
-  XID xid_;
+  x11::Window window_;
   uint32_t event_mask_;
   base::WeakPtr<XWindowEventManager> event_manager_;
 
@@ -52,18 +52,18 @@ class XWindowEventManager {
   ~XWindowEventManager();
 
   // Guarantees that events in |event_mask| will be reported to Chrome.
-  void SelectEvents(XID xid, uint32_t event_mask);
+  void SelectEvents(x11::Window window, uint32_t event_mask);
 
   // Deselects events on |event_mask|.  Chrome will stop receiving events for
   // any set bit in |event_mask| only if no other client has selected that bit.
-  void DeselectEvents(XID xid, uint32_t event_mask);
+  void DeselectEvents(x11::Window window, uint32_t event_mask);
 
   // Helper method called by SelectEvents and DeselectEvents whenever the mask
-  // corresponding to window |xid| might have changed.  Calls SetEventMask if
+  // corresponding to |window| might have changed.  Calls SetEventMask if
   // necessary.
-  void AfterMaskChanged(XID xid, uint32_t old_mask);
+  void AfterMaskChanged(x11::Window window, uint32_t old_mask);
 
-  std::map<XID, std::unique_ptr<MultiMask>> mask_map_;
+  std::map<x11::Window, std::unique_ptr<MultiMask>> mask_map_;
 
   // This is used to set XScopedEventSelector::event_manager_.  If |this| is
   // destroyed before any XScopedEventSelector, the |event_manager_| will become

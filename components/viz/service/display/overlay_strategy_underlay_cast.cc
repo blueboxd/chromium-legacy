@@ -6,6 +6,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/lazy_instance.h"
+#include "base/logging.h"
 #include "base/unguessable_token.h"
 #include "build/chromecast_buildflags.h"
 #include "components/viz/common/quads/draw_quad.h"

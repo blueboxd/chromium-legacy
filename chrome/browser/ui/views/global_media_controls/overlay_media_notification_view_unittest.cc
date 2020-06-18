@@ -4,10 +4,13 @@
 
 #include "chrome/browser/ui/views/global_media_controls/overlay_media_notification_view.h"
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/global_media_controls/overlay_media_notifications_manager.h"
 #include "chrome/browser/ui/views/global_media_controls/media_notification_container_impl_view.h"
 #include "chrome/test/views/chrome_views_test_base.h"
+#include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace {
@@ -32,11 +35,14 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
 
   void SetUp() override {
     ViewsTestBase::SetUp();
+    feature_list_.InitAndEnableFeature(
+        media::kGlobalMediaControlsOverlayControls);
 
     manager_ = std::make_unique<MockOverlayMediaNotificationsManager>();
 
     auto notification = std::make_unique<MediaNotificationContainerImplView>(
         kTestNotificationId, nullptr);
+    notification->PopOut();
 
     overlay_ = std::make_unique<OverlayMediaNotificationView>(
         kTestNotificationId, std::move(notification),
@@ -64,6 +70,18 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
     overlay_->notification_for_testing()->OnExpanded(expand);
   }
 
+  void SimulateMouseDrag(const gfx::Vector2d drag_distance) {
+    gfx::Point start_point = GetContainer()->bounds().CenterPoint();
+    gfx::Point end_point = start_point + drag_distance;
+
+    GetContainer()->OnMousePressed(
+        ui::MouseEvent(ui::ET_MOUSE_PRESSED, start_point, start_point,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+    GetContainer()->OnMouseDragged(
+        ui::MouseEvent(ui::ET_MOUSE_DRAGGED, end_point, end_point,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0));
+  }
+
   base::string16 GetWindowTitle() {
     return overlay_->widget_delegate()->GetWindowTitle();
   }
@@ -71,6 +89,12 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
   gfx::Size GetWindowSize() {
     return overlay_->GetWindowBoundsInScreen().size();
   }
+
+  MediaNotificationContainerImplView* GetContainer() {
+    return overlay_->notification_for_testing();
+  }
+
+  OverlayMediaNotificationView* GetOverlay() { return overlay_.get(); }
 
  private:
   media_message_center::MediaNotificationViewImpl* GetView() {
@@ -80,6 +104,8 @@ class OverlayMediaNotificationViewTest : public ChromeViewsTestBase {
   std::unique_ptr<MockOverlayMediaNotificationsManager> manager_ = nullptr;
 
   std::unique_ptr<OverlayMediaNotificationView> overlay_ = nullptr;
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(OverlayMediaNotificationViewTest, TaskBarTitle) {
@@ -103,4 +129,14 @@ TEST_F(OverlayMediaNotificationViewTest, ResizeOnExpandStateChanged) {
 
   SimulateExpandStateChanged(false);
   EXPECT_EQ(kNormalHeight, GetWindowSize().height());
+}
+
+TEST_F(OverlayMediaNotificationViewTest, Dragging) {
+  gfx::Point start_position = GetOverlay()->GetWindowBoundsInScreen().origin();
+  gfx::Vector2d drag_distance(100, 100);
+
+  SimulateMouseDrag(drag_distance);
+
+  EXPECT_EQ(GetOverlay()->GetWindowBoundsInScreen().origin(),
+            start_position + drag_distance);
 }

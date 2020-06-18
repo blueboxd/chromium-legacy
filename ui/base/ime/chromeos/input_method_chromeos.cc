@@ -366,6 +366,16 @@ bool InputMethodChromeOS::SetCompositionRange(
   }
 }
 
+bool InputMethodChromeOS::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    uint32_t start,
+    uint32_t end) {
+  if (IsTextInputTypeNone())
+    return false;
+  return GetTextInputClient()->SetAutocorrectRange(autocorrect_text,
+                                                   gfx::Range(start, end));
+}
+
 bool InputMethodChromeOS::SetSelectionRange(uint32_t start, uint32_t end) {
   if (IsTextInputTypeNone())
     return false;

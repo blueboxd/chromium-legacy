@@ -35,13 +35,13 @@ JNI_EXPORT void JNI_PrefetchTestBridge_EnableLimitlessPrefetching(
     JNIEnv* env,
     jboolean enable) {
   prefetch_prefs::SetLimitlessPrefetchingEnabled(
-      ::android::GetLastUsedProfileKey()->GetPrefs(), enable != 0);
+      ::android::GetLastUsedRegularProfileKey()->GetPrefs(), enable != 0);
 }
 
 JNI_EXPORT jboolean
 JNI_PrefetchTestBridge_IsLimitlessPrefetchingEnabled(JNIEnv* env) {
   return static_cast<jboolean>(prefetch_prefs::IsLimitlessPrefetchingEnabled(
-      ::android::GetLastUsedProfileKey()->GetPrefs()));
+      ::android::GetLastUsedRegularProfileKey()->GetPrefs()));
 }
 
 JNI_EXPORT void JNI_PrefetchTestBridge_SkipNTPSuggestionsAPIKeyCheck(
@@ -55,7 +55,8 @@ JNI_EXPORT void JNI_PrefetchTestBridge_InsertIntoCachedImageFetcher(
     const JavaParamRef<jstring>& j_url,
     const JavaParamRef<jbyteArray>& j_image_data) {
   image_fetcher::ImageFetcherService* service =
-      ImageFetcherServiceFactory::GetForKey(::android::GetLastUsedProfileKey());
+      ImageFetcherServiceFactory::GetForKey(
+          ::android::GetLastUsedRegularProfileKey());
   DCHECK(service);
   scoped_refptr<image_fetcher::ImageCache> cache =
       service->ImageCacheForTesting();
@@ -88,7 +89,7 @@ JNI_EXPORT void JNI_PrefetchTestBridge_AddCandidatePrefetchURL(
       PrefetchURL(url.spec(), url, title, GURL(thumbnail_url),
                   GURL(favicon_url), snippet, attribution)};
 
-  PrefetchServiceFactory::GetForKey(::android::GetLastUsedProfileKey())
+  PrefetchServiceFactory::GetForKey(::android::GetLastUsedRegularProfileKey())
       ->GetPrefetchDispatcher()
       ->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace,
                                  new_candidate_urls);

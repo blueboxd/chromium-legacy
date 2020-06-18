@@ -64,6 +64,8 @@ class MODULES_EXPORT MediaStreamDeviceObserver
                            GetNonScreenCaptureDevices);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest, OnDeviceStopped);
   FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest, OnDeviceChanged);
+  FRIEND_TEST_ALL_PREFIXES(MediaStreamDeviceObserverTest,
+                           OnDeviceChangedChangesDeviceAfterRebind);
 
   // Private class for keeping track of opened devices and who have
   // opened it.

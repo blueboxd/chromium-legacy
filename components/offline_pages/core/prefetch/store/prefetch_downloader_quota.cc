@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/offline_pages/core/prefetch/store/prefetch_downloader_quota.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"

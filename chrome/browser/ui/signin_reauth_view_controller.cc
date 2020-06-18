@@ -52,6 +52,7 @@ void ReauthWebContentsObserver::DidFinishNavigation(
 SigninReauthViewController::SigninReauthViewController(
     Browser* browser,
     const CoreAccountId& account_id,
+    signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback)
     : browser_(browser),
       account_id_(account_id),

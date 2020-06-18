@@ -75,6 +75,16 @@ struct NGLogicalLineItem {
         rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
         inline_size(inline_size),
         bidi_level(bidi_level) {}
+  NGLogicalLineItem(const NGLogicalLineItem& source_item,
+                    scoped_refptr<const ShapeResultView> shape_result,
+                    const NGTextOffset& text_offset)
+      : inline_item(source_item.inline_item),
+        shape_result(std::move(shape_result)),
+        text_offset(text_offset),
+        text_content(source_item.text_content),
+        rect(source_item.rect),
+        inline_size(this->shape_result->SnappedWidth()),
+        bidi_level(source_item.bidi_level) {}
   NGLogicalLineItem(scoped_refptr<const NGPhysicalTextFragment> fragment,
                     LogicalOffset offset,
                     LayoutUnit inline_size,
@@ -109,6 +119,9 @@ struct NGLogicalLineItem {
         bfc_offset(bfc_offset),
         bidi_level(bidi_level) {}
 
+  bool IsInlineBox() const {
+    return layout_result && layout_result->PhysicalFragment().IsInlineBox();
+  }
   bool HasInFlowFragment() const {
     return fragment || inline_item ||
            (layout_result && !layout_result->PhysicalFragment().IsFloating());
@@ -147,20 +160,26 @@ struct NGLogicalLineItem {
   LayoutUnit BlockEndOffset() const { return rect.BlockEndOffset(); }
   const LogicalSize& Size() const { return rect.size; }
   LogicalSize MarginSize() const { return {inline_size, Size().block_size}; }
+
   const NGPhysicalFragment* PhysicalFragment() const {
     if (layout_result)
       return &layout_result->PhysicalFragment();
     return fragment.get();
   }
+  const LayoutObject* GetLayoutObject() const;
+  LayoutObject* GetMutableLayoutObject() const;
+  const Node* GetNode() const;
+  const ComputedStyle* Style() const;
+
+  unsigned StartOffset() const { return text_offset.start; }
+  unsigned EndOffset() const { return text_offset.end; }
 
   TextDirection ResolvedDirection() const {
     // Inline boxes are not leaves that they don't have directions.
-    DCHECK(HasBidiLevel() || layout_result->PhysicalFragment().IsInlineBox());
+    DCHECK(HasBidiLevel() || IsInlineBox());
     return HasBidiLevel() ? DirectionFromLevel(bidi_level)
                           : TextDirection::kLtr;
   }
-
-  const ComputedStyle* Style() const;
 
   scoped_refptr<const NGLayoutResult> layout_result;
   scoped_refptr<const NGPhysicalTextFragment> fragment;
@@ -194,6 +213,8 @@ struct NGLogicalLineItem {
   UBiDiLevel bidi_level = 0xff;
   // The current text direction for OOF positioned items.
   TextDirection container_direction = TextDirection::kLtr;
+
+  bool is_hidden_for_paint = false;
 };
 
 // A vector of Child.
@@ -243,7 +264,10 @@ class NGLogicalLineItems {
   void AddChild(Args&&... args) {
     children_.emplace_back(std::forward<Args>(args)...);
   }
-  void InsertChild(unsigned index);
+  void InsertChild(unsigned index, NGLogicalLineItem&& item) {
+    WillInsertChild(index);
+    children_.insert(index, item);
+  }
   void InsertChild(unsigned index,
                    scoped_refptr<const NGLayoutResult> layout_result,
                    const LogicalRect& rect,

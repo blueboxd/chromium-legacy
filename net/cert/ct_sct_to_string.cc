@@ -5,6 +5,7 @@
 #include "net/cert/ct_sct_to_string.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 
 namespace net {
 

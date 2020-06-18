@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -138,7 +139,7 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
 
   void ShowReauthPrompt() {
     abort_handle_ = browser()->signin_view_controller()->ShowReauthPrompt(
-        account_id_,
+        account_id_, signin_metrics::ReauthAccessPoint::kAutofillDropdown,
         base::BindOnce(&SigninReauthViewControllerBrowserTest::OnReauthResult,
                        base::Unretained(this)));
   }

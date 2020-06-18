@@ -6,11 +6,15 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/content_settings/core/common/features.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
+#import "ios/chrome/browser/ui/settings/privacy/cookies_mediator.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -29,6 +33,7 @@
 
 // View controller for incognito.
 @property(nonatomic, strong) IncognitoViewController* incognitoViewController;
+@property(nonatomic, strong) PrivacyCookiesMediator* mediator;
 
 @end
 
@@ -54,6 +59,17 @@
         UrlLoadingBrowserAgent::FromBrowser(self.browser);
     self.incognitoViewController =
         [[IncognitoViewController alloc] initWithUrlLoader:URLLoader];
+    if (base::FeatureList::IsEnabled(
+            content_settings::kImprovedCookieControls)) {
+      ChromeBrowserState* originalBrowser =
+          self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
+      self.mediator = [[PrivacyCookiesMediator alloc]
+          initWithPrefService:originalBrowser->GetPrefs()
+                  settingsMap:ios::HostContentSettingsMapFactory::
+                                  GetForBrowserState(originalBrowser)];
+      self.mediator.consumer = self.incognitoViewController;
+      self.incognitoViewController.handler = self.mediator;
+    }
   } else {
     DCHECK(!self.contentSuggestionsCoordinator);
     self.contentSuggestionsCoordinator = [[ContentSuggestionsCoordinator alloc]
@@ -73,6 +89,7 @@
   [self.contentSuggestionsCoordinator stop];
   self.contentSuggestionsCoordinator = nil;
   self.incognitoViewController = nil;
+  self.mediator = nil;
   self.started = NO;
 }
 

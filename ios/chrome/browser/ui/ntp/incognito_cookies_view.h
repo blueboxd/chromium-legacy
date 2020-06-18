@@ -15,7 +15,7 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 
 // Switch to manage cookies blocking.
-@property(nonatomic, strong, readonly) UISwitch* switchView;
+@property(nonatomic, strong, readonly) UISwitch* cookiesBlockedSwitch;
 
 @end
 

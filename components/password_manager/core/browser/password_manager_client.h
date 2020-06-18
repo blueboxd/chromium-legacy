@@ -49,7 +49,8 @@ class IdentityManager;
 
 namespace signin_metrics {
 enum class AccessPoint;
-}
+enum class ReauthAccessPoint;
+}  // namespace signin_metrics
 
 namespace url {
 class Origin;
@@ -246,9 +247,12 @@ class PasswordManagerClient {
                                                const GURL& origin,
                                                const base::string16& username);
 
-  // Requests a reauth for the primary account and triggers the
-  // |reauth_callback| with ReauthSucceeded(true) if reauthentication succeeded.
+  // Requests a reauth for the primary account with |access_point| representing
+  // where the reauth was triggered.
+  // Triggers the |reauth_callback| with ReauthSucceeded(true) if
+  // reauthentication succeeded.
   virtual void TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback);
 
   // Redirects the user to a sign-in in a new tab. |access_point| is used for

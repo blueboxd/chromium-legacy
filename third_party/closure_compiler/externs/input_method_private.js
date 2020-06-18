@@ -333,6 +333,20 @@ chrome.inputMethodPrivate.setSettings = function(engineID, settings, callback) {
 chrome.inputMethodPrivate.setCompositionRange = function(parameters, callback) {};
 
 /**
+ * Set the autocorrect range and autocorrect word. If this extension does not
+ * own the active IME, this fails.
+ * @param {{
+ *   contextID: number,
+ *   autocorrectString: string,
+ *   selectionStart: number,
+ *   selectionEnd: number
+ * }} parameters
+ * @param {function(boolean): void=} callback Called when the operation
+ *     completes. On failure, chrome.runtime.lastError is set.
+ */
+chrome.inputMethodPrivate.setAutocorrectRange = function(parameters, callback) {};
+
+/**
  * Resets the current engine to its initial state. Fires an OnReset event.
  */
 chrome.inputMethodPrivate.reset = function() {};

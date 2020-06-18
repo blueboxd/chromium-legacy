@@ -52,9 +52,7 @@ const int kMaxLaunchAttempt = 5;
 StartupAppLauncher::StartupAppLauncher(Profile* profile,
                                        const std::string& app_id,
                                        StartupAppLauncher::Delegate* delegate)
-    : profile_(profile),
-      app_id_(app_id),
-      delegate_(delegate) {
+    : KioskAppLauncher(delegate), profile_(profile), app_id_(app_id) {
   DCHECK(profile_);
   DCHECK(crx_file::id_util::IdIsValid(app_id_));
   kiosk_app_manager_observer_.Add(KioskAppManager::Get());
@@ -96,7 +94,7 @@ void StartupAppLauncher::RestartLauncher() {
   // notify the delegate that kiosk app is ready to launch, in case the launch
   // was delayed, for example by network config dialog.
   if (ready_to_launch_) {
-    delegate_->OnReadyToLaunch();
+    delegate_->OnAppPrepared();
     return;
   }
 
@@ -439,7 +437,7 @@ void StartupAppLauncher::LaunchApp() {
 }
 
 void StartupAppLauncher::OnLaunchSuccess() {
-  delegate_->OnLaunchSucceeded();
+  delegate_->OnAppLaunched();
 
   window_registry_ = extensions::AppWindowRegistry::Get(profile_);
   // Start waiting for app window.
@@ -477,7 +475,7 @@ void StartupAppLauncher::BeginInstall() {
           ->extension_service()
           ->pending_extension_manager()
           ->IsIdPending(app_id_)) {
-    delegate_->OnInstallingApp();
+    delegate_->OnAppInstalling();
     // Observe the crx installation events.
     install_observer_.Add(
         extensions::InstallTrackerFactory::GetForBrowserContext(profile_));
@@ -523,7 +521,7 @@ void StartupAppLauncher::MaybeInstallSecondaryApps() {
 
   KioskAppManager::Get()->UpdateSecondaryAppsLoaderPrefs(secondary_app_ids);
   if (IsAnySecondaryAppPending()) {
-    delegate_->OnInstallingApp();
+    delegate_->OnAppInstalling();
     // Observe the crx installation events.
     install_observer_.Add(
         extensions::InstallTrackerFactory::GetForBrowserContext(profile_));
@@ -542,7 +540,7 @@ void StartupAppLauncher::OnReadyToLaunch() {
   DCHECK(ready_to_launch_);
   SYSLOG(INFO) << "Kiosk app is ready to launch.";
   MaybeUpdateAppData();
-  delegate_->OnReadyToLaunch();
+  delegate_->OnAppPrepared();
 }
 
 void StartupAppLauncher::MaybeUpdateAppData() {

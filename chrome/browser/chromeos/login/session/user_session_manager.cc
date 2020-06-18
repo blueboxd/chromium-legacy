@@ -71,6 +71,7 @@
 #include "chrome/browser/chromeos/login/users/supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/minimum_version_policy_handler.h"
 #include "chrome/browser/chromeos/policy/tpm_auto_update_mode_policy_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -384,6 +385,12 @@ void PersistChallengeResponseKeys(const UserContext& user_context) {
 bool IsNewProfile(Profile* profile) {
   return user_manager::UserManager::Get()->IsCurrentUserNew() ||
          profile->IsNewProfile();
+}
+
+policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
+  return g_browser_process->platform_part()
+      ->browser_policy_connector_chromeos()
+      ->GetMinimumVersionPolicyHandler();
 }
 
 }  // namespace
@@ -1840,6 +1847,8 @@ void UserSessionManager::ShowNotificationsIfNeeded(Profile* profile) {
       ->browser_policy_connector_chromeos()
       ->GetTPMAutoUpdateModePolicyHandler()
       ->ShowTPMAutoUpdateNotificationIfNeeded();
+
+  GetMinimumVersionPolicyHandler()->MaybeShowNotificationOnLogin();
 }
 
 void UserSessionManager::MaybeLaunchSettings(Profile* profile) {

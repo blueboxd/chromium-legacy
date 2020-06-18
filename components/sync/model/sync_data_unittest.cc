@@ -10,7 +10,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/base_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
@@ -22,7 +21,6 @@ namespace {
 const char kSyncTag[] = "3984729834";
 const ModelType kDatatype = PREFERENCES;
 const char kNonUniqueTitle[] = "my preference";
-const int64_t kId = 439829;
 
 class SyncDataTest : public testing::Test {
  protected:
@@ -58,16 +56,7 @@ TEST_F(SyncDataTest, CreateLocalData) {
 
 TEST_F(SyncDataTest, CreateRemoteData) {
   specifics.mutable_preference();
-  SyncData data = SyncData::CreateRemoteData(kId, specifics);
-  EXPECT_TRUE(data.IsValid());
-  EXPECT_FALSE(data.IsLocal());
-  EXPECT_EQ(kId, SyncDataRemote(data).GetId());
-  EXPECT_TRUE(data.GetSpecifics().has_preference());
-}
-
-TEST_F(SyncDataTest, CreateRemoteDataWithInvalidId) {
-  specifics.mutable_preference();
-  SyncData data = SyncData::CreateRemoteData(kInvalidId, specifics);
+  SyncData data = SyncData::CreateRemoteData(specifics);
   EXPECT_TRUE(data.IsValid());
   EXPECT_FALSE(data.IsLocal());
   EXPECT_TRUE(data.GetSpecifics().has_preference());

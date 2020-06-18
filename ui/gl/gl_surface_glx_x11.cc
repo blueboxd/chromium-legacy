@@ -21,7 +21,8 @@ GLSurfaceGLXX11::~GLSurfaceGLXX11() {
 void GLSurfaceGLXX11::RegisterEvents() {
   // Can be null in tests, when we don't care about Exposes.
   if (X11EventSource::HasInstance()) {
-    XSelectInput(gfx::GetXDisplay(), window(), ExposureMask);
+    XSelectInput(gfx::GetXDisplay(), static_cast<uint32_t>(window()),
+                 ExposureMask);
     X11EventSource::GetInstance()->AddXEventDispatcher(this);
   }
 }

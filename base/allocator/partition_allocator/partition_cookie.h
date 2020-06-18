@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_COOKIE_H_
 
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 
@@ -30,14 +31,14 @@ static constexpr unsigned char kCookieValue[kCookieSize] = {
 ALWAYS_INLINE void PartitionCookieCheckValue(void* ptr) {
   unsigned char* cookie_ptr = reinterpret_cast<unsigned char*>(ptr);
   for (size_t i = 0; i < kCookieSize; ++i, ++cookie_ptr)
-    DCHECK(*cookie_ptr == kCookieValue[i]);
+    PA_DCHECK(*cookie_ptr == kCookieValue[i]);
 }
 
 ALWAYS_INLINE size_t PartitionCookieSizeAdjustAdd(size_t size) {
   // Add space for cookies, checking for integer overflow. TODO(palmer):
   // Investigate the performance and code size implications of using
   // CheckedNumeric throughout PA.
-  DCHECK(size + (2 * kCookieSize) > size);
+  PA_DCHECK(size + (2 * kCookieSize) > size);
   size += 2 * kCookieSize;
   return size;
 }
@@ -50,7 +51,7 @@ ALWAYS_INLINE void* PartitionCookieFreePointerAdjust(void* ptr) {
 
 ALWAYS_INLINE size_t PartitionCookieSizeAdjustSubtract(size_t size) {
   // Remove space for cookies.
-  DCHECK(size >= 2 * kCookieSize);
+  PA_DCHECK(size >= 2 * kCookieSize);
   size -= 2 * kCookieSize;
   return size;
 }

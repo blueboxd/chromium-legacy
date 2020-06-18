@@ -6,4 +6,5 @@
     <!-- InfoBar constants -->
     <item type="id" name="infobar_icon" />
     <item type="id" name="infobar_close_button" />
+    <item type="id" name="infobar_message" />
 </resources>

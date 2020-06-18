@@ -204,6 +204,7 @@ void SigninViewController::ShowModalSigninErrorDialog() {
 std::unique_ptr<SigninViewController::ReauthAbortHandle>
 SigninViewController::ShowReauthPrompt(
     const CoreAccountId& account_id,
+    signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback) {
   CloseModalSignin();
 
@@ -237,7 +238,7 @@ SigninViewController::ShowReauthPrompt(
   }
 
   reauth_controller_ = std::make_unique<SigninReauthViewController>(
-      browser_, account_id, std::move(wrapped_reauth_callback));
+      browser_, account_id, access_point, std::move(wrapped_reauth_callback));
   delegate_ = reauth_controller_.get();
   delegate_observer_.Add(delegate_);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::SIGNIN_REAUTH);

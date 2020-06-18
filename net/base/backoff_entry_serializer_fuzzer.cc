@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/time/tick_clock.h"

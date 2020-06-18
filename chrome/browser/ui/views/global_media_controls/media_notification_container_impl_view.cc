@@ -162,9 +162,18 @@ bool MediaNotificationContainerImplView::OnMouseDragged(
   if (movement.LengthSquared() >= kMinMovementSquaredToBeDragging)
     is_dragging_ = true;
 
+  // If we are in an overlay notification, we want to drag the overlay
+  // instead.
+  if (dragged_out_) {
+    overlay_->SetBoundsConstrained(overlay_->GetWindowBoundsInScreen() +
+                                   movement);
+    return true;
+  }
+
   gfx::Transform transform;
   transform.Translate(movement);
   swipeable_container_->layer()->SetTransform(transform);
+
   return true;
 }
 
@@ -172,6 +181,9 @@ void MediaNotificationContainerImplView::OnMouseReleased(
     const ui::MouseEvent& event) {
   views::Button::OnMouseReleased(event);
   if (!ShouldHandleMouseEvent(event, /*is_press=*/false))
+    return;
+
+  if (dragged_out_)
     return;
 
   gfx::Vector2d movement = event.location() - initial_drag_location_;
@@ -381,10 +393,6 @@ bool MediaNotificationContainerImplView::ShouldHandleMouseEvent(
   // We only manually handle mouse events for dragging out of the dialog, so if
   // the feature is disabled there's no need to handle the event.
   if (!base::FeatureList::IsEnabled(media::kGlobalMediaControlsOverlayControls))
-    return false;
-
-  // We also don't need to handle if we're already dragged out.
-  if (dragged_out_)
     return false;
 
   // We only handle non-press events if we've handled the associated press

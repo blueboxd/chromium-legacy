@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/logging.h"
 #include "base/version.h"
 #include "components/variations/proto/study.pb.h"
 

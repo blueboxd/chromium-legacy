@@ -11,6 +11,7 @@
 
 #include "base/build_time.h"
 #include "base/cpu.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_flattener.h"
 #include "base/metrics/histogram_functions.h"

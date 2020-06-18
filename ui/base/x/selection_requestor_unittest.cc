@@ -30,8 +30,7 @@ namespace ui {
 
 class SelectionRequestorTest : public testing::Test {
  public:
-  SelectionRequestorTest()
-      : x_display_(gfx::GetXDisplay()), x_window_(x11::None) {}
+  SelectionRequestorTest() : x_display_(gfx::GetXDisplay()) {}
 
   ~SelectionRequestorTest() override = default;
 
@@ -50,7 +49,7 @@ class SelectionRequestorTest : public testing::Test {
     auto* event = reinterpret_cast<xcb_selection_notify_event_t*>(&ge);
     event->response_type = x11::SelectionNotifyEvent::opcode;
     event->sequence = 0;
-    event->requestor = x_window_;
+    event->requestor = static_cast<uint32_t>(x_window_);
     event->selection = static_cast<uint32_t>(selection);
     event->target = static_cast<uint32_t>(target);
     event->property = static_cast<uint32_t>(requestor_->x_property_);
@@ -65,14 +64,14 @@ class SelectionRequestorTest : public testing::Test {
     XSynchronize(x_display_, x11::True);
 
     // Create a window for the selection requestor to use.
-    x_window_ = XCreateWindow(
+    x_window_ = static_cast<x11::Window>(XCreateWindow(
         x_display_, DefaultRootWindow(x_display_), 0, 0, 10,
         10,  // x, y, width, height
         0,   // border width
         static_cast<int>(x11::WindowClass::CopyFromParent),  // depth
         static_cast<int>(x11::WindowClass::InputOnly),
         nullptr,  // visual
-        0, nullptr);
+        0, nullptr));
 
     event_source_ = PlatformEventSource::CreateDefault();
     CHECK(PlatformEventSource::GetInstance());
@@ -83,14 +82,14 @@ class SelectionRequestorTest : public testing::Test {
   void TearDown() override {
     requestor_.reset();
     event_source_.reset();
-    XDestroyWindow(x_display_, x_window_);
+    XDestroyWindow(x_display_, static_cast<uint32_t>(x_window_));
     XSynchronize(x_display_, x11::False);
   }
 
   Display* x_display_;
 
   // |requestor_|'s window.
-  XID x_window_;
+  x11::Window x_window_ = x11::Window::None;
 
   std::unique_ptr<PlatformEventSource> event_source_;
   std::unique_ptr<SelectionRequestor> requestor_;

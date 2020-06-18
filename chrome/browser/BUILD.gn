@@ -72,6 +72,7 @@ buildflag_header("buildflags") {
   flags = [
     "CLANG_PGO=$chrome_pgo_phase",
     "ENABLE_KALEIDOSCOPE=$enable_kaleidoscope",
+    "USE_THIN_LTO=$use_thin_lto",
   ]
 }
 
@@ -4128,8 +4129,6 @@ static_library("browser") {
       "sync/roaming_profile_directory_deleter_win.h",
       "taskbar/taskbar_decorator_win.cc",
       "taskbar/taskbar_decorator_win.h",
-      "win/icon_reader_service.cc",
-      "win/icon_reader_service.h",
       "win/parental_controls.cc",
       "win/parental_controls.h",
       "win/util_win_service.cc",

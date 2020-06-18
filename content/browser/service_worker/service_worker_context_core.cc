@@ -699,6 +699,7 @@ void ServiceWorkerContextCore::AddLiveRegistration(
 }
 
 void ServiceWorkerContextCore::RemoveLiveRegistration(int64_t id) {
+  DCHECK(live_registrations_.find(id) != live_registrations_.end());
   live_registrations_.erase(id);
 }
 
@@ -872,6 +873,15 @@ void ServiceWorkerContextCore::NotifyRegistrationStored(int64_t registration_id,
   observer_list_->Notify(
       FROM_HERE, &ServiceWorkerContextCoreObserver::OnRegistrationStored,
       registration_id, scope);
+}
+
+void ServiceWorkerContextCore::NotifyAllRegistrationsDeletedForOrigin(
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  observer_list_->Notify(
+      FROM_HERE,
+      &ServiceWorkerContextCoreObserver::OnAllRegistrationsDeletedForOrigin,
+      origin);
 }
 
 void ServiceWorkerContextCore::OnStorageWiped() {

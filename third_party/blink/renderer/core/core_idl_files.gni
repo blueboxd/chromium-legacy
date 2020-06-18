@@ -63,6 +63,7 @@ core_idl_files =
                     "css/css_style_declaration.idl",
                     "css/css_style_rule.idl",
                     "css/css_style_sheet.idl",
+                    "css/css_scroll_timeline_rule.idl",
                     "css/css_supports_rule.idl",
                     "css/css_property_rule.idl",
                     "css/font_face.idl",

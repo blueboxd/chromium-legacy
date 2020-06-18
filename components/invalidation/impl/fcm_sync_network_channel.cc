@@ -4,6 +4,8 @@
 
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
 
+#include "base/logging.h"
+
 namespace syncer {
 
 FCMSyncNetworkChannel::FCMSyncNetworkChannel() : received_messages_count_(0) {}

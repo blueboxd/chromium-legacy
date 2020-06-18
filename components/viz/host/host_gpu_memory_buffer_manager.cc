@@ -283,7 +283,12 @@ void HostGpuMemoryBufferManager::OnConnectionError() {
                    << ", size = " << buffer.size.ToString()
                    << ", format = " << gfx::BufferFormatToString(buffer.format)
                    << ", usage = " << gfx::BufferUsageToString(buffer.usage)
-                   << ", surface_handle = " << buffer.surface_handle
+                   << ", surface_handle = "
+#if defined(USE_X11)
+                   << static_cast<uint32_t>(buffer.surface_handle)
+#else
+                   << buffer.surface_handle
+#endif
                    << " due to connection error";
       AllocateGpuMemoryBuffer(
           buffer_pair.first, client_pair.first, buffer.size, buffer.format,

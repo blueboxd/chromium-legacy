@@ -3738,7 +3738,6 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kPdfConversion:
     case service_manager::SandboxType::kSharingService:
     case service_manager::SandboxType::kVideoCapture:
-    case service_manager::SandboxType::kIconReader:
       // Should never reach here.
       CHECK(0);
       return base::string16();

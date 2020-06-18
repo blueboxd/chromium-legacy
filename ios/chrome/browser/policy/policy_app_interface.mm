@@ -49,8 +49,8 @@ std::unique_ptr<base::Value> DeserializeValue(NSString* json_value) {
     return std::make_unique<base::Value>(base::Value::Type::NONE);
   }
 
-  JSONStringValueDeserializer deserializer(
-      base::SysNSStringToUTF8((json_value)));
+  std::string json = base::SysNSStringToUTF8(json_value);
+  JSONStringValueDeserializer deserializer(json);
   return deserializer.Deserialize(/*error_code=*/nullptr,
                                   /*error_message=*/nullptr);
 }

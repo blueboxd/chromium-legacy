@@ -16,6 +16,7 @@
 #include <lib/zx/vmo.h>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/notreached.h"
 
@@ -35,7 +36,7 @@ const char* PageTagToName(PageTag tag) {
     case PageTag::kV8:
       return "cr_v8";
     default:
-      DCHECK(false);
+      PA_DCHECK(false);
       return "";
   }
 }
@@ -126,7 +127,7 @@ void* TrimMappingInternal(void* base,
                           bool commit,
                           size_t pre_slack,
                           size_t post_slack) {
-  DCHECK_EQ(base_length, trim_length + pre_slack + post_slack);
+  PA_DCHECK(base_length == trim_length + pre_slack + post_slack);
 
   uint64_t base_address = reinterpret_cast<uint64_t>(base);
 

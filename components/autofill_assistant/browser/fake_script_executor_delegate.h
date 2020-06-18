@@ -76,9 +76,9 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
 
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(bool,
-                              ProcessedActionStatusProto,
-                              const UserModel*)> end_action_callback) override;
+      base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) override;
   void ClearGenericUi() override;
 
   ClientSettings* GetMutableSettings() { return &client_settings_; }

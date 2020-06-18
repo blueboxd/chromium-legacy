@@ -168,9 +168,6 @@ class SyncEngine : public ModelTypeConfigurer {
 
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const = 0;
 
-  // Send a message to the sync thread to persist the Directory to disk.
-  virtual void FlushDirectory() const = 0;
-
   // Requests that the backend forward to the fronent any protocol events in
   // its buffer and begin forwarding automatically from now on.  Repeated calls
   // to this function may result in the same events being emitted several

@@ -30,11 +30,10 @@ class UserContext;
 // coordinating loading the ARC kiosk profile, and
 // updating the splash screen UI.
 class ArcKioskController : public KioskProfileLoader::Delegate,
-                           public ArcKioskAppService::Delegate,
+                           public KioskAppLauncher::Delegate,
                            public AppLaunchSplashScreenView::Delegate {
  public:
   ArcKioskController(LoginDisplayHost* host, OobeUI* oobe_ui);
-
   ~ArcKioskController() override;
 
   // Starts ARC kiosk splash screen.
@@ -44,17 +43,21 @@ class ArcKioskController : public KioskProfileLoader::Delegate,
   void CleanUp();
   void CloseSplashScreen();
 
-  // UserSessionManagerDelegate implementation:
+  // KioskProfileLoader:
   void OnProfileLoaded(Profile* profile) override;
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
   void OnOldEncryptionDetected(const UserContext& user_context) override;
 
-  // ArcKioskAppService::Delegate implementation:
+  // KioskAppLauncher::Delegate:
+  void InitializeNetwork() override;
+  bool IsNetworkReady() const override;
+  bool IsShowingNetworkConfigScreen() const override;
+  bool ShouldSkipAppInstallation() const override;
   void OnAppDataUpdated() override;
-  void OnAppStarted() override;
-  void OnAppWindowLaunched() override;
+  void OnAppLaunched() override;
+  void OnAppWindowCreated() override;
 
-  // AppLaunchSplashScreenView::Delegate implementation:
+  // AppLaunchSplashScreenView::Delegate:
   KioskAppManagerBase::App GetAppData() override;
   void OnCancelAppLaunch() override;
   void OnDeletingSplashScreenView() override;

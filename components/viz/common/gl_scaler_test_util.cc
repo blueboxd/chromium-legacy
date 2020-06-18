@@ -9,6 +9,7 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "cc/test/pixel_test_utils.h"
 #include "components/viz/test/paths.h"

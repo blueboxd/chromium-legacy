@@ -27,7 +27,6 @@
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
-#include "content/browser/service_worker/service_worker_context_watcher.h"
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
@@ -225,12 +224,6 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
   // Add this object as an observer of the wrapped |context_core_|. This lets us
   // forward observer methods to observers outside of content.
   core_observer_list_->AddObserver(this);
-
-  watcher_ = base::MakeRefCounted<ServiceWorkerContextWatcher>(
-      this,
-      base::BindRepeating(&ServiceWorkerContextWrapper::OnRegistrationUpdated,
-                          base::Unretained(this)),
-      base::DoNothing(), base::DoNothing());
 }
 
 void ServiceWorkerContextWrapper::Init(
@@ -270,11 +263,6 @@ void ServiceWorkerContextWrapper::Init(
           base::RetainedRef(loader_factory_getter),
           std::move(
               non_network_pending_loader_factory_bundle_for_update_check)));
-
-  // The watcher also runs or posts a core thread task which must run after
-  // InitOnCoreThread(), so start it after posting that task above.
-  if (watcher_)
-    watcher_->Start();
 }
 
 void ServiceWorkerContextWrapper::Shutdown() {
@@ -282,10 +270,6 @@ void ServiceWorkerContextWrapper::Shutdown() {
 
   storage_partition_ = nullptr;
   process_manager_->Shutdown();
-  if (watcher_) {
-    watcher_->Stop();
-    watcher_ = nullptr;
-  }
 
   // Use explicit feature check here instead of RunOrPostTaskOnThread(), since
   // the feature may be disabled but in unit tests we are considered both on the
@@ -366,8 +350,16 @@ void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
                                                        const GURL& scope) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  registered_origins_.insert(url::Origin::Create(scope.GetOrigin()));
+
   for (auto& observer : observer_list_)
     observer.OnRegistrationStored(registration_id, scope);
+}
+
+void ServiceWorkerContextWrapper::OnAllRegistrationsDeletedForOrigin(
+    const url::Origin& origin) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  registered_origins_.erase(origin);
 }
 
 void ServiceWorkerContextWrapper::OnReportConsoleMessage(
@@ -1547,6 +1539,11 @@ void ServiceWorkerContextWrapper::InitOnCoreThread(
       special_storage_policy, loader_factory_getter,
       std::move(non_network_pending_loader_factory_bundle_for_update_check),
       core_observer_list_.get(), this);
+
+  if (storage_partition_) {
+    context()->registry()->storage()->GetRegisteredOrigins(base::BindOnce(
+        &ServiceWorkerContextWrapper::DidGetRegisteredOrigins, this));
+  }
 }
 
 void ServiceWorkerContextWrapper::FindRegistrationForScopeOnCoreThread(
@@ -2009,9 +2006,13 @@ void ServiceWorkerContextWrapper::DidSetUpLoaderFactoryForUpdateCheck(
 bool ServiceWorkerContextWrapper::HasRegistrationForOrigin(
     const url::Origin& origin) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return !registrations_initialized_ ||
-         registrations_for_origin_.find(origin) !=
-             registrations_for_origin_.end();
+  if (!registrations_initialized_) {
+    return true;
+  }
+  if (registered_origins_.find(origin) != registered_origins_.end()) {
+    return true;
+  }
+  return false;
 }
 
 void ServiceWorkerContextWrapper::WaitForRegistrationsInitializedForTest() {
@@ -2023,25 +2024,21 @@ void ServiceWorkerContextWrapper::WaitForRegistrationsInitializedForTest() {
   loop.Run();
 }
 
-void ServiceWorkerContextWrapper::OnRegistrationUpdated(
-    const std::vector<ServiceWorkerRegistrationInfo>& registrations) {
+void ServiceWorkerContextWrapper::DidGetRegisteredOrigins(
+    std::vector<url::Origin> origins) {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
+  GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::InitializeRegisteredOriginsOnUI, this,
+          std::move(origins)));
+}
+
+void ServiceWorkerContextWrapper::InitializeRegisteredOriginsOnUI(
+    std::vector<url::Origin> origins) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // The first call will initialize stored registrations.
+  registered_origins_.insert(origins.begin(), origins.end());
   registrations_initialized_ = true;
-
-  for (const auto& registration : registrations) {
-    url::Origin origin = url::Origin::Create(registration.scope);
-    int64_t registration_id = registration.registration_id;
-    if (registration.delete_flag == ServiceWorkerRegistrationInfo::IS_DELETED) {
-      auto& registration_ids = registrations_for_origin_[origin];
-      registration_ids.erase(registration_id);
-      if (registration_ids.empty())
-        registrations_for_origin_.erase(origin);
-    } else {
-      registrations_for_origin_[origin].insert(registration_id);
-    }
-  }
-
   if (on_registrations_initialized_)
     std::move(on_registrations_initialized_).Run();
 }

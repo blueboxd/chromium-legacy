@@ -10,6 +10,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"

@@ -15,7 +15,7 @@ namespace ui {
 class X11OSExchangeDataProviderOzone : public XOSExchangeDataProvider,
                                        public XEventDispatcher {
  public:
-  X11OSExchangeDataProviderOzone(XID x_window,
+  X11OSExchangeDataProviderOzone(x11::Window x_window,
                                  const SelectionFormatMap& selection);
   X11OSExchangeDataProviderOzone();
   ~X11OSExchangeDataProviderOzone() override;

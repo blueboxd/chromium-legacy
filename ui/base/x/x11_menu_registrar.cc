@@ -32,8 +32,7 @@ X11MenuRegistrar* X11MenuRegistrar::Get() {
 }
 
 X11MenuRegistrar::X11MenuRegistrar()
-    : xdisplay_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(xdisplay_)) {
+    : xdisplay_(gfx::GetXDisplay()), x_root_window_(ui::GetX11RootWindow()) {
   if (ui::X11EventSource::HasInstance())
     ui::X11EventSource::GetInstance()->AddXEventDispatcher(this);
 
@@ -53,10 +52,12 @@ bool X11MenuRegistrar::DispatchXEvent(x11::Event* x11_event) {
   }
   switch (event->type) {
     case CreateNotify:
-      OnWindowCreatedOrDestroyed(event->type, event->xcreatewindow.window);
+      OnWindowCreatedOrDestroyed(
+          event->type, x11_event->As<x11::CreateNotifyEvent>()->window);
       break;
     case DestroyNotify:
-      OnWindowCreatedOrDestroyed(event->type, event->xdestroywindow.window);
+      OnWindowCreatedOrDestroyed(
+          event->type, x11_event->As<x11::DestroyNotifyEvent>()->window);
       break;
     default:
       NOTREACHED();
@@ -64,7 +65,8 @@ bool X11MenuRegistrar::DispatchXEvent(x11::Event* x11_event) {
   return false;
 }
 
-void X11MenuRegistrar::OnWindowCreatedOrDestroyed(int event_type, XID window) {
+void X11MenuRegistrar::OnWindowCreatedOrDestroyed(int event_type,
+                                                  x11::Window window) {
   // Menus created by Chrome can be drag and drop targets. Since they are
   // direct children of the screen root window and have override_redirect
   // we cannot use regular _NET_CLIENT_LIST_STACKING property to find them

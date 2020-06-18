@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "ash/public/cpp/ambient/ambient_ui_model.h"
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/assistant/assistant_state_base.h"
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "base/barrier_closure.h"
@@ -218,11 +218,10 @@ void AssistantManagerServiceImpl::Start(const base::Optional<UserInfo>& user,
 
   // Check the AmbientModeState to keep us synced on |ambient_state|.
   if (chromeos::features::IsAmbientModeEnabled()) {
-    auto* model = ash::AmbientUiModel::Get();
-    DCHECK(model);
+    auto* ambient_state = ash::AmbientModeState::Get();
+    DCHECK(ambient_state);
 
-    EnableAmbientMode(model->ui_visibility() !=
-                      ash::AmbientUiVisibility::kClosed);
+    EnableAmbientMode(ambient_state->enabled());
   }
 
   // LibAssistant creation will make file IO and sync wait. Post the creation to

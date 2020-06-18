@@ -57,7 +57,7 @@ TEST(VideoCaptureDeviceFactoryMacTest, ListDevicesWithNoPanTiltZoomSupport) {
       return;
     }
     for (const auto& descriptor : descriptors)
-      EXPECT_FALSE(descriptor.pan_tilt_zoom_supported());
+      EXPECT_FALSE(descriptor.pan_tilt_zoom_supported().value());
   }));
 }
 

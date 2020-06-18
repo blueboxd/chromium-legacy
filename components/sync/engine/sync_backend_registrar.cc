@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "components/sync/model/change_processor.h"
+#include "components/sync/syncable/change_processor.h"
 #include "components/sync/syncable/user_share.h"
 
 namespace syncer {

@@ -324,13 +324,6 @@ void NGInlineLayoutAlgorithm::CreateLine(
                     line_info->AvailableWidth() - line_info->TextIndent() &&
                 node_.GetLayoutBlockFlow()->ShouldTruncateOverflowingText()) ||
                ConstraintSpace().LinesUntilClamp() == 1)) {
-    // TODO(kojii): |NGLineTruncator| does not support |Child|-based truncation
-    // yet, so create |NGPhysicalTextFragment| first.
-    if (has_logical_text_items) {
-      line_box_.CreateTextFragments(ConstraintSpace().GetWritingMode(),
-                                    line_info->ItemsData().text_content);
-      has_logical_text_items = false;
-    }
     NGLineTruncator truncator(*line_info);
     auto* input =
         DynamicTo<HTMLInputElement>(node_.GetLayoutBlockFlow()->GetNode());

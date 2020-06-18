@@ -14,7 +14,6 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_controller_delegate.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
-#include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
@@ -153,13 +152,14 @@ void AssistiveWindowController::FocusStateChanged() {
     undo_window_->Hide();
 }
 
-void AssistiveWindowController::ShowSuggestion(
-    const ui::ime::SuggestionDetails& details) {
+void AssistiveWindowController::ShowSuggestion(const base::string16& text,
+                                               const size_t confirmed_length,
+                                               const bool show_tab) {
   if (!suggestion_window_view_)
     InitSuggestionWindow();
-  suggestion_text_ = details.text;
-  confirmed_length_ = details.confirmed_length;
-  suggestion_window_view_->Show(details);
+  suggestion_text_ = text;
+  confirmed_length_ = confirmed_length;
+  suggestion_window_view_->Show(text, confirmed_length, show_tab);
 }
 
 void AssistiveWindowController::ShowMultipleSuggestions(

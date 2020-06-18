@@ -8,7 +8,20 @@
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/gpu_gles2_export.h"
 
+extern "C" typedef struct AHardwareBuffer AHardwareBuffer;
+
+typedef unsigned int GLenum;
+
+namespace gfx {
+class ColorSpace;
+class Rect;
+class Size;
+}  // namespace gfx
+
 namespace gpu {
+namespace gles2 {
+class Texture;
+}  // namespace gles2
 
 // TODO(vikassoni): In future we will need to expose the set of formats and
 // constraints (e.g. max size) to the clients somehow that are available for
@@ -24,6 +37,15 @@ AHardwareBufferSupportedFormat(viz::ResourceFormat format);
 
 // Returns the corresponding AHardwareBuffer format.
 unsigned int GPU_GLES2_EXPORT AHardwareBufferFormat(viz::ResourceFormat format);
+
+// Generates a gles2 texture from AHB. This method must be called with a current
+// GLContext which will be used to create the Texture. This method adds a
+// lightweight ref on the Texture which the caller is responsible for releasing.
+gles2::Texture* GenGLTexture(AHardwareBuffer* buffer,
+                             GLenum target,
+                             const gfx::ColorSpace& color_space,
+                             const gfx::Size& size,
+                             const gfx::Rect& cleared_rect);
 
 }  // namespace gpu
 

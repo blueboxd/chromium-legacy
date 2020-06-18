@@ -100,15 +100,12 @@ class DriveIntegrationService : public KeyedService,
   using GetQuickAccessItemsCallback =
       base::OnceCallback<void(drive::FileError, std::vector<QuickAccessItem>)>;
 
-  // test_drive_service, test_mount_point_name, test_cache_root and
-  // test_file_system are used by tests to inject customized instances.
+  // test_mount_point_name, test_cache_root and
+  // test_drivefs_mojo_listener_factory are used by tests to inject customized
+  // instances.
   // Pass NULL or the empty value when not interested.
-  // |preference_watcher| observes the drive enable preference, and sets the
-  // enable state when changed. It can be NULL. The ownership is taken by
-  // the DriveIntegrationService.
   DriveIntegrationService(
       Profile* profile,
-      PreferenceWatcher* preference_watcher,
       const std::string& test_mount_point_name,
       const base::FilePath& test_cache_root,
       DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory = {});

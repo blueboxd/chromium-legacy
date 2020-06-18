@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"

@@ -29,7 +29,7 @@ AXEvent::AXEvent(const AXEvent& event) = default;
 AXEvent& AXEvent::operator=(const AXEvent& event) = default;
 
 std::string AXEvent::ToString() const {
-  std::string result = "AXEvent";
+  std::string result = "AXEvent ";
 
   result += ui::ToString(event_type);
   result += " on node id=" + base::NumberToString(id);

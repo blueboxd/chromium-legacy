@@ -15,6 +15,9 @@
 
   data: [
     {
+      name: "end",
+    },
+    {
       name: "font-display",
     },
     {
@@ -67,10 +70,19 @@
       name: "orientation",
     },
     {
+      name: "source",
+    },
+    {
       name: "src",
     },
     {
+      name: "start",
+    },
+    {
       name: "syntax"
+    },
+    {
+      name: "time-range",
     },
     {
       name: "unicode-range",

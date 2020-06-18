@@ -6,6 +6,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
+#include "base/notreached.h"
 #include "components/payments/content/android/jni_headers/PaymentFeatureList_jni.h"
 #include "components/payments/core/features.h"
 #include "content/public/common/content_features.h"

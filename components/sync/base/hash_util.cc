@@ -6,6 +6,7 @@
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
+#include "base/notreached.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/sync.pb.h"
 

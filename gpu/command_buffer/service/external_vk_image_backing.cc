@@ -600,10 +600,10 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     texture_ = new gles2::Texture(texture_service_id);
     texture_->SetLightweightRef();
     texture_->SetTarget(GL_TEXTURE_2D, 1);
-    texture_->sampler_state_.min_filter = GL_LINEAR;
-    texture_->sampler_state_.mag_filter = GL_LINEAR;
-    texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-    texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+    texture_->set_min_filter(GL_LINEAR);
+    texture_->set_mag_filter(GL_LINEAR);
+    texture_->set_wrap_t(GL_CLAMP_TO_EDGE);
+    texture_->set_wrap_s(GL_CLAMP_TO_EDGE);
     // If the backing is already cleared, no need to clear it again.
     gfx::Rect cleared_rect;
     if (IsCleared())

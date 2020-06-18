@@ -51,7 +51,7 @@ std::vector<uint8_t> CombineData(
 }  // namespace
 
 SelectionRequestor::SelectionRequestor(XDisplay* x_display,
-                                       XID x_window,
+                                       x11::Window x_window,
                                        XEventDispatcher* dispatcher)
     : x_display_(x_display),
       x_window_(x_window),
@@ -160,7 +160,7 @@ void SelectionRequestor::OnSelectionNotify(const x11::Event& x11_event) {
 
 bool SelectionRequestor::CanDispatchPropertyEvent(const x11::Event& x11_event) {
   const XEvent& event = x11_event.xlib_event();
-  return event.xproperty.window == x_window_ &&
+  return event.xproperty.window == static_cast<uint32_t>(x_window_) &&
          static_cast<x11::Atom>(event.xproperty.atom) == x_property_ &&
          event.xproperty.state == PropertyNewValue;
 }

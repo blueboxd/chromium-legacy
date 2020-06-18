@@ -82,7 +82,8 @@ SelectionChangeObserver::SelectionChangeObserver()
   int ignored;
   if (XFixesQueryExtension(gfx::GetXDisplay(), &event_base_, &ignored)) {
     clipboard_atom_ = gfx::GetAtom(kClipboard);
-    XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
+    XFixesSelectSelectionInput(gfx::GetXDisplay(),
+                               static_cast<uint32_t>(GetX11RootWindow()),
                                static_cast<uint32_t>(clipboard_atom_),
                                XFixesSetSelectionOwnerNotifyMask |
                                    XFixesSelectionWindowDestroyNotifyMask |
@@ -90,7 +91,8 @@ SelectionChangeObserver::SelectionChangeObserver()
     // This seems to be semi-optional. For some reason, registering for any
     // selection notify events seems to subscribe us to events for both the
     // primary and the clipboard buffers. Register anyway just to be safe.
-    XFixesSelectSelectionInput(gfx::GetXDisplay(), GetX11RootWindow(),
+    XFixesSelectSelectionInput(gfx::GetXDisplay(),
+                               static_cast<uint32_t>(GetX11RootWindow()),
                                XA_PRIMARY,
                                XFixesSetSelectionOwnerNotifyMask |
                                    XFixesSelectionWindowDestroyNotifyMask |
@@ -165,9 +167,9 @@ bool TargetList::ContainsAtom(x11::Atom atom) const {
   return base::Contains(target_list_, atom);
 }
 
-XID GetSelectionOwner(x11::Atom selection) {
+x11::Window GetSelectionOwner(x11::Atom selection) {
   auto response = x11::Connection::Get()->GetSelectionOwner({selection}).Sync();
-  return response ? static_cast<XID>(response->owner) : x11::None;
+  return response ? response->owner : x11::Window::None;
 }
 
 }  // namespace
@@ -245,10 +247,10 @@ class ClipboardX11::X11Details : public XEventDispatcher {
 
   // Our X11 state.
   Display* x_display_;
-  ::Window x_root_window_;
+  x11::Window x_root_window_;
 
   // Input-only window used as a selection owner.
-  ::Window x_window_;
+  x11::Window x_window_;
 
   // Events selected on |x_window_|.
   std::unique_ptr<XScopedEventSelector> x_window_events_;
@@ -268,10 +270,10 @@ class ClipboardX11::X11Details : public XEventDispatcher {
 
 ClipboardX11::X11Details::X11Details()
     : x_display_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(x_display_)),
-      x_window_(XCreateWindow(
+      x_root_window_(ui::GetX11RootWindow()),
+      x_window_(static_cast<x11::Window>(XCreateWindow(
           x_display_,
-          x_root_window_,
+          static_cast<uint32_t>(x_root_window_),
           -100,
           -100,
           10,
@@ -281,11 +283,12 @@ ClipboardX11::X11Details::X11Details()
           static_cast<int>(x11::WindowClass::InputOnly),
           nullptr,  // visual
           0,
-          nullptr)),
+          nullptr))),
       selection_requestor_(x_display_, x_window_, this),
       clipboard_owner_(x_display_, x_window_, gfx::GetAtom(kClipboard)),
       primary_owner_(x_display_, x_window_, x11::Atom::PRIMARY) {
-  XStoreName(x_display_, x_window_, "Chromium clipboard");
+  XStoreName(x_display_, static_cast<uint32_t>(x_window_),
+             "Chromium clipboard");
   x_window_events_ =
       std::make_unique<XScopedEventSelector>(x_window_, PropertyChangeMask);
 
@@ -297,7 +300,7 @@ ClipboardX11::X11Details::~X11Details() {
   if (X11EventSource::GetInstance())
     X11EventSource::GetInstance()->RemoveXEventDispatcher(this);
 
-  XDestroyWindow(x_display_, x_window_);
+  XDestroyWindow(x_display_, static_cast<uint32_t>(x_window_));
 }
 
 x11::Atom ClipboardX11::X11Details::LookupSelectionForClipboardBuffer(
@@ -434,7 +437,7 @@ void ClipboardX11::X11Details::StoreCopyPasteDataAndWait() {
     return;
 
   x11::Atom clipboard_manager_atom = gfx::GetAtom(kClipboardManager);
-  if (GetSelectionOwner(clipboard_manager_atom) == x11::None)
+  if (GetSelectionOwner(clipboard_manager_atom) == x11::Window::None)
     return;
 
   const SelectionFormatMap& format_map = LookupStorageForAtom(selection);
@@ -451,7 +454,7 @@ void ClipboardX11::X11Details::StoreCopyPasteDataAndWait() {
 
 bool ClipboardX11::X11Details::CanDispatchXEvent(x11::Event* x11_event) {
   XEvent* xev = &x11_event->xlib_event();
-  if (xev->xany.window == x_window_)
+  if (xev->xany.window == static_cast<uint32_t>(x_window_))
     return true;
 
   if (xev->type == PropertyNotify) {

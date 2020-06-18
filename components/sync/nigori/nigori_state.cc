@@ -5,6 +5,7 @@
 #include "components/sync/nigori/nigori_state.h"
 
 #include "base/base64.h"
+#include "base/notreached.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_encryption_handler.h"

@@ -560,11 +560,13 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
 }
 
 void ChromePasswordManagerClient::TriggerReauthForPrimaryAccount(
+    signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
 #if defined(OS_ANDROID)
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 #else   // !defined(OS_ANDROID)
-  account_storage_auth_helper_.TriggerOptInReauth(std::move(reauth_callback));
+  account_storage_auth_helper_.TriggerOptInReauth(access_point,
+                                                  std::move(reauth_callback));
 #endif  // defined(OS_ANDROID)
 }
 

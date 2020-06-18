@@ -200,7 +200,7 @@ void AmbientBackendControllerImpl::SetPhotoRefreshInterval(
     base::TimeDelta interval) {
   Shell::Get()
       ->ambient_controller()
-      ->GetAmbientBackendModel()
+      ->ambient_backend_model()
       ->SetPhotoRefreshInterval(interval);
 }
 

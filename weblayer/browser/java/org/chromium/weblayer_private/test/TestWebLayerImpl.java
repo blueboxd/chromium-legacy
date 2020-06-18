@@ -16,6 +16,8 @@ import org.chromium.device.geolocation.LocationProviderOverrider;
 import org.chromium.device.geolocation.MockLocationProvider;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.weblayer_private.InfoBarContainer;
+import org.chromium.weblayer_private.InfoBarUiItem;
 import org.chromium.weblayer_private.TabImpl;
 import org.chromium.weblayer_private.WebLayerAccessibilityUtil;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -106,6 +108,31 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
     @Override
     public void setAccessibilityEnabled(boolean value) {
         WebLayerAccessibilityUtil.get().setAccessibilityEnabledForTesting(value);
+    }
+
+    @Override
+    public void addInfoBar(ITab tab, IObjectWrapper runnable) {
+        Runnable unwrappedRunnable = ObjectWrapper.unwrap(runnable, Runnable.class);
+        TabImpl tabImpl = (TabImpl) tab;
+
+        InfoBarContainer infoBarContainer = tabImpl.getInfoBarContainerForTesting();
+        infoBarContainer.addAnimationListener(new InfoBarContainer.InfoBarAnimationListener() {
+            @Override
+            public void notifyAnimationFinished(int animationType) {}
+            @Override
+            public void notifyAllAnimationsFinished(InfoBarUiItem frontInfoBar) {
+                unwrappedRunnable.run();
+                infoBarContainer.removeAnimationListener(this);
+            }
+        });
+
+        TestInfoBar.show((TabImpl) tab);
+    }
+
+    @Override
+    public IObjectWrapper getInfoBarContainerView(ITab tab) {
+        return ObjectWrapper.wrap(
+                ((TabImpl) tab).getInfoBarContainerForTesting().getViewForTesting());
     }
 
     @Override

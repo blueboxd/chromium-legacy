@@ -19,7 +19,7 @@ class ScopedXEventDispatcher;
 // X11 Event Waiter class
 class XEventWaiter : public ui::XEventObserver {
  public:
-  static XEventWaiter* Create(XID window, base::OnceClosure callback);
+  static XEventWaiter* Create(x11::Window window, base::OnceClosure callback);
 
  private:
   explicit XEventWaiter(base::OnceClosure callback);

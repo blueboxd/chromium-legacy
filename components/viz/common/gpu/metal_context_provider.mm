@@ -7,6 +7,7 @@
 #import <Metal/Metal.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"

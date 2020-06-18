@@ -11,7 +11,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/constants/chromeos_pref_names.h"
@@ -134,8 +133,13 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
   if (suggestion_shown_) {
     if (event.key == "Tab" || event.key == "Right") {
       AcceptSuggestion();
-      IncrementPrefValueTilCapped(kPersonalInfoSuggesterTabAcceptanceCount,
-                                  kMaxTabAcceptanceCount);
+      int tab_acceptance_count = GetTabAcceptanceCount();
+      if (tab_acceptance_count < kMaxTabAcceptanceCount) {
+        DictionaryPrefUpdate update(profile_->GetPrefs(),
+                                    prefs::kAssistiveInputFeatureSettings);
+        update->SetIntKey(kPersonalInfoSuggesterTabAcceptanceCount,
+                          tab_acceptance_count + 1);
+      }
       return SuggestionStatus::kAccept;
     } else if (event.key == "Esc") {
       DismissSuggestion();
@@ -231,17 +235,9 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
   }
 
   std::string error;
-  bool show_tab = GetPrefValue(kPersonalInfoSuggesterTabAcceptanceCount) <
-                  kMaxTabAcceptanceCount;
-  ui::ime::SuggestionDetails details;
-  details.text = text;
-  details.confirmed_length = confirmed_length;
-  details.show_tab = show_tab;
-  details.show_setting_link =
-      GetPrefValue(kPersonalInfoSuggesterTabAcceptanceCount) == 0 &&
-      GetPrefValue(kPersonalInfoSuggesterShowSettingCount) <
-          kMaxShowSettingCount;
-  suggestion_handler_->SetSuggestion(context_id_, details, &error);
+  bool show_tab = GetTabAcceptanceCount() < kMaxTabAcceptanceCount;
+  suggestion_handler_->SetSuggestion(context_id_, text, confirmed_length,
+                                     show_tab, &error);
   if (!error.empty()) {
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
@@ -250,8 +246,6 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     first_shown_ = false;
   } else {
     first_shown_ = true;
-    IncrementPrefValueTilCapped(kPersonalInfoSuggesterShowSettingCount,
-                                kMaxShowSettingCount);
     tts_handler_->Announce(
         // TODO(jiwan): Add translation to other languages when we support more
         // than English.
@@ -264,26 +258,16 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
   suggestion_shown_ = true;
 }
 
-int PersonalInfoSuggester::GetPrefValue(const std::string& pref_name) {
+int PersonalInfoSuggester::GetTabAcceptanceCount() {
   DictionaryPrefUpdate update(profile_->GetPrefs(),
                               prefs::kAssistiveInputFeatureSettings);
-  auto value = update->FindIntKey(pref_name);
-  if (!value.has_value()) {
-    update->SetIntKey(pref_name, 0);
+  auto tab_acceptance_count =
+      update->FindIntKey(kPersonalInfoSuggesterTabAcceptanceCount);
+  if (!tab_acceptance_count.has_value()) {
+    update->SetIntKey(kPersonalInfoSuggesterTabAcceptanceCount, 0);
     return 0;
   }
-  return *value;
-}
-
-void PersonalInfoSuggester::IncrementPrefValueTilCapped(
-    const std::string& pref_name,
-    int max_value) {
-  int value = GetPrefValue(pref_name);
-  if (value < max_value) {
-    DictionaryPrefUpdate update(profile_->GetPrefs(),
-                                prefs::kAssistiveInputFeatureSettings);
-    update->SetIntKey(pref_name, value + 1);
-  }
+  return *tab_acceptance_count;
 }
 
 AssistiveType PersonalInfoSuggester::GetProposeActionType() {

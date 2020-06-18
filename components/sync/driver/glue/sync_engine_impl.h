@@ -81,7 +81,6 @@ class SyncEngineImpl : public SyncEngine, public InvalidationHandler {
   void HasUnsyncedItemsForTest(
       base::OnceCallback<void(bool)> cb) const override;
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
-  void FlushDirectory() const override;
   void RequestBufferedProtocolEventsAndEnableForwarding() override;
   void DisableProtocolEventForwarding() override;
   void EnableDirectoryTypeDebugInfoForwarding() override;

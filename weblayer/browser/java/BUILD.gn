@@ -19,7 +19,6 @@ android_resources("weblayer_resources") {
     "res/layout/weblayer_url_bar.xml",
     "res/values/colors.xml",
     "res/values/dimens.xml",
-    "res/values/ids.xml",
     "res/values/styles.xml",
     "res/values/styles.xml",
   ]
@@ -236,7 +235,10 @@ android_resources("weblayer_test_resources") {
 
 android_library("test_java") {
   testonly = true
-  sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
+  sources = [
+    "org/chromium/weblayer_private/test/TestInfoBar.java",
+    "org/chromium/weblayer_private/test/TestWebLayerImpl.java",
+  ]
   deps = [
     ":interfaces_java",
     ":java",
@@ -256,7 +258,10 @@ android_library("test_java") {
 
 generate_jni("test_jni") {
   testonly = true
-  sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
+  sources = [
+    "org/chromium/weblayer_private/test/TestInfoBar.java",
+    "org/chromium/weblayer_private/test/TestWebLayerImpl.java",
+  ]
 }
 
 generate_jni("jni") {

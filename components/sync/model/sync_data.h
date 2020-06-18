@@ -60,8 +60,7 @@ class SyncData {
                                   const sync_pb::EntitySpecifics& specifics);
 
   // Helper method for creating SyncData objects originating from the syncer.
-  static SyncData CreateRemoteData(int64_t id,
-                                   sync_pb::EntitySpecifics specifics,
+  static SyncData CreateRemoteData(sync_pb::EntitySpecifics specifics,
                                    std::string client_tag_hash = std::string());
 
   // Whether this SyncData holds valid data. The only way to have a SyncData
@@ -109,8 +108,6 @@ class SyncData {
   using ImmutableSyncEntity =
       Immutable<sync_pb::SyncEntity, ImmutableSyncEntityTraits>;
 
-  int64_t id_;
-
   // The actual shared sync entity being held.
   ImmutableSyncEntity immutable_entity_;
 
@@ -122,7 +119,7 @@ class SyncData {
   bool is_valid_;
 
   // Clears |entity|.
-  SyncData(bool is_local_, int64_t id, sync_pb::SyncEntity* entity);
+  SyncData(bool is_local_, sync_pb::SyncEntity* entity);
 };
 
 // A SyncData going to the syncer.
@@ -151,10 +148,6 @@ class SyncDataRemote : public SyncData {
   // Returns the tag hash value. May not always be present, in which case an
   // empty string will be returned.
   ClientTagHash GetClientTagHash() const;
-
-  // Deprecated: might not be populated in SyncableService API.
-  // TODO(crbug.com/870624): Remove when directory is removed.
-  int64_t GetId() const;
 };
 
 // gmock printer helper.

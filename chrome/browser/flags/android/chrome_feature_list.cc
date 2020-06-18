@@ -242,6 +242,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &omnibox::kOmniboxSuggestionsRecyclerView,
     &omnibox::kOmniboxSuggestionsWrapAround,
     &password_manager::features::kGooglePasswordManager,
+    &password_manager::features::kPasswordCheck,
     &password_manager::features::kPasswordEditingAndroid,
     &password_manager::features::kPasswordManagerOnboardingAndroid,
     &password_manager::features::kRecoverFromNeverSaveAndroid,

@@ -581,6 +581,41 @@
           }
         ]
       }, {
+        "name": "setAutocorrectRange",
+        "type": "function",
+        "description": "Set the autocorrect range and autocorrect word. If this extension does not own the active IME, this fails.",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context to autocorrect.",
+                "type": "integer"
+              },
+              "autocorrectString": {
+                "description": "Autocorrect suggestion to display.",
+                "type": "string"
+              },
+              "selectionStart": {
+                "description": "Start of the selection range.",
+                "type": "integer"
+              },
+              "selectionEnd": {
+                "description": "End of the selection range.",
+                "type": "integer"
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes. On failure, chrome.runtime.lastError is set.",
+            "parameters": []
+          }
+        ]
+      }, {
         "name": "reset",
         "type": "function",
         "description": "Resets the current engine to its initial state. Fires an OnReset event.",

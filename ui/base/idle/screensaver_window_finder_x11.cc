@@ -11,19 +11,18 @@
 
 namespace ui {
 
-ScreensaverWindowFinder::ScreensaverWindowFinder()
-    : exists_(false) {
-}
+ScreensaverWindowFinder::ScreensaverWindowFinder() : exists_(false) {}
 
 bool ScreensaverWindowFinder::ScreensaverWindowExists() {
   XScreenSaverInfo info;
   XDisplay* display = gfx::GetXDisplay();
-  XID root = DefaultRootWindow(display);
+  x11::Window root = ui::GetX11RootWindow();
   static int xss_event_base;
   static int xss_error_base;
   static bool have_xss =
       XScreenSaverQueryExtension(display, &xss_event_base, &xss_error_base);
-  if (have_xss && XScreenSaverQueryInfo(display, root, &info) &&
+  if (have_xss &&
+      XScreenSaverQueryInfo(display, static_cast<uint32_t>(root), &info) &&
       info.state == ScreenSaverOn) {
     return true;
   }
@@ -48,14 +47,14 @@ bool ScreensaverWindowFinder::ScreensaverWindowExists() {
   return finder.exists_ && !err_tracker.FoundNewError();
 }
 
-bool ScreensaverWindowFinder::ShouldStopIterating(XID window) {
+bool ScreensaverWindowFinder::ShouldStopIterating(x11::Window window) {
   if (!ui::IsWindowVisible(window) || !IsScreensaverWindow(window))
     return false;
   exists_ = true;
   return true;
 }
 
-bool ScreensaverWindowFinder::IsScreensaverWindow(XID window) const {
+bool ScreensaverWindowFinder::IsScreensaverWindow(x11::Window window) const {
   // It should occupy the full screen.
   if (!ui::IsX11WindowFullScreen(window))
     return false;

@@ -386,6 +386,11 @@ class VIEWS_EXPORT Textfield : public View,
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 #endif
 
+#if defined(OS_CHROMEOS)
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           const gfx::Range& range) override;
+#endif
+
 #if defined(OS_WIN)
   void GetActiveTextInputControlLayoutBounds(
       base::Optional<gfx::Rect>* control_bounds,

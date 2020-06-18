@@ -152,6 +152,14 @@ bool DummyTextInputClient::SetCompositionFromExistingText(
 }
 #endif
 
+#if defined(OS_CHROMEOS)
+bool DummyTextInputClient::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    const gfx::Range& range) {
+  return false;
+}
+#endif
+
 #if defined(OS_WIN)
 void DummyTextInputClient::GetActiveTextInputControlLayoutBounds(
     base::Optional<gfx::Rect>* control_bounds,

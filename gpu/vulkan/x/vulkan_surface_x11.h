@@ -17,11 +17,11 @@ namespace gpu {
 class VulkanSurfaceX11 : public VulkanSurface {
  public:
   static std::unique_ptr<VulkanSurfaceX11> Create(VkInstance vk_instance,
-                                                  Window parent_window);
+                                                  x11::Window parent_window);
   VulkanSurfaceX11(VkInstance vk_instance,
                    VkSurfaceKHR vk_surface,
-                   Window parent_window,
-                   Window window);
+                   x11::Window parent_window,
+                   x11::Window window);
   ~VulkanSurfaceX11() override;
 
   // VulkanSurface:
@@ -33,8 +33,8 @@ class VulkanSurfaceX11 : public VulkanSurface {
   bool CanDispatchXEvent(const x11::Event* event);
   void ForwardXExposeEvent(const x11::Event* event);
 
-  const Window parent_window_;
-  const Window window_;
+  const x11::Window parent_window_;
+  const x11::Window window_;
   std::unique_ptr<ExposeEventForwarder> expose_event_forwarder_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanSurfaceX11);

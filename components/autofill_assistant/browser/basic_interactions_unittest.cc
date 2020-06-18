@@ -16,6 +16,7 @@
 
 namespace autofill_assistant {
 
+using ::testing::_;
 using ::testing::ElementsAre;
 using ::testing::Eq;
 using ::testing::InSequence;
@@ -379,20 +380,42 @@ TEST_F(BasicInteractionsTest, ComputeValueIntegerSum) {
 
 TEST_F(BasicInteractionsTest, EndActionWithoutCallbackFails) {
   EndActionProto proto;
-  EXPECT_FALSE(basic_interactions_.EndAction(true, proto));
+  EXPECT_FALSE(basic_interactions_.EndAction(ClientStatus(INVALID_ACTION)));
 }
 
 TEST_F(BasicInteractionsTest, EndActionWithCallbackSucceeds) {
-  base::MockCallback<base::OnceCallback<void(bool, ProcessedActionStatusProto,
-                                             const UserModel*)>>
-      callback;
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>> callback;
   basic_interactions_.SetEndActionCallback(callback.Get());
 
-  EndActionProto proto;
-  proto.set_status(ACTION_APPLIED);
+  EXPECT_CALL(callback,
+              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED)));
+  EXPECT_TRUE(basic_interactions_.EndAction(ClientStatus(ACTION_APPLIED)));
+}
 
-  EXPECT_CALL(callback, Run(true, ACTION_APPLIED, &user_model_));
-  EXPECT_TRUE(basic_interactions_.EndAction(true, proto));
+TEST_F(BasicInteractionsTest, NotifyViewInflationFinishedRunsCallback) {
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>> callback;
+  basic_interactions_.SetViewInflationFinishedCallback(callback.Get());
+
+  EXPECT_CALL(callback,
+              Run(Property(&ClientStatus::proto_status, ACTION_APPLIED)));
+  basic_interactions_.NotifyViewInflationFinished(ClientStatus(ACTION_APPLIED));
+}
+
+TEST_F(BasicInteractionsTest, EndActionResetsViewInflationCallback) {
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>>
+      view_inflation_finished_callback;
+  base::MockCallback<base::OnceCallback<void(const ClientStatus&)>>
+      end_action_callback;
+  basic_interactions_.SetViewInflationFinishedCallback(
+      view_inflation_finished_callback.Get());
+  basic_interactions_.SetEndActionCallback(end_action_callback.Get());
+
+  EXPECT_CALL(end_action_callback,
+              Run(Property(&ClientStatus::proto_status, INVALID_ACTION)));
+  EXPECT_CALL(view_inflation_finished_callback, Run(_)).Times(0);
+  EXPECT_TRUE(basic_interactions_.EndAction(ClientStatus(INVALID_ACTION)));
+  EXPECT_FALSE(basic_interactions_.NotifyViewInflationFinished(
+      ClientStatus(ACTION_APPLIED)));
 }
 
 TEST_F(BasicInteractionsTest, ComputeValueCompare) {

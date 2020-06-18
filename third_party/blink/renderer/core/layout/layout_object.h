@@ -960,8 +960,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            (StyleRef().Display() == EDisplay::kBlock ||
             StyleRef().Display() == EDisplay::kWebkitBox) &&
            StyleRef().StyleType() == kPseudoIdNone && IsLayoutBlock() &&
-           !IsListMarker() && !IsLayoutFlowThread() &&
-           !IsLayoutMultiColumnSet();
+           !IsLayoutFlowThread() && !IsLayoutMultiColumnSet();
   }
   // If node has been split into continuations, it returns the first layout
   // object generated for the node.

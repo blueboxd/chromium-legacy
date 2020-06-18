@@ -3101,8 +3101,7 @@ void LayoutBlockFlow::RemoveChild(LayoutObject* old_child) {
 
     // If we are an empty anonymous block in the continuation chain,
     // we need to remove ourself and fix the continuation chain.
-    if (!BeingDestroyed() && IsAnonymousBlockContinuation() &&
-        !old_child->IsListMarker()) {
+    if (!BeingDestroyed() && IsAnonymousBlockContinuation()) {
       LayoutObject* containing_block_ignoring_anonymous = ContainingBlock();
       while (containing_block_ignoring_anonymous &&
              containing_block_ignoring_anonymous->IsAnonymous())

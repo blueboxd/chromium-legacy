@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/environment.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "media/base/audio_parameters.h"
 

@@ -24,20 +24,6 @@ SyncDataList FakeSyncChangeProcessor::GetAllSyncData(ModelType type) const {
   return data_;
 }
 
-SyncError FakeSyncChangeProcessor::UpdateDataTypeContext(
-    ModelType type,
-    ContextRefreshStatus refresh_status,
-    const std::string& context) {
-  context_ = context;
-  return SyncError();
-}
-
-void FakeSyncChangeProcessor::AddLocalChangeObserver(
-    LocalChangeObserver* observer) {}
-
-void FakeSyncChangeProcessor::RemoveLocalChangeObserver(
-    LocalChangeObserver* observer) {}
-
 const SyncChangeList& FakeSyncChangeProcessor::changes() const {
   return changes_;
 }
@@ -52,14 +38,6 @@ const SyncDataList& FakeSyncChangeProcessor::data() const {
 
 SyncDataList& FakeSyncChangeProcessor::data() {
   return data_;
-}
-
-const std::string& FakeSyncChangeProcessor::context() const {
-  return context_;
-}
-
-std::string& FakeSyncChangeProcessor::context() {
-  return context_;
 }
 
 }  // namespace syncer

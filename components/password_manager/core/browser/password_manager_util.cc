@@ -34,6 +34,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -154,17 +155,20 @@ void UserTriggeredManualGenerationFromContextMenu(
   }
   // The client ensures the callback won't be run if it is destroyed, so
   // base::Unretained is safe.
-  password_manager_client->TriggerReauthForPrimaryAccount(base::BindOnce(
-      [](password_manager::PasswordManagerClient* client,
-         password_manager::PasswordManagerClient::ReauthSucceeded succeeded) {
-        if (succeeded) {
-          client->GeneratePassword();
-          LogPasswordGenerationEvent(
-              autofill::password_generation::
-                  PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
-        }
-      },
-      base::Unretained(password_manager_client)));
+  password_manager_client->TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu,
+      base::BindOnce(
+          [](password_manager::PasswordManagerClient* client,
+             password_manager::PasswordManagerClient::ReauthSucceeded
+                 succeeded) {
+            if (succeeded) {
+              client->GeneratePassword();
+              LogPasswordGenerationEvent(
+                  autofill::password_generation::
+                      PASSWORD_GENERATION_CONTEXT_MENU_PRESSED);
+            }
+          },
+          base::Unretained(password_manager_client)));
 }
 
 // TODO(http://crbug.com/890318): Add unitests to check cleaners are correctly

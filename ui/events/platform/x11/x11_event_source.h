@@ -21,8 +21,6 @@
 
 using Time = unsigned long;
 using XEvent = union _XEvent;
-using XID = unsigned long;
-using XWindow = unsigned long;
 
 namespace gfx {
 class Point;
@@ -155,8 +153,8 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
   // in case if XEventDispatcher has a PlatformEventDispatcher. Thus,
   // there is no need to separately add self to the list of
   // PlatformEventDispatchers. This is needed because XEventDispatchers are
-  // tested if they can receive an x11::Event based on a XID target. If so, the
-  // translated x11::Event into a PlatformEvent is sent to that
+  // tested if they can receive an x11::Event based on a x11::Window target. If
+  // so, the translated x11::Event into a PlatformEvent is sent to that
   // PlatformEventDispatcher.
   void AddXEventDispatcher(XEventDispatcher* dispatcher);
 
@@ -217,7 +215,7 @@ class EVENTS_EXPORT X11EventSource : public PlatformEventSource,
 
   // State necessary for UpdateLastSeenServerTime
   bool dummy_initialized_;
-  ::XWindow dummy_window_;
+  x11::Window dummy_window_;
   x11::Atom dummy_atom_;
   std::unique_ptr<XScopedEventSelector> dummy_window_events_;
 

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"

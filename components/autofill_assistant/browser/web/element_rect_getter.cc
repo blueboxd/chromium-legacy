@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/web/element_rect_getter.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "components/autofill_assistant/browser/devtools/devtools/domains/types_runtime.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"

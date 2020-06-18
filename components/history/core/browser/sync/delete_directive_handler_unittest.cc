@@ -215,7 +215,7 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessGlobalIdDeleteDirective) {
           .ToInternalValue());
   global_id_directive->set_start_time_usec(3);
   global_id_directive->set_end_time_usec(10);
-  directives.push_back(syncer::SyncData::CreateRemoteData(1, entity_specs));
+  directives.push_back(syncer::SyncData::CreateRemoteData(entity_specs));
 
   // 2nd directive.
   global_id_directive->Clear();
@@ -224,7 +224,7 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessGlobalIdDeleteDirective) {
           .ToInternalValue());
   global_id_directive->set_start_time_usec(13);
   global_id_directive->set_end_time_usec(19);
-  directives.push_back(syncer::SyncData::CreateRemoteData(2, entity_specs));
+  directives.push_back(syncer::SyncData::CreateRemoteData(entity_specs));
 
   syncer::FakeSyncChangeProcessor change_processor;
   EXPECT_FALSE(handler()
@@ -258,9 +258,7 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessGlobalIdDeleteDirective) {
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
-  EXPECT_EQ(1, syncer::SyncDataRemote(sync_changes[0].sync_data()).GetId());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[1].change_type());
-  EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
 }
 
 // Create delete directives for time ranges.  The expected entries should be
@@ -285,13 +283,13 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessTimeRangeDeleteDirective) {
           ->mutable_time_range_directive();
   time_range_directive->set_start_time_usec(2);
   time_range_directive->set_end_time_usec(5);
-  directives.push_back(syncer::SyncData::CreateRemoteData(1, entity_specs));
+  directives.push_back(syncer::SyncData::CreateRemoteData(entity_specs));
 
   // 2nd directive.
   time_range_directive->Clear();
   time_range_directive->set_start_time_usec(8);
   time_range_directive->set_end_time_usec(10);
-  directives.push_back(syncer::SyncData::CreateRemoteData(2, entity_specs));
+  directives.push_back(syncer::SyncData::CreateRemoteData(entity_specs));
 
   syncer::FakeSyncChangeProcessor change_processor;
   EXPECT_FALSE(handler()
@@ -323,9 +321,7 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessTimeRangeDeleteDirective) {
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
-  EXPECT_EQ(1, syncer::SyncDataRemote(sync_changes[0].sync_data()).GetId());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[1].change_type());
-  EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
 }
 
 // Create a delete directive for urls.  The expected entries should be
@@ -352,13 +348,13 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessUrlDeleteDirective) {
       entity_specs1.mutable_history_delete_directive()->mutable_url_directive();
   url_directive->set_url(test_url1.spec());
   url_directive->set_end_time_usec(8);
-  directives.push_back(syncer::SyncData::CreateRemoteData(1, entity_specs1));
+  directives.push_back(syncer::SyncData::CreateRemoteData(entity_specs1));
   sync_pb::EntitySpecifics entity_specs2;
   url_directive =
       entity_specs2.mutable_history_delete_directive()->mutable_url_directive();
   url_directive->set_url(test_url2.spec());
   url_directive->set_end_time_usec(8);
-  directives.push_back(syncer::SyncData::CreateRemoteData(2, entity_specs2));
+  directives.push_back(syncer::SyncData::CreateRemoteData(entity_specs2));
 
   syncer::FakeSyncChangeProcessor change_processor;
   EXPECT_FALSE(handler()
@@ -388,9 +384,7 @@ TEST_F(HistoryDeleteDirectiveHandlerTest, ProcessUrlDeleteDirective) {
   const syncer::SyncChangeList& sync_changes = change_processor.changes();
   ASSERT_EQ(2u, sync_changes.size());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[0].change_type());
-  EXPECT_EQ(1, syncer::SyncDataRemote(sync_changes[0].sync_data()).GetId());
   EXPECT_EQ(syncer::SyncChange::ACTION_DELETE, sync_changes[1].change_type());
-  EXPECT_EQ(2, syncer::SyncDataRemote(sync_changes[1].sync_data()).GetId());
 }
 
 }  // namespace

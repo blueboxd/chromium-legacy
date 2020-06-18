@@ -396,6 +396,11 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         return mNativeTab;
     }
 
+    @VisibleForTesting
+    public InfoBarContainer getInfoBarContainerForTesting() {
+        return mInfoBarContainer;
+    }
+
     @Override
     public NavigationControllerImpl createNavigationController(INavigationControllerClient client) {
         StrictModeWorkaround.apply();

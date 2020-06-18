@@ -41,6 +41,7 @@ namespace signin_metrics {
 enum class AccessPoint;
 enum class PromoAction;
 enum class Reason;
+enum class ReauthAccessPoint;
 enum class SourceForRefreshTokenOperation;
 }  // namespace signin_metrics
 
@@ -114,16 +115,18 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   void ShowModalSigninErrorDialog();
 
   // Shows the reauth prompt for |account_id| as either:
-  // - a browser-modal dialog on top of the |browser_|'s window, or
-  // - a popup window
+  // - a tab-modal dialog on top of the currently active tab, or
+  // - a new tab
   // |account_id| should be signed into the content area. Otherwise, the method
   // fails with |kAccountNotSignedIn| error.
+  // |access_point| indicates a call site of this method.
   // Calls |reauth_callback| on completion of the reauth flow, or on error. The
   // callback may be called synchronously. The user may also ignore the reauth
   // indefinitely.
   // Returns a handle that aborts the ongoing reauth on destruction.
   virtual std::unique_ptr<ReauthAbortHandle> ShowReauthPrompt(
       const CoreAccountId& account_id,
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
   // Returns true if the modal dialog is shown.

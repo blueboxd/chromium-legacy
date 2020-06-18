@@ -13,10 +13,10 @@ namespace test {
 
 void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
   XDisplay* xdisplay = gfx::GetXDisplay();
-  XID xwindow = host->GetAcceleratedWidget();
+  x11::Window xwindow = host->GetAcceleratedWidget();
   XEvent event = xevent;
   event.xany.display = xdisplay;
-  event.xany.window = xwindow;
+  event.xany.window = static_cast<uint32_t>(xwindow);
 
   switch (event.type) {
     case x11::CrossingEvent::EnterNotify:
@@ -41,7 +41,7 @@ void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
     default:
       break;
   }
-  XSendEvent(xdisplay, xwindow, x11::False, 0, &event);
+  XSendEvent(xdisplay, static_cast<uint32_t>(xwindow), x11::False, 0, &event);
   XFlush(xdisplay);
 }
 

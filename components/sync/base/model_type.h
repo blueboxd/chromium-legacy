@@ -289,7 +289,7 @@ constexpr ModelTypeSet AlwaysEncryptedUserTypes() {
 constexpr ModelTypeSet PriorityUserTypes() {
   return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES,
                       SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS,
-                      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE);
+                      OS_PRIORITY_PREFERENCES, SHARING_MESSAGE, THEMES);
 }
 
 // Proxy types are placeholder types for handling implicitly enabling real

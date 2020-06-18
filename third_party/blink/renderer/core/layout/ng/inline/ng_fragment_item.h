@@ -375,12 +375,14 @@ class CORE_EXPORT NGFragmentItem {
   NGFragmentItem(const NGInlineItem& inline_item,
                  scoped_refptr<const ShapeResultView> shape_result,
                  const NGTextOffset& text_offset,
-                 const PhysicalSize& size);
+                 const PhysicalSize& size,
+                 bool is_hidden_for_paint);
   // Create a generated text item.
   NGFragmentItem(const NGInlineItem& inline_item,
                  scoped_refptr<const ShapeResultView> shape_result,
                  const String& text_content,
-                 const PhysicalSize& size);
+                 const PhysicalSize& size,
+                 bool is_hidden_for_paint);
 
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();

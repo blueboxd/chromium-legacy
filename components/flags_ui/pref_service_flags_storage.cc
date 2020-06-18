@@ -4,6 +4,7 @@
 
 #include "components/flags_ui/pref_service_flags_storage.h"
 
+#include "base/logging.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/flags_ui/flags_ui_pref_names.h"

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "sql/transaction.h"
 

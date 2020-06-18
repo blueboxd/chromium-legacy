@@ -612,6 +612,13 @@ bool ArcImeService::SetCompositionFromExistingText(
   return false;
 }
 
+bool ArcImeService::SetAutocorrectRange(const base::string16& autocorrect_text,
+                                        const gfx::Range& range) {
+  // TODO(https:://crbug.com/1091088): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 // static
 void ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
     base::Optional<double> scale_factor) {

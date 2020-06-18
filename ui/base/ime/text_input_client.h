@@ -217,6 +217,13 @@ class COMPONENT_EXPORT(UI_BASE_IME) TextInputClient {
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) = 0;
 #endif
 
+#if defined(OS_CHROMEOS)
+  // Set the autocorrect range and return if it has been set correctly as a
+  // boolean value.
+  virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                                   const gfx::Range& range) = 0;
+#endif
+
 #if defined(OS_WIN)
   // Returns false if either the focused editable element or the EditContext
   // bounds is not available, else it returns true with the control and

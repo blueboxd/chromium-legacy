@@ -18,8 +18,6 @@ class AssistiveDelegate;
 class SettingLinkView;
 class SuggestionView;
 
-struct SuggestionDetails;
-
 // SuggestionWindowView is the main container of the suggestion window UI.
 class UI_CHROMEOS_EXPORT SuggestionWindowView
     : public views::BubbleDialogDelegateView {
@@ -32,7 +30,9 @@ class UI_CHROMEOS_EXPORT SuggestionWindowView
   void Hide();
 
   // Shows suggestion text.
-  void Show(const SuggestionDetails& details);
+  void Show(const base::string16& text,
+            const size_t confirmed_length,
+            const bool show_tab);
 
   void ShowMultipleCandidates(const std::vector<base::string16>& candidates);
 

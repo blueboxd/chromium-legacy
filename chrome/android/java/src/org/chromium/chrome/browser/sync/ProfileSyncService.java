@@ -358,14 +358,6 @@ public class ProfileSyncService {
     }
 
     /**
-     * Flushes the sync directory to disk.
-     */
-    public void flushDirectory() {
-        ProfileSyncServiceJni.get().flushDirectory(
-                mNativeProfileSyncServiceAndroid, ProfileSyncService.this);
-    }
-
-    /**
      * Returns the actual passphrase type being used for encryption. The sync engine must be
      * running (isEngineInitialized() returns true) before calling this function.
      * <p/>
@@ -654,7 +646,6 @@ public class ProfileSyncService {
         void requestStop(long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         void setSyncAllowedByPlatform(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller, boolean allowed);
-        void flushDirectory(long nativeProfileSyncServiceAndroid, ProfileSyncService caller);
         void setSyncSessionsId(
                 long nativeProfileSyncServiceAndroid, ProfileSyncService caller, String tag);
         int getAuthError(long nativeProfileSyncServiceAndroid, ProfileSyncService caller);

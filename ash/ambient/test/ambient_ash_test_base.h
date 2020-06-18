@@ -13,7 +13,6 @@
 #include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
-#include "ui/views/widget/widget.h"
 
 namespace gfx {
 class ImageSkia;
@@ -24,7 +23,7 @@ namespace ash {
 class AmbientContainerView;
 class AmbientPhotoController;
 
-// The base class to test the Ambient Mode in Ash.
+// The base class to test the ambient mode in Ash.
 class AmbientAshTestBase : public AshTestBase {
  public:
   AmbientAshTestBase();
@@ -34,17 +33,17 @@ class AmbientAshTestBase : public AshTestBase {
   void SetUp() override;
   void TearDown() override;
 
-  // Creates ambient screen in its own widget.
-  void ShowAmbientScreen();
+  AmbientController* ambient_controller() const;
 
-  // Hides ambient screen. Can only be called after |ShowAmbientScreen| has been
-  // called.
-  void HideAmbientScreen();
+  AmbientPhotoController* photo_controller();
 
-  // Simulates user locks/unlocks screen which will result in ambient widget
-  // shown/closed.
   void LockScreen();
   void UnlockScreen();
+
+  // Toggle ambient mode.
+  void Toggle();
+
+  AmbientContainerView* GetView();
 
   const gfx::ImageSkia& GetImageInPhotoView();
 
@@ -54,18 +53,10 @@ class AmbientAshTestBase : public AshTestBase {
 
   bool IsAccessTokenRequestPending() const;
 
-  AmbientController* ambient_controller();
-
-  AmbientPhotoController* photo_controller();
-
-  // Returns the top-level view which contains all the ambient components.
-  AmbientContainerView* container_view();
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestImageDownloader> image_downloader_;
   std::unique_ptr<TestAmbientClient> ambient_client_;
-  std::unique_ptr<views::Widget> widget_;
 };
 
 }  // namespace ash

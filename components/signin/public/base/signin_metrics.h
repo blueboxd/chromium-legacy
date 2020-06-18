@@ -167,6 +167,20 @@ enum class AccessPoint : int {
   ACCESS_POINT_MAX,  // This must be last.
 };
 
+// Enum values which enumerates all access points where transactional reauth
+// could be initiated. Transactional reauth is used when the user already has
+// a valid refresh token but a system still wants to verify user's identity.
+enum class ReauthAccessPoint {
+  // Account password storage opt-in:
+  kAutofillDropdown = 0,
+  kPasswordSaveBubble = 1,
+  kPasswordSettings = 2,
+  kGeneratePasswordDropdown = 3,
+  kGeneratePasswordContextMenu = 4,
+
+  kMaxValue = kGeneratePasswordContextMenu
+};
+
 // Enum values which enumerates all user actions on the sign-in promo.
 enum class PromoAction : int {
   PROMO_ACTION_NO_SIGNIN_PROMO = 0,

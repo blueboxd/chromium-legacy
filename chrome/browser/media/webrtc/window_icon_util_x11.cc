@@ -14,8 +14,10 @@ gfx::ImageSkia GetWindowIcon(content::DesktopMediaID id) {
   DCHECK(id.type == content::DesktopMediaID::TYPE_WINDOW);
 
   std::vector<uint32_t> data;
-  if (!ui::GetArrayProperty(id.id, gfx::GetAtom("_NET_WM_ICON"), &data))
+  if (!ui::GetArrayProperty(static_cast<x11::Window>(id.id),
+                            gfx::GetAtom("_NET_WM_ICON"), &data)) {
     return gfx::ImageSkia();
+  }
 
   // The format of |data| is concatenation of sections like
   // [width, height, pixel data of size width * height], and the total bytes

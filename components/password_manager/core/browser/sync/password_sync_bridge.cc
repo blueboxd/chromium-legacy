@@ -817,7 +817,8 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
       const autofill::PasswordForm& form = *primary_key_and_form.second;
       password_store_changes.emplace_back(PasswordStoreChange::REMOVE, form,
                                           primary_key);
-      if (unsynced_passwords_storage_keys.count(primary_key) != 0) {
+      if (unsynced_passwords_storage_keys.count(primary_key) != 0 &&
+          !form.blacklisted_by_user) {
         unsynced_logins_being_deleted.push_back(form);
       }
     }
@@ -825,6 +826,10 @@ void PasswordSyncBridge::ApplyStopSyncChanges(
   password_store_sync_->GetMetadataStore()->DeleteAllSyncMetadata();
   password_store_sync_->DeleteAndRecreateDatabaseFile();
   password_store_sync_->NotifyLoginsChanged(password_store_changes);
+
+  base::UmaHistogramCounts100(
+      "PasswordManager.AccountStorage.UnsyncedPasswordsFoundDuringSignOut",
+      unsynced_logins_being_deleted.size());
 
   if (!unsynced_logins_being_deleted.empty()) {
     password_store_sync_->NotifyUnsyncedCredentialsWillBeDeleted(

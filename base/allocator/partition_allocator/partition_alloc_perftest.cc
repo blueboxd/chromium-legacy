@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -78,7 +79,7 @@ class TestLoopThread : public PlatformThread::Delegate {
  public:
   explicit TestLoopThread(OnceCallback<float()> test_fn)
       : test_fn_(std::move(test_fn)) {
-    CHECK(PlatformThread::Create(0, this, &thread_handle_));
+    PA_CHECK(PlatformThread::Create(0, this, &thread_handle_));
   }
 
   float Run() {

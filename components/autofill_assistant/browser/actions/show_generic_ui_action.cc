@@ -106,14 +106,14 @@ void ShowGenericUiAction::InternalProcessAction(
       /* force_notifications = */ false);
   if (!temp_model.GetValues(proto_.show_generic_ui().output_model_identifiers())
            .has_value()) {
-    EndAction(false, INVALID_ACTION, nullptr);
+    EndAction(ClientStatus(INVALID_ACTION));
     return;
   }
   for (const auto& element_check :
        proto_.show_generic_ui().periodic_element_checks().element_checks()) {
     if (element_check.model_identifier().empty()) {
       VLOG(1) << "Invalid action: ElementCheck with empty model_identifier";
-      EndAction(false, INVALID_ACTION, nullptr);
+      EndAction(ClientStatus(INVALID_ACTION));
       return;
     }
   }
@@ -124,7 +124,16 @@ void ShowGenericUiAction::InternalProcessAction(
       std::make_unique<GenericUserInterfaceProto>(
           proto_.show_generic_ui().generic_user_interface()),
       base::BindOnce(&ShowGenericUiAction::OnEndActionInteraction,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&ShowGenericUiAction::OnViewInflationFinished,
                      weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ShowGenericUiAction::OnViewInflationFinished(const ClientStatus& status) {
+  if (!status.ok()) {
+    EndAction(status);
+    return;
+  }
 
   // Note: it is important to write autofill profiles etc. to the model AFTER
   // the UI has been inflated, otherwise the UI won't get change notifications
@@ -220,33 +229,28 @@ void ShowGenericUiAction::OnDoneWaitForDom(const ClientStatus& status) {
   if (!callback_) {
     return;
   }
-  EndAction(true, status.proto_status(), delegate_->GetUserModel());
+  EndAction(status);
 }
 
-void ShowGenericUiAction::OnEndActionInteraction(
-    bool view_inflation_successful,
-    ProcessedActionStatusProto status,
-    const UserModel* user_model) {
+void ShowGenericUiAction::OnEndActionInteraction(const ClientStatus& status) {
   // If WaitForDom was called, we end the action the next time the callback
   // is called in order to end WaitForDom gracefully.
   if (has_pending_wait_for_dom_) {
     should_end_action_ = true;
     return;
   }
-  EndAction(view_inflation_successful, status, user_model);
+  EndAction(status);
 }
 
-void ShowGenericUiAction::EndAction(bool view_inflation_successful,
-                                    ProcessedActionStatusProto status,
-                                    const UserModel* user_model) {
+void ShowGenericUiAction::EndAction(const ClientStatus& status) {
   delegate_->ClearGenericUi();
   delegate_->CleanUpAfterPrompt();
   UpdateProcessedAction(status);
-  if (view_inflation_successful) {
-    DCHECK(user_model);
+  if (status.ok()) {
     const auto& output_model_identifiers =
         proto_.show_generic_ui().output_model_identifiers();
-    auto values = user_model->GetValues(output_model_identifiers);
+    auto values =
+        delegate_->GetUserModel()->GetValues(output_model_identifiers);
     // This should always be the case since there is no way to erase a value
     // from the model.
     DCHECK(values.has_value());
@@ -296,7 +300,6 @@ void ShowGenericUiAction::OnPersonalDataChanged() {
 void ShowGenericUiAction::OnGetLogins(
     const ShowGenericUiProto::RequestLoginOptions& proto,
     std::vector<WebsiteLoginManager::Login> logins) {
-  LOG(ERROR) << "Retrieved " << logins.size() << " logins";
   delegate_->WriteUserModel(
       base::BindOnce(&WriteLoginOptionsToUserModel, proto, logins));
 }

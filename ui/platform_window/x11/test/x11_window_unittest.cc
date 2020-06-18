@@ -16,6 +16,7 @@
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/test/events_test_utils_x11.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
@@ -109,7 +110,7 @@ class ShapedX11ExtensionDelegate : public X11ExtensionDelegate {
 // Blocks till the window state hint, |hint|, is set or unset.
 class WMStateWaiter : public X11PropertyChangeWaiter {
  public:
-  WMStateWaiter(XID window, const char* hint, bool wait_till_set)
+  WMStateWaiter(x11::Window window, const char* hint, bool wait_till_set)
       : X11PropertyChangeWaiter(window, "_NET_WM_STATE"),
         hint_(hint),
         wait_till_set_(wait_till_set) {}
@@ -148,13 +149,14 @@ class TestScreen : public display::ScreenBase {
   }
 };  // namespace
 
-// Returns the list of rectangles which describe |xid|'s bounding region via the
-// X shape extension.
-std::vector<gfx::Rect> GetShapeRects(XID xid) {
+// Returns the list of rectangles which describe |window|'s bounding region via
+// the X shape extension.
+std::vector<gfx::Rect> GetShapeRects(x11::Window window) {
   int dummy;
   int shape_rects_size;
-  gfx::XScopedPtr<XRectangle[]> shape_rects(XShapeGetRectangles(
-      gfx::GetXDisplay(), xid, ShapeBounding, &shape_rects_size, &dummy));
+  gfx::XScopedPtr<XRectangle[]> shape_rects(
+      XShapeGetRectangles(gfx::GetXDisplay(), static_cast<uint32_t>(window),
+                          ShapeBounding, &shape_rects_size, &dummy));
 
   std::vector<gfx::Rect> shape_vector;
   for (int i = 0; i < shape_rects_size; ++i) {
@@ -218,11 +220,11 @@ class X11WindowTest : public testing::Test {
     return window;
   }
 
-  void DispatchSingleEventToWidget(x11::Event* x11_event, XID window) {
+  void DispatchSingleEventToWidget(x11::Event* x11_event, x11::Window window) {
     XEvent* xev = &x11_event->xlib_event();
     XIDeviceEvent* device_event =
         static_cast<XIDeviceEvent*>(xev->xcookie.data);
-    device_event->event = window;
+    device_event->event = static_cast<uint32_t>(window);
     LOG(ERROR) << "____PROCESS " << xev;
     event_source_->ProcessXEvent(x11_event);
   }
@@ -250,15 +252,15 @@ TEST_F(X11WindowTest, Shape) {
   auto window = CreateX11Window(&delegate, bounds, &x11_extension_delegate);
   window->Show(false);
 
-  const gfx::AcceleratedWidget widget = window->GetWidget();
-  ASSERT_TRUE(widget);
+  const x11::Window x11_window = window->window();
+  ASSERT_TRUE(x11_window != x11::Window::None);
 
   // Force update the window region.
   window->ResetWindowRegion();
 
   X11EventSource::GetInstance()->DispatchXEvents();
 
-  std::vector<gfx::Rect> shape_rects = GetShapeRects(widget);
+  std::vector<gfx::Rect> shape_rects = GetShapeRects(x11_window);
   ASSERT_FALSE(shape_rects.empty());
 
   // The widget was supposed to be 100x100, but the WM might have ignored this
@@ -274,7 +276,7 @@ TEST_F(X11WindowTest, Shape) {
   X11EventSource::GetInstance()->DispatchXEvents();
 
   if (window->GetBounds().width() == 200) {
-    shape_rects = GetShapeRects(widget);
+    shape_rects = GetShapeRects(x11_window);
     ASSERT_FALSE(shape_rects.empty());
     EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 85, 5));
     EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 95, 5));
@@ -288,7 +290,7 @@ TEST_F(X11WindowTest, Shape) {
     // The shape should be changed to a rectangle which fills the entire screen
     // when |widget1| is maximized.
     {
-      WMStateWaiter waiter(widget, "_NET_WM_STATE_MAXIMIZED_VERT", true);
+      WMStateWaiter waiter(x11_window, "_NET_WM_STATE_MAXIMIZED_VERT", true);
       window->Maximize();
       waiter.Wait();
     }
@@ -299,9 +301,9 @@ TEST_F(X11WindowTest, Shape) {
     // xvfb does not support Xrandr so we cannot check the maximized window's
     // bounds.
     gfx::Rect maximized_bounds;
-    GetOuterWindowBounds(widget, &maximized_bounds);
+    GetOuterWindowBounds(x11_window, &maximized_bounds);
 
-    shape_rects = GetShapeRects(widget);
+    shape_rects = GetShapeRects(x11_window);
     ASSERT_FALSE(shape_rects.empty());
     EXPECT_TRUE(
         ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 5));
@@ -320,8 +322,8 @@ TEST_F(X11WindowTest, Shape) {
   auto window2 = CreateX11Window(&delegate2, bounds2, nullptr);
   window2->Show(false);
 
-  const gfx::AcceleratedWidget widget2 = window2->GetWidget();
-  ASSERT_TRUE(widget2);
+  const x11::Window x11_window2 = window2->window();
+  ASSERT_TRUE(x11_window2 != x11::Window::None);
 
   gfx::Transform transform;
   transform.Scale(1.0f, 1.0f);
@@ -329,7 +331,7 @@ TEST_F(X11WindowTest, Shape) {
 
   X11EventSource::GetInstance()->DispatchXEvents();
 
-  shape_rects = GetShapeRects(widget2);
+  shape_rects = GetShapeRects(x11_window2);
   ASSERT_FALSE(shape_rects.empty());
   EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 5, 5));
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 15, 5));
@@ -338,7 +340,7 @@ TEST_F(X11WindowTest, Shape) {
 
   // Changing the windows's size should not affect the shape.
   window2->SetBounds(gfx::Rect(100, 100, 200, 200));
-  shape_rects = GetShapeRects(widget2);
+  shape_rects = GetShapeRects(x11_window2);
   ASSERT_FALSE(shape_rects.empty());
   EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 5, 5));
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 15, 5));
@@ -348,7 +350,7 @@ TEST_F(X11WindowTest, Shape) {
   // Setting the shape to nullptr resets the shape back to the entire
   // window bounds.
   window2->SetShape(nullptr, transform);
-  shape_rects = GetShapeRects(widget2);
+  shape_rects = GetShapeRects(x11_window2);
   ASSERT_FALSE(shape_rects.empty());
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 5, 5));
   EXPECT_TRUE(ShapeRectContainsPoint(shape_rects, 15, 5));
@@ -369,7 +371,7 @@ TEST_F(X11WindowTest, WindowManagerTogglesFullscreen) {
   ShapedX11ExtensionDelegate x11_extension_delegate;
   constexpr gfx::Rect bounds(100, 100, 100, 100);
   auto window = CreateX11Window(&delegate, bounds, &x11_extension_delegate);
-  XID xid = window->GetWidget();
+  x11::Window x11_window = window->window();
   window->Show(false);
 
   X11EventSource::GetInstance()->DispatchXEvents();
@@ -378,7 +380,7 @@ TEST_F(X11WindowTest, WindowManagerTogglesFullscreen) {
 
   gfx::Rect initial_bounds = window->GetBounds();
   {
-    WMStateWaiter waiter(xid, "_NET_WM_STATE_FULLSCREEN", true);
+    WMStateWaiter waiter(x11_window, "_NET_WM_STATE_FULLSCREEN", true);
     window->ToggleFullscreen();
     waiter.Wait();
   }
@@ -390,7 +392,7 @@ TEST_F(X11WindowTest, WindowManagerTogglesFullscreen) {
     XEvent xclient;
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
-    xclient.xclient.window = xid;
+    xclient.xclient.window = static_cast<uint32_t>(x11_window);
     xclient.xclient.message_type =
         static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
     xclient.xclient.format = 32;
@@ -403,7 +405,7 @@ TEST_F(X11WindowTest, WindowManagerTogglesFullscreen) {
     XSendEvent(display, DefaultRootWindow(display), x11::False,
                SubstructureRedirectMask | SubstructureNotifyMask, &xclient);
 
-    WMStateWaiter waiter(xid, "_NET_WM_STATE_FULLSCREEN", false);
+    WMStateWaiter waiter(x11_window, "_NET_WM_STATE_FULLSCREEN", false);
     waiter.Wait();
   }
 
@@ -420,7 +422,8 @@ TEST_F(X11WindowTest, WindowManagerTogglesFullscreen) {
     XWindowChanges changes = {0};
     changes.width = initial_bounds.width();
     changes.height = initial_bounds.height();
-    XConfigureWindow(display, xid, CWHeight | CWWidth, &changes);
+    XConfigureWindow(display, static_cast<uint32_t>(x11_window),
+                     CWHeight | CWWidth, &changes);
     // Ensure that the task which is posted when a window is resized is run.
     base::RunLoop().RunUntilIdle();
   }
@@ -447,14 +450,14 @@ TEST_F(X11WindowTest, ToggleMinimizePropogateToPlatformWindowDelegate) {
 
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
-  XID xid = window->GetWidget();
+  x11::Window x11_window = window->window();
   Display* display = gfx::GetXDisplay();
 
   // Minimize by sending _NET_WM_STATE_HIDDEN
   {
     std::vector<x11::Atom> atom_list;
     atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
-    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
+    ui::SetAtomArrayProperty(x11_window, "_NET_WM_STATE", "ATOM", atom_list);
 
     XEvent xevent;
     memset(&xevent, 0, sizeof(xevent));
@@ -462,14 +465,14 @@ TEST_F(X11WindowTest, ToggleMinimizePropogateToPlatformWindowDelegate) {
     xevent.xproperty.type = PropertyNotify;
     xevent.xproperty.send_event = 1;
     xevent.xproperty.display = display;
-    xevent.xproperty.window = xid;
+    xevent.xproperty.window = static_cast<uint32_t>(x11_window);
     xevent.xproperty.atom =
         static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
     xevent.xproperty.state = 0;
     XSendEvent(display, DefaultRootWindow(display), x11::False,
                SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
 
-    WMStateWaiter waiter(xid, "_NET_WM_STATE_HIDDEN", true);
+    WMStateWaiter waiter(x11_window, "_NET_WM_STATE_HIDDEN", true);
     waiter.Wait();
   }
   EXPECT_TRUE(window->IsMinimized());
@@ -479,7 +482,7 @@ TEST_F(X11WindowTest, ToggleMinimizePropogateToPlatformWindowDelegate) {
   {
     std::vector<x11::Atom> atom_list;
     atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_FOCUSED"));
-    ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
+    ui::SetAtomArrayProperty(x11_window, "_NET_WM_STATE", "ATOM", atom_list);
 
     XEvent xevent;
     memset(&xevent, 0, sizeof(xevent));
@@ -487,14 +490,14 @@ TEST_F(X11WindowTest, ToggleMinimizePropogateToPlatformWindowDelegate) {
     xevent.xproperty.type = PropertyNotify;
     xevent.xproperty.send_event = 1;
     xevent.xproperty.display = display;
-    xevent.xproperty.window = xid;
+    xevent.xproperty.window = static_cast<uint32_t>(x11_window);
     xevent.xproperty.atom =
         static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
     xevent.xproperty.state = 0;
     XSendEvent(display, DefaultRootWindow(display), x11::False,
                SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
 
-    WMStateWaiter waiter(xid, "_NET_WM_STATE_FOCUSED", true);
+    WMStateWaiter waiter(x11_window, "_NET_WM_STATE_FOCUSED", true);
     waiter.Wait();
   }
   EXPECT_FALSE(window->IsMinimized());

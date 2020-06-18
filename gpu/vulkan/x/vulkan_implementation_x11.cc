@@ -77,7 +77,7 @@ VulkanImplementationX11::VulkanImplementationX11(bool use_swiftshader)
   gfx::GetXDisplay();
 }
 
-VulkanImplementationX11::~VulkanImplementationX11() {}
+VulkanImplementationX11::~VulkanImplementationX11() = default;
 
 bool VulkanImplementationX11::InitializeVulkanInstance(bool using_surface) {
   if (using_surface && !use_swiftshader() && !IsVulkanSurfaceSupported())
@@ -126,7 +126,8 @@ std::unique_ptr<VulkanSurface> VulkanImplementationX11::CreateViewSurface(
     gfx::AcceleratedWidget window) {
   if (!using_surface_)
     return nullptr;
-  return VulkanSurfaceX11::Create(vulkan_instance_.vk_instance(), window);
+  return VulkanSurfaceX11::Create(vulkan_instance_.vk_instance(),
+                                  static_cast<x11::Window>(window));
 }
 
 bool VulkanImplementationX11::GetPhysicalDevicePresentationSupport(

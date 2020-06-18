@@ -38,12 +38,12 @@ const char kChromiumDragReciever[] = "_CHROMIUM_DRAG_RECEIVER";
 
 }  // namespace
 
-XDragContext::XDragContext(XID local_window,
+XDragContext::XDragContext(x11::Window local_window,
                            const XClientMessageEvent& event,
                            XDragDropClient* source_client,
                            const SelectionFormatMap& data)
     : local_window_(local_window),
-      source_window_(event.data.l[0]),
+      source_window_(static_cast<x11::Window>(event.data.l[0])),
       source_client_(source_client) {
   if (!source_client_) {
     bool get_types_from_property = ((event.data.l[1] & 1) != 0);
@@ -84,7 +84,7 @@ XDragContext::~XDragContext() = default;
 
 void XDragContext::OnXdndPositionMessage(XDragDropClient* client,
                                          x11::Atom suggested_action,
-                                         XID source_window,
+                                         x11::Window source_window,
                                          Time time_stamp,
                                          const gfx::Point& screen_point) {
   DCHECK_EQ(source_window_, source_window);
@@ -117,7 +117,7 @@ void XDragContext::RequestNextTarget() {
                     static_cast<uint32_t>(gfx::GetAtom(kXdndSelection)),
                     static_cast<uint32_t>(target),
                     static_cast<uint32_t>(gfx::GetAtom(kChromiumDragReciever)),
-                    local_window_, position_time_stamp_);
+                    static_cast<uint32_t>(local_window_), position_time_stamp_);
 }
 
 void XDragContext::OnSelectionNotify(const XSelectionEvent& event) {

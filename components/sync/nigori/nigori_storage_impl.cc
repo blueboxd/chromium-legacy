@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/files/important_file_writer.h"
+#include "base/logging.h"
 #include "components/sync/base/encryptor.h"
 
 namespace syncer {

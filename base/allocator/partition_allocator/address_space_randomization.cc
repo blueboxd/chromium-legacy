@@ -5,6 +5,7 @@
 #include "base/allocator/partition_allocator/address_space_randomization.h"
 
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/random.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/check_op.h"
@@ -61,7 +62,7 @@ void* GetRandomPageBase() {
   random += internal::kASLROffset;
 #endif  // defined(ARCH_CPU_32_BITS)
 
-  DCHECK_EQ(0ULL, (random & kPageAllocationGranularityOffsetMask));
+  PA_DCHECK(!(random & kPageAllocationGranularityOffsetMask));
   return reinterpret_cast<void*>(random);
 }
 

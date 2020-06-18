@@ -45,7 +45,7 @@ void GlobalMenuBarRegistrarX11::OnMenuBarDestroyed(GlobalMenuBarX11* menu) {
     dbus::MethodCall method_call(kAppMenuRegistrarInterface,
                                  "UnregisterWindow");
     dbus::MessageWriter writer(&method_call);
-    writer.AppendUint32(menu->xid());
+    writer.AppendUint32(static_cast<uint32_t>(menu->window()));
     registrar_proxy_->CallMethod(&method_call,
                                  dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
                                  base::DoNothing());
@@ -90,7 +90,7 @@ void GlobalMenuBarRegistrarX11::RegisterMenu(GlobalMenuBarX11* menu) {
   menus_[menu] = kRegistered;
   dbus::MethodCall method_call(kAppMenuRegistrarInterface, "RegisterWindow");
   dbus::MessageWriter writer(&method_call);
-  writer.AppendUint32(menu->xid());
+  writer.AppendUint32(static_cast<uint32_t>(menu->window()));
   writer.AppendObjectPath(dbus::ObjectPath(menu->GetPath()));
   registrar_proxy_->CallMethod(
       &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT, base::DoNothing());

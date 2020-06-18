@@ -27,6 +27,8 @@ CSSAtRuleID CssAtRuleID(StringView name) {
     return kCSSAtRulePage;
   if (EqualIgnoringASCIICase(name, "property"))
     return kCSSAtRuleProperty;
+  if (EqualIgnoringASCIICase(name, "scroll-timeline"))
+    return kCSSAtRuleScrollTimeline;
   if (EqualIgnoringASCIICase(name, "supports"))
     return kCSSAtRuleSupports;
   if (EqualIgnoringASCIICase(name, "viewport"))
@@ -63,6 +65,9 @@ void CountAtRule(const CSSParserContext* context, CSSAtRuleID rule_id) {
       break;
     case kCSSAtRuleProperty:
       feature = WebFeature::kCSSAtRuleProperty;
+      break;
+    case kCSSAtRuleScrollTimeline:
+      feature = WebFeature::kCSSAtRuleScrollTimeline;
       break;
     case kCSSAtRuleSupports:
       feature = WebFeature::kCSSAtRuleSupports;

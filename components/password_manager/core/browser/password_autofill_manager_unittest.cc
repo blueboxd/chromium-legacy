@@ -145,7 +145,8 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   MOCK_METHOD(void, GeneratePassword, (), (override));
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
-              (base::OnceCallback<void(ReauthSucceeded)>),
+              (signin_metrics::ReauthAccessPoint,
+               base::OnceCallback<void(ReauthSucceeded)>),
               (override));
   MOCK_METHOD(void, TriggerSignIn, (signin_metrics::AccessPoint), (override));
   MOCK_METHOD(favicon::FaviconService*, GetFaviconService, (), (override));
@@ -649,8 +650,10 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndFillUpdatesPopup) {
         .WillOnce(Return(CreateReopenArgsWithTestSuggestions(
             /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false,
             /*has_re_signin=*/false)));
-    EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
-        .WillOnce([](auto reauth_callback) {
+    EXPECT_CALL(client,
+                TriggerReauthForPrimaryAccount(
+                    signin_metrics::ReauthAccessPoint::kAutofillDropdown, _))
+        .WillOnce([](auto, auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
         });
     EXPECT_CALL(autofill_client, ShowAutofillPopup);
@@ -696,8 +699,11 @@ TEST_F(PasswordAutofillManagerTest, FailedOptInAndGenerateUpdatesPopup) {
         .WillOnce(Return(CreateReopenArgsWithTestSuggestions(
             /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true,
             /*has_re_signin=*/false)));
-    EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
-        .WillOnce([](auto reauth_callback) {
+    EXPECT_CALL(
+        client,
+        TriggerReauthForPrimaryAccount(
+            signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown, _))
+        .WillOnce([](auto, auto reauth_callback) {
           std::move(reauth_callback).Run(ReauthSucceeded(false));
         });
     EXPECT_CALL(autofill_client, ShowAutofillPopup);
@@ -740,8 +746,10 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInAndFillHidesPopup) {
       .WillOnce(Return(CreateReopenArgsWithTestSuggestions(
           /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false,
           /*has_re_signin=*/false)));
-  EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
-      .WillOnce([](auto reauth_callback) {
+  EXPECT_CALL(client,
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kAutofillDropdown, _))
+      .WillOnce([](auto, auto reauth_callback) {
         std::move(reauth_callback).Run(ReauthSucceeded(true));
       });
   EXPECT_CALL(autofill_client, ShowAutofillPopup);
@@ -772,8 +780,11 @@ TEST_F(PasswordAutofillManagerTest,
       .WillOnce(Return(CreateReopenArgsWithTestSuggestions(
           /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ true,
           /*has_re_signin=*/false)));
-  EXPECT_CALL(client, TriggerReauthForPrimaryAccount)
-      .WillOnce([](auto reauth_callback) {
+  EXPECT_CALL(
+      client,
+      TriggerReauthForPrimaryAccount(
+          signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown, _))
+      .WillOnce([](auto, auto reauth_callback) {
         std::move(reauth_callback).Run(ReauthSucceeded(true));
       });
   EXPECT_CALL(autofill_client, ShowAutofillPopup);

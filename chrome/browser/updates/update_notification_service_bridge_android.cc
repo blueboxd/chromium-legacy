@@ -30,7 +30,7 @@ void JNI_UpdateNotificationServiceBridge_Schedule(
     const JavaParamRef<jstring>& j_message,
     const jint j_state,
     const jboolean j_show_immediately) {
-  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
+  ProfileKey* profile_key = ::android::GetLastUsedRegularProfileKey();
   auto* update_notification_service =
       UpdateNotificationServiceFactory::GetForKey(profile_key);
   UpdateNotificationInfo data;

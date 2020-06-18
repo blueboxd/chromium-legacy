@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"

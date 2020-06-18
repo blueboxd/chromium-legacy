@@ -164,6 +164,8 @@ blink_core_sources("css") {
     "css_rule.cc",
     "css_rule.h",
     "css_rule_list.h",
+    "css_scroll_timeline_rule.cc",
+    "css_scroll_timeline_rule.h",
     "css_segmented_font_face.cc",
     "css_segmented_font_face.h",
     "css_selector.cc",

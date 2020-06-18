@@ -5,14 +5,10 @@
 package org.chromium.chrome.browser.sync;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -78,16 +74,6 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
         mProfileSyncService.addSyncStateChangedListener(mSyncNotificationController);
 
         updateSyncStateFromAndroid();
-
-        // When the application gets paused, tell sync to flush the directory to disk.
-        ApplicationStatus.registerStateListenerForAllActivities(new ActivityStateListener() {
-            @Override
-            public void onActivityStateChange(Activity activity, int newState) {
-                if (newState == ActivityState.PAUSED) {
-                    mProfileSyncService.flushDirectory();
-                }
-            }
-        });
 
         IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(
                 new SigninManager.SignInStateObserver() {

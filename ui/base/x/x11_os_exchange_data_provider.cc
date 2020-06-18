@@ -15,6 +15,7 @@
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/x/selection_utils.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 // Note: the GetBlah() methods are used immediately by the
@@ -34,10 +35,10 @@ const char kNetscapeURL[] = "_NETSCAPE_URL";
 }  // namespace
 
 XOSExchangeDataProvider::XOSExchangeDataProvider(
-    XID x_window,
+    x11::Window x_window,
     const SelectionFormatMap& selection)
     : x_display_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(x_display_)),
+      x_root_window_(ui::GetX11RootWindow()),
       own_window_(false),
       x_window_(x_window),
       format_map_(selection),
@@ -45,11 +46,11 @@ XOSExchangeDataProvider::XOSExchangeDataProvider(
 
 XOSExchangeDataProvider::XOSExchangeDataProvider()
     : x_display_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(x_display_)),
+      x_root_window_(ui::GetX11RootWindow()),
       own_window_(true),
-      x_window_(XCreateWindow(
+      x_window_(static_cast<x11::Window>(XCreateWindow(
           x_display_,
-          x_root_window_,
+          static_cast<uint32_t>(x_root_window_),
           -100,                                                // x
           -100,                                                // y
           10,                                                  // width
@@ -59,14 +60,15 @@ XOSExchangeDataProvider::XOSExchangeDataProvider()
           static_cast<int>(x11::WindowClass::InputOnly),
           nullptr,  // visual
           0,
-          nullptr)),
+          nullptr))),
       selection_owner_(x_display_, x_window_, gfx::GetAtom(kDndSelection)) {
-  XStoreName(x_display_, x_window_, "Chromium Drag & Drop Window");
+  XStoreName(x_display_, static_cast<uint32_t>(x_window_),
+             "Chromium Drag & Drop Window");
 }
 
 XOSExchangeDataProvider::~XOSExchangeDataProvider() {
   if (own_window_)
-    XDestroyWindow(x_display_, x_window_);
+    XDestroyWindow(x_display_, static_cast<uint32_t>(x_window_));
 }
 
 void XOSExchangeDataProvider::TakeOwnershipOfSelection() const {
@@ -160,7 +162,7 @@ void XOSExchangeDataProvider::SetURL(const GURL& url,
 
 void XOSExchangeDataProvider::SetFilename(const base::FilePath& path) {
   std::vector<FileInfo> data;
-  data.push_back(FileInfo(path, base::FilePath()));
+  data.emplace_back(path, base::FilePath());
   SetFilenames(data);
 }
 

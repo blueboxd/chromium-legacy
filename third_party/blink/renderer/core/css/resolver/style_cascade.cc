@@ -422,7 +422,7 @@ void StyleCascade::LookupAndApply(const CSSProperty& property,
   DCHECK(!property.IsSurrogate());
 
   CSSPropertyName name = property.GetCSSPropertyName();
-  DCHECK(!resolver.IsLocked(name));
+  DCHECK(!resolver.IsLocked(property));
 
   CascadePriority* p = map_.Find(name);
   if (!p)

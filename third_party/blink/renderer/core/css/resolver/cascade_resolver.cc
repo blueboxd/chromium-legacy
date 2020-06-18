@@ -7,25 +7,21 @@
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 #include "third_party/blink/renderer/core/css/resolver/cascade_priority.h"
 
 namespace blink {
 
 bool CascadeResolver::IsLocked(const CSSProperty& property) const {
-  return IsLocked(property.GetCSSPropertyName());
-}
-
-bool CascadeResolver::IsLocked(const CSSPropertyName& name) const {
-  return stack_.Contains(name);
+  return Find(property) != kNotFound;
 }
 
 bool CascadeResolver::AllowSubstitution(CSSVariableData* data) const {
   if (data && data->IsAnimationTainted() && stack_.size()) {
-    const CSSPropertyName& name = stack_.back();
-    if (name.IsCustomProperty())
+    const CSSProperty* property = stack_.back();
+    if (IsA<CustomProperty>(*property))
       return true;
-    const CSSProperty& property = CSSProperty::Get(name.Id());
-    return !CSSAnimations::IsAnimationAffectingProperty(property);
+    return !CSSAnimations::IsAnimationAffectingProperty(*property);
   }
   return true;
 }
@@ -41,7 +37,7 @@ void CascadeResolver::MarkApplied(CascadePriority* priority) const {
 }
 
 bool CascadeResolver::DetectCycle(const CSSProperty& property) {
-  wtf_size_t index = stack_.Find(property.GetCSSPropertyName());
+  wtf_size_t index = Find(property);
   if (index == kNotFound)
     return false;
   cycle_depth_ = std::min(cycle_depth_, index);
@@ -52,15 +48,21 @@ bool CascadeResolver::InCycle() const {
   return cycle_depth_ != kNotFound;
 }
 
+wtf_size_t CascadeResolver::Find(const CSSProperty& property) const {
+  wtf_size_t index = 0;
+  for (const CSSProperty* p : stack_) {
+    if (p->GetCSSPropertyName() == property.GetCSSPropertyName())
+      return index;
+    ++index;
+  }
+  return kNotFound;
+}
+
 CascadeResolver::AutoLock::AutoLock(const CSSProperty& property,
                                     CascadeResolver& resolver)
-    : AutoLock(property.GetCSSPropertyName(), resolver) {}
-
-CascadeResolver::AutoLock::AutoLock(const CSSPropertyName& name,
-                                    CascadeResolver& resolver)
     : resolver_(resolver) {
-  DCHECK(!resolver.IsLocked(name));
-  resolver_.stack_.push_back(name);
+  DCHECK(!resolver.IsLocked(property));
+  resolver_.stack_.push_back(&property);
 }
 
 CascadeResolver::AutoLock::~AutoLock() {

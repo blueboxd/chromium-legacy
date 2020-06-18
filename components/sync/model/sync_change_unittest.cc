@@ -86,15 +86,14 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   pref_specifics->set_name("update");
   change_list.push_back(
       SyncChange(FROM_HERE, SyncChange::ACTION_UPDATE,
-                 SyncData::CreateRemoteData(1, update_specifics)));
+                 SyncData::CreateRemoteData(update_specifics)));
 
   // Create an add.
   sync_pb::EntitySpecifics add_specifics;
   pref_specifics = add_specifics.mutable_preference();
   pref_specifics->set_name("add");
-  change_list.push_back(
-      SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
-                 SyncData::CreateRemoteData(2, add_specifics)));
+  change_list.push_back(SyncChange(FROM_HERE, SyncChange::ACTION_ADD,
+                                   SyncData::CreateRemoteData(add_specifics)));
 
   // Create a delete.
   sync_pb::EntitySpecifics delete_specifics;
@@ -102,7 +101,7 @@ TEST_F(SyncChangeTest, SyncerChanges) {
   pref_specifics->set_name("add");
   change_list.push_back(
       SyncChange(FROM_HERE, SyncChange::ACTION_DELETE,
-                 SyncData::CreateRemoteData(3, delete_specifics)));
+                 SyncData::CreateRemoteData(delete_specifics)));
 
   ASSERT_EQ(3U, change_list.size());
 

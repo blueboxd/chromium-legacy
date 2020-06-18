@@ -2266,7 +2266,7 @@ TEST_F(ControllerTest, SetGenericUi) {
   }
   controller_->SetGenericUi(
       std::make_unique<GenericUserInterfaceProto>(GenericUserInterfaceProto()),
-      base::DoNothing());
+      base::DoNothing(), base::DoNothing());
   controller_->ClearGenericUi();
 }
 

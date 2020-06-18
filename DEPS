@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '53f973c22a26a4e8216c6109b087fc37c86fe859',
+  'skia_revision': '81454dfaa92a202f905c4d808c5fb343fd96acff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -194,7 +194,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'fa3d64bf72d69e94f8754e52fcf1d2b5ed65a671',
+  'angle_revision': '57f137d71cdfbe11db02e64f615ea8c0aa0e1004',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '22e7befe144d3b27a0880aaeac743398dccd7e8d',
+  'catapult_revision': '22b0828640fba2dc8fc50c4a15aa33ee40c54274',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '7898d65dedcad4d171d2dfd396fff0da4078119b',
+  'devtools_frontend_revision': '55ac3e87d96a9bab2228b5b80b112c380cbe13e3',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -289,7 +289,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': 'a7112d544b2ecb20be58e17a9d4397784bb094cb',
+  'spv_tools_revision': '99651228b23835fd0210ebc57d583fbba73f4621',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -305,7 +305,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '7a4685f448297d31b8bc882b94c78d32a4630b89',
+  'dawn_revision': '581c407cd20badc71e3b8e5536e5a1ac47d5b6ba',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -528,7 +528,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'b98382a762ed3349b8761a1cb528bf707ef69a64',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '3817d4523195da79e9831a927d2e70562b4e1bd1',
       'condition': 'checkout_ios',
   },
 
@@ -1302,7 +1302,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'nHGn4ZAzo3V5DELnU7HAEIv1WzqB1aCbmk_Vh-UnQykC'
+              'version': 'UoYLOT0X6577j70eB9nPqYQs9Z3Nh5lA4I-pRtTchO0C'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1321,7 +1321,7 @@ deps = {
   },
 
   'src/third_party/re2/src':
-    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'e9d517989f66f2e0a24cde42f4d2424dd3e4a9b9',
+    Var('chromium_git') + '/external/github.com/google/re2.git' + '@' + 'e6613e91b26e84b7e7f4d763ebbd0ff336be2fc1',
 
   'src/third_party/r8': {
       'packages': [
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'ae1892d4e4ceac436191d0a33f99cdf337cc5c5f',
+    Var('webrtc_git') + '/src.git' + '@' + '2c9d76a4eb0fcdf50a03cb4a41b8a43ad16f9c6b',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),

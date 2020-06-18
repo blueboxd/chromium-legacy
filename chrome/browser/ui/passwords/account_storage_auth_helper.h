@@ -18,6 +18,10 @@ namespace signin {
 enum class ReauthResult;
 }
 
+namespace signin_metrics {
+enum class ReauthAccessPoint;
+}
+
 class SigninViewController;
 class Profile;
 
@@ -36,7 +40,9 @@ class AccountStorageAuthHelper {
   // Requests a reauth for the primary account. In case of success, sets the
   // opt in preference for account storage. |reauth_callback| is then called
   // passing whether the reauth succeeded or not.
+  // |access_point| represents where the reauth was triggered.
   void TriggerOptInReauth(
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<
           void(password_manager::PasswordManagerClient::ReauthSucceeded)>
           reauth_callback);

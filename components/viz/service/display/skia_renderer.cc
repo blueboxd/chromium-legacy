@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bits.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"

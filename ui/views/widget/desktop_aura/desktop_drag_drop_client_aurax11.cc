@@ -116,7 +116,7 @@ DesktopDragDropClientAuraX11::DesktopDragDropClientAuraX11(
     aura::Window* root_window,
     views::DesktopNativeCursorManager* cursor_manager,
     ::Display* display,
-    XID window)
+    x11::Window window)
     : XDragDropClient(this, display, window),
       root_window_(root_window),
       cursor_manager_(cursor_manager) {}
@@ -217,7 +217,8 @@ void DesktopDragDropClientAuraX11::RemoveObserver(
 bool DesktopDragDropClientAuraX11::DispatchXEvent(x11::Event* x11_event) {
   XEvent* event = &x11_event->xlib_event();
   if (!target_current_context() ||
-      event->xany.window != target_current_context()->source_window()) {
+      event->xany.window !=
+          static_cast<uint32_t>(target_current_context()->source_window())) {
     return false;
   }
   return target_current_context()->DispatchXEvent(x11_event);
@@ -370,7 +371,7 @@ void DesktopDragDropClientAuraX11::UpdateCursor(
       cursor_manager_->GetInitializedCursor(cursor_type).platform());
 }
 
-void DesktopDragDropClientAuraX11::OnBeginForeignDrag(XID window) {
+void DesktopDragDropClientAuraX11::OnBeginForeignDrag(x11::Window window) {
   DCHECK(target_current_context());
   DCHECK(!target_current_context()->source_client());
 

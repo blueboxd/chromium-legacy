@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/selector.h"
 
+#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 
 namespace autofill_assistant {

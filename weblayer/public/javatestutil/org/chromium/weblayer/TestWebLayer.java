@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -91,5 +92,14 @@ public final class TestWebLayer {
 
     public boolean canBrowserControlsScroll(Tab tab) throws RemoteException {
         return mITestWebLayer.canBrowserControlsScroll(tab.getITab());
+    }
+
+    public void addInfoBar(Tab tab, Runnable runnable) throws RemoteException {
+        mITestWebLayer.addInfoBar(tab.getITab(), ObjectWrapper.wrap(runnable));
+    }
+
+    public View getInfoBarContainerView(Tab tab) throws RemoteException {
+        return (View) ObjectWrapper.unwrap(
+                mITestWebLayer.getInfoBarContainerView(tab.getITab()), View.class);
     }
 }

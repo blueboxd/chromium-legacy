@@ -30,28 +30,15 @@ class FakeSyncChangeProcessor : public SyncChangeProcessor {
   // Returns data().
   SyncDataList GetAllSyncData(ModelType type) const override;
 
-  // SyncChangeProcessor implementation.
-  //
-  // Updates context().
-  SyncError UpdateDataTypeContext(ModelType type,
-                                  ContextRefreshStatus refresh_status,
-                                  const std::string& context) override;
-  void AddLocalChangeObserver(LocalChangeObserver* observer) override;
-  void RemoveLocalChangeObserver(LocalChangeObserver* observer) override;
-
   virtual const SyncChangeList& changes() const;
   virtual SyncChangeList& changes();
 
   virtual const SyncDataList& data() const;
   virtual SyncDataList& data();
 
-  virtual const std::string& context() const;
-  virtual std::string& context();
-
  private:
   SyncChangeList changes_;
   SyncDataList data_;
-  std::string context_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSyncChangeProcessor);
 };

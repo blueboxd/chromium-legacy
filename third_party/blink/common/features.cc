@@ -628,5 +628,9 @@ const base::Feature kWebXrMultiGpu{"WebXRMultiGpu",
 const base::Feature kCSSMatchedPropertiesCacheDependencies{
     "CSSMatchedPropertiesCacheDependencies", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether ParkableStrings can be written out to disk.
+const base::Feature kParkableStringsToDisk{"ParkableStringsToDisk",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace blink

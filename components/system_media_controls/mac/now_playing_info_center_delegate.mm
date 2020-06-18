@@ -6,6 +6,7 @@
 
 #import <MediaPlayer/MediaPlayer.h>
 
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/system_media_controls/mac/now_playing_info_center_delegate_cocoa.h"
 

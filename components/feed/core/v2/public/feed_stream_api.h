@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/observer_list_types.h"
 #include "components/feed/core/v2/public/types.h"
 

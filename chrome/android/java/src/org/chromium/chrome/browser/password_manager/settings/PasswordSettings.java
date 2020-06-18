@@ -67,6 +67,7 @@ public class PasswordSettings
 
     public static final String PREF_SAVE_PASSWORDS_SWITCH = "save_passwords_switch";
     public static final String PREF_AUTOSIGNIN_SWITCH = "autosignin_switch";
+    public static final String PREF_CHECK_PASSWORDS = "check_passwords";
     public static final String PREF_KEY_MANAGE_ACCOUNT_LINK = "manage_account_link";
     public static final String PREF_KEY_SECURITY_KEY_LINK = "security_key_link";
 
@@ -81,11 +82,12 @@ public class PasswordSettings
 
     private static final int ORDER_SWITCH = 0;
     private static final int ORDER_AUTO_SIGNIN_CHECKBOX = 1;
-    private static final int ORDER_MANAGE_ACCOUNT_LINK = 2;
-    private static final int ORDER_SECURITY_KEY = 3;
-    private static final int ORDER_SAVED_PASSWORDS = 4;
-    private static final int ORDER_EXCEPTIONS = 5;
-    private static final int ORDER_SAVED_PASSWORDS_NO_TEXT = 6;
+    private static final int ORDER_CHECK_PASSWORDS = 2;
+    private static final int ORDER_MANAGE_ACCOUNT_LINK = 3;
+    private static final int ORDER_SECURITY_KEY = 4;
+    private static final int ORDER_SAVED_PASSWORDS = 5;
+    private static final int ORDER_EXCEPTIONS = 6;
+    private static final int ORDER_SAVED_PASSWORDS_NO_TEXT = 7;
 
     private boolean mNoPasswords;
     private boolean mNoPasswordExceptions;
@@ -98,6 +100,7 @@ public class PasswordSettings
     private Preference mSecurityKey;
     private ChromeSwitchPreference mSavePasswordsSwitch;
     private ChromeBaseCheckBoxPreference mAutoSignInSwitch;
+    private ChromeBasePreference mCheckPasswords;
     private TextMessagePreference mEmptyView;
     private boolean mSearchRecorded;
     private Menu mMenu;
@@ -234,6 +237,9 @@ public class PasswordSettings
         if (mSearchQuery == null) {
             createSavePasswordsSwitch();
             createAutoSignInCheckbox();
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_CHECK)) {
+                createCheckPasswords();
+            }
         }
         PasswordManagerHandlerProvider.getInstance()
                 .getPasswordManagerHandler()
@@ -462,6 +468,17 @@ public class PasswordSettings
         getPreferenceScreen().addPreference(mAutoSignInSwitch);
         mAutoSignInSwitch.setChecked(
                 getPrefService().getBoolean(Pref.CREDENTIALS_ENABLE_AUTOSIGNIN));
+    }
+
+    private void createCheckPasswords() {
+        mCheckPasswords = new ChromeBasePreference(getStyledContext(), null);
+        mCheckPasswords.setKey(PREF_CHECK_PASSWORDS);
+        mCheckPasswords.setTitle(R.string.passwords_check_title);
+        mCheckPasswords.setOrder(ORDER_CHECK_PASSWORDS);
+        mCheckPasswords.setSummary(R.string.passwords_check_description);
+        // Add a stub listener which returns true to notify the click was handled
+        mCheckPasswords.setOnPreferenceClickListener(preference -> true);
+        getPreferenceScreen().addPreference(mCheckPasswords);
     }
 
     private void displayManageAccountLink() {

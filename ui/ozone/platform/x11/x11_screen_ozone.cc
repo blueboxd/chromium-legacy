@@ -10,6 +10,7 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/platform_window/x11/x11_topmost_window_finder.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
@@ -86,14 +87,15 @@ gfx::Point X11ScreenOzone::GetCursorScreenPoint() const {
 gfx::AcceleratedWidget X11ScreenOzone::GetAcceleratedWidgetAtScreenPoint(
     const gfx::Point& point) const {
   X11TopmostWindowFinder finder;
-  return finder.FindWindowAt(point);
+  return static_cast<gfx::AcceleratedWidget>(finder.FindWindowAt(point));
 }
 
 gfx::AcceleratedWidget X11ScreenOzone::GetLocalProcessWidgetAtPoint(
     const gfx::Point& point,
     const std::set<gfx::AcceleratedWidget>& ignore) const {
   X11TopmostWindowFinder finder;
-  return finder.FindLocalProcessWindowAt(point, ignore);
+  return static_cast<gfx::AcceleratedWidget>(
+      finder.FindLocalProcessWindowAt(point, ignore));
 }
 
 display::Display X11ScreenOzone::GetDisplayNearestPoint(

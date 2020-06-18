@@ -46,7 +46,8 @@ RequestCoordinator* GetRequestCoordinator() {
   return RequestCoordinatorFactory::GetForBrowserContext(GetProfile());
 }
 OfflinePageModel* GetOfflinePageModel() {
-  return OfflinePageModelFactory::GetForKey(::android::GetLastUsedProfileKey());
+  return OfflinePageModelFactory::GetForKey(
+      ::android::GetLastUsedRegularProfileKey());
 }
 
 void OnGetAllRequestsDone(
@@ -279,7 +280,7 @@ void JNI_OfflineTestUtil_WaitForConnectivityState(
 void JNI_OfflineTestUtil_SetPrefetchingEnabledByServer(
     JNIEnv* env,
     const jboolean enabled) {
-  ProfileKey* key = ::android::GetLastUsedProfileKey();
+  ProfileKey* key = ::android::GetLastUsedRegularProfileKey();
 
   prefetch_prefs::SetEnabledByServer(key->GetPrefs(), enabled);
   if (!enabled) {
@@ -291,7 +292,7 @@ void JNI_OfflineTestUtil_SetGCMTokenForTesting(
     JNIEnv* env,
     const JavaParamRef<jstring>& gcm_token) {
   prefetch_prefs::SetCachedPrefetchGCMToken(
-      ::android::GetLastUsedProfileKey()->GetPrefs(),
+      ::android::GetLastUsedRegularProfileKey()->GetPrefs(),
       base::android::ConvertJavaStringToUTF8(env, gcm_token));
 }
 

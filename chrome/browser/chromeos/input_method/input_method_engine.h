@@ -29,7 +29,6 @@ namespace ime {
 enum class AssistiveWindowType;
 enum class ButtonId;
 struct InputMethodMenuItem;
-struct SuggestionDetails;
 }  // namespace ime
 }  // namespace ui
 
@@ -114,7 +113,9 @@ class InputMethodEngine : public InputMethodEngineBase,
   // SuggestionHandlerInterface overrides.
   bool DismissSuggestion(int context_id, std::string* error) override;
   bool SetSuggestion(int context_id,
-                     const ui::ime::SuggestionDetails& details,
+                     const base::string16& text,
+                     const size_t confirmed_length,
+                     const bool show_tab,
                      std::string* error) override;
   bool AcceptSuggestion(int context_id, std::string* error) override;
   void OnSuggestionsChanged(
@@ -188,6 +189,10 @@ class InputMethodEngine : public InputMethodEngineBase,
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) override;
+
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           uint32_t start,
+                           uint32_t end) override;
 
   bool SetSelectionRange(uint32_t start, uint32_t end) override;
 

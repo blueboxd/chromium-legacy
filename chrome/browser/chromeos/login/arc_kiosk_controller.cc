@@ -130,7 +130,7 @@ void ArcKioskController::OnAppDataUpdated() {
   arc_kiosk_splash_screen_view_->Show();
 }
 
-void ArcKioskController::OnAppStarted() {
+void ArcKioskController::OnAppLaunched() {
   DVLOG(1) << "ARC Kiosk launch succeeded, wait for app window.";
 
   if (arc_kiosk_splash_screen_view_) {
@@ -142,7 +142,7 @@ void ArcKioskController::OnAppStarted() {
   }
 }
 
-void ArcKioskController::OnAppWindowLaunched() {
+void ArcKioskController::OnAppWindowCreated() {
   DVLOG(1) << "App window created, closing splash screen.";
   launched_ = true;
   // If timer is running, do not remove splash screen for a few
@@ -159,6 +159,21 @@ KioskAppManagerBase::App ArcKioskController::GetAppData() {
   DCHECK(arc_app);
   KioskAppManagerBase::App app(*arc_app);
   return app;
+}
+
+// TODO(crbug.com/1015383): Add network handling logic for arc kiosk.
+void ArcKioskController::InitializeNetwork() {}
+
+bool ArcKioskController::IsNetworkReady() const {
+  return true;
+}
+
+bool ArcKioskController::IsShowingNetworkConfigScreen() const {
+  return false;
+}
+
+bool ArcKioskController::ShouldSkipAppInstallation() const {
+  return false;
 }
 
 }  // namespace chromeos

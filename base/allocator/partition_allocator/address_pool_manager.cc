@@ -6,6 +6,7 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/bits.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"
@@ -26,8 +27,8 @@ AddressPoolManager* AddressPoolManager::GetInstance() {
 }
 
 pool_handle AddressPoolManager::Add(uintptr_t ptr, size_t length) {
-  DCHECK(!(ptr & kSuperPageOffsetMask));
-  DCHECK(!((ptr + length) & kSuperPageOffsetMask));
+  PA_DCHECK(!(ptr & kSuperPageOffsetMask));
+  PA_DCHECK(!((ptr + length) & kSuperPageOffsetMask));
 
   for (pool_handle i = 0; i < base::size(pools_); ++i) {
     if (!pools_[i].IsInitialized()) {
@@ -46,34 +47,34 @@ void AddressPoolManager::ResetForTesting() {
 
 void AddressPoolManager::Remove(pool_handle handle) {
   Pool* pool = GetPool(handle);
-  DCHECK(pool->IsInitialized());
+  PA_DCHECK(pool->IsInitialized());
   pool->Reset();
 }
 
 char* AddressPoolManager::Alloc(pool_handle handle, size_t length) {
   Pool* pool = GetPool(handle);
-  DCHECK(pool->IsInitialized());
+  PA_DCHECK(pool->IsInitialized());
   return reinterpret_cast<char*>(pool->FindChunk(length));
 }
 
 void AddressPoolManager::Free(pool_handle handle, void* ptr, size_t length) {
   Pool* pool = GetPool(handle);
-  DCHECK(pool->IsInitialized());
+  PA_DCHECK(pool->IsInitialized());
   pool->FreeChunk(reinterpret_cast<uintptr_t>(ptr), length);
 }
 
 void AddressPoolManager::Pool::Initialize(uintptr_t ptr, size_t length) {
-  CHECK(ptr != 0);
-  CHECK(!(ptr & kSuperPageOffsetMask));
-  CHECK(!(length & kSuperPageOffsetMask));
+  PA_CHECK(ptr != 0);
+  PA_CHECK(!(ptr & kSuperPageOffsetMask));
+  PA_CHECK(!(length & kSuperPageOffsetMask));
   address_begin_ = ptr;
 #if DCHECK_IS_ON()
   address_end_ = ptr + length;
-  DCHECK_LT(address_begin_, address_end_);
+  PA_DCHECK(address_begin_ < address_end_);
 #endif
 
   total_bits_ = length / kSuperPageSize;
-  CHECK_LE(total_bits_, kMaxBits);
+  PA_CHECK(total_bits_ <= kMaxBits);
 
   base::AutoLock scoped_lock(lock_);
   alloc_bitset_.reset();
@@ -124,7 +125,7 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
     // mark as allocated) and return the allocated address.
     if (found) {
       for (size_t i = beg_bit; i < end_bit; ++i) {
-        DCHECK(!alloc_bitset_.test(i));
+        PA_DCHECK(!alloc_bitset_.test(i));
         alloc_bitset_.set(i);
       }
       if (bit_hint_ == beg_bit) {
@@ -132,7 +133,7 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
       }
       uintptr_t address = address_begin_ + beg_bit * kSuperPageSize;
 #if DCHECK_IS_ON()
-      DCHECK_LE(address + required_size, address_end_);
+      PA_DCHECK(address + required_size <= address_end_);
 #endif
       return address;
     }
@@ -145,18 +146,18 @@ uintptr_t AddressPoolManager::Pool::FindChunk(size_t requested_size) {
 void AddressPoolManager::Pool::FreeChunk(uintptr_t address, size_t free_size) {
   base::AutoLock scoped_lock(lock_);
 
-  DCHECK(!(address & kSuperPageOffsetMask));
+  PA_DCHECK(!(address & kSuperPageOffsetMask));
 
   const size_t size = bits::Align(free_size, kSuperPageSize);
   DCHECK_LE(address_begin_, address);
 #if DCHECK_IS_ON()
-  DCHECK_LE(address + size, address_end_);
+  PA_DCHECK(address + size <= address_end_);
 #endif
 
   const size_t beg_bit = (address - address_begin_) / kSuperPageSize;
   const size_t end_bit = beg_bit + size / kSuperPageSize;
   for (size_t i = beg_bit; i < end_bit; ++i) {
-    DCHECK(alloc_bitset_.test(i));
+    PA_DCHECK(alloc_bitset_.test(i));
     alloc_bitset_.reset(i);
   }
   bit_hint_ = std::min(bit_hint_, beg_bit);
@@ -170,7 +171,7 @@ AddressPoolManager::~AddressPoolManager() = default;
 
 ALWAYS_INLINE AddressPoolManager::Pool* AddressPoolManager::GetPool(
     pool_handle handle) {
-  DCHECK(0 < handle && handle <= kNumPools);
+  PA_DCHECK(0 < handle && handle <= kNumPools);
   return &pools_[handle - 1];
 }
 

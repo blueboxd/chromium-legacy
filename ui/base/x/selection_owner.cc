@@ -51,7 +51,7 @@ size_t GetMaxRequestSize(XDisplay* display) {
 // Gets the value of an atom pair array property. On success, true is returned
 // and the value is stored in |value|.
 bool GetAtomPairArrayProperty(
-    XID window,
+    x11::Window window,
     x11::Atom property,
     std::vector<std::pair<x11::Atom, x11::Atom>>* value) {
   std::vector<x11::Atom> atoms;
@@ -66,22 +66,21 @@ bool GetAtomPairArrayProperty(
   return true;
 }
 
-XID GetSelectionOwner(x11::Atom selection) {
+x11::Window GetSelectionOwner(x11::Atom selection) {
   auto response = x11::Connection::Get()->GetSelectionOwner({selection}).Sync();
-  return response ? static_cast<XID>(response->owner) : x11::None;
+  return response ? response->owner : x11::Window::None;
 }
 
-void SetSelectionOwner(XID window,
+void SetSelectionOwner(x11::Window window,
                        x11::Atom selection,
                        x11::Time time = x11::Time::CurrentTime) {
-  x11::Connection::Get()->SetSelectionOwner(
-      {static_cast<x11::Window>(window), selection, time});
+  x11::Connection::Get()->SetSelectionOwner({window, selection, time});
 }
 
 }  // namespace
 
 SelectionOwner::SelectionOwner(XDisplay* x_display,
-                               XID x_window,
+                               x11::Window x_window,
                                x11::Atom selection_name)
     : x_display_(x_display),
       x_window_(x_window),
@@ -93,7 +92,7 @@ SelectionOwner::~SelectionOwner() {
   // don't receive further events. However, we don't call ClearSelectionOwner()
   // because we don't want to do this indiscriminately.
   if (GetSelectionOwner(selection_name_) == x_window_)
-    SetSelectionOwner(x11::None, selection_name_);
+    SetSelectionOwner(x11::Window::None, selection_name_);
 }
 
 void SelectionOwner::RetrieveTargets(std::vector<x11::Atom>* targets) {
@@ -113,13 +112,13 @@ void SelectionOwner::TakeOwnershipOfSelection(const SelectionFormatMap& data) {
 }
 
 void SelectionOwner::ClearSelectionOwner() {
-  SetSelectionOwner(x11::None, selection_name_);
+  SetSelectionOwner(x11::Window::None, selection_name_);
   format_map_ = SelectionFormatMap();
 }
 
 void SelectionOwner::OnSelectionRequest(const x11::Event& x11_event) {
   const XEvent& event = x11_event.xlib_event();
-  XID requestor = event.xselectionrequest.requestor;
+  auto requestor = static_cast<x11::Window>(event.xselectionrequest.requestor);
   x11::Atom requested_target =
       static_cast<x11::Atom>(event.xselectionrequest.target);
   x11::Atom requested_property =
@@ -129,7 +128,7 @@ void SelectionOwner::OnSelectionRequest(const x11::Event& x11_event) {
   // override the parts indicating success in the different cases.
   XEvent reply;
   reply.xselection.type = SelectionNotify;
-  reply.xselection.requestor = requestor;
+  reply.xselection.requestor = static_cast<uint32_t>(requestor);
   reply.xselection.selection = event.xselectionrequest.selection;
   reply.xselection.target = static_cast<uint32_t>(requested_target);
   reply.xselection.property = x11::None;  // Indicates failure
@@ -162,7 +161,8 @@ void SelectionOwner::OnSelectionRequest(const x11::Event& x11_event) {
   }
 
   // Send off the reply.
-  XSendEvent(x_display_, requestor, x11::False, 0, &reply);
+  XSendEvent(x_display_, static_cast<uint32_t>(requestor), x11::False, 0,
+             &reply);
 }
 
 void SelectionOwner::OnSelectionClear(const x11::Event& event) {
@@ -188,7 +188,7 @@ void SelectionOwner::OnPropertyEvent(const x11::Event& event) {
 }
 
 bool SelectionOwner::ProcessTarget(x11::Atom target,
-                                   XID requestor,
+                                   x11::Window requestor,
                                    x11::Atom property) {
   x11::Atom multiple_atom = gfx::GetAtom(kMultiple);
   x11::Atom save_targets_atom = gfx::GetAtom(kSaveTargets);
@@ -231,10 +231,10 @@ bool SelectionOwner::ProcessTarget(x11::Atom target,
       base::TimeTicks timeout =
           base::TimeTicks::Now() +
           base::TimeDelta::FromMilliseconds(kIncrementalTransferTimeoutMs);
-      incremental_transfers_.push_back(IncrementalTransfer(
+      incremental_transfers_.emplace_back(
           requestor, target, property,
           std::make_unique<XScopedEventSelector>(requestor, PropertyChangeMask),
-          it->second, 0, timeout));
+          it->second, 0, timeout);
 
       // Start a timer to abort the data transfer in case that the selection
       // requestor does not support the INCR property or gets destroyed during
@@ -300,7 +300,7 @@ SelectionOwner::FindIncrementalTransferForEvent(const x11::Event& x11_event) {
   const XEvent& event = x11_event.xlib_event();
   for (auto it = incremental_transfers_.begin();
        it != incremental_transfers_.end(); ++it) {
-    if (it->window == event.xproperty.window &&
+    if (it->window == static_cast<x11::Window>(event.xproperty.window) &&
         it->property == static_cast<x11::Atom>(event.xproperty.atom)) {
       return it;
     }
@@ -309,7 +309,7 @@ SelectionOwner::FindIncrementalTransferForEvent(const x11::Event& x11_event) {
 }
 
 SelectionOwner::IncrementalTransfer::IncrementalTransfer(
-    XID window,
+    x11::Window window,
     x11::Atom target,
     x11::Atom property,
     std::unique_ptr<XScopedEventSelector> event_selector,

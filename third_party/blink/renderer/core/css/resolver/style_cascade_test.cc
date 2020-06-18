@@ -56,13 +56,10 @@ class TestCascadeResolver {
   STACK_ALLOCATED();
 
  public:
-  explicit TestCascadeResolver(Document& document, uint8_t generation = 0)
-      : document_(document), resolver_(CascadeFilter(), generation) {}
+  explicit TestCascadeResolver(uint8_t generation = 0)
+      : resolver_(CascadeFilter(), generation) {}
   bool InCycle() const { return resolver_.InCycle(); }
-  bool DetectCycle(String name) {
-    CSSPropertyRef ref(name, document_);
-    DCHECK(ref.IsValid());
-    const CSSProperty& property = ref.GetProperty();
+  bool DetectCycle(const CSSProperty& property) {
     return resolver_.DetectCycle(property);
   }
   wtf_size_t CycleDepth() const { return resolver_.cycle_depth_; }
@@ -78,7 +75,6 @@ class TestCascadeResolver {
  private:
   friend class TestCascadeAutoLock;
 
-  Document& document_;
   CascadeResolver resolver_;
 };
 
@@ -132,7 +128,7 @@ class TestCascade {
   void ApplySingle(const CSSProperty& property) {
     EnsureAtLeast(CascadeOrigin::kAuthor);
     cascade_.AnalyzeIfNeeded();
-    TestCascadeResolver resolver(GetDocument(), ++cascade_.generation_);
+    TestCascadeResolver resolver(++cascade_.generation_);
     cascade_.LookupAndApply(property, resolver.InnerResolver());
   }
 
@@ -261,9 +257,9 @@ class TestCascadeAutoLock {
   STACK_ALLOCATED();
 
  public:
-  TestCascadeAutoLock(const CSSPropertyName& name,
+  TestCascadeAutoLock(const CSSProperty& property,
                       TestCascadeResolver& resolver)
-      : lock_(name, resolver.resolver_) {}
+      : lock_(property, resolver.resolver_) {}
 
  private:
   CascadeResolver::AutoLock lock_;
@@ -627,21 +623,45 @@ TEST_F(StyleCascadeTest, PendingSubstitutionInLogicalShorthand) {
   EXPECT_EQ("10px", cascade.ComputedValue("margin-right"));
 }
 
-TEST_F(StyleCascadeTest, ResolverDetectCycle) {
+TEST_F(StyleCascadeTest, DetectCycleByName) {
   TestCascade cascade(GetDocument());
-  TestCascadeResolver resolver(GetDocument());
+  TestCascadeResolver resolver;
+
+  // Two different CustomProperty instances with the same name:
+  CustomProperty a1("--a", GetDocument());
+  CustomProperty a2("--a", GetDocument());
 
   {
-    TestCascadeAutoLock lock(CSSPropertyName("--a"), resolver);
+    TestCascadeAutoLock lock(a1, resolver);
+    EXPECT_FALSE(resolver.InCycle());
+
+    // This should still be detected as a cycle, even though it's not the same
+    // CustomProperty instance.
+    EXPECT_TRUE(resolver.DetectCycle(a2));
+    EXPECT_TRUE(resolver.InCycle());
+  }
+  EXPECT_FALSE(resolver.InCycle());
+}
+
+TEST_F(StyleCascadeTest, ResolverDetectCycle) {
+  TestCascade cascade(GetDocument());
+  TestCascadeResolver resolver;
+
+  CustomProperty a("--a", GetDocument());
+  CustomProperty b("--b", GetDocument());
+  CustomProperty c("--c", GetDocument());
+
+  {
+    TestCascadeAutoLock lock(a, resolver);
     EXPECT_FALSE(resolver.InCycle());
     {
-      TestCascadeAutoLock lock(CSSPropertyName("--b"), resolver);
+      TestCascadeAutoLock lock(b, resolver);
       EXPECT_FALSE(resolver.InCycle());
       {
-        TestCascadeAutoLock lock(CSSPropertyName("--c"), resolver);
+        TestCascadeAutoLock lock(c, resolver);
         EXPECT_FALSE(resolver.InCycle());
 
-        EXPECT_TRUE(resolver.DetectCycle("--a"));
+        EXPECT_TRUE(resolver.DetectCycle(a));
         EXPECT_TRUE(resolver.InCycle());
       }
       EXPECT_TRUE(resolver.InCycle());
@@ -653,19 +673,24 @@ TEST_F(StyleCascadeTest, ResolverDetectCycle) {
 
 TEST_F(StyleCascadeTest, ResolverDetectNoCycle) {
   TestCascade cascade(GetDocument());
-  TestCascadeResolver resolver(GetDocument());
+  TestCascadeResolver resolver;
+
+  CustomProperty a("--a", GetDocument());
+  CustomProperty b("--b", GetDocument());
+  CustomProperty c("--c", GetDocument());
+  CustomProperty x("--x", GetDocument());
 
   {
-    TestCascadeAutoLock lock(CSSPropertyName("--a"), resolver);
+    TestCascadeAutoLock lock(a, resolver);
     EXPECT_FALSE(resolver.InCycle());
     {
-      TestCascadeAutoLock lock(CSSPropertyName("--b"), resolver);
+      TestCascadeAutoLock lock(b, resolver);
       EXPECT_FALSE(resolver.InCycle());
       {
-        TestCascadeAutoLock lock(CSSPropertyName("--c"), resolver);
+        TestCascadeAutoLock lock(c, resolver);
         EXPECT_FALSE(resolver.InCycle());
 
-        EXPECT_FALSE(resolver.DetectCycle("--x"));
+        EXPECT_FALSE(resolver.DetectCycle(x));
         EXPECT_FALSE(resolver.InCycle());
       }
       EXPECT_FALSE(resolver.InCycle());
@@ -677,13 +702,15 @@ TEST_F(StyleCascadeTest, ResolverDetectNoCycle) {
 
 TEST_F(StyleCascadeTest, ResolverDetectCycleSelf) {
   TestCascade cascade(GetDocument());
-  TestCascadeResolver resolver(GetDocument());
+  TestCascadeResolver resolver;
+
+  CustomProperty a("--a", GetDocument());
 
   {
-    TestCascadeAutoLock lock(CSSPropertyName("--a"), resolver);
+    TestCascadeAutoLock lock(a, resolver);
     EXPECT_FALSE(resolver.InCycle());
 
-    EXPECT_TRUE(resolver.DetectCycle("--a"));
+    EXPECT_TRUE(resolver.DetectCycle(a));
     EXPECT_TRUE(resolver.InCycle());
   }
   EXPECT_FALSE(resolver.InCycle());
@@ -693,28 +720,33 @@ TEST_F(StyleCascadeTest, ResolverDetectMultiCycle) {
   using AutoLock = TestCascadeAutoLock;
 
   TestCascade cascade(GetDocument());
-  TestCascadeResolver resolver(GetDocument());
+  TestCascadeResolver resolver;
+
+  CustomProperty a("--a", GetDocument());
+  CustomProperty b("--b", GetDocument());
+  CustomProperty c("--c", GetDocument());
+  CustomProperty d("--d", GetDocument());
 
   {
-    AutoLock lock(CSSPropertyName("--a"), resolver);
+    AutoLock lock(a, resolver);
     EXPECT_FALSE(resolver.InCycle());
     {
-      AutoLock lock(CSSPropertyName("--b"), resolver);
+      AutoLock lock(b, resolver);
       EXPECT_FALSE(resolver.InCycle());
       {
-        AutoLock lock(CSSPropertyName("--c"), resolver);
+        AutoLock lock(c, resolver);
         EXPECT_FALSE(resolver.InCycle());
         {
-          AutoLock lock(CSSPropertyName("--d"), resolver);
+          AutoLock lock(d, resolver);
           EXPECT_FALSE(resolver.InCycle());
 
           // Cycle 1 (big cycle):
-          EXPECT_TRUE(resolver.DetectCycle("--b"));
+          EXPECT_TRUE(resolver.DetectCycle(b));
           EXPECT_TRUE(resolver.InCycle());
           EXPECT_EQ(1u, resolver.CycleDepth());
 
           // Cycle 2 (small cycle):
-          EXPECT_TRUE(resolver.DetectCycle("--c"));
+          EXPECT_TRUE(resolver.DetectCycle(c));
           EXPECT_TRUE(resolver.InCycle());
           EXPECT_EQ(1u, resolver.CycleDepth());
         }
@@ -730,28 +762,33 @@ TEST_F(StyleCascadeTest, ResolverDetectMultiCycleReverse) {
   using AutoLock = TestCascadeAutoLock;
 
   TestCascade cascade(GetDocument());
-  TestCascadeResolver resolver(GetDocument());
+  TestCascadeResolver resolver;
+
+  CustomProperty a("--a", GetDocument());
+  CustomProperty b("--b", GetDocument());
+  CustomProperty c("--c", GetDocument());
+  CustomProperty d("--d", GetDocument());
 
   {
-    AutoLock lock(CSSPropertyName("--a"), resolver);
+    AutoLock lock(a, resolver);
     EXPECT_FALSE(resolver.InCycle());
     {
-      AutoLock lock(CSSPropertyName("--b"), resolver);
+      AutoLock lock(b, resolver);
       EXPECT_FALSE(resolver.InCycle());
       {
-        AutoLock lock(CSSPropertyName("--c"), resolver);
+        AutoLock lock(c, resolver);
         EXPECT_FALSE(resolver.InCycle());
         {
-          AutoLock lock(CSSPropertyName("--d"), resolver);
+          AutoLock lock(d, resolver);
           EXPECT_FALSE(resolver.InCycle());
 
           // Cycle 1 (small cycle):
-          EXPECT_TRUE(resolver.DetectCycle("--c"));
+          EXPECT_TRUE(resolver.DetectCycle(c));
           EXPECT_TRUE(resolver.InCycle());
           EXPECT_EQ(2u, resolver.CycleDepth());
 
           // Cycle 2 (big cycle):
-          EXPECT_TRUE(resolver.DetectCycle("--b"));
+          EXPECT_TRUE(resolver.DetectCycle(b));
           EXPECT_TRUE(resolver.InCycle());
           EXPECT_EQ(1u, resolver.CycleDepth());
         }
@@ -764,7 +801,7 @@ TEST_F(StyleCascadeTest, ResolverDetectMultiCycleReverse) {
 }
 
 TEST_F(StyleCascadeTest, ResolverMarkApplied) {
-  TestCascadeResolver resolver(GetDocument(), 2);
+  TestCascadeResolver resolver(2);
 
   CascadePriority priority(CascadeOrigin::kAuthor);
   EXPECT_EQ(0, priority.GetGeneration());
@@ -778,7 +815,7 @@ TEST_F(StyleCascadeTest, ResolverMarkApplied) {
 }
 
 TEST_F(StyleCascadeTest, ResolverMarkUnapplied) {
-  TestCascadeResolver resolver(GetDocument(), 7);
+  TestCascadeResolver resolver(7);
 
   CascadePriority priority(CascadeOrigin::kAuthor);
   EXPECT_EQ(0, priority.GetGeneration());

@@ -753,10 +753,10 @@ SharedImageBackingGLImage::ProduceRGBEmulationGLTexture(
     rgb_emulation_texture_ = new gles2::Texture(service_id);
     rgb_emulation_texture_->SetLightweightRef();
     rgb_emulation_texture_->SetTarget(target, 1);
-    rgb_emulation_texture_->sampler_state_.min_filter = GL_LINEAR;
-    rgb_emulation_texture_->sampler_state_.mag_filter = GL_LINEAR;
-    rgb_emulation_texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-    rgb_emulation_texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+    rgb_emulation_texture_->set_min_filter(GL_LINEAR);
+    rgb_emulation_texture_->set_mag_filter(GL_LINEAR);
+    rgb_emulation_texture_->set_wrap_t(GL_CLAMP_TO_EDGE);
+    rgb_emulation_texture_->set_wrap_s(GL_CLAMP_TO_EDGE);
 
     GLenum format =
         gles2::TextureManager::ExtractFormatFromStorageFormat(internal_format);
@@ -1092,10 +1092,10 @@ bool SharedImageBackingGLCommon::InitializeGLTexture(
     texture_ = new gles2::Texture(service_id);
     texture_->SetLightweightRef();
     texture_->SetTarget(params.target, 1);
-    texture_->sampler_state_.min_filter = GL_LINEAR;
-    texture_->sampler_state_.mag_filter = GL_LINEAR;
-    texture_->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
-    texture_->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
+    texture_->set_min_filter(GL_LINEAR);
+    texture_->set_mag_filter(GL_LINEAR);
+    texture_->set_wrap_t(GL_CLAMP_TO_EDGE);
+    texture_->set_wrap_s(GL_CLAMP_TO_EDGE);
     texture_->SetLevelInfo(params.target, 0, params.internal_format,
                            size().width(), size().height(), 1, 0, params.format,
                            params.type,
@@ -1125,7 +1125,6 @@ bool SharedImageBackingGLImage::InitializeGLTexture(
     } else {
       is_bound = image_->BindTexImage(params.target);
     }
-
     if (is_bound) {
       image_state = gles2::Texture::BOUND;
     } else {

@@ -295,8 +295,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest, RemoteInstall) {
   specifics.mutable_extension()->set_update_url(
       "http://localhost/autoupdate/updates.xml");
   specifics.mutable_extension()->set_version("2");
-  syncer::SyncData sync_data =
-      syncer::SyncData::CreateRemoteData(1234567, specifics);
+  syncer::SyncData sync_data = syncer::SyncData::CreateRemoteData(specifics);
 
   ExtensionSyncService* sync_service = ExtensionSyncService::Get(profile());
   sync_service->MergeDataAndStartSyncing(

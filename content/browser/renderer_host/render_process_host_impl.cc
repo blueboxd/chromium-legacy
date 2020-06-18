@@ -217,6 +217,7 @@
 #include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/sandbox_file_system_backend.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
@@ -5172,7 +5173,7 @@ void RenderProcessHostImpl::ProvideStatusFileForRenderer() {
 #endif
 
 void RenderProcessHostImpl::ProvideSwapFileForRenderer() {
-  if (!base::FeatureList::IsEnabled(features::kParkableStringsToDisk))
+  if (!base::FeatureList::IsEnabled(blink::features::kParkableStringsToDisk))
     return;
 
   // In Incognito, nothing should be written to disk. Don't provide a file..

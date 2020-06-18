@@ -205,12 +205,12 @@ class OAuthMultiloginHelperTest
 
   std::string multilogin_url() const {
     return GaiaUrls::GetInstance()->oauth_multilogin_url().spec() +
-           "?source=ChromiumBrowser&mlreuse=0";
+           "?source=ChromiumBrowser&reuseCookies=0";
   }
 
   std::string multilogin_url_with_external_cc_result() const {
     return GaiaUrls::GetInstance()->oauth_multilogin_url().spec() +
-           "?source=ChromiumBrowser&mlreuse=0&externalCcResult=" +
+           "?source=ChromiumBrowser&reuseCookies=0&externalCcResult=" +
            kExternalCcResult;
   }
 

@@ -13,6 +13,7 @@
 #include "ui/base/wm_role_names_linux.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/transform.h"
 
@@ -71,7 +72,7 @@ void StatusIconButtonLinux::OnSetDelegate() {
   auto* window = widget_->GetNativeWindow();
   DCHECK(window);
   host_ = window->GetHost();
-  if (!host_->GetAcceleratedWidget()) {
+  if (host_->GetAcceleratedWidget() == gfx::kNullAcceleratedWidget) {
     delegate_->OnImplInitializationFailed();
     // |this| might be destroyed.
     return;

@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <map>
 
+#include "base/check.h"
 #include "base/no_destructor.h"
 
 namespace remote_cocoa {

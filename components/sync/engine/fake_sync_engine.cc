@@ -81,8 +81,6 @@ void FakeSyncEngine::HasUnsyncedItemsForTest(
 
 void FakeSyncEngine::GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const {}
 
-void FakeSyncEngine::FlushDirectory() const {}
-
 void FakeSyncEngine::RequestBufferedProtocolEventsAndEnableForwarding() {}
 
 void FakeSyncEngine::DisableProtocolEventForwarding() {}

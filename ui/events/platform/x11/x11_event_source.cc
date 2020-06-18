@@ -137,7 +137,7 @@ X11EventSource::~X11EventSource() {
   DCHECK_EQ(this, instance_);
   instance_ = nullptr;
   if (dummy_initialized_)
-    XDestroyWindow(display_, dummy_window_);
+    XDestroyWindow(display_, static_cast<uint32_t>(dummy_window_));
 }
 
 bool X11EventSource::HasInstance() {
@@ -163,8 +163,8 @@ Time X11EventSource::GetCurrentServerTime() {
 
   if (!dummy_initialized_) {
     // Create a new Window and Atom that will be used for the property change.
-    dummy_window_ = XCreateSimpleWindow(display_, DefaultRootWindow(display_),
-                                        0, 0, 1, 1, 0, 0, 0);
+    dummy_window_ = static_cast<x11::Window>(XCreateSimpleWindow(
+        display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0, 0, 0));
     dummy_atom_ = gfx::GetAtom("CHROMIUM_TIMESTAMP");
     dummy_window_events_ = std::make_unique<XScopedEventSelector>(
         dummy_window_, PropertyChangeMask);
@@ -203,7 +203,8 @@ Time X11EventSource::GetCurrentServerTime() {
   Time time = x11::CurrentTime;
   auto pred = [&](const x11::Event& event) {
     if (event.xlib_event().type == x11::PropertyNotifyEvent::opcode &&
-        event.xlib_event().xproperty.window == dummy_window_) {
+        event.xlib_event().xproperty.window ==
+            static_cast<uint32_t>(dummy_window_)) {
       time = event.xlib_event().xproperty.time;
       return true;
     }

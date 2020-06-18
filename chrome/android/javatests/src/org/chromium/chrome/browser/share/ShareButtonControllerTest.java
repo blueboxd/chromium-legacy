@@ -19,7 +19,6 @@ import android.view.View;
 
 import androidx.test.filters.MediumTest;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,7 +34,6 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ViewUtils;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.signin.AccountManagerTestRule;
@@ -76,11 +74,6 @@ public final class ShareButtonControllerTest {
                 mActivityTestRule.getActivity().getResources().getConfiguration().screenWidthDp;
 
         mButtonExpected = deviceWidth > minimumWidthDp;
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        ApplicationTestUtils.finishActivity(mActivityTestRule.getActivity());
     }
 
     @Test

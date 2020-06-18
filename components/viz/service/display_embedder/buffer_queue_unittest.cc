@@ -92,7 +92,7 @@ class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gpu::SurfaceHandle surface_handle) override {
-    if (!surface_handle) {
+    if (surface_handle == gpu::kNullSurfaceHandle) {
       return TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
           size, format, usage, surface_handle);
     }
@@ -110,6 +110,9 @@ class StubGpuMemoryBufferManager : public TestGpuMemoryBufferManager {
 #if defined(OS_WIN)
 const gpu::SurfaceHandle kFakeSurfaceHandle =
     reinterpret_cast<gpu::SurfaceHandle>(1);
+#elif defined(USE_X11)
+const gpu::SurfaceHandle kFakeSurfaceHandle =
+    static_cast<gpu::SurfaceHandle>(1);
 #else
 const gpu::SurfaceHandle kFakeSurfaceHandle = 1;
 #endif

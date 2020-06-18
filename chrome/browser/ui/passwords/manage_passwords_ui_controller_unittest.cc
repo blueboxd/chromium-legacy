@@ -33,6 +33,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/test/mock_navigation_handle.h"
@@ -110,7 +111,8 @@ class TestPasswordManagerClient
 
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
-              (base::OnceCallback<void(ReauthSucceeded)>),
+              (signin_metrics::ReauthAccessPoint,
+               base::OnceCallback<void(ReauthSucceeded)>),
               (override));
 
   password_manager::PasswordStore* GetProfilePasswordStore() const override {
@@ -563,8 +565,10 @@ TEST_F(ManagePasswordsUIControllerTest,
 
   // The user hasn't opted in, so a reauth flow will be triggered.
   base::OnceCallback<void(ReauthSucceeded)> reauth_callback;
-  EXPECT_CALL(client(), TriggerReauthForPrimaryAccount)
-      .WillOnce(MoveArg<0>(&reauth_callback));
+  EXPECT_CALL(client(),
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSaveBubble, _))
+      .WillOnce(MoveArg<1>(&reauth_callback));
 
   // The user clicks save which will invoke the reauth flow.
   controller()->AuthenticateUserForAccountStoreOptInAndSavePassword(
@@ -594,8 +598,10 @@ TEST_F(ManagePasswordsUIControllerTest,
 
   // The user hasn't opted in, so a reauth flow will be triggered.
   base::OnceCallback<void(ReauthSucceeded)> reauth_callback;
-  EXPECT_CALL(client(), TriggerReauthForPrimaryAccount)
-      .WillOnce(MoveArg<0>(&reauth_callback));
+  EXPECT_CALL(client(),
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSaveBubble, _))
+      .WillOnce(MoveArg<1>(&reauth_callback));
 
   // Unsuccessful reauth should change the default store to profile store.
   EXPECT_CALL(

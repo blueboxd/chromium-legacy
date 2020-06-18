@@ -83,9 +83,9 @@ base::Value ValueResultFromScriptResult(id wk_result, int max_depth) {
         return result;
       }
 
-      std::vector<base::StringPiece> path =
-          base::SplitStringPiece(base::SysNSStringToUTF8(obj_c_string), ".",
-                                 base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+      std::string combined_path = base::SysNSStringToUTF8(obj_c_string);
+      std::vector<base::StringPiece> path = base::SplitStringPiece(
+          combined_path, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
       dictionary.SetPath(path, std::move(value));
     }
     result = std::move(dictionary);

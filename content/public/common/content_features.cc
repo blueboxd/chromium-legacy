@@ -397,10 +397,6 @@ const base::Feature kOverscrollHistoryNavigation {
 #endif
 };
 
-// Whether ParkableStrings in blink can be written out to disk.
-const base::Feature kParkableStringsToDisk{"ParkableStringsToDisk",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Whether web apps can run periodic tasks upon network connectivity.
 const base::Feature kPeriodicBackgroundSync{"PeriodicBackgroundSync",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

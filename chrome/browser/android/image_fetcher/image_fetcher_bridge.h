@@ -21,63 +21,63 @@ class ImageFetcherService;
 // Native counterpart of ImageFetcherBridge.java.
 class ImageFetcherBridge {
  public:
-  ImageFetcherBridge(ImageFetcherService* image_fetcher_service,
-                     base::FilePath base_file_path);
+  ImageFetcherBridge();
   ~ImageFetcherBridge();
 
-  void Destroy(JNIEnv* j_env, const base::android::JavaRef<jobject>& j_this);
-
-  base::android::ScopedJavaLocalRef<jstring> GetFilePath(
+  static base::android::ScopedJavaLocalRef<jstring> GetFilePath(
       JNIEnv* j_env,
-      const base::android::JavaRef<jobject>& j_this,
-      const base::android::JavaRef<jstring>& j_url);
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const base::android::JavaParamRef<jstring>& j_url);
 
-  void FetchImageData(JNIEnv* j_env,
-                      const base::android::JavaRef<jobject>& j_this,
-                      const jint j_image_fetcher_config,
-                      const base::android::JavaRef<jstring>& j_url,
-                      const base::android::JavaRef<jstring>& j_client_name,
-                      const jint j_expiration_interval_mins,
-                      const base::android::JavaRef<jobject>& j_callback);
-
-  void FetchImage(JNIEnv* j_env,
-                  const base::android::JavaRef<jobject>& j_this,
-                  const jint j_image_fetcher_config,
-                  const base::android::JavaRef<jstring>& j_url,
-                  const base::android::JavaRef<jstring>& j_client_name,
-                  const jint j_expiration_interval_mins,
-                  const base::android::JavaRef<jobject>& j_callback);
-
-  void ReportEvent(JNIEnv* j_env,
-                   const base::android::JavaRef<jobject>& j_this,
-                   const base::android::JavaRef<jstring>& j_client_name,
-                   const jint j_event_id);
-
-  void ReportCacheHitTime(JNIEnv* j_env,
-                          const base::android::JavaRef<jobject>& j_this,
-                          const base::android::JavaRef<jstring>& j_client_name,
-                          const jlong start_time_millis);
-
-  void ReportTotalFetchTimeFromNative(
+  static void FetchImageData(
       JNIEnv* j_env,
-      const base::android::JavaRef<jobject>& j_this,
-      const base::android::JavaRef<jstring>& j_client_name,
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const jint j_image_fetcher_config,
+      const base::android::JavaParamRef<jstring>& j_url,
+      const base::android::JavaParamRef<jstring>& j_client_name,
+      const jint j_expiration_interval_mins,
+      const base::android::JavaParamRef<jobject>& j_callback);
+
+  static void FetchImage(
+      JNIEnv* j_env,
+      const base::android::JavaParamRef<jobject>& j_profile,
+      const jint j_image_fetcher_config,
+      const base::android::JavaParamRef<jstring>& j_url,
+      const base::android::JavaParamRef<jstring>& j_client_name,
+      const jint j_expiration_interval_mins,
+      const base::android::JavaParamRef<jobject>& j_callback);
+
+  static void ReportEvent(
+      JNIEnv* j_env,
+      const base::android::JavaParamRef<jstring>& j_client_name,
+      const jint j_event_id);
+
+  static void ReportCacheHitTime(
+      JNIEnv* j_env,
+      const base::android::JavaParamRef<jstring>& j_client_name,
+      const jlong start_time_millis);
+
+  static void ReportTotalFetchTimeFromNative(
+      JNIEnv* j_env,
+      const base::android::JavaParamRef<jstring>& j_client_name,
       const jlong start_time_millis);
 
  private:
-  void OnImageDataFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
-                          const std::string& image_data,
-                          const RequestMetadata& request_metadata);
+  static void OnImageDataFetched(
+      base::android::ScopedJavaGlobalRef<jobject> callback,
+      const std::string& image_data,
+      const RequestMetadata& request_metadata);
 
-  void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
-                      const gfx::Image& image,
-                      const RequestMetadata& request_metadata);
+  static void OnImageFetched(
+      base::android::ScopedJavaGlobalRef<jobject> callback,
+      const gfx::Image& image,
+      const RequestMetadata& request_metadata);
 
-  // This service outlives the bridge.
-  ImageFetcherService* image_fetcher_service_;
-  base::FilePath base_file_path_;
+  static ImageFetcherService* GetImageFetcherServiceForProfile(
+      const base::android::JavaParamRef<jobject>& j_profile);
 
-  base::WeakPtrFactory<ImageFetcherBridge> weak_ptr_factory_{this};
+  static base::FilePath GetFilePathForProfile(
+      const base::android::JavaParamRef<jobject>& j_profile);
 
   DISALLOW_COPY_AND_ASSIGN(ImageFetcherBridge);
 };

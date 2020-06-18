@@ -289,6 +289,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // does not own these object or influence their lifetime.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
   void AddLiveRegistration(ServiceWorkerRegistration* registration);
+  // RemoveLiveRegistration removes registration from |live_registrations_|
+  // and notifies all observers of the id of the registration removed.
   void RemoveLiveRegistration(int64_t registration_id);
   const std::map<int64_t, ServiceWorkerRegistration*>& GetLiveRegistrations()
       const {
@@ -339,6 +341,9 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // Called by ServiceWorkerStorage when StoreRegistration() succeeds.
   void NotifyRegistrationStored(int64_t registration_id, const GURL& scope);
+  // Called on the core thread and notifies observers that all registrations
+  // have been deleted for a particular origin.
+  void NotifyAllRegistrationsDeletedForOrigin(const url::Origin& origin);
 
   URLLoaderFactoryGetter* loader_factory_getter() {
     return loader_factory_getter_.get();

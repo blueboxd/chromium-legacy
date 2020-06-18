@@ -111,24 +111,22 @@ class TestAppLaunchDelegate : public StartupAppLauncher::Delegate {
   void InitializeNetwork() override {
     SetLaunchState(LaunchState::kInitializingNetwork);
   }
-  bool IsNetworkReady() override { return network_ready_; }
-  bool ShouldSkipAppInstallation() override {
+  bool IsNetworkReady() const override { return network_ready_; }
+  bool ShouldSkipAppInstallation() const override {
     return should_skip_app_installation_;
   }
-  void OnInstallingApp() override {
+  void OnAppInstalling() override {
     SetLaunchState(LaunchState::kInstallingApp);
   }
-  void OnReadyToLaunch() override {
-    SetLaunchState(LaunchState::kReadyToLaunch);
-  }
-  void OnLaunchSucceeded() override {
+  void OnAppPrepared() override { SetLaunchState(LaunchState::kReadyToLaunch); }
+  void OnAppLaunched() override {
     SetLaunchState(LaunchState::kLaunchSucceeded);
   }
   void OnLaunchFailed(KioskAppLaunchError::Error error) override {
     launch_error_ = error;
     SetLaunchState(LaunchState::kLaunchFailed);
   }
-  bool IsShowingNetworkConfigScreen() override {
+  bool IsShowingNetworkConfigScreen() const override {
     return showing_network_config_screen_;
   }
 
@@ -558,7 +556,7 @@ class StartupAppLauncherTest : public extensions::ExtensionServiceTestBase,
  protected:
   TestAppLaunchDelegate startup_launch_delegate_;
 
-  std::unique_ptr<StartupAppLauncher> startup_app_launcher_;
+  std::unique_ptr<KioskAppLauncher> startup_app_launcher_;
   std::unique_ptr<AppLaunchTracker> app_launch_tracker_;
   std::unique_ptr<TestKioskLoaderVisitor> external_apps_loader_handler_;
 

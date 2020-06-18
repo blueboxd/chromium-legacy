@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ADDRESS_SPACE_H_
 
 #include "base/allocator/partition_allocator/address_pool_manager.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_features.h"
 #include "base/base_export.h"
@@ -54,32 +55,21 @@ class BASE_EXPORT PartitionAddressSpace {
 
  private:
   // Partition Alloc Address Space
-  // Reserves 64Gbytes address space for 1 direct map space(16G) and 1 normal
-  // bucket space(16G). The remaining 32G is for padding, so that we can
-  // guarantee a 32G alignment somewhere within the reserved region. Address
-  // space is cheap and abundant on 64-bit systems.
-  // TODO(tasak): Telease unused address space.
-  // TODO(bartekn): Look into devices with 39-bit address space that have 256G
+  // Reserves 32GiB address space for 1 direct map space(16GiB) and 1 normal
+  // bucket space(16GiB).
+  // TODO(bartekn): Look into devices with 39-bit address space that have 256GiB
   // user-mode space. Libraries loaded at random addresses may stand in the way
-  // of reserving a contiguous 64G region.
+  // of reserving a contiguous 64GiB region. (even though we're requesting only
+  // 32GiB, AllocPages may under the covers reserve 64GiB to satisfy the
+  // alignment requirements)
   //
-  // +----------------+ reserved address start
-  // |  (unused)      |
-  // +----------------+ 32G-aligned reserved address: X
-  // |                |
+  // +----------------+ reserved_base_address_(32GiB aligned)
   // |  direct map    |
   // |    space       |
-  // |                |
-  // +----------------+ X + 16G bytes
+  // +----------------+ reserved_base_address_ + 16GiB
   // | normal buckets |
   // |    space       |
-  // +----------------+ X + 32G bytes
-  // | (unused)       |
-  // +----------------+ reserved address end
-  //
-  // The static member variables:
-  // - reserved_address_starts_ points the "reserved address start" address, and
-  // - reserved_base_address_ points the "32G-aligned reserved address: X".
+  // +----------------+ reserved_base_address_ + 32GiB
 
   static constexpr size_t kGigaBytes = 1024 * 1024 * 1024;
   static constexpr size_t kDirectMapPoolSize = 16 * kGigaBytes;
@@ -89,16 +79,13 @@ class BASE_EXPORT PartitionAddressSpace {
   static constexpr uintptr_t kNormalBucketPoolBaseMask =
       ~kNormalBucketPoolOffsetMask;
 
-  // Reserves 32GB aligned address space.
-  // Alignment should be the smallest power of two greater than or equal to the
-  // desired size, so that we can check containment with a single bitmask
-  // operation.
+  // Reserves 32GiB aligned address space.
+  // We align on 32GiB as well, and since it's a power of two we can check a
+  // pointer with a single bitmask operation.
   static constexpr size_t kDesiredAddressSpaceSize =
       kDirectMapPoolSize + kNormalBucketPoolSize;
   static constexpr size_t kReservedAddressSpaceAlignment =
       kDesiredAddressSpaceSize;
-  static constexpr size_t kReservedAddressSpaceSize =
-      kReservedAddressSpaceAlignment * 2;
   static constexpr uintptr_t kReservedAddressSpaceOffsetMask =
       static_cast<uintptr_t>(kReservedAddressSpaceAlignment) - 1;
   static constexpr uintptr_t kReservedAddressSpaceBaseMask =
@@ -117,13 +104,8 @@ class BASE_EXPORT PartitionAddressSpace {
       "kReservedAddressSpaceAlignment should be the smallest power of "
       "two greater or equal to kDesiredAddressSpaceSize. So a half of "
       "the alignment should be smaller than the desired size.");
-  static_assert(PartitionAddressSpace::kReservedAddressSpaceSize >
-                    PartitionAddressSpace::kReservedAddressSpaceAlignment,
-                "kReservedAddressSpaceSize should be larger than "
-                "kReservedAddressSpaceAlignment.");
 
   // See the comment describing the address layout above.
-  static uintptr_t reserved_address_start_;
   static uintptr_t reserved_base_address_;
 
   static uintptr_t normal_bucket_pool_base_address_;
@@ -133,12 +115,12 @@ class BASE_EXPORT PartitionAddressSpace {
 };
 
 ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
-  DCHECK(IsPartitionAllocGigaCageEnabled());
+  PA_DCHECK(IsPartitionAllocGigaCageEnabled());
   return PartitionAddressSpace::GetDirectMapPool();
 }
 
 ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
-  DCHECK(IsPartitionAllocGigaCageEnabled());
+  PA_DCHECK(IsPartitionAllocGigaCageEnabled());
   return PartitionAddressSpace::GetNormalBucketPool();
 }
 

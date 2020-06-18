@@ -45,6 +45,7 @@
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -607,6 +608,7 @@ void ManagePasswordsUIController::
         const base::string16& password) {
   password_manager::PasswordManagerClient* client = passwords_data_.client();
   client->TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint::kPasswordSaveBubble,
       base::BindOnce(&ManagePasswordsUIController::
                          AuthenticateUserForAccountStoreOptInCallback,
                      weak_ptr_factory_.GetWeakPtr(), passwords_data_.origin(),

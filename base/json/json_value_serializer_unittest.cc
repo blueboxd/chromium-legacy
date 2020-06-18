@@ -133,12 +133,15 @@ TEST(JSONValueDeserializerTest, ReadJSONWithTrailingCommasFromString) {
   ASSERT_FALSE(value);
   ASSERT_NE(0, error_code);
   ASSERT_FALSE(error_message.empty());
-  // Repeat with commas allowed.
+  // Repeat with commas allowed. The Deserialize call shouldn't change the
+  // value of error_code. To test that, we first set it to a nonsense value
+  // (-789) and ASSERT_EQ that it remains that nonsense value.
+  error_code = -789;
   JSONStringValueDeserializer str_deserializer2(kProperJSONWithCommas,
                                                 JSON_ALLOW_TRAILING_COMMAS);
   value = str_deserializer2.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value);
-  ASSERT_EQ(JSONReader::JSON_TRAILING_COMMA, error_code);
+  ASSERT_EQ(-789, error_code);
   // Verify if the same JSON is still there.
   CheckJSONIsStillTheSame(*value);
 }
@@ -184,12 +187,15 @@ TEST(JSONValueDeserializerTest, ReadJSONWithCommasFromFile) {
   ASSERT_FALSE(value);
   ASSERT_NE(0, error_code);
   ASSERT_FALSE(error_message.empty());
-  // Repeat with commas allowed.
+  // Repeat with commas allowed. The Deserialize call shouldn't change the
+  // value of error_code. To test that, we first set it to a nonsense value
+  // (-789) and ASSERT_EQ that it remains that nonsense value.
+  error_code = -789;
   JSONFileValueDeserializer file_deserializer2(temp_file,
                                                JSON_ALLOW_TRAILING_COMMAS);
   value = file_deserializer2.Deserialize(&error_code, &error_message);
   ASSERT_TRUE(value);
-  ASSERT_EQ(JSONReader::JSON_TRAILING_COMMA, error_code);
+  ASSERT_EQ(-789, error_code);
   // Verify if the same JSON is still there.
   CheckJSONIsStillTheSame(*value);
 }

@@ -235,6 +235,16 @@ bool IsRevertKeyword(StringView);
 bool IsDefaultKeyword(StringView);
 bool IsHashIdentifier(const CSSParserToken&);
 
+// This function returns false for CSS-wide keywords, 'default', and any
+// template parameters provided.
+//
+// https://drafts.csswg.org/css-values-4/#identifier-value
+template <CSSValueID, CSSValueID...>
+bool IsCustomIdent(CSSValueID);
+
+// https://drafts.csswg.org/scroll-animations-1/#typedef-timeline-name
+bool IsTimelineName(const CSSParserToken&);
+
 CSSValue* ConsumeScrollOffset(CSSParserTokenRange&, const CSSParserContext&);
 CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange&,
                                               IsPositionKeyword);
@@ -443,6 +453,16 @@ inline bool IdentMatches(CSSValueID id) {
 template <CSSValueID head, CSSValueID... tail>
 inline bool IdentMatches(CSSValueID id) {
   return id == head || IdentMatches<tail...>(id);
+}
+
+template <typename...>
+bool IsCustomIdent(CSSValueID id) {
+  return !IsCSSWideKeyword(id) && id != CSSValueID::kDefault;
+}
+
+template <CSSValueID head, CSSValueID... tail>
+bool IsCustomIdent(CSSValueID id) {
+  return id != head && IsCustomIdent<tail...>(id);
 }
 
 template <CSSValueID... names>

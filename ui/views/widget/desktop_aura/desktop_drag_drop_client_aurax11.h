@@ -63,7 +63,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
       aura::Window* root_window,
       views::DesktopNativeCursorManager* cursor_manager,
       Display* xdisplay,
-      XID xwindow);
+      x11::Window xwindow);
   ~DesktopDragDropClientAuraX11() override;
 
   void Init();
@@ -119,7 +119,7 @@ class VIEWS_EXPORT DesktopDragDropClientAuraX11
   int UpdateDrag(const gfx::Point& screen_point) override;
   void UpdateCursor(
       ui::DragDropTypes::DragOperation negotiated_operation) override;
-  void OnBeginForeignDrag(XID window) override;
+  void OnBeginForeignDrag(x11::Window window) override;
   void OnEndForeignDrag() override;
   void OnBeforeDragLeave() override;
   int PerformDrop() override;

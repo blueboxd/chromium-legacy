@@ -4,6 +4,8 @@
 
 #include "components/sync/engine/sync_string_conversions.h"
 
+#include "base/notreached.h"
+
 #define ENUM_CASE(x) \
   case x:            \
     return #x

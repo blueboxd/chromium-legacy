@@ -5,6 +5,7 @@
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
@@ -17,17 +18,17 @@ namespace {
 template <bool thread_safe>
 void Insert(std::set<PartitionRoot<thread_safe>*>* partitions,
             PartitionRoot<thread_safe>* partition) {
-  DCHECK(partition);
+  PA_DCHECK(partition);
   auto it_and_whether_inserted = partitions->insert(partition);
-  DCHECK(it_and_whether_inserted.second);
+  PA_DCHECK(it_and_whether_inserted.second);
 }
 
 template <bool thread_safe>
 void Remove(std::set<PartitionRoot<thread_safe>*>* partitions,
             PartitionRoot<thread_safe>* partition) {
-  DCHECK(partition);
+  PA_DCHECK(partition);
   size_t erased_count = partitions->erase(partition);
-  DCHECK_EQ(1u, erased_count);
+  PA_DCHECK(erased_count == 1u);
 }
 
 }  // namespace
@@ -64,12 +65,12 @@ void PartitionAllocMemoryReclaimer::UnregisterPartition(
 
 void PartitionAllocMemoryReclaimer::Start(
     scoped_refptr<SequencedTaskRunner> task_runner) {
-  DCHECK(!timer_);
-  DCHECK(task_runner);
+  PA_DCHECK(!timer_);
+  PA_DCHECK(task_runner);
 
   {
     AutoLock lock(lock_);
-    DCHECK(!thread_safe_partitions_.empty());
+    PA_DCHECK(!thread_safe_partitions_.empty());
   }
 
   // This does not need to run on the main thread, however there are a few

@@ -77,11 +77,11 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
       "images/signin_reauth_illustration_dark.svg",
       IDR_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_SVG);
   source->AddLocalizedString("signinReauthTitle",
-                             IDS_ACCOUNT_PASSWORDS_REAUTH_TITLE);
+                             IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_TITLE);
   source->AddLocalizedString("signinReauthDesc",
                              IDS_ACCOUNT_PASSWORDS_REAUTH_DESC);
   source->AddLocalizedString("signinReauthConfirmLabel",
-                             IDS_ACCOUNT_PASSWORDS_REAUTH_CONFIRM_BUTTON_LABEL);
+                             IDS_ACCOUNT_PASSWORDS_REAUTH_SAVE_BUTTON_LABEL);
   source->AddLocalizedString("signinReauthCloseLabel",
                              IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL);
 

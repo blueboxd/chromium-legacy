@@ -14,14 +14,14 @@ namespace ui {
 namespace {
 
 // The grab window. None if there are no active pointer grabs.
-XID g_grab_window = x11::None;
+x11::Window g_grab_window = x11::Window::None;
 
 // The "owner events" parameter used to grab the pointer.
 bool g_owner_events = false;
 
 }  // namespace
 
-int GrabPointer(XID window, bool owner_events, ::Cursor cursor) {
+int GrabPointer(x11::Window window, bool owner_events, ::Cursor cursor) {
   int result = GrabInvalidTime;
   if (ui::IsXInput2Available()) {
     // Do an XInput2 pointer grab. If there is an active XInput2 pointer grab
@@ -42,9 +42,10 @@ int GrabPointer(XID window, bool owner_events, ::Cursor cursor) {
         ui::DeviceDataManagerX11::GetInstance()->master_pointers();
     for (int master_pointer : master_pointers) {
       evmask.deviceid = master_pointer;
-      result = XIGrabDevice(gfx::GetXDisplay(), master_pointer, window,
-                            x11::CurrentTime, cursor, GrabModeAsync,
-                            GrabModeAsync, owner_events, &evmask);
+      result =
+          XIGrabDevice(gfx::GetXDisplay(), master_pointer,
+                       static_cast<uint32_t>(window), x11::CurrentTime, cursor,
+                       GrabModeAsync, GrabModeAsync, owner_events, &evmask);
       // Assume that the grab will succeed on either all or none of the master
       // pointers.
       if (result != GrabSuccess) {
@@ -56,9 +57,9 @@ int GrabPointer(XID window, bool owner_events, ::Cursor cursor) {
 
   if (result != GrabSuccess) {
     int event_mask = PointerMotionMask | ButtonReleaseMask | ButtonPressMask;
-    result = XGrabPointer(gfx::GetXDisplay(), window, owner_events, event_mask,
-                          GrabModeAsync, GrabModeAsync, x11::None, cursor,
-                          x11::CurrentTime);
+    result = XGrabPointer(gfx::GetXDisplay(), static_cast<uint32_t>(window),
+                          owner_events, event_mask, GrabModeAsync,
+                          GrabModeAsync, x11::None, cursor, x11::CurrentTime);
   }
 
   if (result == GrabSuccess) {
@@ -69,12 +70,12 @@ int GrabPointer(XID window, bool owner_events, ::Cursor cursor) {
 }
 
 void ChangeActivePointerGrabCursor(::Cursor cursor) {
-  DCHECK(g_grab_window != x11::None);
+  DCHECK(g_grab_window != x11::Window::None);
   GrabPointer(g_grab_window, g_owner_events, cursor);
 }
 
 void UngrabPointer() {
-  g_grab_window = x11::None;
+  g_grab_window = x11::Window::None;
   if (ui::IsXInput2Available()) {
     const std::vector<int>& master_pointers =
         ui::DeviceDataManagerX11::GetInstance()->master_pointers();

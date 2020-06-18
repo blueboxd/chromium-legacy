@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/sync/protocol/proto_value_conversions.h"

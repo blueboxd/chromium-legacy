@@ -6,6 +6,7 @@
 
 #import <Metal/Metal.h>
 
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 
 namespace metal {

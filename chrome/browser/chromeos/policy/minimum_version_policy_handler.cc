@@ -67,6 +67,11 @@ BuildState* GetBuildState() {
   return g_browser_process->GetBuildState();
 }
 
+int GetDaysRounded(base::TimeDelta time) {
+  return std::lround(time.InSecondsF() /
+                     base::TimeDelta::FromDays(1).InSecondsF());
+}
+
 }  // namespace
 
 const char MinimumVersionPolicyHandler::kChromeVersion[] = "chrome_version";
@@ -217,7 +222,6 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
         std::move(configs[strongest_config_idx]);
     if (!state_ || state_->Compare(strongest_config.get()) != 0) {
       state_ = std::move(strongest_config);
-      requirements_met_ = false;
       FetchEolInfo();
     }
   } else {
@@ -240,9 +244,9 @@ void MinimumVersionPolicyHandler::HandleUpdateNotRequired() {
 }
 
 void MinimumVersionPolicyHandler::Reset() {
-  requirements_met_ = true;
   deadline_reached = false;
   eol_reached_ = false;
+  update_required_deadline_ = base::Time();
   update_required_deadline_timer_.Stop();
   notification_timer_.Stop();
   GetBuildState()->RemoveObserver(this);
@@ -302,15 +306,15 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   // If update is already required, use the existing timer start time to
   // calculate the new deadline. Else use |update_required_time_|. Do not reduce
   // the warning time if policy is already applied.
-  base::Time deadline;
   if (stored_timer_start_time.is_null()) {
-    deadline = update_required_time_ + warning_time;
+    update_required_deadline_ = update_required_time_ + warning_time;
   } else {
-    deadline =
+    update_required_deadline_ =
         stored_timer_start_time + std::max(stored_warning_time, warning_time);
   }
 
-  const bool deadline_reached = deadline <= update_required_time_;
+  const bool deadline_reached =
+      update_required_deadline_ <= update_required_time_;
   if (deadline_reached) {
     // As per the policy, the deadline for the user cannot reduce.
     // This case can be encountered when :-
@@ -323,7 +327,7 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
 
   // Need to start the timer even if the deadline is same as the previous one to
   // handle the case of Chrome reboot.
-  if (deadline == previous_deadline &&
+  if (update_required_deadline_ == previous_deadline &&
       update_required_deadline_timer_.IsRunning()) {
     return;
   }
@@ -340,7 +344,7 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
   // The |deadline| can only be equal to or greater than the
   // |previous_deadline|. No need to update the local state if the deadline has
   // not been extended.
-  if (deadline > previous_deadline)
+  if (update_required_deadline_ > previous_deadline)
     UpdateLocalState(warning_time);
 
   // The device has already downloaded the update in-session and waiting for
@@ -351,10 +355,10 @@ void MinimumVersionPolicyHandler::HandleUpdateRequired(
     return;
   }
 
-  StartDeadlineTimer(deadline);
+  StartDeadlineTimer(update_required_deadline_);
   if (!eol_reached_)
     StartObservingUpdate();
-  ShowAndScheduleNotification(deadline);
+  ShowAndScheduleNotification(update_required_deadline_);
 }
 
 void MinimumVersionPolicyHandler::ResetLocalState() {
@@ -390,13 +394,25 @@ void MinimumVersionPolicyHandler::StartObservingUpdate() {
     build_state->AddObserver(this);
 }
 
+void MinimumVersionPolicyHandler::MaybeShowNotificationOnLogin() {
+  const base::Time now = clock_->Now();
+  // This should only be true if |update_required_deadline_timer_| expired while
+  // login was in progress, else we would have shown the update required screen
+  // at startup.
+  if (update_required_deadline_ <= now)
+    return;
+
+  base::TimeDelta time_remaining = update_required_deadline_ - now;
+  int days_remaining = GetDaysRounded(time_remaining);
+  if (days_remaining <= 1)
+    MaybeShowNotification(base::TimeDelta::FromDays(days_remaining));
+}
+
 void MinimumVersionPolicyHandler::MaybeShowNotification(
     base::TimeDelta warning) {
   const NetworkStatus status = GetCurrentNetworkStatus();
   if (status == NetworkStatus::kAllowed || !delegate_->IsUserLoggedIn() ||
       !delegate_->IsUserManaged()) {
-    // TODO(https://crbug.com/1048607): Show notification on managed user log in
-    // if it is the last day of the deadline.
     return;
   }
 
@@ -429,8 +445,7 @@ void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
 
   base::Time expiry;
   base::TimeDelta time_remaining = deadline - now;
-  const int days_remaining = std::lround(
-      time_remaining.InSecondsF() / base::TimeDelta::FromDays(1).InSecondsF());
+  int days_remaining = GetDaysRounded(time_remaining);
 
   // Network limitation notifications are shown when policy is received and on
   // the last day. End of life notifications are shown when policy is received,

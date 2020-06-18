@@ -36,6 +36,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/reauth_purpose.h"
 #include "components/password_manager/core/browser/test_password_store.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
@@ -49,6 +50,7 @@ using MockReauthCallback = base::MockCallback<
 using PasswordFormList = std::vector<std::unique_ptr<autofill::PasswordForm>>;
 using password_manager::ReauthPurpose;
 using password_manager::TestPasswordStore;
+using ::testing::_;
 using ::testing::Eq;
 using ::testing::Ne;
 using ::testing::Return;
@@ -85,7 +87,8 @@ class MockPasswordManagerClient : public ChromePasswordManagerClient {
   // ChromePasswordManagerClient overrides.
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
-              (base::OnceCallback<void(ReauthSucceeded)>),
+              (signin_metrics::ReauthAccessPoint,
+               base::OnceCallback<void(ReauthSucceeded)>),
               (override));
   const password_manager::MockPasswordFeatureManager*
   GetPasswordFeatureManager() const override {
@@ -409,7 +412,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestShouldReauthForOptIn) {
   ON_CALL(*(client->GetPasswordFeatureManager()), IsOptedInForAccountStorage)
       .WillByDefault(Return(false));
 
-  EXPECT_CALL(*client, TriggerReauthForPrimaryAccount);
+  EXPECT_CALL(*client,
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _));
 
   PasswordsPrivateDelegateImpl delegate(&profile_);
   delegate.SetAccountStorageOptIn(true, web_contents.get());
@@ -429,7 +434,10 @@ TEST_F(PasswordsPrivateDelegateImplTest,
   ON_CALL(*feature_manager, IsOptedInForAccountStorage)
       .WillByDefault(Return(true));
 
-  EXPECT_CALL(*client, TriggerReauthForPrimaryAccount).Times(0);
+  EXPECT_CALL(*client,
+              TriggerReauthForPrimaryAccount(
+                  signin_metrics::ReauthAccessPoint::kPasswordSettings, _))
+      .Times(0);
   EXPECT_CALL(*feature_manager, OptOutOfAccountStorageAndClearSettings);
 
   PasswordsPrivateDelegateImpl delegate(&profile_);

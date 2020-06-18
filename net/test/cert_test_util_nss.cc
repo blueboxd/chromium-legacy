@@ -12,6 +12,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "crypto/ec_private_key.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/nss_util.h"

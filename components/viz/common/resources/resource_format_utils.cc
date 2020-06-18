@@ -4,6 +4,8 @@
 
 #include "components/viz/common/resources/resource_format_utils.h"
 
+#include <ostream>
+
 #include "base/check_op.h"
 #include "base/notreached.h"
 #include "base/stl_util.h"

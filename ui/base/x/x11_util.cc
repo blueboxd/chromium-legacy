@@ -115,9 +115,9 @@ bool SupportsEWMH() {
   if (!supports_ewmh_cached) {
     supports_ewmh_cached = true;
 
-    int wm_window = 0u;
-    if (!GetIntProperty(GetX11RootWindow(), "_NET_SUPPORTING_WM_CHECK",
-                        &wm_window)) {
+    x11::Window wm_window = x11::Window::None;
+    if (!GetProperty(GetX11RootWindow(),
+                     gfx::GetAtom("_NET_SUPPORTING_WM_CHECK"), &wm_window)) {
       supports_ewmh = false;
       return false;
     }
@@ -132,9 +132,10 @@ bool SupportsEWMH() {
     // property referencing an ID that's been recycled for another window), so
     // we check that too.
     gfx::X11ErrorTracker err_tracker;
-    int wm_window_property = 0;
-    bool result = GetIntProperty(wm_window, "_NET_SUPPORTING_WM_CHECK",
-                                 &wm_window_property);
+    x11::Window wm_window_property = x11::Window::None;
+    bool result =
+        GetProperty(wm_window, gfx::GetAtom("_NET_SUPPORTING_WM_CHECK"),
+                    &wm_window_property);
     supports_ewmh = !err_tracker.FoundNewError() && result &&
                     wm_window_property == wm_window;
   }
@@ -147,15 +148,14 @@ bool GetWindowManagerName(std::string* wm_name) {
   if (!SupportsEWMH())
     return false;
 
-  int wm_window = 0;
-  if (!GetIntProperty(GetX11RootWindow(), "_NET_SUPPORTING_WM_CHECK",
-                      &wm_window)) {
+  x11::Window wm_window = x11::Window::None;
+  if (!GetProperty(GetX11RootWindow(), gfx::GetAtom("_NET_SUPPORTING_WM_CHECK"),
+                   &wm_window)) {
     return false;
   }
 
   gfx::X11ErrorTracker err_tracker;
-  bool result =
-      GetStringProperty(static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
+  bool result = GetStringProperty(wm_window, "_NET_WM_NAME", wm_name);
   return !err_tracker.FoundNewError() && result;
 }
 
@@ -261,7 +261,7 @@ SkBitmap ConvertSkBitmapToUnpremul(const SkBitmap& bitmap) {
 
 }  // namespace
 
-void DeleteProperty(XID window, x11::Atom name) {
+void DeleteProperty(x11::Window window, x11::Atom name) {
   x11::Connection::Get()->DeleteProperty({
       .window = static_cast<x11::Window>(window),
       .property = name,
@@ -459,7 +459,7 @@ void HideHostCursor() {
   return invisible_cursor;
 }
 
-void SetUseOSWindowFrame(XID window, bool use_os_window_frame) {
+void SetUseOSWindowFrame(x11::Window window, bool use_os_window_frame) {
   // This data structure represents additional hints that we send to the window
   // manager and has a direct lineage back to Motif, which defined this de facto
   // standard. We define this struct to match the wire-format (32-bit fields)
@@ -492,15 +492,15 @@ bool IsShapeExtensionAvailable() {
   return is_shape_available;
 }
 
-XID GetX11RootWindow() {
-  return DefaultRootWindow(gfx::GetXDisplay());
+x11::Window GetX11RootWindow() {
+  return x11::Connection::Get()->default_screen().root;
 }
 
 bool GetCurrentDesktop(int* desktop) {
   return GetIntProperty(GetX11RootWindow(), "_NET_CURRENT_DESKTOP", desktop);
 }
 
-void SetHideTitlebarWhenMaximizedProperty(XID window,
+void SetHideTitlebarWhenMaximizedProperty(x11::Window window,
                                           HideTitlebarWhenMaximized property) {
   SetProperty(window, gfx::GetAtom("_GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED"),
               x11::Atom::CARDINAL, static_cast<uint32_t>(property));
@@ -508,7 +508,7 @@ void SetHideTitlebarWhenMaximizedProperty(XID window,
 
 void ClearX11DefaultRootWindow() {
   XDisplay* display = gfx::GetXDisplay();
-  XID root_window = GetX11RootWindow();
+  x11::Window root_window = GetX11RootWindow();
   gfx::Rect root_bounds;
   if (!GetOuterWindowBounds(root_window, &root_bounds)) {
     LOG(ERROR) << "Failed to get the bounds of the X11 root window";
@@ -517,13 +517,15 @@ void ClearX11DefaultRootWindow() {
 
   XGCValues gc_values = {0};
   gc_values.foreground = BlackPixel(display, DefaultScreen(display));
-  GC gc = XCreateGC(display, root_window, GCForeground, &gc_values);
-  XFillRectangle(display, root_window, gc, root_bounds.x(), root_bounds.y(),
-                 root_bounds.width(), root_bounds.height());
+  GC gc = XCreateGC(display, static_cast<uint32_t>(root_window), GCForeground,
+                    &gc_values);
+  XFillRectangle(display, static_cast<uint32_t>(root_window), gc,
+                 root_bounds.x(), root_bounds.y(), root_bounds.width(),
+                 root_bounds.height());
   XFreeGC(display, gc);
 }
 
-bool IsWindowVisible(XID window) {
+bool IsWindowVisible(x11::Window window) {
   TRACE_EVENT0("ui", "IsWindowVisible");
 
   auto x11_window = static_cast<x11::Window>(window);
@@ -548,7 +550,7 @@ bool IsWindowVisible(XID window) {
           window_desktop == kAllDesktops || window_desktop == current_desktop);
 }
 
-bool GetInnerWindowBounds(XID window, gfx::Rect* rect) {
+bool GetInnerWindowBounds(x11::Window window, gfx::Rect* rect) {
   auto x11_window = static_cast<x11::Window>(window);
   auto root = static_cast<x11::Window>(GetX11RootWindow());
 
@@ -568,7 +570,7 @@ bool GetInnerWindowBounds(XID window, gfx::Rect* rect) {
   return true;
 }
 
-bool GetWindowExtents(XID window, gfx::Insets* extents) {
+bool GetWindowExtents(x11::Window window, gfx::Insets* extents) {
   std::vector<int> insets;
   if (!GetIntArrayProperty(window, "_NET_FRAME_EXTENTS", &insets))
     return false;
@@ -583,7 +585,7 @@ bool GetWindowExtents(XID window, gfx::Insets* extents) {
   return true;
 }
 
-bool GetOuterWindowBounds(XID window, gfx::Rect* rect) {
+bool GetOuterWindowBounds(x11::Window window, gfx::Rect* rect) {
   if (!GetInnerWindowBounds(window, rect))
     return false;
 
@@ -596,7 +598,7 @@ bool GetOuterWindowBounds(XID window, gfx::Rect* rect) {
   return true;
 }
 
-bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
+bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc) {
   TRACE_EVENT0("ui", "WindowContainsPoint");
 
   gfx::Rect window_rect;
@@ -626,8 +628,9 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   for (int kind_index : rectangle_kind) {
     int dummy;
     int shape_rects_size = 0;
-    gfx::XScopedPtr<XRectangle[]> shape_rects(XShapeGetRectangles(
-        gfx::GetXDisplay(), window, kind_index, &shape_rects_size, &dummy));
+    gfx::XScopedPtr<XRectangle[]> shape_rects(
+        XShapeGetRectangles(gfx::GetXDisplay(), static_cast<uint32_t>(window),
+                            kind_index, &shape_rects_size, &dummy));
     if (!shape_rects) {
       // The shape is empty. This can occur when |window| is minimized.
       DCHECK_EQ(0, shape_rects_size);
@@ -652,7 +655,7 @@ bool WindowContainsPoint(XID window, gfx::Point screen_loc) {
   return true;
 }
 
-bool PropertyExists(XID window, const std::string& property_name) {
+bool PropertyExists(x11::Window window, const std::string& property_name) {
   auto response = x11::Connection::Get()
                       ->GetProperty({
                           .window = static_cast<x11::Window>(window),
@@ -663,7 +666,7 @@ bool PropertyExists(XID window, const std::string& property_name) {
   return response && response->format;
 }
 
-bool GetRawBytesOfProperty(XID window,
+bool GetRawBytesOfProperty(x11::Window window,
                            x11::Atom property,
                            std::vector<uint8_t>* out_data,
                            x11::Atom* out_type) {
@@ -682,31 +685,25 @@ bool GetRawBytesOfProperty(XID window,
   return true;
 }
 
-bool GetIntProperty(XID window, const std::string& property_name, int* value) {
+bool GetIntProperty(x11::Window window,
+                    const std::string& property_name,
+                    int* value) {
   return GetProperty(window, gfx::GetAtom(property_name), value);
 }
 
-bool GetXIDProperty(XID window, const std::string& property_name, XID* value) {
-  uint32_t xid;
-  if (!GetProperty(window, gfx::GetAtom(property_name), &xid))
-    return false;
-  *value = xid;
-  return true;
-}
-
-bool GetIntArrayProperty(XID window,
+bool GetIntArrayProperty(x11::Window window,
                          const std::string& property_name,
                          std::vector<int32_t>* value) {
   return GetArrayProperty(window, gfx::GetAtom(property_name), value);
 }
 
-bool GetAtomArrayProperty(XID window,
+bool GetAtomArrayProperty(x11::Window window,
                           const std::string& property_name,
                           std::vector<x11::Atom>* value) {
   return GetArrayProperty(window, gfx::GetAtom(property_name), value);
 }
 
-bool GetStringProperty(XID window,
+bool GetStringProperty(x11::Window window,
                        const std::string& property_name,
                        std::string* value) {
   std::vector<char> str;
@@ -717,7 +714,7 @@ bool GetStringProperty(XID window,
   return true;
 }
 
-void SetIntProperty(XID window,
+void SetIntProperty(x11::Window window,
                     const std::string& name,
                     const std::string& type,
                     int32_t value) {
@@ -725,14 +722,14 @@ void SetIntProperty(XID window,
   return SetIntArrayProperty(window, name, type, values);
 }
 
-void SetIntArrayProperty(XID window,
+void SetIntArrayProperty(x11::Window window,
                          const std::string& name,
                          const std::string& type,
                          const std::vector<int32_t>& value) {
   SetArrayProperty(window, gfx::GetAtom(name), gfx::GetAtom(type), value);
 }
 
-void SetAtomProperty(XID window,
+void SetAtomProperty(x11::Window window,
                      const std::string& name,
                      const std::string& type,
                      x11::Atom value) {
@@ -740,14 +737,14 @@ void SetAtomProperty(XID window,
   return SetAtomArrayProperty(window, name, type, values);
 }
 
-void SetAtomArrayProperty(XID window,
+void SetAtomArrayProperty(x11::Window window,
                           const std::string& name,
                           const std::string& type,
                           const std::vector<x11::Atom>& value) {
   SetArrayProperty(window, gfx::GetAtom(name), gfx::GetAtom(type), value);
 }
 
-void SetStringProperty(XID window,
+void SetStringProperty(x11::Window window,
                        x11::Atom property,
                        x11::Atom type,
                        const std::string& value) {
@@ -756,7 +753,7 @@ void SetStringProperty(XID window,
 }
 
 void SetWindowClassHint(XDisplay* display,
-                        XID window,
+                        x11::Window window,
                         const std::string& res_name,
                         const std::string& res_class) {
   XClassHint class_hints;
@@ -765,10 +762,12 @@ void SetWindowClassHint(XDisplay* display,
   // not const references.
   class_hints.res_name = const_cast<char*>(res_name.c_str());
   class_hints.res_class = const_cast<char*>(res_class.c_str());
-  XSetClassHint(display, window, &class_hints);
+  XSetClassHint(display, static_cast<uint32_t>(window), &class_hints);
 }
 
-void SetWindowRole(XDisplay* display, XID window, const std::string& role) {
+void SetWindowRole(XDisplay* display,
+                   x11::Window window,
+                   const std::string& role) {
   x11::Atom prop = gfx::GetAtom("WM_WINDOW_ROLE");
   if (role.empty())
     DeleteProperty(window, prop);
@@ -776,7 +775,7 @@ void SetWindowRole(XDisplay* display, XID window, const std::string& role) {
     SetStringProperty(window, prop, x11::Atom::STRING, role);
 }
 
-void SetWMSpecState(XID window,
+void SetWMSpecState(x11::Window window,
                     bool enabled,
                     x11::Atom state1,
                     x11::Atom state2) {
@@ -787,8 +786,8 @@ void SetWMSpecState(XID window,
 }
 
 void DoWMMoveResize(XDisplay* display,
-                    XID root_window,
-                    XID window,
+                    x11::Window root_window,
+                    x11::Window window,
                     const gfx::Point& location_px,
                     int direction) {
   // This handler is usually sent when the window has the implicit grab.  We
@@ -870,7 +869,7 @@ bool IsWmTiling(WindowManagerName window_manager) {
   }
 }
 
-bool GetWindowDesktop(XID window, int* desktop) {
+bool GetWindowDesktop(x11::Window window, int* desktop) {
   return GetIntProperty(window, "_NET_WM_DESKTOP", desktop);
 }
 
@@ -881,21 +880,21 @@ std::string GetX11ErrorString(XDisplay* display, int err) {
 }
 
 // Returns true if |window| is a named window.
-bool IsWindowNamed(XID window) {
+bool IsWindowNamed(x11::Window window) {
   return PropertyExists(window, "WM_NAME");
 }
 
 bool EnumerateChildren(EnumerateWindowsDelegate* delegate,
-                       XID window,
+                       x11::Window window,
                        const int max_depth,
                        int depth) {
   if (depth > max_depth)
     return false;
 
-  std::vector<XID> windows;
-  std::vector<XID>::iterator iter;
+  std::vector<x11::Window> windows;
+  std::vector<x11::Window>::iterator iter;
   if (depth == 0) {
-    XMenuList::GetInstance()->InsertMenuWindowXIDs(&windows);
+    XMenuList::GetInstance()->InsertMenuWindows(&windows);
     // Enumerate the menus first.
     for (iter = windows.begin(); iter != windows.end(); iter++) {
       if (delegate->ShouldStopIterating(*iter))
@@ -904,17 +903,10 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate,
     windows.clear();
   }
 
-  XID root, parent, *children;
-  unsigned int num_children;
-  int status = XQueryTree(gfx::GetXDisplay(), window, &root, &parent, &children,
-                          &num_children);
-  if (status == 0)
+  auto query_tree = x11::Connection::Get()->QueryTree({window}).Sync();
+  if (!query_tree)
     return false;
-
-  for (int i = static_cast<int>(num_children) - 1; i >= 0; i--)
-    windows.push_back(children[i]);
-
-  XFree(children);
+  windows = std::move(query_tree->children);
 
   // XQueryTree returns the children of |window| in bottom-to-top order, so
   // reverse-iterate the list to check the windows from top-to-bottom.
@@ -938,12 +930,12 @@ bool EnumerateChildren(EnumerateWindowsDelegate* delegate,
 }
 
 bool EnumerateAllWindows(EnumerateWindowsDelegate* delegate, int max_depth) {
-  XID root = GetX11RootWindow();
+  x11::Window root = GetX11RootWindow();
   return EnumerateChildren(delegate, root, max_depth, 0);
 }
 
 void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
-  std::vector<XID> stack;
+  std::vector<x11::Window> stack;
   if (!ui::GetXWindowStack(ui::GetX11RootWindow(), &stack)) {
     // Window Manager doesn't support _NET_CLIENT_LIST_STACKING, so fall back
     // to old school enumeration of all X windows.  Some WMs parent 'top-level'
@@ -953,24 +945,23 @@ void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate) {
     ui::EnumerateAllWindows(delegate, kMaxSearchDepth);
     return;
   }
-  XMenuList::GetInstance()->InsertMenuWindowXIDs(&stack);
+  XMenuList::GetInstance()->InsertMenuWindows(&stack);
 
-  std::vector<XID>::iterator iter;
+  std::vector<x11::Window>::iterator iter;
   for (iter = stack.begin(); iter != stack.end(); iter++) {
     if (delegate->ShouldStopIterating(*iter))
       return;
   }
 }
 
-bool GetXWindowStack(Window window, std::vector<XID>* windows) {
-  std::vector<uint32_t> value32;
+bool GetXWindowStack(x11::Window window, std::vector<x11::Window>* windows) {
   if (!GetArrayProperty(window, gfx::GetAtom("_NET_CLIENT_LIST_STACKING"),
-                        &value32)) {
+                        windows)) {
     return false;
   }
   // It's more common to iterate from lowest window to highest,
   // so reverse the vector.
-  *windows = std::vector<XID>(value32.rbegin(), value32.rend());
+  std::reverse(windows->begin(), windows->end());
   return true;
 }
 
@@ -1050,7 +1041,7 @@ void SetDefaultX11ErrorHandlers() {
   SetX11ErrorHandlers(nullptr, nullptr);
 }
 
-bool IsX11WindowFullScreen(XID window) {
+bool IsX11WindowFullScreen(x11::Window window) {
   // If _NET_WM_STATE_FULLSCREEN is in _NET_SUPPORTED, use the presence or
   // absence of _NET_WM_STATE_FULLSCREEN in _NET_WM_STATE to determine
   // whether we're fullscreen.
@@ -1159,20 +1150,18 @@ SkColorType ColorTypeForVisual(void* visual) {
   return kUnknown_SkColorType;
 }
 
-x11::Future<void> SendClientMessage(XID window,
-                                    XID target,
+x11::Future<void> SendClientMessage(x11::Window window,
+                                    x11::Window target,
                                     x11::Atom type,
                                     const std::array<uint32_t, 5> data,
                                     x11::EventMask event_mask) {
-  x11::ClientMessageEvent event{
-      .format = 32, .window = static_cast<x11::Window>(window), .type = type};
+  x11::ClientMessageEvent event{.format = 32, .window = window, .type = type};
   event.data.data32 = data;
   auto event_bytes = x11::Write(event);
   DCHECK_EQ(event_bytes.size(), 32ul);
 
   auto* connection = x11::Connection::Get();
-  x11::SendEventRequest request{false, static_cast<x11::Window>(target),
-                                event_mask};
+  x11::SendEventRequest request{false, target, event_mask};
   std::copy(event_bytes.begin(), event_bytes.end(), request.event.begin());
   return connection->SendEvent(request);
 }
@@ -1404,7 +1393,8 @@ XVisualManager::XVisualData::~XVisualData() = default;
 
 Colormap XVisualManager::XVisualData::GetColormap() {
   if (colormap_ == static_cast<int>(x11::WindowClass::CopyFromParent)) {
-    colormap_ = XCreateColormap(gfx::GetXDisplay(), GetX11RootWindow(),
+    colormap_ = XCreateColormap(gfx::GetXDisplay(),
+                                static_cast<uint32_t>(GetX11RootWindow()),
                                 visual_info.visual, AllocNone);
   }
   return colormap_;

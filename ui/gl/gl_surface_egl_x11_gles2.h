@@ -20,7 +20,7 @@ namespace gl {
 class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2
     : public NativeViewGLSurfaceEGLX11 {
  public:
-  explicit NativeViewGLSurfaceEGLX11GLES2(EGLNativeWindowType window);
+  explicit NativeViewGLSurfaceEGLX11GLES2(x11::Window window);
 
   // NativeViewGLSurfaceEGL overrides.
   EGLConfig GetConfig() override;
@@ -38,7 +38,7 @@ class GL_EXPORT NativeViewGLSurfaceEGLX11GLES2
   // XEventDispatcher:
   bool DispatchXEvent(x11::Event* xev) override;
 
-  EGLNativeWindowType parent_window_;
+  x11::Window parent_window_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewGLSurfaceEGLX11GLES2);
 };

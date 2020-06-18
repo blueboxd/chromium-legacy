@@ -50,7 +50,7 @@ class EVENTS_DEVICES_X11_EXPORT TouchFactory {
   bool ShouldProcessXI2Event(XEvent* xevent);
 
   // Setup an X Window for XInput2 events.
-  void SetupXI2ForXWindow(::Window xid);
+  void SetupXI2ForXWindow(x11::Window window);
 
   // Keeps a list of touch devices so that it is possible to determine if a
   // pointer event is a touch-event or a mouse-event. The list is reset each

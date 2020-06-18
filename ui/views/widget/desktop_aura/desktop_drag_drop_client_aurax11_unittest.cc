@@ -38,11 +38,11 @@ namespace {
 
 class TestDragDropClient;
 
-// Collects messages which would otherwise be sent to |xid_| via
+// Collects messages which would otherwise be sent to |window_| via
 // SendXClientEvent().
 class ClientMessageEventCollector {
  public:
-  ClientMessageEventCollector(::Window xid, TestDragDropClient* client);
+  ClientMessageEventCollector(x11::Window window, TestDragDropClient* client);
   virtual ~ClientMessageEventCollector();
 
   // Returns true if |events_| is non-empty.
@@ -56,7 +56,7 @@ class ClientMessageEventCollector {
   void RecordEvent(const XClientMessageEvent& event);
 
  private:
-  ::Window xid_;
+  x11::Window window_;
 
   // Not owned.
   TestDragDropClient* client_;
@@ -101,8 +101,8 @@ class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
                            DesktopNativeCursorManager* cursor_manager);
   ~SimpleTestDragDropClient() override;
 
-  // Sets |xid| as the topmost window for all mouse positions.
-  void SetTopmostXWindow(XID xid);
+  // Sets |window| as the topmost window for all mouse positions.
+  void SetTopmostXWindow(x11::Window window);
 
   // Returns true if the move loop is running.
   bool IsMoveLoopRunning();
@@ -113,10 +113,10 @@ class SimpleTestDragDropClient : public DesktopDragDropClientAuraX11 {
   // DesktopDragDropClientAuraX11:
   std::unique_ptr<ui::X11MoveLoop> CreateMoveLoop(
       ui::X11MoveLoopDelegate* delegate) override;
-  XID FindWindowFor(const gfx::Point& screen_point) override;
+  x11::Window FindWindowFor(const gfx::Point& screen_point) override;
 
-  // The XID of the window which is simulated to be the topmost window.
-  XID target_xid_ = x11::None;
+  // The x11::Window of the window which is simulated to be the topmost window.
+  x11::Window target_window_ = x11::Window::None;
 
   // The move loop. Not owned.
   TestMoveLoop* loop_ = nullptr;
@@ -137,8 +137,8 @@ class TestDragDropClient : public SimpleTestDragDropClient {
                      DesktopNativeCursorManager* cursor_manager);
   ~TestDragDropClient() override;
 
-  // Returns the XID of the window which initiated the drag.
-  ::Window source_xwindow() { return source_xid_; }
+  // Returns the x11::Window of the window which initiated the drag.
+  x11::Window source_xwindow() { return source_window_; }
 
   // Returns the Atom with |name|.
   x11::Atom GetAtom(const char* name);
@@ -148,35 +148,35 @@ class TestDragDropClient : public SimpleTestDragDropClient {
 
   // Sets |collector| to collect XClientMessageEvents which would otherwise
   // have been sent to the drop target window.
-  void SetEventCollectorFor(::Window xid,
+  void SetEventCollectorFor(x11::Window window,
                             ClientMessageEventCollector* collector);
 
   // Builds an XdndStatus message and sends it to
   // DesktopDragDropClientAuraX11.
-  void OnStatus(XID target_window,
+  void OnStatus(x11::Window target_window,
                 bool will_accept_drop,
                 x11::Atom accepted_action);
 
   // Builds an XdndFinished message and sends it to
   // DesktopDragDropClientAuraX11.
-  void OnFinished(XID target_window,
+  void OnFinished(x11::Window target_window,
                   bool accepted_drop,
                   x11::Atom performed_action);
 
-  // Sets |xid| as the topmost window at the current mouse position and
+  // Sets |window| as the topmost window at the current mouse position and
   // generates a synthetic mouse move.
-  void SetTopmostXWindowAndMoveMouse(::Window xid);
+  void SetTopmostXWindowAndMoveMouse(x11::Window window);
 
  private:
   // DesktopDragDropClientAuraX11:
-  void SendXClientEvent(::Window xid, XEvent* event) override;
+  void SendXClientEvent(x11::Window window, XEvent* event) override;
 
-  // The XID of the window which initiated the drag.
-  ::Window source_xid_;
+  // The x11::Window of the window which initiated the drag.
+  x11::Window source_window_;
 
-  // Map of ::Windows to the collector which intercepts XClientMessageEvents
+  // Map of x11::Windows to the collector which intercepts XClientMessageEvents
   // for that window.
-  std::map<::Window, ClientMessageEventCollector*> collectors_;
+  std::map<x11::Window, ClientMessageEventCollector*> collectors_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
 };
@@ -185,14 +185,14 @@ class TestDragDropClient : public SimpleTestDragDropClient {
 // ClientMessageEventCollector
 
 ClientMessageEventCollector::ClientMessageEventCollector(
-    ::Window xid,
+    x11::Window window,
     TestDragDropClient* client)
-    : xid_(xid), client_(client) {
-  client->SetEventCollectorFor(xid, this);
+    : window_(window), client_(client) {
+  client->SetEventCollectorFor(window, this);
 }
 
 ClientMessageEventCollector::~ClientMessageEventCollector() {
-  client_->SetEventCollectorFor(xid_, nullptr);
+  client_->SetEventCollectorFor(window_, nullptr);
 }
 
 std::vector<XClientMessageEvent> ClientMessageEventCollector::PopAllEvents() {
@@ -251,8 +251,8 @@ SimpleTestDragDropClient::SimpleTestDragDropClient(
 
 SimpleTestDragDropClient::~SimpleTestDragDropClient() = default;
 
-void SimpleTestDragDropClient::SetTopmostXWindow(XID xid) {
-  target_xid_ = xid;
+void SimpleTestDragDropClient::SetTopmostXWindow(x11::Window window) {
+  target_window_ = window;
 }
 
 bool SimpleTestDragDropClient::IsMoveLoopRunning() {
@@ -265,8 +265,9 @@ std::unique_ptr<ui::X11MoveLoop> SimpleTestDragDropClient::CreateMoveLoop(
   return base::WrapUnique(loop_);
 }
 
-XID SimpleTestDragDropClient::FindWindowFor(const gfx::Point& screen_point) {
-  return target_xid_;
+x11::Window SimpleTestDragDropClient::FindWindowFor(
+    const gfx::Point& screen_point) {
+  return target_window_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -276,7 +277,7 @@ TestDragDropClient::TestDragDropClient(
     aura::Window* window,
     DesktopNativeCursorManager* cursor_manager)
     : SimpleTestDragDropClient(window, cursor_manager),
-      source_xid_(window->GetHost()->GetAcceleratedWidget()) {}
+      source_window_(window->GetHost()->GetAcceleratedWidget()) {}
 
 TestDragDropClient::~TestDragDropClient() = default;
 
@@ -290,22 +291,22 @@ bool TestDragDropClient::MessageHasType(const XClientMessageEvent& event,
 }
 
 void TestDragDropClient::SetEventCollectorFor(
-    ::Window xid,
+    x11::Window window,
     ClientMessageEventCollector* collector) {
   if (collector)
-    collectors_[xid] = collector;
+    collectors_[window] = collector;
   else
-    collectors_.erase(xid);
+    collectors_.erase(window);
 }
 
-void TestDragDropClient::OnStatus(XID target_window,
+void TestDragDropClient::OnStatus(x11::Window target_window,
                                   bool will_accept_drop,
                                   x11::Atom accepted_action) {
   XClientMessageEvent event;
   event.message_type = static_cast<uint32_t>(GetAtom("XdndStatus"));
   event.format = 32;
-  event.window = source_xid_;
-  event.data.l[0] = target_window;
+  event.window = static_cast<uint32_t>(source_window_);
+  event.data.l[0] = static_cast<uint32_t>(target_window);
   event.data.l[1] = will_accept_drop ? 1 : 0;
   event.data.l[2] = 0;
   event.data.l[3] = 0;
@@ -313,14 +314,14 @@ void TestDragDropClient::OnStatus(XID target_window,
   HandleXdndEvent(event);
 }
 
-void TestDragDropClient::OnFinished(XID target_window,
+void TestDragDropClient::OnFinished(x11::Window target_window,
                                     bool accepted_drop,
                                     x11::Atom performed_action) {
   XClientMessageEvent event;
   event.message_type = static_cast<uint32_t>(GetAtom("XdndFinished"));
   event.format = 32;
-  event.window = source_xid_;
-  event.data.l[0] = target_window;
+  event.window = static_cast<uint32_t>(source_window_);
+  event.data.l[0] = static_cast<uint32_t>(target_window);
   event.data.l[1] = accepted_drop ? 1 : 0;
   event.data.l[2] = static_cast<uint32_t>(performed_action);
   event.data.l[3] = 0;
@@ -328,14 +329,14 @@ void TestDragDropClient::OnFinished(XID target_window,
   HandleXdndEvent(event);
 }
 
-void TestDragDropClient::SetTopmostXWindowAndMoveMouse(::Window xid) {
-  SetTopmostXWindow(xid);
+void TestDragDropClient::SetTopmostXWindowAndMoveMouse(x11::Window window) {
+  SetTopmostXWindow(window);
   OnMouseMovement(gfx::Point(kMouseMoveX, kMouseMoveY), ui::EF_NONE,
                   ui::EventTimeForNow());
 }
 
-void TestDragDropClient::SendXClientEvent(::Window xid, XEvent* event) {
-  auto it = collectors_.find(xid);
+void TestDragDropClient::SendXClientEvent(x11::Window window, XEvent* event) {
+  auto it = collectors_.find(window);
   if (it != collectors_.end())
     it->second->RecordEvent(event->xclient);
 }
@@ -404,7 +405,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
 
 namespace {
 
-void BasicStep2(TestDragDropClient* client, XID toplevel) {
+void BasicStep2(TestDragDropClient* client, x11::Window toplevel) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
   ClientMessageEventCollector collector(toplevel, client);
@@ -416,14 +417,16 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
   ASSERT_EQ(2u, events.size());
 
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
+  EXPECT_EQ(client->source_xwindow(),
+            static_cast<x11::Window>(events[0].data.l[0]));
   EXPECT_EQ(1, events[0].data.l[1] & 1);
   std::vector<x11::Atom> targets;
   ui::GetAtomArrayProperty(client->source_xwindow(), "XdndTypeList", &targets);
   EXPECT_FALSE(targets.empty());
 
   EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-  EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
+  EXPECT_EQ(client->source_xwindow(),
+            static_cast<x11::Window>(events[0].data.l[0]));
   const int kCoords =
       TestDragDropClient::kMouseMoveX << 16 | TestDragDropClient::kMouseMoveY;
   EXPECT_EQ(kCoords, events[1].data.l[2]);
@@ -439,7 +442,8 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
   events = collector.PopAllEvents();
   ASSERT_EQ(1u, events.size());
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
-  EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
+  EXPECT_EQ(client->source_xwindow(),
+            static_cast<x11::Window>(events[0].data.l[0]));
 
   // Send XdndFinished to indicate that the drag drop client can cleanup any
   // data related to this drag. The move loop should end only after the
@@ -449,7 +453,7 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
   EXPECT_FALSE(client->IsMoveLoopRunning());
 }
 
-void BasicStep3(TestDragDropClient* client, XID toplevel) {
+void BasicStep3(TestDragDropClient* client, x11::Window toplevel) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
   ClientMessageEventCollector collector(toplevel, client);
@@ -484,7 +488,7 @@ void BasicStep3(TestDragDropClient* client, XID toplevel) {
 }  // namespace
 
 TEST_F(DesktopDragDropClientAuraX11Test, Basic) {
-  XID toplevel = 1;
+  x11::Window toplevel = static_cast<x11::Window>(1);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BasicStep2, client(), toplevel));
@@ -547,7 +551,7 @@ namespace {
 void TargetDoesNotRespondStep2(TestDragDropClient* client) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
-  XID toplevel = 1;
+  x11::Window toplevel = static_cast<x11::Window>(1);
   ClientMessageEventCollector collector(toplevel, client);
   client->SetTopmostXWindowAndMoveMouse(toplevel);
 
@@ -581,7 +585,7 @@ namespace {
 void QueuePositionStep2(TestDragDropClient* client) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
-  XID toplevel = 1;
+  x11::Window toplevel = static_cast<x11::Window>(1);
   ClientMessageEventCollector collector(toplevel, client);
   client->SetTopmostXWindowAndMoveMouse(toplevel);
   client->SetTopmostXWindowAndMoveMouse(toplevel);
@@ -626,7 +630,7 @@ namespace {
 void TargetChangesStep2(TestDragDropClient* client) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
-  XID toplevel1 = 1;
+  x11::Window toplevel1 = static_cast<x11::Window>(1);
   ClientMessageEventCollector collector1(toplevel1, client);
   client->SetTopmostXWindowAndMoveMouse(toplevel1);
 
@@ -635,7 +639,7 @@ void TargetChangesStep2(TestDragDropClient* client) {
   EXPECT_TRUE(client->MessageHasType(events1[0], "XdndEnter"));
   EXPECT_TRUE(client->MessageHasType(events1[1], "XdndPosition"));
 
-  XID toplevel2 = 2;
+  x11::Window toplevel2 = static_cast<x11::Window>(2);
   ClientMessageEventCollector collector2(toplevel2, client);
   client->SetTopmostXWindowAndMoveMouse(toplevel2);
 
@@ -678,7 +682,7 @@ namespace {
 void RejectAfterMouseReleaseStep2(TestDragDropClient* client) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
-  XID toplevel = 1;
+  x11::Window toplevel = static_cast<x11::Window>(1);
   ClientMessageEventCollector collector(toplevel, client);
   client->SetTopmostXWindowAndMoveMouse(toplevel);
 
@@ -709,7 +713,7 @@ void RejectAfterMouseReleaseStep2(TestDragDropClient* client) {
 void RejectAfterMouseReleaseStep3(TestDragDropClient* client) {
   EXPECT_TRUE(client->IsMoveLoopRunning());
 
-  XID toplevel = 2;
+  x11::Window toplevel = static_cast<x11::Window>(2);
   ClientMessageEventCollector collector(toplevel, client);
   client->SetTopmostXWindowAndMoveMouse(toplevel);
 

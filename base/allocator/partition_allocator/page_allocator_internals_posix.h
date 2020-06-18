@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 
@@ -56,7 +57,7 @@ const char* PageTagToName(PageTag tag) {
     case PageTag::kV8:
       return "v8";
     default:
-      DCHECK(false);
+      PA_DCHECK(false);
       return "";
   }
 }
@@ -112,8 +113,8 @@ void* SystemAllocPagesInternal(void* hint,
 #if defined(OS_MACOSX)
   // Use a custom tag to make it easier to distinguish Partition Alloc regions
   // in vmmap(1). Tags between 240-255 are supported.
-  DCHECK_LE(PageTag::kFirst, page_tag);
-  DCHECK_GE(PageTag::kLast, page_tag);
+  PA_DCHECK(PageTag::kFirst <= page_tag);
+  PA_DCHECK(PageTag::kLast >= page_tag);
   int fd = VM_MAKE_TAG(static_cast<int>(page_tag));
 #else
   int fd = -1;

@@ -227,6 +227,11 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
         mInfoBarContainerView.addInfoBar(infoBar);
     }
 
+    @VisibleForTesting
+    public View getViewForTesting() {
+        return mInfoBarContainerView;
+    }
+
     /**
      * Adds an InfoBar to the view hierarchy.
      * @param infoBar InfoBar to add to the View hierarchy.

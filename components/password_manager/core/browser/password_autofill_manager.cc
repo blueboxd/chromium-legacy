@@ -355,7 +355,12 @@ void PasswordAutofillManager::OnUnlockItemAccepted(
 
   UpdatePopup(SetUnlockLoadingState(autofill_client_->GetPopupSuggestions(),
                                     unlock_item, IsLoading(true)));
+  signin_metrics::ReauthAccessPoint reauth_access_point =
+      unlock_item == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN
+          ? signin_metrics::ReauthAccessPoint::kAutofillDropdown
+          : signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown;
   password_client_->TriggerReauthForPrimaryAccount(
+      reauth_access_point,
       base::BindOnce(&PasswordAutofillManager::OnUnlockReauthCompleted,
                      weak_ptr_factory_.GetWeakPtr(), unlock_item,
                      autofill_client_->GetReopenPopupArgs()));

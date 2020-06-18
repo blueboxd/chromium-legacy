@@ -95,8 +95,22 @@ class ServiceWorkerContextCoreObserver {
   // add user data to the registration.
   virtual void OnRegistrationStored(int64_t registration_id,
                                     const GURL& scope) {}
+
+  // Called after a task has been posted to delete a registration from storage.
+  // This is roughly equivalent to the same time that the promise for
+  // unregister() would be resolved. This means the live
+  // ServiceWorkerRegistration may still exist, and the deletion operator may
+  // not yet have finished.
   virtual void OnRegistrationDeleted(int64_t registration_id,
                                      const GURL& scope) {}
+
+  // Called after all registrations for |origin| are deleted from storage. There
+  // may still be live registrations for this origin in the kUninstalling or
+  // kUninstalled state.
+  //
+  // This is called after OnRegistrationDeleted(). It is called once
+  // ServiceWorkerRegistry gets confirmation that the delete operation finished.
+  virtual void OnAllRegistrationsDeletedForOrigin(const url::Origin& origin) {}
 
   // Notified when the storage corruption recovery is completed and all stored
   // data is wiped out.

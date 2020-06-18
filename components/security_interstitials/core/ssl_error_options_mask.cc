@@ -4,6 +4,7 @@
 
 #include "components/security_interstitials/core/ssl_error_options_mask.h"
 
+#include "base/notreached.h"
 #include "net/base/net_errors.h"
 
 namespace security_interstitials {

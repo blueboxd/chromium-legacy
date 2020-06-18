@@ -8,6 +8,7 @@
 #include <cfloat>
 #include <string>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
 #include "base/stl_util.h"

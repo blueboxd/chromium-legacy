@@ -56,6 +56,7 @@
     TableViewNavigationController* navigationController =
         [[TableViewNavigationController alloc]
             initWithTable:self.viewController];
+    navigationController.modalPresentationStyle = UIModalPresentationFormSheet;
 
     [self.baseViewController presentViewController:navigationController
                                           animated:YES

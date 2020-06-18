@@ -103,20 +103,21 @@ bool SyncSetCounter(XDisplay* display, XID counter, int64_t value) {
 }
 
 // Returns the whole path from |window| to the root.
-std::vector<::Window> GetParentsList(XDisplay* xdisplay, ::Window window) {
-  ::Window parent_win, root_win;
+std::vector<x11::Window> GetParentsList(XDisplay* xdisplay,
+                                        x11::Window window) {
+  unsigned long parent_win, root_win;
   Window* child_windows;
   unsigned int num_child_windows;
-  std::vector<::Window> result;
+  std::vector<x11::Window> result;
 
-  while (window) {
+  while (window != x11::Window::None) {
     result.push_back(window);
-    if (!XQueryTree(xdisplay, window, &root_win, &parent_win, &child_windows,
-                    &num_child_windows))
+    if (!XQueryTree(xdisplay, static_cast<uint32_t>(window), &root_win,
+                    &parent_win, &child_windows, &num_child_windows))
       break;
     if (child_windows)
       XFree(child_windows);
-    window = parent_win;
+    window = static_cast<x11::Window>(parent_win);
   }
   return result;
 }
@@ -139,15 +140,15 @@ XWindow::Configuration::Configuration(const Configuration&) = default;
 XWindow::Configuration::~Configuration() = default;
 
 XWindow::XWindow()
-    : xdisplay_(gfx::GetXDisplay()),
-      x_root_window_(DefaultRootWindow(xdisplay_)) {
+    : xdisplay_(gfx::GetXDisplay()), x_root_window_(ui::GetX11RootWindow()) {
   DCHECK(xdisplay_);
-  DCHECK_NE(x_root_window_, x11::None);
+  DCHECK_NE(x_root_window_, x11::Window::None);
 }
 
 XWindow::~XWindow() {
-  DCHECK_EQ(xwindow_, x11::None) << "XWindow destructed without calling "
-                                    "Close() to release allocated resources.";
+  DCHECK_EQ(xwindow_, x11::Window::None)
+      << "XWindow destructed without calling "
+         "Close() to release allocated resources.";
 }
 
 void XWindow::Init(const Configuration& config) {
@@ -227,8 +228,8 @@ void XWindow::Init(const Configuration& config) {
   if (config.wm_role_name == kStatusIconWmRoleName) {
     std::string atom_name =
         "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
-    XID manager = XGetSelectionOwner(
-        xdisplay_, static_cast<uint32_t>(gfx::GetAtom(atom_name.c_str())));
+    auto manager = static_cast<x11::Window>(XGetSelectionOwner(
+        xdisplay_, static_cast<uint32_t>(gfx::GetAtom(atom_name.c_str()))));
     if (ui::GetIntProperty(manager, "_NET_SYSTEM_TRAY_VISUAL", &visual_id))
       visual_id_ = visual_id;
   }
@@ -256,12 +257,13 @@ void XWindow::Init(const Configuration& config) {
   swa.border_pixel = 0;
 
   bounds_in_pixels_ = SanitizeBounds(config.bounds);
-  xwindow_ = XCreateWindow(
-      xdisplay_, x_root_window_, bounds_in_pixels_.x(), bounds_in_pixels_.y(),
-      bounds_in_pixels_.width(), bounds_in_pixels_.height(),
-      0,  // border width
-      depth, static_cast<int>(x11::WindowClass::InputOutput), visual,
-      attribute_mask, &swa);
+  xwindow_ = static_cast<x11::Window>(
+      XCreateWindow(xdisplay_, static_cast<uint32_t>(x_root_window_),
+                    bounds_in_pixels_.x(), bounds_in_pixels_.y(),
+                    bounds_in_pixels_.width(), bounds_in_pixels_.height(),
+                    0,  // border width
+                    depth, static_cast<int>(x11::WindowClass::InputOutput),
+                    visual, attribute_mask, &swa));
 
   // It can be a status icon window. If it fails to initialize, don't provide
   // him with a native window handle, close self and let the client destroy
@@ -313,8 +315,8 @@ void XWindow::Init(const Configuration& config) {
 
   // We need a WM_CLIENT_MACHINE and WM_LOCALE_NAME value so we integrate with
   // the desktop environment.
-  XSetWMProperties(xdisplay_, xwindow_, nullptr, nullptr, nullptr, 0, nullptr,
-                   nullptr, nullptr);
+  XSetWMProperties(xdisplay_, static_cast<uint32_t>(xwindow_), nullptr, nullptr,
+                   nullptr, 0, nullptr, nullptr, nullptr);
 
   // Likewise, the X server needs to know this window's pid so it knows which
   // program to kill if the window hangs.
@@ -419,11 +421,12 @@ void XWindow::Map(bool inactive) {
   XSizeHints size_hints;
   size_hints.flags = 0;
   long supplied_return;
-  XGetWMNormalHints(xdisplay_, xwindow_, &size_hints, &supplied_return);
+  XGetWMNormalHints(xdisplay_, static_cast<uint32_t>(xwindow_), &size_hints,
+                    &supplied_return);
   size_hints.flags |= PPosition;
   size_hints.x = bounds_in_pixels_.x();
   size_hints.y = bounds_in_pixels_.y();
-  XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
+  XSetWMNormalHints(xdisplay_, static_cast<uint32_t>(xwindow_), &size_hints);
 
   ignore_keyboard_input_ = inactive;
   uint32_t wm_user_time_ms =
@@ -445,7 +448,7 @@ void XWindow::Map(bool inactive) {
                                std::end(window_properties_)));
   }
 
-  XMapWindow(xdisplay_, xwindow_);
+  XMapWindow(xdisplay_, static_cast<uint32_t>(xwindow_));
   window_mapped_in_client_ = true;
 
   // TODO(thomasanderson): Find out why this flush is necessary.
@@ -453,14 +456,14 @@ void XWindow::Map(bool inactive) {
 }
 
 void XWindow::Close() {
-  if (xwindow_ == x11::None)
+  if (xwindow_ == x11::Window::None)
     return;
 
   CancelResize();
   UnconfineCursor();
 
-  XDestroyWindow(xdisplay_, xwindow_);
-  xwindow_ = x11::None;
+  XDestroyWindow(xdisplay_, static_cast<uint32_t>(xwindow_));
+  xwindow_ = x11::Window::None;
 
   if (update_counter_ != x11::None) {
     XSyncDestroyCounter(xdisplay_, update_counter_);
@@ -481,7 +484,7 @@ void XWindow::Maximize() {
 
 void XWindow::Minimize() {
   if (window_mapped_in_client_)
-    XIconifyWindow(xdisplay_, xwindow_, 0);
+    XIconifyWindow(xdisplay_, static_cast<uint32_t>(xwindow_), 0);
   else
     SetWMSpecState(true, gfx::GetAtom("_NET_WM_STATE_HIDDEN"), x11::Atom::None);
 }
@@ -499,7 +502,7 @@ bool XWindow::Hide() {
   // Make sure no resize task will run after the window is unmapped.
   CancelResize();
 
-  XWithdrawWindow(xdisplay_, xwindow_, 0);
+  XWithdrawWindow(xdisplay_, static_cast<uint32_t>(xwindow_), 0);
   window_mapped_in_client_ = false;
   return true;
 }
@@ -535,7 +538,7 @@ void XWindow::Activate() {
     XEvent xclient;
     memset(&xclient, 0, sizeof(xclient));
     xclient.type = ClientMessage;
-    xclient.xclient.window = xwindow_;
+    xclient.xclient.window = static_cast<uint32_t>(xwindow_);
     xclient.xclient.message_type =
         static_cast<uint32_t>(gfx::GetAtom("_NET_ACTIVE_WINDOW"));
     xclient.xclient.format = 32;
@@ -548,15 +551,16 @@ void XWindow::Activate() {
     xclient.xclient.data.l[3] = 0;
     xclient.xclient.data.l[4] = 0;
 
-    XSendEvent(xdisplay_, x_root_window_, x11::False,
+    XSendEvent(xdisplay_, static_cast<uint32_t>(x_root_window_), x11::False,
                SubstructureRedirectMask | SubstructureNotifyMask, &xclient);
   } else {
-    XRaiseWindow(xdisplay_, xwindow_);
+    XRaiseWindow(xdisplay_, static_cast<uint32_t>(xwindow_));
     // Directly ask the X server to give focus to the window. Note that the call
     // would have raised an X error if the window is not mapped.
     auto ignore_errors = [](XDisplay*, XErrorEvent*) -> int { return 0; };
     auto old_error_handler = XSetErrorHandler(ignore_errors);
-    XSetInputFocus(xdisplay_, xwindow_, RevertToParent, timestamp);
+    XSetInputFocus(xdisplay_, static_cast<uint32_t>(xwindow_), RevertToParent,
+                   timestamp);
     // At this point, we know we will receive focus, and some
     // webdriver tests depend on a window being IsActive() immediately
     // after an Activate(), so just set this state now.
@@ -575,7 +579,7 @@ void XWindow::Deactivate() {
   // Ignore future input events.
   ignore_keyboard_input_ = true;
 
-  XLowerWindow(xdisplay_, xwindow_);
+  XLowerWindow(xdisplay_, static_cast<uint32_t>(xwindow_));
 
   AfterActivationStateChanged();
 }
@@ -588,8 +592,8 @@ bool XWindow::IsActive() const {
   return (has_window_focus_ || has_pointer_focus_) && !ignore_keyboard_input_;
 }
 void XWindow::SetSize(const gfx::Size& size_in_pixels) {
-  XResizeWindow(xdisplay_, xwindow_, size_in_pixels.width(),
-                size_in_pixels.height());
+  XResizeWindow(xdisplay_, static_cast<uint32_t>(xwindow_),
+                size_in_pixels.width(), size_in_pixels.height());
   bounds_in_pixels_.set_size(size_in_pixels);
 }
 
@@ -628,7 +632,8 @@ void XWindow::SetBounds(const gfx::Rect& requested_bounds_in_pixels) {
   }
 
   if (value_mask)
-    XConfigureWindow(xdisplay_, xwindow_, value_mask, &changes);
+    XConfigureWindow(xdisplay_, static_cast<uint32_t>(xwindow_), value_mask,
+                     &changes);
 
   // Assume that the resize will go through as requested, which should be the
   // case if we're running without a window manager.  If there's a window
@@ -685,13 +690,13 @@ void XWindow::ReleasePointerGrab() {
   has_pointer_grab_ = false;
 }
 
-void XWindow::StackXWindowAbove(::Window window) {
-  DCHECK(window != x11::None);
+void XWindow::StackXWindowAbove(x11::Window window) {
+  DCHECK(window != x11::Window::None);
 
   // Find all parent windows up to the root.
-  std::vector<::Window> window_below_parents =
+  std::vector<x11::Window> window_below_parents =
       GetParentsList(xdisplay_, window);
-  std::vector<::Window> window_above_parents =
+  std::vector<x11::Window> window_above_parents =
       GetParentsList(xdisplay_, xwindow_);
 
   // Find their common ancestor.
@@ -706,7 +711,8 @@ void XWindow::StackXWindowAbove(::Window window) {
   if (it_below_window != window_below_parents.rend() &&
       it_above_window != window_above_parents.rend()) {
     // First stack |xwindow| below so Z-order of |window| stays the same.
-    ::Window windows[] = {*it_below_window, *it_above_window};
+    unsigned long windows[] = {static_cast<unsigned long>(*it_below_window),
+                               static_cast<unsigned long>(*it_above_window)};
     if (XRestackWindows(xdisplay_, windows, 2) == 0) {
       // Now stack them properly.
       std::swap(windows[0], windows[1]);
@@ -716,12 +722,12 @@ void XWindow::StackXWindowAbove(::Window window) {
 }
 
 void XWindow::StackXWindowAtTop() {
-  XRaiseWindow(xdisplay_, xwindow_);
+  XRaiseWindow(xdisplay_, static_cast<uint32_t>(xwindow_));
 }
 
 void XWindow::SetCursor(::Cursor cursor) {
   last_cursor_ = cursor;
-  XDefineCursor(xdisplay_, xwindow_, cursor);
+  XDefineCursor(xdisplay_, static_cast<uint32_t>(xwindow_), cursor);
 }
 
 bool XWindow::SetTitle(base::string16 title) {
@@ -736,7 +742,7 @@ bool XWindow::SetTitle(base::string16 title) {
   char* c_utf8_str = const_cast<char*>(utf8str.c_str());
   if (Xutf8TextListToTextProperty(xdisplay_, &c_utf8_str, 1, XUTF8StringStyle,
                                   &xtp) == x11::Success) {
-    XSetWMName(xdisplay_, xwindow_, &xtp);
+    XSetWMName(xdisplay_, static_cast<uint32_t>(xwindow_), &xtp);
     XFree(xtp.value);
   }
   return true;
@@ -766,14 +772,15 @@ void XWindow::SetXWindowAspectRatio(const gfx::SizeF& aspect_ratio) {
   size_hints.flags = 0;
   long supplied_return;
 
-  XGetWMNormalHints(xdisplay_, xwindow_, &size_hints, &supplied_return);
+  XGetWMNormalHints(xdisplay_, static_cast<uint32_t>(xwindow_), &size_hints,
+                    &supplied_return);
   // Unforce aspect ratio is parameter length is 0, otherwise set normally.
   if (!aspect_ratio.IsEmpty()) {
     size_hints.flags |= PAspect;
     size_hints.min_aspect.x = size_hints.max_aspect.x = aspect_ratio.width();
     size_hints.min_aspect.y = size_hints.max_aspect.y = aspect_ratio.height();
   }
-  XSetWMNormalHints(xdisplay_, xwindow_, &size_hints);
+  XSetWMNormalHints(xdisplay_, static_cast<uint32_t>(xwindow_), &size_hints);
 }
 
 void XWindow::SetXWindowIcons(const gfx::ImageSkia& window_icon,
@@ -816,7 +823,7 @@ void XWindow::SetXWindowVisibleOnAllWorkspaces(bool visible) {
   XEvent xevent;
   memset(&xevent, 0, sizeof(xevent));
   xevent.type = ClientMessage;
-  xevent.xclient.window = xwindow_;
+  xevent.xclient.window = static_cast<uint32_t>(xwindow_);
   xevent.xclient.message_type =
       static_cast<uint32_t>(gfx::GetAtom("_NET_WM_DESKTOP"));
   xevent.xclient.format = 32;
@@ -825,7 +832,7 @@ void XWindow::SetXWindowVisibleOnAllWorkspaces(bool visible) {
   xevent.xclient.data.l[2] = 0;
   xevent.xclient.data.l[3] = 0;
   xevent.xclient.data.l[4] = 0;
-  XSendEvent(xdisplay_, x_root_window_, x11::False,
+  XSendEvent(xdisplay_, static_cast<uint32_t>(x_root_window_), x11::False,
              SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
 }
 
@@ -838,8 +845,8 @@ bool XWindow::IsXWindowVisibleOnAllWorkspaces() const {
 }
 
 void XWindow::MoveCursorTo(const gfx::Point& location_in_pixels) {
-  XWarpPointer(xdisplay_, x11::None, x_root_window_, 0, 0, 0, 0,
-               bounds_in_pixels_.x() + location_in_pixels.x(),
+  XWarpPointer(xdisplay_, x11::None, static_cast<uint32_t>(x_root_window_), 0,
+               0, 0, 0, bounds_in_pixels_.x() + location_in_pixels.x(),
                bounds_in_pixels_.y() + location_in_pixels.y());
 }
 
@@ -878,7 +885,8 @@ void XWindow::SetFlashFrameHint(bool flash_frame) {
   if (urgency_hint_set_ == flash_frame)
     return;
 
-  gfx::XScopedPtr<XWMHints> hints(XGetWMHints(xdisplay_, xwindow_));
+  gfx::XScopedPtr<XWMHints> hints(
+      XGetWMHints(xdisplay_, static_cast<uint32_t>(xwindow_)));
   if (!hints) {
     // The window hasn't had its hints set yet.
     hints.reset(XAllocWMHints());
@@ -889,7 +897,7 @@ void XWindow::SetFlashFrameHint(bool flash_frame) {
   else
     hints->flags &= ~XUrgencyHint;
 
-  XSetWMHints(xdisplay_, xwindow_, hints.get());
+  XSetWMHints(xdisplay_, static_cast<uint32_t>(xwindow_), hints.get());
 
   urgency_hint_set_ = flash_frame;
 }
@@ -908,7 +916,8 @@ void XWindow::UpdateMinAndMaxSize() {
   XSizeHints hints;
   hints.flags = 0;
   long supplied_return;
-  XGetWMNormalHints(xdisplay_, xwindow_, &hints, &supplied_return);
+  XGetWMNormalHints(xdisplay_, static_cast<uint32_t>(xwindow_), &hints,
+                    &supplied_return);
 
   if (min_size_in_pixels_.IsEmpty()) {
     hints.flags &= ~PMinSize;
@@ -926,7 +935,7 @@ void XWindow::UpdateMinAndMaxSize() {
     hints.max_height = max_size_in_pixels_.height();
   }
 
-  XSetWMNormalHints(xdisplay_, xwindow_, &hints);
+  XSetWMNormalHints(xdisplay_, static_cast<uint32_t>(xwindow_), &hints);
 }
 
 void XWindow::BeforeActivationStateChanged() {
@@ -1072,10 +1081,10 @@ void XWindow::OnFocusEvent(bool focus_in, int mode, int detail) {
 
 bool XWindow::IsTargetedBy(const x11::Event& x11_event) const {
   const XEvent& xev = x11_event.xlib_event();
-  ::Window target_window =
-      (xev.type == x11::GeGenericEvent::opcode)
+  auto target_window = static_cast<x11::Window>(
+      xev.type == x11::GeGenericEvent::opcode
           ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
-          : xev.xany.window;
+          : xev.xany.window);
   return target_window == xwindow_;
 }
 
@@ -1183,7 +1192,7 @@ void XWindow::ProcessEvent(x11::Event* x11_event) {
           OnXWindowCloseRequested();
         } else if (protocol == gfx::GetAtom("_NET_WM_PING")) {
           XEvent reply_event = *xev;
-          reply_event.xclient.window = x_root_window_;
+          reply_event.xclient.window = static_cast<uint32_t>(x_root_window_);
 
           XSendEvent(xdisplay_, reply_event.xclient.window, x11::False,
                      SubstructureRedirectMask | SubstructureNotifyMask,
@@ -1258,8 +1267,8 @@ void XWindow::OnWindowMapped() {
 
 void XWindow::OnConfigureEvent(x11::Event* x11_event) {
   XEvent* xev = &x11_event->xlib_event();
-  DCHECK_EQ(xwindow_, xev->xconfigure.window);
-  DCHECK_EQ(xwindow_, xev->xconfigure.event);
+  DCHECK_EQ(static_cast<uint32_t>(xwindow_), xev->xconfigure.window);
+  DCHECK_EQ(static_cast<uint32_t>(xwindow_), xev->xconfigure.event);
 
   if (pending_counter_value_) {
     DCHECK(!configure_counter_value_);
@@ -1276,7 +1285,8 @@ void XWindow::OnConfigureEvent(x11::Event* x11_event) {
   int translated_y_in_pixels = xev->xconfigure.y;
   if (!xev->xconfigure.send_event && !xev->xconfigure.override_redirect) {
     Window unused;
-    XTranslateCoordinates(xdisplay_, xwindow_, x_root_window_, 0, 0,
+    XTranslateCoordinates(xdisplay_, static_cast<uint32_t>(xwindow_),
+                          static_cast<uint32_t>(x_root_window_), 0, 0,
                           &translated_x_in_pixels, &translated_y_in_pixels,
                           &unused);
   }
@@ -1433,26 +1443,30 @@ void XWindow::ConfineCursorTo(const gfx::Rect& bounds) {
 
   // Top horizontal barrier.
   pointer_barriers_[0] = XFixesCreatePointerBarrier(
-      xdisplay_, x_root_window_, barrier.x(), barrier.y(), barrier.right(),
-      barrier.y(), BarrierPositiveY, 0, XIAllDevices);
+      xdisplay_, static_cast<uint32_t>(x_root_window_), barrier.x(),
+      barrier.y(), barrier.right(), barrier.y(), BarrierPositiveY, 0,
+      XIAllDevices);
   // Bottom horizontal barrier.
   pointer_barriers_[1] = XFixesCreatePointerBarrier(
-      xdisplay_, x_root_window_, barrier.x(), barrier.bottom(), barrier.right(),
-      barrier.bottom(), BarrierNegativeY, 0, XIAllDevices);
+      xdisplay_, static_cast<uint32_t>(x_root_window_), barrier.x(),
+      barrier.bottom(), barrier.right(), barrier.bottom(), BarrierNegativeY, 0,
+      XIAllDevices);
   // Left vertical barrier.
   pointer_barriers_[2] = XFixesCreatePointerBarrier(
-      xdisplay_, x_root_window_, barrier.x(), barrier.y(), barrier.x(),
-      barrier.bottom(), BarrierPositiveX, 0, XIAllDevices);
+      xdisplay_, static_cast<uint32_t>(x_root_window_), barrier.x(),
+      barrier.y(), barrier.x(), barrier.bottom(), BarrierPositiveX, 0,
+      XIAllDevices);
   // Right vertical barrier.
   pointer_barriers_[3] = XFixesCreatePointerBarrier(
-      xdisplay_, x_root_window_, barrier.right(), barrier.y(), barrier.right(),
-      barrier.bottom(), BarrierNegativeX, 0, XIAllDevices);
+      xdisplay_, static_cast<uint32_t>(x_root_window_), barrier.right(),
+      barrier.y(), barrier.right(), barrier.bottom(), BarrierNegativeX, 0,
+      XIAllDevices);
 
   has_pointer_barriers_ = true;
 }
 
 void XWindow::LowerWindow() {
-  XLowerWindow(xdisplay_, xwindow_);
+  XLowerWindow(xdisplay_, static_cast<uint32_t>(xwindow_));
 }
 
 void XWindow::SetOverrideRedirect(bool override_redirect) {
@@ -1461,7 +1475,8 @@ void XWindow::SetOverrideRedirect(bool override_redirect) {
     Hide();
   XSetWindowAttributes swa;
   swa.override_redirect = override_redirect;
-  XChangeWindowAttributes(xdisplay_, xwindow_, CWOverrideRedirect, &swa);
+  XChangeWindowAttributes(xdisplay_, static_cast<uint32_t>(xwindow_),
+                          CWOverrideRedirect, &swa);
   if (remap) {
     Map();
     if (has_pointer_grab_)
@@ -1516,15 +1531,15 @@ void XWindow::UnconfineCursor() {
 void XWindow::UpdateWindowRegion(XRegion* xregion) {
   // If a custom window shape was supplied then apply it.
   if (use_custom_shape()) {
-    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
-                        window_shape_.get(), false);
+    XShapeCombineRegion(xdisplay_, static_cast<uint32_t>(xwindow_),
+                        ShapeBounding, 0, 0, window_shape_.get(), false);
     return;
   }
 
   window_shape_.reset(xregion);
   if (window_shape_) {
-    XShapeCombineRegion(xdisplay_, xwindow_, ShapeBounding, 0, 0,
-                        window_shape_.get(), false);
+    XShapeCombineRegion(xdisplay_, static_cast<uint32_t>(xwindow_),
+                        ShapeBounding, 0, 0, window_shape_.get(), false);
     return;
   }
 
@@ -1535,8 +1550,8 @@ void XWindow::UpdateWindowRegion(XRegion* xregion) {
     // If the window has system borders, the mask must be set to null (not a
     // rectangle), because several window managers (eg, KDE, XFCE, XMonad) will
     // not put borders on a window with a custom shape.
-    XShapeCombineMask(xdisplay_, xwindow_, ShapeBounding, 0, 0, x11::None,
-                      ShapeSet);
+    XShapeCombineMask(xdisplay_, static_cast<uint32_t>(xwindow_), ShapeBounding,
+                      0, 0, x11::None, ShapeSet);
   } else {
     // Conversely, if the window does not have system borders, the mask must be
     // manually set to a rectangle that covers the whole window (not null). This
@@ -1546,8 +1561,8 @@ void XWindow::UpdateWindowRegion(XRegion* xregion) {
     XRectangle r = {0, 0,
                     static_cast<unsigned short>(bounds_in_pixels_.width()),
                     static_cast<unsigned short>(bounds_in_pixels_.height())};
-    XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding, 0, 0, &r, 1,
-                            ShapeSet,
+    XShapeCombineRectangles(xdisplay_, static_cast<uint32_t>(xwindow_),
+                            ShapeBounding, 0, 0, &r, 1, ShapeSet,
                             static_cast<int>(x11::ClipOrdering::YXBanded));
   }
 }
@@ -1560,9 +1575,9 @@ void XWindow::NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px) {
 bool XWindow::InitializeAsStatusIcon() {
   std::string atom_name =
       "_NET_SYSTEM_TRAY_S" + base::NumberToString(DefaultScreen(xdisplay_));
-  XID manager = XGetSelectionOwner(
-      xdisplay_, static_cast<uint32_t>(gfx::GetAtom(atom_name.c_str())));
-  if (manager == x11::None)
+  auto manager = static_cast<x11::Window>(XGetSelectionOwner(
+      xdisplay_, static_cast<uint32_t>(gfx::GetAtom(atom_name.c_str()))));
+  if (manager == x11::Window::None)
     return false;
 
   ui::SetIntArrayProperty(xwindow_, "_XEMBED_INFO", "CARDINAL",
@@ -1578,12 +1593,13 @@ bool XWindow::InitializeAsStatusIcon() {
     flags |= CWBackPixmap;
     attrs.background_pixmap = static_cast<int>(x11::BackPixmap::ParentRelative);
   }
-  XChangeWindowAttributes(xdisplay_, xwindow_, flags, &attrs);
+  XChangeWindowAttributes(xdisplay_, static_cast<uint32_t>(xwindow_), flags,
+                          &attrs);
 
   auto future = ui::SendClientMessage(
       manager, manager, gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE"),
       {ui::X11EventSource::GetInstance()->GetTimestamp(),
-       kSystemTrayRequestDock, xwindow_, 0, 0},
+       kSystemTrayRequestDock, static_cast<uint32_t>(xwindow_), 0, 0},
       x11::EventMask::NoEvent);
   return !future.Sync().error;
 }

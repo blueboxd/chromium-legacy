@@ -4,6 +4,7 @@
 
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"

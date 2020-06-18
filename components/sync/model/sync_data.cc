@@ -9,12 +9,10 @@
 #include <utility>
 
 #include "base/json/json_writer.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/sync/base/client_tag_hash.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/base_node.h"
 
 namespace syncer {
 
@@ -41,13 +39,10 @@ void SyncData::ImmutableSyncEntityTraits::Swap(sync_pb::SyncEntity* t1,
   t1->Swap(t2);
 }
 
-SyncData::SyncData() : id_(kInvalidId), is_local_(false), is_valid_(false) {}
+SyncData::SyncData() : is_local_(false), is_valid_(false) {}
 
-SyncData::SyncData(bool is_local, int64_t id, sync_pb::SyncEntity* entity)
-    : id_(id),
-      immutable_entity_(entity),
-      is_local_(is_local),
-      is_valid_(true) {}
+SyncData::SyncData(bool is_local, sync_pb::SyncEntity* entity)
+    : immutable_entity_(entity), is_local_(is_local), is_valid_(true) {}
 
 SyncData::SyncData(const SyncData& other) = default;
 
@@ -69,17 +64,16 @@ SyncData SyncData::CreateLocalData(const std::string& sync_tag,
   entity.set_client_defined_unique_tag(sync_tag);
   entity.set_non_unique_name(non_unique_title);
   entity.mutable_specifics()->CopyFrom(specifics);
-  return SyncData(/*is_local=*/true, kInvalidId, &entity);
+  return SyncData(/*is_local=*/true, &entity);
 }
 
 // Static.
-SyncData SyncData::CreateRemoteData(int64_t id,
-                                    sync_pb::EntitySpecifics specifics,
+SyncData SyncData::CreateRemoteData(sync_pb::EntitySpecifics specifics,
                                     std::string client_tag_hash) {
   sync_pb::SyncEntity entity;
   *entity.mutable_specifics() = std::move(specifics);
   entity.set_client_defined_unique_tag(std::move(client_tag_hash));
-  return SyncData(/*is_local=*/false, id, &entity);
+  return SyncData(/*is_local=*/false, &entity);
 }
 
 bool SyncData::IsValid() const {
@@ -122,9 +116,7 @@ std::string SyncData::ToString() const {
   }
 
   SyncDataRemote sync_data_remote(*this);
-  std::string id = base::NumberToString(sync_data_remote.id_);
-  return "{ isLocal: false, type: " + type + ", specifics: " + specifics +
-         ", id: " + id + "}";
+  return "{ isLocal: false, type: " + type + ", specifics: " + specifics + "}";
 }
 
 void PrintTo(const SyncData& sync_data, std::ostream* os) {
@@ -147,12 +139,6 @@ SyncDataRemote::SyncDataRemote(const SyncData& sync_data)
 }
 
 SyncDataRemote::~SyncDataRemote() {}
-
-int64_t SyncDataRemote::GetId() const {
-  DCHECK(!IsLocal());
-  DCHECK_NE(id_, kInvalidId);
-  return id_;
-}
 
 ClientTagHash SyncDataRemote::GetClientTagHash() const {
   // It seems that client_defined_unique_tag has a bit of an overloaded use,

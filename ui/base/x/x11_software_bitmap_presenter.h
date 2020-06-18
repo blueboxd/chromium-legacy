@@ -58,7 +58,7 @@ class COMPONENT_EXPORT(UI_BASE_X) X11SoftwareBitmapPresenter {
 
   void FlushAfterPutImage();
 
-  gfx::AcceleratedWidget widget_;
+  x11::Window widget_;
   XDisplay* display_;
   GC gc_;
   XWindowAttributes attributes_;

@@ -360,12 +360,6 @@ jlong ProfileSyncServiceAndroid::GetExplicitPassphraseTime(
   return passphrase_time.ToJavaTime();
 }
 
-void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env,
-                                               const JavaParamRef<jobject>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->FlushDirectory();
-}
-
 void ProfileSyncServiceAndroid::GetAllNodes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

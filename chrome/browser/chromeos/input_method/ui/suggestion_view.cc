@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/chromeos/input_method/ui/suggestion_details.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -78,10 +77,12 @@ SuggestionView::SuggestionView() {
 
 SuggestionView::~SuggestionView() = default;
 
-void SuggestionView::SetView(const SuggestionDetails& details) {
-  SetSuggestionText(details.text, details.confirmed_length);
+void SuggestionView::SetView(const base::string16& text,
+                             const size_t confirmed_length,
+                             const bool show_tab) {
+  SetSuggestionText(text, confirmed_length);
   suggestion_width_ = suggestion_label_->GetPreferredSize().width();
-  annotation_label_->SetVisible(details.show_tab);
+  annotation_label_->SetVisible(show_tab);
 }
 
 void SuggestionView::SetViewWithIndex(const base::string16& index,

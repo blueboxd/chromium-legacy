@@ -8,6 +8,7 @@
 
 #include <vector>
 
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/x11/x11_window.h"
 #include "ui/platform_window/x11/x11_window_manager.h"
 
@@ -17,7 +18,7 @@ X11TopmostWindowFinder::X11TopmostWindowFinder() = default;
 
 X11TopmostWindowFinder::~X11TopmostWindowFinder() = default;
 
-XID X11TopmostWindowFinder::FindLocalProcessWindowAt(
+x11::Window X11TopmostWindowFinder::FindLocalProcessWindowAt(
     const gfx::Point& screen_loc_in_pixels,
     const std::set<gfx::AcceleratedWidget>& ignore) {
   screen_loc_in_pixels_ = screen_loc_in_pixels;
@@ -28,35 +29,37 @@ XID X11TopmostWindowFinder::FindLocalProcessWindowAt(
   if (std::none_of(local_process_windows.cbegin(), local_process_windows.cend(),
                    [this](auto* window) {
                      return ShouldStopIteratingAtLocalProcessWindow(window);
-                   }))
-    return gfx::kNullAcceleratedWidget;
+                   })) {
+    return x11::Window::None;
+  }
 
   EnumerateTopLevelWindows(this);
   return toplevel_;
 }
 
-XID X11TopmostWindowFinder::FindWindowAt(
+x11::Window X11TopmostWindowFinder::FindWindowAt(
     const gfx::Point& screen_loc_in_pixels) {
   screen_loc_in_pixels_ = screen_loc_in_pixels;
   EnumerateTopLevelWindows(this);
   return toplevel_;
 }
 
-bool X11TopmostWindowFinder::ShouldStopIterating(XID xid) {
-  if (!IsWindowVisible(xid))
+bool X11TopmostWindowFinder::ShouldStopIterating(x11::Window xwindow) {
+  if (!IsWindowVisible(xwindow))
     return false;
 
-  auto* window = X11WindowManager::GetInstance()->GetWindow(xid);
+  auto* window = X11WindowManager::GetInstance()->GetWindow(
+      static_cast<gfx::AcceleratedWidget>(xwindow));
   if (window) {
     if (ShouldStopIteratingAtLocalProcessWindow(window)) {
-      toplevel_ = xid;
+      toplevel_ = xwindow;
       return true;
     }
     return false;
   }
 
-  if (WindowContainsPoint(xid, screen_loc_in_pixels_)) {
-    toplevel_ = xid;
+  if (WindowContainsPoint(xwindow, screen_loc_in_pixels_)) {
+    toplevel_ = xwindow;
     return true;
   }
   return false;

@@ -191,7 +191,7 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   int UpdateDrag(const gfx::Point& screen_point) override;
   void UpdateCursor(
       ui::DragDropTypes::DragOperation negotiated_operation) override;
-  void OnBeginForeignDrag(XID window) override;
+  void OnBeginForeignDrag(x11::Window window) override;
   void OnEndForeignDrag() override;
   void OnBeforeDragLeave() override;
   int PerformDrop() override;
@@ -235,8 +235,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   gfx::Rect restored_bounds_in_pixels_;
 
   // Tells if this dispatcher can process next translated event based on a
-  // previous check in ::CheckCanDispatchNextPlatformEvent based on a XID
-  // target.
+  // previous check in ::CheckCanDispatchNextPlatformEvent based on a
+  // x11::Window target.
   x11::Event* current_xevent_ = nullptr;
 
   std::unique_ptr<X11DesktopWindowMoveClient> x11_window_move_client_;

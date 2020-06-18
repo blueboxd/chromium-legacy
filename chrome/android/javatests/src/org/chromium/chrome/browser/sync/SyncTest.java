@@ -5,8 +5,6 @@
 package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
-import android.app.Activity;
-import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.LargeTest;
 
@@ -15,8 +13,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.ActivityState;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -42,23 +38,6 @@ public class SyncTest {
     public SyncTestRule mSyncTestRule = new SyncTestRule();
 
     private static final String TAG = "SyncTest";
-
-    @Test
-    @LargeTest
-    @Feature({"Sync"})
-    public void testFlushDirectoryDoesntBreakSync() {
-        mSyncTestRule.setUpAccountAndSignInForTesting();
-        final Activity activity = mSyncTestRule.getActivity();
-
-        InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                ApplicationStatus.onStateChangeForTesting(activity, ActivityState.PAUSED);
-            }
-        });
-
-        // TODO(pvalenzuela): When available, check that sync is still functional.
-    }
 
     @Test
     @LargeTest

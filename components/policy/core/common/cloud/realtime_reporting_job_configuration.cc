@@ -43,7 +43,7 @@ const char RealtimeReportingJobConfiguration::kFailedUploadsKey[] =
 const char RealtimeReportingJobConfiguration::kPermanentFailedUploadsKey[] =
     "permanentFailedUploads";
 const char RealtimeReportingJobConfiguration::kEventIdKey[] = "eventId";
-const char RealtimeReportingJobConfiguration::kDeviceNameKey[] = "deviceName";
+const char RealtimeReportingJobConfiguration::kDeviceNameKey[] = "device.name";
 
 base::Value RealtimeReportingJobConfiguration::BuildReport(
     base::Value events,

@@ -4,6 +4,8 @@
 
 #include "components/viz/host/hit_test/hit_test_query.h"
 
+#include <sstream>
+
 #include "base/containers/stack.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"

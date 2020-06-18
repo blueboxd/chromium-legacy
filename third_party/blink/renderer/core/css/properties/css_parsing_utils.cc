@@ -2612,6 +2612,13 @@ bool IsHashIdentifier(const CSSParserToken& token) {
          token.GetHashTokenType() == kHashTokenId;
 }
 
+bool IsTimelineName(const CSSParserToken& token) {
+  if (token.GetType() == kStringToken)
+    return true;
+  return token.GetType() == kIdentToken &&
+         IsCustomIdent<CSSValueID::kNone>(token.Id());
+}
+
 CSSValue* ConsumeScrollOffset(CSSParserTokenRange& range,
                               const CSSParserContext& context) {
   range.ConsumeWhitespace();

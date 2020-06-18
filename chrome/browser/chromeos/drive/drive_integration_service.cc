@@ -537,7 +537,6 @@ class DriveIntegrationService::DriveFsHolder
 
 DriveIntegrationService::DriveIntegrationService(
     Profile* profile,
-    PreferenceWatcher* preference_watcher,
     const std::string& test_mount_point_name,
     const base::FilePath& test_cache_root,
     DriveFsMojoListenerFactory test_drivefs_mojo_listener_factory)
@@ -552,7 +551,6 @@ DriveIntegrationService::DriveIntegrationService(
           profile_,
           this,
           std::move(test_drivefs_mojo_listener_factory))),
-      preference_watcher_(preference_watcher),
       power_manager_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile && !profile->IsOffTheRecord());
@@ -562,8 +560,11 @@ DriveIntegrationService::DriveIntegrationService(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
 
-  if (preference_watcher_)
-    preference_watcher->set_integration_service(this);
+  if (util::IsDriveEnabledForProfile(profile)) {
+    preference_watcher_ =
+        std::make_unique<PreferenceWatcher>(profile->GetPrefs());
+    preference_watcher_->set_integration_service(this);
+  }
 
   bool migrated_to_drivefs =
       profile_->GetPrefs()->GetBoolean(prefs::kDriveFsPinnedMigrated);
@@ -1162,15 +1163,8 @@ KeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
 
   DriveIntegrationService* service = nullptr;
   if (!factory_for_test_) {
-    DriveIntegrationService::PreferenceWatcher* preference_watcher = nullptr;
-    if (util::IsDriveEnabledForProfile(profile)) {
-      // Drive File System can be enabled.
-      preference_watcher =
-          new DriveIntegrationService::PreferenceWatcher(profile->GetPrefs());
-    }
-
-    service = new DriveIntegrationService(profile, preference_watcher,
-                                          std::string(), base::FilePath());
+    service =
+        new DriveIntegrationService(profile, std::string(), base::FilePath());
   } else {
     service = factory_for_test_->Run(profile);
   }

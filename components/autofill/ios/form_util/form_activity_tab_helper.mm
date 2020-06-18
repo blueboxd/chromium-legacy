@@ -7,6 +7,7 @@
 #import <Foundation/Foundation.h>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/autofill/ios/form_util/form_activity_observer.h"

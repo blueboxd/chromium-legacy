@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <string>
 
+#include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"

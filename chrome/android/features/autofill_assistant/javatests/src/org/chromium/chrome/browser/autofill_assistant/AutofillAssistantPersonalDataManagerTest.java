@@ -818,6 +818,62 @@ public class AutofillAssistantPersonalDataManagerTest {
         onView(withId(org.chromium.chrome.R.id.payments_edit_cancel_button)).perform(click());
     }
 
+    /**
+     * Adds a new shipping address and checks that it is available when adding a new credit card
+     * with Autofill Assistant UI and fill it into the form.
+     */
+    @Test
+    @MediumTest
+    public void testCreateShippingAddressAndCreditCard() throws Exception {
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
+                                                     .setShippingAddressName("shipping_address")
+                                                     .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Shipping address"), isCompletelyDisplayed());
+        onView(allOf(withText("Add address"), isDisplayed())).perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Name*"), allOf(isDisplayed(), isEnabled()));
+        onView(withContentDescription("Name*")).perform(scrollTo(), typeText("John Doe"));
+        onView(withContentDescription("Street address*"))
+                .perform(scrollTo(), typeText("123 Main St"));
+        onView(withContentDescription("City*")).perform(scrollTo(), typeText("Mountain View"));
+        onView(withContentDescription("State*")).perform(scrollTo(), typeText("California"));
+        onView(withContentDescription("ZIP code*")).perform(scrollTo(), typeText("1234"));
+        onView(withContentDescription("Phone*")).perform(scrollTo(), typeText("8008080808"));
+        onView(withText("Done")).perform(scrollTo(), click());
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
+                isCompletelyDisplayed());
+        onView(allOf(withId(R.id.section_title_add_button_label), withText("Add card")))
+                .perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Card number*"), allOf(isDisplayed(), isEnabled()));
+        Espresso.closeSoftKeyboard();
+        onView(allOf(withId(org.chromium.chrome.R.id.spinner), withChild(withText("Select"))))
+                .perform(scrollTo(), click());
+        onData(anything())
+                .atPosition(1 /* address of John, 0 is SELECT (empty) */)
+                .inRoot(withDecorView(withClassName(containsString("Popup"))))
+                .perform(click());
+        waitUntilViewMatchesCondition(withText(containsString("John Doe")), isDisplayed());
+    }
+
     private void runScript(AutofillAssistantTestScript script) {
         AutofillAssistantTestService testService =
                 new AutofillAssistantTestService(Collections.singletonList(script));

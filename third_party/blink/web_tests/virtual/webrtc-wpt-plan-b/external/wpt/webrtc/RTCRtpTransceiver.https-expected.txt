@@ -4,7 +4,7 @@ FAIL checkAddTransceiverNoTrack promise_test: Unhandled rejection with value: ob
 FAIL checkAddTransceiverWithTrack promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL checkAddTransceiverWithAddTrack assert_equals: expected "[{currentDirection:null,direction:\"sendrecv\",mid:null,receiver:{track:{kind:\"audio\"}},sender:{track:{}},stopped:false},{currentDirection:null,direction:\"sendrecv\",mid:null,receiver:{track:{kind:\"video\"}},sender:{track:{}},stopped:false}]" but got "[]"
 FAIL checkAddTransceiverWithDirection promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
-FAIL checkMsidNoTrackId assert_true: expected true got false
+PASS checkMsidNoTrackId
 FAIL checkAddTransceiverWithSetRemoteOfferSending promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL checkAddTransceiverWithSetRemoteOfferNoSend promise_test: Unhandled rejection with value: object "InvalidStateError: Failed to execute 'addTransceiver' on 'RTCPeerConnection': This operation is only supported in 'unified-plan'."
 FAIL checkAddTransceiverBadKind assert_true: addTransceiver("foo") throws a TypeError expected true got false

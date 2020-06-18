@@ -12,6 +12,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/guid.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/pickle.h"
 #include "base/token.h"

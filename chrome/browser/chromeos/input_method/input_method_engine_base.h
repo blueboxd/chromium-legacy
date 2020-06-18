@@ -208,6 +208,12 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                            const std::vector<SegmentInfo>& segments,
                            std::string* error);
 
+  bool SetAutocorrectRange(int context_id,
+                           const base::string16& autocorrect_text,
+                           int start,
+                           int end,
+                           std::string* error);
+
   // Set the current selection range.
   bool SetSelectionRange(int context_id,
                          int start,
@@ -260,6 +266,12 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
       uint32_t before,
       uint32_t after,
       const std::vector<ui::ImeTextSpan>& text_spans) = 0;
+
+  // Notifies the InputContextHandler that the autocorrect range should
+  // be updated and the autocorrect text has updated.
+  virtual bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                                   uint32_t start,
+                                   uint32_t end) = 0;
 
   // Notifies the InputContextHandler to change the selection range.
   virtual bool SetSelectionRange(uint32_t start, uint32_t end) = 0;

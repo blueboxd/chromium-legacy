@@ -1202,9 +1202,12 @@ void ServiceWorkerRegistry::DidDeleteRegistration(
   if (registration)
     registration->UnsetStored();
 
-  if (special_storage_policy_ &&
-      origin_state == ServiceWorkerStorage::OriginState::kDelete) {
-    tracked_origins_for_policy_update_.erase(url::Origin::Create(origin));
+  if (origin_state == ServiceWorkerStorage::OriginState::kDelete) {
+    context_->NotifyAllRegistrationsDeletedForOrigin(
+        url::Origin::Create(origin));
+    if (special_storage_policy_) {
+      tracked_origins_for_policy_update_.erase(url::Origin::Create(origin));
+    }
   }
 
   std::move(callback).Run(status);

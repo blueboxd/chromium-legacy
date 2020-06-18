@@ -135,7 +135,7 @@ class MinimumVersionPolicyHandler
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-  bool RequirementsAreSatisfied() const { return requirements_met_; }
+  bool RequirementsAreSatisfied() const { return GetState() == nullptr; }
 
   // Returns |true| if the current version satisfies the given requirement.
   bool CurrentVersionSatisfies(
@@ -146,6 +146,9 @@ class MinimumVersionPolicyHandler
   bool DeadlineReached() { return deadline_reached; }
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  // Show notification on managed user login if it is the last day to deadline.
+  void MaybeShowNotificationOnLogin();
 
   // Callback used in tests and invoked after end-of-life status has been
   // fetched from the update_engine.
@@ -222,7 +225,6 @@ class MinimumVersionPolicyHandler
   // version in all the configurations.
   std::unique_ptr<MinimumVersionRequirement> state_;
 
-  bool requirements_met_ = true;
   bool eol_reached_ = false;
 
   // If this flag is true, user should restricted to use the session by logging
@@ -230,6 +232,8 @@ class MinimumVersionPolicyHandler
   bool deadline_reached = false;
 
   base::Time update_required_time_;
+
+  base::Time update_required_deadline_;
 
   // Fires when the deadline to update the device has reached or passed.
   util::WallClockTimer update_required_deadline_timer_;

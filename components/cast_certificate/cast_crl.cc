@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "crypto/sha2.h"
 #include "net/cert/internal/cert_errors.h"

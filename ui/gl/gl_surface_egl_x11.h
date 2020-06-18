@@ -22,7 +22,7 @@ namespace gl {
 class GL_EXPORT NativeViewGLSurfaceEGLX11 : public NativeViewGLSurfaceEGL,
                                             public ui::XEventDispatcher {
  public:
-  explicit NativeViewGLSurfaceEGLX11(EGLNativeWindowType window);
+  explicit NativeViewGLSurfaceEGLX11(x11::Window window);
   NativeViewGLSurfaceEGLX11(const NativeViewGLSurfaceEGLX11& other) = delete;
   NativeViewGLSurfaceEGLX11& operator=(const NativeViewGLSurfaceEGLX11& rhs) =
       delete;

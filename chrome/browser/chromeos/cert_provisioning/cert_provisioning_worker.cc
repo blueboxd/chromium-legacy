@@ -20,6 +20,8 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "content/public/browser/browser_context.h"
+#include "net/cert/asn1_util.h"
+#include "net/cert/x509_util.h"
 
 namespace em = enterprise_management;
 
@@ -103,6 +105,19 @@ int GetStateOrderedIndex(CertProvisioningWorkerState state) {
       res -= 1;
   }
   return res;
+}
+
+bool CheckPublicKeyInCertificate(
+    const scoped_refptr<net::X509Certificate>& cert,
+    const std::string& public_key) {
+  base::StringPiece spki_from_cert;
+  if (!net::asn1::ExtractSPKIFromDERCert(
+          net::x509_util::CryptoBufferAsStringPiece(cert->cert_buffer()),
+          &spki_from_cert)) {
+    return false;
+  }
+
+  return (public_key == spki_from_cert);
 }
 
 }  // namespace
@@ -564,6 +579,12 @@ void CertProvisioningWorkerImpl::ImportCert(
       pem_encoded_certificate.data(), pem_encoded_certificate.size());
   if (!cert) {
     LOG(ERROR) << "Failed to parse a certificate";
+    UpdateState(CertProvisioningWorkerState::kFailed);
+    return;
+  }
+
+  if (!CheckPublicKeyInCertificate(cert, public_key_)) {
+    LOG(ERROR) << "Downloaded certificate does not match the expected key pair";
     UpdateState(CertProvisioningWorkerState::kFailed);
     return;
   }

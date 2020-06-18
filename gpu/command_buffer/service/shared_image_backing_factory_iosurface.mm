@@ -610,10 +610,10 @@ class SharedImageBackingIOSurface : public ClearTrackingSharedImageBacking {
       *texture = new gles2::Texture(service_id);
       (*texture)->SetLightweightRef();
       (*texture)->SetTarget(GL_TEXTURE_RECTANGLE, 1);
-      (*texture)->sampler_state_.min_filter = GL_LINEAR;
-      (*texture)->sampler_state_.mag_filter = GL_LINEAR;
-      (*texture)->sampler_state_.wrap_t = GL_CLAMP_TO_EDGE;
-      (*texture)->sampler_state_.wrap_s = GL_CLAMP_TO_EDGE;
+      (*texture)->set_min_filter(GL_LINEAR);
+      (*texture)->set_mag_filter(GL_LINEAR);
+      (*texture)->set_wrap_t(GL_CLAMP_TO_EDGE);
+      (*texture)->set_wrap_s(GL_CLAMP_TO_EDGE);
       (*texture)->SetLevelInfo(GL_TEXTURE_RECTANGLE, 0, gl_info.internal_format,
                                size().width(), size().height(), 1, 0,
                                gl_info.format, gl_info.type, cleared_rect);

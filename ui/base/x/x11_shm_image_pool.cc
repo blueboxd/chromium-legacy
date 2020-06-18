@@ -116,7 +116,7 @@ XShmImagePool::XShmImagePool(
     scoped_refptr<base::SequencedTaskRunner> host_task_runner,
     scoped_refptr<base::SequencedTaskRunner> event_task_runner,
     XDisplay* display,
-    XID drawable,
+    x11::Drawable drawable,
     Visual* visual,
     int depth,
     std::size_t frames_pending)
@@ -320,7 +320,7 @@ bool XShmImagePool::CanDispatchXEvent(x11::Event* x11_event) {
     return false;
 
   const auto* shm_event = reinterpret_cast<const XShmCompletionEvent*>(xev);
-  return shm_event->drawable == drawable_;
+  return shm_event->drawable == drawable_.value;
 }
 
 bool XShmImagePool::DispatchXEvent(x11::Event* x11_event) {

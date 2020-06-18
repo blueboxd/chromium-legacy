@@ -24,7 +24,7 @@ XMenuList::~XMenuList() {
   menus_.clear();
 }
 
-void XMenuList::MaybeRegisterMenu(XID menu) {
+void XMenuList::MaybeRegisterMenu(x11::Window menu) {
   int value = 0;
   if (!GetIntProperty(menu, "_NET_WM_WINDOW_TYPE", &value) ||
       static_cast<x11::Atom>(value) != menu_type_atom_) {
@@ -33,14 +33,14 @@ void XMenuList::MaybeRegisterMenu(XID menu) {
   menus_.push_back(menu);
 }
 
-void XMenuList::MaybeUnregisterMenu(XID menu) {
+void XMenuList::MaybeUnregisterMenu(x11::Window menu) {
   auto iter = std::find(menus_.begin(), menus_.end(), menu);
   if (iter == menus_.end())
     return;
   menus_.erase(iter);
 }
 
-void XMenuList::InsertMenuWindowXIDs(std::vector<XID>* stack) {
+void XMenuList::InsertMenuWindows(std::vector<x11::Window>* stack) {
   stack->insert(stack->begin(), menus_.begin(), menus_.end());
 }
 

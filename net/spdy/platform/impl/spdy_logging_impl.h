@@ -5,7 +5,9 @@
 #ifndef NET_SPDY_PLATFORM_IMPL_SPDY_LOGGING_IMPL_H_
 #define NET_SPDY_PLATFORM_IMPL_SPDY_LOGGING_IMPL_H_
 
+#include "base/check_op.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
 

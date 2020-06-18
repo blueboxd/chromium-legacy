@@ -5,6 +5,8 @@
 #include "components/autofill_assistant/browser/event_handler.h"
 #include "base/strings/string_number_conversions.h"
 
+#include "base/logging.h"
+
 namespace autofill_assistant {
 
 EventHandler::EventHandler() = default;

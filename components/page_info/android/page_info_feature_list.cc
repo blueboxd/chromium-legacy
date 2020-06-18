@@ -4,6 +4,7 @@
 
 #include "base/android/jni_string.h"
 #include "base/feature_list.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "components/page_info/android/features.h"
 #include "components/page_info/android/jni_headers/PageInfoFeatureList_jni.h"

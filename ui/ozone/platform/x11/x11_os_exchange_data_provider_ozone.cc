@@ -12,7 +12,7 @@
 namespace ui {
 
 X11OSExchangeDataProviderOzone::X11OSExchangeDataProviderOzone(
-    XID x_window,
+    x11::Window x_window,
     const SelectionFormatMap& selection)
     : XOSExchangeDataProvider(x_window, selection) {}
 
@@ -36,7 +36,7 @@ std::unique_ptr<OSExchangeDataProvider> X11OSExchangeDataProviderOzone::Clone()
 
 bool X11OSExchangeDataProviderOzone::DispatchXEvent(x11::Event* x11_event) {
   XEvent* xev = &x11_event->xlib_event();
-  if (xev->xany.window != x_window())
+  if (xev->xany.window != static_cast<uint32_t>(x_window()))
     return false;
 
   switch (xev->type) {

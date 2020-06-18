@@ -68,6 +68,8 @@ namespace GetSettings = extensions::api::input_method_private::GetSettings;
 namespace SetSettings = extensions::api::input_method_private::SetSettings;
 namespace SetCompositionRange =
     extensions::api::input_method_private::SetCompositionRange;
+namespace SetAutocorrectRange =
+    extensions::api::input_method_private::SetAutocorrectRange;
 namespace SetSelectionRange =
     extensions::api::input_method_private::SetSelectionRange;
 namespace OnSettingsChanged =
@@ -443,12 +445,29 @@ InputMethodPrivateSetCompositionRangeFunction::Run() {
 
   if (!engine->SetCompositionRange(params.context_id, params.selection_before,
                                    params.selection_after, segments, &error)) {
+    return RespondNow(Error(InformativeError(error, function_name())));
+  }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateSetAutocorrectRangeFunction::Run() {
+  std::string error;
+  InputMethodEngineBase* engine =
+      GetEngineIfActive(browser_context(), extension_id(), &error);
+  if (!engine)
+    return RespondNow(Error(InformativeError(error, function_name())));
+
+  const auto parent_params = SetAutocorrectRange::Params::Create(*args_);
+  const auto& params = parent_params->parameters;
+  if (!engine->SetAutocorrectRange(
+          params.context_id, base::UTF8ToUTF16(params.autocorrect_string),
+          params.selection_start, params.selection_end, &error)) {
     auto results = std::make_unique<base::ListValue>();
     results->Append(std::make_unique<base::Value>(false));
-    return RespondNow(ErrorWithArguments(
-        std::move(results), InformativeError(error, function_name())));
+    return RespondNow(Error(InformativeError(error, function_name())));
   }
-  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
+  return RespondNow(NoArguments());
 }
 
 ExtensionFunction::ResponseAction

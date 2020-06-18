@@ -5,13 +5,7 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [
-    "util_read_icon.mojom",
-    "util_win.mojom",
-  ]
+  sources = [ "util_win.mojom" ]
 
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//ui/gfx/image/mojom",
-  ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

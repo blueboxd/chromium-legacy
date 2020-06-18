@@ -10,10 +10,8 @@
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_info_button_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_link_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/UIColor+cr_semantic_colors.h"
@@ -33,6 +31,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeBlockThirdPartyCookiesIncognito,
   ItemTypeBlockThirdPartyCookies,
   ItemTypeBlockAllCookies,
+  ItemTypeCookiesDescriptionFooter,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -129,6 +128,14 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   blockAllCookies.useCustomSeparator = YES;
   blockAllCookies.iconImageName = @"accessory_no_checkmark";
   [self.tableViewModel addItem:blockAllCookies
+       toSectionWithIdentifier:SectionIdentifierCookiesContent];
+
+  TableViewTextLinkItem* cookiesDescriptionFooter =
+      [[TableViewTextLinkItem alloc]
+          initWithType:ItemTypeCookiesDescriptionFooter];
+  cookiesDescriptionFooter.text =
+      l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_COOKIES_FOOTER);
+  [self.tableViewModel addItem:cookiesDescriptionFooter
        toSectionWithIdentifier:SectionIdentifierCookiesContent];
 }
 
@@ -238,6 +245,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   UITableViewCell* cell = [super tableView:tableView
                      cellForRowAtIndexPath:indexPath];
+  if ([self.tableViewModel itemTypeForIndexPath:indexPath] ==
+      ItemTypeCookiesDescriptionFooter)
+    return cell;
+
   TableViewInfoButtonCell* managedCell =
       base::mac::ObjCCastStrict<TableViewInfoButtonCell>(cell);
   [managedCell.trailingButton addTarget:self

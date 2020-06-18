@@ -21,12 +21,100 @@
 
 namespace blink {
 
+namespace {
+
 // We usually use the text decoration thickness to determine how far
 // ink-skipped text decorations should be away from the glyph
 // contours. Cap this at 5 CSS px in each direction when thickness
 // growths larger than that. A value of 13 closely matches FireFox'
 // implementation.
 constexpr float kDecorationClipMaxDilation = 13;
+
+static ResolvedUnderlinePosition ResolveUnderlinePosition(
+    const ComputedStyle& style,
+    FontBaseline baseline_type) {
+  // |auto| should resolve to |under| to avoid drawing through glyphs in
+  // scripts where it would not be appropriate (e.g., ideographs.)
+  // However, this has performance implications. For now, we only work with
+  // vertical text.
+  switch (baseline_type) {
+    case kAlphabeticBaseline:
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionUnder)
+        return ResolvedUnderlinePosition::kUnder;
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionFromFont)
+        return ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont;
+      return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
+    case kIdeographicBaseline:
+      // Compute language-appropriate default underline position.
+      // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
+      UScriptCode script = style.GetFontDescription().GetScript();
+      if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL) {
+        if (style.TextUnderlinePosition() & kTextUnderlinePositionLeft) {
+          return ResolvedUnderlinePosition::kUnder;
+        }
+        return ResolvedUnderlinePosition::kOver;
+      }
+      if (style.TextUnderlinePosition() & kTextUnderlinePositionRight) {
+        return ResolvedUnderlinePosition::kOver;
+      }
+      return ResolvedUnderlinePosition::kUnder;
+  }
+  NOTREACHED();
+  return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
+}
+
+static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
+  for (const auto& decoration : style.AppliedTextDecorations()) {
+    ETextDecorationStyle decoration_style = decoration.Style();
+    if (decoration_style == ETextDecorationStyle::kDotted ||
+        decoration_style == ETextDecorationStyle::kDashed)
+      return true;
+  }
+  return false;
+}
+
+float ComputeDecorationThickness(
+    const TextDecorationThickness text_decoration_thickness,
+    const ComputedStyle& style,
+    const SimpleFontData* font_data) {
+  float auto_underline_thickness =
+      std::max(1.f, style.ComputedFontSize() / 10.f);
+
+  if (text_decoration_thickness.IsAuto())
+    return auto_underline_thickness;
+
+  // In principle we would not need to test for font_data if
+  // |text_decoration_thickness.Thickness()| is fixed, but a null font_data here
+  // would be a rare / error situation anyway, so practically, we can
+  // early out here.
+  if (!font_data)
+    return auto_underline_thickness;
+
+  if (text_decoration_thickness.IsFromFont()) {
+    base::Optional<float> underline_thickness_font_metric =
+        font_data->GetFontMetrics().UnderlineThickness().value();
+
+    if (!underline_thickness_font_metric)
+      return auto_underline_thickness;
+
+    return std::max(1.f, underline_thickness_font_metric.value());
+  }
+
+  DCHECK(!text_decoration_thickness.IsFromFont());
+
+  const Length& thickness_length = text_decoration_thickness.Thickness();
+  float font_size = font_data->PlatformData().size();
+  float text_decoration_thickness_pixels =
+      FloatValueForLength(thickness_length, font_size);
+
+  return std::max(1.f, text_decoration_thickness_pixels);
+}
+
+float DoubleOffsetFromThickness(float thickness_pixels) {
+  return thickness_pixels + 1.0f;
+}
+
+}  // anonymous namespace
 
 TextPainterBase::TextPainterBase(GraphicsContext& context,
                                  const Font& font,
@@ -293,89 +381,6 @@ void TextPainterBase::PaintDecorationsOnlyLineThrough(
     context.ConcatCTM(Rotation(text_bounds_, kCounterclockwise));
 }
 
-namespace {
-
-static ResolvedUnderlinePosition ResolveUnderlinePosition(
-    const ComputedStyle& style,
-    FontBaseline baseline_type) {
-  // |auto| should resolve to |under| to avoid drawing through glyphs in
-  // scripts where it would not be appropriate (e.g., ideographs.)
-  // However, this has performance implications. For now, we only work with
-  // vertical text.
-  switch (baseline_type) {
-    case kAlphabeticBaseline:
-      if (style.TextUnderlinePosition() & kTextUnderlinePositionUnder)
-        return ResolvedUnderlinePosition::kUnder;
-      if (style.TextUnderlinePosition() & kTextUnderlinePositionFromFont)
-        return ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont;
-      return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
-    case kIdeographicBaseline:
-      // Compute language-appropriate default underline position.
-      // https://drafts.csswg.org/css-text-decor-3/#default-stylesheet
-      UScriptCode script = style.GetFontDescription().GetScript();
-      if (script == USCRIPT_KATAKANA_OR_HIRAGANA || script == USCRIPT_HANGUL) {
-        if (style.TextUnderlinePosition() & kTextUnderlinePositionLeft) {
-          return ResolvedUnderlinePosition::kUnder;
-        }
-        return ResolvedUnderlinePosition::kOver;
-      }
-      if (style.TextUnderlinePosition() & kTextUnderlinePositionRight) {
-        return ResolvedUnderlinePosition::kOver;
-      }
-      return ResolvedUnderlinePosition::kUnder;
-  }
-  NOTREACHED();
-  return ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto;
-}
-
-static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
-  for (const auto& decoration : style.AppliedTextDecorations()) {
-    ETextDecorationStyle decoration_style = decoration.Style();
-    if (decoration_style == ETextDecorationStyle::kDotted ||
-        decoration_style == ETextDecorationStyle::kDashed)
-      return true;
-  }
-  return false;
-}
-
-float ComputeDecorationThickness(const ComputedStyle* style,
-                                 const SimpleFontData* font_data) {
-  DCHECK(style);
-  const TextDecorationThickness& style_thickness =
-      style->GetTextDecorationThickness();
-
-  float auto_underline_thickness =
-      std::max(1.f, style->ComputedFontSize() / 10.f);
-
-  if (style_thickness.IsAuto())
-    return auto_underline_thickness;
-
-  // In principle we would not need to test for font_data if
-  // |style_thickness.Thickness()| is fixed, but a null font_data here
-  // would be a rare / error situation anyway, so practically, we can
-  // early out here.
-  if (!font_data)
-    return auto_underline_thickness;
-
-  if (style_thickness.IsFromFont()) {
-    base::Optional<float> underline_thickness_font_metric =
-        font_data->GetFontMetrics().UnderlineThickness();
-    return std::max(1.f, underline_thickness_font_metric.value_or(
-                             auto_underline_thickness));
-  }
-
-  DCHECK(!style_thickness.IsFromFont());
-
-  const Length& style_thickness_length = style_thickness.Thickness();
-  float font_size = font_data->PlatformData().size();
-  float text_decoration_thickness_pixels =
-      FloatValueForLength(style_thickness_length, font_size);
-
-  return std::max(1.f, text_decoration_thickness_pixels);
-}
-
-}  // anonymous namespace
-
 void TextPainterBase::ComputeDecorationInfo(
     DecorationInfo& decoration_info,
     const PhysicalOffset& box_origin,
@@ -399,28 +404,40 @@ void TextPainterBase::ComputeDecorationInfo(
           ? decoration_info.font_data->GetFontMetrics().FloatAscent()
           : 0;
 
-  if ((decoration_info.underline_position ==
+  decoration_info.thickness = ComputeUnderlineThickness(
+      decoration_info.underline_position, style.GetTextDecorationThickness(),
+      style, decorating_box_style);
+  decoration_info.double_offset =
+      DoubleOffsetFromThickness(decoration_info.thickness);
+}
+
+float TextPainterBase::ComputeUnderlineThickness(
+    const ResolvedUnderlinePosition& underline_position,
+    const TextDecorationThickness& applied_decoration_thickness,
+    const ComputedStyle& style,
+    const ComputedStyle* decorating_box_style) {
+  float thickness = 0;
+  if ((underline_position ==
        ResolvedUnderlinePosition::kNearAlphabeticBaselineAuto) ||
-      decoration_info.underline_position ==
+      underline_position ==
           ResolvedUnderlinePosition::kNearAlphabeticBaselineFromFont) {
-    decoration_info.thickness = ComputeDecorationThickness(
-        decoration_info.style, decoration_info.font_data);
+    thickness = ComputeDecorationThickness(applied_decoration_thickness, style,
+                                           style.GetFont().PrimaryFont());
   } else {
     // Compute decorating box. Position and thickness are computed from the
     // decorating box.
     // Only for non-Roman for now for the performance implications.
     // https:// drafts.csswg.org/css-text-decor-3/#decorating-box
     if (decorating_box_style) {
-      decoration_info.thickness = ComputeDecorationThickness(
-          decorating_box_style, decorating_box_style->GetFont().PrimaryFont());
+      thickness = ComputeDecorationThickness(
+          applied_decoration_thickness, *decorating_box_style,
+          decorating_box_style->GetFont().PrimaryFont());
     } else {
-      decoration_info.thickness = ComputeDecorationThickness(
-          decoration_info.style, decoration_info.font_data);
+      thickness = ComputeDecorationThickness(
+          applied_decoration_thickness, style, style.GetFont().PrimaryFont());
     }
   }
-
-  // Offset between lines - always non-zero, so lines never cross each other.
-  decoration_info.double_offset = decoration_info.thickness + 1.f;
+  return thickness;
 }
 
 void TextPainterBase::PaintDecorationUnderOrOverLine(

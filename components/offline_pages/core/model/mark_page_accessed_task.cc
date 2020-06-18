@@ -5,6 +5,7 @@
 #include "components/offline_pages/core/model/mark_page_accessed_task.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/offline_pages/core/client_namespace_constants.h"

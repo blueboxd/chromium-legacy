@@ -144,6 +144,7 @@ class ChromePasswordManagerClient
       const GURL& origin,
       const base::string16& username) override;
   void TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
   void TriggerSignIn(signin_metrics::AccessPoint access_point) override;
   PrefService* GetPrefs() const override;

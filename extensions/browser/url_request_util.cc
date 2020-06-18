@@ -84,28 +84,21 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
   if (resource_type == blink::mojom::ResourceType::kMainFrame) {
     *allowed = true;
     return true;
-  } else if (resource_type == blink::mojom::ResourceType::kSubFrame) {
-    // When navigating in subframe, allow if it is the same origin
-    // as the top-level frame. This can only be the case if the subframe
-    // request is coming from the extension process.
-    if (process_map.Contains(child_id)) {
-      *allowed = true;
-      return true;
-    }
-
-    // Also allow if the file is explicitly listed as a web_accessible_resource.
-    if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
-            extension, resource_path.as_string())) {
-      *allowed = true;
-      return true;
-    }
   }
 
-  // Since not all subresources are required to be listed in a v2
-  // manifest, we must allow all subresource loads if there are any web
-  // accessible resources. See http://crbug.com/179127.
-  if (!blink::IsResourceTypeFrame(resource_type) &&
-      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension)) {
+  // When navigating in subframe, allow if it is the same origin
+  // as the top-level frame. This can only be the case if the subframe
+  // request is coming from the extension process.
+  if (resource_type == blink::mojom::ResourceType::kSubFrame &&
+      process_map.Contains(child_id)) {
+    *allowed = true;
+    return true;
+  }
+
+  // Allow web accessible extension resources to be loaded as
+  // subresources/sub-frames.
+  if (WebAccessibleResourcesInfo::IsResourceWebAccessible(
+          extension, resource_path.as_string())) {
     *allowed = true;
     return true;
   }

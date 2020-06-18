@@ -508,9 +508,15 @@ GenericUiControllerAndroid::CreateFromProto(
                 view_handler.get())
           : nullptr;
 
+  if (proto.has_root_view() && !jroot_view) {
+    VLOG(1) << "Failed to show generic UI: view inflation failed";
+    return nullptr;
+  }
+
   // Create proto interactions (i.e., native -> java).
   for (const auto& interaction : proto.interactions().interactions()) {
     if (!interaction_handler->AddInteractionsFromProto(interaction)) {
+      VLOG(1) << "Failed to show generic UI: invalid interaction";
       return nullptr;
     }
   }
@@ -518,6 +524,7 @@ GenericUiControllerAndroid::CreateFromProto(
   // Create java listeners (i.e., java -> native).
   if (!android_events::CreateJavaListenersFromProto(
           env, view_handler.get(), jdelegate, proto.interactions())) {
+    VLOG(1) << "Failed to show generic UI: invalid event";
     return nullptr;
   }
 

@@ -19,7 +19,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XTopmostWindowFinder {
   virtual ~XTopmostWindowFinder();
 
   // Returns the topmost window at |screen_loc_px|.
-  virtual XID FindWindowAt(const gfx::Point& screen_loc_px) = 0;
+  virtual x11::Window FindWindowAt(const gfx::Point& screen_loc_px) = 0;
 };
 
 }  // namespace ui

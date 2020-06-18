@@ -20,6 +20,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,7 +46,8 @@ class MockPasswordManagerClient
 
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
-              (base::OnceCallback<void(
+              (signin_metrics::ReauthAccessPoint,
+               base::OnceCallback<void(
                    password_manager::PasswordManagerClient::ReauthSucceeded)>),
               (override));
   MOCK_METHOD(void, GeneratePassword, (), (override));
@@ -450,9 +452,13 @@ TEST(PasswordManagerUtil,
           ShouldShowAccountStorageOptIn)
       .WillByDefault(Return(true));
 
-  EXPECT_CALL(mock_client, TriggerReauthForPrimaryAccount)
+  EXPECT_CALL(
+      mock_client,
+      TriggerReauthForPrimaryAccount(
+          signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu, _))
       .WillOnce(
-          [](base::OnceCallback<void(
+          [](signin_metrics::ReauthAccessPoint,
+             base::OnceCallback<void(
                  password_manager::PasswordManagerClient::ReauthSucceeded)>
                  callback) {
             std::move(callback).Run(
@@ -470,9 +476,13 @@ TEST(PasswordManagerUtil,
           ShouldShowAccountStorageOptIn)
       .WillByDefault(Return(true));
 
-  EXPECT_CALL(mock_client, TriggerReauthForPrimaryAccount)
+  EXPECT_CALL(
+      mock_client,
+      TriggerReauthForPrimaryAccount(
+          signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu, _))
       .WillOnce(
-          [](base::OnceCallback<void(
+          [](signin_metrics::ReauthAccessPoint,
+             base::OnceCallback<void(
                  password_manager::PasswordManagerClient::ReauthSucceeded)>
                  callback) {
             std::move(callback).Run(

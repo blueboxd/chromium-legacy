@@ -7970,6 +7970,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Within subtree"/>
 </enum>
 
+<enum name="BooleanYesNo">
+  <int value="0" label="No"/>
+  <int value="1" label="Yes"/>
+</enum>
+
 <enum name="BoringSSLReasonCode">
   <obsolete>
     Removed in March 2016.
@@ -23187,7 +23192,8 @@ Called by update_extension_histograms.py.-->
   <int value="1301" label="AUTOTESTPRIVATE_GETARCPACKAGE"/>
   <int value="1302" label="AUTOTESTPRIVATE_LAUNCHARCAPP"/>
   <int value="1303" label="AUTOTESTPRIVATE_CLOSEAPP"/>
-  <int value="1304" label="ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE"/>
+  <int value="1304"
+      label="DELETED_ACCESSIBILITY_PRIVATE_SETSWITCHACCESSMENUSTATE"/>
   <int value="1305" label="AUTOTESTPRIVATE_SENDASSISTANTTEXTQUERY"/>
   <int value="1306" label="AUTOTESTPRIVATE_SETCROSTINIAPPSCALED"/>
   <int value="1307" label="ACTIVITYLOGPRIVATE_DELETEACTIVITIESBYEXTENSION"/>
@@ -23369,6 +23375,7 @@ Called by update_extension_histograms.py.-->
   <int value="1480" label="PASSWORDSPRIVATE_MOVEPASSWORDTOACCOUNT"/>
   <int value="1481" label="AUTOTESTPRIVATE_DISABLESWITCHACCESSDIALOG"/>
   <int value="1482" label="ENTERPRISE_NETWORKINGATTRIBUTES_GETNETWORKDETAILS"/>
+  <int value="1483" label="INPUTMETHODPRIVATE_SETAUTOCORRECTRANGE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -27806,6 +27813,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3322" label="V8WasmMultiValue"/>
   <int value="3323" label="HiddenBackfaceWithPossible3D"/>
   <int value="3324" label="HiddenBackfaceWithPreserve3D"/>
+  <int value="3325" label="CSSAtRuleScrollTimeline"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -44142,6 +44150,10 @@ Called by update_use_counter_css.py.-->
   <int value="664" label="page-orientation"/>
   <int value="665" label="animation-timeline"/>
   <int value="666" label="counter-set"/>
+  <int value="667" label="source"/>
+  <int value="668" label="start"/>
+  <int value="669" label="end"/>
+  <int value="670" label="time-range"/>
 </enum>
 
 <enum name="MappedEditingCommands">

@@ -36,9 +36,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/message_loop/timer_slack.h"
-#include "base/optional.h"
 #include "build/build_config.h"
 
 #if defined(__OBJC__)
@@ -145,10 +143,6 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // Get the current mode mask from |enabled_modes_|.
   int GetModeMask() const;
 
-  // Controls whether the timer invalidation performance optimization is
-  // allowed.
-  void SetTimerInvalidationAllowed(bool allowed);
-
  private:
   class ScopedModeEnabler;
 
@@ -158,28 +152,6 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // All sources of delayed work scheduling converge to this, using TimeDelta
   // avoids querying Now() for key callers.
   void ScheduleDelayedWorkImpl(TimeDelta delta);
-
-  // Returns true if the timer invalidation feature is enabled.
-  static bool IsTimerInvalidationEnabled();
-
-  // Marking timers as invalid at the right time helps significantly reduce
-  // power use (see the comment in RunDelayedWorkTimer()), however there is no
-  // public API for doing so. CFRuntime.h states that CFRuntimeBase, upon which
-  // the above timer invalidation functions are based, can change from release
-  // to release and should not be accessed directly (this struct last changed at
-  // least in 2008 in CF-476).
-  //
-  // This function uses private API to modify a test timer's valid state and
-  // uses public API to confirm that the private API changed the right bit.
-  static bool CanInvalidateCFRunLoopTimers();
-
-  // Sets a Core Foundation object's "invalid" bit to |valid|. Based on code
-  // from CFRunLoop.c.
-  static void ChromeCFRunLoopTimerSetValid(CFRunLoopTimerRef timer, bool valid);
-
-  // Controls the validity of the delayed work timer. Does nothing if timer
-  // invalidation is disallowed.
-  void SetDelayedWorkTimerValid(bool valid);
 
   // Timer callback scheduled by ScheduleDelayedWork.  This does not do any
   // work, but it signals |work_source_| so that delayed work can be performed
@@ -282,14 +254,6 @@ class BASE_EXPORT MessagePumpCFRunLoopBase : public MessagePump {
   // work on entry and redispatch it as needed once a delegate is available.
   bool delegateless_work_;
   bool delegateless_idle_work_;
-
-  // Whether or not timer invalidation can be used in order to reduce the number
-  // of reschedulings.
-  bool allow_timer_invalidation_;
-
-  // If changing timer validitity was attempted while it was disallowed, this
-  // value tracks the desired state of the timer.
-  Optional<bool> pending_timer_validity_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePumpCFRunLoopBase);
 };

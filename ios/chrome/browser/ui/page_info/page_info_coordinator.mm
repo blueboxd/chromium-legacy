@@ -79,6 +79,8 @@
 
   self.navigationController =
       [[TableViewNavigationController alloc] initWithTable:self.viewController];
+  self.navigationController.modalPresentationStyle =
+      UIModalPresentationFormSheet;
 
   self.dispatcher = self.browser->GetCommandDispatcher();
   self.viewController.handler =

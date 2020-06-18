@@ -5,6 +5,7 @@
 #include "components/sync/protocol/proto_enum_conversions.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 
 namespace syncer {
 

@@ -2868,7 +2868,6 @@
           '--jobs=1',
           '--additional-driver-flag=--enable-dawn-backend-validation',
         ],
-        'win_args': [ '--additional-driver-flag=--disable-gpu-sandbox' ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
           # These tests run on 10.14, but web_tests [ Mac ] expectations don't
@@ -2898,7 +2897,6 @@
           # TODO(crbug.com/953991): Solve this and remove the workaround.
           '--jobs=1',
         ],
-        'win_args': [ '--additional-driver-flag=--disable-gpu-sandbox' ],
         'win64_args': [ '--target=Release_x64' ],
         'mac_args': [
           # These tests run on 10.14, but web_tests [ Mac ] expectations don't

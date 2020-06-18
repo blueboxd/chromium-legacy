@@ -103,6 +103,7 @@ void WebKioskController::OnNetworkConfigRequested() {
       // installation and restart it as soon as the network is configured.
       // This is identical to what happens when we lose network connection
       // during installation.
+      network_ui_state_ = NetworkUIState::NEED_TO_SHOW;
       OnNetworkStateChanged(/*online*/ false);
       break;
     case AppState::LAUNCHED:
@@ -189,6 +190,19 @@ void WebKioskController::InitializeNetwork() {
     OnNetworkStateChanged(true);
 }
 
+bool WebKioskController::IsNetworkReady() const {
+  return web_kiosk_splash_screen_view_ &&
+         web_kiosk_splash_screen_view_->IsNetworkReady();
+}
+
+bool WebKioskController::IsShowingNetworkConfigScreen() const {
+  return network_ui_state_ == NetworkUIState::SHOWING;
+}
+
+bool WebKioskController::ShouldSkipAppInstallation() const {
+  return false;
+}
+
 void WebKioskController::OnNetworkWaitTimedOut() {
   DCHECK(app_state_ ==
          AppState::INIT_NETWORK);  // Otherwise we should be installing the app.
@@ -223,7 +237,7 @@ void WebKioskController::OnProfileLoaded(Profile* profile) {
 }
 
 void WebKioskController::OnProfileLoadFailed(KioskAppLaunchError::Error error) {
-  OnAppLaunchFailed(error);
+  OnLaunchFailed(error);
 }
 
 void WebKioskController::OnOldEncryptionDetected(
@@ -231,7 +245,7 @@ void WebKioskController::OnOldEncryptionDetected(
   NOTREACHED();
 }
 
-void WebKioskController::OnAppStartedInstalling() {
+void WebKioskController::OnAppInstalling() {
   app_state_ = AppState::INSTALLING;
   if (!web_kiosk_splash_screen_view_)
     return;
@@ -286,7 +300,7 @@ void WebKioskController::OnAppLaunched() {
   CloseSplashScreen();
 }
 
-void WebKioskController::OnAppLaunchFailed(KioskAppLaunchError::Error error) {
+void WebKioskController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   if (error == KioskAppLaunchError::UNABLE_TO_INSTALL) {
     OnAppInstallFailed();
     return;

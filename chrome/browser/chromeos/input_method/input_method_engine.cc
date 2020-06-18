@@ -319,7 +319,9 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
 }
 
 bool InputMethodEngine::SetSuggestion(int context_id,
-                                      const ui::ime::SuggestionDetails& details,
+                                      const base::string16& text,
+                                      const size_t confirmed_length,
+                                      const bool show_tab,
                                       std::string* error) {
   if (!IsActive()) {
     *error = kErrorNotActive;
@@ -333,7 +335,7 @@ bool InputMethodEngine::SetSuggestion(int context_id,
   IMEAssistiveWindowHandlerInterface* aw_handler =
       ui::IMEBridge::Get()->GetAssistiveWindowHandler();
   if (aw_handler)
-    aw_handler->ShowSuggestion(details);
+    aw_handler->ShowSuggestion(text, confirmed_length, show_tab);
   return true;
 }
 
@@ -464,6 +466,17 @@ bool InputMethodEngine::SetCompositionRange(
   if (!input_context)
     return false;
   return input_context->SetCompositionRange(before, after, text_spans);
+}
+
+bool InputMethodEngine::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    uint32_t start,
+    uint32_t end) {
+  ui::IMEInputContextHandlerInterface* input_context =
+      ui::IMEBridge::Get()->GetInputContextHandler();
+  if (!input_context)
+    return false;
+  return input_context->SetAutocorrectRange(autocorrect_text, start, end);
 }
 
 bool InputMethodEngine::SetSelectionRange(uint32_t start, uint32_t end) {

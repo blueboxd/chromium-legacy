@@ -21,7 +21,7 @@ class XDragDropClient;
 
 class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
  public:
-  XDragContext(XID local_window,
+  XDragContext(x11::Window local_window,
                const XClientMessageEvent& event,
                XDragDropClient* source_client,
                const SelectionFormatMap& data);
@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   XDragContext(const XDragContext&) = delete;
   XDragContext& operator=(const XDragContext&) = delete;
 
-  XID source_window() const { return source_window_; }
+  x11::Window source_window() const { return source_window_; }
   XDragDropClient* source_client() { return source_client_; }
   const SelectionFormatMap& fetched_targets() const { return fetched_targets_; }
 
@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   // delay dispatching until we do.
   void OnXdndPositionMessage(XDragDropClient* client,
                              x11::Atom suggested_action,
-                             XID source_window,
+                             x11::Window source_window,
                              Time time_stamp,
                              const gfx::Point& screen_point);
 
@@ -67,11 +67,11 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragContext {
   // |drag_operation|.
   void MaskOperation(x11::Atom xdnd_operation, int* drag_operation) const;
 
-  // The XID of our chrome local aura window handling our events.
-  XID local_window_;
+  // The x11::Window of our chrome local aura window handling our events.
+  x11::Window local_window_;
 
-  // The XID of the window that initiated the drag.
-  XID source_window_;
+  // The x11::Window of the window that initiated the drag.
+  x11::Window source_window_;
 
   // The DesktopDragDropClientAuraX11 for |source_window_| if |source_window_|
   // belongs to a Chrome window.

@@ -16,10 +16,8 @@ TEST_F(AutotestAmbientApiTest,
        ShouldSuccessfullyWaitForPhotoTransitionAnimation) {
   AutotestAmbientApi test_api;
 
-  ShowAmbientScreen();
-
-  // Simulates locking screen to trigger the image refreshing.
-  LockScreen();
+  // Start ambient mode.
+  ambient_controller()->Toggle();
 
   // Wait for 10 photo transition animation to complete.
   base::RunLoop run_loop;

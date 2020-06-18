@@ -569,10 +569,15 @@ source_set("weblayer_lib_base") {
 if (is_android) {
   source_set("weblayer_android_test_jni_impl") {
     testonly = true
-    sources = [ "browser/test/test_weblayer_impl.cc" ]
+    sources = [
+      "browser/test/test_infobar.cc",
+      "browser/test/test_infobar.h",
+      "browser/test/test_weblayer_impl.cc",
+    ]
     deps = [
       ":weblayer_lib_base",
       "//base",
+      "//components/infobars/core",
       "//content/public/browser",
       "//content/test:test_support",
       "//testing/gtest",

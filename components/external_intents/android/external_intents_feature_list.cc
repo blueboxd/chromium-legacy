@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/android/jni_string.h"
+#include "base/notreached.h"
 #include "components/external_intents/android/jni_headers/ExternalIntentsFeatureList_jni.h"
 
 namespace external_intents {

@@ -178,7 +178,7 @@ InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
     case CallbackProto::kEndAction:
       return base::Optional<InteractionCallback>(base::BindRepeating(
           &android_interactions::EndAction, basic_interactions_->GetWeakPtr(),
-          /* view_inflation_successful = */ true, proto.end_action()));
+          proto.end_action()));
     case CallbackProto::kShowCalendarPopup:
       if (proto.show_calendar_popup().date_model_identifier().empty()) {
         VLOG(1) << "Error creating ShowCalendarPopup interaction: "

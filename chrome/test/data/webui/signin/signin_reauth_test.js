@@ -30,7 +30,7 @@ suite('SigninReauthTest', function() {
         'Cannot verify strings for the ' + navigator.language + 'locale.');
 
     assertEquals(
-        'Store once, use everywhere',
+        'Save this and other passwords in your Google Account?',
         app.$.signinReauthTitle.textContent.trim());
   });
 

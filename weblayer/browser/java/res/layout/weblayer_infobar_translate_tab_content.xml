@@ -20,8 +20,8 @@
         android:singleLine="true" />
     <ProgressBar
         android:id="@+id/weblayer_translate_infobar_tab_progressbar"
-        android:layout_width="@dimen/weblayer_infobar_small_icon_size"
-        android:layout_height="@dimen/weblayer_infobar_small_icon_size"
+        android:layout_width="@dimen/infobar_small_icon_size"
+        android:layout_height="@dimen/infobar_small_icon_size"
         android:layout_gravity="center"
         android:indeterminate="true"
         android:visibility="invisible" />

@@ -92,7 +92,7 @@ class X11ClipboardOzone : public PlatformClipboard, public XEventDispatcher {
   Display* const x_display_;
 
   // Input-only window used as a selection owner.
-  const XID x_window_;
+  const x11::Window x_window_;
 
   // If XFixes is unavailable, this clipboard window will not register to
   // receive events and no processing will take place.

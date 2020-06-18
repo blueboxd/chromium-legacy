@@ -51,29 +51,29 @@ class AppLaunchManager : public StartupAppLauncher::Delegate {
     // network configure handling.
     startup_app_launcher_->ContinueWithNetworkReady();
   }
-  bool IsNetworkReady() override {
+  bool IsNetworkReady() const override {
     // See comments above. Network is assumed to be online here.
     return true;
   }
-  bool ShouldSkipAppInstallation() override {
+  bool ShouldSkipAppInstallation() const override {
     // Given that this delegate does not reliably report whether the network is
     // ready, avoid making app update checks - this might take a while if
     // network is not online. Also, during crash-restart, we should continue
     // with the same app version as the restored session.
     return true;
   }
-  void OnInstallingApp() override {}
-  void OnReadyToLaunch() override { startup_app_launcher_->LaunchApp(); }
-  void OnLaunchSucceeded() override {}
+  void OnAppInstalling() override {}
+  void OnAppPrepared() override { startup_app_launcher_->LaunchApp(); }
+  void OnAppLaunched() override {}
   void OnAppWindowCreated() override { Cleanup(); }
   void OnLaunchFailed(KioskAppLaunchError::Error error) override {
     KioskAppLaunchError::Save(error);
     chrome::AttemptUserExit();
     Cleanup();
   }
-  bool IsShowingNetworkConfigScreen() override { return false; }
+  bool IsShowingNetworkConfigScreen() const override { return false; }
 
-  std::unique_ptr<StartupAppLauncher> startup_app_launcher_;
+  std::unique_ptr<KioskAppLauncher> startup_app_launcher_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchManager);
 };

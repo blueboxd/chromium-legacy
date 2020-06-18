@@ -360,12 +360,11 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
 
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 0);
+        long lastUserInteractionTime = SystemClock.elapsedRealtime();
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 0);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
 
@@ -392,12 +391,12 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
 
+        long lastUserInteractionTime = SystemClock.elapsedRealtime();
         handler.updateNewUrlLoading(
-                PageTransition.RELOAD, false, false, SystemClock.elapsedRealtime(), 0);
+                PageTransition.RELOAD, false, false, lastUserInteractionTime, 0);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
 
@@ -424,12 +423,12 @@ public class RedirectHandlerTest {
         Assert.assertFalse(handler.shouldStayInApp(false));
         Assert.assertFalse(handler.shouldStayInApp(true));
 
+        long lastUserInteractionTime = SystemClock.elapsedRealtime();
         handler.updateNewUrlLoading(PageTransition.FORM_SUBMIT | PageTransition.FORWARD_BACK, false,
-                true, SystemClock.elapsedRealtime(), 0);
+                true, lastUserInteractionTime, 0);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
-        handler.updateNewUrlLoading(
-                PageTransition.LINK, false, false, SystemClock.elapsedRealtime(), 1);
+        handler.updateNewUrlLoading(PageTransition.LINK, false, false, lastUserInteractionTime, 1);
         Assert.assertTrue(handler.shouldStayInApp(false));
         Assert.assertTrue(handler.shouldStayInApp(true));
 

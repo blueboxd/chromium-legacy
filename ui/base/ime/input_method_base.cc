@@ -234,6 +234,13 @@ bool InputMethodBase::SetCompositionRange(
   return false;
 }
 
+bool InputMethodBase::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    uint32_t start,
+    uint32_t end) {
+  return false;
+}
+
 bool InputMethodBase::SetSelectionRange(uint32_t start, uint32_t end) {
   return false;
 }

@@ -64,14 +64,15 @@ NGFragmentItem::NGFragmentItem(
     const NGInlineItem& inline_item,
     scoped_refptr<const ShapeResultView> shape_result,
     const NGTextOffset& text_offset,
-    const PhysicalSize& size)
+    const PhysicalSize& size,
+    bool is_hidden_for_paint)
     : layout_object_(inline_item.GetLayoutObject()),
       text_({std::move(shape_result), text_offset}),
       rect_({PhysicalOffset(), size}),
       type_(kText),
       sub_type_(static_cast<unsigned>(inline_item.TextType())),
       style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
-      is_hidden_for_paint_(false),  // TODO(kojii): not supported yet.
+      is_hidden_for_paint_(is_hidden_for_paint),
       text_direction_(static_cast<unsigned>(inline_item.Direction())),
       ink_overflow_computed_(false),
       is_dirty_(false),
@@ -90,14 +91,15 @@ NGFragmentItem::NGFragmentItem(
     const NGInlineItem& inline_item,
     scoped_refptr<const ShapeResultView> shape_result,
     const String& text_content,
-    const PhysicalSize& size)
+    const PhysicalSize& size,
+    bool is_hidden_for_paint)
     : layout_object_(inline_item.GetLayoutObject()),
       generated_text_({std::move(shape_result), text_content}),
       rect_({PhysicalOffset(), size}),
       type_(kGeneratedText),
       sub_type_(static_cast<unsigned>(inline_item.TextType())),
       style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
-      is_hidden_for_paint_(false),  // TODO(kojii): not supported yet.
+      is_hidden_for_paint_(is_hidden_for_paint),
       text_direction_(static_cast<unsigned>(inline_item.Direction())),
       ink_overflow_computed_(false),
       is_dirty_(false),
@@ -156,14 +158,16 @@ NGFragmentItem::NGFragmentItem(NGLogicalLineItem&& line_item,
       new (this) NGFragmentItem(
           *line_item.inline_item, std::move(line_item.shape_result),
           line_item.text_content,
-          ToPhysicalSize(line_item.MarginSize(), writing_mode));
+          ToPhysicalSize(line_item.MarginSize(), writing_mode),
+          line_item.is_hidden_for_paint);
       return;
     }
 
     new (this)
         NGFragmentItem(*line_item.inline_item,
                        std::move(line_item.shape_result), line_item.text_offset,
-                       ToPhysicalSize(line_item.MarginSize(), writing_mode));
+                       ToPhysicalSize(line_item.MarginSize(), writing_mode),
+                       line_item.is_hidden_for_paint);
     return;
   }
 

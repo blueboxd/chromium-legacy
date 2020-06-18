@@ -803,7 +803,7 @@ void GaiaAuthFetcher::StartOAuthMultilogin(
 
   std::string source_string = net::EscapeUrlEncodedData(source_, true);
   std::string parameters = base::StringPrintf(
-      "?source=%s&mlreuse=%i", source_string.c_str(),
+      "?source=%s&reuseCookies=%i", source_string.c_str(),
       mode == gaia::MultiloginMode::MULTILOGIN_PRESERVE_COOKIE_ACCOUNTS_ORDER
           ? 1
           : 0);

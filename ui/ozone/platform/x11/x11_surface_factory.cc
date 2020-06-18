@@ -43,7 +43,8 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
           base::MakeRefCounted<GLSurfaceEglReadbackX11>(window));
     } else {
       return gl::InitializeGLSurface(
-          base::MakeRefCounted<gl::NativeViewGLSurfaceEGLX11GLES2>(window));
+          base::MakeRefCounted<gl::NativeViewGLSurfaceEGLX11GLES2>(
+              static_cast<x11::Window>(window)));
     }
   }
 

@@ -30,16 +30,6 @@ function readFile(path, callback) {
   oReq.send(null);
 }
 
-function compareBuffers(a, b) {
-  if (a.length != b.length)
-    return false;
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i])
-      return false;
-  }
-  return true;
-}
-
 var signDigestRequest;
 var signCallback;
 
@@ -59,8 +49,7 @@ function register() {
   };
 
   function checkResult(rejectedCerts) {
-    assertEq(1, rejectedCerts.length);
-    assertTrue(compareBuffers(invalidCert, new Uint8Array(rejectedCerts[0])));
+    assertEq([invalidCert.buffer], rejectedCerts);
   }
 
   function reportCertificates(reportCallback) {
@@ -72,8 +61,7 @@ function register() {
 
   chrome.certificateProvider.onSignDigestRequested.addListener(function(
       request, callback) {
-    assertTrue(
-        compareBuffers(l1_leaf_cert, new Uint8Array(request.certificate)));
+    assertEq(l1_leaf_cert.buffer, request.certificate);
     // The sign request must refer to the only hash that was declared to be
     // supported.
     assertEq(1, validCertInfo.supportedHashes.length);

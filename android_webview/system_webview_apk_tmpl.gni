@@ -190,6 +190,12 @@ template("system_webview_apk_or_module_tmpl") {
       "${_material_package}/text_*",
     ]
 
+    if (webview_includes_weblayer) {
+      # These are used in WebLayer for the translate infobar
+      resource_exclusion_exceptions +=
+          [ "${_material_package}/design_layout_tab_*" ]
+    }
+
     # Copied from chrome_public_apk_tmpl.gni.
 
     # Remove unneeded entries from material design values.xml files.

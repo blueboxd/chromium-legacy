@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/unacked_invalidation_set.h"
 
+#include "base/logging.h"
 #include "components/invalidation/public/ack_handle.h"
 #include "components/invalidation/public/topic_invalidation_map.h"
 

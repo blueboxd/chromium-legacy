@@ -120,6 +120,12 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 
 }  // namespace
 
+@interface IncognitoView ()
+
+@property(nonatomic, strong) IncognitoCookiesView* cookiesView;
+
+@end
+
 @implementation IncognitoView {
   UIView* _containerView;
   UIStackView* _stackView;
@@ -276,6 +282,12 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
     ApplyVisualConstraints(constraints, viewsDictionary);
   }
   return self;
+}
+
+#pragma mark - Properties
+
+- (UISwitch*)cookiesBlockedSwitch {
+  return self.cookiesView.cookiesBlockedSwitch;
 }
 
 #pragma mark - UIView overrides
@@ -462,8 +474,8 @@ NSAttributedString* FormatHTMLListForUILabel(NSString* listString) {
 }
 
 - (void)addCookiesViewController {
-  IncognitoCookiesView* cookiesView = [[IncognitoCookiesView alloc] init];
-  [_stackView addArrangedSubview:cookiesView];
+  self.cookiesView = [[IncognitoCookiesView alloc] init];
+  [_stackView addArrangedSubview:self.cookiesView];
 }
 
 @end

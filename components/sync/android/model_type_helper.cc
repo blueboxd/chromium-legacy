@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/notreached.h"
 #include "components/sync/android/jni_headers/ModelTypeHelper_jni.h"
 #include "components/sync/base/model_type.h"
 

@@ -45,8 +45,8 @@ class XrandrIntervalOnlyVSyncProvider : public gfx::VSyncProvider {
 
 }  // namespace
 
-NativeViewGLSurfaceEGLX11::NativeViewGLSurfaceEGLX11(EGLNativeWindowType window)
-    : NativeViewGLSurfaceEGL(window, nullptr) {}
+NativeViewGLSurfaceEGLX11::NativeViewGLSurfaceEGLX11(x11::Window window)
+    : NativeViewGLSurfaceEGL(static_cast<uint32_t>(window), nullptr) {}
 
 bool NativeViewGLSurfaceEGLX11::Initialize(GLSurfaceFormat format) {
   if (!NativeViewGLSurfaceEGL::Initialize(format))

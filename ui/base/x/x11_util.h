@@ -43,7 +43,7 @@ namespace ui {
 // the UI thread. Thus, they don't support multiple displays.
 
 template <typename T>
-bool GetArrayProperty(XID window,
+bool GetArrayProperty(x11::Window window,
                       x11::Atom name,
                       std::vector<T>* value,
                       x11::Atom* out_type = nullptr,
@@ -77,7 +77,7 @@ bool GetArrayProperty(XID window,
 }
 
 template <typename T>
-bool GetProperty(XID window, const x11::Atom name, T* value) {
+bool GetProperty(x11::Window window, const x11::Atom name, T* value) {
   std::vector<T> values;
   if (!GetArrayProperty(window, name, &values, nullptr, 1) || values.empty())
     return false;
@@ -86,7 +86,7 @@ bool GetProperty(XID window, const x11::Atom name, T* value) {
 }
 
 template <typename T>
-void SetArrayProperty(XID window,
+void SetArrayProperty(x11::Window window,
                       x11::Atom name,
                       x11::Atom type,
                       const std::vector<T>& values) {
@@ -103,11 +103,15 @@ void SetArrayProperty(XID window,
 }
 
 template <typename T>
-void SetProperty(XID window, x11::Atom name, x11::Atom type, const T& value) {
+void SetProperty(x11::Window window,
+                 x11::Atom name,
+                 x11::Atom type,
+                 const T& value) {
   SetArrayProperty(window, name, type, std::vector<T>{value});
 }
 
-COMPONENT_EXPORT(UI_BASE_X) void DeleteProperty(XID window, x11::Atom name);
+COMPONENT_EXPORT(UI_BASE_X)
+void DeleteProperty(x11::Window window, x11::Atom name);
 
 // These functions cache their results ---------------------------------
 
@@ -155,7 +159,7 @@ COMPONENT_EXPORT(UI_BASE_X)::Cursor CreateInvisibleCursor();
 
 // Sets whether |window| should use the OS window frame.
 COMPONENT_EXPORT(UI_BASE_X)
-void SetUseOSWindowFrame(XID window, bool use_os_window_frame);
+void SetUseOSWindowFrame(x11::Window window, bool use_os_window_frame);
 
 // These functions do not cache their results --------------------------
 
@@ -163,7 +167,7 @@ void SetUseOSWindowFrame(XID window, bool use_os_window_frame);
 COMPONENT_EXPORT(UI_BASE_X) bool IsShapeExtensionAvailable();
 
 // Get the X window id for the default root window
-COMPONENT_EXPORT(UI_BASE_X) XID GetX11RootWindow();
+COMPONENT_EXPORT(UI_BASE_X) x11::Window GetX11RootWindow();
 
 // Returns the user's current desktop.
 COMPONENT_EXPORT(UI_BASE_X) bool GetCurrentDesktop(int* desktop);
@@ -174,42 +178,42 @@ enum HideTitlebarWhenMaximized : uint32_t {
 };
 // Sets _GTK_HIDE_TITLEBAR_WHEN_MAXIMIZED on |window|.
 COMPONENT_EXPORT(UI_BASE_X)
-void SetHideTitlebarWhenMaximizedProperty(XID window,
+void SetHideTitlebarWhenMaximizedProperty(x11::Window window,
                                           HideTitlebarWhenMaximized property);
 
 // Clears all regions of X11's default root window by filling black pixels.
 COMPONENT_EXPORT(UI_BASE_X) void ClearX11DefaultRootWindow();
 
 // Returns true if |window| is visible.
-COMPONENT_EXPORT(UI_BASE_X) bool IsWindowVisible(XID window);
+COMPONENT_EXPORT(UI_BASE_X) bool IsWindowVisible(x11::Window window);
 
 // Returns the inner bounds of |window| (excluding the non-client area).
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetInnerWindowBounds(XID window, gfx::Rect* rect);
+bool GetInnerWindowBounds(x11::Window window, gfx::Rect* rect);
 
 // Returns the non-client area extents of |window|. This is a negative inset; it
 // represents the negative size of the window border on all sides.
 // InnerWindowBounds.Inset(WindowExtents) = OuterWindowBounds.
 // Returns false if the window manager does not provide extents information.
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetWindowExtents(XID window, gfx::Insets* extents);
+bool GetWindowExtents(x11::Window window, gfx::Insets* extents);
 
 // Returns the outer bounds of |window| (including the non-client area).
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetOuterWindowBounds(XID window, gfx::Rect* rect);
+bool GetOuterWindowBounds(x11::Window window, gfx::Rect* rect);
 
 // Returns true if |window| contains the point |screen_loc|.
 COMPONENT_EXPORT(UI_BASE_X)
-bool WindowContainsPoint(XID window, gfx::Point screen_loc);
+bool WindowContainsPoint(x11::Window window, gfx::Point screen_loc);
 
 // Return true if |window| has any property with |property_name|.
 COMPONENT_EXPORT(UI_BASE_X)
-bool PropertyExists(XID window, const std::string& property_name);
+bool PropertyExists(x11::Window window, const std::string& property_name);
 
 // Returns the raw bytes from a property with minimal
 // interpretation. |out_data| should be freed by XFree() after use.
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetRawBytesOfProperty(XID window,
+bool GetRawBytesOfProperty(x11::Window window,
                            x11::Atom property,
                            std::vector<uint8_t>* out_data,
                            x11::Atom* out_type);
@@ -220,46 +224,44 @@ bool GetRawBytesOfProperty(XID window,
 // These functions should no longer be used.  TODO(thomasanderson): migrate
 // existing callers to {Set,Get}{,Array}Property<> instead.
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetIntProperty(XID window,
+bool GetIntProperty(x11::Window window,
                     const std::string& property_name,
                     int32_t* value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetXIDProperty(XID window, const std::string& property_name, XID* value);
-COMPONENT_EXPORT(UI_BASE_X)
-bool GetIntArrayProperty(XID window,
+bool GetIntArrayProperty(x11::Window window,
                          const std::string& property_name,
                          std::vector<int32_t>* value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetAtomArrayProperty(XID window,
+bool GetAtomArrayProperty(x11::Window window,
                           const std::string& property_name,
                           std::vector<x11::Atom>* value);
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetStringProperty(XID window,
+bool GetStringProperty(x11::Window window,
                        const std::string& property_name,
                        std::string* value);
 
 COMPONENT_EXPORT(UI_BASE_X)
-void SetIntProperty(XID window,
+void SetIntProperty(x11::Window window,
                     const std::string& name,
                     const std::string& type,
                     int32_t value);
 COMPONENT_EXPORT(UI_BASE_X)
-void SetIntArrayProperty(XID window,
+void SetIntArrayProperty(x11::Window window,
                          const std::string& name,
                          const std::string& type,
                          const std::vector<int32_t>& value);
 COMPONENT_EXPORT(UI_BASE_X)
-void SetAtomProperty(XID window,
+void SetAtomProperty(x11::Window window,
                      const std::string& name,
                      const std::string& type,
                      x11::Atom value);
 COMPONENT_EXPORT(UI_BASE_X)
-void SetAtomArrayProperty(XID window,
+void SetAtomArrayProperty(x11::Window window,
                           const std::string& name,
                           const std::string& type,
                           const std::vector<x11::Atom>& value);
 COMPONENT_EXPORT(UI_BASE_X)
-void SetStringProperty(XID window,
+void SetStringProperty(x11::Window window,
                        x11::Atom property,
                        x11::Atom type,
                        const std::string& value);
@@ -267,18 +269,20 @@ void SetStringProperty(XID window,
 // Sets the WM_CLASS attribute for a given X11 window.
 COMPONENT_EXPORT(UI_BASE_X)
 void SetWindowClassHint(XDisplay* display,
-                        XID window,
+                        x11::Window window,
                         const std::string& res_name,
                         const std::string& res_class);
 
 // Sets the WM_WINDOW_ROLE attribute for a given X11 window.
 COMPONENT_EXPORT(UI_BASE_X)
-void SetWindowRole(XDisplay* display, XID window, const std::string& role);
+void SetWindowRole(XDisplay* display,
+                   x11::Window window,
+                   const std::string& role);
 
 // Sends a message to the x11 window manager, enabling or disabling the
 // states |state1| and |state2|.
 COMPONENT_EXPORT(UI_BASE_X)
-void SetWMSpecState(XID window,
+void SetWMSpecState(x11::Window window,
                     bool enabled,
                     x11::Atom state1,
                     x11::Atom state2);
@@ -290,8 +294,8 @@ void SetWMSpecState(XID window,
 // resize event, which edges of the window the size grip applies to.
 COMPONENT_EXPORT(UI_BASE_X)
 void DoWMMoveResize(XDisplay* display,
-                    XID root_window,
-                    XID window,
+                    x11::Window root_window,
+                    x11::Window window,
                     const gfx::Point& location_px,
                     int direction);
 
@@ -307,7 +311,8 @@ COMPONENT_EXPORT(UI_BASE_X) bool GetCustomFramePrefDefault();
 static const int kAllDesktops = -1;
 // Queries the desktop |window| is on, kAllDesktops if sticky. Returns false if
 // property not found.
-COMPONENT_EXPORT(UI_BASE_X) bool GetWindowDesktop(XID window, int* desktop);
+COMPONENT_EXPORT(UI_BASE_X)
+bool GetWindowDesktop(x11::Window window, int* desktop);
 
 // Translates an X11 error code into a printable string.
 COMPONENT_EXPORT(UI_BASE_X)
@@ -317,9 +322,9 @@ std::string GetX11ErrorString(XDisplay* display, int err);
 // the main display.
 class EnumerateWindowsDelegate {
  public:
-  // |xid| is the X Window ID of the enumerated window.  Return true to stop
+  // |window| is the X Window ID of the enumerated window.  Return true to stop
   // further iteration.
-  virtual bool ShouldStopIterating(XID xid) = 0;
+  virtual bool ShouldStopIterating(x11::Window window) = 0;
 
  protected:
   virtual ~EnumerateWindowsDelegate() = default;
@@ -337,7 +342,7 @@ void EnumerateTopLevelWindows(ui::EnumerateWindowsDelegate* delegate);
 // Returns all children windows of a given window in top-to-bottom stacking
 // order.
 COMPONENT_EXPORT(UI_BASE_X)
-bool GetXWindowStack(XID window, std::vector<XID>* windows);
+bool GetXWindowStack(x11::Window window, std::vector<x11::Window>* windows);
 
 enum WindowManagerName {
   WM_OTHER,    // We were able to obtain the WM's name, but there is
@@ -388,7 +393,7 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsCompositingManagerPresent();
 COMPONENT_EXPORT(UI_BASE_X) void SetDefaultX11ErrorHandlers();
 
 // Returns true if a given window is in full-screen mode.
-COMPONENT_EXPORT(UI_BASE_X) bool IsX11WindowFullScreen(XID window);
+COMPONENT_EXPORT(UI_BASE_X) bool IsX11WindowFullScreen(x11::Window window);
 
 // Returns true if the window manager supports the given hint.
 COMPONENT_EXPORT(UI_BASE_X) bool WmSupportsHint(x11::Atom atom);
@@ -407,8 +412,8 @@ SkColorType ColorTypeForVisual(void* visual);
 
 COMPONENT_EXPORT(UI_BASE_X)
 x11::Future<void> SendClientMessage(
-    XID window,
-    XID target,
+    x11::Window window,
+    x11::Window target,
     x11::Atom type,
     const std::array<uint32_t, 5> data,
     x11::EventMask event_mask = x11::EventMask::SubstructureNotify |

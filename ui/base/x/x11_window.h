@@ -108,7 +108,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool IsActive() const;
   void GrabPointer();
   void ReleasePointerGrab();
-  void StackXWindowAbove(::Window window);
+  void StackXWindowAbove(x11::Window window);
   void StackXWindowAtTop();
   bool IsTargetedBy(const x11::Event& xev) const;
   void WmMoveResize(int hittest, const gfx::Point& location) const;
@@ -165,8 +165,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   base::Optional<int> workspace() const { return workspace_; }
 
   XDisplay* display() const { return xdisplay_; }
-  ::Window window() const { return xwindow_; }
-  ::Window root_window() const { return x_root_window_; }
+  x11::Window window() const { return xwindow_; }
+  x11::Window root_window() const { return x_root_window_; }
   ::Region shape() const { return window_shape_.get(); }
   XID update_counter() const { return update_counter_; }
   XID extended_update_counter() const { return extended_update_counter_; }
@@ -251,8 +251,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_ = nullptr;
-  ::Window xwindow_ = x11::None;
-  ::Window x_root_window_ = x11::None;
+  x11::Window xwindow_ = x11::Window::None;
+  x11::Window x_root_window_ = x11::Window::None;
 
   // Events selected on |xwindow_|.
   std::unique_ptr<ui::XScopedEventSelector> xwindow_events_;

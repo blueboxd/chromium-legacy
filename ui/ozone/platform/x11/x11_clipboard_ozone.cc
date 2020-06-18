@@ -44,12 +44,12 @@ void ExpandTypes(std::vector<std::string>* list) {
     list->push_back(kMimeTypeTextUtf8);
 }
 
-XID FindXEventTarget(const x11::Event& x11_event) {
+x11::Window FindXEventTarget(const x11::Event& x11_event) {
   const XEvent& xev = x11_event.xlib_event();
   XID target = xev.xany.window;
   if (xev.type == x11::GeGenericEvent::opcode)
     target = static_cast<XIDeviceEvent*>(xev.xcookie.data)->event;
-  return target;
+  return static_cast<x11::Window>(target);
 }
 
 }  // namespace
@@ -91,15 +91,16 @@ X11ClipboardOzone::X11ClipboardOzone()
       atom_timestamp_(gfx::GetAtom(kTimestamp)),
       x_property_(gfx::GetAtom(kChromeSelection)),
       x_display_(gfx::GetXDisplay()),
-      x_window_(XCreateSimpleWindow(x_display_,
-                                    DefaultRootWindow(x_display_),
-                                    /*x=*/-100,
-                                    /*y=*/-100,
-                                    /*width=*/10,
-                                    /*height=*/10,
-                                    /*border_width=*/0,
-                                    /*border=*/0,
-                                    /*background=*/0)) {
+      x_window_(static_cast<x11::Window>(
+          XCreateSimpleWindow(x_display_,
+                              DefaultRootWindow(x_display_),
+                              /*x=*/-100,
+                              /*y=*/-100,
+                              /*width=*/10,
+                              /*height=*/10,
+                              /*border_width=*/0,
+                              /*border=*/0,
+                              /*background=*/0))) {
   int ignored;  // xfixes_error_base.
   if (!XFixesQueryExtension(x_display_, &xfixes_event_base_, &ignored)) {
     LOG(ERROR) << "X server does not support XFixes.";
@@ -114,7 +115,7 @@ X11ClipboardOzone::X11ClipboardOzone()
     // Register the selection state.
     selection_state_.emplace(atom, std::make_unique<SelectionState>());
     // Register to receive XFixes notification when selection owner changes.
-    XFixesSelectSelectionInput(x_display_, x_window_,
+    XFixesSelectSelectionInput(x_display_, static_cast<uint32_t>(x_window_),
                                static_cast<uint32_t>(atom),
                                XFixesSetSelectionOwnerNotifyMask);
     // Prefetch the current remote clipboard contents.
@@ -335,8 +336,8 @@ void X11ClipboardOzone::QueryTargets(x11::Atom selection) {
   GetSelectionState(selection).mime_types.clear();
   XConvertSelection(x_display_, static_cast<uint32_t>(selection),
                     static_cast<uint32_t>(atom_targets_),
-                    static_cast<uint32_t>(x_property_), x_window_,
-                    x11::CurrentTime);
+                    static_cast<uint32_t>(x_property_),
+                    static_cast<uint32_t>(x_window_), x11::CurrentTime);
 }
 
 void X11ClipboardOzone::ReadRemoteClipboard(x11::Atom selection) {
@@ -354,8 +355,8 @@ void X11ClipboardOzone::ReadRemoteClipboard(x11::Atom selection) {
 
   XConvertSelection(x_display_, static_cast<uint32_t>(selection),
                     static_cast<uint32_t>(gfx::GetAtom(target)),
-                    static_cast<uint32_t>(x_property_), x_window_,
-                    x11::CurrentTime);
+                    static_cast<uint32_t>(x_property_),
+                    static_cast<uint32_t>(x_window_), x11::CurrentTime);
 }
 
 void X11ClipboardOzone::OfferClipboardData(
@@ -370,8 +371,8 @@ void X11ClipboardOzone::OfferClipboardData(
   // Only take ownership if we are using xfixes.
   // TODO(joelhockey): Make clipboard work without xfixes.
   if (using_xfixes_) {
-    XSetSelectionOwner(x_display_, static_cast<uint32_t>(selection), x_window_,
-                       timestamp);
+    XSetSelectionOwner(x_display_, static_cast<uint32_t>(selection),
+                       static_cast<uint32_t>(x_window_), timestamp);
   }
   std::move(callback).Run();
 }
@@ -430,7 +431,7 @@ bool X11ClipboardOzone::IsSelectionOwner(ClipboardBuffer buffer) {
 
   return XGetSelectionOwner(x_display_, static_cast<uint32_t>(
                                             SelectionAtomForBuffer(buffer))) ==
-         x_window_;
+         static_cast<uint32_t>(x_window_);
 }
 
 void X11ClipboardOzone::SetSequenceNumberUpdateCb(

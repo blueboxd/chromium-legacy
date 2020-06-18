@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "components/sync/nigori/nigori.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 

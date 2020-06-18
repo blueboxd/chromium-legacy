@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace syncer {

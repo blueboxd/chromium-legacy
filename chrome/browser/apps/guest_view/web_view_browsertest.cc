@@ -3601,6 +3601,19 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, LoadWebviewInaccessibleResource) {
   EXPECT_EQ(foo_url, web_view_contents->GetLastCommittedURL());
 }
 
+// Ensure that only app resources accessible to the webview can be loaded in a
+// webview even if the webview commits an app frame.
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       LoadAccessibleSubresourceInAppWebviewFrame) {
+  TestHelper("testLoadAccessibleSubresourceInAppWebviewFrame",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       InaccessibleResourceDoesNotLoadInAppWebviewFrame) {
+  TestHelper("testInaccessibleResourceDoesNotLoadInAppWebviewFrame",
+             "web_view/load_webview_accessible_resource", NEEDS_TEST_SERVER);
+}
+
 // Makes sure that a webview will display correctly after reloading it after a
 // crash.
 IN_PROC_BROWSER_TEST_F(WebViewTest, ReloadAfterCrash) {

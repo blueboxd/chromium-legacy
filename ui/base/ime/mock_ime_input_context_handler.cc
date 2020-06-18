@@ -47,6 +47,14 @@ bool MockIMEInputContextHandler::SetCompositionRange(
   return true;
 }
 
+bool MockIMEInputContextHandler::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    uint32_t start,
+    uint32_t end) {
+  // TODO(crbug.com/1091088): Implement function.
+  return false;
+}
+
 bool MockIMEInputContextHandler::SetSelectionRange(uint32_t start,
                                                    uint32_t end) {
   ++set_selection_range_call_count_;

@@ -1569,10 +1569,6 @@ void OmniboxEditModel::RevertTemporaryTextAndPopup() {
   view_->OnRevertTemporaryText(match.fill_into_edit, match);
 }
 
-bool OmniboxEditModel::ShouldPreventElision() const {
-  return controller()->GetLocationBarModel()->ShouldPreventElision();
-}
-
 bool OmniboxEditModel::MaybeAcceptKeywordBySpace(
     const base::string16& new_text) {
   size_t keyword_length = new_text.length() - 1;

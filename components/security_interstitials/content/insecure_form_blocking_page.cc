@@ -4,6 +4,7 @@
 
 #include "components/security_interstitials/content/insecure_form_blocking_page.h"
 
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"

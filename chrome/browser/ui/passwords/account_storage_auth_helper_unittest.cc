@@ -25,6 +25,9 @@ namespace {
 
 using testing::_;
 
+const signin_metrics::ReauthAccessPoint kReauthAccessPoint =
+    signin_metrics::ReauthAccessPoint::kAutofillDropdown;
+
 class MockSigninViewController : public SigninViewController {
  public:
   MockSigninViewController() : SigninViewController(/*browser=*/nullptr) {}
@@ -33,6 +36,7 @@ class MockSigninViewController : public SigninViewController {
   MOCK_METHOD(std::unique_ptr<ReauthAbortHandle>,
               ShowReauthPrompt,
               (const CoreAccountId&,
+               signin_metrics::ReauthAccessPoint,
                base::OnceCallback<void(signin::ReauthResult)>),
               (override));
 
@@ -75,37 +79,40 @@ class AccountStorageAuthHelperTest : public ::testing::Test {
 TEST_F(AccountStorageAuthHelperTest, ShouldTriggerReauthForPrimaryAccount) {
   signin::MakePrimaryAccountAvailable(GetIdentityManager(), "alice@gmail.com");
   EXPECT_CALL(mock_signin_view_controller_,
-              ShowReauthPrompt(GetIdentityManager()->GetPrimaryAccountId(), _));
+              ShowReauthPrompt(GetIdentityManager()->GetPrimaryAccountId(),
+                               kReauthAccessPoint, _));
 
-  auth_helper_.TriggerOptInReauth(base::DoNothing());
+  auth_helper_.TriggerOptInReauth(kReauthAccessPoint, base::DoNothing());
 }
 
 TEST_F(AccountStorageAuthHelperTest, ShouldSetOptInOnSucessfulReauth) {
   signin::MakePrimaryAccountAvailable(GetIdentityManager(), "alice@gmail.com");
   EXPECT_CALL(mock_signin_view_controller_,
-              ShowReauthPrompt(GetIdentityManager()->GetPrimaryAccountId(), _))
-      .WillOnce(
-          [](auto, base::OnceCallback<void(signin::ReauthResult)> callback) {
-            std::move(callback).Run(signin::ReauthResult::kSuccess);
-            return nullptr;
-          });
+              ShowReauthPrompt(GetIdentityManager()->GetPrimaryAccountId(),
+                               kReauthAccessPoint, _))
+      .WillOnce([](auto, auto,
+                   base::OnceCallback<void(signin::ReauthResult)> callback) {
+        std::move(callback).Run(signin::ReauthResult::kSuccess);
+        return nullptr;
+      });
   EXPECT_CALL(mock_password_feature_manager_, OptInToAccountStorage);
 
-  auth_helper_.TriggerOptInReauth(base::DoNothing());
+  auth_helper_.TriggerOptInReauth(kReauthAccessPoint, base::DoNothing());
 }
 
 TEST_F(AccountStorageAuthHelperTest, ShouldNotSetOptInOnFailedReauth) {
   signin::MakePrimaryAccountAvailable(GetIdentityManager(), "alice@gmail.com");
   EXPECT_CALL(mock_signin_view_controller_,
-              ShowReauthPrompt(GetIdentityManager()->GetPrimaryAccountId(), _))
-      .WillOnce(
-          [](auto, base::OnceCallback<void(signin::ReauthResult)> callback) {
-            std::move(callback).Run(signin::ReauthResult::kCancelled);
-            return nullptr;
-          });
+              ShowReauthPrompt(GetIdentityManager()->GetPrimaryAccountId(),
+                               kReauthAccessPoint, _))
+      .WillOnce([](auto, auto,
+                   base::OnceCallback<void(signin::ReauthResult)> callback) {
+        std::move(callback).Run(signin::ReauthResult::kCancelled);
+        return nullptr;
+      });
   EXPECT_CALL(mock_password_feature_manager_, OptInToAccountStorage).Times(0);
 
-  auth_helper_.TriggerOptInReauth(base::DoNothing());
+  auth_helper_.TriggerOptInReauth(kReauthAccessPoint, base::DoNothing());
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

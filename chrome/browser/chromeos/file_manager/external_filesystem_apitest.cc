@@ -517,7 +517,7 @@ class DriveFileSystemExtensionApiTest : public FileSystemExtensionApiTestBase {
     fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
-        profile, nullptr, "", test_cache_root_.GetPath(),
+        profile, "", test_cache_root_.GetPath(),
         fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 
@@ -615,7 +615,7 @@ class MultiProfileDriveFileSystemExtensionApiTest :
     const auto& drivefs_helper = fake_drivefs_helpers_[profile] =
         std::make_unique<drive::FakeDriveFsHelper>(profile, drivefs_dir);
     return new drive::DriveIntegrationService(
-        profile, nullptr, std::string(), cache_dir,
+        profile, std::string(), cache_dir,
         drivefs_helper->CreateFakeDriveFsListenerFactory());
   }
 
@@ -687,7 +687,7 @@ class LocalAndDriveFileSystemExtensionApiTest
     fake_drivefs_helper_ = std::make_unique<drive::FakeDriveFsHelper>(
         profile, drivefs_mount_point.DirName());
     return new drive::DriveIntegrationService(
-        profile, nullptr, "", test_cache_root_.GetPath(),
+        profile, "", test_cache_root_.GetPath(),
         fake_drivefs_helper_->CreateFakeDriveFsListenerFactory());
   }
 

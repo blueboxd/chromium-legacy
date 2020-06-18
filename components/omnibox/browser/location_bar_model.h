@@ -73,11 +73,6 @@ class LocationBarModel {
   // previously-downloaded content.
   virtual bool IsOfflinePage() const = 0;
 
-  // Returns whether to prevent elision of the display URL, based on whether
-  // user has a specified extension or pref enabled. If true, the only elisions
-  // should be username/password and trailing slash on bare hostname.
-  virtual bool ShouldPreventElision() const = 0;
-
  protected:
   LocationBarModel() = default;
 

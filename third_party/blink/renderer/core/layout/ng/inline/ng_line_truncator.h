@@ -67,17 +67,22 @@ class CORE_EXPORT NGLineTruncator final {
                                TextDirection edge,
                                NGLogicalLineItems* line_box,
                                NGInlineLayoutStateStack* box_states);
-  bool EllipsizeChild(
-      LayoutUnit line_width,
-      LayoutUnit ellipsis_width,
-      bool is_first_child,
-      NGLogicalLineItem*,
-      scoped_refptr<const NGPhysicalTextFragment>* truncated_fragment);
-  bool TruncateChild(
-      LayoutUnit space_for_this_child,
-      bool is_first_child,
-      const NGLogicalLineItem& child,
-      scoped_refptr<const NGPhysicalTextFragment>* truncated_fragment);
+  bool EllipsizeChild(LayoutUnit line_width,
+                      LayoutUnit ellipsis_width,
+                      bool is_first_child,
+                      NGLogicalLineItem*,
+                      base::Optional<NGLogicalLineItem>* truncated_child);
+  bool TruncateChild(LayoutUnit space_for_this_child,
+                     bool is_first_child,
+                     const NGLogicalLineItem& child,
+                     base::Optional<NGLogicalLineItem>* truncated_child);
+  // Create |NGLogicalLineItem| by truncating text |item| at |offset_to_fit|.
+  // |direction| specifies which side of the text is trimmed; if |kLtr|, it
+  // keeps the left end and trims the right end.
+  NGLogicalLineItem TruncateText(const NGLogicalLineItem& item,
+                                 const ShapeResult& shape_result,
+                                 unsigned offset_to_fit,
+                                 TextDirection direction);
   void HideChild(NGLogicalLineItem* child);
 
   scoped_refptr<const ComputedStyle> line_style_;

@@ -561,26 +561,44 @@ bool BasicInteractions::ToggleUserAction(const ToggleUserActionProto& proto) {
   return true;
 }
 
-bool BasicInteractions::EndAction(bool view_inflation_successful,
-                                  const EndActionProto& proto) {
+bool BasicInteractions::EndAction(const ClientStatus& status) {
   if (!end_action_callback_) {
     DVLOG(2) << "Failed to EndAction: no callback set";
     return false;
   }
-  std::move(end_action_callback_)
-      .Run(view_inflation_successful, proto.status(),
-           delegate_->GetUserModel());
+
+  // It is possible for the action to end before view inflation was finished.
+  // In that case, the action can end directly and does not need to receive this
+  // callback.
+  view_inflation_finished_callback_.Reset();
+  std::move(end_action_callback_).Run(status);
   return true;
 }
 
-void BasicInteractions::ClearEndActionCallback() {
+bool BasicInteractions::NotifyViewInflationFinished(
+    const ClientStatus& status) {
+  if (!view_inflation_finished_callback_) {
+    return false;
+  }
+  std::move(view_inflation_finished_callback_).Run(status);
+  return true;
+}
+
+void BasicInteractions::ClearCallbacks() {
   end_action_callback_.Reset();
+  view_inflation_finished_callback_.Reset();
 }
 
 void BasicInteractions::SetEndActionCallback(
-    base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
-        end_action_callback) {
+    base::OnceCallback<void(const ClientStatus&)> end_action_callback) {
   end_action_callback_ = std::move(end_action_callback);
+}
+
+void BasicInteractions::SetViewInflationFinishedCallback(
+    base::OnceCallback<void(const ClientStatus&)>
+        view_inflation_finished_callback) {
+  view_inflation_finished_callback_ =
+      std::move(view_inflation_finished_callback);
 }
 
 bool BasicInteractions::RunConditionalCallback(

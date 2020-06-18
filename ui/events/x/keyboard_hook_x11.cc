@@ -99,7 +99,8 @@ KeyboardHookX11::~KeyboardHookX11() {
   // loops, however in practice the keys are not actually released.
   for (int native_key_code : grabbed_keys_) {
     for (uint32_t modifier : kModifierMasks) {
-      XUngrabKey(x_display_, native_key_code, modifier, x_window_);
+      XUngrabKey(x_display_, native_key_code, modifier,
+                 static_cast<uint32_t>(x_window_));
     }
   }
 }
@@ -144,7 +145,8 @@ void KeyboardHookX11::CaptureKeyForDomCode(DomCode dom_code) {
     // XGrabKey always returns 1 so we can't rely on the return value to
     // determine if the grab succeeded.  Errors are reported to the global
     // error handler for debugging purposes but are not used to judge success.
-    XGrabKey(x_display_, native_key_code, modifier, x_window_,
+    XGrabKey(x_display_, native_key_code, modifier,
+             static_cast<uint32_t>(x_window_),
              /*owner_events=*/x11::False,
              /*pointer_mode=*/GrabModeAsync,
              /*keyboard_mode=*/GrabModeAsync);

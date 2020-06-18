@@ -51,7 +51,7 @@ std::map<x11::RandR::Output, int> GetMonitors(int version,
 void ClipWorkArea(std::vector<display::Display>* displays,
                   int64_t primary_display_index,
                   float scale) {
-  GLXWindow x_root_window = ui::GetX11RootWindow();
+  x11::Window x_root_window = ui::GetX11RootWindow();
 
   std::vector<int> value;
   if (!ui::GetIntArrayProperty(x_root_window, "_NET_WORKAREA", &value) ||

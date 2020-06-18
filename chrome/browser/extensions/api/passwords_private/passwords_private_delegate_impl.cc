@@ -29,6 +29,7 @@
 #include "components/password_manager/core/browser/ui/plaintext_reason.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -471,7 +472,8 @@ void PasswordsPrivateDelegateImpl::SetAccountStorageOptIn(
     return;
   }
   // The opt in pref is automatically set upon successful reauth.
-  client->TriggerReauthForPrimaryAccount(base::DoNothing());
+  client->TriggerReauthForPrimaryAccount(
+      signin_metrics::ReauthAccessPoint::kPasswordSettings, base::DoNothing());
 }
 
 std::vector<api::passwords_private::CompromisedCredential>

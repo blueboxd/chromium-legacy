@@ -53,14 +53,6 @@
     <!-- Infobar dimensions -->
     <!-- Text size of descriptive controls on an infobar. -->
     <dimen name="infobar_descriptive_text_size">14sp</dimen>
-    <!-- Maximum width of an infobar. -->
-    <dimen name="infobar_max_width">600dp</dimen>
-    <!-- Width of side shadows on floating infobars. -->
-    <dimen name="infobar_shadow_width">8dp</dimen>
-    <!-- Height of top shadow on each infobar. -->
-    <dimen name="infobar_shadow_height">8dp</dimen>
-    <!-- Distance that a back infobar peeks out above the front infobar. -->
-    <dimen name="infobar_peeking_height">10dp</dimen>
 
     <!-- Dimension applied to SyncErrorInfoBar icon. -->
     <dimen name="sync_error_infobar_icon_size">48dp</dimen>

@@ -49,7 +49,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
         DragDropTypes::DragOperation negotiated_operation) = 0;
 
     // Called when data from another application enters the window.
-    virtual void OnBeginForeignDrag(XID window) = 0;
+    virtual void OnBeginForeignDrag(x11::Window window) = 0;
 
     // Called when data from another application is about to leave the window.
     virtual void OnEndForeignDrag() = 0;
@@ -67,12 +67,12 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
     virtual ~Delegate() = default;
   };
 
-  XDragDropClient(Delegate* delegate, Display* xdisplay, XID xwindow);
+  XDragDropClient(Delegate* delegate, Display* xdisplay, x11::Window xwindow);
   virtual ~XDragDropClient();
   XDragDropClient(const XDragDropClient&) = delete;
   XDragDropClient& operator=(const XDragDropClient&) = delete;
 
-  XID xwindow() const { return xwindow_; }
+  x11::Window xwindow() const { return xwindow_; }
   XDragContext* target_current_context() {
     return target_current_context_.get();
   }
@@ -84,7 +84,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   // Handling XdndPosition can be paused while waiting for more data; this is
   // called either synchronously from OnXdndPosition, or asynchronously after
   // we've received data requested from the other window.
-  void CompleteXdndPosition(XID source_window, const gfx::Point& screen_point);
+  void CompleteXdndPosition(x11::Window source_window,
+                            const gfx::Point& screen_point);
 
   void ProcessMouseMove(const gfx::Point& screen_point,
                         unsigned long event_time);
@@ -167,39 +168,40 @@ class COMPONENT_EXPORT(UI_BASE_X) XDragDropClient {
   // the type of event is set to ClientMessage, the format is set to 32 (longs),
   // and the zero member of data payload is set to |xwindow_|.  All other data
   // members are zeroed, as per XDND specification.
-  XEvent PrepareXdndClientMessage(const char* message, XID recipient) const;
+  XEvent PrepareXdndClientMessage(const char* message,
+                                  x11::Window recipient) const;
 
   // Finds the topmost X11 window at |screen_point| and returns it if it is
   // Xdnd aware.  Returns x11::None otherwise.
   // Virtual for testing.
-  virtual XID FindWindowFor(const gfx::Point& screen_point);
+  virtual x11::Window FindWindowFor(const gfx::Point& screen_point);
 
-  // Sends |xev| to |xid|, optionally short circuiting the round trip to the X
-  // server.
-  // Virtual for testing.
-  virtual void SendXClientEvent(XID xid, XEvent* xev);
+  // Sends |xev| to |window|, optionally short circuiting the round trip to the
+  // X server. Virtual for testing.
+  virtual void SendXClientEvent(x11::Window window, XEvent* xev);
 
-  void SendXdndEnter(XID dest_window, const std::vector<x11::Atom>& targets);
-  void SendXdndPosition(XID dest_window,
+  void SendXdndEnter(x11::Window dest_window,
+                     const std::vector<x11::Atom>& targets);
+  void SendXdndPosition(x11::Window dest_window,
                         const gfx::Point& screen_point,
                         unsigned long event_time);
-  void SendXdndLeave(XID dest_window);
-  void SendXdndDrop(XID dest_window);
+  void SendXdndLeave(x11::Window dest_window);
+  void SendXdndDrop(x11::Window dest_window);
 
   // We maintain a mapping of live XDragDropClient objects to their X11 windows,
   // so that we'd able to short circuit sending X11 messages to windows in our
   // process.
-  static XDragDropClient* GetForWindow(XID window);
+  static XDragDropClient* GetForWindow(x11::Window window);
 
   void EndMoveLoop();
 
   Delegate* const delegate_;
 
   Display* const xdisplay_;
-  const XID xwindow_;
+  const x11::Window xwindow_;
 
   // Target side information.
-  XID target_current_window_ = x11::None;
+  x11::Window target_current_window_ = x11::Window::None;
   std::unique_ptr<XDragContext> target_current_context_;
 
   // Source side information.

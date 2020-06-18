@@ -7,6 +7,7 @@
 
 #include <string.h>
 
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
@@ -134,7 +135,7 @@ static_assert(sizeof(PartitionPage<ThreadSafe>) <= kPageMetadataSize,
 
 ALWAYS_INLINE char* PartitionSuperPageToMetadataArea(char* ptr) {
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(ptr);
-  DCHECK(!(pointer_as_uint & kSuperPageOffsetMask));
+  PA_DCHECK(!(pointer_as_uint & kSuperPageOffsetMask));
   // The metadata area is exactly one system page (the guard page) into the
   // super page.
   return reinterpret_cast<char*>(pointer_as_uint + kSystemPageSize);
@@ -152,8 +153,8 @@ PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(void* ptr) {
   // Index 0 is invalid because it is the super page extent metadata and the
   // last index is invalid because the whole PartitionPage is set as guard
   // pages.
-  DCHECK(partition_page_index);
-  DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
+  PA_DCHECK(partition_page_index);
+  PA_DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
   auto* page = reinterpret_cast<PartitionPage*>(
       PartitionSuperPageToMetadataArea(super_page_ptr) +
       (partition_page_index << kPageMetadataShift));
@@ -177,17 +178,18 @@ ALWAYS_INLINE void* PartitionPage<thread_safe>::ToPointer(
 
   // A valid |page| must be past the first guard System page and within
   // the following metadata region.
-  DCHECK(super_page_offset > kSystemPageSize);
+  PA_DCHECK(super_page_offset > kSystemPageSize);
   // Must be less than total metadata region.
-  DCHECK(super_page_offset < kSystemPageSize + (kNumPartitionPagesPerSuperPage *
-                                                kPageMetadataSize));
+  PA_DCHECK(super_page_offset <
+            kSystemPageSize +
+                (kNumPartitionPagesPerSuperPage * kPageMetadataSize));
   uintptr_t partition_page_index =
       (super_page_offset - kSystemPageSize) >> kPageMetadataShift;
   // Index 0 is invalid because it is the super page extent metadata and the
   // last index is invalid because the whole PartitionPage is set as guard
   // pages.
-  DCHECK(partition_page_index);
-  DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
+  PA_DCHECK(partition_page_index);
+  PA_DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
   uintptr_t super_page_base = (pointer_as_uint & kSuperPageBaseMask);
   void* ret = reinterpret_cast<void*>(
       super_page_base + (partition_page_index << kPartitionPageShift));
@@ -203,9 +205,9 @@ ALWAYS_INLINE PartitionPage<thread_safe>*
 PartitionPage<thread_safe>::FromPointer(void* ptr) {
   PartitionPage* page = PartitionPage::FromPointerNoAlignmentCheck(ptr);
   // Checks that the pointer is a multiple of bucket size.
-  DCHECK(!((reinterpret_cast<uintptr_t>(ptr) -
-            reinterpret_cast<uintptr_t>(PartitionPage::ToPointer(page))) %
-           page->bucket->slot_size));
+  PA_DCHECK(!((reinterpret_cast<uintptr_t>(ptr) -
+               reinterpret_cast<uintptr_t>(PartitionPage::ToPointer(page))) %
+              page->bucket->slot_size));
   return page;
 }
 
@@ -218,8 +220,8 @@ ALWAYS_INLINE const size_t* PartitionPage<thread_safe>::get_raw_size_ptr()
   if (bucket->slot_size <= kMaxSystemPagesPerSlotSpan * kSystemPageSize)
     return nullptr;
 
-  DCHECK((bucket->slot_size % kSystemPageSize) == 0);
-  DCHECK(bucket->is_direct_mapped() || bucket->get_slots_per_span() == 1);
+  PA_DCHECK((bucket->slot_size % kSystemPageSize) == 0);
+  PA_DCHECK(bucket->is_direct_mapped() || bucket->get_slots_per_span() == 1);
 
   const PartitionPage* the_next_page = this + 1;
   return reinterpret_cast<const size_t*>(&the_next_page->freelist_head);
@@ -252,12 +254,12 @@ ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
   memset(ptr, kFreedByte, slot_size);
 #endif
 
-  DCHECK(num_allocated_slots);
+  PA_DCHECK(num_allocated_slots);
   // Catches an immediate double free.
-  CHECK(ptr != freelist_head);
+  PA_CHECK(ptr != freelist_head);
   // Look for double free one level deeper in debug.
-  DCHECK(!freelist_head ||
-         ptr != EncodedPartitionFreelistEntry::Decode(freelist_head->next));
+  PA_DCHECK(!freelist_head ||
+            ptr != EncodedPartitionFreelistEntry::Decode(freelist_head->next));
   auto* entry = static_cast<internal::PartitionFreelistEntry*>(ptr);
   entry->next = internal::PartitionFreelistEntry::Encode(freelist_head);
   freelist_head = entry;
@@ -267,46 +269,46 @@ ALWAYS_INLINE DeferredUnmap PartitionPage<thread_safe>::Free(void* ptr) {
   } else {
     // All single-slot allocations must go through the slow path to
     // correctly update the size metadata.
-    DCHECK(get_raw_size() == 0);
+    PA_DCHECK(get_raw_size() == 0);
   }
   return {};
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE bool PartitionPage<thread_safe>::is_active() const {
-  DCHECK(this != get_sentinel_page());
-  DCHECK(!page_offset);
+  PA_DCHECK(this != get_sentinel_page());
+  PA_DCHECK(!page_offset);
   return (num_allocated_slots > 0 &&
           (freelist_head || num_unprovisioned_slots));
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE bool PartitionPage<thread_safe>::is_full() const {
-  DCHECK(this != get_sentinel_page());
-  DCHECK(!page_offset);
+  PA_DCHECK(this != get_sentinel_page());
+  PA_DCHECK(!page_offset);
   bool ret = (num_allocated_slots == bucket->get_slots_per_span());
   if (ret) {
-    DCHECK(!freelist_head);
-    DCHECK(!num_unprovisioned_slots);
+    PA_DCHECK(!freelist_head);
+    PA_DCHECK(!num_unprovisioned_slots);
   }
   return ret;
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE bool PartitionPage<thread_safe>::is_empty() const {
-  DCHECK(this != get_sentinel_page());
-  DCHECK(!page_offset);
+  PA_DCHECK(this != get_sentinel_page());
+  PA_DCHECK(!page_offset);
   return (!num_allocated_slots && freelist_head);
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE bool PartitionPage<thread_safe>::is_decommitted() const {
-  DCHECK(this != get_sentinel_page());
-  DCHECK(!page_offset);
+  PA_DCHECK(this != get_sentinel_page());
+  PA_DCHECK(!page_offset);
   bool ret = (!num_allocated_slots && !freelist_head);
   if (ret) {
-    DCHECK(!num_unprovisioned_slots);
-    DCHECK(empty_cache_index == -1);
+    PA_DCHECK(!num_unprovisioned_slots);
+    PA_DCHECK(empty_cache_index == -1);
   }
   return ret;
 }
@@ -320,10 +322,10 @@ ALWAYS_INLINE void PartitionPage<thread_safe>::set_raw_size(size_t size) {
 
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionPage<thread_safe>::Reset() {
-  DCHECK(is_decommitted());
+  PA_DCHECK(is_decommitted());
 
   num_unprovisioned_slots = bucket->get_slots_per_span();
-  DCHECK(num_unprovisioned_slots);
+  PA_DCHECK(num_unprovisioned_slots);
 
   next_page = nullptr;
 }

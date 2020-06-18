@@ -493,6 +493,26 @@ bool InputMethodEngineBase::SetCompositionRange(
                              text_spans);
 }
 
+bool InputMethodEngineBase::SetAutocorrectRange(
+    int context_id,
+    const base::string16& autocorrect_text,
+    int start,
+    int end,
+    std::string* error) {
+  if (!IsActive()) {
+    *error = kErrorNotActive;
+    return false;
+  }
+  if (context_id != context_id_ || context_id_ == -1) {
+    *error = base::StringPrintf(
+        "%s request context id = %d, current context id = %d",
+        kErrorWrongContext, context_id, context_id_);
+    return false;
+  }
+  return SetAutocorrectRange(autocorrect_text, static_cast<uint32_t>(start),
+                             static_cast<uint32_t>(end));
+}
+
 bool InputMethodEngineBase::SetSelectionRange(int context_id,
                                               int start,
                                               int end,

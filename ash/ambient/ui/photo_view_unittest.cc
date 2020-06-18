@@ -17,7 +17,7 @@ using AmbientPhotoViewTest = AmbientAshTestBase;
 // the same orientation.
 TEST_F(AmbientPhotoViewTest, DISABLED_ShouldResizeImageToFillFullScreen) {
   // Start Ambient mode.
-  ShowAmbientScreen();
+  ambient_controller()->Show();
   // Fastforward enough time to update the photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
 
@@ -28,6 +28,9 @@ TEST_F(AmbientPhotoViewTest, DISABLED_ShouldResizeImageToFillFullScreen) {
   // The expected size is "600x1200".
   EXPECT_EQ(image.size().width(), 600);
   EXPECT_EQ(image.size().height(), 1200);
+
+  // Stop Ambient mode.
+  ambient_controller()->Destroy();
 }
 
 // TODO(b/158617675): test is flaky.
@@ -36,7 +39,7 @@ TEST_F(AmbientPhotoViewTest, DISABLED_ShouldResizeImageToFillFullScreen) {
 TEST_F(AmbientPhotoViewTest,
        DISABLED_ShouldResizeImageToFillOneDirectionOfScreen) {
   // Start Ambient mode.
-  ShowAmbientScreen();
+  ambient_controller()->Show();
   // Fastforward enough time to update the photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
 
@@ -47,6 +50,9 @@ TEST_F(AmbientPhotoViewTest,
   // The expected size is "300x600".
   EXPECT_EQ(image.size().width(), 300);
   EXPECT_EQ(image.size().height(), 600);
+
+  // Stop Ambient mode.
+  ambient_controller()->Destroy();
 }
 
 }  // namespace ash

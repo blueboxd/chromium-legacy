@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/extensions/install_observer.h"
@@ -29,62 +29,27 @@ namespace chromeos {
 
 class StartupAppLauncherUpdateChecker;
 
-// Launches the app at startup. The flow roughly looks like this:
-// First call Initialize():
-// - Initialize network if app is not installed or not offline_enabled.
-// - If network is online, install or update the app as needed.
-// - After the app is installed/updated, launch it and finish the flow;
-// Report OnLauncherInitialized() or OnLaunchFailed() to observers:
-// - If all goes good, launches the app and finish the flow;
-class StartupAppLauncher : public extensions::InstallObserver,
+// Responsible for the startup of the app for Chrome App kiosk.
+class StartupAppLauncher : public KioskAppLauncher,
+                           public extensions::InstallObserver,
                            public KioskAppManagerObserver,
                            public extensions::AppWindowRegistry::Observer {
  public:
-  class Delegate {
-   public:
-    // Invoked to perform actual network initialization work. Note the app
-    // launch flow is paused until ContinueWithNetworkReady is called.
-    virtual void InitializeNetwork() = 0;
-
-    // Returns true if Internet is online.
-    virtual bool IsNetworkReady() = 0;
-
-    // Whether app launch flow can assume all required apps are installed, and
-    // skip app installation steps.
-    virtual bool ShouldSkipAppInstallation() = 0;
-
-    virtual void OnInstallingApp() = 0;
-    virtual void OnReadyToLaunch() = 0;
-    virtual void OnLaunchSucceeded() = 0;
-    virtual void OnLaunchFailed(KioskAppLaunchError::Error error) = 0;
-    virtual void OnAppWindowCreated() {}
-    virtual bool IsShowingNetworkConfigScreen() = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
   StartupAppLauncher(Profile* profile,
                      const std::string& app_id,
                      Delegate* delegate);
 
   ~StartupAppLauncher() override;
 
-  // Prepares the environment for an app launch.
-  void Initialize();
-
-  // Continues the initialization after network is ready.
-  void ContinueWithNetworkReady();
-
-  // Launches the app after the initialization is successful.
-  void LaunchApp();
-
-  // Restarts launcher;
-  void RestartLauncher();
-
  private:
   // Class used to watch for app window creation.
   class AppWindowWatcher;
+
+  // KioskAppLauncher:
+  void Initialize() override;
+  void ContinueWithNetworkReady() override;
+  void LaunchApp() override;
+  void RestartLauncher() override;
 
   void OnLaunchSuccess();
   void OnLaunchFailure(KioskAppLaunchError::Error error);
@@ -135,7 +100,6 @@ class StartupAppLauncher : public extensions::InstallObserver,
 
   Profile* const profile_;
   const std::string app_id_;
-  Delegate* const delegate_;
   bool network_ready_handled_ = false;
   int launch_attempt_ = 0;
   bool ready_to_launch_ = false;

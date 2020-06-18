@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest, RegularFlow) {
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   SetOnline(true);
 
-  launch_controls()->OnAppStartedInstalling();
+  launch_controls()->OnAppInstalling();
 
   launch_controls()->OnAppPrepared();
   ExpectState(AppState::INSTALLED, NetworkUIState::NOT_SHOWING);
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   SetOnline(true);
 
-  launch_controls()->OnAppStartedInstalling();
+  launch_controls()->OnAppInstalling();
 
   // User presses the hotkey, current installation is canceled.
   EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   view_controls()->OnNetworkConfigFinished();
 
-  launch_controls()->OnAppStartedInstalling();
+  launch_controls()->OnAppInstalling();
   ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
 
   launch_controls()->OnAppPrepared();
@@ -201,7 +201,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   SetOnline(true);
 
-  launch_controls()->OnAppStartedInstalling();
+  launch_controls()->OnAppInstalling();
   ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
 
   EXPECT_CALL(*launcher(), RestartLauncher()).Times(1);
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(WebKioskControllerTest,
   EXPECT_CALL(*launcher(), ContinueWithNetworkReady()).Times(1);
   view_controls()->OnNetworkConfigFinished();
 
-  launch_controls()->OnAppStartedInstalling();
+  launch_controls()->OnAppInstalling();
   ExpectState(AppState::INSTALLING, NetworkUIState::NOT_SHOWING);
 
   launch_controls()->OnAppPrepared();

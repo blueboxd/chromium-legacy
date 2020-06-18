@@ -33,7 +33,7 @@ namespace {
 // Blocks till |window| gets activated.
 class ActivationWaiter : public ui::X11PropertyChangeWaiter {
  public:
-  explicit ActivationWaiter(XID window)
+  explicit ActivationWaiter(x11::Window window)
       : ui::X11PropertyChangeWaiter(ui::GetX11RootWindow(),
                                     "_NET_ACTIVE_WINDOW"),
         window_(window) {}
@@ -43,12 +43,13 @@ class ActivationWaiter : public ui::X11PropertyChangeWaiter {
  private:
   // ui::X11PropertyChangeWaiter:
   bool ShouldKeepOnWaiting(x11::Event* event) override {
-    XID xid = 0;
-    ui::GetXIDProperty(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW", &xid);
-    return xid != window_;
+    x11::Window window = x11::Window::None;
+    ui::GetProperty(ui::GetX11RootWindow(), gfx::GetAtom("_NET_ACTIVE_WINDOW"),
+                    &window);
+    return window != window_;
   }
 
-  XID window_;
+  x11::Window window_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivationWaiter);
 };
@@ -96,7 +97,7 @@ void DispatchMouseMotionEvent(DesktopWindowTreeHostX11* desktop_host,
   memset(&ge, 0, sizeof(ge));
   auto* xev = reinterpret_cast<xcb_motion_notify_event_t*>(&ge);
   xev->response_type = MotionNotify;
-  xev->event = desktop_host->GetAcceleratedWidget();
+  xev->event = static_cast<uint32_t>(desktop_host->GetAcceleratedWidget());
   xev->root = static_cast<uint32_t>(connection->default_screen().root);
   xev->child = 0;
   xev->time = x11::CurrentTime;

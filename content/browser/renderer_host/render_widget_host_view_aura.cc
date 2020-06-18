@@ -1458,6 +1458,15 @@ bool RenderWidgetHostViewAura::SetCompositionFromExistingText(
 
 #endif
 
+#if defined(OS_CHROMEOS)
+// TODO(crbug.com/1091088) Implement setAutocorrectRange
+bool RenderWidgetHostViewAura::SetAutocorrectRange(
+    const base::string16& autocorrect_text,
+    const gfx::Range& range) {
+  return false;
+}
+#endif
+
 #if defined(OS_WIN)
 void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
     base::Optional<gfx::Rect>* control_bounds,

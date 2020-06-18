@@ -116,8 +116,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
       const base::android::JavaParamRef<jobject>&);
   jlong GetExplicitPassphraseTime(JNIEnv* env,
                                   const base::android::JavaParamRef<jobject>&);
-  void FlushDirectory(JNIEnv* env,
-                      const base::android::JavaParamRef<jobject>& obj);
   void GetAllNodes(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    const base::android::JavaParamRef<jobject>& callback);

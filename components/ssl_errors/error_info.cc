@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/i18n/message_formatter.h"
+#include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/strings/grit/components_strings.h"

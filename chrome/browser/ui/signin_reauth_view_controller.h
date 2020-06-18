@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/signin_view_controller_delegate.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "google_apis/gaia/core_account_id.h"
 
 class Browser;
@@ -58,6 +59,7 @@ class SigninReauthViewController
   SigninReauthViewController(
       Browser* browser,
       const CoreAccountId& account_id,
+      signin_metrics::ReauthAccessPoint access_point,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
   SigninReauthViewController(const SigninReauthViewController&) = delete;

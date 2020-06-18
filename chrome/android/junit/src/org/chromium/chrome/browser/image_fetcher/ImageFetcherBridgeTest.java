@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 
 import android.graphics.Bitmap;
@@ -37,7 +36,6 @@ import jp.tomorrowkey.android.gifplayer.BaseGifImage;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ImageFetcherBridgeTest {
-    private static long sNativePointer = 100L;
     private static final int WIDTH_PX = 10;
     private static final int HEIGHT_PX = 20;
     private static final int EXPIRATION_INTERVAL_MINS = 60;
@@ -59,35 +57,9 @@ public class ImageFetcherBridgeTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        doReturn(sNativePointer).when(mNatives).init(mProfile);
 
         ImageFetcherBridgeJni.TEST_HOOKS.setInstanceForTesting(mNatives);
         mBridge = new ImageFetcherBridge(mProfile);
-    }
-
-    @Test
-    public void testDestroy() {
-        mBridge.destroy();
-        verify(mNatives).destroy(sNativePointer, mBridge);
-
-        // Check that calling methods after destroy throw AssertionErrors.
-        mExpectedException.expect(AssertionError.class);
-        mExpectedException.expectMessage("destroy called twice");
-        mBridge.destroy();
-        mExpectedException.expectMessage("getFilePath called after destroy");
-        mBridge.getFilePath("");
-        mExpectedException.expectMessage("fetchGif called after destroy");
-        mBridge.fetchGif(-1, ImageFetcher.Params.create("", ""), null);
-        mExpectedException.expectMessage("fetchImage called after destroy");
-        mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), null);
-        mExpectedException.expectMessage("fetchImage called after destroy");
-        mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), null);
-        mExpectedException.expectMessage("reportEvent called after destroy");
-        mBridge.reportEvent("", -1);
-        mExpectedException.expectMessage("reportCacheHitTime called after destroy");
-        mBridge.reportCacheHitTime("", -1L);
-        mExpectedException.expectMessage("reportTotalFetchTimeFromNative called after destroy");
-        mBridge.reportTotalFetchTimeFromNative("", -1L);
     }
 
     @Test
@@ -99,8 +71,8 @@ public class ImageFetcherBridgeTest {
             return null;
         })
                 .when(mNatives)
-                .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        eq(0), callbackCaptor.capture());
+                .fetchImage(eq(mProfile), anyInt(), anyString(), anyString(), eq(0),
+                        callbackCaptor.capture());
 
         mBridge.fetchImage(
                 -1, ImageFetcher.Params.create("", "", WIDTH_PX, HEIGHT_PX), mBitmapCallback);
@@ -116,7 +88,7 @@ public class ImageFetcherBridgeTest {
             return null;
         })
                 .when(mNatives)
-                .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
+                .fetchImage(eq(mProfile), anyInt(), anyString(), anyString(),
                         eq(EXPIRATION_INTERVAL_MINS), callbackCaptor.capture());
 
         mBridge.fetchImage(-1,
@@ -135,8 +107,8 @@ public class ImageFetcherBridgeTest {
             return null;
         })
                 .when(mNatives)
-                .fetchImage(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        eq(0), callbackCaptor.capture());
+                .fetchImage(eq(mProfile), anyInt(), anyString(), anyString(), eq(0),
+                        callbackCaptor.capture());
 
         mBridge.fetchImage(-1, ImageFetcher.Params.create("", "", 100, 100), mBitmapCallback);
         ArgumentCaptor<Bitmap> bitmapCaptor = ArgumentCaptor.forClass(Bitmap.class);
@@ -157,8 +129,8 @@ public class ImageFetcherBridgeTest {
             return null;
         })
                 .when(mNatives)
-                .fetchImageData(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        eq(0), callbackCaptor.capture());
+                .fetchImageData(eq(mProfile), anyInt(), anyString(), anyString(), eq(0),
+                        callbackCaptor.capture());
 
         mBridge.fetchGif(-1, ImageFetcher.Params.create("", ""), mGifCallback);
         ArgumentCaptor<BaseGifImage> gifCaptor = ArgumentCaptor.forClass(BaseGifImage.class);
@@ -175,8 +147,8 @@ public class ImageFetcherBridgeTest {
             return null;
         })
                 .when(mNatives)
-                .fetchImageData(eq(sNativePointer), eq(mBridge), anyInt(), anyString(), anyString(),
-                        eq(0), callbackCaptor.capture());
+                .fetchImageData(eq(mProfile), anyInt(), anyString(), anyString(), eq(0),
+                        callbackCaptor.capture());
 
         mBridge.fetchGif(-1, ImageFetcher.Params.create("", ""), mGifCallback);
         verify(mGifCallback).onResult(null);
@@ -185,30 +157,31 @@ public class ImageFetcherBridgeTest {
     @Test
     public void testGetFilePath() {
         mBridge.getFilePath("testing is cool");
-        verify(mNatives).getFilePath(sNativePointer, mBridge, "testing is cool");
+        verify(mNatives).getFilePath(mProfile, "testing is cool");
     }
 
     @Test
     public void testReportEvent() {
         mBridge.reportEvent("client", 10);
-        verify(mNatives).reportEvent(sNativePointer, mBridge, "client", 10);
+        verify(mNatives).reportEvent("client", 10);
     }
 
     @Test
     public void testReportCacheHitTime() {
         mBridge.reportCacheHitTime("client", 10L);
-        verify(mNatives).reportCacheHitTime(sNativePointer, mBridge, "client", 10L);
+        verify(mNatives).reportCacheHitTime("client", 10L);
     }
 
     @Test
     public void testReportTotalFetchTimeFromNative() {
         mBridge.reportTotalFetchTimeFromNative("client", 10L);
-        verify(mNatives).reportTotalFetchTimeFromNative(sNativePointer, mBridge, "client", 10L);
+        verify(mNatives).reportTotalFetchTimeFromNative("client", 10L);
     }
 
     @Test
     public void testSetupForTesting() {
-        ImageFetcherBridge.setupForTesting(mBridge);
-        Assert.assertEquals(mBridge, ImageFetcherBridge.getInstance());
+        // Since ImageFetcherBridge creates different instance on each call of getForProfile
+        // function, two instances below should not be equal.
+        Assert.assertNotEquals(mBridge, ImageFetcherBridge.getForProfile(mProfile));
     }
 }

@@ -35,7 +35,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
   XShmImagePool(scoped_refptr<base::SequencedTaskRunner> host_task_runner,
                 scoped_refptr<base::SequencedTaskRunner> event_task_runner,
                 XDisplay* display,
-                XID drawable,
+                x11::Drawable drawable,
                 Visual* visual,
                 int depth,
                 std::size_t max_frames_pending);
@@ -107,7 +107,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XShmImagePool
   void Cleanup();
 
   XDisplay* const display_;
-  const XID drawable_;
+  const x11::Drawable drawable_;
   Visual* const visual_;
   const int depth_;
 

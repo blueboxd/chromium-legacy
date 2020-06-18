@@ -4,6 +4,7 @@
 
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 
 std::ostream& operator<<(std::ostream& out, const KeepAliveOrigin& origin) {
   switch (origin) {

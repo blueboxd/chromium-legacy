@@ -16,7 +16,7 @@
 
 namespace ui {
 
-X11PropertyChangeWaiter::X11PropertyChangeWaiter(XID window,
+X11PropertyChangeWaiter::X11PropertyChangeWaiter(x11::Window window,
                                                  const char* property)
     : x_window_(window), property_(property), wait_(true) {
   // Ensure that we are listening to PropertyNotify events for |window|. This
@@ -50,7 +50,7 @@ bool X11PropertyChangeWaiter::ShouldKeepOnWaiting(x11::Event* event) {
 bool X11PropertyChangeWaiter::DispatchXEvent(x11::Event* x11_event) {
   XEvent* xev = &x11_event->xlib_event();
   if (!xev || !wait_ || xev->type != PropertyNotify ||
-      xev->xproperty.window != x_window_ ||
+      xev->xproperty.window != static_cast<uint32_t>(x_window_) ||
       static_cast<x11::Atom>(xev->xproperty.atom) != gfx::GetAtom(property_) ||
       ShouldKeepOnWaiting(x11_event)) {
     return false;

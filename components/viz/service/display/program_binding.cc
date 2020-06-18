@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/program_binding.h"
 
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "components/viz/service/display/geometry_binding.h"
 #include "gpu/GLES2/gl2extchromium.h"

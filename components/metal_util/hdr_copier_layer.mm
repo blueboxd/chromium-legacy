@@ -11,9 +11,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "components/metal_util/device.h"
-
+#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
+#include "components/metal_util/device.h"
 
 namespace {
 

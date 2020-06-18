@@ -58,6 +58,7 @@ void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
     const base::string16& username) {}
 
 void PasswordManagerClient::TriggerReauthForPrimaryAccount(
+    signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
   std::move(reauth_callback).Run(ReauthSucceeded(false));
 }

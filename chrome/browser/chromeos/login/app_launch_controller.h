@@ -31,7 +31,7 @@ class OobeUI;
 // coordinating loading the kiosk profile, launching the app, and
 // updating the splash screen UI.
 class AppLaunchController : public KioskProfileLoader::Delegate,
-                            public StartupAppLauncher::Delegate,
+                            public KioskAppLauncher::Delegate,
                             public AppLaunchSigninScreen::Delegate,
                             public AppLaunchSplashScreenView::Delegate {
  public:
@@ -93,16 +93,16 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   void OnProfileLoadFailed(KioskAppLaunchError::Error error) override;
   void OnOldEncryptionDetected(const UserContext& user_context) override;
 
-  // StartupAppLauncher::Delegate overrides:
+  // KioskAppLauncher::Delegate overrides:
   void InitializeNetwork() override;
-  bool IsNetworkReady() override;
-  bool ShouldSkipAppInstallation() override;
-  void OnInstallingApp() override;
-  void OnReadyToLaunch() override;
-  void OnLaunchSucceeded() override;
+  bool IsNetworkReady() const override;
+  bool ShouldSkipAppInstallation() const override;
+  void OnAppInstalling() override;
+  void OnAppPrepared() override;
+  void OnAppLaunched() override;
   void OnLaunchFailed(KioskAppLaunchError::Error error) override;
   void OnAppWindowCreated() override;
-  bool IsShowingNetworkConfigScreen() override;
+  bool IsShowingNetworkConfigScreen() const override;
 
   // AppLaunchSigninScreen::Delegate overrides:
   void OnOwnerSigninSuccess() override;
@@ -113,7 +113,7 @@ class AppLaunchController : public KioskProfileLoader::Delegate,
   OobeUI* oobe_ui_ = nullptr;
   AppLaunchSplashScreenView* app_launch_splash_screen_view_ = nullptr;
   std::unique_ptr<KioskProfileLoader> kiosk_profile_loader_;
-  std::unique_ptr<StartupAppLauncher> startup_app_launcher_;
+  std::unique_ptr<KioskAppLauncher> startup_app_launcher_;
   std::unique_ptr<AppLaunchSigninScreen> signin_screen_;
 
   bool launcher_ready_ = false;

@@ -13,15 +13,16 @@ using ui::X11EventSource;
 namespace gl {
 
 NativeViewGLSurfaceEGLX11GLES2::NativeViewGLSurfaceEGLX11GLES2(
-    EGLNativeWindowType window)
-    : NativeViewGLSurfaceEGLX11(0), parent_window_(window) {}
+    x11::Window window)
+    : NativeViewGLSurfaceEGLX11(x11::Window::None), parent_window_(window) {}
 
 bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   Display* x11_display = GetXNativeDisplay();
   XWindowAttributes attributes;
-  if (!XGetWindowAttributes(x11_display, parent_window_, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << parent_window_
-               << ".";
+  if (!XGetWindowAttributes(x11_display, static_cast<uint32_t>(parent_window_),
+                            &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window "
+               << static_cast<uint32_t>(parent_window_) << ".";
     return false;
   }
 
@@ -35,8 +36,8 @@ bool NativeViewGLSurfaceEGLX11GLES2::InitializeNativeWindow() {
   memset(&swa, 0, sizeof(swa));
   swa.background_pixmap = 0;
   swa.bit_gravity = NorthWestGravity;
-  window_ = XCreateWindow(x11_display, parent_window_, 0, 0, size_.width(),
-                          size_.height(), 0,
+  window_ = XCreateWindow(x11_display, static_cast<uint32_t>(parent_window_), 0,
+                          0, size_.width(), size_.height(), 0,
                           static_cast<int>(x11::WindowClass::CopyFromParent),
                           static_cast<int>(x11::WindowClass::InputOutput),
                           nullptr, CWBackPixmap | CWBitGravity, &swa);
@@ -72,16 +73,21 @@ EGLConfig NativeViewGLSurfaceEGLX11GLES2::GetConfig() {
     // constrain blending precision.
     const int kBufferSizeOffset = 1;
     const int kAlphaSizeOffset = 3;
-    EGLint config_attribs[] = {
-      EGL_BUFFER_SIZE, ~0,
-      EGL_ALPHA_SIZE, 8,
-      EGL_BLUE_SIZE, 8,
-      EGL_GREEN_SIZE, 8,
-      EGL_RED_SIZE, 8,
-      EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-      EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-      EGL_NONE
-    };
+    EGLint config_attribs[] = {EGL_BUFFER_SIZE,
+                               ~0,
+                               EGL_ALPHA_SIZE,
+                               8,
+                               EGL_BLUE_SIZE,
+                               8,
+                               EGL_GREEN_SIZE,
+                               8,
+                               EGL_RED_SIZE,
+                               8,
+                               EGL_RENDERABLE_TYPE,
+                               EGL_OPENGL_ES2_BIT,
+                               EGL_SURFACE_TYPE,
+                               EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+                               EGL_NONE};
     config_attribs[kBufferSizeOffset] = win_attribs.depth;
 
     EGLDisplay display = GetHardwareDisplay();
@@ -144,9 +150,10 @@ bool NativeViewGLSurfaceEGLX11GLES2::DispatchXEvent(x11::Event* x11_event) {
       xev->xexpose.window != static_cast<Window>(window_))
     return false;
 
-  xev->xexpose.window = parent_window_;
+  xev->xexpose.window = static_cast<uint32_t>(parent_window_);
   Display* x11_display = GetXNativeDisplay();
-  XSendEvent(x11_display, parent_window_, x11::False, ExposureMask, xev);
+  XSendEvent(x11_display, static_cast<uint32_t>(parent_window_), x11::False,
+             ExposureMask, xev);
   XFlush(x11_display);
   return true;
 }

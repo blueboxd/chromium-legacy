@@ -7,11 +7,11 @@
 
 #include "base/bind_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/client_status.h"
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
 class ScriptExecutorDelegate;
-class UserModel;
 
 // Provides basic interactions for use by the generic UI framework. These
 // methods are intended to be bound to by the corresponding interaction
@@ -43,16 +43,23 @@ class BasicInteractions {
   bool ToggleUserAction(const ToggleUserActionProto& proto);
 
   // Ends the current action. Can only be called during a ShowGenericUiAction.
-  bool EndAction(bool view_inflation_successful, const EndActionProto& proto);
+  bool EndAction(const ClientStatus& status);
+
+  // Runs |view_inflation_finished_callback_| to notify its owner that view
+  // inflation has finished. Can only be called during a ShowGenericUiAction.
+  bool NotifyViewInflationFinished(const ClientStatus& status);
 
   // Sets the callback to end the current ShowGenericUiAction.
   void SetEndActionCallback(
-      base::OnceCallback<void(bool,
-                              ProcessedActionStatusProto,
-                              const UserModel*)> end_action_callback);
+      base::OnceCallback<void(const ClientStatus&)> end_action_callback);
 
-  // Clears the |end_action_callback_|.
-  void ClearEndActionCallback();
+  // Sets the callback to indicate whether view inflation was successful or not.
+  void SetViewInflationFinishedCallback(
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback);
+
+  // Clears all callbacks associated with the current ShowGenericUi action.
+  void ClearCallbacks();
 
   // Runs |callback| if |condition_identifier| points to a single boolean set to
   // 'true'. Returns true on success (i.e., condition was evaluated
@@ -69,8 +76,9 @@ class BasicInteractions {
  private:
   ScriptExecutorDelegate* delegate_;
   // Only valid during a ShowGenericUiAction.
-  base::OnceCallback<void(bool, ProcessedActionStatusProto, const UserModel*)>
-      end_action_callback_;
+  base::OnceCallback<void(const ClientStatus&)> end_action_callback_;
+  base::OnceCallback<void(const ClientStatus&)>
+      view_inflation_finished_callback_;
   base::WeakPtrFactory<BasicInteractions> weak_ptr_factory_{this};
 };
 

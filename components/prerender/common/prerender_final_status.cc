@@ -4,6 +4,7 @@
 
 #include "components/prerender/common/prerender_final_status.h"
 
+#include "base/check_op.h"
 #include "base/stl_util.h"
 
 namespace prerender {

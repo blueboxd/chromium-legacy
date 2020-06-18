@@ -214,7 +214,6 @@ class VolumeManagerTest : public testing::Test {
           drive_integration_service_(
               std::make_unique<drive::DriveIntegrationService>(
                   profile_.get(),
-                  nullptr,
                   std::string(),
                   base::FilePath())),
           volume_manager_(std::make_unique<VolumeManager>(

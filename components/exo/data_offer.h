@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/files/scoped_file.h"

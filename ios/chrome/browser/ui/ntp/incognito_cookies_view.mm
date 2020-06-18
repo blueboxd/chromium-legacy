@@ -67,14 +67,10 @@ const CGFloat kVerticalLabelMargin = 6.0f;
     [self addSubview:descriptionLabel];
 
     // Cookies switch.
-    _switchView = [[UISwitch alloc] init];
-    [_switchView setOn:NO];
-    [_switchView addTarget:self
-                    action:@selector(onCookieSwitchToggled:)
-          forControlEvents:UIControlEventValueChanged];
-    _switchView.translatesAutoresizingMaskIntoConstraints = NO;
-    [self addSubview:_switchView];
-    [_switchView
+    _cookiesBlockedSwitch = [[UISwitch alloc] init];
+    _cookiesBlockedSwitch.translatesAutoresizingMaskIntoConstraints = NO;
+    [self addSubview:_cookiesBlockedSwitch];
+    [_cookiesBlockedSwitch
         setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
                                         forAxis:
                                             UILayoutConstraintAxisHorizontal];
@@ -84,7 +80,7 @@ const CGFloat kVerticalLabelMargin = 6.0f;
       [titleLabel.leadingAnchor constraintEqualToAnchor:self.leadingAnchor
                                                constant:kHorizontalSpacing],
       [titleLabel.trailingAnchor
-          constraintEqualToAnchor:_switchView.leadingAnchor
+          constraintEqualToAnchor:_cookiesBlockedSwitch.leadingAnchor
                          constant:-kHorizontalSpacing],
       [titleLabel.trailingAnchor
           constraintEqualToAnchor:descriptionLabel.trailingAnchor],
@@ -101,19 +97,16 @@ const CGFloat kVerticalLabelMargin = 6.0f;
       [descriptionLabel.bottomAnchor constraintEqualToAnchor:self.bottomAnchor
                                                     constant:-kVerticalSpacing],
 
-      // switchView constraints.
-      [_switchView.trailingAnchor constraintEqualToAnchor:self.trailingAnchor
-                                                 constant:-kHorizontalSpacing],
-      [_switchView.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+      // cookiesBlockedSwitch constraints.
+      [_cookiesBlockedSwitch.trailingAnchor
+          constraintEqualToAnchor:self.trailingAnchor
+                         constant:-kHorizontalSpacing],
+      [_cookiesBlockedSwitch.centerYAnchor
+          constraintEqualToAnchor:self.centerYAnchor],
     ];
     [NSLayoutConstraint activateConstraints:constraints];
   }
   return self;
 }
 
-#pragma mark - Private
-
-- (void)onCookieSwitchToggled:(UISwitch*)paramSender {
-  // TODO(crbug.com/1063824): Implement this.
-}
 @end

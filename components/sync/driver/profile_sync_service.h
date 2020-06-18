@@ -221,11 +221,6 @@ class ProfileSyncService : public SyncService,
   // once (before this object is destroyed).
   void Shutdown() override;
 
-  // This triggers a Directory::SaveChanges() call on the sync thread.
-  // It should be used to persist data to disk when the process might be
-  // killed in the near future.
-  void FlushDirectory() const;
-
   bool IsPassphrasePrompted() const;
   void SetPassphrasePrompted(bool prompted);
 

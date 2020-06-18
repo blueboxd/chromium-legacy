@@ -117,7 +117,7 @@ class AccountsCookieMutatorTest
         GetTestURLLoaderFactory()->AddResponse(
             GaiaUrls::GetInstance()
                 ->oauth_multilogin_url()
-                .Resolve(base::StringPrintf("?source=%s&mlreuse=0",
+                .Resolve(base::StringPrintf("?source=%s&reuseCookies=0",
                                             GaiaConstants::kChromeSource))
                 .spec(),
             std::string(kTestOAuthMultiLoginResponse), net::HTTP_OK);

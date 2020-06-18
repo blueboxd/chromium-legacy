@@ -10,6 +10,7 @@
 #include <shlobj.h>
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/win/wrapped_window_proc.h"
 #include "components/storage_monitor/portable_device_watcher_win.h"
 #include "components/storage_monitor/removable_device_constants.h"

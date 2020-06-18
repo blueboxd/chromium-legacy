@@ -8,12 +8,6 @@
 #include <string>
 #include "base/strings/string16.h"
 
-namespace ui {
-namespace ime {
-struct SuggestionDetails;
-}  // namespace ime
-}  // namespace ui
-
 namespace chromeos {
 
 // An interface to handler suggestion related calls from assistive suggester.
@@ -29,7 +23,9 @@ class SuggestionHandlerInterface {
   // confirmed_text - the confirmed text that the user has typed so far.
   // show_tab - whether to show "tab" in the suggestion window.
   virtual bool SetSuggestion(int context_id,
-                             const ui::ime::SuggestionDetails& details,
+                             const base::string16& text,
+                             const size_t confirmed_length,
+                             const bool show_tab,
                              std::string* error) = 0;
 
   // Commit the suggestion and hide the window.

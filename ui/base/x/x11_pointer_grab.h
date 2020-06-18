@@ -15,7 +15,7 @@ namespace ui {
 // Grabs the pointer. It is unnecessary to ungrab the pointer prior to grabbing
 // it.
 COMPONENT_EXPORT(UI_BASE_X)
-int GrabPointer(XID window, bool owner_events, ::Cursor cursor);
+int GrabPointer(x11::Window window, bool owner_events, ::Cursor cursor);
 
 // Sets the cursor to use for the duration of the active pointer grab.
 COMPONENT_EXPORT(UI_BASE_X) void ChangeActivePointerGrabCursor(::Cursor cursor);

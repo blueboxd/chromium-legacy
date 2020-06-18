@@ -5,6 +5,7 @@
 #include "components/rappor/rappor_prefs.h"
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "components/metrics/daily_event.h"

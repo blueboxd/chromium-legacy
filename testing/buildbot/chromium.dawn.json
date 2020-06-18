@@ -2841,7 +2841,6 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3139,7 +3138,6 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3168,7 +3166,6 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3459,7 +3456,6 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3488,7 +3484,6 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3779,7 +3774,6 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -3808,7 +3802,6 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4099,7 +4092,6 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4128,7 +4120,6 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox",
           "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
@@ -4420,8 +4411,7 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--jobs=1"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4448,8 +4438,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--additional-driver-flag=--enable-dawn-backend-validation"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4738,8 +4727,7 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--jobs=1"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -4766,8 +4754,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--additional-driver-flag=--enable-dawn-backend-validation"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5056,8 +5043,7 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--jobs=1"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5084,8 +5070,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--additional-driver-flag=--enable-dawn-backend-validation"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5374,8 +5359,7 @@
       {
         "args": [
           "--driver-logging",
-          "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--jobs=1"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -5402,8 +5386,7 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--additional-driver-flag=--enable-dawn-backend-validation"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {

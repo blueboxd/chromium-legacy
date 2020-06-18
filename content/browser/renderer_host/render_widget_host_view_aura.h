@@ -227,6 +227,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) override;
 #endif
 
+#if defined(OS_CHROMEOS)
+  // Set the autocorrect range
+  bool SetAutocorrectRange(const base::string16& autocorrect_text,
+                           const gfx::Range& range) override;
+#endif
+
 #if defined(OS_WIN)
   // Returns the control and selection bounds of the EditContext or control
   // bounds of the active editable element. This is used to report the layout

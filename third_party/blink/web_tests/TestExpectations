@@ -2971,7 +2971,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/preload/download-resources.html [ Fai
 crbug.com/626703 [ Retina ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/preload/download-resources.html [ Failure Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-001-manual.html [ Skip ]
-crbug.com/626703 external/wpt/webrtc/RTCRtpTransceiver.https.html [ Crash Timeout ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-001-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-digits-002-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-writing-modes/text-combine-upright-all-002-manual.html [ Skip ]
@@ -3170,7 +3169,6 @@ crbug.com/367760 external/wpt/svg/pservers/reftests/meshgradient-basic-001.svg [
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-iceGatheringState.html [ Pass ]
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-operations.https.html [ Pass ]
 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-restartIce-onnegotiationneeded.https.html [ Pass ]
-virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCRtpTransceiver.https.html [ Pass ]
 
 # See also crbug.com/920100 (sheriff 2019-01-09).
 crbug.com/626703 external/wpt/referrer-policy/css-integration/svg/external-stylesheet.html [ Timeout Failure ]
@@ -4746,9 +4744,6 @@ crbug.com/995106 external/wpt/css/css-display/display-flow-root-list-item-001.ht
 
 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html?include=workers [ Timeout ]
 crbug.com/930297 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html?include=workers [ Timeout ]
-
-# RubyNG TODOs
-crbug.com/1069817 fast/ruby/float-overhang-from-ruby-text.html [ Failure ]
 
 crbug.com/676229 plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 crbug.com/742670 plugins/iframe-plugin-bgcolor.html [ Failure Pass ]

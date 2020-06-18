@@ -77,8 +77,6 @@ class FakeSyncEngine : public SyncEngine {
 
   void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) const override;
 
-  void FlushDirectory() const override;
-
   void RequestBufferedProtocolEventsAndEnableForwarding() override;
   void DisableProtocolEventForwarding() override;
 

@@ -34,13 +34,12 @@ class CORE_EXPORT CascadeResolver {
 
  public:
   // TODO(crbug.com/985047): Probably use a HashMap for this.
-  using NameStack = Vector<CSSPropertyName, 8>;
+  using PropertyStack = Vector<const CSSProperty*, 8>;
 
   // A 'locked' property is a property we are in the process of applying.
   // In other words, once a property is locked, locking it again would form
   // a cycle, and is therefore an error.
   bool IsLocked(const CSSProperty&) const;
-  bool IsLocked(const CSSPropertyName&) const;
 
   // We do not allow substitution of animation-tainted values into
   // an animation-affecting property.
@@ -73,7 +72,6 @@ class CORE_EXPORT CascadeResolver {
 
    public:
     AutoLock(const CSSProperty&, CascadeResolver&);
-    AutoLock(const CSSPropertyName&, CascadeResolver&);
     ~AutoLock();
 
    private:
@@ -102,8 +100,12 @@ class CORE_EXPORT CascadeResolver {
   // Returns true whenever the CascadeResolver is in a cycle state.
   // This DOES NOT detect cycles; the caller must call DetectCycle first.
   bool InCycle() const;
+  // Returns the index of the given property (compared using the property's
+  // CSSPropertyName), or kNotFound if the property (name) is not present in
+  // stack_.
+  wtf_size_t Find(const CSSProperty&) const;
 
-  NameStack stack_;
+  PropertyStack stack_;
   wtf_size_t cycle_depth_ = kNotFound;
   CascadeFilter filter_;
   const uint8_t generation_ = 0;

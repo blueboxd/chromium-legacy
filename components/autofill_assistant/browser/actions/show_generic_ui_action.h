@@ -15,7 +15,6 @@
 #include "components/autofill_assistant/browser/website_login_manager.h"
 
 namespace autofill_assistant {
-class UserModel;
 
 // Action to show generic UI in the sheet.
 class ShowGenericUiAction : public Action,
@@ -43,12 +42,10 @@ class ShowGenericUiAction : public Action,
   void OnDoneWaitForDom(const ClientStatus& status);
   // If there is an active WaitForDom this method ends it before calling
   // EndAction, otherwise it just calls EndAction.
-  void OnEndActionInteraction(bool view_inflation_successful,
-                              ProcessedActionStatusProto status,
-                              const UserModel* user_model);
-  void EndAction(bool view_inflation_successful,
-                 ProcessedActionStatusProto status,
-                 const UserModel* user_model);
+  void OnEndActionInteraction(const ClientStatus& status);
+  void EndAction(const ClientStatus& status);
+
+  void OnViewInflationFinished(const ClientStatus& status);
 
   // From autofill::PersonalDataManagerObserver.
   void OnPersonalDataChanged() override;

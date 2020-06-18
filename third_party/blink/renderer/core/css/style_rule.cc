@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/css/css_namespace_rule.h"
 #include "third_party/blink/renderer/core/css/css_page_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_rule.h"
+#include "third_party/blink/renderer/core/css/css_scroll_timeline_rule.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
 #include "third_party/blink/renderer/core/css/css_supports_rule.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -74,6 +75,9 @@ void StyleRuleBase::Trace(Visitor* visitor) const {
     case kMedia:
       To<StyleRuleMedia>(this)->TraceAfterDispatch(visitor);
       return;
+    case kScrollTimeline:
+      To<StyleRuleScrollTimeline>(this)->TraceAfterDispatch(visitor);
+      return;
     case kSupports:
       To<StyleRuleSupports>(this)->TraceAfterDispatch(visitor);
       return;
@@ -116,6 +120,9 @@ void StyleRuleBase::FinalizeGarbageCollectedObject() {
     case kMedia:
       To<StyleRuleMedia>(this)->~StyleRuleMedia();
       return;
+    case kScrollTimeline:
+      To<StyleRuleScrollTimeline>(this)->~StyleRuleScrollTimeline();
+      return;
     case kSupports:
       To<StyleRuleSupports>(this)->~StyleRuleSupports();
       return;
@@ -150,6 +157,8 @@ StyleRuleBase* StyleRuleBase::Copy() const {
       return To<StyleRuleFontFace>(this)->Copy();
     case kMedia:
       return To<StyleRuleMedia>(this)->Copy();
+    case kScrollTimeline:
+      return To<StyleRuleScrollTimeline>(this)->Copy();
     case kSupports:
       return To<StyleRuleSupports>(this)->Copy();
     case kImport:
@@ -195,6 +204,10 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet,
     case kMedia:
       rule = MakeGarbageCollected<CSSMediaRule>(To<StyleRuleMedia>(self),
                                                 parent_sheet);
+      break;
+    case kScrollTimeline:
+      rule = MakeGarbageCollected<CSSScrollTimelineRule>(
+          To<StyleRuleScrollTimeline>(self), parent_sheet);
       break;
     case kSupports:
       rule = MakeGarbageCollected<CSSSupportsRule>(To<StyleRuleSupports>(self),
@@ -360,6 +373,44 @@ MutableCSSPropertyValueSet& StyleRuleFontFace::MutableProperties() {
 }
 
 void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) const {
+  visitor->Trace(properties_);
+  StyleRuleBase::TraceAfterDispatch(visitor);
+}
+
+StyleRuleScrollTimeline::StyleRuleScrollTimeline(
+    const String& name,
+    const CSSPropertyValueSet* properties)
+    : StyleRuleBase(kScrollTimeline), name_(name), properties_(properties) {}
+
+StyleRuleScrollTimeline::StyleRuleScrollTimeline(
+    const StyleRuleScrollTimeline& scroll_timeline_rule)
+    : StyleRuleBase(scroll_timeline_rule),
+      properties_(scroll_timeline_rule.properties_->MutableCopy()) {}
+
+StyleRuleScrollTimeline::~StyleRuleScrollTimeline() = default;
+
+const CSSValue* StyleRuleScrollTimeline::GetSource() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kSource);
+}
+
+const CSSValue* StyleRuleScrollTimeline::GetOrientation() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kOrientation);
+}
+
+const CSSValue* StyleRuleScrollTimeline::GetStart() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kStart);
+}
+
+const CSSValue* StyleRuleScrollTimeline::GetEnd() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kEnd);
+}
+
+const CSSValue* StyleRuleScrollTimeline::GetTimeRange() const {
+  return properties_->GetPropertyCSSValue(CSSPropertyID::kTimeRange);
+}
+
+void StyleRuleScrollTimeline::TraceAfterDispatch(
+    blink::Visitor* visitor) const {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }

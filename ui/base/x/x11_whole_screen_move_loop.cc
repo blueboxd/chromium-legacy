@@ -44,7 +44,7 @@ X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
       in_move_loop_(false),
       initial_cursor_(x11::None),
-      grab_input_window_(x11::None),
+      grab_input_window_(x11::Window::None),
       grabbed_pointer_(false),
       canceled_(false) {}
 
@@ -145,7 +145,8 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(bool can_grab_pointer,
   if (can_grab_pointer) {
     grabbed_pointer_ = GrabPointer(new_cursor);
     if (!grabbed_pointer_) {
-      XDestroyWindow(gfx::GetXDisplay(), grab_input_window_);
+      XDestroyWindow(gfx::GetXDisplay(),
+                     static_cast<uint32_t>(grab_input_window_));
       return false;
     }
   }
@@ -196,15 +197,17 @@ void X11WholeScreenMoveLoop::EndMoveLoop() {
 
   XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
-  for (auto mask : kModifiersMasks)
-    XUngrabKey(display, esc_keycode, mask, grab_input_window_);
+  for (auto mask : kModifiersMasks) {
+    XUngrabKey(display, esc_keycode, mask,
+               static_cast<uint32_t>(grab_input_window_));
+  }
 
   // Restore the previous dispatcher.
   nested_dispatcher_.reset();
   delegate_->OnMoveLoopEnded();
   grab_input_window_events_.reset();
-  XDestroyWindow(display, grab_input_window_);
-  grab_input_window_ = x11::None;
+  XDestroyWindow(display, static_cast<uint32_t>(grab_input_window_));
+  grab_input_window_ = x11::Window::None;
 
   in_move_loop_ = false;
   std::move(quit_closure_).Run();
@@ -228,7 +231,8 @@ void X11WholeScreenMoveLoop::GrabEscKey() {
   XDisplay* display = gfx::GetXDisplay();
   unsigned int esc_keycode = XKeysymToKeycode(display, XK_Escape);
   for (auto mask : kModifiersMasks) {
-    XGrabKey(display, esc_keycode, mask, grab_input_window_, x11::False,
+    XGrabKey(display, esc_keycode, mask,
+             static_cast<uint32_t>(grab_input_window_), x11::False,
              GrabModeAsync, GrabModeAsync);
   }
 }
@@ -237,18 +241,18 @@ void X11WholeScreenMoveLoop::CreateDragInputWindow(XDisplay* display) {
   XSetWindowAttributes swa;
   memset(&swa, 0, sizeof(swa));
   swa.override_redirect = x11::True;
-  grab_input_window_ =
+  grab_input_window_ = static_cast<x11::Window>(
       XCreateWindow(display, DefaultRootWindow(display), -100, -100, 10, 10, 0,
                     static_cast<int>(x11::WindowClass::CopyFromParent),
                     static_cast<int>(x11::WindowClass::InputOnly), nullptr,
-                    CWOverrideRedirect, &swa);
+                    CWOverrideRedirect, &swa));
   uint32_t event_mask = ButtonPressMask | ButtonReleaseMask |
                         PointerMotionMask | KeyPressMask | KeyReleaseMask |
                         StructureNotifyMask;
   grab_input_window_events_ = std::make_unique<ui::XScopedEventSelector>(
       grab_input_window_, event_mask);
 
-  XMapRaised(display, grab_input_window_);
+  XMapRaised(display, static_cast<uint32_t>(grab_input_window_));
 }
 
 }  // namespace ui

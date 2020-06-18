@@ -11,7 +11,6 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/sync/engine/passive_model_worker.h"
-#include "components/sync/model/change_processor_mock.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

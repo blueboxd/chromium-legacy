@@ -401,7 +401,7 @@ void JNI_OfflinePageDownloadBridge_StartDownload(
 static jlong JNI_OfflinePageDownloadBridge_Init(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
-  ProfileKey* key = ::android::GetLastUsedProfileKey();
+  ProfileKey* key = ::android::GetLastUsedRegularProfileKey();
   FullBrowserTransitionManager::Get()->RegisterCallbackOnProfileCreation(
       key, base::BindOnce(&InitializeBackendOnProfileCreated));
 

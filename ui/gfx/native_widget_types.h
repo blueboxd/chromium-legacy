@@ -100,7 +100,7 @@ struct ANativeWindow;
 namespace ui {
 class WindowAndroid;
 class ViewAndroid;
-}
+}  // namespace ui
 #endif
 class SkBitmap;
 
@@ -108,6 +108,12 @@ class SkBitmap;
 extern "C" {
 struct _AtkObject;
 typedef struct _AtkObject AtkObject;
+}
+#endif
+
+#if defined(USE_X11)
+namespace x11 {
+enum class Window : uint32_t;
 }
 #endif
 
@@ -235,8 +241,9 @@ typedef intptr_t NativeViewId;
 typedef HWND AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = nullptr;
 #elif defined(USE_X11)
-typedef unsigned long AcceleratedWidget;
-constexpr AcceleratedWidget kNullAcceleratedWidget = 0;
+typedef x11::Window AcceleratedWidget;
+constexpr AcceleratedWidget kNullAcceleratedWidget =
+    static_cast<x11::Window>(0);
 #elif defined(OS_IOS)
 typedef UIView* AcceleratedWidget;
 constexpr AcceleratedWidget kNullAcceleratedWidget = 0;

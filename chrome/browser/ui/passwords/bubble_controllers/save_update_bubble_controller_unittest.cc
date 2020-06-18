@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -25,6 +26,7 @@
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "components/prefs/pref_service.h"
@@ -64,7 +66,12 @@ constexpr char kUIDismissalReasonUpdateMetric[] =
 
 class SaveUpdateBubbleControllerTest : public ::testing::Test {
  public:
-  SaveUpdateBubbleControllerTest() = default;
+  SaveUpdateBubbleControllerTest() {
+    // If kEnablePasswordsAccountStorage is enabled, then
+    // SaveUpdateWithAccountStoreBubbleController is used instead of this class.
+    feature_list_.InitAndDisableFeature(
+        password_manager::features::kEnablePasswordsAccountStorage);
+  }
   ~SaveUpdateBubbleControllerTest() override = default;
 
   void SetUp() override {
@@ -127,6 +134,7 @@ class SaveUpdateBubbleControllerTest : public ::testing::Test {
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetCurrentForms() const;
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_enabler_;
   TestingProfile profile_;
@@ -375,7 +383,6 @@ TEST_F(SaveUpdateBubbleControllerTest, SuppressSignInPromo) {
 }
 
 TEST_F(SaveUpdateBubbleControllerTest, SignInPromoOK) {
-  base::HistogramTester histogram_tester;
   PretendPasswordWaiting();
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
   EXPECT_CALL(*delegate(), SavePassword(pending_password().username_value,

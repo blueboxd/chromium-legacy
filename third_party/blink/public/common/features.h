@@ -270,6 +270,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebXrMultiGpu;
 BLINK_COMMON_EXPORT extern const base::Feature
     kCSSMatchedPropertiesCacheDependencies;
 
+BLINK_COMMON_EXPORT extern const base::Feature kParkableStringsToDisk;
+
 }  // namespace features
 }  // namespace blink
 

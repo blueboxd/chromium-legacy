@@ -440,8 +440,8 @@ ZOrderLevel X11Window::GetZOrderLevel() const {
 }
 
 void X11Window::StackAbove(gfx::AcceleratedWidget widget) {
-  // Check comment in the GetWidget method about this this cast.
-  XWindow::StackXWindowAbove(static_cast<::Window>(widget));
+  // Check comment in the GetWidget method about this cast.
+  XWindow::StackXWindowAbove(static_cast<x11::Window>(widget));
 }
 
 void X11Window::StackAtTop() {
@@ -576,7 +576,7 @@ bool X11Window::DispatchXEvent(x11::Event* xev) {
 }
 
 bool X11Window::CanDispatchEvent(const PlatformEvent& xev) {
-  DCHECK_NE(window(), x11::None);
+  DCHECK_NE(window(), x11::Window::None);
   return !!current_xevent_;
 }
 
@@ -584,7 +584,7 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
   TRACE_EVENT1("views", "X11PlatformWindow::Dispatch", "event->type()",
                event->type());
 
-  DCHECK_NE(window(), x11::None);
+  DCHECK_NE(window(), x11::Window::None);
   DCHECK(event);
   DCHECK(current_xevent_);
 
@@ -851,7 +851,7 @@ void X11Window::UpdateCursor(
   drag_handler_delegate_->OnDragOperationChanged(negotiated_operation);
 }
 
-void X11Window::OnBeginForeignDrag(XID window) {
+void X11Window::OnBeginForeignDrag(x11::Window window) {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 

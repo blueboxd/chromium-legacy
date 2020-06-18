@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/events/platform/x11/x11_event_source.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
 
@@ -14,7 +15,8 @@ class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
  public:
   explicit ExposeEventForwarder(VulkanSurfaceX11* surface) : surface_(surface) {
     if (auto* event_source = ui::X11EventSource::GetInstance()) {
-      XSelectInput(gfx::GetXDisplay(), surface_->window_, ExposureMask);
+      XSelectInput(gfx::GetXDisplay(), static_cast<uint32_t>(surface_->window_),
+                   ExposureMask);
       event_source->AddXEventDispatcher(this);
     }
   }
@@ -40,17 +42,18 @@ class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
 // static
 std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(
     VkInstance vk_instance,
-    Window parent_window) {
+    x11::Window parent_window) {
   XDisplay* display = gfx::GetXDisplay();
   XWindowAttributes attributes;
-  if (!XGetWindowAttributes(display, parent_window, &attributes)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << parent_window
-               << ".";
+  if (!XGetWindowAttributes(display, static_cast<uint32_t>(parent_window),
+                            &attributes)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window "
+               << static_cast<uint32_t>(parent_window) << ".";
     return nullptr;
   }
   Window window = XCreateWindow(
-      display, parent_window, 0, 0, attributes.width, attributes.height, 0,
-      static_cast<int>(x11::WindowClass::CopyFromParent),
+      display, static_cast<uint32_t>(parent_window), 0, 0, attributes.width,
+      attributes.height, 0, static_cast<int>(x11::WindowClass::CopyFromParent),
       static_cast<int>(x11::WindowClass::InputOutput), nullptr, 0, nullptr);
   if (!window) {
     LOG(ERROR) << "XCreateWindow failed.";
@@ -69,16 +72,16 @@ std::unique_ptr<VulkanSurfaceX11> VulkanSurfaceX11::Create(
     DLOG(ERROR) << "vkCreateXlibSurfaceKHR() failed: " << result;
     return nullptr;
   }
-  return std::make_unique<VulkanSurfaceX11>(vk_instance, vk_surface,
-                                            parent_window, window);
+  return std::make_unique<VulkanSurfaceX11>(
+      vk_instance, vk_surface, parent_window, static_cast<x11::Window>(window));
 }
 
 VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
                                    VkSurfaceKHR vk_surface,
-                                   Window parent_window,
-                                   Window window)
+                                   x11::Window parent_window,
+                                   x11::Window window)
     : VulkanSurface(vk_instance,
-                    window,
+                    static_cast<gfx::AcceleratedWidget>(window),
                     vk_surface,
                     false /* use_protected_memory */),
       parent_window_(parent_window),
@@ -92,20 +95,22 @@ bool VulkanSurfaceX11::Reshape(const gfx::Size& size,
                                gfx::OverlayTransform pre_transform) {
   DCHECK_EQ(pre_transform, gfx::OVERLAY_TRANSFORM_NONE);
 
-  XResizeWindow(gfx::GetXDisplay(), window_, size.width(), size.height());
+  XResizeWindow(gfx::GetXDisplay(), static_cast<uint32_t>(window_),
+                size.width(), size.height());
   return VulkanSurface::Reshape(size, pre_transform);
 }
 
 bool VulkanSurfaceX11::CanDispatchXEvent(const x11::Event* x11_event) {
   const XEvent* event = &x11_event->xlib_event();
-  return event->type == Expose && event->xexpose.window == window_;
+  return event->type == Expose &&
+         event->xexpose.window == static_cast<uint32_t>(window_);
 }
 
 void VulkanSurfaceX11::ForwardXExposeEvent(const x11::Event* event) {
   XEvent forwarded_event = event->xlib_event();
-  forwarded_event.xexpose.window = parent_window_;
-  XSendEvent(gfx::GetXDisplay(), parent_window_, False, ExposureMask,
-             &forwarded_event);
+  forwarded_event.xexpose.window = static_cast<uint32_t>(parent_window_);
+  XSendEvent(gfx::GetXDisplay(), static_cast<uint32_t>(parent_window_), False,
+             ExposureMask, &forwarded_event);
   XFlush(gfx::GetXDisplay());
 }
 

@@ -21,6 +21,7 @@
 #include "ui/base/x/x11_shm_image_pool.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_error_tracker.h"
 #include "ui/gfx/x/x11_types.h"
@@ -122,16 +123,18 @@ X11SoftwareBitmapPresenter::X11SoftwareBitmapPresenter(
     gfx::AcceleratedWidget widget,
     scoped_refptr<base::SequencedTaskRunner> host_task_runner,
     scoped_refptr<base::SequencedTaskRunner> event_task_runner)
-    : widget_(widget),
+    : widget_(static_cast<x11::Window>(widget)),
       display_(gfx::GetXDisplay()),
       gc_(nullptr),
       host_task_runner_(host_task_runner),
       event_task_runner_(event_task_runner) {
-  DCHECK_NE(widget_, gfx::kNullAcceleratedWidget);
-  gc_ = XCreateGC(display_, widget_, 0, nullptr);
+  DCHECK(widget_ != x11::Window::None);
+  gc_ = XCreateGC(display_, static_cast<uint32_t>(widget_), 0, nullptr);
   memset(&attributes_, 0, sizeof(attributes_));
-  if (!XGetWindowAttributes(display_, widget_, &attributes_)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window " << widget_;
+  if (!XGetWindowAttributes(display_, static_cast<uint32_t>(widget_),
+                            &attributes_)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window "
+               << static_cast<uint32_t>(widget_);
     return;
   }
 
@@ -221,9 +224,9 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
   if (ShmPoolReady()) {
     // TODO(thomasanderson): Investigate direct rendering with DRI3 to avoid any
     // unnecessary X11 IPC or buffer copying.
-    if (XShmPutImage(display_, widget_, gc_, shm_pool_->CurrentImage(),
-                     rect.x(), rect.y(), rect.x(), rect.y(), rect.width(),
-                     rect.height(), x11::True)) {
+    if (XShmPutImage(display_, static_cast<uint32_t>(widget_), gc_,
+                     shm_pool_->CurrentImage(), rect.x(), rect.y(), rect.x(),
+                     rect.y(), rect.width(), rect.height(), x11::True)) {
       needs_swap_ = true;
       FlushAfterPutImage();
       return;
@@ -234,9 +237,9 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
   }
 
   if (composite_ &&
-      CompositeBitmap(display_, widget_, rect.x(), rect.y(), rect.width(),
-                      rect.height(), attributes_.depth, gc_,
-                      skia_pixmap.addr())) {
+      CompositeBitmap(display_, static_cast<uint32_t>(widget_), rect.x(),
+                      rect.y(), rect.width(), rect.height(), attributes_.depth,
+                      gc_, skia_pixmap.addr())) {
     FlushAfterPutImage();
     return;
   }
@@ -259,8 +262,8 @@ void X11SoftwareBitmapPresenter::EndPaint(const gfx::Rect& damage_rect) {
   image.blue_mask = attributes_.visual->blue_mask;
 
   image.data = reinterpret_cast<char*>(const_cast<void*>(skia_pixmap.addr()));
-  XPutImage(display_, widget_, gc_, &image, rect.x(), rect.y(), rect.x(),
-            rect.y(), rect.width(), rect.height());
+  XPutImage(display_, static_cast<uint32_t>(widget_), gc_, &image, rect.x(),
+            rect.y(), rect.x(), rect.y(), rect.width(), rect.height());
 
   FlushAfterPutImage();
 }

@@ -212,9 +212,13 @@ public class AssistantPaymentMethodSection
     }
 
     private void addAutocompleteInformationToEditor(AutofillAddress address) {
-        // The check for non-null label is necessary to prevent crash in editor when opening.
-        if (mEditor == null || address.getProfile().getLabel() == null) {
+        if (mEditor == null) {
             return;
+        }
+        if (address.getProfile().getLabel() == null) {
+            address.getProfile().setLabel(
+                    PersonalDataManager.getInstance().getBillingAddressLabelForPaymentRequest(
+                            address.getProfile()));
         }
         mEditor.updateBillingAddressIfComplete(address);
     }

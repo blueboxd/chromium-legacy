@@ -401,16 +401,16 @@ void AppLaunchController::InitializeNetwork() {
     OnNetworkStateChanged(/*online*/ true);
   }
 }
-bool AppLaunchController::IsNetworkReady() {
+bool AppLaunchController::IsNetworkReady() const {
   return app_launch_splash_screen_view_ &&
          app_launch_splash_screen_view_->IsNetworkReady();
 }
 
-bool AppLaunchController::ShouldSkipAppInstallation() {
+bool AppLaunchController::ShouldSkipAppInstallation() const {
   return false;
 }
 
-void AppLaunchController::OnInstallingApp() {
+void AppLaunchController::OnAppInstalling() {
   if (!app_launch_splash_screen_view_)
     return;
 
@@ -429,7 +429,7 @@ void AppLaunchController::OnInstallingApp() {
   }
 }
 
-void AppLaunchController::OnReadyToLaunch() {
+void AppLaunchController::OnAppPrepared() {
   launcher_ready_ = true;
 
   if (block_app_launch)
@@ -455,14 +455,14 @@ void AppLaunchController::OnReadyToLaunch() {
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(kAppInstallSplashScreenMinTimeMS -
                                           time_taken_ms),
-        this, &AppLaunchController::OnReadyToLaunch);
+        this, &AppLaunchController::OnAppPrepared);
     return;
   }
 
   startup_app_launcher_->LaunchApp();
 }
 
-void AppLaunchController::OnLaunchSucceeded() {
+void AppLaunchController::OnAppLaunched() {
   SYSLOG(INFO) << "Kiosk launch succeeded, wait for app window.";
   if (app_launch_splash_screen_view_) {
     app_launch_splash_screen_view_->UpdateAppLaunchState(
@@ -492,7 +492,7 @@ void AppLaunchController::OnLaunchFailed(KioskAppLaunchError::Error error) {
   chrome::AttemptUserExit();
 }
 
-bool AppLaunchController::IsShowingNetworkConfigScreen() {
+bool AppLaunchController::IsShowingNetworkConfigScreen() const {
   return network_config_requested_;
 }
 

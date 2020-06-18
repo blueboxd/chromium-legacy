@@ -324,6 +324,13 @@ bool TextInput::SetCompositionFromExistingText(
   return false;
 }
 
+// TODO(crbug.com/1091088) Implement setAutocorrectRange
+bool TextInput::SetAutocorrectRange(const base::string16& autocorrect_text,
+                                    const gfx::Range& range) {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 void TextInput::OnKeyboardVisibilityChanged(bool is_visible) {
   delegate_->OnVirtualKeyboardVisibilityChanged(is_visible);
 }

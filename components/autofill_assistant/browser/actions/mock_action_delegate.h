@@ -287,19 +287,20 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD0(RequireUI, void());
   MOCK_METHOD0(SetExpandSheetForPromptAction, bool());
 
-  MOCK_METHOD2(
+  MOCK_METHOD3(
       OnSetGenericUi,
       void(std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-           base::OnceCallback<void(bool,
-                                   ProcessedActionStatusProto,
-                                   const UserModel*)>& end_action_callback));
+           base::OnceCallback<void(const ClientStatus&)>& end_action_callback,
+           base::OnceCallback<void(const ClientStatus&)>&
+               view_inflation_finished_callback));
 
   void SetGenericUi(
       std::unique_ptr<GenericUserInterfaceProto> generic_ui,
-      base::OnceCallback<void(bool,
-                              ProcessedActionStatusProto,
-                              const UserModel*)> end_action_callback) override {
-    OnSetGenericUi(std::move(generic_ui), end_action_callback);
+      base::OnceCallback<void(const ClientStatus&)> end_action_callback,
+      base::OnceCallback<void(const ClientStatus&)>
+          view_inflation_finished_callback) override {
+    OnSetGenericUi(std::move(generic_ui), end_action_callback,
+                   view_inflation_finished_callback);
   }
   MOCK_METHOD0(ClearGenericUi, void());
 

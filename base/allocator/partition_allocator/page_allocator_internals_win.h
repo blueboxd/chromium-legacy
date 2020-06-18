@@ -7,6 +7,7 @@
 
 #include "base/allocator/partition_allocator/oom.h"
 #include "base/allocator/partition_allocator/page_allocator_internal.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/logging.h"
 
 namespace base {
@@ -84,7 +85,7 @@ void SetSystemPagesAccessInternal(
     if (!VirtualFree(address, length, MEM_DECOMMIT)) {
       // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
       // report we get the error number.
-      CHECK_EQ(static_cast<uint32_t>(ERROR_SUCCESS), GetLastError());
+      PA_CHECK(static_cast<uint32_t>(ERROR_SUCCESS) == GetLastError());
     }
   } else {
     if (!VirtualAlloc(address, length, MEM_COMMIT,
@@ -94,13 +95,13 @@ void SetSystemPagesAccessInternal(
         OOM_CRASH(length);
       // We check `GetLastError` for `ERROR_SUCCESS` here so that in a crash
       // report we get the error number.
-      CHECK_EQ(ERROR_SUCCESS, error);
+      PA_CHECK(ERROR_SUCCESS == error);
     }
   }
 }
 
 void FreePagesInternal(void* address, size_t length) {
-  CHECK(VirtualFree(address, 0, MEM_RELEASE));
+  PA_CHECK(VirtualFree(address, 0, MEM_RELEASE));
 }
 
 void DecommitSystemPagesInternal(void* address, size_t length) {
@@ -135,7 +136,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
   // failure.
   if (ret) {
     void* ptr = VirtualAlloc(address, length, MEM_RESET, PAGE_READWRITE);
-    CHECK(ptr);
+    PA_CHECK(ptr);
   }
 }
 

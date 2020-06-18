@@ -64,6 +64,7 @@ android_library("weblayer_private_java_tests") {
   sources = [
     "src/org/chromium/weblayer/test/BrowserControlsTest.java",
     "src/org/chromium/weblayer/test/GeolocationTest.java",
+    "src/org/chromium/weblayer/test/InfoBarTest.java",
     "src/org/chromium/weblayer/test/MediaCaptureTest.java",
     "src/org/chromium/weblayer/test/NetworkChangeNotifierTest.java",
     "src/org/chromium/weblayer/test/PopupTest.java",

@@ -21,6 +21,8 @@ class GpuChannelTest : public GpuChannelTestCommon {
 
 #if defined(OS_WIN)
 const SurfaceHandle kFakeSurfaceHandle = reinterpret_cast<SurfaceHandle>(1);
+#elif defined(USE_X11)
+const SurfaceHandle kFakeSurfaceHandle = static_cast<SurfaceHandle>(1);
 #else
 const SurfaceHandle kFakeSurfaceHandle = 1;
 #endif

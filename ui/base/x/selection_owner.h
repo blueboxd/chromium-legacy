@@ -34,7 +34,9 @@ COMPONENT_EXPORT(UI_BASE_X) extern const char kTargets[];
 // processes.
 class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
  public:
-  SelectionOwner(XDisplay* xdisplay, XID xwindow, x11::Atom selection_name);
+  SelectionOwner(XDisplay* xdisplay,
+                 x11::Window xwindow,
+                 x11::Atom selection_name);
   ~SelectionOwner();
 
   // Returns the current selection data. Useful for fast paths.
@@ -64,7 +66,7 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
  private:
   // Holds state related to an incremental data transfer.
   struct IncrementalTransfer {
-    IncrementalTransfer(XID window,
+    IncrementalTransfer(x11::Window window,
                         x11::Atom target,
                         x11::Atom property,
                         std::unique_ptr<XScopedEventSelector> event_selector,
@@ -79,7 +81,7 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
 
     // Parameters from the XSelectionRequest. The data is transferred over
     // |property| on |window|.
-    XID window;
+    x11::Window window;
     x11::Atom target;
     x11::Atom property;
 
@@ -104,7 +106,9 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
   // Attempts to convert the selection to |target|. If the conversion is
   // successful, true is returned and the result is stored in the |property|
   // of |requestor|.
-  bool ProcessTarget(x11::Atom target, XID requestor, x11::Atom property);
+  bool ProcessTarget(x11::Atom target,
+                     x11::Window requestor,
+                     x11::Atom property);
 
   // Sends the next chunk of data for given the incremental data transfer.
   void ProcessIncrementalTransfer(IncrementalTransfer* transfer);
@@ -123,7 +127,7 @@ class COMPONENT_EXPORT(UI_BASE_X) SelectionOwner {
 
   // Our X11 state.
   XDisplay* x_display_;
-  XID x_window_;
+  x11::Window x_window_;
 
   // The X11 selection that this instance communicates on.
   x11::Atom selection_name_;

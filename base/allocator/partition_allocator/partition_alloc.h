@@ -57,6 +57,7 @@
 #include "base/allocator/partition_allocator/memory_reclaimer.h"
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
@@ -86,7 +87,7 @@
     if (flags & PartitionAllocReturnNull) {           \
       return nullptr;                                 \
     }                                                 \
-    CHECK(false);                                     \
+    PA_CHECK(false);                                  \
   }
 
 namespace base {
@@ -423,17 +424,17 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
 
   Page* page = bucket->active_pages_head;
   // Check that this page is neither full nor freed.
-  DCHECK(page);
-  DCHECK(page->num_allocated_slots >= 0);
+  PA_DCHECK(page);
+  PA_DCHECK(page->num_allocated_slots >= 0);
   void* ret = page->freelist_head;
   if (LIKELY(ret)) {
     // If these DCHECKs fire, you probably corrupted memory. TODO(palmer): See
     // if we can afford to make these CHECKs.
-    DCHECK(IsValidPage(page));
+    PA_DCHECK(IsValidPage(page));
 
     // All large allocations must go through the slow path to correctly update
     // the size metadata.
-    DCHECK(page->get_raw_size() == 0);
+    PA_DCHECK(page->get_raw_size() == 0);
     internal::PartitionFreelistEntry* new_head =
         internal::EncodedPartitionFreelistEntry::Decode(
             page->freelist_head->next);
@@ -442,7 +443,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   } else {
     ret = bucket->SlowPathAlloc(this, flags, size, &is_already_zeroed);
     // TODO(palmer): See if we can afford to make this a CHECK.
-    DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
+    PA_DCHECK(!ret || IsValidPage(Page::FromPointer(ret)));
   }
 
 #if DCHECK_IS_ON() && !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
@@ -456,7 +457,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFromBucket(Bucket* bucket,
   size_t new_slot_size = page->bucket->slot_size;
   size_t raw_size = page->get_raw_size();
   if (raw_size) {
-    DCHECK(raw_size == size);
+    PA_DCHECK(raw_size == size);
     new_slot_size = raw_size;
   }
   size_t no_cookie_size =
@@ -488,7 +489,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   free(ptr);
 #else
-  DCHECK(initialized);
+  PA_DCHECK(initialized);
 
   if (UNLIKELY(!ptr))
     return;
@@ -502,7 +503,7 @@ ALWAYS_INLINE void PartitionRoot<thread_safe>::Free(void* ptr) {
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
   Page* page = Page::FromPointer(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(IsValidPage(page));
+  PA_DCHECK(IsValidPage(page));
   internal::DeferredUnmap deferred_unmap;
   {
     ScopedGuard guard{lock_};
@@ -531,16 +532,16 @@ template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::IncreaseCommittedPages(
     size_t len) {
   total_size_of_committed_pages += len;
-  DCHECK(total_size_of_committed_pages <=
-         total_size_of_super_pages + total_size_of_direct_mapped_pages);
+  PA_DCHECK(total_size_of_committed_pages <=
+            total_size_of_super_pages + total_size_of_direct_mapped_pages);
 }
 
 template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::DecreaseCommittedPages(
     size_t len) {
   total_size_of_committed_pages -= len;
-  DCHECK(total_size_of_committed_pages <=
-         total_size_of_super_pages + total_size_of_direct_mapped_pages);
+  PA_DCHECK(total_size_of_committed_pages <=
+            total_size_of_super_pages + total_size_of_direct_mapped_pages);
 }
 
 template <bool thread_safe>
@@ -555,7 +556,7 @@ template <bool thread_safe>
 ALWAYS_INLINE void PartitionRoot<thread_safe>::RecommitSystemPages(
     void* address,
     size_t length) {
-  CHECK(::base::RecommitSystemPages(address, length, PageReadWrite));
+  PA_CHECK(::base::RecommitSystemPages(address, length, PageReadWrite));
   IncreaseCommittedPages(length);
 }
 
@@ -597,11 +598,11 @@ ALWAYS_INLINE internal::PartitionPage<thread_safe>*
 PartitionAllocGetPageForSize(void* ptr) {
   // No need to lock here. Only |ptr| being freed by another thread could
   // cause trouble, and the caller is responsible for that not happening.
-  DCHECK(PartitionAllocSupportsGetSize());
+  PA_DCHECK(PartitionAllocSupportsGetSize());
   auto* page =
       internal::PartitionPage<thread_safe>::FromPointerNoAlignmentCheck(ptr);
   // TODO(palmer): See if we can afford to make this a CHECK.
-  DCHECK(PartitionRoot<thread_safe>::IsValidPage(page));
+  PA_DCHECK(PartitionRoot<thread_safe>::IsValidPage(page));
   return page;
 }
 }  // namespace internal
@@ -623,7 +624,7 @@ ALWAYS_INLINE size_t PartitionAllocGetSize(void* ptr) {
 // lead to undefined behavior.
 template <bool thread_safe>
 ALWAYS_INLINE size_t PartitionAllocGetSlotOffset(void* ptr) {
-  DCHECK(IsManagedByPartitionAllocAndNotDirectMapped(ptr));
+  PA_DCHECK(IsManagedByPartitionAllocAndNotDirectMapped(ptr));
   ptr = internal::PartitionCookieFreePointerAdjust(ptr);
   auto* page = internal::PartitionAllocGetPageForSize<thread_safe>(ptr);
   size_t slot_size = page->bucket->slot_size;
@@ -651,9 +652,9 @@ PartitionRoot<thread_safe>::SizeToBucket(size_t size) const {
   size_t sub_order_index = size & order_sub_index_masks[order];
   Bucket* bucket = bucket_lookups[(order << kGenericNumBucketsPerOrderBits) +
                                   order_index + !!sub_order_index];
-  CHECK(bucket);
-  DCHECK(!bucket->slot_size || bucket->slot_size >= size);
-  DCHECK(!(bucket->slot_size % kGenericSmallestBucket));
+  PA_CHECK(bucket);
+  PA_DCHECK(!bucket->slot_size || bucket->slot_size >= size);
+  PA_DCHECK(!(bucket->slot_size % kGenericSmallestBucket));
   return bucket;
 }
 
@@ -662,16 +663,16 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
     int flags,
     size_t size,
     const char* type_name) {
-  DCHECK_LT(flags, PartitionAllocLastFlag << 1);
+  PA_DCHECK(flags < PartitionAllocLastFlag << 1);
 
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   CHECK_MAX_SIZE_OR_RETURN_NULLPTR(size, flags);
   const bool zero_fill = flags & PartitionAllocZeroFill;
   void* result = zero_fill ? calloc(1, size) : malloc(size);
-  CHECK(result || flags & PartitionAllocReturnNull);
+  PA_CHECK(result || flags & PartitionAllocReturnNull);
   return result;
 #else
-  DCHECK(initialized);
+  PA_DCHECK(initialized);
   void* result;
   const bool hooks_enabled = PartitionAllocHooks::AreHooksEnabled();
   if (UNLIKELY(hooks_enabled)) {
@@ -685,7 +686,7 @@ ALWAYS_INLINE void* PartitionRoot<thread_safe>::AllocFlags(
   size_t requested_size = size;
   size = internal::PartitionCookieSizeAdjustAdd(size);
   auto* bucket = SizeToBucket(size);
-  DCHECK(bucket);
+  PA_DCHECK(bucket);
   {
     internal::ScopedGuard<thread_safe> guard{lock_};
     result = AllocFromBucket(bucket, flags, size);
@@ -725,7 +726,7 @@ ALWAYS_INLINE size_t PartitionRoot<thread_safe>::ActualSize(size_t size) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   return size;
 #else
-  DCHECK(PartitionRoot<thread_safe>::initialized);
+  PA_DCHECK(PartitionRoot<thread_safe>::initialized);
   size = internal::PartitionCookieSizeAdjustAdd(size);
   auto* bucket = SizeToBucket(size);
   if (LIKELY(!bucket->is_direct_mapped())) {

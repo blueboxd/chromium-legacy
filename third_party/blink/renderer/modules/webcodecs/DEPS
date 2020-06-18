@@ -1,11 +1,6 @@
 include_rules = [
     "+base/threading/thread_task_runner_handle.h",
 
-    "+components/viz/common/gpu/raster_context_provider.h",
-    "+components/viz/common/resources/single_release_callback.h",
-
-    "+gpu/command_buffer/client/shared_image_interface.h",
-
     "+media/base",
     "+media/filters",
     "+media/media_buildflags.h",

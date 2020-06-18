@@ -7,6 +7,7 @@
 
 #include "components/safe_browsing/content/password_protection/visual_utils.h"
 
+#include "base/check_op.h"
 #include "base/numerics/checked_math.h"
 #include "components/safe_browsing/core/proto/client_model.pb.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"

@@ -1991,13 +1991,6 @@ void ProfileSyncService::OverrideNetworkForTest(
   }
 }
 
-void ProfileSyncService::FlushDirectory() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_ && engine_->IsInitialized()) {
-    engine_->FlushDirectory();
-  }
-}
-
 bool ProfileSyncService::IsPassphrasePrompted() const {
   return sync_prefs_.IsPassphrasePrompted();
 }

@@ -25,9 +25,7 @@
 #include "printing/buildflags/buildflags.h"
 
 #if defined(OS_WIN)
-#include "chrome/services/util_win/public/mojom/util_read_icon.mojom.h"
 #include "chrome/services/util_win/public/mojom/util_win.mojom.h"
-#include "chrome/services/util_win/util_read_icon.h"
 #include "chrome/services/util_win/util_win_impl.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"  // nogncheck
 #include "components/services/quarantine/public/mojom/quarantine.mojom.h"  // nogncheck
@@ -127,11 +125,6 @@ auto RunQuarantineService(
 
 auto RunWindowsUtility(mojo::PendingReceiver<chrome::mojom::UtilWin> receiver) {
   return std::make_unique<UtilWinImpl>(std::move(receiver));
-}
-
-auto RunWindowsIconReader(
-    mojo::PendingReceiver<chrome::mojom::UtilReadIcon> receiver) {
-  return std::make_unique<UtilReadIcon>(std::move(receiver));
 }
 #endif  // defined(OS_WIN)
 
@@ -275,7 +268,6 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
 #if defined(OS_WIN)
     RunQuarantineService,
     RunWindowsUtility,
-    RunWindowsIconReader,
 #endif  // defined(OS_WIN)
 
 #if BUILDFLAG(ENABLE_PRINTING) && defined(OS_CHROMEOS)

@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, ReauthDefaultFocus) {
   base::RunLoop run_loop;
   std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
       browser()->signin_view_controller()->ShowReauthPrompt(
-          account_id,
+          account_id, signin_metrics::ReauthAccessPoint::kAutofillDropdown,
           base::BindLambdaForTesting([&](signin::ReauthResult result) {
             reauth_result = result;
             run_loop.Quit();

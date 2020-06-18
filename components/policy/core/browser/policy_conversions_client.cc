@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

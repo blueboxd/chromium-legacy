@@ -231,8 +231,6 @@ jumbo_static_library("rest_of_sync") {
     "engine_impl/update_handler.cc",
     "engine_impl/update_handler.h",
     "model/blocking_model_type_store.h",
-    "model/change_processor.cc",
-    "model/change_processor.h",
     "model/conflict_resolution.h",
     "model/data_batch.h",
     "model/data_type_activation_request.cc",
@@ -244,7 +242,6 @@ jumbo_static_library("rest_of_sync") {
     "model/entity_change.h",
     "model/entity_data.cc",
     "model/entity_data.h",
-    "model/local_change_observer.h",
     "model/metadata_batch.cc",
     "model/metadata_batch.h",
     "model/metadata_change_list.h",
@@ -263,7 +260,6 @@ jumbo_static_library("rest_of_sync") {
     "model/string_ordinal.h",
     "model/sync_change.cc",
     "model/sync_change.h",
-    "model/sync_change_processor.cc",
     "model/sync_change_processor.h",
     "model/sync_data.cc",
     "model/sync_data.h",
@@ -333,6 +329,7 @@ jumbo_static_library("rest_of_sync") {
     "syncable/base_node.h",
     "syncable/base_transaction.cc",
     "syncable/base_transaction.h",
+    "syncable/change_processor.h",
     "syncable/change_record.cc",
     "syncable/change_record.h",
     "syncable/change_reorder_buffer.cc",
@@ -510,8 +507,6 @@ static_library("test_support_engine") {
 static_library("test_support_model") {
   testonly = true
   sources = [
-    "model/change_processor_mock.cc",
-    "model/change_processor_mock.h",
     "model/data_type_error_handler_mock.cc",
     "model/data_type_error_handler_mock.h",
     "model/fake_model_type_change_processor.cc",

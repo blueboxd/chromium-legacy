@@ -34,7 +34,7 @@ class SelectionData;
 class COMPONENT_EXPORT(UI_BASE) SelectionRequestor {
  public:
   SelectionRequestor(XDisplay* xdisplay,
-                     XID xwindow,
+                     x11::Window xwindow,
                      XEventDispatcher* dispatcher);
   ~SelectionRequestor();
 
@@ -122,7 +122,7 @@ class COMPONENT_EXPORT(UI_BASE) SelectionRequestor {
 
   // Our X11 state.
   XDisplay* x_display_;
-  XID x_window_;
+  x11::Window x_window_;
 
   // The property on |x_window_| set by the selection owner with the value of
   // the selection.

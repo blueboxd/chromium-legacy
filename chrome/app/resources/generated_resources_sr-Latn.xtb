@@ -1106,7 +1106,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2377588536920405462">Lokaciju možete da isključite ako isključite glavno podešavanje lokacije na uređaju. U podešavanjima lokacije možete da isključite korišćenje Wi‑Fi mreža i mobilnih mreža za lokaciju, kao i traženje Wi‑Fi mreža i Bluetooth uređaja.</translation>
 <translation id="2377667304966270281">Greške u vezi sa hard-diskom</translation>
 <translation id="237828693408258535">Želite li da prevedete ovu stranicu?</translation>
-<translation id="2378346380592252785">Ažurirajte akreditive za: <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Izbor direktorijuma dodatka.</translation>
 <translation id="2379281330731083556">Štampaj pomoću sistemskog dijaloga... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pitaj pre slanja (preporučuje se)</translation>
@@ -2558,7 +2557,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4163560723127662357">Nepoznata tastatura</translation>
 <translation id="4168015872538332605">Neka podešavanja čiji je vlasnik <ph name="PRIMARY_EMAIL" /> se dele sa vama. Ta podešavanja utiču na nalog samo kada koristite višestruko prijavljivanje.</translation>
 <translation id="4170314459383239649">Obriši pri zatvaranju</translation>
-<translation id="4172051516777682613">Uvek prikaži</translation>
 <translation id="4175137578744761569">Svetloljubičasta i bela</translation>
 <translation id="4175737294868205930">Stalni memorijski prostor</translation>
 <translation id="4176463684765177261">Onemogućeno</translation>
@@ -2988,7 +2986,6 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="4777943778632837590">Konfiguriši nazive servera mreže</translation>
 <translation id="4779083564647765204">Zumiranje</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Iskačući prozor je blokiran}one{# iskačući prozor je blokiran}few{# iskačuća prozora su blokirana}other{# iskačućih prozora je blokirano}}</translation>
 <translation id="4780321648949301421">Sačuvaj stranicu kao...</translation>
 <translation id="4785719467058219317">Koristite bezbednosni ključ koji nije registrovan za ovaj veb-sajt</translation>
 <translation id="4788092183367008521">Proverite mrežnu vezu i probajte ponovo.</translation>
@@ -4133,7 +4130,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6242852299490624841">Stavi ovu karticu u fokus</translation>
 <translation id="6243280677745499710">Trenutno podešena</translation>
 <translation id="6243774244933267674">Server je nedostupan</translation>
-<translation id="6246355468475884088">Ovde možete i da prikažete lozinke sa Google naloga</translation>
 <translation id="6246790815526961700">Otpremite sa uređaja</translation>
 <translation id="6247620186971210352">Nije pronađena nijedna aplikacija</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4507,7 +4503,6 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="6745592621698551453">Ažuriraj odmah</translation>
 <translation id="6746124502594467657">Premesti nadole</translation>
 <translation id="674632704103926902">Omogući prevlačenje dodirom</translation>
-<translation id="6748217015615267851">Prikazivač: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Možete da nastavite, ali će biti vraćeni samo sinhronizovani podaci i podešavanja. Izgubićete sve lokalne podatke.</translation>
 <translation id="6749006854028927059">Sajtovi ne mogu da koriste kolačiće da bi videli vaše aktivnosti pregledanja na različitim sajtovima, na primer, za personalizaciju oglasa. Funkcije na nekim sajtovima mogu da prestanu sa radom.</translation>
 <translation id="6750757184909117990">Onemogući mobilnu mrežu</translation>
@@ -5630,7 +5625,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8138082791834443598">Opcionalno – unesite nove ili ažurirajte postojeće informacije koje će biti povezane sa ovim uređajem.</translation>
 <translation id="8138217203226449454">Da li ste namerno promenili dobavljača pretrage?</translation>
 <translation id="813913629614996137">Pokreće se…</translation>
-<translation id="814016597952587568">Prikazuju se lozinke sa Google naloga</translation>
 <translation id="8140778357236808512">Uvezi postojećeg korisnika pod nadzorom</translation>
 <translation id="8141584439523427891">Sada se otvara u alternativnom pregledaču</translation>
 <translation id="8141725884565838206">Upravljajte lozinkama</translation>
@@ -5742,7 +5736,6 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="827097179112817503">Prikaži dugme za početnu stranicu</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 obeleživač je izbrisan}one{# obeleživač je izbrisan}few{# obeleživača su izbrisana}other{# obeleživača je izbrisano}}</translation>
 <translation id="8272443605911821513">Upravljajte dodacima klikom na Dodaci u meniju „Još alatki“.</translation>
-<translation id="8274212285504931082">Dozvolite Pomoćniku da vam prikazuje informacije na osnovu onoga što je na ekranu</translation>
 <translation id="8274332263553132018">Prebacite datoteku</translation>
 <translation id="8274924778568117936">Ne isključujte i ne zatvarajte <ph name="DEVICE_TYPE" /> dok se ažuriranje ne završi. <ph name="DEVICE_TYPE" /> će se ponovo pokrenuti kada se instalacija završi.</translation>
 <translation id="8275038454117074363">Uvezi</translation>

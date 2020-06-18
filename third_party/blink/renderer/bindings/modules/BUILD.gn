@@ -53,7 +53,7 @@ generate_event_interfaces("modules_bindings_generated_event_interfaces") {
     "//third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_error_event.idl",
     "//third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.idl",
     "//third_party/blink/renderer/modules/peerconnection/rtc_quic_stream_event.idl",
-    "//third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.idl",
+    "//third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.idl",
     "//third_party/blink/renderer/modules/presentation/presentation_connection_available_event.idl",
     "//third_party/blink/renderer/modules/presentation/presentation_connection_close_event.idl",
     "//third_party/blink/renderer/modules/push_messaging/push_event.idl",

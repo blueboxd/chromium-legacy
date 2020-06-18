@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6119846243427417423">wezesha</translation>
 <translation id="6129953537138746214">Nafasi</translation>
+<translation id="6134259848159370930">Tafuta kwenye wavuti, programu, mipangilio na kifaa chako.</translation>
 <translation id="6135826906199951471">Futa</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Ziangalie programu zote</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6166852626429024716">Tafuta kwenye programu, mipangilio, wavuti, kifaa chako...</translation>
 <translation id="6264365405983206840">Chagua &amp;Zote</translation>
 <translation id="6351032674660237738">MAPENDEKEZO YA PROGRAMU</translation>
 <translation id="6364916375976753737">Sogeza Kushoto</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Faili ya <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Rafu inaonyeshwa kila wakati</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Tafuta kwenye programu, mipangilio, wavuti na kifaa chako. Tumia vitufe vya vishale ili upitie programu zako.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> zaidi</translation>
 <translation id="8730621377337864115">Nimemaliza</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{Saa 1}other{Saa #}}</translation>

@@ -7,7 +7,9 @@
 #include "content/public/browser/download_manager.h"
 
 TestDownloadShelf::TestDownloadShelf(Profile* profile)
-    : is_showing_(false), did_add_download_(false), profile_(profile) {}
+    : DownloadShelf(nullptr, profile),
+      is_showing_(false),
+      did_add_download_(false) {}
 
 TestDownloadShelf::~TestDownloadShelf() = default;
 
@@ -17,10 +19,6 @@ bool TestDownloadShelf::IsShowing() const {
 
 bool TestDownloadShelf::IsClosing() const {
   return false;
-}
-
-Browser* TestDownloadShelf::browser() const {
-  return NULL;
 }
 
 void TestDownloadShelf::DoAddDownload(DownloadUIModelPtr download) {
@@ -45,8 +43,4 @@ void TestDownloadShelf::DoUnhide() {
 
 base::TimeDelta TestDownloadShelf::GetTransientDownloadShowDelay() {
   return base::TimeDelta();
-}
-
-Profile* TestDownloadShelf::profile() const {
-  return profile_;
 }

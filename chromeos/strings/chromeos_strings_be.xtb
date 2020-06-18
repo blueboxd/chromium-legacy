@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="be">
+<translation id="1018656279737460067">Скасавана</translation>
 <translation id="1195447618553298278">Невядомая памылка.</translation>
 <translation id="1468664791493211953">Прапановы</translation>
 <translation id="1482734542997480527">Дамен "<ph name="ENROLLMENT_DOMAIN" />" кіруе гэтай прыладай і можа адсочваць вашы дзеянні.</translation>
 <translation id="150962533380566081">Няправільны PUK-код.</translation>
 <translation id="1510238584712386396">Панэль запуску</translation>
+<translation id="1644574205037202324">Гісторыя</translation>
 <translation id="1734367976349034509">Прылада знаходзіцца пад кіраваннем арганізацыі</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1930797645656624981">Сэрвіс метадаў уводу Chrome OS</translation>

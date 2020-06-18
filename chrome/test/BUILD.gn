@@ -1546,6 +1546,7 @@ if (!is_android) {
     if (!is_android && !is_chromeos) {
       sources += [
         "../browser/external_protocol/external_protocol_handler_browsertest.cc",
+        "../browser/external_protocol/external_protocol_policy_browsertest.cc",
         "../browser/lifetime/application_lifetime_browsertest.cc",
         "../browser/ui/signin_reauth_view_controller_browsertest.cc",
       ]
@@ -3312,6 +3313,7 @@ test("unit_tests") {
     "../browser/policy/messaging_layer/public/report_client_unittest.cc",
     "../browser/policy/messaging_layer/public/report_queue_configuration_unittest.cc",
     "../browser/policy/messaging_layer/public/report_queue_unittest.cc",
+    "../browser/policy/messaging_layer/storage/storage_queue_unittest.cc",
     "../browser/policy/messaging_layer/storage/test_storage_module.cc",
     "../browser/policy/messaging_layer/storage/test_storage_module.h",
     "../browser/policy/messaging_layer/util/status_macros_unittest.cc",

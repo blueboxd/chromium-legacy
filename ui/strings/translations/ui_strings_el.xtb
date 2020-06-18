@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Κλείσιμο</translation>
 <translation id="6119846243427417423">ενεργοποίηση</translation>
 <translation id="6129953537138746214">Κενό</translation>
+<translation id="6134259848159370930">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Επέκταση σε όλες τις εφαρμογές</translation>
 <translation id="6165508094623778733">Μάθετε περισσότερα</translation>
+<translation id="6166852626429024716">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό…</translation>
 <translation id="6264365405983206840">Επιλογή Όλ&amp;ων</translation>
 <translation id="6351032674660237738">ΠΡΟΤΑΣΕΙΣ ΕΦΑΡΜΟΓΩΝ</translation>
 <translation id="6364916375976753737">Κύλιση αριστερά</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Αρχείο <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Το ράφι είναι πάντα ορατό</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Κάντε αναζήτηση στη συσκευή, στις εφαρμογές, στις ρυθμίσεις και στον ιστό. Χρησιμοποιήστε τα πλήκτρα βέλους για πλοήγηση στις εφαρμογές σας.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> ακόμη</translation>
 <translation id="8730621377337864115">Ολοκληρώθηκε</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ώρ.}other{#ώρ.}}</translation>

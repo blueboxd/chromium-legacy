@@ -15,6 +15,7 @@
 #include "base/containers/queue.h"
 #include "base/debug/activity_tracker.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"

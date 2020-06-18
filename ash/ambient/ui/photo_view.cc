@@ -78,10 +78,6 @@ class AmbientBackgroundImageView : public views::ImageView {
     return true;
   }
 
-  void OnMouseMoved(const ui::MouseEvent& event) override {
-    delegate_->OnBackgroundPhotoEvents();
-  }
-
   void OnGestureEvent(ui::GestureEvent* event) override {
     if (event->type() == ui::ET_GESTURE_TAP) {
       delegate_->OnBackgroundPhotoEvents();

@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />اپنی کوکیز صاف کرنے کی کوشش کریں<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">‏اپنی محفوظ DNS ترتیبات چیک کریں</translation>
 <translation id="1307966114820526988">فرسودہ خصوصیات</translation>
+<translation id="1310581832770023220">اس فارم میں موجود ڈیٹا کو ایک غیر محفوظ کنکشن کے ذریعہ بھیجا جارہا ہے</translation>
 <translation id="131405271941274527">‏آپ کے NFC آلہ پر تھپتھپاتے وقت <ph name="URL" /> معلومات بھیجنا اور وصول کرنا چاہتا ہے</translation>
 <translation id="1314509827145471431">دائیں طرف باندھیں</translation>
 <translation id="1320233736580025032">Prc1 ‎(Envelope‎)‎</translation>
@@ -468,7 +469,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">یہ سرور یہ ثابت نہیں کر سکا کہ یہ <ph name="DOMAIN" /> ہے؛ اس کا سیکیورٹی سرٹیفکیٹ <ph name="DOMAIN2" /> کی جانب سے ہے۔ یہ غلط کنفیگریشن یا آپ کے کنکشن میں مانع بن رہے کسی حملہ آور کی وجہ سے ہو سکتا ہے۔</translation>
 <translation id="2943895734390379394">اپ لوڈ کا وقت:</translation>
-<translation id="2944299917411283989">‏اپنے Google اکاؤنٹ میں مضبوط پاس ورڈ تخلیق کریں</translation>
 <translation id="2948083400971632585">آپ کنکشن کیلئے کنفیگر کردہ کسی بھی پراکسیز کو ترتیبات کے صفحہ سے غیر فعال کر سکتے ہیں۔</translation>
 <translation id="2951588413176968965">میرا میل باکس</translation>
 <translation id="295526156371527179">وارننگ: اس پالیسی کو پالیسی کی وضاحت کے مطابق لغت کے طور پر ضم نہیں کیا گیا ہے کیوں کہ یہ لغت نہیں ہے۔</translation>
@@ -754,6 +754,7 @@
 <translation id="4165986682804962316">سائٹ کی ترتیبات</translation>
 <translation id="4171400957073367226">توثیق کی غلط دستخط</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">ہمیشہ دکھائیں</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> مزید آئٹم}other{<ph name="ITEM_COUNT" /> مزید آئٹمز}}</translation>
 <translation id="4176463684765177261">غیر فعال</translation>
@@ -793,6 +794,7 @@
 <translation id="4235360514405112390">درست</translation>
 <translation id="4250431568374086873">اس سائٹ سے آپ کا کنکشن پوری طرح سے محفوظ نہیں ہے</translation>
 <translation id="4250680216510889253">نہیں</translation>
+<translation id="4253168017788158739">نوٹ</translation>
 <translation id="425582637250725228">ممکن ہے کہ آپ کی تبدیلیاں محفوظ نہ ہوں۔</translation>
 <translation id="4258748452823770588">غلط دستخط</translation>
 <translation id="4261046003697461417">تحفظ یافتہ دستاویزات کی تشریح نہیں کی جا سکتی</translation>
@@ -906,6 +908,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> پر موجود ویب صفحہ عارضی طور پر سست ہو سکتا ہے یا اسے مستقل طور پر ایک نئے ویب پتے پر منتقل کیا گیا ہو سکتا ہے۔</translation>
 <translation id="4766713847338118463">نیچے دُہری سٹیپل</translation>
 <translation id="4771973620359291008">ایک نامعلوم خرابی پیش آگئی ہے۔</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{پاپ اپ مسدود کر دیا گیا}other{# پاپ اپس مسدود کر دیے گئے}}</translation>
 <translation id="4780366598804516005">میل باکس 1</translation>
 <translation id="4780900888022378816">آپ کا آلہ <ph name="ENROLLMENT_DOMAIN" /> کے زیر انتظام ہے اور آپ کا اکاؤنٹ <ph name="ACCOUNT_DOMAIN" /> کے زیر انتظام ہے۔</translation>
 <translation id="4785689107224900852">اس ٹیب پر سوئچ کریں</translation>
@@ -1449,6 +1452,7 @@
 <translation id="7138472120740807366">ڈیلیوری کا طریقہ</translation>
 <translation id="7139724024395191329">امارات</translation>
 <translation id="714064300541049402">‏سائیڈ 2 تصویر X شفٹ</translation>
+<translation id="7147693119324090759">بہرصورت جمع کروائیں</translation>
 <translation id="7152423860607593928">Number-14 ‎(Envelope‎)‎</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}other{<ph name="PAYMENT_METHOD_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}}</translation>
 <translation id="7153618581592392745">ارغوانی</translation>
@@ -1525,6 +1529,7 @@
 <translation id="7416351320495623771">پاس ورڈز کا نظم کریں…</translation>
 <translation id="7419106976560586862">پروفائل پاتھ</translation>
 <translation id="7437289804838430631">رابطے کی معلومات شامل کریں</translation>
+<translation id="743897106051685947">اصل</translation>
 <translation id="7438976808740265764">‏دسمبر 2020 کے بعد Flash Player تعاون یافتہ نہیں رہے گا۔</translation>
 <translation id="7440140511386898319">آف لائن رہتے ہوئے دریافت کریں</translation>
 <translation id="7441627299479586546">غلط پالیسی کا مضمون</translation>
@@ -1536,6 +1541,7 @@
 <translation id="7473891865547856676">نہیں شکریہ</translation>
 <translation id="7481312909269577407">فارورڈ کریں</translation>
 <translation id="7485870689360869515">کوئی ڈیٹا نہیں ملا۔</translation>
+<translation id="7488762544858401571">ترمیم کردہ</translation>
 <translation id="7495290002932347110">‏کسی سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی کے باعث آپ کا پاس ورڈ بے نقاب ہوا ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو چیک کرنے اور <ph name="ORIGIN" /> پر آپ کے پاس ورڈ کو ابھی تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="7498234416455752244">ترمیم جاری رکھیں</translation>
 <translation id="7503664977220660814">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> اور دیگر ایسی سائٹس کے لیے اپنے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے جہاں آپ اس پاس ورڈ کا استعمال کرتے ہیں۔</translation>
@@ -1619,6 +1625,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">اسی ترتیب میں، صفحات کا رُخ اوپر کی جانب</translation>
 <translation id="777702478322588152">انتظامی حلقہ</translation>
+<translation id="7791011319128895129">غیر ریلیز کردہ</translation>
 <translation id="7791196057686275387">گانٹھ باندھیں</translation>
 <translation id="7791543448312431591">شامل کریں</translation>
 <translation id="7798389633136518089">نظر انداز کی گئی کیونکہ پالیسی کلاؤڈ سورس کے ذریعے سیٹ نہیں کی گئی ہے۔</translation>
@@ -1755,6 +1762,7 @@
 <translation id="8355270400102541638">مقامی ناکامی کا سیاق و سباق:</translation>
 <translation id="8363502534493474904">ہوائی جہاز وض‏ع کو آف کیا جا رہا ہے</translation>
 <translation id="8364627913115013041">سیٹ نہیں ہے۔</translation>
+<translation id="8367477997601443248">غیر محفوظ فارم</translation>
 <translation id="8368476060205742148">‏Google Play سروسز</translation>
 <translation id="8371889962595521444">حسب ضرورت روٹ سرٹیفکیٹس</translation>
 <translation id="8380941800586852976">خطرناک</translation>
@@ -1837,6 +1845,7 @@
 <translation id="8805819170075074995">‏فہرست کا اندراج "<ph name="LANGUAGE_ID" />": اندراج کو نظر انداز کیا گیا کیونکہ یہ SpellcheckLanguage پالیسی میں بھی شامل ہے۔</translation>
 <translation id="8807160976559152894">ہر صفحہ کے بعد تراشیں</translation>
 <translation id="8820817407110198400">بُک مارکس</translation>
+<translation id="8831512686168463822">یہ فارم ایک غیر محفوظ کنکشن سے زیادہ میں جمع کیا جارہا ہے جو اس سائٹ پر بھیجے جانے پر آپ کی معلومات (مثلاً، پاس ورڈز، پیغامات یا کریڈٹ کارڈز) کو ظاہر کر سکتی ہے۔</translation>
 <translation id="883848425547221593">دیگر بُک مارکس</translation>
 <translation id="884264119367021077">ترسیل کا پتہ</translation>
 <translation id="884923133447025588">کوئی منسوخی کا میکانزم نہیں ملا۔</translation>

@@ -32,6 +32,7 @@ TransformNode::TransformNode()
       moved_by_outer_viewport_bounds_delta_y(false),
       in_subtree_of_page_scale_layer(false),
       transform_changed(false),
+      delegates_to_parent_for_backface(false),
       maximum_animation_scale(kNotScaled),
       starting_animation_scale(kNotScaled) {}
 
@@ -62,6 +63,8 @@ bool TransformNode::operator==(const TransformNode& other) const {
              other.moved_by_outer_viewport_bounds_delta_y &&
          in_subtree_of_page_scale_layer ==
              other.in_subtree_of_page_scale_layer &&
+         delegates_to_parent_for_backface ==
+             other.delegates_to_parent_for_backface &&
          transform_changed == other.transform_changed &&
          scroll_offset == other.scroll_offset &&
          snap_amount == other.snap_amount &&

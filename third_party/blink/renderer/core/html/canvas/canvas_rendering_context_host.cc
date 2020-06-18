@@ -144,7 +144,7 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D() {
       provider = CanvasResourceProvider::CreateSharedImageProvider(
           Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
           ColorParams(), RenderingContext()->IsOriginTopLeft(),
-          CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+          RasterMode::kGPU, shared_image_usage_flags);
     }
   } else if (SharedGpuContext::IsGpuCompositingEnabled()) {
     // If there is no LawLatency mode, and GPU is enabled, will try a GPU
@@ -156,8 +156,8 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider3D() {
     }
     provider = CanvasResourceProvider::CreateSharedImageProvider(
         Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-        ColorParams(), RenderingContext()->IsOriginTopLeft(),
-        CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+        ColorParams(), RenderingContext()->IsOriginTopLeft(), RasterMode::kGPU,
+        shared_image_usage_flags);
   }
 
   // If either of the other modes failed and / or it was not possible to do, we
@@ -219,8 +219,8 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
       }
       provider = CanvasResourceProvider::CreateSharedImageProvider(
           Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-          ColorParams(), is_origin_top_left,
-          CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+          ColorParams(), is_origin_top_left, RasterMode::kGPU,
+          shared_image_usage_flags);
     }
   } else if (use_gpu) {
     // First try to be optimized for displaying on screen. In the case we are
@@ -231,15 +231,15 @@ void CanvasRenderingContextHost::CreateCanvasResourceProvider2D(
       shared_image_usage_flags |= gpu::SHARED_IMAGE_USAGE_SCANOUT;
     provider = CanvasResourceProvider::CreateSharedImageProvider(
         Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-        ColorParams(), is_origin_top_left,
-        CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+        ColorParams(), is_origin_top_left, RasterMode::kGPU,
+        shared_image_usage_flags);
   } else if (RuntimeEnabledFeatures::Canvas2dImageChromiumEnabled()) {
     const uint32_t shared_image_usage_flags =
         gpu::SHARED_IMAGE_USAGE_DISPLAY | gpu::SHARED_IMAGE_USAGE_SCANOUT;
     provider = CanvasResourceProvider::CreateSharedImageProvider(
         Size(), SharedGpuContext::ContextProviderWrapper(), FilterQuality(),
-        ColorParams(), is_origin_top_left,
-        CanvasResourceProvider::RasterMode::kCPU, shared_image_usage_flags);
+        ColorParams(), is_origin_top_left, RasterMode::kCPU,
+        shared_image_usage_flags);
   }
 
   // If either of the other modes failed and / or it was not possible to do, we

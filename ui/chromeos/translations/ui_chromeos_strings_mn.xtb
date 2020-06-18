@@ -10,7 +10,7 @@
 <translation id="1049926623896334335">Word баримт</translation>
 <translation id="1062407476771304334">Солих</translation>
 <translation id="1065449928621190041">Канадын франц хэлний гарын</translation>
-<translation id="1119069657431255176">Bzip2 файл нэгтгэн хадгалах програм</translation>
+<translation id="1119069657431255176">Bzip2 файл нэгтгэн хадгалах программ</translation>
 <translation id="1120073797882051782">Хангыль Ромажа</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> олдсон.
     <ph name="LINE_BREAK1" />
@@ -115,7 +115,7 @@
 <translation id="2291538123825441971"><ph name="NUMBER_OF_FILES" /> файлыг нээж байна.</translation>
 <translation id="2303301624314357662"><ph name="FILE_NAME" /> файлыг нээж байна.</translation>
 <translation id="2305020378527873881"><ph name="VOLUME_NAME" />-г салгалаа.</translation>
-<translation id="2325650632570794183">Энэ төрлийн файлыг дэмжихгүй байна. Chrome Web Store-т нэвтрэн энэ төрлийн файл нээж чадахуйц програмыг татан авна уу.</translation>
+<translation id="2325650632570794183">Энэ төрлийн файлыг дэмжихгүй байна. Chrome Web Store-т нэвтрэн энэ төрлийн файл нээж чадахуйц программыг татан авна уу.</translation>
 <translation id="23434688402327542">Казак хэлний гар</translation>
 <translation id="2352947182261340447">Дотоод санд хангалттай багтаамж алга.</translation>
 <translation id="2377319039870049694">Жагсаалтаар харах горим руу сэлгэх</translation>
@@ -308,7 +308,7 @@
 <translation id="4694604912444486114">Сармагчин</translation>
 <translation id="4697043402264950621">Файлын жагсаалтыг <ph name="COLUMN_NAME" />-н дагуу өсөх дарааллаар эрэмбэлсэн.</translation>
 <translation id="4711094779914110278">Турк хэл</translation>
-<translation id="4713544552769165154">Энэхүү файл нь зөвхөн Macintosh үйлдлийн систем бүхий комьпютерт зориулагдсан тул таны Chrome үйлдлийн систем ашигладаг төхөөрөмжид нийцэхгүй. Тохирох програмыг <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" />-аас хайна уу.<ph name="BEGIN_LINK_HELP" />Дэлгэрэнгүй мэдээлэл<ph name="END_LINK_HELP" /></translation>
+<translation id="4713544552769165154">Энэхүү файл нь зөвхөн Macintosh үйлдлийн систем бүхий комьпютерт зориулагдсан тул таны Chrome үйлдлийн систем ашигладаг төхөөрөмжид нийцэхгүй. Тохирох программыг <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" />-аас хайна уу.<ph name="BEGIN_LINK_HELP" />Дэлгэрэнгүй мэдээлэл<ph name="END_LINK_HELP" /></translation>
 <translation id="4724850507808590449"><ph name="FILE_COUNT" /> зураг хадгалагдсан байна</translation>
 <translation id="4725511304875193254">Корги нохой</translation>
 <translation id="4732760563705710320">Уучлаарай, энэ видео бичлэгийг cast тоглуулах боломжгүй байна.</translation>
@@ -432,7 +432,7 @@
 <translation id="5833610766403489739">Энэ файл нь хаа нэгтээ байна. Татацын байршлын тохиргоогоо шалгаад дахин оролдож үзнэ үү.</translation>
 <translation id="5838451609423551646">Сонголт хийх хэсгээс бүх оролтыг хассан.</translation>
 <translation id="5838825566232597749">Олон улсын US Workman гар</translation>
-<translation id="5850516540536751549">Энэ файлын төрлийг дэмждэггүй. Ийм төрөлтэй файлыг нээхийн тулд тохирохыг програмыг <ph name="BEGIN_LINK" />Chrome Вэб Дэлгүүр<ph name="END_LINK" />-ээс олно уу.
+<translation id="5850516540536751549">Энэ файлын төрлийг дэмждэггүй. Ийм төрөлтэй файлыг нээхийн тулд тохирохыг программыг <ph name="BEGIN_LINK" />Chrome Вэб Дэлгүүр<ph name="END_LINK" />-ээс олно уу.
      <ph name="BEGIN_LINK_HELP" />Дэлгэрэнгүй мэдээллийг эндээс<ph name="END_LINK_HELP" /></translation>
 <translation id="5851063901794976166">Энд харах зүйл алга..</translation>
 <translation id="5857774240076772505">Linux-д <ph name="FOLDER_NAME" /> фолдерт файл өөрчлөх аппын зөвшөөрлийг олгоно уу</translation>
@@ -538,7 +538,7 @@
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> файл сонгосон байна</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Суулгах ажиллагаа амжилтгүй боллоо.</translation>
-<translation id="7040138676081995583">Нээх програмыг сонгох...</translation>
+<translation id="7040138676081995583">Нээх программыг сонгох...</translation>
 <translation id="7059566040011178088"><ph name="REMAINING_TIME" />-с бага</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> зүйлс сонгогдсон байна</translation>
 <translation id="7106346894903675391">Илүү их хадгалалтын санг худалдаж аваарай...</translation>
@@ -717,7 +717,7 @@
 <translation id="9130775360844693113">'<ph name="DESTINATION_NAME" />'-н гишүүд эдгээр зүйлд хандах эрхтэй болно.</translation>
 <translation id="9131598836763251128">Нэг буюу хэд хэдэн файлуудыг сонгох</translation>
 <translation id="9133055936679483811">Файл нэгтгэлт амжилтгүй боллоо. <ph name="ERROR_MESSAGE" /></translation>
-<translation id="9134524245363717059">Энэ файл нь Macintosh-ийн програм хангамжийг ашигладаг компьютерт зориулагдсан байна. Энэ нь Chrome OS ажиллуулдаг таны төхөөрөмжтэй тохирохгүй тул та Chrome Web Store-оос таны төхөөрөмжтэй тохирох өөр апликейшнийг олно уу.</translation>
+<translation id="9134524245363717059">Энэ файл нь Macintosh-ийн программ хангамжийг ашигладаг компьютерт зориулагдсан байна. Энэ нь Chrome OS ажиллуулдаг таны төхөөрөмжтэй тохирохгүй тул та Chrome Web Store-оос таны төхөөрөмжтэй тохирох өөр апликейшнийг олно уу.</translation>
 <translation id="913758436357682283">Мьянмар Мьянсан гар</translation>
 <translation id="9148058034647219655">гарах</translation>
 <translation id="9153744823707037316">Array оролтын арга</translation>

@@ -168,8 +168,8 @@ TEST_F(SharedGpuContextTest, Canvas2DLayerBridgeAutoRecovery) {
   IntSize size(10, 10);
   CanvasColorParams color_params;
   std::unique_ptr<Canvas2DLayerBridge> bridge =
-      std::make_unique<Canvas2DLayerBridge>(
-          size, Canvas2DLayerBridge::kEnableAcceleration, color_params);
+      std::make_unique<Canvas2DLayerBridge>(size, RasterMode::kGPU,
+                                            color_params);
   EXPECT_TRUE(bridge->IsAccelerated());
   EXPECT_TRUE(SharedGpuContext::IsValidWithoutRestoring());
 }
@@ -195,7 +195,7 @@ TEST_F(BadSharedGpuContextTest, AccelerateImageBufferSurfaceCreationFails) {
       CanvasResourceProvider::CreateSharedImageProvider(
           size, SharedGpuContext::ContextProviderWrapper(),
           kLow_SkFilterQuality, CanvasColorParams(),
-          true /*is_origin_top_left*/, CanvasResourceProvider::RasterMode::kGPU,
+          true /*is_origin_top_left*/, RasterMode::kGPU,
           0u /*shared_image_usage_flags*/);
   EXPECT_FALSE(resource_provider);
 }
@@ -222,7 +222,7 @@ TEST_F(SharedGpuContextTestViz, AccelerateImageBufferSurfaceAutoRecovery) {
       CanvasResourceProvider::CreateSharedImageProvider(
           size, SharedGpuContext::ContextProviderWrapper(),
           kLow_SkFilterQuality, CanvasColorParams(),
-          true /*is_origin_top_left*/, CanvasResourceProvider::RasterMode::kGPU,
+          true /*is_origin_top_left*/, RasterMode::kGPU,
           0u /*shared_image_usage_flags*/);
   EXPECT_TRUE(resource_provider && resource_provider->IsValid());
   EXPECT_TRUE(resource_provider->IsAccelerated());

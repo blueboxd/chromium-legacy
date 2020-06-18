@@ -424,6 +424,14 @@ ci.android_builder(
 )
 
 ci.android_builder(
+    name = 'android-nougat-arm64-rel',
+    console_view_entry = ci.console_view_entry(
+        category = 'builder_tester|arm64',
+        short_name = 'N',
+    ),
+)
+
+ci.android_builder(
     name = 'android-pie-arm64-dbg',
     console_view_entry = ci.console_view_entry(
         category = 'tester|phone',

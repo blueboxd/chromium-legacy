@@ -17,6 +17,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -71,10 +72,12 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -82,6 +85,9 @@
 namespace {
 
 constexpr gfx::Size kSize(640, 480);
+
+const char kAllowedUAClientHint[] = "sec-ch-ua";
+const char kAllowedUAMobileClientHint[] = "sec-ch-ua-mobile";
 
 void SimulateNetworkChange(network::mojom::ConnectionType type) {
   if (!content::IsInProcessNetworkService()) {
@@ -296,6 +302,11 @@ class IsolatedPrerenderBrowserTest
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
+    // So that we can test for client hints.
+    g_browser_process->network_quality_tracker()
+        ->ReportEffectiveConnectionTypeForTesting(
+            net::EFFECTIVE_CONNECTION_TYPE_2G);
+
     ukm_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
 
     // Ensure the service gets created before the tests start.
@@ -364,6 +375,29 @@ class IsolatedPrerenderBrowserTest
     run_loop.Run();
 
     return std::move(config_client.config_);
+  }
+
+  bool RequestHasClientHints(const net::test_server::HttpRequest& request) {
+    for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
+      // The UA {mobile} Client Hint is whitelisted so we don't check it.
+      if (std::string(blink::kClientHintsHeaderMapping[i]) ==
+          std::string(kAllowedUAClientHint)) {
+        continue;
+      }
+
+      if (std::string(blink::kClientHintsHeaderMapping[i]) ==
+          std::string(kAllowedUAMobileClientHint)) {
+        continue;
+      }
+
+      if (base::Contains(request.headers,
+                         blink::kClientHintsHeaderMapping[i])) {
+        LOG(WARNING) << "request has " << blink::kClientHintsHeaderMapping[i];
+
+        return true;
+      }
+    }
+    return false;
   }
 
   void VerifyProxyConfig(network::mojom::CustomProxyConfigPtr config,
@@ -1483,6 +1517,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
 
   EXPECT_GT(proxy_requests_after_prerender.size(),
             proxy_requests_before_prerender.size());
+
+  for (const net::test_server::HttpRequest& request :
+       origin_requests_after_prerender) {
+    EXPECT_FALSE(RequestHasClientHints(request));
+  }
 
   // Check that the page's Javascript was NSP'd, but not the mainframe.
   bool found_nsp_javascript = false;

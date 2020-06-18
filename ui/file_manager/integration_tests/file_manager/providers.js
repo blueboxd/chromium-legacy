@@ -188,7 +188,7 @@
       // Since there is no FSP provider, there should be no add-new-service
       // sub-menu, it should instead point to CWS install-new-extension.
       chrome.test.assertEq(
-          '#install-new-extension', element.attributes.command);
+          '#install-new-extension', element.attributes['command']);
       return;
     }
 
@@ -196,7 +196,7 @@
     // 'add-new-service' sub-menu does not contain the |manifest| provider.
     chrome.test.assertTrue(isSmbEnabled);
     chrome.test.assertEq('Add new service', element.text);
-    chrome.test.assertEq('#new-service', element.attributes.command);
+    chrome.test.assertEq('#new-service', element.attributes['command']);
     chrome.test.assertEq(
         '#add-new-services-menu', element.attributes['sub-menu']);
 

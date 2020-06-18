@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr-Latn">
+<translation id="1018656279737460067">Otkazano</translation>
 <translation id="1195447618553298278">Nepoznata greška.</translation>
 <translation id="1468664791493211953">Ponude</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i može da prati vaše aktivnosti.</translation>
 <translation id="150962533380566081">Nevažeći PUK.</translation>
 <translation id="1510238584712386396">Pokretač</translation>
+<translation id="1644574205037202324">Istorija</translation>
 <translation id="1734367976349034509">Ovim uređajem upravlja preduzeće</translation>
 <translation id="1905710495812624430">Premašen je maksimalni broj pokušaja.</translation>
 <translation id="1930797645656624981">Usluga metoda unosa za Chrome OS</translation>

@@ -2768,14 +2768,14 @@ body[block-hosted-docs] .file.dim-hosted {
 }
 
 /* Invisible container for elements representing files while dragging. */
-#drag-container {
+body:not(.files-ng) #drag-container {
   left: 0;
   position: fixed;
   top: 0;
   z-index: -1;  /* below .dialog-container */
 }
 
-#drag-container .drag-contents {
+body:not(.files-ng) #drag-container .drag-contents {
   background-color: #fafafa;
   border: 1px solid #bbb;
   border-radius: 3px;
@@ -2788,17 +2788,30 @@ body[block-hosted-docs] .file.dim-hosted {
   transition: opacity 200ms ease-in;
 }
 
-#drag-container .drag-contents.for-image  {
+body:not(.files-ng) #drop-label {
+  background-color: rgba(0, 0, 0, 80%);
+  border-radius: 2px;
+  color: white;
+  display: none;  /* hidden until activated */
+  font-size: 12px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 8px;
+  position: absolute;
+  z-index: 1000;  /* same height as files-tooltip */
+}
+
+body:not(.files-ng) #drag-container .drag-contents.for-image  {
   flex: none;
   padding: 2px;
 }
 
-#drag-container .thumbnail-item {
+body:not(.files-ng) #drag-container .thumbnail-item {
   display: flex;
   flex-direction: row;
 }
 
-#drag-container .label {
+body:not(.files-ng) #drag-container .label {
   flex: auto;
   font-weight: bold;
   line-height: 24px;
@@ -2807,6 +2820,80 @@ body[block-hosted-docs] .file.dim-hosted {
   padding: 0 5px;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+body.files-ng #drag-container {
+  background-color: transparent;
+  height: calc(12px + 40px + 8px + 8px);
+  left: 0;
+  position: fixed;
+  top: 0;
+  width: calc(8px + 192px + 8px + 8px);
+  z-index: -1;  /* below .dialog-container */
+}
+
+body.files-ng #drag-container .drag-box {
+  background-color: white;
+  border-radius: 2px;
+  box-shadow: 0 1px 2px 0 rgba(var(--google-grey-800-rgb), 30%),
+              0 2px 6px 2px rgba(var(--google-grey-800-rgb), 15%);
+  box-sizing: border-box;
+  height: 40px;
+  position: absolute;
+  width: 192px;
+}
+
+body.files-ng #drag-container .drag-contents {
+  align-items: center;
+  display: flex;
+  left: 8px;
+  padding-inline-end: 2px;
+  padding-inline-start: 8px;
+  right: 8px;
+  top: 12px;
+}
+
+body.files-ng #drag-container .drag-multiple {
+  left: calc(8px + 8px);
+  right: calc(8px + 8px);
+  top: calc(12px + 8px);
+}
+
+body.files-ng #drag-container .detail-icon {
+  border-radius: 50%;
+  flex: none;
+}
+
+body.files-ng #drag-container .detail-icon[file-type-icon] {
+  color: var(--google-grey-700);
+}
+
+body.files-ng #drag-container .label {
+  color: var(--google-grey-900);
+  overflow: hidden;
+  padding: 0 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.files-ng #drag-container .drag-bubble {
+  background-color: var(--google-blue-600);
+  border-radius: 12px;
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+  height: 24px;
+  line-height: 24px;
+  max-width: fit-content;
+  padding: 0 8px;
+  position: absolute;
+  right: calc(8px * 0.5);
+  white-space: nowrap;
+}
+
+html[dir=rtl] body.files-ng #drag-container .drag-bubble {
+  left: calc(8px * 0.5);
+  right: unset;
 }
 
 /* TODO(fukino): Gather menu-related definitions into one place. */
@@ -3544,28 +3631,15 @@ files-toggle-ripple {
   z-index: 505; /* Must be above the scroll bar (500). */
 }
 
+files-toast {
+  /* Must be above the splitter (500) but below menu-like UI (550). */
+  z-index: 520;
+}
+
 /*
  * Preventing FOUC
  */
 cr-input:not(:defined),
 files-tooltip:not(:defined) {
   display: none;
-}
-
-#drop-label {
-  background-color: rgba(0, 0, 0, 80%);
-  border-radius: 2px;
-  color: white;
-  display: none;  /* hidden until activated */
-  font-size: 12px;
-  height: 24px;
-  line-height: 24px;
-  padding: 0 8px;
-  position: absolute;
-  z-index: 1000;  /* same height as files-tooltip */
-}
-
-files-toast {
-  /* Must be above the splitter (500) but below menu-like UI (550). */
-  z-index: 520;
 }

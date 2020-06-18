@@ -163,6 +163,7 @@
 <translation id="2323763861024343754">Կայքի օգտագործած տարածքը</translation>
 <translation id="2328985652426384049">Չհաջողվեց մուտք գործել</translation>
 <translation id="234265804618409743">Չհաջողվեց բացել տեսախցիկը։ Սխալ առաջացավ։</translation>
+<translation id="2345671828921229300">Որոնելու համար հպեք բառին և պահեք</translation>
 <translation id="2349710944427398404">Chrome-ի օգտագործած ընդհանուր տարածքը, ներառյալ` հաշիվները, էջանիշները և պահված կարգավորումները</translation>
 <translation id="2353636109065292463">Ինտերնետ կապի ստուգում</translation>
 <translation id="2359808026110333948">Շարունակել</translation>
@@ -291,6 +292,7 @@
 <translation id="3350687908700087792">Փակել բոլոր ինկոգնիտո ներդիրները</translation>
 <translation id="3353615205017136254">Էջի Lite տարբերակը տրամադրվել է Google-ի կողմից։ Բնօրինակը բեռնելու համար սեղմեք համապատասխան կոճակը։</translation>
 <translation id="3367813778245106622">Նորից մուտք գործեք՝ համաժամացումը սկսելու համար</translation>
+<translation id="337236281855091893">Որոնելու համար հպեք բառին և պահեք</translation>
 <translation id="3373979091428520308">Այս էջով մեկ այլ սարքի հետ կիսվելու համար միացրեք համաժամացումը այդ սարքի Chrome-ի կարգավորումներում</translation>
 <translation id="3374023511497244703">Ձեր էջանիշները, պատմությունը, գաղտնաբառերն ու Chrome-ի մյուս տվյալները այլևս չեն համաժամացվի ձեր Google հաշվի հետ:</translation>
 <translation id="3384347053049321195">Կիսվել պատկերով</translation>
@@ -566,6 +568,7 @@
 <translation id="5686790454216892815">Ֆայլի անունը չափազանց երկար է</translation>
 <translation id="5694049548840660018">Արագ անցում գլխավոր էջ</translation>
 <translation id="569536719314091526">Թարգմանեք այս կայքը «Այլ ընտրանքներ» կոճակի միջոցով</translation>
+<translation id="570347048394355941">Անցնել ներդիր</translation>
 <translation id="572328651809341494">Վերջերս բացված ներդիրներ</translation>
 <translation id="5726692708398506830">Էջում ամեն ինչ մեծացնել</translation>
 <translation id="5748802427693696783">Դուք անցում կատարեցիք սովորական ներդիրների ռեժիմին</translation>
@@ -606,7 +609,6 @@
 <translation id="6005538289190791541">Առաջարկվող գաղտնաբառ</translation>
 <translation id="6036057147555329831">Լրացուցիչ ICU մոդուլ</translation>
 <translation id="6039379616847168523">Անցնել հաջորդ ներդիր</translation>
-<translation id="6040143037577758943">Փակել</translation>
 <translation id="6042308850641462728">Ավելին</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> ֆայլի ներբեռնումը ձախողվեց՝ անհայտ սխալի պատճառով:</translation>
 <translation id="605721222689873409">տարի</translation>
@@ -703,7 +705,6 @@
 <translation id="6710213216561001401">Նախորդը</translation>
 <translation id="671481426037969117"><ph name="FQDN" />-ի համար նախատեսված ժամանակը լրացել է։ Վաղը այն նորից կաշխատի:</translation>
 <translation id="6738867403308150051">Ներբեռնում…</translation>
-<translation id="6766622839693428701">Փակելու համար մատը սահեցրեք ներքև։</translation>
 <translation id="6767294960381293877">Սարքերը, որոնց հետ կիսվելու եք ներդիրով, ցուցադրված են էկրանի կեսով:</translation>
 <translation id="6790428901817661496">Նվագարկել</translation>
 <translation id="6811034713472274749">Էջը պատրաստ է</translation>

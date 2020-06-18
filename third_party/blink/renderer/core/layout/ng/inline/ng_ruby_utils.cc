@@ -291,6 +291,11 @@ NGLineHeightMetrics ComputeAnnotationOverflow(
   if (has_under_emphasis)
     content_block_end = line_block_end;
 
+  // With some fonts, text fragment sizes can exceed line-height.
+  // We should not handle them as annotation overflow.
+  content_block_start = std::max(content_block_start, line_block_start);
+  content_block_end = std::min(content_block_end, line_block_end);
+
   const LayoutUnit content_or_annotation_block_start =
       std::min(content_block_start, annotation_block_start);
   const LayoutUnit content_or_annotation_block_end =

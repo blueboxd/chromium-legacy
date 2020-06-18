@@ -470,6 +470,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="681368974849482173">مورد ایجاد شد</translation>
 <translation id="6831043979455480757">ترجمه</translation>
 <translation id="6851516051005285358">درخواست سایت میزکار</translation>
+<translation id="6856384753476268833">توسط سازمانتان مدیریت می‌شود.</translation>
 <translation id="6858855187367714033">اسکن‌شده</translation>
 <translation id="6859944681507688231">‏برای اسکن کردن کد QR یا کارت اعتباری، دوربین را در تنظیمات فعال کنید.</translation>
 <translation id="6873263987691478642">نمای تقسیم</translation>
@@ -529,6 +530,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7600965453749440009">هرگز <ph name="LANGUAGE" /> ترجمه نشود</translation>
 <translation id="7603852183842204213">پنجره‌های بازشوی مسدود (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">عبارت عبور نادرست است</translation>
+<translation id="7649070708921625228">راهنما</translation>
 <translation id="7658239707568436148">لغو</translation>
 <translation id="766891008101699113">برای مرور وب به‌صورت خصوصی، برگه جدیدی اضافه کنید.</translation>
 <translation id="7671141431838911305">نصب</translation>
@@ -542,12 +544,12 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7781829728241885113">دیروز</translation>
 <translation id="778855399387580014">‏جستجویی در برگه Chrome جدیدی شروع کنید.</translation>
 <translation id="7791543448312431591">افزودن</translation>
-<translation id="7828557259026017104">کوکی‌ها فایل‌هایی هستند که توسط وب‌سایت‌هایی که بازدید می‌کنید ایجاد می‌شوند. سایت‌ها برای به‌خاطر سپردن اولویت‌هایتان از آن‌ها استفاده می‌کنند. کوکی‌های شخص ثالث را سایت‌های دیگری ایجاد می‌کنند. برخی از محتواها مثل آگهی‌ها یا تصاویر موجود در صفحه وبی که از آن دیدن می‌کنید، متعلق به این سایت‌ها هستند.</translation>
 <translation id="7839985698273989086">صفحه آفلاین</translation>
 <translation id="7840771868269352570">موارد انتخاب‌شده برداشته خواهد شد.</translation>
 <translation id="7856733331829174190">بارگیری نشد</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7887198238286927132">‏برای محافظت از حریم‌خصوصی‌تان، Chrome از ویژگی تکمیل خودکار برای این فیلد استفاده نخواهد کرد.</translation>
+<translation id="791251013315685175">تحت مدیریت <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">فهرست مطالعه‌تان درحالت آفلاین دردسترس است. برای اضافه کردن صفحه به فهرست مطالعه، روی <ph name="SHARE_OPENING_ICON" /> و بعد <ph name="READ_LATER_TEXT" /> ضربه بزنید.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">صادر کردن گذرواژه‌ها…</translation>

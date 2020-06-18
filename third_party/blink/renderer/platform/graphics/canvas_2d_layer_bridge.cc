@@ -56,13 +56,13 @@
 namespace blink {
 
 Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
-                                         AccelerationMode acceleration_mode,
+                                         RasterMode raster_mode,
                                          const CanvasColorParams& color_params)
     : logger_(std::make_unique<Logger>()),
       have_recorded_draw_commands_(false),
       is_hidden_(false),
       is_being_displayed_(false),
-      acceleration_mode_(acceleration_mode),
+      raster_mode_(raster_mode),
       color_params_(color_params),
       size_(size),
       snapshot_state_(kInitialSnapshotState),
@@ -84,7 +84,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
   if (!layer_)
     return;
 
-  if (acceleration_mode_ != kDisableAcceleration) {
+  if (raster_mode_ == RasterMode::kGPU) {
     layer_->ClearTexture();
     // Orphaning the layer is required to trigger the recreation of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
@@ -109,16 +109,7 @@ void Canvas2DLayerBridge::ResetResourceProvider() {
 }
 
 bool Canvas2DLayerBridge::ShouldAccelerate(RasterModeHint hint) const {
-  bool accelerate;
-  if (acceleration_mode_ == kForceAccelerationForTesting) {
-    accelerate = true;
-  } else if (acceleration_mode_ == kDisableAcceleration) {
-    accelerate = false;
-  } else if (acceleration_mode_ == kEnableAcceleration) {
-    accelerate = true;
-  } else {
-    accelerate = hint == RasterModeHint::kPreferGPU;
-  }
+  bool accelerate = raster_mode_ == RasterMode::kGPU;
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
@@ -131,7 +122,7 @@ bool Canvas2DLayerBridge::ShouldAccelerate(RasterModeHint hint) const {
 }
 
 bool Canvas2DLayerBridge::IsAccelerated() const {
-  if (acceleration_mode_ == kDisableAcceleration)
+  if (raster_mode_ == RasterMode::kCPU)
     return false;
   if (IsHibernating())
     return false;
@@ -140,7 +131,7 @@ bool Canvas2DLayerBridge::IsAccelerated() const {
 
   // Whether or not to accelerate is not yet resolved. Determine whether
   // immediate presentation of the canvas would result in the canvas being
-  // accelerated. Presentation is assumed to be a 'PreferAcceleration'
+  // accelerated. Presentation is assumed to be a 'PreferGPU'
   // operation.
   return ShouldAccelerate(RasterModeHint::kPreferGPU);
 }
@@ -567,7 +558,7 @@ bool Canvas2DLayerBridge::IsValid() {
 bool Canvas2DLayerBridge::CheckResourceProviderValid() {
   if (IsHibernating())
     return true;
-  if (!layer_ || acceleration_mode_ == kDisableAcceleration)
+  if (!layer_ || raster_mode_ == RasterMode::kCPU)
     return true;
   if (context_lost_)
     return false;
@@ -700,7 +691,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 }
 
 void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
-  if (layer_ && acceleration_mode_ != kDisableAcceleration)
+  if (layer_ && raster_mode_ == RasterMode::kGPU)
     layer_->SetNeedsDisplayRect(EnclosingIntRect(dirty_rect));
 }
 

@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6119846243427417423">aktivovat</translation>
 <translation id="6129953537138746214">Mezera</translation>
+<translation id="6134259848159370930">Prohledejte zařízení, aplikace, nastavení a internet.</translation>
 <translation id="6135826906199951471">Klávesa Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Rozšířit na všechny aplikace</translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6166852626429024716">Prohledejte zařízení, aplikace, nastavení, internet…</translation>
 <translation id="6264365405983206840">Vybr&amp;at vše</translation>
 <translation id="6351032674660237738">NÁVRHY APLIKACÍ</translation>
 <translation id="6364916375976753737">Posuv doleva</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Soubor <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Polička se vždy zobrazuje</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
+<translation id="8685326675965865247">Prohledejte zařízení, aplikace, nastavení a internet. Mezi aplikacemi se můžete pohybovat pomocí kláves.</translation>
 <translation id="8725488761726303204">a ještě <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}few{# h}many{# h}other{# h}}</translation>

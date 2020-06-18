@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
+<translation id="1018656279737460067">Anulat</translation>
 <translation id="1195447618553298278">Eroare necunoscută.</translation>
 <translation id="1468664791493211953">Oferte</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> gestionează acest dispozitiv și poate să îți monitorizeze activitatea.</translation>
 <translation id="150962533380566081">PUK nevalid.</translation>
 <translation id="1510238584712386396">Lansator</translation>
+<translation id="1644574205037202324">Istoric</translation>
 <translation id="1734367976349034509">Acest dispozitiv este gestionat de companie</translation>
 <translation id="1905710495812624430">Ai depășit numărul maxim de încercări permise.</translation>
 <translation id="1930797645656624981">Serviciul metodei de introducere a textului din sistemul de operare Chrome</translation>

@@ -1910,10 +1910,6 @@ interface ElementInternals
     setter ariaValueMin
     setter ariaValueNow
     setter ariaValueText
-interface EnterPictureInPictureEvent : Event
-    attribute @@toStringTag
-    getter pictureInPictureWindow
-    method constructor
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno
@@ -5134,6 +5130,10 @@ interface PhotoCapabilities
     getter imageHeight
     getter imageWidth
     getter redEyeReduction
+    method constructor
+interface PictureInPictureEvent : Event
+    attribute @@toStringTag
+    getter pictureInPictureWindow
     method constructor
 interface PictureInPictureWindow : EventTarget
     attribute @@toStringTag

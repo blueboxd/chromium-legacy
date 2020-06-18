@@ -698,6 +698,41 @@ class FileTransferController {
   }
 
   /**
+   * Renders a drag-and-drop thumbnail. TODO(files-ng): remove renderThumbnail_
+   * and its strings, preloadedThumbnailImagePromise_, constants, etc.
+   *
+   * @return {!HTMLElement} Thumbnail element.
+   * @private
+   */
+  renderThumbnailFilesNg_() {
+    const entry = this.selectionHandler_.selection.entries[0];
+    const index = this.selectionHandler_.selection.indexes[0];
+    const items = this.selectionHandler_.selection.entries.length;
+
+    const container = /** @type {!HTMLElement} */ (
+        this.document_.body.querySelector('#drag-container'));
+    const multiple = items > 1 ? 'block' : 'none';
+    container.innerHTML = `
+      <div class='drag-box drag-multiple' style='display:${multiple}'></div>
+      <div class='drag-box drag-contents'>
+        <div class='detail-icon'></div><div class='label'>${entry.name}</div>
+      </div>
+      <div class='drag-bubble' style='display:${multiple}'>${items}</div>
+    `;
+
+    const icon = container.querySelector('.detail-icon');
+    const thumbnail = this.listContainer_.currentView.getThumbnail(index);
+    if (thumbnail) {
+      icon.style.backgroundImage = thumbnail.style.backgroundImage;
+      icon.style.backgroundSize = 'cover';
+    } else {
+      icon.setAttribute('file-type-icon', FileType.getIcon(entry));
+    }
+
+    return container;
+  }
+
+  /**
    * @param {!cr.ui.List} list Drop target list
    * @param {!Event} event A dragstart event of DOM.
    * @private
@@ -732,34 +767,43 @@ class FileTransferController {
       return;
     }
 
-    const dt = /** @type {DragEvent} */ (event).dataTransfer;
+    const dataTransfer = /** @type {DragEvent} */ (event).dataTransfer;
+
     const canCopy = this.canCopyOrDrag();
     const canCut = this.canCutOrDrag();
     if (canCopy || canCut) {
       if (canCopy && canCut) {
-        this.cutOrCopy_(dt, 'all');
+        this.cutOrCopy_(dataTransfer, 'all');
       } else if (canCopy) {
-        this.cutOrCopy_(dt, 'copyLink');
+        this.cutOrCopy_(dataTransfer, 'copyLink');
       } else {
-        this.cutOrCopy_(dt, 'move');
+        this.cutOrCopy_(dataTransfer, 'move');
       }
     } else {
       event.preventDefault();
       return;
     }
 
-    const dragThumbnail = this.renderThumbnail_();
-    let yOffset = 0;
-    // Position the drag image above the start point for touch intiated drag.
-    if (this.touching_) {
-      const thumbNailExtent = dragThumbnail.getBoundingClientRect();
-      yOffset = thumbNailExtent.height;
+    const thumbnail = {element: null, x: 0, y: 0};
+
+    if (util.isFilesNg()) {
+      thumbnail.element = this.renderThumbnailFilesNg_();
+      if (this.document_.querySelector(':root[dir=rtl]')) {
+        thumbnail.x = thumbnail.element.clientWidth * window.devicePixelRatio;
+      }
+    } else {
+      thumbnail.element = this.renderThumbnail_();
+      // Move drag image above the start point for touch initiated drags.
+      if (this.touching_) {
+        thumbnail.y = thumbnail.element.getBoundingClientRect().height;
+      }
     }
-    dt.setDragImage(dragThumbnail, 0, yOffset);
+
+    dataTransfer.setDragImage(thumbnail.element, thumbnail.x, thumbnail.y);
 
     window[DRAG_AND_DROP_GLOBAL_DATA] = {
-      sourceRootURL: dt.getData('fs/sourceRootURL'),
-      missingFileContents: dt.getData('fs/missingFileContents')
+      sourceRootURL: dataTransfer.getData('fs/sourceRootURL'),
+      missingFileContents: dataTransfer.getData('fs/missingFileContents'),
     };
   }
 
@@ -792,14 +836,22 @@ class FileTransferController {
     if (!entry && !onlyIntoDirectories) {
       entry = this.directoryModel_.getCurrentDirEntry();
     }
+
     const effectAndLabel =
         this.selectDropEffect_(event, this.getDragAndDropGlobalData_(), entry);
     event.dataTransfer.dropEffect = effectAndLabel.getDropEffect();
     event.preventDefault();
-    const label = effectAndLabel.getLabel();
+
+    if (util.isFilesNg()) {
+      return;
+    }
+
+    // TODO(files-ng): the #drop-label is not used in files-ng, remove this
+    // code and update the effectAndLabel class to remove its label code.
     if (!this.dropLabel_) {
       this.dropLabel_ = document.querySelector('div#drop-label');
     }
+    const label = effectAndLabel.getLabel();
     if (label) {
       this.dropLabel_.innerText = label;
       this.dropLabel_.style.left = event.pageX + 'px';
@@ -875,6 +927,8 @@ class FileTransferController {
       this.clearDropTarget_();
       this.lastEnteredTarget_ = null;
     }
+
+    // TODO(files-ng): dropLabel_ is not used in files-ng, remove it.
     if (this.dropLabel_) {
       this.dropLabel_.style.display = 'none';
     }
@@ -935,15 +989,17 @@ class FileTransferController {
 
     // Set the new drop target.
     this.dropTarget_ = domElement;
-
     if (!domElement || !destinationEntry.isDirectory) {
       return;
     }
 
-    if (this.selectionHandler_.selection.entries.find(element => {
-          return util.isSameEntry(element, destinationEntry);
-        })) {
-      return;
+    // Disallow dropping a folder on itself.
+    assert(destinationEntry.isDirectory);
+    const entries = this.selectionHandler_.selection.entries;
+    for (let i = 0; i < entries.length; i++) {
+      if (util.isSameEntry(entries[i], destinationEntry)) {
+        return;
+      }
     }
 
     // Add accept class if the domElement can accept the drag.

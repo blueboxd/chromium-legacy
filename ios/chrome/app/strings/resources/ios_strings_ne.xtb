@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">वेबसाइटमा साइन इन गर्नुहोस्</translation>
 <translation id="1509960214886564027">कयौँ साइटका सुविधाहरूले काम नगर्न सक्छन्</translation>
 <translation id="152234381334907219">कहिल्यै सुरक्षित गरिँदैन</translation>
+<translation id="1535268707340844072">तपाईंको हालको सेटिङका कारण केही साइटहरूले सही रूपमा काम नगर्न सक्छन्। सबै साइटका कुकीहरू व्यवस्थापन गर्न, <ph name="BEGIN_LINK" />कुकीसम्बन्धी सेटिङ<ph name="END_LINK" />मा जानुहोस्।</translation>
 <translation id="1540800554400757039">ठेगाना 1</translation>
 <translation id="1545749641540134597">QR कोड स्क्यान गर्नुहोस्</translation>
 <translation id="1552525382687785070">तपाईंका प्रशासकले सिंंक सुविधा असक्षम पार्नुभएको छ</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" /> दिनअघि सक्रिय</translation>
 <translation id="2074131957428911366">तपाईं जुनसुकै बेला <ph name="BEGIN_LINK" />सेटिङहरू<ph name="END_LINK" /> मा गई सिंक गर्ने कुरा छनौट गर्न सक्नुहुन्छ।</translation>
 <translation id="2079545284768500474">अन्डू गर्नुहोस्</translation>
+<translation id="2081417079511601293">इन्कोग्निटोमा तेस्रो पक्षीय कुकीमाथि रोक लगाउनुहोस्</translation>
 <translation id="209018056901015185">डेस्कटप साइट अनुरोध गर्नुहोस्</translation>
 <translation id="2103075008456228677">history.google.com लाई खोल्नुहोस्</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> वस्तुहरू सारियो</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">नयाँ ट्याबमा खोल्नुहोस्</translation>
 <translation id="3037605927509011580">हरे, स्न्याप!</translation>
 <translation id="3112556859945124369">चिन्ह लगाउनुहोस्…</translation>
+<translation id="3131206671572504478">सबै ब्लक गर्नुहोस्</translation>
 <translation id="3153862085237805241">कार्ड सुरक्षित गर्नुहोस्</translation>
 <translation id="3157684681743766797">सबैलाई चिन्ह लगाउनुहोस्…</translation>
 <translation id="3161291298470460782">यस कार्यले तपाईंलाई साइन आउट गराउने छ, सिंक गर्ने सुविधा निष्क्रिय पार्ने छ र यो यन्त्रबाट Chrome का सबै डेटा मेटाउने छ। सिंक भएको तपाईंको डेटा तपाईंको Google खातामा रहिरहने छ।</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">भाषा परिवर्तन गर्न ट्याप गर्नुहोस्।</translation>
 <translation id="441868831736628555">गोपनीयता सूचना</translation>
 <translation id="4454246407045105932">भाषा थप्नुहोस्</translation>
+<translation id="4469418912670346607">सेटअप जारी राख्नुहोस्</translation>
 <translation id="4476574785019001431">सेटिङहरू</translation>
 <translation id="4496373720959965247">ट्याबहरू थप्नुहोस् र पृष्ठहरू बीच बदल्नुहोस्</translation>
 <translation id="4508750114462689118">साइन-इन प्रोमो बन्द गर्नुहोस्</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">कार्डको नम्बर अमान्य छ</translation>
 <translation id="4818522717893377262">भाषा थप्नुहोस्...</translation>
 <translation id="481968316161811770">कुकी, साइटको डेटा</translation>
+<translation id="4826218269716039351">तेस्रो पक्षीय कुकीहरूमाथि रोक लगाउनुहोस्</translation>
 <translation id="4833786495304741580">यसले Google मा प्रयोगसम्बन्धी तथ्याङ्क र क्र्यास रिपोर्टहरू स्वतः पठाउँछ।</translation>
 <translation id="4840495572919996524">अब उप्रान्त तपाईंको Google खातामा तपाईंका पुस्तक चिन्ह, इतिहाससम्बन्धी डेटा, पासवर्ड र अन्य सेटिङहरू सिंक हुने छैनन्।</translation>
 <translation id="4854345657858711387">कुनै पासकोड सेट गर्नुहोस्‌</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">पृष्ठ सुरक्षा जानकारी</translation>
 <translation id="5443952882982198570">क्रेडिट कार्डहरू</translation>
 <translation id="5457907402803865181">पासवर्डहरू सिंक गर्ने क्रममा त्रुटि भयो।</translation>
+<translation id="5489208564673669003">सबै साइटका कुकीहरू व्यवस्थापन गर्न, <ph name="BEGIN_LINK" />कुकीसम्बन्धी सेटिङ<ph name="END_LINK" />मा जानुहोस्।</translation>
 <translation id="5508435575041083207">साइन आउट गर्नुहोस् र यो यन्त्रमा भएका डेटा मेटाउनुहोस्</translation>
 <translation id="5525269841082836315">पासफ्रेज सिर्जना गर्नुहोस्</translation>
 <translation id="5548760955356983418">ह्यानडअफले तपाईंलाई यस यन्त्रमा ब्राउजिङ सुरु गर्न र तपाईंको Mac मा सजिलै जारी गर्न दिन्छ। हाल खोलिएको वेबसाइट तपाईंको Mac को डकमा प्रकट हुनेछ।
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">PDF तयार गर्दै</translation>
 <translation id="6426067060178468363">कुकीहरूलाई अनुमति दिनुहोस्</translation>
 <translation id="6434591244308415567">कुनै त्रुटि भयो। पछि फेरि प्रयास गर्नुहोस्।</translation>
+<translation id="6439338047467462846">सबैलाई अनुमति दिनुहोस्</translation>
 <translation id="6445051938772793705">देश</translation>
 <translation id="6445981559479772097">सन्देश पठाइयो।</translation>
 <translation id="6447842834002726250">कुकीहरू</translation>
@@ -439,6 +446,7 @@
 <translation id="6476800141292307438">पृष्ठलाई <ph name="LANGUAGE" /> भाषामा अनुवाद गर्दै। विकल्पहरू स्क्रिनका पुछारमा उपलब्ध छन्।</translation>
 <translation id="648164694371393720">प्रमाणीकरणसम्बन्धी त्रुटि</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> वस्तुहरू मेटाइयो</translation>
+<translation id="651505212789431520">सिंक गर्ने कार्य रद्द गर्ने हो? तपाईं सेटिङमा गई जुनसुकै बेला सिंक गर्ने सुविधा सक्रिय गर्न सक्नुहुन्छ।</translation>
 <translation id="6561262006871132942">जुम बढाउनुहोस्</translation>
 <translation id="6610002944194042868">अनुवादसम्बन्धी विकल्पहरू</translation>
 <translation id="6628106477656132239">म्याद सकिने मिति अमान्य छ</translation>
@@ -521,6 +529,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> कहिले पनि अनुवाद नगर्नुहोस्</translation>
 <translation id="7603852183842204213">पप-अपहरु ब्लक गरियो (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">गलत पासफ्रेज</translation>
+<translation id="7649070708921625228">मद्दत</translation>
 <translation id="7658239707568436148">रद्द गर्नुहोस्</translation>
 <translation id="766891008101699113">निजी रूपमा वेब ब्राउज गर्न कुनै नयाँ ट्याब थप्नुहोस्।</translation>
 <translation id="7671141431838911305">स्थापना गर्नुहोस्</translation>
@@ -534,7 +543,6 @@
 <translation id="7781829728241885113">हिजो</translation>
 <translation id="778855399387580014">Chrome को नयाँ ट्याबमा खोज सुरु गर्नुहोस्।</translation>
 <translation id="7791543448312431591">थप्नुहोस्</translation>
-<translation id="7828557259026017104">कुकीहरू भनेका तपाईं जाने वेबसाइटहरूले सिर्जना गर्ने फाइल हुन्। तपाईंका प्राथमिकताहरू याद राख्न वेबसाइटहरूले ती कुकीहरूको प्रयोग गर्छन्। अन्य वेबसाइटहरूले तेस्रो पक्षीय कुकीहरू सिर्जना गर्छन्। तपाईं जाने वेबपृष्ठमा तपाईंले देख्ने विज्ञापन वा छविहरू जस्ता केही सामग्री यी वेबसाइटहरूको स्वामित्वमा हुन्छन्।</translation>
 <translation id="7839985698273989086">अफलाइन पृष्ठ</translation>
 <translation id="7840771868269352570">तपाईंले चयन गर्नुभएका वस्तुहरू हटाइने छन्।</translation>
 <translation id="7856733331829174190">डाउनलोड गर्न सकिएन</translation>

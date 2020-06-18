@@ -470,6 +470,7 @@
 <translation id="681368974849482173">تم إنشاء العنصر</translation>
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6851516051005285358">طلب موقع سطح المكتب</translation>
+<translation id="6856384753476268833">تتم إدارة المتصفِّح من خلال مؤسستك.</translation>
 <translation id="6858855187367714033">تم مسحه ضوئيًا.</translation>
 <translation id="6859944681507688231">لمسح رمز الاستجابة السريعة أو بطاقة ائتمان ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات.</translation>
 <translation id="6873263987691478642">وضع تقسيم العرض</translation>
@@ -529,6 +530,7 @@
 <translation id="7600965453749440009">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">تم حظر النوافذ المنبثقة (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">عبارة مرور غير صحيحة</translation>
+<translation id="7649070708921625228">مساعدة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="766891008101699113">لتصفح الويب بخصوصية تامّة، يمكنك إضافة علامة تبويب جديدة.</translation>
 <translation id="7671141431838911305">تثبيت</translation>
@@ -542,12 +544,12 @@
 <translation id="7781829728241885113">أمس</translation>
 <translation id="778855399387580014">‏يمكنك بدء البحث في علامة تبويب Chrome جديدة.</translation>
 <translation id="7791543448312431591">إضافة</translation>
-<translation id="7828557259026017104">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. وتستخدمها المواقع الإلكترونية لتتذكّر الإعدادات المفضّلة. أمّا ملفات تعريف الارتباط التابعة لجهات خارجية، فتُنشئها مواقع إلكترونية أخرى. وتمتلك هذه المواقع الإلكترونية بعضًا من المحتوى الذي تراه على صفحة الويب التي تزورها، مثل الإعلانات أو الصور.</translation>
 <translation id="7839985698273989086">صفحة بلا إنترنت</translation>
 <translation id="7840771868269352570">ستتم إزالة العناصر التي اخترتها.</translation>
 <translation id="7856733331829174190">تعذّر التنزيل.</translation>
 <translation id="7859704718976024901">سجلّ التصفّح</translation>
 <translation id="7887198238286927132">‏لحماية خصوصيتك، لن يجري Chrome الملء التلقائي لهذا الحقل.</translation>
+<translation id="791251013315685175">تتم إدارته من خلال <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على  <ph name="SHARE_OPENING_ICON" />  ثم <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">جارٍ تصدير كلمات المرور...</translation>

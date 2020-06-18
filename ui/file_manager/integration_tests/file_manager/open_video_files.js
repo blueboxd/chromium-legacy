@@ -7,7 +7,6 @@
   /**
    * Waits until a window having the given filename appears.
    * @param {string} filename Filename of the requested window.
-   * @param {Promise} promise Promise to be fulfilled with a found window's ID.
    */
   function waitForPlaying(filename) {
     const caller = getCaller();

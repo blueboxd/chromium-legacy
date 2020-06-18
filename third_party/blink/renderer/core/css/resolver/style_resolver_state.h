@@ -227,6 +227,12 @@ class CORE_EXPORT StyleResolverState {
   // stored in the MatchedPropertiesCache.
   const CSSValue& ResolveLightDarkPair(const CSSProperty&, const CSSValue&);
 
+  // The dependencies we track here end up in an entry in the
+  // MatchedPropertiesCache. Declarations such as "all:inherit" incurs several
+  // hundred dependencies, which is too big to cache, hence the number of
+  // dependencies we can track is limited.
+  static const size_t kMaxDependencies = 8;
+
   // Mark the ComputedStyle as possibly dependent on the specified property.
   //
   // A "dependency" in this context means that one or more of the computed
@@ -238,6 +244,9 @@ class CORE_EXPORT StyleResolverState {
   void MarkDependency(const CSSProperty&);
 
   // Returns the set of all properties seen by MarkDependency.
+  //
+  // The caller must check if the dependencies are valid via
+  // HasValidDependencies() before calling this function.
   //
   // Note that this set might be larger than the actual set of dependencies,
   // as we do some degree of over-marking to keep the implementation simple.
@@ -252,11 +261,18 @@ class CORE_EXPORT StyleResolverState {
   //    margin: var(--x) (--y);
   //  }
   //
-  const HashSet<CSSPropertyName>& Dependencies() const { return dependencies_; }
+  const HashSet<CSSPropertyName>& Dependencies() const {
+    DCHECK(HasValidDependencies());
+    return dependencies_;
+  }
 
   // True if there's a dependency without the kComputedValueComparable flag.
   bool HasIncomparableDependency() const {
     return has_incomparable_dependency_;
+  }
+
+  bool HasValidDependencies() const {
+    return dependencies_.size() <= kMaxDependencies;
   }
 
  private:

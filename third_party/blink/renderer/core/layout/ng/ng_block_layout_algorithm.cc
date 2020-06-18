@@ -730,6 +730,19 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
                  Node().GetLayoutBox()->LogicalHeightForEmptyLine());
   }
 
+  // Collapse annotation overflow and padding.
+  // logical_block_offset already contains block-end annotation overflow.
+  // However, if the container has non-zero block-end padding, the annotation
+  // can extend on the padding. So we decrease logical_block_offset by
+  // shareable part of the annotation overflow and the padding.
+  if (previous_inflow_position.block_end_annotation_space < LayoutUnit()) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
+    const LayoutUnit annotation_overflow =
+        -previous_inflow_position.block_end_annotation_space;
+    previous_inflow_position.logical_block_offset -=
+        std::min(container_builder_.Padding().block_end, annotation_overflow);
+  }
+
   // To save space of the stack when we recurse into children, the rest of this
   // function is continued within |FinishLayout|. However it should be read as
   // one function.
@@ -1980,9 +1993,13 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     if (!container_builder_.BfcBlockOffset())
       DCHECK_EQ(logical_block_offset, LayoutUnit());
   } else {
-    // TODO(crbug.com/1069817): We should not add AnnotationOverflow
-    // unconditionally here. Instead, we should pass it to the next child
-    // layout.
+    // We add AnnotationOverflow unconditionally here.  Then, we cancel it if
+    //  - The next line box has block-start annotation space, or
+    //  - There are no following child boxes and this container has block-end
+    //    padding.
+    //
+    // See NGInlineLayoutAlgorithm::CreateLine() and
+    // BlockLayoutAlgorithm::Layout().
     logical_block_offset = logical_offset.block_offset + fragment.BlockSize() +
                            layout_result.AnnotationOverflow();
   }
@@ -2014,8 +2031,13 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
       (previous_inflow_position.self_collapsing_child_had_clearance &&
        is_self_collapsing);
 
-  return {logical_block_offset, margin_strut,
-          layout_result.BlockEndAnnotationSpace(),
+  LayoutUnit annotation_space = layout_result.BlockEndAnnotationSpace();
+  if (layout_result.AnnotationOverflow() > LayoutUnit()) {
+    DCHECK(!annotation_space);
+    annotation_space = -layout_result.AnnotationOverflow();
+  }
+
+  return {logical_block_offset, margin_strut, annotation_space,
           self_or_sibling_self_collapsing_child_had_clearance};
 }
 

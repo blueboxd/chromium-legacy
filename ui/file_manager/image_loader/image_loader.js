@@ -131,7 +131,7 @@ ImageLoader.prototype.onMessage_ = function(senderOrigin, request, callback) {
     return false;  // No callback calls.
   } else {
     // Create a request task and add it to the scheduler (queue).
-    const requestTask = new ImageRequest(
+    const requestTask = new ImageRequestTask(
         requestId, this.cache_, this.piexLoader_, request, callback);
     this.scheduler_.add(requestTask);
     return true;  // Request will call the callback.

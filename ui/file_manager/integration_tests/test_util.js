@@ -437,9 +437,9 @@ class TestEntryInfo {
     this.mimeType = options.mimeType || '';
     this.sharedOption = options.sharedOption || SharedOption.NONE;
     this.lastModifiedTime = options.lastModifiedTime;
-    this.nameText = options.nameText;
-    this.sizeText = options.sizeText;
-    this.typeText = options.typeText;
+    this.nameText = options.nameText || '';
+    this.sizeText = options.sizeText || '';
+    this.typeText = options.typeText || '';
     this.capabilities = options.capabilities;
     this.folderFeature = options.folderFeature;
     this.pinned = !!options.pinned;

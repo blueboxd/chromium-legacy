@@ -107,8 +107,11 @@ void GetDownload(Profile* profile,
 
 }  // namespace
 
-DownloadShelf::DownloadShelf()
-    : should_show_on_unhide_(false), is_hidden_(false) {}
+DownloadShelf::DownloadShelf(Browser* browser, Profile* profile)
+    : browser_(browser),
+      profile_(profile),
+      should_show_on_unhide_(false),
+      is_hidden_(false) {}
 
 DownloadShelf::~DownloadShelf() {}
 
@@ -234,10 +237,6 @@ base::TimeDelta DownloadShelf::GetTransientDownloadShowDelay() {
   return base::TimeDelta::FromSeconds(kDownloadShowDelayInSeconds);
 }
 
-Profile* DownloadShelf::profile() const {
-  return browser() ? browser()->profile() : nullptr;
-}
-
 void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
   if (download->GetState() == DownloadItem::COMPLETE &&
       download->ShouldRemoveFromShelfWhenComplete())
@@ -255,8 +254,8 @@ void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
   Open();
   DoAddDownload(std::move(download));
 
-  // browser() can be NULL for tests.
-  if (!browser())
+  // browser_ can be null for tests.
+  if (!browser_)
     return;
 
   // Show the download started animation if:
@@ -266,7 +265,7 @@ void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
   //   or running under a test etc.)
   // - Rich animations are enabled.
   content::WebContents* shelf_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
+      browser_->tab_strip_model()->GetActiveWebContents();
   if (should_show_download_started_animation && shelf_tab &&
       platform_util::IsVisible(shelf_tab->GetNativeView()) &&
       gfx::Animation::ShouldRenderRichAnimation()) {
@@ -275,7 +274,7 @@ void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
 }
 
 void DownloadShelf::ShowDownloadById(ContentId id) {
-  GetDownload(profile(), id,
+  GetDownload(profile_, id,
               base::BindOnce(&DownloadShelf::ShowDownload,
                              weak_ptr_factory_.GetWeakPtr()));
 }

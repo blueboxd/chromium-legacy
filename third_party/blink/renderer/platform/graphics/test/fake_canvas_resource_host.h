@@ -42,9 +42,8 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
           size_, SharedGpuContext::ContextProviderWrapper(),
           kMedium_SkFilterQuality, CanvasColorParams(),
           false /*is_origin_top_left*/,
-          hint == RasterModeHint::kPreferGPU
-              ? CanvasResourceProvider::RasterMode::kGPU
-              : CanvasResourceProvider::RasterMode::kCPU,
+          hint == RasterModeHint::kPreferGPU ? RasterMode::kGPU
+                                             : RasterMode::kCPU,
           shared_image_usage_flags);
     }
     if (!provider) {

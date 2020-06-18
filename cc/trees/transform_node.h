@@ -105,6 +105,10 @@ struct CC_EXPORT TransformNode {
   // We need to track changes to to_screen transform to compute the damage rect.
   bool transform_changed : 1;
 
+  // Whether the parent transform node should be used for checking backface
+  // visibility, not this transform one.
+  bool delegates_to_parent_for_backface : 1;
+
   gfx::ScrollOffset scroll_offset;
 
   // This value stores the snapped amount whenever we snap. If the snap is due

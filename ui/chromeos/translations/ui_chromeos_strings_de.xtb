@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Singhalesische Tastatur</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> verfügbar</translation>
 <translation id="2425665904502185219">Gesamtdateigröße</translation>
+<translation id="2428749644083375155"><ph name="NUMBER_OF_ITEMS" /> Elemente werden in den Ordner "<ph name="FOLDER_NAME" />" kopiert</translation>
 <translation id="2448312741937722512">Art</translation>
 <translation id="2453576648990281505">Datei bereits vorhanden</translation>
 <translation id="2464079411014186876">Eiscreme</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" /> wurde zur Auswahl hinzugefügt.</translation>
 <translation id="4582497162516204941">Installation mit Linux (Beta)</translation>
 <translation id="4594543368593301662">Ergebnisse für <ph name="SEARCH_TERM" />.</translation>
+<translation id="4603392156942865207"><ph name="FILE_NAME" /> wird in den Ordner "<ph name="FOLDER_NAME" />" kopiert</translation>
 <translation id="4631887759990505102">Musiker</translation>
 <translation id="4656293982926141856">Auf diesem Computer</translation>
 <translation id="4669606053856530811">Mitglieder von "<ph name="SOURCE_NAME" />" verlieren den Zugriff, sofern Sie diese Dateien nicht mit ihnen teilen.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Kontrast</translation>
 <translation id="5068919226082848014">Pizza</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> an Dateien werden gelöscht</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> Elemente werden in den Ordner "<ph name="FOLDER_NAME" />" verschoben</translation>
 <translation id="509429900233858213">Ein Fehler ist aufgetreten.</translation>
 <translation id="5098629044894065541">Hebräisch</translation>
 <translation id="5123433949759960244">Basketball</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Französische Tastatur</translation>
 <translation id="6074825444536523002">Google-Formular</translation>
 <translation id="6096979789310008754">Die Sucheingabe wurde gelöscht. Alle Dateien und Ordner werden angezeigt.</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" /> wird in den Ordner "<ph name="FOLDER_NAME" />" verschoben</translation>
 <translation id="6111770213269631447">Transliteration (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Leerzeichen</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> wird verschoben...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Installation fehlgeschlagen</translation>
 <translation id="7040138676081995583">Öffnen mit...</translation>
+<translation id="7059566040011178088">Weniger als <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> Elemente ausgewählt</translation>
 <translation id="7106346894903675391">Mehr Speicherplatz erwerben...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' – &lt;em&gt;Ablage durchsuchen&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Gerätemodell</translation>
 <translation id="8208580316430297579">Artwork</translation>
 <translation id="8223479393428528563">Wenn Sie diese Dateien zur Offline-Nutzung speichern möchten, gehen Sie online, klicken Sie mit der rechten Maustaste auf die Dateien und wählen Sie die Option "<ph name="OFFLINE_CHECKBOX_NAME" />" aus.</translation>
+<translation id="8231972167769262174">Ca. <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Abbrechen</translation>
 <translation id="8261506727792406068">Löschen</translation>
 <translation id="8269755669432358899">Erweiterte Dateiinformationen minimieren</translation>

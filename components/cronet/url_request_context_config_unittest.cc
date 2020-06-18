@@ -70,8 +70,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       {"QUIC", "set_quic_flags"},
       base::Value(
           "FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count=5,"
-          "FLAGS_quic_reloadable_flag_quic_enable_version_draft_28=true,"
-          "FLAGS_quic_reloadable_flag_quic_enable_version_draft_27=true"));
+          "FLAGS_quic_reloadable_flag_quic_enable_version_draft_29=true,"
+          "FLAGS_quic_reloadable_flag_quic_disable_version_draft_27=true"));
   options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "preloaded_report_to_headers"},
@@ -144,8 +144,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
 
   // Initialize QUIC flags set by the config.
   FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count = 0;
-  FLAGS_quic_reloadable_flag_quic_enable_version_draft_28 = false;
-  FLAGS_quic_reloadable_flag_quic_enable_version_draft_27 = false;
+  FLAGS_quic_reloadable_flag_quic_enable_version_draft_29 = false;
+  FLAGS_quic_reloadable_flag_quic_disable_version_draft_27 = false;
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -197,8 +197,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_EQ(quic_connection_options, quic_params->connection_options);
 
   EXPECT_EQ(FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count, 5);
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_28);
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_27);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_29);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_disable_version_draft_27);
 
   // Check Custom QUIC User Agent Id.
   EXPECT_EQ("Custom QUIC UAID", quic_params->user_agent_id);

@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1018656279737460067">Отменено</translation>
 <translation id="1195447618553298278">Неизвестная ошибка.</translation>
 <translation id="1468664791493211953">Предложения</translation>
 <translation id="1482734542997480527">Это управляемое устройство. Администратор домена <ph name="ENROLLMENT_DOMAIN" /> может отслеживать ваши действия.</translation>
 <translation id="150962533380566081">Неверный PUK-код.</translation>
 <translation id="1510238584712386396">Панель запуска</translation>
+<translation id="1644574205037202324">История</translation>
 <translation id="1734367976349034509">Это корпоративное устройство</translation>
 <translation id="1905710495812624430">Превышено максимально допустимое число попыток.</translation>
 <translation id="1930797645656624981">Выбор способа ввода в Chrome OS</translation>

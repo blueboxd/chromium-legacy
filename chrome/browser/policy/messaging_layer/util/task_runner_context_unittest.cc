@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/messaging_layer/util/task_runner_context.h"
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 #include "base/bind.h"
@@ -37,11 +38,10 @@ TEST_F(TaskRunner, SingleAction) {
         : TaskRunnerContext<bool>(std::move(callback), std::move(task_runner)) {
     }
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~SingleActionContext() override = default;
 
-   private:
     void OnStart() override { Response(true); }
   };
 
@@ -49,15 +49,14 @@ TEST_F(TaskRunner, SingleAction) {
   // Created context reference is self-destruct upon completion of 'Start',
   // but the context itself lives through until all tasks are done.
   base::RunLoop run_loop;
-  base::MakeRefCounted<SingleActionContext>(
+  Start<SingleActionContext>(
       base::BindOnce(
           [](base::RunLoop* run_loop, bool* var, bool val) {
             *var = val;
             run_loop->Quit();
           },
           &run_loop, &result),
-      base::SequencedTaskRunnerHandle::Get())
-      ->Start();
+      base::SequencedTaskRunnerHandle::Get());
   run_loop.Run();
   EXPECT_TRUE(result);
 }
@@ -73,11 +72,10 @@ TEST_F(TaskRunner, SeriesOfActions) {
                                       std::move(task_runner)),
           init_value_(init_value) {}
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~SeriesOfActionsContext() override = default;
 
-   private:
     void Halve(uint32_t value, uint32_t log) {
       CheckOnValidSequence();
       if (value <= 1) {
@@ -94,7 +92,7 @@ TEST_F(TaskRunner, SeriesOfActions) {
 
   uint32_t result = 0;
   base::RunLoop run_loop;
-  base::MakeRefCounted<SeriesOfActionsContext>(
+  Start<SeriesOfActionsContext>(
       128,
       base::BindOnce(
           [](base::RunLoop* run_loop, uint32_t* var, uint32_t val) {
@@ -102,8 +100,7 @@ TEST_F(TaskRunner, SeriesOfActions) {
             run_loop->Quit();
           },
           &run_loop, &result),
-      base::SequencedTaskRunnerHandle::Get())
-      ->Start();
+      base::SequencedTaskRunnerHandle::Get());
   run_loop.Run();
   EXPECT_EQ(result, 7u);
 }
@@ -120,11 +117,10 @@ TEST_F(TaskRunner, SeriesOfDelays) {
           init_value_(init_value),
           delay_(base::TimeDelta::FromSecondsD(0.1)) {}
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~SeriesOfDelaysContext() override = default;
 
-   private:
     void Halve(uint32_t value, uint32_t log) {
       CheckOnValidSequence();
       if (value <= 1) {
@@ -146,7 +142,7 @@ TEST_F(TaskRunner, SeriesOfDelays) {
   // and avoid RunLoopIdle (which would exit on the first delay).
   uint32_t result = 0;
   base::RunLoop run_loop;
-  base::MakeRefCounted<SeriesOfDelaysContext>(
+  Start<SeriesOfDelaysContext>(
       128,
       base::BindOnce(
           [](base::RunLoop* run_loop, uint32_t* var, uint32_t val) {
@@ -154,8 +150,7 @@ TEST_F(TaskRunner, SeriesOfDelays) {
             run_loop->Quit();
           },
           &run_loop, &result),
-      base::SequencedTaskRunnerHandle::Get())
-      ->Start();
+      base::SequencedTaskRunnerHandle::Get());
   run_loop.Run();
   EXPECT_EQ(result, 7u);
 }
@@ -173,11 +168,10 @@ TEST_F(TaskRunner, SeriesOfAsyncs) {
           init_value_(init_value),
           delay_(base::TimeDelta::FromSecondsD(0.1)) {}
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~SeriesOfAsyncsContext() override = default;
 
-   private:
     void Halve(uint32_t value, uint32_t log) {
       CheckOnValidSequence();
       if (value <= 1) {
@@ -213,7 +207,7 @@ TEST_F(TaskRunner, SeriesOfAsyncs) {
   // and avoid RunLoopIdle (which would exit on the first delay).
   uint32_t result = 0;
   base::RunLoop run_loop;
-  base::MakeRefCounted<SeriesOfAsyncsContext>(
+  Start<SeriesOfAsyncsContext>(
       128,
       base::BindOnce(
           [](base::RunLoop* run_loop, uint32_t* var, uint32_t val) {
@@ -221,8 +215,7 @@ TEST_F(TaskRunner, SeriesOfAsyncs) {
             run_loop->Quit();
           },
           &run_loop, &result),
-      base::SequencedTaskRunnerHandle::Get())
-      ->Start();
+      base::SequencedTaskRunnerHandle::Get());
 
   run_loop.Run();
   EXPECT_EQ(result, 7u);
@@ -264,11 +257,10 @@ TEST_F(TaskRunner, TreeOfActions) {
                                       std::move(task_runner)),
           init_value_(init_value) {}
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~TreeOfActionsContext() override = default;
 
-   private:
     void FibonacciSplit(uint32_t value, scoped_refptr<Summator> join) {
       CheckOnValidSequence();
       if (value < 2u) {
@@ -309,7 +301,7 @@ TEST_F(TaskRunner, TreeOfActions) {
         FROM_HERE, base::BindOnce(
                        [](size_t* count, base::RunLoop* run_loop, uint32_t n,
                           uint32_t* result) {
-                         base::MakeRefCounted<TreeOfActionsContext>(
+                         Start<TreeOfActionsContext>(
                              n,
                              base::BindOnce(
                                  [](size_t* count, base::RunLoop* run_loop,
@@ -320,8 +312,7 @@ TEST_F(TaskRunner, TreeOfActions) {
                                    }
                                  },
                                  count, run_loop, result),
-                             base::SequencedTaskRunnerHandle::Get())
-                             ->Start();
+                             base::SequencedTaskRunnerHandle::Get());
                        },
                        &count, &run_loop, n, result));
   }
@@ -343,11 +334,10 @@ TEST_F(TaskRunner, ActionsWithStatus) {
                                     std::move(task_runner)),
           vector_(vector) {}
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~ActionsWithStatusContext() override = default;
 
-   private:
     void Pick(size_t index) {
       CheckOnValidSequence();
       if (index < vector_.size()) {
@@ -368,7 +358,7 @@ TEST_F(TaskRunner, ActionsWithStatus) {
 
   Status result(error::UNKNOWN, "Not yet set");
   base::RunLoop run_loop;
-  base::MakeRefCounted<ActionsWithStatusContext>(
+  Start<ActionsWithStatusContext>(
       std::vector<Status>({Status::StatusOK(), Status::StatusOK(),
                            Status::StatusOK(),
                            Status(error::CANCELLED, "Cancelled"),
@@ -379,49 +369,50 @@ TEST_F(TaskRunner, ActionsWithStatus) {
             run_loop->Quit();
           },
           &run_loop, &result),
-      base::SequencedTaskRunnerHandle::Get())
-      ->Start();
+      base::SequencedTaskRunnerHandle::Get());
   run_loop.Run();
   EXPECT_EQ(result, Status(error::CANCELLED, "Cancelled"));
 }
 
-// This test runs a series of actions returning non-primitive object as a result
-// (StatusOr<scoped_ptr<...>>).
+// This test runs a series of actions returning non-primitive non-copyable
+// object as a result (StatusOr<std::unique_ptr<...>>).
 TEST_F(TaskRunner, ActionsWithStatusOrPtr) {
-  class RefCountedValue : public base::RefCounted<RefCountedValue> {
+  class WrappedValue {
    public:
-    explicit RefCountedValue(int value) : value_(value) {}
+    explicit WrappedValue(int value) : value_(value) {}
+    ~WrappedValue() = default;
+
+    WrappedValue(const WrappedValue& other) = delete;
+    WrappedValue& operator=(const WrappedValue& other) = delete;
+
     int value() const { return value_; }
 
    private:
-    friend class base::RefCounted<RefCountedValue>;
-    ~RefCountedValue() = default;
     const int value_;
   };
-  using StatusOrPtr = StatusOr<scoped_refptr<RefCountedValue>>;
+  using StatusOrPtr = StatusOr<std::unique_ptr<WrappedValue>>;
   class ActionsWithStatusOrContext : public TaskRunnerContext<StatusOrPtr> {
    public:
     ActionsWithStatusOrContext(
-        const std::vector<StatusOrPtr>& vector,
+        std::vector<StatusOrPtr>* vector,
         base::OnceCallback<void(StatusOrPtr)> callback,
         scoped_refptr<base::SequencedTaskRunner> task_runner)
         : TaskRunnerContext<StatusOrPtr>(std::move(callback),
                                          std::move(task_runner)),
-          vector_(vector) {}
+          vector_(std::move(vector)) {}
 
-   protected:
+   private:
     // Context can only be deleted by calling Response method.
     ~ActionsWithStatusOrContext() override = default;
 
-   private:
     void Pick(size_t index) {
       CheckOnValidSequence();
-      if (index < vector_.size()) {
-        if (!vector_[index].ok()) {
+      if (index < vector_->size()) {
+        if (!vector_->at(index).ok()) {
           Schedule(&ActionsWithStatusOrContext::Pick, this, index + 1);
           return;
         }
-        Response(vector_[index]);
+        Response(std::move(vector_->at(index)));
         return;
       }
       Response(Status(error::OUT_OF_RANGE, "All statuses are OK"));
@@ -429,27 +420,28 @@ TEST_F(TaskRunner, ActionsWithStatusOrPtr) {
 
     void OnStart() override { Pick(0); }
 
-    const std::vector<StatusOrPtr> vector_;
+    std::vector<StatusOrPtr>* const vector_;
   };
 
   const int kI = 0;
+  std::vector<StatusOrPtr> vector;
+  vector.emplace_back(Status(error::CANCELLED, "Cancelled"));
+  vector.emplace_back(Status(error::CANCELLED, "Cancelled"));
+  vector.emplace_back(Status(error::CANCELLED, "Cancelled"));
+  vector.emplace_back(Status(error::CANCELLED, "Cancelled"));
+  vector.emplace_back(Status(error::CANCELLED, "Cancelled"));
+  vector.emplace_back(std::make_unique<WrappedValue>(kI));
   StatusOrPtr result;
   base::RunLoop run_loop;
-  base::MakeRefCounted<ActionsWithStatusOrContext>(
-      std::vector<StatusOrPtr>({Status(error::CANCELLED, "Cancelled"),
-                                Status(error::CANCELLED, "Cancelled"),
-                                Status(error::CANCELLED, "Cancelled"),
-                                Status(error::CANCELLED, "Cancelled"),
-                                Status(error::CANCELLED, "Cancelled"),
-                                base::MakeRefCounted<RefCountedValue>(kI)}),
+  Start<ActionsWithStatusOrContext>(
+      &vector,
       base::BindOnce(
           [](base::RunLoop* run_loop, StatusOrPtr* result, StatusOrPtr res) {
             *result = std::move(res);
             run_loop->Quit();
           },
           &run_loop, &result),
-      base::SequencedTaskRunnerHandle::Get())
-      ->Start();
+      base::SequencedTaskRunnerHandle::Get());
   run_loop.Run();
   EXPECT_TRUE(result.ok()) << result.status();
   EXPECT_EQ(result.ValueOrDie()->value(), kI);

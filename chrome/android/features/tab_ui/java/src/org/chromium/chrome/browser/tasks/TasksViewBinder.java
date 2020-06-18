@@ -20,7 +20,9 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGN
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_CONTAINER_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TAB_SWITCHER_TITLE_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
 
@@ -86,6 +88,10 @@ class TasksViewBinder {
                     model.get(VOICE_SEARCH_BUTTON_CLICK_LISTENER));
         } else if (propertyKey == TASKS_SURFACE_BODY_TOP_MARGIN) {
             view.setTasksSurfaceBodyTopMargin(model.get(TASKS_SURFACE_BODY_TOP_MARGIN));
+        } else if (propertyKey == MV_TILES_CONTAINER_TOP_MARGIN) {
+            view.setMVTilesContainerTopMargin(model.get(MV_TILES_CONTAINER_TOP_MARGIN));
+        } else if (propertyKey == TAB_SWITCHER_TITLE_TOP_MARGIN) {
+            view.setTabSwitcherTitleTopMargin(model.get(TAB_SWITCHER_TITLE_TOP_MARGIN));
         }
     }
 }

@@ -17,9 +17,11 @@
 
 namespace blink {
 
+class TransformationMatrix;
 class XRCubeMap;
 class XRLightEstimate;
 class XRSession;
+class XRSpace;
 
 class XRLightProbe : public EventTargetWithInlineData {
   DEFINE_WRAPPERTYPEINFO();
@@ -29,7 +31,11 @@ class XRLightProbe : public EventTargetWithInlineData {
 
   XRSession* session() const { return session_; }
 
+  XRSpace* probeSpace() const;
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reflectionchange, kReflectionchange)
+
+  base::Optional<TransformationMatrix> MojoFromObject() const;
 
   void ProcessLightEstimationData(
       const device::mojom::blink::XRLightEstimationData* data,
@@ -46,6 +52,7 @@ class XRLightProbe : public EventTargetWithInlineData {
 
  private:
   Member<XRSession> session_;
+  mutable Member<XRSpace> probe_space_;
   Member<XRLightEstimate> light_estimate_;
 
   double last_reflection_change_ = 0.0;

@@ -462,6 +462,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="681368974849482173">Elemento creado</translation>
 <translation id="6831043979455480757">Traducir</translation>
 <translation id="6851516051005285358">Solicitar versión de escritorio</translation>
+<translation id="6856384753476268833">Administrado por tu organización.</translation>
 <translation id="6858855187367714033">Escaneado</translation>
 <translation id="6859944681507688231">Para escanear un código QR o una tarjeta de crédito, habilita la cámara desde la configuración.</translation>
 <translation id="6873263987691478642">Vista dividida</translation>
@@ -521,6 +522,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7600965453749440009">Nunca traducir <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Vent.emerg.bloq. (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Frase de contraseña incorrecta</translation>
+<translation id="7649070708921625228">Ayuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="766891008101699113">Para navegar en la Web de manera privada, agrega una pestaña nueva.</translation>
 <translation id="7671141431838911305">INSTALAR</translation>
@@ -534,12 +536,12 @@ Como <ph name="HOSTED_DOMAIN" /> administra tu cuenta, los datos de Chrome se bo
 <translation id="7781829728241885113">Ayer</translation>
 <translation id="778855399387580014">Realiza una búsqueda en una nueva pestaña de Chrome.</translation>
 <translation id="7791543448312431591">Agregar</translation>
-<translation id="7828557259026017104">Las cookies son archivos que crean los sitios web que visitas para recordar tus preferencias. Las cookies de terceros son las que se generan desde otros sitios a los cuales pertenece parte del contenido que ves en la página web que visitas (como anuncios o imágenes).</translation>
 <translation id="7839985698273989086">Página sin conexión</translation>
 <translation id="7840771868269352570">Se quitarán los elementos seleccionados.</translation>
 <translation id="7856733331829174190">No se pudo descargar</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7887198238286927132">Para proteger tu privacidad, Chrome no completará este campo de forma automática.</translation>
+<translation id="791251013315685175">Administrado por <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Tu lista de lectura está disponible sin conexión. Para agregar una página a la lista, presiona <ph name="SHARE_OPENING_ICON" /> y, luego, <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar contraseñas…</translation>

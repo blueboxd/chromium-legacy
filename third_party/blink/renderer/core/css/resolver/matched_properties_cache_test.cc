@@ -443,7 +443,7 @@ TEST_F(MatchedPropertiesCacheTest, MaxDependencies) {
   StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
                            parent.get());
   state.SetStyle(style);
-  for (size_t i = 0; i < MatchedPropertiesCache::kMaxDependencies; i++) {
+  for (size_t i = 0; i < StyleResolverState::kMaxDependencies; i++) {
     CustomProperty property(AtomicString(String::Format("--x%zu", i)),
                             GetDocument());
     state.MarkDependency(property);

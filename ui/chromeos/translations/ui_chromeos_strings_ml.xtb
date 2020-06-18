@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">സിംഹള കീബോർഡ്</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> ലഭ്യം</translation>
 <translation id="2425665904502185219">മൊത്തം ഫയൽ വലുപ്പം</translation>
+<translation id="2428749644083375155"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ പകർത്തുന്നു</translation>
 <translation id="2448312741937722512">തരം</translation>
 <translation id="2453576648990281505">ഫയൽ ഇതിനകം നിലനിൽക്കുന്നു</translation>
 <translation id="2464079411014186876">ഐസ്‌ക്രീം</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">തിരഞ്ഞെടുക്കലിലേക്ക് <ph name="ENTRY_NAME" /> ചേർത്തു.</translation>
 <translation id="4582497162516204941">Linux (ബീറ്റ) ഉപയോഗിച്ച് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> എന്നതിനുള്ള ഫലങ്ങൾ കാണിക്കുന്നു.</translation>
+<translation id="4603392156942865207"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="FILE_NAME" /> പകർത്തുന്നു</translation>
 <translation id="4631887759990505102">ആര്‍ട്ടിസ്റ്റ്</translation>
 <translation id="4656293982926141856">ഈ കമ്പ്യൂട്ടറിൽ</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' എന്നതിലെ അംഗങ്ങളുമായി ഈ ഇനങ്ങൾ പങ്കിട്ടില്ലെങ്കിൽ അവർക്ക് അവയിലേക്കുള്ള ആക്‌സസ് ‌നഷ്‌ടമാകും.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">കോണ്ട്രാസ്റ്റ്</translation>
 <translation id="5068919226082848014">പിസ്സ</translation>
 <translation id="5081517858322016911">ഫയലുകളിൽ <ph name="TOTAL_FILE_SIZE" /> ഇല്ലാതാക്കപ്പെടും</translation>
+<translation id="508423945471810158"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ നീക്കുന്നു</translation>
 <translation id="509429900233858213">ഒരു പിശക് സംഭവിച്ചു.</translation>
 <translation id="5098629044894065541">ഹീബ്രു</translation>
 <translation id="5123433949759960244">ബാസ്ക്കറ്റ്ബോൾ</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">ഫ്രഞ്ച് കീബോര്‍ഡ്</translation>
 <translation id="6074825444536523002">Google ഫോം</translation>
 <translation id="6096979789310008754">തിരയൽ ടെക്‌സ്‌റ്റ് മായ്ച്ചു, മുഴുവൻ ഫയലുകളും ഫോൾഡറുകളും കാണിക്കുന്നു.</translation>
+<translation id="610101264611565198"><ph name="FOLDER_NAME" /> ഫോൾഡറിലേക്ക് <ph name="FILE_NAME" /> നീക്കുന്നു</translation>
 <translation id="6111770213269631447">ലിപ്യന്തരണം (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">സ്പെയ്സ്</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> നീക്കുന്നു...</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു.</translation>
 <translation id="7040138676081995583">ഇത് ഉപയോഗിച്ച് തുറക്കുക...</translation>
+<translation id="7059566040011178088"><ph name="REMAINING_TIME" />-ൽ കുറവ്</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> ഇനങ്ങൾ തിരഞ്ഞെടുത്തു</translation>
 <translation id="7106346894903675391">കൂടുതൽ സംഭരണം വാങ്ങുക...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;തിരയൽ ഡ്രൈവ്&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">ഉപകരണ മോഡൽ</translation>
 <translation id="8208580316430297579">കലാസൃഷ്‌ടി</translation>
 <translation id="8223479393428528563">ഓഫ്‌ലൈൻ ഉപയോഗത്തിനായി ഈ ഫയലുകൾ സംരക്ഷിക്കാൻ, ഓൺലൈനിൽ തിരികെ വന്ന് ഫയലുകൾ റൈറ്റ് ക്ലിക്ക് ചെയ്‌ത്, <ph name="OFFLINE_CHECKBOX_NAME" /> ഓപ്‌ഷൻ തിരഞ്ഞെടുക്കുക.</translation>
+<translation id="8231972167769262174">ഏകദേശം <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">ഉപേക്ഷിക്കുക</translation>
 <translation id="8261506727792406068">ഇല്ലാതാക്കുക</translation>
 <translation id="8269755669432358899">ഫയലുകളുടെ ഫീഡ്ബാക്ക് പാനലുകൾ ചുരുക്കുക</translation>

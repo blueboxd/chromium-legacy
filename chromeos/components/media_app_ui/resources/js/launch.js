@@ -507,6 +507,28 @@ async function launchWithDirectory(directory, handle) {
 }
 
 /**
+ * Launch the media app with the selected files.
+ * @param {!FileSystemDirectoryHandle} directory
+ * @param {!Array<?FileSystemHandle>} handles
+ */
+async function launchWithMultipleSelection(directory, handles) {
+  currentFiles.length = 0;
+  for (const handle of handles) {
+    if (handle && handle.isFile) {
+      const fileHandle = /** @type{!FileSystemFileHandle} */ (handle);
+      currentFiles.push({
+        token: generateToken(fileHandle),
+        file: null,  // Just let sendSnapshotToGuest() "refresh" it.
+        handle: fileHandle,
+      });
+    }
+  }
+  entryIndex = currentFiles.length > 0 ? 0 : -1;
+  currentDirectoryHandle = directory;
+  await sendFilesToGuest();
+}
+
+/**
  * Advance to another file.
  *
  * @param {number} direction How far to advance (e.g. +/-1).
@@ -525,6 +547,40 @@ async function advance(direction) {
 }
 
 /**
+ * The launchQueue consumer. This returns a promise to help tests, but the file
+ * handling API will ignore it.
+ * @param {LaunchParams} params
+ * @return {!Promise<undefined>}
+ */
+function launchConsumer(params) {
+  // The MediaApp sets `include_launch_directory = true` in its SystemAppInfo
+  // struct compiled into Chrome. That means files[0] is guaranteed to be a
+  // directory, with remaining launch files following it. Validate that this is
+  // true and abort the launch if is is not.
+  if (!params || !params.files || params.files.length < 2) {
+    console.error('Invalid launch (missing files): ', params);
+    return Promise.resolve();
+  }
+
+  if (!assertCast(params.files[0]).isDirectory) {
+    console.error('Invalid launch: files[0] is not a directory: ', params);
+    return Promise.resolve();
+  }
+  const directory =
+      /** @type{!FileSystemDirectoryHandle} */ (params.files[0]);
+
+  // With a single file selected, launch with all files in the directory as
+  // navigation candidates. Otherwise, launch with all selected files (except
+  // the launch directory itself) as navigation candidates.
+  if (params.files.length === 2) {
+    const focusEntry = assertCast(params.files[1]);
+    return launchWithDirectory(directory, focusEntry);
+  } else {
+    return launchWithMultipleSelection(directory, params.files.slice(1));
+  }
+}
+
+/**
  * Installs the handler for launch files, if window.launchQueue is available.
  */
 function installLaunchHandler() {
@@ -532,21 +588,7 @@ function installLaunchHandler() {
     console.error('FileHandling API missing.');
     return;
   }
-  window.launchQueue.setConsumer(params => {
-    if (!params || !params.files || params.files.length < 2) {
-      console.error('Invalid launch (missing files): ', params);
-      return;
-    }
-
-    if (!assertCast(params.files[0]).isDirectory) {
-      console.error('Invalid launch: files[0] is not a directory: ', params);
-      return;
-    }
-    const directory =
-        /** @type{!FileSystemDirectoryHandle} */ (params.files[0]);
-    const focusEntry = assertCast(params.files[1]);
-    launchWithDirectory(directory, focusEntry);
-  });
+  window.launchQueue.setConsumer(launchConsumer);
 }
 
 installLaunchHandler();

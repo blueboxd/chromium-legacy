@@ -40,7 +40,7 @@ scoped_refptr<StaticBitmapImage> MakeAccelerated(
   auto provider = CanvasResourceProvider::CreateSharedImageProvider(
       source->Size(), context_provider_wrapper, kLow_SkFilterQuality,
       CanvasColorParams(paint_image.GetSkImage()->imageInfo()),
-      source->IsOriginTopLeft(), CanvasResourceProvider::RasterMode::kGPU,
+      source->IsOriginTopLeft(), RasterMode::kGPU,
       gpu::SHARED_IMAGE_USAGE_DISPLAY);
   if (!provider || !provider->IsAccelerated())
     return nullptr;

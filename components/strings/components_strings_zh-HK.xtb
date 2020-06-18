@@ -81,7 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />嘗試清除 Cookie<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">請檢查您的安全 DNS 設定</translation>
 <translation id="1307966114820526988">這些功能已被淘汰</translation>
-<translation id="1310581832770023220">你正在透過不安全的連線傳送這份表單的資料</translation>
+<translation id="1310581832770023220">您正在透過不安全的連線傳送此表格的資料</translation>
 <translation id="131405271941274527"><ph name="URL" /> 想在您以手機觸踫 NFC 裝置時傳送和接收資料</translation>
 <translation id="1314509827145471431">釘裝 (右側)</translation>
 <translation id="1320233736580025032">Prc1 (信封)</translation>
@@ -460,7 +460,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證來自 <ph name="DOMAIN2" /> 網域。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="2943895734390379394">上載時間：</translation>
-<translation id="2944299917411283989">在 Google 帳戶中產生安全性強的密碼</translation>
 <translation id="2948083400971632585">您可以在設定頁面停用任何為連線設定的 Proxy。</translation>
 <translation id="2951588413176968965">我的出紙槽</translation>
 <translation id="295526156371527179">警告：此政策並非字典，因此未有按政策中指定的方式合併為字典。</translation>
@@ -743,6 +742,7 @@
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4171400957073367226">驗證簽名錯誤</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">永遠顯示</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{還有另外 <ph name="ITEM_COUNT" /> 個項目}other{還有另外 <ph name="ITEM_COUNT" /> 個項目}}</translation>
 <translation id="4176463684765177261">已停用</translation>
@@ -778,6 +778,7 @@
 <translation id="4235360514405112390">有效</translation>
 <translation id="4250431568374086873">您與此網站的連線並非完全安全</translation>
 <translation id="4250680216510889253">否</translation>
+<translation id="4253168017788158739">注意事項</translation>
 <translation id="425582637250725228">系統可能不會儲存您的變更。</translation>
 <translation id="4258748452823770588">簽名有誤</translation>
 <translation id="4261046003697461417">無法為受保護的文件加入註釋</translation>
@@ -891,6 +892,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> 的網頁可能暫時無法使用或被永久移至新網址。</translation>
 <translation id="4766713847338118463">雙釘 (底部)</translation>
 <translation id="4771973620359291008">發生不明的錯誤。</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{已封鎖彈出式視窗}other{已封鎖 # 個彈出式視窗}}</translation>
 <translation id="4780366598804516005">出紙槽 1</translation>
 <translation id="4780900888022378816">您的裝置由 <ph name="ENROLLMENT_DOMAIN" /> 管理，而您的帳戶由 <ph name="ACCOUNT_DOMAIN" /> 管理。</translation>
 <translation id="4785689107224900852">切換至此分頁</translation>
@@ -1522,7 +1524,7 @@
 <translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7481312909269577407">向前</translation>
 <translation id="7485870689360869515">找不到任何數據。</translation>
-<translation id="7488762544858401571">已編輯版本</translation>
+<translation id="7488762544858401571">編輯版本</translation>
 <translation id="7495290002932347110">由於您使用的網站或應用程式發生資料外洩，密碼已被洩露。Chrome 建議您檢查已儲存的密碼，並立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
 <translation id="7498234416455752244">繼續編輯</translation>
 <translation id="7503664977220660814">您剛才在欺詐網站上輸入了密碼。Chromium 建議您立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及其他您使用此密碼的網站。</translation>
@@ -1606,7 +1608,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">相同順序 (正面朝上)</translation>
 <translation id="777702478322588152">縣</translation>
-<translation id="7791011319128895129">尚未發布</translation>
+<translation id="7791011319128895129">未發佈</translation>
 <translation id="7791196057686275387">綑綁式釘裝</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="7798389633136518089">由於政策並非透過雲端來源設定，因此已忽略。</translation>
@@ -1743,7 +1745,7 @@
 <translation id="8355270400102541638">本機當機內容：</translation>
 <translation id="8363502534493474904">關閉飛行模式</translation>
 <translation id="8364627913115013041">未設定。</translation>
-<translation id="8367477997601443248">不安全的表單</translation>
+<translation id="8367477997601443248">不安全的表格</translation>
 <translation id="8368476060205742148">Google Play 服務</translation>
 <translation id="8371889962595521444">自訂根憑證</translation>
 <translation id="8380941800586852976">不安全</translation>
@@ -1826,7 +1828,7 @@
 <translation id="8805819170075074995">清單項目「<ph name="LANGUAGE_ID" />」：此項目同時亦包括在 SpellcheckLanguage 政策中，因此系統會忽略該項目。</translation>
 <translation id="8807160976559152894">完成每頁後修剪</translation>
 <translation id="8820817407110198400">書籤</translation>
-<translation id="8831512686168463822">你正在透過不安全的連線提交這份表單，因此你傳送給這個網站的資訊 (例如密碼、訊息或信用卡資料) 可能會外洩。</translation>
+<translation id="8831512686168463822">您正在透過不安全的連線提交此表格，因此您傳送至此網站的資料 (例如密碼、訊息或信用卡資料) 可能會外洩。</translation>
 <translation id="883848425547221593">其他書籤</translation>
 <translation id="884264119367021077">運送地址</translation>
 <translation id="884923133447025588">未發現撤銷機制。</translation>

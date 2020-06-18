@@ -424,6 +424,8 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
   compositor_node.sorting_context_id = transform_node.RenderingContextId();
+  compositor_node.delegates_to_parent_for_backface =
+      transform_node.DelegatesToParentForBackface();
 
   if (transform_node.IsAffectedByOuterViewportBoundsDelta()) {
     compositor_node.moved_by_outer_viewport_bounds_delta_y = true;

@@ -1787,69 +1787,85 @@ template("mojom") {
   }
   if ((generate_fuzzing || !defined(invoker.cpp_only) || !invoker.cpp_only) &&
       use_typescript_for_target) {
-    generator_ts_target_name = "${target_name}_ts__generator"
-
+    generator_js_target_names = []
     source_filelist = []
-    ts_filelist = []
-    ts_outputs = []
-    js_outputs = []
     foreach(source, sources_list) {
       source_filelist += [ rebase_path("$source", root_build_dir) ]
     }
-    foreach(base_path, output_file_base_paths) {
-      ts_outputs += [
-        "$root_gen_dir/$base_path-lite.ts",
-        "$root_gen_dir/$base_path-lite.m.ts",
-      ]
-      ts_filelist += [
-        rebase_path("$root_gen_dir/$base_path-lite.ts", root_build_dir),
-        rebase_path("$root_gen_dir/$base_path-lite.m.ts", root_build_dir),
-      ]
 
-      js_outputs += [
-        "$root_gen_dir/$base_path-lite.js",
-        "$root_gen_dir/$base_path-lite.m.js",
-      ]
-    }
+    dependency_types = [
+      {
+        name = "regular"
+        ts_extension = ".ts"
+        js_extension = ".js"
+      },
+      {
+        name = "modules"
+        ts_extension = ".m.ts"
+        js_extension = ".m.js"
+      },
+    ]
+    foreach(dependency_type, dependency_types) {
+      ts_filelist = []
+      ts_outputs = []
+      js_outputs = []
 
-    generator_ts_target_name = "${target_name}_ts__generator"
-    action(generator_ts_target_name) {
-      script = mojom_generator_script
-      inputs = mojom_generator_sources + jinja2_sources
-      sources = sources_list
-      deps = [
-        ":$parser_target_name",
-        "//mojo/public/tools/bindings:precompile_templates",
-      ]
-      outputs = ts_outputs
-      args = common_generator_args
-      response_file_contents = source_filelist
+      foreach(base_path, output_file_base_paths) {
+        ts_outputs +=
+            [ "$root_gen_dir/$base_path-lite${dependency_type.ts_extension}" ]
+        ts_filelist += [ rebase_path(
+                "$root_gen_dir/$base_path-lite${dependency_type.ts_extension}",
+                root_build_dir) ]
 
-      args += [
-        "--filelist={{response_file_name}}",
-        "-g",
-        "typescript",
-      ]
+        js_outputs +=
+            [ "$root_gen_dir/$base_path-lite${dependency_type.js_extension}" ]
+      }
 
-      # TODO(crbug.com/1007587): Support scramble_message_ids.
-      # TODO(crbug.com/1007591): Support generate_fuzzing.
-    }
+      generator_ts_target_name =
+          "${target_name}_${dependency_type.name}__ts__generator"
+      action(generator_ts_target_name) {
+        script = mojom_generator_script
+        inputs = mojom_generator_sources + jinja2_sources
+        sources = sources_list
+        deps = [
+          ":$parser_target_name",
+          "//mojo/public/tools/bindings:precompile_templates",
+        ]
+        outputs = ts_outputs
+        args = common_generator_args
+        response_file_contents = source_filelist
 
-    generator_js_target_name = "${target_name}_js__generator"
-    action(generator_js_target_name) {
-      script = "$mojom_generator_root/compile_typescript.py"
-      sources = ts_outputs
-      outputs = js_outputs
-      public_deps = [ ":$generator_ts_target_name" ]
-      response_file_contents = ts_filelist
-      args = [ "--filelist={{response_file_name}}" ]
+        args += [
+          "--filelist={{response_file_name}}",
+          "-g",
+          "typescript",
+        ]
+
+        # TODO(crbug.com/1007587): Support scramble_message_ids.
+        # TODO(crbug.com/1007591): Support generate_fuzzing.
+      }
+
+      generator_js_target_name =
+          "${target_name}_${dependency_type.name}__js__generator"
+      generator_js_target_names += [ generator_js_target_name ]
+
+      action(generator_js_target_name) {
+        script = "$mojom_generator_root/compile_typescript.py"
+        sources = ts_outputs
+        outputs = js_outputs
+        public_deps = [ ":$generator_ts_target_name" ]
+        response_file_contents = ts_filelist
+        args = [ "--filelist={{response_file_name}}" ]
+      }
     }
 
     js_target_name = target_name + "_js"
     group(js_target_name) {
       public_deps = []
       if (sources_list != []) {
-        public_deps += [ ":$generator_js_target_name" ]
+        foreach(generator_js_target_name, generator_js_target_names) {
+          public_deps += [ ":$generator_js_target_name" ]
+        }
       }
 
       foreach(d, all_deps) {

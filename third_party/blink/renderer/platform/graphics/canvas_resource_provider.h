@@ -93,13 +93,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
       const CanvasColorParams&,
       base::WeakPtr<CanvasResourceDispatcher>);
 
-  // Specifies whether the provider should rasterize paint commands on the CPU
-  // or GPU. This is used to support software raster with GPU compositing.
-  enum class RasterMode {
-    kGPU,
-    kCPU,
-  };
-
   static std::unique_ptr<CanvasResourceProvider> CreateSharedImageProvider(
       const IntSize&,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,

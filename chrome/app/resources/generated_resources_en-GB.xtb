@@ -1109,7 +1109,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2377588536920405462">You can turn off location by turning off the main location setting on your device. You can also turn off the use of Wi-Fi, mobile networks and sensors for location in location settings.</translation>
 <translation id="2377667304966270281">Hard Faults</translation>
 <translation id="237828693408258535">Translate this page?</translation>
-<translation id="2378346380592252785">Update credentials for <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Ask before sending (recommended)</translation>
@@ -2561,7 +2560,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4163560723127662357">Unknown keyboard</translation>
 <translation id="4168015872538332605">Some settings belonging to <ph name="PRIMARY_EMAIL" /> are being shared with you. These settings only affect your account when using multiple sign-in.</translation>
 <translation id="4170314459383239649">Clear On Exit</translation>
-<translation id="4172051516777682613">Always show</translation>
 <translation id="4175137578744761569">Light purple and white</translation>
 <translation id="4175737294868205930">Persistent storage</translation>
 <translation id="4176463684765177261">Disabled</translation>
@@ -2991,7 +2989,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4777943778632837590">Configure network name servers</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up blocked}other{# pop-ups blocked}}</translation>
 <translation id="4780321648949301421">Save Page As...</translation>
 <translation id="4785719467058219317">You're using a security key that's not registered with this website</translation>
 <translation id="4788092183367008521">Please check your network connection and try again.</translation>
@@ -4135,7 +4132,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6242852299490624841">Focus this tab</translation>
 <translation id="6243280677745499710">Currently set</translation>
 <translation id="6243774244933267674">Server unavailable</translation>
-<translation id="6246355468475884088">You can also show passwords from your Google Account here</translation>
 <translation id="6246790815526961700">Upload from device</translation>
 <translation id="6247620186971210352">No apps found.</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4509,7 +4505,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6745592621698551453">Update now</translation>
 <translation id="6746124502594467657">Move down</translation>
 <translation id="674632704103926902">Enable tap dragging</translation>
-<translation id="6748217015615267851">Renderer: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">You may proceed, but only your synced data and settings will be restored. All local data will be lost.</translation>
 <translation id="6749006854028927059">Sites can't use your cookies to see your browsing activity across different sites, for example, to personalise ads. Features on some sites may break.</translation>
 <translation id="6750757184909117990">Disable mobile</translation>
@@ -5632,7 +5627,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8138082791834443598">Optional – enter new or update existing information to be associated with this device.</translation>
 <translation id="8138217203226449454">Did you mean to change your search provider?</translation>
 <translation id="813913629614996137">Initialising...</translation>
-<translation id="814016597952587568">Showing passwords from your Google Account</translation>
 <translation id="8140778357236808512">Import an existing supervised user</translation>
 <translation id="8141584439523427891">Opening in alternative browser now</translation>
 <translation id="8141725884565838206">Manage your passwords</translation>
@@ -5744,7 +5738,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="827097179112817503">Show Home button</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bookmark deleted}other{# bookmarks deleted}}</translation>
 <translation id="8272443605911821513">Manage your extensions by clicking Extensions in the "More tools" menu.</translation>
-<translation id="8274212285504931082">Let your Assistant show you info related to what's on your screen</translation>
 <translation id="8274332263553132018">Cast file</translation>
 <translation id="8274924778568117936">Don’t turn off or close your <ph name="DEVICE_TYPE" /> until the update finishes. Your <ph name="DEVICE_TYPE" /> will restart after installation completes.</translation>
 <translation id="8275038454117074363">Import</translation>

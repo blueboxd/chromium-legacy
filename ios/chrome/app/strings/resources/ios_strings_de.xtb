@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Auf der Website anmelden</translation>
 <translation id="1509960214886564027">Funktionen auf vielen Websites funktionieren möglicherweise nicht mehr</translation>
 <translation id="152234381334907219">Nie speichern für...</translation>
+<translation id="1535268707340844072">Ihre aktuellen Einstellungen führen möglicherweise dazu, dass Websites nicht korrekt ausgeführt werden. Cookies für alle Websites können Sie in den <ph name="BEGIN_LINK" />Cookie-Einstellungen<ph name="END_LINK" /> verwalten.</translation>
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">QR-Code scannen</translation>
 <translation id="1552525382687785070">Die Synchronisierung wurde von Ihrem Administrator deaktiviert</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Vor <ph name="DAYS" /> Tagen aktiv</translation>
 <translation id="2074131957428911366">Sie können in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
+<translation id="2081417079511601293">Drittanbieter-Cookies im Inkognitomodus blockiert</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
 <translation id="2103075008456228677">history.google.com öffnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
 <translation id="3112556859945124369">Markieren…</translation>
+<translation id="3131206671572504478">Alle blockiert</translation>
 <translation id="3153862085237805241">Karte speichern</translation>
 <translation id="3157684681743766797">Alle markieren…</translation>
 <translation id="3161291298470460782">Hierdurch werden Sie abgemeldet, die Synchronisierung wird deaktiviert und alle Chrome-Daten werden von diesem Gerät gelöscht. Ihre synchronisierten Daten verbleiben jedoch in Ihrem Google-Konto.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Zum Ändern der Sprache hier tippen.</translation>
 <translation id="441868831736628555">Datenschutzhinweise</translation>
 <translation id="4454246407045105932">Sprache hinzufügen</translation>
+<translation id="4469418912670346607">Einrichtung fortsetzen</translation>
 <translation id="4476574785019001431">Einstellungen</translation>
 <translation id="4496373720959965247">Tabs hinzufügen und zwischen Seiten wechseln</translation>
 <translation id="4508750114462689118">Anmeldeangebot schließen</translation>
@@ -300,6 +304,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4805759445554688327">Ungültige Kartennummer</translation>
 <translation id="4818522717893377262">Sprache hinzufügen…</translation>
 <translation id="481968316161811770">Cookies, Websitedaten</translation>
+<translation id="4826218269716039351">Drittanbieter-Cookies blockiert</translation>
 <translation id="4833786495304741580">Nutzungsstatistiken und Absturzberichte werden automatisch an Google gesendet.</translation>
 <translation id="4840495572919996524">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="4854345657858711387">Passcode einrichten</translation>
@@ -345,6 +350,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="54401264925851789">Sicherheitsinformationen zur Seite</translation>
 <translation id="5443952882982198570">Kreditkarten</translation>
 <translation id="5457907402803865181">Fehler beim Synchronisieren von Passwörtern.</translation>
+<translation id="5489208564673669003">Cookies für alle Websites können Sie in den <ph name="BEGIN_LINK" />Cookie-Einstellungen<ph name="END_LINK" /> verwalten.</translation>
 <translation id="5508435575041083207">Abmelden und Daten von diesem Gerät löschen</translation>
 <translation id="5525269841082836315">Passphrase erstellen</translation>
 <translation id="5548760955356983418">Mit Handoff können Sie auf diesem Gerät auf einer Website stöbern und dann einfach auf Ihrem Mac an derselben Stelle weitermachen. Die aktuell geöffnete Website wird im Dock Ihres Macs angezeigt.
@@ -432,6 +438,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6418346271604475326">PDF wird vorbereitet</translation>
 <translation id="6426067060178468363">Cookies zulassen</translation>
 <translation id="6434591244308415567">Ein Fehler ist aufgetreten. Bitte versuchen Sie es später noch einmal.</translation>
+<translation id="6439338047467462846">Alle zulassen</translation>
 <translation id="6445051938772793705">Land</translation>
 <translation id="6445981559479772097">Nachricht gesendet</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -439,6 +446,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6476800141292307438">Die Seite wird in die Sprache <ph name="LANGUAGE" /> übersetzt. Optionen sind unten auf dem Bildschirm verfügbar.</translation>
 <translation id="648164694371393720">Authentifizierungsfehler</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen gelöscht</translation>
+<translation id="651505212789431520">Synchronisierung abbrechen? Sie können die Synchronisierung jederzeit in den Einstellungen aktivieren.</translation>
 <translation id="6561262006871132942">Heranzoomen</translation>
 <translation id="6610002944194042868">Übersetzungsoptionen</translation>
 <translation id="6628106477656132239">Ungültiges Ablaufdatum</translation>
@@ -462,6 +470,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="681368974849482173">Element erstellt</translation>
 <translation id="6831043979455480757">Übersetzen</translation>
 <translation id="6851516051005285358">Desktop-Version</translation>
+<translation id="6856384753476268833">Von Ihrer Organisation verwaltet.</translation>
 <translation id="6858855187367714033">Gescannt</translation>
 <translation id="6859944681507688231">Wenn Sie einen QR-Code oder eine Kreditkarte scannen möchten, aktivieren Sie zuerst in den Einstellungen die Kamera.</translation>
 <translation id="6873263987691478642">Geteilte Ansicht</translation>
@@ -521,6 +530,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nie übersetzen</translation>
 <translation id="7603852183842204213">Pop-ups blockiert (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Falsche Passphrase</translation>
+<translation id="7649070708921625228">Hilfe</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="766891008101699113">Fügen Sie einen neuen Tab hinzu, um privat im Web zu surfen.</translation>
 <translation id="7671141431838911305">Installieren</translation>
@@ -534,12 +544,12 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="778855399387580014">Eine Suche in einem neuen Chrome-Tab starten.</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
-<translation id="7828557259026017104">Cookies sind Dateien, die von Websites erstellt werden, die Sie besuchen. Sie werden zum Speichern Ihrer Einstellungen verwendet. Drittanbieter-Cookies werden von anderen Websites erstellt. Diesen Websites gehören einige der Inhalte, wie z. B. Werbeanzeigen oder Bilder, die Sie auf der besuchten Webseite sehen.</translation>
 <translation id="7839985698273989086">Offlineseite</translation>
 <translation id="7840771868269352570">Die ausgewählten Elemente werden entfernt.</translation>
 <translation id="7856733331829174190">Fehler beim Download</translation>
 <translation id="7859704718976024901">Browserverlauf</translation>
 <translation id="7887198238286927132">Um Ihre Daten zu schützen, füllt Chrome dieses Feld nicht automatisch aus.</translation>
+<translation id="791251013315685175">Verwaltet von <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Ihre Leseliste ist offline verfügbar. Sie können eine Seite Ihrer Leseliste hinzufügen, indem Sie auf <ph name="SHARE_OPENING_ICON" /> &gt; <ph name="READ_LATER_TEXT" /> tippen.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Passwörter exportieren…</translation>

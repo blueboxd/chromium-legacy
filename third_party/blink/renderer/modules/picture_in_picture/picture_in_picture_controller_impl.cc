@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
-#include "third_party/blink/renderer/modules/picture_in_picture/enter_picture_in_picture_event.h"
+#include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_event.h"
 #include "third_party/blink/renderer/modules/picture_in_picture/picture_in_picture_window.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -227,10 +227,9 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
   picture_in_picture_window_ = MakeGarbageCollected<PictureInPictureWindow>(
       GetExecutionContext(), picture_in_picture_window_size);
 
-  picture_in_picture_element_->DispatchEvent(
-      *EnterPictureInPictureEvent::Create(
-          event_type_names::kEnterpictureinpicture,
-          WrapPersistent(picture_in_picture_window_.Get())));
+  picture_in_picture_element_->DispatchEvent(*PictureInPictureEvent::Create(
+      event_type_names::kEnterpictureinpicture,
+      WrapPersistent(picture_in_picture_window_.Get())));
 
   if (resolver)
     resolver->Resolve(picture_in_picture_window_);
@@ -256,16 +255,19 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
   if (!GetSupplementable()->IsActive())
     return;
 
-  if (picture_in_picture_window_)
+  // The Picture-in-Picture window and the Picture-in-Picture element
+  // should be either both set or both null.
+  DCHECK(!picture_in_picture_element_ == !picture_in_picture_window_);
+  if (picture_in_picture_element_) {
     picture_in_picture_window_->OnClose();
 
-  if (picture_in_picture_element_) {
     HTMLVideoElement* element = picture_in_picture_element_;
     picture_in_picture_element_ = nullptr;
 
     element->OnExitedPictureInPicture();
-    element->DispatchEvent(
-        *Event::CreateBubble(event_type_names::kLeavepictureinpicture));
+    element->DispatchEvent(*PictureInPictureEvent::Create(
+        event_type_names::kLeavepictureinpicture,
+        WrapPersistent(picture_in_picture_window_.Get())));
   }
 
   if (resolver)

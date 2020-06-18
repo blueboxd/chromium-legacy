@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Увійдіть в обліковий запис на веб-сайті</translation>
 <translation id="1509960214886564027">Функції на багатьох сайтах можуть не працювати</translation>
 <translation id="152234381334907219">Ніколи не зберігалося</translation>
+<translation id="1535268707340844072">Через поточні налаштування певні сайти можуть не працювати. Щоб керувати файлами cookie для всіх сайтів, перегляньте <ph name="BEGIN_LINK" />Налаштування файлів cookie<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Адреса 1</translation>
 <translation id="1545749641540134597">Сканувати QR-код</translation>
 <translation id="1552525382687785070">Ваш адміністратор вимкнув синхронізацію</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">У мережі <ph name="DAYS" /> дн. тому</translation>
 <translation id="2074131957428911366">Ви можете будь-коли вибрати дані для синхронізації в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Відмінити</translation>
+<translation id="2081417079511601293">Блокувати файли cookie третіх сторін в анонімному режимі</translation>
 <translation id="209018056901015185">Повна версія сайту</translation>
 <translation id="2103075008456228677">Відкрити history.google.com</translation>
 <translation id="2116625576999540962">Переміщено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Відкрити в новій вкладці</translation>
 <translation id="3037605927509011580">От халепа!</translation>
 <translation id="3112556859945124369">Позначити…</translation>
+<translation id="3131206671572504478">Заблокувати всі</translation>
 <translation id="3153862085237805241">Зберегти картку</translation>
 <translation id="3157684681743766797">Позначити всі…</translation>
 <translation id="3161291298470460782">Ваш сеанс в обліковому записі буде завершено, синхронізацію – вимкнено, а всі дані Chrome на пристрої – видалено. Синхронізовані дані залишаться у вашому обліковому записі Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Натисніть, щоб змінити мову.</translation>
 <translation id="441868831736628555">Примітка про конфіденційність</translation>
 <translation id="4454246407045105932">Додати мову</translation>
+<translation id="4469418912670346607">Продовжити налаштування</translation>
 <translation id="4476574785019001431">Налаштування</translation>
 <translation id="4496373720959965247">Додавайте вкладки та переходьте між сторінками</translation>
 <translation id="4508750114462689118">Закрити заклик до входу</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">Недійсний номер картки</translation>
 <translation id="4818522717893377262">Додати мову…</translation>
 <translation id="481968316161811770">Файли cookie й дані із сайтів</translation>
+<translation id="4826218269716039351">Блокувати файли cookie третіх сторін</translation>
 <translation id="4833786495304741580">Автоматично надсилає статистику використання та звіти про аварійне завершення роботи в Google.</translation>
 <translation id="4840495572919996524">Закладки, історія, паролі тощо більше не синхронізуватимуться з обліковим записом Google.</translation>
 <translation id="4854345657858711387">Налаштуйте код доступу</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">Відомості про безпеку сторінки</translation>
 <translation id="5443952882982198570">Кредитні картки</translation>
 <translation id="5457907402803865181">Не вдалося синхронізувати паролі.</translation>
+<translation id="5489208564673669003">Щоб керувати файлами cookie для всіх сайтів, перегляньте <ph name="BEGIN_LINK" />Налаштування файлів cookie<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Вийти й видалити дані з цього пристрою</translation>
 <translation id="5525269841082836315">Створити парол.фразу</translation>
 <translation id="5548760955356983418">За допомогою Handoff можна почати переглядати веб-сайт на цьому пристрої, а потім легко продовжити на пристрої Mac. Відкритий веб-сайт з’явиться на панелі Dock на пристрої Mac.
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">Підготовка PDF</translation>
 <translation id="6426067060178468363">Дозволити файли cookie</translation>
 <translation id="6434591244308415567">Сталася помилка. Спробуйте пізніше.</translation>
+<translation id="6439338047467462846">Дозволити всі</translation>
 <translation id="6445051938772793705">Країна</translation>
 <translation id="6445981559479772097">Повідомлення надіслано.</translation>
 <translation id="6447842834002726250">Cookie-файли</translation>
@@ -439,6 +446,7 @@
 <translation id="6476800141292307438">Сторінка перекладається такою мовою: <ph name="LANGUAGE" />. Параметри розташовано внизу екрана.</translation>
 <translation id="648164694371393720">Помилка автентифікації</translation>
 <translation id="6482629121755362506">Видалено елементів: <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /></translation>
+<translation id="651505212789431520">Скасувати синхронізацію? Ви можете будь-коли ввімкнути синхронізацію в налаштуваннях.</translation>
 <translation id="6561262006871132942">Наблизити</translation>
 <translation id="6610002944194042868">Параметри перекладу</translation>
 <translation id="6628106477656132239">Недійсна дата закінчення терміну дії</translation>
@@ -522,6 +530,7 @@
 <translation id="7600965453749440009">Ніколи не перекладати з такої мови: <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Сплив.вікна блок. (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Неправильна парольна фраза</translation>
+<translation id="7649070708921625228">Довідка</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="766891008101699113">Щоб переглядати веб-сторінки конфіденційно, додайте нову вкладку.</translation>
 <translation id="7671141431838911305">INSTALL</translation>
@@ -535,7 +544,6 @@
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пошук у новій вкладці Chrome.</translation>
 <translation id="7791543448312431591">Додати</translation>
-<translation id="7828557259026017104">Файли cookie – це файли, створені веб-сайтами, які ви відвідали. Сайти використовують їх, щоб запам'ятовувати ваші налаштування. Сторонні файли cookie створюються іншими сайтами. Ці сайти показують власний контент, як-от оголошення чи зображення, на веб-сторінці, яку ви відвідуєте.</translation>
 <translation id="7839985698273989086">Офлайн-сторінка</translation>
 <translation id="7840771868269352570">Вибраний елемент буде видалено.</translation>
 <translation id="7856733331829174190">Не вдалося завантажити</translation>

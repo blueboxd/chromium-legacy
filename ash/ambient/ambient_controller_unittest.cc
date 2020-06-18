@@ -4,10 +4,13 @@
 
 #include "ash/ambient/ambient_controller.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
 #include "ash/ambient/test/ambient_ash_test_base.h"
+#include "ash/ambient/ui/ambient_container_view.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 
@@ -22,11 +25,44 @@ constexpr base::TimeDelta kDefaultTokenExpirationDelay =
 
 using AmbientControllerTest = AmbientAshTestBase;
 
-TEST_F(AmbientControllerTest, ShowAmbientContainerViewOnLockScreen) {
-  EXPECT_FALSE(ambient_controller()->is_showing());
-
+TEST_F(AmbientControllerTest, ShowAmbientScreenUponLock) {
   LockScreen();
-  EXPECT_TRUE(ambient_controller()->is_showing());
+
+  EXPECT_TRUE(container_view());
+  EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
+            AmbientUiVisibility::kShown);
+  EXPECT_TRUE(ambient_controller()->IsShown());
+}
+
+TEST_F(AmbientControllerTest, HideAmbientScreen) {
+  LockScreen();
+  EXPECT_TRUE(container_view());
+  EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
+            AmbientUiVisibility::kShown);
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  HideAmbientScreen();
+
+  EXPECT_TRUE(container_view());
+  EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
+            AmbientUiVisibility::kHidden);
+  EXPECT_FALSE(container_view()->GetWidget()->IsVisible());
+}
+
+TEST_F(AmbientControllerTest, CloseAmbientScreenUponUnlock) {
+  LockScreen();
+  EXPECT_TRUE(container_view());
+  EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
+            AmbientUiVisibility::kShown);
+  EXPECT_TRUE(ambient_controller()->IsShown());
+
+  UnlockScreen();
+
+  EXPECT_EQ(AmbientUiModel::Get()->ui_visibility(),
+            AmbientUiVisibility::kClosed);
+  EXPECT_FALSE(ambient_controller()->IsShown());
+  // The view should be destroyed along the widget.
+  EXPECT_FALSE(container_view());
 }
 
 TEST_F(AmbientControllerTest, ShouldRequestAccessTokenWhenLockingScreen) {
@@ -40,7 +76,6 @@ TEST_F(AmbientControllerTest, ShouldRequestAccessTokenWhenLockingScreen) {
   EXPECT_FALSE(IsAccessTokenRequestPending());
 
   // Should close ambient widget already when unlocking screen.
-  ambient_controller()->Toggle();
   UnlockScreen();
   EXPECT_FALSE(IsAccessTokenRequestPending());
 }

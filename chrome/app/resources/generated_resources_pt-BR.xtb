@@ -1109,7 +1109,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2377588536920405462">Na configuração de localização principal do dispositivo é possível desativar esse recurso. Você também pode desativar o uso de Wi-Fi, redes móveis e sensores de local nessas configurações.</translation>
 <translation id="2377667304966270281">Falhas graves</translation>
 <translation id="237828693408258535">Traduzir esta página?</translation>
-<translation id="2378346380592252785">Atualizar credenciais para <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Selecionar o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Perguntar antes de enviar (recomendado)</translation>
@@ -2561,7 +2560,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4163560723127662357">Teclado desconhecido</translation>
 <translation id="4168015872538332605">Algumas configurações pertencentes a <ph name="PRIMARY_EMAIL" /> estão sendo compartilhadas com você. Essas configurações afetam sua conta apenas quando o recurso de login múltiplo é usado.</translation>
 <translation id="4170314459383239649">Limpar ao sair</translation>
-<translation id="4172051516777682613">Sempre mostrar</translation>
 <translation id="4175137578744761569">Roxo-claro e branco</translation>
 <translation id="4175737294868205930">Armazenamento persistente</translation>
 <translation id="4176463684765177261">Desativado</translation>
@@ -2991,7 +2989,6 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="4777943778632837590">Configurar servidores de nomes da rede</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Oniguiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up bloqueado}one{# pop-up bloqueado}other{# pop-ups bloqueados}}</translation>
 <translation id="4780321648949301421">Salvar página como...</translation>
 <translation id="4785719467058219317">Você está usando uma chave de segurança que não está registrada neste site</translation>
 <translation id="4788092183367008521">Verifique sua conexão de rede e tente novamente.</translation>
@@ -4137,7 +4134,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6242852299490624841">Focar esta guia</translation>
 <translation id="6243280677745499710">Definido no momento</translation>
 <translation id="6243774244933267674">Servidor não disponível</translation>
-<translation id="6246355468475884088">Você também pode mostrar as senhas da sua Conta do Google aqui</translation>
 <translation id="6246790815526961700">Upload do dispositivo</translation>
 <translation id="6247620186971210352">Nenhum app encontrado</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4511,7 +4507,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="6745592621698551453">Atualizar agora</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="674632704103926902">Ativar gesto de arrastar com toque</translation>
-<translation id="6748217015615267851">Renderizador: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">É possível prosseguir, mas apenas seus dados e configurações sincronizados serão restaurados. Todos os dados locais serão perdidos.</translation>
 <translation id="6749006854028927059">Os sites não podem usar seus cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios. Os recursos de alguns sites podem falhar.</translation>
 <translation id="6750757184909117990">Desativar rede celular</translation>
@@ -5634,7 +5629,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8138082791834443598">Opcional: inserir novas informações ou atualizar as já existentes para serem associadas a esse dispositivo.</translation>
 <translation id="8138217203226449454">Você queria mudar seu provedor de pesquisa?</translation>
 <translation id="813913629614996137">Inicializando…</translation>
-<translation id="814016597952587568">Mostrando senhas da sua Conta do Google</translation>
 <translation id="8140778357236808512">Importar um usuário supervisionado existente</translation>
 <translation id="8141584439523427891">Abrindo em navegador alternativo agora</translation>
 <translation id="8141725884565838206">Gerenciar suas senhas</translation>
@@ -5746,7 +5740,6 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="827097179112817503">Mostrar botão "Página inicial"</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{ favorito excluído}one{# favorito excluído}other{# favoritos excluídos}}</translation>
 <translation id="8272443605911821513">Gerencie suas extensões clicando em "Extensões" no menu "Mais ferramentas".</translation>
-<translation id="8274212285504931082">Permitir que seu Assistente mostre informações relacionadas ao que está na sua tela</translation>
 <translation id="8274332263553132018">Transmitir arquivo</translation>
 <translation id="8274924778568117936">Não desligue ou feche seu <ph name="DEVICE_TYPE" /> até que a atualização termine. O <ph name="DEVICE_TYPE" /> será reiniciado depois que a instalação for concluída.</translation>
 <translation id="8275038454117074363">Importar</translation>

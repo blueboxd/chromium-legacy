@@ -94,12 +94,18 @@ bool NavigateToURL(Shell* window,
 
 bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
                                const GURL& url) {
+  return NavigateToURLFromRenderer(adapter, url, url);
+}
+
+bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
+                               const GURL& url,
+                               const GURL& expected_commit_url) {
   RenderFrameHost* rfh = adapter.render_frame_host();
   TestFrameNavigationObserver nav_observer(rfh);
   if (!ExecJs(rfh, JsReplace("location = $1", url)))
     return false;
   nav_observer.Wait();
-  return nav_observer.last_committed_url() == url &&
+  return nav_observer.last_committed_url() == expected_commit_url &&
          nav_observer.last_navigation_succeeded();
 }
 

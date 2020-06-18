@@ -11,16 +11,16 @@ class FakeTask {
   /**
    * @param {boolean} isDefault Whether the task is default or not.
    * @param {string} taskId Task ID.
-   * @param {string} title Title of the task.
+   * @param {string=} opt_title Title of the task.
    * @param {boolean=} opt_isGenericFileHandler Whether the task is a generic
    *     file handler.
    */
-  constructor(isDefault, taskId, title, opt_isGenericFileHandler) {
+  constructor(isDefault, taskId, opt_title, opt_isGenericFileHandler) {
     this.driveApp = false;
     this.iconUrl = 'chrome://theme/IDR_DEFAULT_FAVICON';  // Dummy icon
     this.isDefault = isDefault;
     this.taskId = taskId;
-    this.title = title;
+    this.title = opt_title;
     this.isGenericFileHandler = opt_isGenericFileHandler || false;
     Object.freeze(this);
   }
@@ -158,7 +158,7 @@ async function defaultTaskDialog(appId, expectedTaskId) {
       ]));
 
   // Wait for the dialog hidden, and the task is executed.
-  await remoteCall.waitForElementLost(appId, '#default-task-dialog', null);
+  await remoteCall.waitForElementLost(appId, '#default-task-dialog');
 
   // Execute the new default task. Click on "Open ▼" button.
   remoteCall.callRemoteTestUtil('fakeMouseClick', appId, ['#tasks']);

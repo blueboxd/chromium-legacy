@@ -470,6 +470,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="681368974849482173">Elementet blev oprettet</translation>
 <translation id="6831043979455480757">Oversæt</translation>
 <translation id="6851516051005285358">Vis computerversion</translation>
+<translation id="6856384753476268833">Administreret af din organisation.</translation>
 <translation id="6858855187367714033">Scannet</translation>
 <translation id="6859944681507688231">Aktivér kameraet i Indstillinger for at scanne en QR-kode eller et betalingskort.</translation>
 <translation id="6873263987691478642">Opdelt visning</translation>
@@ -529,6 +530,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7600965453749440009">Oversæt aldrig <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Pop op-vinduer er blokeret (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Forkert adgangssætning</translation>
+<translation id="7649070708921625228">Hjælp</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="766891008101699113">Tilføj en ny fane for at surfe privat på nettet.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
@@ -542,12 +544,12 @@ Eftersom din konto administreres af <ph name="HOSTED_DOMAIN" />, slettes dine Ch
 <translation id="7781829728241885113">I går</translation>
 <translation id="778855399387580014">Start en søgning i en ny Chrome-fane.</translation>
 <translation id="7791543448312431591">Tilføj</translation>
-<translation id="7828557259026017104">Cookies er filer, som oprettes af de websites, du besøger. Websites anvender dem til at huske dine præferencer. Tredjepartscookies oprettes af andre websites. Disse websites ejer noget af indholdet, f.eks. de annoncer eller billeder, der vises på den webside, du besøger.</translation>
 <translation id="7839985698273989086">Offlineside</translation>
 <translation id="7840771868269352570">De valgte elementer fjernes.</translation>
 <translation id="7856733331829174190">Downloaden mislykkedes</translation>
 <translation id="7859704718976024901">Browserhistorik</translation>
 <translation id="7887198238286927132">Af hensyn til beskyttelsen af dine personlige oplysninger autofylder Chrome ikke dette felt.</translation>
+<translation id="791251013315685175">Administreres af <ph name="COMPANY" /></translation>
 <translation id="7918293828610777738">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" /> og derefter <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér adgangskoder…</translation>

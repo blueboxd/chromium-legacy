@@ -1109,7 +1109,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2377588536920405462">Lokaciju možete isključiti tako što ćete isključiti glavnu postavku lokacije na svojem uređaju. U postavkama lokacije također možete isključiti upotrebu Wi‑Fija, mobilnih mreža i senzora za lokaciju.</translation>
 <translation id="2377667304966270281">Pogreške tvrdog diska</translation>
 <translation id="237828693408258535">Želite li prevesti ovu stranicu?</translation>
-<translation id="2378346380592252785">Ažurirajte vjerodajnice za <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Odaberi direktorij proširenja.</translation>
 <translation id="2379281330731083556">Ispis pomoću dijaloškog okvira sustava... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pitanje prije slanja (preporučeno)</translation>
@@ -2561,7 +2560,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4163560723127662357">Nepoznata tipkovnica</translation>
 <translation id="4168015872538332605">Neke postavke korisnika <ph name="PRIMARY_EMAIL" /> dijele se s vama. Te postavke utječu na vaš račun samo kad upotrebljavate višestruku prijavu.</translation>
 <translation id="4170314459383239649">Izbriši pri izlazu</translation>
-<translation id="4172051516777682613">Uvijek prikaži</translation>
 <translation id="4175137578744761569">Svijetloljubičasta i bijela</translation>
 <translation id="4175737294868205930">Stalna pohrana</translation>
 <translation id="4176463684765177261">Onemogućeno</translation>
@@ -2991,7 +2989,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4777943778632837590">Konfiguriranje naziva poslužitelja mreže</translation>
 <translation id="4779083564647765204">Zumiranje</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Skočni prozor blokiran}one{# skočni prozor blokiran}few{# skočna prozora blokirana}other{# skočnih prozora blokirano}}</translation>
 <translation id="4780321648949301421">Spremi stranicu kao...</translation>
 <translation id="4785719467058219317">Upotrebljavate sigurnosni ključ koji nije registriran na toj web-lokaciji</translation>
 <translation id="4788092183367008521">Provjerite mrežnu vezu i pokušajte ponovo.</translation>
@@ -4135,7 +4132,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6242852299490624841">Fokusiraj tu karticu</translation>
 <translation id="6243280677745499710">Trenutačno postavljeno</translation>
 <translation id="6243774244933267674">Poslužitelj nije dostupan</translation>
-<translation id="6246355468475884088">Zaporke s Google računa možete prikazati i ovdje</translation>
 <translation id="6246790815526961700">Prijenos s uređaja</translation>
 <translation id="6247620186971210352">Aplikacije nisu pronađene</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4509,7 +4505,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6745592621698551453">Ažuriraj sada</translation>
 <translation id="6746124502594467657">Pomakni dolje</translation>
 <translation id="674632704103926902">Omogući povlačenje dodirom</translation>
-<translation id="6748217015615267851">Ispunjivač: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Možete nastaviti, no vratit će se samo sinkronizirani podaci i postavke. Izgubit će se svi lokalni podaci.</translation>
 <translation id="6749006854028927059">Web-lokacije ne mogu upotrebljavati vaše kolačiće za uvid u vašu aktivnost pregledavanja, primjerice radi prilagođavanja oglasa. Značajke na nekim web-lokacijama mogu prestati funkcionirati.</translation>
 <translation id="6750757184909117990">Onemogućivanje mobilne mreže</translation>
@@ -5632,7 +5627,6 @@ Ključnu datoteku čuvajte na sigurnom mjestu. Trebat će vam za stvaranje novih
 <translation id="8138082791834443598">Dodajte nove ili ažurirajte postojeće informacije povezane s ovim uređajem (nije obavezno).</translation>
 <translation id="8138217203226449454">Jeste li htjeli promijeniti davatelja usluga pretraživanja?</translation>
 <translation id="813913629614996137">Pokretanje...</translation>
-<translation id="814016597952587568">Prikazivanje zaporki s vašeg Google računa</translation>
 <translation id="8140778357236808512">Uvezi postojećeg zaštićenog korisnika</translation>
 <translation id="8141584439523427891">Otvaranje u zamjenskom pregledniku</translation>
 <translation id="8141725884565838206">Upravljanje zaporkama</translation>
@@ -5744,7 +5738,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="827097179112817503">Prikaži gumb početne stranice</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Izbrisana je 1 oznaka}one{Izbrisana je # oznaka}few{Izbrisane su # oznake}other{Izbrisano je # oznaka}}</translation>
 <translation id="8272443605911821513">Upravljajte proširenjima klikom na Proširenja u izborniku "Više alata".</translation>
-<translation id="8274212285504931082">Dopustite Asistentu da vam prikaže informacije povezane sa sadržajem zaslona</translation>
 <translation id="8274332263553132018">Emitiraj datoteku</translation>
 <translation id="8274924778568117936">Ne isključujte i ne zatvarajte uređaj <ph name="DEVICE_TYPE" /> dok ažuriranje ne završi. Uređaj <ph name="DEVICE_TYPE" /> ponovo će se pokrenuti kada instaliranje završi.</translation>
 <translation id="8275038454117074363">Uvezi</translation>

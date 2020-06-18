@@ -470,6 +470,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="681368974849482173">Ставката е создадена</translation>
 <translation id="6831043979455480757">Преведи</translation>
 <translation id="6851516051005285358">Побарај верзија на сајтот за работна површина</translation>
+<translation id="6856384753476268833">Управувано од вашата организација.</translation>
 <translation id="6858855187367714033">Скенирано</translation>
 <translation id="6859944681507688231">За да скенирате QR-код или кредитна картичка, овозможете ја камерата од поставки.</translation>
 <translation id="6873263987691478642">Поделен приказ</translation>
@@ -529,6 +530,7 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7600965453749440009">Никогаш не преведувај <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Појавните прозорци се блокирани (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Погрешна лозинка-фраза</translation>
+<translation id="7649070708921625228">Помош</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="766891008101699113">За приватно прелистување на интернет, додајте нова картичка.</translation>
 <translation id="7671141431838911305">ИНСТАЛИРАЈ</translation>
@@ -542,12 +544,12 @@ Handoff мора да биде овозможен и во Општиот дел 
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Започнете пребарување во нова картичка на Chrome.</translation>
 <translation id="7791543448312431591">Додај</translation>
-<translation id="7828557259026017104">Колачињата се датотеки создадени од веб-сајтовите што ги посетувате. Сајтовите ги користат за да ги запомнат вашите поставки. Колачињата од трети страни се создадени од други сајтови. Овие сајтови се сопственици на дел од содржините, како рекламите или сликите што ги гледате на веб-страницата што ја посетувате.</translation>
 <translation id="7839985698273989086">Офлајн страница</translation>
 <translation id="7840771868269352570">Ставките ќе се отстранат.</translation>
 <translation id="7856733331829174190">Не можеше да се преземе</translation>
 <translation id="7859704718976024901">Историја на прелистувањето</translation>
 <translation id="7887198238286927132">За да ја заштити вашата приватност, Chrome нема автоматски да го пополнува ова поле.</translation>
+<translation id="791251013315685175">Управувано од <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">„Списокот за читање“ е достапен офлајн. За да додадете страница во списокот за читање, допрете <ph name="SHARE_OPENING_ICON" />, а потоа <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Извезување лозинки…</translation>

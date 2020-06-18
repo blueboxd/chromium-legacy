@@ -30,4 +30,16 @@ suite('SmartInputsPage', function() {
         createSmartInputsPage();
         assertFalse(!!smartInputsPage.$$('#assistPersonalInfo'));
       });
+
+  test('emojiSuggestAdditionNotNullWhenAllowEmojiSuggestionIsTrue', function() {
+    loadTimeData.overrideValues({allowEmojiSuggestion: true});
+    createSmartInputsPage();
+    assertTrue(!!smartInputsPage.$$('#emojiSuggestion'));
+  });
+
+  test('emojiSuggestAdditionNullWhenAllowEmojiSuggestionIsFalse', function() {
+    loadTimeData.overrideValues({allowEmojiSuggestion: false});
+    createSmartInputsPage();
+    assertFalse(!!smartInputsPage.$$('#emojiSuggestion'));
+  });
 });

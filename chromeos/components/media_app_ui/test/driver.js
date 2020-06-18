@@ -293,17 +293,36 @@ async function loadMultipleFiles(files) {
 }
 
 /**
- * Helper to "launch" with the given handles, by populating a fake directory,
- * then launching with the first file in the provided array as the focus file.
- * @param {!Array<!FakeFileSystemFileHandle>} handles
+ * Creates a mock LaunchParams object from the provided `files`.
+ * @param {!Array<FileSystemHandle>} files
+ * @return {LaunchParams}
+ */
+function handlesToLaunchParams(files) {
+  return /** @type{LaunchParams} */ ({files});
+}
+
+/**
+ * Helper to "launch" with the given `directoryContents`. Populates a fake
+ * directory containing those handles, then launches the app. The focus file is
+ * either the first file in `multiSelectionFiles`, or the first directory entry.
+ * @param {!Array<!FakeFileSystemFileHandle>} directoryContents
+ * @param {!Array<!FakeFileSystemFileHandle>=} multiSelectionFiles If provided,
+ *     holds additional files selected in the files app at launch time.
  * @return {!Promise<FakeFileSystemDirectoryHandle>}
  */
-async function launchWithHandles(handles) {
+async function launchWithHandles(directoryContents, multiSelectionFiles = []) {
+  /** @type {?FakeFileSystemFileHandle} */
+  let focusFile = multiSelectionFiles[0];
+  if (!focusFile) {
+    focusFile = directoryContents[0];
+  }
+  multiSelectionFiles = multiSelectionFiles.slice(1);
   const directory = new FakeFileSystemDirectoryHandle();
-  for (const handle of handles) {
+  for (const handle of directoryContents) {
     directory.addFileHandleForTest(handle);
   }
-  await launchWithDirectory(directory, handles[0]);
+  const files = [directory, focusFile, ...multiSelectionFiles];
+  await launchConsumer(handlesToLaunchParams(files));
   return directory;
 }
 
@@ -320,10 +339,14 @@ function fileToFileHandle(file) {
 /**
  * Helper to invoke launchWithHandles after wrapping `files` in fake handles.
  * @param {!Array<!File>} files
+ * @param {!Array<!number>=} selectedIndexes
  * @return {!Promise<FakeFileSystemDirectoryHandle>}
  */
-async function launchWithFiles(files) {
-  return launchWithHandles(files.map(fileToFileHandle));
+async function launchWithFiles(files, selectedIndexes = []) {
+  const fileHandles = files.map(fileToFileHandle);
+  const selection =
+      selectedIndexes.map((/** @type {number} */ i) => fileHandles[i]);
+  return launchWithHandles(fileHandles, selection);
 }
 
 /**
@@ -345,9 +368,18 @@ function createNamedError(name, msg) {
  * @param {?string} testCase
  */
 function assertFilesToBe(expectedFiles, testCase) {
+  return assertFilenamesToBe(expectedFiles.map(f => f.name).join(), testCase);
+}
+
+/**
+ * Checks that the `currentFiles` array maintained by launch.js has the same
+ * sequence of filenames as `expectedFilenames`.
+ * @param {string} expectedFilenames
+ * @param {?string} testCase
+ */
+function assertFilenamesToBe(expectedFilenames, testCase) {
   // Use filenames as an approximation of file uniqueness.
   const currentFilenames = currentFiles.map(d => d.handle.name).join();
-  const expectedFilenames = expectedFiles.map(f => f.name).join();
   chai.assert.equal(
       currentFilenames, expectedFilenames,
       `Expected '${expectedFilenames}' but got '${currentFilenames}'` +

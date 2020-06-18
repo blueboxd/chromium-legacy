@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">웹사이트에 로그인</translation>
 <translation id="1509960214886564027">다수의 사이트에서 기능이 작동하지 않을 수 있음</translation>
 <translation id="152234381334907219">저장하지 않음</translation>
+<translation id="1535268707340844072">현재 설정에서는 일부 사이트의 기능이 손상될 수 있습니다. 모든 사이트의 쿠키를 관리하려면 <ph name="BEGIN_LINK" />쿠키 설정<ph name="END_LINK" />을 참조하세요.</translation>
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1552525382687785070">관리자가 동기화를 사용 중지했습니다.</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212"><ph name="DAYS" />일 전 사용됨</translation>
 <translation id="2074131957428911366">언제든지 <ph name="BEGIN_LINK" />설정<ph name="END_LINK" />에서 동기화할 항목을 선택할 수 있습니다.</translation>
 <translation id="2079545284768500474">실행취소</translation>
+<translation id="2081417079511601293">시크릿 모드에서 제3자 차단</translation>
 <translation id="209018056901015185">데스크톱 버전으로 보기</translation>
 <translation id="2103075008456228677">history.google.com 열기</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 이동함</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">새 탭에서 열기</translation>
 <translation id="3037605927509011580">앗, 이런!</translation>
 <translation id="3112556859945124369">표시…</translation>
+<translation id="3131206671572504478">모두 차단</translation>
 <translation id="3153862085237805241">카드 저장</translation>
 <translation id="3157684681743766797">모두 표시...</translation>
 <translation id="3161291298470460782">로그아웃되고 동기화가 사용 중지되며 기기에서 모든 Chrome 데이터가 삭제됩니다. 동기화된 데이터는 Google 계정에 그대로 유지됩니다.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">언어를 변경하려면 탭하세요.</translation>
 <translation id="441868831736628555">개인정보처리방침</translation>
 <translation id="4454246407045105932">언어 추가</translation>
+<translation id="4469418912670346607">설정 계속하기</translation>
 <translation id="4476574785019001431">설정</translation>
 <translation id="4496373720959965247">탭 추가 및 페이지 간에 전환</translation>
 <translation id="4508750114462689118">로그인 프로모션 닫기</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">카드 번호가 잘못됨</translation>
 <translation id="4818522717893377262">언어 추가...</translation>
 <translation id="481968316161811770">쿠키, 사이트 데이터</translation>
+<translation id="4826218269716039351">제3자 차단</translation>
 <translation id="4833786495304741580">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 전송합니다.</translation>
 <translation id="4840495572919996524">북마크, 방문 기록, 비밀번호 등이 더 이상 Google 계정과 동기화되지 않습니다.</translation>
 <translation id="4854345657858711387">비밀번호 설정</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">페이지 보안 정보</translation>
 <translation id="5443952882982198570">신용카드</translation>
 <translation id="5457907402803865181">비밀번호 동기화 중에 오류가 발생했습니다.</translation>
+<translation id="5489208564673669003">모든 사이트의 쿠키를 관리하려면 <ph name="BEGIN_LINK" />쿠키 설정<ph name="END_LINK" />을 참조하세요.</translation>
 <translation id="5508435575041083207">로그아웃 및 기기에서 데이터 삭제</translation>
 <translation id="5525269841082836315">암호 만들기</translation>
 <translation id="5548760955356983418">Handoff를 이용하면 이 기기에서 웹사이트를 탐색하다가 Mac에서 간편하게 보던 페이지부터 계속할 수 있습니다. 현재 열어놓은 웹사이트가 Mac의 Dock에 표시됩니다.
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">PDF 준비 중</translation>
 <translation id="6426067060178468363">쿠키 허용</translation>
 <translation id="6434591244308415567">오류가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
+<translation id="6439338047467462846">모두 허용</translation>
 <translation id="6445051938772793705">국가</translation>
 <translation id="6445981559479772097">메시지가 전송되었습니다.</translation>
 <translation id="6447842834002726250">쿠키</translation>
@@ -439,6 +446,7 @@
 <translation id="6476800141292307438">페이지를 <ph name="LANGUAGE" />로 번역합니다. 화면 하단에 옵션이 있습니다.</translation>
 <translation id="648164694371393720">인증 오류</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />개 항목 삭제함</translation>
+<translation id="651505212789431520">동기화를 취소하시겠습니까? 언제든지 설정에서 동기화를 사용 설정할 수 있습니다.</translation>
 <translation id="6561262006871132942">확대</translation>
 <translation id="6610002944194042868">번역 옵션</translation>
 <translation id="6628106477656132239">유효기간이 잘못됨</translation>
@@ -522,6 +530,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="7603852183842204213">팝업 차단(<ph name="NUMBER_OF_BLOCKED_POPUPS" />개)</translation>
 <translation id="7638584964844754484">암호가 잘못되었습니다.</translation>
+<translation id="7649070708921625228">도움말</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="766891008101699113">비공개로 웹을 탐색하려면 새 탭을 추가하세요.</translation>
 <translation id="7671141431838911305">설치</translation>
@@ -535,7 +544,6 @@
 <translation id="7781829728241885113">어제</translation>
 <translation id="778855399387580014">새 Chrome 탭에서 검색을 시작합니다.</translation>
 <translation id="7791543448312431591">추가</translation>
-<translation id="7828557259026017104">쿠키는 방문한 웹사이트에서 생성된 파일로, 사이트에서 사용자의 설정을 기억하기 위해 사용합니다. 타사 쿠키는 다른 사이트, 즉 광고나 이미지 등 방문하는 웹페이지에 표시되는 일부 콘텐츠를 소유하는 사이트에 의해 생성됩니다.</translation>
 <translation id="7839985698273989086">오프라인 페이지</translation>
 <translation id="7840771868269352570">선택한 항목 삭제</translation>
 <translation id="7856733331829174190">다운로드할 수 없음</translation>

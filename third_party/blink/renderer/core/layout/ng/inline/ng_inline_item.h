@@ -187,6 +187,10 @@ class CORE_EXPORT NGInlineItem {
            (Type() == NGInlineItem::kControl && type == kCollapsible));
     end_collapse_type_ = type;
   }
+  bool IsCollapsibleSpaceOnly() const {
+    return Type() == NGInlineItem::kText &&
+           end_collapse_type_ == kCollapsible && Length() == 1u;
+  }
 
   // True if this item was generated (not in DOM).
   // NGInlineItemsBuilder may generate break opportunitites to express the

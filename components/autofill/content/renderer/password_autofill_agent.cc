@@ -873,9 +873,10 @@ bool PasswordAutofillAgent::ShowSuggestions(
   FindPasswordInfoForElement(element, UseFallbackData(true), &username_element,
                              &password_element, &password_info);
 
-  if (!password_info && !ShowPopupWithoutPasswords(password_element)) {
+  if (!password_info) {
     MaybeCheckSafeBrowsingReputation(element);
-    return false;
+    if (!ShowPopupWithoutPasswords(password_element))
+      return false;
   }
 
   // Check that all fillable elements are editable.

@@ -145,9 +145,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
 
   void TearDown() override;
   void UnrefCanvas();
-  std::unique_ptr<Canvas2DLayerBridge> MakeBridge(
-      const IntSize&,
-      Canvas2DLayerBridge::AccelerationMode);
+  std::unique_ptr<Canvas2DLayerBridge> MakeBridge(const IntSize&, RasterMode);
 
   Document& GetDocument() const {
     return *web_view_helper_->GetWebView()
@@ -280,9 +278,9 @@ void CanvasRenderingContext2DTest::TearDown() {
 
 std::unique_ptr<Canvas2DLayerBridge> CanvasRenderingContext2DTest::MakeBridge(
     const IntSize& size,
-    Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
+    RasterMode raster_mode) {
   std::unique_ptr<Canvas2DLayerBridge> bridge =
-      std::make_unique<Canvas2DLayerBridge>(size, acceleration_mode,
+      std::make_unique<Canvas2DLayerBridge>(size, raster_mode,
                                             CanvasColorParams());
   bridge->SetCanvasResourceHost(canvas_element_);
   return bridge;
@@ -295,7 +293,7 @@ class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
   FakeCanvas2DLayerBridge(const IntSize& size,
                           CanvasColorParams color_params,
                           RasterModeHint hint)
-      : Canvas2DLayerBridge(size, kDisableAcceleration, color_params),
+      : Canvas2DLayerBridge(size, RasterMode::kCPU, color_params),
         is_accelerated_(hint != RasterModeHint::kPreferCPU) {}
   ~FakeCanvas2DLayerBridge() override = default;
   bool IsAccelerated() const override { return is_accelerated_; }
@@ -350,9 +348,7 @@ class MockImageBufferSurfaceForOverwriteTesting : public Canvas2DLayerBridge {
  public:
   MockImageBufferSurfaceForOverwriteTesting(const IntSize& size,
                                             CanvasColorParams color_params)
-      : Canvas2DLayerBridge(size,
-                            Canvas2DLayerBridge::kDisableAcceleration,
-                            color_params) {}
+      : Canvas2DLayerBridge(size, RasterMode::kCPU, color_params) {}
   ~MockImageBufferSurfaceForOverwriteTesting() override = default;
   MOCK_METHOD0(WillOverwriteCanvas, void());
 };
@@ -1082,8 +1078,8 @@ TEST_F(CanvasRenderingContext2DTestAccelerated,
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
-      std::make_unique<Canvas2DLayerBridge>(
-          size, Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams());
+      std::make_unique<Canvas2DLayerBridge>(size, RasterMode::kGPU,
+                                            CanvasColorParams());
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
   CanvasElement().SetResourceProviderForTesting(nullptr, std::move(bridge),
@@ -1132,8 +1128,8 @@ TEST_F(CanvasRenderingContext2DTestAccelerated,
   CreateContext(kNonOpaque);
   IntSize size(300, 300);
   std::unique_ptr<Canvas2DLayerBridge> bridge =
-      std::make_unique<Canvas2DLayerBridge>(
-          size, Canvas2DLayerBridge::kEnableAcceleration, CanvasColorParams());
+      std::make_unique<Canvas2DLayerBridge>(size, RasterMode::kGPU,
+                                            CanvasColorParams());
   // Force hibernatation to occur in an immediate task.
   bridge->DontUseIdleSchedulingForTesting();
   CanvasElement().SetResourceProviderForTesting(nullptr, std::move(bridge),

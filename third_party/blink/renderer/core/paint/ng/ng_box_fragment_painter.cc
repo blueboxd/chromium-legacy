@@ -2365,7 +2365,20 @@ bool NGBoxFragmentPainter::HitTestFloatingChildren(
 
     const auto* child_container =
         DynamicTo<NGPhysicalContainerFragment>(&child_fragment);
-    if (!child_container || !child_container->HasFloatingDescendantsForPaint())
+    if (!child_container)
+      continue;
+    // If this is a legacy root, fallback to legacy. It does not have
+    // |HasFloatingDescendantsForPaint()| set, but it may have floating
+    // descendants.
+    if (child_container->IsLegacyLayoutRoot() &&
+        RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      if (child_container->GetMutableLayoutObject()->NodeAtPoint(
+              *hit_test.result, hit_test.location, child_offset,
+              hit_test.action))
+        return true;
+      continue;
+    }
+    if (!child_container->HasFloatingDescendantsForPaint())
       continue;
 
     if (child_container->HasOverflowClip()) {

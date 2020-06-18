@@ -465,7 +465,6 @@
 <translation id="2934466151127459956">सरकारी-पत्र</translation>
 <translation id="2941952326391522266">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र <ph name="DOMAIN2" /> की ओर से है. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="2943895734390379394">अपलोड करने का समय:</translation>
-<translation id="2944299917411283989">अपने Google खाते में मज़बूत पासवर्ड जनरेट करें</translation>
 <translation id="2948083400971632585">आप किसी कनेक्शन के लिए कॉन्फ़िगर की गई किसी भी प्रॉक्सी को सेटिंग पेज से बंद कर सकते हैं.</translation>
 <translation id="2951588413176968965">मेरा मेलबॉक्स</translation>
 <translation id="295526156371527179">चेतावनी: इस नीति को शब्दकोश के तौर पर नीति के बताए अनुसार मिलाया नहीं जा सकता, क्योंकि यह शब्दकोश नहीं है.</translation>
@@ -749,6 +748,7 @@
 <translation id="4165986682804962316">साइट सेटिंग</translation>
 <translation id="4171400957073367226">गलत सत्यापन हस्ताक्षर</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">हमेशा दिखाएं</translation>
 <translation id="4173315687471669144">फ़ूल्ज़कैप</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> और आइटम}one{<ph name="ITEM_COUNT" /> और आइटम}other{<ph name="ITEM_COUNT" /> और आइटम}}</translation>
 <translation id="4176463684765177261">बंद किया गया</translation>
@@ -788,6 +788,7 @@
 <translation id="4235360514405112390">मान्य</translation>
 <translation id="4250431568374086873">इस साइट से आपका कनेक्शन पूरी तरह से सुरक्षित नहीं है</translation>
 <translation id="4250680216510889253">नहीं</translation>
+<translation id="4253168017788158739">नोट</translation>
 <translation id="425582637250725228">हो सकता है कि किए गए बदलाव सहेजे ना जाएं.</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4261046003697461417">सुरक्षित दस्तावेज़ों को एनोटेट नहीं किया जा सकता</translation>
@@ -901,6 +902,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> पर मौजूद वेबपेज संभवतः अस्थायी रूप से बंद है या उसे स्थायी रूप से किसी नए वेब पते पर ले जाया गया है.</translation>
 <translation id="4766713847338118463">नीचे की ओर ड्युएल स्टेपल</translation>
 <translation id="4771973620359291008">अज्ञात गड़बड़ी आई.</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{पॉप-अप ब्लॉक किया गया}one{# पॉप-अप ब्लॉक किए गए हैं}other{# पॉप-अप ब्लॉक किए गए हैं}}</translation>
 <translation id="4780366598804516005">मेलबॉक्स 1</translation>
 <translation id="4780900888022378816">आपके डिवाइस का प्रबंधन <ph name="ENROLLMENT_DOMAIN" /> करता है और खाते का प्रबंधन <ph name="ACCOUNT_DOMAIN" /> करता हैै.</translation>
 <translation id="4785689107224900852">इस टैब पर जाएं</translation>

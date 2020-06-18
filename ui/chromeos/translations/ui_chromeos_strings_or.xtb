@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">ସିଂହଳ କୀବୋର୍ଡ</translation>
 <translation id="240770291734945588"><ph name="SPACE_AVAILABLE" /> ଉପଲବ୍ଧ</translation>
 <translation id="2425665904502185219">ମୋଟ ଫାଇଲ୍‍ର ଆକାର</translation>
+<translation id="2428749644083375155"><ph name="FOLDER_NAME" />ରେ <ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍ କପି କରାଯାଉଛି</translation>
 <translation id="2448312741937722512">ପ୍ରକାର</translation>
 <translation id="2453576648990281505">ପୂର୍ବରୁ ଏହି ଫାଇଲ୍‌ଟି ଅଛି</translation>
 <translation id="2464079411014186876">ଆଇସ୍‍କ୍ରିମ୍</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346"><ph name="ENTRY_NAME" />କୁ ବଛାଯାଇଛି।</translation>
 <translation id="4582497162516204941">Linux (ବିଟା) ମାଧ୍ୟମରେ ଇନ୍‌ଷ୍ଟଲ୍ କରନ୍ତୁ</translation>
 <translation id="4594543368593301662"><ph name="SEARCH_TERM" /> ପାଇଁ ଫଳାଫଳ ଦେଖାଉଛି।</translation>
+<translation id="4603392156942865207"><ph name="FOLDER_NAME" />କୁ <ph name="FILE_NAME" /> କପି କରାଯାଉଛି</translation>
 <translation id="4631887759990505102">କଳାକାର</translation>
 <translation id="4656293982926141856">ଏହି କମ୍ପ୍ୟୁଟର୍</translation>
 <translation id="4669606053856530811"><ph name="SOURCE_NAME" />ର ସଦସ୍ୟମାନେ ସେପର୍ଯ୍ୟନ୍ତ ଆକ୍ସେସ୍ ହରାଇବେ ଯେପର୍ଯ୍ୟନ୍ତ ଏହି ଆଇଟମ୍‍ଗୁଡ଼ିକୁ ସେମାନଙ୍କ ସହିତ ସେୟାର୍‌ କରାଯାଇ ନାହିଁ।</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">କଣ୍ଟ୍ରାଷ୍ଟ</translation>
 <translation id="5068919226082848014">ପିଜା</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" />ଟି ଫାଇଲ୍ ଡିଲିଟ୍ କରାଯିବ</translation>
+<translation id="508423945471810158"><ph name="FOLDER_NAME" />କୁ <ph name="NUMBER_OF_ITEMS" />ଟି ଆଇଟମ୍ ମୁଭ୍ କରାଯାଉଛି</translation>
 <translation id="509429900233858213">ଏକ ତ୍ରୁଟି ଦେଖାଦେଲା।</translation>
 <translation id="5098629044894065541">ହେବ୍ର୍ୟୁ</translation>
 <translation id="5123433949759960244">ବାସ୍କେଟବଲ୍</translation>
@@ -449,6 +452,7 @@
 <translation id="6054173164583630569">ଫ୍ରେଞ୍ଚ କୀବୋର୍ଡ୍</translation>
 <translation id="6074825444536523002">Google ଫର୍ମ</translation>
 <translation id="6096979789310008754">ସନ୍ଧାନ ଟେକ୍ସଟ୍ ଖାଲି ହୋଇଛି, ସମସ୍ତ ଫାଇଲ୍ ଏବଂ ଫୋଲ୍ଡର୍ ଦେଖାଉଛି।</translation>
+<translation id="610101264611565198"><ph name="FOLDER_NAME" />କୁ <ph name="FILE_NAME" /> ମୁଭ୍ କରାଯାଉଛି</translation>
 <translation id="6111770213269631447">ଆକ୍ଷରିକ ଅନୁବାଦକରଣ (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">ସ୍ପେସ୍</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> ଘୁଞ୍ଚୁଛି...</translation>
@@ -532,6 +536,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">ଇନ୍‍ଷ୍ଟଲ୍ କରିହେଲା ନାହିଁ</translation>
 <translation id="7040138676081995583">ଏହା ମାଧ୍ୟମରେ ଖୋଲନ୍ତୁ...</translation>
+<translation id="7059566040011178088"><ph name="REMAINING_TIME" />ରୁ କମ୍</translation>
 <translation id="7100897339030255923"><ph name="COUNT" />ଟି ଆଇଟମ୍ ଚୟନ କରାଯାଇଛି</translation>
 <translation id="7106346894903675391">ଅଧିକ ଷ୍ଟୋରେଜ୍ କିଣନ୍ତୁ...</translation>
 <translation id="7126604456862387217">'&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;' - &lt;em&gt;ଡ୍ରାଇଭ୍‍‍ରେ ଖୋଜନ୍ତୁ&lt;/em&gt;</translation>
@@ -642,6 +647,7 @@
 <translation id="8193175696669055101">ଡିଭାଇସ୍‍ର ମଡେଲ୍</translation>
 <translation id="8208580316430297579">କଳାକୃତି</translation>
 <translation id="8223479393428528563">ଅଫ୍‍ଲାଇନ୍‍‍ରେ ବ୍ୟବହାର କରିବା ପାଇଁ ଏହି ଫାଇଲ୍‍ଗୁଡ଼ିକୁ ସେଭ୍ କରିବାକୁ, ଅନ୍‍ଲାଇନ୍‍‍ରେ ଫେରି ଆସନ୍ତୁ, ଫାଇଲ୍‍ଗୁଡ଼ିକ ଉପରେ ଡାହାଣ-କ୍ଲିକ୍ କରନ୍ତୁ ଏବଂ <ph name="OFFLINE_CHECKBOX_NAME" /> ବିକଳ୍ପ ଚୟନ କରନ୍ତୁ।</translation>
+<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> ବିଷୟରେ</translation>
 <translation id="8249296373107784235">ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8261506727792406068">ବିଲୋପ</translation>
 <translation id="8269755669432358899">ଫାଇଲ୍ ମତାମତ ପ୍ୟାନେଲ୍‍ଗୁଡ଼ିକୁ ସଙ୍କୁଚିତ କରନ୍ତୁ</translation>

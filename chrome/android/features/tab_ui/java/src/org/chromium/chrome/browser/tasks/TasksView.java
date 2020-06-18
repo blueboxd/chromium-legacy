@@ -292,4 +292,26 @@ class TasksView extends CoordinatorLayoutForPointer {
         MarginLayoutParams params = (MarginLayoutParams) getBodyViewContainer().getLayoutParams();
         params.topMargin = topMargin;
     }
+
+    /**
+     * Set the top margin for the mv tiles container.
+     * @param topMargin The top margin to set.
+     */
+    void setMVTilesContainerTopMargin(int topMargin) {
+        MarginLayoutParams params =
+                (MarginLayoutParams) mHeaderView.findViewById(R.id.mv_tiles_container)
+                        .getLayoutParams();
+        params.topMargin = topMargin;
+    }
+
+    /**
+     * Set the top margin for the tab switcher title.
+     * @param topMargin The top margin to set.
+     */
+    void setTabSwitcherTitleTopMargin(int topMargin) {
+        MarginLayoutParams params =
+                (MarginLayoutParams) mHeaderView.findViewById(R.id.tab_switcher_title)
+                        .getLayoutParams();
+        params.topMargin = topMargin;
+    }
 }

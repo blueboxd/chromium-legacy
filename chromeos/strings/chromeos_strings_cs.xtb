@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="1018656279737460067">Zrušeno</translation>
 <translation id="1195447618553298278">Neznámá chyba.</translation>
 <translation id="1468664791493211953">Nabídky</translation>
 <translation id="1482734542997480527">Toto zařízení je spravováno doménou <ph name="ENROLLMENT_DOMAIN" />, která také může sledovat vaši aktivitu.</translation>
 <translation id="150962533380566081">Neplatný kód PUK.</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
+<translation id="1644574205037202324">Historie</translation>
 <translation id="1734367976349034509">Toto zařízení je spravováno organizací</translation>
 <translation id="1905710495812624430">Byl překročen maximální povolený počet pokusů.</translation>
 <translation id="1930797645656624981">Služba metod zadávání systému Chrome OS</translation>

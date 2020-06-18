@@ -48,7 +48,8 @@ Polymer({
     smartInputsEnabled_: {
       type: Boolean,
       value() {
-        return loadTimeData.getBoolean('allowAssistivePersonalInfo');
+        return loadTimeData.getBoolean('allowAssistivePersonalInfo') ||
+            loadTimeData.getBoolean('allowEmojiSuggestion');
       },
     }
   },

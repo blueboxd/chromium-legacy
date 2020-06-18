@@ -3470,15 +3470,31 @@
         "policies": {
           "ExternalProtocolDialogShowAlwaysOpenCheckbox": true
         },
-        "policy_pref_mapping_tests": [
-          {
-            "policies": {
-              "ExternalProtocolDialogShowAlwaysOpenCheckbox": true
-            },
-            "prefs": { "external_protocol_dialog.show_always_open_checkbox": { "local_state": false, "value": true }
-            }
+        "prefs": { "external_protocol_dialog.show_always_open_checkbox": { "local_state": false, "value": true }
+        }
+      }
+    ]
+  },
+
+  "AutoLaunchProtocolsFromOrigins": {
+    "os": ["win", "linux", "mac"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "AutoLaunchProtocolsFromOrigins": [
+            { "protocol" : "calc", "allowed_origins" : [ "*" ] },
+            { "protocol" : "invalid://", "allowed_origins" : [ "*" ] },
+            { "protocol" : "notes", "allowed_origins" : [ ] },
+            { "protocol" : "no.valid.origins", "allowed_origins" : ["http://a.com/path", "http://a.com/?b=1"] }
+          ]
+        },
+        "prefs": {
+          "protocol_handler.policy.auto_launch_protocols_from_origins": {
+            "value" : [
+              { "protocol" : "calc", "allowed_origins" : [ "*" ] }
+            ]
           }
-        ]
+        }
       }
     ]
   },
@@ -6429,6 +6445,18 @@
           ]
         },
         "prefs": { "cros.device.web_based_attestation_allowed_urls": {} }
+      }
+    ]
+  },
+
+  "EmojiSuggestionEnabled": {
+    "os" : ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "EmojiSuggestionEnabled": false
+        },
+        "prefs": { "assistive_input.emoji_suggestion_enabled": { "local_state": false } }
       }
     ]
   },

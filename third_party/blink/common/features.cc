@@ -71,6 +71,10 @@ const base::Feature kTopLevelAwait{"TopLevelAwait",
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable LayoutNGRuby by default. This feature is for a kill switch.
+const base::Feature kLayoutNGRuby{"LayoutNGRuby",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::Feature kFragmentItem{"FragmentItem",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 

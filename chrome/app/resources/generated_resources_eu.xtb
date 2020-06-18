@@ -1107,7 +1107,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="2377588536920405462">Kokapena desaktibatzeko, desaktibatu gailuko kokapen-ezarpen nagusia. Bestela, desaktibatu kokapena zehazteko wifi-sareak, sare mugikorrak eta sentsoreak erabiltzeko aukera kokapen-ezarpenetan.</translation>
 <translation id="2377667304966270281">Hutsegite larriak</translation>
 <translation id="237828693408258535">Orria itzuli nahi duzu?</translation>
-<translation id="2378346380592252785">Eguneratu hemengo kredentzialak: <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Hautatu luzapenen direktorioa.</translation>
 <translation id="2379281330731083556">Inprimatu sistemaren leihoaren bidez… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Galdetu bidali aurretik (gomendatua)</translation>
@@ -2557,7 +2556,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4163560723127662357">Teklatu ezezaguna</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> kontuko ezarpen batzuk zurekin partekatu dira. Ezarpen horiek saio-hasiera anizkoitza erabiltzean soilik izango dute eragina zure kontuan.</translation>
 <translation id="4170314459383239649">Garbitu irteterakoan</translation>
-<translation id="4172051516777682613">Erakutsi beti</translation>
 <translation id="4175137578744761569">More argia eta zuria</translation>
 <translation id="4175737294868205930">Memoria iraunkorra</translation>
 <translation id="4176463684765177261">Desgaituta</translation>
@@ -2986,7 +2984,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="4777943778632837590">Konfiguratu sareko izenen zerbitzariak</translation>
 <translation id="4779083564647765204">Zooma</translation>
 <translation id="4779136857077979611">Onigiria</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Leiho gainerakor bat blokeatu da}other{# leiho gainerakor blokeatu dira}}</translation>
 <translation id="4780321648949301421">Gorde orria honela…</translation>
 <translation id="4785719467058219317">Webgune honetan erregistratuta ez dagoen segurtasun-giltza bat erabiltzen ari zara</translation>
 <translation id="4788092183367008521">Egiaztatu sarera konektatuta zaudela eta saiatu berriro.</translation>
@@ -4129,7 +4126,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6242852299490624841">Fokuratu fitxa</translation>
 <translation id="6243280677745499710">Ezarrita dagoena</translation>
 <translation id="6243774244933267674">Zerbitzaria ez dago erabilgarri</translation>
-<translation id="6246355468475884088">Google-ko kontuko pasahitzak ere ikus ditzakezu hemen</translation>
 <translation id="6246790815526961700">Kargatu gailutik</translation>
 <translation id="6247620186971210352">Ez da aurkitu aplikaziorik</translation>
 <translation id="6247708409970142803">% <ph name="PERCENTAGE" /></translation>
@@ -4503,7 +4499,6 @@ Kontu honen ezarpenak kudeatzeko, instalatu Family Link aplikazioa zure gailuan.
 <translation id="6745592621698551453">Eguneratu</translation>
 <translation id="6746124502594467657">Eraman behera</translation>
 <translation id="674632704103926902">Gaitu sakatze bidezko arrastatzea</translation>
-<translation id="6748217015615267851">Errendatzailea: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Aurrera egin dezakezu, baina sinkronizatutako datuak eta ezarpenak soilik leheneratuko dira. Galdu egingo dira gailuko datu guztiak.</translation>
 <translation id="6749006854028927059">Webguneek ezin dituzte erabili cookieak beste webguneetan egiten dituzun arakatze-jarduerak ikusteko, hala nola iragarkiak pertsonalizatzeko. Baliteke webgune batzuetako eginbideek ez funtzionatzea.</translation>
 <translation id="6750757184909117990">Desgaitu sare mugikorra</translation>
@@ -5622,7 +5617,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="8138082791834443598">Aukerakoa: idatzi gailu honekin erlazionatu nahi duzun informazio berria edo eguneratu lehendik dagoena.</translation>
 <translation id="8138217203226449454">Bilaketa-hornitzailea aldatu nahi al zenuen?</translation>
 <translation id="813913629614996137">Hasieratzen…</translation>
-<translation id="814016597952587568">Google-ko kontuko pasahitzak daude ikusgai</translation>
 <translation id="8140778357236808512">Inportatu lehendik dagoen gainbegiratutako erabiltzailea</translation>
 <translation id="8141584439523427891">Beste arakatzaile batean irekitzen</translation>
 <translation id="8141725884565838206">Kudeatu pasahitzak</translation>
@@ -5734,7 +5728,6 @@ Gorde gakoen fitxategia leku seguru batean. Zure luzapenaren bertsio berriak sor
 <translation id="827097179112817503">Erakutsi Hasiera botoia</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 laster-marka ezabatu da}other{# laster-marka ezabatu dira}}</translation>
 <translation id="8272443605911821513">Luzapenak kudeatzeko, sakatu "Tresna gehiago" menuaren Luzapenak aukera.</translation>
-<translation id="8274212285504931082">Utzi Laguntzailea eginbideari pantailan duzunari buruzko informazioa erakusten</translation>
 <translation id="8274332263553132018">Igorri fitxategia</translation>
 <translation id="8274924778568117936">Eguneratzen amaitu arte, ez itzali edo itxi <ph name="DEVICE_TYPE" /> gailua. Instalatzen amaitutakoan, berrabiarazi egingo da <ph name="DEVICE_TYPE" />-a.</translation>
 <translation id="8275038454117074363">Inportatu</translation>

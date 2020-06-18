@@ -119,6 +119,21 @@ class GpuWatchdogInit {
   GpuWatchdogThread* watchdog_ptr_ = nullptr;
 };
 
+// TODO(https://crbug.com/1095744): We currently do not handle
+// VK_ERROR_DEVICE_LOST in in-process-gpu.
+void DisableInProcessGpuVulkan(GpuFeatureInfo* gpu_feature_info,
+                               GpuPreferences* gpu_preferences) {
+  if (gpu_feature_info->status_values[GPU_FEATURE_TYPE_VULKAN] ==
+      kGpuFeatureStatusEnabled) {
+    LOG(ERROR) << "Vulkan not supported with in process gpu";
+    gpu_preferences->use_vulkan = VulkanImplementationName::kNone;
+    gpu_feature_info->status_values[GPU_FEATURE_TYPE_VULKAN] =
+        kGpuFeatureStatusDisabled;
+    if (gpu_preferences->gr_context_type == GrContextType::kVulkan)
+      gpu_preferences->gr_context_type = GrContextType::kGL;
+  }
+}
+
 }  // namespace
 
 GpuInit::GpuInit() = default;
@@ -432,6 +447,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
       gpu_preferences_.gr_context_type = GrContextType::kGL;
     }
+  } else {
+    // TODO(https://crbug.com/1095744): It would be better to cleanly tear
+    // down and recreate the VkDevice on VK_ERROR_DEVICE_LOST. Until that
+    // happens, we will exit_on_context_lost to ensure there are no leaks.
+    gpu_feature_info_.enabled_gpu_driver_bug_workarounds.push_back(
+        EXIT_ON_CONTEXT_LOST);
   }
 
   // Collect GPU process info
@@ -561,16 +582,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   InitializeGLThreadSafe(command_line, gpu_preferences_, &gpu_info_,
                          &gpu_feature_info_);
 
-  if (gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] !=
-          kGpuFeatureStatusEnabled ||
-      !InitializeVulkan()) {
-    gpu_preferences_.use_vulkan = VulkanImplementationName::kNone;
-    gpu_feature_info_.status_values[GPU_FEATURE_TYPE_VULKAN] =
-        kGpuFeatureStatusDisabled;
-    if (gpu_preferences_.gr_context_type == GrContextType::kVulkan)
-      gpu_preferences_.gr_context_type = GrContextType::kGL;
-  }
-
+  DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
   default_offscreen_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
@@ -683,6 +695,8 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
       std::move(supported_buffer_formats_for_texturing);
 #endif
+
+  DisableInProcessGpuVulkan(&gpu_feature_info_, &gpu_preferences_);
 
   UMA_HISTOGRAM_ENUMERATION("GPU.GLImplementation", gl::GetGLImplementation());
 }

@@ -290,6 +290,12 @@
   <message name="IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO" desc="The label for opening Chrome's browser settings page for managing personal addresses">
     Manage personal information
   </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_TITLE" desc="The label for emoji suggestion (when an user types a word, some emojis might be suggested for the user to insert after) section.">
+    Emoji suggestions
+  </message>
+  <message name="IDS_SETTINGS_SMART_INPUTS_SHOW_EMOJI_SUGGESTION" desc="The label for the toggle button controlling showing emoji suggestions (when an user types a word, some emojis might be suggested for the user to insert after).">
+    Show emoji suggestions
+  </message>
 
   <!-- Device Page (OS Settings) -->
   <message name="IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL">

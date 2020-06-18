@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Опитайте да изчистите „бисквитките“ си<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Проверете настройките си за защитен DNS</translation>
 <translation id="1307966114820526988">Оттеглени функции</translation>
+<translation id="1310581832770023220">Данните в този формуляр се изпращат през незащитена връзка</translation>
 <translation id="131405271941274527"><ph name="URL" /> иска да изпраща и да получава информация при докосване на телефона ви до устройства с NFC</translation>
 <translation id="1314509827145471431">Подвързване отдясно</translation>
 <translation id="1320233736580025032">Prc1 (плик)</translation>
@@ -462,7 +463,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Сървърът не можа да докаже, че е <ph name="DOMAIN" />; сертификатът му за сигурност е от <ph name="DOMAIN2" />. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от атакуващ.</translation>
 <translation id="2943895734390379394">Време на качване:</translation>
-<translation id="2944299917411283989">Генериране на надеждна парола в профила ви в Google</translation>
 <translation id="2948083400971632585">Можете да деактивирате всички конфигурирани за дадена връзка прокси сървъри от страницата „Настройки“.</translation>
 <translation id="2951588413176968965">Моята пощенска кутия</translation>
 <translation id="295526156371527179">Предупреждение: Това правило не бе обединено като речник според посоченото в правилото, тъй като не е речник.</translation>
@@ -747,6 +747,7 @@
 <translation id="4165986682804962316">Настройки за сайта</translation>
 <translation id="4171400957073367226">Невалиден подпис за потвърждаване</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_OWNER" /> – <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">Показване винаги</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{още <ph name="ITEM_COUNT" /> елемент}other{още <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4176463684765177261">Деактивирано</translation>
@@ -786,6 +787,7 @@
 <translation id="4235360514405112390">Валиден сертификат</translation>
 <translation id="4250431568374086873">Връзката ви с този сайт не е напълно защитена</translation>
 <translation id="4250680216510889253">Не</translation>
+<translation id="4253168017788158739">Забележка</translation>
 <translation id="425582637250725228">Направените от вас промени може да не се запазят.</translation>
 <translation id="4258748452823770588">Невалиден подпис</translation>
 <translation id="4261046003697461417">Не могат да се добавят пояснения към защитени документи</translation>
@@ -899,6 +901,7 @@
 <translation id="4764776831041365478">До уеб страницата на адрес <ph name="URL" /> може временно да няма достъп или да е преместена за постоянно на нов уеб адрес.</translation>
 <translation id="4766713847338118463">Двуточково телбодиране в долната част</translation>
 <translation id="4771973620359291008">Възникна неизвестна грешка.</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Блокиран е изскачащ прозорец}other{Блокирани са # изскач. прозореца}}</translation>
 <translation id="4780366598804516005">Пощенска кутия 1</translation>
 <translation id="4780900888022378816">Устройството ви се управлява от <ph name="ENROLLMENT_DOMAIN" />, а профилът ви се управлява от <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Превключване към този раздел</translation>
@@ -1441,6 +1444,7 @@
 <translation id="7138472120740807366">Начин на бърза доставка</translation>
 <translation id="7139724024395191329">Емирство</translation>
 <translation id="714064300541049402">Изместване на изображението от страна 2 по оста X</translation>
+<translation id="7147693119324090759">Изпращане въпреки това</translation>
 <translation id="7152423860607593928">Number-14 (плик)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> и още <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">лавандулово</translation>
@@ -1517,6 +1521,7 @@
 <translation id="7416351320495623771">Управление на паролите…</translation>
 <translation id="7419106976560586862">Път на потребителския профил</translation>
 <translation id="7437289804838430631">Добавяне на информация за връзка</translation>
+<translation id="743897106051685947">Оригинал</translation>
 <translation id="7438976808740265764">Поддръжката на Flash Player ще бъде прекратена след декември 2020 г.</translation>
 <translation id="7440140511386898319">Разгледайте, докато сте офлайн</translation>
 <translation id="7441627299479586546">Грешен предмет на правилото</translation>
@@ -1528,6 +1533,7 @@
 <translation id="7473891865547856676">Не, благодаря</translation>
 <translation id="7481312909269577407">Напред</translation>
 <translation id="7485870689360869515">Няма намерени данни.</translation>
+<translation id="7488762544858401571">Редактиран</translation>
 <translation id="7495290002932347110">Паролата ви е била разкрита при нарушение на сигурността на данните на сайт или приложение. Chrome препоръчва да проверите запазените си пароли и да промените паролата си за <ph name="ORIGIN" /> сега.</translation>
 <translation id="7498234416455752244">Продължаване с редактирането</translation>
 <translation id="7503664977220660814">Току-що въведохте паролата си в измамнически сайт. Chromium препоръчва да проверите запазените си пароли за <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и други сайтове, на които понастоящем използвате тази парола.</translation>
@@ -1611,6 +1617,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">В същия ред с отпечатаната страна нагоре</translation>
 <translation id="777702478322588152">Префектура</translation>
+<translation id="7791011319128895129">Непубликувано</translation>
 <translation id="7791196057686275387">Пакетиране</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="7798389633136518089">Правилото бе пренебрегнато, защото не е зададено от източник в облака.</translation>
@@ -1747,6 +1754,7 @@
 <translation id="8355270400102541638">Локален контекст за срива:</translation>
 <translation id="8363502534493474904">Изключете самолетния режим.</translation>
 <translation id="8364627913115013041">Не е зададено.</translation>
+<translation id="8367477997601443248">Незащитен формуляр</translation>
 <translation id="8368476060205742148">Услуги за Google Play</translation>
 <translation id="8371889962595521444">Персонализирани основни сертификати</translation>
 <translation id="8380941800586852976">Опасно</translation>
@@ -1829,6 +1837,7 @@
 <translation id="8805819170075074995">Списъчен запис „<ph name="LANGUAGE_ID" />“: Записът е пренебрегнат, защото е включен и в правилото SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Отрязване след всяка страница</translation>
 <translation id="8820817407110198400">Отметки</translation>
+<translation id="8831512686168463822">Данните в този формуляр се изпращат до сайта през незащитена връзка, при което може да бъде разкрита информацията ви (например пароли, съобщения или номера на кредитни карти).</translation>
 <translation id="883848425547221593">Други отметки</translation>
 <translation id="884264119367021077">Адрес за доставка</translation>
 <translation id="884923133447025588">Не е намерен механизъм за анулиране.</translation>

@@ -75,15 +75,7 @@ class StaticBitmapImage;
 
 class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
  public:
-  enum AccelerationMode {
-    kDisableAcceleration,
-    kEnableAcceleration,
-    kForceAccelerationForTesting,
-  };
-
-  Canvas2DLayerBridge(const IntSize&,
-                      AccelerationMode,
-                      const CanvasColorParams&);
+  Canvas2DLayerBridge(const IntSize&, RasterMode, const CanvasColorParams&);
 
   ~Canvas2DLayerBridge() override;
 
@@ -207,7 +199,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   // WritePixels, the recording is now missing that information.
   bool last_record_tainted_by_write_pixels_ = false;
 
-  const AccelerationMode acceleration_mode_;
+  const RasterMode raster_mode_;
   const CanvasColorParams color_params_;
   const IntSize size_;
 

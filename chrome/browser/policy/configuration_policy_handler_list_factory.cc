@@ -128,6 +128,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 #include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
+#include "chrome/browser/external_protocol/auto_launch_protocols_policy_handler.h"
 #endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -706,6 +707,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     base::Value::Type::BOOLEAN },
   { key::kDriveDisabledOverCellular,
     drive::prefs::kDisableDriveOverCellular,
+    base::Value::Type::BOOLEAN },
+  { key::kEmojiSuggestionEnabled,
+    chromeos::prefs::kEmojiSuggestionEnabled,
     base::Value::Type::BOOLEAN },
   { key::kExternalStorageDisabled,
     prefs::kExternalStorageDisabled,
@@ -1753,6 +1757,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       std::make_unique<extensions::NativeMessagingHostListPolicyHandler>(
           key::kNativeMessagingBlacklist,
           extensions::pref_names::kNativeMessagingBlacklist, true));
+  handlers->AddHandler(
+      std::make_unique<AutoLaunchProtocolsPolicyHandler>(chrome_schema));
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

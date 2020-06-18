@@ -22,10 +22,6 @@ class Browser;
 class BrowserView;
 class DownloadItemView;
 
-namespace content {
-class PageNavigator;
-}
-
 namespace views {
 class ImageButton;
 class MdTextButton;
@@ -47,10 +43,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Sent from the DownloadItemView when the user opens an item.
   void OpenedDownload();
 
-  // Returns the relevant containing object that can load pages.
-  // i.e. the |browser_|.
-  content::PageNavigator* GetNavigator();
-
   // Returns the parent_.
   BrowserView* get_parent() { return parent_; }
 
@@ -70,7 +62,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // DownloadShelf:
   bool IsShowing() const override;
   bool IsClosing() const override;
-  Browser* browser() const override;
 
   // views::MouseWatcherListener:
   void MouseMovedOutOfHost() override;
@@ -134,9 +125,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
 
   // Returns the color of text for the shelf (used for deriving icon color).
   SkColor GetTextColorForIconMd();
-
-  // The browser for this shelf.
-  Browser* const browser_;
 
   // The animation for adding new items to the shelf.
   gfx::SlideAnimation new_item_animation_;

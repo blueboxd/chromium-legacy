@@ -20614,6 +20614,8 @@ Called by update_document_policy_enum.py.-->
   <int value="718" label="PinUnlockAutosubmitEnabled"/>
   <int value="719" label="SamlLockScreenReauthenticationEnabled"/>
   <int value="720" label="DeletePrintJobHistoryAllowed"/>
+  <int value="721" label="EmojiSuggestionEnabled"/>
+  <int value="722" label="AutoLaunchProtocolsFromOrigins"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -51128,6 +51130,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="205" label="Messages: Set Up"/>
   <int value="206" label="Messages: On/Off"/>
   <int value="207" label="Forget Phone"/>
+  <int value="208" label="Nearby Share: On/Off"/>
   <int value="300" label="Add Account"/>
   <int value="301" label="Remove Account"/>
   <int value="302" label="Sync On/Off"/>
@@ -51208,6 +51211,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1200" label="Add Language"/>
   <int value="1201" label="Show Input Options In Shelf"/>
   <int value="1202" label="Show Personal Information Suggestions"/>
+  <int value="1203" label="Show Emoji Suggestions"/>
   <int value="1300" label="Google Drive Connection"/>
   <int value="1400" label="Add Printer"/>
   <int value="1401" label="Saved Printers"/>
@@ -57113,6 +57117,11 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Required but not shown - grace exceeded"/>
 </enum>
 
+<enum name="QueryTilesGroupPruneReason">
+  <int value="0" label="Expired"/>
+  <int value="1" label="InvalidLocale"/>
+</enum>
+
 <enum name="QueryTilesGroupStatus">
   <int value="0" label="Success"/>
   <int value="1" label="Uninitialized"/>
@@ -59881,6 +59890,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
              the warning was shown."/>
   <int value="11"
       label="User pasted something on the page and the warning was shown."/>
+</enum>
+
+<enum name="SafeBrowsingMalwareDeepScanningVerdict">
+  <int value="0" label="Verdict unspecified"/>
+  <int value="1" label="Clean"/>
+  <int value="2" label="Unwanted Software"/>
+  <int value="3" label="Malware"/>
+  <int value="4" label="Scan failure"/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">

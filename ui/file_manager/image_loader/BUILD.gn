@@ -14,9 +14,9 @@ js_type_check("closure_compile_module") {
     ":image_loader",
     ":image_loader_client",
     ":image_loader_util",
+    ":image_request_task",
     ":load_image_request",
     ":piex_loader",
-    ":request",
     ":scheduler",
   ]
 }
@@ -39,9 +39,9 @@ js_unittest("cache_unittest") {
 js_library("image_loader") {
   deps = [
     ":cache",
+    ":image_request_task",
     ":load_image_request",
     ":piex_loader",
-    ":request",
     ":scheduler",
     "//ui/file_manager/externs:file_manager_private",
   ]
@@ -96,7 +96,7 @@ js_library("piex_loader") {
   externs_list = [ "//ui/file_manager/externs/platform.js" ]
 }
 
-js_library("request") {
+js_library("image_request_task") {
   deps = [
     ":cache",
     ":image_loader_util",
@@ -108,7 +108,14 @@ js_library("request") {
 }
 
 js_library("scheduler") {
-  deps = [ ":request" ]
+  deps = [ ":image_request_task" ]
+}
+
+js_unittest("scheduler_unittest") {
+  deps = [
+    ":scheduler",
+    "//ui/webui/resources/js:webui_resource_test",
+  ]
 }
 
 js_test_gen_html("js_test_gen_html") {
@@ -117,6 +124,7 @@ js_test_gen_html("js_test_gen_html") {
     ":cache_unittest",
     ":image_loader_client_unittest",
     ":image_loader_unittest",
+    ":scheduler_unittest",
   ]
 }
 

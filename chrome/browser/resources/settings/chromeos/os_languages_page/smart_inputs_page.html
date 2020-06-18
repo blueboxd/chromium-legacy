@@ -37,6 +37,19 @@
           </div>
         </div>
       </template>
+      <template is="dom-if" if="[[allowEmojiSuggestion_]]">
+        <div id="emojiSuggestion">
+          <h2 aria-hidden="true">
+            $i18n{emojiSuggestionTitle}
+          </h2>
+          <div class="list-frame vertical-list">
+            <settings-toggle-button class="list-item first"
+                pref="{{prefs.assistive_input.emoji_suggestion_enabled}}"
+                label="$i18n{showEmojiSuggestion}">
+            </settings-toggle-button>
+          </div>
+        </div>
+      </template>
     </div>
   </template>
   <script src="smart_inputs_page.js"></script>

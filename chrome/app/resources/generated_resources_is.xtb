@@ -1109,7 +1109,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2377588536920405462">Þú getur slökkt á staðsetningaraðgangi með því að slökkva á aðalstaðsetningarstillingunni í tækinu. Einnig er hægt að slökkva á notkun Wi-Fi, farsímakerfa og skynjara við ákvörðun staðsetningar í staðsetningarstillingunum.</translation>
 <translation id="2377667304966270281">Sótt úr sýndarminni</translation>
 <translation id="237828693408258535">Þýða þessa síðu?</translation>
-<translation id="2378346380592252785">Uppfæra skilríki fyrir <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Veldu viðbótamöppuna.</translation>
 <translation id="2379281330731083556">Prenta í gegnum kerfisglugga... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Spyrja fyrir sendingu (ráðlagt)</translation>
@@ -2561,7 +2560,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4163560723127662357">Óþekkt lyklaborð</translation>
 <translation id="4168015872538332605">Verið er að deila með þér einhverjum stillingum sem tilheyra <ph name="PRIMARY_EMAIL" />. Þessar stillingar hafa einungis áhrif á reikninginn þinn þegar innskráning á marga reikninga er notuð.</translation>
 <translation id="4170314459383239649">Hreinsa við lokun</translation>
-<translation id="4172051516777682613">Sýna alltaf</translation>
 <translation id="4175137578744761569">Ljósfjólublár og hvítur</translation>
 <translation id="4175737294868205930">Langtímageymsla</translation>
 <translation id="4176463684765177261">Óvirkt</translation>
@@ -2991,7 +2989,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4777943778632837590">Stilla nafnaþjóna netkerfis</translation>
 <translation id="4779083564647765204">Aðdráttur</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Lokað á sprettiglugga}one{Lokað á # sprettiglugga}other{Lokað á # sprettiglugga}}</translation>
 <translation id="4780321648949301421">Vista síðu sem...</translation>
 <translation id="4785719467058219317">Þú ert að nota öryggislykil sem er ekki skráður hjá þessu vefsvæði</translation>
 <translation id="4788092183367008521">Athugaðu nettenginguna og reyndu aftur.</translation>
@@ -4135,7 +4132,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6242852299490624841">Setja þennan flipa í fókus</translation>
 <translation id="6243280677745499710">Valið núna</translation>
 <translation id="6243774244933267674">Ekki næst í netþjóninn</translation>
-<translation id="6246355468475884088">Þú getur einnig sýnt aðgangsorð af Google reikningnum þínum hér</translation>
 <translation id="6246790815526961700">Hlaða upp úr tæki</translation>
 <translation id="6247620186971210352">Engin forrit fundust</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4509,7 +4505,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6745592621698551453">Uppfæra núna</translation>
 <translation id="6746124502594467657">Færa niður</translation>
 <translation id="674632704103926902">Draga með snertingu</translation>
-<translation id="6748217015615267851">Teiknun: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Þú getur haldið áfram en aðeins samstillt gögn og stillingar verða endurheimt. Öll staðbundin gögn tapast.</translation>
 <translation id="6749006854028927059">Vefsvæði geta ekki notað fótsporin þín til að sjá vafranotkun þína á vefsvæðum, til dæmis til að sérsníða auglýsingar. Ekki er víst að allir eiginleikar á öllum vefsvæðum virki.</translation>
 <translation id="6750757184909117990">Óvirkja farsímakerfi</translation>
@@ -5631,7 +5626,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8138082791834443598">Valfrjálst – færðu inn eða breyttu upplýsingunum sem tengja skal við þetta tæki.</translation>
 <translation id="8138217203226449454">Ætlaðirðu að skipta um leitarþjónustu?</translation>
 <translation id="813913629614996137">Frumstillir...</translation>
-<translation id="814016597952587568">Sýnir aðgangsorð af Google reikningnum þínum</translation>
 <translation id="8140778357236808512">Flytja inn fyrirliggjandi stýrðan notanda</translation>
 <translation id="8141584439523427891">Opnar í öðrum vafra núna</translation>
 <translation id="8141725884565838206">Stjórna aðgangsorðunum þínum</translation>
@@ -5743,7 +5737,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="827097179112817503">Sýna heimahnapp</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bókamerki eytt}one{# bókamerki eytt}other{# bókamerkjum eytt}}</translation>
 <translation id="8272443605911821513">Stjórnaðu viðbótunum þínum með því að smella á Viðbætur í valmyndinni „Fleiri verkfæri“.</translation>
-<translation id="8274212285504931082">Leyfa hjálparanum að birta þér upplýsingar sem tengjast því sem er á skjánum</translation>
 <translation id="8274332263553132018">Senda út skrá</translation>
 <translation id="8274924778568117936">Ekki slökkva eða loka <ph name="DEVICE_TYPE" /> tækinu þínu þar til uppfærslunni lýkur. <ph name="DEVICE_TYPE" /> mun endurræsa sig eftir að uppsetningu lýkur.</translation>
 <translation id="8275038454117074363">Flytja inn</translation>

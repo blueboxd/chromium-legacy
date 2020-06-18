@@ -297,15 +297,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
 <translation id="1553532014072799546">Whitelist limiti di utilizzo per app</translation>
 <translation id="1553956579506604198">Blocca l'installazione delle estensioni esterne</translation>
-<translation id="1556072857949466438">Questo criterio consente a un amministratore di specificare che una pagina potrebbe mostrare popup durante l'unload.
-
-      Se il criterio viene attivato, le pagine possono mostrare popup durante l'unload.
-
-      Se il criterio viene disattivato o non viene impostato, le pagine non possono mostrare popup durante l'unload, come da specifiche (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
-
-      Questo criterio verrà rimosso nella versione 88 di Chrome.
-
-      Visita la pagina https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="1560205870554624777">Controlla se la funzionalità Kerberos è attiva. Kerberos è un protocollo di autenticazione che può essere utilizzato per eseguire l'autenticazione per applicazioni web e condivisioni di file.
 
           Se questo criterio è attivato, la funzionalità Kerberos è attiva. Gli account Kerberos possono essere aggiunti tramite il criterio "Configura account Kerberos" o tramite le impostazioni Account Kerberos nella pagina Impostazioni persone.
@@ -689,13 +680,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questo criterio non viene impostato, il rilevamento della copertura della finestra verrà attivato.</translation>
 <translation id="2166472654199325139">Non filtrare i siti di contenuti per adulti</translation>
-<translation id="2166746572083670600">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> userà per memorizzare i dati utente.
-
-      Se imposti questo criterio, <ph name="PRODUCT_NAME" /> userà la directory indicata a prescindere dalla specifica o meno da parte dell'utente del flag "--user-data-dir". Per evitare perdite di dati o altri errori imprevisti, questo criterio non deve essere impostato su una directory usata per altri scopi perché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
-
-      Visita la pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
-
-      Se questo criterio non viene impostato, verrà usato il percorso del profilo predefinito e l'utente potrà ignorarlo con il flag della riga di comando "--user-data-dir".</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="217013996107840632">Parametri della riga di comando per cambiare il browser alternativo.</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
@@ -1009,11 +993,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
 <translation id="2517466659416174529">Consenti il blocco delle schede in secondo piano</translation>
 <translation id="2518231489509538392">Consenti riproduzione audio</translation>
 <translation id="2521581787935130926">Mostra la scorciatoia per le app nella barra dei Preferiti</translation>
-<translation id="2526082146909867346">Consente di specificare un elenco di pattern URL che indicano i siti per cui <ph name="PRODUCT_NAME" /> deve selezionare automaticamente un certificato client, se i siti ne richiedono uno.
-
-          Il valore deve essere un array di dizionari JSON sotto forma di stringa. Ogni dizionario deve avere il formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, dove <ph name="URL_PATTERN_PLACEHOLDER" /> rappresenta un pattern di impostazioni contenuti. <ph name="FILTER_PLACEHOLDER" /> limita la gamma di certificati client che il browser può selezionare automaticamente. Indipendentemente dal filtro, saranno selezionati solo i certificati che soddisfano la richiesta di certificato del server. Ad esempio, se <ph name="FILTER_PLACEHOLDER" /> ha il formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, vengono inoltre selezionati solo i certificati client emessi da un certificato con valore CommonName uguale a <ph name="ISSUER_CN_PLACEHOLDER" />. Se <ph name="FILTER_PLACEHOLDER" /> contiene una sezione <ph name="ISSUER_STRING_VALUE" /> e una sezione <ph name="SUBJECT_STRING_VALUE" />, per poter essere selezionati, i certificati client devono soddisfare entrambe le condizioni. Se <ph name="FILTER_PLACEHOLDER" /> specifica un'organizzazione ("O"), per poter essere selezionati, i certificati devono avere almeno un'organizzazione corrispondente al valore specificato. Se <ph name="FILTER_PLACEHOLDER" /> specifica un'unità organizzativa ("UO"), per poter essere selezionati, i certificati devono avere almeno un'unità organizzativa corrispondente al valore specificato. Se <ph name="FILTER_PLACEHOLDER" /> è il dizionario vuoto <ph name="EMPTY_DICTIONARY" />, la selezione dei certificati client non viene limitata ulteriormente.
-
-          Se questo criterio non è impostato, la selezione automatica non avviene per nessun sito.</translation>
 <translation id="2528659559494311776">Questo criterio controlla una funzionalità di sicurezza nel protocollo TLS 1.3 che protegge le connessioni da attacchi di downgrade. È compatibile con le versioni precedenti e non interesserà le connessioni a server o proxy TLS 1.2 conformi. Tuttavia, un difetto di implementazione nelle versioni precedenti di alcuni proxy che intercettano connessioni TLS li rende incompatibili.
 
       Se questo criterio è impostato su True o non è impostato, <ph name="PRODUCT_NAME" /> attiverà queste protezioni di sicurezza per tutte le connessioni.
@@ -2238,12 +2217,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
 <translation id="4332177773549877617">Registra eventi per le installazioni di app Android</translation>
 <translation id="4343382787226139147">Consente di specificare i certificati client che dovrebbero essere registrati usando il protocollo di gestione del dispositivo.</translation>
-<translation id="4346674324214534449">Consente di stabilire se bloccare o meno gli annunci su siti con annunci invasivi.
-
-      Se questa norma viene impostata su 2, gli annunci verranno bloccati sui siti con annunci invasivi.
-      Questo comportamento non verrà però attivato se la norma SafeBrowsingEnabled viene impostata su False.
-      Se questa norma viene impostata su 1, gli annunci non verranno bloccati sui siti con annunci invasivi.
-      Se questa norma non viene impostata, verrà usato il valore 2.</translation>
 <translation id="4347908978527632940">Se la norma viene impostata su true e l'utente è supervisionato, le altre app Android possono chiedere le restrizioni web dell'utente tramite un provider di contenuti.
 
           Se la norma è impostata su false o non è impostata, il provider di contenuti non restituisce informazioni.</translation>
@@ -2471,11 +2444,6 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       <ph name="PAGE_SIZE_NAME" /> non dovrebbe contenere uno dei formati elencati o "personalizzato" se la dimensione della carta richiesta non è nell'elenco. Se viene fornito il valore "personalizzato", deve essere specificata la proprietà <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Descrive l'altezza e la larghezza desiderate in micrometri. Diversamente la proprietà <ph name="PAGE_SIZE_CUSTOM_SIZE" /> non deve essere specificata. Il criterio che viola queste regole viene ignorato.
 
       Se le dimensioni della pagina non sono disponibili nella stampante scelta dall'utente, questo criterio viene ignorato.</translation>
-<translation id="4788252609789586009">Consente di attivare la funzione Compilazione automatica di <ph name="PRODUCT_NAME" /> e permette agli utenti di eseguire il completamento automatico dei dati della carta di credito nei moduli web utilizzando informazioni memorizzate in precedenza.
-
-      Se questa impostazione è disattivata, la funzione Compilazione automatica non suggerirà o non inserirà mai i dati della carta di credito e non salverà i dati di altre carte di credito che l'utente potrebbe inviare durante la navigazione sul Web.
-
-      Se questa impostazione è attivata o non è impostata su alcun valore, l'utente potrà gestire la funzione Compilazione automatica per le carte di credito nell'interfaccia utente.</translation>
 <translation id="4802744647065138872">Limita il numero di istantanee di dati utente conservate per essere utilizzate in caso di rollback di emergenza</translation>
 <translation id="4802905909524200151">Configura il comportamento di aggiornamento del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Riavvia sempre all'uscita dell'utente.</translation>
@@ -2522,14 +2490,6 @@ Questa norma è facoltativa. Se non viene impostata, la richiesta di ricerca di 
 Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled" è attiva.</translation>
 <translation id="489803897780524242">Parametro di controllo sostituzione termini di ricerca per fornitore ricerca predefinito</translation>
 <translation id="4899708173828500852">Consenti Navigazione sicura</translation>
-<translation id="4899802251198446659">Ti consente di stabilire se permettere o meno la riproduzione automatica dei video (senza il consenso dell'utente) con contenuti audio in <ph name="PRODUCT_NAME" />.
-
-      Se il criterio viene impostato su True, in <ph name="PRODUCT_NAME" /> è consentita la riproduzione automatica dei contenuti multimediali.
-      Se il criterio viene impostato su False, in <ph name="PRODUCT_NAME" /> non è consentita la riproduzione automatica dei contenuti multimediali. È possibile usare il criterio AutoplayWhitelist in sostituzione di questo criterio per alcuni pattern URL.
-      Per impostazione predefinita, la riproduzione automatica di contenuti multimediali in <ph name="PRODUCT_NAME" /> non è consentita. È possibile usare il criterio AutoplayWhitelist in sostituzione di questo criterio per alcuni pattern URL.
-
-      Tieni presente che se questo criterio viene cambiato mentre <ph name="PRODUCT_NAME" /> è in esecuzione, il criterio viene applicato soltanto alle nuove schede aperte. Di conseguenza alcune schede potrebbero mantenere il comportamento precedente.
-      </translation>
 <translation id="4906194810004762807">Frequenza di aggiornamento per norma dispositivo</translation>
 <translation id="4917385247580444890">Forte</translation>
 <translation id="4919122295221518724">Attiva trattamento più restrittivo per i contenuti misti</translation>
@@ -2718,7 +2678,6 @@ Se questa norma non viene impostata viene utilizzata la riga di comando predefin
 <translation id="5182483318861266793">Posiziona la shelf sul lato destro dello schermo</translation>
 <translation id="5183383917553127163">Consente di specificare le estensioni da non includere nella blacklist. Un valore di * riportato nella blacklist indica che tutte le estensioni sono state inserite nella blacklist e che gli utenti possono installare solo quelle elencate nella whitelist. Per impostazione predefinita, tutte le estensioni si trovano nella whitelist, ma se in base alla norma applicata tutte le estensioni sono state inserite nella blacklist, la whitelist può essere utilizzata per annullare tale norma.</translation>
 <translation id="519247340330463721">Configura le norme relative alla Navigazione sicura.</translation>
-<translation id="5192837635164433517">Consente di attivare l'utilizzo di pagine di errore alternative integrate in <ph name="PRODUCT_NAME" /> (come "pagina non trovata") e di impedire agli utenti di modificare questa impostazione. Se attivi questa impostazione, vengono utilizzate le pagine di errore alternative. Se la disattivi, le pagine di errore alternative non vengono mai utilizzate. Se l'impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />. Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
 <translation id="5196520640744454600">Attiva i tasti permanenti nella schermata di accesso</translation>
 <translation id="5196805177499964601">Blocca la modalità sviluppatore.
 
@@ -2825,11 +2784,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
       Se la norma viene impostata su True o non viene impostata, Crostini è abilitato per l'utente, a patto che anche le altre impostazioni lo permettano.
       Le tre norme, VirtualMachinesAllowed, CrostiniAllowed e DeviceUnaffiliatedCrostiniAllowed devono essere impostate su True affinché Crostini possa essere eseguito.
       Quando l'impostazione di questa norma viene modificata in False, la norma viene applicata all'avvio di nuovi contenitori Crostini, ma non determina l'arresto dei contenitori già in esecuzione.</translation>
-<translation id="5277914408935179830">Questo criterio consente di stabilire il trattamento dei contenuti misti (contenuti HTTP in siti HTTPS) nel browser.
-       Se il criterio viene impostato su true o non viene impostato, viene eseguito l'upgrade automatico a HTTPS dei contenuti misti di audio e video (vale a dire che l'URL viene riscritto come HTTPS, senza una riserva se la risorsa non è disponibile tramite HTTPS) e nella barra degli URL viene mostrato un avviso "Non sicuro" per i contenuti misti delle immagini.
-       Se il criterio viene impostato su false, vengono disattivati gli upgrade automatici di audio e video e non viene mostrato un avviso per le immagini.
-       Questo criterio non influisce su tipi di contenuti misti diversi da audio, video e immagini.
-       Questo criterio non avrà più effetto dalla versione 84 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="5283457834853986457">Disattiva la ricerca dei plug-in (ritirata)</translation>
 <translation id="5285315763984334157">Blocca download dannosi</translation>
 <translation id="5288772341821359899">Se la norma viene impostata, l'intervallo di porte UDP utilizzato da WebRTC viene limitato all'intervallo di porte specificato (endpoint inclusi).
@@ -3051,15 +3005,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se questo criterio è impostato su False o non viene impostato, gli avvisi verranno mostrati su tali computer o sistemi operativi non supportati.</translation>
 <translation id="5565178130821694365">Inserimento della password richiesto ogni due giorni (48 ore)</translation>
-<translation id="556564360355507488">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare su un dispositivo <ph name="PRODUCT_OS_NAME" /> gestito dall'azienda.
-
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_OS_NAME" /> senza inviare una nuova versione, attivando o disattivando in modo selettivo le funzionalità già esistenti.
-
-      Se imposti <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o se non imposti il criterio, è possibile applicare a <ph name="PRODUCT_OS_NAME" /> tutte le varianti.
-
-      Se imposti <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1), è possibile applicare a <ph name="PRODUCT_OS_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza o la stabilità.
-
-      L'impostazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti nella schermata di accesso. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_OS_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="5566210228171064229">Consenti la stampa con e senza PIN</translation>
 <translation id="557360560705413259">Quando questa impostazione è attiva, <ph name="PRODUCT_NAME" /> usa il nome comune di un certificato server per associare un nome host se il certificato è privo di un'estensione subjectAlternativeName, purché venga convalidato correttamente e collegato a un certificato CA installato in una posizione locale.
 
@@ -3110,9 +3055,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       NOTA: questa norma viene applicata solo a Chrome su dispositivi Android con più di 1 GB di RAM. Per applicare la norma su piattaforme non Android, utilizza IsolateOrigins.
       </translation>
-<translation id="5595998409088126162">La configurazione del criterio consente di impostare un elenco di preferiti dove ognuno di questi è un dizionario con le chiavi "<ph name="NAME" />" e "<ph name="URL_LABEL" />" indicanti il nome e la destinazione del preferito. Gli amministratori possono configurare una sottocartella definendo un preferito senza una chiave "<ph name="URL_LABEL" />", ma con una chiave "<ph name="CHILDREN" />" aggiuntiva. Tale chiave contiene anche un elenco di preferiti, alcuni dei quali possono essere anche cartelle. Chrome corregge gli URL incompleti come se fossero stati inviati tramite la barra degli indirizzi. Ad esempio, "<ph name="GOOGLE_COM" />" diventa "<ph name="HTTPS_GOOGLE_COM" />".
-
-      Gli utenti non possono modificare le cartelle in cui vengono inseriti i preferiti (ma possono nasconderle dalla barra dei Preferiti). Il nome della cartella è "Preferiti gestiti", ma gli utenti possono aggiungere all'elenco dei preferiti un dizionario con la chiave "<ph name="TOPLEVEL_NAME" />" e il nome della cartella che preferiscono come valore. I preferiti gestiti non vengono sincronizzati con l'account utente e le estensioni non possono modificarli.</translation>
 <translation id="5599461642204007579">Impostazioni di gestione di <ph name="MS_AD_NAME" /></translation>
 <translation id="5618398258385745432">L'impostazione associata veniva utilizzata prima dell'introduzione della riautenticazione per la visualizzazione delle password. Dopodiché l'impostazione e quindi la norma non hanno più inciso sul comportamento di Chrome. Ora Chrome funziona come se la norma fosse impostata in modo da disattivare la visualizzazione delle password in testo non criptato nella pagina delle impostazioni di Gestione password. Ciò significa che la pagina delle impostazioni contiene soltanto un segnaposto e che Chrome mostra la password soltanto se l'utente fa clic su "Mostra" (ed esegue la riautenticazione, se possibile). Di seguito è riportata la descrizione originale della norma.
 
@@ -3230,13 +3172,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5809728392451418079">Imposta il nome visualizzato per gli account del dispositivo</translation>
 <translation id="5814301096961727113">Impostazione stato predefinito della lettura vocale nella schermata di accesso</translation>
 <translation id="5815129011704381141">Riavvia automaticamente dopo l'aggiornamento</translation>
-<translation id="5815353477778354428">Consente di configurare la directory che <ph name="PRODUCT_FRAME_NAME" /> utilizza per memorizzare i dati dell'utente.
-
-      Se la norma viene impostata, <ph name="PRODUCT_FRAME_NAME" /> utilizza la directory fornita.
-
-      Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
-
-      Se la norma non viene impostata, viene utilizzata la directory del profilo predefinita.</translation>
 <translation id="582857022372205358">Attiva la stampa fronte/retro su lato corto</translation>
 <translation id="583091600226586337">
       Se la norma viene attivata, all'utente verrà chiesto dove salvare ogni file prima del download.
@@ -3248,17 +3183,6 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Gli URL (ad esempio https://example.com/some/path) corrisponderanno soltanto ad appID U2F. I domini (come example.com) corrisponderanno soltanto a ID RP webauthn. Di conseguenza, per includere entrambe le API U2F e webauthn per un determinato sito, devono essere elencati sia il dominio sia l'URL appID.</translation>
 <translation id="5836064773277134605">Limita l'intervallo di porte UDP utilizzate dall'host di accesso remoto</translation>
-<translation id="5844300486330234296">Consente di controllare la whitelist dei pattern URL su cui è sempre attivata la riproduzione automatica.
-
-      Se la riproduzione automatica è attivata, i video possono essere riprodotti automaticamente (ovvero senza il consenso dell'utente) in <ph name="PRODUCT_NAME" />.
-
-      Se il criterio AutoplayAllowed è impostato su vero, questo criterio non avrà effetto.
-
-      Se il criterio AutoplayAllowed è impostato su falso, i pattern URL configurati in questo criterio potranno comunque essere riprodotti.
-
-      Tieni presente che, se <ph name="PRODUCT_NAME" /> è in esecuzione e il criterio cambia, sarà applicato solo alle nuove schede aperte. Pertanto alcune schede potrebbero continuare a osservare il comportamento precedente.
-
-      Per informazioni dettagliate sui pattern URL validi, consulta https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="585270638818921943">Impedisci all'utente di usare app Android di fonti non attendibili</translation>
 <translation id="5854749508571554984">Questo criterio viene applicato soltanto se il dispositivo ha raggiunto la fine del ciclo di vita e non rispetta la versione minima consentita di <ph name="PRODUCT_NAME" /> impostata tramite il criterio <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" />.
 
@@ -3859,15 +3783,6 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6786747875388722282">Estensioni</translation>
 <translation id="6786967369487349613">Imposta la directory profilo di roaming</translation>
 <translation id="6795485990775913659">Consenti la stampa solo senza PIN</translation>
-<translation id="6799657852647827750">La configurazione di questo criterio consente di specificare quali varianti è possibile applicare in <ph name="PRODUCT_NAME" />.
-
-      Le varianti forniscono un mezzo per apportare modifiche a <ph name="PRODUCT_NAME" /> senza inviare una nuova versione del browser, attivando o disattivando in modo selettivo le funzionalità già esistenti.
-
-      Se imposti <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valore 0) o se non imposti il criterio, è possibile applicare al browser tutte le varianti.
-
-      Se imposti <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valore 1), è possibile applicare a <ph name="PRODUCT_NAME" /> soltanto le varianti considerate correzioni fondamentali per la sicurezza o la stabilità.
-
-      La configurazione di <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valore 2) impedisce di applicare al browser tutte le varianti. Questa modalità potrebbe impedire agli sviluppatori di <ph name="PRODUCT_NAME" /> di fornire tempestivamente correzioni fondamentali per la sicurezza ed è pertanto sconsigliata.</translation>
 <translation id="6810445994095397827">Blocca JavaScript in questi siti</translation>
 <translation id="6813263547126514821">Alimentazione e spegnimento</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
@@ -4703,11 +4618,6 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
 
       Se il criterio viene impostato su False, la funzionalità Tocca per cercare verrà disattivata completamente.</translation>
 <translation id="8140204717286305802">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware. Se la norma viene impostata su False, l'elenco di interfacce non viene comunicato.</translation>
-<translation id="8140907626566492348">Se il criterio è impostato su True o se non viene configurato, <ph name="PRODUCT_NAME" /> mostra agli utenti informazioni sul prodotto come contenuti a scheda intera.
-
-      Se il criterio è impostato su False, <ph name="PRODUCT_NAME" /> non può mostrare le informazioni sul prodotto come contenuti a scheda intera.
-
-      La configurazione del criterio consente di controllare la presentazione delle pagine di benvenuto che aiutano gli utenti ad accedere a <ph name="PRODUCT_NAME" />, di impostare <ph name="PRODUCT_NAME" /> come browser predefinito degli utenti oppure di fornirgli informazioni sulle caratteristiche del prodotto.</translation>
 <translation id="8141795997560411818">Questa norma non impedisce all'utente di utilizzare l'app Google Drive per Android. Se vuoi impedire l'accesso a Google Drive, non devi consentire l'installazione dell'app Google Drive per Android.</translation>
 <translation id="8142894094385450823">Questa norma consente di impostare le impostazioni internazionali consigliate per una sessione gestita</translation>
 <translation id="8146727383888924340">Consenti agli utenti di utilizzare le offerte tramite la registrazione a Chrome OS</translation>
@@ -4876,9 +4786,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 
           Se questo criterio non viene impostato, la modalità di ricarica avanzata della batteria è disattivata e non può essere attivata dall'utente.</translation>
 <translation id="838870586332499308">Attiva roaming dati</translation>
-<translation id="8390049129576938611">Consente di disattivare il visualizzatore di PDF interno di <ph name="PRODUCT_NAME" />. I file PDF vengono gestiti come download che l'utente può aprire con l'applicazione predefinita.
-
-      Se questa norma non viene impostata o viene disattivata, per aprire i file PDF verrà utilizzato il plug-in di PDF, se l'utente non lo disattiva.</translation>
 <translation id="8395749934754392549">Consente di gestire le impostazioni relative al container Android (ARC) e alle app Android.</translation>
 <translation id="8396145449084377015">Questa norma consente di stabilire se caricare regole dalla norma SiteList di Internet Explorer.
 

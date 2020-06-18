@@ -1106,7 +1106,6 @@
 <translation id="2377588536920405462">‏כדי לכבות את המיקום, עליך להשבית את ההגדרה הראשית של המיקום במכשיר שלך. בהגדרות המיקום אפשר גם להשבית את האפשרות להסתמך על Wi-Fi, רשתות סלולריות וחיישנים כדי לקבוע את המיקום.</translation>
 <translation id="2377667304966270281">שגיאות חמורות</translation>
 <translation id="237828693408258535">לתרגם את הדף הזה?</translation>
-<translation id="2378346380592252785">עדכון פרטי הכניסה אל <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">בחר את ספריית ההרחבה.</translation>
 <translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">שאל לפני שליחה (מומלץ)</translation>
@@ -2559,7 +2558,6 @@
 <translation id="4163560723127662357">מקלדת לא ידועה</translation>
 <translation id="4168015872538332605">חלק מההגדרות השייכות ל-<ph name="PRIMARY_EMAIL" /> משותפות איתך. ההגדרות האלה משפיעות על החשבון שלך רק בעת שימוש בכניסה עם מספר חשבונות.</translation>
 <translation id="4170314459383239649">מחיקה ביציאה</translation>
-<translation id="4172051516777682613">הצג תמיד</translation>
 <translation id="4175137578744761569">סגול בהיר ולבן</translation>
 <translation id="4175737294868205930">אחסון קבוע</translation>
 <translation id="4176463684765177261">מושבת</translation>
@@ -2989,7 +2987,6 @@
 <translation id="4777943778632837590">הגדרת שרתי שמות של הרשת</translation>
 <translation id="4779083564647765204">מרחק מתצוגה</translation>
 <translation id="4779136857077979611">אוניגירי</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{חלון קופץ נחסם}two{# חלונות קופצים נחסמו}many{# חלונות קופצים נחסמו}other{# חלונות קופצים נחסמו}}</translation>
 <translation id="4780321648949301421">שמירת הדף בשם...</translation>
 <translation id="4785719467058219317">בחרת להשתמש במפתח אבטחה שלא רשום עבור האתר הזה</translation>
 <translation id="4788092183367008521">כדאי לבדוק את החיבור לרשת ולנסות שוב.</translation>
@@ -4133,7 +4130,6 @@
 <translation id="6242852299490624841">הדגשת הכרטיסייה הזו</translation>
 <translation id="6243280677745499710">מוגדר עכשיו</translation>
 <translation id="6243774244933267674">השרת אינו זמין</translation>
-<translation id="6246355468475884088">‏אפשר להציג כאן גם סיסמאות מחשבון Google</translation>
 <translation id="6246790815526961700">העלאה מהמכשיר</translation>
 <translation id="6247620186971210352">לא נמצאו אפליקציות</translation>
 <translation id="6247708409970142803">%<ph name="PERCENTAGE" /></translation>
@@ -4507,7 +4503,6 @@
 <translation id="6745592621698551453">עדכן כעת</translation>
 <translation id="6746124502594467657">הזז למטה</translation>
 <translation id="674632704103926902">הפעל גרירה והקשה</translation>
-<translation id="6748217015615267851">כלי עיבוד: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">אתה יכול להמשיך, אולם רק הנתונים וההגדרות המסונכרנים שלך ישוחזרו. כל הנתונים המקומיים יאבדו.</translation>
 <translation id="6749006854028927059">‏אתרים לא יכולים להשתמש בקובצי Cookie כדי לקבל מידע על פעילות הגלישה שלך. המידע הזה דרוש להם לצרכים שונים, כמו למשל הצגה של מודעות בהתאמה אישית. ייתכן שתכונות באתרים מסוימים לא יפעלו כראוי.</translation>
 <translation id="6750757184909117990">ביטול הרשת הסלולרית</translation>
@@ -5631,7 +5626,6 @@
 <translation id="8138082791834443598">אופציונלי - הזן פרטים חדשים או עדכן פרטים קיימים לשיוך עם מכשיר זה.</translation>
 <translation id="8138217203226449454">האם התכוונת לשנות את ספק החיפוש שלך?</translation>
 <translation id="813913629614996137">מאתחל...</translation>
-<translation id="814016597952587568">‏הצגה של סיסמאות מחשבון Google שלך</translation>
 <translation id="8140778357236808512">יבא 'משתמש בפיקוח' קיים</translation>
 <translation id="8141584439523427891">נפתח עכשיו בדפדפן חלופי</translation>
 <translation id="8141725884565838206">נהל את הסיסמאות שלך</translation>
@@ -5743,7 +5737,6 @@
 <translation id="827097179112817503">הצג את לחצן 'דף הבית'</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{סימניה אחת נמחקה}two{# סימניות נמחקו}many{# סימניות נמחקו}other{# סימניות נמחקו}}</translation>
 <translation id="8272443605911821513">נהל את התוספים שלך על ידי לחיצה על 'תוספים' בתפריט 'כלים נוספים'.</translation>
-<translation id="8274212285504931082">‏מערכת Assistant יכולה להראות לך מידע לגבי מה שמוצג על המסך</translation>
 <translation id="8274332263553132018">העברת קובץ</translation>
 <translation id="8274924778568117936">אל תכבה או תסגור את ה-<ph name="DEVICE_TYPE" /> לפני סיום העדכון. ה-<ph name="DEVICE_TYPE" /> יופעל מחדש באופן אוטומטי בסיום ההתקנה.</translation>
 <translation id="8275038454117074363">ייבוא</translation>

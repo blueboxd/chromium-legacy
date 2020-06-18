@@ -23,7 +23,9 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGN
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_CONTAINER_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MV_TILES_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TAB_SWITCHER_TITLE_TOP_MARGIN;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.TASKS_SURFACE_BODY_TOP_MARGIN;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_CLICKLISTENER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.BOTTOM_BAR_HEIGHT;
@@ -36,6 +38,7 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.IS_SHOWING_STACK_TAB_SWITCHER;
 import static org.chromium.chrome.features.start_surface.StartSurfaceProperties.TOP_BAR_HEIGHT;
 
+import android.content.res.Resources;
 import android.view.View;
 
 import org.junit.After;
@@ -1473,15 +1476,27 @@ public class StartSurfaceMediatorUnitTest {
     }
 
     @Test
-    public void initializeTasksSurfaceBodyTopMargin() {
-        int topMargin = ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                R.dimen.tasks_surface_body_top_margin);
+    public void initializeStartSurfaceTopMargins() {
+        Resources resources = ContextUtils.getApplicationContext().getResources();
+        int tasksSurfaceBodyTopMargin =
+                resources.getDimensionPixelSize(R.dimen.tasks_surface_body_top_margin);
+        int mvTilesContainerTopMargin =
+                resources.getDimensionPixelSize(R.dimen.mv_tiles_container_top_margin);
+        int tabSwitcherTitleTopMargin =
+                resources.getDimensionPixelSize(R.dimen.tab_switcher_title_top_margin);
 
         createStartSurfaceMediatorWithoutInit(SurfaceMode.OMNIBOX_ONLY, false, false);
         assertThat(mPropertyModel.get(TASKS_SURFACE_BODY_TOP_MARGIN), equalTo(0));
+        assertThat(mPropertyModel.get(MV_TILES_CONTAINER_TOP_MARGIN), equalTo(0));
+        assertThat(mPropertyModel.get(TAB_SWITCHER_TITLE_TOP_MARGIN), equalTo(0));
 
         createStartSurfaceMediatorWithoutInit(SurfaceMode.SINGLE_PANE, false, false);
-        assertThat(mPropertyModel.get(TASKS_SURFACE_BODY_TOP_MARGIN), equalTo(topMargin));
+        assertThat(mPropertyModel.get(TASKS_SURFACE_BODY_TOP_MARGIN),
+                equalTo(tasksSurfaceBodyTopMargin));
+        assertThat(mPropertyModel.get(MV_TILES_CONTAINER_TOP_MARGIN),
+                equalTo(mvTilesContainerTopMargin));
+        assertThat(mPropertyModel.get(TAB_SWITCHER_TITLE_TOP_MARGIN),
+                equalTo(tabSwitcherTitleTopMargin));
     }
 
     private StartSurfaceMediator createStartSurfaceMediator(

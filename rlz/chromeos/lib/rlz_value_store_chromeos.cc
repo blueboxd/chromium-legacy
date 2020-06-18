@@ -186,8 +186,9 @@ bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
 bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64_t* time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // TODO(wzang): make sure time is correct (check that npupdate has updated
-  // successfully).
+  // TODO(wzang): Make sure time is correct (check that npupdate has updated
+  // successfully). See AutoEnrollmentController::SystemClockSyncWaiter for
+  // potential refactor in the ping embargo class.
   if (!HasRlzEmbargoEndDatePassed()) {
     *time = GetSystemTimeAsInt64();
     return true;
@@ -376,7 +377,7 @@ void RlzValueStoreChromeOS::CollectGarbage() {
 bool RlzValueStoreChromeOS::HasRlzEmbargoEndDatePassed() {
   chromeos::system::StatisticsProvider* statistics_provider =
       chromeos::system::StatisticsProvider::GetInstance();
-  return chromeos::system::GetFactoryPingEmbargoState(statistics_provider) !=
+  return chromeos::system::GetRlzPingEmbargoState(statistics_provider) !=
          chromeos::system::FactoryPingEmbargoState::kNotPassed;
 }
 

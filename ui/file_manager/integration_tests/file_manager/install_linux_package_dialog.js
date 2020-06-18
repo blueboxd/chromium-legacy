@@ -33,6 +33,7 @@ testcase.installLinuxPackageDialog = async () => {
 
   // Ensure package install dialog is shown.
   await remoteCall.waitForElement(appId, dialog);
+  const caller = getCaller();
   await repeatUntil(async () => {
     const elements = await remoteCall.callRemoteTestUtil(
         'queryAllElements', appId, ['.install-linux-package-details-frame']);
@@ -45,7 +46,7 @@ testcase.installLinuxPackageDialog = async () => {
              'Application: Fake Package' +
              'Version: 1.0' +
              'Description: A package that is fake') ||
-        pending('Waiting for installation to start.');
+        pending(caller, 'Waiting for installation to start.');
   });
 
   // Begin installation.
@@ -58,7 +59,7 @@ testcase.installLinuxPackageDialog = async () => {
         'queryAllElements', appId, ['.cr-dialog-text']);
     return elements[0] &&
         elements[0].text == 'Installation successfully started.' ||
-        pending('Waiting for installation to start.');
+        pending(caller, 'Waiting for installation to start.');
   });
 
   // Dismiss dialog

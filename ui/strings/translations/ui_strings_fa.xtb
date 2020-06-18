@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6119846243427417423">فعالسازی</translation>
 <translation id="6129953537138746214">فاصله</translation>
+<translation id="6134259848159370930">دستگاه، برنامه‌ها، تنظیمات، و وب را جستجو کنید.</translation>
 <translation id="6135826906199951471">حذف</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> بایت/ثانیه</translation>
 <translation id="6156262341071374681">بزرگ کردن برای مشاهده همه برنامه‌ها</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6166852626429024716">جستجوی دستگاه، برنامه‌ها، تنظیمات، وب، و غیره</translation>
 <translation id="6264365405983206840">انتخاب &amp;همه</translation>
 <translation id="6351032674660237738">پیشنهادات برنامه</translation>
 <translation id="6364916375976753737">پیمایش به چپ</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">فایل <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">قفسه همیشه نمایش داده می‌شود</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> کیلوبایت/ثانیه</translation>
+<translation id="8685326675965865247">دستگاه، برنامه‌ها، تنظیمات، و وب را جستجو کنید. با کلیدهای پیکانی، برنامه‌هایتان را پیمایش کنید.</translation>
 <translation id="8725488761726303204"><ph name="NUMBER" /> مورد دیگر</translation>
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{۱ ساعت}one{# ساعت}other{# ساعت}}</translation>

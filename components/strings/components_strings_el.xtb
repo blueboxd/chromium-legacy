@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Δοκιμάστε να διαγράψετε τα cookie σας<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Ελέγξτε τις ρυθμίσεις ασφαλούς DNS</translation>
 <translation id="1307966114820526988">Λειτουργίες που καταργήθηκαν</translation>
+<translation id="1310581832770023220">Τα δεδομένα σε αυτήν τη φόρμα αποστέλλονται μέσω μη ασφαλούς σύνδεσης</translation>
 <translation id="131405271941274527">Η διεύθυνση <ph name="URL" /> θέλει να στέλνει και να λαμβάνει πληροφορίες όταν ακουμπάτε το τηλέφωνό σας σε μια συσκευή NFC</translation>
 <translation id="1314509827145471431">Δέσιμο δεξιά</translation>
 <translation id="1320233736580025032">Prc1 (Φάκελος)</translation>
@@ -466,7 +467,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι <ph name="DOMAIN" />. Το πιστοποιητικό ασφαλείας του είναι από το <ph name="DOMAIN2" />. Αυτό μπορεί να οφείλεται σε λανθασμένη ρύθμιση ή σε κάποιον τρίτο που επιτίθεται στη σύνδεσή σας.</translation>
 <translation id="2943895734390379394">Ώρα μεταφόρτωσης:</translation>
-<translation id="2944299917411283989">Δημιουργήστε έναν ισχυρό κωδικό πρόσβασης στον Λογαριασμό σας Google.</translation>
 <translation id="2948083400971632585">Μπορείτε να απενεργοποιήσετε τυχόν διακομιστές μεσολάβησης που έχουν διαμορφωθεί για μια σύνδεση από τη σελίδα ρυθμίσεων.</translation>
 <translation id="2951588413176968965">Το γραμματοκιβώτιό μου</translation>
 <translation id="295526156371527179">Προειδοποίηση: Αυτή η πολιτική δεν συγχωνεύτηκε ως λεξικό όπως ορίζεται από την πολιτική, επειδή δεν είναι λεξικό.</translation>
@@ -751,6 +751,7 @@
 <translation id="4165986682804962316">Ρυθμίσεις ιστότοπου</translation>
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">Εμφάνιση πάντα</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ακόμη στοιχείο}other{<ph name="ITEM_COUNT" /> ακόμη στοιχεία}}</translation>
 <translation id="4176463684765177261">Απενεργοποιημένη</translation>
@@ -791,6 +792,7 @@
 <translation id="4235360514405112390">Έγκυρο</translation>
 <translation id="4250431568374086873">Η σύνδεσή σας σε αυτόν τον ιστότοπο δεν είναι πλήρως ασφαλής</translation>
 <translation id="4250680216510889253">Όχι</translation>
+<translation id="4253168017788158739">Σημείωση</translation>
 <translation id="425582637250725228">Οι αλλαγές που κάνατε ενδέχεται να μην έχουν αποθηκευτεί.</translation>
 <translation id="4258748452823770588">Εσφαλμένη υπογραφή</translation>
 <translation id="4261046003697461417">Δεν είναι δυνατός ο σχολιασμός των προστατευμένων εγγράφων</translation>
@@ -904,6 +906,7 @@
 <translation id="4764776831041365478">Η ιστοσελίδα στη διεύθυνση <ph name="URL" /> μπορεί να βρίσκεται προσωρινά εκτός λειτουργίας ή ίσως έχει μεταφερθεί μόνιμα σε νέα διεύθυνση ιστού.</translation>
 <translation id="4766713847338118463">Διπλή συρραφή στο κάτω μέρος</translation>
 <translation id="4771973620359291008">Παρουσιάστηκε άγνωστο σφάλμα.</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Το αναδυόμενο παράθυρο αποκλ.}other{# αναδυόμενα παράθυρα αποκλείστηκαν}}</translation>
 <translation id="4780366598804516005">Γραμματοκιβώτιο 1</translation>
 <translation id="4780900888022378816">Η διαχείριση της συσκευής σας γίνεται από τον τομέα <ph name="ENROLLMENT_DOMAIN" /> και του λογαριασμού σας από τον τομέα <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Εναλλαγή σε αυτήν την καρτέλα</translation>
@@ -1446,6 +1449,7 @@
 <translation id="7138472120740807366">Μέθοδος προβολής</translation>
 <translation id="7139724024395191329">Εμιράτο</translation>
 <translation id="714064300541049402">Πλευρά 2 μετατόπιση εικόνας στον άξονα X</translation>
+<translation id="7147693119324090759">Υποβολή ούτως ή άλλως</translation>
 <translation id="7152423860607593928">Number-14 (Φάκελος)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}other{<ph name="PAYMENT_METHOD_PREVIEW" /> και <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> ακόμη}}</translation>
 <translation id="7153618581592392745">Λιλά</translation>
@@ -1522,6 +1526,7 @@
 <translation id="7416351320495623771">Διαχείριση κωδικών πρόσβασης…</translation>
 <translation id="7419106976560586862">Διαδρομή προφίλ</translation>
 <translation id="7437289804838430631">Προσθήκη στοιχείων επικοινωνίας</translation>
+<translation id="743897106051685947">Αρχικό</translation>
 <translation id="7438976808740265764">Το Flash Player δεν θα υποστηρίζεται πλέον μετά τον Δεκέμβριο του 2020.</translation>
 <translation id="7440140511386898319">Αναζήτηση εκτός σύνδεσης</translation>
 <translation id="7441627299479586546">Εσφαλμένο θέμα πολιτικής</translation>
@@ -1533,6 +1538,7 @@
 <translation id="7473891865547856676">Όχι, ευχαριστώ</translation>
 <translation id="7481312909269577407">Προώθηση</translation>
 <translation id="7485870689360869515">Δεν βρέθηκαν δεδομένα</translation>
+<translation id="7488762544858401571">Τροποποιήθηκε</translation>
 <translation id="7495290002932347110">Μια παραβίαση δεδομένων σε έναν ιστότοπο ή μια εφαρμογή αποκάλυψε τον κωδικό πρόσβασης που χρησιμοποιείτε. Το Chrome συνιστά να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής και να αλλάξετε άμεσα τον κωδικό πρόσβασης που χρησιμοποιείτε στο <ph name="ORIGIN" />.</translation>
 <translation id="7498234416455752244">Συνέχιση επεξεργασίας</translation>
 <translation id="7503664977220660814">Μόλις καταχωρίσατε τον κωδικό πρόσβασής σας σε έναν παραπλανητικό ιστότοπο. Το Chromium συνιστά να ελέγξετε τους αποθηκευμένους κωδικούς πρόσβασής σας για τους ιστοτόπους <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> και τους άλλους ιστοτόπους όπου χρησιμοποιείτε αυτόν τον κωδικό πρόσβασης τώρα.</translation>
@@ -1616,6 +1622,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Ίδια σειρά με την πρόσοψη προς τα επάνω</translation>
 <translation id="777702478322588152">Νομός</translation>
+<translation id="7791011319128895129">Δεν έχει κυκλοφορήσει</translation>
 <translation id="7791196057686275387">Δέμα</translation>
 <translation id="7791543448312431591">Προσθήκη</translation>
 <translation id="7798389633136518089">Παραβλέφθηκε επειδή η πολιτική δεν έχει οριστεί από πηγή cloud.</translation>
@@ -1752,6 +1759,7 @@
 <translation id="8355270400102541638">Περιβάλλον τοπικού σφάλματος:</translation>
 <translation id="8363502534493474904">Απενεργοποιήστε τη λειτουργία πτήσης.</translation>
 <translation id="8364627913115013041">Δεν έχει οριστεί.</translation>
+<translation id="8367477997601443248">Μη ασφαλής φόρμα</translation>
 <translation id="8368476060205742148">Υπηρεσίες Google Play</translation>
 <translation id="8371889962595521444">Προσαρμοσμένα πιστοποιητικά ρίζας</translation>
 <translation id="8380941800586852976">Επικίνδυνο</translation>
@@ -1835,6 +1843,7 @@
 <translation id="8805819170075074995">Καταχώριση λίστας "<ph name="LANGUAGE_ID" />": Η καταχώριση παραβλέπεται επειδή περιλαμβάνεται επίσης στην πολιτική SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">Περικοπή μετά από κάθε σελίδα</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
+<translation id="8831512686168463822">Αυτή η φόρμα υποβάλλεται μέσω μη ασφαλούς σύνδεσης η οποία μπορεί να εκθέσει τις πληροφορίες σας (για παράδειγμα, τους κωδικούς πρόσβασης, τα μηνύματα ή τα στοιχεία πιστωτικών καρτών) κατά την αποστολή τους σε αυτόν τον ιστότοπο.</translation>
 <translation id="883848425547221593">Άλλοι σελιδοδείκτες</translation>
 <translation id="884264119367021077">Διεύθυνση αποστολής</translation>
 <translation id="884923133447025588">Δεν εντοπίστηκε μηχανισμός ακύρωσης.</translation>

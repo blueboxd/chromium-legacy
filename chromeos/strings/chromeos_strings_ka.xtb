@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ka">
+<translation id="1018656279737460067">გაუქმდა</translation>
 <translation id="1195447618553298278">უცნობი შეცდომა.</translation>
 <translation id="1468664791493211953">შემოთავაზებები</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> მართავს ამ მოწყობილობას და შეუძლია თქვენი აქტივობის მონიტორინგი.</translation>
 <translation id="150962533380566081">PUK კოდი არასწორია.</translation>
 <translation id="1510238584712386396">გამშვები</translation>
+<translation id="1644574205037202324">ისტორია</translation>
 <translation id="1734367976349034509">ამ მოწყობილობას მართავს ორგანიზაცია</translation>
 <translation id="1905710495812624430">გადაჭარბებულია მცდელობათა მაქსიმალური რაოდენობა.</translation>
 <translation id="1930797645656624981">Chrome OS-ის შეყვანის მეთოდის სერვისი</translation>

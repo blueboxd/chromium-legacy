@@ -780,7 +780,7 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
       CanvasResourceProvider::CreateSharedImageProvider(
           size, SharedGpuContext::ContextProviderWrapper(),
           GetDrawingBuffer()->FilterQuality(), color_params,
-          is_origin_top_left_, CanvasResourceProvider::RasterMode::kGPU,
+          is_origin_top_left_, RasterMode::kGPU,
           0u /*shared_image_usage_flags*/);
   // todo(bug 1090962) This CPU fallback is needed as it would break
   // webgl_conformance_gles_passthrough_tests on Android FYI for Nexus 5x.

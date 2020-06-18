@@ -470,7 +470,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">ម៉ាស៊ីនមេនេះមិនអាចបង្ហាញថាវាជា <ph name="DOMAIN" /> ទេ វិញ្ញាបនប័ត្រសុវត្ថិភាពរបស់វាមកពី <ph name="DOMAIN2" />។ នេះអាចបណ្តាលមកពីការកំណត់មិនត្រឹមត្រូវ ឬមានការស្ទាក់ការភ្ជាប់របស់អ្នកពីអ្នកវាយប្រហារ។</translation>
 <translation id="2943895734390379394">ពេល​វេលាបង្ហោះ៖</translation>
-<translation id="2944299917411283989">បង្កើតពាក្យសម្ងាត់ខ្លាំងនៅក្នុងគណនី Google របស់អ្នក</translation>
 <translation id="2948083400971632585">អ្នកអាចបិទដំណើរការប្រូកស៊ីណាមួយដែលបានកំណត់សម្រាប់ការភ្ជាប់ ពីទំព័រការកំណត់។</translation>
 <translation id="2951588413176968965">ប្រអប់សំបុត្រ​របស់ខ្ញុំ</translation>
 <translation id="295526156371527179">ការព្រមាន៖ គោលការណ៍​នេះ​មិន​ត្រូវបាន​ដាក់បញ្ចូល​គ្នា​ជាវចនានុក្រម ដូច​ដែលបាន​បញ្ជាក់​ដោយ​គោលការណ៍ទេ ដោយសារ​វាមិនមែន​ជាវចនានុក្រម។</translation>
@@ -755,6 +754,7 @@
 <translation id="4165986682804962316">ការកំណត់គេហទំព័រ</translation>
 <translation id="4171400957073367226">ហេត្ថលេខាផ្ទៀងផ្ទាត់មិនល្អ</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">បង្ហាញជានិច្ច</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{ធាតុ <ph name="ITEM_COUNT" /> ទៀត}other{ធាតុ <ph name="ITEM_COUNT" /> ទៀត}}</translation>
 <translation id="4176463684765177261">បានបិទដំណើរការ</translation>
@@ -794,6 +794,7 @@
 <translation id="4235360514405112390">មានសុពលភាព</translation>
 <translation id="4250431568374086873">ការតភ្ជាប់របស់អ្នកទៅគេហទំព័រនេះមិនមានសុវត្ថិភាពពេញលេញទេ</translation>
 <translation id="4250680216510889253">ទេ</translation>
+<translation id="4253168017788158739">កំណត់ត្រា</translation>
 <translation id="425582637250725228">ការផ្លាស់ប្តូរដែលអ្នកបានធ្វើប្រហែលជាមិនបានរក្សាទុកទេ</translation>
 <translation id="4258748452823770588">ហេត្ថលេខាមិនល្អ</translation>
 <translation id="4261046003697461417">មិនអាចដាក់​ចំណារលើឯកសារ​ដែលត្រូវបានការពារនោះ​ទេ</translation>
@@ -908,6 +909,7 @@
 <translation id="4764776831041365478">គេហទំព័រនៅ <ph name="URL" /> អាចមិនដំណើរការបណ្តោះអាសន្ន ឬវាអាចត្រូវបានផ្លាស់ទីទៅអាសយដ្ឋានគេហទំព័រថ្មី។</translation>
 <translation id="4766713847338118463">កិប​ពីរគ្រាប់​ខាងក្រោម</translation>
 <translation id="4771973620359291008">កំហុសឆ្គងមិនស្គាល់បានកើតឡើង។</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{​ផ្ទាំងផុសត្រូវ​បាន​ទប់ស្កាត់}other{​ផ្ទាំងផុស # ត្រូវ​បាន​ទប់ស្កាត់}}</translation>
 <translation id="4780366598804516005">ប្រអប់​សំបុត្រទី 1</translation>
 <translation id="4780900888022378816">ឧបករណ៍​របស់អ្នក​ស្ថិតក្រោមការគ្រប់គ្រង​របស់ <ph name="ENROLLMENT_DOMAIN" /> ហើយ​គណនី​របស់អ្នកស្ថិតក្រោមការគ្រប់គ្រង​របស់ <ph name="ACCOUNT_DOMAIN" /> ។</translation>
 <translation id="4785689107224900852">ប្ដូរ​ទៅ​ផ្ទាំងនេះ</translation>

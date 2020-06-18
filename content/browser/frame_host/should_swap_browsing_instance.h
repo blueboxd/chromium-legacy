@@ -24,9 +24,15 @@ enum class ShouldSwapBrowsingInstance {
   kNo_AlreadyHasMatchingBrowsingInstance = 9,
   kNo_RendererDebugURL = 10,
   kNo_NotNeededForBackForwardCache = 11,
-  kYes_ProactiveSwap = 12,
+  kYes_CrossSiteProactiveSwap = 12,
+  kYes_SameSiteProactiveSwap = 13,
+  kNo_SameDocumentNavigation = 14,
+  kNo_SamePageNavigation = 15,
+  kNo_WillReplaceEntry = 16,
+  kNo_Reload = 17,
+  kNo_Guest = 18,
 
-  kMaxValue = kYes_ProactiveSwap
+  kMaxValue = kNo_Guest
 };
 
 }  // namespace content

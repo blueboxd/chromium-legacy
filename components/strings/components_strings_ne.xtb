@@ -384,6 +384,7 @@
 <translation id="2544644783021658368">एउटा कागजात</translation>
 <translation id="254947805923345898">नीतिको मान मान्य छैन।</translation>
 <translation id="255002559098805027"><ph name="HOST_NAME" /> ले अमान्य प्रतिक्रिया पठायो।</translation>
+<translation id="2552295903035773204">अबदेखि कार्डहरू पुष्टि गर्न स्क्रिन लक प्रयोग गर्नुहोस्</translation>
 <translation id="2553853292994445426">आफ्नो सुरक्षित DNS सेटिङको जाँच गर्नुहोस्। तपाईंले जोड्न नसकिएका सुरक्षित DNS सर्भर कन्फिगर गर्नुभएको हुन सक्छ।</translation>
 <translation id="2556876185419854533">सम्पादन &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="257674075312929031">समूह</translation>
@@ -465,7 +466,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">यो सर्भरले यो <ph name="DOMAIN" /> हो भनेर प्रमाणित गर्न सकेन; यसको सुरक्षा प्रमाणपत्र <ph name="DOMAIN2" /> बाट हो। यो एक गलत कन्फिगुरेसन वा तपाईंको जडान अवरोध गर्न खोज्ने आक्रमणकारीको हुनसक्छ।</translation>
 <translation id="2943895734390379394">अपलोड गरिएको समय:</translation>
-<translation id="2944299917411283989">आफ्नो Google खातामा भरपर्दो पासवर्ड राख्नुहोस्</translation>
 <translation id="2948083400971632585">तपाइँले सेटिङ पृष्ठहरूबाट जडानको लागि विन्यास गरिएको कुनै पनि प्रोक्सीहरू असक्षम गर्न सक्नुहुन्छ।</translation>
 <translation id="2951588413176968965">मेरो मेलबक्स</translation>
 <translation id="295526156371527179">चेतावनी: यो नीति कुनै शब्दकोश नभएका कारण यसलाई नीतिले तोकेअनुसार शब्दकोशका रूपमा गाभिएन।</translation>
@@ -747,6 +747,7 @@
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
 <translation id="4171400957073367226">खराब रूजू हस्ताक्षर।</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">सधैँ देखाउनुहोस्</translation>
 <translation id="4173315687471669144">फुलस्केप</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{थप <ph name="ITEM_COUNT" /> वस्तु}other{थप <ph name="ITEM_COUNT" /> वस्तुहरू}}</translation>
 <translation id="4176463684765177261">असक्षम गरिएको</translation>
@@ -785,6 +786,7 @@
 <translation id="4235360514405112390">मान्य</translation>
 <translation id="4250431568374086873">यस साइटमा तपाईँको जडान पूर्णतया सुरक्षित छैन</translation>
 <translation id="4250680216510889253">होइन</translation>
+<translation id="4253168017788158739">नोट</translation>
 <translation id="425582637250725228">तपाईँले गर्नुभएका परिवर्तनहरू सुरक्षित नहुन सक्छन्।</translation>
 <translation id="4258748452823770588">खराब हस्ताक्षर</translation>
 <translation id="4261046003697461417">सुरक्षित कागजातहरूमा एनोटेसन गर्न मिल्दैन</translation>
@@ -898,6 +900,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> को वेबपेज अस्थायी रूपमा बन्द भएको हुन सक्छ वा त्यो स्थायी रूपमा एउटा नयाँ वेब ठेगानामा सरेको हुन सक्छ।</translation>
 <translation id="4766713847338118463">फेदमा दुई स्टिच</translation>
 <translation id="4771973620359291008">एउटा अज्ञात त्रुटि देखापर्यो ।</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{पप-अपमाथि रोक लगाइयो}other{# पप-अपहरूमाथि रोक लगाइयो}}</translation>
 <translation id="4780366598804516005">मेलबक्स १</translation>
 <translation id="4780900888022378816"><ph name="ENROLLMENT_DOMAIN" /> ले तपाईंको यन्त्रको व्यवस्थापन गर्छ र <ph name="ACCOUNT_DOMAIN" /> ले तपाईंको खाताको व्यवस्थापन गर्छ।</translation>
 <translation id="4785689107224900852">यो ट्याबमा लैजानुहोस्</translation>

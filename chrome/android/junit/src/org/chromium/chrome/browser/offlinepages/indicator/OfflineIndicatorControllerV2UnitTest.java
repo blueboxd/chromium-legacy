@@ -51,6 +51,8 @@ public class OfflineIndicatorControllerV2UnitTest {
     @Mock
     private ConnectivityDetector mConnectivityDetector;
     @Mock
+    private OfflineDetector mOfflineDetector;
+    @Mock
     private Handler mHandler;
     @Mock
     private Supplier<Boolean> mCanAnimateNativeBrowserControls;
@@ -78,7 +80,8 @@ public class OfflineIndicatorControllerV2UnitTest {
         when(mTimeUtils.getTimeTicksNowUs()).thenReturn(0L);
 
         mIsUrlBarFocusedSupplier.set(false);
-        OfflineIndicatorControllerV2.setMockConnectivityDetector(mConnectivityDetector);
+        OfflineDetector.setMockConnectivityDetector(mConnectivityDetector);
+        OfflineIndicatorControllerV2.setMockOfflineDetector(mOfflineDetector);
         mElapsedTimeMs = 0;
         OfflineIndicatorControllerV2.setMockElapsedTimeSupplier(() -> mElapsedTimeMs);
         mController = new OfflineIndicatorControllerV2(mContext, mStatusIndicator,
@@ -164,6 +167,7 @@ public class OfflineIndicatorControllerV2UnitTest {
     public void testCoolDown_Show() {
         // First, show.
         changeConnectionState(true);
+        verify(mStatusIndicator, times(1)).show(eq("Offline"), any(), anyInt(), anyInt(), anyInt());
         // Advance time so we can hide.
         advanceTimeByMs(STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS);
         // Now, hide.
@@ -289,8 +293,8 @@ public class OfflineIndicatorControllerV2UnitTest {
 
     private void changeConnectionState(boolean offline) {
         final int state = offline ? ConnectionState.NO_INTERNET : ConnectionState.VALIDATED;
-        when(mConnectivityDetector.getConnectionState()).thenReturn(state);
-        mController.onConnectionStateChanged(state);
+        when(mOfflineDetector.isConnectionStateOffline()).thenReturn(offline);
+        mController.onConnectionStateChanged(offline);
     }
 
     private void advanceTimeByMs(long delta) {

@@ -78,10 +78,27 @@ const std::vector<SearchConcept>& GetAssistivePersonalInfoSearchConcepts() {
   return *tags;
 }
 
+const std::vector<SearchConcept>& GetEmojiSuggestionSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_LANGUAGES_EMOJI_SUGGESTIONS,
+       mojom::kSmartInputsSubpagePath,
+       mojom::SearchResultIcon::kGlobe,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kShowEmojiSuggestions}},
+  });
+  return *tags;
+}
+
 bool IsAssistivePersonalInfoAllowed() {
   return !features::IsGuestModeActive() &&
          base::FeatureList::IsEnabled(
              ::chromeos::features::kAssistPersonalInfo);
+}
+
+bool IsEmojiSuggestionAllowed() {
+  return base::FeatureList::IsEnabled(
+      ::chromeos::features::kEmojiSuggestAddition);
 }
 
 void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
@@ -94,11 +111,15 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source) {
       {"showPersonalInfoSuggestion",
        IDS_SETTINGS_SMART_INPUTS_SHOW_PERSONAL_INFO},
       {"managePersonalInfo", IDS_SETTINGS_SMART_INPUTS_MANAGE_PERSONAL_INFO},
+      {"emojiSuggestionTitle",
+       IDS_SETTINGS_SMART_INPUTS_EMOJI_SUGGESTION_TITLE},
+      {"showEmojiSuggestion", IDS_SETTINGS_SMART_INPUTS_SHOW_EMOJI_SUGGESTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddBoolean("allowAssistivePersonalInfo",
                           IsAssistivePersonalInfoAllowed());
+  html_source->AddBoolean("allowEmojiSuggestion", IsEmojiSuggestionAllowed());
 }
 
 }  // namespace
@@ -108,9 +129,12 @@ LanguagesSection::LanguagesSection(Profile* profile,
     : OsSettingsSection(profile, search_tag_registry) {
   registry()->AddSearchTags(GetLanguagesSearchConcepts());
 
-  if (IsAssistivePersonalInfoAllowed()) {
+  if (IsAssistivePersonalInfoAllowed() || IsEmojiSuggestionAllowed()) {
     registry()->AddSearchTags(GetSmartInputsSearchConcepts());
-    registry()->AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
+    if (IsAssistivePersonalInfoAllowed())
+      registry()->AddSearchTags(GetAssistivePersonalInfoSearchConcepts());
+    if (IsEmojiSuggestionAllowed())
+      registry()->AddSearchTags(GetEmojiSuggestionSearchConcepts());
   }
 }
 
@@ -215,9 +239,12 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_SETTINGS_SMART_INPUTS_TITLE, mojom::Subpage::kSmartInputs,
       mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
       mojom::kSmartInputsSubpagePath);
-  generator->RegisterNestedSetting(
+  static constexpr mojom::Setting kSmartInputsFeaturesSettings[] = {
       mojom::Setting::kShowPersonalInformationSuggestions,
-      mojom::Subpage::kSmartInputs);
+      mojom::Setting::kShowEmojiSuggestions,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kSmartInputs,
+                            kSmartInputsFeaturesSettings, generator);
 }
 
 }  // namespace settings

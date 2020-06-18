@@ -67,13 +67,14 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool HasCoveringSpan(mojom::AccessibilityStringProperty prop,
                        mojom::SpanType span_type) const;
 
-  void ComputeNameFromContents(std::vector<std::string>* names) const;
+  bool HasText() const;
+  bool HasAccessibilityFocusableText() const;
 
+  void ComputeNameFromContents(std::vector<std::string>* names) const;
   void ComputeNameFromContentsInternal(std::vector<std::string>* names) const;
 
   bool IsScrollableContainer() const;
   bool IsToplevelScrollItem() const;
-  bool IsInterestingLeaf() const;
 
   mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
 

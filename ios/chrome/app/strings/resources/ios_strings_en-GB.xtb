@@ -530,6 +530,7 @@ Your data was encrypted with your sync passphrase on <ph name="TIME" />. Enter i
 <translation id="7600965453749440009">Never translate <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Pop-ups blocked (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Incorrect passphrase</translation>
+<translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="766891008101699113">To browse the web privately, add a new tab.</translation>
 <translation id="7671141431838911305">INSTALL</translation>
@@ -543,7 +544,6 @@ Because your account is managed by <ph name="HOSTED_DOMAIN" />, your Chrome data
 <translation id="7781829728241885113">Yesterday</translation>
 <translation id="778855399387580014">Start a search in a new Chrome tab.</translation>
 <translation id="7791543448312431591">Add</translation>
-<translation id="7828557259026017104">Cookies are files created by websites that you visit. Sites use them to remember your preferences. Third-party cookies are created by other sites. These sites own some of the content, like ads or images, that you see on the web page that you visit.</translation>
 <translation id="7839985698273989086">Offline page</translation>
 <translation id="7840771868269352570">The items that you selected will be removed.</translation>
 <translation id="7856733331829174190">Couldn't download</translation>

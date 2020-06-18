@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
@@ -21,10 +22,9 @@ namespace reporting {
 // a sequenced task runner with the ability to make asynchronous calls to
 // other threads and resuming sequenced execution by calling |Schedule| or
 // |ScheduleAfter|. Multiple actions can be scheduled at once; they will be
-// executed on the same sequenced task runner. Ends execution when one of the
-// actions calls |Response| (any previoudly scheduled action will still be
-// executed after that, but it does not make much sense: it cannot call
-// |Response| for the second time).
+// executed on the same sequenced task runner. Ends execution and self-destructs
+// when one of the actions calls |Response| (all previously scheduled actions
+// must be completed or cancelled by then, otherwise they will crash).
 //
 // Derived from RefCountedThreadSafe, because adding and releasing a reference
 // may take place on different threads.
@@ -41,11 +41,10 @@ namespace reporting {
 //         : TaskRunnerContext<...>(std::move(callback),
 //                                  std::move(task_runner)) {}
 //
-//    protected:
+//    private:
 //     // Context can only be deleted by calling Response method.
 //     ~SeriesOfActionsContext() override = default;
 //
-//    private:
 //     void Action1(...) {
 //       ...
 //       if (...) {
@@ -61,34 +60,17 @@ namespace reporting {
 //   };
 //
 // Usage:
-//   base::MakeRefCounted<SeriesOfActionsContext>(
+//   Start<SeriesOfActionsContext>(
 //       ...,
 //       returning_callback,
-//       base::SequencedTaskRunnerHandle::Get())->Start();
+//       base::SequencedTaskRunnerHandle::Get());
 //
 template <typename ResponseType>
 class TaskRunnerContext
     : public base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>> {
  public:
-  TaskRunnerContext(base::OnceCallback<void(ResponseType)> callback,
-                    scoped_refptr<base::SequencedTaskRunner> task_runner)
-      : callback_(std::move(callback)), task_runner_(std::move(task_runner)) {
-    // Constructor can be called from any thread.
-    DETACH_FROM_SEQUENCE(sequence_checker_);
-  }
-
   TaskRunnerContext(const TaskRunnerContext& other) = delete;
   TaskRunnerContext& operator=(const TaskRunnerContext& other) = delete;
-
-  // Starts execution (can be called from any thread to schedule the first
-  // action in the sequence).
-  void Start() {
-    // Hold to ourselves until Response() is called.
-    base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>>::AddRef();
-
-    // Place actual start on the sequential task runner.
-    Schedule(&TaskRunnerContext<ResponseType>::OnStartWrap, this);
-  }
 
   // Schedules next execution (can be called from any thread).
   template <class Function, class... Args>
@@ -115,9 +97,9 @@ class TaskRunnerContext
 
     // Respond to the caller.
     DCHECK(!callback_.is_null()) << "Already responded";
-    std::move(callback_).Run(result);
+    std::move(callback_).Run(std::forward<ResponseType>(result));
 
-    // Release reference taken by Start().
+    // Self-destruct.
     base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>>::Release();
   }
 
@@ -130,6 +112,14 @@ class TaskRunnerContext
   }
 
  protected:
+  // Constructor is protected, for derived class to refer to.
+  TaskRunnerContext(base::OnceCallback<void(ResponseType)> callback,
+                    scoped_refptr<base::SequencedTaskRunner> task_runner)
+      : callback_(std::move(callback)), task_runner_(std::move(task_runner)) {
+    // Constructor can be called from any thread.
+    DETACH_FROM_SEQUENCE(sequence_checker_);
+  }
+
   // Context can only be deleted by calling Response method.
   virtual ~TaskRunnerContext() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -138,6 +128,9 @@ class TaskRunnerContext
 
  private:
   friend class base::RefCountedThreadSafe<TaskRunnerContext<ResponseType>>;
+  template <typename ContextType /* derived from TaskRunnerContext*/,
+            class... Args>
+  friend void Start(Args&&... args);
 
   // Hook for execution start. Should be overridden to do non-trivial work.
   virtual void OnStart() { Response(ResponseType()); }
@@ -161,6 +154,22 @@ class TaskRunnerContext
 
   SEQUENCE_CHECKER(sequence_checker_);
 };
+
+// Constructs the context and starts execution on the assigned sequential task
+// runner. Can be called from any thread to schedule the first action in the
+// sequence.
+template <typename ContextType /* derived from TaskRunnerContext*/,
+          class... Args>
+void Start(Args&&... args) {
+  scoped_refptr<ContextType> context =
+      base::WrapRefCounted(new ContextType(std::forward<Args>(args)...));
+  context->AddRef();  // To keep context alive until Response is called.
+  auto task_runner = context->task_runner_;
+  // Start execution handing |context| over to the callback, in order
+  // to make sure final |Release| and destruct can only happen on |task_runner|.
+  task_runner->PostTask(
+      FROM_HERE, base::BindOnce(&ContextType::OnStartWrap, std::move(context)));
+}
 
 }  // namespace reporting
 

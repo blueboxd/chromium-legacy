@@ -169,7 +169,7 @@
    * @param {string} appId Files app windowId.
    * @param {string} name QuickView Metadata Box field name.
    *
-   * @return {string} text Text value in the field name.
+   * @return {!Promise<string>} text Text value in the field name.
    */
   async function getQuickViewMetadataBoxField(appId, name) {
     let filesMetadataBox = 'files-metadata-box';
@@ -668,7 +668,7 @@
 
     // Get the Quick View <webview> scrollY.
     const getScrollY = 'window.scrollY';
-    await remoteCall.callRemoteTestUtil(
+    const scrollY = await remoteCall.callRemoteTestUtil(
         'deepExecuteScriptInWebView', appId, [webView, getScrollY]);
 
     // Check: the initial <webview> scrollY should be 0.
@@ -878,7 +878,7 @@
 
     // Get the Quick View <webview> scrollY.
     const getScrollY = 'window.scrollY';
-    await remoteCall.callRemoteTestUtil(
+    const scrollY = await remoteCall.callRemoteTestUtil(
         'deepExecuteScriptInWebView', appId, [webView, getScrollY]);
 
     // Check: the initial <webview> scrollY should be 0.
@@ -2760,7 +2760,7 @@
    */
   testcase.openQuickViewDeleteButtonNotShown = async () => {
     // Open Files app on My Files
-    const appId = await openNewWindow(RootPath.MYFILES);
+    const appId = await openNewWindow('');
 
     // Wait for the file list to appear.
     await remoteCall.waitForElement(appId, '#file-list');

@@ -467,7 +467,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Бул сервер <ph name="DOMAIN" /> экендигин далилдей алган жок; себеби анын коопсуздук тастыктамасы бул жерден <ph name="DOMAIN2" /> алынган. Мындай көйгөй туура эмес конфигурация менен шартталышы мүмкүн же туташууңузга чабуулчу кийлигишип жатат.</translation>
 <translation id="2943895734390379394">Жүктөп берүү убакыты:</translation>
-<translation id="2944299917411283989">Google аккаунтуңузда күчтүү сырсөз түзүп алыңыз</translation>
 <translation id="2948083400971632585">Жөндөөлөр бетинен туташат деп конфигурацияланган бардык проксилерди өчүрүп койсоңуз болот.</translation>
 <translation id="2951588413176968965">Электрондук каттар кутум</translation>
 <translation id="295526156371527179">Эскертүү: Бул саясат белгиленгендей сөздүк катары бириктирилген жок, себеби ал сөздүк эмес.</translation>
@@ -751,6 +750,7 @@
 <translation id="4165986682804962316">Сайт жөндөөлөрү</translation>
 <translation id="4171400957073367226">Текшерүү колтамгасы начар</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">Ар дайым көрсөтүлсүн</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Дагы <ph name="ITEM_COUNT" /> нерсе}other{Дагы <ph name="ITEM_COUNT" /> нерсе}}</translation>
 <translation id="4176463684765177261">Өчүк</translation>
@@ -790,6 +790,7 @@
 <translation id="4235360514405112390">Жарактуу</translation>
 <translation id="4250431568374086873">Бул сайтка туташуу толугу менен коопсуз эмес</translation>
 <translation id="4250680216510889253">Жок</translation>
+<translation id="4253168017788158739">Эскертме</translation>
 <translation id="425582637250725228">Киргизген өзгөртүүлөрүңүз сакталбай калышы мүмкүн.</translation>
 <translation id="4258748452823770588">Начар колтамга</translation>
 <translation id="4261046003697461417">Корголгон документтерде Аннотация режими иштебейт</translation>
@@ -903,6 +904,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> дарегиндеги веб-баракча убактылуу иштебейт же жаңы веб дарекке биротоло көчүрүлгөн окшойт.</translation>
 <translation id="4766713847338118463">Төмөн жагын эки жолу илмек менен бекитүү</translation>
 <translation id="4771973620359291008">Белгисиз ката кетти.</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Калкыма терезе бөгөттөлгөн}other{# калкыма терезе бөгөттөлгөн}}</translation>
 <translation id="4780366598804516005">1-электрондук каттар кутусу</translation>
 <translation id="4780900888022378816">Түзмөгүңүздү <ph name="ENROLLMENT_DOMAIN" /> жана аккаунтуңузду <ph name="ACCOUNT_DOMAIN" /> башкарууда.</translation>
 <translation id="4785689107224900852">Бул өтмөккө которулуу</translation>

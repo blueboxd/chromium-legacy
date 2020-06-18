@@ -470,6 +470,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="681368974849482173">Elementi u krijua</translation>
 <translation id="6831043979455480757">Përkthe</translation>
 <translation id="6851516051005285358">Kërko sajtin për desktop</translation>
+<translation id="6856384753476268833">Menaxhohet nga organizata jote.</translation>
 <translation id="6858855187367714033">Skanuar</translation>
 <translation id="6859944681507688231">Për të skanuar një kod QR ose kartë krediti, aktivizo kamerën nga cilësimet.</translation>
 <translation id="6873263987691478642">Pamja e ndarë</translation>
@@ -529,6 +530,7 @@ Të dhënat e tua janë koduar me frazën tënde të kalimit më <ph name="TIME"
 <translation id="7600965453749440009">Asnjëherë mos përkthe <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Dritare kërcyese të bllokuara (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Shprehje kalimi e pasaktë</translation>
+<translation id="7649070708921625228">Ndihma</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="766891008101699113">Për të shfletuar uebin në mënyrë private, shto një skedë të re.</translation>
 <translation id="7671141431838911305">INSTALO</translation>
@@ -542,12 +544,12 @@ Duke qenë se llogaria jote menaxhohet nga <ph name="HOSTED_DOMAIN" />, të dhë
 <translation id="7781829728241885113">Dje</translation>
 <translation id="778855399387580014">Nis një kërkim në një skedë të re Chrome.</translation>
 <translation id="7791543448312431591">Shtoje</translation>
-<translation id="7828557259026017104">Kukit janë skedarë të krijuar nga sajtet e uebit që viziton ti. Përdori ato për të kujtuar preferencat e tua. Kukit e palëve të treta krijohen nga sajte të tjera. Këto sajte zotërojnë disa nga përmbajtjet, si p.sh. reklamat ose imazhet që ti shikon në faqen e uebit që viziton.</translation>
 <translation id="7839985698273989086">Faqe jashtë linje</translation>
 <translation id="7840771868269352570">Artikujt që zgjodhe do të hiqen.</translation>
 <translation id="7856733331829174190">Nuk mundi të shkarkohej</translation>
 <translation id="7859704718976024901">Historiku i shfletimit</translation>
 <translation id="7887198238286927132">Për të mbrojtur privatësinë tënde, Chrome nuk do ta plotësojë automatikisht këtë fushë.</translation>
+<translation id="791251013315685175">Menaxhohet nga <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Lista jote e leximit ofrohet jashtë linje. Për të shtuar një faqe në listën tënde të leximit, trokit te <ph name="SHARE_OPENING_ICON" /> më pas te <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksporto fjalëkalimet...</translation>

@@ -163,7 +163,7 @@
 <translation id="2323763861024343754">網站儲存空間資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
 <translation id="234265804618409743">無法開啟攝錄機。發生錯誤。</translation>
-<translation id="2345671828921229300">如要搜尋，請按住字詞</translation>
+<translation id="2345671828921229300">如要搜尋，請輕觸並按住字詞</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和已儲存的設定</translation>
 <translation id="2353636109065292463">檢查互聯網連線</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -292,7 +292,7 @@
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3353615205017136254">此簡易版網頁由 Google 提供。輕按「載入原始網頁」按鈕即可載入原始版本網頁。</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
-<translation id="337236281855091893">如要搜尋，請按住 (而非輕觸) 字詞</translation>
+<translation id="337236281855091893">如要搜尋，請輕觸並按住 (而非輕按) 字詞</translation>
 <translation id="3373979091428520308">如要將此頁面分享至另一部裝置，請在另一部裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="3374023511497244703">您的書籤、記錄、密碼及其他 Chrome 資料將不會同步至您的 Google 帳戶。</translation>
 <translation id="3384347053049321195">分享圖片</translation>
@@ -609,7 +609,6 @@
 <translation id="6005538289190791541">建議的密碼</translation>
 <translation id="6036057147555329831">其他 ICU</translation>
 <translation id="6039379616847168523">跳至下一個分頁</translation>
-<translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">更多選項</translation>
 <translation id="604996488070107836">發生不明錯誤，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
@@ -706,7 +705,6 @@
 <translation id="6710213216561001401">上一個</translation>
 <translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
 <translation id="6738867403308150051">下載中…</translation>
-<translation id="6766622839693428701">向下掃就可以閂咗佢。</translation>
 <translation id="6767294960381293877">要共用分頁嘅裝置清單宜家顯示喺畫面下半部。</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6811034713472274749">網頁已準備就緒，可供查看</translation>

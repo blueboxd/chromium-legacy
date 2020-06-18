@@ -1109,7 +1109,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2377588536920405462">Pots desactivar la ubicació desactivant la configuració d'ubicació principal del dispositiu. A la configuració d'ubicació també pots desactivar l'ús de sensors, xarxes mòbils i Wi-Fi per calcular la ubicació.</translation>
 <translation id="2377667304966270281">Errors greus</translation>
 <translation id="237828693408258535">Vols traduir aquesta pàgina?</translation>
-<translation id="2378346380592252785">Actualitza les credencials per a <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Seleccioneu el directori de l'extensió.</translation>
 <translation id="2379281330731083556">Imprimeix des de la finestra de diàleg del sistema… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Pregunta'm abans de fer cap enviament (opció recomanada)</translation>
@@ -2559,7 +2558,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4163560723127662357">Teclat desconegut</translation>
 <translation id="4168015872538332605">Alguns paràmetres de configuració que pertanyen a <ph name="PRIMARY_EMAIL" /> es comparteixen amb l'usuari. Aquests paràmetres només afecten el vostre compte quan s'utilitza l'inici de sessió múltiple.</translation>
 <translation id="4170314459383239649">Esborra en sortir</translation>
-<translation id="4172051516777682613">Mostra sempre</translation>
 <translation id="4175137578744761569">Porpra clar i blanc</translation>
 <translation id="4175737294868205930">Emmagatzematge permanent</translation>
 <translation id="4176463684765177261">Desactivat</translation>
@@ -2989,7 +2987,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="4777943778632837590">Configura els servidors de noms de la xarxa</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Finestra emergent bloquejada}other{# finestres emergents bloquejades}}</translation>
 <translation id="4780321648949301421">Anomena i desa la pàgina...</translation>
 <translation id="4785719467058219317">Estàs utilitzant una clau de seguretat que no està registrada en aquest lloc web</translation>
 <translation id="4788092183367008521">Comprova la connexió a la xarxa i torna-ho a provar.</translation>
@@ -4135,7 +4132,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6242852299490624841">Posa el focus en aquesta pestanya</translation>
 <translation id="6243280677745499710">Establert actualment</translation>
 <translation id="6243774244933267674">El servidor no està disponible</translation>
-<translation id="6246355468475884088">També pots fer que es mostrin aquí les contrasenyes del teu Compte de Google</translation>
 <translation id="6246790815526961700">Penja des del dispositiu</translation>
 <translation id="6247620186971210352">No s'ha trobat cap aplicació</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4509,7 +4505,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6745592621698551453">Actualitza ara</translation>
 <translation id="6746124502594467657">Mou avall</translation>
 <translation id="674632704103926902">Activa la funció de tocar i arrossegar</translation>
-<translation id="6748217015615267851">Renderitzador: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Podeu continuar, però només es restauraran les dades i la configuració sincronitzades. Es perdran totes les dades locals.</translation>
 <translation id="6749006854028927059">Els llocs web no poden fer servir les teves galetes per veure la teva activitat de navegació en diferents llocs web, per exemple, per personalitzar els anuncis. Pot ser que les funcions d'alguns llocs web no funcionin.</translation>
 <translation id="6750757184909117990">Desactiva les funcions per a mòbils</translation>
@@ -5631,7 +5626,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8138082791834443598">Opcional: introduïu informació nova, o actualitzeu la que hi havia, per associar-la amb aquest dispositiu.</translation>
 <translation id="8138217203226449454">Volies canviar el proveïdor de cerca?</translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>
-<translation id="814016597952587568">Es mostren les contrasenyes del teu Compte de Google</translation>
 <translation id="8140778357236808512">Importa un usuari supervisat existent</translation>
 <translation id="8141584439523427891">S'està obrint en un navegador alternatiu</translation>
 <translation id="8141725884565838206">Gestiona les contrasenyes</translation>
@@ -5743,7 +5737,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="827097179112817503">Mostra el botó Pàgina d'inici</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{S'ha suprimit 1 adreça d'interès}other{S'han suprimit # adreces d'interès}}</translation>
 <translation id="8272443605911821513">Per gestionar les extensions, feu clic a Extensions al menú Més eines.</translation>
-<translation id="8274212285504931082">Permet que l'Assistent et mostri informació relacionada amb el que hi ha a la pantalla</translation>
 <translation id="8274332263553132018">Emet el fitxer</translation>
 <translation id="8274924778568117936">No apaguis ni tanquis el dispositiu <ph name="DEVICE_TYPE" /> fins que l'actualització no hagi finalitzat. <ph name="DEVICE_TYPE" /> es reiniciarà un cop finalitzi la instal·lació.</translation>
 <translation id="8275038454117074363">Importa</translation>

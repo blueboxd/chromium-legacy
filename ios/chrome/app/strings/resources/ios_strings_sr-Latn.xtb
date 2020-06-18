@@ -530,6 +530,7 @@ Podaci su šifrovani pomoću pristupne fraze za sinhronizaciju <ph name="TIME" 
 <translation id="7600965453749440009">Nikad ne prevodi <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Blokirani iskačući prozori (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Neispravna pristupna fraza</translation>
+<translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="766891008101699113">Da biste privatno pregledali veb, dodajte novu karticu.</translation>
 <translation id="7671141431838911305">INSTALIRANJE</translation>
@@ -543,7 +544,6 @@ Pošto vašim nalogom upravlja <ph name="HOSTED_DOMAIN" />, Chrome podaci će s
 <translation id="7781829728241885113">Juče</translation>
 <translation id="778855399387580014">Započnite pretragu na novoj Chrome kartici.</translation>
 <translation id="7791543448312431591">Dodaj</translation>
-<translation id="7828557259026017104">Kolačići su datoteke koje prave veb-sajtovi koje posećujete. Sajtovi ih koriste da bi zapamtili vaša podešavanja. Kolačiće treće strane prave drugi sajtovi. Ti sajtovi su vlasnici delova sadržaja koji vidite na posećenoj veb-stranici, poput oglasa ili slika.</translation>
 <translation id="7839985698273989086">Oflajn stranica</translation>
 <translation id="7840771868269352570">Stavke koje ste izabrali će biti uklonjene.</translation>
 <translation id="7856733331829174190">Preuzimanje nije uspelo</translation>

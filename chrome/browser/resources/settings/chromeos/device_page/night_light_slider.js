@@ -320,7 +320,8 @@ Polymer({
     d.setMilliseconds(0);
 
     return d.toLocaleTimeString(
-        [], {hour: '2-digit', minute: '2-digit', hour12: !shouldUse24Hours});
+        navigator.language,
+        {hour: 'numeric', minute: 'numeric', hour12: !shouldUse24Hours});
   },
 
   /**

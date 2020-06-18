@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
+#include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -42,8 +43,11 @@ class PartialResourceRequest {
 
 class PingLocalFrameClient : public EmptyLocalFrameClient {
  public:
+  explicit PingLocalFrameClient(TestingPlatformSupport* platform)
+      : platform_(platform) {}
+
   std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return Platform::Current()->CreateDefaultURLLoaderFactory();
+    return platform_->CreateDefaultURLLoaderFactory();
   }
 
   void DispatchWillSendRequest(ResourceRequest& request) override {
@@ -55,12 +59,14 @@ class PingLocalFrameClient : public EmptyLocalFrameClient {
 
  private:
   PartialResourceRequest ping_request_;
+  TestingPlatformSupport* platform_;
 };
 
 class PingLoaderTest : public PageTestBase {
  public:
   void SetUp() override {
-    client_ = MakeGarbageCollected<PingLocalFrameClient>();
+    client_ = MakeGarbageCollected<PingLocalFrameClient>(
+        platform_.GetTestingPlatformSupport());
     PageTestBase::SetupPageWithClients(nullptr, client_);
   }
 
@@ -95,6 +101,7 @@ class PingLoaderTest : public PageTestBase {
   }
 
  protected:
+  ScopedTestingPlatformSupport<TestingPlatformSupport> platform_;
   Persistent<PingLocalFrameClient> client_;
 };
 

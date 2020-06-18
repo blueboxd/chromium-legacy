@@ -9,7 +9,7 @@
 // <include src="image_loader.js">
 // <include src="image_loader_util.js">
 // <include src="piex_loader.js">
-// <include src="request.js">
+// <include src="image_request_task.js">
 // <include src="scheduler.js">
 // Entry point.
 // <include src="background.js">

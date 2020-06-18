@@ -13,7 +13,7 @@
  * @param {function(!LoadImageResponse)} callback Response handler.
  * @constructor
  */
-function ImageRequest(id, cache, piexLoader, request, callback) {
+function ImageRequestTask(id, cache, piexLoader, request, callback) {
   /**
    * Global ID (concatenated client ID and client request ID).
    * @type {string}
@@ -111,7 +111,7 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
  * @const
  * @type {number}
  */
-ImageRequest.VIDEO_THUMBNAIL_POSITION = 3; // [sec]
+ImageRequestTask.VIDEO_THUMBNAIL_POSITION = 3;  // [sec]
 
 /**
  * The maximum milliseconds to load video. If loading video exceeds the limit,
@@ -119,13 +119,13 @@ ImageRequest.VIDEO_THUMBNAIL_POSITION = 3; // [sec]
  * @const
  * @type {number}
  */
-ImageRequest.MAX_MILLISECONDS_TO_LOAD_VIDEO = 3000;
+ImageRequestTask.MAX_MILLISECONDS_TO_LOAD_VIDEO = 3000;
 
 /**
  * A map which is used to estimate content type from extension.
  * @enum {string}
  */
-ImageRequest.ExtensionContentTypeMap = {
+ImageRequestTask.ExtensionContentTypeMap = {
   gif: 'image/gif',
   png: 'image/png',
   svg: 'image/svg',
@@ -138,7 +138,7 @@ ImageRequest.ExtensionContentTypeMap = {
  * Returns ID of the request.
  * @return {string} Request ID.
  */
-ImageRequest.prototype.getId = function() {
+ImageRequestTask.prototype.getId = function() {
   return this.id_;
 };
 
@@ -146,7 +146,7 @@ ImageRequest.prototype.getId = function() {
  * Returns the client's task ID for the request.
  * @return {number}
  */
-ImageRequest.prototype.getClientTaskId = function() {
+ImageRequestTask.prototype.getClientTaskId = function() {
   // Every incoming request should have been given a taskId.
   assert(this.request_.taskId);
   return this.request_.taskId;
@@ -158,7 +158,7 @@ ImageRequest.prototype.getClientTaskId = function() {
  *
  * @return {number} Priority.
  */
-ImageRequest.prototype.getPriority = function() {
+ImageRequestTask.prototype.getPriority = function() {
   return (this.request_.priority !== undefined) ? this.request_.priority : 2;
 };
 
@@ -169,7 +169,7 @@ ImageRequest.prototype.getPriority = function() {
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback.
  */
-ImageRequest.prototype.loadFromCacheAndProcess = function(
+ImageRequestTask.prototype.loadFromCacheAndProcess = function(
     onSuccess, onFailure) {
   this.loadFromCache_(
       function(width, height, ifd, data) {  // Found in cache.
@@ -185,14 +185,14 @@ ImageRequest.prototype.loadFromCacheAndProcess = function(
  *
  * @param {function()} callback Completion callback.
  */
-ImageRequest.prototype.downloadAndProcess = function(callback) {
+ImageRequestTask.prototype.downloadAndProcess = function(callback) {
   if (this.downloadCallback_) {
     throw new Error('Downloading already started.');
   }
 
   this.downloadCallback_ = callback;
-  this.downloadOriginal_(this.onImageLoad_.bind(this),
-                         this.onImageError_.bind(this));
+  this.downloadOriginal_(
+      this.onImageLoad_.bind(this), this.onImageError_.bind(this));
 };
 
 /**
@@ -203,7 +203,7 @@ ImageRequest.prototype.downloadAndProcess = function(callback) {
  * @param {function()} onFailure Failure callback.
  * @private
  */
-ImageRequest.prototype.loadFromCache_ = function(onSuccess, onFailure) {
+ImageRequestTask.prototype.loadFromCache_ = function(onSuccess, onFailure) {
   const cacheKey = LoadImageRequest.cacheKey(this.request_);
 
   if (!cacheKey) {
@@ -238,7 +238,7 @@ ImageRequest.prototype.loadFromCache_ = function(onSuccess, onFailure) {
  * @param {string} data Image data.
  * @private
  */
-ImageRequest.prototype.saveToCache_ = function(width, height, data) {
+ImageRequestTask.prototype.saveToCache_ = function(width, height, data) {
   const timestamp = this.request_.timestamp;
 
   if (!this.request_.cache || !timestamp) {
@@ -262,7 +262,7 @@ ImageRequest.prototype.saveToCache_ = function(width, height, data) {
  * @param {function()} onFailure Failure callback.
  * @private
  */
-ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
+ImageRequestTask.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   this.image_.onload = function() {
     URL.revokeObjectURL(this.image_.src);
     onSuccess();
@@ -324,12 +324,14 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
 
   // Load video thumbnails by using video tag instead of XHR.
   if (fileType.type === 'video') {
-    this.createVideoThumbnailUrl_(this.request_.url).then(function(url) {
-      this.image_.src = url;
-    }.bind(this)).catch(function(error) {
-      console.error('Video thumbnail error: ', error);
-      onFailure();
-    });
+    this.createVideoThumbnailUrl_(this.request_.url)
+        .then(function(url) {
+          this.image_.src = url;
+        }.bind(this))
+        .catch(function(error) {
+          console.error('Video thumbnail error: ', error);
+          onFailure();
+        });
     return;
   }
 
@@ -353,7 +355,7 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
  *    thumbnail.
  * @private
  */
-ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
+ImageRequestTask.prototype.createVideoThumbnailUrl_ = function(url) {
   const video =
       assertInstanceof(document.createElement('video'), HTMLVideoElement);
   return Promise
@@ -361,13 +363,13 @@ ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
         new Promise((resolve, reject) => {
           video.addEventListener('canplay', resolve);
           video.addEventListener('error', reject);
-          video.currentTime = ImageRequest.VIDEO_THUMBNAIL_POSITION;
+          video.currentTime = ImageRequestTask.VIDEO_THUMBNAIL_POSITION;
           video.preload = 'auto';
           video.src = url;
           video.load();
         }),
         new Promise((resolve) => {
-          setTimeout(resolve, ImageRequest.MAX_MILLISECONDS_TO_LOAD_VIDEO);
+          setTimeout(resolve, ImageRequestTask.MAX_MILLISECONDS_TO_LOAD_VIDEO);
         }).then(() => {
           // If we don't receive 'canplay' event after 3 seconds have passed for
           // some reason (e.g. unseekable video), we give up generating
@@ -396,7 +398,7 @@ ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
  *     type and the fetched data.
  * @param {function()} onFailure Failure callback.
  */
-ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
+ImageRequestTask.prototype.load = function(url, onSuccess, onFailure) {
   this.aborted_ = false;
 
   // Do not call any callbacks when aborting.
@@ -405,7 +407,8 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
         // When content type is not available, try to estimate it from url.
         if (!contentType) {
           contentType =
-              ImageRequest.ExtensionContentTypeMap[this.extractExtension_(url)];
+              ImageRequestTask
+                  .ExtensionContentTypeMap[this.extractExtension_(url)];
         }
 
         if (!this.aborted_) {
@@ -422,7 +425,8 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
   // The query parameter is workaround for crbug.com/379678, which forces the
   // browser to obtain the latest contents of the image.
   const noCacheUrl = url + '?nocache=' + Date.now();
-  this.xhr_ = ImageRequest.load_(noCacheUrl, onMaybeSuccess, onMaybeFailure);
+  this.xhr_ =
+      ImageRequestTask.load_(noCacheUrl, onMaybeSuccess, onMaybeFailure);
 };
 
 /**
@@ -430,7 +434,7 @@ ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
  * @param {string} url Url.
  * @return {string} Extracted extension, e.g. png.
  */
-ImageRequest.prototype.extractExtension_ = function(url) {
+ImageRequestTask.prototype.extractExtension_ = function(url) {
   const result = (/\.([a-zA-Z]+)$/i).exec(url);
   return result ? result[1] : '';
 };
@@ -446,7 +450,7 @@ ImageRequest.prototype.extractExtension_ = function(url) {
  * @return {XMLHttpRequest} XHR instance.
  * @private
  */
-ImageRequest.load_ = function(url, onSuccess, onFailure) {
+ImageRequestTask.load_ = function(url, onSuccess, onFailure) {
   const xhr = new XMLHttpRequest();
   xhr.responseType = 'blob';
 
@@ -481,7 +485,7 @@ ImageRequest.load_ = function(url, onSuccess, onFailure) {
  * @param {boolean} imageChanged Whether the image has been changed.
  * @private
  */
-ImageRequest.prototype.sendImage_ = function(imageChanged) {
+ImageRequestTask.prototype.sendImage_ = function(imageChanged) {
   let width;
   let height;
   let data;
@@ -525,7 +529,7 @@ ImageRequest.prototype.sendImage_ = function(imageChanged) {
  * @param {string} data Image data.
  * @private
  */
-ImageRequest.prototype.sendImageData_ = function(width, height, data) {
+ImageRequestTask.prototype.sendImageData_ = function(width, height, data) {
   const result = {width, height, ifd: this.ifd_, data};
   this.sendResponse_(new LoadImageResponse(
       LoadImageResponseStatus.SUCCESS, this.getClientTaskId(), result));
@@ -536,7 +540,7 @@ ImageRequest.prototype.sendImageData_ = function(width, height, data) {
  * and finalizes the request process.
  * @private
  */
-ImageRequest.prototype.onImageLoad_ = function() {
+ImageRequestTask.prototype.onImageLoad_ = function() {
   // Perform processing if the url is not a data url, or if there are some
   // operations requested.
   if (!(this.request_.url.match(/^data/) ||
@@ -559,7 +563,7 @@ ImageRequest.prototype.onImageLoad_ = function() {
  * finalizes the request process.
  * @private
  */
-ImageRequest.prototype.onImageError_ = function() {
+ImageRequestTask.prototype.onImageError_ = function() {
   this.sendResponse_(new LoadImageResponse(
       LoadImageResponseStatus.ERROR, this.getClientTaskId()));
   this.cleanup_();
@@ -569,7 +573,7 @@ ImageRequest.prototype.onImageError_ = function() {
 /**
  * Cancels the request.
  */
-ImageRequest.prototype.cancel = function() {
+ImageRequestTask.prototype.cancel = function() {
   this.cleanup_();
 
   // If downloading has started, then call the callback.
@@ -582,7 +586,7 @@ ImageRequest.prototype.cancel = function() {
  * Cleans up memory used by this request.
  * @private
  */
-ImageRequest.prototype.cleanup_ = function() {
+ImageRequestTask.prototype.cleanup_ = function() {
   this.image_.onerror = function() {};
   this.image_.onload = function() {};
 

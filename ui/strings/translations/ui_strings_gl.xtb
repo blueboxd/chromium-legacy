@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Pechar</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="6129953537138746214">Espazo</translation>
+<translation id="6134259848159370930">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración e na Web.</translation>
 <translation id="6135826906199951471">Supr</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Despregar todas as aplicacións</translation>
 <translation id="6165508094623778733">Máis información</translation>
+<translation id="6166852626429024716">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración, na Web…</translation>
 <translation id="6264365405983206840">Seleccionar &amp;todo</translation>
 <translation id="6351032674660237738">SUXESTIÓNS DE APLICACIÓNS</translation>
 <translation id="6364916375976753737">Desprazar cara á esquerda</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Ficheiro <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">O estante móstrase sempre</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/s</translation>
+<translation id="8685326675965865247">Realiza buscas no teu dispositivo, nas aplicacións, nas opcións de configuración e na Web. Utiliza as teclas das frechas para navegar polas aplicacións.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> máis</translation>
 <translation id="8730621377337864115">Feito</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>

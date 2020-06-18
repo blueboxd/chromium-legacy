@@ -22,13 +22,9 @@ class TestDownloadShelf : public DownloadShelf {
   // DownloadShelf:
   bool IsShowing() const override;
   bool IsClosing() const override;
-  Browser* browser() const override;
 
   // Return |true| if a download was added to this shelf.
   bool did_add_download() const { return did_add_download_; }
-
-  // Set a profile.
-  void set_profile(Profile* profile) { profile_ = profile; }
 
  protected:
   void DoAddDownload(DownloadUIModelPtr download) override;
@@ -37,12 +33,10 @@ class TestDownloadShelf : public DownloadShelf {
   void DoHide() override;
   void DoUnhide() override;
   base::TimeDelta GetTransientDownloadShowDelay() override;
-  Profile* profile() const override;
 
  private:
   bool is_showing_;
   bool did_add_download_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDownloadShelf);
 };

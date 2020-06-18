@@ -32,6 +32,8 @@ class NGFragment;
 struct NGPreviousInflowPosition {
   LayoutUnit logical_block_offset;
   NGMarginStrut margin_strut;
+  // > 0: Block-end annotation space of the previous line
+  // < 0: Block-end annotation overflow of the previous line
   LayoutUnit block_end_annotation_space;
   bool self_collapsing_child_had_clearance;
 };

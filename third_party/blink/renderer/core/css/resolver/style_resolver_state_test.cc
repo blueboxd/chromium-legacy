@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/custom_property.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -44,6 +45,22 @@ TEST_F(StyleResolverStateTest, Dependencies) {
   EXPECT_TRUE(state.Dependencies().Contains(right.GetCSSPropertyName()));
   EXPECT_TRUE(state.Dependencies().Contains(incomparable.GetCSSPropertyName()));
   EXPECT_TRUE(state.HasIncomparableDependency());
+}
+
+TEST_F(StyleResolverStateTest, MaxDependencies) {
+  StyleResolverState state(GetDocument(), *GetDocument().body(), nullptr,
+                           nullptr);
+
+  EXPECT_TRUE(state.HasValidDependencies());
+
+  for (size_t i = 0; i < StyleResolverState::kMaxDependencies; ++i) {
+    auto name = AtomicString(String::Format("--v%zu", i));
+    state.MarkDependency(CustomProperty(name, GetDocument()));
+    EXPECT_TRUE(state.HasValidDependencies());
+  }
+
+  state.MarkDependency(CustomProperty("--exceeds-limit", GetDocument()));
+  EXPECT_FALSE(state.HasValidDependencies());
 }
 
 }  // namespace blink

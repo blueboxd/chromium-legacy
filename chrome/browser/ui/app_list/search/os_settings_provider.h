@@ -80,7 +80,32 @@ class OsSettingsProvider : public SearchProvider,
       const base::string16& query,
       std::vector<chromeos::settings::mojom::SearchResultPtr> results);
 
+  // Given a vector of results from the SearchHandler, filters them down to a
+  // display-ready vector. It:
+  // - returns at most |kMaxShownResults| results
+  // - removes results with duplicate IDs
+  // - removes results matching alternate text unless they meet extra
+  // requirements
+  //
+  // The SearchHandler's vector is ranked high-to-low with this logic:
+  // - compares SearchResultDefaultRank,
+  // - if equal, compares relevance scores
+  // - if equal, compares SearchResultType, favoring sections over subpages over
+  //   settings
+  // - if equal, picks arbitrarily
+  //
+  // So simply iterating down the vector while being careful about duplicates
+  // and checking for alternate matches is enough.
+  std::vector<chromeos::settings::mojom::SearchResultPtr> FilterResults(
+      const base::string16& query,
+      const std::vector<chromeos::settings::mojom::SearchResultPtr>& results);
+
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
+
+  // Scoring and filtering parameters controlled from Finch.
+  size_t min_query_length_ = 1u;
+  size_t min_query_length_for_alternates_ = 4u;
+  float min_score_for_alternates_ = 0.35f;
 
   Profile* const profile_;
   chromeos::settings::SearchHandler* const search_handler_;

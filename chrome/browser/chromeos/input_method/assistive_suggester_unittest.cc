@@ -35,15 +35,9 @@ TEST_F(AssistiveSuggesterTest,
        EmojiSuggestionPrefFalseFeatureFlagTrue_AssitiveFeatureEnabledFalse) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      // enabled_features
-      {chromeos::features::kEmojiSuggestAddition},
-      // disabled_features
-      {chromeos::features::kAssistPersonalInfo});
-
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kAssistiveInputFeatureSettings);
-  update->SetPath(std::string(kEmojiSuggestAdditionEnabledPrefName),
-                  base::Value(false));
+      /*enabled_features=*/{chromeos::features::kEmojiSuggestAddition},
+      /*disabled_features=*/{chromeos::features::kAssistPersonalInfo});
+  profile_->GetPrefs()->SetBoolean(prefs::kEmojiSuggestionEnabled, false);
 
   EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }
@@ -52,15 +46,9 @@ TEST_F(AssistiveSuggesterTest,
        EmojiSuggestionPrefTrueFeatureFlagTrue_AssitiveFeatureEnabledTrue) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
-      // enabled_features
-      {chromeos::features::kEmojiSuggestAddition},
-      // disabled_features
-      {chromeos::features::kAssistPersonalInfo});
-
-  DictionaryPrefUpdate update(profile_->GetPrefs(),
-                              prefs::kAssistiveInputFeatureSettings);
-  update->SetPath(std::string(kEmojiSuggestAdditionEnabledPrefName),
-                  base::Value(true));
+      /*enabled_features=*/{chromeos::features::kEmojiSuggestAddition},
+      /*disabled_features=*/{chromeos::features::kAssistPersonalInfo});
+  profile_->GetPrefs()->SetBoolean(prefs::kEmojiSuggestionEnabled, true);
 
   EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }

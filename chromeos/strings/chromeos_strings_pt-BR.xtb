@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-BR">
+<translation id="1018656279737460067">Cancelado</translation>
 <translation id="1195447618553298278">Erro desconhecido.</translation>
 <translation id="1468664791493211953">Ofertas</translation>
 <translation id="1482734542997480527">O domínio <ph name="ENROLLMENT_DOMAIN" /> gerencia este dispositivo e pode monitorar sua atividade.</translation>
 <translation id="150962533380566081">PUK inválida.</translation>
 <translation id="1510238584712386396">Iniciador</translation>
+<translation id="1644574205037202324">Histórico</translation>
 <translation id="1734367976349034509">Este dispositivo é gerenciado por uma empresa</translation>
 <translation id="1905710495812624430">O número máximo de tentativas permitidas foi excedido.</translation>
 <translation id="1930797645656624981">Serviço de método de entrada do Chrome OS</translation>

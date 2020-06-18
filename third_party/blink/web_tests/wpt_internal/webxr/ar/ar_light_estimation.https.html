@@ -76,20 +76,27 @@ function verifyReflectionCubeMap(session, lightProbe) {
 // Verifies the structure of |XRFrame| (as it relates to light estimation)
 // for a session that's expected to suppot light estimation.
 // Defined in 'third_party/blink/renderer/modules/xr/xr_frame.idl'
-function verifyXRLightEstimateExists(t, resolve, count, session, frame, lightProbe) {
+function verifyXRLightEstimateExists(t, resolve, count, session, frame, lightProbe, localSpace) {
   t.step(() => {
     assert_not_equals(count, 0, "Did not get light estimate with a reasonable number of frames");
     assert_defined(frame.getLightEstimate, "getLightEstimate was not defined on XRFrame");
 
     const lightEstimate = frame.getLightEstimate(lightProbe);
+    const lightProbePose = frame.getPose(lightProbe.probeSpace, localSpace);
+
     if (lightEstimate === null) {
       // Check if we get a lighting estimate next frame
       session.requestAnimationFrame((time, frame) => {
-        verifyXRLightEstimateExists(t, resolve, count - 1, session, frame, lightProbe);
+        verifyXRLightEstimateExists(t, resolve, count - 1, session, frame, lightProbe, localSpace);
       });
     } else {
       verifyXRLightEstimate(lightEstimate);
       verifyReflectionCubeMap(session, lightProbe);
+
+      // If the light probe is providing valid results it should also have a
+      // valid space.
+      assert_not_equals(lightProbePose, null);
+
       resolve();
     }
   });
@@ -99,6 +106,9 @@ function verifyXRLightEstimateExists(t, resolve, count, session, frame, lightPro
 // Defined in 'third_party/blink/renderer/modules/xr/xr_light_probe.idl'
 function verifyXRLightProbe(lightProbe) {
   assert_true(lightProbe instanceof XRLightProbe);
+
+  assert_true(lightProbe.probeSpace instanceof XRSpace);
+  assert_not_equals(lightProbe.probeSpace, null);
 }
 
 const lightingInformationExistsName = "Ensures lighting estimation feature works when enabled";
@@ -107,13 +117,14 @@ function lightingInformationExists(session, fakeDeviceController, t, sessionObje
     assert_defined(session.requestLightProbe, "requestLightProbe was not defined on XRSession");
   });
 
-  return new Promise((resolve, reject) => {
-    session.requestLightProbe().then((lightProbe) => {
-      verifyXRLightProbe(lightProbe);
+  return new Promise(async (resolve, reject) => {
+    const lightProbe = await session.requestLightProbe();
+    verifyXRLightProbe(lightProbe);
 
-      session.requestAnimationFrame((time, frame) => {
-        verifyXRLightEstimateExists(t, resolve, 10, session, frame, lightProbe);
-      });
+    const localSpace = await session.requestReferenceSpace("local");
+
+    session.requestAnimationFrame((time, frame) => {
+      verifyXRLightEstimateExists(t, resolve, 10, session, frame, lightProbe, localSpace);
     });
   });
 }

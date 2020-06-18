@@ -15,6 +15,10 @@ const char kAssistiveInputFeatureSettings[] =
 const char kAssistPersonalInfoEnabled[] =
     "assistive_input.personal_info_enabled";
 
+// A boolean pref of whether emoji suggestion addition is enabled.
+const char kEmojiSuggestionEnabled[] =
+    "assistive_input.emoji_suggestion_enabled";
+
 // A dictionary pref to hold the mute setting for all the currently known
 // audio devices.
 const char kAudioDevicesMute[] = "settings.audio.devices.mute";

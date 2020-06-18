@@ -13,6 +13,14 @@
 #include "content/public/common/content_constants.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/load_flags.h"
+#include "third_party/blink/public/common/client_hints/client_hints.h"
+
+namespace {
+
+const char kAllowedUAClientHint[] = "sec-ch-ua";
+const char kAllowedUAMobileClientHint[] = "sec-ch-ua-mobile";
+
+}  // namespace
 
 IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::InProgressRequest(
     IsolatedPrerenderProxyingURLLoaderFactory* parent_factory,
@@ -234,6 +242,18 @@ void IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult(
   // Ensures that the Accept-Language string is set to the Isolated Network
   // Context's default.
   isolated_request.headers.RemoveHeader("Accept-Language");
+
+  // Strip out all Client Hints.
+  for (size_t i = 0; i < blink::kClientHintsMappingsCount; ++i) {
+    // UA Client Hint and UA Mobile are ok to send.
+    if (std::string(blink::kClientHintsHeaderMapping[i]) ==
+            kAllowedUAClientHint ||
+        std::string(blink::kClientHintsHeaderMapping[i]) ==
+            kAllowedUAMobileClientHint) {
+      continue;
+    }
+    isolated_request.headers.RemoveHeader(blink::kClientHintsHeaderMapping[i]);
+  }
 
   // If this subresource is eligible for prefetching then it can be cached. If
   // not, it must still be put on the wire to avoid privacy attacks but should

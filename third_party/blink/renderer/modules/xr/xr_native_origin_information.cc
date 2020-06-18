@@ -7,6 +7,7 @@
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
 #include "third_party/blink/renderer/modules/xr/xr_anchor.h"
 #include "third_party/blink/renderer/modules/xr/xr_input_source.h"
+#include "third_party/blink/renderer/modules/xr/xr_light_probe.h"
 #include "third_party/blink/renderer/modules/xr/xr_plane.h"
 #include "third_party/blink/renderer/modules/xr/xr_reference_space.h"
 
@@ -40,6 +41,16 @@ device::mojom::blink::XRNativeOriginInformation Create(const XRPlane* plane) {
   result.set_plane_id(plane->id());
 
   return result;
+}
+
+device::mojom::blink::XRNativeOriginInformation Create(
+    const XRLightProbe* light_probe) {
+  DCHECK(light_probe);
+
+  // TODO: We'll want these to correspond to an actual, independent space
+  // eventually, but at the moment it's sufficient for the ARCore implementation
+  // to have it be equivalent to the local reference space.
+  return Create(device::mojom::XRReferenceSpaceType::kLocal);
 }
 
 device::mojom::blink::XRNativeOriginInformation Create(

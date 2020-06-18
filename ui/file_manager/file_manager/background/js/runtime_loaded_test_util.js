@@ -41,6 +41,17 @@ let ElementObject;
 let KeyModifiers;
 
 /**
+ * @typedef {{
+ *   fromCache: number,
+ *   fullFetch: number,
+ *   invalidateCount: number,
+ *   clearCacheCount: number,
+ *   clearAllCount: number,
+ * }}
+ */
+let MetadataStatsType;
+
+/**
  * Extract the information of the given element.
  * @param {Element} element Element to be extracted.
  * @param {Window} contentWindow Window to be tested.

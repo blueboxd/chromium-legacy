@@ -2003,6 +2003,13 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
           CompositingReason::kDirectReasonsForScrollTranslationProperty;
       state.rendering_context_id = context_.current.rendering_context_id;
       state.scroll = properties_->Scroll();
+      // If scroll and transform are both present, we should use the
+      // transform property tree node to determine visibility of the
+      // scrolling contents.
+      if (object_.StyleRef().HasTransform() &&
+          object_.StyleRef().BackfaceVisibility() ==
+              EBackfaceVisibility::kHidden)
+        state.flags.delegates_to_parent_for_backface = true;
       auto effective_change_type = properties_->UpdateScrollTranslation(
           *context_.current.transform, std::move(state));
       if (effective_change_type ==

@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="1018656279737460067">Megszakítva</translation>
 <translation id="1195447618553298278">Ismeretlen hiba.</translation>
 <translation id="1468664791493211953">Ajánlatok</translation>
 <translation id="1482734542997480527">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt az eszközt, és előfordulhat, hogy megfigyeli az Ön tevékenységeit.</translation>
 <translation id="150962533380566081">Érvénytelen PUK-kód.</translation>
 <translation id="1510238584712386396">Indító</translation>
+<translation id="1644574205037202324">Előzmények</translation>
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
 <translation id="1905710495812624430">Elérte az engedélyezett kísérletek maximális számát.</translation>
 <translation id="1930797645656624981">Chrome OS beviteli módszere szolgáltatás</translation>

@@ -5,7 +5,6 @@
 #include "components/query_tiles/internal/stats.h"
 
 #include "base/metrics/histogram_functions.h"
-#include "base/metrics/histogram_macros.h"
 
 namespace query_tiles {
 namespace stats {
@@ -27,8 +26,11 @@ const char kFirstFlowDurationHistogram[] =
 
 const char kFetcherStartHourHistogram[] = "Search.QueryTiles.Fetcher.Start";
 
+const char kPrunedGroupReasonHistogram[] =
+    "Search.QueryTiles.Group.PruneReason";
+
 void RecordImageLoading(ImagePreloadingEvent event) {
-  UMA_HISTOGRAM_ENUMERATION(kImagePreloadingHistogram, event);
+  base::UmaHistogramEnumeration(kImagePreloadingHistogram, event);
 }
 
 void RecordTileFetcherResponseCode(int response_code) {
@@ -40,19 +42,23 @@ void RecordTileFetcherNetErrorCode(int error_code) {
 }
 
 void RecordTileRequestStatus(TileInfoRequestStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(kRequestStatusHistogram, status);
+  base::UmaHistogramEnumeration(kRequestStatusHistogram, status);
 }
 
 void RecordTileGroupStatus(TileGroupStatus status) {
-  UMA_HISTOGRAM_ENUMERATION(kGroupStatusHistogram, status);
+  base::UmaHistogramEnumeration(kGroupStatusHistogram, status);
 }
 
 void RecordFirstFetchFlowDuration(int hours) {
-  UMA_HISTOGRAM_COUNTS_100(kFirstFlowDurationHistogram, hours);
+  base::UmaHistogramCounts100(kFirstFlowDurationHistogram, hours);
 }
 
 void RecordExplodeOnFetchStarted(int explode_hour) {
-  UMA_HISTOGRAM_EXACT_LINEAR(kFetcherStartHourHistogram, explode_hour, 24);
+  base::UmaHistogramExactLinear(kFetcherStartHourHistogram, explode_hour, 24);
+}
+
+void RecordGroupPruned(PrunedGroupReason reason) {
+  base::UmaHistogramEnumeration(kPrunedGroupReasonHistogram, reason);
 }
 
 }  // namespace stats

@@ -52,5 +52,13 @@ TEST(QueryTilesStatsTest, RecordExplodeOnFetchStarted) {
   tester.ExpectBucketCount(stats::kFetcherStartHourHistogram, 12, 1);
 }
 
+TEST(QueryTilesStatsTest, RecordGroupPruned) {
+  base::HistogramTester tester;
+  stats::RecordGroupPruned(stats::PrunedGroupReason::kExpired);
+  stats::RecordGroupPruned(stats::PrunedGroupReason::kInvalidLocale);
+  tester.ExpectBucketCount(stats::kPrunedGroupReasonHistogram, 0, 1);
+  tester.ExpectBucketCount(stats::kPrunedGroupReasonHistogram, 1, 1);
+}
+
 }  // namespace
 }  // namespace query_tiles

@@ -24,7 +24,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/download_manager.h"
-#include "content/public/browser/page_navigator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
@@ -63,7 +62,7 @@ int CenterPosition(int size, int target_size) {
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : AnimationDelegateViews(this),
-      browser_(browser),
+      DownloadShelf(browser, browser->profile()),
       new_item_animation_(this),
       shelf_animation_(this),
       parent_(parent),
@@ -163,8 +162,7 @@ void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
   // For the normal theme, just use the default button bg color.
   base::Optional<SkColor> bg_color;
-  if (!ThemeServiceFactory::GetForProfile(browser_->profile())
-          ->UsingDefaultTheme()) {
+  if (!ThemeServiceFactory::GetForProfile(profile())->UsingDefaultTheme()) {
     // For custom themes, we have to make up a background color for the
     // button. Use a slight tint of the shelf background.
     bg_color = color_utils::BlendTowardMaxContrast(
@@ -190,10 +188,6 @@ void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
 void DownloadShelfView::OpenedDownload() {
   if (CanAutoClose())
     mouse_watcher_.Start(GetWidget()->GetNativeWindow());
-}
-
-content::PageNavigator* DownloadShelfView::GetNavigator() {
-  return browser_;
 }
 
 gfx::Size DownloadShelfView::CalculatePreferredSize() const {
@@ -339,7 +333,7 @@ void DownloadShelfView::ButtonPressed(
   if (button == close_button_)
     Close();
   else if (button == show_all_view_)
-    chrome::ShowDownloads(browser_);
+    chrome::ShowDownloads(browser());
   else
     NOTREACHED();
 }
@@ -372,10 +366,6 @@ void DownloadShelfView::DoUnhide() {
   SetVisible(true);
   parent_->ToolbarSizeChanged(true);
   parent_->SetDownloadShelfVisible(true);
-}
-
-Browser* DownloadShelfView::browser() const {
-  return browser_;
 }
 
 void DownloadShelfView::Closed() {

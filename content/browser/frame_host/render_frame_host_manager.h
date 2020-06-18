@@ -606,12 +606,15 @@ class CONTENT_EXPORT RenderFrameHostManager
       ui::PageTransition transition,
       bool is_failure,
       bool is_reload,
+      bool is_same_document,
       bool cross_origin_opener_policy_mismatch,
-      bool was_server_redirect);
+      bool was_server_redirect,
+      bool should_replace_current_entry);
 
   ShouldSwapBrowsingInstance ShouldProactivelySwapBrowsingInstance(
-      RenderFrameHostImpl* current_rfh,
-      const GURL& destination_url);
+      const GURL& destination_url,
+      bool is_reload,
+      bool should_replace_current_entry);
 
   // Returns the SiteInstance to use for the navigation.
   scoped_refptr<SiteInstance> GetSiteInstanceForNavigation(
@@ -622,10 +625,12 @@ class CONTENT_EXPORT RenderFrameHostManager
       ui::PageTransition transition,
       bool is_failure,
       bool is_reload,
+      bool is_same_document,
       bool dest_is_restore,
       bool dest_is_view_source_mode,
       bool was_server_redirect,
-      bool cross_origin_opener_policy_mismatch);
+      bool cross_origin_opener_policy_mismatch,
+      bool should_replace_current_entry);
 
   // Returns a descriptor of the appropriate SiteInstance object for the given
   // |dest_url|, possibly reusing the current, source or destination

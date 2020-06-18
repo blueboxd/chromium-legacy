@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gl">
+<translation id="1018656279737460067">Cancelados</translation>
 <translation id="1195447618553298278">Erro descoñecido.</translation>
 <translation id="1468664791493211953">Ofertas</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> xestiona este dispositivo e pode supervisar a túa actividade.</translation>
 <translation id="150962533380566081">O PUK non é válido.</translation>
 <translation id="1510238584712386396">Menú de aplicacións</translation>
+<translation id="1644574205037202324">Historial</translation>
 <translation id="1734367976349034509">Este dispositivo xestiónao unha empresa</translation>
 <translation id="1905710495812624430">Superouse o número máximo de intentos.</translation>
 <translation id="1930797645656624981">Servizo do método de introdución de texto de Chrome OS</translation>

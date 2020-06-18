@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-HK">
-<translation id="1001307489511021749">當你使用 Google 帳戶登入後，所有 Chrome 作業系統裝置上的應用程式、設定和其他自訂項目都會保持同步。</translation>
+<translation id="1001307489511021749">您的應用程式、設定和其他自訂設定將會同步至所有您使用 Google 帳戶登入的 Chrome 作業系統裝置。</translation>
 <translation id="1003088604756913841">在 <ph name="APP" />的新視窗中開啟連結</translation>
 <translation id="1004218526896219317">網站存取權</translation>
 <translation id="1005274289863221750">使用您的麥克風和相機</translation>
@@ -528,7 +528,7 @@
 <translation id="164936512206786300">取消配對藍牙裝置</translation>
 <translation id="1650371550981945235">顯示輸入選項</translation>
 <translation id="1651008383952180276">您必須輸入兩次相同的密碼短語</translation>
-<translation id="1652326691684645429">啟用鄰近分享功能</translation>
+<translation id="1652326691684645429">啟用「咫尺共享」功能</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{將打印機新增至「Google 雲端打印」，即可隨時隨地列印。}other{將 # 部打印機新增至「Google 雲端打印」，即可隨時隨地列印。}}</translation>
 <translation id="1656528038316521561">背景透明度</translation>
 <translation id="1657406563541664238">將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 <ph name="PRODUCT_NAME" /> 更臻完美</translation>
@@ -1109,7 +1109,6 @@
 <translation id="2377588536920405462">關閉裝置的主要位置資訊設定，即可關閉定位服務。您也可以在位置資訊設定中關閉使用 Wi‑Fi、流動網絡和感應器確定位置的功能。</translation>
 <translation id="2377667304966270281">嚴重錯誤</translation>
 <translation id="237828693408258535">要翻譯此網頁嗎？</translation>
-<translation id="2378346380592252785">更新 <ph name="SHARE_PATH" /> 的憑證。</translation>
 <translation id="2378982052244864789">選取擴充功能目錄。</translation>
 <translation id="2379281330731083556">使用系統對話方塊列印…<ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">傳送前先詢問 (建議)</translation>
@@ -1640,7 +1639,7 @@
 <translation id="3022978424994383087">無法辨識語音。</translation>
 <translation id="3023464535986383522">選取以朗讀</translation>
 <translation id="3024374909719388945">使用 24 小時制時鐘</translation>
-<translation id="3027296729579831126">啟用鄰近分享功能</translation>
+<translation id="3027296729579831126">開啟「咫尺共享」功能</translation>
 <translation id="3029466929721441205">顯示檔案櫃中的觸控筆工具</translation>
 <translation id="3031417829280473749">特務 X</translation>
 <translation id="3031557471081358569">選取要匯入的項目：</translation>
@@ -1741,7 +1740,7 @@
 <translation id="3162853326462195145">學校帳戶</translation>
 <translation id="3162899666601560689">網站可使用 Cookie 來改善瀏覽體驗，例如讓您保持登入狀態或記住購物車中的商品</translation>
 <translation id="3163201441334626963">來自供應商 <ph name="VENDOR_ID" /> 的不明產品 <ph name="PRODUCT_ID" /></translation>
-<translation id="3163254451837720982">下列服務可協助確保資料安全無虞，你隨時可以停用這些功能。</translation>
+<translation id="3163254451837720982">下列服務可協助確保資料安全無虞，您可隨時停用這些功能。</translation>
 <translation id="3164329792803560526">正在將此分頁與 <ph name="APP_NAME" /> 共用</translation>
 <translation id="3165390001037658081">部分流動網絡供應商可能會封鎖此功能。</translation>
 <translation id="316652501498554287">G Suite 教育版帳戶</translation>
@@ -2560,7 +2559,6 @@
 <translation id="4163560723127662357">未知的鍵盤</translation>
 <translation id="4168015872538332605"><ph name="PRIMARY_EMAIL" /> 的部分設定已與您共用。不過只有使用多重登入時，這些設定才會影響您的帳戶。</translation>
 <translation id="4170314459383239649">退出時清除</translation>
-<translation id="4172051516777682613">永遠顯示</translation>
 <translation id="4175137578744761569">淺紫色和白色</translation>
 <translation id="4175737294868205930">永久儲存空間</translation>
 <translation id="4176463684765177261">已停用</translation>
@@ -2927,7 +2925,7 @@
 <translation id="4673442866648850031">拔出觸控筆後開啟觸控筆工具</translation>
 <translation id="4677772697204437347">GPU 記憶體使用量</translation>
 <translation id="4680105648806843642">此網頁已設為靜音</translation>
-<translation id="4681453295291708042">停用鄰近分享功能</translation>
+<translation id="4681453295291708042">停用「咫尺共享」功能</translation>
 <translation id="4681930562518940301">在新分頁中開啟原始圖片(&amp;I)</translation>
 <translation id="4682551433947286597">登入螢幕上顯示的桌布。</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (預設)</translation>
@@ -2990,7 +2988,6 @@
 <translation id="4777943778632837590">設定網絡域名伺服器</translation>
 <translation id="4779083564647765204">縮放</translation>
 <translation id="4779136857077979611">飯糰</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{已封鎖彈出式視窗}other{已封鎖 # 個彈出式視窗}}</translation>
 <translation id="4780321648949301421">另存網頁…</translation>
 <translation id="4785719467058219317">您目前使用的安全密鑰並未在此網站註冊</translation>
 <translation id="4788092183367008521">請檢查你的網絡連線，然後再試一次。</translation>
@@ -3739,7 +3736,7 @@
 <translation id="5739017626473506901">需要登入才能為 <ph name="USER_NAME" /> 新增學校帳戶</translation>
 <translation id="5739235828260127894">正在等待驗證。<ph name="LINK_BEGIN" />瞭解詳情<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">非常大</translation>
-<translation id="5740328398383587084">鄰近分享</translation>
+<translation id="5740328398383587084">咫尺共享</translation>
 <translation id="574104302965107104">螢幕鏡像</translation>
 <translation id="574209121243317957">音調</translation>
 <translation id="5746169159649715125">另存為 PDF</translation>
@@ -4134,7 +4131,6 @@
 <translation id="6242852299490624841">將焦點移至此分頁</translation>
 <translation id="6243280677745499710">目前設定的桌布</translation>
 <translation id="6243774244933267674">無法與伺服器連線</translation>
-<translation id="6246355468475884088">您亦可在此顯示 Google 帳戶的密碼</translation>
 <translation id="6246790815526961700">從裝置上載</translation>
 <translation id="6247620186971210352">找不到應用程式</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4508,7 +4504,6 @@
 <translation id="6745592621698551453">立即更新</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="674632704103926902">啟用輕觸拖曳</translation>
-<translation id="6748217015615267851">轉譯器：<ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">您可以繼續，但是只有您的同步資料和設定會被還原。所有本機資料將會遺失。</translation>
 <translation id="6749006854028927059">網站不能使用 Cookie 查看您在其他網站的瀏覽活動，例如放送個人化廣告。 有些網站的功能可能會無法正常運作。</translation>
 <translation id="6750757184909117990">停用流動網絡</translation>
@@ -4677,7 +4672,7 @@
 <translation id="6965978654500191972">裝置</translation>
 <translation id="696780070563539690">網站不可使用 Cookie 查看您在各網站的瀏覽活動，例如放送個人化廣告</translation>
 <translation id="6968288415730398122">如要設定螢幕鎖定功能，請輸入您的密碼</translation>
-<translation id="6969047215179982698">停用鄰近分享功能</translation>
+<translation id="6969047215179982698">關閉「咫尺共享」功能</translation>
 <translation id="6970480684834282392">啟動類型</translation>
 <translation id="6970856801391541997">列印特定網頁</translation>
 <translation id="6972180789171089114">音訊/影片</translation>
@@ -4847,7 +4842,7 @@
 <translation id="7171259390164035663">不要註冊</translation>
 <translation id="7171559745792467651">安裝其他裝置上的應用程式</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{在新群組中加入分頁}other{在新群組中加入分頁}}</translation>
-<translation id="7173852404388239669">打造專屬的「<ph name="DEVICE_TYPE" />」使用體驗</translation>
+<translation id="7173852404388239669">設定個人化的 <ph name="DEVICE_TYPE" /></translation>
 <translation id="7174199383876220879">新功能！控制音樂、影片及其他內容。</translation>
 <translation id="7175037578838465313">設定「<ph name="NAME" />」</translation>
 <translation id="7175353351958621980">載入來源：</translation>
@@ -5630,7 +5625,6 @@
 <translation id="8138082791834443598">可選 — 輸入新資訊，或更新要與此裝置相關的資訊。</translation>
 <translation id="8138217203226449454">您要變更搜尋服務供應商嗎？</translation>
 <translation id="813913629614996137">正在初始化…</translation>
-<translation id="814016597952587568">顯示 Google 帳戶的密碼</translation>
 <translation id="8140778357236808512">匯入目前受監管的使用者</translation>
 <translation id="8141584439523427891">正在替代瀏覽器中開啟</translation>
 <translation id="8141725884565838206">管理您的密碼</translation>
@@ -5742,7 +5736,6 @@
 <translation id="827097179112817503">顯示 [主頁] 按鈕</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{已刪除 1 個書籤}other{已刪除 # 個書籤}}</translation>
 <translation id="8272443605911821513">如要管理擴充功能，只需按一下 [其他工具] 選單裡的 [擴充功能] 即可。</translation>
-<translation id="8274212285504931082">允許「Google 助理」根據畫面上的內容顯示相關資料</translation>
 <translation id="8274332263553132018">投放檔案</translation>
 <translation id="8274924778568117936">在更新完成前，請勿關閉 <ph name="DEVICE_TYPE" />。您的 <ph name="DEVICE_TYPE" /> 將會在安裝完成後重新啟動。</translation>
 <translation id="8275038454117074363">匯入</translation>

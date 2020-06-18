@@ -151,7 +151,7 @@ void AutoResumptionHandler::OnDownloadUpdated(download::DownloadItem* item) {
     resumable_downloads_.erase(item->GetGuid());
 
   if (item->GetState() == download::DownloadItem::INTERRUPTED &&
-      IsAutoResumableDownload(item) && SatisfiesNetworkRequirements(item)) {
+      IsAutoResumableDownload(item) && ShouldResumeNow(item)) {
     downloads_to_retry_.insert(item);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
@@ -178,7 +178,7 @@ void AutoResumptionHandler::ResumeDownloadImmediately() {
     return;
 
   for (auto* download : std::move(downloads_to_retry_)) {
-    if (SatisfiesNetworkRequirements(download))
+    if (ShouldResumeNow(download))
       download->Resume(false);
     else
       RecomputeTaskParams();
@@ -226,7 +226,7 @@ void AutoResumptionHandler::RescheduleTaskIfNecessary() {
       continue;
 
     has_resumable_downloads = true;
-    has_actionable_downloads |= SatisfiesNetworkRequirements(download);
+    has_actionable_downloads |= ShouldResumeNow(download);
     can_download_on_metered |= download->AllowMetered();
     if (can_download_on_metered)
       break;
@@ -257,21 +257,28 @@ void AutoResumptionHandler::ResumePendingDownloads() {
     if (!IsAutoResumableDownload(download))
       continue;
 
-    if (SatisfiesNetworkRequirements(download))
+    if (ShouldResumeNow(download))
       download->Resume(false);
   }
 }
 
-bool AutoResumptionHandler::SatisfiesNetworkRequirements(
-    download::DownloadItem* download) {
+bool AutoResumptionHandler::ShouldResumeNow(
+    download::DownloadItem* download) const {
   if (!IsConnected(network_listener_->GetConnectionType()))
     return false;
+
+  // If the user select a time to start in the future, don't resume now.
+  const auto& download_schedule = download->GetDownloadSchedule();
+  if (download_schedule.has_value() && download_schedule->start_time().value_or(
+                                           base::Time()) > base::Time::Now()) {
+    return false;
+  }
 
   return download->AllowMetered() || !IsActiveNetworkMetered();
 }
 
 bool AutoResumptionHandler::IsAutoResumableDownload(
-    download::DownloadItem* item) {
+    download::DownloadItem* item) const {
   if (!item || item->IsDangerous())
     return false;
 

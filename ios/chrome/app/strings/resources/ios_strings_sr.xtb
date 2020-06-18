@@ -530,6 +530,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7600965453749440009">Никад не преводи <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Блокирани искачући прозори (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Неисправна приступна фраза</translation>
+<translation id="7649070708921625228">Помоћ</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="766891008101699113">Да бисте приватно прегледали веб, додајте нову картицу.</translation>
 <translation id="7671141431838911305">ИНСТАЛИРАЊЕ</translation>
@@ -543,7 +544,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7781829728241885113">Јуче</translation>
 <translation id="778855399387580014">Започните претрагу на новој Chrome картици.</translation>
 <translation id="7791543448312431591">Додај</translation>
-<translation id="7828557259026017104">Колачићи су датотеке које праве веб-сајтови које посећујете. Сајтови их користе да би запамтили ваша подешавања. Колачиће треће стране праве други сајтови. Ти сајтови су власници делова садржаја који видите на посећеној веб-страници, попут огласа или слика.</translation>
 <translation id="7839985698273989086">Офлајн страница</translation>
 <translation id="7840771868269352570">Ставке које сте изабрали ће бити уклоњене.</translation>
 <translation id="7856733331829174190">Преузимање није успело</translation>

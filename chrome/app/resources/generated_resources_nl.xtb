@@ -1109,7 +1109,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2377588536920405462">Je kunt Locatie uitschakelen door de primaire instelling voor Locatie op je apparaat uit te schakelen. Je kunt het gebruik van wifi, mobiele netwerken en sensoren voor locatie ook uitschakelen via de locatie-instellingen.</translation>
 <translation id="2377667304966270281">Harde fouten</translation>
 <translation id="237828693408258535">Deze pagina vertalen?</translation>
-<translation id="2378346380592252785">Update de inloggegevens voor <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Selecteer de directory van de extensie.</translation>
 <translation id="2379281330731083556">Afdrukken via systeemdialoogvenster... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vragen vóór verzenden (aanbevolen)</translation>
@@ -2561,7 +2560,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4163560723127662357">Onbekend toetsenbord</translation>
 <translation id="4168015872538332605">Sommige instellingen die bij <ph name="PRIMARY_EMAIL" /> horen, worden met je gedeeld. Deze instellingen beïnvloeden je account alleen wanneer toegang tot meerdere accounts wordt gebruikt.</translation>
 <translation id="4170314459383239649">Wissen bij het verlaten</translation>
-<translation id="4172051516777682613">Altijd weergeven</translation>
 <translation id="4175137578744761569">Lichtpaars/wit</translation>
 <translation id="4175737294868205930">Permanente opslag</translation>
 <translation id="4176463684765177261">Uitgeschakeld</translation>
@@ -2991,7 +2989,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="4777943778632837590">Naamservers voor netwerk configureren</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Pop-up geblokkeerd}other{# pop-ups geblokkeerd}}</translation>
 <translation id="4780321648949301421">Bewaar pagina als...</translation>
 <translation id="4785719467058219317">Je gebruikt een beveiligingssleutel die niet is geregistreerd voor deze website</translation>
 <translation id="4788092183367008521">Controleer de netwerkverbinding en probeer het opnieuw.</translation>
@@ -4135,7 +4132,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6242852299490624841">Focus op dit tabblad plaatsen</translation>
 <translation id="6243280677745499710">Momenteel ingesteld</translation>
 <translation id="6243774244933267674">Server is niet beschikbaar</translation>
-<translation id="6246355468475884088">Je kunt hier ook wachtwoorden van je Google-account weergeven</translation>
 <translation id="6246790815526961700">Uploaden via apparaat</translation>
 <translation id="6247620186971210352">Geen apps gevonden</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4509,7 +4505,6 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6745592621698551453">Nu updaten</translation>
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="674632704103926902">Tikken en slepen inschakelen</translation>
-<translation id="6748217015615267851">Weergaveprogramma: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Je kunt doorgaan, maar alleen je gesynchroniseerde gegevens en instellingen worden hersteld. Alle lokale gegevens gaan verloren.</translation>
 <translation id="6749006854028927059">Sites kunnen je cookies niet gebruiken om je browse-activiteit op verschillende sites te bekijken, bijvoorbeeld om advertenties te personaliseren. Functies op bepaalde sites werken mogelijk niet meer.</translation>
 <translation id="6750757184909117990">Mobiel netwerk uitschakelen</translation>
@@ -5631,7 +5626,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8138082791834443598">Optioneel: Voer nieuwe informatie in of update bestaande informatie die aan dit apparaat moet worden gekoppeld.</translation>
 <translation id="8138217203226449454">Wilde je je zoekprovider wijzigen?</translation>
 <translation id="813913629614996137">Starten...</translation>
-<translation id="814016597952587568">Wachtwoorden van je Google-account worden weergegeven</translation>
 <translation id="8140778357236808512">Een bestaande gebruiker met beperkte rechten importeren</translation>
 <translation id="8141584439523427891">Wordt nu geopend in een alternatieve browser</translation>
 <translation id="8141725884565838206">Je wachtwoorden beheren</translation>
@@ -5743,7 +5737,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="827097179112817503">Knop 'Homepage' weergeven</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 bookmark verwijderd}other{# bookmarks verwijderd}}</translation>
 <translation id="8272443605911821513">Beheer je extensies door op 'Extensies' te klikken in het menu 'Meer tools'.</translation>
-<translation id="8274212285504931082">Laat de Assistent informatie weergeven over wat er op je scherm staat</translation>
 <translation id="8274332263553132018">Bestand casten</translation>
 <translation id="8274924778568117936">Je moet je <ph name="DEVICE_TYPE" /> niet uitschakelen of sluiten totdat de update is voltooid. Je <ph name="DEVICE_TYPE" /> wordt opnieuw opgestart nadat de installatie is voltooid.</translation>
 <translation id="8275038454117074363">Importeren</translation>

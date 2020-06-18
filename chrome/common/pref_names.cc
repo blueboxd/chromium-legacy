@@ -2966,6 +2966,14 @@ const char kCorsLegacyModeEnabled[] = "cors.legacy_mode.enabled";
 const char kExternalProtocolDialogShowAlwaysOpenCheckbox[] =
     "external_protocol_dialog.show_always_open_checkbox";
 
+// List of dictionaries. For each dictionary, key "protocol" is a protocol
+// (as a string) that is permitted by policy to launch an external application
+// without prompting the user. Key "allowed_origins" is a nested list of origin
+// patterns that defines the scope of applicability of that protocol. If the
+// "allow" list is empty, that protocol rule will never apply.
+const char kAutoLaunchProtocolsFromOrigins[] =
+    "protocol_handler.policy.auto_launch_protocols_from_origins";
+
 // This pref enables the ScrollToTextFragment feature.
 const char kScrollToTextFragmentEnabled[] = "scroll_to_text_fragment_enabled";
 

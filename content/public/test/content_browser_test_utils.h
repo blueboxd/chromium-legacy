@@ -93,6 +93,13 @@ WARN_UNUSED_RESULT bool NavigateToURL(Shell* window,
 WARN_UNUSED_RESULT bool NavigateToURLFromRenderer(
     const ToRenderFrameHost& adapter,
     const GURL& url);
+// Similar to above but takes in an additional URL, |expected_commit_url|, to
+// which the navigation should eventually commit. (See the browser-initiated
+// counterpart for more details).
+WARN_UNUSED_RESULT bool NavigateToURLFromRenderer(
+    const ToRenderFrameHost& adapter,
+    const GURL& url,
+    const GURL& expected_commit_url);
 WARN_UNUSED_RESULT bool NavigateToURLFromRendererWithoutUserGesture(
     const ToRenderFrameHost& adapter,
     const GURL& url);

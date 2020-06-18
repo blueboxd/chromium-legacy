@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/debug/alias.h"
+#include "base/logging.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"

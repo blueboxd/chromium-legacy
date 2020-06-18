@@ -135,15 +135,9 @@ bool AssistiveSuggester::IsAssistPersonalInfoEnabled() {
 }
 
 bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {
-  if (!base::FeatureList::IsEnabled(chromeos::features::kEmojiSuggestAddition))
-    return false;
-  base::Optional<bool> enabled =
-      profile_->GetPrefs()
-          ->GetDictionary(prefs::kAssistiveInputFeatureSettings)
-          ->FindBoolPath(kEmojiSuggestAdditionEnabledPrefName);
-  if (!enabled.has_value())
-    return true;
-  return enabled.value();
+  return base::FeatureList::IsEnabled(
+             chromeos::features::kEmojiSuggestAddition) &&
+         profile_->GetPrefs()->GetBoolean(prefs::kEmojiSuggestionEnabled);
 }
 
 bool AssistiveSuggester::IsActionEnabled(AssistiveType action) {

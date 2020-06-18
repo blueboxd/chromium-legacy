@@ -33,7 +33,7 @@ class DownloadShelf {
   // Size of the space used for the progress indicator.
   static constexpr int kProgressIndicatorSize = 25;
 
-  DownloadShelf();
+  DownloadShelf(Browser* browser, Profile* profile);
   virtual ~DownloadShelf();
 
   // Paint the common download animation progress foreground and background,
@@ -84,7 +84,7 @@ class DownloadShelf {
   // when it was hidden, or was shown while it was hidden.
   void Unhide();
 
-  virtual Browser* browser() const = 0;
+  Browser* browser() { return browser_; }
 
   // Returns whether the download shelf is hidden.
   bool is_hidden() { return is_hidden_; }
@@ -100,8 +100,7 @@ class DownloadShelf {
   // Protected virtual for testing.
   virtual base::TimeDelta GetTransientDownloadShowDelay();
 
-  // Virtual for testing.
-  virtual Profile* profile() const;
+  Profile* profile() { return profile_; }
 
  private:
   // Show the download on the shelf immediately. Also displayes the download
@@ -111,6 +110,8 @@ class DownloadShelf {
   // Similar to ShowDownload() but refers to the download using an ID.
   void ShowDownloadById(ContentId id);
 
+  Browser* const browser_;
+  Profile* const profile_;
   bool should_show_on_unhide_;
   bool is_hidden_;
   base::WeakPtrFactory<DownloadShelf> weak_ptr_factory_{this};

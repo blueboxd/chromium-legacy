@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 modules_idl_files = [
-  "enter_picture_in_picture_event.idl",
+  "picture_in_picture_event.idl",
   "picture_in_picture_window.idl",
 ]
 
 modules_dictionary_idl_files = [
-  "enter_picture_in_picture_event_init.idl",
+  "picture_in_picture_event_init.idl",
   "picture_in_picture_options.idl",
 ]
 

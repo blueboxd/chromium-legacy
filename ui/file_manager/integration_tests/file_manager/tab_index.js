@@ -243,7 +243,7 @@ testcase.tabindexFocusDirectorySelected = async () => {
  * @param {!Array<string>} initialElements Selectors of the elements which
  *     shows the Files app is ready. After all the elements show up, the
  *     tabfocus tests starts.
- * @param {Array<string>} expectedTabOrder Array with the IDs of the element
+ * @param {!Array<string>} expectedTabOrder Array with the IDs of the element
  *     with the corresponding order of expected tab-indexes.
  */
 async function tabindexFocus(

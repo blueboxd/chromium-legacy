@@ -170,6 +170,7 @@
 <translation id="2387895666653383613">వచన ప్రమాణం</translation>
 <translation id="2394602618534698961">మీరు డౌన్‌లోడ్ చేసే ఫైల్‌లు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="2407481962792080328">మీ Google ఖాతాకు మీరు సైన్ ఇన్ చేసినప్పుడు, ఈ ఫీచర్ ఆన్ చేయబడుతుంది</translation>
+<translation id="2407674018644220013"><ph name="APP_NAME" />ను మీ ఆటోమేటిక్ సెట్టింగ్‌గా సెట్ చేయాలా?</translation>
 <translation id="2410754283952462441">ఖాతాను ఎంచుకోండి</translation>
 <translation id="2414886740292270097">ముదురు</translation>
 <translation id="2426805022920575512">మరొక ఖాతాను ఎంచుకోండి</translation>
@@ -179,6 +180,7 @@
 
 ఏదైనా పదంపై తాకి &amp; అలాగే నొక్కి ఉంచడం ద్వారా, దానిని వెతకండి. మీ శోధనను మెరుగుపరచడానికి, మరిన్ని లేదా తక్కువ పదాలను ఎంచుకోండి. మీ శోధనను ఎడిట్ చేయడానికి, ప్యానెల్‌ను తెరిచి, చిహ్నంపై ట్యాప్ చేయడం ద్వారా కొత్త ట్యాబ్‌లో తెరిచి, శోధన పెట్టెలో మీ మార్పులు చేయండి.</translation>
 <translation id="246532703174860178">షేర్ చేయండి</translation>
+<translation id="2479148705183875116">సెట్టింగ్‌లకు వెళ్లు</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2494974097748878569">Chromeలో Google అసిస్టెంట్</translation>
 <translation id="2496180316473517155">బ్రౌజింగ్ చరిత్ర</translation>
@@ -604,7 +606,6 @@
 <translation id="6005538289190791541">సూచించబడిన పాస్‌వర్డ్‌</translation>
 <translation id="6036057147555329831">అదనపు ICU</translation>
 <translation id="6039379616847168523">తదుపరి ట్యాబ్‌కు వెళ్లండి</translation>
-<translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6042308850641462728">మరింత</translation>
 <translation id="604996488070107836">తెలియని ఎర్ర‌ర్‌ కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
 <translation id="605721222689873409">YY</translation>
@@ -617,6 +618,7 @@
 <translation id="6140912465461743537">దేశం/ప్రాంతం</translation>
 <translation id="614940544461990577">ఇలా చేసి ప్రయత్నించండి:</translation>
 <translation id="6154478581116148741">ఈ పరికరం నుండి మీ పాస్‌వర్డ్‌లను ఎగుమతి చేయడానికి సెట్టింగ్‌లలో స్క్రీన్ లాక్‌ను ఆన్ చేయండి</translation>
+<translation id="6157392216611456285"><ph name="APP_NAME" />ను ఎంచుకోండి</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> డేటా పొదుపులు</translation>
 <translation id="6192333916571137726">ఫైల్‌ను డౌన్‌లోడ్ చేయండి</translation>
 <translation id="6201345951596836663">లింక్ కాపీ చేయబడింది</translation>
@@ -641,6 +643,7 @@
 <translation id="6341580099087024258">ఫైల్‌లను ఎక్కడ సేవ్ చేయాలో అడుగు</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 మరియు మరో <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" />}}</translation>
 <translation id="6364438453358674297">చరిత్ర నుండి సూచనను తీసివేయాలా?</translation>
+<translation id="6366047038980456022">మీరు ఆన్‌లైన్‌లో సురక్షితంగా పని చేయడానికి, రూపొందించడానికి, అలాగే అన్వేషించడానికి అవసరమైన స్మార్ట్‌లను, వేగాన్ని <ph name="APP_NAME" /> కలిగి ఉంది</translation>
 <translation id="6369229450655021117">ఇక్కడ నుండి, మీరు వెబ్‌లో వెతకవచ్చు, స్నేహితులతో షేర్ చేసుకోవచ్చు, తెరిచి ఉన్న పేజీలను చూడవచ్చు</translation>
 <translation id="6378173571450987352">వివరాలు: ఉపయోగించిన డేటా మొత్తం ద్వారా క్రమీకరించబడ్డాయి</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" /> Chromeలో తెరవబడుతుంది. కొనసాగడం ద్వారా, మీరు <ph name="BEGIN_LINK1" />Google సేవా నిబంధనలు<ph name="END_LINK1" />, అలాగే <ph name="BEGIN_LINK2" />Google Chrome, Chrome OS అదనపు సేవా నిబంధనలు<ph name="END_LINK2" />కు అంగీకరిస్తున్నారు.</translation>
@@ -692,13 +695,13 @@
 <translation id="6671495933530132209">చిత్రాన్ని కాపీ చేయి</translation>
 <translation id="6676840375528380067">ఈ పరికరం నుండి మీ Chrome డేటాని తీసివేయాలా?</translation>
 <translation id="6689172468748959065">ప్రొఫైల్ ఫోటోలు</translation>
+<translation id="6691888250440401212">1. <ph name="APP_NAME" />ను ఎంచుకోండి\n2. “ఆటోమేటిక్ సెట్టింగ్‌గా సెట్ చేయి”ని ట్యాప్ చేయండి</translation>
 <translation id="6697492270171225480">పేజీ కనుగొనబడనప్పుడు అటువంటి పేజీల కోసం సూచనలను చూపుతుంది</translation>
 <translation id="6698801883190606802">సమకాలీకరించిన డేటాను నిర్వహించండి</translation>
 <translation id="6699370405921460408">మీరు సందర్శించే పేజీలను Google సర్వర్‌లు ఆప్టిమైజ్ చేస్తాయి.</translation>
 <translation id="6710213216561001401">మునుపటి</translation>
 <translation id="671481426037969117">మీ <ph name="FQDN" /> టైమర్ పూర్తయింది. అది మళ్లీ రేపు ప్రారంభమవుతుంది.</translation>
 <translation id="6738867403308150051">డౌన్‌లోడ్ చేస్తోంది...</translation>
-<translation id="6766622839693428701">మూసివేయడానికి దిగువకు స్వైప్ చేయండి.</translation>
 <translation id="6767294960381293877">ట్యాబ్‌ను షేర్ చేయాల్సిన పరికరాల జాబితా సగం ఎత్తులో తెరవబడింది.</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6811034713472274749">పేజీ వీక్షించడానికి సిద్ధంగా ఉంది</translation>
@@ -778,7 +781,7 @@
 <translation id="7479104141328977413">ట్యాబ్ నిర్వహణ</translation>
 <translation id="7481312909269577407">ఫార్వర్డ్</translation>
 <translation id="7482656565088326534">ప్రివ్యూ ట్యాబ్</translation>
-<translation id="7484997419527351112">Discover - ఆఫ్ చేయబడింది</translation>
+<translation id="7484997419527351112">Discover - ఆఫ్‌లో ఉంది</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (నవీకరించినది <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="7494974237137038751">ఆదా అయిన డేటా</translation>
 <translation id="7498271377022651285">దయచేసి వేచి ఉండండి...</translation>
@@ -895,6 +898,7 @@
 <translation id="8364299278605033898">ప్రసిద్ధ వెబ్‌సైట్‌లను చూడండి</translation>
 <translation id="8368027906805972958">తెలియని లేదా మద్దతు లేని పరికరం (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">సందేశాన్ని పంపండి</translation>
+<translation id="8407396331882458341">1. <ph name="APP_NAME" />ను ఎంచుకోండి\n2. “ఎల్లప్పుడూ”ను ట్యాప్ చేయండి</translation>
 <translation id="8413126021676339697">పూర్తి చరిత్రను చూపించు</translation>
 <translation id="8425213833346101688">మార్చు</translation>
 <translation id="8427875596167638501">ప్రివ్యూ ట్యాబ్ సగం తెరవబడింది</translation>
@@ -921,6 +925,7 @@
 <translation id="8555836665334561807">Wi-Fiలో</translation>
 <translation id="8558485628462305855">మెరుగైన వాస్తవిక అనుభవ కంటెంట్‌ను చూడడానికి, ARCoreని అప్‌డేట్ చేయండి</translation>
 <translation id="8559990750235505898">ఇతర భాషలలో పేజీలను అనువదించడాన్ని ఆఫర్ చేస్తుంది</translation>
+<translation id="8561196567344536112">1. సెట్టింగ్‌లకు వెళ్లండి\n2. “బ్రౌజర్ యాప్”ను ట్యాప్ చేయండి\n3. <ph name="APP_NAME" />ను ఎంచుకోండి</translation>
 <translation id="8562452229998620586">సేవ్ చేయబడిన పాస్‌వర్డ్‌లు ఇక్కడ కనిపిస్తాయి.</translation>
 <translation id="8569404424186215731"><ph name="DATE" /> నుండి</translation>
 <translation id="8571213806525832805">గత 4 వారాలు</translation>

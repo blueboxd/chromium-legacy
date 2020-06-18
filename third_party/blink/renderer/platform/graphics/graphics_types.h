@@ -116,6 +116,13 @@ enum OpacityMode {
   kOpaque,
 };
 
+// Specifies whether the provider should rasterize paint commands on the CPU
+// or GPU. This is used to support software raster with GPU compositing.
+enum class RasterMode {
+  kGPU,
+  kCPU,
+};
+
 enum class RasterModeHint {
   kPreferGPU,
   kPreferCPU,

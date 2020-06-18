@@ -77,8 +77,8 @@ class COMPONENTS_DOWNLOAD_EXPORT AutoResumptionHandler
   void RecomputeTaskParams();
   void RescheduleTaskIfNecessary();
   void ResumeDownloadImmediately();
-  bool SatisfiesNetworkRequirements(download::DownloadItem* download);
-  bool IsAutoResumableDownload(download::DownloadItem* item);
+  bool ShouldResumeNow(download::DownloadItem* download) const;
+  bool IsAutoResumableDownload(download::DownloadItem* item) const;
 
   std::unique_ptr<download::NetworkStatusListener> network_listener_;
 

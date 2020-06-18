@@ -172,6 +172,19 @@ TEST_F('MediaAppUIBrowserTest', 'MultipleFileHaveTokens', async () => {
   testDone();
 });
 
+// Tests that a launch with multiple files selected in the files app loads only
+// the files selected.
+TEST_F('MediaAppUIBrowserTest', 'MultipleSelectionLaunch', async () => {
+  const filePromise = name => createTestImageFile(1, 1, `${name}.png`);
+  const directoryContents = await Promise.all([0, 1, 2, 3].map(filePromise));
+  const selectedIndexes = [1, 3];
+  const directory = await launchWithFiles(directoryContents, selectedIndexes);
+
+  assertFilenamesToBe('1.png,3.png');
+
+  testDone();
+});
+
 // Tests that we show error UX when trying to launch an unopenable file.
 TEST_F('MediaAppUIBrowserTest', 'LaunchUnopenableFile', async () => {
   const mockFileHandle =

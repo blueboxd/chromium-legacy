@@ -494,7 +494,7 @@ class RemoteCallFilesApp extends RemoteCall {
    * Waits until the given taskId appears in the executed task list.
    * @param {string} appId App window Id.
    * @param {string} taskId Task ID to watch.
-   * @param {Array<Object>} opt_replyArgs arguments to reply to executed task.
+   * @param {Array<Object>=} opt_replyArgs arguments to reply to executed task.
    * @return {Promise} Promise to be fulfilled when the task appears in the
    *     executed task list.
    */

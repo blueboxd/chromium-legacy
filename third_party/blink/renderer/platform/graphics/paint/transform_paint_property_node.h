@@ -127,7 +127,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       bool affected_by_outer_viewport_bounds_delta : 1;
       bool in_subtree_of_page_scale : 1;
       bool animation_is_axis_aligned : 1;
-    } flags = {false, false, true, false};
+      bool delegates_to_parent_for_backface : 1;
+    } flags = {false, false, true, false, false};
     BackfaceVisibility backface_visibility = BackfaceVisibility::kInherited;
     unsigned rendering_context_id = 0;
     CompositingReasons direct_compositing_reasons = CompositingReason::kNone;
@@ -145,6 +146,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
               other.flags.in_subtree_of_page_scale ||
           flags.animation_is_axis_aligned !=
               other.flags.animation_is_axis_aligned ||
+          flags.delegates_to_parent_for_backface !=
+              other.flags.delegates_to_parent_for_backface ||
           backface_visibility != other.backface_visibility ||
           rendering_context_id != other.rendering_context_id ||
           compositor_element_id != other.compositor_element_id ||
@@ -385,6 +388,10 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
 
   const CompositorElementId& GetCompositorElementId() const {
     return state_.compositor_element_id;
+  }
+
+  bool DelegatesToParentForBackface() const {
+    return state_.flags.delegates_to_parent_for_backface;
   }
 
   // Content whose transform nodes have a common rendering context ID are 3D

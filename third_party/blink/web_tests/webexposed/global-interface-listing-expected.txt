@@ -2283,10 +2283,6 @@ interface EncodedVideoChunk
     getter timestamp
     getter type
     method constructor
-interface EnterPictureInPictureEvent : Event
-    attribute @@toStringTag
-    getter pictureInPictureWindow
-    method constructor
 interface ErrorEvent : Event
     attribute @@toStringTag
     getter colno
@@ -6065,6 +6061,10 @@ interface PhotoCapabilities
     getter imageHeight
     getter imageWidth
     getter redEyeReduction
+    method constructor
+interface PictureInPictureEvent : Event
+    attribute @@toStringTag
+    getter pictureInPictureWindow
     method constructor
 interface PictureInPictureWindow : EventTarget
     attribute @@toStringTag
@@ -11338,6 +11338,7 @@ interface XRLightEstimate
 interface XRLightProbe : EventTarget
     attribute @@toStringTag
     getter onreflectionchange
+    getter probeSpace
     method constructor
     setter onreflectionchange
 interface XRPlane

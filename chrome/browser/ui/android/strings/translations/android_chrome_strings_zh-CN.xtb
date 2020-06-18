@@ -171,6 +171,7 @@
 <translation id="2387895666653383613">文字大小</translation>
 <translation id="2394602618534698961">您下载的文件会显示在此处</translation>
 <translation id="2407481962792080328">当您登录自己的 Google 帐号后，系统即会启用此功能</translation>
+<translation id="2407674018644220013">将 <ph name="APP_NAME" /> 设为您的默认应用？</translation>
 <translation id="2410754283952462441">选择帐号</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2426805022920575512">选择其他帐号</translation>
@@ -180,6 +181,7 @@
 
 轻触并按住任意字词即可进行搜索。要优化您的搜索，请多选或少选一些字词。要修改您的搜索，请打开面板，点按图标打开新标签页，然后在搜索框中做出更改。</translation>
 <translation id="246532703174860178">分享</translation>
+<translation id="2479148705183875116">转到“设置”</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2494974097748878569">Chrome 中的 Google 助理</translation>
 <translation id="2496180316473517155">浏览记录</translation>
@@ -607,7 +609,6 @@
 <translation id="6005538289190791541">建议的密码</translation>
 <translation id="6036057147555329831">额外的 ICU</translation>
 <translation id="6039379616847168523">跳转到下一个标签页</translation>
-<translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="604996488070107836">出现未知错误，未能下载 <ph name="FILE_NAME" />。</translation>
 <translation id="605721222689873409">YY</translation>
@@ -620,6 +621,7 @@
 <translation id="6140912465461743537">国家/地区</translation>
 <translation id="614940544461990577">请试试以下办法：</translation>
 <translation id="6154478581116148741">需在“设置”部分中开启屏幕锁定功能，才能从此设备中导出您的密码</translation>
+<translation id="6157392216611456285">选择 <ph name="APP_NAME" /></translation>
 <translation id="6159335304067198720">节省 <ph name="PERCENT" /> 的数据流量</translation>
 <translation id="6192333916571137726">下载文件</translation>
 <translation id="6201345951596836663">已复制链接</translation>
@@ -644,6 +646,7 @@
 <translation id="6341580099087024258">询问文件保存位置</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}}</translation>
 <translation id="6364438453358674297">要从历史记录中移除建议吗？</translation>
+<translation id="6366047038980456022">借助 <ph name="APP_NAME" /> 所具备的智能工具和非凡速度，您可在网络世界得心应手地操作、创作和探索，且无需担心安全问题</translation>
 <translation id="6369229450655021117">您可从这里搜索网上内容、与好友分享内容以及查看已打开的网页</translation>
 <translation id="6378173571450987352">详细信息：按已使用的数据流量排序</translation>
 <translation id="6379829913050047669"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意接受 <ph name="BEGIN_LINK1" />Google 服务条款<ph name="END_LINK1" />以及 <ph name="BEGIN_LINK2" />Google Chrome 和 Chrome 操作系统附加服务条款<ph name="END_LINK2" />。</translation>
@@ -695,13 +698,13 @@
 <translation id="6671495933530132209">复制图片</translation>
 <translation id="6676840375528380067">从这部设备中清除您的 Chrome 数据？</translation>
 <translation id="6689172468748959065">个人资料照片</translation>
+<translation id="6691888250440401212">1. 选择 <ph name="APP_NAME" />\n2. 点按“设为默认应用”</translation>
 <translation id="6697492270171225480">找不到相应网页时，显示有关类似网页的建议</translation>
 <translation id="6698801883190606802">管理已同步的数据</translation>
 <translation id="6699370405921460408">Google 服务器会优化您访问的网页。</translation>
 <translation id="6710213216561001401">上一个</translation>
 <translation id="671481426037969117">您的 <ph name="FQDN" /> 计时器已结束计时。它将于明天重新开始。</translation>
 <translation id="6738867403308150051">正在下载…</translation>
-<translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6767294960381293877">要与之分享标签页的设备的列表已半屏打开。</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6811034713472274749">页面已可供查看</translation>
@@ -781,7 +784,7 @@
 <translation id="7479104141328977413">标签页管理</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7482656565088326534">预览标签页</translation>
-<translation id="7484997419527351112">探索 - 关闭</translation>
+<translation id="7484997419527351112">探索 - 已关闭</translation>
 <translation id="7493994139787901920"><ph name="VERSION" />（上次更新时间：<ph name="TIME_SINCE_UPDATE" />）</translation>
 <translation id="7494974237137038751">已节省的流量</translation>
 <translation id="7498271377022651285">请稍候…</translation>
@@ -898,6 +901,7 @@
 <translation id="8364299278605033898">查看热门网站</translation>
 <translation id="8368027906805972958">未知或不支持的设备 (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">发送消息</translation>
+<translation id="8407396331882458341">1. 选择 <ph name="APP_NAME" />\n2. 点按“始终”</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
 <translation id="8425213833346101688">更改</translation>
 <translation id="8427875596167638501">预览标签页已在下半屏中打开</translation>
@@ -924,6 +928,7 @@
 <translation id="8555836665334561807">有 Wi-Fi 可用时</translation>
 <translation id="8558485628462305855">要查看增强现实内容，请更新 ARCore</translation>
 <translation id="8559990750235505898">询问是否翻译其他语言版本的网页</translation>
+<translation id="8561196567344536112">1. 转到“设置”\n2. 点按“浏览器应用”\n3. 选择 <ph name="APP_NAME" /></translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="8569404424186215731">自 <ph name="DATE" />以来</translation>
 <translation id="8571213806525832805">近 4 周</translation>

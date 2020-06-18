@@ -65,7 +65,7 @@ void CachedMatchedProperties::Set(
       RuntimeEnabledFeatures::CSSMatchedPropertiesCacheDependenciesEnabled() ||
       dependencies.IsEmpty());
   if (dependencies.size()) {
-    DCHECK(dependencies.size() <= MatchedPropertiesCache::kMaxDependencies);
+    DCHECK(dependencies.size() <= StyleResolverState::kMaxDependencies);
     // Plus one for g_null_atom.
     this->dependencies =
         std::make_unique<AtomicString[]>(dependencies.size() + 1);
@@ -257,8 +257,7 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
     return true;
   }
 
-  return state.Dependencies().size() <= kMaxDependencies &&
-         !state.HasIncomparableDependency();
+  return state.HasValidDependencies() && !state.HasIncomparableDependency();
 }
 
 void MatchedPropertiesCache::Trace(Visitor* visitor) const {

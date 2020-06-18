@@ -1,11 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
+<translation id="1018656279737460067">Avbröts</translation>
 <translation id="1195447618553298278">Okänt fel.</translation>
 <translation id="1468664791493211953">Erbjudanden</translation>
 <translation id="1482734542997480527">Den här enheten hanteras av <ph name="ENROLLMENT_DOMAIN" />, som kan ha möjlighet att övervaka din aktivitet.</translation>
 <translation id="150962533380566081">Ogiltig PUK-kod.</translation>
 <translation id="1510238584712386396">Startprogram</translation>
+<translation id="1644574205037202324">Historik</translation>
 <translation id="1734367976349034509">Enheten är företagshanterad</translation>
 <translation id="1905710495812624430">Du har försökt för många gånger.</translation>
 <translation id="1930797645656624981">Tjänst för inmatningsmetod för Chrome OS</translation>

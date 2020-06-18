@@ -1109,7 +1109,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2377588536920405462">Jy kan ligging afskakel deur die hoofligginginstelling op jou toestel af te skakel. Jy kan ook die gebruik van Wi-Fi, selnetwerke en sensors vir ligging in ligginginstellings afskakel.</translation>
 <translation id="2377667304966270281">Harde foute</translation>
 <translation id="237828693408258535">Vertaal hierdie bladsy?</translation>
-<translation id="2378346380592252785">Dateer eiebewyse vir <ph name="SHARE_PATH" /> op.</translation>
 <translation id="2378982052244864789">Kies die uitbreidinggids.</translation>
 <translation id="2379281330731083556">Druk uit deur stelseldialoog te gebruik … <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Vra voordat gestuur word (aanbeveel)</translation>
@@ -2561,7 +2560,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4163560723127662357">Onbekende sleutelbord</translation>
 <translation id="4168015872538332605">Sommige instellings wat aan <ph name="PRIMARY_EMAIL" /> behoort, word met jou gedeel. Hierdie instellings affekteer net jou rekening wanneer jy veelvuldige aanmelding gebruik.</translation>
 <translation id="4170314459383239649">Vee uit wanneer uitgegaan is</translation>
-<translation id="4172051516777682613">Wys altyd</translation>
 <translation id="4175137578744761569">Ligpers en wit</translation>
 <translation id="4175737294868205930">Aanhoudende berging</translation>
 <translation id="4176463684765177261">Gedeaktiveer</translation>
@@ -2991,7 +2989,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4777943778632837590">Stel netwerknaambedieners op</translation>
 <translation id="4779083564647765204">Zoem</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Opspringer is geblokkeer}other{# opspringers is geblokkeer}}</translation>
 <translation id="4780321648949301421">Stoor bladsy as …</translation>
 <translation id="4785719467058219317">Jy gebruik tans 'n sleutel wat nie by hierdie webwerf geregistreer is nie</translation>
 <translation id="4788092183367008521">Gaan jou netwerkverbinding na en probeer weer.</translation>
@@ -4136,7 +4133,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6242852299490624841">Fokus hierdie oortjie</translation>
 <translation id="6243280677745499710">Tans gestel</translation>
 <translation id="6243774244933267674">Bediener nie beskikbaar nie</translation>
-<translation id="6246355468475884088">Jy kan ook wagwoorde van jou Google-rekening af hier wys</translation>
 <translation id="6246790815526961700">Laai van toestel af op</translation>
 <translation id="6247620186971210352">Geen programme gekry nie</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4510,7 +4506,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6745592621698551453">Dateer nou op</translation>
 <translation id="6746124502594467657">Skuif af</translation>
 <translation id="674632704103926902">Aktiveer tiksleep</translation>
-<translation id="6748217015615267851">Leweraar: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Jy mag voortgaan, maar net jou gesinkroniseerde data en instellings sal herwin word. Alle plaaslike data sal verloor word.</translation>
 <translation id="6749006854028927059">Werwe kan nie jou webkoekies gebruik om jou blaai-aktiwiteit op verskillende werwe te sien nie, byvoorbeeld om advertensies te personaliseer. Kenmerke op sommige werwe kan breek.</translation>
 <translation id="6750757184909117990">Deaktiveer sellulêre netwerk</translation>
@@ -5632,7 +5627,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8138082791834443598">Opsioneel – voer nuwe inligting in of dateer bestaande inligting op om met hierdie toestel geassosieer te word.</translation>
 <translation id="8138217203226449454">Het jy bedoel om jou soekverskaffer te verander?</translation>
 <translation id="813913629614996137">Inisialiseer tans …</translation>
-<translation id="814016597952587568">Wys tans wagwoorde in jou Google-rekening</translation>
 <translation id="8140778357236808512">Voer 'n bestaande gebruiker onder toesig in</translation>
 <translation id="8141584439523427891">Maak tans in alternatiewe blaaier oop</translation>
 <translation id="8141725884565838206">Bestuur jou wagwoorde</translation>
@@ -5744,7 +5738,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="827097179112817503">Wys tuisknoppie</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 boekmerk is uitgevee}other{# boekmerke is uitgevee}}</translation>
 <translation id="8272443605911821513">Bestuur jou uitbreidings deur Uitbreidings in die "Meer nutsgoed"-kieslys te klik.</translation>
-<translation id="8274212285504931082">Laat jou Assistent vir jou inligting wys wat verband hou met wat op jou skerm is</translation>
 <translation id="8274332263553132018">Saai lêer uit</translation>
 <translation id="8274924778568117936">Moenie jou <ph name="DEVICE_TYPE" /> afskakel of toemaak voordat die opdatering afgehandel is nie. Jou <ph name="DEVICE_TYPE" /> sal herbegin wanneer die installering voltooi is.</translation>
 <translation id="8275038454117074363">Voer in</translation>

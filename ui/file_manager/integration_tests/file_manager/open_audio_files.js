@@ -9,7 +9,7 @@
    * Returns the title and artist text associated with the given audio track.
    *
    * @param {string} audioAppId The Audio Player window ID.
-   * @param {query} track Query for the Audio Player track.
+   * @param {string} track Query for the Audio Player track.
    * @return {Promise<Object>} Promise to be fulfilled with a track details
    *     object containing {title:string, artist:string}.
    */
@@ -144,7 +144,7 @@
     await audioPlayerApp.waitForElement(audioAppId, playFile);
 
     // Check: track 0 should be active.
-    let song = await getTrackText(audioAppId, '.track[index="0"][active]');
+    const song = await getTrackText(audioAppId, '.track[index="0"][active]');
 
     // Check: track 0 should have the correct title and artist.
     chrome.test.assertEq('Beautiful Song', song.title);

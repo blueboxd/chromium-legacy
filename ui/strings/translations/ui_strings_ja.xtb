@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6119846243427417423">アクティブにする</translation>
 <translation id="6129953537138746214">Space</translation>
+<translation id="6134259848159370930">デバイス、アプリ、設定、ウェブを検索します。</translation>
 <translation id="6135826906199951471">Delete</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/秒</translation>
 <translation id="6156262341071374681">すべてのアプリを表示</translation>
 <translation id="6165508094623778733">詳細</translation>
+<translation id="6166852626429024716">デバイス、アプリ、設定、ウェブを検索...</translation>
 <translation id="6264365405983206840">すべて選択(&amp;A)</translation>
 <translation id="6351032674660237738">アプリの候補</translation>
 <translation id="6364916375976753737">左にスクロール</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ファイル (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">シェルフは常に表示されます</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/秒</translation>
+<translation id="8685326675965865247">デバイス、アプリ、設定、ウェブを検索します。アプリに移動するには矢印キーを使用します。</translation>
 <translation id="8725488761726303204">他 <ph name="NUMBER" /> 件</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1時間}other{#時間}}</translation>

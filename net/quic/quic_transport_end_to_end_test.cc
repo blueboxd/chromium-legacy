@@ -266,7 +266,7 @@ TEST_F(QuicTransportEndToEndTest, CertificateFingerprintMismatch) {
 
 TEST_F(QuicTransportEndToEndTest, OldVersion) {
   SetQuicReloadableFlag(quic_enable_version_draft_29, false);
-  SetQuicReloadableFlag(quic_enable_version_draft_27, true);
+  SetQuicReloadableFlag(quic_disable_version_draft_27, false);
 
   StartServer();
   client_ = std::make_unique<QuicTransportClient>(
@@ -281,7 +281,7 @@ TEST_F(QuicTransportEndToEndTest, OldVersion) {
 
 TEST_F(QuicTransportEndToEndTest, NoCommonVersion) {
   SetQuicReloadableFlag(quic_enable_version_draft_29, false);
-  SetQuicReloadableFlag(quic_enable_version_draft_27, false);
+  SetQuicReloadableFlag(quic_disable_version_draft_27, true);
 
   StartServer();
   client_ = std::make_unique<QuicTransportClient>(

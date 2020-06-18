@@ -508,7 +508,7 @@ void HTMLCanvasElement::DisableAcceleration(
   if (unaccelerated_bridge_used_for_testing)
     bridge = std::move(unaccelerated_bridge_used_for_testing);
   else
-    bridge = Create2DLayerBridge(Canvas2DLayerBridge::kDisableAcceleration);
+    bridge = Create2DLayerBridge(RasterMode::kCPU);
 
   if (bridge && canvas2d_bridge_)
     ReplaceExisting2dLayerBridge(std::move(bridge));
@@ -1147,9 +1147,9 @@ bool HTMLCanvasElement::ShouldAccelerate() const {
 }
 
 std::unique_ptr<Canvas2DLayerBridge> HTMLCanvasElement::Create2DLayerBridge(
-    Canvas2DLayerBridge::AccelerationMode acceleration_mode) {
-  auto surface = std::make_unique<Canvas2DLayerBridge>(
-      Size(), acceleration_mode, ColorParams());
+    RasterMode raster_mode) {
+  auto surface =
+      std::make_unique<Canvas2DLayerBridge>(Size(), raster_mode, ColorParams());
   if (!surface->IsValid())
     return nullptr;
 
@@ -1176,12 +1176,10 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
     // resource provider fails, the canvas will fallback to CPU rendering.
     if (ShouldAccelerate() &&
         !context_->CreationAttributes().will_read_frequently) {
-      canvas2d_bridge_ =
-          Create2DLayerBridge(Canvas2DLayerBridge::kEnableAcceleration);
+      canvas2d_bridge_ = Create2DLayerBridge(RasterMode::kGPU);
     }
     if (!canvas2d_bridge_) {
-      canvas2d_bridge_ =
-          Create2DLayerBridge(Canvas2DLayerBridge::kDisableAcceleration);
+      canvas2d_bridge_ = Create2DLayerBridge(RasterMode::kCPU);
     }
   }
 
@@ -1283,7 +1281,7 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
       source->IsAccelerated() && GetOrCreateCanvas2DLayerBridge() &&
       !canvas2d_bridge_->IsAccelerated() && ShouldAccelerate()) {
     std::unique_ptr<Canvas2DLayerBridge> surface =
-        Create2DLayerBridge(Canvas2DLayerBridge::kEnableAcceleration);
+        Create2DLayerBridge(RasterMode::kGPU);
     if (surface) {
       ReplaceExisting2dLayerBridge(std::move(surface));
       SetNeedsCompositingUpdate();
@@ -1537,7 +1535,7 @@ void HTMLCanvasElement::UpdateMemoryUsage() {
 
   intptr_t gpu_memory_usage = 0;
   if (gpu_buffer_count) {
-    // Switch from non-acceleration mode to acceleration mode
+    // Switch from cpu mode to gpu mode
     base::CheckedNumeric<intptr_t> checked_usage =
         gpu_buffer_count * bytes_per_pixel;
     checked_usage *= width();

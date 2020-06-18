@@ -470,6 +470,7 @@ Vos données ont été chiffrées avec votre phrase de passe le <ph name="TIME" 
 <translation id="681368974849482173">Élément créé</translation>
 <translation id="6831043979455480757">Traduire</translation>
 <translation id="6851516051005285358">Voir la version pour ordinateur</translation>
+<translation id="6856384753476268833">Géré par votre organisation.</translation>
 <translation id="6858855187367714033">Numérisé</translation>
 <translation id="6859944681507688231">Pour numériser un code QR ou une carte de crédit, activez l'appareil photo dans les paramètres.</translation>
 <translation id="6873263987691478642">Vue partagée</translation>
@@ -529,6 +530,7 @@ Vos données ont été chiffrées avec votre phrase de passe le <ph name="TIME" 
 <translation id="7600965453749440009">Ne jamais traduire les pages rédigées en <ph name="LANGUAGE" /></translation>
 <translation id="7603852183842204213">Fen context bloq (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Mot de passe multiterme incorrect</translation>
+<translation id="7649070708921625228">Aide</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="766891008101699113">Pour naviguer confidentiellement sur le Web, ajoutez un nouvel onglet.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
@@ -542,12 +544,12 @@ Comme votre compte est géré par <ph name="HOSTED_DOMAIN" />, vos données Chro
 <translation id="7781829728241885113">Hier</translation>
 <translation id="778855399387580014">Lancez une recherche dans un nouvel onglet Chrome.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
-<translation id="7828557259026017104">Les témoins sont des fichiers créés par les sites Web que vous visitez. Les sites les utilisent pour mémoriser vos préférences. Les témoins tiers sont ceux que créent d'autres sites. Ces sites possèdent certains types de contenu, comme des annonces et des images, que vous voyez sur les pages que vous visitez.</translation>
 <translation id="7839985698273989086">Page hors ligne</translation>
 <translation id="7840771868269352570">Les éléments sélectionnés seront supprimés.</translation>
 <translation id="7856733331829174190">Échec du téléchargement</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
 <translation id="7887198238286927132">Afin de protéger votre confidentialité, Chrome ne remplira pas automatiquement ce champ.</translation>
+<translation id="791251013315685175">Géré par <ph name="COMPANY" />.</translation>
 <translation id="7918293828610777738">Votre liste de lecture est disponible hors connexion. Pour ajouter une page à votre liste de lecture, touchez <ph name="SHARE_OPENING_ICON" />, puis <ph name="READ_LATER_TEXT" />.</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exporter les mots de passe…</translation>

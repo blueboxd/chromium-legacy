@@ -1109,7 +1109,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2377588536920405462">Du kan inaktivera plats genom att inaktivera huvudinställningen på enheten. Du kan även inaktivera användningen av Wi-Fi, mobilnätverk och sensorer för plats i platsinställningarna.</translation>
 <translation id="2377667304966270281">Sidfel</translation>
 <translation id="237828693408258535">Vill du översätta den här sidan?</translation>
-<translation id="2378346380592252785">Uppdatera användaruppgifterna för <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Välj tilläggets katalog.</translation>
 <translation id="2379281330731083556">Skriv ut via systemets dialogruta ... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Fråga innan något skickas (rekommenderas)</translation>
@@ -2561,7 +2560,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4163560723127662357">Okänt tangentbord</translation>
 <translation id="4168015872538332605">Vissa inställningar som tillhör <ph name="PRIMARY_EMAIL" /> delas med dig. Dessa inställningar påverkar bara ditt konto när du använder multiinloggning.</translation>
 <translation id="4170314459383239649">Rensa vid avslut</translation>
-<translation id="4172051516777682613">Visa alltid</translation>
 <translation id="4175137578744761569">Ljuslila och vit</translation>
 <translation id="4175737294868205930">Beständig lagring</translation>
 <translation id="4176463684765177261">Inaktiverad</translation>
@@ -2991,7 +2989,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4777943778632837590">Konfigurera nätverkets namnservrar</translation>
 <translation id="4779083564647765204">Zooma in</translation>
 <translation id="4779136857077979611">Onigiri (risbollar)</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Popup-fönster har blockerats}other{# popup-fönster har blockerats}}</translation>
 <translation id="4780321648949301421">Spara sida som...</translation>
 <translation id="4785719467058219317">Säkerhetsnyckeln som du använder är inte registrerad på den här webbplatsen</translation>
 <translation id="4788092183367008521">Kontrollera nätverksanslutningen och försök igen.</translation>
@@ -4135,7 +4132,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6242852299490624841">Fokusera på den här fliken</translation>
 <translation id="6243280677745499710">Nuvarande</translation>
 <translation id="6243774244933267674">Servern är inte tillgänglig</translation>
-<translation id="6246355468475884088">Du kan även visa lösenord från Google-kontot här</translation>
 <translation id="6246790815526961700">Ladda upp från enheten</translation>
 <translation id="6247620186971210352">Inga appar hittades</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
@@ -4509,7 +4505,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6745592621698551453">Uppdatera nu</translation>
 <translation id="6746124502594467657">Flytta ned</translation>
 <translation id="674632704103926902">Aktivera "tryck och dra"</translation>
-<translation id="6748217015615267851">Renderas av: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Du kan fortsätta, men endast synkroniserade uppgifter och inställningar återställs. All lokal data kommer att gå förlorad.</translation>
 <translation id="6749006854028927059">Webbplatser får inte se din webbaktivitet på olika webbplatser med hjälp av cookies och till exempel anpassa annonser. Funktioner på vissa webbplatser kan sluta fungera.</translation>
 <translation id="6750757184909117990">Inaktivera mobilnätverk</translation>
@@ -5632,7 +5627,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8138082791834443598">Valfritt: Ange nya eller uppdatera befintliga uppgifter om du vill kopplas till den här enheten.</translation>
 <translation id="8138217203226449454">Ville du ändra sökleverantör?</translation>
 <translation id="813913629614996137">Initierar …</translation>
-<translation id="814016597952587568">Visar lösenord från ditt Google-konto</translation>
 <translation id="8140778357236808512">Importera en befintlig hanterad användare</translation>
 <translation id="8141584439523427891">Öppnas i en annan webbläsare nu</translation>
 <translation id="8141725884565838206">Hantera dina lösenord</translation>
@@ -5744,7 +5738,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="827097179112817503">Visa hemknappen</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{Bokmärket har raderats}other{# bokmärken har raderats}}</translation>
 <translation id="8272443605911821513">Hantera dina tillägg genom att klicka på Tillägg i menyn Fler verktyg.</translation>
-<translation id="8274212285504931082">Tillåt att assistenten ger information utifrån vad som visas på skärmen</translation>
 <translation id="8274332263553132018">Casta fil</translation>
 <translation id="8274924778568117936">Stäng inte av eller stäng <ph name="DEVICE_TYPE" /> förrän uppdateringen har slutförts. <ph name="DEVICE_TYPE" /> startas om när installationen är slutförd.</translation>
 <translation id="8275038454117074363">Importera</translation>

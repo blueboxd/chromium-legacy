@@ -28,6 +28,14 @@ Polymer({
       value() {
         return loadTimeData.getBoolean('allowAssistivePersonalInfo');
       },
+    },
+
+    /** @private */
+    allowEmojiSuggestion_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('allowEmojiSuggestion');
+      },
     }
   },
 

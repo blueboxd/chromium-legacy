@@ -288,31 +288,31 @@ void QuitLoopOnAutoEnrollmentProgress(
     loop->Quit();
 }
 
-// Returns a string which can be put into the |kRlzEmbargoEndDateKey| VPD
-// variable. If |days_offset| is 0, the return value represents the current day.
-// If |days_offset| is positive, the return value represents |days_offset| days
-// in the future. If |days_offset| is negative, the return value represents
-// |days_offset| days in the past.
+// Returns a string which can be put into the VPD variable
+// |kEnterpriseManagementEmbargoEndDateKey|. If |days_offset| is 0, the return
+// value represents the current day. If |days_offset| is positive, the return
+// value represents |days_offset| days in the future. If |days_offset| is
+// negative, the return value represents |days_offset| days in the past.
 std::string GenerateEmbargoEndDate(int days_offset) {
   base::Time::Exploded exploded;
   base::Time target_time =
       base::Time::Now() + base::TimeDelta::FromDays(days_offset);
   target_time.UTCExplode(&exploded);
 
-  std::string rlz_embargo_end_date_string = base::StringPrintf(
+  std::string embargo_end_date_string = base::StringPrintf(
       "%04d-%02d-%02d", exploded.year, exploded.month, exploded.day_of_month);
 
   // Sanity check that base::Time::FromUTCString can read back the format used
   // here.
   base::Time reparsed_time;
-  EXPECT_TRUE(base::Time::FromUTCString(rlz_embargo_end_date_string.c_str(),
+  EXPECT_TRUE(base::Time::FromUTCString(embargo_end_date_string.c_str(),
                                         &reparsed_time));
   EXPECT_EQ(target_time.ToDeltaSinceWindowsEpoch().InMicroseconds() /
                 base::Time::kMicrosecondsPerDay,
             reparsed_time.ToDeltaSinceWindowsEpoch().InMicroseconds() /
                 base::Time::kMicrosecondsPerDay);
 
-  return rlz_embargo_end_date_string;
+  return embargo_end_date_string;
 }
 
 template <typename View>
@@ -1463,7 +1463,6 @@ IN_PROC_BROWSER_TEST_P(WizardControllerDeviceStateExplicitRequirementTest,
     EXPECT_EQ(0, FakeSessionManagerClient::Get()
                      ->clear_forced_re_enrollment_vpd_call_count());
   } else {
-
     // Make AutoEnrollmentClient notify the controller that a server error
     // occurred.
     fake_auto_enrollment_client->SetState(
@@ -1518,7 +1517,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
                        ControlFlowInitialEnrollment) {
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(-15 /* days_offset */));
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
@@ -1592,7 +1591,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(-15 /* days_offset */));
   CheckCurrentScreen(WelcomeView::kScreenId);
   EXPECT_CALL(*mock_welcome_screen_, HideImpl()).Times(1);
@@ -1683,7 +1682,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(1 /* days_offset */));
   EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
@@ -1727,7 +1726,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
                        ControlFlowWaitSystemClockSyncThenEmbargoPeriod) {
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(1 /* days_offset */));
   EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
@@ -1783,7 +1782,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   base::TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner);
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(1 /* days_offset */));
   EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
@@ -1839,7 +1838,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
 
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(1 /* days_offset */));
   EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());
@@ -1877,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   // Simulate that the clock moved forward, passing the embargo period, by
   // moving the embargo period back in time.
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(-1 /* days_offset */));
   base::DictionaryValue device_state;
   device_state.SetString(policy::kDeviceStateMode,
@@ -1921,7 +1920,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   fake_statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey,
                                                 "0");
   fake_statistics_provider_.SetMachineStatistic(
-      system::kRlzEmbargoEndDateKey,
+      system::kEnterpriseManagementEmbargoEndDateKey,
       GenerateEmbargoEndDate(1 /* days_offset */));
   EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
             auto_enrollment_controller()->state());

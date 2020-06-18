@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Luk</translation>
 <translation id="6119846243427417423">aktivér</translation>
 <translation id="6129953537138746214">Mellemrum</translation>
+<translation id="6134259848159370930">Søg på din enhed, i dine apps, i indstillingerne og på nettet.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/sek.</translation>
 <translation id="6156262341071374681">Vis alle apps</translation>
 <translation id="6165508094623778733">Flere oplysninger</translation>
+<translation id="6166852626429024716">Søg på din enhed, i dine apps, i indstillingerne, på nettet...</translation>
 <translation id="6264365405983206840">Vælg &amp;alle</translation>
 <translation id="6351032674660237738">APPFORSLAG</translation>
 <translation id="6364916375976753737">Scroll Left</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Fil (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Hylden vises altid</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> kB/sek.</translation>
+<translation id="8685326675965865247">Søg på din enhed, i dine apps, i indstillingerne og på nettet. Brug piletasterne til at navigere i dine apps.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> mere</translation>
 <translation id="8730621377337864115">Udfør</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 t}one{# t}other{# t}}</translation>

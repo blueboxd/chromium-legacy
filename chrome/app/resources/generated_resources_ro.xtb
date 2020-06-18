@@ -1109,7 +1109,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2377588536920405462">Poți dezactiva locația oprind setarea principală privind locația de pe dispozitivul tău. Poți dezactiva și folosirea conexiunii Wi-Fi, a rețelelor mobile și a senzorilor pentru locație din setările privind locația.</translation>
 <translation id="2377667304966270281">Erori de hardware</translation>
 <translation id="237828693408258535">Traduci această pagină?</translation>
-<translation id="2378346380592252785">Actualizează datele de conectare pentru <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Selectează directorul extensiei.</translation>
 <translation id="2379281330731083556">Printați utilizând caseta de dialog a sistemului... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Solicită permisiunea înainte de trimitere (recomandat)</translation>
@@ -2561,7 +2560,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4163560723127662357">Tastatură necunoscută</translation>
 <translation id="4168015872538332605">Aveți acces la anumite setări care aparțin utilizatorului <ph name="PRIMARY_EMAIL" />. Aceste setări vă afectează contul numai când folosiți conectarea multiplă.</translation>
 <translation id="4170314459383239649">Șterge la ieșire</translation>
-<translation id="4172051516777682613">Afișați întotdeauna</translation>
 <translation id="4175137578744761569">Mov deschis și alb</translation>
 <translation id="4175737294868205930">Stocare persistentă</translation>
 <translation id="4176463684765177261">Dezactivat</translation>
@@ -2991,7 +2989,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4777943778632837590">Configurează serverele de nume din rețea</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Fereastră pop-up blocată}few{# ferestre pop-up blocate}other{# de ferestre pop-up blocate}}</translation>
 <translation id="4780321648949301421">Salvează pagina ca...</translation>
 <translation id="4785719467058219317">Folosești o cheie de securitate care nu este înregistrată pe acest site</translation>
 <translation id="4788092183367008521">Verifică conexiunea la rețea și încearcă din nou.</translation>
@@ -4135,7 +4132,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6242852299490624841">Focalizează această filă</translation>
 <translation id="6243280677745499710">Setată în prezent</translation>
 <translation id="6243774244933267674">Server indisponibil</translation>
-<translation id="6246355468475884088">În plus, aici poți afișa parolele din Contul tău Google</translation>
 <translation id="6246790815526961700">Încarcă de pe dispozitiv</translation>
 <translation id="6247620186971210352">Nu s-au găsit aplicații</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" /> %</translation>
@@ -4509,7 +4505,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6745592621698551453">Actualizați acum</translation>
 <translation id="6746124502594467657">Mutați în jos</translation>
 <translation id="674632704103926902">Activați tragerea prin atingere</translation>
-<translation id="6748217015615267851">Motor de redare: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Poți continua, dar numai datele și setările sincronizate vor fi restabilite. Toate datele locale se vor pierde.</translation>
 <translation id="6749006854028927059">Site-urile nu pot folosi cookie-uri pentru a vedea activitatea ta de navigare de pe diferite site-uri, de exemplu, pentru a personaliza anunțurile. Este posibil ca funcțiile de pe anumite site-uri să fie întrerupte.</translation>
 <translation id="6750757184909117990">Dezactivează rețeaua mobilă</translation>
@@ -5632,7 +5627,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8138082791834443598">Opțional: introdu informații noi sau actualizează informațiile existente, pentru a le asocia acestui dispozitiv.</translation>
 <translation id="8138217203226449454">Ai vrut să schimbi furnizorul de căutare?</translation>
 <translation id="813913629614996137">Se inițializează...</translation>
-<translation id="814016597952587568">Se afișează parolele din Contul Google</translation>
 <translation id="8140778357236808512">Importați un utilizator monitorizat existent</translation>
 <translation id="8141584439523427891">Se deschide acum în browserul secundar</translation>
 <translation id="8141725884565838206">Gestionați parolele</translation>
@@ -5744,7 +5738,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="827097179112817503">Afișează butonul Pagina principală</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 marcaj șters}few{# marcaje șterse}other{# de marcaje șterse}}</translation>
 <translation id="8272443605911821513">Gestionați extensiile dând clic pe Extensii în meniul „Mai multe instrumente”.</translation>
-<translation id="8274212285504931082">Permite Asistentului să îți arate informații legate de ce este afișat pe ecran</translation>
 <translation id="8274332263553132018">Proiectează fișierul</translation>
 <translation id="8274924778568117936">Nu închide și nu opri dispozitivul <ph name="DEVICE_TYPE" /> înainte să se finalizeze actualizarea. Dispozitivul <ph name="DEVICE_TYPE" /> va reporni după ce se finalizează instalarea.</translation>
 <translation id="8275038454117074363">Importă</translation>

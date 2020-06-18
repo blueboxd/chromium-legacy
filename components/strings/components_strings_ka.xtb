@@ -461,7 +461,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">ეს სერვერი ვერ ამტკიცებს, რომ ის არის <ph name="DOMAIN" />; მისი უსაფრთხოების სერტიფიკატი არის <ph name="DOMAIN2" /> .-დან. ეს შეიძლება იყოს გამოწვეული არასწორი კონფიგურაციით ან თავდამსხმელის მიერ თქვენი კავშირის გადაჭრით.</translation>
 <translation id="2943895734390379394">ატვირთვის დრო:</translation>
-<translation id="2944299917411283989">თქვენს Google ანგარიშში ძლიერი პაროლის შექმნა</translation>
 <translation id="2948083400971632585">კავშირებისთვის დაყენებული ნებისმიერი პროქსის გამორთვა შესაძლებელია პარამეტრების გვერდიდან.</translation>
 <translation id="2951588413176968965">ჩემი საფოსტო ყუთი</translation>
 <translation id="295526156371527179">გაფრთხილება: ეს წესები არ გაერთიანებულა ლექსიკონის სახით, წესებში აღწერილის შესაბამისად, ვინაიდან ისინი არ არის ლექსიკონი.</translation>
@@ -745,6 +744,7 @@
 <translation id="4165986682804962316">საიტის პარამეტრები</translation>
 <translation id="4171400957073367226">დამოწმების ცუდი ხელმოწერა</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> — <ph name="RESULT_OWNER" /> — <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">ყოველთვის ჩვენება</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{კიდევ <ph name="ITEM_COUNT" /> ერთეული}other{კიდევ <ph name="ITEM_COUNT" /> ერთეული}}</translation>
 <translation id="4176463684765177261">გამორთული</translation>
@@ -780,6 +780,7 @@
 <translation id="4235360514405112390">სწორია</translation>
 <translation id="4250431568374086873">თქვენი კავშირი ამ საიტთან სრულად დაცული არ არის</translation>
 <translation id="4250680216510889253">არა</translation>
+<translation id="4253168017788158739">შენიშვნა</translation>
 <translation id="425582637250725228">თქვენ მიერ განხორციელებული ცვლილებები შეიძლება არ შეინახოს.</translation>
 <translation id="4258748452823770588">ცუდი ხელმოწერა</translation>
 <translation id="4261046003697461417">დაცული დოკუმენტების ანოტირება ვერ მოხერხდება</translation>
@@ -893,6 +894,7 @@
 <translation id="4764776831041365478">ვებგვერდი <ph name="URL" />-ზე შეიძლება დროებით იყოს მწყობრიდან გამოსული ან შეიძლება ის სამუდამოდ გადავიდა ახალ ვებ მისამართზე.</translation>
 <translation id="4766713847338118463">ორმაგად დასტეპლერება ქვემოთ</translation>
 <translation id="4771973620359291008">დაფიქსირდა უცნობი შეცდომა.</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{ამომხტარი ფანჯარა დაიბლოკა}other{# ამომხტარი ფანჯარა დაიბლოკა}}</translation>
 <translation id="4780366598804516005">საფოსტო ყუთი 1</translation>
 <translation id="4780900888022378816">თქვენს მოწყობილობას მართავს <ph name="ENROLLMENT_DOMAIN" />, ხოლო თქვენს ანგარიშს — <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">ამ ჩანართზე გადართვა</translation>

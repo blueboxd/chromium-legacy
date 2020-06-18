@@ -326,8 +326,10 @@ RenderProcessHost* SiteInstanceImpl::GetProcess() {
 
 void SiteInstanceImpl::ReuseCurrentProcessIfPossible(
     RenderProcessHost* current_process) {
-  if (IsGuest() || HasProcess() || RequiresDedicatedProcess())
+  DCHECK(!IsGuest());
+  if (HasProcess())
     return;
+
   // We should not reuse the current process if the destination uses
   // process-per-site. Note that this includes the case where the process for
   // the site is not there yet (so we're going to create a new process).
@@ -335,13 +337,19 @@ void SiteInstanceImpl::ReuseCurrentProcessIfPossible(
   // process is used for a process-per-site site, it is ok to reuse this for the
   // new page (regardless of the site).
   if (HasSite() && RenderProcessHostImpl::ShouldUseProcessPerSite(
-                       browsing_instance_->GetBrowserContext(), site_))
+                       browsing_instance_->GetBrowserContext(), site_)) {
     return;
+  }
+
+  // Do not reuse the process if it's not suitable for this SiteInstance. For
+  // example, this won't allow reusing a process if it's locked to a site that's
+  // different from this SiteInstance's site.
   if (!current_process->MayReuseHost() ||
       !RenderProcessHostImpl::IsSuitableHost(
           current_process, GetIsolationContext(), site_.site_url(), lock_url(),
-          IsGuest()))
+          IsGuest())) {
     return;
+  }
   SetProcessInternal(current_process);
 }
 

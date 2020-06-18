@@ -434,10 +434,23 @@ void NGInlineLayoutAlgorithm::CreateLine(
     annotation_block_start = annotation_metrics.descent;
     annotation_block_end = annotation_metrics.ascent;
   }
-  // Borrow the bottom space of the previous line.
+
+  LayoutUnit block_offset_shift = annotation_block_start.ClampNegativeToZero();
+  // If the previous line has block-end annotation overflow and this line has
+  // block-start annotation space, shift up the block offset of this line.
+  if (ConstraintSpace().BlockStartAnnotationSpace() < LayoutUnit() &&
+      annotation_block_start < LayoutUnit()) {
+    const LayoutUnit overflow = -ConstraintSpace().BlockStartAnnotationSpace();
+    const LayoutUnit space = -annotation_block_start;
+    block_offset_shift = -std::min(space, overflow);
+  }
+
+  // If this line has block-start annotation overflow and the previous line has
+  // block-end annotation space, borrow the block-end space of the previous line
+  // and shift down the block offset by |overflow - space|.
   if (annotation_block_start > LayoutUnit() &&
       ConstraintSpace().BlockStartAnnotationSpace() > LayoutUnit()) {
-    annotation_block_start =
+    block_offset_shift =
         (annotation_block_start - ConstraintSpace().BlockStartAnnotationSpace())
             .ClampNegativeToZero();
   }
@@ -447,9 +460,8 @@ void NGInlineLayoutAlgorithm::CreateLine(
   container_builder_.SetBaseDirection(line_info->BaseDirection());
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
-  container_builder_.SetBfcBlockOffset(
-      line_info->BfcOffset().block_offset +
-      annotation_block_start.ClampNegativeToZero());
+  container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset +
+                                       block_offset_shift);
   if (annotation_block_end > LayoutUnit())
     container_builder_.SetAnnotationOverflow(annotation_block_end);
   else if (annotation_block_end < LayoutUnit())

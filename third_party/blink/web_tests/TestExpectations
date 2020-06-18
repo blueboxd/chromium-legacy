@@ -6774,3 +6774,4 @@ crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Ski
 # Sheriff 2020-06-17
 crbug.com/1095969 [ Mac ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 crbug.com/1092975 http/tests/inspector-protocol/target/target-expose-devtools-protocol.js [ Pass Failure ]
+crbug.com/1093836 fast/canvas/canvas-composite-text-alpha.html [ Pass Timeout ]

@@ -5660,7 +5660,7 @@ IN_PROC_BROWSER_TEST_P(
       static_cast<SiteInstanceImpl*>(
           web_contents->GetMainFrame()->GetSiteInstance());
 
-  // Check that A and B are in different SiteInstances (both are in default
+  // Check that A and B are in different BrowsingInstances (both are in default
   // SiteInstances of different BrowsingInstances) but have the same renderer
   // process.
   EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
@@ -5695,7 +5695,7 @@ IN_PROC_BROWSER_TEST_P(
       static_cast<SiteInstanceImpl*>(
           web_contents->GetMainFrame()->GetSiteInstance());
 
-  // Check that A and B are in different SiteInstances (both are in default
+  // Check that A and B are in different BrowsingInstances (both are in default
   // SiteInstances of different BrowsingInstances) and renderer processes.
   EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
   EXPECT_TRUE(a_site_instance->IsDefaultSiteInstance());
@@ -5755,7 +5755,7 @@ IN_PROC_BROWSER_TEST_P(
       static_cast<SiteInstanceImpl*>(
           web_contents->GetMainFrame()->GetSiteInstance());
 
-  // Check that A and B are in different SiteInstances (both are in default
+  // Check that A and B are in different BrowsingInstances (both are in default
   // SiteInstances of different BrowsingInstances) but have the same renderer
   // process.
   EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
@@ -5775,7 +5775,7 @@ IN_PROC_BROWSER_TEST_P(
       static_cast<SiteInstanceImpl*>(
           web_contents->GetMainFrame()->GetSiteInstance());
 
-  // Check that B and C are in different SiteInstances (both are in default
+  // Check that B and C are in different BrowsingInstances (both are in default
   // SiteInstances of different BrowsingInstances) and renderer processes.
   EXPECT_FALSE(b_site_instance->IsRelatedSiteInstance(c_site_instance.get()));
   EXPECT_TRUE(c_site_instance->IsDefaultSiteInstance());
@@ -5852,7 +5852,7 @@ IN_PROC_BROWSER_TEST_P(
       static_cast<SiteInstanceImpl*>(
           web_contents->GetMainFrame()->GetSiteInstance());
 
-  // Check that A and B are in different SiteInstances (both are in default
+  // Check that A and B are in different BrowsingInstances (both are in default
   // SiteInstances of different BrowsingInstances) but B should use the sole
   // process assigned to site B.
   EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
@@ -5865,6 +5865,529 @@ IN_PROC_BROWSER_TEST_P(
                 b_site_instance->GetIsolationContext(),
                 b_site_instance->GetSiteURL()));
 
+  SetBrowserClientForTesting(old_client);
+}
+
+// We should not reuse the current process on renderer-initiated navigations to
+// sites that require a dedicated process.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
+    NavigationToSiteThatRequiresDedicatedProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // The client will make sure b.com require a dedicated process.
+  EffectiveURLContentBrowserClient modified_client(
+      b_url /* url_to_modify */, b_url, true /* requires_dedicated_process */);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&modified_client);
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstanceImpl> a_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(a_site_instance->RequiresDedicatedProcess());
+
+  // 2) Navigate cross-site to B. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_TRUE(b_site_instance->RequiresDedicatedProcess());
+
+  // Check that A and B are in different BrowsingInstances and processes.
+  EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_NE(a_site_instance->GetProcess(), b_site_instance->GetProcess());
+  SetBrowserClientForTesting(old_client);
+}
+
+// We should not reuse the current process on renderer-initiated navigations to
+// sites that require a dedicated process.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
+    NavigationFromSiteThatRequiresDedicatedProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL b_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // The client will make sure a.com require a dedicated process.
+  EffectiveURLContentBrowserClient modified_client(
+      a_url /* url_to_modify */, a_url, true /* requires_dedicated_process */);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&modified_client);
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), a_url));
+  scoped_refptr<SiteInstanceImpl> a_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_TRUE(a_site_instance->RequiresDedicatedProcess());
+
+  // 2) Navigate cross-site to B. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), b_url));
+  scoped_refptr<SiteInstanceImpl> b_site_instance =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(b_site_instance->RequiresDedicatedProcess());
+
+  // Check that A and B are in different BrowsingInstances and processes.
+  EXPECT_FALSE(a_site_instance->IsRelatedSiteInstance(b_site_instance.get()));
+  EXPECT_NE(a_site_instance->GetProcess(), b_site_instance->GetProcess());
+  SetBrowserClientForTesting(old_client);
+}
+
+class ProactivelySwapBrowsingInstancesSameSiteTest
+    : public RenderFrameHostManagerTest {
+ public:
+  ProactivelySwapBrowsingInstancesSameSiteTest() {
+    std::map<std::string, std::string> parameters;
+    parameters[kProactivelySwapBrowsingInstanceLevelParameterName] = "SameSite";
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kProactivelySwapBrowsingInstance, parameters);
+  }
+
+  ~ProactivelySwapBrowsingInstancesSameSiteTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       RendererInitiatedSameSiteNavigationReusesProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Navigate to title2.html. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url_2));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and title2.html are in different BrowsingInstances
+  // but have the same renderer process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       BrowserInitiatedSameSiteNavigationReusesProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // 2) Navigate to title2.html. The navigation is browser initiated.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and title2.html are in different BrowsingInstances
+  // but have the same renderer process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+
+  // 3) Do a back navigation to title1.html.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_1);
+  scoped_refptr<SiteInstanceImpl> site_instance_1_history_nav =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We will reuse the SiteInstance and renderer process of |site_instance_1|.
+  EXPECT_EQ(site_instance_1_history_nav, site_instance_1);
+  EXPECT_EQ(site_instance_1_history_nav->GetProcess(),
+            site_instance_1->GetProcess());
+}
+
+// If the navigation is classified as NAVIGATION_TYPE_SAME_PAGE, or is a same
+// document navigation, we should not do a proactive BrowsingInstance swap.
+// TODO(crbug.com/536102): NAVIGATION_TYPE_SAME_PAGE will be removed in the
+// future, so we should update this test.
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       SamePageAndSameDocumentNavigationDoesNotSwap) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html#foo.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/title1.html#foo")));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Navigate from title1.html#foo to title1.html.
+  // This is a different-document, same-page navigation.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that #1 and #2 are in the same SiteInstance.
+  EXPECT_EQ(site_instance_1, site_instance_2);
+
+  // 3) Navigate from title1.html to title1.html.
+  // This is a different-document, same-page navigation.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should keep the same SiteInstance again.
+  EXPECT_EQ(site_instance_2, site_instance_3);
+
+  // 4) Navigate from title1.html to title1.html#foo.
+  // This is a same document navigation.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/title1.html#foo")));
+  scoped_refptr<SiteInstanceImpl> site_instance_4 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should keep the same SiteInstance again.
+  EXPECT_EQ(site_instance_3, site_instance_4);
+
+  // 5) Navigate from title1.html#foo to title1.html#foo.
+  // This is a different-document, same page navigation.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/title1.html#foo")));
+  scoped_refptr<SiteInstanceImpl> site_instance_5 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should keep the same SiteInstance again.
+  EXPECT_EQ(site_instance_4, site_instance_5);
+
+  // 6) Navigate from title1.html#foo to title1.html#bar.
+  // This is a same document navigation.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/title1.html#bar")));
+  scoped_refptr<SiteInstanceImpl> site_instance_6 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should keep the same SiteInstance again.
+  EXPECT_EQ(site_instance_5, site_instance_6);
+
+  // 7) Do a history navigation from title1.html#bar to title1.html#foo.
+  // This is a different-document, same-page history navigation.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  scoped_refptr<SiteInstanceImpl> site_instance_7 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // We should keep the same SiteInstance again.
+  EXPECT_EQ(site_instance_6, site_instance_7);
+}
+
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       ReloadDoesNotSwap) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Request a reload to happen when the controller becomes active (e.g.
+  // after the renderer gets killed in background on Android).
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  ASSERT_FALSE(controller.NeedsReload());
+  controller.SetNeedsReload();
+  ASSERT_TRUE(controller.NeedsReload());
+
+  // Set the controller as active, triggering the requested reload.
+  controller.SetActive(true);
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+  ASSERT_FALSE(controller.NeedsReload());
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Check that we're still in the same SiteInstance.
+  EXPECT_EQ(site_instance_1, site_instance_2);
+
+  // 3) Trigger reload using Reload().
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+  }
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Check that we're still in the same SiteInstance.
+  EXPECT_EQ(site_instance_2, site_instance_3);
+
+  // 4) Trigger reload using location.reload().
+  {
+    TestNavigationObserver reload_observer(shell()->web_contents());
+    EXPECT_TRUE(ExecuteScript(shell(), "location.reload();"));
+    reload_observer.Wait();
+    EXPECT_TRUE(reload_observer.last_navigation_succeeded());
+  }
+  scoped_refptr<SiteInstanceImpl> site_instance_4 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Check that we're still in the same SiteInstance.
+  EXPECT_EQ(site_instance_3, site_instance_4);
+
+  // 5) Do a replaceState to another URL.
+  {
+    GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+    TestNavigationObserver observer(web_contents);
+    std::string script =
+        "history.replaceState({}, '', '/" + url_2.spec() + "')";
+    EXPECT_TRUE(ExecJs(root, script));
+    observer.Wait();
+  }
+  scoped_refptr<SiteInstanceImpl> site_instance_5 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Check that we're still in the same SiteInstance.
+  EXPECT_EQ(site_instance_4, site_instance_5);
+
+  // 6) Reload after a replaceState by simulating the user hitting Enter in the
+  // omnibox without changing the URL.
+  {
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().LoadURL(web_contents->GetLastCommittedURL(),
+                                          Referrer(), ui::PAGE_TRANSITION_LINK,
+                                          std::string());
+    observer.Wait();
+  }
+  scoped_refptr<SiteInstanceImpl> site_instance_6 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // Check that we're still in the same SiteInstance.
+  EXPECT_EQ(site_instance_5, site_instance_6);
+}
+
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       SwapOnNavigationToPageThatRedirects) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  // This is a same-site URL, and will redirect to another same-site URL.
+  GURL same_site_redirector_url(
+      embedded_test_server()->GetURL("/server-redirect?" + url_2.spec()));
+  GURL url_3(embedded_test_server()->GetURL("/title3.html"));
+  // This is a cross-site URL, but will redirect to a same-site URL.
+  GURL cross_site_redirector_url(embedded_test_server()->GetURL(
+      "b.com", "/server-redirect?" + url_3.spec()));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Go to a same-site URL that will redirect us same-site to /title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), same_site_redirector_url,
+                            url_2 /* expected_commit_url */));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that we are using a different BrowsingInstance but still using the
+  // same renderer process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
+
+  // 3) Go to a cross-site URL that will redirect us same-site to /title3.html.
+  // Note that we're using a renderer-initiated navigation here. If we do a
+  // browser-initiated navigation, it will hit the case at crbug.com/1094147
+  // where we can't reuse |url_2|'s process even though |url_3| is same-site.
+  // TODO(crbug.com/1094147): Test with browser-initiated navigation too once
+  // the issue is fixed.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), cross_site_redirector_url,
+                                        url_3 /* expected_commit_url */));
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that we are using a different BrowsingInstance but still using the
+  // same renderer process.
+  EXPECT_FALSE(site_instance_2->IsRelatedSiteInstance(site_instance_3.get()));
+  EXPECT_EQ(site_instance_2->GetProcess(), site_instance_3->GetProcess());
+}
+
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       DoNotSwapWhenReplacingHistoryEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Do a location.replace() to title2.html.
+  {
+    TestNavigationObserver navigation_observer(shell()->web_contents(), 1);
+    EXPECT_TRUE(
+        ExecJs(shell(), JsReplace("window.location.replace($1)", url_2)));
+    navigation_observer.Wait();
+    EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+    EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), url_2);
+  }
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_EQ(site_instance_1, site_instance_2);
+}
+
+// When we do a same-document navigation from A to A#foo then a navigation that
+// does replacement (e.g., cross-process reload, or location.replace, or other
+// client redirects) such that B takes the place of A#foo, we can go back to A
+// with the back navigation. In this case, we might want to do a proactive BI
+// swap so that page A can be bfcached.
+// However, this test is currently disabled because we won't swap on any
+// navigation that will replace the current history entry.
+// TODO(rakina): Support this case.
+IN_PROC_BROWSER_TEST_P(
+    ProactivelySwapBrowsingInstancesSameSiteTest,
+    DISABLED_ShouldSwapWhenReplacingEntryWithSameDocumentPreviousEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_1_anchor(embedded_test_server()->GetURL("/title1.html#foo"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate to title1.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Navigate same-document to title1.html#foo.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1_anchor));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_EQ(site_instance_1, site_instance_2);
+
+  // 3) Do a location.replace() to title2.html.
+  {
+    TestNavigationObserver navigation_observer(web_contents, 1);
+    EXPECT_TRUE(
+        ExecJs(shell(), JsReplace("window.location.replace($1)", url_2)));
+    navigation_observer.Wait();
+    EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), url_2);
+  }
+  scoped_refptr<SiteInstanceImpl> site_instance_3 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  // We should swap BrowsingInstance here so that the page at url_1 (which is
+  // now the previous history entry) can be bfcached.
+  EXPECT_NE(site_instance_2, site_instance_3);
+
+  // Assert that a back navigation will go to |url_1|.
+  {
+    TestNavigationObserver navigation_observer(web_contents);
+    web_contents->GetController().GoBack();
+    navigation_observer.Wait();
+    EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+    EXPECT_EQ(web_contents->GetLastCommittedURL(), url_1);
+  }
+}
+
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       DoNotSwapWhenRelatedContentsPresent) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  // 1) Navigate and open a new window.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  OpenPopup(shell(), url_1, "foo");
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // 2) Navigate to title2.html.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+
+  // Check that title1.html and title2.html are using the same SiteInstance.
+  EXPECT_EQ(site_instance_1, site_instance_2);
+}
+
+// We should reuse the current process on same-site navigations even if the
+// site requires a dedicated process (because we are still in the same site).
+IN_PROC_BROWSER_TEST_P(ProactivelySwapBrowsingInstancesSameSiteTest,
+                       NavigationToSiteThatRequiresDedicatedProcess) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_1(embedded_test_server()->GetURL("/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("/title2.html"));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  // Make sure the site require a dedicated process.
+  EffectiveURLContentBrowserClient modified_client(
+      url_1 /* url_to_modify */, url_1, /* requires_dedicated_process */ true);
+  ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&modified_client);
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  scoped_refptr<SiteInstanceImpl> site_instance_1 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_TRUE(site_instance_1->RequiresDedicatedProcess());
+
+  // 2) Navigate cross-site to B. The navigation is document/renderer initiated.
+  EXPECT_TRUE(NavigateToURLFromRenderer(shell(), url_2));
+  scoped_refptr<SiteInstanceImpl> site_instance_2 =
+      static_cast<SiteInstanceImpl*>(
+          web_contents->GetMainFrame()->GetSiteInstance());
+  EXPECT_TRUE(site_instance_2->RequiresDedicatedProcess());
+
+  // Check that A and B are in different BrowsingInstances but reuse the same
+  // process.
+  EXPECT_FALSE(site_instance_1->IsRelatedSiteInstance(site_instance_2.get()));
+  EXPECT_EQ(site_instance_1->GetProcess(), site_instance_2->GetProcess());
   SetBrowserClientForTesting(old_client);
 }
 
@@ -7075,6 +7598,9 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     ProactivelySwapBrowsingInstancesCrossSiteReuseProcessTest,
     testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ProactivelySwapBrowsingInstancesSameSiteTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 INSTANTIATE_TEST_SUITE_P(All,
                          RenderFrameHostManagerUnloadBrowserTest,
                          testing::ValuesIn(RenderDocumentFeatureLevelValues()));

@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">ウェブサイトにログイン</translation>
 <translation id="1509960214886564027">多くサイトで機能を使用できなくなる可能性があります</translation>
 <translation id="152234381334907219">常に保存しない</translation>
+<translation id="1535268707340844072">現在の設定によって一部のサイトが影響を受ける可能性があります。すべてのサイトの Cookie を管理するには、<ph name="BEGIN_LINK" />Cookie の設定<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1552525382687785070">同期は管理者により無効にされています</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">最終同期: <ph name="DAYS" /> 日前</translation>
 <translation id="2074131957428911366">同期する項目はいつでも [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で選択できます。</translation>
 <translation id="2079545284768500474">元に戻す</translation>
+<translation id="2081417079511601293">シークレット モードでサードパーティの Cookie をブロック</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3037605927509011580">エラー</translation>
 <translation id="3112556859945124369">マーク...</translation>
+<translation id="3131206671572504478">すべてブロック</translation>
 <translation id="3153862085237805241">カードを保存</translation>
 <translation id="3157684681743766797">すべてマーク...</translation>
 <translation id="3161291298470460782">この操作を行うと、ログアウトして同期がオフになり、このデバイスから Chrome のデータがすべて削除されます。同期データは Google アカウントに残ります。</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">タップして言語を変更できます。</translation>
 <translation id="441868831736628555">プライバシーに関するお知らせ</translation>
 <translation id="4454246407045105932">言語の追加</translation>
+<translation id="4469418912670346607">設定を続行</translation>
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">タブを追加してページを切り替えることができます</translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
@@ -300,6 +304,7 @@
 <translation id="4805759445554688327">無効なカード番号</translation>
 <translation id="4818522717893377262">言語を追加...</translation>
 <translation id="481968316161811770">Cookie、サイトデータ</translation>
+<translation id="4826218269716039351">サードパーティの Cookie をブロック</translation>
 <translation id="4833786495304741580">使用統計情報や障害レポートを Google に自動送信します。</translation>
 <translation id="4840495572919996524">ブックマーク、履歴、パスワードなどの設定は Google アカウントと同期されなくなります。</translation>
 <translation id="4854345657858711387">パスコードの設定</translation>
@@ -345,6 +350,7 @@
 <translation id="54401264925851789">ページのセキュリティ情報</translation>
 <translation id="5443952882982198570">クレジット カード</translation>
 <translation id="5457907402803865181">パスワードの同期中にエラーが発生しました。</translation>
+<translation id="5489208564673669003">すべてのサイトの Cookie を管理するには、<ph name="BEGIN_LINK" />Cookie の設定<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="5508435575041083207">ログアウトしてこのデバイスからデータを消去</translation>
 <translation id="5525269841082836315">パスフレーズの作成</translation>
 <translation id="5548760955356983418">Handoffを使うと、このデバイスで見ているウェブサイトの続きをMacで見ることができます。現在開いているウェブサイトはMacのDockに表示されます。
@@ -432,6 +438,7 @@
 <translation id="6418346271604475326">PDF を準備しています</translation>
 <translation id="6426067060178468363">Cookie を許可する</translation>
 <translation id="6434591244308415567">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
+<translation id="6439338047467462846">すべて許可</translation>
 <translation id="6445051938772793705">国名</translation>
 <translation id="6445981559479772097">メッセージ送信完了。</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -439,6 +446,7 @@
 <translation id="6476800141292307438">ページを<ph name="LANGUAGE" />に翻訳しています。画面の下の方にオプションがあります。</translation>
 <translation id="648164694371393720">認証エラー</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を削除しました</translation>
+<translation id="651505212789431520">同期をキャンセルしますか？同期は設定でいつでもオンにできます。</translation>
 <translation id="6561262006871132942">拡大</translation>
 <translation id="6610002944194042868">翻訳オプション</translation>
 <translation id="6628106477656132239">無効な有効期限</translation>
@@ -462,6 +470,7 @@
 <translation id="681368974849482173">作成済みのアイテム</translation>
 <translation id="6831043979455480757">翻訳</translation>
 <translation id="6851516051005285358">PC 版サイトを見る</translation>
+<translation id="6856384753476268833">組織によって管理されています。</translation>
 <translation id="6858855187367714033">スキャンされました</translation>
 <translation id="6859944681507688231">QR コードまたはクレジット カードをスキャンするには、設定でカメラを有効にしてください。</translation>
 <translation id="6873263987691478642">分割表示</translation>
@@ -521,6 +530,7 @@
 <translation id="7600965453749440009"><ph name="LANGUAGE" />を翻訳しない</translation>
 <translation id="7603852183842204213">ブロックしたポップアップ: <ph name="NUMBER_OF_BLOCKED_POPUPS" /></translation>
 <translation id="7638584964844754484">パスフレーズが正しくありません</translation>
+<translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="766891008101699113">ウェブをプライベートに閲覧するには新しいタブを追加してください。</translation>
 <translation id="7671141431838911305">インストール</translation>
@@ -534,12 +544,12 @@
 <translation id="7781829728241885113">昨日</translation>
 <translation id="778855399387580014">新しい Chrome タブで検索を開始します。</translation>
 <translation id="7791543448312431591">追加</translation>
-<translation id="7828557259026017104">Cookie は、アクセスしたサイトによって作成されるファイルです。サイトではこのファイルを使用して各ユーザーが行なった設定が記憶されます。2 つ目の「サードパーティの Cookie」は、他のサイト、つまり現在ウェブページに表示されているコンテンツの一部（広告、画像など）を所有しているサイトによって作成されます。</translation>
 <translation id="7839985698273989086">オフライン ページ</translation>
 <translation id="7840771868269352570">選択したアイテムが削除されます。</translation>
 <translation id="7856733331829174190">ダウンロードできませんでした</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
 <translation id="7887198238286927132">プライバシー保護のため、Chrome ではこの欄の自動入力は行われません。</translation>
+<translation id="791251013315685175"><ph name="COMPANY" /> によって管理されています。</translation>
 <translation id="7918293828610777738">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> &gt; [<ph name="READ_LATER_TEXT" />] をタップします。</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">パスワードをエクスポート...</translation>

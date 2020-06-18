@@ -322,15 +322,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="1530812829012954197">Luôn hiển thị các mẫu URL sau đây trong trình duyệt chính</translation>
 <translation id="1553532014072799546">Danh sách cho phép về giới hạn thời gian cho mỗi ứng dụng</translation>
 <translation id="1553956579506604198">Chặn không cho cài đặt các tiện ích bên ngoài</translation>
-<translation id="1556072857949466438">Chính sách này cho phép quản trị viên chỉ định rằng trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
-
-      Khi bạn đặt chính sách này thành bật, các trang sẽ được phép hiển thị cửa sổ bật lên khi đang hủy tải trang.
-
-      Khi bạn không đặt chính sách này hoặc đặt chính sách thành tắt, các trang sẽ không được phép hiển thị cửa sổ bật lên khi đang hủy tải trang, theo thông số kỹ thuật (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
-
-      Chính sách này sẽ bị loại bỏ trong Chrome 88.
-
-      Vui lòng xem tại https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="1560205870554624777">Kiểm soát việc có bật chức năng Kerberos hay không. Kerberos là một giao thức xác thực có thể dùng để xác thực cho các ứng dụng web và các mục chia sẻ tệp.
 
           Nếu bạn bật chính sách này thì chức năng Kerberos sẽ bật. Người dùng có thể thêm các tài khoản Kerberos thông qua chính sách 'Định cấu hình các tài khoản Kerberos' hoặc thông qua phần cài đặt của Tài khoản Kerberos trên trang cài đặt Mọi người.
@@ -705,13 +696,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 
       Nếu bạn không đặt chính sách này, thì tính năng phát hiện che kín sẽ bật.</translation>
 <translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
-<translation id="2166746572083670600">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ dùng để lưu trữ dữ liệu người dùng.
-
-      Nếu bạn đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ dùng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--user-data-dir' hay không. Để tránh mất mát dữ liệu hoặc các lỗi không mong muốn khác, bạn không nên chọn tùy chọn thư mục dùng cho các mục đích khác cho chính sách này, bởi vì <ph name="PRODUCT_NAME" /> quản lý các nội dung trong thư mục này.
-
-      Truy cập vào https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể dùng.
-
-      Nếu bạn không đặt chính sách này, thì đường dẫn mặc định của hồ sơ sẽ được dùng và người dùng có thể ghi đè chính sách này bằng cờ dòng lệnh '--user-data-dir'.</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="217013996107840632">Các tham số dòng lệnh để chuyển từ trình duyệt thay thế.</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
@@ -1021,11 +1005,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
 <translation id="2517466659416174529">Cho phép đóng băng các tab chạy trong nền</translation>
 <translation id="2518231489509538392">Cho phép phát âm thanh</translation>
 <translation id="2521581787935130926">Hiển thị lối tắt ứng dụng trong thanh dấu trang</translation>
-<translation id="2526082146909867346">Cho phép bạn chỉ định danh sách các mẫu url. Những mẫu url này chỉ định các trang web mà <ph name="PRODUCT_NAME" /> sẽ tự động chọn một chứng chỉ ứng dụng khách, nếu trang web yêu cầu chứng chỉ.
-
-          Giá trị phải là một mảng từ điển JSON dạng chuỗi. Mỗi từ điển phải có dạng <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, trong đó <ph name="URL_PATTERN_PLACEHOLDER" /> là một mẫu tùy chọn cài đặt nội dung. <ph name="FILTER_PLACEHOLDER" /> giới hạn các chứng chỉ ứng dụng khách mà trình duyệt sẽ tự động chọn. Bất kể bộ lọc là gì, chỉ các chứng chỉ khớp với yêu cầu chứng chỉ của máy chủ mới được chọn. Ví dụ: nếu <ph name="FILTER_PLACEHOLDER" /> có dạng <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />, thì chỉ các chứng chỉ ứng dụng khách do chứng chỉ có CommonName <ph name="ISSUER_CN_PLACEHOLDER" /> cấp mới được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> chứa phần <ph name="ISSUER_STRING_VALUE" /> và <ph name="SUBJECT_STRING_VALUE" />, thì chứng chỉ ứng dụng khách phải thỏa mãn cả hai điều kiện để được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> chỉ định một tổ chức ("O"), thì chứng chỉ phải có ít nhất một tổ chức khớp với giá trị đã chỉ định để được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> chỉ định một đơn vị tổ chức ("OU"), thì chứng chỉ phải có ít nhất một đơn vị tổ chức khớp với giá trị đã chỉ định để được chọn. Nếu <ph name="FILTER_PLACEHOLDER" /> là từ điển trống <ph name="EMPTY_DICTIONARY" />, thì việc chọn chứng chỉ ứng dụng khách sẽ không có các hạn chế bổ sung.
-
-          Nếu bạn không đặt chính sách này, thì sẽ không có thao tác tự động chọn nào được thực hiện cho bất kỳ trang web nào.</translation>
 <translation id="2528659559494311776">Chính sách này kiểm soát một tính năng bảo mật trong TLS 1.3 giúp bảo vệ các đường kết nối khỏi các cuộc tấn công hạ cấp. Tính năng này có khả năng tương thích ngược và sẽ không ảnh hưởng đến các đường kết nối tới proxy hoặc máy chủ TLS 1.2 tuân thủ. Tuy nhiên, các phiên bản cũ của một số proxy chặn TLS hiện có một lỗi triển khai gây ra tình trạng không tương thích.
 
       Nếu bạn không đặt hoặc đặt chính sách này thành True, thì <ph name="PRODUCT_NAME" /> sẽ bật các biện pháp bảo vệ an ninh này cho mọi đường kết nối.
@@ -2257,12 +2236,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="4325690621216251241">Thêm một nút đăng xuất vào khay hệ thống</translation>
 <translation id="4332177773549877617">Ghi lại các sự kiện cho lượt cài đặt ứng dụng Android</translation>
 <translation id="4343382787226139147">Chỉ định chứng chỉ ứng dụng cần được đăng ký bằng giao thức quản lý thiết bị.</translation>
-<translation id="4346674324214534449">Cho phép bạn thiết lập xem có chặn quảng cáo trên các trang web chứa quảng cáo xâm nhập hay không.
-
-      Nếu bạn đặt chính sách này thành 2, quảng cáo sẽ bị chặn trên các trang web chứa quảng cáo xâm nhập.
-      Tuy nhiên, hành vi này sẽ không kích hoạt nếu bạn đặt chính sách SafeBrowsingEnabled thành False.
-      Nếu bạn đặt chính sách này thành 1, quảng cáo sẽ không bị chặn trên các trang web chứa quảng cáo xâm nhập.
-      Nếu bạn không đặt chính sách này, tùy chọn 2 sẽ được sử dụng.</translation>
 <translation id="4347908978527632940">Nếu đúng và người dùng là người dùng được giám sát thì các ứng dụng Android khác có thể truy vấn các giới hạn web của người dùng thông qua nhà cung cấp nội dung.
 
           Nếu sai hoặc chưa đặt thì nhà cung cấp nội dung sẽ không trả về thông tin nào.</translation>
@@ -2491,11 +2464,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       <ph name="PAGE_SIZE_NAME" /> nên chứa một trong các định dạng được liệt kê hoặc giá trị "tùy chỉnh" nếu kích thước giấy bắt buộc không có trong danh sách đó. Nếu cung cấp giá trị "tùy chỉnh", thì bạn nên chỉ định thuộc tính <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Thuộc tính này mô tả chiều dài và chiều rộng mong muốn tính bằng micromet. Nếu không, bạn không nên chỉ định thuộc tính <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Chính sách vi phạm những quy tắc này sẽ bị bỏ qua.
 
       Nếu kích thước trang không có sẵn trên máy in mà người dùng chọn, thì chính sách này sẽ bị bỏ qua.</translation>
-<translation id="4788252609789586009">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành thông tin thẻ tín dụng trong biểu mẫu web bằng cách sử dụng thông tin đã lưu trữ trước đây.
-
-      Nếu bạn tắt tùy chọn cài đặt này, thì tính năng Tự động điền sẽ không bao giờ gợi ý hoặc điền thông tin thẻ tín dụng, đồng thời sẽ không lưu thông tin thẻ tín dụng bổ sung mà người dùng có thể gửi trong khi duyệt web.
-
-      Nếu bạn bật hoặc không đặt giá trị nào cho tùy chọn cài đặt này, thì người dùng có thể kiểm soát tính năng Tự động điền cho thẻ tín dụng trong giao diện người dùng.</translation>
 <translation id="4802744647065138872">Giới hạn số lượng ảnh chụp nhanh dữ liệu người dùng được giữ lại để sử dụng trong trường hợp khôi phục khẩn cấp.</translation>
 <translation id="4802905909524200151">Định cấu hình hành vi của bản cập nhật chương trình cơ sở <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Luôn khởi động lại khi đăng xuất người dùng.</translation>
@@ -2542,14 +2510,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
           Chính sách này chỉ được tuân theo nếu kích hoạt chính sách 'DefaultSearchProviderEnabled'.</translation>
 <translation id="489803897780524242">Tham số kiểm soát vị trí cụm từ tìm kiếm cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="4899708173828500852">Bật Duyệt web an toàn</translation>
-<translation id="4899802251198446659">Cho phép bạn kiểm soát xem có thể tự động phát video chứa nội dung âm thanh trong <ph name="PRODUCT_NAME" /> (khi chưa có sự đồng ý của người dùng) hay không.
-
-      Nếu bạn đặt chính sách thành True, thì <ph name="PRODUCT_NAME" /> sẽ được phép tự động phát phương tiện.
-      Nếu bạn đặt chính sách thành False, thì <ph name="PRODUCT_NAME" /> sẽ không được phép tự động phát phương tiện. Có thể sử dụng chính sách AutoplayWhitelist để ghi đè chính sách này đối với một số mẫu URL.
-      Theo mặc định, <ph name="PRODUCT_NAME" /> sẽ không được phép tự động phát nội dung phương tiện. Có thể sử dụng chính sách AutoplayWhitelist đề ghi đè chính sách này đối với một số mẫu URL.
-
-      Xin lưu ý rằng nếu <ph name="PRODUCT_NAME" /> đang chạy và chính sách này thay đổi, thì chính sách này sẽ chỉ áp dụng cho những tab mới mở. Do vậy, một số tab có thể vẫn hoạt động như cũ.
-      </translation>
 <translation id="4906194810004762807">Chính sách tốc độ làm mới cho thiết bị</translation>
 <translation id="4917385247580444890">Mạnh</translation>
 <translation id="4919122295221518724">Cho phép thắt chặt việc xử lý nội dung hỗn hợp</translation>
@@ -2739,15 +2699,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5182483318861266793">Đặt giá ở bên phải màn hình</translation>
 <translation id="5183383917553127163">Cho phép bạn chỉ định các tiện ích không thuộc danh sách đen. Giá trị danh sách đen là * có nghĩa là tất cả tiện ích đều được đưa vào danh sách đen và người dùng chỉ có thể cài đặt các tiện ích trong danh sách trắng. Theo mặc định, tất cả tiện ích đều được đưa vào danh sách trắng nhưng nếu tất cả tiện ích đều đã được đưa vào danh sách đen theo chính sách thì có thể sử dụng danh sách trắng để ghi đè chính sách đó.</translation>
 <translation id="519247340330463721">Định cấu hình các chính sách liên quan đến Duyệt web an toàn.</translation>
-<translation id="5192837635164433517">Cho phép sử dụng các trang lỗi thay thế được tích hợp vào  <ph name="PRODUCT_NAME" /> (chẳng hạn như 'không tìm thấy trang') và ngăn người dùng thay đổi cài đặt này.
-
-      Nếu bạn bật cài đặt này, các trang lỗi thay thế sẽ được sử dụng.
-
-      Nếu bạn tắt cài đặt này, các trang lỗi thay thế sẽ không bao giờ được sử dụng.
-
-      Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-      Nếu chính sách này không được đặt, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="5196520640744454600">Bật phím cố định trên màn hình đăng nhập</translation>
 <translation id="5196805177499964601">Chặn chế độ của nhà phát triển.
 
@@ -2854,11 +2805,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu đặt thành true hoặc không đặt, thì người dùng được phép sử dụng Crostini miễn là các tùy chọn cài đặt khác cũng cho phép sử dụng Crostini.
       Để cho phép chạy Crostini, bạn Cần đặt tất cả ba chính sách, VirtualMachinesAllowed, CrostiniAllowed và DeviceUnaffiliatedCrostiniAllowed thành true.
       Khi đổi chính sách này thành false, chính sách sẽ áp dụng cho quá trình khởi động các vùng chứa Crostini mới nhưng không tắt các vùng chứa đang chạy.</translation>
-<translation id="5277914408935179830">Chính sách này kiểm soát việc xử lý nội dung hỗn hợp (nội dung HTTP trên các trang web HTTPS) trong trình duyệt.
-       Nếu bạn không đặt hoặc đặt chính sách này thành true, thì nội dung hỗn hợp là âm thanh và video sẽ được nâng cấp tự động lên HTTPS (tức là URL sẽ được viết lại dưới dạng HTTPS mà không có phiên bản dự phòng nếu không có sẵn tài nguyên qua HTTPS), còn với nội dung hỗn hợp là hình ảnh thì một cảnh báo 'Không bảo mật' sẽ hiển thị trong thanh URL.
-       Nếu bạn đặt chính sách này thành false, thì âm thanh và video sẽ không được nâng cấp tự động, còn với hình ảnh thì sẽ không hiển thị cảnh báo nào.
-       Chính sách này không ảnh hưởng đến các loại nội dung hỗn hợp khác ngoài âm thanh, video và hình ảnh.
-       Chính sách này sẽ không có hiệu lực từ <ph name="PRODUCT_NAME" /> phiên bản 84 nữa.</translation>
 <translation id="5283457834853986457">Tắt trình tìm kiếm plugin (không được dùng nữa)</translation>
 <translation id="5285315763984334157">Chặn tệp độc hại đã tải xuống</translation>
 <translation id="5288772341821359899">Nếu đã đặt chính sách, phạm vi cổng UDP mà WebRTC sử dụng sẽ được hạn chế đến phạm vi cổng được chỉ định (đã bao gồm cả điểm cuối).
@@ -3083,15 +3029,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Nếu bạn không đặt hoặc đặt chính sách này thành false, thì cảnh báo sẽ xuất hiện trên các máy tính hoặc hệ điều hành không được hỗ trợ nêu trên.</translation>
 <translation id="5565178130821694365">Yêu cầu cứ 2 ngày (48 giờ) nhập mật khẩu một lần</translation>
-<translation id="556564360355507488">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trên thiết bị <ph name="PRODUCT_OS_NAME" /> do doanh nghiệp quản lý.
-
-      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_OS_NAME" /> mà không cần gửi phiên bản mới bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
-
-      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả biến thể cho <ph name="PRODUCT_OS_NAME" />.
-
-      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_OS_NAME" />.
-
-      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả biến thể cho trình duyệt trên màn hình đăng nhập. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_OS_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="5566210228171064229">Cho phép in khi có và không có mã PIN</translation>
 <translation id="557360560705413259">Khi cài đặt này được bật, <ph name="PRODUCT_NAME" /> sẽ sử dụng commonName của chứng chỉ máy chủ để khớp với tên máy chủ nếu chứng chỉ thiếu tiện ích subjectAlternativeName miễn là chứng chỉ xác thực thành công và liên kết với chứng chỉ CA được cài đặt cục bộ.
 
@@ -3146,9 +3083,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       LƯU Ý: Chính sách này chỉ áp dụng cho Chrome trên Android chạy trên các thiết bị có hơn 1GB RAM. Để áp dụng chính sách này trên các nền tảng không phải Android, hãy sử dụng IsolateOrigins.
       </translation>
-<translation id="5595998409088126162">Nếu bạn đặt chính sách này, thì danh sách dấu trang sẽ được thiết lập, trong đó mỗi dấu trang là một từ điển có khóa "<ph name="NAME" />" và "<ph name="URL_LABEL" />". Những khóa này lưu giữ tên và đích của dấu trang. Quản trị viên có thể thiết lập thư mục con bằng cách xác định một dấu trang không có khóa "<ph name="URL_LABEL" />" nhưng có khóa "<ph name="CHILDREN" />" bổ sung. Khóa này cũng có danh sách dấu trang và một số dấu trang trong đó cũng có thể là thư mục. Chrome sẽ sửa đổi các URL chưa hoàn chỉnh như thể các URL đó được gửi qua thanh địa chỉ. Ví dụ: "<ph name="GOOGLE_COM" />" trở thành "<ph name="HTTPS_GOOGLE_COM" />".
-
-      Người dùng không thể thay đổi thư mục có chứa dấu trang (nhưng họ có thể ẩn thư mục đó khỏi thanh dấu trang). Tên thư mục là "Dấu trang được quản lý" nhưng họ có thể thêm tên đó vào danh sách dấu trang, một từ điển chứa khóa "<ph name="TOPLEVEL_NAME" />" với giá trị là tên thư mục mong muốn. Dấu trang được quản lý không đồng bộ hóa với tài khoản người dùng và các tiện ích không có quyền sửa đổi các dấu trang đó.</translation>
 <translation id="5599461642204007579">Cài đặt quản lý <ph name="MS_AD_NAME" /></translation>
 <translation id="5618398258385745432">Sử dụng tùy chọn cài đặt được liên kết trước khi đưa vào xác thực lại việc xem mật khẩu. Vì khi đó, tùy chọn cài đặt và chính sách này theo đó không ảnh hưởng đến hoạt động của Chrome. Lúc này, hoạt động hiện tại của Chrome sẽ giống như thể chính sách đã được đặt thành tắt hiển thị mật khẩu ở dạng văn bản rõ ràng trong trang cài đặt của trình quản lý mật khẩu. Điều đó có nghĩa là trang cài đặt chỉ chứa một trình giữ chỗ và chỉ khi người dùng nhấp vào "Hiển thị" (và xác thực lại, nếu cần), thì Chrome mới hiển thị mật khẩu. Mô tả gốc của chính sách như sau.
 
@@ -3257,13 +3191,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5809728392451418079">Đặt tên hiển thị cho tài khoản trong thiết bị</translation>
 <translation id="5814301096961727113">Đặt trạng thái phản hồi bằng giọng nói mặc định trên màn hình đăng nhập</translation>
 <translation id="5815129011704381141">Tự động khởi động lại sau khi cập nhật</translation>
-<translation id="5815353477778354428">Định cấu hình thư mục mà <ph name="PRODUCT_FRAME_NAME" /> sẽ sử dụng để lưu trữ dữ liệu người dùng.
-
-      Nếu bạn đặt chính sách này, <ph name="PRODUCT_FRAME_NAME" /> sẽ sử dụng thư mục được cung cấp.
-
-      Truy cập http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để xem danh sách các biến có thể sử dụng.
-
-      Nếu bạn không đặt cài đặt này, thư mục hồ sơ mặc định sẽ được sử dụng.</translation>
 <translation id="582857022372205358">Bật chế độ in hai mặt với cạnh ngắn</translation>
 <translation id="583091600226586337">
       Nếu bạn bật chính sách này thì người dùng sẽ được hỏi vị trí lưu mỗi tệp trước khi tải xuống.
@@ -3275,17 +3202,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 
       Các URL (như https://example.com/some/path) sẽ chỉ khớp dưới dạng U2F appID. Các miền (như example.com) chỉ khớp dưới dạng ID RP webauthn. Do đó, để bao gồm cả API U2F và API webauthn cho một trang web cho trước, cần liệt kê cả miền và URL appID.</translation>
 <translation id="5836064773277134605">Hạn chế phạm vi cổng UDP được máy chủ truy cập từ xa sử dụng</translation>
-<translation id="5844300486330234296">Kiểm soát danh sách cho phép gồm các mẫu URL luôn bật chính sách tự động phát.
-
-      Nếu bạn bật chính sách tự động phát, thì video có thể tự động phát (mà không cần người dùng cho phép) nội dung âm thanh trong <ph name="PRODUCT_NAME" />.
-
-      Nếu bạn đặt AutoplayAllowed thành True, thì chính sách này sẽ không có hiệu lực.
-
-      Nếu bạn đặt chính sách AutoplayAllowed thành False, thì các mẫu URL bạn thiết lập trong chính sách này vẫn sẽ được phép phát.
-
-      Lưu ý rằng nếu chính sách này thay đổi khi <ph name="PRODUCT_NAME" /> đang chạy, thì chính sách sẽ chỉ áp dụng cho các thẻ mới mở. Vì vậy, một số thẻ có thể vẫn tuân theo hành vi trước đó.
-
-      Để biết thông tin chi tiết về mẫu URL hợp lệ, vui lòng xem tại https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="585270638818921943">Ngăn người dùng sử dụng các ứng dụng Android từ những nguồn không tin cậy</translation>
 <translation id="5855010364142818361">Chính sách này kiểm soát các tham số dòng lệnh dành cho Chrome từ Internet Explorer.
 
@@ -3878,15 +3794,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="6786747875388722282">Tiện ích</translation>
 <translation id="6786967369487349613">Đặt thư mục hồ sơ chuyển vùng</translation>
 <translation id="6795485990775913659">Chỉ cho phép in khi không có mã PIN</translation>
-<translation id="6799657852647827750">Việc định cấu hình chính sách này sẽ cho phép chỉ định những biến thể được phép áp dụng trong <ph name="PRODUCT_NAME" />.
-
-      Biến thể là phương tiện để sửa đổi <ph name="PRODUCT_NAME" /> mà không cần gửi phiên bản mới của trình duyệt bằng cách bật hoặc tắt những tính năng đã có một cách chọn lọc.
-
-      Việc đặt <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (giá trị 0) hoặc không đặt chính sách này sẽ cho phép áp dụng tất cả biến thể cho trình duyệt.
-
-      Việc đặt <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (giá trị 1) sẽ chỉ cho phép áp dụng những biến thể được xem là bản sửa lỗi quan trọng về độ bảo mật hoặc độ ổn định cho <ph name="PRODUCT_NAME" />.
-
-      Việc đặt <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (giá trị 2) sẽ không cho phép áp dụng tất cả biến thể cho trình duyệt. Xin lưu ý rằng chế độ này có thể khiến nhà phát triển <ph name="PRODUCT_NAME" /> không thể cung cấp kịp thời các bản sửa lỗi bảo mật quan trọng nên không được khuyên dùng.</translation>
 <translation id="6810445994095397827">Chặn JavaScript trên các trang web này</translation>
 <translation id="6813263547126514821">Bật và tắt nguồn</translation>
 <translation id="681446116407619279">Các giao thức xác thực được hỗ trợ</translation>
@@ -4727,11 +4634,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 <translation id="8140204717286305802">Danh sách báo cáo giao diện mạng chứa thông tin về loại và địa chỉ phần cứng đến máy chủ.
 
       Nếu chính sách được đặt giá trị thành sai, danh sách giao diện sẽ không được báo cáo.</translation>
-<translation id="8140907626566492348">Nếu bạn đặt chính sách này thành True hoặc không đặt chính sách này, thì <ph name="PRODUCT_NAME" /> có thể hiển thị cho người dùng thông tin sản phẩm dưới dạng nội dung toàn bộ thẻ.
-
-      Nếu bạn đặt chính sách này thành False, thì <ph name="PRODUCT_NAME" /> sẽ không hiển thị thông tin sản phẩm dưới dạng nội dung toàn bộ thẻ.
-
-      Việc đặt chính sách này sẽ kiểm soát cách trình bày trang chào mừng nhằm giúp người dùng đăng nhập vào <ph name="PRODUCT_NAME" />, đặt <ph name="PRODUCT_NAME" /> làm trình duyệt mặc định của người dùng hoặc thông báo cho người dùng về các tính năng của sản phẩm.</translation>
 <translation id="8141795997560411818">Chính sách này không ngăn người dùng sử dụng ứng dụng Google Drive trên Android. Nếu muốn ngăn việc truy cập vào Google Drive, bạn cũng phải không cho phép cài đặt ứng dụng Google Drive trên Android.</translation>
 <translation id="8142894094385450823">Đặt ngôn ngữ đề xuất cho phiên được quản lý</translation>
 <translation id="8146727383888924340">Cho phép người dùng đổi phiếu mua hàng thông qua Đăng ký Chrome OS</translation>
@@ -4899,9 +4801,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 
           Nếu bạn không đặt chính sách này, thì chế độ sạc pin nâng cao sẽ tắt và người dùng không thể bật được.</translation>
 <translation id="838870586332499308">Bật chuyển vùng dữ liệu</translation>
-<translation id="8390049129576938611">Tắt trình xem PDF nội bộ trong <ph name="PRODUCT_NAME" />. Thay vào đó, thiết bị sẽ coi các tệp PDF là nội dung tải xuống và cho phép người dùng mở các tệp PDF này bằng ứng dụng mặc định.
-
-      Nếu chính sách này không được đặt hoặc đã bị tắt, plugin PDF sẽ được sử dụng để mở các tệp PDF trừ khi người dùng tắt plugin này.</translation>
 <translation id="8395749934754392549">Kiểm soát các tùy chọn cài đặt cho vùng chứa Android (ARC) và ứng dụng Android.</translation>
 <translation id="8396145449084377015">Chính sách này sẽ kiểm soát việc có nên tải các quy tắc từ chính sách SiteList của Internet Explorer hay không.
 

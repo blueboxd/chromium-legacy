@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6119846243427417423">activar</translation>
 <translation id="6129953537138746214">Espaço</translation>
+<translation id="6134259848159370930">Pesquise no dispositivo, nas apps, nas definições e na Web.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Expandir para ver todas as aplicações</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6166852626429024716">Pesquise no dispositivo, nas apps, nas definições, na Web…</translation>
 <translation id="6264365405983206840">Seleccion&amp;ar Tudo</translation>
 <translation id="6351032674660237738">SUGESTÕES DE APLICAÇÕES</translation>
 <translation id="6364916375976753737">Deslocar-se para a esquerda</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623">Ficheiro <ph name="SAVEAS_EXTENSION_TYPE" /> (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Prateleira apresentada sempre</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Pesquise no dispositivo, nas apps e na Web. Utilize as teclas de seta para navegar nas apps.</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>

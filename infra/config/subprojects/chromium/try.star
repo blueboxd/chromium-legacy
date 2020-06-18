@@ -103,6 +103,11 @@ try_.chromium_android_builder(
 )
 
 try_.chromium_android_builder(
+    name = 'android-nougat-arm64-rel',
+    goma_jobs = goma.jobs.J150,
+)
+
+try_.chromium_android_builder(
     name = 'android-pie-arm64-dbg',
     goma_jobs = goma.jobs.J300,
     tryjob = try_.job(

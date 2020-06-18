@@ -385,6 +385,7 @@
 <translation id="2544644783021658368">Один документ</translation>
 <translation id="254947805923345898">Недійсне значення правила.</translation>
 <translation id="255002559098805027">Хост <ph name="HOST_NAME" /> надіслав недійсну відповідь.</translation>
+<translation id="2552295903035773204">Використовувати блокування екрана, щоб підтверджувати картки</translation>
 <translation id="2553853292994445426">Перевірте налаштування безпеки DNS. Можливо, ви налаштували безпечний DNS-сервер, до якого не вдається підключитися.</translation>
 <translation id="2556876185419854533">&amp;Відмінити редагування</translation>
 <translation id="257674075312929031">Група</translation>
@@ -464,7 +465,6 @@
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Цей сервер не зміг довести, що він – домен <ph name="DOMAIN" />. Його сертифікат безпеки походить із домену <ph name="DOMAIN2" />. Імовірні причини: неправильна конфігурація або хтось намагається перехопити ваше з’єднання.</translation>
 <translation id="2943895734390379394">Час завантаження:</translation>
-<translation id="2944299917411283989">Створити надійний пароль в обліковому записі Google</translation>
 <translation id="2948083400971632585">Усі проксі-сервери, налаштовані для з’єднання, можна вимкнути на сторінці налаштувань.</translation>
 <translation id="2951588413176968965">Моя поштова скринька</translation>
 <translation id="295526156371527179">Застереження: це правило не об'єднано в словник, як указано в правилі, оскільки це не словник.</translation>
@@ -749,6 +749,7 @@
 <translation id="4165986682804962316">Налаштування сайту</translation>
 <translation id="4171400957073367226">Недійсний підпис для підтвердження</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> – <ph name="RESULT_OWNER" />, <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">Завжди показувати</translation>
 <translation id="4173315687471669144">Foolscap</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{ще <ph name="ITEM_COUNT" /> елемент}one{ще <ph name="ITEM_COUNT" /> елемент}few{ще <ph name="ITEM_COUNT" /> елементи}many{ще <ph name="ITEM_COUNT" /> елементів}other{ще <ph name="ITEM_COUNT" /> елемента}}</translation>
 <translation id="4176463684765177261">Вимкнено</translation>
@@ -788,6 +789,7 @@
 <translation id="4235360514405112390">Дійсний</translation>
 <translation id="4250431568374086873">Ваше з’єднання з цим сайтом не повністю захищене</translation>
 <translation id="4250680216510889253">ні</translation>
+<translation id="4253168017788158739">Примітка</translation>
 <translation id="425582637250725228">Внесені зміни, можливо, не буде збережено.</translation>
 <translation id="4258748452823770588">Недійсний підпис</translation>
 <translation id="4261046003697461417">Для захищених документів створення приміток недоступне</translation>
@@ -901,6 +903,7 @@
 <translation id="4764776831041365478">Веб-сторінка за адресою <ph name="URL" /> може бути тимчасово недоступною або її назавжди переміщено на нову веб-адресу.</translation>
 <translation id="4766713847338118463">Двічі скріпити внизу</translation>
 <translation id="4771973620359291008">Виникла невідома помилка.</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Спливаюче вікно заблоковано}one{# спливаюче вікно заблоковано}few{# спливаючі вікна заблоковано}many{# спливаючих вікон заблоковано}other{# спливаючого вікна заблоковано}}</translation>
 <translation id="4780366598804516005">Поштова скринька 1</translation>
 <translation id="4780900888022378816">Вашим пристроєм керує<ph name="ENROLLMENT_DOMAIN" />, а обліковим записом – <ph name="ACCOUNT_DOMAIN" />.</translation>
 <translation id="4785689107224900852">Перейти на цю вкладку</translation>
@@ -1616,7 +1619,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Однаковий порядок лицевою стороною вгору</translation>
 <translation id="777702478322588152">Префектура</translation>
-<translation id="7791011319128895129">Невипущено</translation>
+<translation id="7791011319128895129">Не випущено</translation>
 <translation id="7791196057686275387">Скріпити</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="7798389633136518089">Ігнорується, оскільки правило не налаштовано хмарним джерелом.</translation>

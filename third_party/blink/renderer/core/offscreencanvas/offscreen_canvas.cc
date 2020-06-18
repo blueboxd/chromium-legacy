@@ -381,14 +381,14 @@ CanvasResourceProvider* OffscreenCanvas::GetOrCreateResourceProvider() {
     provider = CanvasResourceProvider::CreateSharedImageProvider(
         surface_size, SharedGpuContext::ContextProviderWrapper(),
         FilterQuality(), context_->ColorParams(), false /*is_origin_top_left*/,
-        CanvasResourceProvider::RasterMode::kGPU, shared_image_usage_flags);
+        RasterMode::kGPU, shared_image_usage_flags);
   } else if (HasPlaceholderCanvas() && composited_mode) {
     // Only try a SoftwareComposited SharedImage if the context has Placeholder
     // canvas and the composited mode is enabled.
     provider = CanvasResourceProvider::CreateSharedImageProvider(
         surface_size, SharedGpuContext::ContextProviderWrapper(),
         FilterQuality(), context_->ColorParams(), false /*is_origin_top_left*/,
-        CanvasResourceProvider::RasterMode::kCPU, shared_image_usage_flags);
+        RasterMode::kCPU, shared_image_usage_flags);
   }
 
   if (!provider && HasPlaceholderCanvas()) {

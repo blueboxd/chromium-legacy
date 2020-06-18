@@ -1045,6 +1045,8 @@ extern const char kCorsLegacyModeEnabled[];
 
 extern const char kExternalProtocolDialogShowAlwaysOpenCheckbox[];
 
+extern const char kAutoLaunchProtocolsFromOrigins[];
+
 extern const char kScrollToTextFragmentEnabled[];
 
 #if defined(OS_ANDROID)

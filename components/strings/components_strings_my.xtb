@@ -469,7 +469,6 @@
 <translation id="2934466151127459956">အစိုးရရုံးသုံး Letter စာရွက်</translation>
 <translation id="2941952326391522266">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်မှာ<ph name="DOMAIN2" />ထံမှ ဖြစ်သည်။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
 <translation id="2943895734390379394">အပ်လုဒ်လုပ်ချိန်-</translation>
-<translation id="2944299917411283989">သင်၏ Google Account တွင် လုံခြုံမှုမြင့်သည့် စကားဝှက် ထုတ်ယူရန်</translation>
 <translation id="2948083400971632585">ကြိုတင်ပြင်ဆင်ခြင်း စာမျက်နှာမှ ချိတ်ဆက်မှုတစ်ခုအတွက် ပရောက်စီပြုပြင်ချက်များအား ပိတ်နိုင်သည်။</translation>
 <translation id="2951588413176968965">ကျွန်ုပ်၏စာတိုက်ပုံး</translation>
 <translation id="295526156371527179">သတိပေးချက်- ဤမူဝါဒသည် အဘိဓာန်တစ်ခုမဟုတ်သဖြင့် မူဝါဒက သတ်မှတ်ထားသည့်အတိုင်း အဘိဓာန်အဖြစ် ၎င်းကို ပေါင်းစည်းမထားပါ။</translation>
@@ -751,6 +750,7 @@
 <translation id="4165986682804962316">ဝက်ဆိုက် ဆက်တင်များ</translation>
 <translation id="4171400957073367226">ဆိုးရွားသည့် အတည်ပြု လက်မှတ်</translation>
 <translation id="4171489848299289778"><ph name="RESULT_MODIFIED_DATE" /> - <ph name="RESULT_OWNER" /> - <ph name="RESULT_PRODUCT_SOURCE" /></translation>
+<translation id="4172051516777682613">အမြဲပြရန်</translation>
 <translation id="4173315687471669144">ဖူးစကက်</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{နောက်ထပ် <ph name="ITEM_COUNT" /> ခု}other{နောက်ထပ် <ph name="ITEM_COUNT" /> ခု}}</translation>
 <translation id="4176463684765177261">ပိတ်ထားသည်။</translation>
@@ -791,6 +791,7 @@
 <translation id="4235360514405112390">မှန်ကန်သည်</translation>
 <translation id="4250431568374086873">ဤဝဘ်ဆိုက်သို့ သင့်ချိတ်ဆက်ထားမှုသည် လုံခြုံမှုအပြည့်အဝမရှိပါ</translation>
 <translation id="4250680216510889253">No</translation>
+<translation id="4253168017788158739">မှတ်ချက်</translation>
 <translation id="425582637250725228">သင်ပြုလုပ်ခဲ့သည့် ပြောင်းလဲချက်များကို သိမ်းဆည်းမည်မဟုတ်ပါ။</translation>
 <translation id="4258748452823770588">ဆိုးရွားသည့် လက်မှတ်</translation>
 <translation id="4261046003697461417">ကာကွယ်ထားသော မှတ်တမ်းဖိုင်များကို မှတ်ချက်ပေး၍ မရပါ</translation>
@@ -904,6 +905,7 @@
 <translation id="4764776831041365478"><ph name="URL" /> ပေါ်က ဝဘ်စာမျက်နှာမှ ယာယီ ဒေါင်းနေတာ ဖြစ်နိုင်သည် သို့မဟုတ် ၎င်းသည် ဝဘ် လိပ်စာ သစ်ဆီသို့ ထာဝရ ရွှေ့ပြောင်းသွားတာ ဖြစ်နိုင်သည်။</translation>
 <translation id="4766713847338118463">အောက်ခြေတွင် ချုပ်စက်ဖြင့် နှစ်ချက်ချုပ်ရန်</translation>
 <translation id="4771973620359291008">မသိရသည့် မှားယွင်းမှုတစ်ခု ဖြစ်ခဲ့သည်။</translation>
+<translation id="477945296921629067">{NUM_POPUPS,plural, =1{ပေါ့ပ်အပ်ကို ပိတ်ထားသည်}other{ပေါ့ပ်အပ်ကို # ခုကို ပိတ်ထားသည်}}</translation>
 <translation id="4780366598804516005">စာတိုက်ပုံး ၁</translation>
 <translation id="4780900888022378816">သင့်စက်ပစ္စည်းကို <ph name="ENROLLMENT_DOMAIN" /> က စီမံခန့်ခွဲပြီး သင့်အကောင့်ကို <ph name="ACCOUNT_DOMAIN" /> က စီမံခန့်ခွဲထားသည်။</translation>
 <translation id="4785689107224900852">ဤတဘ်သို့ ပြောင်းရန်</translation>

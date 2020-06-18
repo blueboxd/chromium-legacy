@@ -124,6 +124,7 @@
 <translation id="2384596874640104496">Сингальская раскладка</translation>
 <translation id="240770291734945588">Свободно <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="2425665904502185219">Общий размер файлов</translation>
+<translation id="2428749644083375155">Копирование объектов (<ph name="NUMBER_OF_ITEMS" />) в папку "<ph name="FOLDER_NAME" />"…</translation>
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2453576648990281505">Файл уже существует</translation>
 <translation id="2464079411014186876">Мороженое</translation>
@@ -298,6 +299,7 @@
 <translation id="4579744207439506346">Выбран объект "<ph name="ENTRY_NAME" />".</translation>
 <translation id="4582497162516204941">Установить с помощью ОС Linux (бета-версия)</translation>
 <translation id="4594543368593301662">Результаты поиска по запросу "<ph name="SEARCH_TERM" />".</translation>
+<translation id="4603392156942865207">Копирование файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
 <translation id="4631887759990505102">Исполнитель</translation>
 <translation id="4656293982926141856">С компьютера</translation>
 <translation id="4669606053856530811">Пользователи общего диска "<ph name="SOURCE_NAME" />" больше не смогут использовать эти объекты, если к ним не будет включен общий доступ.</translation>
@@ -352,6 +354,7 @@
 <translation id="5061708541166515394">Контрастность</translation>
 <translation id="5068919226082848014">Пицца</translation>
 <translation id="5081517858322016911">Будут удалены файлы общим объемом <ph name="TOTAL_FILE_SIZE" /></translation>
+<translation id="508423945471810158">Перемещение объектов (<ph name="NUMBER_OF_ITEMS" />) в папку "<ph name="FOLDER_NAME" />"…</translation>
 <translation id="509429900233858213">Произошла ошибка.</translation>
 <translation id="5098629044894065541">Иврит</translation>
 <translation id="5123433949759960244">Баскетбол</translation>
@@ -455,6 +458,7 @@
 <translation id="6054173164583630569">Французская раскладка</translation>
 <translation id="6074825444536523002">Форма Google</translation>
 <translation id="6096979789310008754">Поисковый запрос удален. Показаны все файлы и папки.</translation>
+<translation id="610101264611565198">Перемещение файла "<ph name="FILE_NAME" />" в папку "<ph name="FOLDER_NAME" />"…</translation>
 <translation id="6111770213269631447">Транслитерация (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Пробел</translation>
 <translation id="6133173853026656527">Перемещение файла "<ph name="FILE_NAME" />"…</translation>
@@ -538,6 +542,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Установка не выполнена.</translation>
 <translation id="7040138676081995583">Открыть с помощью…</translation>
+<translation id="7059566040011178088">Менее <ph name="REMAINING_TIME" /></translation>
 <translation id="7100897339030255923">Выбрано элементов: <ph name="COUNT" /></translation>
 <translation id="7106346894903675391">Приобрести дополнительное пространство…</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" – &lt;em&gt;искать на Диске&lt;/em&gt;</translation>
@@ -648,6 +653,7 @@
 <translation id="8193175696669055101">Модель устройства</translation>
 <translation id="8208580316430297579">Обложка</translation>
 <translation id="8223479393428528563">Чтобы работать с этими файлами в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на каждый документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
+<translation id="8231972167769262174">Примерно <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">Отмена</translation>
 <translation id="8261506727792406068">Удалить</translation>
 <translation id="8269755669432358899">Свернуть панель с информацией о файлах</translation>

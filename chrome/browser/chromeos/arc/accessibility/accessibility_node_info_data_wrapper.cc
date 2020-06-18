@@ -84,45 +84,20 @@ bool AccessibilityNodeInfoDataWrapper::IsIgnored() const {
   if (IsAccessibilityFocusableContainer())
     return false;
 
-  // On screen reader mode, text might be used by focusable ancestor.
-  // Make such nodes ignored. See ComputeNameFromContents().
-  bool has_text = HasNonEmptyStringProperty(
-                      node_ptr_, AXStringProperty::CONTENT_DESCRIPTION) ||
-                  HasNonEmptyStringProperty(node_ptr_, AXStringProperty::TEXT);
-  if (!has_text)
-    return false;
+  if (!HasText())
+    return false;  // A layout container with a11y importance.
 
-  AccessibilityInfoDataWrapper* parent = tree_source_->GetParent(
-      const_cast<AccessibilityNodeInfoDataWrapper*>(this));
-  while (parent && parent->IsNode()) {
-    if (parent->IsAccessibilityFocusableContainer())
-      return true;
-    parent = tree_source_->GetParent(parent);
-  }
-  return false;
+  return !HasAccessibilityFocusableText();
 }
 
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
-  // TODO(hirokisato): Remove this method and only use
-  // IsAccessibilityFocusableContainer().
-
-  // An important node with a non-generic role and:
-  // - actionable nodes
-  // - top level scrollables with a name
-  // - interesting leaf nodes
-  ui::AXNodeData data;
-  PopulateAXRole(&data);
-  bool non_generic_role = data.role != ax::mojom::Role::kGenericContainer &&
-                          data.role != ax::mojom::Role::kGroup &&
-                          data.role != ax::mojom::Role::kList &&
-                          data.role != ax::mojom::Role::kGrid;
-  bool actionable = GetProperty(AXBooleanProperty::CLICKABLE) ||
-                    GetProperty(AXBooleanProperty::FOCUSABLE) ||
-                    GetProperty(AXBooleanProperty::CHECKABLE);
-  bool top_level_scrollable = HasProperty(AXStringProperty::TEXT) &&
-                              GetProperty(AXBooleanProperty::SCROLLABLE);
-  return !IsIgnored() && non_generic_role &&
-         (actionable || top_level_scrollable || IsInterestingLeaf());
+  // Using HasText() here is incomplete because it doesn't match the
+  // populated ax name. However, this method is used only from AXTreeSourceArc
+  // and not used for actual focusability computation of ChromeVox, and it's
+  // enough to check only hasText().
+  return (IsAccessibilityFocusableContainer() ||
+          HasAccessibilityFocusableText()) &&
+         HasText();
 }
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
@@ -639,6 +614,29 @@ bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(
   return false;
 }
 
+bool AccessibilityNodeInfoDataWrapper::HasText() const {
+  // The same properties are checked as ComputeNameFromContentsInternal.
+  return HasNonEmptyStringProperty(node_ptr_,
+                                   AXStringProperty::CONTENT_DESCRIPTION) ||
+         HasNonEmptyStringProperty(node_ptr_, AXStringProperty::TEXT);
+}
+
+bool AccessibilityNodeInfoDataWrapper::HasAccessibilityFocusableText() const {
+  if (!is_important_ || !HasText())
+    return false;
+
+  // If any ancestor has a focusable property, the text is used by that node.
+  AccessibilityInfoDataWrapper* parent =
+      tree_source_->GetFirstImportantAncestor(
+          const_cast<AccessibilityNodeInfoDataWrapper*>(this));
+  while (parent && parent->IsNode()) {
+    if (parent->IsAccessibilityFocusableContainer())
+      return false;
+    parent = tree_source_->GetFirstImportantAncestor(parent);
+  }
+  return true;
+}
+
 void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
     std::vector<std::string>* names) const {
   std::vector<AccessibilityInfoDataWrapper*> children;
@@ -700,14 +698,6 @@ bool AccessibilityNodeInfoDataWrapper::IsToplevelScrollItem() const {
 
   return static_cast<AccessibilityNodeInfoDataWrapper*>(parent)
       ->IsScrollableContainer();
-}
-
-bool AccessibilityNodeInfoDataWrapper::IsInterestingLeaf() const {
-  std::vector<AccessibilityInfoDataWrapper*> children;
-  GetChildren(&children);
-  // TODO(hirokisato) Even if the node has children, they might be empty. In
-  // this case we should return true.
-  return HasImportantProperty(node_ptr_) && children.empty();
 }
 
 }  // namespace arc

@@ -25,10 +25,6 @@ class TestPluginLocalFrameClient : public EmptyLocalFrameClient {
   int plugin_created_count() const { return plugin_created_count_; }
 
  private:
-  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
-    return Platform::Current()->CreateDefaultURLLoaderFactory();
-  }
-
   WebPluginContainerImpl* CreatePlugin(HTMLPlugInElement& element,
                                        const KURL& url,
                                        const Vector<String>& param_names,

@@ -498,7 +498,7 @@ AutoEnrollmentController::GetInitialEnrollmentRequirement() {
   system::StatisticsProvider* provider =
       system::StatisticsProvider::GetInstance();
   system::FactoryPingEmbargoState embargo_state =
-      system::GetFactoryPingEmbargoState(provider);
+      system::GetEnterpriseManagementPingEmbargoState(provider);
   if (provider->GetEnterpriseMachineID().empty()) {
     LOG(WARNING)
         << "Skip Initial Enrollment Check due to missing serial number.";

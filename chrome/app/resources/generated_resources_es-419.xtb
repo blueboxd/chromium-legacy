@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
+<translation id="1001307489511021749">Se sincronizarán tus apps, opciones de configuración y otras personalizaciones en todos los dispositivos con el Sistema operativo Chrome a los que hayas accedido con tu Cuenta de Google.</translation>
 <translation id="1003088604756913841">Abrir vínculo en una ventana nueva de <ph name="APP" /></translation>
 <translation id="1004218526896219317">Acceso al sitio</translation>
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
@@ -523,6 +524,7 @@
 <translation id="164936512206786300">Desvincular el dispositivo Bluetooth</translation>
 <translation id="1650371550981945235">Mostrar opciones de entrada</translation>
 <translation id="1651008383952180276">Debes ingresar la misma frase de contraseña dos veces</translation>
+<translation id="1652326691684645429">Habilitar Compartir con Nearby</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Agrega la impresora a Google Cloud Print para poder imprimir desde todas partes.}other{Agrega # impresoras a Google Cloud Print para poder imprimir desde todas partes.}}</translation>
 <translation id="1656528038316521561">Opacidad del fondo</translation>
 <translation id="1657406563541664238">Ayúdanos a <ph name="PRODUCT_NAME" /> mejorar enviando automáticamente estadísticas de uso e informes de fallos a Google.</translation>
@@ -1099,7 +1101,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2377588536920405462">Para inhabilitar la Ubicación, desactiva la configuración de la ubicación principal en el dispositivo. También puedes desactivar el uso de Wi-Fi, redes móviles y sensores para obtener la ubicación en la configuración de la ubicación.</translation>
 <translation id="2377667304966270281">Fallos graves</translation>
 <translation id="237828693408258535">¿Deseas traducir esta página?</translation>
-<translation id="2378346380592252785">Actualiza las credenciales para <ph name="SHARE_PATH" /></translation>
 <translation id="2378982052244864789">Seleccionar el directorio de extensión.</translation>
 <translation id="2379281330731083556">Imprimir mediante el sistema de diálogo... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Preguntar antes de enviar (recomendado)</translation>
@@ -1631,6 +1632,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3022978424994383087">No entendí.</translation>
 <translation id="3023464535986383522">Seleccionar para pronunciar</translation>
 <translation id="3024374909719388945">Utilizar reloj de 24 horas</translation>
+<translation id="3027296729579831126">Activar Compartir con Nearby</translation>
 <translation id="3029466929721441205">Mostrar herramientas de la pluma stylus en la biblioteca</translation>
 <translation id="3031417829280473749">Agente X</translation>
 <translation id="3031557471081358569">Selecciona elementos para importar:</translation>
@@ -1730,6 +1732,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3162853326462195145">Cuenta de una institución educativa</translation>
 <translation id="3162899666601560689">Los sitios pueden usar cookies para mejorar la experiencia de navegación, por ejemplo, para mantener el acceso a ellos o recordar elementos del carrito de compras.</translation>
 <translation id="3163201441334626963">Producto desconocido <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /></translation>
+<translation id="3163254451837720982">Los siguientes servicios permiten proteger tus datos. Puedes desactivar estas funciones en cualquier momento.</translation>
 <translation id="3164329792803560526">Compartiendo esta pestaña en <ph name="APP_NAME" /></translation>
 <translation id="3165390001037658081">Es posible que algunos proveedores bloqueen esta función.</translation>
 <translation id="316652501498554287">Cuentas de G Suite for Education</translation>
@@ -2546,7 +2549,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4163560723127662357">Teclado desconocido</translation>
 <translation id="4168015872538332605">Algunas opciones de configuración que pertenecen a <ph name="PRIMARY_EMAIL" /> están compartidas contigo. Estas opciones solo se aplican a tu cuenta cuando se utiliza el acceso múltiple.</translation>
 <translation id="4170314459383239649">Borrar al salir</translation>
-<translation id="4172051516777682613">Mostrar siempre</translation>
 <translation id="4175137578744761569">Púrpura claro y blanco</translation>
 <translation id="4175737294868205930">Almacenamiento persistente</translation>
 <translation id="4176463684765177261">Inhabilitado</translation>
@@ -2911,6 +2913,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4673442866648850031">Abrir las herramientas de pluma stylus al quitarla</translation>
 <translation id="4677772697204437347">Memoria de la GPU</translation>
 <translation id="4680105648806843642">El sonido está silenciado en esta página</translation>
+<translation id="4681453295291708042">Inhabilitar Compartir con Nearby</translation>
 <translation id="4681930562518940301">Abrir imagen original en una pestaña nueva</translation>
 <translation id="4682551433947286597">Los fondos de pantalla aparecen en la pantalla de acceso.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (predeterminado)</translation>
@@ -2973,7 +2976,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4777943778632837590">Configurar los servidores de nombres de la red</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Se bloqueó una ventana emergente}other{Se bloquearon # vent. emergentes}}</translation>
 <translation id="4780321648949301421">Guardar página como...</translation>
 <translation id="4785719467058219317">Estás usando una llave de seguridad que no se registró con este sitio web</translation>
 <translation id="4788092183367008521">Comprueba la conexión de red y vuelve a intentarlo.</translation>
@@ -3721,6 +3723,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="5739017626473506901">Accede para ayudar a <ph name="USER_NAME" /> a agregar una cuenta de una institución educativa</translation>
 <translation id="5739235828260127894">La verificación está pendiente. <ph name="LINK_BEGIN" />Más información<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">Muy grande</translation>
+<translation id="5740328398383587084">Compartir con Nearby</translation>
 <translation id="574104302965107104">Duplicación de pantalla</translation>
 <translation id="574209121243317957">Tono</translation>
 <translation id="5746169159649715125">Guardar como PDF</translation>
@@ -4114,7 +4117,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6242852299490624841">Enfocar esta pestaña</translation>
 <translation id="6243280677745499710">Establecido actualmente</translation>
 <translation id="6243774244933267674">Servidor no disponible</translation>
-<translation id="6246355468475884088">También puedes mostrar las contraseñas de tu Cuenta de Google aquí</translation>
 <translation id="6246790815526961700">Subir desde el dispositivo</translation>
 <translation id="6247620186971210352">No se encontraron apps</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4488,7 +4490,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6745592621698551453">Actualizar ahora</translation>
 <translation id="6746124502594467657">Mover hacia abajo</translation>
 <translation id="674632704103926902">Habilitar la función tocar y arrastrar</translation>
-<translation id="6748217015615267851">Procesador: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Puedes continuar, pero se restaurarán únicamente la configuración y los datos sincronizados. Se perderán todos los datos locales.</translation>
 <translation id="6749006854028927059">Los sitios no pueden usar tus cookies para ver la actividad de navegación en diferentes sitios, por ejemplo, con el fin de personalizar anuncios. Es posible que las características de algunos sitios no funcionen de forma adecuada.</translation>
 <translation id="6750757184909117990">Inhabilitar la red móvil</translation>
@@ -4657,6 +4658,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6965978654500191972">Dispositivo</translation>
 <translation id="696780070563539690">Los sitios no pueden usar tus cookies para ver la actividad de navegación en diferentes sitios, por ejemplo, con el fin de personalizar anuncios</translation>
 <translation id="6968288415730398122">Ingresa tu contraseña para configurar el bloqueo de pantalla</translation>
+<translation id="6969047215179982698">Desactivar Compartir con Nearby</translation>
 <translation id="6970480684834282392">Tipo de inicio</translation>
 <translation id="6970856801391541997">Imprimir páginas específicas</translation>
 <translation id="6972180789171089114">Audio/video</translation>
@@ -4826,6 +4828,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7171259390164035663">No inscribir</translation>
 <translation id="7171559745792467651">Instalar apps desde tus otros dispositivos</translation>
 <translation id="7172470549472604877">{NUM_TABS,plural, =1{Agregar pestaña a un grupo nuevo}other{Agregar pestañas a un grupo nuevo}}</translation>
+<translation id="7173852404388239669">Personaliza tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="7174199383876220879">Ahora puedes controlar tu música, video y más.</translation>
 <translation id="7175037578838465313">Configurar <ph name="NAME" /></translation>
 <translation id="7175353351958621980">Cargados desde:</translation>
@@ -5114,6 +5117,7 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7552846755917812628">Intenta las siguientes sugerencias:</translation>
 <translation id="7553012839257224005">Revisando el contenedor de Linux</translation>
 <translation id="7553242001898162573">Ingresar contraseña</translation>
+<translation id="7554475479213504905">Volver a cargar y mostrar de todas formas</translation>
 <translation id="7554791636758816595">Nueva pestaña</translation>
 <translation id="7556033326131260574">Smart Lock no pudo verificar la cuenta. Escribe la contraseña para acceder.</translation>
 <translation id="7556242789364317684">Lamentablemente, <ph name="SHORT_PRODUCT_NAME" /> no puede recuperar la configuración. Para solucionar el error, <ph name="SHORT_PRODUCT_NAME" /> debe restablecer el dispositivo con Powerwash.</translation>
@@ -5602,7 +5606,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8138082791834443598">Opcional: ingresa información nueva o actualiza la existente para asociarla con este dispositivo.</translation>
 <translation id="8138217203226449454">¿Querías cambiar el proveedor de búsqueda?</translation>
 <translation id="813913629614996137">Inicializando…</translation>
-<translation id="814016597952587568">Se muestran las contraseñas de tu Cuenta de Google</translation>
 <translation id="8140778357236808512">Importar un usuario supervisado existente</translation>
 <translation id="8141584439523427891">Abriendo en otro navegador</translation>
 <translation id="8141725884565838206">Administra tus contraseñas.</translation>
@@ -5713,7 +5716,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="827097179112817503">Mostrar el botón de la Página principal</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 favorito borrado}other{# favoritos borrados}}</translation>
 <translation id="8272443605911821513">Para administrar tus extensiones, haz clic en Extensiones en el menú "Más herramientas".</translation>
-<translation id="8274212285504931082">Permitir que el Asistente proporcione información relacionada con lo que aparece en tu pantalla</translation>
 <translation id="8274332263553132018">Transmitir archivo</translation>
 <translation id="8274924778568117936">No apagues ni cierres el dispositivo <ph name="DEVICE_TYPE" /> hasta que finalice la actualización. Cuando el proceso termine, el dispositivo <ph name="DEVICE_TYPE" /> se reiniciará.</translation>
 <translation id="8275038454117074363">Importar</translation>

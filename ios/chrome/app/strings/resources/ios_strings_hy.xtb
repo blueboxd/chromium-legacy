@@ -470,6 +470,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="681368974849482173">Տարրը ստեղծվեց</translation>
 <translation id="6831043979455480757">Թարգմանել</translation>
 <translation id="6851516051005285358">Համակարգչային տարբերակ</translation>
+<translation id="6856384753476268833">Կառավարվում է ձեր կազմակերպության կողմից։</translation>
 <translation id="6858855187367714033">Սկանավորվեց</translation>
 <translation id="6859944681507688231">QR կոդ կամ վարկային քարտ սկանավորելու համար կարգավորումներում միացրեք ֆոտոխցիկը:</translation>
 <translation id="6873263987691478642">Տրոհված դիտակերպ</translation>
@@ -529,6 +530,7 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7600965453749440009">Երբեք չթարգմանել <ph name="LANGUAGE" /> էջերը</translation>
 <translation id="7603852183842204213">Ելնող պատուհաններն արգելափակվել են (<ph name="NUMBER_OF_BLOCKED_POPUPS" />)</translation>
 <translation id="7638584964844754484">Սխալ անցաբառ</translation>
+<translation id="7649070708921625228">Օգնություն</translation>
 <translation id="7658239707568436148">Չեղարկել</translation>
 <translation id="766891008101699113">Համացանցում անանուն կերպով կայքէջեր այցելելու համար ավելացրեք նոր ներդիր:</translation>
 <translation id="7671141431838911305">ՏԵՂԱԴՐԵԼ</translation>
@@ -542,12 +544,12 @@ Handoff-ը պետք է միացված լինի նաև Կարգավորումնե
 <translation id="7781829728241885113">Երեկ</translation>
 <translation id="778855399387580014">Սկսեք որոնել Chrome-ի նոր ներդիրում:</translation>
 <translation id="7791543448312431591">Ավելացնել</translation>
-<translation id="7828557259026017104">Քուքիները ֆայլեր են, որոնք ստեղծվում են ձեր այցելած կայքերի կողմից։ Կայքերն օգտագործում են դրանք՝ ձեր նախընտրությունները հիշելու համար։ Երրորդ կողմի քուքիները ստեղծվում են այլ կայքերի կողմից։ Այս կայքերն ունեն որոշակի բովանդակություն, օր․՝ գովազդ կամ պատկերներ, որոնք դուք տեսնում եք ձեր այցելած կայքում։</translation>
 <translation id="7839985698273989086">Անցանց էջ</translation>
 <translation id="7840771868269352570">Ընտրված տարրերը կջնջվեն:</translation>
 <translation id="7856733331829174190">Չհաջողվեց ներբեռնել</translation>
 <translation id="7859704718976024901">Այցելությունների պատմություն</translation>
 <translation id="7887198238286927132">Ձեր գաղտնիությունը պաշտպանելու նպատակով Chrome-ն ավտոմատ չի լրացնի այս դաշտը:</translation>
+<translation id="791251013315685175">Կառավարվում է <ph name="COMPANY" />-ի կողմից։</translation>
 <translation id="7918293828610777738">Ձեր ընթերցանության ցանկը հասանելի է նաև անցանց ռեժիմում: Ընթերցանության ցանկում էջ ավելացնելու համար հպեք <ph name="SHARE_OPENING_ICON" />, ապա <ph name="READ_LATER_TEXT" />։</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Գաղտնաբառերի արտահանում...</translation>

@@ -413,6 +413,14 @@ void BinaryUploadService::RecordRequestMetrics(
     base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.MalwareResult",
                               response.malware_scan_verdict().verdict() !=
                                   MalwareDeepScanningVerdict::SCAN_FAILURE);
+    MalwareDeepScanningVerdict::Verdict verdict_count =
+        static_cast<MalwareDeepScanningVerdict::Verdict>(
+            MalwareDeepScanningVerdict_Verdict_Verdict_ARRAYSIZE);
+    base::UmaHistogramEnumeration(
+        IsAdvancedProtectionRequest(*request)
+            ? "SafeBrowsingBinaryUploadRequest.AdvancedProtectionScanVerdict"
+            : "SafeBrowsingBinaryUploadRequest.MalwareScanVerdict",
+        response.malware_scan_verdict().verdict(), verdict_count);
   }
 
   if (response.has_dlp_scan_verdict()) {

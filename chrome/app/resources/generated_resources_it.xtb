@@ -1109,7 +1109,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2377588536920405462">Puoi disabilitare la geolocalizzazione disattivando l'impostazione Posizione principale sul tuo dispositivo. Puoi anche disattivare l'uso di reti Wi-Fi e mobili e di sensori per la geolocalizzazione nelle impostazioni di geolocalizzazione.</translation>
 <translation id="2377667304966270281">Errori hardware</translation>
 <translation id="237828693408258535">Vuoi tradurre questa pagina?</translation>
-<translation id="2378346380592252785">Aggiorna le credenziali relative a <ph name="SHARE_PATH" />.</translation>
 <translation id="2378982052244864789">Seleziona la directory dell'estensione.</translation>
 <translation id="2379281330731083556">Stampa utilizzando la finestra di dialogo di sistema... <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381756643783702095">Chiedi prima di inviare (opzione consigliata)</translation>
@@ -2560,7 +2559,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4163560723127662357">Tastiera sconosciuta</translation>
 <translation id="4168015872538332605">Alcune impostazioni di <ph name="PRIMARY_EMAIL" /> sono condivise con te. Queste impostazioni interessano il tuo account solo quando utilizzi l'accesso simultaneo.</translation>
 <translation id="4170314459383239649">Cancella all'uscita</translation>
-<translation id="4172051516777682613">Mostra sempre</translation>
 <translation id="4175137578744761569">Lilla e bianco</translation>
 <translation id="4175737294868205930">Archiviazione persistente</translation>
 <translation id="4176463684765177261">Disattivato</translation>
@@ -2990,7 +2988,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4777943778632837590">Configura server dei nomi di rete</translation>
 <translation id="4779083564647765204">Zoom</translation>
 <translation id="4779136857077979611">Onigiri</translation>
-<translation id="477945296921629067">{NUM_POPUPS,plural, =1{Popup bloccato}other{# popup bloccati}}</translation>
 <translation id="4780321648949301421">Salva pagina con nome...</translation>
 <translation id="4785719467058219317">Stai usando un token di sicurezza non registrato su questo sito web</translation>
 <translation id="4788092183367008521">Controlla la connessione di rete e riprova.</translation>
@@ -4134,7 +4131,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6242852299490624841">Imposta stato attivo su questa scheda</translation>
 <translation id="6243280677745499710">Attualmente impostato</translation>
 <translation id="6243774244933267674">Server non disponibile</translation>
-<translation id="6246355468475884088">Puoi visualizzare le password del tuo Account Google anche qui</translation>
 <translation id="6246790815526961700">Carica dal dispositivo</translation>
 <translation id="6247620186971210352">Nessuna app trovata</translation>
 <translation id="6247708409970142803"><ph name="PERCENTAGE" />%</translation>
@@ -4508,7 +4504,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6745592621698551453">Aggiorna ora</translation>
 <translation id="6746124502594467657">Sposta giù</translation>
 <translation id="674632704103926902">Attiva trascinamento al tocco</translation>
-<translation id="6748217015615267851">Renderer: <ph name="RENDERER_URL" /></translation>
 <translation id="6748465660675848252">Puoi continuare, tuttavia verranno ripristinati soltanto le impostazioni e i dati sincronizzati. Tutti i dati locali andranno persi.</translation>
 <translation id="6749006854028927059">I siti non possono utilizzare i cookie per conoscere la tua attività di navigazione su diversi siti web, ad esempio per personalizzare gli annunci. Le funzionalità su alcuni siti potrebbero non essere disponibili.</translation>
 <translation id="6750757184909117990">Disabilita rete mobile</translation>
@@ -5630,7 +5625,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8138082791834443598">Facoltativo. Inserisci nuove informazioni o aggiorna informazioni esistenti da associare a questo dispositivo.</translation>
 <translation id="8138217203226449454">Era tua intenzione cambiare provider di ricerca?</translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
-<translation id="814016597952587568">Mostra password dal tuo Account Google</translation>
 <translation id="8140778357236808512">Importa un utente supervisionato esistente</translation>
 <translation id="8141584439523427891">Apertura browser alternativo</translation>
 <translation id="8141725884565838206">Gestisci le tue password</translation>
@@ -5742,7 +5736,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="827097179112817503">Mostra pulsante Home</translation>
 <translation id="8271246892936492311">{COUNT,plural, =1{1 preferito eliminato}other{# preferiti eliminati}}</translation>
 <translation id="8272443605911821513">Gestisci le tue estensioni facendo clic su Estensioni nel menu "Altri strumenti".</translation>
-<translation id="8274212285504931082">Consenti all'assistente di mostrarti informazioni relative ai contenuti sullo schermo</translation>
 <translation id="8274332263553132018">Trasmetti file</translation>
 <translation id="8274924778568117936">Non spegnere o chiudere il tuo dispositivo <ph name="DEVICE_TYPE" /> fino al termine dell'aggiornamento. Il dispositivo <ph name="DEVICE_TYPE" /> si riavvierà al termine dell'installazione.</translation>
 <translation id="8275038454117074363">Importa</translation>

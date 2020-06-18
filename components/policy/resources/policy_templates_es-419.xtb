@@ -319,15 +319,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
 <translation id="1553532014072799546">Lista blanca de límites de tiempo por app</translation>
 <translation id="1553956579506604198">Impide la instalación de extensiones externas</translation>
-<translation id="1556072857949466438">Esta política permite que un administrador especifique si una página puede mostrar ventanas emergentes durante su descarga.
-
-      Si se habilita la política, las páginas podrán mostrar ventanas emergentes durante su descarga.
-
-      Si se inhabilita la política o no se establece, las páginas no podrán mostrar ventanas emergentes durante su descarga, conforme a las especificaciones (https://html.spec.whatwg.org/#apis-for-creating-and-navigating-browsing-contexts-by-name).
-
-      Se quitará esta política en Chrome 88.
-
-      Consulta https://www.chromestatus.com/feature/5989473649164288.</translation>
 <translation id="1560205870554624777">Determina si se habilita la funcionalidad Kerberos. Kerberos es un protocolo de autenticación que puede usarse para autenticar apps web y archivos compartidos.
 
           Si se habilita esta política, se permitirá la funcionalidad Kerberos. Podrán agregarse las cuentas de Kerberos mediante la política "Configurar cuentas de Kerberos" o la configuración de las cuentas de Kerberos en la página de configuración de personas.
@@ -688,13 +679,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 
       Si no se establece esta política, se habilitará la detección de oclusión.</translation>
 <translation id="2166472654199325139">No aplicar filtros de contenido para adultos a los sitios</translation>
-<translation id="2166746572083670600">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar datos del usuario.
-
-      Si se establece esta política, <ph name="PRODUCT_NAME" /> usará el directorio independientemente de si el usuario ha especificado la marca "--user-data-dir" o no. Para evitar pérdida de datos u otros errores inesperados, no debe establecerse esta política en un directorio que se use para otros propósitos, porque <ph name="PRODUCT_NAME" /> administra su contenido.
-
-      Consulta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.
-
-      Si no se establece esta política, se usará la ruta predeterminada de acceso al perfil, y el usuario podrá anularla con la marca de la línea de comandos "--user-data-dir".</translation>
 <translation id="2168397434410358693">Demora de inactividad con alimentación de CA</translation>
 <translation id="217013996107840632">Parámetros de la línea de comandos para cambiar del navegador alternativo</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
@@ -996,11 +980,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="2517466659416174529">Permite la inmovilización de pestañas en segundo plano</translation>
 <translation id="2518231489509538392">Permitir la reproducción de audio</translation>
 <translation id="2521581787935130926">Muestra el acceso directo a las aplicaciones en la barra de favoritos.</translation>
-<translation id="2526082146909867346">Te permite configurar una lista de patrones de URL que especifican los sitios para los cuales <ph name="PRODUCT_NAME" /> debe seleccionar un certificado de cliente automáticamente, si el sitio solicita un certificado.
-
-          El valor debe ser un conjunto de diccionarios en formato JSON con strings. Cada diccionario debe tener el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, en donde <ph name="URL_PATTERN_PLACEHOLDER" /> es un patrón de configuración de contenido. <ph name="FILTER_PLACEHOLDER" /> restringe los certificados de cliente que el navegador seleccionará automáticamente. Más allá del filtro, solo se seleccionarán los certificados que cumplan con la solicitud de certificado del servidor. Por ejemplo, si <ph name="FILTER_PLACEHOLDER" /> tiene el formato <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />. Además, solo se seleccionan los certificados de cliente que emitió un cliente con el nombre común <ph name="ISSUER_CN_PLACEHOLDER" />. Si <ph name="FILTER_PLACEHOLDER" /> contiene las secciones <ph name="ISSUER_STRING_VALUE" /> y <ph name="SUBJECT_STRING_VALUE" />, un certificado de cliente deberá cumplir con ambas condiciones para ser elegido. Si <ph name="FILTER_PLACEHOLDER" /> especifica una organización ("O"), un certificado deberá contar con, al menos, una organización que coincida con el valor indicado para ser elegido. Si <ph name="FILTER_PLACEHOLDER" /> especifica una unidad organizacional ("OU"), un certificado debe contar con, al menos, una unidad organizacional que coincida con el valor indicado para ser elegido. Si <ph name="FILTER_PLACEHOLDER" /> es el diccionario vacío <ph name="EMPTY_DICTIONARY" />, no se restringirá la selección de certificados de cliente.
-
-          Si no se configura esta política, no se implementará la selección automática para ningún sitio.</translation>
 <translation id="2528659559494311776">Esta política controla una función de seguridad en TLS 1.3 que protege las conexiones contra ataques de cambio a una versión anterior. La función es retrocompatible y no afecta las conexiones a proxies o servidores que emplean el protocolo TLS 1.2. Sin embargo, las versiones anteriores de algunos proxies de intercepción de TLS tienen una falla de implementación que genera la incompatibilidad.
 
       Si esta política se configura como verdadera o bien no se configura, <ph name="PRODUCT_NAME" /> habilitará estas protecciones para todas las conexiones.
@@ -2215,12 +2194,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="4325690621216251241">Agregar un botón para cerrar sesión en la bandeja del sistema</translation>
 <translation id="4332177773549877617">Registrar eventos de instalaciones de apps de Android</translation>
 <translation id="4343382787226139147">Especifica los Certificados de cliente que deben inscribirse con el protocolo de administración de dispositivos.</translation>
-<translation id="4346674324214534449">Te permite establecer si se bloquearán los anuncios en sitios con anuncios intrusivos.
-
-      Si se establece esta política como 2, se bloquearán los anuncios en sitios con anuncios intrusivos.
-      Sin embargo, este comportamiento no se activará si la política SafeBrowsingEnabled se establece como falsa.
-      Si se establece como 1, no se bloquearán los anuncios en sitios con anuncios intrusivos.
-      Si no se establece, se usará 2.</translation>
 <translation id="4347908978527632940">Si la política se establece en true y el usuario es uno supervisado, otras apps de Android pueden consultar las restricciones web del usuario mediante un proveedor de contenido.
 
           Si la política se establece en false o no se establece, el proveedor de contenido no muestra ninguna información.</translation>
@@ -2438,11 +2411,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       <ph name="PAGE_SIZE_NAME" /> debe contener uno de los formatos incluidos o "personalizado" si el tamaño del papel necesario no está en la lista. Si se proporciona un valor "personalizado", se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Describe el ancho y altura deseados en micrómetros. De lo contrario, no se debe especificar la propiedad <ph name="PAGE_SIZE_CUSTOM_SIZE" />. Se ignorará la política que infrinja estas reglas.
 
       Si el tamaño de la página no está disponible en la impresora que elija el usuario, se ignorará esta política.</translation>
-<translation id="4788252609789586009">Habilita la función "Autocompletar" de <ph name="PRODUCT_NAME" /> y permite que los usuarios completen automáticamente formularios web con información ya almacenada de las tarjetas de crédito.
-
-      Si se inhabilita esta configuración, "Autocompletar" nunca sugerirá ni completará información de tarjetas de crédito. Tampoco guardará información adicional de tarjetas que el usuario haya enviado cuando navegaba en la Web.
-
-      Si se habilita esta configuración o no se establece ningún valor, el usuario podrá controlar la función "Autocompletar" para las tarjetas de crédito en la IU.</translation>
 <translation id="4802744647065138872">Limita la cantidad de instantáneas sobre los datos del usuario que se conservan en caso de tener que realizar reversión de emergencia.</translation>
 <translation id="4802905909524200151">Configurar el comportamiento de actualización del firmware <ph name="TPM_FIRMWARE_UPDATE_TPM" /></translation>
 <translation id="4804828344300125154">Reinicia siempre cuando el usuario sale de su cuenta.</translation>
@@ -2487,14 +2455,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
           Esta política solo se respeta si se habilita la política "DefaultSearchProviderEnabled".</translation>
 <translation id="489803897780524242">Parámetro que controla la ubicación del término de búsqueda para el proveedor de búsqueda predeterminado</translation>
 <translation id="4899708173828500852">Habilitar la navegación segura</translation>
-<translation id="4899802251198446659">Te permite controlar si los videos se pueden reproducir de forma automática (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
-
-      Si se establece la política como verdadera, <ph name="PRODUCT_NAME" /> podrá reproducir contenido multimedia de forma automática.
-      Si se establece la política como falsa, <ph name="PRODUCT_NAME" /> no podrá reproducir contenido multimedia de forma automática. Se puede usar la política AutoplayWhitelist para anular esta configuración en determinados patrones de URL.
-      De forma predeterminada, <ph name="PRODUCT_NAME" /> no puede reproducir contenido multimedia de forma automática. Se puede usar la política AutoplayWhitelist para anular esta configuración en determinados patrones de URL.
-
-      Ten en cuenta que, si <ph name="PRODUCT_NAME" /> está abierto y esta política cambia, solo se aplicará a las pestañas nuevas que se abran. Por lo tanto, es posible que notes el comportamiento anterior en algunas pestañas.
-      </translation>
 <translation id="4906194810004762807">Frecuencia de actualización de la Política de dispositivos</translation>
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4919122295221518724">Habilita un tratamiento más estricto para contenido mixto</translation>
@@ -2676,7 +2636,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5182483318861266793">Ubicar la biblioteca en el lado derecho de la pantalla</translation>
 <translation id="5183383917553127163">Te permite especificar las extensiones que no están sujetas a la lista negra. El valor de lista negra de * significa que todas las extensiones están en la lista negra y los usuarios sólo pueden instalar extensiones que figuran en la lista blanca. De manera predeterminada, todas las extensiones se encuentran en la lista blanca. Sin embargo, si todas las extensiones se han agregado a la lista negra mediante una política, la lista blanca se puede utilizar para anular dicha política.</translation>
 <translation id="519247340330463721">Configura las políticas relacionadas con la Navegación segura.</translation>
-<translation id="5192837635164433517">Permite el uso de páginas alternativas de error integradas en <ph name="PRODUCT_NAME" /> (por ejemplo, "página no encontrada") y evita que los usuarios cambien esta configuración. Si se habilita esta configuración, se usarán páginas alternativas de error. Si se inhabilita esta configuración, no se usarán páginas alternativas de error. Si se habilita o inhabilita esta configuración, los usuarios no podrán cambiar ni anular esta configuración en <ph name="PRODUCT_NAME" />. Si esta política no se configura, se habilitará esta opción, pero el usuario podrá cambiarla.</translation>
 <translation id="5196520640744454600">Habilita las teclas especiales en la pantalla de acceso</translation>
 <translation id="5196805177499964601">Bloquear modo de programador.
 
@@ -2783,11 +2742,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si se establece como verdadera, o no se establece, el usuario podrá utilizar Crostini, siempre que otras opciones de configuración también lo permitan.
       Para que pueda ejecutarse Crostini, deben establecerse las tres políticas (VirtualMachinesAllowed, CrostiniAllowed y DeviceUnaffiliatedCrostiniAllowed) como verdaderas.
       Si se cambia esta política a falsa, se aplicará a contenedores nuevos de Crostini, pero no se apagarán los que ya estén en ejecución.</translation>
-<translation id="5277914408935179830">Esta política controla el tratamiento del contenido mixto (contenido HTTP en sitios HTTPS) en el navegador.
-       Si se establece la política como verdadera o no se establece, se actualizará de forma automática el contenido mixto de audio y video a HTTPS (p. ej., se reescribirá la URL como HTTPS, sin un resguardo si el recurso no está disponible en HTTPS) y se mostrará la advertencia "No seguro" en la barra de URL para el contenido mixto con imágenes.
-       Si se establece la política como falsa, se inhabilitarán las actualizaciones automáticas para el audio y el video y no se mostrarán advertencias para las imágenes.
-       Esta política no afecta otros tipos de contenido mixto que no sean imágenes, audio y video.
-       A partir de <ph name="PRODUCT_NAME" /> 84, esta política dejará de tener efecto.</translation>
 <translation id="5283457834853986457">Inhabilitar el buscador de complementos (obsoleto)</translation>
 <translation id="5285315763984334157">Bloquear descargas con contenido malicioso</translation>
 <translation id="5288772341821359899">Si se establece la política, el intervalo de puertos UDP que usa WebRTC está restringido al intervalo de puertos especificado (extremos incluidos).
@@ -2997,15 +2951,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Si se establece como falsa o no se establece, desaparecerán las advertencias en este tipo de computadoras o sistemas operativos.</translation>
 <translation id="5565178130821694365">Se requiere el ingreso de la contraseña cada dos días (48 horas)</translation>
-<translation id="556564360355507488">Configura esta política para especificar qué variaciones pueden aplicarse en un dispositivo <ph name="PRODUCT_OS_NAME" /> administrado por una empresa.
-
-      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_OS_NAME" /> sin enviar una nueva versión. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
-
-      Si estableces <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no estableces la política, podrán aplicarse todas las variaciones en <ph name="PRODUCT_OS_NAME" />.
-
-      Si estableces <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), solo se permitirá la aplicación a <ph name="PRODUCT_OS_NAME" /> de variaciones que se consideren correcciones críticas de estabilidad o seguridad.
-
-      Si estableces <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no podrá aplicarse ninguna variación en el navegador en la pantalla de acceso. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_OS_NAME" /> proporcionen correcciones críticas de seguridad de manera oportuna.</translation>
 <translation id="5566210228171064229">Permite la impresión con y sin PIN</translation>
 <translation id="557360560705413259">Cuando esta configuración está habilitada, <ph name="PRODUCT_NAME" /> usará el commonName de un certificado de servidor para que coincida con un nombre de host, si el certificado no tiene una extensión subjectAlternativeName, siempre y cuando valide de forma correcta un certificado de CA instalado localmente y esté unido a él.
 
@@ -3060,9 +3005,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       NOTA: Esta política se aplica solo a las versiones de Chrome para Android que se ejecuten en dispositivos únicamente con más de 1 GB de RAM. Para aplicar la política en plataformas que no sean Android, utiliza IsolateOrigins.
       </translation>
-<translation id="5595998409088126162">Si estableces la política, se definirá una lista de favoritos en la que cada uno es un diccionario que contiene las claves "<ph name="NAME" />" y "<ph name="URL_LABEL" />" con el nombre y objetivo del favorito. Los administradores pueden configurar una subcarpeta definiendo un favorito sin una clave "<ph name="URL_LABEL" />", pero con una clave "<ph name="CHILDREN" />" adicional que contenga una lista de favoritos (algunos pueden ser carpetas). Chrome modifica las URL incompletas como si fueran enviadas a través de la barra de direcciones, p. ej., "<ph name="GOOGLE_COM" />" cambia a "<ph name="HTTPS_GOOGLE_COM" />".
-
-      Los usuarios no podrán modificar las carpetas donde se guardan los favoritos (pero podrán ocultarlas en la barra de favoritos). El nombre de la carpeta es "Favoritos administrados", pero los usuarios podrán agregar a la lista de favoritos un diccionario que incluya la clave "<ph name="TOPLEVEL_NAME" />" con el nombre deseado de la carpeta como valor. Los favoritos administrados no se sincronizarán con la cuenta del usuario ni se podrán modificar mediante extensiones.</translation>
 <translation id="5599461642204007579">Configuración de la administración de <ph name="MS_AD_NAME" /></translation>
 <translation id="5618398258385745432">La configuración asociada se usó antes de implementar la reautenticación para ver contraseñas. A partir de ese momento, la configuración y, por lo tanto, esta política no tienen efecto en el comportamiento de Chrome. El comportamiento actual de Chrome es como si la política se hubiera establecido para no ver las contraseñas en texto claro en las páginas de configuración del administrador de contraseñas. Esto significa que la página de configuración contiene solo un marcador de posición y Chrome mostrará la contraseña después de que el usuario haga clic en "Mostrar" (e implemente la reautenticación, si corresponde). A continuación, se muestra la descripción original de la política.
 
@@ -3171,13 +3113,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="5809728392451418079">Establecer el nombre para mostrar de las cuentas locales del dispositivo</translation>
 <translation id="5814301096961727113">Establece el estado predeterminado de los comentarios por voz en la pantalla de acceso.</translation>
 <translation id="5815129011704381141">Reinicia automáticamente después de la actualización.</translation>
-<translation id="5815353477778354428">Configura el directorio que <ph name="PRODUCT_FRAME_NAME" /> usará para almacenar los datos del usuario.
-
-      Si estableces esta política, <ph name="PRODUCT_FRAME_NAME" /> usará el directorio proporcionado.
-
-      Ingresa a http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de variables que se pueden usar.
-
-      Si esta política no se establece, se usará el directorio de perfil predeterminado.</translation>
 <translation id="582857022372205358">Habilitar la impresión doble con bordes cortos</translation>
 <translation id="583091600226586337">
       Si se habilita la política, se le preguntará al usuario dónde guardar cada archivo antes de descargarlo.
@@ -3189,17 +3124,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
       Las URL (como https://ejemplo.com/una/ruta) solo coincidirán como appID de U2F. Los dominios (como ejemplo.com) solo coincidirán como RP ID de webauthn. Por lo tanto, para abarcar las API de U2F y webauthn para un determinado sitio, deben enumerarse el dominio y la URL de appID.</translation>
 <translation id="5836064773277134605">Restringir el intervalo de puertos UDP que utiliza el host de acceso remoto</translation>
-<translation id="5844300486330234296">Controla la lista blanca de los patrones de URL con la reproducción automática siempre habilitada.
-
-      Si la reproducción automática está habilitada, los videos podrán reproducirse automáticamente (sin el consentimiento del usuario) con contenido de audio en <ph name="PRODUCT_NAME" />.
-
-      Si se establece la política AutoplayAllowed como verdadera, esta política no tendrá ningún efecto.
-
-      Si se establece la política AutoplayAllowed como falsa, de todos modos podrá reproducirse cualquier patrón de URL incluido en esta política.
-
-      Si cambias esta política cuando <ph name="PRODUCT_NAME" /> se está ejecutando, solo se aplicará a las nuevas pestañas abiertas. Por lo tanto, es posible que algunas pestañas todavía muestren el comportamiento anterior.
-
-      Para obtener información detallada sobre los patrones de URL válidos, consulta: https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.</translation>
 <translation id="585270638818921943">Impide que el usuario use apps para Android de fuentes no confiables</translation>
 <translation id="5855010364142818361">Esta política controla los parámetros de la línea de comandos para Chrome desde Internet Explorer.
 
@@ -3790,15 +3714,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6786747875388722282">Extensiones</translation>
 <translation id="6786967369487349613">Establecer el directorio del perfil de itinerancia</translation>
 <translation id="6795485990775913659">Permitir la impresión solo sin PIN</translation>
-<translation id="6799657852647827750">Si estableces esta política, se podrán especificar las variaciones aplicables en <ph name="PRODUCT_NAME" />.
-
-      Las variaciones brindan un medio para proponer modificaciones en <ph name="PRODUCT_NAME" /> sin enviar una nueva versión del navegador. Para hacerlo, se habilitan o inhabilitan de forma selectiva las funciones existentes.
-
-      Si estableces la política <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (valor 0) o no la estableces, se podrán aplicar todas las variaciones en el navegador.
-
-      Si estableces <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (valor 1), se permitirá solo la aplicación de las variaciones que se consideren correcciones de estabilidad o seguridad críticas en <ph name="PRODUCT_NAME" />.
-
-      Si estableces <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (valor 2), no se permitirá la aplicación de ninguna variación en el navegador. Ten en cuenta que no se recomienda este modo porque podría impedir que los desarrolladores de <ph name="PRODUCT_NAME" /> proporcionen correcciones de seguridad críticas de manera oportuna.</translation>
 <translation id="6810445994095397827">Bloquear JavaScript en estos sitios</translation>
 <translation id="6813263547126514821">Encendido y apagado</translation>
 <translation id="681446116407619279">Esquemas de autenticación compatibles</translation>
@@ -4622,11 +4537,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="8140204717286305802">Informa sobre la lista de interfaces de red con sus tipos y direcciones de hardware al servidor.
 
       Si esta política se establece en "False", no se informará sobre la lista de interfaces.</translation>
-<translation id="8140907626566492348">Si estableces la política como verdadera o no la estableces, <ph name="PRODUCT_NAME" /> podrá mostrarles a los usuarios contenido sobre productos en pestaña completa.
-
-      Si estableces la política como falsa, <ph name="PRODUCT_NAME" /> no podrá mostrar contenido sobre productos en pestaña completa.
-
-      Si estableces la política, se podrá controlar la presentación de páginas de bienvenida que permiten a los usuarios acceder a <ph name="PRODUCT_NAME" />, elegir <ph name="PRODUCT_NAME" /> como navegador predeterminado o recibir información sobre funciones de productos.</translation>
 <translation id="8141795997560411818">Esta política no impide que el usuario use la app de Google Drive de Android. Si deseas evitar el acceso a Google Drive, también debes inhabilitar la instalación de su app.</translation>
 <translation id="8142894094385450823">Establecer la configuración regional recomendada para una sesión administrada</translation>
 <translation id="8146727383888924340">Permite a los usuarios canjear ofertas a través del Registro del Sistema operativo Chrome.</translation>
@@ -4804,9 +4714,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
           Si no se establece, se inhabilitará el modo avanzado de carga de la batería, y el usuario no podrá habilitarlo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
-<translation id="8390049129576938611">Inhabilita la app interna para ver archivos PDF <ph name="PRODUCT_NAME" />. Los considera archivos de descarga y le permite al usuario abrirlos con la aplicación predeterminada.
-
-      Si esta política no se establece o se inhabilita, el complemento de PDF se usará para abrir archivos PDF a menos que el usuario lo inhabilite.</translation>
 <translation id="8395749934754392549">Controla la configuración para las apps y el contenedor de Android (ARC).</translation>
 <translation id="8396145449084377015">Esta política controla si se deben cargar reglas de la política SiteList de Internet Explorer.
 

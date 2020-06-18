@@ -34,6 +34,11 @@ extern const char kShouldSendRlzPingValueTrue[];
 // allowed to be sent. It is in the format of "yyyy-mm-dd".
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kRlzEmbargoEndDateKey[];
 
+// The key present in VPD that indicates the date after which enterprise
+// management pings are allowed to be sent. It is in the format of "yyyy-mm-dd".
+COMPONENT_EXPORT(CHROMEOS_SYSTEM)
+extern const char kEnterpriseManagementEmbargoEndDateKey[];
+
 // Customization ID key.
 COMPONENT_EXPORT(CHROMEOS_SYSTEM) extern const char kCustomizationIdKey[];
 

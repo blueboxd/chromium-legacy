@@ -83,6 +83,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Déverrouillage avec empreinte</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> n'est pas compatible avec la résolution <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). La résolution <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />) sera utilisée à la place. Cliquez sur "Confirmer" pour valider cette modification. Les paramètres précédents seront restaurés dans <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
 <translation id="1928739107511554905">Pour télécharger la mise à jour, utilisez l'écran tactile pour redémarrer votre Chromebook avec le clavier branché.</translation>
@@ -103,6 +104,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="2126242104232412123">Nouveau bureau</translation>
 <translation id="2127372758936585790">Chargeur de faible puissance</translation>
 <translation id="2135456203358955318">Loupe ancrée</translation>
+<translation id="2143915448548023856">Paramètres d'affichage</translation>
 <translation id="2144487987174258011">Redémarrez pour mettre Adobe Flash Player à jour</translation>
 <translation id="2208323208084708176">Mode bureau unifié</translation>
 <translation id="2220572644011485463">Code ou mot de passe</translation>
@@ -612,6 +614,7 @@ Pour commencer, voici des exemples de ce que vous pouvez me demander.</translati
 <translation id="8388750414311082622">Impossible de supprimer le dernier bureau.</translation>
 <translation id="8392451568018454956">Menu "Options" de l'adresse e-mail <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8394567579869570560">Ton parent a verrouillé cet appareil</translation>
+<translation id="8412677897383510995">Paramètres d'affichage</translation>
 <translation id="8425213833346101688">Modifier</translation>
 <translation id="8427213022735114808">La fonctionnalité de dictée transmet votre voix à Google et permet d'utiliser ainsi la saisie vocale dans n'importe quelle zone de texte.</translation>
 <translation id="8428213095426709021">Paramètres</translation>

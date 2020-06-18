@@ -167,6 +167,10 @@ apiBridge.registerCustomHook(function(api) {
     if (Array.isArray(expected) !== Array.isArray(actual))
       return false;
 
+    // Handle the ArrayBuffer cases. Bail out in case of type mismatch, to
+    // prevent the ArrayBuffer from being treated as an empty enumerable below.
+    if ((actual instanceof ArrayBuffer) !== (expected instanceof ArrayBuffer))
+      return false;
     if ((actual instanceof ArrayBuffer) && (expected instanceof ArrayBuffer)) {
       if (actual.byteLength != expected.byteLength)
         return false;

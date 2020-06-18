@@ -382,6 +382,12 @@ bool IsTargetSpaceTransformBackFaceVisible(
     LayerImpl* layer,
     int transform_tree_index,
     const PropertyTrees* property_trees) {
+  const TransformTree& transform_tree = property_trees->transform_tree;
+  const TransformNode& transform_node =
+      *transform_tree.Node(transform_tree_index);
+  if (transform_node.delegates_to_parent_for_backface)
+    transform_tree_index = transform_node.parent_id;
+
   gfx::Transform to_target;
   property_trees->GetToTarget(transform_tree_index,
                               layer->render_target_effect_tree_index(),
@@ -403,9 +409,15 @@ bool IsTransformToRootOf3DRenderingContextBackFaceVisible(
     int transform_tree_index,
     const PropertyTrees* property_trees) {
   const TransformTree& transform_tree = property_trees->transform_tree;
+
+  const TransformNode& transform_node =
+      *transform_tree.Node(transform_tree_index);
+  if (transform_node.delegates_to_parent_for_backface)
+    transform_tree_index = transform_node.parent_id;
+
   int root_id = transform_tree_index;
-  int sorting_context_id =
-      transform_tree.Node(transform_tree_index)->sorting_context_id;
+  int sorting_context_id = transform_node.sorting_context_id;
+
   while (root_id > 0 && transform_tree.Node(root_id - 1)->sorting_context_id ==
                             sorting_context_id)
     root_id--;

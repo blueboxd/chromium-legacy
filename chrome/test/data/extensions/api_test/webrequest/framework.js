@@ -350,6 +350,15 @@ function captureEvent(name, details, callback) {
     delete details.responseHeaders;
   }
 
+  if (details?.requestBody?.raw) {
+    for (const rawItem of details.requestBody.raw) {
+      chrome.test.assertTrue(rawItem.bytes instanceof ArrayBuffer);
+      // Stub out the bytes with an empty array buffer, since the expectations
+      // don't hardcode real bytes.
+      rawItem.bytes = new ArrayBuffer;
+    }
+  }
+
   // Check if the equivalent event is already captured, and issue a unique
   // |eventCount| to identify each.
   var eventCount = 0;

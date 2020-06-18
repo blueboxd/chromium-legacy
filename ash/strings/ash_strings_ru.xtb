@@ -45,7 +45,7 @@
 <translation id="1351937230027495976">Свернуть меню</translation>
 <translation id="1383876407941801731">Поиск</translation>
 <translation id="1419738280318246476">Чтобы выполнить действие, предложенное в уведомлении, разблокируйте устройство.</translation>
-<translation id="1420408895951708260">Включить или отключить ночной режим (<ph name="STATE_TEXT" />)</translation>
+<translation id="1420408895951708260">Включить или отключить ночную подсветку (<ph name="STATE_TEXT" />)</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1455242230282523554">Показать языковые настройки</translation>
 <translation id="1460620680449458626">Сейчас звук выключен.</translation>
@@ -77,12 +77,13 @@
 <translation id="1812997170047690955">Объекты на экране</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Ассистент (загрузка…)</translation>
-<translation id="1838895407229022812">Ночной режим отключен</translation>
+<translation id="1838895407229022812">Ночная подсветка отключена</translation>
 <translation id="1850504506766569011">Wi-Fi отключен</translation>
 <translation id="1859889070386344428">Отключено</translation>
 <translation id="1864454756846565995">Устройство USB-C (порт сзади)</translation>
 <translation id="1882897271359938046">Дублирование экрана в <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Используйте разблокировку по отпечатку пальца</translation>
+<translation id="1888656773939766144">Экран "<ph name="DISPLAY_NAME" />" не поддерживает разрешение <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Гц). Установлено разрешение <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Чтобы сохранить изменения, нажмите "Подтвердить". Предыдущие настройки восстановятся через <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Изменились быстрые клавиши для запуска диспетчера задач. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Автоматическое нажатие</translation>
 <translation id="1928739107511554905">Чтобы выполнить обновление, перезагрузите устройство Chromebook с помощью сенсорной панели, не отключая от него клавиатуру.</translation>
@@ -103,6 +104,7 @@
 <translation id="2126242104232412123">Добавить рабочий стол</translation>
 <translation id="2127372758936585790">Маломощное зарядное устройство</translation>
 <translation id="2135456203358955318">Закрепленная лупа</translation>
+<translation id="2143915448548023856">Настройки экрана</translation>
 <translation id="2144487987174258011">Перезагрузите, чтобы обновить Adobe Flash Player</translation>
 <translation id="2208323208084708176">Единый рабочий стол</translation>
 <translation id="2220572644011485463">PIN-код или пароль</translation>
@@ -150,7 +152,7 @@
 <translation id="2704781753052663061">Подключиться к другим сетям Wi-Fi</translation>
 <translation id="2705001408393684014">Кнопка включения и отключения микрофона. <ph name="STATE_TEXT" /></translation>
 <translation id="2706462751667573066">Вверх</translation>
-<translation id="2718395828230677721">Ночной режим</translation>
+<translation id="2718395828230677721">Ночная подсветка</translation>
 <translation id="2727977024730340865">Подключено маломощное зарядное устройство. Возможны проблемы при зарядке.</translation>
 <translation id="2792498699870441125">Alt + Search</translation>
 <translation id="2819276065543622893">Сеанс завершен.</translation>
@@ -385,15 +387,15 @@
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5673434351075758678">В результате синхронизации настроек язык изменен. Теперь используется <ph name="TO_LOCALE" />, а не <ph name="FROM_LOCALE" />.</translation>
 <translation id="5682642926269496722">Google Ассистент недоступен в этом аккаунте.</translation>
-<translation id="5689633613396158040">Этот режим помогает снизить напряжение глаз при тусклом свете. Нажмите здесь, чтобы изменить расписание или полностью отключить ночной режим.</translation>
+<translation id="5689633613396158040">Она помогает снизить напряжение глаз при тусклом свете. Нажмите здесь, чтобы изменить расписание или полностью отключить ночную подсветку.</translation>
 <translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="5710450975648804523">Режим "Не беспокоить" включен</translation>
 <translation id="573413375004481890">Вы подключили к устройству больше дисплеев, чем оно может поддерживать, поэтому один из них пришлось отключить</translation>
 <translation id="574392208103952083">Средний</translation>
 <translation id="5744083938413354016">Перетаскивание нажатием</translation>
-<translation id="5745612484876805746">Ночной режим включается автоматически на закате</translation>
+<translation id="5745612484876805746">Ночная подсветка включается автоматически на закате</translation>
 <translation id="5750765938512549687">Bluetooth выключен</translation>
-<translation id="576453121877257266">Ночной режим включен</translation>
+<translation id="576453121877257266">Ночная подсветка включена</translation>
 <translation id="5769373120130404283">Экран конфиденциальности</translation>
 <translation id="5777841717266010279">Закрыть доступ к экрану?</translation>
 <translation id="5820394555380036790">Chromium OS</translation>

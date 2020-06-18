@@ -7,7 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
-#include "ui/views/widget/widget_delegate.h"
+#include "ui/views/view.h"
 
 namespace ash {
 
@@ -16,8 +16,9 @@ class AmbientViewDelegate;
 class GlanceableInfoView;
 class PhotoView;
 
-// Container view for ambient mode.
-class ASH_EXPORT AmbientContainerView : public views::WidgetDelegateView {
+// Container view to display all Ambient Mode related views, i.e. photo frame,
+// weather info.
+class ASH_EXPORT AmbientContainerView : public views::View {
  public:
   explicit AmbientContainerView(AmbientViewDelegate* delegate);
   ~AmbientContainerView() override;
@@ -27,15 +28,15 @@ class ASH_EXPORT AmbientContainerView : public views::WidgetDelegateView {
   gfx::Size CalculatePreferredSize() const override;
   void Layout() override;
 
-  // Fade out the background photo.
-  void FadeOutPhotoView();
-
  private:
   friend class AmbientAshTestBase;
 
   void Init();
 
+  // Layouts its child views.
+  void LayoutPhotoView();
   void LayoutGlanceableInfoView();
+  void LayoutAssistantView();
 
   PhotoView* photo_view_for_testing() { return photo_view_; }
 

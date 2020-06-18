@@ -16,9 +16,6 @@
 
 namespace chromeos {
 
-const char kEmojiSuggestAdditionEnabledPrefName[] =
-    "emoji_suggest_addition_enabled";
-
 // An agent to suggest assistive information when the user types, and adopt or
 // dismiss the suggestion according to the user action.
 class AssistiveSuggester {

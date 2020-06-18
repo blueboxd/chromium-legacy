@@ -260,13 +260,11 @@ QUIC_FLAG(bool,
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 
-// If true, enable QUIC version h3-25.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_enable_version_draft_25_v3,
-          true)
+// If true, disable QUIC version h3-25.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_25, false)
 
-// If true, enable QUIC version h3-27.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_27, true)
+// If true, disable QUIC version h3-27.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_draft_27, false)
 
 // If true, QUIC BBRv2 to take ack height into account when calculating
 // queuing_threshold in PROBE_UP.
@@ -274,11 +272,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bbr2_add_ack_height_to_queueing_threshold,
     true)
-
-// If true, quic::BandwidthSampler will start in application limited phase.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bw_sampler_app_limited_starting_value,
-          true)
 
 // If true, use idle network detector to detect handshake timeout and idle
 // network timeout.
@@ -430,3 +423,13 @@ QUIC_FLAG(bool,
 
 // If true, enable QUIC version h3-29.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_29, true)
+
+// If true, support HANDSHAKE_DONE frame in T050
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_support_handshake_done_in_t050,
+          true)
+
+// If true, save user agent into in QuicSession.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_save_user_agent_in_quic_session,
+          false)

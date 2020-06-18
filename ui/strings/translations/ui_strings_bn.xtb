@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6119846243427417423">সক্রিয় করুন</translation>
 <translation id="6129953537138746214">ব্যবধান</translation>
+<translation id="6134259848159370930">আপনার ডিভাইস, অ্যাপ, সেটিংস এবং ওয়েবে সার্চ করুন।</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">সমস্ত অ্যাপ দেখুন</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6166852626429024716">আপনার ডিভাইস, অ্যাপ, সেটিংস, ওয়েবে সার্চ করুন...</translation>
 <translation id="6264365405983206840">&amp;সকল বেছে নিন</translation>
 <translation id="6351032674660237738">অ্যাপের প্রস্তাবনা</translation>
 <translation id="6364916375976753737">বাঁ দিকে স্ক্রল করুন</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ফাইল (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">শেল্ফ সবসময় দেখানো হয়</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> কেবি/সেকেণ্ড</translation>
+<translation id="8685326675965865247">আপনার ডিভাইস, অ্যাপ, সেটিংস এবং ওয়েবে সার্চ করুন। আপনার অ্যাপগুলি নেভিগেট করতে তীরচিহ্ন কী ব্যবহার করুন।</translation>
 <translation id="8725488761726303204">আরও <ph name="NUMBER" />টি</translation>
 <translation id="8730621377337864115">হয়ে গেছে</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{১ ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>

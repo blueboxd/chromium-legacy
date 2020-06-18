@@ -20,7 +20,6 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.offlinepages.indicator.ConnectivityDetector.ConnectionState;
 import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 
 import java.lang.annotation.Retention;
@@ -31,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  * Class that controls visibility and content of {@link StatusIndicatorCoordinator} to relay
  * connectivity information.
  */
-public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observer {
+public class OfflineIndicatorControllerV2 {
     @IntDef({UmaEnum.CAN_ANIMATE_NATIVE_CONTROLS,
             UmaEnum.CAN_ANIMATE_NATIVE_CONTROLS_OMNIBOX_FOCUSED,
             UmaEnum.CANNOT_ANIMATE_NATIVE_CONTROLS,
@@ -47,15 +46,20 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
     }
 
     static final long STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
+
+    // TODO(tbansal): Consider moving the cooldown logic to OfflineDetector.java.
+    // The cooldown period was added to prevent showing/changing the indicator too frequently. In
+    // longer term, OfflineDetector should protect against sending signals to this class too
+    // frequently.
     static final long STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS = 5000;
 
-    private static ConnectivityDetector sMockConnectivityDetector;
+    private static OfflineDetector sMockOfflineDetector;
     private static Supplier<Long> sMockElapsedTimeSupplier;
 
     private Context mContext;
     private StatusIndicatorCoordinator mStatusIndicator;
     private Handler mHandler;
-    private ConnectivityDetector mConnectivityDetector;
+    private OfflineDetector mOfflineDetector;
     private ObservableSupplier<Boolean> mIsUrlBarFocusedSupplier;
     private Supplier<Boolean> mCanAnimateBrowserControlsSupplier;
     private Callback<Boolean> mOnUrlBarFocusChanged;
@@ -91,6 +95,12 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         // If we're offline at start-up, we should have a small enough last action time so that we
         // don't wait for the cool-down.
         mLastActionTime = getElapsedTime() - STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS;
+        if (sMockOfflineDetector != null) {
+            mOfflineDetector = sMockOfflineDetector;
+        } else {
+            mOfflineDetector =
+                    new OfflineDetector((Boolean offline) -> onConnectionStateChanged(offline));
+        }
 
         mShowRunnable = () -> {
             RecordUserAction.record("OfflineIndicator.Shown");
@@ -148,23 +158,14 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         mIsUrlBarFocusedSupplier.addObserver(mOnUrlBarFocusChanged);
 
         mUpdateStatusIndicatorDelayedRunnable = () -> {
-            final boolean offline =
-                    isConnectionStateOffline(mConnectivityDetector.getConnectionState());
+            final boolean offline = mOfflineDetector.isConnectionStateOffline();
             if (offline != mIsOffline) {
                 updateStatusIndicator(offline);
             }
         };
-
-        if (sMockConnectivityDetector != null) {
-            mConnectivityDetector = sMockConnectivityDetector;
-        } else {
-            mConnectivityDetector = new ConnectivityDetector(this);
-        }
     }
 
-    @Override
-    public void onConnectionStateChanged(int connectionState) {
-        final boolean offline = isConnectionStateOffline(connectionState);
+    public void onConnectionStateChanged(boolean offline) {
         if (mIsOffline == offline) {
             return;
         }
@@ -183,9 +184,9 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
     }
 
     public void destroy() {
-        if (mConnectivityDetector != null) {
-            mConnectivityDetector.destroy();
-            mConnectivityDetector = null;
+        if (mOfflineDetector != null) {
+            mOfflineDetector.destroy();
+            mOfflineDetector = null;
         }
 
         if (mIsUrlBarFocusedSupplier != null) {
@@ -238,13 +239,9 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         mLastActionTime = getElapsedTime();
     }
 
-    private boolean isConnectionStateOffline(@ConnectionState int connectionState) {
-        return connectionState != ConnectionState.VALIDATED;
-    }
-
     @VisibleForTesting
-    static void setMockConnectivityDetector(ConnectivityDetector connectivityDetector) {
-        sMockConnectivityDetector = connectivityDetector;
+    static void setMockOfflineDetector(OfflineDetector offlineDetector) {
+        sMockOfflineDetector = offlineDetector;
     }
 
     @VisibleForTesting

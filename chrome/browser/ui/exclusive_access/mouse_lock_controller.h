@@ -50,7 +50,7 @@ class MouseLockController : public ExclusiveAccessControllerBase {
   }
 
  private:
-  friend class FullscreenControllerTest;
+  friend class ExclusiveAccessTest;
 
   enum MouseLockState {
     MOUSELOCK_UNLOCKED,

@@ -12,6 +12,7 @@
 #include "chrome/browser/vr/ui.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "base/numerics/ranges.h"
 #include "base/strings/string16.h"

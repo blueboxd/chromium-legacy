@@ -362,6 +362,25 @@ bool ImageAnimationController::AnimationState::AdvanceFrame(
   // skipped trying to catch up.
   DCHECK_GT(num_of_frames_advanced, 0u);
   last_num_frames_skipped_ = num_of_frames_advanced - 1u;
+  switch (repetitions_completed_) {
+    case 0:
+      UMA_HISTOGRAM_COUNTS_100000(
+          "AnimatedImage.NumOfFramesSkipped.FirstAnimationLoop",
+          last_num_frames_skipped_);
+      break;
+    case 1:
+      UMA_HISTOGRAM_COUNTS_100000(
+          "AnimatedImage.NumOfFramesSkipped.SecondAnimationLoop",
+          last_num_frames_skipped_);
+      break;
+    case 2:
+    case 3:
+    case 4:
+      UMA_HISTOGRAM_COUNTS_100000(
+          "AnimatedImage.NumOfFramesSkipped.ThirdToFifthAnimationLoop",
+          last_num_frames_skipped_);
+      break;
+  }
   UMA_HISTOGRAM_COUNTS_100000("AnimatedImage.NumOfFramesSkipped.Compositor",
                               last_num_frames_skipped_);
   return needs_invalidation();

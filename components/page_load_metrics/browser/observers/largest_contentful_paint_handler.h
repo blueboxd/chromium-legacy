@@ -91,13 +91,18 @@ class LargestContentfulPaintHandler {
 
   // Returns true if the out parameters are assigned values.
   static bool AssignTimeAndSizeForLargestContentfulPaint(
-      const page_load_metrics::mojom::PaintTimingPtr& paint_timing,
+      const page_load_metrics::mojom::LargestContentfulPaintTiming&
+          largest_contentful_paint,
       base::Optional<base::TimeDelta>* largest_content_paint_time,
       uint64_t* largest_content_paint_size,
       ContentfulPaintTimingInfo::LargestContentType* largest_content_type);
 
-  void RecordTiming(const page_load_metrics::mojom::PaintTimingPtr&,
-                    content::RenderFrameHost* subframe_rfh);
+  void RecordTiming(
+      const page_load_metrics::mojom::LargestContentfulPaintTiming&
+          largest_contentful_paint,
+      const base::Optional<base::TimeDelta>&
+          first_input_or_scroll_notified_timestamp,
+      content::RenderFrameHost* subframe_rfh);
   inline void RecordMainFrameTreeNodeId(int main_frame_tree_node_id) {
     main_frame_tree_node_id_.emplace(main_frame_tree_node_id);
   }
@@ -130,9 +135,17 @@ class LargestContentfulPaintHandler {
   void OnFrameDeleted(content::RenderFrameHost* render_frame_host);
 
  private:
-  void RecordSubframeTiming(const mojom::PaintTimingPtr& timing,
-                            const base::TimeDelta& navigation_start_offset);
-  void RecordMainFrameTiming(const page_load_metrics::mojom::PaintTimingPtr&);
+  void RecordSubframeTiming(
+      const page_load_metrics::mojom::LargestContentfulPaintTiming&
+          largest_contentful_paint,
+      const base::Optional<base::TimeDelta>&
+          first_input_or_scroll_notified_timestamp,
+      const base::TimeDelta& navigation_start_offset);
+  void RecordMainFrameTiming(
+      const page_load_metrics::mojom::LargestContentfulPaintTiming&
+          largest_contentful_paint,
+      const base::Optional<base::TimeDelta>&
+          first_input_or_scroll_notified_timestamp);
   void UpdateFirstInputOrScrollNotified(
       const base::Optional<base::TimeDelta>& candidate_new_time,
       const base::TimeDelta& navigation_start_offset);

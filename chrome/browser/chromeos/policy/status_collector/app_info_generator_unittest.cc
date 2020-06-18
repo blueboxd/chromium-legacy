@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -39,11 +40,15 @@
 
 using ::testing::AllOf;
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::Field;
 using ::testing::IsEmpty;
 using ::testing::Matcher;
+using ::testing::MatcherInterface;
 using ::testing::Matches;
+using ::testing::MatchResultListener;
 using ::testing::Property;
+using ::testing::ResultOf;
 
 using web_app::ProviderType;
 
@@ -51,30 +56,65 @@ namespace em = enterprise_management;
 
 namespace {
 
-MATCHER_P(EqualsProto,
-          message,
-          "Match a proto Message equal to the matcher's argument.") {
-  std::string expected_serialized, actual_serialized;
-  message.SerializeToString(&expected_serialized);
-  arg.SerializeToString(&actual_serialized);
-  return expected_serialized == actual_serialized;
-}
+class TimePeriodMatcher : public MatcherInterface<const em::TimePeriod&> {
+ public:
+  explicit TimePeriodMatcher(const em::TimePeriod& time_period)
+      : start_(base::Time::FromJavaTime(time_period.start_timestamp())),
+        end_(base::Time::FromJavaTime(time_period.end_timestamp())) {}
+
+  bool MatchAndExplain(const em::TimePeriod& time_period,
+                       MatchResultListener* listener) const override {
+    bool start_timestamp_equal =
+        time_period.start_timestamp() == start_.ToJavaTime();
+    if (!start_timestamp_equal) {
+      *listener << " |start_timestamp| is "
+                << base::Time::FromJavaTime(time_period.start_timestamp());
+    }
+    bool end_timestamp_equal = time_period.end_timestamp() == end_.ToJavaTime();
+    if (!end_timestamp_equal) {
+      *listener << " |end_timestamp| is "
+                << base::Time::FromJavaTime(time_period.end_timestamp());
+    }
+    return start_timestamp_equal && end_timestamp_equal;
+  }
+
+  void DescribeTo(std::ostream* os) const override {
+    *os << "equal to TimePeriod"
+        << "(" << start_ << ", " << end_ << "]";
+  }
+
+ private:
+  base::Time start_;
+  base::Time end_;
+};
 
 auto EqApp(const std::string& app_id,
            const std::string& name,
            const em::AppInfo::Status status,
            const std::string& version,
            const em::AppInfo::AppType app_type,
-           const std::vector<em::TimePeriod> app_activity = {}) {
-  em::AppInfo app_info;
-  app_info.set_app_id(app_id);
-  app_info.set_app_name(name);
-  app_info.set_status(status);
-  app_info.set_version(version);
-  app_info.set_app_type(app_type);
-  *app_info.mutable_active_time_periods() = {app_activity.begin(),
-                                             app_activity.end()};
-  return EqualsProto(app_info);
+           const std::vector<em::TimePeriod> app_activities = {}) {
+  auto GetActivity =
+      [](const em::AppInfo& input) -> std::vector<em::TimePeriod> {
+    std::vector<em::TimePeriod> activities;
+    for (const em::TimePeriod& time_period : input.active_time_periods()) {
+      activities.push_back(time_period);
+    }
+    return activities;
+  };
+
+  std::vector<Matcher<const em::TimePeriod&>> activity_matchers;
+  for (const em::TimePeriod& activity : app_activities) {
+    activity_matchers.push_back(
+        Matcher<const em::TimePeriod&>(new TimePeriodMatcher(activity)));
+  }
+
+  return AllOf(Property(&em::AppInfo::app_id, app_id),
+               Property(&em::AppInfo::app_name, name),
+               Property(&em::AppInfo::status, status),
+               Property(&em::AppInfo::version, version),
+               Property(&em::AppInfo::app_type, app_type),
+               ResultOf(GetActivity, ElementsAreArray(activity_matchers)));
 }
 
 auto MakeActivity(const base::Time& start_time, const base::Time& end_time) {
@@ -119,7 +159,7 @@ class AppInfoGeneratorTest : public ::testing::TestWithParam<ProviderType> {
 
   class Instance {
    public:
-    Instance(const std::string& app_id) {
+    explicit Instance(const std::string& app_id) {
       window_ = std::make_unique<aura::Window>(nullptr);
       window_->Init(ui::LAYER_NOT_DRAWN);
       instance_ = std::make_unique<apps::Instance>(app_id, window_.get());
@@ -335,14 +375,17 @@ TEST_P(AppInfoGeneratorTest, OnReportedSuccessfully) {
   generator->OnReportedSuccessfully(report_time);
 
   test_clock().SetNow(MakeLocalTime("31-MAR-2020 5:30pm"));
+  PushAppInstance(app_instance, apps::InstanceState::kStarted);
+  test_clock().SetNow(MakeLocalTime("31-MAR-2020 11:30pm"));
+  PushAppInstance(app_instance, apps::InstanceState::kDestroyed);
   auto result = generator->Generate();
 
   EXPECT_THAT(
       result.value(),
       ElementsAre(EqApp("a", "FirstApp", em::AppInfo_Status_STATUS_DISABLED,
                         "1.1", em::AppInfo_AppType_TYPE_ARC,
-                        {MakeActivity(MakeUTCTime("30-MAR-2020 12:00am"),
-                                      MakeUTCTime("30-MAR-2020 11:30pm"))})));
+                        {MakeActivity(MakeUTCTime("31-MAR-2020 12:00am"),
+                                      MakeUTCTime("31-MAR-2020 6:00am"))})));
 }
 
 TEST_P(AppInfoGeneratorTest, OnWillReport) {
@@ -351,7 +394,9 @@ TEST_P(AppInfoGeneratorTest, OnWillReport) {
           apps::mojom::AppType::kArc);
   Instance app_instance("a");
   test_clock().SetNow(MakeLocalTime("29-MAR-2020 3:30pm"));
-  PushAppInstance(app_instance, apps::InstanceState::kStarted);
+  PushAppInstance(app_instance, static_cast<apps::InstanceState>(
+                                    apps::InstanceState::kStarted |
+                                    apps::InstanceState::kHidden));
 
   test_clock().SetNow(MakeLocalTime("30-MAR-2020 5:30pm"));
   generator->OnWillReport();
@@ -366,7 +411,9 @@ TEST_P(AppInfoGeneratorTest, OnWillReport) {
       ElementsAre(EqApp("a", "FirstApp", em::AppInfo_Status_STATUS_DISABLED,
                         "1.1", em::AppInfo_AppType_TYPE_ARC,
                         {MakeActivity(MakeUTCTime("29-MAR-2020 12:00am"),
-                                      MakeUTCTime("29-MAR-2020 8:30am"))})));
+                                      MakeUTCTime("29-MAR-2020 8:30am")),
+                         MakeActivity(MakeUTCTime("30-MAR-2020 12:00am"),
+                                      MakeUTCTime("30-MAR-2020 5:30pm"))})));
   EXPECT_THAT(
       result2.value(),
       ElementsAre(EqApp("a", "FirstApp", em::AppInfo_Status_STATUS_DISABLED,
@@ -374,7 +421,9 @@ TEST_P(AppInfoGeneratorTest, OnWillReport) {
                         {MakeActivity(MakeUTCTime("29-MAR-2020 12:00am"),
                                       MakeUTCTime("29-MAR-2020 8:30am")),
                          MakeActivity(MakeUTCTime("30-MAR-2020 12:00am"),
-                                      MakeUTCTime("31-MAR-2020 12:00am"))})));
+                                      MakeUTCTime("31-MAR-2020 12:00am")),
+                         MakeActivity(MakeUTCTime("31-MAR-2020 12:00am"),
+                                      MakeUTCTime("31-MAR-2020 8:30pm"))})));
 }
 
 TEST_P(AppInfoGeneratorTest, OnLogoutOnLogin) {

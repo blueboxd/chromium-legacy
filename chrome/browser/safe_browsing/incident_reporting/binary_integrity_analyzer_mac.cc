@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/mac/bundle_locations.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"

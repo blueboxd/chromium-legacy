@@ -5,6 +5,7 @@
 #include "chrome/chrome_cleaner/os/digest_verifier.h"
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

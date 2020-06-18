@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
+
+#import <UIKit/UIKit.h>
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
@@ -13,6 +15,8 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+const char kBreadcrumbOrientation[] = "Orientation";
 
 ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
     BreadcrumbManager* breadcrumb_manager)
@@ -25,9 +29,42 @@ ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
                               base::Unretained(this)))) {
   base::AddActionCallback(user_action_callback_);
   breakpad::MonitorBreadcrumbManager(breadcrumb_manager_);
+
+  orientation_observer_ = [NSNotificationCenter.defaultCenter
+      addObserverForName:UIDeviceOrientationDidChangeNotification
+                  object:nil
+                   queue:nil
+              usingBlock:^(NSNotification*) {
+                std::string event(kBreadcrumbOrientation);
+                switch (UIDevice.currentDevice.orientation) {
+                  case UIDeviceOrientationUnknown:
+                    event += " #unknown";
+                    break;
+                  case UIDeviceOrientationPortrait:
+                    event += " #portrait";
+                    break;
+                  case UIDeviceOrientationPortraitUpsideDown:
+                    event += " #portrait-upside-down";
+                    break;
+                  case UIDeviceOrientationLandscapeLeft:
+                    event += " #landscape-left";
+                    break;
+                  case UIDeviceOrientationLandscapeRight:
+                    event += " #landscape-right";
+                    break;
+                  case UIDeviceOrientationFaceUp:
+                    event += " #face-up";
+                    break;
+                  case UIDeviceOrientationFaceDown:
+                    event += " #face-down";
+                    break;
+                }
+                breadcrumb_manager_->AddEvent(event);
+              }];
 }
 
 ApplicationBreadcrumbsLogger::~ApplicationBreadcrumbsLogger() {
+  [NSNotificationCenter.defaultCenter removeObserver:orientation_observer_];
   breadcrumb_manager_->AddEvent("Shutdown");
   base::RemoveActionCallback(user_action_callback_);
   breakpad::StopMonitoringBreadcrumbManager(breadcrumb_manager_);

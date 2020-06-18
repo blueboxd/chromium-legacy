@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_shelf_utils.h"
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"

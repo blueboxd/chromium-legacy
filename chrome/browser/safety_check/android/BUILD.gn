@@ -32,8 +32,11 @@ android_library("java") {
     ":java_resources",
     "//base:base_java",
     "//base:jni_java",
+    "//components/browser_ui/settings/android:java",
+    "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_fragment_fragment_java",
     "//third_party/android_deps:androidx_preference_preference_java",
+    "//ui/android:ui_full_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":safety_check_enums" ]
@@ -57,7 +60,16 @@ android_library("junit") {
 }
 
 android_resources("java_resources") {
-  deps = [ "//chrome/browser/ui/android/strings:ui_strings_grd" ]
+  sources = [
+    "java/res/layout/safety_check_button.xml",
+    "java/res/values/dimens.xml",
+    "java/res/xml/safety_check_preferences.xml",
+  ]
+  deps = [
+    "//chrome/browser/ui/android/strings:ui_strings_grd",
+    "//components/browser_ui/settings/android:java_resources",
+    "//components/browser_ui/styles/android:java_resources",
+  ]
   custom_package = "org.chromium.chrome.browser.safety_check"
 }
 

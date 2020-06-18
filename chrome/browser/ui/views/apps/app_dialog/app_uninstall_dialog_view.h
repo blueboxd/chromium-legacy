@@ -44,12 +44,12 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
 
   // views::BubbleDialogDelegateView:
   ui::ModalType GetModalType() const override;
-  base::string16 GetWindowTitle() const override;
 
  private:
   void InitializeView(Profile* profile,
                       apps::mojom::AppType app_type,
-                      const std::string& app_id);
+                      const std::string& app_id,
+                      const std::string& app_name);
 
   void InitializeCheckbox(const GURL& app_launch_url);
 
@@ -69,15 +69,6 @@ class AppUninstallDialogView : public apps::UninstallDialog::UiBase,
   void OnDialogAccepted();
 
   Profile* profile_;
-
-  // The type of apps, e.g. Extension-backed app, Android app.
-  apps::mojom::AppType app_type_;
-
-  // Whether app represents a shortcut. |shortcut_| is available for the ARC
-  // apps only.
-#if defined(OS_CHROMEOS)
-  bool shortcut_ = false;
-#endif
 
   views::Checkbox* report_abuse_checkbox_ = nullptr;
   views::Checkbox* clear_site_data_checkbox_ = nullptr;

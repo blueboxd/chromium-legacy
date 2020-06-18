@@ -4,6 +4,8 @@
 
 #include "chrome/common/string_matching/term_break_iterator.h"
 
+#include <ostream>
+
 #include "base/check.h"
 #include "base/i18n/char_iterator.h"
 #include "base/notreached.h"

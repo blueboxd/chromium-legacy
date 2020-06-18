@@ -34,6 +34,7 @@ let AutofillFormFieldData;
  *   origin: string,
  *   action: string,
  *   fields: Array<AutofillFormFieldData>
+ *   frame_id: string
  * }}
  */
 let AutofillFormData;
@@ -850,6 +851,8 @@ __gCrWeb.fill.webFormElementToFormData = function(
 
   __gCrWeb.fill.setUniqueIDIfNeeded(formElement);
   form['unique_renderer_id'] = __gCrWeb.fill.getUniqueID(formElement);
+
+  form['frame_id'] = frame.__gCrWeb.message.getFrameId();
 
   // Note different from form_autofill_util.cc version of this method, which
   // computes |form.action| using document.completeURL(form_element.action())

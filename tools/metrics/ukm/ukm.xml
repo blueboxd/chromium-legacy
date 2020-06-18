@@ -7958,6 +7958,13 @@ be describing additional metrics about the same event.
       detailed explanation. In ms.
     </summary>
   </metric>
+  <metric name="InteractiveTiming.FirstScrollDelay">
+    <summary>
+      Measures the time, in milliseconds, from when a user starts scrolling
+      until the result shows up on screen if the scroll was the first scroll
+      since navigation.
+    </summary>
+  </metric>
   <metric name="InteractiveTiming.LongestInputDelay">
     <obsolete>
       Deprecated on January 2019 in favor of
@@ -8445,6 +8452,37 @@ be describing additional metrics about the same event.
       loads that failed in the foreground.
     </summary>
   </metric>
+  <metric name="PaintTiming.NavigationToExperimentalLargestContentfulPaint">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, across all frames. Differs from
+      PaintTiming.NavigationToLargestContentfulPaint in that this experimental
+      version includes content that has been removed.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <index fields="profile.country,profile.system_ram"/>
+        <index fields="profile.is_dominant_version"/>
+        <index fields="profile.is_latest_version"/>
+        <index fields="profile.system_ram"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric
+      name="PaintTiming.NavigationToExperimentalLargestContentfulPaint.MainFrame">
+    <summary>
+      Measures the time in milliseconds from navigation timing's navigation
+      start to the time when the page first paints the largest content (text or
+      image) within viewport, in the main frame. Differs from
+      PaintTiming.NavigationToLargestContentfulPaint.MainFrame in that this
+      experimental version includes content that has been removed.
+    </summary>
+  </metric>
   <metric name="PaintTiming.NavigationToFirstContentfulPaint">
     <summary>
       Measures the time in milliseconds from navigation timing's navigation
@@ -8564,6 +8602,32 @@ be describing additional metrics about the same event.
     Debugging metrics for the PageLoad event that do not require the same amount
     of sampling.
   </summary>
+  <metric name="PaintTiming.ExperimentalLargestContentfulPaint.ContentType"
+      enum="LargestContentType">
+    <summary>
+      Records whether the page's experimental version of largest contentful
+      paint, whose timestamp is measured by
+      PageLoad.PaintTiming.NavigationToExperimentalLargestContentfulPaint, comes
+      from text or image. This value is sampled and not on the PageLoad event,
+      so it is not always recorded whenever
+      PageLoad.PaintTiming.NavigationToExperimentalLargestContentfulPaint is
+      recorded.
+    </summary>
+  </metric>
+  <metric
+      name="PaintTiming.ExperimentalLargestContentfulPaint.TerminationState"
+      enum="LargestContentfulPaint.TerminationState">
+    <summary>
+      Records the state of the experimental largest contentful paint algorithm
+      at the time in which the browser attempts to record
+      PageLoad.PaintTiming.NavigationToExperimentalLargestContentfulPaint. This
+      state depends on whether there was an experimental largest contentful
+      paint candidate or not and the foreground state of the page. This value is
+      sampled and not on the PageLoad event, so it is not always recorded
+      whenever the browser attempts to record
+      PageLoad.PaintTiming.NavigationToExperimentalLargestContentfulPaint.
+    </summary>
+  </metric>
   <metric name="PaintTiming.LargestContentfulPaint.ContentType"
       enum="LargestContentType">
     <summary>

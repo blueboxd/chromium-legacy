@@ -16,6 +16,7 @@ android_library("java") {
     "widget/java/src/org/chromium/components/browser_ui/settings/ChromeImageViewPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/ChromeSwitchPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/ExpandablePreferenceGroup.java",
+    "widget/java/src/org/chromium/components/browser_ui/settings/IconPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/LearnMorePreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/SpinnerPreference.java",
     "widget/java/src/org/chromium/components/browser_ui/settings/TextMessagePreference.java",
@@ -61,5 +62,6 @@ android_resources("java_resources") {
     "java/res/values/dimens.xml",
     "java/res/values/styles.xml",
   ]
+
   custom_package = "org.chromium.components.browser_ui.settings"
 }

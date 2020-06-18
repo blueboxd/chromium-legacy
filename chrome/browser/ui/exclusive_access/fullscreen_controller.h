@@ -143,7 +143,7 @@ class FullscreenController : public ExclusiveAccessControllerBase {
   }
 
  private:
-  friend class FullscreenControllerTest;
+  friend class ExclusiveAccessTest;
 
   enum FullscreenInternalOption {
     BROWSER,

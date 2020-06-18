@@ -1191,9 +1191,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
   FloatSize default_object_size(Width(), Height());
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   if (!image_source->IsVideoElement()) {
-    RasterModeHint hint = IsAccelerated() ? RasterModeHint::kPreferGPU
-                                          : RasterModeHint::kPreferCPU;
-    image = image_source->GetSourceImageForCanvas(&source_image_status, hint,
+    image = image_source->GetSourceImageForCanvas(&source_image_status,
                                                   default_object_size);
     if (source_image_status == kUndecodableSourceImageStatus) {
       exception_state.ThrowDOMException(
@@ -1417,8 +1415,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
 
   FloatSize default_object_size(Width(), Height());
   scoped_refptr<Image> image_for_rendering =
-      image_source->GetSourceImageForCanvas(&status, RasterModeHint::kPreferCPU,
-                                            default_object_size);
+      image_source->GetSourceImageForCanvas(&status, default_object_size);
 
   switch (status) {
     case kNormalSourceImageStatus:
@@ -1625,8 +1622,7 @@ ImageData* BaseRenderingContext2D::getImageData(
   // Deferred offscreen canvases might have recorded commands, make sure
   // that those get drawn here
   FinalizeFrame();
-  scoped_refptr<StaticBitmapImage> snapshot =
-      GetImage(RasterModeHint::kPreferCPU);
+  scoped_refptr<StaticBitmapImage> snapshot = GetImage();
 
   // GetImagedata is faster in Unaccelerated canvases
   if (IsAccelerated())

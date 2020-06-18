@@ -50,7 +50,6 @@ enum SourceImageStatus {
 class CORE_EXPORT CanvasImageSource {
  public:
   virtual scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                                       RasterModeHint,
                                                        const FloatSize&) = 0;
 
   // IMPORTANT: Result must be independent of whether destinationContext is

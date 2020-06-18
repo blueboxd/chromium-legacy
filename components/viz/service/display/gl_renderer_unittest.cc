@@ -37,6 +37,7 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_gles2_interface.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
+#include "components/viz/test/viz_test_suite.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/config/gpu_finch_features.h"
@@ -85,6 +86,11 @@ MATCHER_P(MatchesSyncToken, sync_token, "") {
 
 class GLRendererTest : public testing::Test {
  protected:
+  ~GLRendererTest() override {
+    // Some tests create CopyOutputRequests which will PostTask ensure
+    // they are all cleaned up and completed before destroying the test.
+    VizTestSuite::RunUntilIdle();
+  }
   RenderPass* root_render_pass() {
     return render_passes_in_draw_order_.back().get();
   }

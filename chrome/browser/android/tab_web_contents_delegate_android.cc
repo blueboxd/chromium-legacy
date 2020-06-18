@@ -22,6 +22,7 @@
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/sound_content_setting_observer.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_tab_helper.h"
@@ -54,6 +55,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/blocked_content/popup_blocker.h"
 #include "components/blocked_content/popup_tracker.h"
 #include "components/browser_ui/util/android/url_constants.h"
@@ -160,6 +162,11 @@ void TabWebContentsDelegateAndroid::PortalWebContentsCreated(
   // helpers that are unprepared for portal activation to transition them.
   // See https://crbug.com/1042323
   autofill::ChromeAutofillClient::CreateForWebContents(portal_contents);
+  autofill::ContentAutofillDriverFactory::CreateForWebContentsAndDelegate(
+      portal_contents,
+      autofill::ChromeAutofillClient::FromWebContents(portal_contents),
+      g_browser_process->GetApplicationLocale(),
+      autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
   ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
       portal_contents,
       autofill::ChromeAutofillClient::FromWebContents(portal_contents));

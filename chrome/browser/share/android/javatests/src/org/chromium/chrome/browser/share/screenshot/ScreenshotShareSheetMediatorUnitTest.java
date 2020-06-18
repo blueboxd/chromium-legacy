@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.share.screenshot;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 
+import android.app.Activity;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -38,6 +40,12 @@ public class ScreenshotShareSheetMediatorUnitTest {
     @Mock
     Runnable mDeleteRunnable;
 
+    @Mock
+    Runnable mSaveRunnable;
+
+    @Mock
+    Activity mContext;
+
     private PropertyModel mModel;
     private ScreenshotShareSheetMediator mMediator;
 
@@ -46,10 +54,12 @@ public class ScreenshotShareSheetMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
 
         doNothing().when(mDeleteRunnable).run();
+        doNothing().when(mSaveRunnable).run();
 
         mModel = new PropertyModel(ScreenshotShareSheetViewProperties.ALL_KEYS);
 
-        mMediator = new ScreenshotShareSheetMediator(mModel, mDeleteRunnable);
+        mMediator =
+                new ScreenshotShareSheetMediator(mContext, mModel, mDeleteRunnable, mSaveRunnable);
     }
     @Test
     public void onClickDelete() {
@@ -59,6 +69,16 @@ public class ScreenshotShareSheetMediatorUnitTest {
 
         verify(mDeleteRunnable).run();
     }
+
+    @Test
+    public void onClickSave() {
+        Callback<Integer> callback =
+                mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
+        callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.SAVE);
+
+        verify(mSaveRunnable).run();
+    }
+
     @After
     public void tearDown() {}
 }

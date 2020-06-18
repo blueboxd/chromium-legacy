@@ -189,10 +189,13 @@ void HTMLPortalElement::Navigate() {
   if (!CheckWithinFrameLimitOrWarn())
     return;
 
-  if (portal_) {
-    portal_->Navigate(GetNonEmptyURLAttribute(html_names::kSrcAttr),
-                      ReferrerPolicyAttribute());
-  }
+  auto url = GetNonEmptyURLAttribute(html_names::kSrcAttr);
+
+  if (url.PotentiallyDanglingMarkup())
+    return;
+
+  if (portal_)
+    portal_->Navigate(url, ReferrerPolicyAttribute());
 }
 
 namespace {

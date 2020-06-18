@@ -326,8 +326,9 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetrics) {
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
   subframe_timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(5);
-  subframe_timing.paint_timing->largest_image_paint_size = 1;
-  subframe_timing.paint_timing->largest_image_paint =
+  subframe_timing.paint_timing->largest_contentful_paint
+      ->largest_image_paint_size = 1;
+  subframe_timing.paint_timing->largest_contentful_paint->largest_image_paint =
       base::TimeDelta::FromMilliseconds(10);
   subframe_timing.interactive_timing->first_input_timestamp =
       base::TimeDelta::FromMilliseconds(20);
@@ -431,8 +432,9 @@ TEST_F(AMPPageLoadMetricsObserverTest, SubFrameMetricsFullNavigation) {
   subframe_timing.navigation_start = base::Time::FromDoubleT(2);
   subframe_timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(5);
-  subframe_timing.paint_timing->largest_image_paint_size = 1;
-  subframe_timing.paint_timing->largest_image_paint =
+  subframe_timing.paint_timing->largest_contentful_paint
+      ->largest_image_paint_size = 1;
+  subframe_timing.paint_timing->largest_contentful_paint->largest_image_paint =
       base::TimeDelta::FromMilliseconds(10);
   subframe_timing.interactive_timing->first_input_timestamp =
       base::TimeDelta::FromMilliseconds(20);

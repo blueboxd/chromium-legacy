@@ -62,6 +62,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "chrome/browser/policy/messaging_layer/util/status.h"
 

@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"

@@ -174,7 +174,7 @@ ax::mojom::blink::Role AXLayoutObject::RoleFromLayoutObject(
 
   if ((css_box && css_box->IsListItem()) || IsA<HTMLLIElement>(node))
     return ax::mojom::blink::Role::kListItem;
-  if (layout_object_->IsListMarkerIncludingNGOutsideAndInside())
+  if (layout_object_->IsListMarkerIncludingAll())
     return ax::mojom::blink::Role::kListMarker;
   if (layout_object_->IsBR())
     return ax::mojom::blink::Role::kLineBreak;
@@ -690,7 +690,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (alt_text)
     return alt_text->IsEmpty();
 
-  if (IsWebArea() || layout_object_->IsListMarkerIncludingNGOutsideAndInside())
+  if (IsWebArea() || layout_object_->IsListMarkerIncludingAll())
     return false;
 
   // Positioned elements and scrollable containers are important for
@@ -1054,7 +1054,7 @@ static AXObject* NextOnLineInternalNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNGOutside() ||
+  if (layout_object.IsBoxListMarkerIncludingNG() ||
       !layout_object.IsInLayoutNGInlineFormattingContext())
     return nullptr;
   NGInlineCursor cursor;
@@ -1086,7 +1086,7 @@ AXObject* AXLayoutObject::NextOnLine() const {
     return nullptr;
 
   AXObject* result = nullptr;
-  if (GetLayoutObject()->IsListMarkerIncludingNGOutside()) {
+  if (GetLayoutObject()->IsBoxListMarkerIncludingNG()) {
     // A list marker should be followed by a list item on the same line. The
     // list item might have no text children, so we don't eagerly descend to the
     // inline text box.
@@ -1172,7 +1172,7 @@ static AXObject* PreviousOnLineInlineNG(const AXObject& ax_object) {
   DCHECK(!ax_object.IsDetached());
   const LayoutObject& layout_object = *ax_object.GetLayoutObject();
   DCHECK(ShouldUseLayoutNG(layout_object)) << layout_object;
-  if (layout_object.IsListMarkerIncludingNGOutside() ||
+  if (layout_object.IsBoxListMarkerIncludingNG() ||
       !layout_object.IsInLayoutNGInlineFormattingContext()) {
     return nullptr;
   }
@@ -1396,7 +1396,7 @@ String AXLayoutObject::TextAlternative(bool recursive,
         text_alternative = visible_text;
       }
       found_text_alternative = true;
-    } else if (layout_object_->IsListMarker() && !recursive) {
+    } else if (layout_object_->IsListMarkerForNormalContent() && !recursive) {
       text_alternative = ToLayoutListMarker(layout_object_)->TextAlternative();
       found_text_alternative = true;
     } else if (!recursive) {
@@ -1802,7 +1802,7 @@ bool AXLayoutObject::CanHaveChildren() const {
     return false;
   if (GetCSSAltText(GetNode()))
     return false;
-  if (layout_object_->IsListMarker())
+  if (layout_object_->IsListMarkerForNormalContent())
     return false;
   return AXNodeObject::CanHaveChildren();
 }

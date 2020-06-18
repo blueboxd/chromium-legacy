@@ -60,7 +60,7 @@ class KeyboardLockController : public ExclusiveAccessControllerBase {
   bool HandleKeyEvent(const content::NativeWebKeyboardEvent& event);
 
  private:
-  friend class FullscreenControllerTest;
+  friend class ExclusiveAccessTest;
   friend class FullscreenControlViewTest;
 
   enum class KeyboardLockState {

@@ -7,7 +7,7 @@
 namespace blink {
 
 LayoutOutsideListMarker::LayoutOutsideListMarker(Element* element)
-    : LayoutListMarker(element) {}
+    : LayoutBlockFlow(element) {}
 
 LayoutOutsideListMarker::~LayoutOutsideListMarker() = default;
 

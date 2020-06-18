@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.test.filters.MediumTest;
 
@@ -22,17 +23,23 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.test.params.ParameterAnnotations;
+import org.chromium.base.test.params.ParameterProvider;
+import org.chromium.base.test.params.ParameterSet;
+import org.chromium.base.test.params.ParameterizedRunner;
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
-import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -44,17 +51,23 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.test.util.WebContentsUtils;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.DropdownPopupWindowInterface;
 import org.chromium.ui.R;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Integration tests for the AutofillPopup.
  */
-@RunWith(ChromeJUnit4ClassRunner.class)
+@RunWith(ParameterizedRunner.class)
+@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@EnableFeatures({ChromeFeatureList.PORTALS, ChromeFeatureList.PORTALS_CROSS_ORIGIN})
 @DisableFeatures({ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY})
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AutofillPopupTest {
@@ -79,69 +92,47 @@ public class AutofillPopupTest {
     private static final String LANGUAGE_CODE = "";
     private static final String ORIGIN = "https://www.example.com";
 
-    private static final String BASIC_PAGE_DATA = UrlUtils.encodeHtmlDataUri("<html><head>"
-            + "<meta name=\"viewport\""
-            + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-            + "<body><form method=\"POST\">"
-            + "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\" /><br>"
-            + "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\" /><br>"
-            + "<textarea id=\"sa\" autocomplete=\"street-address\"></textarea><br>"
-            + "<input type=\"text\" id=\"a1\" autocomplete=\"address-line1\" /><br>"
-            + "<input type=\"text\" id=\"a2\" autocomplete=\"address-line2\" /><br>"
-            + "<input type=\"text\" id=\"ct\" autocomplete=\"locality\" /><br>"
-            + "<input type=\"text\" id=\"zc\" autocomplete=\"postal-code\" /><br>"
-            + "<input type=\"text\" id=\"em\" autocomplete=\"email\" /><br>"
-            + "<input type=\"text\" id=\"ph\" autocomplete=\"tel\" /><br>"
-            + "<input type=\"text\" id=\"fx\" autocomplete=\"fax\" /><br>"
-            + "<select id=\"co\" autocomplete=\"country\"><br>"
-            + "<option value=\"BR\">Brazil</option>"
-            + "<option value=\"US\">United States</option>"
-            + "</select>"
-            + "<input type=\"submit\" />"
-            + "</form></body></html>");
+    private static final String TEST_SERVER_DIR = "components/test/data/autofill";
+    private static final String BASIC_PAGE_DATA = "autofill_basic_page_data.html";
+    private static final String INITIATING_ELEMENT_FILLED =
+            "autofill_initiating_element_filled.html";
+    private static final String ANOTHER_ELEMENT_FILLED = "autofill_another_element_filled.html";
+    private static final String INVALID_OPTION = "autofill_invalid_option.html";
+    private static final String PORTAL_WRAPPER = "/portal_wrapper.html?url=";
 
-    private static final String INITIATING_ELEMENT_FILLED = UrlUtils.encodeHtmlDataUri("<html>"
-            + "<head><meta name=\"viewport\""
-            + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-            + "<body><form method=\"POST\">"
-            + "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\" value=\"J\"><br>"
-            + "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>"
-            + "<input type=\"text\" id=\"em\" autocomplete=\"email\"><br>"
-            + "<select id=\"co\" autocomplete=\"country\"><br>"
-            + "<option value=\"US\">United States</option>"
-            + "<option value=\"BR\">Brazil</option>"
-            + "</select>"
-            + "<input type=\"submit\" />"
-            + "</form></body></html>");
+    private EmbeddedTestServer mServer;
 
-    private static final String ANOTHER_ELEMENT_FILLED = UrlUtils.encodeHtmlDataUri("<html><head>"
-            + "<meta name=\"viewport\""
-            + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-            + "<body><form method=\"POST\">"
-            + "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\"><br>"
-            + "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>"
-            + "<input type=\"text\" id=\"em\" autocomplete=\"email\" value=\"foo@example.com\"><br>"
-            + "<select id=\"co\" autocomplete=\"country\"><br>"
-            + "<option></option>"
-            + "<option value=\"BR\">Brazil</option>"
-            + "<option value=\"US\">United States</option>"
-            + "</select>"
-            + "<input type=\"submit\" />"
-            + "</form></body></html>");
+    /** Parameter provider for enabling/disabling triggering-related Features. */
+    public static class FeatureParamProvider implements ParameterProvider {
+        @Override
+        public Iterable<ParameterSet> getParameters() {
+            return Arrays.asList(new ParameterSet().value(EnabledFeature.NONE).name("default"),
+                    new ParameterSet().value(EnabledFeature.PORTALS).name("enablePortals"));
+        }
+    }
 
-    private static final String INVALID_OPTION = UrlUtils.encodeHtmlDataUri("<html><head>"
-            + "<meta name=\"viewport\""
-            + "content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0\" /></head>"
-            + "<body><form method=\"POST\">"
-            + "<input type=\"text\" id=\"fn\" autocomplete=\"given-name\" value=\"J\"><br>"
-            + "<input type=\"text\" id=\"ln\" autocomplete=\"family-name\"><br>"
-            + "<input type=\"text\" id=\"em\" autocomplete=\"email\"><br>"
-            + "<select id=\"co\" autocomplete=\"country\"><br>"
-            + "<option value=\"GB\">Great Britain</option>"
-            + "<option value=\"BR\">Brazil</option>"
-            + "</select>"
-            + "<input type=\"submit\" />"
-            + "</form></body></html>");
+    /**
+     * A WebContentsObserver for watching for web contents swaps.
+     */
+    private static class SwapWebContentsObserver extends EmptyTabObserver {
+        public CallbackHelper mCallbackHelper;
+
+        public SwapWebContentsObserver() {
+            mCallbackHelper = new CallbackHelper();
+        }
+
+        @Override
+        public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
+            mCallbackHelper.notifyCalled();
+        }
+    }
+
+    @IntDef({EnabledFeature.NONE, EnabledFeature.PORTALS})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface EnabledFeature {
+        int NONE = 0;
+        int PORTALS = 1;
+    }
 
     private AutofillTestHelper mHelper;
     private List<AutofillLogger.LogEntry> mAutofillLoggedEntries;
@@ -152,9 +143,12 @@ public class AutofillPopupTest {
         AutofillLogger.setLoggerForTesting(
                 logEntry -> mAutofillLoggedEntries.add(logEntry)
         );
-        // TODO(crbug.com/894428) - fix this suite to use the embedded test server instead of
-        // data urls.
         Features.getInstance().enable(ChromeFeatureList.AUTOFILL_ALLOW_NON_HTTP_ACTIVATION);
+        mServer = new EmbeddedTestServer();
+        mServer.initializeNative(InstrumentationRegistry.getContext(),
+                EmbeddedTestServer.ServerHTTPSSetting.USE_HTTP);
+        mServer.addDefaultHandlers(TEST_SERVER_DIR);
+        mServer.start();
     }
 
     @After
@@ -162,11 +156,23 @@ public class AutofillPopupTest {
         mActivityTestRule.getActivity().setRequestedOrientation(
                 ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+        mServer.stopAndDestroyServer();
     }
 
-    private void loadForm(final String formDataUrl, final String inputText,
-            @Nullable Callback<Activity> updateActivity) throws TimeoutException {
-        mActivityTestRule.startMainActivityWithURL(formDataUrl);
+    private void loadForm(final String formUrl, final String inputText,
+            @Nullable Callback<Activity> updateActivity, @EnabledFeature int enabledFeature)
+            throws TimeoutException {
+        if (enabledFeature == EnabledFeature.PORTALS) {
+            mActivityTestRule.startMainActivityWithURL(mServer.getURL(PORTAL_WRAPPER + formUrl));
+            SwapWebContentsObserver observer = new SwapWebContentsObserver();
+            mActivityTestRule.getActivity().getActivityTab().addObserver(observer);
+            DOMUtils.clickNode(mActivityTestRule.getActivity().getCurrentWebContents(), "ACTIVATE");
+            CriteriaHelper.pollUiThread(
+                    () -> { return observer.mCallbackHelper.getCallCount() == 1; });
+        } else {
+            mActivityTestRule.startMainActivityWithURL(mServer.getURL("/" + formUrl));
+        }
+
         if (updateActivity != null) {
             updateActivity.onResult(mActivityTestRule.getActivity());
             InstrumentationRegistry.getInstrumentation().waitForIdleSync();
@@ -200,10 +206,15 @@ public class AutofillPopupTest {
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
-
-    private void loadAndFillForm(final String formDataUrl, final String inputText,
+    private void loadForm(final String formUrl, final String inputText,
             @Nullable Callback<Activity> updateActivity) throws TimeoutException {
-        loadForm(formDataUrl, inputText, updateActivity);
+        loadForm(formUrl, inputText, updateActivity, EnabledFeature.NONE);
+    }
+
+    private void loadAndFillForm(final String formUrl, final String inputText,
+            @Nullable Callback<Activity> updateActivity, @EnabledFeature int enabledfeature)
+            throws TimeoutException {
+        loadForm(formUrl, inputText, updateActivity, enabledfeature);
 
         final WebContents webContents = mActivityTestRule.getActivity().getCurrentWebContents();
         final View view = webContents.getViewAndroidDelegate().getContainerView();
@@ -221,9 +232,19 @@ public class AutofillPopupTest {
         waitForInputFieldFill();
     }
 
-    private void loadAndFillForm(final String formDataUrl, final String inputText)
+    private void loadAndFillForm(final String formUrl, final String inputText,
+            @Nullable Callback<Activity> updateActivity) throws TimeoutException {
+        loadAndFillForm(formUrl, inputText, updateActivity, EnabledFeature.NONE);
+    }
+
+    private void loadAndFillForm(final String formUrl, final String inputText,
+            @EnabledFeature int enabledFeature) throws TimeoutException {
+        loadAndFillForm(formUrl, inputText, null, enabledFeature);
+    }
+
+    private void loadAndFillForm(final String formUrl, final String inputText)
             throws TimeoutException {
-        loadAndFillForm(formDataUrl, inputText, null);
+        loadAndFillForm(formUrl, inputText, null, EnabledFeature.NONE);
     }
 
     /**
@@ -279,9 +300,11 @@ public class AutofillPopupTest {
      */
     @Test
     @MediumTest
+    @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @Feature({"autofill"})
-    public void testLoggingInitiatedElementFilled() throws TimeoutException {
-        loadAndFillForm(INITIATING_ELEMENT_FILLED, "o");
+    public void testLoggingInitiatedElementFilled(@EnabledFeature int enabledFeature)
+            throws TimeoutException {
+        loadAndFillForm(INITIATING_ELEMENT_FILLED, "o", enabledFeature);
         final String profileFullName = FIRST_NAME + " " + LAST_NAME;
         final int loggedEntries = 4;
         Assert.assertEquals("Mismatched number of logged entries", loggedEntries,

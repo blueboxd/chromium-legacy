@@ -2164,10 +2164,10 @@ jumbo_source_set("browser") {
     }
     if (is_chromeos) {
       sources += [
-        "media/capture/lame_capture_overlay_chromeos.cc",
-        "media/capture/lame_capture_overlay_chromeos.h",
-        "media/capture/lame_window_capturer_chromeos.cc",
-        "media/capture/lame_window_capturer_chromeos.h",
+        "media/capture/slow_capture_overlay_chromeos.cc",
+        "media/capture/slow_capture_overlay_chromeos.h",
+        "media/capture/slow_window_capturer_chromeos.cc",
+        "media/capture/slow_window_capturer_chromeos.h",
       ]
     }
     if (is_mac) {

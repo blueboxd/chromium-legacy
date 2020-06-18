@@ -19,6 +19,7 @@ class Time;
 
 namespace web_app {
 
+// Deprecated. Please use TestWebAppRegistryController instead.
 class TestAppRegistrar : public AppRegistrar {
  public:
   struct AppInfo {

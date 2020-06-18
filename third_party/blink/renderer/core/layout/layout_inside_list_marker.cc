@@ -7,7 +7,7 @@
 namespace blink {
 
 LayoutInsideListMarker::LayoutInsideListMarker(Element* element)
-    : LayoutListMarker(element) {}
+    : LayoutInline(element) {}
 
 LayoutInsideListMarker::~LayoutInsideListMarker() = default;
 

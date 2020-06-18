@@ -283,7 +283,8 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
         base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
         item_->GetMimeType(),
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        item_->GetTotalBytes(), result, response);
+        DeepScanAccessPoint::DOWNLOAD, item_->GetTotalBytes(), result,
+        response);
   }
 
   DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;

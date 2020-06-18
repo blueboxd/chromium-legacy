@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
 
+#include "base/logging.h"
+
 namespace chromeos {
 namespace smb_client {
 

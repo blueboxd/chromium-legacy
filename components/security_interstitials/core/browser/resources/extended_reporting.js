@@ -22,7 +22,15 @@ function setupExtendedReportingCheckbox() {
     return;
   }
 
-  $('opt-in-label').innerHTML = loadTimeData.getString('optInLink');
+  if ($('privacy-link')) {
+    $('privacy-link').addEventListener('click', function() {
+      sendCommand(SecurityInterstitialCommandId.CMD_OPEN_REPORTING_PRIVACY);
+      return false;
+    });
+    $('privacy-link').addEventListener('mousedown', function() {
+      return false;
+    });
+  }
   $('opt-in-checkbox').checked = loadTimeData.getBoolean(SB_BOX_CHECKED);
   $('extended-reporting-opt-in').classList.remove('hidden');
 

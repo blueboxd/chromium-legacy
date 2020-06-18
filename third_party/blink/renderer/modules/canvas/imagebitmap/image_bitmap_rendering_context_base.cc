@@ -51,8 +51,7 @@ void ImageBitmapRenderingContextBase::SetImage(ImageBitmap* image_bitmap) {
     image_bitmap->close();
 }
 
-scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContextBase::GetImage(
-    RasterModeHint) {
+scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContextBase::GetImage() {
   return image_layer_bridge_->GetImage();
 }
 

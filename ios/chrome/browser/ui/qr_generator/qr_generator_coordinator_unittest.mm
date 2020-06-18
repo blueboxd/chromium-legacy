@@ -90,6 +90,16 @@ TEST_F(QRGeneratorCoordinatorTest, Done_DispatchesCommand) {
 
   // Callback should've gotten invoked.
   [mock_qr_generation_commands_handler_ verify];
+
+  // Set-up mocks for "stop" function.
+  id baseViewControllerMock = OCMPartialMock(base_view_controller_);
+  [[baseViewControllerMock expect] dismissViewControllerAnimated:YES
+                                                      completion:nil];
+
+  [coordinator_ stop];
+
+  // View controller dismissal must have gone through the root view controller.
+  [baseViewControllerMock verify];
 }
 
 // Tests that tje primary action, share, intializes the activity service

@@ -80,7 +80,7 @@ TEST(TriggerContextTest, Merge) {
   EXPECT_EQ("exp1,exp2", merged->experiment_ids());
 }
 
-TEST(TriggerContextText, CCT) {
+TEST(TriggerContextTest, CCT) {
   TriggerContextImpl context;
 
   EXPECT_FALSE(context.is_cct());
@@ -88,7 +88,7 @@ TEST(TriggerContextText, CCT) {
   EXPECT_TRUE(context.is_cct());
 }
 
-TEST(TriggerContextText, MergeCCT) {
+TEST(TriggerContextTest, MergeCCT) {
   auto empty = TriggerContext::CreateEmpty();
 
   auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
@@ -124,7 +124,7 @@ TEST(TriggerContextTest, MergeOnboardingShown) {
   EXPECT_TRUE(one_with_onboarding->is_onboarding_shown());
 }
 
-TEST(TriggerContextText, DirectAction) {
+TEST(TriggerContextTest, DirectAction) {
   TriggerContextImpl context;
 
   EXPECT_FALSE(context.is_direct_action());
@@ -132,7 +132,7 @@ TEST(TriggerContextText, DirectAction) {
   EXPECT_TRUE(context.is_direct_action());
 }
 
-TEST(TriggerContextText, MergeDirectAction) {
+TEST(TriggerContextTest, MergeDirectAction) {
   auto empty = TriggerContext::CreateEmpty();
 
   auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
@@ -146,7 +146,7 @@ TEST(TriggerContextText, MergeDirectAction) {
   EXPECT_TRUE(one_direct_action->is_direct_action());
 }
 
-TEST(TriggerContextText, MergeAccountsMatchingStatusTest) {
+TEST(TriggerContextTest, MergeAccountsMatchingStatusTest) {
   auto empty = TriggerContext::CreateEmpty();
 
   auto all_empty = TriggerContext::Merge({empty.get(), empty.get()});
@@ -159,6 +159,46 @@ TEST(TriggerContextText, MergeAccountsMatchingStatusTest) {
 
   EXPECT_EQ(one_with_accounts_matching->get_caller_account_hash(),
             "accountsha");
+}
+
+TEST(TriggerContextTest, HasExperimentId) {
+  std::map<std::string, std::string> parameters;
+
+  auto context = TriggerContext::Create(parameters, "1,2,3");
+  ASSERT_TRUE(context);
+
+  EXPECT_TRUE(context->HasExperimentId("2"));
+  EXPECT_FALSE(context->HasExperimentId("4"));
+
+  auto other_context = TriggerContext::Create(parameters, "4,5,6");
+  ASSERT_TRUE(other_context);
+
+  EXPECT_TRUE(other_context->HasExperimentId("4"));
+  EXPECT_FALSE(other_context->HasExperimentId("2"));
+
+  auto merged = TriggerContext::Merge({context.get(), other_context.get()});
+  ASSERT_TRUE(merged);
+
+  EXPECT_TRUE(merged->HasExperimentId("2"));
+  EXPECT_TRUE(merged->HasExperimentId("4"));
+  EXPECT_FALSE(merged->HasExperimentId("7"));
+
+  // Double commas should not allow empty element to match.
+  auto double_comma = TriggerContext::Create(parameters, "1,,2");
+  EXPECT_TRUE(double_comma->HasExperimentId("2"));
+  EXPECT_FALSE(double_comma->HasExperimentId(""));
+
+  // Empty context should not aloow empty element to match.
+  auto empty = TriggerContext::Create(parameters, "");
+  EXPECT_FALSE(empty->HasExperimentId(""));
+
+  // Lone comma does not create empty elements.
+  auto lone_comma = TriggerContext::Create(parameters, ",");
+  EXPECT_FALSE(lone_comma->HasExperimentId(""));
+
+  // Single element should match.
+  auto single_element = TriggerContext::Create(parameters, "1");
+  EXPECT_TRUE(single_element->HasExperimentId("1"));
 }
 
 }  // namespace

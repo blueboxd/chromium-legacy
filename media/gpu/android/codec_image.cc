@@ -157,16 +157,6 @@ void CodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                               uint64_t process_tracing_id,
                               const std::string& dump_name) {}
 
-void CodecImage::GetTextureMatrix(float matrix[16]) {
-  static constexpr float kIdentity[16]{
-      1, 0, 0, 0,  //
-      0, 1, 0, 0,  //
-      0, 0, 1, 0,  //
-      0, 0, 0, 1   //
-  };
-  memcpy(matrix, kIdentity, sizeof(kIdentity));
-}
-
 void CodecImage::NotifyPromotionHint(bool promotion_hint,
                                      int display_x,
                                      int display_y,

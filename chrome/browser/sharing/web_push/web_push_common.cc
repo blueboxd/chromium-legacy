@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sharing/web_push/web_push_common.h"
 
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
 

@@ -1,0 +1,4 @@
+include_rules = [
+  # To observer web contents swaps on the tab.
+  "+chrome/browser/tab/java/src/org/chromium/chrome/browser/tab",
+]

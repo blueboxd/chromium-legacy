@@ -18,6 +18,7 @@
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -46,6 +47,7 @@
 
 using ::testing::_;
 using ::testing::Mock;
+using ::testing::Return;
 using ::testing::SaveArg;
 
 namespace extensions {
@@ -187,41 +189,31 @@ class SafeBrowsingPrivateEventRouterTest : public testing::Test {
   }
 
   void TriggerOnSensitiveDataEvent() {
-    safe_browsing::DlpDeepScanningVerdict verdict;
-    verdict.set_status(safe_browsing::DlpDeepScanningVerdict::SUCCESS);
-    safe_browsing::DlpDeepScanningVerdict::TriggeredRule* rule =
-        verdict.add_triggered_rules();
-    rule->set_action(
-        safe_browsing::DlpDeepScanningVerdict::TriggeredRule::BLOCK);
-    rule->set_rule_name("fake rule");
-    rule->set_rule_id(12345);
-    rule->set_rule_resource_name("fake resource name");
-    rule->set_rule_severity("fake severity");
-
-    safe_browsing::DlpDeepScanningVerdict::MatchedDetector* detector =
-        rule->add_matched_detectors();
-    detector->set_detector_id("fake id");
-    detector->set_display_name("fake name");
-    detector->set_detector_type("fake type");
-
-    detector = rule->add_matched_detectors();
-    detector->set_detector_id("fake id2");
-    detector->set_display_name("fake name2");
-    detector->set_detector_type("fake type2");
+    safe_browsing::ContentAnalysisScanResult result;
+    result.tag = "dlp";
+    result.status = 1;
+    safe_browsing::ContentAnalysisTrigger trigger;
+    trigger.action = 3;
+    trigger.name = "fake rule";
+    trigger.id = "12345";
+    result.triggers.push_back(std::move(trigger));
 
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->OnSensitiveDataEvent(verdict,
-                               GURL("https://evil.com/sensitive_data.txt"),
-                               "sensitive_data.txt", "sha256_of_data",
-                               "text/plain", "FILE_UPLOAD", 12345);
+        ->OnAnalysisConnectorResult(
+            GURL("https://evil.com/sensitive_data.txt"), "sensitive_data.txt",
+            "sha256_of_data", "text/plain",
+            SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
+            safe_browsing::DeepScanAccessPoint::UPLOAD, result, 12345);
   }
 
   void TriggerOnUnscannedFileEvent() {
     SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
-        ->OnUnscannedFileEvent(GURL("https://evil.com/sensitive_data.txt"),
-                               "sensitive_data.txt", "sha256_of_data",
-                               "text/plain", "FILE_DOWNLOAD",
-                               "filePasswordProtected", 12345);
+        ->OnUnscannedFileEvent(
+            GURL("https://evil.com/sensitive_data.txt"), "sensitive_data.txt",
+            "sha256_of_data", "text/plain",
+            SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            safe_browsing::DeepScanAccessPoint::DOWNLOAD,
+            "filePasswordProtected", 12345);
   }
 
   void SetReportingPolicy(bool enabled) {
@@ -726,7 +718,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent) {
   EXPECT_EQ(
       "sensitive_data.txt",
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
-  EXPECT_EQ("FILE_UPLOAD",
+  EXPECT_EQ(SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
 
   base::Value* triggered_rule_info =
@@ -741,27 +733,6 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSensitiveDataEvent) {
   EXPECT_EQ("fake rule",
             *triggered_rule.FindStringKey(
                 SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName));
-  EXPECT_EQ("fake resource name",
-            *triggered_rule.FindStringKey(
-                SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleResourceName));
-  EXPECT_EQ("fake severity",
-            *triggered_rule.FindStringKey(
-                SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity));
-
-  base::Value* matched_detectors = triggered_rule.FindKey(
-      SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors);
-  ASSERT_NE(nullptr, matched_detectors);
-  ASSERT_EQ(2u, matched_detectors->GetList().size());
-  base::Value detector = std::move(matched_detectors->GetList()[0]);
-  EXPECT_EQ("fake id",
-            *detector.FindStringKey(
-                SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId));
-  EXPECT_EQ("fake type",
-            *detector.FindStringKey(
-                SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType));
-  EXPECT_EQ("fake name",
-            *detector.FindStringKey(
-                SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName));
 }
 
 TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent) {
@@ -798,7 +769,7 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnUnscannedFileEvent) {
   EXPECT_EQ(
       "sensitive_data.txt",
       *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyFileName));
-  EXPECT_EQ("FILE_DOWNLOAD",
+  EXPECT_EQ(SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyTrigger));
   EXPECT_EQ("filePasswordProtected",
             *event->FindStringKey(
@@ -815,6 +786,8 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestProfileUsername) {
   SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
       ->SetIdentityManagerForTesting(
           identity_test_environment.identity_manager());
+
+  EXPECT_CALL(*client_, UploadRealtimeReport_(_, _)).WillRepeatedly(Return());
 
   // With no primary account, we should not set the username.
   TriggerOnSecurityInterstitialShownEvent();

@@ -19,6 +19,22 @@ struct DocumentTiming {
   mojo_base.mojom.TimeDelta? load_event_start;
 };
 
+struct LargestContentfulPaintTiming {
+  // Time when the page's largest image is painted. Removed images are excluded.
+  mojo_base.mojom.TimeDelta? largest_image_paint;
+
+  // Size of the largest image of the largest image paint, by
+  // Size = Height * Width. Removed images are excluded.
+  uint64 largest_image_paint_size;
+
+  // Time when the page's largest text is painted. Removed text is excluded.
+  mojo_base.mojom.TimeDelta? largest_text_paint;
+
+  // Size of the largest text of the largest text paint, by
+  // Size = Height * Width. Removed text is excluded.
+  uint64 largest_text_paint_size;
+};
+
 // TimeDeltas below relative to navigation start.
 struct PaintTiming {
   // Time when the first paint is performed.
@@ -33,19 +49,11 @@ struct PaintTiming {
   // (Experimental) Time when the page's primary content is painted.
   mojo_base.mojom.TimeDelta? first_meaningful_paint;
 
-  // (Experimental) Time when the page's largest image is painted.
-  mojo_base.mojom.TimeDelta? largest_image_paint;
+  // Largest contentful paint, which excludes removed content.
+  LargestContentfulPaintTiming largest_contentful_paint;
 
-  // (Experimental) Size of the largest image of the largest image paint, by
-  // Size = Height * Width.
-  uint64 largest_image_paint_size;
-
-  // (Experimental) Time when the page's largest text is painted.
-  mojo_base.mojom.TimeDelta? largest_text_paint;
-
-  // (Experimental) Size of the largest text of the largest text paint, by
-  // Size = Height * Width.
-  uint64 largest_text_paint_size;
+  // (Experimental) largest contentful paint including removed content.
+  LargestContentfulPaintTiming experimental_largest_contentful_paint;
 
   // (Experimental) Time when first input or scroll is received, causing the
   // largest contentful paint algorithm to stop.
@@ -108,6 +116,13 @@ struct InteractiveTiming {
 
   // The timestamp of the event whose delay is reported as longest_input_delay.
   mojo_base.mojom.TimeDelta? longest_input_timestamp;
+
+  // The latency between user input and display update for the first scroll after
+  // a navigation.
+  mojo_base.mojom.TimeDelta? first_scroll_delay;
+
+  // The timestamp of the user's first scroll after a navigation.
+  mojo_base.mojom.TimeDelta? first_scroll_timestamp;
 
   // The duration of event handlers processing the first input event.
   mojo_base.mojom.TimeDelta? first_input_processing_time;

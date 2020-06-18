@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "chrome/updater/win/ui/constants.h"
 #include "chrome/updater/win/ui/ui.h"

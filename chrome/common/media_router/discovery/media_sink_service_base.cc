@@ -4,6 +4,7 @@
 
 #include "chrome/common/media_router/discovery/media_sink_service_base.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/common/media_router/media_route.h"
 
 #include <vector>

@@ -31,6 +31,9 @@ js_library("fake_settings_search_handler") {
 
 js_modulizer("modulize") {
   input_files = [
+    "bluetooth_page_tests.js",
+    "fake_bluetooth.js",
+    "fake_bluetooth_private.js",
     "fake_settings_search_handler.js",
     "fake_user_action_recorder.js",
     "localized_link_test.js",

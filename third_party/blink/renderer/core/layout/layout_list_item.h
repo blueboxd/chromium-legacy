@@ -44,9 +44,8 @@ class LayoutListItem final : public LayoutBlockFlow {
     Element* list_item = To<Element>(GetNode());
     if (LayoutObject* marker =
             list_item->PseudoElementLayoutObject(kPseudoIdMarker)) {
-      if (marker->IsListMarker())
+      if (marker->IsListMarkerForNormalContent())
         return ToLayoutListMarker(marker);
-      NOTREACHED();
     }
     return nullptr;
   }

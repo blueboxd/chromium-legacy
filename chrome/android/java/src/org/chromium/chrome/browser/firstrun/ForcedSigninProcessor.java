@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.services.AndroidChildAccountHelper;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -64,12 +65,15 @@ public final class ForcedSigninProcessor {
      */
     private static void processForcedSignIn(@Nullable final Runnable onComplete) {
         if (FirstRunUtils.canAllowSync()
-                && IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) {
+                && IdentityServicesProvider.get()
+                           .getIdentityManager(Profile.getLastUsedRegularProfile())
+                           .hasPrimaryAccount()) {
             // TODO(https://crbug.com/1044206): Remove this.
             ProfileSyncService.get().setFirstSetupComplete(SyncFirstSetupCompleteSource.BASIC_FLOW);
         }
 
-        final SigninManager signinManager = IdentityServicesProvider.get().getSigninManager();
+        final SigninManager signinManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         // By definition we have finished all the checks for first run.
         signinManager.onFirstRunCheckDone();
         if (!FirstRunUtils.canAllowSync() || !signinManager.isSignInAllowed()) {
@@ -111,7 +115,9 @@ public final class ForcedSigninProcessor {
     // TODO(bauerb): Once external dependencies reliably use policy to force sign-in,
     // consider removing the child account.
     public static void checkCanSignIn(final ChromeActivity activity) {
-        if (IdentityServicesProvider.get().getSigninManager().isForceSigninEnabled()) {
+        if (IdentityServicesProvider.get()
+                        .getSigninManager(Profile.getLastUsedRegularProfile())
+                        .isForceSigninEnabled()) {
             ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                     new UserRecoverableErrorHandler.ModalDialog(activity, false));
         }

@@ -8,6 +8,7 @@
 #include <set>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "chrome/chrome_cleaner/chrome_utils/extensions_util.h"

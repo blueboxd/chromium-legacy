@@ -95,6 +95,7 @@
 #include "weblayer/browser/http_auth_handler_impl.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
 #include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
+#include "weblayer/browser/js_communication/web_message_host_factory_proxy.h"
 #include "weblayer/browser/weblayer_factory_impl_android.h"
 #include "weblayer/browser/webrtc/media_stream_manager.h"
 #endif
@@ -741,6 +742,28 @@ void TabImpl::SetHttpAuth(
 void TabImpl::CancelHttpAuth(JNIEnv* env) {
   auth_handler_->Cancel();
   CloseHttpAuthPrompt();
+}
+
+base::android::ScopedJavaLocalRef<jstring> TabImpl::RegisterWebMessageCallback(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& js_object_name,
+    const base::android::JavaParamRef<jobjectArray>& js_origins,
+    const base::android::JavaParamRef<jobject>& client) {
+  auto proxy = std::make_unique<WebMessageHostFactoryProxy>(client);
+  std::vector<std::string> origins;
+  base::android::AppendJavaStringArrayToStringVector(env, js_origins, &origins);
+  base::string16 result = AddWebMessageHostFactory(
+      std::move(proxy),
+      base::android::ConvertJavaStringToUTF16(env, js_object_name), origins);
+  return base::android::ConvertUTF16ToJavaString(env, result);
+}
+
+void TabImpl::UnregisterWebMessageCallback(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& js_object_name) {
+  base::string16 name;
+  base::android::ConvertJavaStringToUTF16(env, js_object_name, &name);
+  RemoveWebMessageHostFactory(name);
 }
 #endif  // OS_ANDROID
 

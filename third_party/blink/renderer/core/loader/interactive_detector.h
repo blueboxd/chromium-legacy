@@ -103,6 +103,12 @@ class CORE_EXPORT InteractiveDetector
   // The duration of event handlers processing the first input event.
   base::Optional<base::TimeDelta> GetFirstInputProcessingTime() const;
 
+  // The duration between the user's first scroll and display update.
+  base::Optional<base::TimeTicks> GetFirstScrollTimestamp() const;
+
+  // The hardware timestamp of the first scroll after a navigation.
+  base::Optional<base::TimeDelta> GetFirstScrollDelay() const;
+
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
   void HandleForInputDelay(const Event&,
@@ -128,6 +134,9 @@ class CORE_EXPORT InteractiveDetector
                                  base::TimeTicks processing_start,
                                  base::TimeTicks processing_end);
 
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay,
+                                  base::TimeTicks first_scroll_timestamp);
+
  private:
   friend class InteractiveDetectorTest;
 
@@ -151,6 +160,8 @@ class CORE_EXPORT InteractiveDetector
     base::Optional<base::TimeTicks> first_input_timestamp;
     base::Optional<base::TimeTicks> longest_input_timestamp;
     base::Optional<base::TimeDelta> first_input_processing_time;
+    base::Optional<base::TimeTicks> first_scroll_timestamp;
+    base::Optional<base::TimeDelta> frist_scroll_delay;
   } page_event_times_;
 
   struct VisibilityChangeEvent {

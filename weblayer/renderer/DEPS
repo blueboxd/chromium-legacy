@@ -4,6 +4,7 @@ include_rules = [
   "+components/cdm/renderer",
   "+components/content_settings/renderer",
   "+components/error_page/common",
+  "+components/grit",
   "+components/page_load_metrics/renderer",
   "+components/safe_browsing/content/common",
   "+components/safe_browsing/content/renderer",

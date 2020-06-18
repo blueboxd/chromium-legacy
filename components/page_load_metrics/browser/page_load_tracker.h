@@ -233,6 +233,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   const ResourceTracker& GetResourceTracker() const override;
   const LargestContentfulPaintHandler& GetLargestContentfulPaintHandler()
       const override;
+  const LargestContentfulPaintHandler&
+  GetExperimentalLargestContentfulPaintHandler() const override;
   ukm::SourceId GetSourceId() const override;
   bool IsFirstNavigationInWebContents() const override;
 
@@ -484,6 +486,8 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
 
   page_load_metrics::LargestContentfulPaintHandler
       largest_contentful_paint_handler_;
+  page_load_metrics::LargestContentfulPaintHandler
+      experimental_largest_contentful_paint_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadTracker);
 };

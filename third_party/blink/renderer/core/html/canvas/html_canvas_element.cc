@@ -381,14 +381,6 @@ ScriptPromise HTMLCanvasElement::convertToBlob(
     ScriptState* script_state,
     const ImageEncodeOptions* options,
     ExceptionState& exception_state) {
-  if (IsUserInIdentifiabilityStudy()) {
-    RecordIdentifiabilityMetric(
-        blink::IdentifiableSurface::FromTypeAndInput(
-            blink::IdentifiableSurface::Type::kCanvasReadback,
-            context_ ? context_->GetContextType()
-                     : CanvasRenderingContext::kContextTypeUnknown),
-        0);
-  }
   return CanvasRenderingContextHost::convertToBlob(script_state, options,
                                                    exception_state);
 }
@@ -688,7 +680,7 @@ void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   if (listener_needs_new_frame_capture) {
     SourceImageStatus status;
     scoped_refptr<StaticBitmapImage> source_image =
-        GetSourceImageForCanvasInternal(&status, RasterModeHint::kPreferCPU);
+        GetSourceImageForCanvasInternal(&status);
     if (status != kNormalSourceImageStatus)
       return;
     for (CanvasDrawListener* listener : listeners_) {
@@ -838,7 +830,7 @@ void HTMLCanvasElement::PaintInternal(GraphicsContext& context,
     FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(Size()));
     scoped_refptr<StaticBitmapImage> snapshot =
         canvas2d_bridge_
-            ? canvas2d_bridge_->NewImageSnapshot(RasterModeHint::kPreferGPU)
+            ? canvas2d_bridge_->NewImageSnapshot()
             : (ResourceProvider() ? ResourceProvider()->Snapshot() : nullptr);
     if (snapshot) {
       // GraphicsContext cannot handle gpu resource serialization.
@@ -879,8 +871,7 @@ const AtomicString HTMLCanvasElement::ImageSourceURL() const {
 }
 
 scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
-    SourceDrawingBuffer source_buffer,
-    RasterModeHint hint) const {
+    SourceDrawingBuffer source_buffer) const {
   if (size_.IsEmpty())
     return nullptr;
 
@@ -912,9 +903,9 @@ scoped_refptr<StaticBitmapImage> HTMLCanvasElement::Snapshot(
     }
   } else if (canvas2d_bridge_) {
     DCHECK(IsRenderingContext2D());
-    image_bitmap = canvas2d_bridge_->NewImageSnapshot(hint);
+    image_bitmap = canvas2d_bridge_->NewImageSnapshot();
   } else if (context_) {  // Bitmap renderer canvas
-    image_bitmap = context_->GetImage(hint);
+    image_bitmap = context_->GetImage();
   }
 
   if (!image_bitmap)
@@ -934,8 +925,7 @@ String HTMLCanvasElement::ToDataURLInternal(
       ImageEncoderUtils::ToEncodingMimeType(
           mime_type, ImageEncoderUtils::kEncodeReasonToDataURL);
 
-  scoped_refptr<StaticBitmapImage> image_bitmap =
-      Snapshot(source_buffer, RasterModeHint::kPreferCPU);
+  scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(source_buffer);
   if (image_bitmap) {
     std::unique_ptr<ImageDataBuffer> data_buffer =
         ImageDataBuffer::Create(image_bitmap);
@@ -1042,15 +1032,16 @@ void HTMLCanvasElement::toBlob(V8BlobCallback* callback,
           mime_type, ImageEncoderUtils::kEncodeReasonToBlobCallback);
 
   CanvasAsyncBlobCreator* async_creator = nullptr;
-  scoped_refptr<StaticBitmapImage> image_bitmap =
-      Snapshot(kBackBuffer, RasterModeHint::kPreferCPU);
+  scoped_refptr<StaticBitmapImage> image_bitmap = Snapshot(kBackBuffer);
   if (image_bitmap) {
     auto* options = ImageEncodeOptions::Create();
     options->setType(ImageEncodingMimeTypeName(encoding_mime_type));
     async_creator = MakeGarbageCollected<CanvasAsyncBlobCreator>(
         image_bitmap, options,
         CanvasAsyncBlobCreator::kHTMLCanvasToBlobCallback, callback, start_time,
-        GetExecutionContext());
+        GetExecutionContext(),
+        base::make_optional<UkmParameters>(
+            {GetDocument().UkmRecorder(), GetDocument().UkmSourceID()}));
   }
 
   if (IsUserInIdentifiabilityStudy()) {
@@ -1291,14 +1282,12 @@ void HTMLCanvasElement::WillDrawImageTo2DContext(CanvasImageSource* source) {
 
 scoped_refptr<Image> HTMLCanvasElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    RasterModeHint hint,
     const FloatSize&) {
-  return GetSourceImageForCanvasInternal(status, hint);
+  return GetSourceImageForCanvasInternal(status);
 }
 
 scoped_refptr<StaticBitmapImage>
-HTMLCanvasElement::GetSourceImageForCanvasInternal(SourceImageStatus* status,
-                                                   RasterModeHint hint) {
+HTMLCanvasElement::GetSourceImageForCanvasInternal(SourceImageStatus* status) {
   if (!width() || !height()) {
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
@@ -1322,7 +1311,7 @@ HTMLCanvasElement::GetSourceImageForCanvasInternal(SourceImageStatus* status,
 
   if (HasImageBitmapContext()) {
     *status = kNormalSourceImageStatus;
-    scoped_refptr<StaticBitmapImage> result = context_->GetImage(hint);
+    scoped_refptr<StaticBitmapImage> result = context_->GetImage();
     if (!result)
       result = GetTransparentImage();
     *status = result ? kNormalSourceImageStatus : kInvalidSourceImageStatus;
@@ -1342,7 +1331,7 @@ HTMLCanvasElement::GetSourceImageForCanvasInternal(SourceImageStatus* status,
     else
       image = GetTransparentImage();
   } else {
-    image = RenderingContext()->GetImage(hint);
+    image = RenderingContext()->GetImage();
     if (!image)
       image = GetTransparentImage();
   }
@@ -1362,7 +1351,7 @@ FloatSize HTMLCanvasElement::ElementSize(
     const FloatSize&,
     const RespectImageOrientationEnum) const {
   if (context_ && HasImageBitmapContext()) {
-    scoped_refptr<Image> image = context_->GetImage(RasterModeHint::kPreferCPU);
+    scoped_refptr<Image> image = context_->GetImage();
     if (image)
       return FloatSize(image->width(), image->height());
     return FloatSize(0, 0);
@@ -1565,7 +1554,7 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
   scoped_refptr<StaticBitmapImage> image;
   std::unique_ptr<Canvas2DLayerBridge> old_layer_bridge;
   if (canvas2d_bridge_) {
-    image = canvas2d_bridge_->NewImageSnapshot(RasterModeHint::kPreferCPU);
+    image = canvas2d_bridge_->NewImageSnapshot();
     // image can be null if allocation failed in which case we should just
     // abort the surface switch to retain the old surface which is still
     // functional.
@@ -1614,7 +1603,7 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
 CanvasResourceProvider* HTMLCanvasElement::GetOrCreateCanvasResourceProvider(
     RasterModeHint hint) {
   if (IsRenderingContext2D())
-    return GetOrCreateCanvas2DLayerBridge()->GetOrCreateResourceProvider(hint);
+    return GetOrCreateCanvas2DLayerBridge()->GetOrCreateResourceProvider();
 
   return CanvasRenderingContextHost::GetOrCreateCanvasResourceProvider(hint);
 }

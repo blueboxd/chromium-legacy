@@ -168,6 +168,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Notifications When an input delay data becomes available.
   virtual void DidObserveInputDelay(base::TimeDelta input_delay) {}
 
+  // Notification When the First Scroll Delay becomes available.
+  virtual void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {}
+
   // Notifications when a cpu timing update becomes available, when a frame
   // has performed at least 100ms of tasks.
   virtual void DidChangeCpuTiming(base::TimeDelta time) {}

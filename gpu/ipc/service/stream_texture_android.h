@@ -81,7 +81,6 @@ class StreamTexture : public StreamTextureSharedImageInterface,
   GetAHardwareBuffer() override;
 
   // gpu::gles2::GLStreamTextureMatrix implementation
-  void GetTextureMatrix(float xform[16]) override;
   void NotifyPromotionHint(bool promotion_hint,
                            int display_x,
                            int display_y,

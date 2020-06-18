@@ -10466,32 +10466,9 @@ void GLES2DecoderImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     GLint fake_location,
     GLboolean transpose,
     const volatile GLfloat* transform) {
-  float gl_matrix[16];
-
   // This refers to the bound external texture on the active unit.
   TextureUnit& unit = state_.texture_units[state_.active_texture_unit];
-  if (TextureRef* texture_ref = unit.bound_texture_external_oes.get()) {
-    if (GLStreamTextureImage* image =
-            texture_ref->texture()->GetLevelStreamTextureImage(
-                GL_TEXTURE_EXTERNAL_OES, 0)) {
-      gfx::Transform st_transform(gfx::Transform::kSkipInitialization);
-      gfx::Transform pre_transform(gfx::Transform::kSkipInitialization);
-      image->GetTextureMatrix(gl_matrix);
-      st_transform.matrix().setColMajorf(gl_matrix);
-      // const_cast is safe, because setColMajorf only does a memcpy.
-      // TODO(piman): can we remove this assumption without having to introduce
-      // an extra copy?
-      pre_transform.matrix().setColMajorf(
-          const_cast<const GLfloat*>(transform));
-      gfx::Transform(pre_transform, st_transform)
-          .matrix()
-          .asColMajorf(gl_matrix);
-    } else {
-      // Missing stream texture. Treat matrix as identity.
-      memcpy(gl_matrix, const_cast<const GLfloat*>(transform),
-             sizeof(gl_matrix));
-    }
-  } else {
+  if (!unit.bound_texture_external_oes.get()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                        "DoUniformMatrix4vStreamTextureMatrix",
                        "no texture bound");
@@ -10507,7 +10484,8 @@ void GLES2DecoderImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     return;
   }
 
-  api()->glUniformMatrix4fvFn(real_location, count, transpose, gl_matrix);
+  api()->glUniformMatrix4fvFn(real_location, count, transpose,
+                              const_cast<const GLfloat*>(transform));
 }
 
 void GLES2DecoderImpl::DoUniformMatrix2x3fv(GLint fake_location,
@@ -18262,24 +18240,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
       unpack_unmultiply_alpha == GL_TRUE, false /* dither */);
 
-  // GL_TEXTURE_EXTERNAL_OES texture requires that we apply a transform matrix
-  // before presenting.
-  if (source_target == GL_TEXTURE_EXTERNAL_OES) {
-    if (GLStreamTextureImage* texture_image =
-            source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
-                                                       source_level)) {
-      GLfloat transform_matrix[16];
-      texture_image->GetTextureMatrix(transform_matrix);
-      copy_texture_chromium_->DoCopyTextureWithTransform(
-          this, source_target, source_texture->service_id(), source_level,
-          source_internal_format, dest_target, dest_texture->service_id(),
-          dest_level, internal_format, source_width, source_height,
-          unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-          unpack_unmultiply_alpha == GL_TRUE, false /* dither */,
-          transform_matrix, method, copy_tex_image_blit_.get());
-      return;
-    }
-  }
   copy_texture_chromium_->DoCopyTexture(
       this, source_target, source_texture->service_id(), source_level,
       source_internal_format, dest_target, dest_texture->service_id(),
@@ -18482,26 +18442,6 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
   }
 
   DoBindOrCopyTexImageIfNeeded(source_texture, source_target, 0);
-
-  // GL_TEXTURE_EXTERNAL_OES texture requires apply a transform matrix
-  // before presenting.
-  if (source_target == GL_TEXTURE_EXTERNAL_OES) {
-    if (GLStreamTextureImage* texture_image =
-            source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
-                                                       source_level)) {
-      GLfloat transform_matrix[16];
-      texture_image->GetTextureMatrix(transform_matrix);
-      copy_texture_chromium_->DoCopySubTextureWithTransform(
-          this, source_target, source_texture->service_id(), source_level,
-          source_internal_format, dest_target, dest_texture->service_id(),
-          dest_level, dest_internal_format, xoffset, yoffset, x, y, width,
-          height, dest_width, dest_height, source_width, source_height,
-          unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
-          unpack_unmultiply_alpha == GL_TRUE, dither == GL_TRUE,
-          transform_matrix, copy_tex_image_blit_.get());
-      return;
-    }
-  }
 
   CopyTextureMethod method = GetCopyTextureCHROMIUMMethod(
       GetFeatureInfo(), source_target, source_level, source_internal_format,

@@ -33,7 +33,10 @@ void AppServiceProxy::CreateBlockDialog(const std::string& app_name,
 AppBlockDialogView::AppBlockDialogView(const std::string& app_name,
                                        const gfx::ImageSkia& image,
                                        Profile* profile)
-    : AppDialogView(app_name, image) {
+    : AppDialogView(image) {
+  SetTitle(l10n_util::GetStringFUTF16(IDS_APP_BLOCK_PROMPT_TITLE,
+                                      base::UTF8ToUTF16(app_name)));
+
   base::string16 heading_text = l10n_util::GetStringFUTF16(
       profile->IsChild() ? IDS_APP_BLOCK_HEADING_FOR_CHILD
                          : IDS_APP_BLOCK_HEADING,
@@ -51,9 +54,4 @@ AppBlockDialogView::~AppBlockDialogView() {
 // static
 AppBlockDialogView* AppBlockDialogView::GetActiveViewForTesting() {
   return g_app_block_dialog_view;
-}
-
-base::string16 AppBlockDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_APP_BLOCK_PROMPT_TITLE,
-                                    base::UTF8ToUTF16(app_name()));
 }

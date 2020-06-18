@@ -27,6 +27,8 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   // content::ContentRendererClient:
   void RenderThreadStarted() override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
+  SkBitmap* GetSadPluginBitmap() override;
+  SkBitmap* GetSadWebViewBitmap() override;
   bool HasErrorPage(int http_status_code) override;
   bool ShouldSuppressErrorPage(content::RenderFrame* render_frame,
                                const GURL& url,

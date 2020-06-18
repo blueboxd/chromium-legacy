@@ -158,6 +158,10 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   base::Optional<base::TimeDelta> LongestInputTimestamp() const;
   // The duration of event handlers processing the first input event.
   base::Optional<base::TimeDelta> FirstInputProcessingTime() const;
+  // The duration between the user's first scroll and display update.
+  base::Optional<base::TimeDelta> FirstScrollDelay() const;
+  // The hardware timestamp of the first scroll.
+  base::Optional<base::TimeDelta> FirstScrollTimestamp() const;
 
   uint64_t ParseStart() const;
   uint64_t ParseStop() const;

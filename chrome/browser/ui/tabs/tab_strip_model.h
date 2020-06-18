@@ -802,6 +802,10 @@ class TabStripModel : public TabGroupController {
 // TabStripModelObserver already implements ScopedObserver's functionality
 // natively.
 template <>
-class ScopedObserver<TabStripModel, TabStripModelObserver> {};
+class ScopedObserver<TabStripModel, TabStripModelObserver> {
+ public:
+  // Deleting the constructor gives a clear error message traceable back to here.
+  explicit ScopedObserver(TabStripModelObserver* observer) = delete;
+};
 
 #endif  // CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

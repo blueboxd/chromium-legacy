@@ -533,8 +533,13 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     install_feedback = true;
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    if (install_feedback)
-      Add(IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")));
+    if (install_feedback) {
+      AddWithNameAndDescription(
+          IDR_FEEDBACK_MANIFEST, base::FilePath(FILE_PATH_LITERAL("feedback")),
+          l10n_util::GetStringUTF8(IDS_FEEDBACK_REPORT_APP_TITLE),
+          // Description string
+          l10n_util::GetStringUTF8(IDS_FEEDBACK_REPORT_PAGE_TITLE));
+    }
 
 #if defined(OS_CHROMEOS)
     AddChromeCameraApp();

@@ -760,8 +760,7 @@ void WebGLRenderingContextBase::commit() {
   MarkLayerComposited();
 }
 
-scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
-    RasterModeHint hint) {
+scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage() {
   if (!GetDrawingBuffer())
     return nullptr;
 
@@ -1747,7 +1746,7 @@ bool WebGLRenderingContextBase::CopyRenderingResultsFromDrawingBuffer(
   // Note: This code path could work for all cases. The only reason there
   // is a separate path for the accelerated case is that we assume texture
   // copying is faster than drawImage.
-  scoped_refptr<StaticBitmapImage> image = GetImage(RasterModeHint::kPreferGPU);
+  scoped_refptr<StaticBitmapImage> image = GetImage();
   if (!image || !image->PaintImageForCurrentFrame())
     return false;
   cc::PaintFlags paint_flags;
@@ -5548,7 +5547,7 @@ void WebGLRenderingContextBase::TexImageHelperCanvasRenderingContextHost(
         To<WebGLRenderingContextBase>(context_host->RenderingContext());
   } else {
     image = context_host->GetSourceImageForCanvas(
-        &source_image_status, RasterModeHint::kPreferGPU,
+        &source_image_status,
         FloatSize(source_sub_rectangle.Width(), source_sub_rectangle.Height()));
     if (source_image_status != kNormalSourceImageStatus)
       return;

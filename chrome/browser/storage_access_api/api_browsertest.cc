@@ -139,8 +139,9 @@ class StorageAccessAPIBrowserTest : public InProcessBrowserTest {
 
 // Validate that if an iframe requests access that cookies become unblocked for
 // just that top-level/third-party combination.
+// TODO(crbug.com/1090625): Flaky-failing on Linux, Mac, and Windows.
 IN_PROC_BROWSER_TEST_F(StorageAccessAPIBrowserTest,
-                       ThirdPartyCookiesIFrameRequestsAccess) {
+                       DISABLED_ThirdPartyCookiesIFrameRequestsAccess) {
   SetBlockThirdPartyCookies(true);
   base::HistogramTester histogram_tester;
 

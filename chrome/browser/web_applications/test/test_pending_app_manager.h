@@ -18,6 +18,7 @@ namespace web_app {
 
 class TestAppRegistrar;
 
+// Deprecated. Please use TestPendingAppManagerImpl instead.
 class TestPendingAppManager : public PendingAppManager {
  public:
   explicit TestPendingAppManager(TestAppRegistrar* registrar);

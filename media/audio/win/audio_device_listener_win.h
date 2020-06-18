@@ -63,6 +63,7 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
 
   // Used to rate limit device change events.
   base::TimeTicks last_device_change_time_;
+  std::string last_device_id_;
 
   // AudioDeviceListenerWin must be constructed and destructed on one thread.
   THREAD_CHECKER(thread_checker_);

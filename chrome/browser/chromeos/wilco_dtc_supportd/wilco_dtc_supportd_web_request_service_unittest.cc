@@ -271,6 +271,26 @@ TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodPutEmptyBody) {
   EXPECT_EQ(request_result->response_body, "");
 }
 
+TEST_F(WilcoDtcSupportdWebRequestServiceTest, HttpMethodPatchEmptyBody) {
+  std::unique_ptr<WebRequestResult> request_result;
+  base::RunLoop run_loop;
+
+  StartWebRequest(
+      wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPatch,
+      kFakeUrl, {} /* headers */, "" /* request_body */, &request_result,
+      &run_loop);
+  EXPECT_FALSE(request_result);
+  InjectNetworkResponse(kFakeUrl,
+                        std::make_unique<net::HttpStatusCode>(net::HTTP_OK),
+                        net::OK, "" /* response_body */);
+  run_loop.Run();
+  ASSERT_TRUE(request_result);
+  EXPECT_EQ(request_result->status,
+            wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestStatus::kOk);
+  EXPECT_EQ(request_result->http_status, net::HTTP_OK);
+  EXPECT_EQ(request_result->response_body, "");
+}
+
 TEST_F(WilcoDtcSupportdWebRequestServiceTest, ResponseCodeParsingError) {
   std::unique_ptr<WebRequestResult> request_result;
   base::RunLoop run_loop;

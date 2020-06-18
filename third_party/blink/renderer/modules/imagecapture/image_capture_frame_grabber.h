@@ -22,7 +22,7 @@ class SkImage;
 namespace blink {
 
 class ImageBitmap;
-class WebMediaStreamTrack;
+class MediaStreamComponent;
 
 // A ScopedWebCallbacks is a move-only scoper which helps manage the lifetime of
 // a blink::WebCallbacks object. This is particularly useful when you're
@@ -130,7 +130,7 @@ class ImageCaptureFrameGrabber final : public MediaStreamVideoSink {
   ImageCaptureFrameGrabber();
   ~ImageCaptureFrameGrabber() override;
 
-  void GrabFrame(WebMediaStreamTrack* track,
+  void GrabFrame(MediaStreamComponent* component,
                  std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks,
                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

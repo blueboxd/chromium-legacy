@@ -17,6 +17,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
@@ -542,7 +543,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*threat_type*/ "DANGEROUS",
         /*trigger*/
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*dlp_verdict*/
+        SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size());
 
@@ -579,7 +581,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         /*threat_type*/ "POTENTIALLY_UNWANTED",
         /*trigger*/
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*dlp_verdict*/
+        SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size());
 
@@ -612,7 +615,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
         /*trigger*/
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*dlp_verdict*/
+        SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size());
 
@@ -645,7 +649,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
         /*trigger*/
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*dlp_verdict*/
+        SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size());
 
@@ -680,7 +685,8 @@ TEST_P(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         "76E00EB33811F5778A5EE557512C30D9341D4FEB07646BCE3E4DB13F9428573C",
         /*trigger*/
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
-        /*dlp_verdict*/ response.dlp_scan_verdict(),
+        /*dlp_verdict*/
+        SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
         /*mimetypes*/ ExeMimeTypes(),
         /*size*/ std::string("download contents").size());
 

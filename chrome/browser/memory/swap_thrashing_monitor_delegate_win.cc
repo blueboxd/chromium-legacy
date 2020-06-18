@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/win_util.h"
 #include "chrome/common/chrome_constants.h"

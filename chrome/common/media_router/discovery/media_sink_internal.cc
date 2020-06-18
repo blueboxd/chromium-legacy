@@ -7,6 +7,7 @@
 #include <new>
 
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_util.h"
 
 namespace media_router {

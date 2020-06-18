@@ -114,7 +114,8 @@ class NodeWrapper extends SAChildNode {
     if (!this.baseNode_.role) {
       return false;
     }
-    return SwitchAccessPredicate.isVisible(this.baseNode_);
+    return SwitchAccessPredicate.isVisible(this.baseNode_) &&
+        super.isValidAndVisible();
   }
 
   /** @override */

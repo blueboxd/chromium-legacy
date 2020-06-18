@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/test_lock_screen_action_background_controller.h"
@@ -696,6 +697,55 @@ TEST_F(LoginShelfViewTest, TapShutdownWithSwipeDetectionEnabledInOobe) {
 
   Click(LoginShelfView::kShutdown);
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
+}
+
+TEST_F(LoginShelfViewTest, MouseWheelOnLoginShelf) {
+  gfx::NativeWindow window = login_shelf_view_->GetWidget()->GetNativeWindow();
+  ShelfWidget* const shelf_widget = Shelf::ForWindow(window)->shelf_widget();
+  const gfx::Rect shelf_bounds = shelf_widget->GetWindowBoundsInScreen();
+
+  gfx::Point kLocations[] = {
+      shelf_bounds.left_center() + gfx::Vector2d(10, 0),
+      shelf_bounds.right_center() + gfx::Vector2d(-10, 0),
+      shelf_bounds.CenterPoint()};
+
+  ui::test::EventGenerator* event_generator = GetEventGenerator();
+  auto test_mouse_wheel_noop = [&event_generator, &shelf_widget,
+                                &shelf_bounds](const gfx::Point& location) {
+    event_generator->MoveMouseTo(location);
+
+    event_generator->MoveMouseWheel(/*delta_x=*/0, 100);
+    EXPECT_EQ(shelf_bounds, shelf_widget->GetWindowBoundsInScreen());
+    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(base::nullopt));
+
+    event_generator->MoveMouseWheel(/*delta_x=*/0, -100);
+    EXPECT_EQ(shelf_bounds, shelf_widget->GetWindowBoundsInScreen());
+    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible(base::nullopt));
+  };
+
+  for (const auto& location : kLocations) {
+    SCOPED_TRACE(testing::Message()
+                 << "Mouse wheel in OOBE at " << location.ToString());
+
+    test_mouse_wheel_noop(location);
+  }
+
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
+
+  for (const auto& location : kLocations) {
+    SCOPED_TRACE(testing::Message()
+                 << "Mouse wheel on login at " << location.ToString());
+    test_mouse_wheel_noop(location);
+  }
+
+  CreateUserSessions(1);
+  NotifySessionStateChanged(SessionState::LOCKED);
+
+  for (const auto& location : kLocations) {
+    SCOPED_TRACE(testing::Message()
+                 << "Mouse wheel on lock screen at " << location.ToString());
+    test_mouse_wheel_noop(location);
+  }
 }
 
 }  // namespace

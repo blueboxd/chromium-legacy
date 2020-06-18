@@ -132,8 +132,6 @@ class DownloadItemView : public views::View,
 
   static constexpr int kTextWidth = 140;
 
-  static constexpr int kTooltipMaxWidth = 800;
-
   // Padding before the icon and at end of the item.
   static constexpr int kStartPadding = 12;
   static constexpr int kEndPadding = 6;

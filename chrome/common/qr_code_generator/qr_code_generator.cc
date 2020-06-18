@@ -6,6 +6,8 @@
 
 #include <string.h>
 
+#include <ostream>
+
 #include "base/check_op.h"
 
 static_assert(QRCodeGenerator::kNumSegments != 0 &&

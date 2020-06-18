@@ -42,7 +42,6 @@ class GLStreamTextureImageStub : public GLStreamTextureImage {
   bool EmulatingRGB() const override;
 
   // Overridden from GLStreamTextureImage:
-  void GetTextureMatrix(float matrix[16]) override {}
   void NotifyPromotionHint(bool promotion_hint,
                            int display_x,
                            int display_y,

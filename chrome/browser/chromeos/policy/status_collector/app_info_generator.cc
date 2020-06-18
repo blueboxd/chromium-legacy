@@ -99,9 +99,7 @@ const AppInfoGenerator::Result AppInfoGenerator::Generate() const {
     VLOG(1) << "No affiliated user session. Returning empty app list.";
     return base::nullopt;
   }
-
-  auto activity_periods =
-      provider_->activity_storage.GetActivityPeriods(clock_.Now());
+  auto activity_periods = provider_->activity_storage.GetActivityPeriods();
   auto activity_compare = [](const em::TimePeriod& time_period1,
                              const em::TimePeriod& time_period2) {
     return time_period1.start_timestamp() < time_period2.start_timestamp();
@@ -136,7 +134,8 @@ void AppInfoGenerator::OnReportedSuccessfully(const base::Time report_time) {
   if (!provider_) {
     return;
   }
-  provider_->activity_storage.PruneActivityPeriods(report_time);
+  provider_->activity_storage.TrimActivityPeriods(
+      report_time.ToJavaTime(), base::Time::Max().ToJavaTime());
 }
 
 void AppInfoGenerator::OnWillReport() {
@@ -230,7 +229,7 @@ void AppInfoGenerator::SetIdleDurationsToOpen() {
   base::Time start_time = clock_.Now();
   provider_->app_service_proxy.InstanceRegistry().ForEachInstance(
       [this, start_time](const apps::InstanceUpdate& update) {
-        if (update.State() == apps::InstanceState::kStarted) {
+        if (update.State() & apps::InstanceState::kStarted) {
           OpenUsageInterval(update.AppId(), update.Window(), start_time);
         }
       });

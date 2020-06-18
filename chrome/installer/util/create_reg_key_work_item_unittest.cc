@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"
 #include "chrome/installer/util/work_item.h"

@@ -3310,7 +3310,7 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
     LayoutBox* list_item = ToLayoutBox(child);
     for (LayoutObject* item_child = list_item->SlowFirstChild(); item_child;
          item_child = item_child->NextSibling()) {
-      if (!item_child->IsListMarker())
+      if (!item_child->IsListMarkerForNormalContent())
         continue;
       LayoutBox* item_marker = ToLayoutBox(item_child);
       // Make sure to compute the autosized width.

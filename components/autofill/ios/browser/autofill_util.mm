@@ -138,6 +138,7 @@ bool ExtractFormData(const base::Value& form_value,
   form_dictionary->GetBoolean("is_form_tag", &form_data->is_form_tag);
   form_dictionary->GetBoolean("is_formless_checkout",
                               &form_data->is_formless_checkout);
+  form_dictionary->GetString("frame_id", &form_data->frame_id);
 
   // Field list (mandatory) is extracted.
   const base::ListValue* fields_list = nullptr;

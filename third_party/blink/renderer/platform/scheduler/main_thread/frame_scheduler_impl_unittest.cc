@@ -468,11 +468,11 @@ class FrameSchedulerImplTestWithIntensiveWakeUpThrottling
 
   FrameSchedulerImplTestWithIntensiveWakeUpThrottling()
       : FrameSchedulerImplTest(
-            {{kIntensiveWakeUpThrottling,
+            {{features::kIntensiveWakeUpThrottling,
               {// Make the grace period for intensive throttling shorter than
                // the grace period for freezing, because freezing hides the
                // effect of intensive throttling.
-               {kIntensiveWakeUpThrottling_GracePeriodSeconds.name, "60"}}}}) {}
+               {kIntensiveWakeUpThrottling_GracePeriodSeconds_Name, "60"}}}}) {}
 
   void SetUp() override {
     Super::SetUp();

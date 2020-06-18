@@ -7,6 +7,7 @@
 #include <unistd.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #import "chrome/browser/ui/cocoa/notifications/notification_builder_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"

@@ -70,9 +70,10 @@ ChromeFeedbackPrivateDelegate::GetStrings(
       std::make_unique<base::DictionaryValue>();
 
 #define SET_STRING(id, idr) dict->SetString(id, l10n_util::GetStringUTF16(idr))
-  SET_STRING("page-title", from_crash
-                               ? IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW
-                               : IDS_FEEDBACK_REPORT_PAGE_TITLE);
+  SET_STRING("pageTitle", from_crash
+                              ? IDS_FEEDBACK_REPORT_PAGE_TITLE_SAD_TAB_FLOW
+                              : IDS_FEEDBACK_REPORT_PAGE_TITLE);
+  SET_STRING("appTitle", IDS_FEEDBACK_REPORT_APP_TITLE);
   SET_STRING("additionalInfo", IDS_FEEDBACK_ADDITIONAL_INFO_LABEL);
   SET_STRING("minimizeBtnLabel", IDS_FEEDBACK_MINIMIZE_BUTTON_LABEL);
   SET_STRING("closeBtnLabel", IDS_FEEDBACK_CLOSE_BUTTON_LABEL);

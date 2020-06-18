@@ -10,10 +10,12 @@
 #include "components/autofill/content/renderer/password_autofill_agent.h"
 #include "components/content_settings/renderer/content_settings_agent_impl.h"
 #include "components/error_page/common/error.h"
+#include "components/grit/components_scaled_resources.h"
 #include "components/js_injection/renderer/js_communication.h"
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "content/public/renderer/render_thread.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "weblayer/common/features.h"
 #include "weblayer/renderer/error_page_helper.h"
 #include "weblayer/renderer/weblayer_render_frame_observer.h"
@@ -104,6 +106,18 @@ void ContentRendererClientImpl::RenderFrameCreated(
                          local_interface_provider_.get());
 #endif
   new js_injection::JsCommunication(render_frame);
+}
+
+SkBitmap* ContentRendererClientImpl::GetSadPluginBitmap() {
+  return const_cast<SkBitmap*>(ui::ResourceBundle::GetSharedInstance()
+                                   .GetImageNamed(IDR_SAD_PLUGIN)
+                                   .ToSkBitmap());
+}
+
+SkBitmap* ContentRendererClientImpl::GetSadWebViewBitmap() {
+  return const_cast<SkBitmap*>(ui::ResourceBundle::GetSharedInstance()
+                                   .GetImageNamed(IDR_SAD_WEBVIEW)
+                                   .ToSkBitmap());
 }
 
 bool ContentRendererClientImpl::HasErrorPage(int http_status_code) {

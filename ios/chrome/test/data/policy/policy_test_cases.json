@@ -46,6 +46,18 @@
     ]
   },
 
+ "ChromeVariations": {
+    "os": [ "ios" ],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ChromeVariations": 1
+        },
+        "prefs": { "variations_restrictions_by_policy": { "local_state": true } }
+      }
+    ]
+  },
+
   "DefaultPopupsSetting": {
     "os": [ "ios" ],
     "note": "TODO(crbug.com/106682): Flag this with can_be_recommended",

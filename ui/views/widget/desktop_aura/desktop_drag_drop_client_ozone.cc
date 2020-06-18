@@ -154,9 +154,17 @@ int DesktopDragDropClientOzone::StartDragAndDrop(
         CreateDragWidget(root_location, drag_image, drag_context_->offset);
   }
 
+  // This object is owned by a DesktopNativeWidgetAura that can be destroyed
+  // during the drag loop, which will also destroy this object.  So keep track
+  // of whether we are still alive after the drag ends.
+  auto alive = weak_factory_.GetWeakPtr();
+
   drag_handler_->StartDrag(*data.get(), operation, cursor_client->GetCursor(),
                            this);
   run_loop.Run();
+
+  if (!alive)
+    return ui::DragDropTypes::DRAG_NONE;
 
   if (cursor_client)
     cursor_client->SetCursor(initial_cursor);
@@ -203,17 +211,17 @@ int DesktopDragDropClientOzone::OnDragMotion(const gfx::PointF& point,
                                              int operation) {
   last_drag_point_ = point;
   drag_operation_ = operation;
-  int client_operation =
-      ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
 
-  // If |data_to_drop_| has a valid data, ask |drag_drop_delegate_| about the
-  // operation that it would accept.
-  if (data_to_drop_) {
-    std::unique_ptr<ui::DropTargetEvent> event =
-        UpdateTargetAndCreateDropEvent(point);
-    if (drag_drop_delegate_ && event)
-      client_operation = drag_drop_delegate_->OnDragUpdated(*event);
-  }
+  // If |data_to_drop_| doesn't have data, return that we accept everything.
+  if (!data_to_drop_)
+    return ui::DragDropTypes::DRAG_COPY | ui::DragDropTypes::DRAG_MOVE;
+
+  // Ask the delegate what operation it would accept for the current data.
+  int client_operation = ui::DragDropTypes::DRAG_NONE;
+  std::unique_ptr<ui::DropTargetEvent> event =
+      UpdateTargetAndCreateDropEvent(point);
+  if (drag_drop_delegate_ && event)
+    client_operation = drag_drop_delegate_->OnDragUpdated(*event);
   return client_operation;
 }
 

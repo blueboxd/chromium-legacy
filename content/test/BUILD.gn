@@ -2262,7 +2262,7 @@ test("content_unittests") {
     ]
     if (is_chromeos) {
       sources += [
-        "../browser/media/capture/lame_capture_overlay_chromeos_unittest.cc",
+        "../browser/media/capture/slow_capture_overlay_chromeos_unittest.cc",
       ]
     }
   }

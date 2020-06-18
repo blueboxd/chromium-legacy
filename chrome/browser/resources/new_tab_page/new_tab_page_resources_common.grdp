@@ -65,6 +65,4 @@
       file="untrusted/background_image.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_JS"
       file="untrusted/background_image.js" type="BINDATA" />
-  <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML"
-      file="untrusted/iframe.html" type="BINDATA" />
 </grit-part>

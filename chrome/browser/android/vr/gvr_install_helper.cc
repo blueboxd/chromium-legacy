@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/android/vr/android_vr_utils.h"
 
 using base::android::AttachCurrentThread;

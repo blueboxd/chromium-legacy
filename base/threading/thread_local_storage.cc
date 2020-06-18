@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/notreached.h"
 #include "base/synchronization/lock.h"
+#include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 
 using base::internal::PlatformThreadLocalStorage;
@@ -327,6 +328,10 @@ namespace internal {
 
 #if defined(OS_WIN)
 void PlatformThreadLocalStorage::OnThreadExit() {
+  // Don't execute TLS destructor at low priority. On Windows, this leads to
+  // LoaderLock priority inversions and shutdown hangs.
+  DCHECK_GE(PlatformThread::GetCurrentThreadPriority(), ThreadPriority::NORMAL);
+
   PlatformThreadLocalStorage::TLSKey key =
       base::subtle::NoBarrier_Load(&g_native_tls_key);
   if (key == PlatformThreadLocalStorage::TLS_KEY_OUT_OF_INDEXES)

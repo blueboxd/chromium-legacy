@@ -222,7 +222,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/tab/TabBrowserControlsOffsetHelperTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabUnitTest.java",
   "junit/src/org/chromium/chrome/browser/tab/TabViewAndroidDelegateTest.java",
-  "junit/src/org/chromium/chrome/browser/tab/TabViewManagerTest.java",
+  "junit/src/org/chromium/chrome/browser/tab/TabViewManagerImplTest.java",
   "junit/src/org/chromium/chrome/browser/tabmodel/TabModelSelectorImplTest.java",
   "junit/src/org/chromium/chrome/browser/tabmodel/TabModelSelectorProfileSupplierTest.java",
   "junit/src/org/chromium/chrome/browser/tabstate/TabStateUnitTest.java",

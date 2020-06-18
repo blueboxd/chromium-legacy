@@ -716,10 +716,10 @@ const base::Feature kQuickUnlockPinSignin{"QuickUnlockPinSignin",
 const base::Feature kOobeMarketingScreen{"OobeMarketingScreen",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables/disables marketing email subscribe option for Germany
+// Enables/disables marketing emails for double opt-in countries.
 const base::Feature kOobeMarketingDoubleOptInCountriesSupported{
     "kOobeMarketingDoubleOptInCountriesSupported",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables/disables marketing emails for other countries other than US,CA,UK.
 const base::Feature kOobeMarketingAdditionalCountriesSupported{

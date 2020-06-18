@@ -707,9 +707,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidRunContentWithCertificateErrors() override;
   void DidChangePerformanceTiming() override;
   void DidObserveInputDelay(base::TimeDelta input_delay) override;
-  void DidObserveFirstScrollDelay(
-      base::TimeDelta first_scroll_delay,
-      base::TimeTicks first_scroll_timestamp) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
   void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) override;

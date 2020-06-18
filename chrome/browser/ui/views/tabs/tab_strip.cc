@@ -1380,6 +1380,11 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   if (tab->detached())
     return false;
 
+  if (tab->group() && controller()->IsGroupCollapsed(*tab->group()) &&
+      tab->bounds().IsEmpty()) {
+    return false;
+  }
+
   // When stacking tabs, all tabs should always be visible.
   if (stacked_layout_)
     return true;

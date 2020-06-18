@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.share.screenshot;
 
+import android.content.Context;
+
 import org.chromium.chrome.browser.share.screenshot.ScreenshotShareSheetViewProperties.NoArgOperation;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -13,15 +15,21 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 class ScreenshotShareSheetMediator {
     private final PropertyModel mModel;
-
+    private final Context mContext;
     private final Runnable mDeleteRunnable;
+    private final Runnable mSaveRunnable;
+
     /**
      * The ScreenshotShareSheetMediator constructor.
      * @param context The context to use.
-     * @param propertyModel The property modelto use to communicate with views.
+     * @param propertyModel The property model to use to communicate with views.
+     * @param deleteRunnable The action to take when cancel or delete is called.
      */
-    ScreenshotShareSheetMediator(PropertyModel propertyModel, Runnable deleteRunnable) {
+    ScreenshotShareSheetMediator(Context context, PropertyModel propertyModel,
+            Runnable deleteRunnable, Runnable saveRunnable) {
         mDeleteRunnable = deleteRunnable;
+        mSaveRunnable = saveRunnable;
+        mContext = context;
         mModel = propertyModel;
         mModel.set(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER,
                 operation -> { performNoArgOperation(operation); });
@@ -37,7 +45,7 @@ class ScreenshotShareSheetMediator {
         if (NoArgOperation.SHARE == operation) {
             share();
         } else if (NoArgOperation.SAVE == operation) {
-            save();
+            mSaveRunnable.run();
         } else if (NoArgOperation.DELETE == operation) {
             mDeleteRunnable.run();
         }
@@ -48,12 +56,5 @@ class ScreenshotShareSheetMediator {
      */
     private void share() {
         // TODO(crbug/1024586): export image
-    }
-
-    /**
-     * Saves the current image.
-     */
-    private void save() {
-        // TODO(crbug/1024586):save image
     }
 }

@@ -39,6 +39,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
+import org.chromium.base.UnownedUserDataHost;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -142,6 +143,10 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
 
     // List of display modes with the same dimensions as the current mode but varying refresh rate.
     private List<Display.Mode> mSupportedRefreshRateModes;
+
+    // A container for UnownedUserData objects that are not owned by, but can be accessed through
+    // WindowAndroid.
+    private final UnownedUserDataHost mUnownedUserDataHost = new UnownedUserDataHost();
 
     /**
      * An interface to notify listeners that a context menu is closed.
@@ -638,6 +643,8 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
             WindowAndroidJni.get().destroy(mNativeWindowAndroid, WindowAndroid.this);
         }
 
+        mUnownedUserDataHost.destroy();
+
         if (mTouchExplorationMonitor != null) mTouchExplorationMonitor.destroy();
 
         mApplicationBottomInsetProvider.destroy();
@@ -988,6 +995,13 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
         }
 
         return preferredMode.getModeId();
+    }
+
+    /**
+     * @return The {@link UnownedUserDataHost} attached to the current {@link WindowAndroid}.
+     */
+    public UnownedUserDataHost getUnownedUserDataHost() {
+        return mUnownedUserDataHost;
     }
 
     @NativeMethods

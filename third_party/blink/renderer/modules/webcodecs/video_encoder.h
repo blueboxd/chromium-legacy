@@ -25,8 +25,8 @@ namespace blink {
 
 class ExceptionState;
 enum class DOMExceptionCode;
+class VideoEncoderConfig;
 class VideoEncoderInit;
-class VideoEncoderTuneOptions;
 class VideoEncoderEncodeOptions;
 class Visitor;
 
@@ -34,22 +34,24 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VideoEncoder* Create(ScriptState*, ExceptionState&);
-  VideoEncoder(ScriptState*, ExceptionState&);
+  static VideoEncoder* Create(ScriptState*,
+                              const VideoEncoderInit*,
+                              ExceptionState&);
+  VideoEncoder(ScriptState*, const VideoEncoderInit*, ExceptionState&);
   ~VideoEncoder() override;
 
   // video_encoder.idl implementation.
-  ScriptPromise encode(const VideoFrame* frame,
-                       const VideoEncoderEncodeOptions*,
-                       ExceptionState&);
+  void encode(const VideoFrame* frame,
+              const VideoEncoderEncodeOptions*,
+              ExceptionState&);
 
-  ScriptPromise configure(const VideoEncoderInit* init, ExceptionState&);
+  void configure(const VideoEncoderConfig*, ExceptionState&);
 
-  ScriptPromise tune(const VideoEncoderTuneOptions* params, ExceptionState&);
+  ScriptPromise flush(ExceptionState&);
 
-  ScriptPromise close();
+  void reset(ExceptionState&);
 
-  ScriptPromise flush();
+  void close(ExceptionState&);
 
   // GarbageCollected override.
   void Trace(Visitor*) const override;
@@ -60,27 +62,24 @@ class MODULES_EXPORT VideoEncoder final : public ScriptWrappable {
       kConfigure,
       kEncode,
       kFlush,
-      kClose,
     };
 
     void Trace(Visitor*) const;
-    DOMException* Reject(DOMExceptionCode code, const String& message);
-    void Resolve();
 
     Type type;
-    Member<const VideoEncoderInit> config;               // used by kConfigure
+    Member<const VideoEncoderConfig> config;             // used by kConfigure
     Member<const VideoFrame> frame;                      // used by kEncode
     Member<const VideoEncoderEncodeOptions> encodeOpts;  // used by kEncode
-    Member<ScriptPromiseResolver> resolver;
+    Member<ScriptPromiseResolver> resolver;              // used by kFlush
   };
 
   void CallOutputCallback(EncodedVideoChunk* chunk);
   void CallErrorCallback(DOMException* ex);
-  ScriptPromise EnqueueRequest(Request* request);
+  void CallErrorCallback(DOMExceptionCode code, const String& message);
+  void EnqueueRequest(Request* request);
   void ProcessRequests();
   void ProcessEncode(Request* request);
   void ProcessConfigure(Request* request);
-  void ProcessClose(Request* request);
   void ProcessFlush(Request* request);
 
   void MediaEncoderOutputCallback(media::VideoEncoderOutput output);

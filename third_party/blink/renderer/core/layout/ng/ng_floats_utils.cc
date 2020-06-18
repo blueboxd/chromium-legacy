@@ -281,21 +281,41 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
       break;
     } while (true);
 
-    LayoutUnit fragmentainer_block_offset =
+    LayoutUnit fragmentainer_margin_edge_block_offset =
         parent_space.FragmentainerOffsetAtBfc() +
         opportunity.rect.start_offset.block_offset;
 
     // Note that we don't check if we're at a valid class A, B or C breakpoint
-    // (we only check that we're not at the start of the fragmentainer). While
-    // no other browsers do this either, we should consider doing this in the
-    // future. But for now, don't let the float affect the appeal of breaking
-    // inside this container.
-    if (!MovePastBreakpoint(parent_space, node, *layout_result,
-                            fragmentainer_block_offset, kBreakAppealPerfect,
-                            /* builder */ nullptr)) {
-      need_break_before = true;
-    } else if (layout_result->PhysicalFragment().BreakToken()) {
-      fragment_margins.block_end = LayoutUnit();
+    // (we only check that we're not at the start of the fragmentainer (in which
+    // case breaking typically wouldn't eliminate the unappealing break inside
+    // the float)). While no other browsers do this either, we should consider
+    // doing this in the future. But for now, don't let the float affect the
+    // appeal of breaking inside this container.
+    //
+    // If we're past the fragmentainer start, we can consider breaking before
+    // this float. Otherwise we cannot, or there'd be no content
+    // progression. The common fragmentation machinery assumes that margins can
+    // collapse with fragmentainer boundaries, but this isn't the case for
+    // floats. We don't allow float margins to collapse with anything, nor be
+    // split into multiple fragmentainers. Hence this additional check. Note
+    // that we might want to reconsider this behavior, since browsers disagree
+    // (what we do now is relatively similar to legacy Blink, though). Should we
+    // split a margin in cases where it helps prevent fragmentainer overflow?
+    // Should we always split them if they occur at fragmentainer boundaries? Or
+    // even allow them to collapse with the fragmentainer boundary? Exact
+    // behavior is currently unspecified.
+    if (fragmentainer_margin_edge_block_offset > LayoutUnit()) {
+      LayoutUnit fragmentainer_block_offset =
+          fragmentainer_margin_edge_block_offset + fragment_margins.block_start;
+      if (!MovePastBreakpoint(parent_space, node, *layout_result,
+                              fragmentainer_block_offset, kBreakAppealPerfect,
+                              /* builder */ nullptr)) {
+        need_break_before = true;
+      } else if (layout_result->PhysicalFragment().BreakToken()) {
+        // We need to resume in the next fragmentainer, which means that
+        // there'll be no block-end margin here.
+        fragment_margins.block_end = LayoutUnit();
+      }
     }
   }
 

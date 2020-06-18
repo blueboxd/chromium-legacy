@@ -3266,17 +3266,25 @@ TEST_F(DeviceStatusCollectorTest, GenerateAppInfo) {
   test_clock_.SetNow(report_time);
   GetStatus();
 
-  EXPECT_EQ(session_status_.app_infos(0).app_id(), "id");
-  EXPECT_EQ(session_status_.app_infos(0).active_time_periods_size(), 1);
-  auto first = session_status_.app_infos(0).active_time_periods()[0];
   base::Time reported_start_time;
+  base::Time reported_end_time;
+  EXPECT_EQ(session_status_.app_infos(0).app_id(), "id");
+  EXPECT_EQ(session_status_.app_infos(0).active_time_periods_size(), 2);
+  auto first_activity = session_status_.app_infos(0).active_time_periods()[0];
   EXPECT_TRUE(
       base::Time::FromUTCString("29-MAR-2020 12:00am", &reported_start_time));
-  EXPECT_EQ(first.start_timestamp(), reported_start_time.ToJavaTime());
-  base::Time reported_end_time;
   EXPECT_TRUE(
       base::Time::FromUTCString("29-MAR-2020 10:30am", &reported_end_time));
-  EXPECT_EQ(first.end_timestamp(), reported_end_time.ToJavaTime());
+  EXPECT_EQ(first_activity.start_timestamp(), reported_start_time.ToJavaTime());
+  EXPECT_EQ(first_activity.end_timestamp(), reported_end_time.ToJavaTime());
+  auto second_activity = session_status_.app_infos(0).active_time_periods()[1];
+  EXPECT_TRUE(
+      base::Time::FromUTCString("30-MAR-2020 12:00am", &reported_start_time));
+  EXPECT_TRUE(
+      base::Time::FromUTCString("30-MAR-2020 2:30pm", &reported_end_time));
+  EXPECT_EQ(second_activity.start_timestamp(),
+            reported_start_time.ToJavaTime());
+  EXPECT_EQ(second_activity.end_timestamp(), reported_end_time.ToJavaTime());
   EXPECT_EQ(session_status_.app_infos(1).app_id(), "id2");
   EXPECT_EQ(session_status_.app_infos(1).active_time_periods_size(), 0);
 }

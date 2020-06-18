@@ -1235,12 +1235,6 @@ const char kLogJsConsoleMessagesDescription[] =
     "Enable logging JS console messages in system logs, please note that they "
     "may contain PII.";
 
-const char kLookalikeUrlNavigationSuggestionsName[] =
-    "Navigation suggestions for lookalike URLs";
-const char kLookalikeUrlNavigationSuggestionsDescription[] =
-    "Enable navigation suggestions for URLs that are visually similar to "
-    "popular domains or to domains with a site engagement score.";
-
 const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
 const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
 
@@ -1793,6 +1787,13 @@ const char kPrefetchPrivacyChangesDescription[] =
     "Prefetch requests will not follow redirects, not send a Referer header, "
     "not send credentials for cross-origin requests, and do not pass through "
     "service workers.";
+
+const char kIntensiveWakeUpThrottlingName[] =
+    "Throttle Javascript timers in background.";
+const char kIntensiveWakeUpThrottlingDescription[] =
+    "When enabled, wake ups from throttleable TaskQueues are limited to 1 per "
+    "minute in a page that has been backgrounded for 5 minutes. For additional "
+    "details, see https://www.chromestatus.com/feature/4718288976216064.";
 
 const char kPrinterStatusName[] = "Show printer Status";
 const char kPrinterStatusDescription[] =

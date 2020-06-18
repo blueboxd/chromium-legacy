@@ -152,9 +152,9 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
   timing.paint_timing->first_paint = base::TimeDelta::FromMilliseconds(20);
   timing.paint_timing->first_contentful_paint =
       base::TimeDelta::FromMilliseconds(40);
-  timing.paint_timing->largest_text_paint =
+  timing.paint_timing->largest_contentful_paint->largest_text_paint =
       base::TimeDelta::FromMilliseconds(50);
-  timing.paint_timing->largest_text_paint_size = 20u;
+  timing.paint_timing->largest_contentful_paint->largest_text_paint_size = 20u;
   timing.paint_timing->first_image_paint =
       base::TimeDelta::FromMilliseconds(160);
   timing.parse_timing->parse_stop = base::TimeDelta::FromMilliseconds(320);
@@ -203,7 +203,9 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
       internal::kHistogramFromGWSLargestContentfulPaint, 1);
   tester()->histogram_tester().ExpectBucketCount(
       internal::kHistogramFromGWSLargestContentfulPaint,
-      timing.paint_timing->largest_text_paint.value().InMilliseconds(), 1);
+      timing.paint_timing->largest_contentful_paint->largest_text_paint.value()
+          .InMilliseconds(),
+      1);
 
   tester()->histogram_tester().ExpectTotalCount(
       internal::kHistogramFromGWSParseStartToFirstContentfulPaint, 1);

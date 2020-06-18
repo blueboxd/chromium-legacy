@@ -668,11 +668,10 @@ bool CanvasRenderingContext2D::CanCreateCanvas2dResourceProvider() const {
   return canvas()->GetOrCreateCanvas2DLayerBridge();
 }
 
-scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage(
-    RasterModeHint hint) {
+scoped_refptr<StaticBitmapImage> blink::CanvasRenderingContext2D::GetImage() {
   if (!IsPaintable())
     return nullptr;
-  return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot(hint);
+  return canvas()->GetCanvas2DLayerBridge()->NewImageSnapshot();
 }
 
 ImageData* CanvasRenderingContext2D::getImageData(

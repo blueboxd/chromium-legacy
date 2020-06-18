@@ -563,7 +563,6 @@ KURL HTMLVideoElement::PosterImageURL() const {
 
 scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    RasterModeHint,
     const FloatSize&) {
   if (!HasAvailableVideoFrame()) {
     *status = kInvalidSourceImageStatus;
@@ -572,8 +571,6 @@ scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
 
   IntSize intrinsic_size(videoWidth(), videoHeight());
   // TODO(fserb): this should not be default software.
-  // FIXME: Not sure if we should we be doing anything with the RasterModeHint
-  // argument here? Currently we use unacceleration mode.
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateBitmapProvider(
           intrinsic_size, kLow_SkFilterQuality, CanvasColorParams());

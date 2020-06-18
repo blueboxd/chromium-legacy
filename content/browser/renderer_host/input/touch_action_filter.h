@@ -91,7 +91,6 @@ class CONTENT_EXPORT TouchActionFilter {
                                cc::TouchAction touch_action);
   FilterGestureEventResult FilterScrollEventAndResetState();
   FilterGestureEventResult FilterPinchEventAndResetState();
-  void ReportTouchAction();
   void ResetTouchAction();
   void SetTouchAction(cc::TouchAction touch_action);
 

@@ -6,6 +6,7 @@
 #define CHROME_UPDATER_MAC_SETUP_INFO_PLIST_H_
 
 #include <memory>
+#include <string>
 
 #import "base/mac/scoped_cftyperef.h"
 #import "base/mac/scoped_nsobject.h"

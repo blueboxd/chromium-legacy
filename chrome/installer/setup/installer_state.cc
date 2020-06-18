@@ -10,6 +10,7 @@
 
 #include "base/command_line.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/win/registry.h"
 #include "build/branding_buildflags.h"
 #include "chrome/install_static/install_util.h"

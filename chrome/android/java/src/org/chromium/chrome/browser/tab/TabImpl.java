@@ -96,6 +96,12 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     /** The view provided by {@link TabViewManager} to be shown on top of Content view. */
     private View mCustomView;
 
+    /**
+     * The {@link TabViewManager} associated with this Tab that is responsible for managing custom
+     * views.
+     */
+    private TabViewManagerImpl mTabViewManager;
+
     /** A list of Tab observers.  These are used to broadcast Tab events to listeners. */
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
 
@@ -265,6 +271,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 updateInteractableState();
             }
         };
+        mTabViewManager = new TabViewManagerImpl(this);
     }
 
     @Override
@@ -348,6 +355,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     }
 
     @Override
+    public TabViewManager getTabViewManager() {
+        return mTabViewManager;
+    }
+
+    @Override
     @CalledByNative
     public int getId() {
         return mId;
@@ -402,6 +414,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     @CalledByNative
     public boolean isNativePage() {
         return mNativePage != null;
+    }
+
+    @Override
+    public boolean isShowingCustomView() {
+        return mCustomView != null;
     }
 
     @Override
@@ -685,6 +702,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         mObservers.clear();
 
         mUserDataHost.destroy();
+        mTabViewManager.destroy();
         hideNativePage(false, null);
         destroyWebContents(true);
 
@@ -781,7 +799,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
         WebContentsAccessibility wcax = getWebContentsAccessibility(getWebContents());
         if (wcax != null) {
-            boolean isWebContentObscured = isObscured || mCustomView != null;
+            boolean isWebContentObscured = isObscured || isShowingCustomView();
             wcax.setObscuredByAnotherView(isWebContentObscured);
         }
     }

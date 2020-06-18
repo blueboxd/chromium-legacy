@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/renderer_id.h"
@@ -114,6 +115,9 @@ struct FormData {
   std::vector<FieldRendererId> username_predictions;
   // True if this is a Gaia form which should be skipped on saving.
   bool is_gaia_with_skip_save_password_form = false;
+#if defined(OS_IOS)
+  std::string frame_id;
+#endif
 };
 
 // For testing.

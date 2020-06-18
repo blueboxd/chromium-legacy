@@ -1995,4 +1995,65 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
                                1);
 }
 
+class TranslateManagerWithMainFrameLanguageDetectionBrowserTest
+    : public TranslateManagerBrowserTest {
+ protected:
+  TranslateManagerWithMainFrameLanguageDetectionBrowserTest() {
+    // Enable sub frame translation but with sub frame language
+    // detection turned off.
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        translate::kTranslateSubFrames,
+        {std::make_pair("detect_language_in_sub_frames", "false")});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      TranslateManagerWithMainFrameLanguageDetectionBrowserTest);
+};
+
+// Test that iframes can be translated.
+IN_PROC_BROWSER_TEST_F(
+    TranslateManagerWithMainFrameLanguageDetectionBrowserTest,
+    TranslateIframe) {
+  base::HistogramTester histograms;
+  SetTranslateScript(kTestValidScript);
+
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+
+  // Open a new tab with a page in French.
+  AddTabAtIndex(
+      0, GURL(embedded_test_server()->GetURL("/translate/fr_iframe_test.html")),
+      ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
+  chrome_translate_client = GetChromeTranslateClient();
+  if (chrome_translate_client->GetLanguageState().original_language().empty())
+    WaitUntilLanguageDetermined();
+
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      chrome_translate_client->GetLanguageState().original_language(), "en",
+      true);
+
+  WaitUntilPageTranslated();
+
+  EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
+
+  // 3 frames are translated.
+  histograms.ExpectBucketCount("Translate.TranslateFrameCount", 3, 1);
+  histograms.ExpectBucketCount("Translate.TranslateSubframe.SuccessPercentage",
+                               100, 1);
+  histograms.ExpectTotalCount("Translate.TranslateSubframe.ErrorType", 0);
+  histograms.ExpectTotalCount("Translate.LanguageDetection.ContentLength", 1);
+  // But only the 54 characters of main frame are used for language detection.
+  histograms.ExpectBucketCount("Translate.LanguageDetection.ContentLength", 54,
+                               1);
+}
+
 }  // namespace translate

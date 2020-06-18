@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+
 /**
  * @fileoverview Fake implementation of chrome.bluetoothPrivate for testing.
  */
@@ -12,7 +14,7 @@ cr.define('settings', function() {
    * @constructor
    * @implements {BluetoothPrivate}
    */
-  function FakeBluetoothPrivate(bluetoothApi) {
+  /* #export */ function FakeBluetoothPrivate(bluetoothApi) {
     /** @private {!Bluetooth} */ this.bluetoothApi_ = bluetoothApi;
 
     /** @type {!Set<string>} */ this.connectedDevices_ = new Set();
@@ -106,5 +108,6 @@ cr.define('settings', function() {
     onDeviceAddressChanged: new FakeChromeEvent(),
   };
 
+  // #cr_define_end
   return {FakeBluetoothPrivate: FakeBluetoothPrivate};
 });

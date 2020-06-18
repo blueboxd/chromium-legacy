@@ -147,9 +147,10 @@ class SAChildNode {
    * Returns whether this node is still both valid and visible onscreen (e.g.
    *    not hidden, not offscreen, not invisible)
    * @return {boolean}
-   * @abstract
    */
-  isValidAndVisible() {}
+  isValidAndVisible() {
+    return !!this.location;
+  }
 
   /**
    * Called when this node becomes the primary highlighted node.

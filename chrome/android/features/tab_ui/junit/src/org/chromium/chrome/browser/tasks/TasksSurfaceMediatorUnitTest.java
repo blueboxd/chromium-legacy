@@ -21,6 +21,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_SURFACE_BODY_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
@@ -99,6 +100,7 @@ public class TasksSurfaceMediatorUnitTest {
                         mVoiceSearchButtonClickListenerCaptor.capture());
         verify(mPropertyModel).set(eq(IS_FAKE_SEARCH_BOX_VISIBLE), eq(true));
         verify(mPropertyModel).set(eq(IS_VOICE_RECOGNITION_BUTTON_VISIBLE), eq(false));
+        verify(mPropertyModel).set(eq(IS_SURFACE_BODY_VISIBLE), eq(true));
         verify(mPropertyModel)
                 .set(eq(INCOGNITO_COOKIE_CONTROLS_MANAGER), mCookieControlsManagerCaptor.capture());
         verify(mPropertyModel)

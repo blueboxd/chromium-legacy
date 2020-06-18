@@ -5,6 +5,7 @@
 #ifndef DEVICE_VR_OPENXR_OPENXR_UTIL_H_
 #define DEVICE_VR_OPENXR_OPENXR_UTIL_H_
 
+#include "base/logging.h"
 #include "third_party/openxr/src/include/openxr/openxr.h"
 
 namespace device {

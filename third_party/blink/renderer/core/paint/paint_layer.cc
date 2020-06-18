@@ -3398,20 +3398,22 @@ void PaintLayer::SetSelfNeedsRepaint() {
 }
 
 void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {
-  // Need to access compositingState(). We've ensured correct flag setting when
-  // compositingState() changes.
-  DisableCompositingQueryAsserts disabler;
 
   PaintLayer* layer = this;
   while (true) {
-    if (layer->GetCompositingState() == kPaintsIntoOwnBacking)
-      return;
-    if (CompositedLayerMapping* grouped_mapping = layer->GroupedMapping()) {
-      // TODO(wkorman): As we clean up the CompositedLayerMapping needsRepaint
-      // logic to delegate to scrollbars, we may be able to remove the line
-      // below as well.
-      grouped_mapping->OwningLayer().SetNeedsRepaint();
-      return;
+    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      // Need to access compositingState(). We've ensured correct flag setting
+      // when compositingState() changes.
+      DisableCompositingQueryAsserts disabler;
+      if (layer->GetCompositingState() == kPaintsIntoOwnBacking)
+        return;
+      if (CompositedLayerMapping* grouped_mapping = layer->GroupedMapping()) {
+        // TODO(wkorman): As we clean up the CompositedLayerMapping needsRepaint
+        // logic to delegate to scrollbars, we may be able to remove the line
+        // below as well.
+        grouped_mapping->OwningLayer().SetNeedsRepaint();
+        return;
+      }
     }
 
     // For a non-self-painting layer having self-painting descendant, the
@@ -3504,7 +3506,9 @@ void PaintLayer::DirtyStackingContextZOrderLists() {
 }
 
 DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
-    : disabler_(&g_compositing_query_mode, kCompositingQueriesAreAllowed) {}
+    : disabler_(&g_compositing_query_mode, kCompositingQueriesAreAllowed) {
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+}
 
 }  // namespace blink
 

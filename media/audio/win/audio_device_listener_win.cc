@@ -19,7 +19,7 @@ using base::win::ScopedCoMem;
 namespace media {
 
 static std::string FlowToString(EDataFlow flow) {
-  return flow == eRender ? "eRender" : "eConsole";
+  return flow == eRender ? "eRender" : "eCapture";
 }
 
 static std::string RoleToString(ERole role) {
@@ -134,8 +134,10 @@ HRESULT AudioDeviceListenerWin::OnDefaultDeviceChanged(
   // it provides a substantially faster resumption of playback.
   bool did_run_listener_cb = false;
   const base::TimeTicks now = tick_clock_->NowTicks();
-  if (flow == eRender && now - last_device_change_time_ > kDeviceChangeLimit) {
+  if (flow == eRender && (now - last_device_change_time_ > kDeviceChangeLimit ||
+                          new_device_id.compare(last_device_id_) != 0)) {
     last_device_change_time_ = now;
+    last_device_id_ = new_device_id;
     listener_cb_.Run();
     did_run_listener_cb = true;
   }

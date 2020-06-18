@@ -365,10 +365,13 @@ void AMPPageLoadMetricsObserver::MaybeRecordAmpDocumentMetrics() {
     uint64_t largest_content_paint_size;
     page_load_metrics::ContentfulPaintTimingInfo::LargestContentType
         largest_content_type;
+    const page_load_metrics::mojom::PaintTimingPtr& paint_timing =
+        subframe_info.timing->paint_timing;
     if (page_load_metrics::LargestContentfulPaintHandler::
             AssignTimeAndSizeForLargestContentfulPaint(
-                subframe_info.timing->paint_timing, &largest_content_paint_time,
-                &largest_content_paint_size, &largest_content_type)) {
+                *paint_timing->largest_contentful_paint,
+                &largest_content_paint_time, &largest_content_paint_size,
+                &largest_content_type)) {
       builder.SetSubFrame_PaintTiming_NavigationToLargestContentfulPaint(
           largest_content_paint_time.value().InMilliseconds());
 

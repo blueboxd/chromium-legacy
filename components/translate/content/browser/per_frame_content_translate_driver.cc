@@ -25,6 +25,7 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_metrics.h"
+#include "components/translate/core/common/translate_util.h"
 #include "components/translate/core/language_detection/language_detection_util.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_context.h"
@@ -301,11 +302,20 @@ void PerFrameContentTranslateDriver::DOMContentLoaded(
   // Main frame loaded, set new sequence number.
   page_seq_no_ = IncrementSeqNo(page_seq_no_);
   translate_manager()->set_current_seq_no(page_seq_no_);
+
+  // Start language detection now if not waiting for sub frames
+  // to load to use for detection.
+  if (!translate::IsSubFrameLanguageDetectionEnabled() &&
+      translate::IsTranslatableURL(web_contents()->GetURL())) {
+    StartLanguageDetection();
+  }
 }
 
 void PerFrameContentTranslateDriver::DocumentOnLoadCompletedInMainFrame() {
-  if (translate::IsTranslatableURL(web_contents()->GetURL()))
+  if (translate::IsSubFrameLanguageDetectionEnabled() &&
+      translate::IsTranslatableURL(web_contents()->GetURL())) {
     StartLanguageDetection();
+  }
 }
 
 void PerFrameContentTranslateDriver::StartLanguageDetection() {

@@ -36,7 +36,8 @@ class DeviceManagementService;
 
 namespace safe_browsing {
 class BinaryUploadService;
-class DlpDeepScanningVerdict;
+enum class DeepScanAccessPoint;
+struct ContentAnalysisScanResult;
 }
 
 #if defined(OS_CHROMEOS)
@@ -70,13 +71,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyClickedThrough[];
   static const char kKeyTriggeredRuleId[];
   static const char kKeyTriggeredRuleName[];
-  static const char kKeyTriggeredRuleResourceName[];
-  static const char kKeyTriggeredRuleSeverity[];
   static const char kKeyTriggeredRuleAction[];
-  static const char kKeyMatchedDetectors[];
-  static const char kKeyMatchedDetectorId[];
-  static const char kKeyMatchedDetectorName[];
-  static const char kKeyMatchedDetectorType[];
   static const char kKeyTriggeredRuleInfo[];
   static const char kKeyThreatType[];
   static const char kKeyContentType[];
@@ -91,7 +86,8 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyUnscannedFileEvent[];
   static const char kKeyUnscannedReason[];
 
-  // String constants for the "trigger" event field.
+  // String constants for the "trigger" event field.  This corresponds to
+  // an enterprise connector.
   static const char kTriggerFileDownload[];
   static const char kTriggerFileUpload[];
   static const char kTriggerWebContentUpload[];
@@ -126,33 +122,26 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                                        const std::string& reason,
                                        int net_error_code);
 
-  // Notifies listeners that deep scanning detected a dangerous download.
-  void OnDangerousDeepScanningResult(const GURL& url,
-                                     const std::string& file_name,
-                                     const std::string& download_digest_sha256,
-                                     const std::string& threat_type,
-                                     const std::string& mime_type,
-                                     const std::string& trigger,
-                                     const int64_t content_size);
-
-  // Notifies listeners that scanning for sensitive data detected a violation.
-  void OnSensitiveDataEvent(
-      const safe_browsing::DlpDeepScanningVerdict& verdict,
+  // Notifies listeners that the analysis connector detected a violation.
+  void OnAnalysisConnectorResult(
       const GURL& url,
       const std::string& file_name,
       const std::string& download_digest_sha256,
       const std::string& mime_type,
       const std::string& trigger,
+      safe_browsing::DeepScanAccessPoint access_point,
+      const safe_browsing::ContentAnalysisScanResult& result,
       const int64_t content_size);
 
-  // Notifies listeners that scanning for sensitive data detected a violation.
-  void OnSensitiveDataWarningBypassed(
-      const safe_browsing::DlpDeepScanningVerdict& verdict,
+  // Notifies listeners that an analysis connector violation was bypassed.
+  void OnAnalysisConnectorWarningBypassed(
       const GURL& url,
       const std::string& file_name,
       const std::string& download_digest_sha256,
       const std::string& mime_type,
       const std::string& trigger,
+      safe_browsing::DeepScanAccessPoint access_point,
+      const safe_browsing::ContentAnalysisScanResult& result,
       const int64_t content_size);
 
   // Notifies listeners that deep scanning failed, for the given |reason|.
@@ -161,6 +150,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                             const std::string& download_digest_sha256,
                             const std::string& mime_type,
                             const std::string& trigger,
+                            safe_browsing::DeepScanAccessPoint access_point,
                             const std::string& reason,
                             const int64_t content_size);
 
@@ -256,6 +246,25 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // Returns the Gaia email address of the account signed in to the profile or
   // an empty string if the profile is not signed in.
   std::string GetProfileUserName() const;
+
+  // Notifies listeners that deep scanning detected a dangerous download.
+  void OnDangerousDeepScanningResult(const GURL& url,
+                                     const std::string& file_name,
+                                     const std::string& download_digest_sha256,
+                                     const std::string& threat_type,
+                                     const std::string& mime_type,
+                                     const std::string& trigger,
+                                     const int64_t content_size);
+
+  // Notifies listeners that the analysis connector detected a violation.
+  void OnSensitiveDataEvent(
+      const GURL& url,
+      const std::string& file_name,
+      const std::string& download_digest_sha256,
+      const std::string& mime_type,
+      const std::string& trigger,
+      const safe_browsing::ContentAnalysisScanResult& result,
+      const int64_t content_size);
 
   content::BrowserContext* context_;
   signin::IdentityManager* identity_manager_ = nullptr;

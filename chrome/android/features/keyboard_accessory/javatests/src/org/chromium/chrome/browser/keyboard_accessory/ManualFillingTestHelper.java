@@ -108,6 +108,12 @@ public class ManualFillingTestHelper {
         ChromeWindow.setKeyboardVisibilityDelegateFactory(keyboardDelegate);
         mActivityTestRule.startMainActivityWithURL(mEmbeddedTestServer.getURL(url));
         setRtlForTesting(isRtl);
+        updateWebContentsDependentState();
+        cacheCredentials(new String[0], new String[0], false); // This caches the empty state.
+        if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
+    }
+
+    public void updateWebContentsDependentState() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ChromeActivity activity = mActivityTestRule.getActivity();
             mWebContentsRef.set(activity.getActivityTab().getWebContents());
@@ -123,8 +129,6 @@ public class ManualFillingTestHelper {
             getManualFillingCoordinator().registerSheetDataProvider(
                     AccessoryTabType.PASSWORDS, mSheetSuggestionsProvider);
         });
-        if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
-        cacheCredentials(new String[0], new String[0], false); // This caches the empty state.
     }
 
     public void clear() {

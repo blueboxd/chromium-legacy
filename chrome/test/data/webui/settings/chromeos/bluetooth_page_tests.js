@@ -2,6 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// #import {FakeBluetooth} from './fake_bluetooth.m.js'
+// #import {FakeBluetoothPrivate} from './fake_bluetooth_private.m.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+// #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+// #import {flush} from'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {bluetoothApis} from 'chrome://os-settings/chromeos/os_settings.js';
+
 function getFakePrefs() {
   return {
     ash: {
@@ -204,7 +214,6 @@ suite('Bluetooth', function() {
       div.click();
 
       await flushAsync();
-
       subpage = bluetoothPage.$$('settings-bluetooth-subpage');
       subpage.listUpdateFrequencyMs = 0;
       assertTrue(!!subpage);

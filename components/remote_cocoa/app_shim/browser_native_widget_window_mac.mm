@@ -65,6 +65,21 @@
 
 @implementation BrowserNativeWidgetWindow
 
+// Prevent detached tabs from glitching when the window is partially offscreen.
+// See https://crbug.com/1095717 for details.
+- (NSRect)constrainFrameRect:(NSRect)rect toScreen:(NSScreen*)screen {
+  NSRect screenFrame = [screen frame];
+  // Adjust if either the entire frame is offscreen, or the toolbar is
+  // cut off at the top.
+  if (NSMaxY(rect) < NSMinY(screenFrame) ||  // Below the screen.
+      NSMaxX(rect) < NSMinX(screenFrame) ||  // To the left of the screen.
+      NSMinX(rect) > NSMaxX(screenFrame) ||  // To the right of the screen.
+      NSMaxY(rect) > NSMaxY(screenFrame)) {  // Top edge above the screen.
+    return [super constrainFrameRect:rect toScreen:screen];
+  }
+  return rect;
+}
+
 // NSWindow (PrivateAPI) overrides.
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle {

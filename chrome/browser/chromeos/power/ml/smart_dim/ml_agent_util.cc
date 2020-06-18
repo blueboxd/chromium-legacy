@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/power/ml/smart_dim/ml_agent_util.h"
 
+#include "base/logging.h"
 #include "base/optional.h"
 
 namespace chromeos {

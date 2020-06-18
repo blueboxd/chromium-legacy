@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "cc/layers/effect_tree_layer_list_iterator.h"
+#include "cc/test/cc_test_suite.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/layer_tree_test.h"
@@ -309,13 +310,19 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
             base::BindOnce(
                 &LayerTreeHostCopyRequestTestLayerDestroyed::CopyOutputCallback,
                 base::Unretained(this))));
+        // We expect that the RequestCopyOfOutput won't yet return results until
+        // the main is destroyed. So we RunUntilIdle to ensure no PostTask is
+        // currently queued to return the result.
+        CCTestSuite::RunUntilIdle();
         EXPECT_EQ(0, callback_count_);
 
         // Destroy the main thread layer right away.
         main_destroyed_->RemoveFromParent();
         main_destroyed_.reset();
 
-        // Should callback with a NULL bitmap.
+        // Should callback with a NULL bitmap, result will be in a PostTask so
+        // RunUntilIdle().
+        CCTestSuite::RunUntilIdle();
         EXPECT_EQ(1, callback_count_);
 
         // Prevent drawing so we can't make a copy of the impl_destroyed layer.
@@ -350,7 +357,6 @@ class LayerTreeHostCopyRequestTestLayerDestroyed
   }
 
   void CopyOutputCallback(std::unique_ptr<viz::CopyOutputResult> result) {
-    EXPECT_TRUE(layer_tree_host()->GetTaskRunnerProvider()->IsMainThread());
     EXPECT_TRUE(result->IsEmpty());
     ++callback_count_;
   }

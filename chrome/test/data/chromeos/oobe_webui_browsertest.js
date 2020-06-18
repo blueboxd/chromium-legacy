@@ -4,8 +4,7 @@
 
 GEN('#include "chrome/browser/ui/browser.h"');
 GEN('#include "chrome/browser/ui/browser_commands.h"');
-GEN('#include "chrome/browser/ui/exclusive_access/' +
-    'fullscreen_controller_test.h"');
+GEN('#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 /**

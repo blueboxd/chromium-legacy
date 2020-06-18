@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/win/registry.h"

@@ -159,6 +159,16 @@ InteractiveDetector::GetFirstInputProcessingTime() const {
   return page_event_times_.first_input_processing_time;
 }
 
+base::Optional<base::TimeTicks> InteractiveDetector::GetFirstScrollTimestamp()
+    const {
+  return page_event_times_.first_scroll_timestamp;
+}
+
+base::Optional<base::TimeDelta> InteractiveDetector::GetFirstScrollDelay()
+    const {
+  return page_event_times_.frist_scroll_delay;
+}
+
 bool InteractiveDetector::PageWasBackgroundedSinceEvent(
     base::TimeTicks event_time) {
   DCHECK(GetSupplementable());
@@ -654,6 +664,18 @@ void InteractiveDetector::RecordInputEventTimingUKM(
 
   if (!page_event_times_.first_input_processing_time) {
     page_event_times_.first_input_processing_time = processing_time;
+    if (GetSupplementable()->Loader()) {
+      GetSupplementable()->Loader()->DidChangePerformanceTiming();
+    }
+  }
+}
+
+void InteractiveDetector::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay,
+    base::TimeTicks first_scroll_timestamp) {
+  if (!page_event_times_.frist_scroll_delay.has_value()) {
+    page_event_times_.frist_scroll_delay = first_scroll_delay;
+    page_event_times_.first_scroll_timestamp = first_scroll_timestamp;
     if (GetSupplementable()->Loader()) {
       GetSupplementable()->Loader()->DidChangePerformanceTiming();
     }

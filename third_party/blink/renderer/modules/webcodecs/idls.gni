@@ -23,9 +23,9 @@ modules_dictionary_idl_files = [
   "image_decoder_init.idl",
   "image_frame.idl",
   "video_decoder_init.idl",
+  "video_encoder_config.idl",
   "video_encoder_init.idl",
   "video_encoder_encode_options.idl",
-  "video_encoder_tune_options.idl",
   "video_frame_init.idl",
   "video_track_writer_parameters.idl",
 ]

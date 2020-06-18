@@ -731,9 +731,6 @@ extern const char kLoadMediaRouterComponentExtensionDescription[];
 extern const char kLogJsConsoleMessagesName[];
 extern const char kLogJsConsoleMessagesDescription[];
 
-extern const char kLookalikeUrlNavigationSuggestionsName[];
-extern const char kLookalikeUrlNavigationSuggestionsDescription[];
-
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
 extern const char kMarkHttpAsDangerous[];
@@ -1047,6 +1044,9 @@ extern const char kDelayAsyncScriptExecutionDescription[];
 
 extern const char kPrefetchPrivacyChangesName[];
 extern const char kPrefetchPrivacyChangesDescription[];
+
+extern const char kIntensiveWakeUpThrottlingName[];
+extern const char kIntensiveWakeUpThrottlingDescription[];
 
 extern const char kPrinterStatusName[];
 extern const char kPrinterStatusDescription[];

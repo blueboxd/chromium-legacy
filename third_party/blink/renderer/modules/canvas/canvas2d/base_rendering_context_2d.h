@@ -352,7 +352,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     NOTREACHED();
     return false;
   }
-  virtual scoped_refptr<StaticBitmapImage> GetImage(RasterModeHint) {
+  virtual scoped_refptr<StaticBitmapImage> GetImage() {
     NOTREACHED();
     return nullptr;
   }

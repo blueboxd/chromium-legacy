@@ -178,8 +178,11 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
     return;
   }
 
-  base::UmaHistogramTimes("SafeBrowsingBinaryUploadRequest.TimeToGetToken",
-                          base::TimeTicks::Now() - start_times_[request]);
+  base::UmaHistogramCustomTimes(
+      "SafeBrowsingBinaryUploadRequest.TimeToGetFCMToken",
+      base::TimeTicks::Now() - start_times_[request],
+      base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromMinutes(6),
+      50);
 
   request->set_fcm_token(instance_id);
   request->GetRequestData(base::BindOnce(&BinaryUploadService::OnGetRequestData,

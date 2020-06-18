@@ -6091,6 +6091,9 @@ the Bookmarks menu.">
 
       <if expr="enable_extensions">
         <!-- Feedback Dialog -->
+        <message name="IDS_FEEDBACK_REPORT_APP_TITLE" desc="The title of the feedback app as shown in the app switcher and system tray">
+          Feedback
+        </message>
         <if expr="use_titlecase">
           <message name="IDS_FEEDBACK_REPORT_PAGE_TITLE" desc="Label showing the title of the page that will be reported">
             Send Feedback to Google

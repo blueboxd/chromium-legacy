@@ -32,7 +32,6 @@ class FocusSearch;
 
 namespace ash {
 class PresentationTimeRecorder;
-class ScrollableShelfAnimationMetricsReporter;
 
 class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
@@ -571,10 +570,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Indicates whether the layer clip should be applied to
   // |shelf_container_view_| in non-overflow mode.
   bool layer_clip_in_non_overflow_ = false;
-
-  // Metric reporter for scrolling animations.
-  const std::unique_ptr<ScrollableShelfAnimationMetricsReporter>
-      animation_metrics_reporter_;
 
   // Records the presentation time for the scrollable shelf dragging.
   std::unique_ptr<PresentationTimeRecorder> presentation_time_recorder_;

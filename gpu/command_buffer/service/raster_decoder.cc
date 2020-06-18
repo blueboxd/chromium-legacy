@@ -2040,17 +2040,14 @@ void RasterDecoderImpl::DoCopySubTextureINTERNALGL(
     if (gles2::GLStreamTextureImage* image =
             source_texture->GetLevelStreamTextureImage(GL_TEXTURE_EXTERNAL_OES,
                                                        source_level)) {
-      GLfloat transform_matrix[16];
-      image->GetTextureMatrix(transform_matrix);
-
-      copy_texture_chromium_->DoCopySubTextureWithTransform(
+      copy_texture_chromium_->DoCopySubTexture(
           this, source_target, source_texture->service_id(), source_level,
           source_internal_format, dest_target, dest_texture->service_id(),
           dest_level, dest_internal_format, xoffset, yoffset, x, y, width,
           height, dest_size.width(), dest_size.height(), source_size.width(),
           source_size.height(), unpack_flip_y, unpack_premultiply_alpha,
-          false /* unpack_unmultiply_alpha */, false /* dither */,
-          transform_matrix, copy_tex_image_blit_.get());
+          /*unpack_unmultiply_alpha=*/false, /*dither=*/false,
+          gles2::CopyTextureMethod::DIRECT_DRAW, copy_tex_image_blit_.get());
       dest_texture->SetLevelClearedRect(dest_target, dest_level,
                                         new_cleared_rect);
       return;

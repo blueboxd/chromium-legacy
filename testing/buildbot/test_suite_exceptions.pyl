@@ -990,6 +990,11 @@
   },
   'context_lost_passthrough_tests': {
     'modifications': {
+      'Mac FYI GPU ASAN Release': {
+        'args': [
+          '--is-asan',
+        ]
+      },
       'Win10 x64 Debug (NVIDIA)': {
         'args': [
           # TODO(https://crbug.com/1007013): Remove this flag when it's no
@@ -1083,6 +1088,63 @@
       'Linux ASan LSan Tests (1)',  # https://crbug.com/831667
       'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/831667
     ],
+  },
+  'gl_tests_passthrough': {
+    'remove_from': [
+      'CFI Linux ToT',
+      # Can't run on MSAN because gl_tests uses the hardware driver,
+      # which isn't instrumented.
+      'Linux MSan Tests',
+    ],
+    'modifications': {
+      # TODO(kbr): figure out a better way to specify blocks of
+      # arguments like this for tests on multiple machines.
+      'Linux ASan LSan Tests (1)': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu.template',
+            },
+          ],
+        },
+      },
+      'Linux CFI': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu.template',
+            },
+          ],
+        },
+      },
+      'Linux TSan Tests': {
+        'args': [
+          '--use-gpu-in-tests',
+          '--no-xvfb',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'gpu': '10de:1cb3',
+              'os': 'Ubuntu',
+              'pool': 'chromium.tests.gpu.template',
+            },
+          ],
+        },
+      },
+    },
   },
   'gl_tests_validating': {
     'remove_from': [
@@ -1347,6 +1409,11 @@
         },
       },
       'Linux V8 FYI Release - pointer compression (NVIDIA)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
+      'Mac V8 FYI Release (Intel)': {
         'args': {
           '--git-revision': '${got_cr_revision}',
         },
@@ -1988,6 +2055,11 @@
           '--git-revision': '${got_cr_revision}',
         },
       },
+      'Mac V8 FYI Release (Intel)': {
+        'args': {
+          '--git-revision': '${got_cr_revision}',
+        },
+      },
       'Win V8 FYI Release (NVIDIA)': {
         'args': {
           '--git-revision': '${got_cr_revision}',
@@ -2094,6 +2166,11 @@
     },
     'remove_from': [
       'android-asan',  # https://crbug.com/962650
+    ],
+  },
+  'screenshot_sync_tests': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1058255
     ],
   },
   'services_unittests': {
@@ -2299,6 +2376,11 @@
     'remove_from': [
       # crbug.com/1080749
       'Optional Linux Release (NVIDIA)',
+    ],
+  },
+  'trace_test': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1058255
     ],
   },
   'unit_tests': {

@@ -26,9 +26,6 @@ class AppBlockDialogView : public AppDialogView {
   ~AppBlockDialogView() override;
 
   static AppBlockDialogView* GetActiveViewForTesting();
-
-  // AppDialogView:
-  base::string16 GetWindowTitle() const override;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APPS_APP_DIALOG_APP_BLOCK_DIALOG_VIEW_H_

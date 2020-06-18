@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
       // The hash should not be included for string requests.
       /*sha*/ "",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      /*dlp_verdict*/ response.dlp_scan_verdict(),
+      /*dlp_verdict*/ SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
       /*mimetype*/ TextMimeTypes(),
       /*size*/ 20);
 
@@ -822,7 +822,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
       /*threat_type*/ "DANGEROUS",
       /*trigger*/
       extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      /*dlp_verdict*/ response.dlp_scan_verdict(),
+      /*dlp_verdict*/ SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
       /*mimetypes*/ DocMimeTypes(),
       /*size*/ std::string("foo content").size());
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
@@ -85,21 +86,19 @@ void ReportDangerousDownloadWarningBypassed(
   }
 }
 
-void ReportSensitiveDataWarningBypassed(download::DownloadItem* download) {
+void ReportAnalysisConnectorWarningBypassed(download::DownloadItem* download) {
   content::BrowserContext* browser_context =
       content::DownloadItemUtils::GetBrowserContext(download);
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile) {
     std::string raw_digest_sha256 = download->GetHash();
-    // TODO(crbug/1069109): Use actual DlpDeepScanningVerdict that triggered the
-    // original warning here.
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile)
-        ->OnSensitiveDataWarningBypassed(
-            DlpDeepScanningVerdict(), download->GetURL(),
-            download->GetTargetFilePath().AsUTF8Unsafe(),
+        ->OnAnalysisConnectorWarningBypassed(
+            download->GetURL(), download->GetTargetFilePath().AsUTF8Unsafe(),
             base::HexEncode(raw_digest_sha256.data(), raw_digest_sha256.size()),
             download->GetMimeType(),
             extensions::SafeBrowsingPrivateEventRouter::kTriggerFileDownload,
+            DeepScanAccessPoint::DOWNLOAD, ContentAnalysisScanResult(),
             download->GetTotalBytes());
   }
 }
@@ -167,7 +166,7 @@ void DownloadReporter::OnDownloadUpdated(download::DownloadItem* download) {
   if (old_danger_type ==
           download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING &&
       current_danger_type == download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED) {
-    ReportSensitiveDataWarningBypassed(download);
+    ReportAnalysisConnectorWarningBypassed(download);
   }
 
   danger_types_[download] = current_danger_type;

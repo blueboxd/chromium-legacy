@@ -25,14 +25,6 @@ class AppPauseDialogView : public AppDialogView {
   ~AppPauseDialogView() override;
 
   static AppPauseDialogView* GetActiveViewForTesting();
-
-  // views::BubbleDialogDelegateView:
-  bool Accept() override;
-  base::string16 GetWindowTitle() const override;
-
- private:
-  // Callback when the dialog closes after the user has clicked the OK.
-  apps::AppServiceProxy::OnPauseDialogClosedCallback closed_callback_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_APPS_APP_DIALOG_APP_PAUSE_DIALOG_VIEW_H_

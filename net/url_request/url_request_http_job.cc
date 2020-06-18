@@ -160,6 +160,58 @@ void RecordCTHistograms(const net::SSLInfo& ssl_info) {
   }
 }
 
+template <typename CookieWithMetadata>
+bool ShouldMarkSameSiteCompatPairs(
+    const std::vector<CookieWithMetadata>& cookie_list,
+    const net::CookieOptions& options) {
+  // If the context is same-site then there cannot be any SameSite-by-default
+  // warnings, so the compat pair warning is irrelevant.
+  if (options.same_site_cookie_context().GetContextForCookieInclusion() >
+      net::CookieOptions::SameSiteCookieContext::ContextType::
+          SAME_SITE_LAX_METHOD_UNSAFE) {
+    return false;
+  }
+  return cookie_list.size() >= 2;
+}
+
+void MarkSameSiteCompatPairs(
+    std::vector<net::CookieWithAccessResult>& cookie_list,
+    const net::CookieOptions& options) {
+  for (size_t i = 0; i < cookie_list.size() - 1; ++i) {
+    const net::CanonicalCookie& c1 = cookie_list[i].cookie;
+    for (size_t j = i + 1; j < cookie_list.size(); ++j) {
+      const net::CanonicalCookie& c2 = cookie_list[j].cookie;
+      if (net::cookie_util::IsSameSiteCompatPair(c1, c2, options)) {
+        cookie_list[i].access_result.status.AddWarningReason(
+            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
+        cookie_list[j].access_result.status.AddWarningReason(
+            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
+      }
+    }
+  }
+}
+
+void MarkSameSiteCompatPairs(
+    std::vector<net::CookieAndLineWithStatus>& cookie_list,
+    const net::CookieOptions& options) {
+  for (size_t i = 0; i < cookie_list.size() - 1; ++i) {
+    if (!cookie_list[i].cookie.has_value())
+      continue;
+    const net::CanonicalCookie& c1 = cookie_list[i].cookie.value();
+    for (size_t j = i + 1; j < cookie_list.size(); ++j) {
+      if (!cookie_list[j].cookie.has_value())
+        continue;
+      const net::CanonicalCookie& c2 = cookie_list[j].cookie.value();
+      if (net::cookie_util::IsSameSiteCompatPair(c1, c2, options)) {
+        cookie_list[i].status.AddWarningReason(
+            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
+        cookie_list[j].status.AddWarningReason(
+            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
+      }
+    }
+  }
+}
+
 }  // namespace
 
 namespace net {
@@ -637,6 +689,11 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     }
   }
 
+  // Mark the CookieInclusionStatuses of items in |maybe_sent_cookies| if they
+  // are part of a presumed SameSite compatibility pair.
+  if (ShouldMarkSameSiteCompatPairs(maybe_sent_cookies, options))
+    MarkSameSiteCompatPairs(maybe_sent_cookies, options);
+
   request_->set_maybe_sent_cookies(std::move(maybe_sent_cookies));
 
   StartTransaction();
@@ -735,8 +792,14 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   // loop has been exited.
   num_cookie_lines_left_--;
 
-  if (num_cookie_lines_left_ == 0)
+  if (num_cookie_lines_left_ == 0) {
+    // Mark the CookieInclusionStatuses of items in |set_cookie_status_list_| if
+    // they are part of a presumed SameSite compatibility pair.
+    if (ShouldMarkSameSiteCompatPairs(set_cookie_status_list_, options))
+      MarkSameSiteCompatPairs(set_cookie_status_list_, options);
+
     NotifyHeadersComplete();
+  }
 }
 
 void URLRequestHttpJob::OnSetCookieResult(
@@ -762,8 +825,14 @@ void URLRequestHttpJob::OnSetCookieResult(
   // If all the cookie lines have been handled, |set_cookie_status_list_| now
   // reflects the result of all Set-Cookie lines, and the request can be
   // continued.
-  if (num_cookie_lines_left_ == 0)
+  if (num_cookie_lines_left_ == 0) {
+    // Mark the CookieInclusionStatuses of items in |set_cookie_status_list_| if
+    // they are part of a presumed SameSite compatibility pair.
+    if (ShouldMarkSameSiteCompatPairs(set_cookie_status_list_, options))
+      MarkSameSiteCompatPairs(set_cookie_status_list_, options);
+
     NotifyHeadersComplete();
+  }
 }
 
 void URLRequestHttpJob::ProcessStrictTransportSecurityHeader() {

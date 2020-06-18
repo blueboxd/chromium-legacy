@@ -991,10 +991,6 @@ void RasterImplementation::GetQueryObjectui64vEXT(GLuint id,
 void* RasterImplementation::MapRasterCHROMIUM(uint32_t size,
                                               uint32_t* size_allocated) {
   *size_allocated = 0u;
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glMapRasterCHROMIUM", "negative size");
-    return nullptr;
-  }
   if (raster_mapped_buffer_) {
     SetGLError(GL_INVALID_OPERATION, "glMapRasterCHROMIUM", "already mapped");
     return nullptr;
@@ -1010,10 +1006,6 @@ void* RasterImplementation::MapRasterCHROMIUM(uint32_t size,
 }
 
 void* RasterImplementation::MapFontBuffer(uint32_t size) {
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glMapFontBufferCHROMIUM", "negative size");
-    return nullptr;
-  }
   if (font_mapped_buffer_) {
     SetGLError(GL_INVALID_OPERATION, "glMapFontBufferCHROMIUM",
                "already mapped");
@@ -1036,11 +1028,6 @@ void* RasterImplementation::MapFontBuffer(uint32_t size) {
 
 void RasterImplementation::UnmapRasterCHROMIUM(uint32_t raster_written_size,
                                                uint32_t total_written_size) {
-  if (total_written_size < 0) {
-    SetGLError(GL_INVALID_VALUE, "glUnmapRasterCHROMIUM",
-               "negative written_size");
-    return;
-  }
   if (!raster_mapped_buffer_) {
     SetGLError(GL_INVALID_OPERATION, "glUnmapRasterCHROMIUM", "not mapped");
     return;

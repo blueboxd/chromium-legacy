@@ -50,6 +50,7 @@ test("cast_reboot_unittests") {
       ":fuchsia",
       "//chromecast/public",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.feedback",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hardware.power.statecontrol",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
       "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",

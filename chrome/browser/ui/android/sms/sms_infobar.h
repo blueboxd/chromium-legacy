@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 

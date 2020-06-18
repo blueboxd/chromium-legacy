@@ -14,6 +14,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/numerics/math_constants.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"

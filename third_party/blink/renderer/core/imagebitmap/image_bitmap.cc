@@ -683,8 +683,8 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
                          base::Optional<IntRect> crop_rect,
                          const ImageBitmapOptions* options) {
   SourceImageStatus status;
-  scoped_refptr<Image> image_input = canvas->GetSourceImageForCanvas(
-      &status, RasterModeHint::kPreferGPU, FloatSize());
+  scoped_refptr<Image> image_input =
+      canvas->GetSourceImageForCanvas(&status, FloatSize());
   if (status != kNormalSourceImageStatus)
     return;
   DCHECK(IsA<StaticBitmapImage>(image_input.get()));
@@ -710,7 +710,7 @@ ImageBitmap::ImageBitmap(OffscreenCanvas* offscreen_canvas,
                          const ImageBitmapOptions* options) {
   SourceImageStatus status;
   scoped_refptr<Image> raw_input = offscreen_canvas->GetSourceImageForCanvas(
-      &status, RasterModeHint::kPreferCPU, FloatSize(offscreen_canvas->Size()));
+      &status, FloatSize(offscreen_canvas->Size()));
   DCHECK(IsA<StaticBitmapImage>(raw_input.get()));
   scoped_refptr<StaticBitmapImage> input =
       static_cast<StaticBitmapImage*>(raw_input.get());
@@ -1104,7 +1104,6 @@ ScriptPromise ImageBitmap::CreateImageBitmap(ScriptState* script_state,
 
 scoped_refptr<Image> ImageBitmap::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    RasterModeHint,
     const FloatSize&) {
   *status = kNormalSourceImageStatus;
   if (!image_)

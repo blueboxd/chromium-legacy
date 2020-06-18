@@ -36,6 +36,7 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "components/viz/test/test_gles2_interface.h"
+#include "components/viz/test/viz_test_suite.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -102,8 +103,11 @@ class StubDisplayClient : public DisplayClient {
   }
 };
 
-void CopyCallback(bool* called, std::unique_ptr<CopyOutputResult> result) {
+void CopyCallback(bool* called,
+                  base::OnceClosure finished,
+                  std::unique_ptr<CopyOutputResult> result) {
   *called = true;
+  std::move(finished).Run();
 }
 
 gfx::SwapTimings GetTestSwapTimings() {
@@ -219,10 +223,7 @@ class DisplayTest : public testing::Test {
 
   void ResetDamageForTest() { scheduler_->ResetDamageForTest(); }
 
-  void RunAllPendingInMessageLoop() {
-    base::RunLoop run_loop;
-    run_loop.RunUntilIdle();
-  }
+  void RunUntilIdle() { VizTestSuite::RunUntilIdle(); }
 
   void LatencyInfoCapTest(bool over_capacity);
 
@@ -429,10 +430,12 @@ TEST_F(DisplayTest, DisplayDamaged) {
     pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 100, 100);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
+    base::RunLoop copy_run_loop;
     bool copy_called = false;
     pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
         CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-        base::BindOnce(&CopyCallback, &copy_called)));
+        base::BindOnce(&CopyCallback, &copy_called,
+                       copy_run_loop.QuitClosure())));
     pass->id = 1u;
 
     pass_list.push_back(std::move(pass));
@@ -446,6 +449,7 @@ TEST_F(DisplayTest, DisplayDamaged) {
     display_->DrawAndSwap(base::TimeTicks::Now());
     EXPECT_TRUE(scheduler_->swapped());
     EXPECT_EQ(5u, output_surface_->num_sent_frames());
+    copy_run_loop.Run();
     EXPECT_TRUE(copy_called);
   }
 
@@ -3548,7 +3552,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     pass_list.push_back(std::move(pass));
     SubmitCompositorFrame(&pass_list, local_surface_id);
     display_->DrawAndSwap(base::TimeTicks::Now());
-    RunAllPendingInMessageLoop();
+    RunUntilIdle();
   }
 
   {
@@ -3562,7 +3566,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
     display_->DrawAndSwap(base::TimeTicks::Now());
-    RunAllPendingInMessageLoop();
+    RunUntilIdle();
 
     // Both frames with frame-tokens 1 and 2 requested presentation-feedback.
     ASSERT_EQ(2u, sub_support->timing_details().size());
@@ -3580,7 +3584,7 @@ TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
     sub_support->SubmitCompositorFrame(sub_local_surface_id, std::move(frame));
 
     display_->DrawAndSwap(base::TimeTicks::Now());
-    RunAllPendingInMessageLoop();
+    RunUntilIdle();
   }
 }
 
@@ -4505,10 +4509,12 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     std::unique_ptr<RenderPass> pass = RenderPass::Create();
     pass->output_rect = gfx::Rect(0, 0, 99, 99);
     pass->damage_rect = gfx::Rect(10, 10, 0, 0);
+    base::RunLoop copy_run_loop;
     bool copy_called = false;
     pass->copy_requests.push_back(std::make_unique<CopyOutputRequest>(
         CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-        base::BindOnce(&CopyCallback, &copy_called)));
+        base::BindOnce(&CopyCallback, &copy_called,
+                       copy_run_loop.QuitClosure())));
     pass->id = 1u;
 
     RenderPassList pass_list;
@@ -4520,6 +4526,8 @@ TEST_F(DisplayTest, DisplaySizeMismatch) {
     EXPECT_TRUE(scheduler_->damaged());
 
     display_->DrawAndSwap(base::TimeTicks::Now());
+
+    copy_run_loop.Run();
 
     // Expect no swap happen
     EXPECT_EQ(0u, output_surface_->num_sent_frames());

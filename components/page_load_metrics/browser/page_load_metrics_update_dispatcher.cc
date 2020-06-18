@@ -194,6 +194,16 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     return internal::INVALID_NULL_FIRST_INPUT_DELAY;
   }
 
+  if (timing.interactive_timing->first_scroll_delay.has_value() &&
+      !timing.interactive_timing->first_scroll_timestamp.has_value()) {
+    return internal::INVALID_NULL_FIRST_SCROLL_TIMESTAMP;
+  }
+
+  if (!timing.interactive_timing->first_scroll_delay.has_value() &&
+      timing.interactive_timing->first_scroll_timestamp.has_value()) {
+    return internal::INVALID_NULL_FIRST_SCROLL_DELAY;
+  }
+
   if (timing.interactive_timing->longest_input_delay.has_value() &&
       !timing.interactive_timing->longest_input_timestamp.has_value()) {
     return internal::INVALID_NULL_LONGEST_INPUT_TIMESTAMP;
@@ -330,14 +340,10 @@ class PageLoadTimingMerger {
       target_paint_timing->first_meaningful_paint =
           new_paint_timing.first_meaningful_paint;
 
-      target_paint_timing->largest_image_paint =
-          new_paint_timing.largest_image_paint;
-      target_paint_timing->largest_image_paint_size =
-          new_paint_timing.largest_image_paint_size;
-      target_paint_timing->largest_text_paint =
-          new_paint_timing.largest_text_paint;
-      target_paint_timing->largest_text_paint_size =
-          new_paint_timing.largest_text_paint_size;
+      target_paint_timing->largest_contentful_paint =
+          new_paint_timing.largest_contentful_paint->Clone();
+      target_paint_timing->experimental_largest_contentful_paint =
+          new_paint_timing.experimental_largest_contentful_paint.Clone();
       target_paint_timing->first_input_or_scroll_notified_timestamp =
           new_paint_timing.first_input_or_scroll_notified_timestamp;
       target_paint_timing->portal_activated_paint =
@@ -377,6 +383,14 @@ class PageLoadTimingMerger {
         target_interactive_timing->longest_input_timestamp =
             new_longest_input_timestamp;
       }
+    }
+
+    // Update First Scroll Delay.
+    if (MaybeUpdateTimeDelta(&target_interactive_timing->first_scroll_timestamp,
+                             navigation_start_offset,
+                             new_interactive_timing.first_scroll_timestamp)) {
+      target_interactive_timing->first_scroll_delay =
+          new_interactive_timing.first_scroll_delay;
     }
   }
 

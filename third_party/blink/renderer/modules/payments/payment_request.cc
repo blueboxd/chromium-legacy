@@ -270,13 +270,18 @@ void ValidateShippingOptionOrPaymentItem(const T* item,
   }
 }
 
+const WTF::HashSet<String> GetAppStoreBillingMethods() {
+  static const WTF::HashSet<String> app_store_billing_methods = {
+      kGooglePlayBillingMethod};
+  return app_store_billing_methods;
+}
+
 bool RequestingOnlyAppStoreBillingMethods(
     const Vector<payments::mojom::blink::PaymentMethodDataPtr>& method_data) {
   DCHECK(!method_data.IsEmpty());
-  static const WTF::HashSet<String> app_store_billing_methods = {
-      kGooglePlayBillingMethod};
+  const WTF::HashSet<String> billing_methods = GetAppStoreBillingMethods();
   for (const auto& method : method_data) {
-    if (!app_store_billing_methods.Contains(method->supported_method))
+    if (!billing_methods.Contains(method->supported_method))
       return false;
   }
   return true;
@@ -1186,6 +1191,20 @@ PaymentRequest::PaymentRequest(
                                        *GetExecutionContext(), exception_state);
   if (exception_state.HadException())
     return;
+
+  const WTF::HashSet<String> billing_methods = GetAppStoreBillingMethods();
+  for (const PaymentMethodDataPtr& data : validated_method_data) {
+    if (billing_methods.Contains(data->supported_method) &&
+        (options_->requestShipping() || options_->requestPayerName() ||
+         options_->requestPayerEmail() || options_->requestPayerPhone())) {
+      execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::blink::ConsoleMessageSource::kJavaScript,
+          mojom::blink::ConsoleMessageLevel::kError,
+          "Payment method \"" + data->supported_method +
+          "\" cannot be used with \"requestShipping\", \"requestPayerName\", "
+          "\"requestPayerEmail\", or \"requestPayerPhone\"."));
+    }
+  }
 
   if (options_->requestShipping()) {
     shipping_type_ = options_->shippingType();

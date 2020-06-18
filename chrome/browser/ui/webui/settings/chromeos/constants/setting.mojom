@@ -54,7 +54,7 @@ enum Setting {
   // People section.
   kAddAccount = 300,
   kRemoveAccount = 301,
-  kSyncOnOff = 302,
+  kSplitSyncOnOff = 302,
   kLockScreen = 303,
   kChangeAuthPin = 304,
   kGuestBrowsing = 305,
@@ -68,6 +68,10 @@ enum Setting {
   kAddFingerprint = 313,
   kRemoveFingerprint = 314,
   kSetUpParentalControls = 315,
+  kNonSplitSyncEncryptionOptions = 316,
+  kAutocompleteSearchesAndUrls = 317,
+  kMakeSearchesAndBrowsingBetter = 318,
+  kGoogleDriveSearchSuggestions = 319,
 
   // Device section.
   kTouchpadTapToClick = 400,

@@ -67,6 +67,10 @@
 
     highlightEntry(entryIndex) {
     }
+
+    navStartTimes() {
+        return [];
+    }
   }
 
   var entries = [

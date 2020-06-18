@@ -184,8 +184,8 @@ source_set("pref_names") {
 source_set("browser_impl") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "application_context_impl.cc",
     "application_context_impl.h",
+    "application_context_impl.mm",
     "ios_chrome_main_parts.h",
     "ios_chrome_main_parts.mm",
   ]

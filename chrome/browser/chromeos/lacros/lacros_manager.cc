@@ -176,7 +176,7 @@ void LacrosManager::StartForeground(bool already_running) {
       "--enable-gpu-rasterization",
       "--enable-oop-rasterization",
       "--lang=en-US",
-      "--breakpad-dump-location=/tmp"};
+      "--enable-crashpad"};
 
   // We assume that if there's a custom chrome path, that this is a developer
   // and they want to enable logging.

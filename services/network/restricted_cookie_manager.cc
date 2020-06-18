@@ -84,6 +84,31 @@ net::CookieOptions MakeOptionsForGet(
   return options;
 }
 
+void MarkSameSiteCompatPairs(std::vector<net::CookieWithStatus>& cookie_list,
+                             const net::CookieOptions& options) {
+  // If the context is same-site then there cannot be any SameSite-by-default
+  // warnings, so the compat pair warning is irrelevant.
+  if (options.same_site_cookie_context().GetContextForCookieInclusion() >
+      net::CookieOptions::SameSiteCookieContext::ContextType::
+          SAME_SITE_LAX_METHOD_UNSAFE) {
+    return;
+  }
+  if (cookie_list.size() < 2)
+    return;
+  for (size_t i = 0; i < cookie_list.size() - 1; ++i) {
+    const net::CanonicalCookie& c1 = cookie_list[i].cookie;
+    for (size_t j = i + 1; j < cookie_list.size(); ++j) {
+      const net::CanonicalCookie& c2 = cookie_list[j].cookie;
+      if (net::cookie_util::IsSameSiteCompatPair(c1, c2, options)) {
+        cookie_list[i].status.AddWarningReason(
+            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
+        cookie_list[j].status.AddWarningReason(
+            net::CookieInclusionStatus::WARN_SAMESITE_COMPAT_PAIR);
+      }
+    }
+  }
+}
+
 }  // namespace
 
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
@@ -248,6 +273,11 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
 
   // TODO(https://crbug.com/977040): Remove once samesite tightening up is
   // rolled out.
+  // |result_with_status| is populated with excluded cookies here based on
+  // warnings present before WARN_SAMESITE_COMPAT_PAIR can be applied by
+  // MarkSameSiteCompatPairs(). This is ok because WARN_SAMESITE_COMPAT_PAIR is
+  // irrelevant unless WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT is already
+  // present.
   for (const auto& cookie_and_access_result : excluded_cookies) {
     if (cookie_and_access_result.access_result.status.ShouldWarn()) {
       result_with_status.push_back(
@@ -288,6 +318,10 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   }
 
   if (cookie_observer_) {
+    // Mark the CookieInclusionStatuses of items in |result_with_status| if they
+    // are part of a presumed SameSite compatibility pair.
+    MarkSameSiteCompatPairs(result_with_status, net_options);
+
     cookie_observer_->OnCookiesAccessed(mojom::CookieAccessDetails::New(
         mojom::CookieAccessDetails::Type::kRead, url, site_for_cookies,
         result_with_status, base::nullopt));

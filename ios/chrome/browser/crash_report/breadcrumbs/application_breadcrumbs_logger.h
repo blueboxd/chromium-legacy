@@ -5,6 +5,8 @@
 #ifndef IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_
 #define IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_
 
+#import <Foundation/Foundation.h>
+
 #include <memory>
 
 #include "base/memory/memory_pressure_listener.h"
@@ -15,6 +17,9 @@ class TimeTicks;
 }  // namespace base
 
 class BreadcrumbManager;
+
+// Name of event logged when device orientation is changed.
+extern const char kBreadcrumbOrientation[];
 
 // Listens for and logs application wide breadcrumb events to the
 // BreadcrumbManager passed in the constructor.
@@ -44,6 +49,8 @@ class ApplicationBreadcrumbsLogger {
   base::ActionCallback user_action_callback_;
   // A memory pressure listener which observes memory pressure events.
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
+  // Observes device orientation.
+  id<NSObject> orientation_observer_;
 };
 
 #endif  // IOS_CHROME_BROWSER_CRASH_REPORT_BREADCRUMBS_APPLICATION_BREADCRUMBS_LOGGER_H_

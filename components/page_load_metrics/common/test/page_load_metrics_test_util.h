@@ -16,6 +16,10 @@
 void PopulateRequiredTimingFields(
     page_load_metrics::mojom::PageLoadTiming* inout_timing);
 
+// Sets the experimental LCP values to be equal to the non-experimental
+// counterparts, which are assumed to be already set.
+void PopulateExperimentalLCP(page_load_metrics::mojom::PaintTimingPtr& timing);
+
 // Helper that creates a resource update mojo.
 page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
     bool was_cached,

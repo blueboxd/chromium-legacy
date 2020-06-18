@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/enterprise/connectors/common.h"
+
+#include "base/notreached.h"
 #include "chrome/browser/enterprise/connectors/connectors_prefs.h"
 
 namespace enterprise_connectors {

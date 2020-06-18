@@ -8,7 +8,7 @@
  * just provodes a summary and link to the subpage.
  */
 
-const bluetoothApis = window['bluetoothApis'] || {
+/* #export */ const bluetoothApis = window['bluetoothApis'] || {
   /**
    * Set this to provide a fake implementation for testing.
    * @type {Bluetooth}

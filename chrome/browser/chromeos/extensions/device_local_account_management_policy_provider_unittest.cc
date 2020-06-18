@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/values.h"

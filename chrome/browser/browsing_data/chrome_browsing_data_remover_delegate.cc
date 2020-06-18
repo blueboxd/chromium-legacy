@@ -366,6 +366,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
            ~content::BrowsingDataRemover::DATA_TYPE_AVOID_CLOSING_CONNECTIONS &
            ~FILTERABLE_DATA_TYPES) == 0) ||
          filter_builder->IsEmptyBlacklist());
+  DCHECK(!should_clear_password_account_storage_settings_);
 
   TRACE_EVENT0("browsing_data",
                "ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData");
@@ -724,14 +725,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     if (nullable_filter.is_null() ||
         nullable_filter.Run(GaiaUrls::GetInstance()->google_url())) {
-      // Explicitly clear any opt-ins to the account-scoped password storage
-      // when cookies are being cleared.
-      // TODO(crbug.com/1052005, crbug.com/1078762): These *should* get cleared
-      // automatically when the Google cookies are deleted, but currently this
-      // doesn't always work reliably. When these bugs get resolved, the
-      // following line can be removed.
-      password_manager::features_util::ClearAccountStorageSettingsForAllUsers(
-          prefs);
+      // Set a flag to clear account storage settings later instead of clearing
+      // it now as we can not reset this setting before passwords are deleted.
+      should_clear_password_account_storage_settings_ = true;
     }
   }
 
@@ -1280,6 +1276,19 @@ void ChromeBrowsingDataRemoverDelegate::OnTaskComplete(
       "data_type", static_cast<int>(data_type));
   if (!pending_sub_tasks_.empty())
     return;
+
+  // Explicitly clear any opt-ins to the account-scoped password storage
+  // when cookies are being cleared. This needs to happen after passwords
+  // have been deleted, so it is performed when all other tasks are completed.
+  // TODO(crbug.com/1052005, crbug.com/1078762): These *should* get cleared
+  // automatically when the Google cookies are deleted, but currently this
+  // doesn't always work reliably. When these bugs get resolved, the
+  // following line and associated code can be removed.
+  if (should_clear_password_account_storage_settings_) {
+    should_clear_password_account_storage_settings_ = false;
+    password_manager::features_util::ClearAccountStorageSettingsForAllUsers(
+        profile_->GetPrefs());
+  }
 
   slow_pending_tasks_closure_.Cancel();
 

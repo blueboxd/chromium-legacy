@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/trigger_context.h"
+#include "base/strings/string_split.h"
 
 namespace autofill_assistant {
 
@@ -59,6 +60,15 @@ std::string TriggerContextImpl::experiment_ids() const {
   return experiment_ids_;
 }
 
+bool TriggerContextImpl::HasExperimentId(
+    const std::string& experiment_id) const {
+  std::vector<std::string> experiments = base::SplitString(
+      experiment_ids_, ",", base::WhitespaceHandling::TRIM_WHITESPACE,
+      base::SplitResult::SPLIT_WANT_NONEMPTY);
+  return std::find(experiments.begin(), experiments.end(), experiment_id) !=
+         experiments.end();
+}
+
 bool TriggerContextImpl::is_cct() const {
   return cct_;
 }
@@ -111,6 +121,16 @@ std::string MergedTriggerContext::experiment_ids() const {
     experiment_ids.append(context->experiment_ids());
   }
   return experiment_ids;
+}
+
+bool MergedTriggerContext::HasExperimentId(
+    const std::string& experiment_id) const {
+  for (const TriggerContext* context : contexts_) {
+    if (context->HasExperimentId(experiment_id)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 bool MergedTriggerContext::is_cct() const {

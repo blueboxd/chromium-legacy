@@ -34,6 +34,7 @@
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/list_selection_model.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_utils.h"
@@ -297,8 +298,6 @@ void TabStripUIHandler::OnTabStripModelChanged(
     case TabStripModelChange::kMoved: {
       auto* move = change.GetMove();
 
-      // TODO(johntlee): Investigate if this is still needed, when
-      // TabGroupChange::kMoved exists.
       base::Optional<tab_groups::TabGroupId> tab_group_id =
           tab_strip_model->GetTabGroupForTab(move->to_index);
       if (tab_group_id.has_value()) {
@@ -309,16 +308,9 @@ void TabStripUIHandler::OnTabStripModelChanged(
         if (tabs_in_group == selection.new_model.selected_indices()) {
           // If the selection includes all the tabs within the changed tab's
           // group, it is an indication that the entire group is being moved.
-          // To prevent sending multiple events for the same batch move, fire a
-          // separate single tab-group-moved event once all tabs have been
-          // moved. All tabs have moved only after all the indices in the group
-          // are in the correct continuous order.
-          if (tabs_in_group.back() - tabs_in_group.front() + 1 ==
-              static_cast<int>(tabs_in_group.size())) {
-            FireWebUIListener("tab-group-moved",
-                              base::Value(tab_group_id.value().ToString()),
-                              base::Value(tabs_in_group[0]));
-          }
+          // To prevent sending multiple events for each tab in the group,
+          // ignore these tabs moving as entire group moves will be handled by
+          // TabGroupChange::kMoved.
           break;
         }
       }
@@ -662,7 +654,17 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
       return;
     }
 
-    // If moving within the same browser, just do a simple move.
+    // When a group is moved, all the tabs in it need to be selected at the same
+    // time. This mimics the way the native tab strip works and also allows
+    // this handler to ignore the events for each individual tab moving.
+    int active_index =
+        target_browser->tab_strip_model()->selection_model().active();
+    ui::ListSelectionModel group_selection;
+    group_selection.SetSelectedIndex(group->ListTabs().front());
+    group_selection.SetSelectionFromAnchorTo(group->ListTabs().back());
+    group_selection.set_active(active_index);
+    target_browser->tab_strip_model()->SetSelectionFromModel(group_selection);
+
     target_browser->tab_strip_model()->MoveGroupTo(group_id.value(), to_index);
     return;
   }

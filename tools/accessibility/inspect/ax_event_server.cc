@@ -5,6 +5,7 @@
 #include "tools/accessibility/inspect/ax_event_server.h"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "base/bind.h"

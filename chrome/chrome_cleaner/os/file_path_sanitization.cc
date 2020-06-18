@@ -10,6 +10,7 @@
 
 #include "base/base_paths_win.h"
 #include "base/logging.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 

@@ -62,6 +62,7 @@ class HttpAuthHandlerImpl;
 #if defined(OS_ANDROID)
 class BrowserControlsContainerView;
 enum class ControlsVisibilityReason;
+class WebMessageHostFactoryProxy;
 #endif
 
 class TabImpl : public Tab,
@@ -181,6 +182,14 @@ class TabImpl : public Tab,
                    const base::android::JavaParamRef<jstring>& username,
                    const base::android::JavaParamRef<jstring>& password);
   void CancelHttpAuth(JNIEnv* env);
+  base::android::ScopedJavaLocalRef<jstring> RegisterWebMessageCallback(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& js_object_name,
+      const base::android::JavaParamRef<jobjectArray>& origins,
+      const base::android::JavaParamRef<jobject>& client);
+  void UnregisterWebMessageCallback(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jstring>& js_object_name);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
@@ -204,7 +213,7 @@ class TabImpl : public Tab,
   base::string16 AddWebMessageHostFactory(
       std::unique_ptr<WebMessageHostFactory> factory,
       const base::string16& js_object_name,
-      const std::vector<std::string>& allowed_origin_rules) override;
+      const std::vector<std::string>& js_origins) override;
   void RemoveWebMessageHostFactory(
       const base::string16& js_object_name) override;
 #if !defined(OS_ANDROID)
@@ -351,6 +360,9 @@ class TabImpl : public Tab,
   // Last value supplied to UpdateBrowserControlsState().
   content::BrowserControlsState current_browser_controls_state_ =
       content::BROWSER_CONTROLS_STATE_SHOWN;
+
+  std::map<std::string, std::unique_ptr<WebMessageHostFactoryProxy>>
+      js_name_to_proxy_;
 #endif
 
   bool is_fullscreen_ = false;

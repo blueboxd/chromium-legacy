@@ -188,6 +188,7 @@ void DragDropOperation::CaptureDragIcon() {
           viz::CopyOutputRequest::ResultFormat::RGBA_BITMAP,
           base::BindOnce(&DragDropOperation::OnDragIconCaptured,
                          weak_ptr_factory_.GetWeakPtr()));
+  request->set_result_task_runner(base::SequencedTaskRunnerHandle::Get());
 
   host_window()->layer()->RequestCopyOfOutput(std::move(request));
 }

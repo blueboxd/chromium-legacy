@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_low_energy_advertisement_manager_mac.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"

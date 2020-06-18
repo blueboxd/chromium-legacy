@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/status_collector/affiliated_session_service.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
 namespace policy {

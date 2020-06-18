@@ -24,7 +24,6 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
   // CanvasImageSource
   ResourceStatus Status() const final;
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               RasterModeHint,
                                                const FloatSize&) final;
   bool IsAccelerated() const final;
 

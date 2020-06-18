@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/logging.h"
 #include "chrome/chrome_cleaner/test/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

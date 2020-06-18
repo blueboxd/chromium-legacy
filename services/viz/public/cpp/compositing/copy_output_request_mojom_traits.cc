@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -23,17 +25,21 @@ class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
  public:
   CopyOutputResultSenderImpl(
       viz::CopyOutputRequest::ResultFormat result_format,
-      viz::CopyOutputRequest::CopyOutputRequestCallback result_callback)
+      viz::CopyOutputRequest::CopyOutputRequestCallback result_callback,
+      scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
       : result_format_(result_format),
-        result_callback_(std::move(result_callback)) {
+        result_callback_(std::move(result_callback)),
+        result_callback_task_runner_(std::move(callback_task_runner)) {
     DCHECK(result_callback_);
+    DCHECK(result_callback_task_runner_);
   }
 
   ~CopyOutputResultSenderImpl() override {
     if (result_callback_) {
-      std::move(result_callback_)
-          .Run(std::make_unique<viz::CopyOutputResult>(result_format_,
-                                                       gfx::Rect()));
+      result_callback_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(std::move(result_callback_),
+                                    std::make_unique<viz::CopyOutputResult>(
+                                        result_format_, gfx::Rect())));
     }
   }
 
@@ -42,12 +48,15 @@ class CopyOutputResultSenderImpl : public viz::mojom::CopyOutputResultSender {
     TRACE_EVENT0("viz", "CopyOutputResultSenderImpl::SendResult");
     if (!result_callback_)
       return;
-    std::move(result_callback_).Run(std::move(result));
+    result_callback_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(result_callback_), std::move(result)));
   }
 
  private:
   const viz::CopyOutputRequest::ResultFormat result_format_;
   viz::CopyOutputRequest::CopyOutputRequestCallback result_callback_;
+  scoped_refptr<base::SequencedTaskRunner> result_callback_task_runner_;
 };
 
 void SendResult(
@@ -69,10 +78,23 @@ StructTraits<viz::mojom::CopyOutputRequestDataView,
              std::unique_ptr<viz::CopyOutputRequest>>::
     result_sender(const std::unique_ptr<viz::CopyOutputRequest>& request) {
   mojo::PendingRemote<viz::mojom::CopyOutputResultSender> result_sender;
+  auto pending_receiver = result_sender.InitWithNewPipeAndPassReceiver();
+  // Receiving the result requires an expensive deserialize operation, so by
+  // default we want the pipe to operate on the ThreadPool, and then it will
+  // PostTask back to the current sequence.
   auto impl = std::make_unique<CopyOutputResultSenderImpl>(
-      request->result_format(), std::move(request->result_callback_));
-  MakeSelfOwnedReceiver(std::move(impl),
-                        result_sender.InitWithNewPipeAndPassReceiver());
+      request->result_format(), std::move(request->result_callback_),
+      base::SequencedTaskRunnerHandle::Get());
+  auto runner = base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()});
+  runner->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](std::unique_ptr<CopyOutputResultSenderImpl> impl,
+             mojo::PendingReceiver<viz::mojom::CopyOutputResultSender>
+                 receiver) {
+            MakeSelfOwnedReceiver(std::move(impl), std::move(receiver));
+          },
+          std::move(impl), std::move(pending_receiver)));
   return result_sender;
 }
 

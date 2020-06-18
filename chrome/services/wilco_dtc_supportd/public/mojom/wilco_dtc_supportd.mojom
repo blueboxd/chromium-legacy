@@ -18,6 +18,7 @@ enum WilcoDtcSupportdWebRequestHttpMethod {
   kHead,
   kPost,
   kPut,
+  kPatch,
 };
 
 [Extensible]

@@ -133,55 +133,6 @@ TEST_F(TabStripUIHandlerTest, GroupStateChangedEvents) {
   EXPECT_EQ(nullptr, ungrouped_call_data.arg4());
 }
 
-TEST_F(TabStripUIHandlerTest, GroupMovedEvents) {
-  // Create a tab group and a few other tabs to allow the group to move.
-  AddTab(browser(), GURL("http://foo/1"));
-  AddTab(browser(), GURL("http://foo/2"));
-  AddTab(browser(), GURL("http://foo/3"));
-  AddTab(browser(), GURL("http://foo/4"));
-  tab_groups::TabGroupId expected_group_id =
-      browser()->tab_strip_model()->AddToNewGroup({0, 1});
-
-  // Select all the tabs in the group.
-  ui::ListSelectionModel selection;
-  selection.AddIndexToSelection(0);
-  selection.AddIndexToSelection(1);
-  selection.set_active(0);
-  browser()->tab_strip_model()->SetSelectionFromModel(selection);
-
-  web_ui()->ClearTrackedCalls();
-
-  // Move the selected tabs to later in the tab strip. This should result in
-  // a single event that is fired to indicate the entire group has moved.
-  int expected_index = 2;
-  browser()->tab_strip_model()->MoveSelectedTabsTo(expected_index);
-
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-
-  const content::TestWebUI::CallData& call_data = *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
-  EXPECT_EQ("tab-group-moved", call_data.arg1()->GetString());
-  EXPECT_EQ(expected_group_id.ToString(), call_data.arg2()->GetString());
-  EXPECT_EQ(expected_index, call_data.arg3()->GetInt());
-
-  web_ui()->ClearTrackedCalls();
-
-  // Move the selected tabs to earlier in the tab strip. This should also
-  // result in a single event that is fired to indicate the entire group has
-  // moved.
-  expected_index = 1;
-  browser()->tab_strip_model()->MoveSelectedTabsTo(expected_index);
-
-  EXPECT_EQ(1U, web_ui()->call_data().size());
-
-  const content::TestWebUI::CallData& call_data2 =
-      *web_ui()->call_data().back();
-  EXPECT_EQ("cr.webUIListenerCallback", call_data2.function_name());
-  EXPECT_EQ("tab-group-moved", call_data2.arg1()->GetString());
-  EXPECT_EQ(expected_group_id.ToString(), call_data2.arg2()->GetString());
-  EXPECT_EQ(expected_index, call_data2.arg3()->GetInt());
-}
-
 TEST_F(TabStripUIHandlerTest, GetGroupVisualData) {
   AddTab(browser(), GURL("http://foo/1"));
   AddTab(browser(), GURL("http://foo/2"));
@@ -269,6 +220,7 @@ TEST_F(TabStripUIHandlerTest, MoveGroup) {
   AddTab(browser(), GURL("http://foo/2"));
   tab_groups::TabGroupId group_id =
       browser()->tab_strip_model()->AddToNewGroup({0});
+  web_ui()->ClearTrackedCalls();
 
   // Move the group to index 1.
   int new_index = 1;
@@ -284,6 +236,13 @@ TEST_F(TabStripUIHandlerTest, MoveGroup) {
                                        ->ListTabs();
   ASSERT_EQ(new_index, tabs_in_group.front());
   ASSERT_EQ(new_index, tabs_in_group.back());
+
+  EXPECT_EQ(1U, web_ui()->call_data().size());
+  const content::TestWebUI::CallData& call_data =
+      *web_ui()->call_data().front();
+  EXPECT_EQ("cr.webUIListenerCallback", call_data.function_name());
+  EXPECT_EQ("tab-group-moved", call_data.arg1()->GetString());
+  EXPECT_EQ(group_id.ToString(), call_data.arg2()->GetString());
 }
 
 TEST_F(TabStripUIHandlerTest, MoveGroupAcrossWindows) {

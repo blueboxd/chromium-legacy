@@ -12,6 +12,7 @@
 
 #include "base/enterprise_util.h"
 #include "base/i18n/case_conversion.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"

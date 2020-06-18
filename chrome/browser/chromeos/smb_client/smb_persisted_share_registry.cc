@@ -8,6 +8,7 @@
 
 #include "base/base64.h"
 #include "base/check.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"

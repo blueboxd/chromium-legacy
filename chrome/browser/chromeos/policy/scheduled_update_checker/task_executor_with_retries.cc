@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/logging.h"
+
 namespace policy {
 
 TaskExecutorWithRetries::TaskExecutorWithRetries(int max_retries,

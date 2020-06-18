@@ -5,7 +5,9 @@
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 
 #include "base/command_line.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 namespace scheduler {
@@ -45,18 +47,6 @@ PolicyOverride GetIntensiveWakeUpThrottlingPolicyOverride() {
 
 }  // namespace
 
-const base::Feature kIntensiveWakeUpThrottling{
-    "IntensiveWakeUpThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<int>
-    kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds{
-        &kIntensiveWakeUpThrottling, "duration_between_wake_ups_seconds",
-        kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default};
-
-const base::FeatureParam<int> kIntensiveWakeUpThrottling_GracePeriodSeconds{
-    &kIntensiveWakeUpThrottling, "grace_period_seconds",
-    kIntensiveWakeUpThrottling_GracePeriodSeconds_Default};
-
 void ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting() {
   g_intensive_wake_up_throttling_policy_override_cached_ = false;
 }
@@ -67,7 +57,7 @@ bool IsIntensiveWakeUpThrottlingEnabled() {
   if (policy != PolicyOverride::NO_OVERRIDE)
     return policy == PolicyOverride::FORCE_ENABLE;
   // Otherwise respect the base::Feature.
-  return base::FeatureList::IsEnabled(kIntensiveWakeUpThrottling);
+  return base::FeatureList::IsEnabled(features::kIntensiveWakeUpThrottling);
 }
 
 // If a policy override is specified then stick to the published defaults so
@@ -76,6 +66,15 @@ bool IsIntensiveWakeUpThrottlingEnabled() {
 
 base::TimeDelta GetIntensiveWakeUpThrottlingDurationBetweenWakeUps() {
   DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+
+  // Controls the period during which at most 1 wake up from throttleable
+  // TaskQueues in a page can take place.
+  static const base::FeatureParam<int>
+      kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds{
+          &features::kIntensiveWakeUpThrottling,
+          kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Name,
+          kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default};
+
   int seconds =
       kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default;
   if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
@@ -87,6 +86,15 @@ base::TimeDelta GetIntensiveWakeUpThrottlingDurationBetweenWakeUps() {
 
 base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod() {
   DCHECK(IsIntensiveWakeUpThrottlingEnabled());
+
+  // Controls the time that elapses after a page is backgrounded before the
+  // throttling policy takes effect.
+  static const base::FeatureParam<int>
+      kIntensiveWakeUpThrottling_GracePeriodSeconds{
+          &features::kIntensiveWakeUpThrottling,
+          kIntensiveWakeUpThrottling_GracePeriodSeconds_Name,
+          kIntensiveWakeUpThrottling_GracePeriodSeconds_Default};
+
   int seconds = kIntensiveWakeUpThrottling_GracePeriodSeconds_Default;
   if (GetIntensiveWakeUpThrottlingPolicyOverride() ==
       PolicyOverride::NO_OVERRIDE) {

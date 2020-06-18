@@ -102,6 +102,8 @@ using password_manager::PasswordManager;
 using password_manager::PasswordManagerClient;
 using password_manager::PasswordManagerDriver;
 using password_manager::SerializePasswordFormFillData;
+using web::WebFrame;
+using web::WebState;
 
 namespace {
 // Types of password infobars to display.
@@ -184,7 +186,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
   // The WebState this instance is observing. Will be null after
   // -webStateDestroyed: has been called.
-  web::WebState* _webState;
+  WebState* _webState;
 
   // Bridge to observe WebState from Objective-C.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
@@ -206,12 +208,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   NSString* _lastTypedValue;
 }
 
-- (instancetype)initWithWebState:(web::WebState*)webState {
+- (instancetype)initWithWebState:(WebState*)webState {
   self = [self initWithWebState:webState client:nullptr];
   return self;
 }
 
-- (instancetype)initWithWebState:(web::WebState*)webState
+- (instancetype)initWithWebState:(WebState*)webState
                           client:(std::unique_ptr<PasswordManagerClient>)
                                      passwordManagerClient {
   self = [super init];
@@ -286,7 +288,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 // If Tab was shown, and there is a pending PasswordForm, display autosign-in
 // notification.
-- (void)webStateWasShown:(web::WebState*)webState {
+- (void)webStateWasShown:(WebState*)webState {
   DCHECK_EQ(_webState, webState);
   if (_pendingAutoSigninPasswordForm) {
     [self showAutosigninNotification:std::move(_pendingAutoSigninPasswordForm)];
@@ -295,12 +297,12 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 // If Tab was hidden, hide auto sign-in notification.
-- (void)webStateWasHidden:(web::WebState*)webState {
+- (void)webStateWasHidden:(WebState*)webState {
   DCHECK_EQ(_webState, webState);
   [self hideAutosigninNotification];
 }
 
-- (void)webState:(web::WebState*)webState
+- (void)webState:(WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   DCHECK_EQ(_webState, webState);
   if (!navigation->HasCommitted() || navigation->IsSameDocument())
@@ -318,7 +320,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       /*form_may_be_submitted=*/navigation->IsRendererInitiated());
 }
 
-- (void)webState:(web::WebState*)webState didLoadPageWithSuccess:(BOOL)success {
+- (void)webState:(WebState*)webState didLoadPageWithSuccess:(BOOL)success {
   DCHECK_EQ(_webState, webState);
   // Clear per-page state.
   [self.suggestionHelper resetForNewPage];
@@ -344,8 +346,8 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   [self findPasswordFormsAndSendThemToPasswordStore];
 }
 
-- (void)webState:(web::WebState*)webState
-    frameDidBecomeAvailable:(web::WebFrame*)web_frame {
+- (void)webState:(WebState*)webState
+    frameDidBecomeAvailable:(WebFrame*)web_frame {
   DCHECK_EQ(_webState, webState);
   DCHECK(web_frame);
   UniqueIDTabHelper* uniqueIDTabHelper =
@@ -355,7 +357,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   [self.formHelper setUpForUniqueIDsWithInitialState:nextAvailableRendererID];
 }
 
-- (void)webStateDestroyed:(web::WebState*)webState {
+- (void)webStateDestroyed:(WebState*)webState {
   DCHECK_EQ(_webState, webState);
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());
@@ -373,6 +375,14 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   _lastTypedValue = nil;
 }
 
+// Track detaching iframes.
+- (void)webState:(WebState*)webState
+    frameWillBecomeUnavailable:(WebFrame*)web_frame {
+  if (web_frame->IsMainFrame() || !web_frame->CanCallJavaScriptFunction())
+    return;
+  _passwordManager->OnIframeDetach(web_frame->GetFrameId());
+}
+
 #pragma mark - FormSuggestionProvider
 
 - (id<FormSuggestionProvider>)suggestionProvider {
@@ -383,7 +393,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
             (FormSuggestionProviderQuery*)formQuery
                                isMainFrame:(BOOL)isMainFrame
                             hasUserGesture:(BOOL)hasUserGesture
-                                  webState:(web::WebState*)webState
+                                  webState:(WebState*)webState
                          completionHandler:
                              (SuggestionsAvailableCompletion)completion {
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
@@ -432,7 +442,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 }
 
 - (void)retrieveSuggestionsForForm:(FormSuggestionProviderQuery*)formQuery
-                          webState:(web::WebState*)webState
+                          webState:(WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))
     return;
@@ -548,7 +558,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 #pragma mark - PasswordManagerClientDelegate
 
-- (web::WebState*)webState {
+- (WebState*)webState {
   return _webState;
 }
 
@@ -1023,9 +1033,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
 
 #pragma mark - FormActivityObserver
 
-- (void)webState:(web::WebState*)webState
+- (void)webState:(WebState*)webState
     didRegisterFormActivity:(const autofill::FormActivityParams&)params
-                    inFrame:(web::WebFrame*)frame {
+                    inFrame:(WebFrame*)frame {
   DCHECK_EQ(_webState, webState);
 
   if (!GetPageURLAndCheckTrustLevel(webState, nullptr))

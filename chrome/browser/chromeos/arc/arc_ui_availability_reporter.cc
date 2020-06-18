@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_ui_availability_reporter.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"

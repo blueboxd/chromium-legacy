@@ -5,6 +5,7 @@
 #include "chrome/browser/android/autofill_assistant/ui_controller_android_utils.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/notreached.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantColor_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDateTime_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDialogButton_jni.h"

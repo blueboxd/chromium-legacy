@@ -3,14 +3,14 @@
 // found in the LICENSE file.
 
 #include "build/build_config.h"
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_test.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/test/browser_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
-class ExclusiveAccessBubbleViewsTest : public FullscreenControllerTest,
+class ExclusiveAccessBubbleViewsTest : public ExclusiveAccessTest,
                                        public views::WidgetObserver {
  public:
   ExclusiveAccessBubbleViewsTest() {}

@@ -184,6 +184,9 @@ void CaptivePortalBlockingPage::PopulateInterstitialStrings(
     }
   }
   load_time_data->SetString("primaryParagraph", paragraph);
+  load_time_data->SetString(
+      "optInLink",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
   // Explicitly specify other expected fields to empty.
   load_time_data->SetString("openDetails", "");
   load_time_data->SetString("closeDetails", "");

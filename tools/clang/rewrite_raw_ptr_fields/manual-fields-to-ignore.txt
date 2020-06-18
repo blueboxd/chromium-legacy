@@ -67,6 +67,7 @@ blink::NormalPage::CompactionContext::current_page_
 blink::Worklist::PrivateSegmentHolder::private_pop_segment
 blink::Worklist::PrivateSegmentHolder::private_push_segment
 content::(anonymous namespace)::AudioStreamMonitorTest::monitor_
+content::AudioStreamMonitor::clock_
 
 # Populated manually - always holds OilPan pointers.
 blink::PersistentBase::raw_
@@ -133,5 +134,26 @@ blink::PaintController::IdAsHashKey::client
 ui::AXPlatformNodeAuraLinux::document_parent_
 ui::AXPlatformNodeAuraLinux::atk_object_
 
-# Populated manually - these pointers can cause runtime crashes.
-(anonymous namespace)::TlsVectorEntry::data  # can be an invalid pointer with top bits set
+# Populated manually - to temporarily avoid passing CheckedPtr as
+# an argument to TRACE_EVENT* family of macros.
+ProfileDestroyer::profile_
+content::RenderProcessHostImpl::browser_context_
+
+# Populated manually - problems related to testing::StrictMock and
+# testing::NiceMock (needs more investigation / problem not full understood).
+(anonymous namespace)::BluetoothLowEnergyApiTest::mock_adapter_
+
+# Populated manually - problems related to lambdas with no return type, where
+# the return value is CheckedPtr, but variable/parameter receiving the lambda
+# expects the raw pointer type.
+vr::LocationBarState::vector_icon
+vr::OmniboxSuggestion::icon
+
+# Populated manually - these pointers are assigned invalid address (with top
+# bits sets), which CheckedPtr is unable to handle, leading to run-time crashes.
+(anonymous namespace)::TlsVectorEntry::data
+blink::(anonymous namespace)::ControlKey::name_
+blink::(anonymous namespace)::ControlKey::type_
+blink::(anonymous namespace)::ThreadMarker::creating_thread_
+performance_manager::frame_priority::BoostingVoteAggregator::Edge::src_
+performance_manager::frame_priority::BoostingVoteAggregator::Edge::dst_

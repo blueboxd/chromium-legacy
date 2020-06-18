@@ -20,7 +20,7 @@
 #include "base/numerics/ranges.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/compositor/animation_metrics_reporter.h"
+#include "ui/compositor/animation_throughput_reporter.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/insets.h"
@@ -103,6 +103,27 @@ constexpr char kAnimationSmoothnessClamshellLauncherHiddenHistogram[] =
 int64_t GetDisplayIdForView(const views::View* view) {
   aura::Window* window = view->GetWidget()->GetNativeWindow();
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+}
+
+void ReportSmoothness(bool tablet_mode, bool launcher_visible, int smoothness) {
+  base::UmaHistogramPercentage(kAnimationSmoothnessHistogram, smoothness);
+  if (tablet_mode) {
+    if (launcher_visible) {
+      base::UmaHistogramPercentage(
+          kAnimationSmoothnessTabletLauncherVisibleHistogram, smoothness);
+    } else {
+      base::UmaHistogramPercentage(
+          kAnimationSmoothnessTabletLauncherHiddenHistogram, smoothness);
+    }
+  } else {
+    if (launcher_visible) {
+      base::UmaHistogramPercentage(
+          kAnimationSmoothnessClamshellLauncherVisibleHistogram, smoothness);
+    } else {
+      base::UmaHistogramPercentage(
+          kAnimationSmoothnessClamshellLauncherHiddenHistogram, smoothness);
+    }
+  }
 }
 
 }  // namespace
@@ -341,45 +362,6 @@ class ScrollableShelfView::ScopedActiveInkDropCountImpl
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// ScrollableShelfAnimationMetricsReporter
-
-class ScrollableShelfAnimationMetricsReporter
-    : public ui::AnimationMetricsReporter {
- public:
-  ScrollableShelfAnimationMetricsReporter() {}
-
-  ~ScrollableShelfAnimationMetricsReporter() override = default;
-
-  void set_display_id(int64_t display_id) { display_id_ = display_id; }
-
-  // ui::AnimationMetricsReporter:
-  void Report(int value) override {
-    base::UmaHistogramPercentage(kAnimationSmoothnessHistogram, value);
-    if (Shell::Get()->IsInTabletMode()) {
-      if (Shell::Get()->app_list_controller()->IsVisible(display_id_)) {
-        base::UmaHistogramPercentage(
-            kAnimationSmoothnessTabletLauncherVisibleHistogram, value);
-      } else {
-        base::UmaHistogramPercentage(
-            kAnimationSmoothnessTabletLauncherHiddenHistogram, value);
-      }
-    } else {
-      if (Shell::Get()->app_list_controller()->IsVisible(display_id_)) {
-        base::UmaHistogramPercentage(
-            kAnimationSmoothnessClamshellLauncherVisibleHistogram, value);
-      } else {
-        base::UmaHistogramPercentage(
-            kAnimationSmoothnessClamshellLauncherHiddenHistogram, value);
-      }
-    }
-  }
-
- private:
-  int64_t display_id_ = display::kInvalidDisplayId;
-  DISALLOW_COPY_AND_ASSIGN(ScrollableShelfAnimationMetricsReporter);
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // ScrollableShelfContainerView
 
 class ScrollableShelfContainerView : public ShelfContainerView,
@@ -514,9 +496,7 @@ ScrollableShelfView::ScrollableShelfView(ShelfModel* model, Shelf* shelf)
                                 shelf,
                                 /*drag_and_drop_host=*/this,
                                 /*shelf_button_delegate=*/this)),
-      page_flip_time_threshold_(kShelfPageFlipDelay),
-      animation_metrics_reporter_(
-          std::make_unique<ScrollableShelfAnimationMetricsReporter>()) {
+      page_flip_time_threshold_(kShelfPageFlipDelay) {
   Shell::Get()->AddShellObserver(this);
   ShelfConfig::Get()->AddObserver(this);
   set_allow_deactivate_on_esc(true);
@@ -829,10 +809,15 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   animation_settings.SetTweenType(gfx::Tween::EASE_OUT);
   animation_settings.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_SET_NEW_TARGET);
-  animation_settings.SetAnimationMetricsReporter(
-      animation_metrics_reporter_.get());
   animation_settings.AddObserver(this);
-  animation_metrics_reporter_->set_display_id(GetDisplayIdForView(this));
+
+  ui::AnimationThroughputReporter reporter(
+      animation_settings.GetAnimator(),
+      metrics_util::ForSmoothness(
+          base::BindRepeating(&ReportSmoothness, Shell::Get()->IsInTabletMode(),
+                              Shell::Get()->app_list_controller()->IsVisible(
+                                  GetDisplayIdForView(this)))));
+
   shelf_container_view_->TranslateShelfView(scroll_offset_);
 }
 

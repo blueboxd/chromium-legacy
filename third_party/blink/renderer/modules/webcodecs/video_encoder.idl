@@ -9,15 +9,14 @@
     RuntimeEnabled=WebCodecs
 ] interface VideoEncoder {
     [CallWith=ScriptState, RaisesException]
-    constructor();
+    constructor(VideoEncoderInit init);
 
     // Performs original configuration of the encoder.
     // Resolved after configuration is done. It should be called only
     // once per encoder instance, before calling any other methods.
     [RaisesException]
-    Promise<void> configure(VideoEncoderInit init);
+    void configure(VideoEncoderConfig config);
 
-    [RaisesException]
     // Enqueues a request to encode a frame.
     // Results of the encoding (EncodedVideoChunk) are returned via
     // the output callback provided in configure().
@@ -25,23 +24,27 @@
     // The output callback can be called before or after the result is resolved.
     // Several encoded requests can be resolved before even a single output
     // is produced.
-    Promise<void> encode(VideoFrame frame,
+    [RaisesException]
+    void encode(VideoFrame frame,
                          optional VideoEncoderEncodeOptions options = {});
 
-    [RaisesException]
-    // Enqueues a request to change certain parameters of the encoder.
-    // Resolved after the parameters are adjusted.
-    // All following encode requests will be executed according to
-    // the new parameters.
-    // Should be preceded by flush().
-    Promise<void> tune(VideoEncoderTuneOptions options);
 
     // Enqueues a request to produce outputs for all already encoded frames.
     // Resolved after emitting outputs for all previously encoded frames.
+    [RaisesException]
     Promise<void> flush();
+
+    // Discard all pending work and current encoder configuration.
+    //
+    // Output for earlier encoding requests will not be emitted.
+    // The next encoded frame will be a keyframe.
+    // Required a configure() to be call to set configuration once again.
+    [RaisesException]
+    void reset();
 
     // Enqueues a request to shut down the encoder and free its resources.
     // Resolved after all resources are released and all following requests
     // rejected.
-    Promise<void> close();
+    [RaisesException]
+    void close();
 };

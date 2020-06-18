@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
+#import "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
+
+#import <UIKit/UIKit.h>
 
 #include "base/memory/memory_pressure_listener.h"
 #include "base/metrics/user_metrics_action.h"
@@ -83,4 +85,17 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, DISABLED_MemoryPressure) {
   EXPECT_NE(std::string::npos, events.front().find("Memory Pressure: "));
   events.pop_front();
   EXPECT_NE(std::string::npos, events.front().find("Critical"));
+}
+
+// Tests logging device orientation.
+TEST_F(ApplicationBreadcrumbsLoggerTest, Orientation) {
+  [NSNotificationCenter.defaultCenter
+      postNotificationName:UIDeviceOrientationDidChangeNotification
+                    object:nil];
+
+  std::list<std::string> events = breadcrumb_manager_.GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+
+  EXPECT_NE(std::string::npos, events.front().find(kBreadcrumbOrientation))
+      << events.front();
 }

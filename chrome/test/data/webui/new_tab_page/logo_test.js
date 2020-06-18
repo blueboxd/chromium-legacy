@@ -78,7 +78,7 @@ suite('NewTabPageLogoTest', () => {
     assertStyle($$(logo, '#shareButton'), 'top', '12px');
     assertEquals($$(logo, '#shareButtonImage').src, 'data:bar');
     assertStyle($$(logo, '#animation'), 'display', 'none');
-    assertStyle($$(logo, '#iframe'), 'display', 'none');
+    assertFalse(!!$$(logo, '#iframe'));
   });
 
   test('setting animated doodle shows image', async () => {
@@ -96,7 +96,7 @@ suite('NewTabPageLogoTest', () => {
     assertEquals($$(logo, '#image').src, 'data:foo');
     assertNotStyle($$(logo, '#image'), 'display', 'none');
     assertStyle($$(logo, '#animation'), 'display', 'none');
-    assertStyle($$(logo, '#iframe'), 'display', 'none');
+    assertFalse(!!$$(logo, '#iframe'));
   });
 
   test('setting interactive doodle shows iframe', async () => {
@@ -114,7 +114,7 @@ suite('NewTabPageLogoTest', () => {
     // Assert.
     assertNotStyle($$(logo, '#doodle'), 'display', 'none');
     assertEquals($$(logo, '#logo'), null);
-    assertEquals($$(logo, '#iframe').path, 'iframe?https://foo.com');
+    assertEquals($$(logo, '#iframe').src, 'https://foo.com/');
     assertNotStyle($$(logo, '#iframe'), 'display', 'none');
     assertStyle($$(logo, '#iframe'), 'width', '200px');
     assertStyle($$(logo, '#iframe'), 'height', '100px');

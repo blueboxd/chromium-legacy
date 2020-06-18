@@ -13,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/file_descriptor_posix.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "device/bluetooth/dbus/bluetooth_media_client.h"

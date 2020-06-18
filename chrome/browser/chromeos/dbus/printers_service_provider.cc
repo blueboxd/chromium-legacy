@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/dbus/printers_service_provider.h"
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager_proxy.h"
 #include "chrome/browser/profiles/profile_manager.h"

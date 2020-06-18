@@ -25,9 +25,6 @@ include_rules = [
   "+content/public/android/java/src/org/chromium/content_public/browser/RenderWidgetHostView.java",
   "+content/public/android/java/src/org/chromium/content_public/browser/WebContents.java",
 
-  # TODO(crbug/1002277): Remove once BottomSheetController is modularized.
-  "+chrome/android/java/src/org/chromium/chrome/browser/widget/bottomsheet",
-
   # TODO(crbug/1090917): Remove this dependency once the STTS java code is moved.
   "+chrome/android/java/src/org/chromium/chrome/browser/send_tab_to_self/SendTabToSelfShareActivity.java",
 ]

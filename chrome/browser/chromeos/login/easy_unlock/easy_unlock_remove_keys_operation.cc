@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_remove_keys_operation.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_key_manager.h"
 #include "chromeos/cryptohome/cryptohome_util.h"
 #include "chromeos/cryptohome/homedir_methods.h"

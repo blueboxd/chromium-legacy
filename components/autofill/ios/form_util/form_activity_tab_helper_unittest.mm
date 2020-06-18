@@ -16,6 +16,8 @@
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/platform_test.h"
 
+using web::WebFrame;
+
 class FormTestClient : public web::TestWebClient {
  public:
   NSString* GetDocumentStartScriptForAllFrames(
@@ -61,19 +63,22 @@ TEST_F(FormActivityTabHelperTest, TestObserverDocumentSubmitted) {
   ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   ASSERT_FALSE(observer_->submit_document_info());
   const std::string kTestFormName("form-name");
-  const std::string kTestFormData(
-      "[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
-      "\",\"action\":\"https://chromium.test/\","
-      "\"name_attribute\":\"form-name\",\"id_attribute\":\"\","
-      "\"unique_renderer_id\":\"0\"}]");
+
+  WebFrame* main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+  std::string mainFrameID = main_frame->GetFrameId();
+  const std::string kTestFormData =
+      std::string("[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
+                  "\",\"action\":\"https://chromium.test/\","
+                  "\"name_attribute\":\"form-name\",\"id_attribute\":\"\","
+                  "\"unique_renderer_id\":\"0\",\"frame_id\":\"") +
+      mainFrameID + std::string("\"}]");
+
   bool has_user_gesture = false;
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^bool {
         return web_state()->GetWebFramesManager()->GetMainWebFrame() != nullptr;
       }));
-  web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
 
   ExecuteJavaScript(@"document.getElementById('submit').click();");
   ASSERT_TRUE(observer_->submit_document_info());
@@ -96,19 +101,22 @@ TEST_F(FormActivityTabHelperTest, TestFormSubmittedHook) {
   ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
   ASSERT_FALSE(observer_->submit_document_info());
   const std::string kTestFormName("form-name");
-  const std::string kTestFormData(
-      "[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
-      "\",\"action\":\"https://chromium.test/\","
-      "\"name_attribute\":\"form-name\",\"id_attribute\":\"form\","
-      "\"unique_renderer_id\":\"0\"}]");
+
+  WebFrame* main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+  std::string mainFrameID = main_frame->GetFrameId();
+  const std::string kTestFormData =
+      std::string("[{\"name\":\"form-name\",\"origin\":\"https://chromium.test/"
+                  "\",\"action\":\"https://chromium.test/\","
+                  "\"name_attribute\":\"form-name\",\"id_attribute\":\"form\","
+                  "\"unique_renderer_id\":\"0\",\"frame_id\":\"") +
+      mainFrameID + std::string("\"}]");
+
   bool has_user_gesture = false;
   bool form_in_main_frame = true;
   EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForJSCompletionTimeout, ^bool {
         return web_state()->GetWebFramesManager()->GetMainWebFrame() != nullptr;
       }));
-  web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
 
   ExecuteJavaScript(@"document.getElementById('form').submit();");
   ASSERT_TRUE(observer_->submit_document_info());
@@ -133,8 +141,7 @@ TEST_F(FormActivityTabHelperTest, TestObserverFormActivityFrameMessaging) {
       base::test::ios::kWaitForJSCompletionTimeout, ^bool {
         return web_state()->GetWebFramesManager()->GetMainWebFrame() != nullptr;
       }));
-  web::WebFrame* main_frame =
-      web_state()->GetWebFramesManager()->GetMainWebFrame();
+  WebFrame* main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
   ASSERT_FALSE(observer_->form_activity_info());
   // First call will set document.activeElement (which is usually set by user
   // action. Second call will trigger the message.

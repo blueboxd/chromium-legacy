@@ -120,7 +120,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
 
   bool HasRecordedDrawCommands() { return have_recorded_draw_commands_; }
 
-  scoped_refptr<StaticBitmapImage> NewImageSnapshot(RasterModeHint);
+  scoped_refptr<StaticBitmapImage> NewImageSnapshot();
 
   cc::TextureLayer* layer_for_testing() { return layer_.get(); }
 
@@ -153,8 +153,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void SetLoggerForTesting(std::unique_ptr<Logger> logger) {
     logger_ = std::move(logger);
   }
-  CanvasResourceProvider* GetOrCreateResourceProvider(
-      RasterModeHint = RasterModeHint::kPreferGPU);
+  CanvasResourceProvider* GetOrCreateResourceProvider();
   CanvasResourceProvider* ResourceProvider() const;
   void FlushRecording();
 
@@ -180,7 +179,8 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void SkipQueuedDrawCommands();
   void EnsureCleared();
 
-  bool ShouldAccelerate(RasterModeHint) const;
+  // Check if the Raster Mode is GPU and if the GPU context is not lost
+  bool ShouldAccelerate() const;
 
   sk_sp<SkImage> hibernation_image_;
   scoped_refptr<cc::TextureLayer> layer_;

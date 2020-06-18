@@ -429,6 +429,13 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     timing->interactive_timing->first_input_processing_time =
         *perf.FirstInputProcessingTime();
   }
+  if (perf.FirstScrollDelay().has_value()) {
+    timing->interactive_timing->first_scroll_delay = *perf.FirstScrollDelay();
+  }
+  if (perf.FirstScrollTimestamp().has_value()) {
+    timing->interactive_timing->first_scroll_timestamp =
+        ClampDelta((*perf.FirstScrollTimestamp()).InSecondsF(), start);
+  }
   if (perf.ResponseStart() > 0.0)
     timing->response_start = ClampDelta(perf.ResponseStart(), start);
   if (perf.DomContentLoadedEventStart() > 0.0) {
@@ -471,13 +478,13 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
         ClampDelta(perf.FirstMeaningfulPaint(), start);
   }
   if (perf.LargestImagePaintSize() > 0) {
-    timing->paint_timing->largest_image_paint_size =
+    timing->paint_timing->largest_contentful_paint->largest_image_paint_size =
         perf.LargestImagePaintSize();
     // Note that size can be nonzero while the time is 0 since a time of 0 is
     // sent when the image is painting. We assign the time even when it is 0 so
     // that it's not ignored, but need to be careful when doing operations on
     // the value.
-    timing->paint_timing->largest_image_paint =
+    timing->paint_timing->largest_contentful_paint->largest_image_paint =
         perf.LargestImagePaint() == 0.0
             ? base::TimeDelta()
             : ClampDelta(perf.LargestImagePaint(), start);
@@ -486,9 +493,34 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     // LargestTextPaint and LargestTextPaintSize should be available at the
     // same time. This is a renderer side DCHECK to ensure this.
     DCHECK(perf.LargestTextPaint());
-    timing->paint_timing->largest_text_paint =
+    timing->paint_timing->largest_contentful_paint->largest_text_paint =
         ClampDelta(perf.LargestTextPaint(), start);
-    timing->paint_timing->largest_text_paint_size = perf.LargestTextPaintSize();
+    timing->paint_timing->largest_contentful_paint->largest_text_paint_size =
+        perf.LargestTextPaintSize();
+  }
+  if (perf.ExperimentalLargestImagePaintSize() > 0) {
+    timing->paint_timing->experimental_largest_contentful_paint
+        ->largest_image_paint_size = perf.ExperimentalLargestImagePaintSize();
+    // Note that size can be nonzero while the time is 0 since a time of 0 is
+    // sent when the image is painting. We assign the time even when it is 0 so
+    // that it's not ignored, but need to be careful when doing operations on
+    // the value.
+    timing->paint_timing->experimental_largest_contentful_paint
+        ->largest_image_paint =
+        perf.ExperimentalLargestImagePaint() == 0.0
+            ? base::TimeDelta()
+            : ClampDelta(perf.ExperimentalLargestImagePaint(), start);
+  }
+  if (perf.ExperimentalLargestTextPaintSize() > 0) {
+    // ExperimentalLargestTextPaint and ExperimentalLargestTextPaintSize should
+    // be available at the same time. This is a renderer side DCHECK to ensure
+    // this.
+    DCHECK(perf.ExperimentalLargestTextPaint());
+    timing->paint_timing->experimental_largest_contentful_paint
+        ->largest_text_paint =
+        ClampDelta(perf.ExperimentalLargestTextPaint(), start);
+    timing->paint_timing->experimental_largest_contentful_paint
+        ->largest_text_paint_size = perf.ExperimentalLargestTextPaintSize();
   }
   if (perf.FirstInputOrScrollNotifiedTimestamp() > 0) {
     timing->paint_timing->first_input_or_scroll_notified_timestamp =

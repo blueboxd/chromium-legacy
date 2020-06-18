@@ -128,17 +128,6 @@ void StreamTexture::ReleaseChannel() {
   channel_ = nullptr;
 }
 
-// gpu::gles2::GLStreamTextureMatrix implementation
-void StreamTexture::GetTextureMatrix(float xform[16]) {
-  static constexpr float kIdentity[16]{
-      1, 0, 0, 0,  //
-      0, 1, 0, 0,  //
-      0, 0, 1, 0,  //
-      0, 0, 0, 1   //
-  };
-  memcpy(xform, kIdentity, sizeof(kIdentity));
-}
-
 bool StreamTexture::IsUsingGpuMemory() const {
   // Once the image is bound during the first update, we just replace/update the
   // same image every time in future and hence the image is always bound to a

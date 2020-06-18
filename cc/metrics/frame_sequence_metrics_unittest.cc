@@ -31,6 +31,7 @@ TEST(FrameSequenceMetricsTest, AggregatedThroughputClearedAfterReport) {
                              nullptr);
   first.impl_throughput().frames_expected = 200u;
   first.impl_throughput().frames_produced = 190u;
+  first.aggregated_throughput().frames_expected = 170u;
   first.aggregated_throughput().frames_produced = 150u;
 
   first.ReportMetrics();
@@ -49,11 +50,12 @@ TEST(FrameSequenceMetricsTest, ComputeUniversalThroughputAtDestruction) {
 
   metric->impl_throughput().frames_expected = 200u;
   metric->impl_throughput().frames_produced = 190u;
+  metric->aggregated_throughput().frames_expected = 170u;
   metric->aggregated_throughput().frames_produced = 150u;
 
   metric = nullptr;
   DCHECK(reporter.current_universal_throughput().has_value());
-  EXPECT_EQ(reporter.current_universal_throughput().value(), 75);
+  EXPECT_EQ(reporter.current_universal_throughput().value(), 88);
 }
 
 // Test that ThroughputUkmReporter::ReportThroughputUkm isn't called for the
@@ -67,6 +69,7 @@ TEST(FrameSequenceMetricsTest, UniversalNotReportUkmAtRenderer) {
 
   metric->impl_throughput().frames_expected = 200u;
   metric->impl_throughput().frames_produced = 190u;
+  metric->aggregated_throughput().frames_expected = 170u;
   metric->aggregated_throughput().frames_produced = 150u;
   metric->ReportMetrics();
 

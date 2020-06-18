@@ -112,12 +112,6 @@ const std::vector<SearchConcept>& GetPeopleSearchConcepts() {
        {.setting = mojom::Setting::kLockScreen},
        {IDS_OS_SETTINGS_TAG_LOCK_SCREEN_WHEN_WAKING_ALT1,
         SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_SYNC,
-       mojom::kSyncSubpagePath,
-       mojom::SearchResultIcon::kSync,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSubpage,
-       {.subpage = mojom::Subpage::kSync}},
       {IDS_OS_SETTINGS_TAG_PEOPLE_ACCOUNTS_REMOVE,
        mojom::kMyAccountsSubpagePath,
        mojom::SearchResultIcon::kAvatar,
@@ -147,27 +141,83 @@ const std::vector<SearchConcept>& GetPeopleSearchConcepts() {
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetSyncOnSearchConcepts() {
+const std::vector<SearchConcept>& GetNonSplitSyncSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_SYNC_AND_GOOGLE_SERVICES,
+       mojom::kSyncDeprecatedSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSyncDeprecated}},
+      {IDS_OS_SETTINGS_TAG_SYNC_MANAGEMENT,
+       mojom::kSyncDeprecatedAdvancedSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSyncDeprecatedAdvanced}},
+      {IDS_OS_SETTINGS_TAG_SYNC_ENCRYPTION_OPTIONS,
+       mojom::kSyncDeprecatedSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kNonSplitSyncEncryptionOptions},
+       {IDS_OS_SETTINGS_TAG_SYNC_ENCRYPTION_OPTIONS_ALT1,
+        SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_AUTOCOMPLETE_SEARCHES_AND_URLS,
+       mojom::kSyncDeprecatedSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kAutocompleteSearchesAndUrls}},
+      {IDS_OS_SETTINGS_TAG_MAKE_SEARCHES_AND_BROWSER_BETTER,
+       mojom::kSyncDeprecatedSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kMakeSearchesAndBrowsingBetter}},
+      {IDS_OS_SETTINGS_TAG_GOOGLE_DRIVE_SEARCH_SUGGESTIONS,
+       mojom::kSyncDeprecatedSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kGoogleDriveSearchSuggestions}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetSplitSyncSearchConcepts() {
+  static const base::NoDestructor<std::vector<SearchConcept>> tags({
+      {IDS_OS_SETTINGS_TAG_SYNC,
+       mojom::kSyncSubpagePath,
+       mojom::SearchResultIcon::kSync,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSubpage,
+       {.subpage = mojom::Subpage::kSync}},
+  });
+  return *tags;
+}
+
+const std::vector<SearchConcept>& GetSplitSyncOnSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF,
        mojom::kSyncSubpagePath,
        mojom::SearchResultIcon::kSync,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kSyncOnOff},
+       {.setting = mojom::Setting::kSplitSyncOnOff},
        {IDS_OS_SETTINGS_TAG_SYNC_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
 
-const std::vector<SearchConcept>& GetSyncOffSearchConcepts() {
+const std::vector<SearchConcept>& GetSplitSyncOffSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON,
        mojom::kSyncSubpagePath,
        mojom::SearchResultIcon::kSync,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kSyncOnOff},
+       {.setting = mojom::Setting::kSplitSyncOnOff},
        {IDS_OS_SETTINGS_TAG_SYNC_TURN_ON_ALT1, SearchConcept::kAltTagEnd}},
   });
   return *tags;
@@ -637,10 +687,16 @@ PeopleSection::PeopleSection(
     OnKerberosEnabledStateChanged();
   }
 
-  if (sync_service_ && chromeos::features::IsSplitSettingsSyncEnabled()) {
-    // Sync search tags are added/removed dynamically.
-    sync_service_->AddObserver(this);
-    OnStateChanged(sync_service_);
+  if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+    if (sync_service_) {
+      registry()->AddSearchTags(GetSplitSyncSearchConcepts());
+
+      // Sync search tags are added/removed dynamically.
+      sync_service_->AddObserver(this);
+      OnStateChanged(sync_service_);
+    }
+  } else {
+    registry()->AddSearchTags(GetNonSplitSyncSearchConcepts());
   }
 
   // Parental control search tags are added if necessary and do not update
@@ -658,7 +714,7 @@ PeopleSection::~PeopleSection() {
   if (kerberos_credentials_manager_)
     kerberos_credentials_manager_->RemoveObserver(this);
 
-  if (sync_service_ && chromeos::features::IsSplitSettingsSyncEnabled())
+  if (chromeos::features::IsSplitSettingsSyncEnabled() && sync_service_)
     sync_service_->RemoveObserver(this);
 }
 
@@ -824,13 +880,20 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   RegisterNestedSettingBulk(mojom::Subpage::kMyAccounts, kMyAccountsSettings,
                             generator);
 
-  // Combined browser/OS sync (deprecated). Note that settings are not
-  // registered for these subpages since they'll be removed shortly.
+  // Combined browser/OS sync.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES,
       mojom::Subpage::kSyncDeprecated, mojom::SearchResultIcon::kSync,
       mojom::SearchResultDefaultRank::kMedium,
       mojom::kSyncDeprecatedSubpagePath);
+  static constexpr mojom::Setting kSyncDeprecatedSettings[] = {
+      mojom::Setting::kNonSplitSyncEncryptionOptions,
+      mojom::Setting::kAutocompleteSearchesAndUrls,
+      mojom::Setting::kMakeSearchesAndBrowsingBetter,
+      mojom::Setting::kGoogleDriveSearchSuggestions,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kSyncDeprecated,
+                            kSyncDeprecatedSettings, generator);
   generator->RegisterNestedSubpage(
       IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE,
       mojom::Subpage::kSyncDeprecatedAdvanced, mojom::Subpage::kSyncDeprecated,
@@ -842,7 +905,7 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_OS_SETTINGS_SYNC_PAGE_TITLE, mojom::Subpage::kSync,
       mojom::SearchResultIcon::kSync, mojom::SearchResultDefaultRank::kMedium,
       mojom::kSyncSubpagePath);
-  generator->RegisterNestedSetting(mojom::Setting::kSyncOnOff,
+  generator->RegisterNestedSetting(mojom::Setting::kSplitSyncOnOff,
                                    mojom::Subpage::kSync);
 
   // Security and sign-in.
@@ -906,11 +969,11 @@ void PeopleSection::OnStateChanged(syncer::SyncService* sync_service) {
   DCHECK_EQ(sync_service, sync_service_);
   if (sync_service_->IsEngineInitialized() &&
       sync_service_->GetUserSettings()->IsOsSyncFeatureEnabled()) {
-    registry()->AddSearchTags(GetSyncOnSearchConcepts());
-    registry()->RemoveSearchTags(GetSyncOffSearchConcepts());
+    registry()->AddSearchTags(GetSplitSyncOnSearchConcepts());
+    registry()->RemoveSearchTags(GetSplitSyncOffSearchConcepts());
   } else {
-    registry()->RemoveSearchTags(GetSyncOnSearchConcepts());
-    registry()->AddSearchTags(GetSyncOffSearchConcepts());
+    registry()->RemoveSearchTags(GetSplitSyncOnSearchConcepts());
+    registry()->AddSearchTags(GetSplitSyncOffSearchConcepts());
   }
 }
 

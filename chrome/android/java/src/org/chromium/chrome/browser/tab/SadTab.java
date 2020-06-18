@@ -112,7 +112,7 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
                 suggestionAction, buttonAction, showSendFeedbackView, mTab.isIncognito());
         mSadTabSuccessiveRefreshCounter++;
 
-        TabViewManager.get(mTab).addTabViewProvider(this);
+        mTab.getTabViewManager().addTabViewProvider(this);
     }
 
     /**
@@ -120,7 +120,7 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
      */
     @VisibleForTesting
     public void removeIfPresent() {
-        TabViewManager.get(mTab).removeTabViewProvider(this);
+        mTab.getTabViewManager().removeTabViewProvider(this);
         mView = null;
     }
 
@@ -128,7 +128,7 @@ public class SadTab extends EmptyTabObserver implements UserData, TabViewProvide
      * @return Whether or not the sad tab is showing.
      */
     public boolean isShowing() {
-        return mView != null && TabViewManager.get(mTab).getCurrentTabViewProvider() == this;
+        return mView != null && mTab.getTabViewManager().isShowing(this);
     }
 
     // TabObserver

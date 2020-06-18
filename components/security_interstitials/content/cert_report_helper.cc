@@ -86,15 +86,9 @@ void CertReportHelper::PopulateExtendedReportingOption(
       security_interstitials::kBoxChecked,
       safe_browsing::IsExtendedReportingEnabled(*GetPrefs(web_contents_)));
 
-  const std::string privacy_link = base::StringPrintf(
-      security_interstitials::kPrivacyLinkHtml,
-      security_interstitials::CMD_OPEN_REPORTING_PRIVACY,
-      l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
-
   load_time_data->SetString(
       security_interstitials::kOptInLink,
-      l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE,
-                                 base::UTF8ToUTF16(privacy_link)));
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
 }
 
 void CertReportHelper::SetSSLCertReporterForTesting(

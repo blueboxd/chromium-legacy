@@ -23,7 +23,6 @@ Window CreateWindow(Connection* connection) {
       .parent = connection->default_screen().root,
       .width = 1,
       .height = 1,
-      .value_mask = CreateWindowAttribute::OverrideRedirect,
       .override_redirect = Bool32(true),
   });
   auto create_window_response = create_window_future.Sync();
@@ -69,7 +68,6 @@ TEST(X11ConnectionTest, Event) {
 
   auto cwa_future = connection.ChangeWindowAttributes({
       .window = window,
-      .value_mask = CreateWindowAttribute::EventMask,
       .event_mask = EventMask::PropertyChange,
   });
   EXPECT_FALSE(cwa_future.Sync().error);

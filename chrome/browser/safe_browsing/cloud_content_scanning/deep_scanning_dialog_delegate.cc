@@ -196,12 +196,12 @@ void DeepScanningDialogDelegate::BypassWarnings() {
     for (const base::string16& entry : data_.text)
       content_size += (entry.size() * sizeof(base::char16));
 
-    ReportSensitiveDataWarningBypass(
+    ReportAnalysisConnectorWarningBypass(
         Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
         web_contents_->GetLastCommittedURL(), "Text data", std::string(),
         "text/plain",
         extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-        content_size, text_response_.dlp_scan_verdict());
+        access_point_, content_size, text_response_.dlp_scan_verdict());
   }
 
   // Mark every "warning" file as complying and report a warning bypass.
@@ -209,12 +209,13 @@ void DeepScanningDialogDelegate::BypassWarnings() {
     size_t index = warning.first;
     result_.paths_results[index] = true;
 
-    ReportSensitiveDataWarningBypass(
+    ReportAnalysisConnectorWarningBypass(
         Profile::FromBrowserContext(web_contents_->GetBrowserContext()),
         web_contents_->GetLastCommittedURL(), data_.paths[index].AsUTF8Unsafe(),
         file_info_[index].sha256, file_info_[index].mime_type,
         extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-        file_info_[index].size, warning.second.dlp_scan_verdict());
+        access_point_, file_info_[index].size,
+        warning.second.dlp_scan_verdict());
   }
 
   RunCallback();
@@ -426,7 +427,7 @@ void DeepScanningDialogDelegate::StringRequestCallback(
       web_contents_->GetLastCommittedURL(), "Text data", std::string(),
       "text/plain",
       extensions::SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      content_size, result, response);
+      access_point_, content_size, result, response);
 
   text_request_complete_ = true;
   bool text_complies = ResultShouldAllowDataUse(result, data_.settings) &&
@@ -459,7 +460,7 @@ void DeepScanningDialogDelegate::CompleteFileRequestCallback(
       web_contents_->GetLastCommittedURL(), path.AsUTF8Unsafe(),
       file_info_[index].sha256, mime_type,
       extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      file_info_[index].size, result, response);
+      access_point_, file_info_[index].size, result, response);
 
   bool dlp_ok = DlpVerdictAllowsDataUse(response.dlp_scan_verdict());
   bool malware_ok = true;

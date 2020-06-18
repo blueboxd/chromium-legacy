@@ -83,6 +83,9 @@ void SafeBrowsingLoudErrorUI::PopulateStringsForHtml(
       "primaryButtonText",
       l10n_util::GetStringUTF16(IDS_SAFEBROWSING_OVERRIDABLE_SAFETY_BUTTON));
   load_time_data->SetBoolean("overridable", !is_proceed_anyway_disabled());
+  load_time_data->SetString(
+      security_interstitials::kOptInLink,
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
 
   if (always_show_back_to_safety()) {
     load_time_data->SetBoolean("hide_primary_button", false);
@@ -305,14 +308,6 @@ void SafeBrowsingLoudErrorUI::PopulateExtendedReportingOption(
     return;
   }
 
-  const std::string privacy_link = base::StringPrintf(
-      security_interstitials::kPrivacyLinkHtml,
-      security_interstitials::CMD_OPEN_REPORTING_PRIVACY,
-      l10n_util::GetStringUTF8(IDS_SAFE_BROWSING_PRIVACY_POLICY_PAGE).c_str());
-  load_time_data->SetString(
-      security_interstitials::kOptInLink,
-      l10n_util::GetStringFUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE,
-                                 base::UTF8ToUTF16(privacy_link)));
   load_time_data->SetBoolean(security_interstitials::kBoxChecked,
                              is_extended_reporting_enabled());
 }

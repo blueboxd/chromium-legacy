@@ -171,7 +171,7 @@ AXObject* AXNodeObject::ActiveDescendant() {
     return nullptr;
 
   AXObject* ax_descendant = AXObjectCache().GetOrCreate(descendant);
-  return ax_descendant->IsVisible() ? ax_descendant : nullptr;
+  return ax_descendant && ax_descendant->IsVisible() ? ax_descendant : nullptr;
 }
 
 AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(

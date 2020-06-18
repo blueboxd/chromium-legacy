@@ -25,7 +25,7 @@
 #include "ui/aura/window_occlusion_tracker.h"
 
 #if defined(OS_CHROMEOS)
-#include "content/browser/media/capture/lame_window_capturer_chromeos.h"
+#include "content/browser/media/capture/slow_window_capturer_chromeos.h"
 #endif
 
 namespace content {
@@ -81,7 +81,7 @@ class AuraWindowVideoCaptureDevice::WindowTracker
     target_window_ = DesktopMediaID::GetNativeWindowById(source_id);
     if (target_window_ &&
 #if defined(OS_CHROMEOS)
-        // See class comments for LameWindowCapturerChromeOS.
+        // See class comments for SlowWindowCapturerChromeOS.
         (source_id.type == DesktopMediaID::TYPE_WINDOW ||
          target_window_->GetFrameSinkId().is_valid()) &&
 #else
@@ -175,7 +175,7 @@ void AuraWindowVideoCaptureDevice::CreateCapturer(
               VLOG(1) << "AuraWindowVideoCaptureDevice is using the LAME "
                          "capturer. :(";
               mojo::MakeSelfOwnedReceiver(
-                  std::make_unique<LameWindowCapturerChromeOS>(
+                  std::make_unique<SlowWindowCapturerChromeOS>(
                       tracker->target_window()),
                   std::move(receiver));
             } else {

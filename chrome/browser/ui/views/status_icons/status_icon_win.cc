@@ -6,6 +6,7 @@
 
 #include <string.h>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ui/views/status_icons/status_tray_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"

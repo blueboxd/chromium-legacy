@@ -35,6 +35,7 @@ android_library("weblayer_java_tests") {
     "src/org/chromium/weblayer/test/TopControlsTest.java",
     "src/org/chromium/weblayer/test/WebLayerLoadingTest.java",
     "src/org/chromium/weblayer/test/WebLayerTest.java",
+    "src/org/chromium/weblayer/test/WebMessageTest.java",
     "src/org/chromium/weblayer/test/WebViewCompatibilityTest.java",
   ]
   deps = [

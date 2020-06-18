@@ -5118,26 +5118,8 @@ GLES2DecoderPassthroughImpl::DoUniformMatrix4fvStreamTextureMatrixCHROMIUM(
     return error::kNoError;
   }
 
-  float gl_matrix[16] = {};
-
-  GLStreamTextureImage* image =
-      bound_texture->GetStreamLevelImage(kTextureTarget, 0);
-  if (image) {
-    gfx::Transform st_transform(gfx::Transform::kSkipInitialization);
-    gfx::Transform pre_transform(gfx::Transform::kSkipInitialization);
-    image->GetTextureMatrix(gl_matrix);
-    st_transform.matrix().setColMajorf(gl_matrix);
-    // const_cast is safe, because setColMajorf only does a memcpy.
-    // TODO(piman): can we remove this assumption without having to introduce
-    // an extra copy?
-    pre_transform.matrix().setColMajorf(const_cast<const GLfloat*>(transform));
-    gfx::Transform(pre_transform, st_transform).matrix().asColMajorf(gl_matrix);
-  } else {
-    // Missing stream texture. Treat matrix as identity.
-    memcpy(gl_matrix, const_cast<const GLfloat*>(transform), sizeof(gl_matrix));
-  }
-
-  api()->glUniformMatrix4fvFn(location, 1, transpose, gl_matrix);
+  api()->glUniformMatrix4fvFn(location, 1, transpose,
+                              const_cast<const GLfloat*>(transform));
 
   return error::kNoError;
 }

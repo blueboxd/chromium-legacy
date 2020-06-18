@@ -8733,7 +8733,7 @@ interface VideoEncoder
     method constructor
     method encode
     method flush
-    method tune
+    method reset
 interface VideoFrame
     attribute @@toStringTag
     getter codedHeight

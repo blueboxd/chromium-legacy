@@ -118,6 +118,10 @@ class PageLoadMetricsObserverDelegate {
   // Returns a shared LargestContentfulPaintHandler for page load metrics.
   virtual const LargestContentfulPaintHandler&
   GetLargestContentfulPaintHandler() const = 0;
+  // Returns a LargestContentfulPaintHandler for the experimental version of
+  // LCP.
+  virtual const LargestContentfulPaintHandler&
+  GetExperimentalLargestContentfulPaintHandler() const = 0;
 
   // UKM SourceId for the current page load.
   virtual ukm::SourceId GetSourceId() const = 0;

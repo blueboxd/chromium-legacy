@@ -21,6 +21,8 @@
 
       <!-- Generic resources -->
       <structure type="chrome_scaled_image" name="IDR_HISTORY_FAVICON" file="favicon_history.png" />
+      <structure type="chrome_scaled_image" name="IDR_SAD_WEBVIEW" file="webview-crash.png" />
+      <structure type="chrome_scaled_image" name="IDR_SAD_PLUGIN" file="sadplugin.png" />
     </structures>
   </release>
 </grit>

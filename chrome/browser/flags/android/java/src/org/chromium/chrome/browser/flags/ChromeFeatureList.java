@@ -360,6 +360,8 @@ public abstract class ChromeFeatureList {
             "WebPaymentsPerMethodCanMakePaymentQuota";
     public static final String PHOTO_PICKER_VIDEO_SUPPORT = "PhotoPickerVideoSupport";
     public static final String PHOTO_PICKER_ZOOM = "PhotoPickerZoom";
+    public static final String PORTALS = "Portals";
+    public static final String PORTALS_CROSS_ORIGIN = "PortalsCrossOrigin";
     public static final String PREDICTIVE_PREFETCHING_ALLOWED_ON_ALL_CONNECTION_TYPES =
             "PredictivePrefetchingAllowedOnAllConnectionTypes";
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";

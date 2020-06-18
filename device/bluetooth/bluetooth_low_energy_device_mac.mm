@@ -7,6 +7,7 @@
 #import <CoreFoundation/CoreFoundation.h>
 #include <stddef.h>
 
+#include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/memory/ptr_util.h"

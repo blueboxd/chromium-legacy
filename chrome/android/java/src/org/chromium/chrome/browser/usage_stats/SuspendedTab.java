@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.media.MediaCaptureDevicesDispatcherAndroid;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabViewManager;
 import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsAccessibility;
@@ -149,7 +148,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData, TabViewP
 
     @VisibleForTesting
     boolean isViewAttached() {
-        return mView != null && TabViewManager.get(mTab).getCurrentTabViewProvider() == this;
+        return mView != null && mTab.getTabViewManager().isShowing(this);
     }
 
     private View createView() {
@@ -166,7 +165,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData, TabViewP
         assert mView == null;
 
         mView = createView();
-        TabViewManager.get(mTab).addTabViewProvider(this);
+        mTab.getTabViewManager().addTabViewProvider(this);
         updateFqdnText();
     }
 
@@ -199,7 +198,7 @@ public class SuspendedTab extends EmptyTabObserver implements UserData, TabViewP
     }
 
     private void removeViewIfPresent() {
-        TabViewManager.get(mTab).removeTabViewProvider(this);
+        mTab.getTabViewManager().removeTabViewProvider(this);
         mView = null;
     }
 

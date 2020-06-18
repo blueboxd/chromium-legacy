@@ -158,7 +158,6 @@ class CORE_EXPORT OffscreenCanvas final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               RasterModeHint,
                                                const FloatSize&) final;
   bool WouldTaintOrigin() const final { return !origin_clean_; }
   FloatSize ElementSize(const FloatSize& default_object_size,

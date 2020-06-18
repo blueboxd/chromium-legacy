@@ -57,6 +57,7 @@ import org.chromium.weblayer_private.interfaces.INavigationControllerClient;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.ITab;
 import org.chromium.weblayer_private.interfaces.ITabClient;
+import org.chromium.weblayer_private.interfaces.IWebMessageCallbackClient;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
 import org.chromium.weblayer_private.interfaces.StrictModeWorkaround;
 
@@ -694,6 +695,32 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         TabImplJni.get().setHttpAuth(mNativeTab, username, password);
     }
 
+    @Override
+    public void registerWebMessageCallback(
+            String jsObjectName, List<String> allowedOrigins, IWebMessageCallbackClient client) {
+        if (jsObjectName.isEmpty()) {
+            throw new IllegalArgumentException("JS object name must not be empty");
+        }
+        if (allowedOrigins.isEmpty()) {
+            throw new IllegalArgumentException("At least one origin must be specified");
+        }
+        for (String origin : allowedOrigins) {
+            if (TextUtils.isEmpty(origin)) {
+                throw new IllegalArgumentException("Origin must not be non-empty");
+            }
+        }
+        String registerError = TabImplJni.get().registerWebMessageCallback(mNativeTab, jsObjectName,
+                allowedOrigins.toArray(new String[allowedOrigins.size()]), client);
+        if (!TextUtils.isEmpty(registerError)) {
+            throw new IllegalArgumentException(registerError);
+        }
+    }
+
+    @Override
+    public void unregisterWebMessageCallback(String jsObjectName) {
+        TabImplJni.get().unregisterWebMessageCallback(mNativeTab, jsObjectName);
+    }
+
     public void destroy() {
         // Ensure that this method isn't called twice.
         assert mInterceptNavigationDelegate != null;
@@ -857,5 +884,8 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         boolean isRendererControllingBrowserControlsOffsets(long nativeTabImpl);
         void setHttpAuth(long nativeTabImpl, String username, String password);
         void cancelHttpAuth(long nativeTabImpl);
+        String registerWebMessageCallback(long nativeTabImpl, String jsObjectName,
+                String[] allowedOrigins, IWebMessageCallbackClient client);
+        void unregisterWebMessageCallback(long nativeTabImpl, String jsObjectName);
     }
 }

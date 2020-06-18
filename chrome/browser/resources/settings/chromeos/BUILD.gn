@@ -175,7 +175,8 @@ group("closure_compile_module") {
     # TODO: Uncomment as the Polymer3 migration makes progress.
     #":closure_compile_local_module",
     #"ambient_mode_page:closure_compile_module",
-    #"bluetooth_page:closure_compile_module",
+    "bluetooth_page:closure_compile_module",
+
     #"crostini_page:closure_compile_module",
     #"date_time_page:closure_compile_module",
     #"device_page:closure_compile_module",
@@ -252,9 +253,13 @@ js_library("os_route.m") {
     "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_route.m.js",
   ]
   deps = [
-    # TODO: Fill those in.
+    ":os_settings_routes.m",
+    "..:router.m",
+    "//chrome/browser/ui/webui/settings/chromeos/constants:mojom_js_library_for_compile",
+    "//ui/webui/resources/js:cr",
+    "//ui/webui/resources/js:load_time_data",
   ]
-  extra_deps = [ ":os_route_module" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("os_settings_icons_css.m") {
@@ -267,9 +272,7 @@ js_library("os_settings_icons_css.m") {
 
 js_library("os_settings_routes.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/chromeos/os_settings_routes.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:load_time_data.m" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -327,11 +330,14 @@ group("polymer3_elements") {
     ":modulize",
     ":os_icons_module",
     ":os_page_visibility_module",
-    ":os_route_module",
     ":os_settings_icons_css_module",
     "..:modulize",
     "..:settings_shared_css_module",
     "..:settings_vars_css_module",
+    "../prefs:modulize",
+    "../prefs:prefs_module",
+    "../settings_page:settings_animated_pages_module",
+    "../settings_page:settings_subpage_module",
   ]
 }
 
@@ -347,12 +353,6 @@ polymer_modulizer("os_page_visibility") {
   html_type = "dom-module"
 }
 
-polymer_modulizer("os_route") {
-  js_file = "os_route.js"
-  html_file = "os_route.html"
-  html_type = "dom-module"
-}
-
 polymer_modulizer("os_settings_icons_css") {
   js_file = "os_settings_icons_css.m.js"
   html_file = "os_settings_icons_css.html"
@@ -365,6 +365,7 @@ js_modulizer("modulize") {
     "os_settings_routes.js",
     "route_origin_behavior.js",
     "search_handler.js",
+    "os_route.js",
   ]
   namespace_rewrites = os_settings_namespace_rewrites
 }

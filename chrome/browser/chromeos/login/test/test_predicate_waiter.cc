@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
 
 #include "base/callback.h"
+#include "base/logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

@@ -150,10 +150,10 @@ LayoutObject* LayoutObjectFactory::CreateListMarker(Node& node,
       (IsA<HTMLLIElement>(parent) && !parent_style->IsInsideListElement());
   if (is_inside) {
     return CreateObject<LayoutObject, LayoutNGInsideListMarker,
-                        LayoutInsideListMarker>(node, style, legacy);
+                        LayoutListMarker>(node, style, legacy);
   }
   return CreateObject<LayoutObject, LayoutNGOutsideListMarker,
-                      LayoutOutsideListMarker>(node, style, legacy);
+                      LayoutListMarker>(node, style, legacy);
 }
 
 LayoutBlock* LayoutObjectFactory::CreateTable(Node& node,

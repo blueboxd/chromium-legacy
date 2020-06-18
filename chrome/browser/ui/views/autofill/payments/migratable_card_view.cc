@@ -103,6 +103,10 @@ MigratableCardView::GetMigratableCardDescriptionView(
   std::unique_ptr<views::Label> card_description =
       std::make_unique<views::Label>(GetCardIdentifierString(),
                                      views::style::CONTEXT_LABEL);
+  card_description->SetMultiLine(true);
+  card_description->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  constexpr int kCardDescriptionMaximumWidth = 260;
+  card_description->SetMaximumWidth(kCardDescriptionMaximumWidth);
 
   constexpr int kMigrationResultImageSize = 16;
   switch (migratable_credit_card.migration_status()) {
@@ -165,6 +169,8 @@ MigratableCardView::GetMigratableCardDescriptionView(
           migratable_credit_card.credit_card()
               .AbbreviatedExpirationDateForDisplay(/*with_prefix=*/true),
           views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
+  card_expiration->SetElideBehavior(gfx::ElideBehavior::NO_ELIDE);
+  card_expiration->SetMultiLine(true);
   migratable_card_description_view->AddChildView(card_expiration.release());
 
   // If card is not successfully uploaded we show the invalid card

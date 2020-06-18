@@ -107,7 +107,11 @@ struct YUVColor {
 
 // Forces any pending Mojo method calls between the capturer and consumer to be
 // made.
-void PropagateMojoTasks() {
+void PropagateMojoTasks(
+    scoped_refptr<base::TestMockTimeTaskRunner> runner = nullptr) {
+  if (runner) {
+    runner->RunUntilIdle();
+  }
   base::RunLoop().RunUntilIdle();
 }
 
@@ -288,7 +292,11 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
   void SendCopyOutputResult(int offset) {
     auto it = results_.begin() + offset;
     std::move(*it).Run();
-    PropagateMojoTasks();
+    PropagateMojoTasks(task_runner_);
+  }
+
+  void set_task_runner(scoped_refptr<base::TestMockTimeTaskRunner> runner) {
+    task_runner_ = std::move(runner);
   }
 
  private:
@@ -296,6 +304,7 @@ class FakeCapturableFrameSink : public CapturableFrameSink {
   YUVColor color_ = {0xde, 0xad, 0xbf};
   SizeSet size_set_;
   CompositorFrameMetadata metadata_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
 
   std::vector<base::OnceClosure> results_;
 };
@@ -392,6 +401,10 @@ class FrameSinkVideoCapturerTest : public testing::Test {
         base::TestMockTimeTaskRunner::Type::kStandalone);
     start_time_ = task_runner_->NowTicks();
     capturer_->clock_ = task_runner_->GetMockTickClock();
+
+    // Ensure any posted tasks for CopyOutputResults will be handled when
+    // PropagateMojoTasks() is called
+    frame_sink_.set_task_runner(task_runner_);
 
     // Replace the retry timer with one that uses this test's fake clock and
     // task runner.

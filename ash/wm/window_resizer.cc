@@ -4,6 +4,7 @@
 
 #include "ash/wm/window_resizer.h"
 
+#include "ash/public/cpp/frame_header.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -21,6 +22,7 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/presentation_feedback.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/window/window_resize_utils.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -313,18 +315,60 @@ gfx::Point WindowResizer::GetOriginForDrag(int delta_x,
   // modify the origin so that the cursor remains within the dragged window.
   // The ratio of the new origin to the new location should match the ratio
   // from the initial origin to the initial location.
-  if (!details().restore_bounds_in_parent.IsEmpty()) {
-    // The ratios that should match is the (drag location x - bounds origin x) /
-    // bounds width.
-    const float ratio = (details().initial_location_in_parent.x() -
-                         float{details().initial_bounds_in_parent.x()}) /
-                        details().initial_bounds_in_parent.width();
-    const int new_origin_x =
-        gfx::ToRoundedInt(event_location.x() -
-                          ratio * details().restore_bounds_in_parent.width());
-    origin.set_x(new_origin_x);
-  }
+  const gfx::Rect restore_bounds = details().restore_bounds_in_parent;
+  if (restore_bounds.IsEmpty())
+    return origin;
 
+  // The ratios that should match is the (drag location x - bounds origin x) /
+  // bounds width.
+  const float ratio = (details().initial_location_in_parent.x() -
+                       float{details().initial_bounds_in_parent.x()}) /
+                      details().initial_bounds_in_parent.width();
+  int new_origin_x =
+      gfx::ToRoundedInt(event_location.x() - ratio * restore_bounds.width());
+  origin.set_x(new_origin_x);
+
+  // Windows may not have a widget in tests.
+  auto* widget = views::Widget::GetWidgetForNativeWindow(GetTarget());
+  if (!widget)
+    return origin;
+
+  // |widget| may have a custom frame, |header| will be null in this case.
+  auto* header = FrameHeader::Get(widget);
+  if (!header)
+    return origin;
+
+  // Compute the available bounds based on the header local bounds. These bounds
+  // are from the previous layout and do not match |restore_bounds| yet.
+  gfx::Rect header_bounds = header->view()->GetLocalBounds();
+  header_bounds.set_height(header->GetHeaderHeight());
+  gfx::Rect available_bounds = header_bounds;
+  auto* back_button = header->GetBackButton();
+  auto* caption_button_container = header->caption_button_container();
+  if (back_button)
+    available_bounds.Subtract(back_button->bounds());
+  if (caption_button_container)
+    available_bounds.Subtract(caption_button_container->bounds());
+
+  // Calculate the new expected available header left and right bounds. The new
+  // header will still are |new_origin_x| with width |restore_bounds.width()|.
+  // The available region subtracts the control buttons.
+  const int header_left =
+      new_origin_x + (available_bounds.x() - header_bounds.x());
+  const int header_right = new_origin_x + restore_bounds.width() -
+                           (header_bounds.right() - available_bounds.right());
+
+  // If |event_location| x falls outside |available_bounds|, shift
+  // |new_origin_x| so that the new window bounds will not land on the any of
+  // the header buttons.
+  int shift = 0;
+  if (event_location.x() > header_right)
+    shift = event_location.x() - header_right;
+  else if (event_location.x() < header_left)
+    shift = event_location.x() - header_left;
+  new_origin_x += shift;
+
+  origin.set_x(new_origin_x);
   return origin;
 }
 

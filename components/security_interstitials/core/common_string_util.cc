@@ -37,6 +37,9 @@ void PopulateSSLLayoutStrings(int cert_error,
   // interstitials as needed.
   load_time_data->SetString("recurrentErrorParagraph", "");
   load_time_data->SetBoolean("show_recurrent_error_paragraph", false);
+  load_time_data->SetString(
+      "optInLink",
+      l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
 }
 
 void PopulateSSLDebuggingStrings(const net::SSLInfo ssl_info,

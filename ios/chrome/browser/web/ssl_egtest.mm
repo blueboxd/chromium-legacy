@@ -27,6 +27,13 @@
 
 @implementation SSLTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+  config.features_enabled.push_back(web::features::kSSLCommittedInterstitials);
+  config.relaunch_policy = NoForceRelaunchAndResetState;
+  return config;
+}
+
 - (void)setUp {
   [super setUp];
   _HTTPSServer = std::make_unique<net::test_server::EmbeddedTestServer>(
@@ -37,17 +44,27 @@
 // Test loading a page with a bad SSL certificate from the NTP, to avoid
 // https://crbug.com/1067250 from regressing.
 - (void)testBadSSLOnNTP {
-  if (!base::FeatureList::IsEnabled(
-          web::features::kSSLCommittedInterstitials)) {
-    // The content of the interstitial isn't in the webstate in that case.
-    EARL_GREY_TEST_SKIPPED(@"The test needs committed interstitials enabled.");
-  }
-
   GREYAssertTrue(_HTTPSServer->Start(), @"Test server failed to start.");
 
   const GURL pageURL = _HTTPSServer->GetURL("/echo");
   [ChromeEarlGrey loadURL:pageURL];
 
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_SSL_V2_HEADING)];
+}
+
+// Test loading a page with a bad SSL certificate during session restore, to
+// avoid regressing https://crbug.com/1050808.
+- (void)testBadSSLInSessionRestore {
+  GREYAssertTrue(_HTTPSServer->Start(), @"Test server failed to start.");
+
+  GURL pageURL = _HTTPSServer->GetURL("/echo");
+  [ChromeEarlGrey loadURL:pageURL];
+
+  [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
+                                                    IDS_SSL_V2_HEADING)];
+
+  [ChromeEarlGrey triggerRestoreViaTabGridRemoveAllUndo];
   [ChromeEarlGrey waitForWebStateContainingText:l10n_util::GetStringUTF8(
                                                     IDS_SSL_V2_HEADING)];
 }

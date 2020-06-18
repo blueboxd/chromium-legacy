@@ -90,7 +90,6 @@ class MEDIA_GPU_EXPORT CodecImage
   GetAHardwareBuffer() override;
   gfx::Rect GetCropRect() override;
   // gpu::gles2::GLStreamTextureMatrix implementation
-  void GetTextureMatrix(float xform[16]) override;
   // Currently this API is implemented by the NotifyOverlayPromotion, since this
   // API is expected to be removed.
   void NotifyPromotionHint(bool promotion_hint,

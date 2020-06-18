@@ -57,6 +57,7 @@ AAPT_IGNORE_PATTERN = ':'.join([
     '*~',  # Some editors create these as temp files.
     '.*',  # Never makes sense to include dot(files/dirs).
     '*.d.stamp',  # Ignore stamp files
+    '*.backup',  # Some tools create temporary backup files.
 ])
 
 MULTIPLE_RES_MAGIC_STRING = b'magic'

@@ -38,8 +38,12 @@ AppPauseDialogView::AppPauseDialogView(
     const gfx::ImageSkia& image,
     const apps::PauseData& pause_data,
     apps::AppServiceProxy::OnPauseDialogClosedCallback closed_callback)
-    : AppDialogView(app_name, image),
-      closed_callback_(std::move(closed_callback)) {
+    : AppDialogView(image) {
+  SetTitle(l10n_util::GetStringFUTF16(IDS_APP_PAUSE_PROMPT_TITLE,
+                                      base::UTF8ToUTF16(app_name)));
+
+  SetAcceptCallback(std::move(closed_callback));
+
   const int cutoff = pause_data.minutes == 0 || pause_data.hours == 0 ? 0 : -1;
   base::string16 heading_text = l10n_util::GetStringFUTF16(
       (app_type == apps::mojom::AppType::kWeb)
@@ -64,14 +68,4 @@ AppPauseDialogView::~AppPauseDialogView() {
 // static
 AppPauseDialogView* AppPauseDialogView::GetActiveViewForTesting() {
   return g_app_pause_dialog_view;
-}
-
-bool AppPauseDialogView::Accept() {
-  std::move(closed_callback_).Run();
-  return true;
-}
-
-base::string16 AppPauseDialogView::GetWindowTitle() const {
-  return l10n_util::GetStringFUTF16(IDS_APP_PAUSE_PROMPT_TITLE,
-                                    base::UTF8ToUTF16(app_name()));
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/services/sharing/nearby_decoder/advertisement.h"
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 

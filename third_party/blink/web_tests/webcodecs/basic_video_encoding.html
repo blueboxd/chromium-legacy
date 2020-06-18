@@ -28,24 +28,26 @@ async function createFrame(width, height, ts) {
 }
 
 promise_test(async function() {
-  const tune = {
+  const init = {
+    output : () => { return true; }
+  };
+  const params = {
+    codec : "vp8",
     width: 123,
     height: 321,
     bitrate: 1e6,
-    framerate: 24
-   }
-  const init_params = {
-    codec : "vp8",
-    tuneOptions: tune,
-    output : () => { return true; }
+    framerate: 24,
   };
-  let encoder = new VideoEncoder();
-  await encoder.configure(init_params);
-  encoder = new VideoEncoder(init_params);
-  tune.width = null;
-  encoder.configure(init_params).catch(e => {
+  let encoder = new VideoEncoder(init);
+  encoder.configure(params);
+  encoder.close();
+  encoder = new VideoEncoder(init);
+  params.width = null;
+  try {
+    encoder.configure(params);
+  } catch (e) {
     assert_equals(e.name, "InvalidStateError");
-  });
+  };
 }, "Initialization");
 
 promise_test(async function() {
@@ -64,28 +66,27 @@ promise_test(async function() {
     frames_processed++;
   };
 
-  const init_params = {
-    codec : "vp9",
-    profile : "vp09.00.10.08",
-    tuneOptions : {
-      width : w,
-      height : h,
-      bitrate: 10e6,
-      framerate: 30
-    },
+  const init = {
     output : process_video_chunk,
     error: (e) => { console.log(e.message); }
   };
-  let encoder = new VideoEncoder();
-  await encoder.configure(init_params);
-
+  const params = {
+    codec : "vp9",
+    profile : "vp09.00.10.08",
+    width : w,
+    height : h,
+    bitrate: 10e6,
+    framerate: 30,
+  };
+  let encoder = new VideoEncoder(init);
+  encoder.configure(params);
   for (let i = 0; i < frames_to_encode; i++) {
     var frame = await createFrame(w, h, i);
     let keyframe = (i % 5 == 0);
-    await encoder.encode(frame, { keyFrame : keyframe});
+    encoder.encode(frame, { keyFrame : keyframe});
   }
   await encoder.flush();
-  await encoder.close();
+  encoder.close();
   assert_equals(frames_processed, frames_to_encode);
 }, "EncodeFrame");
 

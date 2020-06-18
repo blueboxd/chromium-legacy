@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
 #include "third_party/blink/renderer/core/page/drag_actions.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
@@ -475,11 +476,16 @@ void WebFrameWidgetBase::DidCommitAndDrawCompositorFrame() {
 void WebFrameWidgetBase::DidObserveFirstScrollDelay(
     base::TimeDelta first_scroll_delay,
     base::TimeTicks first_scroll_timestamp) {
-  if (!LocalRoot() || !(LocalRoot()->Client())) {
+  if (!local_root_ || !(local_root_->GetFrame()) ||
+      !(local_root_->GetFrame()->GetDocument())) {
     return;
   }
-  LocalRoot()->Client()->DidObserveFirstScrollDelay(first_scroll_delay,
-                                                    first_scroll_timestamp);
+  InteractiveDetector* interactive_detector =
+      InteractiveDetector::From(*(local_root_->GetFrame()->GetDocument()));
+  if (interactive_detector) {
+    interactive_detector->DidObserveFirstScrollDelay(first_scroll_delay,
+                                                     first_scroll_timestamp);
+  }
 }
 
 void WebFrameWidgetBase::OnDeferMainFrameUpdatesChanged(bool defer) {

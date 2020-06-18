@@ -18,6 +18,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/notreached.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

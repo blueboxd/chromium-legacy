@@ -9,9 +9,9 @@
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
@@ -187,14 +187,14 @@ ImageCaptureFrameGrabber::~ImageCaptureFrameGrabber() {
 }
 
 void ImageCaptureFrameGrabber::GrabFrame(
-    WebMediaStreamTrack* track,
+    MediaStreamComponent* component,
     std::unique_ptr<ImageCaptureGrabFrameCallbacks> callbacks,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!!callbacks);
 
-  DCHECK(track && !track->IsNull() && track->GetPlatformTrack());
-  DCHECK_EQ(WebMediaStreamSource::kTypeVideo, track->Source().GetType());
+  DCHECK(component && component->GetPlatformTrack());
+  DCHECK_EQ(MediaStreamSource::kTypeVideo, component->Source()->GetType());
 
   if (frame_grab_in_progress_) {
     // Reject grabFrame()s too close back to back.
@@ -212,7 +212,7 @@ void ImageCaptureFrameGrabber::GrabFrame(
   // https://crbug.com/623042.
   frame_grab_in_progress_ = true;
   MediaStreamVideoSink::ConnectToTrack(
-      *track,
+      component,
       ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
           &SingleShotFrameHandler::OnVideoFrameOnIOThread,
           base::MakeRefCounted<SingleShotFrameHandler>(),

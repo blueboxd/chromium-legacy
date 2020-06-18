@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data/access_context_audit_database.h"
 
+#include "base/logging.h"
 #include "sql/database.h"
 #include "sql/recovery.h"
 #include "sql/statement.h"

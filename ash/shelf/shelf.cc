@@ -569,6 +569,13 @@ void Shelf::ProcessScrollEvent(ui::ScrollEvent* event) {
 void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event,
                                    bool from_touchpad) {
   event->SetHandled();
+
+  // Early out if not in active session. Code below assumes that there is
+  // an active user (shelf layout manager looks up active user's scroll
+  // preferences) and crashes without this.
+  if (!shelf_layout_manager_->is_active_session_state())
+    return;
+
   if (!IsHorizontalAlignment())
     return;
   auto* app_list_controller = Shell::Get()->app_list_controller();

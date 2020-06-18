@@ -216,7 +216,6 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
 
 scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    RasterModeHint hint,
     const FloatSize& size) {
   if (!context_) {
     *status = kInvalidSourceImageStatus;
@@ -230,7 +229,7 @@ scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
   }
-  scoped_refptr<Image> image = context_->GetImage(hint);
+  scoped_refptr<Image> image = context_->GetImage();
   if (!image)
     image = CreateTransparentImage(Size());
   *status = image ? kNormalSourceImageStatus : kInvalidSourceImageStatus;

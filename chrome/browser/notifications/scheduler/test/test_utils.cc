@@ -7,6 +7,7 @@
 #include <sstream>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"

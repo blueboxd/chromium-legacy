@@ -1,0 +1,42 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+// Metadata information for a directory.
+message Metadata {
+  // Monorail metadata. Its component field should always map to the same
+  // team_email field (see below) for every directory that it is listed in.
+  Monorail monorail = 1;
+  // The team responsible for the directory. Only a single email is allowed.
+  // For example, “team-email@chromium.org”.
+  string team_email = 2;
+  // The code in this directory is specific to this OS.
+  OS os = 3;
+  // Reserved for metadata information for third-party code. See
+  // https://opensource.google/docs/thirdparty/metadata/
+  reserved 13;
+  reserved "third_party";
+}
+
+// Supported OS to tag a directory.
+enum OS {
+  OS_UNSPECIFIED = 0;
+  OS_LINUX = 1;
+  OS_WINDOWS = 2;
+  OS_MAC = 3;
+  OS_ANDROID = 4;
+  OS_IOS = 5;
+  OS_CHROME = 6;
+  OS_FUCHSIA = 7;
+}
+
+// Monorail specific metadata.
+message Monorail {
+  // The Monorail project. For example, “chromium”.
+  string project = 1;
+  // The Monorail component. For example, “UI>Browser>Zoom”.
+  // Only a single component is allowed.
+  string component = 2;
+}

@@ -17,9 +17,10 @@
 using fuchsia::feedback::LastReboot;
 using fuchsia::feedback::LastRebootInfoProviderSyncPtr;
 using fuchsia::feedback::RebootReason;
-using fuchsia::hardware::power::statecontrol::Admin_Suspend_Result;
+using fuchsia::hardware::power::statecontrol::Admin_Reboot_Result;
 using fuchsia::hardware::power::statecontrol::AdminSyncPtr;
-using fuchsia::hardware::power::statecontrol::SystemPowerState;
+using StateControlRebootReason =
+    fuchsia::hardware::power::statecontrol::RebootReason;
 
 namespace chromecast {
 
@@ -63,9 +64,23 @@ bool RebootShlib::IsRebootSourceSupported(
 
 // static
 bool RebootShlib::RebootNow(RebootSource reboot_source) {
-  Admin_Suspend_Result out_result;
-  zx_status_t status =
-      GetAdminSyncPtr()->Suspend(SystemPowerState::REBOOT, &out_result);
+  StateControlRebootReason reason;
+  switch (reboot_source) {
+    case RebootSource::API:
+      reason = StateControlRebootReason::USER_REQUEST;
+      break;
+    case RebootSource::OTA:
+      reason = StateControlRebootReason::SYSTEM_UPDATE;
+      break;
+    case RebootSource::OVERHEAT:
+      reason = StateControlRebootReason::HIGH_TEMPERATURE;
+      break;
+    default:
+      reason = StateControlRebootReason::USER_REQUEST;
+      break;
+  }
+  Admin_Reboot_Result out_result;
+  zx_status_t status = GetAdminSyncPtr()->Reboot(reason, &out_result);
   ZX_CHECK(status == ZX_OK, status) << "Failed to suspend device";
   return !out_result.is_err();
 }
@@ -124,6 +139,14 @@ RebootShlib::RebootSource RebootUtil::GetLastRebootSource() {
       return RebootShlib::RebootSource::HW_WATCHDOG;
     case RebootReason::SOFTWARE_WATCHDOG_TIMEOUT:
       return RebootShlib::RebootSource::WATCHDOG;
+    case RebootReason::USER_REQUEST:
+      return RebootShlib::RebootSource::API;
+    case RebootReason::SYSTEM_UPDATE:
+      return RebootShlib::RebootSource::OTA;
+    case RebootReason::HIGH_TEMPERATURE:
+      return RebootShlib::RebootSource::OVERHEAT;
+    case RebootReason::SESSION_FAILURE:
+      return RebootShlib::RebootSource::SW_OTHER;
     default:
       return last_reboot.graceful() ? RebootShlib::RebootSource::SW_OTHER
                                     : RebootShlib::RebootSource::FORCED;

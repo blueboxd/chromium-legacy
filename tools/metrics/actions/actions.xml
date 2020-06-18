@@ -20166,6 +20166,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingQRCode.FailureNotificationTapped">
+  <obsolete>Deprecated 6/2020</obsolete>
   <owner>tgupta@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>
@@ -20190,6 +20191,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingQRCode.SuccessNotificationTapped">
+  <obsolete>Deprecated 6/2020</obsolete>
   <owner>tgupta@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <description>

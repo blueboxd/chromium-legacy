@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_serializer.h"
 
 #include "base/base64.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "components/prefs/pref_service.h"

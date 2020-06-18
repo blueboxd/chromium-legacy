@@ -194,11 +194,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '57f137d71cdfbe11db02e64f615ea8c0aa0e1004',
+  'angle_revision': '7b282eb5f8fbfdb1409e98cf5366ba45ce53e107',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '7a1d99d0be42345b82c1d0c778a1ce69e6c20f34',
+  'swiftshader_revision': '974cfa9fbbdb72c25baef8d66e8e914e08631773',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -209,7 +209,7 @@ vars = {
   #
   # Note this revision should be updated with
   # third_party/boringssl/roll_boringssl.py, not roll-dep.
-  'boringssl_revision': '88024df12147e56b6abd66b743ff441a0aaa09a8',
+  'boringssl_revision': 'c17985424391fcbaaa57f733b7197c5dd3e510aa',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling google-toolbox-for-mac
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '55ac3e87d96a9bab2228b5b80b112c380cbe13e3',
+  'devtools_frontend_revision': '4ca37e4df727779afc578f0d3898aff0735a5a34',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -340,7 +340,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:db55efd4bccc863849e396df094b754b31cb7d4b',
+  'gn_version': 'git_revision:7d7e8deea36d126397bda2cf924682504271f0e1',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -855,7 +855,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd3394c28b80cbcef4503bd42582d0acc6d67f433',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '73bba61486a09b578741de1806cdfa78748773ea',
       'condition': 'checkout_linux',
   },
 
@@ -1224,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '3ef226c9565d8212b4c4b92486cd7554b31bd1d7',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '9c7a8fbc59771cb9bc97689ab57b300975f18f1c',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '2c9d76a4eb0fcdf50a03cb4a41b8a43ad16f9c6b',
+    Var('webrtc_git') + '/src.git' + '@' + 'f46902c540c32f2c2507fde6998d5e1516158825',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1524,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2878b9ea5ed394d9a175de2477107514395fb4a8',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@d438a6023a21f2ea733a2a98acf0e6f77fadb33d',
     'condition': 'checkout_src_internal',
   },
 

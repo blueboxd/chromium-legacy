@@ -209,7 +209,6 @@ class DeviceSyncCryptAuthV2DeviceManagerImplTest
   }
 
   CryptAuthV2DeviceManager* device_manager() { return device_manager_.get(); }
-  FakeCryptAuthScheduler* scheduler() { return &fake_scheduler_; }
 
  private:
   // Adds the ClientMetadata from the latest DeviceSync request to a list of
@@ -454,27 +453,6 @@ TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest,
   RequestDeviceSyncThroughSchedulerAndVerify(
       cryptauthv2::ClientMetadata::PERIODIC, base::nullopt /* session_id */);
   TimeoutWaitingForClientAppMetadataAndVerifyResult();
-}
-
-// TODO(https://crbug.com/1092113): Remove when bug is resolved.
-TEST_F(DeviceSyncCryptAuthV2DeviceManagerImplTest,
-       ScheduleEnrollmentAfterSyncMetadataEndpointNotFoundError) {
-  CreateAndStartDeviceManager();
-  RequestDeviceSyncThroughSchedulerAndVerify(
-      cryptauthv2::ClientMetadata::PERIODIC, base::nullopt /* session_id */);
-  SucceedGetClientAppMetadataRequest();
-
-  EXPECT_FALSE(scheduler()->IsWaitingForEnrollmentResult());
-
-  // Fail SyncMetadata request with 404 error.
-  FinishDeviceSyncAttemptAndVerifyResult(
-      0u /* expected_device_sync_instance_index */,
-      CryptAuthDeviceSyncResult(CryptAuthDeviceSyncResult::ResultCode::
-                                    kErrorSyncMetadataApiCallEndpointNotFound,
-                                false /* did_device_registry_change */,
-                                base::nullopt /* client_directive */));
-
-  EXPECT_TRUE(scheduler()->IsWaitingForEnrollmentResult());
 }
 
 }  // namespace device_sync

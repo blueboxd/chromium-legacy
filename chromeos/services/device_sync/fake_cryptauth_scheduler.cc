@@ -21,6 +21,7 @@ FakeCryptAuthScheduler::~FakeCryptAuthScheduler() = default;
 void FakeCryptAuthScheduler::RequestEnrollment(
     const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
     const base::Optional<std::string>& session_id) {
+  DCHECK(HasEnrollmentSchedulingStarted());
   is_waiting_for_enrollment_result_ = true;
 
   cryptauthv2::ClientMetadata client_metadata;
@@ -36,6 +37,7 @@ void FakeCryptAuthScheduler::RequestEnrollment(
 void FakeCryptAuthScheduler::RequestDeviceSync(
     const cryptauthv2::ClientMetadata::InvocationReason& invocation_reason,
     const base::Optional<std::string>& session_id) {
+  DCHECK(HasDeviceSyncSchedulingStarted());
   is_waiting_for_device_sync_result_ = true;
 
   cryptauthv2::ClientMetadata client_metadata;

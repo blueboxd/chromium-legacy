@@ -414,7 +414,37 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetPaintTiming_NavigationToLargestContentfulPaint(
         all_frames_largest_contentful_paint.Time().value().InMilliseconds());
   }
-  RecordInternalTimingMetrics(all_frames_largest_contentful_paint);
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      main_frame_experimental_largest_contentful_paint =
+          GetDelegate()
+              .GetExperimentalLargestContentfulPaintHandler()
+              .MainFrameLargestContentfulPaint();
+  if (main_frame_experimental_largest_contentful_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          main_frame_experimental_largest_contentful_paint.Time(),
+          GetDelegate())) {
+    builder
+        .SetPaintTiming_NavigationToExperimentalLargestContentfulPaint_MainFrame(
+            main_frame_experimental_largest_contentful_paint.Time()
+                .value()
+                .InMilliseconds());
+  }
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      all_frames_experimental_largest_contentful_paint =
+          GetDelegate()
+              .GetExperimentalLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
+  if (all_frames_experimental_largest_contentful_paint.ContainsValidTime() &&
+      WasStartedInForegroundOptionalEventInForeground(
+          all_frames_experimental_largest_contentful_paint.Time(),
+          GetDelegate())) {
+    builder.SetPaintTiming_NavigationToExperimentalLargestContentfulPaint(
+        all_frames_experimental_largest_contentful_paint.Time()
+            .value()
+            .InMilliseconds());
+  }
+  RecordInternalTimingMetrics(all_frames_largest_contentful_paint,
+                              all_frames_experimental_largest_contentful_paint);
   if (timing.interactive_timing->first_input_delay) {
     base::TimeDelta first_input_delay =
         timing.interactive_timing->first_input_delay.value();
@@ -439,6 +469,12 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         timing.interactive_timing->longest_input_timestamp.value();
     builder.SetInteractiveTiming_LongestInputTimestamp4(
         longest_input_timestamp.InMilliseconds());
+  }
+  if (timing.interactive_timing->first_scroll_delay) {
+    base::TimeDelta first_scroll_delay =
+        timing.interactive_timing->first_scroll_delay.value();
+    builder.SetInteractiveTiming_FirstScrollDelay(
+        first_scroll_delay.InMilliseconds());
   }
   if (timing.interactive_timing->first_input_processing_time) {
     base::TimeDelta first_input_processing_time =
@@ -476,7 +512,9 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
 
 void UkmPageLoadMetricsObserver::RecordInternalTimingMetrics(
     const page_load_metrics::ContentfulPaintTimingInfo&
-        all_frames_largest_contentful_paint) {
+        all_frames_largest_contentful_paint,
+    const page_load_metrics::ContentfulPaintTimingInfo&
+        all_frames_experimental_largest_contentful_paint) {
   ukm::builders::PageLoad_Internal debug_builder(GetDelegate().GetSourceId());
   LargestContentState lcp_state = LargestContentState::kNotFound;
   if (all_frames_largest_contentful_paint.ContainsValidTime()) {
@@ -499,6 +537,33 @@ void UkmPageLoadMetricsObserver::RecordInternalTimingMetrics(
   }
   debug_builder.SetPaintTiming_LargestContentfulPaint_TerminationState(
       static_cast<int>(lcp_state));
+
+  LargestContentState experimental_lcp_state = LargestContentState::kNotFound;
+  if (all_frames_experimental_largest_contentful_paint.ContainsValidTime()) {
+    if (WasStartedInForegroundOptionalEventInForeground(
+            all_frames_experimental_largest_contentful_paint.Time(),
+            GetDelegate())) {
+      debug_builder
+          .SetPaintTiming_ExperimentalLargestContentfulPaint_ContentType(
+              static_cast<int>(
+                  all_frames_experimental_largest_contentful_paint.Type()));
+      experimental_lcp_state = LargestContentState::kReported;
+    } else {
+      // TODO(npm): figure out why this code can be reached given that
+      // RecordTimingMetrics() is only called when was_hidden_ is set to false.
+      experimental_lcp_state = LargestContentState::kFoundButNotReported;
+    }
+  } else if (all_frames_experimental_largest_contentful_paint.Time()
+                 .has_value()) {
+    DCHECK(all_frames_experimental_largest_contentful_paint.Size());
+    experimental_lcp_state = LargestContentState::kLargestImageLoading;
+  } else {
+    DCHECK(all_frames_experimental_largest_contentful_paint.Empty());
+    experimental_lcp_state = LargestContentState::kNotFound;
+  }
+  debug_builder
+      .SetPaintTiming_ExperimentalLargestContentfulPaint_TerminationState(
+          static_cast<int>(lcp_state));
   debug_builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -777,6 +842,32 @@ void UkmPageLoadMetricsObserver::OnTimingUpdate(
         "Invalidate::AllFrames::UKM",
         TRACE_EVENT_SCOPE_THREAD, "main_frame_tree_node_id",
         GetDelegate().GetLargestContentfulPaintHandler().MainFrameTreeNodeId());
+  }
+
+  const page_load_metrics::ContentfulPaintTimingInfo&
+      experimental_largest_contentful_paint =
+          GetDelegate()
+              .GetExperimentalLargestContentfulPaintHandler()
+              .MergeMainFrameAndSubframes();
+  if (experimental_largest_contentful_paint.ContainsValidTime()) {
+    TRACE_EVENT_INSTANT2(
+        "loading",
+        "NavStartToExperimentalLargestContentfulPaint::Candidate::AllFrames::"
+        "UKM",
+        TRACE_EVENT_SCOPE_THREAD, "data",
+        experimental_largest_contentful_paint.DataAsTraceValue(),
+        "main_frame_tree_node_id",
+        GetDelegate()
+            .GetExperimentalLargestContentfulPaintHandler()
+            .MainFrameTreeNodeId());
+  } else {
+    TRACE_EVENT_INSTANT1("loading",
+                         "NavStartToExperimentalLargestContentfulPaint::"
+                         "Invalidate::AllFrames::UKM",
+                         TRACE_EVENT_SCOPE_THREAD, "main_frame_tree_node_id",
+                         GetDelegate()
+                             .GetExperimentalLargestContentfulPaintHandler()
+                             .MainFrameTreeNodeId());
   }
 }
 

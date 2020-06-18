@@ -669,6 +669,9 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
       LogManager::Create(AutofillLogRouterFactory::GetForBrowserContext(
                              web_contents->GetBrowserContext()),
                          base::Closure());
+  // Initialize StrikeDatabase so its cache will be loaded and ready to use when
+  // when requested by other Autofill classes.
+  GetStrikeDatabase();
 
 #if !defined(OS_ANDROID)
   // Since ZoomController is also a WebContentsObserver, we need to be careful

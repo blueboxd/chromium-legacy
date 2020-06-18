@@ -18,6 +18,7 @@
 #include "base/files/memory_mapped_file.h"
 #include "base/files/scoped_file.h"
 #include "base/json/json_string_value_serializer.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/stl_util.h"

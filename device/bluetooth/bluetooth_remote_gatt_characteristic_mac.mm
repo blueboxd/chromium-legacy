@@ -5,6 +5,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_mac.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"

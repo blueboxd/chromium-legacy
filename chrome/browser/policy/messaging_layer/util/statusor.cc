@@ -4,6 +4,7 @@
 
 #include "chrome/browser/policy/messaging_layer/util/statusor.h"
 
+#include "base/logging.h"
 #include "base/no_destructor.h"
 
 namespace reporting {

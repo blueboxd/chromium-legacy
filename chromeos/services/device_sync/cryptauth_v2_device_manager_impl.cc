@@ -294,21 +294,6 @@ void CryptAuthV2DeviceManagerImpl::OnDeviceSyncFinished(
 
   RecordDeviceSyncResult(device_sync_result);
 
-  // TODO(https://crbug.com/1092113): This is a workaround for the SyncMetadata
-  // 404 errors returned by the server when it cannot find an enrolled device
-  // with the same Instance ID. Theoretically, this should never occur assuming
-  // that 1) we never run a v2 DeviceSync until the device has successfully
-  // enrolled using v2 Enrollment and 2) the Instance ID does not rotate.
-  // Without this mitigation, the user will unsuccessfully try to sync until the
-  // next enrollment, which could be up to 30 days. Remove this code when the
-  // root cause is uncovered.
-  if (device_sync_result.result_code() ==
-      CryptAuthDeviceSyncResult::ResultCode::
-          kErrorSyncMetadataApiCallEndpointNotFound) {
-    scheduler_->RequestEnrollment(cryptauthv2::ClientMetadata::FAILURE_RECOVERY,
-                                  base::nullopt /* session_id */);
-  }
-
   scheduler_->HandleDeviceSyncResult(device_sync_result);
 
   base::Optional<base::TimeDelta> time_to_next_attempt = GetTimeToNextAttempt();

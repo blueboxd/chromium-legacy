@@ -91,11 +91,14 @@ constexpr float kDragAndDropProxyScale = 1.2f;
 // The apps grid should be scaled down by this factor.
 constexpr float kCardifiedScale = 0.84f;
 
-// Horizontal padding of the apps grid page when it is in cardified state.
+// Vertical padding between the apps grid pages in cardified state.
+constexpr int kCardifiedPaddingBetweenPages = 12;
+
+// Horizontal padding of the apps grid page in cardified state.
 constexpr int kCardifiedHorizontalPadding = 16;
 
 // The radius of the corner of the background cards in the apps grid.
-constexpr int kBackgroundCardCornerRadius = 16;
+constexpr int kBackgroundCardCornerRadius = 12;
 
 // Delays in milliseconds to show re-order preview.
 constexpr int kReorderDelay = 120;
@@ -113,8 +116,13 @@ constexpr int kDefaultAnimationDuration = 200;
 // apps grid view.
 constexpr int kEndCardifiedAnimationDuration = 350;
 
-// The opacity for the background cards when shown.
-constexpr float kBackgroundCardOpacityShow = 0.2f;
+// The background card opacity of the active apps grid page, when background
+// cards are shown.
+constexpr float kBackgroundCardOpacityActivePage = 0.2f;
+
+// The background card opacity of inactive apps grid pages, when background
+// cards are shown.
+constexpr float kBackgroundCardOpacityInactivePage = 0.1f;
 
 // The opacity for the background cards when hidden.
 constexpr float kBackgroundCardOpacityHide = 0.0f;
@@ -543,8 +551,11 @@ gfx::Size AppsGridView::GetMaximumTileGridSize(int cols,
 }
 
 int AppsGridView::GetPaddingBetweenPages() const {
-  return std::round(GetAppListConfig().page_spacing() *
-                    (cardified_state_ ? kCardifiedScale : 1.0));
+  // In cardified state, padding between pages should be fixed  and it should
+  // include background card padding.
+  return cardified_state_
+             ? kCardifiedPaddingBetweenPages + 2 * vertical_tile_padding_
+             : GetAppListConfig().page_spacing();
 }
 
 void AppsGridView::ResetForShowApps() {
@@ -1125,6 +1136,7 @@ void AppsGridView::Layout() {
     }
   }
   if (cardified_state_) {
+    MaybeCreateGradientMask();
     // Make sure that the background cards render behind everything
     // else in the items container.
     for (auto& background_card : background_cards_)
@@ -2274,6 +2286,7 @@ void AppsGridView::StartAppsGridCardifiedView() {
   UpdateTilePadding();
   for (int i = 0; i < pagination_model_.total_pages(); i++)
     AppendBackgroundCard(kBackgroundCardOpacityHide);
+  MaybeCreateGradientMask();
   AnimateCardifiedState();
 }
 
@@ -2353,8 +2366,16 @@ void AppsGridView::AnimateCardifiedState() {
         background_card->GetAnimator(),
         metrics_util::ForSmoothness(
             base::BindRepeating(&ReportCardifiedSmoothness, cardified_state_)));
-    background_card->SetOpacity(cardified_state_ ? kBackgroundCardOpacityShow
-                                                 : kBackgroundCardOpacityHide);
+    if (cardified_state_) {
+      const bool is_active_page =
+          background_cards_[pagination_model_.selected_page()] ==
+          background_card;
+      background_card->SetOpacity(is_active_page
+                                      ? kBackgroundCardOpacityActivePage
+                                      : kBackgroundCardOpacityInactivePage);
+    } else {
+      background_card->SetOpacity(kBackgroundCardOpacityHide);
+    }
   }
 }
 
@@ -2964,7 +2985,7 @@ void AppsGridView::AppendBackgroundCard(float opacity) {
   background_cards_.push_back(
       std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
   ui::Layer* current_layer = background_cards_.back().get();
-  current_layer->SetColor(SK_ColorGRAY);
+  current_layer->SetColor(gfx::kGoogleGrey100);
   // The size of the grid excluding the outer padding.
   const gfx::Size grid_size = GetTileGridSize();
   // The size for the background card that will be displayed. The outer padding
@@ -2983,10 +3004,10 @@ void AppsGridView::AppendBackgroundCard(float opacity) {
   const int horizontal_padding =
       (GetContentsBounds().width() - background_card_size.width()) / 2 +
       kCardifiedHorizontalPadding;
+  // The vertical padding should account for the fadeout mask.
   const int vertical_padding =
-      (GetContentsBounds().height() - background_card_size.height() +
-       padding_between_pages) /
-      2;
+      (GetContentsBounds().height() - background_card_size.height()) / 2 +
+      GetAppListConfig().grid_fadeout_mask_height();
   current_layer->SetBounds(gfx::Rect(
       horizontal_padding, vertical_padding + vertical_page_start_offset,
       background_card_size.width() - 2 * kCardifiedHorizontalPadding,
@@ -3029,7 +3050,7 @@ void AppsGridView::TotalPagesChanged(int previous_page_count,
   const int page_difference = new_page_count - previous_page_count;
   if (page_difference > 0) {
     for (int i = previous_page_count; i < new_page_count; ++i)
-      AppendBackgroundCard(kBackgroundCardOpacityShow);
+      AppendBackgroundCard(kBackgroundCardOpacityHide);
   } else {
     for (int i = 0; i < page_difference; ++i)
       RemoveBackgroundCard();
@@ -3071,6 +3092,12 @@ void AppsGridView::SelectedPageChanged(int old_selected, int new_selected) {
       ClearSelectedView(selected_view_);
     }
     Layout();
+  }
+  if (cardified_state_) {
+    background_cards_[old_selected]->SetOpacity(
+        kBackgroundCardOpacityInactivePage);
+    background_cards_[new_selected]->SetOpacity(
+        kBackgroundCardOpacityActivePage);
   }
 }
 

@@ -5,6 +5,7 @@
 #include <utility>
 
 #include "base/hash/hash.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"

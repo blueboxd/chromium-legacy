@@ -140,6 +140,13 @@ class OffScreenMainSixtyJank(ThroughputMetricStory):
          'main-animations-throughput.html?jank&offscreen#60')
 
 
+class MainAnimationsHalfPresented(ThroughputMetricStory):
+  BASE_NAME = 'main_animations_half_presented'
+  SUPPORTED_PLATFORMS = platforms.ALL_PLATFORMS
+  URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'
+         'main-animations-half-presented.html')
+
+
 class ThroughputScrolling(ThroughputMetricStory):
   ABSTRACT_STORY = True
   URL = ('file://../../../../chrome/test/data/perf/throughput_test_cases/'

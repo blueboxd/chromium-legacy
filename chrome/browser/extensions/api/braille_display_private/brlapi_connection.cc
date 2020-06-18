@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include "base/files/file_descriptor_watcher_posix.h"
+#include "base/logging.h"
 #include "base/memory/free_deleter.h"
 #include "base/stl_util.h"
 #include "base/system/sys_info.h"

@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"

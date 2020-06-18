@@ -188,6 +188,22 @@ const base::Feature kWebRtcMultiplexCodec{"WebRTC-MultiplexCodec",
 const base::Feature kWebRtcHideLocalIpsWithMdns{
     "WebRtcHideLocalIpsWithMdns", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// When enabled, wake ups from throttleable TaskQueues are limited to 1 per
+// minute in a page that has been backgrounded for 5 minutes.
+//
+// Intensive wake up throttling is enforced in addition to other throttling
+// mechanisms:
+//  - 1 wake up per second in a background page or hidden cross-origin frame
+//  - 1% CPU time in a page that has been backgrounded for 10 seconds
+//
+// Feature tracking bug: https://crbug.com/1075553
+//
+// Note that the base::Feature should not be read from;
+// rather the provided accessors should be used, which also take into account
+// the managed policy override of the feature.
+const base::Feature kIntensiveWakeUpThrottling{
+    "IntensiveWakeUpThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 // Run-time feature for the |rtc_use_h264| encoder/decoder.
 const base::Feature kWebRtcH264WithOpenH264FFmpeg{

@@ -661,8 +661,8 @@ class Browser : public TabStripModelObserver,
 
  private:
   friend class BrowserTest;
+  friend class ExclusiveAccessTest;
   friend class FullscreenControllerInteractiveTest;
-  friend class FullscreenControllerTest;
   FRIEND_TEST_ALL_PREFIXES(AppModeTest, EnableAppModeTest);
   FRIEND_TEST_ALL_PREFIXES(BrowserCommandControllerTest,
                            IsReservedCommandOrKeyIsApp);
@@ -674,7 +674,7 @@ class Browser : public TabStripModelObserver,
   FRIEND_TEST_ALL_PREFIXES(BrowserTest, AppIdSwitch);
   FRIEND_TEST_ALL_PREFIXES(ExclusiveAccessBubbleWindowControllerTest,
                            DenyExitsFullscreen);
-  FRIEND_TEST_ALL_PREFIXES(FullscreenControllerTest,
+  FRIEND_TEST_ALL_PREFIXES(ExclusiveAccessTest,
                            TabEntersPresentationModeFromWindowed);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest, OpenAppShortcutNoPref);
   FRIEND_TEST_ALL_PREFIXES(StartupBrowserCreatorTest,

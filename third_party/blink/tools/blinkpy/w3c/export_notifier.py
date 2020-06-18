@@ -218,8 +218,8 @@ class PRStatusInfo(object):
     def to_gerrit_comment(self, patchset=None):
         status_line = (
             'The exported PR, {pr_url}, has failed Taskcluster check(s) '
-            'on GitHub, which could indicate cross-broswer failures on the '
-            'exported changes. Please contact ecosystem-infra@ team for '
+            'on GitHub, which could indicate cross-browser failures on the '
+            'exported changes. Please contact ecosystem-infra@chromium.org for '
             'more information.').format(
             pr_url='%spull/%d' % (WPT_GH_URL, self.pr_number)
         )
@@ -231,5 +231,5 @@ class PRStatusInfo(object):
         if patchset is not None:
             comment += ('\n{}{}').format(PRStatusInfo.PATCHSET_TAG, patchset)
 
-        comment += '\n\nAny suggestions to improve this service is welcomed, crbug.com/1027618.'
+        comment += '\n\nAny suggestions to improve this service are welcome; crbug.com/1027618.'
         return comment

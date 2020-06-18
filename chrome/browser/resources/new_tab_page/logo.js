@@ -95,20 +95,20 @@ class LogoElement extends PolymerElement {
 
       /** @private */
       duration_: {
+        observer: 'onDurationHeightWidthChange_',
         type: String,
-        value: null,
       },
 
       /** @private */
       height_: {
+        observer: 'onDurationHeightWidthChange_',
         type: String,
-        value: null,
       },
 
       /** @private */
       width_: {
+        observer: 'onDurationHeightWidthChange_',
         type: String,
-        value: null,
       },
 
       /** @private */
@@ -309,18 +309,9 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeIframeUrl_() {
-    return (this.doodle_ && this.doodle_.content.interactiveDoodle) ?
-        `iframe?${this.doodle_.content.interactiveDoodle.url.url}` :
+    return this.doodle_ && this.doodle_.content.interactiveDoodle &&
+        this.doodle_.content.interactiveDoodle.url.url ||
         '';
-  }
-
-  /**
-   * @param {string} value
-   * @return {string}
-   * @private
-   */
-  valueOrUnset_(value) {
-    return value || 'unset';
   }
 
   /**
@@ -344,6 +335,15 @@ class LogoElement extends PolymerElement {
   /** @private */
   onShareDialogClose_() {
     this.showShareDialog_ = false;
+  }
+
+  /** @private */
+  onDurationHeightWidthChange_() {
+    this.updateStyles({
+      '--duration': this.duration_,
+      '--height': this.height_,
+      '--width': this.width_,
+    });
   }
 }
 

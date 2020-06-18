@@ -7,6 +7,7 @@
 #include "base/hash/legacy_hash.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace federated_learning {
 

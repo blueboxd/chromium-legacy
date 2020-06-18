@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/nix/xdg_util.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"

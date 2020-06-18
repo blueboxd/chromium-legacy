@@ -283,7 +283,7 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
     }
   }
 
-  if (o.IsListMarker()) {
+  if (o.IsListMarkerForNormalContent()) {
     String text = ToLayoutListMarker(o).GetText();
     if (!text.IsEmpty()) {
       if (text.length() != 1) {

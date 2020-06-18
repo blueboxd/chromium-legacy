@@ -88,6 +88,12 @@ public interface Tab extends TabLifecycle {
     View getView();
 
     /**
+     * @return The {@link TabViewManager} that is responsible for managing custom {@link View}s
+     * shown on top of content in this Tab.
+     */
+    TabViewManager getTabViewManager();
+
+    /**
      * @return The id representing this tab.
      */
     int getId();
@@ -134,6 +140,12 @@ public interface Tab extends TabLifecycle {
      * @return Whether or not the {@link Tab} represents a {@link NativePage}.
      */
     boolean isNativePage();
+
+    /**
+     * @return Whether a custom view shown through {@link TabViewManager} is being displayed instead
+     * of the current WebContents.
+     */
+    boolean isShowingCustomView();
 
     /**
      * Replaces the current NativePage with a empty stand-in for a NativePage. This can be used

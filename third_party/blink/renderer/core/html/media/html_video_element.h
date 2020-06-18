@@ -156,7 +156,6 @@ class CORE_EXPORT HTMLVideoElement final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               RasterModeHint,
                                                const FloatSize&) override;
   bool IsVideoElement() const override { return true; }
   bool WouldTaintOrigin() const override;

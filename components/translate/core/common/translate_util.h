@@ -28,6 +28,9 @@ GURL GetTranslateSecurityOrigin();
 // Return whether sub frame translation is enabled.
 bool IsSubFrameTranslationEnabled();
 
+// Return whether sub frame language detection is enabled.
+bool IsSubFrameLanguageDetectionEnabled();
+
 }  // namespace translate
 
 #endif  // COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_

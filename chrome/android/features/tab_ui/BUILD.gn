@@ -55,6 +55,7 @@ android_resources("java_resources") {
     "java/res/layout/bottom_tab_strip_toolbar.xml",
     "java/res/layout/closable_tab_grid_card_item.xml",
     "java/res/layout/closable_tab_list_card_item.xml",
+    "java/res/layout/incognito_description_container_layout.xml",
     "java/res/layout/iph_drag_and_drop_dialog_layout.xml",
     "java/res/layout/new_tab_tile_card_item.xml",
     "java/res/layout/selectable_tab_grid_card_item.xml",

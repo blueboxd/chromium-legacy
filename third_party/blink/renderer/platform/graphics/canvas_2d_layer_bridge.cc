@@ -108,17 +108,17 @@ void Canvas2DLayerBridge::ResetResourceProvider() {
     resource_host_->ReplaceResourceProvider(nullptr);
 }
 
-bool Canvas2DLayerBridge::ShouldAccelerate(RasterModeHint hint) const {
-  bool accelerate = raster_mode_ == RasterMode::kGPU;
+bool Canvas2DLayerBridge::ShouldAccelerate() const {
+  bool use_gpu = raster_mode_ == RasterMode::kGPU;
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper =
       SharedGpuContext::ContextProviderWrapper();
-  if (accelerate &&
+  if (use_gpu &&
       (!context_provider_wrapper ||
        context_provider_wrapper->ContextProvider()->IsContextLost())) {
-    accelerate = false;
+    use_gpu = false;
   }
-  return accelerate;
+  return use_gpu;
 }
 
 bool Canvas2DLayerBridge::IsAccelerated() const {
@@ -129,11 +129,9 @@ bool Canvas2DLayerBridge::IsAccelerated() const {
   if (resource_host_ && resource_host_->ResourceProvider())
     return resource_host_->ResourceProvider()->IsAccelerated();
 
-  // Whether or not to accelerate is not yet resolved. Determine whether
-  // immediate presentation of the canvas would result in the canvas being
-  // accelerated. Presentation is assumed to be a 'PreferGPU'
-  // operation.
-  return ShouldAccelerate(RasterModeHint::kPreferGPU);
+  // Whether or not to accelerate is not yet resolved, the canvas cannot be
+  // accelerated if the gpu context is lost.
+  return ShouldAccelerate();
 }
 
 static void HibernateWrapper(base::WeakPtr<Canvas2DLayerBridge> bridge,
@@ -221,8 +219,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::ResourceProvider() const {
   return resource_host_ ? resource_host_->ResourceProvider() : nullptr;
 }
 
-CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
-    RasterModeHint hint) {
+CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider() {
   DCHECK(resource_host_);
   CanvasResourceProvider* resource_provider = ResourceProvider();
 
@@ -250,7 +247,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   // ResourceProvider before the final attempt, in which a new
   // Canvas2DLayerBridge is created along with its resource provider.
 
-  bool want_acceleration = ShouldAccelerate(hint);
+  bool want_acceleration = ShouldAccelerate();
   RasterModeHint adjusted_hint = want_acceleration ? RasterModeHint::kPreferGPU
                                                    : RasterModeHint::kPreferCPU;
 
@@ -654,7 +651,7 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
 
 cc::Layer* Canvas2DLayerBridge::Layer() {
   // Trigger lazy layer creation
-  GetOrCreateResourceProvider(RasterModeHint::kPreferGPU);
+  GetOrCreateResourceProvider();
   return layer_.get();
 }
 
@@ -669,7 +666,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 
   // Make sure surface is ready for painting: fix the rendering mode now
   // because it will be too late during the paint invalidation phase.
-  if (!GetOrCreateResourceProvider(RasterModeHint::kPreferGPU))
+  if (!GetOrCreateResourceProvider())
     return;
 
   FlushRecording();
@@ -695,8 +692,7 @@ void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
     layer_->SetNeedsDisplayRect(EnclosingIntRect(dirty_rect));
 }
 
-scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
-    RasterModeHint hint) {
+scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot() {
   if (snapshot_state_ == kInitialSnapshotState)
     snapshot_state_ = kDidAcquireSnapshot;
   if (IsHibernating())
@@ -706,10 +702,10 @@ scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
   // GetOrCreateResourceProvider needs to be called before FlushRecording, to
   // make sure "hint" is properly taken into account, as well as after
   // FlushRecording, in case the playback crashed the GPU context.
-  if (!GetOrCreateResourceProvider(hint))
+  if (!GetOrCreateResourceProvider())
     return nullptr;
   FlushRecording();
-  if (!GetOrCreateResourceProvider(hint))
+  if (!GetOrCreateResourceProvider())
     return nullptr;
   return ResourceProvider()->Snapshot();
 }

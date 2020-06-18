@@ -4,6 +4,8 @@
 
 #include <fuchsia/feedback/cpp/fidl.h>
 #include <fuchsia/feedback/cpp/fidl_test_base.h>
+#include <fuchsia/hardware/power/statecontrol/cpp/fidl.h>
+#include <fuchsia/hardware/power/statecontrol/cpp/fidl_test_base.h>
 #include <fuchsia/io/cpp/fidl.h>
 #include <lib/fidl/cpp/interface_request.h>
 #include <lib/sys/cpp/outgoing_directory.h>
@@ -11,6 +13,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/bind.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/location.h"
 #include "base/message_loop/message_pump_type.h"
@@ -30,11 +33,15 @@ namespace {
 using ::testing::Eq;
 
 using fuchsia::feedback::RebootReason;
+using StateControlRebootReason =
+    fuchsia::hardware::power::statecontrol::RebootReason;
 
 struct RebootReasonParam {
   RebootReason reason;
   RebootShlib::RebootSource source;
   bool graceful;
+  StateControlRebootReason state_control_reason =
+      StateControlRebootReason::USER_REQUEST;
 };
 
 const RebootReasonParam kRebootReasonParams[] = {
@@ -50,34 +57,65 @@ const RebootReasonParam kRebootReasonParams[] = {
      RebootShlib::RebootSource::HW_WATCHDOG, false},
     {RebootReason::SOFTWARE_WATCHDOG_TIMEOUT,
      RebootShlib::RebootSource::WATCHDOG, false},
+
+    // Graceful reboot reasons.
+    {RebootReason::USER_REQUEST, RebootShlib::RebootSource::API, true,
+     StateControlRebootReason::USER_REQUEST},
+    {RebootReason::SYSTEM_UPDATE, RebootShlib::RebootSource::OTA, true,
+     StateControlRebootReason::SYSTEM_UPDATE},
+    {RebootReason::HIGH_TEMPERATURE, RebootShlib::RebootSource::OVERHEAT, true,
+     StateControlRebootReason::HIGH_TEMPERATURE},
+    {RebootReason::SESSION_FAILURE, RebootShlib::RebootSource::SW_OTHER, true},
+};
+
+class FakeAdmin
+    : public fuchsia::hardware::power::statecontrol::testing::Admin_TestBase {
+ public:
+  explicit FakeAdmin(sys::OutgoingDirectory* outgoing_directory)
+      : binding_(outgoing_directory, this) {}
+
+  void GetLastRebootReason(StateControlRebootReason* reason) {
+    *reason = last_reboot_reason_;
+  }
+
+ private:
+  void Reboot(StateControlRebootReason reason, RebootCallback callback) final {
+    last_reboot_reason_ = reason;
+    fuchsia::hardware::power::statecontrol::Admin_Reboot_Response response;
+    fuchsia::hardware::power::statecontrol::Admin_Reboot_Result result;
+    result.set_response(response);
+    callback(std::move(result));
+  }
+
+  void NotImplemented_(const std::string& name) final {
+    ADD_FAILURE() << "NotImplemented_: " << name;
+  }
+
+  base::fuchsia::ScopedServiceBinding<
+      fuchsia::hardware::power::statecontrol::Admin>
+      binding_;
+  StateControlRebootReason last_reboot_reason_;
 };
 
 class FakeLastRebootInfoProvider
     : public fuchsia::feedback::testing::LastRebootInfoProvider_TestBase {
  public:
   explicit FakeLastRebootInfoProvider(
-      fidl::InterfaceRequest<fuchsia::io::Directory> channel) {
-    outgoing_directory_.GetOrCreateDirectory("svc")->Serve(
-        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
-        channel.TakeChannel());
-    binding_ = std::make_unique<base::fuchsia::ScopedServiceBinding<
-        fuchsia::feedback::LastRebootInfoProvider>>(&outgoing_directory_, this);
-  }
+      sys::OutgoingDirectory* outgoing_directory)
+      : binding_(outgoing_directory, this) {}
 
   void SetLastReboot(fuchsia::feedback::LastReboot last_reboot) {
     last_reboot_ = std::move(last_reboot);
   }
 
-  void Get(GetCallback callback) override { callback(std::move(last_reboot_)); }
+ private:
+  void Get(GetCallback callback) final { callback(std::move(last_reboot_)); }
 
-  void NotImplemented_(const std::string& name) override {
+  void NotImplemented_(const std::string& name) final {
     ADD_FAILURE() << "NotImplemented_: " << name;
   }
 
- private:
-  sys::OutgoingDirectory outgoing_directory_;
-  std::unique_ptr<base::fuchsia::ScopedServiceBinding<
-      fuchsia::feedback::LastRebootInfoProvider>>
+  base::fuchsia::ScopedServiceBinding<fuchsia::feedback::LastRebootInfoProvider>
       binding_;
   fuchsia::feedback::LastReboot last_reboot_;
 };
@@ -94,28 +132,74 @@ class RebootFuchsiaTest : public ::testing::TestWithParam<RebootReasonParam> {
   void SetUp() override {
     // Create incoming (service) and outgoing directories that are connected.
     fidl::InterfaceHandle<::fuchsia::io::Directory> directory;
+
+    // The thread handling fidl calls to the fake service must also be the
+    // thread that we start the serve operation on. Since all fakes require the
+    // same output directory handle, we post a task here to begin the serve
+    // operation, then flush the task runner queue to ensure that output
+    // directory is safe to pass to the fakes.
+    thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&RebootFuchsiaTest::ServeOutgoingDirectory,
+                       base::Unretained(this), directory.NewRequest()));
+    thread_.FlushForTesting();
+
+    // Initialize and publish fake fidl services.
+    admin_ = base::SequenceBound<FakeAdmin>(thread_.task_runner(),
+                                            outgoing_directory_.get());
     last_reboot_info_provider_ =
-        base::SequenceBound<FakeLastRebootInfoProvider>(thread_.task_runner(),
-                                                        directory.NewRequest());
+        base::SequenceBound<FakeLastRebootInfoProvider>(
+            thread_.task_runner(), outgoing_directory_.get());
+
+    // Ensure that the services above finish publishing themselves.
+    thread_.FlushForTesting();
+
+    // Use a service directory backed by the fakes above for tests.
     incoming_directory_ =
         std::make_unique<sys::ServiceDirectory>(std::move(directory));
     InitializeRebootShlib({}, incoming_directory_.get());
   }
 
-  void TearDown() override { RebootUtil::Finalize(); }
+  void TearDown() override {
+    RebootUtil::Finalize();
+    thread_.FlushForTesting();
+  }
+
+  StateControlRebootReason GetLastRebootReason() {
+    StateControlRebootReason reason;
+    admin_.Post(FROM_HERE, &FakeAdmin::GetLastRebootReason, &reason);
+    thread_.FlushForTesting();
+    return reason;
+  }
 
   void SetLastReboot(fuchsia::feedback::LastReboot last_reboot) {
     last_reboot_info_provider_.Post(FROM_HERE,
                                     &FakeLastRebootInfoProvider::SetLastReboot,
                                     std::move(last_reboot));
+    thread_.FlushForTesting();
   }
 
  private:
+  void ServeOutgoingDirectory(
+      fidl::InterfaceRequest<fuchsia::io::Directory> channel) {
+    outgoing_directory_ = std::make_unique<sys::OutgoingDirectory>();
+    outgoing_directory_->GetOrCreateDirectory("svc")->Serve(
+        fuchsia::io::OPEN_RIGHT_READABLE | fuchsia::io::OPEN_RIGHT_WRITABLE,
+        channel.TakeChannel());
+  }
+
   const base::test::SingleThreadTaskEnvironment task_environment_;
+  std::unique_ptr<sys::OutgoingDirectory> outgoing_directory_;
   std::unique_ptr<sys::ServiceDirectory> incoming_directory_;
   base::Thread thread_;
+  base::SequenceBound<FakeAdmin> admin_;
   base::SequenceBound<FakeLastRebootInfoProvider> last_reboot_info_provider_;
 };
+
+TEST_P(RebootFuchsiaTest, RebootNowSendsFidlRebootReason) {
+  EXPECT_TRUE(RebootShlib::RebootNow(GetParam().source));
+  EXPECT_THAT(GetLastRebootReason(), Eq(GetParam().state_control_reason));
+}
 
 TEST_F(RebootFuchsiaTest, GetLastRebootSourceDefaultsToUnknown) {
   EXPECT_THAT(RebootUtil::GetLastRebootSource(),

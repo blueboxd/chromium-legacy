@@ -84,6 +84,7 @@ using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 using testing::WithArg;
 using testing::_;
+using web::WebFrame;
 
 namespace {
 
@@ -1890,7 +1891,7 @@ TEST_F(PasswordControllerTest, FindDynamicallyAddedForm2) {
   ExecuteJavaScript(kAddFormDynamicallyScript);
 
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
-  web::WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+  WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
   autofill::FormActivityParams params;
   params.type = "form_changed";
   params.frame_id = mainFrameID;
@@ -1926,7 +1927,7 @@ TEST_F(PasswordControllerTest, DetectSubmissionOnRemovedForm) {
   EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  web::WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+  WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
   autofill::FormActivityParams params;
   params.type = "password_form_removed";
   params.unique_form_id = 0;
@@ -1960,7 +1961,7 @@ TEST_F(PasswordControllerTest,
   EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
 
   std::string mainFrameID = web::GetMainWebFrameId(web_state());
-  web::WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
+  WebFrame* frame = web::GetWebFrameWithId(web_state(), mainFrameID);
   autofill::FormActivityParams params;
   params.type = "password_form_removed";
   params.unique_form_id = 0;
@@ -1969,4 +1970,111 @@ TEST_F(PasswordControllerTest,
   [passwordController_ webState:web_state()
         didRegisterFormActivity:params
                         inFrame:frame];
+}
+
+// Tests that submission is detected on removal of the form that had user input.
+TEST_F(PasswordControllerTest, DetectSubmissionOnIFrameDetach) {
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  EXPECT_TRUE(
+      LoadHtml("<script>"
+               "  function FillFrame() {"
+               "       var doc = frames['frame1'].document.open();"
+               "       doc.write('<form id=\"form1\">');"
+               "       doc.write('<input id=\"un\" type=\"text\">');"
+               "       doc.write('<input id=\"pw\" type=\"password\">');"
+               "       doc.write('</form>');"
+               "       doc.close();"
+               // This event listerer is set by Chrome, but it gets disabled
+               // by document.write(). This is quite uncommon way to add
+               // content to an iframe, but it is the only way for this test.
+               // Reattaching it manually for test purposes.
+               "       frames[0].addEventListener('unload', function(event) {"
+               "  __gCrWeb.common.sendWebKitMessage('FrameBecameUnavailable',"
+               "      frames[0].__gCrWeb.message.getFrameId());"
+               "});"
+               "}"
+               "</script>"
+               "<body onload='FillFrame()'>"
+               "<iframe id='frame1' name='frame1'></iframe>"
+               "</body>"));
+
+  std::string mainFrameID = web::GetMainWebFrameId(web_state());
+  std::set<WebFrame*> all_frames =
+      web_state()->GetWebFramesManager()->GetAllWebFrames();
+  std::string iFrameID;
+  for (auto* frame : all_frames) {
+    if (!frame->IsMainFrame()) {
+      iFrameID = frame->GetFrameId();
+      break;
+    }
+  }
+
+  SimulateUserTyping("form1", FormRendererId(0), "un", FieldRendererId(1),
+                     "user1", iFrameID);
+  SimulateUserTyping("form1", FormRendererId(0), "pw", FieldRendererId(2),
+                     "password1", iFrameID);
+
+  std::unique_ptr<PasswordFormManagerForUI> form_manager_to_save;
+  EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
+      .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
+
+  ExecuteJavaScript(@"var frame1 = document.getElementById('frame1');"
+                     "frame1.parentNode.removeChild(frame1);");
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
+    auto frames = web_state()->GetWebFramesManager()->GetAllWebFrames();
+    return frames.size() == 1;
+  }));
+  ASSERT_TRUE(form_manager_to_save);
+
+  EXPECT_EQ("https://chromium.test/",
+            form_manager_to_save->GetPendingCredentials().signon_realm);
+  EXPECT_EQ(ASCIIToUTF16("user1"),
+            form_manager_to_save->GetPendingCredentials().username_value);
+  EXPECT_EQ(ASCIIToUTF16("password1"),
+            form_manager_to_save->GetPendingCredentials().password_value);
+
+  auto* form_manager =
+      static_cast<PasswordFormManager*>(form_manager_to_save.get());
+  EXPECT_TRUE(form_manager->is_submitted());
+  EXPECT_FALSE(form_manager->IsPasswordUpdate());
+}
+
+// Tests that no submission is detected on removal of the form that had no user
+// input.
+TEST_F(PasswordControllerTest,
+       DetectNoSubmissionOnIFrameDetachWithoutUserInput) {
+  ON_CALL(*store_, GetLogins)
+      .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+  EXPECT_TRUE(
+      LoadHtml("<script>"
+               "  function FillFrame() {"
+               "       var doc = frames['frame1'].document.open();"
+               "       doc.write('<form id=\"form1\">');"
+               "       doc.write('<input id=\"un\" type=\"text\">');"
+               "       doc.write('<input id=\"pw\" type=\"password\">');"
+               "       doc.write('</form>');"
+               "       doc.close();"
+               // This event listerer is set by Chrome, but it gets disabled
+               // by document.write(). This is quite uncommon way to add
+               // content to an iframe, but it is the only way for this test.
+               // Reattaching it manually for test purposes.
+               "       frames[0].addEventListener('unload', function(event) {"
+               "  __gCrWeb.common.sendWebKitMessage('FrameBecameUnavailable',"
+               "      frames[0].__gCrWeb.message.getFrameId());"
+               "});"
+               "}"
+               "</script>"
+               "<body onload='FillFrame()'>"
+               "<iframe id='frame1' name='frame1'></iframe>"
+               "</body>"));
+
+  EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
+
+  ExecuteJavaScript(@"var frame1 = document.getElementById('frame1');"
+                     "frame1.parentNode.removeChild(frame1);");
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
+    auto frames = web_state()->GetWebFramesManager()->GetAllWebFrames();
+    return frames.size() == 1;
+  }));
 }

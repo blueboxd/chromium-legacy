@@ -12,11 +12,12 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
-AppDialogView::AppDialogView(const std::string& app_name,
-                             const gfx::ImageSkia& image)
-    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE),
-      app_name_(app_name),
-      image_(image) {}
+AppDialogView::AppDialogView(const gfx::ImageSkia& image)
+    : BubbleDialogDelegateView(nullptr, views::BubbleBorder::NONE) {
+  SetIcon(image);
+  SetShowCloseButton(false);
+  SetShowIcon(true);
+}
 
 AppDialogView::~AppDialogView() = default;
 
@@ -29,18 +30,6 @@ gfx::Size AppDialogView::CalculatePreferredSize() const {
 
 ui::ModalType AppDialogView::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
-}
-
-gfx::ImageSkia AppDialogView::GetWindowIcon() {
-  return image_;
-}
-
-bool AppDialogView::ShouldShowCloseButton() const {
-  return false;
-}
-
-bool AppDialogView::ShouldShowWindowIcon() const {
-  return true;
 }
 
 void AppDialogView::InitializeView(const base::string16& heading_text) {

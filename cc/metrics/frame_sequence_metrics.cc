@@ -202,6 +202,8 @@ void FrameSequenceMetrics::ComputeAggregatedThroughput() {
 void FrameSequenceMetrics::ReportMetrics() {
   DCHECK_LE(impl_throughput_.frames_produced, impl_throughput_.frames_expected);
   DCHECK_LE(main_throughput_.frames_produced, main_throughput_.frames_expected);
+  DCHECK_LE(aggregated_throughput_.frames_produced,
+            aggregated_throughput_.frames_expected);
 
   // Terminates |trace_data_| for all types of FrameSequenceTracker.
   trace_data_.Terminate();
@@ -216,8 +218,6 @@ void FrameSequenceMetrics::ReportMetrics() {
     frames_checkerboarded_ = 0;
     return;
   }
-
-  ComputeAggregatedThroughput();
 
   // Report the throughput metrics.
   base::Optional<int> impl_throughput_percent = ThroughputData::ReportHistogram(

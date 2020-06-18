@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/child_accounts/time_limit_override.h"

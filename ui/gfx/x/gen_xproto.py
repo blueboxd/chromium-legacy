@@ -1078,8 +1078,10 @@ class GenXproto(FileWriter):
             if field.field_name == 'sequence':
                 field.visible = True
             field.parent = (t, name)
-            field.for_list = None
-            field.for_switch = None
+            # |for_list| and |for_switch| may have already been set when
+            # processing other fields in this structure.
+            field.for_list = getattr(field, 'for_list', None)
+            field.for_switch = getattr(field, 'for_switch', None)
 
             for is_type, for_type in ((field.type.is_list, 'for_list'),
                                       (field.type.is_switch, 'for_switch')):

@@ -212,7 +212,7 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   // Allow embedding of iframes from the One Google Bar and
   // chrome-untrusted://new-tab-page for other external content and resources.
   source->OverrideContentSecurityPolicyChildSrc(
-      base::StringPrintf("child-src https://*.google.com/ %s %s;",
+      base::StringPrintf("child-src https: %s %s;",
                          google_util::CommandLineGoogleBaseURL().spec().c_str(),
                          chrome::kChromeUIUntrustedNewTabPageUrl));
 

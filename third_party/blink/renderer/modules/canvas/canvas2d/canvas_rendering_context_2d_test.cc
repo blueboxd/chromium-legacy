@@ -65,7 +65,6 @@ class FakeImageSource : public CanvasImageSource {
   FakeImageSource(IntSize, BitmapOpacity);
 
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               RasterModeHint,
                                                const FloatSize&) override;
 
   bool WouldTaintOrigin() const override { return false; }
@@ -95,7 +94,6 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
 
 scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
-    RasterModeHint,
     const FloatSize&) {
   if (status)
     *status = kNormalSourceImageStatus;
@@ -128,7 +126,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     Context2D()->FinalizeFrame();
     CanvasElement().PostFinalizeFrame();
     // Grabbing an image forces a flush
-    CanvasElement().Snapshot(kBackBuffer, RasterModeHint::kPreferGPU);
+    CanvasElement().Snapshot(kBackBuffer);
   }
 
   enum LatencyMode { kNormalLatency, kLowLatency };
@@ -1089,8 +1087,7 @@ TEST_F(CanvasRenderingContext2DTestAccelerated,
 
   EXPECT_TRUE(CanvasElement().GetCanvas2DLayerBridge()->IsAccelerated());
   // Take a snapshot to trigger lazy resource provider creation
-  CanvasElement().GetCanvas2DLayerBridge()->NewImageSnapshot(
-      RasterModeHint::kPreferGPU);
+  CanvasElement().GetCanvas2DLayerBridge()->NewImageSnapshot();
   EXPECT_TRUE(!!CanvasElement().ResourceProvider());
   EXPECT_TRUE(CanvasElement().ResourceProvider()->IsAccelerated());
   EXPECT_TRUE(CanvasElement().GetLayoutBoxModelObject());

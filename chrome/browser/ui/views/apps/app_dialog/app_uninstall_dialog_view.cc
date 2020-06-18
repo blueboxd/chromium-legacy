@@ -43,6 +43,36 @@ namespace {
 
 AppUninstallDialogView* g_app_uninstall_dialog_view = nullptr;
 
+#if defined(OS_CHROMEOS)
+bool IsArcShortcutApp(Profile* profile, const std::string& app_id) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  DCHECK(arc_prefs);
+
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id);
+  DCHECK(app_info);
+  return app_info->shortcut;
+}
+#endif
+
+base::string16 GetWindowTitleForApp(Profile* profile,
+                                    apps::mojom::AppType app_type,
+                                    const std::string& app_id,
+                                    const std::string& app_name) {
+  using apps::mojom::AppType;
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, all app types exist, but Arc shortcut apps get the regular
+  // extension uninstall title.
+  if (app_type == AppType::kArc && IsArcShortcutApp(profile, app_id))
+    return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
+#else
+  // On non-ChromeOS, only extension and web app types meaningfully exist.
+  DCHECK(app_type != AppType::kExtension && app_type != AppType::kWeb);
+#endif
+  return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
+                                    base::UTF8ToUTF16(app_name));
+}
+
 }  // namespace
 
 // static
@@ -69,9 +99,10 @@ AppUninstallDialogView::AppUninstallDialogView(
     gfx::ImageSkia image,
     apps::UninstallDialog* uninstall_dialog)
     : apps::UninstallDialog::UiBase(uninstall_dialog),
-      AppDialogView(app_name, image),
-      profile_(profile),
-      app_type_(app_type) {
+      AppDialogView(image),
+      profile_(profile) {
+  SetTitle(GetWindowTitleForApp(profile, app_type, app_id, app_name));
+
   SetCloseCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
                                   base::Unretained(this)));
   SetCancelCallback(base::BindOnce(&AppUninstallDialogView::OnDialogCancelled,
@@ -79,7 +110,7 @@ AppUninstallDialogView::AppUninstallDialogView(
   SetAcceptCallback(base::BindOnce(&AppUninstallDialogView::OnDialogAccepted,
                                    base::Unretained(this)));
 
-  InitializeView(profile, app_type, app_id);
+  InitializeView(profile, app_type, app_id, app_name);
 
   chrome::RecordDialogCreation(chrome::DialogIdentifier::APP_UNINSTALL);
 
@@ -99,43 +130,10 @@ ui::ModalType AppUninstallDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-base::string16 AppUninstallDialogView::GetWindowTitle() const {
-  switch (app_type_) {
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kMacNative:
-    case apps::mojom::AppType::kLacros:
-      NOTREACHED();
-      return base::string16();
-    case apps::mojom::AppType::kArc:
-#if defined(OS_CHROMEOS)
-      if (shortcut_)
-        return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
-
-      // Otherwise fallback to Uninstall + app name.
-      FALLTHROUGH;
-#else
-      NOTREACHED();
-      return base::string16();
-#endif
-    case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kPluginVm:
-#if defined(OS_CHROMEOS)
-      FALLTHROUGH;
-#else
-      NOTREACHED();
-      return base::string16();
-#endif
-    case apps::mojom::AppType::kExtension:
-    case apps::mojom::AppType::kWeb:
-      return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
-                                        base::UTF8ToUTF16(app_name()));
-  }
-}
-
 void AppUninstallDialogView::InitializeView(Profile* profile,
                                             apps::mojom::AppType app_type,
-                                            const std::string& app_id) {
+                                            const std::string& app_id,
+                                            const std::string& app_name) {
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_APP_BUTTON));
@@ -145,7 +143,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
-  switch (app_type_) {
+  switch (app_type) {
     case apps::mojom::AppType::kUnknown:
     case apps::mojom::AppType::kBuiltIn:
     case apps::mojom::AppType::kMacNative:
@@ -162,7 +160,7 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
     case apps::mojom::AppType::kPluginVm:
 #if defined(OS_CHROMEOS)
       InitializeViewWithMessage(l10n_util::GetStringFUTF16(
-          IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name())));
+          IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name)));
 #else
       NOTREACHED();
 #endif
@@ -304,16 +302,7 @@ void AppUninstallDialogView::InitializeViewForWebApp(
 void AppUninstallDialogView::InitializeViewForArcApp(
     Profile* profile,
     const std::string& app_id) {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
-  DCHECK(arc_prefs);
-
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id);
-  DCHECK(app_info);
-
-  shortcut_ = app_info->shortcut;
-
-  if (shortcut_) {
+  if (IsArcShortcutApp(profile, app_id)) {
     SetButtonLabel(
         ui::DIALOG_BUTTON_OK,
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON));

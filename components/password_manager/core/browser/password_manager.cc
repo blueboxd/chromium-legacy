@@ -750,6 +750,14 @@ void PasswordManager::OnPasswordFormRemoved(PasswordManagerDriver* driver,
     }
   }
 }
+
+void PasswordManager::OnIframeDetach(const std::string& frame_id) {
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
+  if (submitted_manager &&
+      submitted_manager->observed_form().frame_id == frame_id) {
+    OnLoginSuccessful();
+  }
+}
 #endif
 
 bool PasswordManager::IsAutomaticSavePromptAvailable() {

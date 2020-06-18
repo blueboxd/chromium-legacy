@@ -518,6 +518,24 @@ base::Optional<base::TimeDelta> PerformanceTiming::FirstInputProcessingTime()
   return interactive_detector->GetFirstInputProcessingTime();
 }
 
+base::Optional<base::TimeDelta> PerformanceTiming::FirstScrollDelay() const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return base::nullopt;
+
+  return interactive_detector->GetFirstScrollDelay();
+}
+
+base::Optional<base::TimeDelta> PerformanceTiming::FirstScrollTimestamp()
+    const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return base::nullopt;
+
+  return MonotonicTimeToPseudoWallTime(
+      interactive_detector->GetFirstScrollTimestamp());
+}
+
 uint64_t PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)

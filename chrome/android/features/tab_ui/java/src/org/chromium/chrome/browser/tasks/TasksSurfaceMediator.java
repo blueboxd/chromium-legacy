@@ -14,6 +14,7 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_COOKIE_CONTROLS_TOGGLE_ENFORCEMENT;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.INCOGNITO_LEARN_MORE_CLICK_LISTENER;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_SEARCH_BOX_VISIBLE;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_SURFACE_BODY_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.VOICE_SEARCH_BUTTON_CLICK_LISTENER;
@@ -52,6 +53,9 @@ class TasksSurfaceMediator {
         // Set Incognito Cookie Controls functionality
         mIncognitoCookieControlsManager = incognitoCookieControlsManager;
         mModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mIncognitoCookieControlsManager);
+
+        // Set the initial state.
+        mModel.set(IS_SURFACE_BODY_VISIBLE, true);
     }
 
     public void initWithNative(FakeboxDelegate fakeboxDelegate) {

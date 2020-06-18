@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview PasswordListItem represents one row in a list of passwords,
- * with a "more actions" button. It needs to be its own component because
- * FocusRowBehavior provides good a11y.
- * Clicking the button fires a password-more-actions-clicked event.
+ * @fileoverview PasswordListItem represents one row in the list of passwords.
+ * It needs to be its own component because FocusRowBehavior provides good a11y.
  */
 
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
@@ -22,12 +20,6 @@ import {loadTimeData} from '../i18n_setup.js';
 
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {ShowPasswordBehavior} from './show_password_behavior.js';
-
-/**
- * @typedef {!Event<!{target: !HTMLElement, listItem:
- *     !PasswordListItemElement}>}
- */
-export let PasswordMoreActionsClickedEvent;
 
 Polymer({
   is: 'password-list-item',
@@ -50,12 +42,12 @@ Polymer({
   },
 
   /**
+   * Opens the password action menu.
    * @private
    */
-  onPasswordMoreActionsButtonTap_() {
+  onPasswordMenuTap_() {
     this.fire(
-        'password-more-actions-clicked',
-        {target: this.$.moreActionsButton, listItem: this});
+        'password-menu-tap', {target: this.$.passwordMenu, listItem: this});
   },
 
   /**

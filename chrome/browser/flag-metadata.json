@@ -1793,11 +1793,6 @@
     "expiry_milestone": -1
   },
   {
-    "name": "enable-lookalike-url-navigation-suggestions",
-    "owners": [ "jdeblasio", "meacer", "livvielin" ],
-    "expiry_milestone": 84
-  },
-  {
     "name": "enable-mark-http-as",
     "owners": [ "cthomp", "estark" ],
     "expiry_milestone": 86
@@ -2877,6 +2872,11 @@
     // don't receive server config seeds, we depend on this flag to flip the feature to enabled on
     // test machines for debug purposes.
     "expiry_milestone": -1
+  },
+  {
+    "name": "intensive-wake-up-throttling",
+    "owners": [ "fdoray" ],
+    "expiry_milestone": 88
   },
   {
     "name": "intent-handling-sharing",

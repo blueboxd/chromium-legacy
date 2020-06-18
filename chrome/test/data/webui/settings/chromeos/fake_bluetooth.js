@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+// #import {assert} from 'chrome://resources/js/assert.m.js';
+
 /**
  * @fileoverview Fake implementation of chrome.bluetooth for testing.
  */
@@ -11,7 +14,7 @@ cr.define('settings', function() {
    * @constructor
    * @implements {Bluetooth}
    */
-  function FakeBluetooth() {
+  /* #export */ function FakeBluetooth() {
     /** @type {!chrome.bluetooth.AdapterState} */ this.adapterState_ = {
       address: '00:11:22:33:44:55:66',
       name: 'Fake Adapter',
@@ -155,5 +158,6 @@ cr.define('settings', function() {
     onDeviceRemoved: new FakeChromeEvent(),
   };
 
+  // #cr_define_end
   return {FakeBluetooth: FakeBluetooth};
 });

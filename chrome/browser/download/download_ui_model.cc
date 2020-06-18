@@ -237,16 +237,12 @@ base::string16 DownloadUIModel::GetStatusText() const {
   return status_text;
 }
 
-base::string16 DownloadUIModel::GetTooltipText(const gfx::FontList& font_list,
-                                               int max_width) const {
-  base::string16 tooltip =
-      gfx::ElideFilename(GetFileNameToReportUser(), font_list, max_width);
+base::string16 DownloadUIModel::GetTooltipText() const {
+  base::string16 tooltip = GetFileNameToReportUser().LossyDisplayName();
   if (GetState() == DownloadItem::INTERRUPTED &&
       GetLastFailState() != FailState::USER_CANCELED) {
-    tooltip += base::ASCIIToUTF16("\n");
-    tooltip += gfx::ElideText(
-        OfflineItemUtils::GetFailStateMessage(GetLastFailState()), font_list,
-        max_width, gfx::ELIDE_TAIL);
+    tooltip += base::ASCIIToUTF16("\n") +
+               OfflineItemUtils::GetFailStateMessage(GetLastFailState());
   }
   return tooltip;
 }

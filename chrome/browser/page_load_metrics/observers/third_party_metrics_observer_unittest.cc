@@ -501,12 +501,14 @@ TEST_F(ThirdPartyMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->largest_image_paint = base::TimeDelta();
-  timing.paint_timing->largest_image_paint_size = 100u;
+  timing.paint_timing->largest_contentful_paint->largest_image_paint =
+      base::TimeDelta();
+  timing.paint_timing->largest_contentful_paint->largest_image_paint_size =
+      100u;
 
-  timing.paint_timing->largest_text_paint =
+  timing.paint_timing->largest_contentful_paint->largest_text_paint =
       base::TimeDelta::FromMilliseconds(4780);
-  timing.paint_timing->largest_text_paint_size = 120u;
+  timing.paint_timing->largest_contentful_paint->largest_text_paint_size = 120u;
 
   PopulateRequiredTimingFields(&timing);
 
@@ -537,12 +539,14 @@ TEST_F(ThirdPartyMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->largest_image_paint = base::TimeDelta();
-  timing.paint_timing->largest_image_paint_size = 100u;
+  timing.paint_timing->largest_contentful_paint->largest_image_paint =
+      base::TimeDelta();
+  timing.paint_timing->largest_contentful_paint->largest_image_paint_size =
+      100u;
 
-  timing.paint_timing->largest_text_paint =
+  timing.paint_timing->largest_contentful_paint->largest_text_paint =
       base::TimeDelta::FromMilliseconds(4780);
-  timing.paint_timing->largest_text_paint_size = 120u;
+  timing.paint_timing->largest_contentful_paint->largest_text_paint_size = 120u;
 
   PopulateRequiredTimingFields(&timing);
 
@@ -574,9 +578,10 @@ TEST_F(ThirdPartyMetricsObserverTest,
   page_load_metrics::mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
-  timing.paint_timing->largest_image_paint =
+  timing.paint_timing->largest_contentful_paint->largest_image_paint =
       base::TimeDelta::FromMilliseconds(4780);
-  timing.paint_timing->largest_image_paint_size = 120u;
+  timing.paint_timing->largest_contentful_paint->largest_image_paint_size =
+      120u;
 
   PopulateRequiredTimingFields(&timing);
 

@@ -65,6 +65,13 @@ void PopulateRequiredTimingFields(
   }
 }
 
+// Sets the experimental LCP values to be equal to the non-experimental
+// counterparts.
+void PopulateExperimentalLCP(page_load_metrics::mojom::PaintTimingPtr& timing) {
+  timing->experimental_largest_contentful_paint =
+      timing->largest_contentful_paint->Clone();
+}
+
 page_load_metrics::mojom::ResourceDataUpdatePtr CreateResource(
     bool was_cached,
     int64_t delta_bytes,

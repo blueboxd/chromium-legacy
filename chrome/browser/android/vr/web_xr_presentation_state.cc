@@ -4,6 +4,7 @@
 
 #include "chrome/browser/android/vr/web_xr_presentation_state.h"
 
+#include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "ui/gl/gl_fence.h"

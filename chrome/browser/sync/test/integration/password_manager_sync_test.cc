@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/password_manager/account_storage/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_manager_test_base.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -27,7 +28,10 @@
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browsing_data_remover_test_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -621,6 +625,43 @@ IN_PROC_BROWSER_TEST_F(
       GetAllLoginsFromProfilePasswordStore();
   EXPECT_THAT(profile_credentials,
               ElementsAre(MatchesLogin("accountuser", "accountpass")));
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
+                       PasswordDeletionsPropagateToServer) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Add credential to server.
+  AddCredentialToFakeServer(CreateTestPasswordForm("user", "pass"));
+
+  SetupSyncTransportWithPasswordAccountStorage();
+  auto* account_store = passwords_helper::GetAccountPasswordStore(0);
+
+  // Make sure the password show up in the account store and on the server.
+  ASSERT_EQ(passwords_helper::GetAllLogins(account_store).size(), 1u);
+  ASSERT_EQ(fake_server_->GetSyncEntitiesByModelType(syncer::PASSWORDS).size(),
+            1u);
+  EXPECT_TRUE(password_manager::features_util::IsOptedInForAccountStorage(
+      GetProfile(0)->GetPrefs(), GetSyncService(0)));
+
+  // Clear all data including cookies and passwords.
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(GetProfile(0));
+  content::BrowsingDataRemoverCompletionObserver observer(remover);
+  remover->RemoveAndReply(
+      base::Time(), base::Time::Max(),
+      ChromeBrowsingDataRemoverDelegate::ALL_DATA_TYPES,
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB, &observer);
+  observer.BlockUntilCompletion();
+
+  // Now passwords should be removed from the client and server.
+  EXPECT_EQ(passwords_helper::GetAllLogins(account_store).size(), 0u);
+  EXPECT_EQ(fake_server_->GetSyncEntitiesByModelType(syncer::PASSWORDS).size(),
+            0u);
+
+  // The opt-in should be gone as well.
+  EXPECT_FALSE(password_manager::features_util::IsOptedInForAccountStorage(
+      GetProfile(0)->GetPrefs(), GetSyncService(0)));
 }
 
 #endif  // !defined(OS_CHROMEOS)

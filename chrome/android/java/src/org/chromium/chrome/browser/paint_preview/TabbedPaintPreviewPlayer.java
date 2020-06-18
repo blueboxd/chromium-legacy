@@ -13,7 +13,6 @@ import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabService
 import org.chromium.chrome.browser.paint_preview.services.PaintPreviewTabServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
-import org.chromium.chrome.browser.tab.TabViewManager;
 import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.components.paintpreview.player.PlayerManager;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -68,7 +67,7 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
                     onShown.run();
                 }, TabThemeColorHelper.getBackgroundColor(mTab), this::removePaintPreview);
         mOnDismissed = onDismissed;
-        TabViewManager.get(mTab).addTabViewProvider(this);
+        mTab.getTabViewManager().addTabViewProvider(this);
         return true;
     }
 
@@ -81,13 +80,13 @@ public class TabbedPaintPreviewPlayer implements TabViewProvider, UserData {
         mInitializing = false;
         if (mTab == null || mPlayerManager == null) return;
 
-        TabViewManager.get(mTab).removeTabViewProvider(this);
+        mTab.getTabViewManager().removeTabViewProvider(this);
         mPlayerManager.destroy();
         mPlayerManager = null;
     }
 
     public boolean isShowing() {
-        return TabViewManager.get(mTab).getCurrentTabViewProvider() == this;
+        return mTab.getTabViewManager().isShowing(this);
     }
 
     private void onLinkClicked(GURL url) {

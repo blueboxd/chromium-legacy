@@ -44,9 +44,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   void SetIsBeingDisplayed(bool) override {}
   bool isContextLost() const override { return false; }
   void SetImage(ImageBitmap*);
-  // The acceleration hint here is ignored as GetImage(RasterModeHint) only
-  // calls to image_layer_bridge->GetImage(), without giving it a hint
-  scoped_refptr<StaticBitmapImage> GetImage(RasterModeHint) final;
+  scoped_refptr<StaticBitmapImage> GetImage() final;
   // This function resets the internal image resource to a image of the same
   // size than the original, with the same properties, but completely black.
   // This is used to follow the standard regarding transferToBitmap

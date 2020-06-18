@@ -674,7 +674,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   bool IsFrame() const { return IsOfType(kLayoutObjectFrame); }
   bool IsFrameSet() const { return IsOfType(kLayoutObjectFrameSet); }
-  bool IsInsideListMarker() const {
+  bool IsInsideListMarkerForCustomContent() const {
     return IsOfType(kLayoutObjectInsideListMarker);
   }
   bool IsLayoutNGBlockFlow() const {
@@ -700,13 +700,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsOfType(kLayoutObjectLayoutNGTableCol);
   }
   bool IsListItem() const { return IsOfType(kLayoutObjectListItem); }
+  bool IsListMarkerForNormalContent() const {
+    return IsOfType(kLayoutObjectListMarker);
+  }
   bool IsListMarkerImage() const {
     return IsOfType(kLayoutObjectListMarkerImage);
   }
   bool IsMathML() const { return IsOfType(kLayoutObjectMathML); }
   bool IsMathMLRoot() const { return IsOfType(kLayoutObjectMathMLRoot); }
   bool IsMedia() const { return IsOfType(kLayoutObjectMedia); }
-  bool IsOutsideListMarker() const {
+  bool IsOutsideListMarkerForCustomContent() const {
     return IsOfType(kLayoutObjectOutsideListMarker);
   }
   bool IsProgress() const { return IsOfType(kLayoutObjectProgress); }
@@ -2071,17 +2074,40 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return IsListItem() || IsLayoutNGListItem();
   }
 
-  // There are 3 types of list marker. LayoutNG creates different types for
-  // inside and outside; outside is derived from LayoutBlockFlow, and inside
-  // from LayoutInline. Legacy is derived from LayoutBox.
+  // There 5 different types of list markers:
+  // * LayoutListMarker (LayoutBox): for both outside and inside markers with
+  //   'content: normal', in legacy layout.
+  // * LayoutInsideListMarker (LayoutInline): for non-normal inside markers in
+  //   legacy layout.
+  // * LayoutOutsideListMarker (LayoutBlockFlow): for non-normal outside markers
+  //   in legacy layout.
+  // * LayoutNGInsideListMarker (LayoutInline): for inside markers in LayoutNG.
+  // * LayoutNGOutsideListMarker (LayoutNGBlockFlowMixin<LayoutBlockFlow>):
+  //   for outside markers in LayoutNG.
+
+  // Legacy marker with inside position, normal or not.
+  bool IsInsideListMarker() const;
+  // Legacy marker with outside position, normal or not.
+  bool IsOutsideListMarker() const;
+  // Any kind of legacy list marker.
   bool IsListMarker() const {
-    return IsOutsideListMarker() || IsInsideListMarker();
+    return IsListMarkerForNormalContent() ||
+           IsInsideListMarkerForCustomContent() ||
+           IsOutsideListMarkerForCustomContent();
   }
-  bool IsListMarkerIncludingNGOutside() const {
-    return IsListMarker() || IsLayoutNGOutsideListMarker();
+  // Any kind of LayoutBox list marker.
+  bool IsBoxListMarkerIncludingNG() const {
+    return IsListMarkerForNormalContent() ||
+           IsOutsideListMarkerForCustomContent() ||
+           IsLayoutNGOutsideListMarker();
   }
-  bool IsListMarkerIncludingNGOutsideAndInside() const {
-    return IsListMarkerIncludingNGOutside() || IsLayoutNGInsideListMarker();
+  // Any kind of LayoutNG list marker.
+  bool IsLayoutNGListMarker() const {
+    return IsLayoutNGInsideListMarker() || IsLayoutNGOutsideListMarker();
+  }
+  // Any kind of list marker.
+  bool IsListMarkerIncludingAll() const {
+    return IsListMarker() || IsLayoutNGListMarker();
   }
 
   virtual bool IsCombineText() const { return false; }
@@ -2628,6 +2654,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectLayoutTableCol,
     kLayoutObjectLayoutNGTableCol,
     kLayoutObjectListItem,
+    kLayoutObjectListMarker,
     kLayoutObjectListMarkerImage,
     kLayoutObjectMathML,
     kLayoutObjectMathMLRoot,

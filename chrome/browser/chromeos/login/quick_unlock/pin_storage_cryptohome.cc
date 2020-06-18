@@ -7,6 +7,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"

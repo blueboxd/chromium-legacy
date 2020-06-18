@@ -88,6 +88,10 @@ class ASH_PUBLIC_EXPORT FrameHeader : public views::AnimationDelegateViews {
 
   views::View* view() { return view_; }
 
+  FrameCaptionButtonContainerView* caption_button_container() {
+    return caption_button_container_;
+  }
+
  protected:
   FrameHeader(views::Widget* target_widget, views::View* view);
 
@@ -105,10 +109,6 @@ class ASH_PUBLIC_EXPORT FrameHeader : public views::AnimationDelegateViews {
 
   void SetCaptionButtonContainer(
       FrameCaptionButtonContainerView* caption_button_container);
-
-  FrameCaptionButtonContainerView* caption_button_container() {
-    return caption_button_container_;
-  }
 
   Mode mode() const { return mode_; }
 

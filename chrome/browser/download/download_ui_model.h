@@ -76,11 +76,7 @@ class DownloadUIModel {
   // example:
   //    Report.pdf
   //    Network disconnected
-  // |font_list| and |max_width| are used to elide the filename and/or interrupt
-  // reason as necessary to keep the width of the tooltip text under
-  // |max_width|. The tooltip will be at most 2 lines.
-  base::string16 GetTooltipText(const gfx::FontList& font_list,
-                                int max_width) const;
+  base::string16 GetTooltipText() const;
 
   // Get the warning text to display for a dangerous download. The |base_width|
   // is the maximum width of an embedded filename (if there is one). The metrics

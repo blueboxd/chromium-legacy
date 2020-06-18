@@ -14,14 +14,6 @@
 
 class Browser;
 
-namespace gfx {
-class Canvas;
-}
-
-namespace ui {
-class ThemeProvider;
-}
-
 using offline_items_collection::ContentId;
 using offline_items_collection::OfflineItem;
 using DownloadUIModelPtr = DownloadUIModel::DownloadUIModelPtr;
@@ -30,28 +22,8 @@ using DownloadUIModelPtr = DownloadUIModel::DownloadUIModelPtr;
 // implementations.
 class DownloadShelf {
  public:
-  // Size of the space used for the progress indicator.
-  static constexpr int kProgressIndicatorSize = 25;
-
   DownloadShelf(Browser* browser, Profile* profile);
   virtual ~DownloadShelf();
-
-  // Paint the common download animation progress foreground and background,
-  // clipping the foreground to 'percent' full. If percent is -1, then we don't
-  // know the total size, so we just draw a rotating segment until we're done.
-  // |progress_time| is only used for these unknown size downloads.
-  static void PaintDownloadProgress(gfx::Canvas* canvas,
-                                    const ui::ThemeProvider& theme_provider,
-                                    const base::TimeDelta& progress_time,
-                                    int percent);
-
-  static void PaintDownloadComplete(gfx::Canvas* canvas,
-                                    const ui::ThemeProvider& theme_provider,
-                                    double animation_progress);
-
-  static void PaintDownloadInterrupted(gfx::Canvas* canvas,
-                                       const ui::ThemeProvider& theme_provider,
-                                       double animation_progress);
 
   // A new download has started. Add it to our shelf and show the download
   // started animation.

@@ -5,11 +5,6 @@
 // https://github.com/WICG/web-codecs
 
 dictionary VideoEncoderInit {
-  required DOMString codec;
-  DOMString profile;
-
-  required VideoEncoderTuneOptions tuneOptions;
-
   // Called whenever there is a new encoded video chunk available.
   required VideoEncoderOutputCallback output;
 

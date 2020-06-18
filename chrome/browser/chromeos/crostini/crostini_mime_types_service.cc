@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/logging.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"

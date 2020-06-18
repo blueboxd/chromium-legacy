@@ -6,39 +6,51 @@
 #define CHROME_BROWSER_SAFE_BROWSING_CLOUD_CONTENT_SCANNING_DEEP_SCANNING_UTILS_H_
 
 #include <string>
+#include <vector>
+
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "url/gurl.h"
 
 class Profile;
 
-namespace safe_browsing {
-// Helper function to examine a DeepScanningClientResponse and report the
-// appropriate events to the enterprise admin. |download_digest_sha256| must be
-// encoded using base::HexEncode.
-void MaybeReportDeepScanningVerdict(Profile* profile,
-                                    const GURL& url,
-                                    const std::string& file_name,
-                                    const std::string& download_digest_sha256,
-                                    const std::string& mime_type,
-                                    const std::string& trigger,
-                                    const int64_t content_size,
-                                    BinaryUploadService::Result result,
-                                    DeepScanningClientResponse response);
+namespace enterprise_connectors {
+class ContentAnalysisResponse;
+}  // namespace enterprise_connectors
 
-// Helper function to report the user bypassed a warning to the enterprise
-// admin. This is split from MaybeReportDeepScanningVerdict since it happens
-// after getting a response. |download_digest_sha256| must be encoded using
-// base::HexEncode.
-void ReportSensitiveDataWarningBypass(Profile* profile,
-                                      const GURL& url,
-                                      const std::string& file_name,
-                                      const std::string& download_digest_sha256,
-                                      const std::string& mime_type,
-                                      const std::string& trigger,
-                                      const int64_t content_size,
-                                      const DlpDeepScanningVerdict& verdict);
+namespace safe_browsing {
+
+// Represents a trigger that caused a a content analysis request to report a
+// violation.  This is a structure that abstracts the old and new protobufs,
+// to diminish dependencies on them.
+struct ContentAnalysisTrigger {
+  ContentAnalysisTrigger();
+  ContentAnalysisTrigger(const ContentAnalysisTrigger& other);
+  ContentAnalysisTrigger(ContentAnalysisTrigger&& other);
+  ~ContentAnalysisTrigger();
+  ContentAnalysisTrigger& operator=(const ContentAnalysisTrigger& other);
+
+  int action;        // The action taken by chrome.
+  std::string id;    // The id of the trigger.
+  std::string name;  // A friendly name for the trigger.
+};
+
+// Represents the result of a sensitive data scan.  This is a structure that
+// abstracts the old and new protobugs, to diminish dependencies on them.
+struct ContentAnalysisScanResult {
+  ContentAnalysisScanResult();
+  ContentAnalysisScanResult(const ContentAnalysisScanResult& other);
+  ContentAnalysisScanResult(ContentAnalysisScanResult&& other);
+  ~ContentAnalysisScanResult();
+  ContentAnalysisScanResult& operator=(const ContentAnalysisScanResult& other);
+
+  std::string tag;  // The tag associated with the scan.
+  int status;       // The status of scan for the given tag.
+  std::vector<ContentAnalysisTrigger> triggers;  // Triggers, if any.
+};
 
 // Access points used to record UMA metrics and specify which code location is
 // initiating a deep scan. Any new caller of
@@ -63,6 +75,60 @@ enum class DeepScanAccessPoint {
   PASTE,
 };
 std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point);
+
+// Helper function to examine a DeepScanningClientResponse and report the
+// appropriate events to the enterprise admin. |download_digest_sha256| must be
+// encoded using base::HexEncode.
+void MaybeReportDeepScanningVerdict(Profile* profile,
+                                    const GURL& url,
+                                    const std::string& file_name,
+                                    const std::string& download_digest_sha256,
+                                    const std::string& mime_type,
+                                    const std::string& trigger,
+                                    DeepScanAccessPoint access_point,
+                                    const int64_t content_size,
+                                    BinaryUploadService::Result result,
+                                    const DeepScanningClientResponse& response);
+
+// Helper function to examine a ContentAnalysisResponse and report the
+// appropriate events to the enterprise admin. |download_digest_sha256| must be
+// encoded using base::HexEncode.
+void MaybeReportDeepScanningVerdict(
+    Profile* profile,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const std::string& trigger,
+    DeepScanAccessPoint access_point,
+    const int64_t content_size,
+    BinaryUploadService::Result result,
+    const enterprise_connectors::ContentAnalysisResponse& response);
+
+// Helper function to report the user bypassed a warning to the enterprise
+// admin. This is split from MaybeReportDeepScanningVerdict since it happens
+// after getting a response. |download_digest_sha256| must be encoded using
+// base::HexEncode.
+void ReportAnalysisConnectorWarningBypass(
+    Profile* profile,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const std::string& trigger,
+    DeepScanAccessPoint access_point,
+    const int64_t content_size,
+    const DlpDeepScanningVerdict& verdict);
+void ReportAnalysisConnectorWarningBypass(
+    Profile* profile,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& mime_type,
+    const std::string& trigger,
+    DeepScanAccessPoint access_point,
+    const int64_t content_size,
+    const enterprise_connectors::ContentAnalysisResponse& response);
 
 // Helper functions to record DeepScanning UMA metrics for the duration of the
 // request split by its result and bytes/sec for successful requests.
@@ -93,6 +159,19 @@ DeepScanningClientResponse SimpleDeepScanningClientResponseForTesting(
 std::string BinaryUploadServiceResultToString(
     const BinaryUploadService::Result& result,
     bool success);
+
+// Converts legacy DeepScanningResponse protos or an enterprise connectors
+// ContentAnalysisResponse proto to ContentAnalysisScanResult used by the
+// reporting layer.  This indirection is used during the conversion to
+// connectors and possibly could be removed once the conversion is done.
+ContentAnalysisScanResult SensitiveDataVerdictToResult(
+    const safe_browsing::DlpDeepScanningVerdict& verdict);
+ContentAnalysisScanResult ContentAnalysisResultToResult(
+    const enterprise_connectors::ContentAnalysisResponse::Result& result);
+ContentAnalysisScanResult MalwareVerdictToResult(
+    const safe_browsing::MalwareDeepScanningVerdict& verdict);
+std::vector<ContentAnalysisScanResult> ContentAnalysisResponseToResults(
+    const enterprise_connectors::ContentAnalysisResponse& response);
 
 }  // namespace safe_browsing
 

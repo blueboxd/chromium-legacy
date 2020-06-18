@@ -5,12 +5,12 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_UKM_LOGGER_HELPERS_H_
 #define CHROME_BROWSER_CHROMEOS_POWER_ML_USER_ACTIVITY_UKM_LOGGER_HELPERS_H_
 
-#include "base/logging.h"
-#include "base/macros.h"
-
 #include <map>
 #include <string>
 
+#include "base/check_op.h"
+#include "base/logging.h"
+#include "base/macros.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
 
 namespace chromeos {

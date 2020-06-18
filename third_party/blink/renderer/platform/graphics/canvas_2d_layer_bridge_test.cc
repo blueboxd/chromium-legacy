@@ -168,11 +168,10 @@ TEST_F(Canvas2DLayerBridgeTest, DisableAcceleration) {
   std::unique_ptr<Canvas2DLayerBridge> bridge =
       MakeBridge(IntSize(300, 150), RasterMode::kCPU, CanvasColorParams());
 
-  GrBackendTexture backend_texture =
-      bridge->NewImageSnapshot(RasterModeHint::kPreferGPU)
-          ->PaintImageForCurrentFrame()
-          .GetSkImage()
-          ->getBackendTexture(true);
+  GrBackendTexture backend_texture = bridge->NewImageSnapshot()
+                                         ->PaintImageForCurrentFrame()
+                                         .GetSkImage()
+                                         ->getBackendTexture(true);
 
   EXPECT_FALSE(backend_texture.isValid());
 }
@@ -188,7 +187,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoDrawOnContextLost) {
   test_context_provider_->TestContextGL()->set_context_lost(true);
   EXPECT_EQ(nullptr, bridge->GetOrCreateResourceProvider());
   // The following passes by not crashing
-  bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+  bridge->NewImageSnapshot();
 }
 
 TEST_F(Canvas2DLayerBridgeTest, PrepareMailboxWhenContextIsLost) {
@@ -298,8 +297,7 @@ TEST_F(Canvas2DLayerBridgeTest, RasterModeHint) {
         MakeBridge(IntSize(300, 300), RasterMode::kGPU, CanvasColorParams());
     PaintFlags flags;
     bridge->GetPaintCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    scoped_refptr<StaticBitmapImage> image =
-        bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+    scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot();
     EXPECT_TRUE(bridge->IsValid());
     EXPECT_TRUE(bridge->IsAccelerated());
   }
@@ -309,8 +307,7 @@ TEST_F(Canvas2DLayerBridgeTest, RasterModeHint) {
         MakeBridge(IntSize(300, 300), RasterMode::kGPU, CanvasColorParams());
     PaintFlags flags;
     bridge->GetPaintCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    scoped_refptr<StaticBitmapImage> image =
-        bridge->NewImageSnapshot(RasterModeHint::kPreferCPU);
+    scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot();
     EXPECT_TRUE(bridge->IsValid());
     EXPECT_TRUE(bridge->IsAccelerated());
   }
@@ -320,8 +317,7 @@ TEST_F(Canvas2DLayerBridgeTest, RasterModeHint) {
         MakeBridge(IntSize(300, 300), RasterMode::kCPU, CanvasColorParams());
     PaintFlags flags;
     bridge->GetPaintCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    scoped_refptr<StaticBitmapImage> image =
-        bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+    scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot();
     EXPECT_TRUE(bridge->IsValid());
     EXPECT_FALSE(bridge->IsAccelerated());
   }
@@ -331,8 +327,7 @@ TEST_F(Canvas2DLayerBridgeTest, RasterModeHint) {
         MakeBridge(IntSize(300, 300), RasterMode::kCPU, CanvasColorParams());
     PaintFlags flags;
     bridge->GetPaintCanvas()->drawRect(SkRect::MakeXYWH(0, 0, 1, 1), flags);
-    scoped_refptr<StaticBitmapImage> image =
-        bridge->NewImageSnapshot(RasterModeHint::kPreferCPU);
+    scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot();
     EXPECT_TRUE(bridge->IsValid());
     EXPECT_FALSE(bridge->IsAccelerated());
   }
@@ -350,7 +345,7 @@ void DrawSomething(Canvas2DLayerBridge* bridge) {
   bridge->DidDraw(FloatRect(0, 0, 1, 1));
   bridge->FinalizeFrame();
   // Grabbing an image forces a flush
-  bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+  bridge->NewImageSnapshot();
 }
 
 TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc) {
@@ -360,8 +355,7 @@ TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc) {
         MakeBridge(IntSize(300, 150), RasterMode::kGPU, CanvasColorParams());
     EXPECT_TRUE(bridge->IsValid());
     EXPECT_TRUE(bridge->IsAccelerated());
-    scoped_refptr<StaticBitmapImage> snapshot =
-        bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+    scoped_refptr<StaticBitmapImage> snapshot = bridge->NewImageSnapshot();
     EXPECT_TRUE(bridge->IsAccelerated());
     EXPECT_TRUE(snapshot->IsTextureBacked());
   }
@@ -384,8 +378,7 @@ TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc) {
     host_ = std::make_unique<FakeCanvasResourceHost>(IntSize(300, 150));
     bridge->SetCanvasResourceHost(host_.get());
     DrawSomething(bridge.get());
-    scoped_refptr<StaticBitmapImage> snapshot =
-        bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+    scoped_refptr<StaticBitmapImage> snapshot = bridge->NewImageSnapshot();
     EXPECT_FALSE(bridge->IsAccelerated());
     EXPECT_FALSE(snapshot->IsTextureBacked());
   }
@@ -558,8 +551,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_SnapshotWhileHibernating)
   EXPECT_TRUE(bridge->IsValid());
 
   // Take a snapshot and verify that it is not accelerated due to hibernation
-  scoped_refptr<StaticBitmapImage> image =
-      bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+  scoped_refptr<StaticBitmapImage> image = bridge->NewImageSnapshot();
   EXPECT_FALSE(image->IsTextureBacked());
   image = nullptr;
 
@@ -840,7 +832,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUse) {
   bridge->GetPaintCanvas()->drawImageRect(
       images[1].paint_image(), SkRect::MakeWH(5u, 5u), SkRect::MakeWH(5u, 5u),
       nullptr, SkCanvas::kFast_SrcRectConstraint);
-  bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+  bridge->NewImageSnapshot();
 
   EXPECT_EQ(image_decode_cache_.decoded_images(), images);
 }
@@ -863,7 +855,7 @@ TEST_F(Canvas2DLayerBridgeTest, EnsureCCImageCacheUseWithColorConversion) {
   bridge->GetPaintCanvas()->drawImageRect(
       images[1].paint_image(), SkRect::MakeWH(5u, 5u), SkRect::MakeWH(5u, 5u),
       nullptr, SkCanvas::kFast_SrcRectConstraint);
-  bridge->NewImageSnapshot(RasterModeHint::kPreferGPU);
+  bridge->NewImageSnapshot();
 
   EXPECT_EQ(image_decode_cache_.decoded_images(), images);
 }

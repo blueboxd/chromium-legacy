@@ -2042,7 +2042,7 @@ StyleDifference LayoutObject::AdjustStyleDifference(
         (IsText() && !IsBR() && ToLayoutText(this)->HasInlineFragments()) ||
         (IsSVG() && StyleRef().SvgStyle().IsFillColorCurrentColor()) ||
         (IsSVG() && StyleRef().SvgStyle().IsStrokeColorCurrentColor()) ||
-        IsListMarker() || IsDetailsMarker() || IsMathML())
+        IsListMarkerForNormalContent() || IsDetailsMarker() || IsMathML())
       diff.SetNeedsPaintInvalidation();
   }
 
@@ -3745,6 +3745,18 @@ bool LayoutObject::GetImageAnimationPolicy(ImageAnimationPolicy& policy) {
     return false;
   policy = GetDocument().GetSettings()->GetImageAnimationPolicy();
   return true;
+}
+
+bool LayoutObject::IsInsideListMarker() const {
+  return (IsListMarkerForNormalContent() &&
+          ToLayoutListMarker(this)->IsInside()) ||
+         IsInsideListMarkerForCustomContent();
+}
+
+bool LayoutObject::IsOutsideListMarker() const {
+  return (IsListMarkerForNormalContent() &&
+          !ToLayoutListMarker(this)->IsInside()) ||
+         IsOutsideListMarkerForCustomContent();
 }
 
 int LayoutObject::CaretMinOffset() const {

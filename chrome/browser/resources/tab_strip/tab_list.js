@@ -50,15 +50,33 @@ const LayoutVariable = {
 /**
  * Animates a series of elements to indicate that tabs have moved position.
  * @param {!Element} movedElement
- * @param {?Element} elementsToAnimateStart
- * @param {?Element} elementsToAnimateEnd
- * @param {number} direction, +1 if moving towards the end of tab strip,
- *     -1 if moving left
+ * @param {?Element} prevSibling, the previousElementSibling before element
+ *     was moved
+ * @param {?Element} nextSibling, the nextElementSibling before element was
+ *     moved
  */
-function animateTabElementMoved(
-    movedElement, elementsToAnimateStart, elementsToAnimateEnd, direction) {
-  if (isRTL()) {
-    direction *= -1;
+function animateElementMoved(movedElement, prevSibling, nextSibling) {
+  let horizontalDirection = isRTL() ? -1 : 1;
+
+  let elementsToAnimateStart;
+  let elementsToAnimateEnd;
+  if (nextSibling &&
+      movedElement.compareDocumentPosition(nextSibling) &
+          Node.DOCUMENT_POSITION_PRECEDING) {
+    // Element moved towards end of tab strip.
+    elementsToAnimateStart = nextSibling;
+    elementsToAnimateEnd = movedElement.previousElementSibling;
+  } else if (
+      prevSibling &&
+      movedElement.compareDocumentPosition(prevSibling) &
+          Node.DOCUMENT_POSITION_FOLLOWING) {
+    // Element moved towards start of tab strip.
+    elementsToAnimateStart = movedElement.nextElementSibling;
+    elementsToAnimateEnd = prevSibling;
+    horizontalDirection *= -1;
+  } else {
+    // Element did not move.
+    return;
   }
 
   let elementToAnimate = elementsToAnimateStart;
@@ -68,27 +86,27 @@ function animateTabElementMoved(
   // elementsToAnimateEnd and animate each of them.
   while (elementToAnimate && elementsToAnimateEnd &&
          elementToAnimate !== elementsToAnimateEnd.nextElementSibling) {
-    slideElement(elementToAnimate, direction);
+    slideElement(elementToAnimate, horizontalDirection);
     elementToAnimate = elementToAnimate.nextElementSibling;
     numOfTabs++;
   }
 
   // Animate the moved TabElement itself the total number of tabs that it
   // has been moved across.
-  slideElement(movedElement, -1 * direction * numOfTabs);
+  slideElement(movedElement, -1 * horizontalDirection * numOfTabs);
 }
 
 /**
- * Animates the horizontal slide of an element across the tab strip.
+ * Animates the slide of an element across the tab strip.
  * @param {!Element} element
- * @param {number} scale
+ * @param {number} horizontalScale
  */
-function slideElement(element, scale) {
+function slideElement(element, horizontalScale) {
   element.isValidDragOverTarget = false;
   const animation = element.animate(
       [
         {
-          transform: 'translateX(calc(' + scale + ' ' +
+          transform: 'translateX(calc(' + horizontalScale + ' ' +
               '* (var(--tabstrip-tab-width) + var(--tabstrip-tab-spacing))))',
         },
         {transform: 'translateX(0)'},
@@ -707,20 +725,8 @@ export class TabListElement extends CustomElement {
     this.updateTabElementDomPosition_(element, index, pinned, groupId);
 
     if (shouldAnimate) {
-      if (initialDomNextSibling &&
-          element.compareDocumentPosition(initialDomNextSibling) &
-              Node.DOCUMENT_POSITION_PRECEDING) {
-        // Element has moved right.
-        animateTabElementMoved(
-            element, initialDomNextSibling, element.previousElementSibling, 1);
-      } else if (
-          initialDomPrevSibling &&
-          element.compareDocumentPosition(initialDomPrevSibling) &
-              Node.DOCUMENT_POSITION_FOLLOWING) {
-        // Element has moved left.
-        animateTabElementMoved(
-            element, element.nextElementSibling, initialDomPrevSibling, -1);
-      }
+      animateElementMoved(
+          element, initialDomPrevSibling, initialDomNextSibling);
     }
 
     if (isInserting) {

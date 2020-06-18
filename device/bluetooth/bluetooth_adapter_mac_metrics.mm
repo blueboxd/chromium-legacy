@@ -9,6 +9,7 @@
 
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/notreached.h"
 
 namespace {
 

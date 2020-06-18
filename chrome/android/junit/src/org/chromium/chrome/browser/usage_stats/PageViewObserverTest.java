@@ -41,6 +41,8 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabViewManager;
+import org.chromium.chrome.browser.tab.TabViewProvider;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -90,6 +92,25 @@ public final class PageViewObserverTest {
     private UserDataHost mDestroyedUserDataHost;
     private WeakReference<Activity> mActivityRef;
 
+    private class MockTabViewManager implements TabViewManager {
+        private TabViewProvider mTabViewProvider;
+
+        @Override
+        public boolean isShowing(TabViewProvider tabViewProvider) {
+            return mTabViewProvider != null && mTabViewProvider == tabViewProvider;
+        }
+
+        @Override
+        public void addTabViewProvider(TabViewProvider tabViewProvider) {
+            mTabViewProvider = tabViewProvider;
+        }
+
+        @Override
+        public void removeTabViewProvider(TabViewProvider tabViewProvider) {
+            if (mTabViewProvider == tabViewProvider) mTabViewProvider = null;
+        }
+    }
+
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
@@ -103,6 +124,8 @@ public final class PageViewObserverTest {
         doReturn(null).when(mTab).getUrlString();
         doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab).getContext();
         doReturn(Robolectric.buildActivity(Activity.class).get()).when(mTab2).getContext();
+        doReturn(new MockTabViewManager()).when(mTab).getTabViewManager();
+        doReturn(new MockTabViewManager()).when(mTab2).getTabViewManager();
         doReturn(true).when(mTab).isInitialized();
         doReturn(true).when(mTab2).isInitialized();
         doReturn(Arrays.asList(mTabModel)).when(mTabModelSelector).getModels();

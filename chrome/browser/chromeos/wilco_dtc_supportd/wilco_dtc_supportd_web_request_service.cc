@@ -49,6 +49,9 @@ std::string GetHttpMethod(
       return "POST";
     case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::kPut:
       return "PUT";
+    case wilco_dtc_supportd::mojom::WilcoDtcSupportdWebRequestHttpMethod::
+        kPatch:
+      return "PATCH";
   }
   return "";
 }

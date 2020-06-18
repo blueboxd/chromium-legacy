@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/history/media_history_origin_table.h"
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "sql/statement.h"

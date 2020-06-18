@@ -244,6 +244,8 @@ std::string CookieInclusionStatus::GetDebugString() const {
     base::StrAppend(&out, {"WARN_LAX_CROSS_DOWNGRADE_STRICT_SAMESITE, "});
   if (HasWarningReason(WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE))
     base::StrAppend(&out, {"WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE, "});
+  if (HasWarningReason(WARN_SAMESITE_COMPAT_PAIR))
+    base::StrAppend(&out, {"WARN_SAMESITE_COMPAT_PAIR, "});
 
   // Strip trailing comma and space.
   out.erase(out.end() - 2, out.end());

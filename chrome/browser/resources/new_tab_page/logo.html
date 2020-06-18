@@ -69,10 +69,11 @@
   }
 
   #iframe {
-    height: var(--height);
+    border: none;
+    height: var(--height, --ntp-logo-height);
     transition-duration: var(--duration, 100ms);
     transition-property: height, width;
-    width: var(--width);
+    width: var(--width, 100%);
   }
 </style>
 <dom-if if="[[showLogo_]]" restamp>
@@ -106,12 +107,9 @@
           </img>
         </cr-button>
       </div>
-      <ntp-untrusted-iframe id="iframe" path="[[iframeUrl_]]"
-          hidden="[[!iframeUrl_]]"
-          style="--duration: [[valueOrUnset_(duration_)]];
-                 --height: [[valueOrUnset_(height_)]];
-                 --width: [[valueOrUnset_(width_)]];">
-      </ntp-untrusted-iframe>
+      <template is="dom-if" if="[[iframeUrl_]]" restamp>
+        <iframe id="iframe" src="[[iframeUrl_]]"></iframe>
+      </template>
     </div>
   </template>
 </dom-if>

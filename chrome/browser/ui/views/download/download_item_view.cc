@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cmath>
 #include <vector>
 
 #include "base/bind.h"
@@ -18,12 +19,14 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/math_constants.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -59,6 +62,9 @@
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/download_item_utils.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkScalar.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
@@ -98,6 +104,9 @@ using download::DownloadItem;
 using MixedContentStatus = download::DownloadItem::MixedContentStatus;
 
 namespace {
+
+// Size of the space used for the progress indicator.
+constexpr int kProgressIndicatorSize = 25;
 
 // The vertical distance between the item's visual upper bound (as delineated
 // by the separator on the right) and the edge of the shelf.
@@ -199,6 +208,84 @@ class TransparentButton : public views::Button {
     return parent()->GetTooltipText(point);
   }
 };
+
+// Get the opacity based on |animation_progress|, with values in [0.0, 1.0].
+// Range of return value is [0, 255].
+int GetOpacity(double animation_progress) {
+  DCHECK(animation_progress >= 0 && animation_progress <= 1);
+
+  // How many times to cycle the complete animation. This should be an odd
+  // number so that the animation ends faded out.
+  static const int kCompleteAnimationCycles = 5;
+  double temp =
+      ((animation_progress * kCompleteAnimationCycles) + 0.5) * base::kPiDouble;
+  temp = sin(temp) / 2 + 0.5;
+  return static_cast<int>(255.0 * temp);
+}
+
+// Paint the common download animation progress foreground and background,
+// clipping the foreground to 'percent' full. If percent is -1, then we don't
+// know the total size, so we just draw a rotating segment until we're done.
+// |progress_time| is only used for these unknown size downloads.
+void PaintDownloadProgress(gfx::Canvas* canvas,
+                           const ui::ThemeProvider& theme_provider,
+                           const base::TimeDelta& progress_time,
+                           int percent_done) {
+  // Draw background (light blue circle).
+  cc::PaintFlags bg_flags;
+  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
+  SkColor indicator_color =
+      theme_provider.GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
+  bg_flags.setColor(SkColorSetA(indicator_color, 0x33));
+  bg_flags.setAntiAlias(true);
+  const SkScalar kCenterPoint = kProgressIndicatorSize / 2.f;
+  SkPath bg;
+  bg.addCircle(kCenterPoint, kCenterPoint, kCenterPoint);
+  canvas->DrawPath(bg, bg_flags);
+
+  // Calculate progress.
+  SkScalar sweep_angle = 0.f;
+  // Start at 12 o'clock.
+  SkScalar start_pos = SkIntToScalar(270);
+  if (percent_done < 0) {
+    // For unknown size downloads, draw a 50 degree sweep that moves at
+    // 0.08 degrees per millisecond.
+    sweep_angle = 50.f;
+    start_pos += static_cast<SkScalar>(progress_time.InMilliseconds() * 0.08);
+  } else if (percent_done > 0) {
+    sweep_angle = static_cast<SkScalar>(360 * percent_done / 100.0);
+  }
+
+  // Draw progress.
+  SkPath progress;
+  progress.addArc(
+      SkRect::MakeLTRB(0, 0, kProgressIndicatorSize, kProgressIndicatorSize),
+      start_pos, sweep_angle);
+  cc::PaintFlags progress_flags;
+  progress_flags.setColor(indicator_color);
+  progress_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  progress_flags.setStrokeWidth(1.7f);
+  progress_flags.setAntiAlias(true);
+  canvas->DrawPath(progress, progress_flags);
+}
+
+void PaintDownloadComplete(gfx::Canvas* canvas,
+                           const ui::ThemeProvider& theme_provider,
+                           double animation_progress) {
+  // Start at full opacity, then loop back and forth five times before ending
+  // at zero opacity.
+  canvas->SaveLayerAlpha(GetOpacity(animation_progress));
+  PaintDownloadProgress(canvas, theme_provider, base::TimeDelta(), 100);
+  canvas->Restore();
+}
+
+void PaintDownloadInterrupted(gfx::Canvas* canvas,
+                              const ui::ThemeProvider& theme_provider,
+                              double animation_progress) {
+  // Start at zero opacity, then loop back and forth five times before ending
+  // at full opacity.
+  PaintDownloadComplete(canvas, theme_provider, 1.0 - animation_progress);
+}
 
 }  // namespace
 
@@ -352,7 +439,7 @@ void DownloadItemView::OnDownloadUpdated() {
     return;
   }
 
-  base::string16 new_tip = model_->GetTooltipText(font_list_, kTooltipMaxWidth);
+  base::string16 new_tip = model_->GetTooltipText();
   if (new_tip != tooltip_text_) {
     tooltip_text_ = new_tip;
     TooltipTextChanged();
@@ -519,8 +606,7 @@ void DownloadItemView::Layout() {
     }
   } else {
     int mirrored_x = GetMirroredXWithWidthInView(
-        kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding,
+        kStartPadding + kProgressIndicatorSize + kProgressTextPadding,
         kTextWidth);
     int file_name_y = GetYForFilenameText();
     file_name_label_->SetBoundsRect(
@@ -587,8 +673,8 @@ gfx::Size DownloadItemView::CalculatePreferredSize() const {
       status_width =
           std::max(status_width, status_label_->GetPreferredSize().width());
     }
-    width = kStartPadding + DownloadShelf::kProgressIndicatorSize +
-            kProgressTextPadding + status_width + kEndPadding;
+    width = kStartPadding + kProgressIndicatorSize + kProgressTextPadding +
+            status_width + kEndPadding;
   }
 
   if (mode_ != DANGEROUS_MODE)
@@ -792,11 +878,10 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
   // Paint download progress.
   DownloadItem::DownloadState state = model_->GetState();
   canvas->Save();
-  int progress_x =
-      base::i18n::IsRTL()
-          ? width() - kStartPadding - DownloadShelf::kProgressIndicatorSize
-          : kStartPadding;
-  int progress_y = (height() - DownloadShelf::kProgressIndicatorSize) / 2;
+  int progress_x = base::i18n::IsRTL()
+                       ? width() - kStartPadding - kProgressIndicatorSize
+                       : kStartPadding;
+  int progress_y = (height() - kProgressIndicatorSize) / 2;
   canvas->Translate(gfx::Vector2d(progress_x, progress_y));
 
   const gfx::ImageSkia* current_icon = nullptr;
@@ -811,16 +896,16 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
     base::TimeDelta progress_time = previous_progress_elapsed_;
     if (!model_->IsPaused())
       progress_time += base::TimeTicks::Now() - progress_start_time_;
-    DownloadShelf::PaintDownloadProgress(
-        canvas, *GetThemeProvider(), progress_time, model_->PercentComplete());
+    PaintDownloadProgress(canvas, *GetThemeProvider(), progress_time,
+                          model_->PercentComplete());
   } else if (complete_animation_.get() && complete_animation_->is_animating()) {
     if (state == DownloadItem::INTERRUPTED) {
-      DownloadShelf::PaintDownloadInterrupted(
-          canvas, *GetThemeProvider(), complete_animation_->GetCurrentValue());
+      PaintDownloadInterrupted(canvas, *GetThemeProvider(),
+                               complete_animation_->GetCurrentValue());
     } else {
       DCHECK_EQ(DownloadItem::COMPLETE, state);
-      DownloadShelf::PaintDownloadComplete(
-          canvas, *GetThemeProvider(), complete_animation_->GetCurrentValue());
+      PaintDownloadComplete(canvas, *GetThemeProvider(),
+                            complete_animation_->GetCurrentValue());
     }
   } else if (use_new_warnings) {
     current_icon = &icon_;
@@ -832,7 +917,7 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
 
   // Draw the icon image.
   int kFiletypeIconOffset =
-      (DownloadShelf::kProgressIndicatorSize - current_icon->height()) / 2;
+      (kProgressIndicatorSize - current_icon->height()) / 2;
   int icon_x = progress_x + kFiletypeIconOffset;
   int icon_y = progress_y + kFiletypeIconOffset;
   cc::PaintFlags flags;

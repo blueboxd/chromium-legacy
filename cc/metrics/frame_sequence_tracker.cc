@@ -128,6 +128,8 @@ void FrameSequenceTracker::ReportBeginImplFrame(
                          args.frame_id.sequence_number);
   impl_throughput().frames_expected +=
       begin_impl_frame_data_.previous_sequence_delta;
+  aggregated_throughput().frames_expected +=
+      begin_impl_frame_data_.previous_sequence_delta;
 #if DCHECK_IS_ON()
   ++impl_throughput().frames_received;
 #endif
@@ -365,6 +367,8 @@ void FrameSequenceTracker::ReportFrameEnd(
       NOTREACHED() << TRACKER_DCHECK_MSG;
 #endif
     begin_impl_frame_data_.previous_sequence = 0;
+    if (!IsExpectingMainFrame())
+      --aggregated_throughput().frames_expected;
   }
   // last_submitted_frame_ == 0 means the last impl frame has been presented.
   if (termination_status_ == TerminationStatus::kScheduledForTermination &&
@@ -652,6 +656,13 @@ bool FrameSequenceTracker::ShouldIgnoreBeginFrameSource(
 bool FrameSequenceTracker::ShouldIgnoreSequence(
     uint64_t sequence_number) const {
   return sequence_number != begin_impl_frame_data_.previous_sequence;
+}
+
+bool FrameSequenceTracker::IsExpectingMainFrame() const {
+  bool last_main_not_processed =
+      begin_main_frame_data_.previous_sequence != 0 &&
+      begin_main_frame_data_.previous_sequence != last_processed_main_sequence_;
+  return !main_frames_.empty() || last_main_not_processed;
 }
 
 std::unique_ptr<base::trace_event::TracedValue>

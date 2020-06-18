@@ -180,10 +180,10 @@ const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
 const base::Feature kHighPriorityDatabaseTaskType{
     "HighPriorityDatabaseTaskType", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When enabled, wake ups from throttleable TaskQueues are limited to 1 per
-// |kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds| in a page that has
-// been backgrounded for |kIntensiveWakeUpThrottling_GracePeriodSeconds|
-// seconds.
+// When features::kIntensiveWakeUpThrottling is enabled, wake ups from
+// throttleable TaskQueues are limited to 1 per
+// GetIntensiveWakeUpThrottlingDurationBetweenWakeUp() in a page that has been
+// backgrounded for GetIntensiveWakeUpThrottlingGracePeriod().
 //
 // Intensive wake up throttling is enforced in addition to other throttling
 // mechanisms:
@@ -192,18 +192,22 @@ const base::Feature kHighPriorityDatabaseTaskType{
 //
 // Feature tracking bug: https://crbug.com/1075553
 //
-// Note that the base::Feature and base::FeatureParams should not be read from;
+//
+// Note that features::kIntensiveWakeUpThrottling should not be read from;
 // rather the provided accessors should be used, which also take into account
 // the managed policy override of the feature.
-PLATFORM_EXPORT extern const base::Feature kIntensiveWakeUpThrottling;
-PLATFORM_EXPORT extern const base::FeatureParam<int>
-    kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds;
-PLATFORM_EXPORT extern const base::FeatureParam<int>
-    kIntensiveWakeUpThrottling_GracePeriodSeconds;
-// Default parameter values, exposed for testing.
+//
+// Parameter name and default values, exposed for testing.
 constexpr int kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Default =
     60;
+constexpr const char*
+    kIntensiveWakeUpThrottling_DurationBetweenWakeUpsSeconds_Name =
+        "duration_between_wake_ups_seconds";
+
 constexpr int kIntensiveWakeUpThrottling_GracePeriodSeconds_Default = 5 * 60;
+constexpr const char* kIntensiveWakeUpThrottling_GracePeriodSeconds_Name =
+    "grace_period_seconds";
+
 // Exposed so that multiple tests can tinker with the policy override.
 PLATFORM_EXPORT void
 ClearIntensiveWakeUpThrottlingPolicyOverrideCacheForTesting();

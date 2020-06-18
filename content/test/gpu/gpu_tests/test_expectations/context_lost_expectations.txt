@@ -59,3 +59,6 @@ crbug.com/1078566 [ android ] GpuNormalTermination_NewWebGLNotBlocked [ Skip ]
 
 # Fuchsia cannot launch a new tab.
 [ fuchsia ] ContextLost_WebGLContextLostInHiddenTab [ Skip ]
+
+# Flaky on Fuchsia.
+[ fuchsia ] ContextLost_WebGLContextLostFromGPUProcessExit [ Skip ]

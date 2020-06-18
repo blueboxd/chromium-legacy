@@ -202,7 +202,6 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // CanvasImageSource implementation
   scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                               RasterModeHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override;
   FloatSize ElementSize(const FloatSize&,
@@ -299,8 +298,7 @@ class CORE_EXPORT HTMLCanvasElement final
     needs_unbuffered_input_ = value;
   }
 
-  scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer,
-                                            RasterModeHint) const;
+  scoped_refptr<StaticBitmapImage> Snapshot(SourceDrawingBuffer) const;
 
   // Returns the cc layer containing the contents. It's the cc layer of
   // SurfaceLayerBridge() or RenderingContext(), or nullptr if the canvas is not
@@ -361,8 +359,7 @@ class CORE_EXPORT HTMLCanvasElement final
       const CanvasContextCreationAttributesCore&);
 
   scoped_refptr<StaticBitmapImage> GetSourceImageForCanvasInternal(
-      SourceImageStatus*,
-      RasterModeHint);
+      SourceImageStatus*);
 
   void OnContentsCcLayerChanged();
 

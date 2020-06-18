@@ -1331,7 +1331,7 @@ void AssistantManagerServiceImpl::ResumeTimer(const std::string& id) {
 void AssistantManagerServiceImpl::NotifyEntryIntoAssistantUi(
     mojom::AssistantEntryPoint entry_point) {
   base::AutoLock lock(last_trigger_source_lock_);
-  last_trigger_source_ = ToTriggerSource(entry_point);
+  last_trigger_source_ = ToTriggerSource(static_cast<int>(entry_point));
 }
 
 std::string AssistantManagerServiceImpl::ConsumeLastTriggerSource() {

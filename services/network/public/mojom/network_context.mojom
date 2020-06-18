@@ -886,7 +886,7 @@ interface NetworkContext {
       url.mojom.Origin origin,
       SiteForCookies site_for_cookies,
       url.mojom.Origin top_frame_origin,
-      pending_remote<CookieAccessObserver> cookie_observer);
+      pending_remote<CookieAccessObserver>? cookie_observer);
 
   // Provides a HasTrustTokensAnswerer scoped to the given top-frame origin
   // (subsequent calls to its HasTrustTokens(issuer) method will attempt to

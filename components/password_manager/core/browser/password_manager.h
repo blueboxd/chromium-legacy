@@ -243,6 +243,10 @@ class PasswordManager : public FormSubmissionObserver {
 
   void OnPasswordFormRemoved(PasswordManagerDriver* driver,
                              autofill::FormRendererId form_id);
+
+  // Checks if there is a submitted PasswordFormManager for a form from the
+  // detached frame.
+  void OnIframeDetach(const std::string& frame_id);
 #endif
 
  private:

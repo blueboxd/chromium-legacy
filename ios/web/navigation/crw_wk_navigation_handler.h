@@ -89,9 +89,8 @@ class WKBackForwardListItemHolder;
 - (instancetype)initWithDelegate:(id<CRWWKNavigationHandlerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
-// TODO(crbug.com/956511): Change this to readonly when
-// |webViewWebProcessDidCrash| is moved to CRWWKNavigationHandler.
-@property(nonatomic, assign) BOOL webProcessCrashed;
+// Indicates if the webview reported a crash.
+@property(nonatomic, assign, readonly) BOOL webProcessCrashed;
 
 // Pending information for an in-progress page navigation. The lifetime of
 // this object starts at |decidePolicyForNavigationAction| where the info is

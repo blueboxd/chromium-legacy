@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/pref_names.h"
 #include "components/account_id/account_id.h"

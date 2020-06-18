@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/concierge_helper_service.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/optional.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"

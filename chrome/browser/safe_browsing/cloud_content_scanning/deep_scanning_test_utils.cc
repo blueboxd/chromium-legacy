@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
 
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/connectors/common.h"
@@ -186,7 +187,7 @@ void EventReportValidator::ExpectSensitiveDataEvent(
     const std::string& expected_filename,
     const std::string& expected_sha256,
     const std::string& expected_trigger,
-    const DlpDeepScanningVerdict& expected_dlp_verdict,
+    const ContentAnalysisScanResult& expected_dlp_verdict,
     const std::set<std::string>* expected_mimetypes,
     int expected_content_size) {
   event_key_ = SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent;
@@ -214,7 +215,7 @@ void EventReportValidator::
         const std::string& expected_sha256,
         const std::string& expected_threat_type,
         const std::string& expected_trigger,
-        const DlpDeepScanningVerdict& expected_dlp_verdict,
+        const ContentAnalysisScanResult& expected_dlp_verdict,
         const std::set<std::string>* expected_mimetypes,
         int expected_content_size) {
   event_key_ = SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent;
@@ -271,7 +272,6 @@ void EventReportValidator::ValidateReport(base::Value* report) {
                 content_size_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyThreatType,
                 threat_type_);
-  ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyReason, reason_);
   ValidateField(event, SafeBrowsingPrivateEventRouter::kKeyUnscannedReason,
                 unscanned_reason_);
   ValidateMimeType(event);
@@ -298,54 +298,26 @@ void EventReportValidator::ValidateDlpVerdict(base::Value* value) {
   ASSERT_NE(nullptr, triggered_rules);
   ASSERT_EQ(base::Value::Type::LIST, triggered_rules->type());
   base::Value::ListView rules_list = triggered_rules->GetList();
-  int rules_size = rules_list.size();
-  ASSERT_EQ(rules_size, dlp_verdict_.value().triggered_rules_size());
-  for (int i = 0; i < rules_size; ++i) {
+  size_t rules_size = rules_list.size();
+  ASSERT_EQ(rules_size, dlp_verdict_.value().triggers.size());
+  for (size_t i = 0; i < rules_size; ++i) {
     base::Value* rule = &rules_list[i];
     ASSERT_EQ(base::Value::Type::DICTIONARY, rule->type());
-    ValidateDlpRule(rule, dlp_verdict_.value().triggered_rules(i));
+    ValidateDlpRule(rule, dlp_verdict_.value().triggers[i]);
   }
 }
 
 void EventReportValidator::ValidateDlpRule(
     base::Value* value,
-    const DlpDeepScanningVerdict::TriggeredRule& expected_rule) {
+    const ContentAnalysisTrigger& expected_rule) {
   ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleAction,
-                base::Optional<int>(expected_rule.action()));
+                base::Optional<int>(expected_rule.action));
   ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleName,
-                expected_rule.rule_name());
+                expected_rule.name);
+  int64_t rule_id;
+  ASSERT_TRUE(base::StringToInt64(expected_rule.id, &rule_id));
   ValidateField(value, SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleId,
-                base::Optional<int>(expected_rule.rule_id()));
-  ValidateField(value,
-                SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleSeverity,
-                expected_rule.rule_severity());
-  ValidateField(value,
-                SafeBrowsingPrivateEventRouter::kKeyTriggeredRuleResourceName,
-                expected_rule.rule_resource_name());
-
-  base::Value* matched_detectors =
-      value->FindListKey(SafeBrowsingPrivateEventRouter::kKeyMatchedDetectors);
-  ASSERT_NE(nullptr, matched_detectors);
-  ASSERT_EQ(base::Value::Type::LIST, matched_detectors->type());
-  base::Value::ListView detectors_list = matched_detectors->GetList();
-  int detectors_size = detectors_list.size();
-  ASSERT_EQ(detectors_size, expected_rule.matched_detectors_size());
-
-  for (int j = 0; j < detectors_size; ++j) {
-    base::Value* detector = &detectors_list[j];
-    ASSERT_EQ(base::Value::Type::DICTIONARY, detector->type());
-    const DlpDeepScanningVerdict::MatchedDetector& expected_detector =
-        expected_rule.matched_detectors(j);
-    ValidateField(detector,
-                  SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorId,
-                  expected_detector.detector_id());
-    ValidateField(detector,
-                  SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorName,
-                  expected_detector.display_name());
-    ValidateField(detector,
-                  SafeBrowsingPrivateEventRouter::kKeyMatchedDetectorType,
-                  expected_detector.detector_type());
-  }
+                base::Optional<int>(rule_id));
 }
 
 void EventReportValidator::ValidateField(

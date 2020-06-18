@@ -86,9 +86,6 @@ CreditCardSaveManager::CreditCardSaveManager(
       payments_client_(payments_client),
       app_locale_(app_locale),
       personal_data_manager_(personal_data_manager) {
-  // This is to initialize StrikeDatabase is if it hasn't been already, so that
-  // its cache would be loaded and ready to use when the first CCSM is created.
-  client_->GetStrikeDatabase();
 }
 
 CreditCardSaveManager::~CreditCardSaveManager() {}

@@ -112,7 +112,7 @@ const addSubmitButtonTouchEndHandler = function(form) {
  */
 const onSubmitButtonTouchEnd = function(evt) {
   const form = evt.currentTarget.form;
-  const formData = __gCrWeb.passwords.getPasswordFormData(form);
+  const formData = __gCrWeb.passwords.getPasswordFormData(form, window);
   if (!formData) {
     return;
   }
@@ -181,7 +181,7 @@ __gCrWeb.passwords['getPasswordFormDataAsString'] = function(identifier) {
   if (!el) {
     return '{}';
   }
-  const formData = __gCrWeb.passwords.getPasswordFormData(el);
+  const formData = __gCrWeb.passwords.getPasswordFormData(el, window);
   if (!formData) {
     return '{}';
   }
@@ -341,7 +341,7 @@ const getPasswordFormDataList = function(formDataList, win) {
   const doc = win.document;
   const forms = doc.forms;
   for (let i = 0; i < forms.length; i++) {
-    const formData = __gCrWeb.passwords.getPasswordFormData(forms[i]);
+    const formData = __gCrWeb.passwords.getPasswordFormData(forms[i], win);
     if (formData) {
       formDataList.push(formData);
       addSubmitButtonTouchEndHandler(forms[i]);
@@ -384,13 +384,14 @@ function getPasswordFormDataFromUnownedElements_(formDataList, window) {
 /**
  * Returns a JS object containing the data from |formElement|.
  * @param {HTMLFormElement} formElement An HTML Form element.
+ * @param {Window} win A window or a frame containing formData.
  * @return {Object} Object of data from formElement.
  */
-__gCrWeb.passwords.getPasswordFormData = function(formElement) {
+__gCrWeb.passwords.getPasswordFormData = function(formElement, win) {
   const extractMask = __gCrWeb.fill.EXTRACT_MASK_VALUE;
   const formData = {};
   const ok = __gCrWeb.fill.webFormElementToFormData(
-      window, formElement, null /* formControlElement */, extractMask, formData,
+      win, formElement, null /* formControlElement */, extractMask, formData,
       null /* field */);
   return ok ? formData : null;
 };

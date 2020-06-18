@@ -380,6 +380,8 @@ void PageLoadTracker::Commit(content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame()) {
     largest_contentful_paint_handler_.RecordMainFrameTreeNodeId(
         navigation_handle->GetFrameTreeNodeId());
+    experimental_largest_contentful_paint_handler_.RecordMainFrameTreeNodeId(
+        navigation_handle->GetFrameTreeNodeId());
   }
 
   const std::string& mime_type =
@@ -414,6 +416,8 @@ void PageLoadTracker::ReadyToCommitNavigation(
 void PageLoadTracker::DidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle) {
   largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
+      navigation_handle, navigation_start_);
+  experimental_largest_contentful_paint_handler_.OnDidFinishSubFrameNavigation(
       navigation_handle, navigation_start_);
   for (const auto& observer : observers_) {
     observer->OnDidFinishSubFrameNavigation(navigation_handle);
@@ -667,8 +671,15 @@ void PageLoadTracker::OnTimingChanged() {
   DCHECK(!last_dispatched_merged_page_timing_->Equals(
       metrics_update_dispatcher_.timing()));
 
+  const mojom::PaintTimingPtr& paint_timing =
+      metrics_update_dispatcher_.timing().paint_timing;
   largest_contentful_paint_handler_.RecordTiming(
-      metrics_update_dispatcher_.timing().paint_timing,
+      *paint_timing->largest_contentful_paint,
+      paint_timing->first_input_or_scroll_notified_timestamp,
+      nullptr /* subframe_rfh */);
+  experimental_largest_contentful_paint_handler_.RecordTiming(
+      *paint_timing->experimental_largest_contentful_paint,
+      paint_timing->first_input_or_scroll_notified_timestamp,
       nullptr /* subframe_rfh */);
 
   for (const auto& observer : observers_) {
@@ -684,7 +695,13 @@ void PageLoadTracker::OnSubFrameTimingChanged(
     content::RenderFrameHost* rfh,
     const mojom::PageLoadTiming& timing) {
   DCHECK(rfh->GetParent());
-  largest_contentful_paint_handler_.RecordTiming(timing.paint_timing, rfh);
+  const mojom::PaintTimingPtr& paint_timing = timing.paint_timing;
+  largest_contentful_paint_handler_.RecordTiming(
+      *paint_timing->largest_contentful_paint,
+      paint_timing->first_input_or_scroll_notified_timestamp, rfh);
+  experimental_largest_contentful_paint_handler_.RecordTiming(
+      *paint_timing->experimental_largest_contentful_paint,
+      paint_timing->first_input_or_scroll_notified_timestamp, rfh);
   for (const auto& observer : observers_) {
     observer->OnTimingUpdate(rfh, timing);
   }
@@ -873,6 +890,11 @@ const ResourceTracker& PageLoadTracker::GetResourceTracker() const {
 const LargestContentfulPaintHandler&
 PageLoadTracker::GetLargestContentfulPaintHandler() const {
   return largest_contentful_paint_handler_;
+}
+
+const LargestContentfulPaintHandler&
+PageLoadTracker::GetExperimentalLargestContentfulPaintHandler() const {
+  return experimental_largest_contentful_paint_handler_;
 }
 
 ukm::SourceId PageLoadTracker::GetSourceId() const {

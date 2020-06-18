@@ -594,7 +594,7 @@ void LayoutBoxModelObject::AddOutlineRectsForDescendant(
     Vector<PhysicalRect>& rects,
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
-  if (descendant.IsText() || descendant.IsListMarker())
+  if (descendant.IsText() || descendant.IsListMarkerForNormalContent())
     return;
 
   if (descendant.HasLayer()) {

@@ -10,8 +10,8 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
-#include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace base {
 class Value;
@@ -47,7 +47,7 @@ class EventReportValidator {
       const std::string& expected_filename,
       const std::string& expected_sha256,
       const std::string& expected_trigger,
-      const DlpDeepScanningVerdict& expected_dlp_verdict,
+      const ContentAnalysisScanResult& expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size);
 
@@ -57,7 +57,7 @@ class EventReportValidator {
       const std::string& expected_sha256,
       const std::string& expected_threat_type,
       const std::string& expected_trigger,
-      const DlpDeepScanningVerdict& expected_dlp_verdict,
+      const ContentAnalysisScanResult& expected_dlp_verdict,
       const std::set<std::string>* expected_mimetypes,
       int expected_content_size);
 
@@ -76,9 +76,8 @@ class EventReportValidator {
   void ValidateReport(base::Value* report);
   void ValidateMimeType(base::Value* value);
   void ValidateDlpVerdict(base::Value* value);
-  void ValidateDlpRule(
-      base::Value* value,
-      const DlpDeepScanningVerdict::TriggeredRule& expected_rule);
+  void ValidateDlpRule(base::Value* value,
+                       const ContentAnalysisTrigger& expected_rule);
   void ValidateField(base::Value* value,
                      const std::string& field_key,
                      const base::Optional<std::string>& expected_value);
@@ -96,9 +95,8 @@ class EventReportValidator {
   std::string filename_;
   std::string sha256_;
   std::string trigger_;
-  base::Optional<DlpDeepScanningVerdict> dlp_verdict_ = base::nullopt;
+  base::Optional<ContentAnalysisScanResult> dlp_verdict_ = base::nullopt;
   base::Optional<std::string> threat_type_ = base::nullopt;
-  base::Optional<std::string> reason_ = base::nullopt;
   base::Optional<std::string> unscanned_reason_ = base::nullopt;
   base::Optional<bool> clicked_through_ = base::nullopt;
   base::Optional<int> content_size_ = base::nullopt;

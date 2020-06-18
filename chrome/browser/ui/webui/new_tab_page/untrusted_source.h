@@ -39,8 +39,6 @@ class Profile;
 //         * repeatY:   (optional) CSS background-repeat-y property.
 //         * positionX: (optional) CSS background-position-x property.
 //         * positionY: (optional) CSS background-position-y property.
-//   * chrome-untrusted://new-tab-page/iframe?<url>: Behaves like an iframe with
-//       src set to <url>.
 //   Each of those helpers only accept URLs with HTTPS or chrome-untrusted:.
 class UntrustedSource : public content::URLDataSource,
                         public OneGoogleBarServiceObserver,

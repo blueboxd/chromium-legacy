@@ -87,7 +87,7 @@
 }
 
 - (void)stop {
-  [self.viewController dismissViewControllerAnimated:YES completion:nil];
+  [self.baseViewController dismissViewControllerAnimated:YES completion:nil];
   self.viewController = nil;
   self.learnMoreViewController = nil;
 

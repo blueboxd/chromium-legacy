@@ -334,12 +334,12 @@ class ExportNotifierTest(LoggingTestCase):
             comment = (
                 'The exported PR, https://github.com/web-platform-tests/wpt/pull/{}, '
                 'has failed Taskcluster check(s) on GitHub, which could indicate '
-                'cross-broswer failures on the exported changes. Please contact '
-                'ecosystem-infra@ team for more information.\n\n'
+                'cross-browser failures on the exported changes. Please contact '
+                'ecosystem-infra@chromium.org for more information.\n\n'
                 'Taskcluster Link: {}\n'
                 '{}Gerrit CL SHA: {}\n'
                 'Patchset Number: {}'
-                '\n\nAny suggestions to improve this service is welcomed, '
+                '\n\nAny suggestions to improve this service are welcome; '
                 'crbug.com/1027618.').format(
                 pr_number, link, pr_number, sha, patchset
             )
@@ -347,11 +347,11 @@ class ExportNotifierTest(LoggingTestCase):
             comment = (
                 'The exported PR, https://github.com/web-platform-tests/wpt/pull/{}, '
                 'has failed Taskcluster check(s) on GitHub, which could indicate '
-                'cross-broswer failures on the exported changes. Please contact '
-                'ecosystem-infra@ team for more information.\n\n'
+                'cross-browser failures on the exported changes. Please contact '
+                'ecosystem-infra@chromium.org for more information.\n\n'
                 'Taskcluster Link: {}\n'
                 '{}Gerrit CL SHA: {}'
-                '\n\nAny suggestions to improve this service is welcomed, '
+                '\n\nAny suggestions to improve this service are welcome; '
                 'crbug.com/1027618.').format(
                 pr_number, link, pr_number, sha
             )

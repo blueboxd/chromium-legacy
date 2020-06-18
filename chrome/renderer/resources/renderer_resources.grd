@@ -9,10 +9,6 @@
     <output filename="renderer_resources_300_percent.pak" type="data_package" context="default_300_percent" />
   </outputs>
   <release seq="1">
-    <structures fallback_to_low_resolution="true">
-      <structure type="chrome_scaled_image" name="IDR_SAD_WEBVIEW" file="common\webview-crash.png" />
-      <structure type="chrome_scaled_image" name="IDR_SAD_PLUGIN" file="common\sadplugin.png" />
-    </structures>
     <includes>
       <include name="IDR_BLOCKED_PLUGIN_HTML" file="plugins/blocked_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_DISABLED_PLUGIN_HTML" file="plugins/disabled_plugin.html" flattenhtml="true" type="BINDATA" />

@@ -8,6 +8,7 @@
 
 #include "chrome/browser/global_keyboard_shortcuts_mac.h"
 
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "chrome/app/chrome_command_ids.h"

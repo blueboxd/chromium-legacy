@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabViewManager;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
@@ -644,7 +643,7 @@ public class TabContentManager {
     }
 
     private boolean isNativeViewShowing(Tab tab) {
-        return tab != null && TabViewManager.get(tab).getCurrentTabViewProvider() != null;
+        return tab != null && tab.isShowingCustomView();
     }
 
     @NativeMethods

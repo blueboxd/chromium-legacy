@@ -69,8 +69,6 @@ void ThroughputUkmReporter::ComputeUniversalThroughput(
     FrameSequenceMetrics* metrics) {
   last_impl_percent_ = metrics->impl_throughput().DroppedFramePercent();
   last_main_percent_ = metrics->main_throughput().DroppedFramePercent();
-  metrics->aggregated_throughput().frames_expected =
-      metrics->impl_throughput().frames_expected;
   last_aggregated_percent_ =
       metrics->aggregated_throughput().DroppedFramePercent();
   current_universal_throughput_ = 100 - last_aggregated_percent_.value();

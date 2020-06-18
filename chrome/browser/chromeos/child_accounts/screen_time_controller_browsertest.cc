@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -114,6 +115,10 @@ class ScreenTimeControllerTest : public MixinBasedInProcessBrowserTest {
   bool IsAuthEnabled() {
     return ScreenLocker::default_screen_locker()->IsAuthEnabledForUser(
         logged_in_user_mixin_.GetAccountId());
+  }
+
+  const AccountId& GetAccountId() {
+    return logged_in_user_mixin_.GetAccountId();
   }
 
   void MockChildScreenTime(base::TimeDelta used_time) {
@@ -664,6 +669,33 @@ IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, BedtimeOnTimezoneChange) {
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
       base::UTF8ToUTF16("GMT+0500"));
   EXPECT_TRUE(IsAuthEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(ScreenTimeControllerTest, BedtimeLockScreen24HourClock) {
+  LogInChildAndSetupClockWithTime("1 Jan 2018 22:00:00 GMT");
+
+  // Set preference of using 24 hour clock to be true.
+  child_profile_->GetPrefs()->SetBoolean(prefs::kUse24HourClock, true);
+
+  ScreenLockerTester().Lock();
+
+  system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
+      base::UTF8ToUTF16("GMT"));
+
+  // Set new policy.
+  base::Time last_updated = utils::TimeFromString("1 Jan 2018 0:00 GMT");
+  base::Value policy_content =
+      utils::CreateTimeLimitPolicy(utils::CreateTime(6, 0));
+  utils::AddTimeWindowLimit(&policy_content, utils::kMonday,
+                            utils::CreateTime(21, 0), utils::CreateTime(17, 0),
+                            last_updated);
+  SetUsageTimeLimitPolicy(policy_content);
+
+  // Check that auth is disabled, since the bedtime has already started.
+  EXPECT_FALSE(IsAuthEnabled());
+
+  EXPECT_EQ(base::UTF8ToUTF16("Come back at 17:00."),
+            ash::LoginScreenTestApi::GetDisabledAuthMessage(GetAccountId()));
 }
 
 // Tests bedtime during timezone changes that make the clock go back in time.

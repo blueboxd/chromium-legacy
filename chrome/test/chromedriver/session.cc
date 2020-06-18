@@ -71,7 +71,6 @@ Session::Session(const std::string& id)
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
       strict_file_interactability(false),
-      enable_launch_app(false),
       click_count(0),
       mouse_click_timestamp(base::TimeTicks::Now()) {}
 
@@ -88,7 +87,6 @@ Session::Session(const std::string& id, std::unique_ptr<Chrome> chrome)
       page_load_timeout(kDefaultPageLoadTimeout),
       script_timeout(kDefaultScriptTimeout),
       strict_file_interactability(false),
-      enable_launch_app(false),
       click_count(0),
       mouse_click_timestamp(base::TimeTicks::Now()) {}
 

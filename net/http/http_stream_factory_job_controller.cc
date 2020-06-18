@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/base/load_flags.h"
+#include "net/base/url_util.h"
 #include "net/http/bidirectional_stream_impl.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
@@ -1014,7 +1015,8 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
       if (!is_any_broken) {
         // Only log the broken alternative service once per request.
         is_any_broken = true;
-        HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false);
+        HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_BROKEN, false,
+                                        HasGoogleHost(original_url));
       }
       continue;
     }
@@ -1170,22 +1172,23 @@ void HttpStreamFactory::JobController::ReportAlternateProtocolUsage(
 
   bool proxy_server_used =
       alternative_job_->alternative_proxy_server().is_quic();
+  bool is_google_host = HasGoogleHost(job->origin_url());
 
   if (job == main_job_.get()) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_LOST_RACE,
-                                    proxy_server_used);
+                                    proxy_server_used, is_google_host);
     return;
   }
 
   DCHECK_EQ(alternative_job_.get(), job);
   if (job->using_existing_quic_session()) {
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_NO_RACE,
-                                    proxy_server_used);
+                                    proxy_server_used, is_google_host);
     return;
   }
 
   HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_WON_RACE,
-                                  proxy_server_used);
+                                  proxy_server_used, is_google_host);
 }
 
 bool HttpStreamFactory::JobController::IsJobOrphaned(Job* job) const {

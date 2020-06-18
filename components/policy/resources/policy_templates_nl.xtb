@@ -2679,7 +2679,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als het beleid <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> niet is ingesteld of is uitgeschakeld, wordt dit beleid genegeerd.
 
       Als dit beleid niet is ingesteld of is ingesteld op True, worden er gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
-      Als dit beleid is ingesteld op False, worden er geen gegevens verzameld die kan worden gebruikt om gebruikers te identificeren.
+      Als dit beleid is ingesteld op False, worden er geen gegevens verzameld die kunnen worden gebruikt om gebruikers te identificeren.
 
       Dit beleid is alleen van kracht als de machine is ingeschreven met <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> voor <ph name="PRODUCT_NAME" />.
       Dit beleid is altijd van kracht voor <ph name="PRODUCT_OS_NAME" />.</translation>
@@ -3250,7 +3250,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als dit beleid is ingesteld op een niet-lege tekenreeks:
       Als de waarschuwingstijd die wordt vermeld in het beleid <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> is verstreken, wordt dit bericht weergegeven op het inlogscherm als het apparaat wordt geblokkeerd zodat gebruikers niet kunnen inloggen.
-      Als de waarschuwingstijd die wordt vermeld in het beleid <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> niet is verstreken, wordt dit bericht weergegeven op de pagina Instellingen nadat de gebruiker is ingelogd.
+      Als de waarschuwingstijd die wordt vermeld in het beleid <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> niet is verstreken, wordt dit bericht weergegeven op de pagina met instellingen nadat de gebruiker is ingelogd.
 
       Als dit beleid niet is ingesteld of is ingesteld op een lege waarde, krijgt de gebruiker in beide bovenstaande gevallen het standaard bericht voor het einde van de levensduur te zien.
       Het bericht voor het einde van de levensduur moet zijn opgesteld in platte tekst zonder opmaak. Opmaak is niet toegestaan. </translation>

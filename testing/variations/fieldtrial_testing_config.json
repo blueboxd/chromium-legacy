@@ -1271,6 +1271,27 @@
             ]
         }
     ],
+    "CSSReducedFontLoadingLayoutInvalidations": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "CSSReducedFontLoadingLayoutInvalidations"
+                    ]
+                }
+            ]
+        }
+    ],
     "CacheStorageEagerReading": [
         {
             "platforms": [
@@ -6462,26 +6483,6 @@
                     },
                     "enable_features": [
                         "PulseInterval"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SyncUSSNigori": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SyncUSSNigori"
                     ]
                 }
             ]

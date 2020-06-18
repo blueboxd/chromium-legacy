@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />നിങ്ങളുടെ കുക്കികൾ മായ്‌ക്കുന്നത് പരീക്ഷിക്കുക<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">നിങ്ങളുടെ സുരക്ഷിത DNS ക്രമീകരണം പരിശോധിക്കുക</translation>
 <translation id="1307966114820526988">അവസാനിപ്പിച്ച ഫീച്ചറുകൾ</translation>
+<translation id="1310581832770023220">ഈ ഫോമിലെ ഡാറ്റ അയയ്ക്കുന്നത് സുരക്ഷിതമല്ലാത്ത കണക്ഷനിലൂടെയാണ്</translation>
 <translation id="131405271941274527">ഒരു NFC ഉപകരണത്തിൽ നിങ്ങളുടെ ഫോൺ ടാപ്പ് ചെയ്യുമ്പോൾ വിവരങ്ങൾ അയയ്ക്കാനും സ്വീകരിക്കാനും <ph name="URL" /> താൽപ്പര്യപ്പെടുന്നു</translation>
 <translation id="1314509827145471431">വലതുവശത്ത് ബൈൻഡ് ചെയ്യുക</translation>
 <translation id="1320233736580025032">Prc1 (എൻവലപ്പ്)</translation>
@@ -1441,6 +1442,7 @@
 <translation id="7138472120740807366">ഡെലിവറി രീതി</translation>
 <translation id="7139724024395191329">എമിറേറ്റ്</translation>
 <translation id="714064300541049402">സൈഡ് 2 ചിത്രം X ഷിഫ്റ്റ്</translation>
+<translation id="7147693119324090759">എന്തായാലും സമർപ്പിക്കുക</translation>
 <translation id="7152423860607593928">നമ്പർ-14 (എൻവലപ്പ്)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> എണ്ണവും}other{<ph name="PAYMENT_METHOD_PREVIEW" /> എന്നതും മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> എണ്ണവും}}</translation>
 <translation id="7153618581592392745">ലാവെൻഡർ</translation>
@@ -1515,6 +1517,7 @@
 <translation id="7416351320495623771">പാസ്‌വേഡുകൾ മാനേജ് ചെയ്യുക…</translation>
 <translation id="7419106976560586862">പ്രൊഫൈൽ പാത</translation>
 <translation id="7437289804838430631">ബന്ധപ്പെടാനുള്ള വിവരങ്ങൾ ചേർക്കുക</translation>
+<translation id="743897106051685947">ഒറിജിനൽ</translation>
 <translation id="7438976808740265764">2020 ഡിസംബറിന് ശേഷം Flash Player പിന്തുണയ്‌ക്കില്ല.</translation>
 <translation id="7440140511386898319">ഓഫ്‌ലൈനായിരിക്കുമ്പോൾ ഉള്ളടക്കം അടുത്തറിയുക</translation>
 <translation id="7441627299479586546">തെറ്റായ നയ വിഷയം</translation>
@@ -1526,6 +1529,7 @@
 <translation id="7473891865547856676">വേണ്ട, നന്ദി</translation>
 <translation id="7481312909269577407">മുന്നോട്ട്</translation>
 <translation id="7485870689360869515">ഡാറ്റകളൊന്നും കണ്ടെത്തിയില്ല.</translation>
+<translation id="7488762544858401571">എഡിറ്റ് ചെയ്‌തത്</translation>
 <translation id="7495290002932347110">സൈറ്റിലോ ആപ്പിലോ ഉണ്ടായ ഡാറ്റാ ലംഘനം കാരണം നിങ്ങളുടെ പാസ്‌വേഡ് പുറത്തായി. നിങ്ങളുടെ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ പരിശോധിച്ച് ഇപ്പോൾ തന്നെ <ph name="ORIGIN" /> എന്നതിലെ പാസ്‌വേഡ് മാറ്റാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="7498234416455752244">എഡിറ്റ് ചെയ്യുന്നത് തുടരുക</translation>
 <translation id="7503664977220660814">വഞ്ചനാപരമായ സൈറ്റിൽ നിങ്ങൾ ഇപ്പോൾ പാസ്‍വേഡ് നൽകി. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, കൂടാതെ നിങ്ങൾ ഇപ്പോൾ ഈ പാസ്‌വേഡ് ഉപയോഗിക്കുന്ന മറ്റ് സൈറ്റുകൾ എന്നിവയ്‌ക്കായി നിങ്ങളുടെ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ പരിശോധിക്കാൻ Chromium നിർദ്ദേശിക്കുന്നു.</translation>
@@ -1609,6 +1613,7 @@
 <translation id="7770259615151589601">ഡെസിഗ്‌നേറ്റ് ചെയ്‌തത്-വലുത്</translation>
 <translation id="7773005668374414287">അതേ ക്രമത്തിൽ ഫേസ് അപ്പ്</translation>
 <translation id="777702478322588152">പ്രിഫെക്ച്വര്‍</translation>
+<translation id="7791011319128895129">റിലീസ് ചെയ്യാത്തത്</translation>
 <translation id="7791196057686275387">ബെയ്‌ൽ</translation>
 <translation id="7791543448312431591">ചേര്‍ക്കൂ</translation>
 <translation id="7798389633136518089">നയം സജ്ജീകരിച്ചത് ക്ലൗഡിൽ നിന്ന് അല്ലാത്തതിനാൽ അവഗണിച്ചു.</translation>
@@ -1745,6 +1750,7 @@
 <translation id="8355270400102541638">ലോക്കൽ ക്രാഷ് സന്ദർഭം:</translation>
 <translation id="8363502534493474904">ഫ്ലൈറ്റ് മോഡ് ഓഫാക്കുന്നു</translation>
 <translation id="8364627913115013041">സജ്ജമാക്കിയിട്ടില്ല.</translation>
+<translation id="8367477997601443248">സുരക്ഷിതമല്ലാത്ത ഫോം</translation>
 <translation id="8368476060205742148">Google Play സേവനങ്ങൾ</translation>
 <translation id="8371889962595521444">ഇഷ്‌ടാനുസൃത റൂട്ട് സർട്ടിഫിക്കറ്റുകൾ</translation>
 <translation id="8380941800586852976">അപകടകരമായത്</translation>
@@ -1827,6 +1833,7 @@
 <translation id="8805819170075074995">ലിസ്‌റ്റ് എൻട്രി "<ph name="LANGUAGE_ID" />": SpellcheckLanguage നയത്തിലും ഉൾപ്പെടുത്തിയിരിക്കുന്നതിനാൽ എൻട്രി അവഗണിച്ചു.</translation>
 <translation id="8807160976559152894">ഓരോ പേജിന് ശേഷവും ട്രിം ചെയ്യുക</translation>
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>
+<translation id="8831512686168463822">ഈ സൈറ്റിലേക്ക് അയയ്ക്കുമ്പോൾ, നിങ്ങളുടെ വിവരങ്ങൾ (ഉദാഹരണത്തിന്, പാസ്‌വേഡുകളും സന്ദേശങ്ങളും ക്രെഡിറ്റ് കാർഡുകളും) വെളിപ്പെടുത്തിയേക്കാവുന്ന, സുരക്ഷിതമല്ലാത്ത കണക്ഷനിലൂടെയാണ് ഈ ഫോം സമർപ്പിക്കുന്നത്.</translation>
 <translation id="883848425547221593">മറ്റുള്ള ബുക്ക്‌മാര്‍‌ക്കുകള്‍‌</translation>
 <translation id="884264119367021077">ഷിപ്പിംഗ് വിലാസം</translation>
 <translation id="884923133447025588">അസാധുവാക്കല്‍ പ്രവര്‍ത്തനം കണ്ടെത്തിയിട്ടില്ല.</translation>

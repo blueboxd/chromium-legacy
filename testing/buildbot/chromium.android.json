@@ -1912,7 +1912,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -1959,7 +1959,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2006,7 +2006,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2053,7 +2053,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2100,7 +2100,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2147,7 +2147,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2194,7 +2194,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2241,7 +2241,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2289,7 +2289,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2337,7 +2337,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2384,7 +2384,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2431,7 +2431,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2478,7 +2478,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2526,7 +2526,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2573,7 +2573,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2620,7 +2620,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2667,7 +2667,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2714,7 +2714,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2761,7 +2761,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2808,7 +2808,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2861,7 +2861,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2917,7 +2917,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -2967,7 +2967,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3015,7 +3015,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3064,7 +3064,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3111,7 +3111,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3159,7 +3159,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3209,7 +3209,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3257,7 +3257,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3307,7 +3307,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3355,7 +3355,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3403,7 +3403,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3450,7 +3450,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3497,7 +3497,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3544,7 +3544,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3591,7 +3591,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3638,7 +3638,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3685,7 +3685,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3734,7 +3734,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3781,7 +3781,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3828,7 +3828,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3875,7 +3875,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3922,7 +3922,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -3969,7 +3969,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4016,7 +4016,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4063,7 +4063,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4110,7 +4110,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4157,7 +4157,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4204,7 +4204,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4251,7 +4251,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4298,7 +4298,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4345,7 +4345,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4392,7 +4392,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4441,7 +4441,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4488,7 +4488,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4535,7 +4535,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4582,7 +4582,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4629,7 +4629,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4676,7 +4676,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4723,7 +4723,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4770,7 +4770,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4817,7 +4817,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4864,7 +4864,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4912,7 +4912,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -4959,7 +4959,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5006,7 +5006,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5053,7 +5053,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5100,7 +5100,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5147,7 +5147,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5194,7 +5194,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5241,7 +5241,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5288,7 +5288,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5335,7 +5335,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5382,7 +5382,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5433,7 +5433,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"
@@ -5481,7 +5481,7 @@
           ],
           "dimension_sets": [
             {
-              "device_os": "LMY48I",
+              "device_os": "LMY48M|LMY48I",
               "device_os_type": "userdebug",
               "device_type": "hammerhead",
               "os": "Android"

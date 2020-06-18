@@ -941,6 +941,15 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     ash::LoginUserInfo user_info;
     user_info.basic_user_info.type = user->GetType();
     user_info.basic_user_info.account_id = user->GetAccountId();
+
+    if (!user_manager::known_user::GetBooleanPref(
+            account_id, ::prefs::kUse24HourClock,
+            &user_info.use_24hour_clock)) {
+      // Fallback to system default in case pref was not found.
+      user_info.use_24hour_clock =
+          base::GetHourClockType() == base::k24HourClock;
+    }
+
     user_info.basic_user_info.display_name =
         base::UTF16ToUTF8(user->GetDisplayName());
     user_info.basic_user_info.display_email = user->display_email();

@@ -44,36 +44,7 @@ const char kRangeLenDictAttr[] = "len";
 const char kSetKeyPrefixDictAttr[] = "_setkey_";
 const char kConstValuePrefix[] = "_const_";
 const char kNULLValue[] = "_const_NULL";
-
-NSArray* PropertyNodeToIntArray(const PropertyNode& propnode) {
-  if (propnode.parameters.size() != 1) {
-    LOG(ERROR) << "Failed to parse " << propnode.original_property
-               << " to IntArray: single argument is expected";
-    return nil;
-  }
-
-  const auto& arraynode = propnode.parameters[0];
-  if (arraynode.name_or_value != base::ASCIIToUTF16("[]")) {
-    LOG(ERROR) << "Failed to parse " << propnode.original_property
-               << " to IntArray: " << arraynode.name_or_value
-               << " is not array";
-    return nil;
-  }
-
-  NSMutableArray* array =
-      [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
-  for (const auto& paramnode : arraynode.parameters) {
-    int param = 0;
-    if (!base::StringToInt(paramnode.name_or_value, &param)) {
-      LOG(ERROR) << "Failed to parse " << propnode.original_property
-                 << " to IntArray: " << paramnode.name_or_value
-                 << " is not a number";
-      return nil;
-    }
-    [array addObject:@(param)];
-  }
-  return array;
-}
+const char kFailedToParseArgsError[] = "_const_ERROR:FAILED_TO_PARSE_ARGS";
 
 }  // namespace
 
@@ -139,6 +110,8 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   };
 
   IdOrError ParamByPropertyNode(const PropertyNode&) const;
+  NSNumber* PropertyNodeToInt(const PropertyNode&) const;
+  NSArray* PropertyNodeToIntArray(const PropertyNode&) const;
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
@@ -295,7 +268,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
     IdOrError param = ParamByPropertyNode(propnode);
     if (param.IsError()) {
       dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
-                    base::Value("ERROR:FAILED_TO_PARSE_ARGS"));
+                    base::Value(kFailedToParseArgsError));
       continue;
     }
 
@@ -317,10 +290,63 @@ AccessibilityTreeFormatterMac::ParamByPropertyNode(
     const PropertyNode& property_node) const {
   IdOrError param;
   std::string property_name = base::UTF16ToASCII(property_node.name_or_value);
-  if (property_name == "AXCellForColumnAndRow") {
+
+  if (property_name == "AXLineForIndex") {  // Int
+    param = PropertyNodeToInt(property_node);
+  } else if (property_name == "AXCellForColumnAndRow") {  // IntArray
     param = PropertyNodeToIntArray(property_node);
   }
+
   return param;
+}
+
+NSNumber* AccessibilityTreeFormatterMac::PropertyNodeToInt(
+    const PropertyNode& propnode) const {
+  if (propnode.parameters.size() != 1) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to Int: single argument is expected";
+    return nil;
+  }
+
+  int param = 0;
+  const auto& intnode = propnode.parameters[0];
+  if (!base::StringToInt(intnode.name_or_value, &param)) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to Int: " << intnode.name_or_value << " is not a number";
+    return nil;
+  }
+  return [NSNumber numberWithInt:param];
+}
+
+NSArray* AccessibilityTreeFormatterMac::PropertyNodeToIntArray(
+    const PropertyNode& propnode) const {
+  if (propnode.parameters.size() != 1) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to IntArray: single argument is expected";
+    return nil;
+  }
+
+  const auto& arraynode = propnode.parameters[0];
+  if (arraynode.name_or_value != base::ASCIIToUTF16("[]")) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to IntArray: " << arraynode.name_or_value
+               << " is not array";
+    return nil;
+  }
+
+  NSMutableArray* array =
+      [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
+  for (const auto& paramnode : arraynode.parameters) {
+    int param = 0;
+    if (!base::StringToInt(paramnode.name_or_value, &param)) {
+      LOG(ERROR) << "Failed to parse " << propnode.original_property
+                 << " to IntArray: " << paramnode.name_or_value
+                 << " is not a number";
+      return nil;
+    }
+    [array addObject:@(param)];
+  }
+  return array;
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateSize(

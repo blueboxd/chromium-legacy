@@ -116,8 +116,7 @@ class OmniboxEditModel {
 
   // Adjusts the copied text before writing it to the clipboard. If the copied
   // text is a URL with the scheme elided, this method reattaches the scheme.
-  // Copied text that looks like a search query, including the Query in Omnibox
-  // case, will not be modified.
+  // Copied text that looks like a search query will not be modified.
   //
   // |sel_min| gives the minimum of the selection, e.g. min(sel_start, sel_end).
   // |text| is the currently selected text, and may be modified by this method.
@@ -505,12 +504,10 @@ class OmniboxEditModel {
   // no input is in progress or the Omnibox is not focused.
   OmniboxFocusSource focus_source_ = OmniboxFocusSource::INVALID;
 
-  // Display-only text representing the current page. This could be any of:
+  // Display-only text representing the current page. This could either:
   //  - The same as |url_for_editing_| if Steady State Elisions is OFF.
   //  - A simplified version of |url_for_editing_| with some destructive
   //    elisions applied. This is the case if Steady State Elisions is ON.
-  //  - The user entered search query, if the user is on the search results
-  //    page of the default search provider and Query in Omnibox is ON.
   //
   // This should not be considered suitable for editing.
   base::string16 display_text_;

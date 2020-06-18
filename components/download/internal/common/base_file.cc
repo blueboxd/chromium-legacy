@@ -95,14 +95,14 @@ void InitializeFile(base::File* file, const base::FilePath& file_path) {
   );
 }
 
-void DeleteFile(const base::FilePath& file_path) {
+void DeleteFileWrapper(const base::FilePath& file_path) {
 #if defined(OS_ANDROID)
   if (file_path.IsContentUri()) {
     DownloadCollectionBridge::DeleteIntermediateUri(file_path);
     return;
   }
 #endif  // defined(OS_ANDROID)
-  base::DeleteFile(file_path, false);
+  base::DeleteFile(file_path);
 }
 
 }  // namespace
@@ -312,7 +312,7 @@ void BaseFile::Cancel() {
   if (!full_path_.empty()) {
     CONDITIONAL_TRACE(
         INSTANT0("download", "DownloadFileDeleted", TRACE_EVENT_SCOPE_THREAD));
-    DeleteFile(full_path_);
+    DeleteFileWrapper(full_path_);
   }
 
   Detach();

@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Разглеждане</translation>
 <translation id="1749561566933687563">Синхронизирайте отметките си</translation>
 <translation id="17513872634828108">Отворени раздели</translation>
+<translation id="1754404134430936718">Текстът е копиран</translation>
 <translation id="1779089405699405702">Декодиране на изображения</translation>
 <translation id="1782483593938241562">Крайна дата: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Инсталиран</translation>
@@ -223,6 +224,7 @@
 <translation id="2810645512293415242">Страницата е опростена с цел пестене на данни и по-бързо зареждане.</translation>
 <translation id="281504910091592009">Преглеждайте и управлявайте запазените пароли в <ph name="BEGIN_LINK" />профила си в Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Влезте в профила си и включете синхронизирането, за да получите отметките си на всичките си устройства</translation>
+<translation id="2827278682606527653">Менюто на картата за емисията се показва на половината височина</translation>
 <translation id="2842985007712546952">Основна папка</translation>
 <translation id="2860954141821109167">Трябва да има активирано приложение за телефон на устройството</translation>
 <translation id="2870560284913253234">Сайт</translation>
@@ -346,6 +348,7 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> изтегляния бяха изтрити</translation>
 <translation id="3859306556332390985">Придвижване напред</translation>
 <translation id="388596076286380598">Получавайте статии, видеоклипове и друго съдържание от сайтовете, които харесвате, дори ако сте офлайн или връзката е лоша.</translation>
+<translation id="3892148308691398805">Копиране на текста</translation>
 <translation id="3894427358181296146">Добавяне на папка</translation>
 <translation id="3895926599014793903">Принудително активиране на промяната на мащаба</translation>
 <translation id="3912508018559818924">Намираме най-доброто от мрежата…</translation>
@@ -412,6 +415,7 @@
 <translation id="4479972344484327217">Модулът „<ph name="MODULE" />“ за Chrome се инсталира…</translation>
 <translation id="4487967297491345095">Всички данни на приложението Chrome ще се изтрият за постоянно. Това включва всички файлове, настройки, профили, бази от данни и др.</translation>
 <translation id="4493497663118223949">Олекотеният режим е включен</translation>
+<translation id="4508528996305412043">Менюто на картата за емисията е отворено</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{преди # ден}other{преди # дни}}</translation>
 <translation id="451872707440238414">Търсене в отметките ви</translation>
 <translation id="4521489764227272523">Избраните данни са премахнати от Chrome и синхронизираните ви устройства.
@@ -883,6 +887,7 @@
 <translation id="8200772114523450471">Възобновяване</translation>
 <translation id="8209050860603202033">Отваряне на изображението</translation>
 <translation id="8218622182176210845">Управление на профила ви</translation>
+<translation id="8223642481677794647">Меню на картата за емисията</translation>
 <translation id="8224471946457685718">Изтегляне на статиите за вас през Wi-Fi</translation>
 <translation id="8232956427053453090">Запазване на данните</translation>
 <translation id="8233540874193135768">За да сканирате QR код, използвайте устройство с камера.</translation>
@@ -1007,4 +1012,5 @@
 <translation id="981121421437150478">Офлайн</translation>
 <translation id="983192555821071799">Затваряне на всички раздели</translation>
 <translation id="987264212798334818">Общи</translation>
+<translation id="996149300115483134">Менюто на картата за емисията е затворено</translation>
 </translationbundle>

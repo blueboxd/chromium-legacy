@@ -241,6 +241,7 @@
       'Linux remote_run Builder': 'release_bot',
       'Linux remote_run Tester': 'release_bot',
       'Linux Viz': 'release_trybot',
+      'Mac Builder Next': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
       'Mac deterministic': 'release_bot_mac_strip_minimal_symbols_deterministic',
       'Mac deterministic (dbg)': 'debug_bot_deterministic',
       'Mojo Android': 'android_release_bot_minimal_symbols_arm64',
@@ -475,7 +476,7 @@
     },
 
     'chromium.mac': {
-      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols_no_nacl',
+      'Mac Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Mac Builder (dbg)': 'gpu_tests_debug_bot',
       'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',

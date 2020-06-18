@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Istraži</translation>
 <translation id="1749561566933687563">Sinhronizirajte svoje oznake</translation>
 <translation id="17513872634828108">Otvorene kartice</translation>
+<translation id="1754404134430936718">Tekst je kopiran</translation>
 <translation id="1779089405699405702">Dekodiranje slika</translation>
 <translation id="1782483593938241562">Datum završetka <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Instalirano</translation>
@@ -223,6 +224,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="2810645512293415242">Pojednostavljena stranica štedi podatke i učitava se brže.</translation>
 <translation id="281504910091592009">Prikažite i upravljajte sačuvanim lozinkama u svom <ph name="BEGIN_LINK" />Google računu<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Da biste imali svoje oznake na svim svojim uređajima, prijavite se i uključite sinhronizaciju</translation>
+<translation id="2827278682606527653">Meni kartice za sažetak sadržaja na pola visine</translation>
 <translation id="2842985007712546952">Nadređeni folder</translation>
 <translation id="2860954141821109167">Provjerite je li na ovom uređaju omogućena aplikacija za telefon</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
@@ -292,7 +294,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3350687908700087792">Zatvori sve anonimne kartice</translation>
 <translation id="3353615205017136254">Jednostavnu stranicu omogućava Google. Dodirnite dugme za učitavanje originalne stranice kako bi ste je učitali.</translation>
 <translation id="3367813778245106622">Ponovo se prijavite da započnete sinhronizaciju</translation>
-<translation id="337236281855091893">Da pretražite, dodirnite i zadržite riječ umjesto samog dodira</translation>
+<translation id="337236281855091893">Da pretražite, dodirnite i zadržite riječ umjesto da je samo dodirnete</translation>
 <translation id="3373979091428520308">Da dijelite ovu stranicu s drugim uređajem, u postavkama Chromea na drugom uređaju uključite sinhronizaciju</translation>
 <translation id="3374023511497244703">Oznake, historija, lozinke i drugi podaci iz Chromea se neće više sinhronizirati s vašim Google računom.</translation>
 <translation id="3384347053049321195">Dijeli sliku</translation>
@@ -346,6 +348,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="3819178904835489326">Broj izbrisanih preuzimanja: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3859306556332390985">Pomakni naprijed</translation>
 <translation id="388596076286380598">Preuzmite članke, videozapise i drugi sadržaj s web lokacija koje vam se sviđaju, čak i kada ste van mreže ili kada vam je veza slaba.</translation>
+<translation id="3892148308691398805">Kopiraj tekst</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Prisilno omogući zumiranje</translation>
 <translation id="3912508018559818924">Tražimo najbolje sadržaje na internetu…</translation>
@@ -412,6 +415,7 @@ Dodirnite i zadržite bilo koju riječ da je pretražite. Za fino podešavanje p
 <translation id="4479972344484327217">Instaliranje modula <ph name="MODULE" /> za Chrome…</translation>
 <translation id="4487967297491345095">Svi podaci aplikacije Chrome bit će trajno izbrisani. To uključuje sve fajlove, postavke, račune, baze podataka, itd.</translation>
 <translation id="4493497663118223949">Uključen je jednostavni način rada</translation>
+<translation id="4508528996305412043">Meni kartice za sažetak sadržaja je otvoren</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{prije # dana}one{prije # dana}few{prije # dana}other{prije # dana}}</translation>
 <translation id="451872707440238414">Pretražite svoje oznake</translation>
 <translation id="4521489764227272523">Odabrani podaci su uklonjeni iz Chromea i vaših sinhroniziranih uređaja.
@@ -883,6 +887,7 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="8200772114523450471">Nastavi</translation>
 <translation id="8209050860603202033">Otvori sliku</translation>
 <translation id="8218622182176210845">Upravljajte svojim računom</translation>
+<translation id="8223642481677794647">Meni kartice za sažetak sadržaja</translation>
 <translation id="8224471946457685718">Preuzmite članke putem WiFi mreže</translation>
 <translation id="8232956427053453090">Zadrži podatke</translation>
 <translation id="8233540874193135768">Da skenirate QR kôd, koristite uređaj s kamerom.</translation>
@@ -1007,4 +1012,5 @@ Naprimjer, neke web lokacije mogu reagirati na ovaj zahtjev prikazivanjem oglasa
 <translation id="981121421437150478">Van mreže</translation>
 <translation id="983192555821071799">Zatvaranje svih kartica</translation>
 <translation id="987264212798334818">Opće</translation>
+<translation id="996149300115483134">Meni kartice za sažetak sadržaja je zatvoren</translation>
 </translationbundle>

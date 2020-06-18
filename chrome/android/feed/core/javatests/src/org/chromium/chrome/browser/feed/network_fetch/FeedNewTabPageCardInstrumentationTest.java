@@ -6,9 +6,6 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 
-import static org.hamcrest.Matchers.instanceOf;
-
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
 
@@ -19,10 +16,10 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.feed.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
@@ -64,7 +61,8 @@ public final class FeedNewTabPageCardInstrumentationTest {
         NewTabPageTestUtils.waitForNtpLoaded(mActivityTestRule.getActivity().getActivityTab());
 
         // scroll to "More" button
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(3));
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(3));
 
         // Click "More" button
         onView(withId(R.id.action_button)).perform(click());
@@ -72,10 +70,12 @@ public final class FeedNewTabPageCardInstrumentationTest {
         Thread.sleep(2000);
 
         // Scroll to position 5 to trigger a network resource load for the cards
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(5));
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(5));
 
         // Scroll down to bottom
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(11));
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(11));
 
         // Wait till image resource loaded
         Thread.sleep(4000);
@@ -84,7 +84,8 @@ public final class FeedNewTabPageCardInstrumentationTest {
                 "feed_wpr_render_position_11");
 
         // Scroll back to position 3 to see previously rendered card
-        onView(instanceOf(RecyclerView.class)).perform(RecyclerViewActions.scrollToPosition(3));
+        onView(withId(R.id.feed_stream_recycler_view))
+                .perform(RecyclerViewActions.scrollToPosition(3));
 
         // Wait till it finish rendering cards
         Thread.sleep(1000);

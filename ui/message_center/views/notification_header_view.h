@@ -41,8 +41,8 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   void SetExpandButtonEnabled(bool enabled);
   void SetExpanded(bool expanded);
 
-  // Set the unified theme color used among the app icon, app name, and expand
-  // button.
+  // Calls UpdateColors() to set the unified theme color used among the
+  // app icon, app name, and expand button.
   void SetAccentColor(SkColor color);
 
   // Sets the background color of the notification. This is used to ensure that
@@ -57,10 +57,11 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
 
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnThemeChanged() override;
 
   views::ImageView* expand_button() { return expand_button_; }
 
-  SkColor accent_color_for_testing() { return accent_color_; }
+  base::Optional<SkColor> accent_color_for_testing() { return accent_color_; }
 
   const views::Label* summary_text_for_testing() const {
     return summary_text_view_;
@@ -84,7 +85,9 @@ class MESSAGE_CENTER_EXPORT NotificationHeaderView : public views::Button {
   // Update visibility for both |summary_text_view_| and |timestamp_view_|.
   void UpdateSummaryTextVisibility();
 
-  SkColor accent_color_ = kNotificationDefaultAccentColor;
+  void UpdateColors();
+
+  base::Optional<SkColor> accent_color_;
 
   // Timer that updates the timestamp over time.
   base::OneShotTimer timestamp_update_timer_;

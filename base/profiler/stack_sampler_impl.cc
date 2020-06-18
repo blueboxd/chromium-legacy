@@ -97,6 +97,8 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
   RegisterContext thread_context;
   uintptr_t stack_top;
   TimeTicks timestamp;
+
+  bool copy_stack_succeeded;
   {
     // Make this scope as small as possible because |metadata_provider| is
     // holding a lock.
@@ -104,11 +106,15 @@ void StackSamplerImpl::RecordStackFrames(StackBuffer* stack_buffer,
         GetSampleMetadataRecorder());
     StackCopierDelegate delegate(&unwinders_, profile_builder,
                                  &metadata_provider);
-    bool success = stack_copier_->CopyStack(
+    copy_stack_succeeded = stack_copier_->CopyStack(
         stack_buffer, &stack_top, &timestamp, &thread_context, &delegate);
-    if (!success)
-      return;
   }
+  if (!copy_stack_succeeded) {
+    profile_builder->OnSampleCompleted(
+        {}, timestamp.is_null() ? TimeTicks::Now() : timestamp);
+    return;
+  }
+
   for (const auto& unwinder : unwinders_)
     unwinder->UpdateModules(module_cache_);
 

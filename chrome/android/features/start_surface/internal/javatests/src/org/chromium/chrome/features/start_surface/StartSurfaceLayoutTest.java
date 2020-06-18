@@ -93,7 +93,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.incognito.IncognitoUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
@@ -1755,7 +1755,7 @@ public class StartSurfaceLayoutTest {
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                        -> TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
                                    .contentsState
                         != null,
                 "Incognito tab contentsState is null");
@@ -1768,7 +1768,7 @@ public class StartSurfaceLayoutTest {
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                        -> TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
                                    .contentsState
                         != null,
                 "Incognito tab contentsState is null");

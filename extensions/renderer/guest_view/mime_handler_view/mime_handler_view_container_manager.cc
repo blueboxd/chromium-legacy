@@ -270,6 +270,8 @@ void MimeHandlerViewContainerManager::RemoveFrameContainerForReason(
     bool retain_manager) {
   if (!RemoveFrameContainer(frame_container, retain_manager))
     return;
+  // At this point |this| may be invalid, but it's still OK to call
+  // RecordInteraction() as it's declared static.
   RecordInteraction(event);
 }
 
@@ -298,6 +300,7 @@ void MimeHandlerViewContainerManager::SetShowBeforeUnloadDialog(
   std::move(callback).Run();
 }
 
+// static
 void MimeHandlerViewContainerManager::RecordInteraction(UMAType type) {
   base::UmaHistogramEnumeration(MimeHandlerViewUMATypes::kUMAName, type);
 }

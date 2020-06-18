@@ -123,6 +123,25 @@ class StackedNotificationBar::StackedNotificationBarIcon
       layer()->GetAnimator()->StopAnimating();
   }
 
+  void OnThemeChanged() override {
+    views::ImageView::OnThemeChanged();
+
+    auto* notification =
+        message_center::MessageCenter::Get()->FindVisibleNotificationById(id_);
+    SkColor accent_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_NotificationDefaultAccentColor);
+    gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
+        kStackedNotificationIconSize, accent_color);
+
+    if (masked_small_icon.IsEmpty()) {
+      SetImage(gfx::CreateVectorIcon(message_center::kProductIcon,
+                                     kStackedNotificationIconSize,
+                                     accent_color));
+    } else {
+      SetImage(masked_small_icon.AsImageSkia());
+    }
+  }
+
   void AnimateIn() {
     DCHECK(!is_animating_out());
 
@@ -326,18 +345,6 @@ void StackedNotificationBar::AddNotificationIcon(
     notification_icons_container_->AddChildViewAt(icon_view, 0);
   else
     notification_icons_container_->AddChildView(icon_view);
-
-  gfx::Image masked_small_icon = notification->GenerateMaskedSmallIcon(
-      kStackedNotificationIconSize,
-      message_center::kNotificationDefaultAccentColor);
-
-  if (masked_small_icon.IsEmpty()) {
-    icon_view->SetImage(gfx::CreateVectorIcon(
-        message_center::kProductIcon, kStackedNotificationIconSize,
-        message_center::kNotificationDefaultAccentColor));
-  } else {
-    icon_view->SetImage(masked_small_icon.AsImageSkia());
-  }
 }
 
 void StackedNotificationBar::OnIconAnimatedOut(views::View* icon) {

@@ -163,7 +163,7 @@
 <translation id="2323763861024343754">網站儲存資料量</translation>
 <translation id="2328985652426384049">無法登入</translation>
 <translation id="234265804618409743">無法開啟攝影機，發生錯誤。</translation>
-<translation id="2345671828921229300">如要搜尋，請按住字詞</translation>
+<translation id="2345671828921229300">如要進行搜尋，請按住要查詢的字詞</translation>
 <translation id="2349710944427398404">Chrome 使用的資料總量，包括帳戶、書籤和儲存的設定</translation>
 <translation id="2353636109065292463">檢查你的網際網路連線</translation>
 <translation id="2359808026110333948">繼續</translation>
@@ -292,7 +292,7 @@
 <translation id="3350687908700087792">關閉所有無痕式分頁</translation>
 <translation id="3353615205017136254">由 Google 提供的精簡版網頁。輕觸 [載入原始頁面] 按鈕即可載入原始頁面。</translation>
 <translation id="3367813778245106622">如要開始同步處理，請重新登入</translation>
-<translation id="337236281855091893">如要搜尋，請按住 (而非輕觸) 字詞</translation>
+<translation id="337236281855091893">如要進行搜尋，請按住 (而非輕觸) 要查詢的字詞</translation>
 <translation id="3373979091428520308">如要將這個頁面分享至另一部裝置，你必須在另一部裝置的 Chrome 設定中開啟同步功能</translation>
 <translation id="3374023511497244703">你的書籤、歷史記錄、密碼和其他 Chrome 資料將停止同步到你的 Google 帳戶</translation>
 <translation id="3384347053049321195">分享圖片</translation>
@@ -708,7 +708,7 @@
 <translation id="6767294960381293877">要共用分頁的裝置清單已開啟，顯示在畫面下半部。</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6811034713472274749">你可以瀏覽這個網頁了</translation>
-<translation id="6820686453637990663">CVC</translation>
+<translation id="6820686453637990663">信用卡驗證碼</translation>
 <translation id="6831043979455480757">翻譯</translation>
 <translation id="6845325883481699275">協助改善 Chrome 安全性</translation>
 <translation id="6846298663435243399">載入中…</translation>

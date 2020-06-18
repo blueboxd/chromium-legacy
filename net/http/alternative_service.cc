@@ -53,7 +53,8 @@ quic::ParsedQuicVersion ParsedQuicVersionFromAlpn(
 }  // anonymous namespace
 
 void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
-                                     bool proxy_server_used) {
+                                     bool proxy_server_used,
+                                     bool is_google_host) {
   if (proxy_server_used) {
     DCHECK_LE(usage, ALTERNATE_PROTOCOL_USAGE_LOST_RACE);
     LOCAL_HISTOGRAM_ENUMERATION("Net.QuicAlternativeProxy.Usage",
@@ -62,6 +63,10 @@ void HistogramAlternateProtocolUsage(AlternateProtocolUsage usage,
   } else {
     UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsage", usage,
                               ALTERNATE_PROTOCOL_USAGE_MAX);
+    if (is_google_host) {
+      UMA_HISTOGRAM_ENUMERATION("Net.AlternateProtocolUsageGoogle", usage,
+                                ALTERNATE_PROTOCOL_USAGE_MAX);
+    }
   }
 }
 

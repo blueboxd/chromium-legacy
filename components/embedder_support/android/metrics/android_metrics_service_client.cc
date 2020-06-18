@@ -128,8 +128,7 @@ void RegisterOrRemovePreviousRunMetricsFile(
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), metrics_file,
-                       /*recursive=*/false));
+        base::BindOnce(base::GetDeleteFileCallback(), metrics_file));
   }
 }
 

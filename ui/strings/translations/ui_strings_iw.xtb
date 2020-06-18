@@ -158,7 +158,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">הרחב לכל האפליקציות</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
-<translation id="6166852626429024716">כאן אפשר לחפש במכשיר, באפליקציות, בהגדרות, באינטרנט...</translation>
+<translation id="6166852626429024716">חיפוש במכשיר, באפליקציות, בהגדרות, באינטרנט...</translation>
 <translation id="6264365405983206840">בחר &amp;הכל</translation>
 <translation id="6351032674660237738">הצעות לאפליקציות</translation>
 <translation id="6364916375976753737">גלול שמאלה</translation>
@@ -233,7 +233,7 @@
 <translation id="8602707065186045623">קובץ <ph name="SAVEAS_EXTENSION_TYPE" />  (<ph name="SAVEAS_EXTENSION_NAME" />.)</translation>
 <translation id="8649597172973390955">המדף תמיד מוצג</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s‎</translation>
-<translation id="8685326675965865247">אפשר לחפש במכשיר, באפליקציות ובאינטרנט. בעזרת מקשי החיצים ניתן לעבור בין האפליקציות.</translation>
+<translation id="8685326675965865247">אפשר לחפש במכשיר, באפליקציות, בהגדרות ובאינטרנט. בעזרת מקשי החיצים ניתן לעבור בין האפליקציות.</translation>
 <translation id="8725488761726303204">ועוד <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{שעה}two{# שע}many{# שע}other{# שע}}</translation>

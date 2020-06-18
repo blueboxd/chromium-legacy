@@ -2191,7 +2191,7 @@
     A factory error has been detected
   </message>
   <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART" desc="Warning message shown on screen notifying about malformed hardware ID. First paragraph.">
-    Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">$1</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">$2</ph>.
+    Unfortunately, your computer is configured with a malformed hardware ID. This prevents Chrome OS from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">&lt;b&gt;</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">&lt;/b&gt;</ph>.
   </message>
   <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_SECOND_PART" desc="Warning message shown on screen notifying about malformed hardware ID. Second paragraph.">
     Please contact your hardware manufacturer immediately to send your computer to a repair facility.
@@ -2831,14 +2831,36 @@
   </message>
 
   <!-- Update Required Notiifcation Strings-->
-  <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_IMMEDIATE" desc="The title of the notification dialog informing the user that the device is not connected to the internet and it is last day to update the device.">
-    Last day to update device
-  </message>
-  <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_DAYS" desc="The title of the notification dialog informing the user that the device is not connected to the internet and an update is required within two or more days.">
-    Update device within <ph name="COUNT">$1<ex>2</ex></ph> days
+  <message name="IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS" desc="The title of the notification dialog informing the user that the device is not connected to a network suitable for downloading updates and an update is required within one or more days.">
+    {0, plural,
+      =1 {Last day to update device}
+      other {Update device within # days}}
   </message>
   <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE" desc="The body text of the notification dialog informing the user that the device is not connected to the internet and an update is required.">
     <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to download an update before the deadline. The update will download automatically when you connect to the internet.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE_IMMEDIATE" desc="The body text of the notification dialog informing the user that the device is not connected to the internet and it is last day to update the device.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to download an update today. The update will download automatically when you connect to the internet.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE" desc="The body text of the notification dialog informing the user that the device is connected to a metered network and an update is required.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to connect to Wi-Fi and download an update before the deadline. Or, download from a metered connection (charges may apply).
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE_IMMEDIATE" desc="The body text of the notification dialog informing the user that the device is connected to a metered network and it is last day to update the device.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to connect to Wi-Fi today to download an update. Or, download from a metered connection (charges may apply).
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_EOL_TITLE_DAYS" desc="The title of the notification dialog informing the user that the device has reached end of life and should be returned before the deadline.">
+    {0, plural,
+      =1 {Immediate return required}
+      other {Return device within # days}}
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_EOL_MESSAGE_IMMEDIATE" desc="The body text of the noti fication dialog informing the user that the device has reached end of life and it is last day to return it.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to back up your data and return this device today.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_EOL_MESSAGE" desc="The body text of the notification dialog informing the user that the device has reached end of life and should be returned before the deadline.">
+    <ph name="DOMAIN">$1<ex>example.com</ex></ph> requires you to back up your data and return this device before the deadline.
+  </message>
+  <message name="IDS_UPDATE_REQUIRED_EOL_SEE_DETAILS" desc="The button text of the notification dialog which can be clicked to view return instructions from the admin on the settings page.">
+    See Details
   </message>
 
   <!-- Genius App -->
@@ -3376,6 +3398,18 @@
        debugging) -->
   <message name="IDS_NETWORK_UI_TITLE" desc="Title of the page">
     Network
+  </message>
+  <message name="IDS_NETWORK_UI_TAB_GENERAL" desc="General tab name">
+    General
+  </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_HEALTH" desc="Network health tab name">
+    Network Health
+  </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_STATE" desc="Network state tab name">
+    Network State
+  </message>
+  <message name="IDS_NETWORK_UI_TAB_NETWORK_SELECT" desc="Network Select tab name">
+    Network Select
   </message>
   <message name="IDS_NETWORK_UI_AUTO_REFRESH" desc="Instructions for how to auto-refresh the page">
     Add a query param in URL to auto-refresh the page: chrome://network/?refresh=&lt;sec&gt;

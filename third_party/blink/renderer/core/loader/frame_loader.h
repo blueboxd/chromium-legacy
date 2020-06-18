@@ -234,9 +234,6 @@ class CORE_EXPORT FrameLoader final {
 
   void DidDropNavigation();
 
-  bool ShouldReuseDefaultView(const scoped_refptr<const SecurityOrigin>&,
-                              const ContentSecurityPolicy*);
-
   bool HasAccessedInitialDocument() { return has_accessed_initial_document_; }
 
   static bool NeedsHistoryItemRestore(WebFrameLoadType type);

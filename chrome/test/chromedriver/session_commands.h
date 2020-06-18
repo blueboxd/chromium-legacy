@@ -109,10 +109,6 @@ Status ExecuteIsLoading(Session* session,
                         const base::DictionaryValue& params,
                         std::unique_ptr<base::Value>* value);
 
-Status ExecuteLaunchApp(Session* session,
-                        const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value);
-
 Status ExecuteGetLocation(Session* session,
                           const base::DictionaryValue& params,
                           std::unique_ptr<base::Value>* value);

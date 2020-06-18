@@ -50,6 +50,7 @@
 <translation id="1509486075633541495">Acceder al sitio web</translation>
 <translation id="1509960214886564027">Es posible que las características de muchos sitios no funcionen de forma correcta</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
+<translation id="1535268707340844072">Con tu configuración actual, es posible que algunos sitios fallen. Para administrar las cookies de todos los sitios, visita la <ph name="BEGIN_LINK" />Configuración de cookies<ph name="END_LINK" />.</translation>
 <translation id="1540800554400757039">Dirección 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
 <translation id="1552525382687785070">Tu administrador inhabilitó la sincronización</translation>
@@ -92,6 +93,7 @@
 <translation id="2073572773299281212">Activo hace <ph name="DAYS" /> días</translation>
 <translation id="2074131957428911366">En la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
+<translation id="2081417079511601293">Bloquear las cookies de terceros en el modo Incógnito</translation>
 <translation id="209018056901015185">Versión para escritorio</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
@@ -176,6 +178,7 @@
 <translation id="2989805286512600854">Abrir en una nueva pestaña</translation>
 <translation id="3037605927509011580">¡Oh, no!</translation>
 <translation id="3112556859945124369">Marcar…</translation>
+<translation id="3131206671572504478">Bloquear todas</translation>
 <translation id="3153862085237805241">Guardar tarjeta</translation>
 <translation id="3157684681743766797">Marcar todas…</translation>
 <translation id="3161291298470460782">Si realizas esta acción, saldrás de tu cuenta, se desactivará la sincronización y se borrarán todos los datos de Chrome de este dispositivo. Los datos que tengas sincronizados permanecerán en tu Cuenta de Google.</translation>
@@ -272,6 +275,7 @@
 <translation id="4389019817280890563">Presiona aquí para cambiar el idioma.</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
 <translation id="4454246407045105932">Agregar idioma</translation>
+<translation id="4469418912670346607">Continuar con la configuración</translation>
 <translation id="4476574785019001431">Configuración</translation>
 <translation id="4496373720959965247">Agrega pestañas y alterna entre páginas</translation>
 <translation id="4508750114462689118">Cerrar promoción de acceso</translation>
@@ -300,6 +304,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="4805759445554688327">El número de la tarjeta no es válido</translation>
 <translation id="4818522717893377262">Agregar idioma…</translation>
 <translation id="481968316161811770">Cookies, datos del sitio</translation>
+<translation id="4826218269716039351">Bloquear cookies de terceros</translation>
 <translation id="4833786495304741580">Envía automáticamente informes de fallas y estadísticas de uso a Google.</translation>
 <translation id="4840495572919996524">Ya no se sincronizarán los favoritos, el historial, las contraseñas ni otras opciones de configuración con tu Cuenta de Google.</translation>
 <translation id="4854345657858711387">Establecer una contraseña</translation>
@@ -345,6 +350,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="54401264925851789">Información de seguridad de la página</translation>
 <translation id="5443952882982198570">Tarjetas de crédito</translation>
 <translation id="5457907402803865181">Se produjo un error al sincronizar las contraseñas.</translation>
+<translation id="5489208564673669003">Para administrar las cookies de todos los sitios, visita la <ph name="BEGIN_LINK" />Configuración de cookies<ph name="END_LINK" />.</translation>
 <translation id="5508435575041083207">Salir y borrar los datos de este dispositivo</translation>
 <translation id="5525269841082836315">Crear frase contras.</translation>
 <translation id="5548760955356983418">Handoff te permite comenzar a navegar en un sitio web en este dispositivo y, luego, continuar fácilmente en tu Mac. El sitio web que está abierto ahora aparecerá en el Dock de tu Mac.
@@ -432,6 +438,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6418346271604475326">Preparando PDF</translation>
 <translation id="6426067060178468363">Permitir cookies</translation>
 <translation id="6434591244308415567">Se produjo un error. Vuelve a intentarlo más tarde.</translation>
+<translation id="6439338047467462846">Permitir todo</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -439,6 +446,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6476800141292307438">Se está traduciendo la página al <ph name="LANGUAGE" />. Las opciones disponibles se encuentran cerca de la parte inferior de la pantalla.</translation>
 <translation id="648164694371393720">Error de autenticación</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos eliminados</translation>
+<translation id="651505212789431520">¿Quieres cancelar la sincronización? Puedes activarla en la Configuración en cualquier momento.</translation>
 <translation id="6561262006871132942">Acercar</translation>
 <translation id="6610002944194042868">Opciones de traducción</translation>
 <translation id="6628106477656132239">La fecha de vencimiento no es válida</translation>

@@ -1,14 +1,24 @@
-<div class="step hidden" id="wrong-hwid" hidden>
-  <div class="step-contents">
-    <div id="wrong-hwid-message">
-      <div id="wrong-hwid-message-header" i18n-content="wrongHWIDScreenHeader">
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<dom-module id="wrong-hwid">
+  <template>
+    <style include="oobe-dialog-host"></style>
+    <oobe-dialog role="dialog" has-buttons
+        title-key="wrongHWIDScreenHeader">
+      <hd-iron-icon slot="oobe-icon" class="warning"
+          icon1x="oobe-32:warning" icon2x="oobe-64:warning">
+      </hd-iron-icon>
+      <div slot="subtitle">
+        <p><html-echo content="[[formattedFirstPart_(locale)]]"></html-echo></p>
+        <p>[[i18nDynamic(locale, 'wrongHWIDMessageSecondPart')]]</p>
       </div>
-      <img id="wrong-hwid-icon" src="chrome://theme/IDR_RESET_WARNING"/>
-      <div id="wrong-hwid-message-content"></div>
-    </div>
-    <div id="skip-hwid-warning" class="step-controls">
-      <a id="skip-hwid-warning-link" href="#"
-          i18n-content="wrongHWIDScreenSkipLink"></a>
-    </div>
-  </div>
-</div>
+      <div slot="bottom-buttons" class="layout horizontal end-justified">
+        <oobe-text-button id="skipButton" inverse
+            text-key="wrongHWIDScreenSkipLink" on-tap="onSkip_">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

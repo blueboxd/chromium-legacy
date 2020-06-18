@@ -3,6 +3,7 @@
 <translationbundle lang="bs">
 <translation id="1018656279737460067">Otkazano</translation>
 <translation id="1195447618553298278">Nepoznata greška.</translation>
+<translation id="1413240736185167732">Nije uspjelo – filter ne radi</translation>
 <translation id="1468664791493211953">Ponude</translation>
 <translation id="1482734542997480527">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i moguće je da može pratiti vaše aktivnosti.</translation>
 <translation id="150962533380566081">Nevažeći PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Ovim uređajem upravlja preduzeće</translation>
 <translation id="1905710495812624430">Prekoračen je maksimalan broj dozvoljenih pokušaja.</translation>
 <translation id="1930797645656624981">Usluga načina unosa Chrome OS-a</translation>
+<translation id="1947737735496445907">Odštampano</translation>
 <translation id="1979103255016296513">Vrijeme za promjenu lozinke je isteklo</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja domena <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Uključite Bluetooth da otkrijete uređaje u blizini</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
+<translation id="3091839911843451378">Nije uspjelo – zaustavljeno</translation>
+<translation id="3268178239013324452">Nije uspjelo – otvoren je poklopac</translation>
 <translation id="3369013195428705271">Jeste li sigurni da želite obrisati svu historiju štampanja? Vaši trenutni zadaci štampanja se neće izbrisati.</translation>
+<translation id="3456078764689556234">Odštampane stanice: <ph name="PRINTED_PAGES" /> od <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Zadaci štampanja</translation>
+<translation id="3527036260304016759">Nije uspjelo – nepoznata greška</translation>
 <translation id="3749289110408117711">Naziv fajla</translation>
 <translation id="38114475217616659">Obriši svu historiju</translation>
 <translation id="3820172043799983114">Nevažeći PIN.</translation>
 <translation id="3838338534323494292">Nova lozinka</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> od <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451">Web lokacija <ph name="ENROLLMENT_DOMAIN" /> upravlja ovim uređajem i ima pristup svim aktivnostima korisnika, uključujući posjećene web stranice, lozinke i e-poštu.</translation>
+<translation id="4003384961948020559">Nije uspjelo – izlaz je pun</translation>
 <translation id="4034824040120875894">Štampač</translation>
 <translation id="4227825898293920515">Lozinka će isteći za <ph name="TIME" /></translation>
+<translation id="428217921675623177">Zadaci za štampanje stariji od 90 dana će se ukloniti</translation>
 <translation id="4429881212383817840">Kerberos tiket uskoro ističe</translation>
 <translation id="445059817448385655">Stara lozinka</translation>
 <translation id="467510802200863975">Lozinke se ne podudaraju</translation>
@@ -37,24 +46,31 @@
 Pokušajte dodirnuti mikrofon da me nešto pitate.</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5317780077021120954">Sačuvaj</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Sada odaberite novu lozinku</translation>
 <translation id="5457599981699367932">Pregledajte kao gost</translation>
 <translation id="54609108002486618">Upravljani</translation>
 <translation id="5832805196449965646">Dodaj osobu</translation>
 <translation id="5895138241574237353">Ponovo pokreni</translation>
+<translation id="6048107060512778456">Nije uspjelo – papir je zaglavljen</translation>
 <translation id="6058625436358447366">Unesite staru i novu lozinku da završite</translation>
 <translation id="6106186594183574873">Unesite staru lozinku da završite</translation>
 <translation id="6146993107019042706">Unesite novu lozinku da završite</translation>
 <translation id="6517239166834772319">Istražite</translation>
+<translation id="6564646048574748301">Nije uspjelo – štampač je nedostupan</translation>
 <translation id="6643016212128521049">Obriši</translation>
 <translation id="7162487448488904999">Galerija</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7690294790491645610">Potvrdite novu lozinku</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Promijenite lozinku</translation>
 <translation id="8208861521865154048">Privilegije</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može udaljeno upravljati postavkama i pratiti aktivnost korisnika.</translation>
+<translation id="871560550817059752">Nije uspjelo – nema tinte</translation>
 <translation id="8747900814994928677">Potvrdite promjenu</translation>
+<translation id="8919837981463578619">Nije uspjelo – nedostaje ladica</translation>
+<translation id="8928727111548978589">Nije uspjelo – nema papira</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Broj preostalih pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Osvježite tiket za <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Otključaj</translation>

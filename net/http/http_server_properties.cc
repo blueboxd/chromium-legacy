@@ -18,6 +18,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/values.h"
 #include "net/base/features.h"
+#include "net/base/url_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_manager.h"
 #include "net/socket/ssl_client_socket.h"
@@ -871,7 +872,7 @@ void HttpServerProperties::SetAlternativeServicesInternal(
     // before the first completes. In this case, only one of the jobs
     // would reach this code, whereas all of them should should have.
     HistogramAlternateProtocolUsage(ALTERNATE_PROTOCOL_USAGE_MAPPING_MISSING,
-                                    false);
+                                    false, IsGoogleHost(origin.host()));
   }
 
   // If this host ends with a canonical suffix, then set it as the

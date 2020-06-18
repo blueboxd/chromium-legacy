@@ -316,6 +316,18 @@ void NetworkUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
                                l10n_util::GetStringUTF16(IDS_NETWORK_UI_TITLE));
 
   localized_strings->SetString(
+      "generalTab", l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_GENERAL));
+  localized_strings->SetString(
+      "networkHealthTab",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_HEALTH));
+  localized_strings->SetString(
+      "networkStateTab",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_STATE));
+  localized_strings->SetString(
+      "networkSelectTab",
+      l10n_util::GetStringUTF16(IDS_NETWORK_UI_TAB_NETWORK_SELECT));
+
+  localized_strings->SetString(
       "autoRefreshText",
       l10n_util::GetStringUTF16(IDS_NETWORK_UI_AUTO_REFRESH));
   localized_strings->SetString(
@@ -396,10 +408,11 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   html->AddLocalizedStrings(localized_strings);
 
   network_element::AddLocalizedStrings(html);
-
   html->UseStringsJs();
-  html->AddResourcePath("network_ui.css", IDR_NETWORK_UI_CSS);
+
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);
+  html->AddResourcePath("network_state_ui.html", IDR_NETWORK_STATE_UI_HTML);
+  html->AddResourcePath("network_state_ui.js", IDR_NETWORK_STATE_UI_JS);
   html->SetDefaultResource(IDR_NETWORK_UI_HTML);
 
   content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),

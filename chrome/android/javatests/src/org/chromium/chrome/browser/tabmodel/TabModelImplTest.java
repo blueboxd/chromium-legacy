@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -78,7 +78,7 @@ public class TabModelImplTest {
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                        -> TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
                                    .contentsState
                         != null);
 
@@ -124,7 +124,7 @@ public class TabModelImplTest {
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(
                 ()
-                        -> TabState.from(mActivityTestRule.getActivity().getActivityTab())
+                        -> TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
                                    .contentsState
                         != null);
 

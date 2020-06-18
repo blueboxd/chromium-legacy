@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_progress_bar.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -53,6 +54,9 @@
 
 // Separator below the toolbar, redefined as readwrite.
 @property(nonatomic, strong, readwrite) UIView* separator;
+
+// HandleBar attached to the bottom of the toolbar, redefined as readwrite.
+@property(nonatomic, strong, readwrite) UIView* handleBar;
 
 #pragma mark** Buttons in the leading stack view. **
 // Button to navigate back, redefined as readwrite.
@@ -146,6 +150,9 @@
   [self setUpProgressBar];
   [self setUpCollapsedToolbarButton];
   [self setUpSeparator];
+  if (IsIPadIdiom() && base::FeatureList::IsEnabled(kExpandedTabStrip)) {
+    [self setUpHandleBar];
+  }
 
   [self setUpConstraints];
 }
@@ -288,6 +295,15 @@
   [self addSubview:self.separator];
 }
 
+// Sets the handleBar up.
+- (void)setUpHandleBar {
+  self.handleBar = [[UIView alloc] init];
+  self.handleBar.backgroundColor = [UIColor colorNamed:kToolbarShadowColor];
+  self.handleBar.layer.cornerRadius = kHandleBarHeight / 2.0;
+  self.handleBar.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:self.handleBar];
+}
+
 // Sets the constraints up.
 - (void)setUpConstraints {
   id<LayoutGuideProvider> safeArea = self.safeAreaLayoutGuide;
@@ -305,7 +321,7 @@
                                       kToolbarSeparatorHeight)],
   ]];
 
-  // Leading StackView constraints
+  // Leading StackView constraints.
   [NSLayoutConstraint activateConstraints:@[
     [self.leadingStackView.leadingAnchor
         constraintEqualToAnchor:safeArea.leadingAnchor
@@ -397,6 +413,18 @@
 
   // CollapsedToolbarButton constraints.
   AddSameConstraints(self, self.collapsedToolbarButton);
+
+  // HandleBar Constraints.
+  if (self.handleBar) {
+    [NSLayoutConstraint activateConstraints:@[
+      [self.handleBar.bottomAnchor
+          constraintEqualToAnchor:self.bottomAnchor
+                         constant:-kHandleBarBottomAnchorConstant],
+      [self.handleBar.centerXAnchor constraintEqualToAnchor:self.centerXAnchor],
+      [self.handleBar.heightAnchor constraintEqualToConstant:kHandleBarHeight],
+      [self.handleBar.widthAnchor constraintEqualToConstant:kHandleBarWidth],
+    ]];
+  }
 }
 
 #pragma mark - Property accessors

@@ -137,7 +137,13 @@ class BinaryUploadService : public KeyedService {
     // Returns the URL to send the request to.
     const GURL& url() const { return url_; }
 
-    bool use_legacy_proto() { return use_legacy_proto_; }
+    // Returns the metadata to upload, as a ContentAnalysisRequest.
+    const enterprise_connectors::ContentAnalysisRequest&
+    content_analysis_request() const {
+      return content_analysis_request_;
+    }
+
+    bool use_legacy_proto() const { return use_legacy_proto_; }
 
     // Methods for modifying the DeepScanningClientRequest.
     void set_request_dlp_scan(DlpDeepScanningClientRequest dlp_request);
@@ -159,9 +165,22 @@ class BinaryUploadService : public KeyedService {
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
 
+    // Methods for accessing either internal proto requests.
+    const std::string& device_token() const;
+    const std::string& request_token() const;
+    const std::string& fcm_notification_token() const;
+
     // Finish the request, with the given |result| and |response| from the
     // server.
-    void FinishRequest(Result result, DeepScanningClientResponse response);
+    void FinishRequest(Result result);
+    void FinishConnectorRequest(
+        Result result,
+        enterprise_connectors::ContentAnalysisResponse response);
+    void FinishLegacyRequest(Result result,
+                             DeepScanningClientResponse response);
+
+    // Calls SerializeToString on the appropriate proto request.
+    void SerializeToString(std::string* destination) const;
 
    private:
     const bool use_legacy_proto_;
@@ -200,9 +219,14 @@ class BinaryUploadService : public KeyedService {
   static GURL GetUploadUrl(bool is_advanced_protection_request);
 
  protected:
-  void FinishRequest(Request* request,
-                     Result result,
-                     DeepScanningClientResponse response);
+  void FinishRequest(Request* request, Result result);
+  void FinishConnectorRequest(
+      Request* request,
+      Result result,
+      enterprise_connectors::ContentAnalysisResponse response);
+  void FinishLegacyRequest(Request* request,
+                           Result result,
+                           DeepScanningClientResponse response);
 
  private:
   friend class BinaryUploadServiceTest;
@@ -222,9 +246,15 @@ class BinaryUploadService : public KeyedService {
                         bool success,
                         const std::string& response_data);
 
-  void OnGetResponse(Request* request, DeepScanningClientResponse response);
+  void OnGetConnectorResponse(
+      Request* request,
+      enterprise_connectors::ContentAnalysisResponse response);
+  void OnGetLegacyResponse(Request* request,
+                           DeepScanningClientResponse response);
 
   void MaybeFinishRequest(Request* request);
+  void MaybeFinishConnectorRequest(Request* request);
+  void MaybeFinishLegacyRequest(Request* request);
 
   void OnTimeout(Request* request);
 
@@ -240,9 +270,17 @@ class BinaryUploadService : public KeyedService {
   // Callback once a request's instance ID is unregistered.
   void InstanceIDUnregisteredCallback(bool);
 
+  void RecordRequestMetrics(Request* request, Result result);
+  void RecordRequestMetrics(
+      Request* request,
+      Result result,
+      const enterprise_connectors::ContentAnalysisResponse& response);
   void RecordRequestMetrics(Request* request,
                             Result result,
                             const DeepScanningClientResponse& response);
+
+  // Called at the end of either Finish{Connector|Legacy}Request methods.
+  void FinishRequestCleanup(Request* request, const std::string& instance_id);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<BinaryFCMService> binary_fcm_service_;
@@ -260,6 +298,10 @@ class BinaryUploadService : public KeyedService {
       received_malware_verdicts_;
   base::flat_map<Request*, std::unique_ptr<DlpDeepScanningVerdict>>
       received_dlp_verdicts_;
+
+  // Maps requests to each tag-result pair.
+  base::flat_map<Request*, enterprise_connectors::ContentAnalysisResponse>
+      received_connector_responses_;
 
   // Indicates whether this browser can upload data for enterprise requests.
   // Advanced Protection scans are validated using the user's Advanced

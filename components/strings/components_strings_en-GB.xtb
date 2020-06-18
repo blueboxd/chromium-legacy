@@ -1538,6 +1538,7 @@ Additional details:
 <translation id="7485870689360869515">No data found.</translation>
 <translation id="7488762544858401571">Edited</translation>
 <translation id="7495290002932347110">A data breach on a site or app exposed your password. Chrome recommends checking your saved passwords and changing your password on <ph name="ORIGIN" /> now.</translation>
+<translation id="7495528107193238112">This content is blocked. Contact the site owner to fix the issue.</translation>
 <translation id="7498234416455752244">Keep editing</translation>
 <translation id="7503664977220660814">You just entered your password on a deceptive site. Chromium recommends checking your saved passwords for <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and other sites where you use this password now.</translation>
 <translation id="7508255263130623398">Returned policy device ID is empty or doesn't match current device ID</translation>

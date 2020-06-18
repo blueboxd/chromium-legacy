@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">Additional info (optional)</translation>
 <translation id="1017280919048282932">&amp;Add to dictionary</translation>
 <translation id="1018656279737460067">Cancelled</translation>
+<translation id="1022489261739821355">Showing passwords from your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /></translation>
 <translation id="1023873740278604399">Move your finger slightly to add the different parts of your fingerprint.</translation>
 <translation id="1026655690966755180">Add port</translation>
 <translation id="1026822031284433028">Load Image</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">You must confirm registration on your printer to finish this process - check it now.</translation>
 <translation id="1900305421498694955">Apps from Google Play may require full file system access to read and write files on external storage devices. Files and folders created on the device are visible to anyone who uses the external drive. <ph name="LINK_BEGIN" />Learn more<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Select &amp;all</translation>
+<translation id="1901396183631570154">Chrome couldn't save these passwords in your Google Account. You can still save them on this device.</translation>
 <translation id="1905375423839394163">Chromebook device name</translation>
 <translation id="1906828677882361942">Do not allow any sites to access serial ports</translation>
 <translation id="1909880997794698664">Are you sure you want to permanently keep this device in kiosk mode?</translation>
@@ -1187,6 +1189,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2476578072172137802">Site settings</translation>
 <translation id="2478176599153288112">Media-File Permissions for "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Share audio</translation>
+<translation id="248003956660572823">Passwords not saved</translation>
 <translation id="2480868415629598489">Modify data that you copy and paste</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484959914739448251">To clear browsing data from all of your synced devices and your Google Account, <ph name="BEGIN_LINK" />enter your passphrase<ph name="END_LINK" />.</translation>
@@ -3365,6 +3368,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5275352920323889391">Dog</translation>
 <translation id="527605982717517565">Always allow JavaScript on <ph name="HOST" /></translation>
 <translation id="5278823018825269962">Status ID</translation>
+<translation id="5280064835262749532">Update credentials for <ph name="SHARE_PATH" /></translation>
 <translation id="5280174558369304332">Extensions to be removed:</translation>
 <translation id="5280243692621919988">Clear cookies and site data when you close all windows</translation>
 <translation id="5280426389926346830">Create Shortcut?</translation>
@@ -4661,6 +4665,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6950627417367801484">Restore apps</translation>
 <translation id="6950943362443484797">We'll install that app for you</translation>
 <translation id="6951153907720526401">Payment Handlers</translation>
+<translation id="6952242901357037157">You can also show passwords from your <ph name="BEGIN_LINK" />Google Account<ph name="END_LINK" /> here</translation>
 <translation id="6953878494808481632">Related info</translation>
 <translation id="6955446738988643816">Inspect Pop-up</translation>
 <translation id="6955535239952325894">This setting is disabled on managed browsers</translation>
@@ -4728,6 +4733,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7022562585984256452">Your home page has been set.</translation>
 <translation id="7025082428878635038">Introducing a new way to navigate with gestures</translation>
 <translation id="7025190659207909717">Mobile data service management</translation>
+<translation id="7029307918966275733">Crostini is not installed. Please install Crostini to view credits.</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Serial port connected</translation>
 <translation id="7031962166228839643">TPM is being prepared, please wait (this may take a few minutes)...</translation>

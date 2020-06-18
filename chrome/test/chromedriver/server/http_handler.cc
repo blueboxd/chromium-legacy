@@ -860,9 +860,6 @@ HttpHandler::HttpHandler(
       //
 
       CommandMapping(
-          kPost, "session/:sessionId/chromium/launch_app",
-          WrapToCommand("LaunchApp", base::BindRepeating(&ExecuteLaunchApp))),
-      CommandMapping(
           kGet, "session/:sessionId/chromium/heap_snapshot",
           WrapToCommand("HeapSnapshot",
                         base::BindRepeating(&ExecuteTakeHeapSnapshot))),

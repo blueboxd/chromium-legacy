@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/fuchsia/fuchsia_logging.h"
-#include "base/logging.h"
 
 ApplicationControllerImpl::ApplicationControllerImpl(
     fuchsia::web::Frame* frame,

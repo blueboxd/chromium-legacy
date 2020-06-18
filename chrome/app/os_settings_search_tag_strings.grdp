@@ -518,10 +518,10 @@
   <message name="IDS_OS_SETTINGS_TAG_UNIFIED_DESKTOP" desc="Text for search result item which, when clicked, navigates the user to display settings, with a toggle to enable/disable Unified Desktop mode, which allows windows to span multiple displays.">
     Allow windows to span displays
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select display orientation (normal, or rotated 90/180/270 degrees). Alternate phrase for 'Display orientation'">
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select display orientation (normal, or rotated 90/180/270 degrees). Alternate phrase for 'Display rotation'">
     Display orientation
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT1" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select display orientation (normal, or rotated 90/180/270 degrees). Alternate phrase for 'Display rotation'.">
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_ORIENTATION_ALT1" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select display orientation (normal, or rotated 90/180/270 degrees). Alternate phrase for 'Display orientation'">
     Display rotation
   </message>
   <message name="IDS_OS_SETTINGS_TAG_DISPLAY_AMBIENT_COLORS" desc="Text for search result item which, when clicked, navigates the user to display settings, with a toggle to enable/disable ambient colors, which adapts the screen color to match the environment.">

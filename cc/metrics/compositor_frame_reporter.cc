@@ -613,7 +613,15 @@ void CompositorFrameReporter::ReportEventLatencyHistograms() const {
                      [&event_metrics](const StageData& stage) {
                        return stage.start_time > event_metrics.time_stamp();
                      });
-    DCHECK(stage_it != stage_history_.end());
+    // TODO(crbug.com/1079116): Ideally, at least the start time of
+    // SubmitCompositorFrameToPresentationCompositorFrame stage should be
+    // greater than the event time stamp, but apparently, this is not always the
+    // case (see crbug.com/1093698). For now, skip to the next event in such
+    // cases. Hopefully, the work to reduce discrepancies between the new
+    // EventLatency and the old Event.Latency metrics would fix this issue. If
+    // not, we need to reconsider investigating this issue.
+    if (stage_it == stage_history_.end())
+      continue;
 
     const base::TimeDelta b2r_latency =
         stage_it->start_time - event_metrics.time_stamp();
@@ -789,7 +797,15 @@ void CompositorFrameReporter::ReportEventLatencyTraceEvents() const {
                      [&event_metrics](const StageData& stage) {
                        return stage.start_time > event_metrics.time_stamp();
                      });
-    DCHECK(stage_it != stage_history_.end());
+    // TODO(crbug.com/1079116): Ideally, at least the start time of
+    // SubmitCompositorFrameToPresentationCompositorFrame stage should be
+    // greater than the event time stamp, but apparently, this is not always the
+    // case (see crbug.com/1093698). For now, skip to the next event in such
+    // cases. Hopefully, the work to reduce discrepancies between the new
+    // EventLatency and the old Event.Latency metrics would fix this issue. If
+    // not, we need to reconsider investigating this issue.
+    if (stage_it == stage_history_.end())
+      continue;
 
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
         "cc,input", "BrowserToRendererCompositor", trace_id,

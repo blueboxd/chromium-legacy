@@ -3,6 +3,7 @@
 <translationbundle lang="en-GB">
 <translation id="1018656279737460067">Cancelled</translation>
 <translation id="1195447618553298278">Unknown error.</translation>
+<translation id="1413240736185167732">Failed – Filter failed</translation>
 <translation id="1468664791493211953">Offers</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> manages this device and may be able to monitor your activity.</translation>
 <translation id="150962533380566081">Invalid PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">This device is enterprise managed</translation>
 <translation id="1905710495812624430">Maximum allowed attempts exceeded.</translation>
 <translation id="1930797645656624981">Chrome OS Input Method Service</translation>
+<translation id="1947737735496445907">Printed</translation>
 <translation id="1979103255016296513">Password change overdue</translation>
 <translation id="2049639323467105390">This device is managed by <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Turn on Bluetooth to discover nearby devices</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">REFRESH</translation>
+<translation id="3091839911843451378">Failed – Stopped</translation>
+<translation id="3268178239013324452">Failed – Door open</translation>
 <translation id="3369013195428705271">Are you sure you want to clear all print history? Your ongoing print jobs will not be cleared.</translation>
+<translation id="3456078764689556234">Printed page <ph name="PRINTED_PAGES" /> out of <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Print jobs</translation>
+<translation id="3527036260304016759">Failed – Unknown error</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="38114475217616659">Clear all history</translation>
 <translation id="3820172043799983114">Invalid PIN.</translation>
 <translation id="3838338534323494292">New password</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> out of <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> manages this device and has access to all user activity, including web pages visited, passwords and email.</translation>
+<translation id="4003384961948020559">Failed – Output full</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Password expires in <ph name="TIME" /></translation>
+<translation id="428217921675623177">Print jobs older than 90 days will be removed</translation>
 <translation id="4429881212383817840">Kerberos ticket expires soon</translation>
 <translation id="445059817448385655">Old password</translation>
 <translation id="467510802200863975">Passwords do not match</translation>
@@ -37,24 +46,31 @@
 Try tapping the mic to ask me anything.</translation>
 <translation id="5222676887888702881">Sign out</translation>
 <translation id="5317780077021120954">Save</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Choose a new one now</translation>
 <translation id="5457599981699367932">Browse as Guest</translation>
 <translation id="54609108002486618">Managed</translation>
 <translation id="5832805196449965646">Add Person</translation>
 <translation id="5895138241574237353">Restart</translation>
+<translation id="6048107060512778456">Failed – Paper jam</translation>
 <translation id="6058625436358447366">To finish, enter your old and new passwords</translation>
 <translation id="6106186594183574873">To finish, enter your old password</translation>
 <translation id="6146993107019042706">To finish, enter your new password</translation>
 <translation id="6517239166834772319">Explore</translation>
+<translation id="6564646048574748301">Failed – Printer unreachable</translation>
 <translation id="6643016212128521049">Clear</translation>
 <translation id="7162487448488904999">Gallery</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7690294790491645610">Confirm new password</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Change password</translation>
 <translation id="8208861521865154048">Perks</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> manages this user. It may remotely manage settings and monitor user activity.</translation>
+<translation id="871560550817059752">Failed – Out of ink</translation>
 <translation id="8747900814994928677">Confirm change</translation>
+<translation id="8919837981463578619">Failed – Tray missing</translation>
+<translation id="8928727111548978589">Failed – Out of paper</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> attempts left</translation>
 <translation id="910415269708673980">Refresh ticket for <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Unlock</translation>

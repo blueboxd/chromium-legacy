@@ -13269,7 +13269,8 @@ unsigned int aom_variance8x8_neon(const uint8_t* src_ptr,
 #define aom_variance8x8 aom_variance8x8_neon
 
 int aom_vector_var_c(const int16_t* ref, const int16_t* src, const int bwl);
-#define aom_vector_var aom_vector_var_c
+int aom_vector_var_neon(const int16_t* ref, const int16_t* src, const int bwl);
+#define aom_vector_var aom_vector_var_neon
 
 void aom_dsp_rtcd(void);
 

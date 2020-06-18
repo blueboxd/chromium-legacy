@@ -56,10 +56,6 @@ constexpr double kMagnetometerFrequencyValue = 7.0;
 constexpr double kMagnetometerOffsetValue = 3.0;
 constexpr double kMagnetometerScalingValue = 0.000001;
 
-void DeleteFile(const base::FilePath& file) {
-  EXPECT_TRUE(base::DeleteFileRecursively(file));
-}
-
 void WriteValueToFile(const base::FilePath& path, double value) {
   const std::string str = base::NumberToString(value);
   int bytes_written = base::WriteFile(path, str.data(), str.size());
@@ -317,7 +313,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   void GenerateDeviceRemovedEvent(const base::FilePath& sensor_dir) {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
-      DeleteFile(sensor_dir);
+      EXPECT_TRUE(base::DeleteFileRecursively(sensor_dir));
     }
     bool success = provider_->blocking_task_runner_->PostTask(
         FROM_HERE,

@@ -1538,6 +1538,7 @@ Dodatni detalji:
 <translation id="7485870689360869515">Nisu pronađeni podaci.</translation>
 <translation id="7488762544858401571">Izmenjeno</translation>
 <translation id="7495290002932347110">Vaša lozinka je otkrivena pri upadu u podatke na sajtu ili u aplikaciji. Chrome preporučuje da proverite sačuvane lozinke i da odmah promenite lozinku na <ph name="ORIGIN" />.</translation>
+<translation id="7495528107193238112">Ovaj sadržaj je blokiran. Obratite se vlasniku sajta da biste rešili problem.</translation>
 <translation id="7498234416455752244">Nastavite sa izmenama</translation>
 <translation id="7503664977220660814">Upravo ste uneli lozinku na obmanjujućem sajtu. Chromium vam preporučuje da proverite sačuvane lozinke za <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> i druge sajtove na kojima trenutno koristite ovu lozinku.</translation>
 <translation id="7508255263130623398">Vraćeni ID uređaja za smernice je prazan ili se ne podudara sa aktuelnim ID-om uređaja</translation>

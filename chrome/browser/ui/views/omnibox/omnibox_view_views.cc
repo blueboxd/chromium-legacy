@@ -103,11 +103,6 @@ using metrics::OmniboxEventProto;
 
 namespace {
 
-// TODO(tommycli): Remove this killswitch once we are confident that the new
-// behavior doesn't cause big user breakage.
-constexpr base::Feature kOmniboxCanCopyHyperlinksToClipboard{
-    "OmniboxCanCopyHyperlinksToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // When certain field trials are enabled, the path is hidden this long after
 // page load.
 const uint32_t kPathFadeOutDelayMs = 4000;
@@ -1964,10 +1959,8 @@ void OmniboxViewViews::OnAfterCutOrCopy(ui::ClipboardBuffer clipboard_buffer) {
   ui::ScopedClipboardWriter scoped_clipboard_writer(clipboard_buffer);
   scoped_clipboard_writer.WriteText(selected_text);
 
-  if (write_url &&
-      base::FeatureList::IsEnabled(kOmniboxCanCopyHyperlinksToClipboard)) {
-    scoped_clipboard_writer.WriteHyperlink(selected_text, url.spec());
-  }
+  // Regardless of |write_url|, don't write a hyperlink to the clipboard.
+  // Plaintext URLs are simply handled more consistently than hyperlinks.
 }
 
 void OmniboxViewViews::OnWriteDragData(ui::OSExchangeData* data) {

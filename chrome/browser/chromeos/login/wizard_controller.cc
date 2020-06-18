@@ -417,8 +417,9 @@ void WizardController::Init(OobeScreenId first_screen) {
 
   AdvanceToScreen(first_screen_);
   if (!IsMachineHWIDCorrect() && !StartupUtils::IsDeviceRegistered() &&
-      first_screen_ == OobeScreen::SCREEN_UNKNOWN)
+      first_screen_ == OobeScreen::SCREEN_UNKNOWN) {
     ShowWrongHWIDScreen();
+  }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kOobeSkipToLogin)) {
@@ -807,12 +808,7 @@ void WizardController::OnScreenExit(OobeScreenId screen,
 // WizardController, ExitHandlers:
 void WizardController::OnWrongHWIDScreenExit() {
   OnScreenExit(WrongHWIDScreenView::kScreenId, kDefaultExitReason);
-
-  if (previous_screen_) {
-    SetCurrentScreen(previous_screen_);
-  } else {
-    ShowPackagedLicenseScreen();
-  }
+  OnDeviceModificationCanceled();
 }
 
 void WizardController::OnHidDetectionScreenExit() {
@@ -1230,9 +1226,6 @@ void WizardController::OnDeviceModificationCanceled() {
   if (previous_screen_) {
     SetCurrentScreen(previous_screen_);
   } else {
-    if (current_screen_)
-      current_screen_->Hide();
-
     ShowPackagedLicenseScreen();
   }
 }

@@ -334,7 +334,8 @@
       <if expr="chromeos">
         <include name="IDR_NETWORK_UI_HTML" file="resources\chromeos\network_ui\network_ui.html" type="BINDATA" />
         <include name="IDR_NETWORK_UI_JS" file="resources\chromeos\network_ui\network_ui.js" type="BINDATA" />
-        <include name="IDR_NETWORK_UI_CSS" file="resources\chromeos\network_ui\network_ui.css" type="BINDATA" />
+        <include name="IDR_NETWORK_STATE_UI_HTML" file="resources\chromeos\network_ui\network_state_ui.html" type="BINDATA" />
+        <include name="IDR_NETWORK_STATE_UI_JS" file="resources\chromeos\network_ui\network_state_ui.js" type="BINDATA" />
       </if>
       <if expr="_google_chrome">
         <include name="IDR_PREF_HASH_SEED_BIN" file="resources\settings_internal\pref_hash_seed.bin" type="BINDATA" />

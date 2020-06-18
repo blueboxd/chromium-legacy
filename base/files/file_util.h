@@ -60,21 +60,15 @@ BASE_EXPORT FilePath MakeAbsoluteFilePath(const FilePath& input);
 BASE_EXPORT int64_t ComputeDirectorySize(const FilePath& root_path);
 
 // Deletes the given path, whether it's a file or a directory.
-// If it's a directory, it's perfectly happy to delete all of the
-// directory's contents.  Passing true to recursive deletes
-// subdirectories and their contents as well.
-// Returns true if successful, false otherwise. It is considered successful
-// to attempt to delete a file that does not exist.
+// If it's a directory, it's perfectly happy to delete all of the directory's
+// contents, but it will not recursively delete subdirectories and their
+// contents.
+// Returns true if successful, false otherwise. It is considered successful to
+// attempt to delete a file that does not exist.
 //
 // In POSIX environment and if |path| is a symbolic link, this deletes only
 // the symlink. (even if the symlink points to a non-existent file)
-//
-// WARNING: USING THIS WITH recursive==true IS EQUIVALENT
-//          TO "rm -rf", SO USE WITH CAUTION.
-//
-// Note: The |recursive| parameter is in the process of being removed. Use
-// DeleteFileRecursively() instead. See https://crbug.com/1009837
-BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
+BASE_EXPORT bool DeleteFile(const FilePath& path);
 
 // Deletes the given path, whether it's a file or a directory.
 // If it's a directory, it's perfectly happy to delete all of the
@@ -89,7 +83,24 @@ BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
 // TODO(thestig): Rename to DeletePathRecursively().
 BASE_EXPORT bool DeleteFileRecursively(const FilePath& path);
 
-// Simplified way to get a callback to do DeleteFile(path, false) and ignore the
+// DEPRECATED. Please use the functions immediately above.
+// https://crbug.com/1009837
+//
+// Deletes the given path, whether it's a file or a directory.
+// If it's a directory, it's perfectly happy to delete all of the
+// directory's contents.  Passing true to recursively delete
+// subdirectories and their contents as well.
+// Returns true if successful, false otherwise. It is considered successful
+// to attempt to delete a file that does not exist.
+//
+// In POSIX environment and if |path| is a symbolic link, this deletes only
+// the symlink. (even if the symlink points to a non-existent file)
+//
+// WARNING: USING THIS WITH recursive==true IS EQUIVALENT
+//          TO "rm -rf", SO USE WITH CAUTION.
+BASE_EXPORT bool DeleteFile(const FilePath& path, bool recursive);
+
+// Simplified way to get a callback to do DeleteFile(path) and ignore the
 // DeleteFile() result.
 BASE_EXPORT OnceCallback<void(const FilePath&)> GetDeleteFileCallback();
 

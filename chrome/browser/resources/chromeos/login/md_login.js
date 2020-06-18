@@ -27,7 +27,6 @@
 // <include src="screen_app_launch_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
-// <include src="screen_wrong_hwid.js">
 // <include src="screen_fatal_error.js">
 // <include src="screen_active_directory_password_change.js">
 // <include src="screen_encryption_migration.js">
@@ -58,7 +57,6 @@ cr.define('cr.ui.Oobe', function() {
      */
     initialize() {
       cr.ui.login.DisplayManager.initialize();
-      login.WrongHWIDScreen.register();
       login.AccountPickerScreen.register();
       login.AutolaunchScreen.register();
       login.ErrorMessageScreen.register();

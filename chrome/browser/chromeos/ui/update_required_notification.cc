@@ -25,27 +25,47 @@ base::string16 GetTitle(NotificationType type, int days_remaining) {
   // |days_remaining| >= 7.
   switch (type) {
     case NotificationType::kNoConnection:
-      return days_remaining > 1
-                 ? l10n_util::GetStringFUTF16Int(
-                       IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_DAYS,
-                       days_remaining)
-                 : l10n_util::GetStringUTF16(
-                       IDS_UPDATE_REQUIRED_NO_NETWORK_TITLE_IMMEDIATE);
     case NotificationType::kMeteredConnection:
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_UPDATE_REQUIRED_NETWORK_LIMITATION_TITLE_DAYS, days_remaining);
     case NotificationType::kEolReached:
-      return base::string16();
+      return l10n_util::GetPluralStringFUTF16(
+          IDS_UPDATE_REQUIRED_EOL_TITLE_DAYS, days_remaining);
   }
 }
 
 base::string16 GetMessage(NotificationType type,
-                          const std::string& domain_name) {
+                          const std::string& domain_name,
+                          int days_remaining) {
+  if (days_remaining > 1) {
+    switch (type) {
+      case NotificationType::kNoConnection:
+        return l10n_util::GetStringFUTF16(
+            IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE,
+            base::UTF8ToUTF16(domain_name));
+      case NotificationType::kMeteredConnection:
+        return l10n_util::GetStringFUTF16(
+            IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE,
+            base::UTF8ToUTF16(domain_name));
+      case NotificationType::kEolReached:
+        return l10n_util::GetStringFUTF16(IDS_UPDATE_REQUIRED_EOL_MESSAGE,
+                                          base::UTF8ToUTF16(domain_name));
+    }
+  }
+
   switch (type) {
     case NotificationType::kNoConnection:
-      return l10n_util::GetStringFUTF16(IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE,
-                                        base::UTF8ToUTF16(domain_name));
+      return l10n_util::GetStringFUTF16(
+          IDS_UPDATE_REQUIRED_NO_NETWORK_MESSAGE_IMMEDIATE,
+          base::UTF8ToUTF16(domain_name));
     case NotificationType::kMeteredConnection:
+      return l10n_util::GetStringFUTF16(
+          IDS_UPDATE_REQUIRED_METERED_NETWORK_MESSAGE_IMMEDIATE,
+          base::UTF8ToUTF16(domain_name));
     case NotificationType::kEolReached:
-      return base::string16();
+      return l10n_util::GetStringFUTF16(
+          IDS_UPDATE_REQUIRED_EOL_MESSAGE_IMMEDIATE,
+          base::UTF8ToUTF16(domain_name));
   }
 }
 
@@ -55,8 +75,10 @@ base::string16 GetButtonText(NotificationType type) {
       return l10n_util::GetStringUTF16(
           IDS_UPDATE_REQUIRED_SCREEN_OPEN_NETWORK_SETTINGS);
     case NotificationType::kMeteredConnection:
+      return l10n_util::GetStringUTF16(
+          IDS_UPDATE_REQUIRED_SCREEN_ALLOW_METERED);
     case NotificationType::kEolReached:
-      return base::string16();
+      return l10n_util::GetStringUTF16(IDS_UPDATE_REQUIRED_EOL_SEE_DETAILS);
   }
 }
 
@@ -89,7 +111,7 @@ void UpdateRequiredNotification::Show(NotificationType type,
   notification_close_callback_ = std::move(close_callback);
 
   base::string16 title = GetTitle(type, days_remaining);
-  base::string16 body = GetMessage(type, domain_name);
+  base::string16 body = GetMessage(type, domain_name, days_remaining);
   base::string16 button = GetButtonText(type);
   if (title.empty() || body.empty() || button.empty()) {
     NOTREACHED();

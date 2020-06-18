@@ -536,7 +536,7 @@ size_t CaptionBubble::GetTextIndexOfLineInLabel(size_t line) const {
   return label_->GetTextIndexOfLine(line);
 }
 
-size_t CaptionBubble::GetNumLinesInLabel() {
+size_t CaptionBubble::GetNumLinesInLabel() const {
   return label_->GetRequiredLines();
 }
 

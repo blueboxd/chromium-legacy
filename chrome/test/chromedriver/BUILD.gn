@@ -56,34 +56,11 @@ action("embed_user_data_dir_in_cpp") {
   args += rebase_path(files, root_build_dir)
 }
 
-action("embed_extension_in_cpp") {
-  script = "embed_extension_in_cpp.py"
-
-  files = [
-    "extension/background.js",
-    "extension/manifest.json",
-  ]
-
-  inputs = [ "cpp_source.py" ] + files
-  outputs = [
-    "$target_gen_dir/chrome/embedded_automation_extension.cc",
-    "$target_gen_dir/chrome/embedded_automation_extension.h",
-  ]
-
-  args = [
-    "--directory",
-    rebase_path("$target_gen_dir/chrome", root_build_dir),
-  ]
-  args += rebase_path(files, root_build_dir)
-}
-
 source_set("automation_client_lib") {
   sources = [
     "chrome/adb.h",
     "chrome/adb_impl.cc",
     "chrome/adb_impl.h",
-    "chrome/automation_extension.cc",
-    "chrome/automation_extension.h",
     "chrome/cast_tracker.cc",
     "chrome/cast_tracker.h",
     "chrome/chrome.h",
@@ -185,12 +162,10 @@ source_set("automation_client_lib") {
   ]
 
   # Also compile the generated files.
-  sources += get_target_outputs(":embed_extension_in_cpp")
   sources += get_target_outputs(":embed_js_in_cpp")
   sources += get_target_outputs(":embed_user_data_dir_in_cpp")
 
   deps = [
-    ":embed_extension_in_cpp",
     ":embed_js_in_cpp",
     ":embed_user_data_dir_in_cpp",
     "//base",

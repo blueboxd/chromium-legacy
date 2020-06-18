@@ -507,8 +507,6 @@ class CORE_EXPORT LocalFrameView final
   IntPoint ConvertFromRootFrame(const IntPoint&) const;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
   PhysicalOffset ConvertFromRootFrame(const PhysicalOffset&) const;
-  IntPoint ConvertSelfToChild(const EmbeddedContentView&,
-                              const IntPoint&) const;
 
   IntRect RootFrameToDocument(const IntRect&);
   IntPoint RootFrameToDocument(const IntPoint&);

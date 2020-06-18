@@ -67,7 +67,7 @@ class FakeBinaryUploadService : public BinaryUploadService {
 
   void MaybeUploadForDeepScanning(std::unique_ptr<Request> request) override {
     last_request_ = request->deep_scanning_request();
-    request->FinishRequest(saved_result_, saved_response_);
+    request->FinishLegacyRequest(saved_result_, saved_response_);
   }
 
   void SetResponse(BinaryUploadService::Result result,

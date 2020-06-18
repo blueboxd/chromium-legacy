@@ -114,14 +114,20 @@ VideoCaptureSettings::VideoCaptureSettings(
     base::Optional<bool> noise_reduction,
     const VideoTrackAdapterSettings& track_adapter_settings,
     base::Optional<double> min_frame_rate,
-    base::Optional<double> max_frame_rate)
+    base::Optional<double> max_frame_rate,
+    base::Optional<double> pan,
+    base::Optional<double> tilt,
+    base::Optional<double> zoom)
     : failed_constraint_name_(nullptr),
       device_id_(std::move(device_id)),
       capture_params_(capture_params),
       noise_reduction_(noise_reduction),
       track_adapter_settings_(track_adapter_settings),
       min_frame_rate_(min_frame_rate),
-      max_frame_rate_(max_frame_rate) {
+      max_frame_rate_(max_frame_rate),
+      pan_(pan),
+      tilt_(tilt),
+      zoom_(zoom) {
   DCHECK(!min_frame_rate ||
          *min_frame_rate_ <= capture_params.requested_format.frame_rate);
   DCHECK(!track_adapter_settings.target_size() ||

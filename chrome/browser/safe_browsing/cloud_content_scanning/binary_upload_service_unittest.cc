@@ -142,7 +142,7 @@ class BinaryUploadServiceTest : public testing::Test {
 
   void ReceiveMessageForRequest(BinaryUploadService::Request* request,
                                 const DeepScanningClientResponse& response) {
-    service_->OnGetResponse(request, response);
+    service_->OnGetLegacyResponse(request, response);
   }
 
   void ReceiveResponseFromUpload(BinaryUploadService::Request* request,

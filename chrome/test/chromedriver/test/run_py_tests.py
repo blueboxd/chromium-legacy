@@ -127,8 +127,6 @@ _INTEGRATION_NEGATIVE_FILTER = [
     # already tested by other test cases.
     'ChromeDriverTest.testGetCurrentWindowHandle',
     'ChromeDriverTest.testStartStop',
-    # LaunchApp is an obsolete API.
-    'ChromeExtensionsCapabilityTest.testCanLaunchApp',
     # PerfTest takes a long time, requires extra setup, and adds little value
     # to integration testing.
     'PerfTest.*',
@@ -3524,19 +3522,6 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
     zip_1 = os.path.join(_TEST_DATA_DIR, 'ext_test_1.zip')
     self.CreateDriver(chrome_extensions=[self._PackExtension(zip_1)])
 
-  def testCanLaunchApp(self):
-    app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
-    driver = self.CreateDriver(chrome_switches=['load-extension=%s' % app_path],
-      experimental_options=
-        {"useUnsupportedLaunchAppDeprecationWorkaround": True})
-    old_handles = driver.GetWindowHandles()
-    self.assertEqual(1, len(old_handles))
-    driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')
-    new_window_handle = self.WaitForNewWindow(driver, old_handles)
-    driver.SwitchToWindow(new_window_handle)
-    body_element = driver.FindElement('tag name', 'body')
-    self.assertEqual('It works!', body_element.GetText())
-
   def testCanInspectBackgroundPage(self):
     crx = os.path.join(_TEST_DATA_DIR, 'ext_bg_page.crx')
     driver = self.CreateDriver(
@@ -3577,14 +3562,6 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('one', driver.ExecuteScript("return window['global_var']"))
     driver.SwitchToFrame('iframe')
     self.assertEqual('two', driver.ExecuteScript("return window['iframe_var']"))
-
-  def testDontUseAutomationExtension(self):
-    driver = self.CreateDriver(
-        experimental_options={'useAutomationExtension': False})
-    driver.Load('chrome:version')
-    command_line = driver.FindElement('css selector', '#command_line').GetText()
-    self.assertNotIn('load-extension', command_line)
-
 
 class ChromeLogPathCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.logPath."""

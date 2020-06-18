@@ -81,7 +81,7 @@
 <translation id="129863573139666797">‏<ph name="BEGIN_LINK" />נסה לנקות את קובצי ה-Cookie<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">‏בדיקת הגדרות ה-DNS המאובטח</translation>
 <translation id="1307966114820526988">תכונות שהוצאו משימוש</translation>
-<translation id="1310581832770023220">הנתונים בטופס הזה נשלחים בחיבור לא מאובטח.</translation>
+<translation id="1310581832770023220">הנתונים בטופס הזה נשלחים דרך חיבור לא מאובטח</translation>
 <translation id="131405271941274527">‏<ph name="URL" /> רוצה לשלוח ולקבל מידע אחרי כל הקשה של מספר הטלפון שלך במכשיר NFC</translation>
 <translation id="1314509827145471431">כריכה בקצה הימני</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)‎</translation>
@@ -1451,7 +1451,7 @@ Del</translation>
 <translation id="7138472120740807366">שיטת מסירה</translation>
 <translation id="7139724024395191329">האמירויות הערביות</translation>
 <translation id="714064300541049402">‏הזזה של תמונה בצד 2 על ציר X</translation>
-<translation id="7147693119324090759">אני רוצה לשלוח בכל זאת</translation>
+<translation id="7147693119324090759">לשלוח בכל זאת?</translation>
 <translation id="7152423860607593928">Number-14 (Envelope)‎</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}two{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}many{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> ועוד <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">לבנדר</translation>
@@ -1845,7 +1845,7 @@ Del</translation>
 <translation id="8805819170075074995">‏ערך רשימה "<ph name="LANGUAGE_ID" />": המערכת התעלמה מהערך מאחר שהוא כלול גם במדיניות SpellcheckLanguage.</translation>
 <translation id="8807160976559152894">חיתוך אחרי כל עמוד</translation>
 <translation id="8820817407110198400">סימניות</translation>
-<translation id="8831512686168463822">הטופס הזה נשלח בחיבור לא מאובטח ועלול לחשוף את המידע שלך (כמו סיסמאות, הודעות או כרטיסי אשראי) כשהוא נשלח אל האתר הזה.</translation>
+<translation id="8831512686168463822">הטופס הזה נשלח דרך חיבור לא מאובטח. דבר זה עלול לחשוף את המידע שלך (כמו סיסמאות, הודעות או כרטיסי אשראי) כשהוא נשלח אל האתר הזה.</translation>
 <translation id="883848425547221593">סימניות אחרות</translation>
 <translation id="884264119367021077">כתובת למשלוח</translation>
 <translation id="884923133447025588">לא נמצא מנגנון ביטול</translation>

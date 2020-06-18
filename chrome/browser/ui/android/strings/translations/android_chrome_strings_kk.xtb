@@ -163,7 +163,7 @@
 <translation id="2323763861024343754">Сайт деректері</translation>
 <translation id="2328985652426384049">Кіру мүмкін емес</translation>
 <translation id="234265804618409743">Камера ашылмайды. Бірдеңе дұрыс болмады.</translation>
-<translation id="2345671828921229300">Іздеу үшін сөзді басып тұрыңыз.</translation>
+<translation id="2345671828921229300">Іздеу үшін сөзді түртіп, ұстап тұрыңыз.</translation>
 <translation id="2349710944427398404">Chrome пайдаланатын жалпы деректер, соның ішінде есептік жазбалар, бетбелгілер және сақталған параметрлер</translation>
 <translation id="2353636109065292463">Интернет байланысы тексерілуде.</translation>
 <translation id="2359808026110333948">Жалғастыру</translation>
@@ -292,7 +292,7 @@
 <translation id="3350687908700087792">Барлық жасырын қойындыларды жабу</translation>
 <translation id="3353615205017136254">Google бетті Lite нұсқасында ұсынды. Түпнұсқа бетті жүктеу үшін "Түпнұсқаны жүктеу" түймесін түртіңіз.</translation>
 <translation id="3367813778245106622">Синхрондауды бастау үшін қайтадан кіріңіз</translation>
-<translation id="337236281855091893">Іздеу үшін сөзді түртудің орнына, оны басып ұстап тұрыңыз</translation>
+<translation id="337236281855091893">Іздеу үшін сөзді түртудің орнына оны басып ұстап тұрыңыз</translation>
 <translation id="3373979091428520308">Бұл бетті басқа құрылғымен бөлісу үшін екінші құрылғыдағы Chrome параметрлерінен синхрондау функциясын қосыңыз.</translation>
 <translation id="3374023511497244703">Бетбелгілер, тарих, құпия сөздер және Chrome браузерінің басқа деректері сіздің Google есептік жазбаңызбен синхрондалмайды.</translation>
 <translation id="3384347053049321195">Сурет бөлісу</translation>
@@ -467,7 +467,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="488187801263602086">Файлдың атын өзгерту</translation>
 <translation id="4882831918239250449">Іздеу, жарнама қызметтерін, т.б. жекелендіру үшін шолу тарихын қалай пайдалану керектігін көрсетіңіз</translation>
 <translation id="4885273946141277891">Chrome нұсқаларының қайшылығы орын алды.</translation>
-<translation id="4908869848243824489">Discover by Google</translation>
+<translation id="4908869848243824489">Google ұсынатын Discover</translation>
 <translation id="4910889077668685004">Төлем қолданбалары</translation>
 <translation id="4913161338056004800">Статистиканы бастапқы күйіне қайтару</translation>
 <translation id="4913169188695071480">Жаңартуды тоқтату</translation>
@@ -714,7 +714,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6846298663435243399">Жүктелуде…</translation>
 <translation id="6850409657436465440">Жүктеп алу әлі аяқталған жоқ</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> қойынды жабылған</translation>
-<translation id="685850645784703949">Discover by Google – өшірулі</translation>
+<translation id="685850645784703949">Google ұсынатын Discover – өшірулі</translation>
 <translation id="6864459304226931083">Суретті жүктеп алу</translation>
 <translation id="6865313869410766144">Нысан деректерін автотолтыру</translation>
 <translation id="6884306546558072722">Офлайн режимде пайдалана беру</translation>

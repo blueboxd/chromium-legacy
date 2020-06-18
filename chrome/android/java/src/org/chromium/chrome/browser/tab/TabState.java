@@ -14,9 +14,6 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.crypto.CipherFactory;
-import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
-import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.content_public.common.Referrer;
 import org.chromium.ui.util.ColorUtils;
 
 import java.io.BufferedOutputStream;
@@ -246,53 +243,6 @@ public class TabState {
         buffer.rewind();
         buffer.get(contentsStateBytes);
         return contentsStateBytes;
-    }
-
-    /** @return An opaque "state" object that can be persisted to storage. */
-    public static TabState from(Tab tab) {
-        TabImpl tabImpl = (TabImpl) tab;
-        if (!tabImpl.isInitialized()) return null;
-        TabState tabState = new TabState();
-        tabState.contentsState = getWebContentsState(tabImpl);
-        tabState.openerAppId = TabAssociatedApp.getAppId(tab);
-        tabState.parentId = tab.getParentId();
-        tabState.timestampMillis = tab.getTimestampMillis();
-        tabState.tabLaunchTypeAtCreation = tab.getLaunchTypeAtInitialTabCreation();
-        // Don't save the actual default theme color because it could change on night mode state
-        // changed.
-        tabState.themeColor = TabThemeColorHelper.isUsingColorFromTabContents(tab)
-                ? TabThemeColorHelper.getColor(tab)
-                : TabState.UNSPECIFIED_THEME_COLOR;
-        tabState.rootId = CriticalPersistedTabData.from(tabImpl).getRootId();
-        return tabState;
-    }
-
-    /** Returns an object representing the state of the Tab's WebContents. */
-    public static WebContentsState getWebContentsState(TabImpl tab) {
-        if (tab.getFrozenContentsState() != null) return tab.getFrozenContentsState();
-
-        // Native call returns null when buffer allocation needed to serialize the state failed.
-        ByteBuffer buffer = getWebContentsStateAsByteBuffer(tab);
-        if (buffer == null) return null;
-
-        WebContentsState state = new WebContentsState(buffer);
-        state.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
-        return state;
-    }
-
-    /** Returns an ByteBuffer representing the state of the Tab's WebContents. */
-    private static ByteBuffer getWebContentsStateAsByteBuffer(TabImpl tab) {
-        LoadUrlParams pendingLoadParams = tab.getPendingLoadParams();
-        if (pendingLoadParams == null) {
-            return WebContentsStateBridge.getContentsStateAsByteBuffer(tab);
-        } else {
-            Referrer referrer = pendingLoadParams.getReferrer();
-            return WebContentsStateBridge.createSingleNavigationStateAsByteBuffer(
-                    pendingLoadParams.getUrl(), referrer != null ? referrer.getUrl() : null,
-                    // Policy will be ignored for null referrer url, 0 is just a placeholder.
-                    referrer != null ? referrer.getPolicy() : 0,
-                    pendingLoadParams.getInitiatorOrigin(), tab.isIncognito());
-        }
     }
 
     /**

@@ -21,7 +21,6 @@
 #include "base/values.h"
 #include "chrome/test/chromedriver/basic_types.h"
 #include "chrome/test/chromedriver/capabilities.h"
-#include "chrome/test/chromedriver/chrome/automation_extension.h"
 #include "chrome/test/chromedriver/chrome/browser_info.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 #include "chrome/test/chromedriver/chrome/chrome_android_impl.h"
@@ -359,8 +358,6 @@ Status ConfigureSession(Session* session,
         session->w3c_compliant ? kDismissAndNotify : kIgnore;
   }
 
-  session->enable_launch_app = capabilities->enable_launch_app;
-
   session->implicit_wait = capabilities->implicit_wait_timeout;
   session->page_load_timeout = capabilities->page_load_timeout;
   session->script_timeout = capabilities->script_timeout;
@@ -632,31 +629,6 @@ Status ExecuteGetCurrentWindowHandle(Session* session,
     return status;
   value->reset(new base::Value(WebViewIdToWindowHandle(web_view->GetId())));
   return Status(kOk);
-}
-
-Status ExecuteLaunchApp(Session* session,
-                        const base::DictionaryValue& params,
-                        std::unique_ptr<base::Value>* value) {
-  if (!session->enable_launch_app) {
-    return Status(kUnsupportedOperation,
-                  R"(LaunchApp command has been removed. See:
-      https://blog.chromium.org/2020/01/moving-forward-from-chrome-apps.html)");
-  }
-  std::string id;
-  if (!params.GetString("id", &id))
-    return Status(kInvalidArgument, "'id' must be a string");
-
-  ChromeDesktopImpl* desktop = nullptr;
-  Status status = session->chrome->GetAsDesktop(&desktop);
-  if (status.IsError())
-    return status;
-
-  AutomationExtension* extension = nullptr;
-  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
-  if (status.IsError())
-    return status;
-
-  return extension->LaunchApp(id);
 }
 
 Status ExecuteClose(Session* session,

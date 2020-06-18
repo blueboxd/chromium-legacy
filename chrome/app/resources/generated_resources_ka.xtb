@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">დამატებითი ინფორმაცია (არასავალდებულო)</translation>
 <translation id="1017280919048282932">&amp;ლექსიკონში დამატება</translation>
 <translation id="1018656279737460067">გაუქმდა</translation>
+<translation id="1022489261739821355">ნაჩვენებია პაროლები თქვენი <ph name="BEGIN_LINK" />Google ანგარიშიდან<ph name="END_LINK" /></translation>
 <translation id="1023873740278604399">თქვენი თითის სხვადასხვა ნაწილის აღსაბეჭდად ოდნავ გადააადგილეთ თითი.</translation>
 <translation id="1026655690966755180">პორტის დამატება</translation>
 <translation id="1026822031284433028">სურათის ჩატვირთვა</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">პროცესის დასრულებისთვის თქვენი პრინტერის რეგისტრაცია უნდა დაადასტუროთ - შეამოწმეთ ახლა.</translation>
 <translation id="1900305421498694955">Google Play-დან ჩამოტვირთულმა აპებმა შეიძლება მოითხოვოს სრული წვდომა ფაილების სისტემაზე, რათა წაიკითხოს და ჩაწეროს ფაილები მეხსიერების გარე მოწყობილობებზე. მოწყობილობაზე შექმნილი ფაილები და საქაღალდეები ხილულია გარე დისკის ნებისმიერი მომხმარებლისთვის. <ph name="LINK_BEGIN" />შეიტყვეთ მეტი<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">&amp;ყველას არჩევა</translation>
+<translation id="1901396183631570154">Chrome-მა ვერ მოახერხა ამ პაროლების თქვენს Google ანგარიშში შენახვა. თქვენ მაინც შეგიძლიათ მათი შენახვა ამ მოწყობილობაზე.</translation>
 <translation id="1905375423839394163">Chromebook მოწყობილობის სახელი</translation>
 <translation id="1906828677882361942">საიტებისთვის თანმიმდევრულ პორტებზე წვდომის აკრძალვა</translation>
 <translation id="1909880997794698664">დარწმუნებული ხართ, რომ გსურთ ამ მოწყობილობის მუდამ kiosk-რეჟიმში დატოვება?</translation>
@@ -1186,6 +1188,7 @@
 <translation id="2476578072172137802">საიტის პარამეტრები</translation>
 <translation id="2478176599153288112">მედია ფაილის ნებართვები „<ph name="EXTENSION" />“-თვის</translation>
 <translation id="247949520305900375">აუდიოს გაზიარება</translation>
+<translation id="248003956660572823">პაროლების შენახვა ვერ მოხერხდა</translation>
 <translation id="2480868415629598489">თქვენ მიერ კოპირებული და ჩასმული მონაცემების შეცვლა</translation>
 <translation id="2482878487686419369">შეტყობინებები</translation>
 <translation id="2484959914739448251">თქვენი Google ანგარიშიდან და ყველა სინქრონიზებული მოწყობილობიდან დათვალიერების მონაცემების გასასუფთავებლად <ph name="BEGIN_LINK" />შეიყვანეთ თქვენი საიდუმლო ფრაზა<ph name="END_LINK" />.</translation>
@@ -3364,6 +3367,7 @@
 <translation id="5275352920323889391">ძაღლი</translation>
 <translation id="527605982717517565">ყოველთვის დაუშვით JavaScript <ph name="HOST" />-ზე</translation>
 <translation id="5278823018825269962">სტატუსის ID</translation>
+<translation id="5280064835262749532">განაახლეთ ავტორიზაციის მონაცემები <ph name="SHARE_PATH" />-ისთვის</translation>
 <translation id="5280174558369304332">ამოსაშლელი გაფართოებები:</translation>
 <translation id="5280243692621919988">ქუქი-ჩანაწერებისა და საიტების მონაცემების გასუფთავება ყველა ფანჯრის დახურვისას</translation>
 <translation id="5280426389926346830">გსურთ მალსახმობის შექმნა?</translation>
@@ -4660,6 +4664,7 @@
 <translation id="6950627417367801484">აპების აღდგენა</translation>
 <translation id="6950943362443484797">ეს აპი დაინსტალირდება თქვენთვის</translation>
 <translation id="6951153907720526401">გადახდის დამმუშავებლები</translation>
+<translation id="6952242901357037157">აქ შეგიძლიათ თქვენს <ph name="BEGIN_LINK" />Google ანგარიშში<ph name="END_LINK" /> შენახული პაროლების გამოჩენაც</translation>
 <translation id="6953878494808481632">დაკავშირებული ინფორმაცია</translation>
 <translation id="6955446738988643816">კონტექსტური ფანჯრის შემოწმება</translation>
 <translation id="6955535239952325894">ეს პარამეტრი გათიშულია მართულ ბრაუზერებში</translation>
@@ -4727,6 +4732,7 @@
 <translation id="7022562585984256452">მთავარი გვერდი დაყენდა.</translation>
 <translation id="7025082428878635038">წარმოგიდგენთ ჟესტებით ნავიგაციის ახალ ხერხს</translation>
 <translation id="7025190659207909717">მობილური მონაცემების სერვისის მართვა</translation>
+<translation id="7029307918966275733">Crostini არ არის დაინსტალირებული. გთხოვთ, დააინსტალიროთ Crostini, რათა იხილოთ კრედიტები.</translation>
 <translation id="7029809446516969842">პაროლები</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> — დაკავშირებულია თანმიმდევრული პორტი</translation>
 <translation id="7031962166228839643">TPM მომზადების პროცესშია, დაელოდეთ (შეიძლება დასჭირდეს რამდენიმე წუთი)…</translation>

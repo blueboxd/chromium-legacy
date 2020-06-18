@@ -3,6 +3,7 @@
 <translationbundle lang="ca">
 <translation id="1018656279737460067">S'ha cancel·lat</translation>
 <translation id="1195447618553298278">Error desconegut.</translation>
+<translation id="1413240736185167732">Error: error en el filtre</translation>
 <translation id="1468664791493211953">Ofertes</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest dispositiu i és possible que pugui supervisar la teva activitat.</translation>
 <translation id="150962533380566081">El PUK no és vàlid.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Aquest dispositiu està gestionat per una empresa</translation>
 <translation id="1905710495812624430">S'ha superat el nombre màxim d'intents permesos.</translation>
 <translation id="1930797645656624981">Servei del mètode d'introducció de text a Chrome OS</translation>
+<translation id="1947737735496445907">Imprès</translation>
 <translation id="1979103255016296513">Canvi de contrasenya vençut</translation>
 <translation id="2049639323467105390">Aquest dispositiu està gestionat per <ph name="DOMAIN" /></translation>
 <translation id="2338501278241028356">Activa el Bluetooth per detectar dispositius propers</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Aplicacions</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="3008341117444806826">ACTUALITZA</translation>
+<translation id="3091839911843451378">Error: s'ha aturat</translation>
+<translation id="3268178239013324452">Error: porta oberta</translation>
 <translation id="3369013195428705271">Confirmes que vols esborrar tot l'historial d'impressions? Les tasques d'impressió en curs no s'esborraran.</translation>
+<translation id="3456078764689556234">S'ha imprès la pàgina <ph name="PRINTED_PAGES" /> de <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Tasques d'impressió</translation>
+<translation id="3527036260304016759">Error: error desconegut</translation>
 <translation id="3749289110408117711">Nom del fitxer</translation>
 <translation id="38114475217616659">Esborra tot l'historial</translation>
 <translation id="3820172043799983114">El PIN no és vàlid.</translation>
 <translation id="3838338534323494292">Contrasenya nova</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest dispositiu i té accés a tota l'activitat dels usuaris, com ara les pàgines web visitades, les contrasenyes i el correu electrònic.</translation>
+<translation id="4003384961948020559">Error: safata de sortida plena</translation>
 <translation id="4034824040120875894">Impressora</translation>
 <translation id="4227825898293920515">La contrasenya caduca d'aquí a <ph name="TIME" /></translation>
+<translation id="428217921675623177">Les tasques d'impressió que tinguin més de 90 dies se suprimiran</translation>
 <translation id="4429881212383817840">El tiquet de Kerberos caducarà aviat</translation>
 <translation id="445059817448385655">Contrasenya antiga</translation>
 <translation id="467510802200863975">Les contrasenyes no coincideixen</translation>
@@ -37,24 +46,31 @@
 Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="5317780077021120954">Desa</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Tria'n una de nova ara</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="54609108002486618">Gestionat</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
 <translation id="5895138241574237353">Reinicia</translation>
+<translation id="6048107060512778456">Error: embús de paper</translation>
 <translation id="6058625436358447366">Per acabar, introdueix la contrasenya antiga i la nova</translation>
 <translation id="6106186594183574873">Per acabar, introdueix la contrasenya antiga</translation>
 <translation id="6146993107019042706">Per acabar, introdueix la contrasenya nova</translation>
 <translation id="6517239166834772319">Explora</translation>
+<translation id="6564646048574748301">Error: no es pot accedir a la impressora</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="7162487448488904999">Galeria</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7690294790491645610">Confirma la contrasenya nova</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
 <translation id="8208861521865154048">Avantatges</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest usuari. És possible que gestioni la configuració i monitori l'activitat de l'usuari de manera remota.</translation>
+<translation id="871560550817059752">Error: no hi ha tinta</translation>
 <translation id="8747900814994928677">Confirma el canvi</translation>
+<translation id="8919837981463578619">Error: no es troba la safata</translation>
+<translation id="8928727111548978589">Error: no hi ha paper</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Intents restants: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Actualitza el tiquet de: <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Desbloqueja</translation>

@@ -150,8 +150,10 @@ bool IsHWIDCorrect(const std::string& hwid) {
 }
 
 bool IsMachineHWIDCorrect() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(chromeos::switches::kForceHWIDCheckFailureForTest))
+    return false;
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (cmd_line->HasSwitch(::switches::kTestType))
     return true;
   if (!base::SysInfo::IsRunningOnChromeOS())

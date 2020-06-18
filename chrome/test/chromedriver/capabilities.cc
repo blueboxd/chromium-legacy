@@ -545,9 +545,6 @@ Status ParseChromeOptions(
   // sent if not parsed correctly.
   parser_map["w3c"] = base::BindRepeating(&IgnoreCapability);
 
-  parser_map["useUnsupportedLaunchAppDeprecationWorkaround"] =
-      base::BindRepeating(&ParseBoolean, &capabilities->enable_launch_app);
-
   if (is_android) {
     parser_map["androidActivity"] =
         base::BindRepeating(&ParseString, &capabilities->android_activity);
@@ -589,8 +586,8 @@ Status ParseChromeOptions(
         base::BindRepeating(&ParseString, &capabilities->minidump_path);
     parser_map["mobileEmulation"] = base::BindRepeating(&ParseMobileEmulation);
     parser_map["prefs"] = base::BindRepeating(&ParseDict, &capabilities->prefs);
-    parser_map["useAutomationExtension"] = base::BindRepeating(
-        &ParseBoolean, &capabilities->use_automation_extension);
+    parser_map["useAutomationExtension"] =
+        base::BindRepeating(&IgnoreDeprecatedOption, "useAutomationExtension");
   }
 
   for (base::DictionaryValue::Iterator it(*chrome_options); !it.IsAtEnd();
@@ -759,9 +756,7 @@ Capabilities::Capabilities()
       android_use_running_app(false),
       detach(false),
       extension_load_timeout(base::TimeDelta::FromSeconds(10)),
-      network_emulation_enabled(false),
-      use_automation_extension(true),
-      enable_launch_app(false) {}
+      network_emulation_enabled(false) {}
 
 Capabilities::~Capabilities() {}
 

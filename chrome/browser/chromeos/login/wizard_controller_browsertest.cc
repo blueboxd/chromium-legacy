@@ -566,7 +566,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
                 base::Unretained(wizard_controller))));
 
     mock_wrong_hwid_screen_view_ = std::make_unique<MockWrongHWIDScreenView>();
-    ExpectSetDelegate(mock_wrong_hwid_screen_view_.get());
+    ExpectBindUnbind(mock_wrong_hwid_screen_view_.get());
     mock_wrong_hwid_screen_ =
         MockScreenExpectLifecycle(std::make_unique<MockWrongHWIDScreen>(
             mock_wrong_hwid_screen_view_.get(),
@@ -974,7 +974,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
 
   CheckCurrentScreen(WrongHWIDScreenView::kScreenId);
 
-  // Verify and clear all expectations on the mock wrong hid screen before
+  // Verify and clear all expectations on the mock wrong hwid screen before
   // setting new ones.
   testing::Mock::VerifyAndClearExpectations(mock_wrong_hwid_screen_);
 
@@ -2917,8 +2917,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
   ASSERT_NE(configuration, nullptr);
   EXPECT_FALSE(configuration->DictEmpty());
 }
-
-// TODO(dzhioev): Add test emulating device with wrong HWID.
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 

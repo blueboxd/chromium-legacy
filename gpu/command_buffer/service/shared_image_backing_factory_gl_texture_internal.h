@@ -79,13 +79,9 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
     bool framebuffer_attachment_angle = false;
     bool has_immutable_storage = false;
   };
-  virtual bool InitializeGLTexture(GLuint service_id,
-                                   const InitializeGLTextureParams& params);
 
   GLenum GetGLTarget() const;
   GLuint GetGLServiceId() const;
-
-  virtual void BeginSkiaReadAccess() = 0;
 
  protected:
   // SharedImageBacking:
@@ -98,16 +94,20 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
   std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
   ProduceGLTexturePassthrough(SharedImageManager* manager,
                               MemoryTypeTracker* tracker) final;
-  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      scoped_refptr<SharedContextState> context_state) final;
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       WGPUDevice device) final;
 
   bool IsPassthrough() const { return is_passthrough_; }
+
+  // Helper function to create a GL texture.
+  static void MakeTextureAndSetParameters(
+      GLenum target,
+      GLuint service_id,
+      bool framebuffer_attachment_angle,
+      scoped_refptr<gles2::TexturePassthrough>* passthrough_texture,
+      gles2::Texture** texture);
 
   const bool is_passthrough_;
   gles2::Texture* texture_ = nullptr;
@@ -121,15 +121,14 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
  public:
   SharedImageRepresentationSkiaImpl(
       SharedImageManager* manager,
-      SharedImageBackingGLCommon* backing,
+      SharedImageBacking* backing,
       scoped_refptr<SharedContextState> context_state,
-      sk_sp<SkPromiseImageTexture> cached_promise_texture,
-      MemoryTypeTracker* tracker,
-      GLenum target,
-      GLuint service_id);
+      sk_sp<SkPromiseImageTexture> promise_texture,
+      MemoryTypeTracker* tracker);
   ~SharedImageRepresentationSkiaImpl() override;
 
-  sk_sp<SkPromiseImageTexture> promise_texture();
+  void SetBeginReadAccessCallback(
+      base::RepeatingClosure begin_read_access_callback);
 
  private:
   // SharedImageRepresentationSkia:
@@ -147,6 +146,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 
   void CheckContext();
 
+  base::RepeatingClosure begin_read_access_callback_;
   scoped_refptr<SharedContextState> context_state_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
 
@@ -171,6 +171,9 @@ class SharedImageBackingGLTexture : public SharedImageBackingGLCommon {
       delete;
   ~SharedImageBackingGLTexture() override;
 
+  void InitializeGLTexture(GLuint service_id,
+                           const InitializeGLTextureParams& params);
+
  private:
   // SharedImageBacking:
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
@@ -178,9 +181,10 @@ class SharedImageBackingGLTexture : public SharedImageBackingGLCommon {
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
-
-  // SharedImageBackingGLCommon:
-  void BeginSkiaReadAccess() override;
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture that is backed
@@ -202,9 +206,8 @@ class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
       delete;
   ~SharedImageBackingGLImage() override;
 
-  // SharedImageBackingGLCommon:
-  bool InitializeGLTexture(GLuint service_id,
-                           const InitializeGLTextureParams& params) override;
+  bool InitializeGLTexture(const InitializeGLTextureParams& params);
+  void InitializePixels(GLenum format, GLenum type, const uint8_t* data);
 
  private:
   // SharedImageBacking:
@@ -214,17 +217,22 @@ class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
   scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
+  std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      scoped_refptr<SharedContextState> context_state) override;
   std::unique_ptr<SharedImageRepresentationGLTexture>
   ProduceRGBEmulationGLTexture(SharedImageManager* manager,
                                MemoryTypeTracker* tracker) override;
 
-  // SharedImageBackingGLCommon:
-  void BeginSkiaReadAccess() override;
+  void BeginSkiaReadAccess();
 
   scoped_refptr<gl::GLImage> image_;
   gles2::Texture* rgb_emulation_texture_ = nullptr;
   const SharedImageBackingFactoryGLTexture::UnpackStateAttribs attribs_;
   scoped_refptr<gfx::NativePixmap> native_pixmap_;
+
+  base::WeakPtrFactory<SharedImageBackingGLImage> weak_factory_;
 };
 
 }  // namespace gpu

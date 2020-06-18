@@ -26,6 +26,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/night_light/time_of_day.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
@@ -268,27 +270,35 @@ struct LockScreenMessage {
 
 // Returns the message used when the device was locked due to a time window
 // limit.
-LockScreenMessage GetWindowLimitMessage(const base::Time& unlock_time) {
+LockScreenMessage GetWindowLimitMessage(const base::Time& unlock_time,
+                                        bool use_24hour_clock) {
   LockScreenMessage message;
   message.title = l10n_util::GetStringUTF16(IDS_ASH_LOGIN_TIME_FOR_BED_MESSAGE);
 
   base::Time local_midnight = base::Time::Now().LocalMidnight();
-  const std::string time_of_day = TimeOfDay::FromTime(unlock_time).ToString();
+
+  base::string16 time_to_display;
+  if (use_24hour_clock) {
+    time_to_display = base::TimeFormatTimeOfDayWithHourClockType(
+        unlock_time, base::k24HourClock, base::kDropAmPm);
+  } else {
+    time_to_display = base::TimeFormatTimeOfDayWithHourClockType(
+        unlock_time, base::k12HourClock, base::kKeepAmPm);
+  }
 
   if (unlock_time < local_midnight + base::TimeDelta::FromDays(1)) {
     // Unlock time is today.
     message.content = l10n_util::GetStringFUTF16(
-        IDS_ASH_LOGIN_COME_BACK_MESSAGE, base::UTF8ToUTF16(time_of_day));
+        IDS_ASH_LOGIN_COME_BACK_MESSAGE, time_to_display);
   } else if (unlock_time < local_midnight + base::TimeDelta::FromDays(2)) {
     // Unlock time is tomorrow.
-    message.content =
-        l10n_util::GetStringFUTF16(IDS_ASH_LOGIN_COME_BACK_TOMORROW_MESSAGE,
-                                   base::UTF8ToUTF16(time_of_day));
+    message.content = l10n_util::GetStringFUTF16(
+        IDS_ASH_LOGIN_COME_BACK_TOMORROW_MESSAGE, time_to_display);
   } else {
     message.content = l10n_util::GetStringFUTF16(
         IDS_ASH_LOGIN_COME_BACK_DAY_OF_WEEK_MESSAGE,
         base::TimeFormatWithPattern(unlock_time, kDayOfWeekOnlyTimeFormat),
-        base::UTF8ToUTF16(time_of_day));
+        time_to_display);
   }
   message.icon = &kLockScreenTimeLimitMoonIcon;
   return message;
@@ -341,10 +351,11 @@ LockScreenMessage GetOverrideMessage() {
 
 LockScreenMessage GetLockScreenMessage(AuthDisabledReason lock_reason,
                                        const base::Time& unlock_time,
-                                       const base::TimeDelta& used_time) {
+                                       const base::TimeDelta& used_time,
+                                       bool use_24hour_clock) {
   switch (lock_reason) {
     case AuthDisabledReason::kTimeWindowLimit:
-      return GetWindowLimitMessage(unlock_time);
+      return GetWindowLimitMessage(unlock_time, use_24hour_clock);
     case AuthDisabledReason::kTimeUsageLimit:
       return GetUsageLimitMessage(used_time);
     case AuthDisabledReason::kTimeLimitOverride:
@@ -631,6 +642,19 @@ class LoginAuthUserView::ChallengeResponseView : public views::View,
 // The message shown to user when the auth method is |AUTH_DISABLED|.
 class LoginAuthUserView::DisabledAuthMessageView : public views::View {
  public:
+  class ASH_EXPORT TestApi {
+   public:
+    explicit TestApi(DisabledAuthMessageView* view) : view_(view) {}
+    ~TestApi() = default;
+
+    const base::string16& GetDisabledAuthMessageContent() const {
+      return view_->message_contents_->GetText();
+    }
+
+   private:
+    DisabledAuthMessageView* const view_;
+  };
+
   DisabledAuthMessageView() {
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
@@ -679,10 +703,11 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
   ~DisabledAuthMessageView() override = default;
 
   // Set the parameters needed to render the message.
-  void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data) {
+  void SetAuthDisabledMessage(const AuthDisabledData& auth_disabled_data,
+                              bool use_24hour_clock) {
     LockScreenMessage message = GetLockScreenMessage(
         auth_disabled_data.reason, auth_disabled_data.auth_reenabled_time,
-        auth_disabled_data.device_used_time);
+        auth_disabled_data.device_used_time, use_24hour_clock);
     message_icon_->SetImage(gfx::CreateVectorIcon(
         *message.icon, kDisabledAuthMessageIconSizeDp, SK_ColorWHITE));
     message_title_->SetText(message.title);
@@ -756,6 +781,13 @@ views::View* LoginAuthUserView::TestApi::disabled_auth_message() const {
 
 bool LoginAuthUserView::TestApi::HasAuthMethod(AuthMethods auth_method) const {
   return view_->HasAuthMethod(auth_method);
+}
+
+const base::string16&
+LoginAuthUserView::TestApi::GetDisabledAuthMessageContent() const {
+  return LoginAuthUserView::DisabledAuthMessageView::TestApi(
+             view_->disabled_auth_message_)
+      .GetDisabledAuthMessageContent();
 }
 
 LoginAuthUserView::Callbacks::Callbacks() = default;
@@ -1189,7 +1221,8 @@ void LoginAuthUserView::NotifyFingerprintAuthResult(bool success) {
 
 void LoginAuthUserView::SetAuthDisabledMessage(
     const AuthDisabledData& auth_disabled_data) {
-  disabled_auth_message_->SetAuthDisabledMessage(auth_disabled_data);
+  disabled_auth_message_->SetAuthDisabledMessage(
+      auth_disabled_data, current_user().use_24hour_clock);
   Layout();
 }
 

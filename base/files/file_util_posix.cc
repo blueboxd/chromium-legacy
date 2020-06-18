@@ -367,12 +367,16 @@ FilePath MakeAbsoluteFilePath(const FilePath& input) {
   return FilePath(full_path);
 }
 
-bool DeleteFile(const FilePath& path, bool recursive) {
-  return DoDeleteFile(path, recursive);
+bool DeleteFile(const FilePath& path) {
+  return DoDeleteFile(path, /*recursive=*/false);
 }
 
 bool DeleteFileRecursively(const FilePath& path) {
   return DoDeleteFile(path, /*recursive=*/true);
+}
+
+bool DeleteFile(const FilePath& path, bool recursive) {
+  return DoDeleteFile(path, recursive);
 }
 
 bool ReplaceFile(const FilePath& from_path,

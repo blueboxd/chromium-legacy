@@ -532,9 +532,6 @@ extern const char kEnableSubresourceRedirectDescription[];
 extern const char kEnableSyncTrustedVaultName[];
 extern const char kEnableSyncTrustedVaultDescription[];
 
-extern const char kEnableSyncUSSNigoriName[];
-extern const char kEnableSyncUSSNigoriDescription[];
-
 extern const char kEnableTextFragmentAnchorName[];
 extern const char kEnableTextFragmentAnchorDescription[];
 

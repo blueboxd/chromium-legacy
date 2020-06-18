@@ -325,7 +325,16 @@ void UkmManager::RecordEventLatencyUKM(
         [&event_metrics](const CompositorFrameReporter::StageData& stage) {
           return stage.start_time > event_metrics.time_stamp();
         });
-    DCHECK(stage_it != stage_history.end());
+    // TODO(crbug.com/1079116): Ideally, at least the start time of
+    // SubmitCompositorFrameToPresentationCompositorFrame stage should be
+    // greater than the event time stamp, but apparently, this is not always the
+    // case (see crbug.com/1093698). For now, skip to the next event in such
+    // cases. Hopefully, the work to reduce discrepancies between the new
+    // EventLatency and the old Event.Latency metrics would fix this issue. If
+    // not, we need to reconsider investigating this issue.
+    if (stage_it == stage_history.end())
+      continue;
+
     builder.SetBrowserToRendererCompositor(
         (stage_it->start_time - event_metrics.time_stamp()).InMicroseconds());
 

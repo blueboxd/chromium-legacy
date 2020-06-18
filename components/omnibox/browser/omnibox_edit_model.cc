@@ -460,8 +460,7 @@ bool OmniboxEditModel::ShouldShowCurrentPageIcon() const {
     return true;
 
   // If user input is in progress, keep showing the current page's icon so long
-  // as the text matches the current page's URL, elided or unelided. This logic
-  // also works for Query in Omnibox, since the query is in |display_text_|.
+  // as the text matches the current page's URL, elided or unelided.
   return view_->GetText() == display_text_ ||
          view_->GetText() == url_for_editing_;
 }

@@ -1792,6 +1792,26 @@ ci.fyi_ios_builder(
 
 
 ci.fyi_mac_builder(
+    name = 'Mac Builder Next',
+    console_view_entry = ci.console_view_entry(
+        category = 'mac',
+        short_name = 'bld',
+    ),
+    cores = None,
+    os = None,
+)
+
+ci.thin_tester(
+    name = 'Mac10.15 Tests',
+    mastername = 'chromium.fyi',
+    console_view_entry = ci.console_view_entry(
+        category = 'mac',
+        short_name = '15',
+    ),
+    triggered_by = ['Mac Builder Next'],
+)
+
+ci.fyi_mac_builder(
     name = 'Mac deterministic',
     console_view_entry = ci.console_view_entry(
         category = 'deterministic|mac',

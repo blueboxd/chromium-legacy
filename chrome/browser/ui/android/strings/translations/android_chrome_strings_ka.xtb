@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">მიმოხილვა</translation>
 <translation id="1749561566933687563">განახორციელეთ თქვენი სანიშნეების სინქრონიზაცია</translation>
 <translation id="17513872634828108">გახსნილი ჩანართები</translation>
+<translation id="1754404134430936718">ტექსტი დაკოპირდა</translation>
 <translation id="1779089405699405702">სურათების დეკოდერი</translation>
 <translation id="1782483593938241562">დასრულების თარიღი: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">დაინსტალირებულია</translation>
@@ -223,6 +224,7 @@
 <translation id="2810645512293415242">გვერდი გამარტივდა მონაცემების დაზოგვისა და უფრო სწრაფად ჩატვირთვის მიზნით.</translation>
 <translation id="281504910091592009">ნახეთ და მართეთ შენახული პაროლები თქვენს <ph name="BEGIN_LINK" />Google ანგარიშში<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">თქვენს ყველა მოწყობილობაზე არსებულ სანიშნეებზე წვდომისთვის შედით სისტემაში და ჩართეთ სინქრონიზაცია</translation>
+<translation id="2827278682606527653">არხის ბარათის მენიუ ნახევარ სიმაღლეზე</translation>
 <translation id="2842985007712546952">ზედა საქაღალდე</translation>
 <translation id="2860954141821109167">დარწმუნდით, რომ ამ მოწყობილობაზე ჩართულია ტელეფონის აპი</translation>
 <translation id="2870560284913253234">საიტი</translation>
@@ -346,6 +348,7 @@
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> ჩამოტვირთული ფაილი წაიშალა</translation>
 <translation id="3859306556332390985">წინ ძიება</translation>
 <translation id="388596076286380598">მიიღეთ სტატიები, ვიდეოები და სხვა კონტენტი საიტებიდან, რომლებიც მოგწონთ, მაშინაც კი თუ ხაზგარეშე რეჟიმში ხართ ან ცუდი კავშირი გაქვთ.</translation>
+<translation id="3892148308691398805">ტექსტის კოპირება</translation>
 <translation id="3894427358181296146">საქაღალდის დამატება</translation>
 <translation id="3895926599014793903">გადიდების იძულებით ჩართვა</translation>
 <translation id="3912508018559818924">მიმდინარეობს საუკეთესო კონტენტის პოვნა ვებში…</translation>
@@ -412,6 +415,7 @@
 <translation id="4479972344484327217">ინსტალირდება <ph name="MODULE" /> Chrome-ისთვის…</translation>
 <translation id="4487967297491345095">Chrome-ში არსებული აპების მონაცემები სამუდამოდ წაიშლება. მათ შორის, აპებთან დაკავშირებული ყველა ფაილი, პარამეტრი, ანგარიში, მონაცემთა ბაზა და ა.შ.</translation>
 <translation id="4493497663118223949">Lite რეჟიმი ჩართულია</translation>
+<translation id="4508528996305412043">გაიხსნა არხის ბარათის მენიუ</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# დღის წინ}other{# დღის წინ}}</translation>
 <translation id="451872707440238414">სანიშნეებში ძიება</translation>
 <translation id="4521489764227272523">არჩეული მონაცემები ამოიშალა Chrome-იდან და სინქრონიზებული მოწყობილობებიდან.
@@ -883,6 +887,7 @@
 <translation id="8200772114523450471">გაგრძელება</translation>
 <translation id="8209050860603202033">გამოსახულების გახსნა</translation>
 <translation id="8218622182176210845">თქვენი ანგარიშის სამართავად</translation>
+<translation id="8223642481677794647">არხის ბარათის მენიუ</translation>
 <translation id="8224471946457685718">სტატიების ჩამოტვირთვა Wi-Fi კავშირის მეშვეობით</translation>
 <translation id="8232956427053453090">მონაცემების შენარჩუნება</translation>
 <translation id="8233540874193135768">QR კოდის სკანირებისთვის გამოიყენეთ კამერიანი მოწყობილობა.</translation>
@@ -1007,4 +1012,5 @@
 <translation id="981121421437150478">ოფლაინი</translation>
 <translation id="983192555821071799">ყველა ჩანართის დახურვა</translation>
 <translation id="987264212798334818">ზოგადი</translation>
+<translation id="996149300115483134">არხის ბარათის მენიუ დახურულია</translation>
 </translationbundle>

@@ -23,12 +23,21 @@ const char kDeviceID2[] = "fake_device_2";
 const char kDeviceID3[] = "fake_device_3";
 const char kDeviceID4[] = "fake_device_4";
 const char kDeviceID5[] = "fake_device_5";
+const char kDeviceID6[] = "fake_device_6";
 
 const char kGroupID1[] = "fake_group_1";
 const char kGroupID2[] = "fake_group_2";
 const char kGroupID3[] = "fake_group_3";
 const char kGroupID4[] = "fake_group_4";
 const char kGroupID5[] = "fake_group_5";
+const char kGroupID6[] = "fake_group_6";
+
+const std::vector<DoubleConstraint MediaTrackConstraintSetPlatform::*>
+    kPanTiltZoomConstraints = {
+        &MediaTrackConstraintSetPlatform::pan,
+        &MediaTrackConstraintSetPlatform::tilt,
+        &MediaTrackConstraintSetPlatform::zoom,
+};
 
 void CheckTrackAdapterSettingsEqualsResolution(
     const VideoCaptureSettings& settings) {
@@ -86,6 +95,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         media::VideoCaptureFormat(gfx::Size(1000, 1000), 20.0f,
                                   media::PIXEL_FORMAT_I420),
     };
+    device.pan_tilt_zoom_supported = true;
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A low-resolution device.
@@ -106,6 +116,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         media::VideoCaptureFormat(gfx::Size(800, 600), 20.0f,
                                   media::PIXEL_FORMAT_I420),
     };
+    device.pan_tilt_zoom_supported = true;
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A high-resolution device.
@@ -137,6 +148,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         media::VideoCaptureFormat(gfx::Size(2304, 1536), 10.0f,
                                   media::PIXEL_FORMAT_I420),
     };
+    device.pan_tilt_zoom_supported = true;
     capabilities_.device_capabilities.push_back(std::move(device));
 
     // A depth capture device.
@@ -160,6 +172,16 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
         media::VideoCaptureFormat(gfx::Size(500, 500), 0.1f,
                                   media::PIXEL_FORMAT_I420),
     };
+    device.pan_tilt_zoom_supported = true;
+    capabilities_.device_capabilities.push_back(std::move(device));
+
+    // A camera device without PTZ.
+    device.device_id = kDeviceID6;
+    device.group_id = kGroupID6;
+    device.facing_mode = media::MEDIA_VIDEO_FACING_NONE;
+    device.formats = {media::VideoCaptureFormat(gfx::Size(640, 480), 30.0f,
+                                                media::PIXEL_FORMAT_I420)};
+    device.pan_tilt_zoom_supported = false;
     capabilities_.device_capabilities.push_back(std::move(device));
 
     capabilities_.noise_reduction_capabilities = {
@@ -172,6 +194,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
     low_res_device_ = &capabilities_.device_capabilities[1];
     high_res_device_ = &capabilities_.device_capabilities[2];
     invalid_frame_rate_device_ = &capabilities_.device_capabilities[4];
+    no_ptz_device_ = &capabilities_.device_capabilities[5];
     default_closest_format_ = &default_device_->formats[1];
     low_res_closest_format_ = &low_res_device_->formats[2];
     high_res_closest_format_ = &high_res_device_->formats[3];
@@ -189,6 +212,7 @@ class MediaStreamConstraintsUtilVideoDeviceTest : public testing::Test {
   const VideoInputDeviceCapabilities* low_res_device_;
   const VideoInputDeviceCapabilities* high_res_device_;
   const VideoInputDeviceCapabilities* invalid_frame_rate_device_;
+  const VideoInputDeviceCapabilities* no_ptz_device_;
   // Closest formats to the default settings.
   const media::VideoCaptureFormat* default_closest_format_;
   const media::VideoCaptureFormat* low_res_closest_format_;
@@ -399,6 +423,43 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().goog_noise_reduction.GetName(),
             result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       OverconstrainedOnPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    constraint_factory_.basic().device_id.SetExact(no_ptz_device_->device_id);
+    (constraint_factory_.basic().*constraint).SetIdeal(1);
+    auto result = SelectSettings();
+    EXPECT_FALSE(result.HasValue());
+    EXPECT_EQ((constraint_factory_.basic().*constraint).GetName(),
+              result.failed_constraint_name());
+
+    constraint_factory_.Reset();
+    constraint_factory_.basic().device_id.SetExact(no_ptz_device_->device_id);
+    (constraint_factory_.basic().*constraint).SetMin(1);
+    result = SelectSettings();
+    EXPECT_FALSE(result.HasValue());
+    EXPECT_EQ((constraint_factory_.basic().*constraint).GetName(),
+              result.failed_constraint_name());
+
+    constraint_factory_.Reset();
+    constraint_factory_.basic().device_id.SetExact(no_ptz_device_->device_id);
+    (constraint_factory_.basic().*constraint).SetMax(1);
+    result = SelectSettings();
+    EXPECT_FALSE(result.HasValue());
+    EXPECT_EQ((constraint_factory_.basic().*constraint).GetName(),
+              result.failed_constraint_name());
+
+    constraint_factory_.Reset();
+    constraint_factory_.basic().device_id.SetExact(no_ptz_device_->device_id);
+    (constraint_factory_.basic().*constraint).SetExact(1);
+    result = SelectSettings();
+    EXPECT_FALSE(result.HasValue());
+    EXPECT_EQ((constraint_factory_.basic().*constraint).GetName(),
+              result.failed_constraint_name());
+  }
 }
 
 // The "Mandatory" and "Ideal" tests check that various selection criteria work
@@ -1827,6 +1888,97 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, TwoIdealResizeValues) {
   EXPECT_FALSE(result.track_adapter_settings().target_size().has_value());
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryExactPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    (constraint_factory_.basic().*constraint).SetExact(3);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The algorithm should prefer the first device that supports PTZ natively,
+    // which is the default device.
+    EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_EQ(3, result.pan().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_EQ(3, result.tilt().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_EQ(3, result.zoom().value());
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMinPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    (constraint_factory_.basic().*constraint).SetMin(2);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The algorithm should prefer the first device that supports PTZ
+    // natively, which is the default device.
+    EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_EQ(2, result.pan().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_EQ(2, result.tilt().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_EQ(2, result.zoom().value());
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryMaxPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    (constraint_factory_.basic().*constraint).SetMax(4);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The algorithm should prefer the first device that supports PTZ
+    // natively, which is the default device.
+    EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_EQ(4, result.pan().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_EQ(4, result.tilt().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_EQ(4, result.zoom().value());
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, MandatoryPanTiltZoomRange) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    (constraint_factory_.basic().*constraint).SetMin(2);
+    (constraint_factory_.basic().*constraint).SetMax(4);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The algorithm should prefer the first device that supports PTZ
+    // natively, which is the default device.
+    EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_EQ(2, result.pan().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_EQ(2, result.tilt().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_EQ(2, result.zoom().value());
+  }
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, IdealPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    (constraint_factory_.basic().*constraint).SetIdeal(3);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    // The algorithm should select the first device that supports the ideal PTZ
+    // constraint natively, which is the default device.
+    EXPECT_EQ(default_device_->device_id.Utf8(), result.device_id());
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_EQ(3, result.pan().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_EQ(3, result.tilt().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_EQ(3, result.zoom().value());
+  }
+}
+
 // The "Advanced" tests check selection criteria involving advanced constraint
 // sets.
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
@@ -2393,6 +2545,44 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   }
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       AdvancedContradictoryPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+
+    MediaTrackConstraintSetPlatform& advanced1 =
+        constraint_factory_.AddAdvanced();
+    advanced1.device_id.SetExact({low_res_device_->device_id});
+
+    MediaTrackConstraintSetPlatform& advanced2 =
+        constraint_factory_.AddAdvanced();
+    advanced2.device_id.SetExact({no_ptz_device_->device_id});
+    (advanced2.*constraint).SetExact(4);
+
+    MediaTrackConstraintSetPlatform& advanced3 =
+        constraint_factory_.AddAdvanced();
+    (advanced3.*constraint).SetMin(4);
+    (advanced3.*constraint).SetMax(2);
+
+    MediaTrackConstraintSetPlatform& advanced4 =
+        constraint_factory_.AddAdvanced();
+    (advanced4.*constraint).SetExact(3);
+
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    EXPECT_EQ(low_res_device_->device_id.Utf8(), result.device_id());
+    // The second advanced set must be ignored because it contradicts the first
+    // set. The third advanced must be ignored because it is invalid. The fourth
+    // advanced set must be applied.
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_EQ(3, result.pan().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_EQ(3, result.tilt().value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_EQ(3, result.zoom().value());
+  }
+}
+
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedResize) {
   constraint_factory_.Reset();
   constraint_factory_.basic().width.SetIdeal(1);
@@ -2439,6 +2629,26 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_EQ(result.FrameRate(), 30.0);
 }
 
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, AdvancedPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    constraint_factory_.basic().device_id.SetExact(no_ptz_device_->device_id);
+    MediaTrackConstraintSetPlatform& advanced =
+        constraint_factory_.AddAdvanced();
+    (advanced.*constraint).SetExact(3);
+    auto result = SelectSettings();
+    EXPECT_TRUE(result.HasValue());
+    EXPECT_EQ(no_ptz_device_->device_id.Utf8(), result.device_id());
+    // The advanced set must be ignored because the device does not support PTZ.
+    if (constraint == &MediaTrackConstraintSetPlatform::pan)
+      EXPECT_FALSE(result.pan().has_value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::tilt)
+      EXPECT_FALSE(result.tilt().has_value());
+    else if (constraint == &MediaTrackConstraintSetPlatform::zoom)
+      EXPECT_FALSE(result.zoom().has_value());
+  }
+}
+
 TEST_F(MediaStreamConstraintsUtilVideoDeviceTest, BasicContradictoryWidth) {
   constraint_factory_.Reset();
   constraint_factory_.basic().width.SetMin(10);
@@ -2458,6 +2668,19 @@ TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
   EXPECT_FALSE(result.HasValue());
   EXPECT_EQ(constraint_factory_.basic().aspect_ratio.GetName(),
             result.failed_constraint_name());
+}
+
+TEST_F(MediaStreamConstraintsUtilVideoDeviceTest,
+       BasicContradictoryPanTiltZoom) {
+  for (auto& constraint : kPanTiltZoomConstraints) {
+    constraint_factory_.Reset();
+    (constraint_factory_.basic().*constraint).SetMin(4);
+    (constraint_factory_.basic().*constraint).SetMax(2);
+    auto result = SelectSettings();
+    EXPECT_FALSE(result.HasValue());
+    EXPECT_EQ((constraint_factory_.basic().*constraint).GetName(),
+              result.failed_constraint_name());
+  }
 }
 
 // The "NoDevices" tests verify that the algorithm returns the expected result

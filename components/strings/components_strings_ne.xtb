@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />कुकीहरूलाई खाली गर्ने प्रयास गर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">DNS सेटिङ</translation>
 <translation id="1307966114820526988">चल्तीबाट हटाइएका सुविधाहरू</translation>
+<translation id="1310581832770023220">यो फारममा भएको डेटा असुरक्षित इन्टरनेट कनेक्सनमार्फत पठाइँदै छ</translation>
 <translation id="131405271941274527"><ph name="URL" /> तपाईंले NFC यन्त्रहरूमा ट्याप गर्दा जानकारी पठाउन तथा प्राप्त गर्न चाहन्छ</translation>
 <translation id="1314509827145471431">दायाँ बाइन्ड</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
@@ -1443,6 +1444,7 @@
 <translation id="7138472120740807366">डेलिभरीको विधि</translation>
 <translation id="7139724024395191329">इमिरेट</translation>
 <translation id="714064300541049402">सतह २ मा रहेको छविको X सिफ्ट</translation>
+<translation id="7147693119324090759">तैपनि पेस गर्नुहोस्</translation>
 <translation id="7152423860607593928">Number-14 (Envelope)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> र थप <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">हल्का बैजनी</translation>
@@ -1519,6 +1521,7 @@
 <translation id="7416351320495623771">पासवर्डहरूको व्यवस्थापन गर्नुहोस्…</translation>
 <translation id="7419106976560586862">प्रोफाइल मार्ग</translation>
 <translation id="7437289804838430631">सम्पर्कसम्बन्धी जानकारी थप्नुहोस्</translation>
+<translation id="743897106051685947">मूल</translation>
 <translation id="7438976808740265764">सन् २०२० को डिसेम्बरपछि Flash Player लाई समर्थन गरिने छैन।</translation>
 <translation id="7440140511386898319">अफलाइन हुँदा अन्वेषण गर्नुहोस्</translation>
 <translation id="7441627299479586546">गलत नीति विषयवस्तु</translation>
@@ -1530,6 +1533,7 @@
 <translation id="7473891865547856676">पर्दैन, धन्यवाद</translation>
 <translation id="7481312909269577407">अगाडि</translation>
 <translation id="7485870689360869515">कुनैपनि डाटा भेटिएन।</translation>
+<translation id="7488762544858401571">सम्पादन गरिएको</translation>
 <translation id="7495290002932347110">कुनै साइट वा अनुप्रयोगमा भएको डेटाको चोरीले तपाईंको पासवर्ड खुलासा गर्‍यो। Chrome ले अहिले नै आफ्नो सुरक्षित गरिएको पासवर्डको जाँच गर्न र <ph name="ORIGIN" /> को आफ्नो पासवर्ड बदल्न सिफारिस गर्छ।</translation>
 <translation id="7498234416455752244">सम्पादन गरिरहनुहोस्</translation>
 <translation id="7503664977220660814">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
@@ -1613,6 +1617,7 @@
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">उही क्रम तर माथितिर फर्काएर</translation>
 <translation id="777702478322588152">प्रशासकिय क्षेत्र</translation>
+<translation id="7791011319128895129">अप्रकाशित</translation>
 <translation id="7791196057686275387">गाँठो</translation>
 <translation id="7791543448312431591">थप्नुहोस्</translation>
 <translation id="7798389633136518089">यो नीति क्लाउडको स्रोतले सेट नगरेको हुनाले बेवास्ता गरियो।</translation>
@@ -1749,6 +1754,7 @@
 <translation id="8355270400102541638">स्थानीय क्र्यासको सन्दर्भ:</translation>
 <translation id="8363502534493474904">हवाइजहाज मोडलाई निष्क्रिय गर्नुहोस्</translation>
 <translation id="8364627913115013041">सेट गरिएको छैन।</translation>
+<translation id="8367477997601443248">असुरक्षित फारम</translation>
 <translation id="8368476060205742148">Google Play सम्बन्धी सेवाहरू</translation>
 <translation id="8371889962595521444">आफू अनुकूल मूल प्रमाणपत्रहरू</translation>
 <translation id="8380941800586852976">खतरनाक</translation>
@@ -1831,6 +1837,7 @@
 <translation id="8805819170075074995">सूचीको प्रविष्टि "<ph name="LANGUAGE_ID" />": प्रविष्टिलाई SpellcheckLanguage नीतिमा पनि समावेश गरिएका कारण यसलाई बेवास्ता गरियो।</translation>
 <translation id="8807160976559152894">हरेक पृष्ठपछि छाँटकाँट गर्नुहोस्</translation>
 <translation id="8820817407110198400">बुकमार्कहरू</translation>
+<translation id="8831512686168463822">यो फारम असुरक्षित इन्टरनेट कनेक्सनमार्फत पेस गरिँदै छ। परिणामस्वरूप, यस साइटमा तपाईंको जानकारी (उदाहरणका लागि, पासवर्ड, सन्देश वा क्रेडिट कार्डको विवरण) पठाइँदा ती जानकारी खुलासा हुन सक्छन्।</translation>
 <translation id="883848425547221593">अन्य बुकमार्कहरू</translation>
 <translation id="884264119367021077">सिपिङ ठेगाना</translation>
 <translation id="884923133447025588">कुनैपनि खण्डन संयन्त्र फेला परेन।</translation>

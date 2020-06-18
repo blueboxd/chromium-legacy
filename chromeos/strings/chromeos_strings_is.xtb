@@ -3,6 +3,7 @@
 <translationbundle lang="is">
 <translation id="1018656279737460067">Hætt við</translation>
 <translation id="1195447618553298278">Óþekkt villa.</translation>
+<translation id="1413240736185167732">Mistókst – bilun í síu</translation>
 <translation id="1468664791493211953">Tilboð</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessu tæki og getur hugsanlega fylgst með því sem þú gerir.</translation>
 <translation id="150962533380566081">Ógilt PUK-númer.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Þessu tæki er stýrt af fyrirtæki</translation>
 <translation id="1905710495812624430">Farið var yfir hámarksfjölda tilrauna.</translation>
 <translation id="1930797645656624981">Innfærsluaðferð Chrome OS þjónustu</translation>
+<translation id="1947737735496445907">Prentað</translation>
 <translation id="1979103255016296513">Breyting á aðgangsorði komin fram yfir tíma</translation>
 <translation id="2049639323467105390">Þessu tæki er stjórnað af <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Kveiktu á Bluetooth til að uppgötva nálæg tæki</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Forrit</translation>
 <translation id="2872961005593481000">Slökkva</translation>
 <translation id="3008341117444806826">ENDURNÝJA</translation>
+<translation id="3091839911843451378">Mistókst – stöðvaðist</translation>
+<translation id="3268178239013324452">Mistókst – hlíf er opin</translation>
 <translation id="3369013195428705271">Viltu örugglega hreinsa allan prentferil? Prentverk sem eru í gangi verða ekki hreinsuð.</translation>
+<translation id="3456078764689556234">Prentaði síðu <ph name="PRINTED_PAGES" /> af <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Prentverk</translation>
+<translation id="3527036260304016759">Mistókst – óþekkt villa</translation>
 <translation id="3749289110408117711">Skráarheiti</translation>
 <translation id="38114475217616659">Hreinsa allan feril</translation>
 <translation id="3820172043799983114">Ógilt PIN-númer.</translation>
 <translation id="3838338534323494292">Nýtt aðgangsorð</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> af <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessu tæki og hefur aðgang að öllum aðgerðum, þ.m.t. heimsóttum vefsíðum, aðgangsorðum og tölvupósti.</translation>
+<translation id="4003384961948020559">Mistókst – úttakið er fullt</translation>
 <translation id="4034824040120875894">Prentari</translation>
 <translation id="4227825898293920515">Aðgangsorð rennur út eftir <ph name="TIME" /></translation>
+<translation id="428217921675623177">Prentverk sem eru eldri en 90 daga verða fjarlægð</translation>
 <translation id="4429881212383817840">Kerberos-miði rennur út fljótlega</translation>
 <translation id="445059817448385655">Eldra aðgangsorð</translation>
 <translation id="467510802200863975">Aðgangsorð stemma ekki</translation>
@@ -37,24 +46,31 @@
 Prófaðu að ýta á hljóðnemann til að spyrja mig að hverju sem er.</translation>
 <translation id="5222676887888702881">Skrá út</translation>
 <translation id="5317780077021120954">Vista</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Veldu nýtt núna</translation>
 <translation id="5457599981699367932">Vafra sem gestur</translation>
 <translation id="54609108002486618">Stjórnað</translation>
 <translation id="5832805196449965646">Bæta notanda við</translation>
 <translation id="5895138241574237353">Endurræsa</translation>
+<translation id="6048107060512778456">Mistókst – pappírsstífla</translation>
 <translation id="6058625436358447366">Sláðu inn gamla aðgangsorðið og það nýja til að ganga frá þessu</translation>
 <translation id="6106186594183574873">Sláðu inn gamla aðgangsorðið þitt til að ganga frá þessu</translation>
 <translation id="6146993107019042706">Sláðu inn nýja aðgangsorðið til að ljúka þessu</translation>
 <translation id="6517239166834772319">Kanna</translation>
+<translation id="6564646048574748301">Mistókst – ekki næst í prentara</translation>
 <translation id="6643016212128521049">Hreinsa</translation>
 <translation id="7162487448488904999">Gallerí</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Hætta við</translation>
 <translation id="7690294790491645610">Staðfestu nýtt aðgangsorð</translation>
 <translation id="7805768142964895445">Staða</translation>
 <translation id="808894953321890993">Breyta aðgangsorði</translation>
 <translation id="8208861521865154048">Fríðindi</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> stjórnar þessum notanda. Það getur valið stillingar og skoðað notandavirkni með fjartengingu.</translation>
+<translation id="871560550817059752">Mistókst – blekið er búið</translation>
 <translation id="8747900814994928677">Staðfesta breytingu</translation>
+<translation id="8919837981463578619">Mistókst – bakka vantar</translation>
+<translation id="8928727111548978589">Mistókst – pappír vantar</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> tilraunir eftir</translation>
 <translation id="910415269708673980">Endurnýja miða fyrir <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Taka úr lás</translation>

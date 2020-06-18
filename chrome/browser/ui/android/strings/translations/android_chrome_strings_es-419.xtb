@@ -171,6 +171,7 @@ Para buscar una palabra, presiónala. Si quieres definir mejor la búsqueda, man
 <translation id="2387895666653383613">Ajuste de texto</translation>
 <translation id="2394602618534698961">Los archivos que descargues aparecerán aquí</translation>
 <translation id="2407481962792080328">Esta función se activa cuando accedes a tu Cuenta de Google</translation>
+<translation id="2407674018644220013">¿Quieres establecer <ph name="APP_NAME" /> como tu navegador predeterminado?</translation>
 <translation id="2410754283952462441">Elegir una cuenta</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2426805022920575512">Seleccionar otra cuenta</translation>
@@ -180,6 +181,7 @@ Para buscar una palabra, presiónala. Si quieres definir mejor la búsqueda, man
 
 Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqueda, selecciona más o menos palabras. Si quieres editar la búsqueda, abre el panel, presiona el ícono para abrir una pestaña nueva y realiza los cambios que quieras en el cuadro de búsqueda.</translation>
 <translation id="246532703174860178">Compartir</translation>
+<translation id="2479148705183875116">Ir a Configuración</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2494974097748878569">Asistente de Google en Chrome</translation>
 <translation id="2496180316473517155">Historial de navegación</translation>
@@ -619,6 +621,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="6140912465461743537">País o región</translation>
 <translation id="614940544461990577">Intenta:</translation>
 <translation id="6154478581116148741">Para exportar tus contraseñas de este dispositivo, activa el bloqueo de pantalla en Configuración</translation>
+<translation id="6157392216611456285">Elige <ph name="APP_NAME" />.</translation>
 <translation id="6159335304067198720"><ph name="PERCENT" /> de ahorro de datos</translation>
 <translation id="6192333916571137726">Descargar archivo</translation>
 <translation id="6201345951596836663">Se copió el vínculo</translation>
@@ -643,6 +646,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6341580099087024258">Preguntar dónde guardar los archivos</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> más}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> y <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> más}}</translation>
 <translation id="6364438453358674297">¿Borrar la sugerencia del historial?</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> cuenta con las herramientas inteligentes y la velocidad que necesitas para completar tareas, crear contenido y explorar en línea</translation>
 <translation id="6369229450655021117">Desde aquí, puedes realizar búsquedas en la Web, compartir contenido con amigos y ver las páginas abiertas</translation>
 <translation id="6378173571450987352">Detalles: Ordenados por cantidad de datos utilizados</translation>
 <translation id="6379829913050047669">Se abrirá <ph name="APP_NAME" /> en Chrome. Si continúas, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y el Sistema operativo Chrome<ph name="END_LINK2" />.</translation>
@@ -694,6 +698,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6671495933530132209">Copiar imagen</translation>
 <translation id="6676840375528380067">¿Quieres borrar tus datos de Chrome de este dispositivo?</translation>
 <translation id="6689172468748959065">Fotos de perfil</translation>
+<translation id="6691888250440401212">1. Elige <ph name="APP_NAME" />\n2. Presiona "Hacer predeterminada".</translation>
 <translation id="6697492270171225480">Mostrar sugerencias para páginas similares cuando no se puede encontrar una específica</translation>
 <translation id="6698801883190606802">Administrar datos sincronizados</translation>
 <translation id="6699370405921460408">Los servidores de Google optimizarán las páginas que visites.</translation>
@@ -896,6 +901,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8364299278605033898">Ver sitios populares</translation>
 <translation id="8368027906805972958">Dispositivo desconocido o no compatible (<ph name="DEVICE_ID" />)</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
+<translation id="8407396331882458341">1. Elige <ph name="APP_NAME" />\n2. Presiona "Siempre".</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8427875596167638501">La pestaña de vista previa está abierta a la mitad</translation>
@@ -922,6 +928,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8555836665334561807">Con Wi‑Fi</translation>
 <translation id="8558485628462305855">Para ver contenido de realidad aumentada, actualiza ARCore</translation>
 <translation id="8559990750235505898">Ofrecer la traducción de páginas en otros idiomas</translation>
+<translation id="8561196567344536112">1. Ve a Configuración\n2. Presiona "App de navegador"\n3. Elige <ph name="APP_NAME" />.</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="8569404424186215731">desde el <ph name="DATE" /></translation>
 <translation id="8571213806525832805">Últimas cuatro semanas</translation>

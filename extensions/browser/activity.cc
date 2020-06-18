@@ -5,6 +5,7 @@
 #include "extensions/browser/activity.h"
 
 #include "base/logging.h"
+#include "base/notreached.h"
 
 namespace extensions {
 

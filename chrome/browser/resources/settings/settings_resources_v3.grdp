@@ -174,6 +174,10 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/payments_section.js"
            use_base_dir="false"
            compress="false" type="BINDATA" />
+  <include name="IDR_SETTINGS_AUTOFILL_PAGE_REMOVE_PASSWORD_BEHAVIOR_JS"
+           file="autofill_page/remove_password_behavior.js"
+           compress="false" type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_SHOW_PASSWORD_BEHAVIOR_JS"
            file="autofill_page/show_password_behavior.js"
            compress="false" type="BINDATA"

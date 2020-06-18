@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">စူးစမ်းလေ့လာရန်</translation>
 <translation id="1749561566933687563">သင့် စာညှပ်များကို စင့်ခ် လုပ်ပါ</translation>
 <translation id="17513872634828108">တဲဘ်များ ဖွင့်ရန်</translation>
+<translation id="1754404134430936718">စာသား မိတ္တူကူးပြီးပြီ</translation>
 <translation id="1779089405699405702">ပုံကို ကုဒ်ဖြည်သည့် စနစ်</translation>
 <translation id="1782483593938241562">ပြီးဆုံးရက် <ph name="DATE" /></translation>
 <translation id="1791662854739702043">ထည့်သွင်းပြီးပါပြီ</translation>
@@ -223,6 +224,7 @@
 <translation id="2810645512293415242">ဒေတာကို ချွေတာပြီး ပိုမိုမြန်ဆန်စွာဖွင့်နိုင်ရန် စာမျက်နှာကို ရိုးရှင်းအောင် ပြုလုပ်ထားသည်။</translation>
 <translation id="281504910091592009">သိမ်းဆည်းထားသည့် စကားဝှက်များကို သင်၏ <ph name="BEGIN_LINK" />Google အကောင့်<ph name="END_LINK" /> တွင် ကြည့်ရှုစီမံပါ</translation>
 <translation id="2818669890320396765">သင်၏ဝဘ်လိပ်စာများကို စက်အားလုံးတွင် ရယူနိုင်ရန် လက်မှတ်ထိုးဝင်ပြီး စင့်ခ်လုပ်ခြင်းကို ဖွင့်ပါ</translation>
+<translation id="2827278682606527653">Feed card menu half height</translation>
 <translation id="2842985007712546952">မူရင်း ဖိုင်တွဲ</translation>
 <translation id="2860954141821109167">ဤကိရိယာတွင် ဖုန်းအက်ပ်ဖွင့်ထားခြင်း ရှိမရှိ စစ်ဆေးပါ</translation>
 <translation id="2870560284913253234">ဆိုဒ်</translation>
@@ -346,6 +348,7 @@
 <translation id="3819178904835489326">ဒေါင်းလုဒ် <ph name="NUMBER_OF_DOWNLOADS" /> ခုကို ဖျက်လိုက်သည်</translation>
 <translation id="3859306556332390985">အရှေ့သို့ ရစ်ရန်</translation>
 <translation id="388596076286380598">အော့ဖ်လိုင်းဖြစ်နေစဉ် သို့မဟုတ် လိုင်းမကောင်းသည့်အချိန်တွင်ပင် သင်ကြိုက်နှစ်သက်သည့် ဝဘ်ဆိုက်များမှ ဆောင်းပါး၊ ဗီဒီယိုနှင့် အခြားအကြောင်းအရာများကို ရယူလိုက်ပါ။</translation>
+<translation id="3892148308691398805">စာသား မိတ္တူကူးရန်</translation>
 <translation id="3894427358181296146">ဖိုလ်ဒါ ထည့်ရန်</translation>
 <translation id="3895926599014793903">ဇူးမ် အတင်း ဖွင့်ရန်</translation>
 <translation id="3912508018559818924">ဝဘ်မှ အကောင်းဆုံးကို ရှာနေသည်…</translation>
@@ -412,6 +415,7 @@
 <translation id="4479972344484327217"><ph name="MODULE" /> ကို Chrome အတွက် စနစ်ထည့်သွင်းနေသည်…</translation>
 <translation id="4487967297491345095">Chrome ၏ အက်ပ်ဒေတာများကို အပြီးအပိုင် ဖျက်လိုက်ပါမည်။ ၎င်းတို့တွင် ဖိုင်၊ ဆက်တင်၊ အကောင့်၊ ဒေတာဘေ့စ်၊ စသည်တို့အားလုံး ပါဝင်သည်။</translation>
 <translation id="4493497663118223949">'အပေါ့စားမုဒ်' ဖွင့်ထားသည်</translation>
+<translation id="4508528996305412043">ဖိဒ်ကတ်မီနူး ဖွင့်ထားသည်</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{လွန်ခဲ့သည့် # ရက်က}other{လွန်ခဲ့သည့် # ရက်က}}</translation>
 <translation id="451872707440238414">မှတ်ထားသော စာညှပ်များကို ရှာရန်</translation>
 <translation id="4521489764227272523">ရွေးချယ်ထားသည့် ဒေတာများကို စင့်ခ်လုပ်ထားသည့် စက်ပစ္စည်းများနှင့် Chrome မှဖယ်ရှားလိုက်ပါပြီ။
@@ -882,6 +886,7 @@
 <translation id="8200772114523450471">ပြန်ဆက်ရန်</translation>
 <translation id="8209050860603202033">ပုံဖွင့်</translation>
 <translation id="8218622182176210845">သင့်အကောင့်ကို စီမံခန့်ခွဲခြင်း</translation>
+<translation id="8223642481677794647">ဖိဒ်ကတ်မီနူး</translation>
 <translation id="8224471946457685718">Wi-Fi သုံး၍ သင့်အတွက် ဆောင်းပါးများ ဒေါင်းလုဒ်လုပ်သည်</translation>
 <translation id="8232956427053453090">ဒေတာများ ဆက်ထားရှိရန်</translation>
 <translation id="8233540874193135768">QR ကုဒ် စကင်ဖတ်ရန် ကင်မရာပါသည့် စက်ကိုသုံးပါ။</translation>
@@ -1006,4 +1011,5 @@
 <translation id="981121421437150478">အော့ဖ်လိုင်း</translation>
 <translation id="983192555821071799">တဘ်အားလုံး ပိတ်ရန်</translation>
 <translation id="987264212798334818">အထွေထွေ</translation>
+<translation id="996149300115483134">ဖိဒ်ကတ်မီနူးကို ပိတ်ထားသည်</translation>
 </translationbundle>

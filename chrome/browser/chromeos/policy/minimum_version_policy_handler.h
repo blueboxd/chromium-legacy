@@ -36,7 +36,8 @@ namespace policy {
 // checks if respective requirement is met.
 class MinimumVersionPolicyHandler
     : public BuildStateObserver,
-      public chromeos::NetworkStateHandlerObserver {
+      public chromeos::NetworkStateHandlerObserver,
+      public chromeos::UpdateEngineClient::Observer {
  public:
   static const char kChromeVersion[];
   static const char kWarningPeriod[];
@@ -133,6 +134,9 @@ class MinimumVersionPolicyHandler
   // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
 
+  // UpdateEngineClient::Observer:
+  void UpdateStatusChanged(const update_engine::StatusResult& status) override;
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
   bool RequirementsAreSatisfied() const { return GetState() == nullptr; }
@@ -204,6 +208,17 @@ class MinimumVersionPolicyHandler
   void HideNotification() const;
 
   void StopObservingNetwork();
+
+  // Start updating over metered network as user has given consent through
+  // notification click.
+  void UpdateOverMeteredPermssionGranted();
+
+  // Tells whether starting an update check succeeded or not.
+  void OnUpdateCheckStarted(
+      chromeos::UpdateEngineClient::UpdateCheckResult result);
+
+  // Callback from UpdateEngineClient::SetUpdateOverCellularOneTimePermission().
+  void OnSetUpdateOverCellularOneTimePermission(bool success);
 
   // Updates pref |kUpdateRequiredWarningPeriod| in local state to
   // |warning_time|. If |kUpdateRequiredTimerStartTime| is not null, it means

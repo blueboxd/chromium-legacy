@@ -358,6 +358,11 @@ const char kForceFirstRunUI[] = "force-first-run-ui";
 // for any type of user. Should be used only for testing.
 const char kForceHappinessTrackingSystem[] = "force-happiness-tracking-system";
 
+// Forces Hardware ID check (happens during OOBE) to fail. Should be used only
+// for testing.
+const char kForceHWIDCheckFailureForTest[] =
+    "force-hwid-check-failure-for-test";
+
 // Usually in browser tests the usual login manager bringup is skipped so that
 // tests can change how it's brought up. This flag disables that.
 const char kForceLoginManagerInTests[] = "force-login-manager-in-tests";

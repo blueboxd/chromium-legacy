@@ -30,7 +30,6 @@ namespace {
 constexpr int64_t kStubDisplayId = 1;
 constexpr char kCastGraphicsHeight[] = "cast-graphics-height";
 constexpr char kCastGraphicsWidth[] = "cast-graphics-width";
-constexpr char kDisplayRotation[] = "display-rotation";
 
 gfx::Size GetDefaultScreenResolution() {
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
@@ -62,20 +61,6 @@ gfx::Size GetScreenResolution() {
   }
 
   return GetDefaultScreenResolution();
-}
-
-display::Display::Rotation GetRotationFromCommandLine() {
-  std::string rotation =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueNative(
-          kDisplayRotation);
-  if (rotation == "90")
-    return display::Display::ROTATE_90;
-  else if (rotation == "180")
-    return display::Display::ROTATE_180;
-  else if (rotation == "270")
-    return display::Display::ROTATE_270;
-  else
-    return display::Display::ROTATE_0;
 }
 
 display::Display::Rotation RotationFromPanelOrientation(
@@ -145,7 +130,7 @@ void CastDisplayConfigurator::OnConfigurationChanged() {
 void CastDisplayConfigurator::ConfigureDisplayFromCommandLine() {
   const gfx::Size size = GetScreenResolution();
   UpdateScreen(kStubDisplayId, gfx::Rect(size), GetDeviceScaleFactor(size),
-               GetRotationFromCommandLine());
+               display::Display::ROTATE_0);
 }
 
 void CastDisplayConfigurator::SetColorMatrix(

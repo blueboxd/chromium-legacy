@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -82,7 +82,8 @@ public class IncognitoTabModelTest {
         createTabOnUiThread();
         // Need to wait for contentsState to be initialized for the tab to restore correctly.
         CriteriaHelper.pollUiThread(() -> {
-            return TabState.from(mActivityTestRule.getActivity().getActivityTab()).contentsState
+            return TabStateExtractor.from(mActivityTestRule.getActivity().getActivityTab())
+                           .contentsState
                     != null;
         });
         ChromeTabbedActivity newActivity =

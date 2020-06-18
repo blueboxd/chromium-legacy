@@ -671,7 +671,7 @@ void DeepScanningDialogDelegate::OnGotFileInfo(
   // property (too large, unsupported file type, encrypted, ...) that make its
   // upload pointless, so the request should finish early.
   if (result != BinaryUploadService::Result::SUCCESS) {
-    request->FinishRequest(result, DeepScanningClientResponse());
+    request->FinishRequest(result);
     return;
   }
 

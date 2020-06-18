@@ -5,21 +5,30 @@
 import("//third_party/closure_compiler/compile_js.gni")
 
 js_type_check("closure_compile") {
-  deps = [ ":network_ui" ]
+  deps = [
+    ":network_state_ui",
+    ":network_ui",
+  ]
 }
 
 js_library("network_ui") {
   deps = [
-    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
-    "//chromeos/services/network_health/public/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
-    "//ui/webui/resources/cr_components/chromeos/network:network_icon",
-    "//ui/webui/resources/cr_components/chromeos/network:network_list",
+    ":network_state_ui",
     "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js:util",
     "//ui/webui/resources/js/cr:ui",
     "//ui/webui/resources/js/cr/ui:tabs",
+  ]
+}
+
+js_library("network_state_ui") {
+  deps = [
+    "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
+    "//ui/webui/resources/cr_components/chromeos/network:network_icon",
+    "//ui/webui/resources/cr_components/chromeos/network:network_list",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
   ]
   externs_list = chrome_extension_public_externs +
                  [ "$externs_path/networking_private.js" ]

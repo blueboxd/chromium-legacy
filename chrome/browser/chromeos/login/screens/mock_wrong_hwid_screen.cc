@@ -13,16 +13,25 @@ MockWrongHWIDScreen::MockWrongHWIDScreen(
 
 MockWrongHWIDScreen::~MockWrongHWIDScreen() {}
 
+void MockWrongHWIDScreen::ExitScreen() {
+  WrongHWIDScreen::OnExit();
+}
+
 MockWrongHWIDScreenView::MockWrongHWIDScreenView() = default;
 
 MockWrongHWIDScreenView::~MockWrongHWIDScreenView() {
-  if (delegate_)
-    delegate_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockWrongHWIDScreenView::SetDelegate(WrongHWIDScreen* delegate) {
-  delegate_ = delegate;
-  MockSetDelegate(delegate);
+void MockWrongHWIDScreenView::Bind(WrongHWIDScreen* screen) {
+  screen_ = screen;
+  MockBind(screen_);
+}
+
+void MockWrongHWIDScreenView::Unbind() {
+  screen_ = nullptr;
+  MockUnbind();
 }
 
 }  // namespace chromeos

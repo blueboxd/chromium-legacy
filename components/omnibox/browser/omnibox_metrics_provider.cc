@@ -113,4 +113,6 @@ void OmniboxMetricsProvider::RecordOmniboxOpenedURL(const OmniboxLog& log) {
   omnibox_event->set_in_keyword_mode(log.in_keyword_mode);
   if (log.in_keyword_mode)
     omnibox_event->set_keyword_mode_entry_method(log.keyword_mode_entry_method);
+  if (log.is_query_started_from_tile)
+    omnibox_event->set_is_query_started_from_tile(true);
 }

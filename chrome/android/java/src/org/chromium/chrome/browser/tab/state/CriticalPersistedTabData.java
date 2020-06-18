@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tab.WebContentsState;
 import org.chromium.chrome.browser.tab.proto.CriticalPersistedTabData.CriticalPersistedTabDataProto;
@@ -132,7 +133,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
         // This function will only be used to acquire the {@link CriticalPersistedTabData}
         // from the {@link Tab}.
         if (tabImpl.isInitialized()) {
-            WebContentsState webContentsState = TabState.getWebContentsState(tabImpl);
+            WebContentsState webContentsState = TabStateExtractor.getWebContentsState(tabImpl);
             PersistedTabDataConfiguration config = PersistedTabDataConfiguration.get(
                     CriticalPersistedTabData.class, tab.isIncognito());
             CriticalPersistedTabData criticalPersistedTabData = new CriticalPersistedTabData(tab,

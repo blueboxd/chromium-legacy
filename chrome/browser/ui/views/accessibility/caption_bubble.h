@@ -60,7 +60,7 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   size_t GetTextIndexOfLineInLabel(size_t line) const;
 
   // Returns the number of lines in the caption bubble label that are rendered.
-  size_t GetNumLinesInLabel();
+  size_t GetNumLinesInLabel() const;
 
   const char* GetClassName() const override;
 

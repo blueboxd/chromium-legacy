@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/metrics/statistics_recorder.h"
 
 namespace cr_fuchsia {

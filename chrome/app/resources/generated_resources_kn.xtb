@@ -529,7 +529,7 @@
 <translation id="164936512206786300">ಬ್ಲೂಟೂತ್ ಸಾಧನದ ಜೋಡಿ ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="1650371550981945235">ಇನ್‌ಪುಟ್‌ ಆಯ್ಕೆಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="1651008383952180276">ನೀವು ಒಂದೇ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ಎರಡು ಬಾರಿ ನಮೂದಿಸಬೇಕು</translation>
-<translation id="1652326691684645429">'ಸಮೀಪದಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ' ಆನ್ ಮಾಡಿ</translation>
+<translation id="1652326691684645429">Nearby Share ಆನ್ ಮಾಡಿ</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Google ಕ್ಲೌಡ್ ಪ್ರಿಂಟ್‌ಗೆ ಪ್ರಿಂಟರ್ ಅನ್ನು ಸೇರಿಸಿ, ಈ ಮೂಲಕ ನೀವು ಎಲ್ಲಿಂದಲಾದರೂ ಪ್ರಿಂಟ್ ಮಾಡಬಹುದು.}one{Google ಕ್ಲೌಡ್ ಪ್ರಿಂಟ್‌ಗೆ # ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ಸೇರಿಸಿ, ಈ ಮೂಲಕ ನೀವು ಎಲ್ಲಿಂದಲಾದರೂ ಪ್ರಿಂಟ್ ಮಾಡಬಹುದು.}other{Google ಕ್ಲೌಡ್ ಪ್ರಿಂಟ್‌ಗೆ # ಪ್ರಿಂಟರ್‌ಗಳನ್ನು ಸೇರಿಸಿ, ಈ ಮೂಲಕ ನೀವು ಎಲ್ಲಿಂದಲಾದರೂ ಪ್ರಿಂಟ್ ಮಾಡಬಹುದು.}}</translation>
 <translation id="1656528038316521561">ಹಿನ್ನೆಲೆ ಅಪಾರದರ್ಶಕತೆ</translation>
 <translation id="1657406563541664238">Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಶ್ ವರದಿಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವ ಮೂಲಕ <ph name="PRODUCT_NAME" /> ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
@@ -1640,7 +1640,7 @@
 <translation id="3022978424994383087">ಅದು ಅರ್ಥವಾಗಲಿಲ್ಲ.</translation>
 <translation id="3023464535986383522">ಧ್ವನಿ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="3024374909719388945">24-ಗಂಟೆಯ ಕ್ಲಾಕ್ ಬಳಸಿ</translation>
-<translation id="3027296729579831126">'ಸಮೀಪದಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳುವುದನ್ನು' ಆನ್ ಮಾಡಿ</translation>
+<translation id="3027296729579831126">Nearby Share ಆನ್ ಮಾಡಿ</translation>
 <translation id="3029466929721441205">ಶೆಲ್ಫ್‌ನಲ್ಲಿ ಸ್ಟೈಲಸ್ ಪರಿಕರಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="3031417829280473749">ಏಜೆಂಟ್  X</translation>
 <translation id="3031557471081358569">ಆಮದು ಮಾಡಲು ಐಟಂಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಿ:</translation>
@@ -2926,7 +2926,7 @@
 <translation id="4673442866648850031">ಸ್ಟೈಲಸ್ ಅನ್ನು ತೆಗೆದುಹಾಕಿದಾಗ ಸ್ಟೈಲಸ್ ಪರಿಕರಗಳನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4677772697204437347">GPU ಮೆಮೊರಿ</translation>
 <translation id="4680105648806843642">ಈ ಪುಟದಲ್ಲಿ ಧ್ವನಿಯನ್ನು ಮ್ಯೂಟ್ ಮಾಡಲಾಗಿದೆ</translation>
-<translation id="4681453295291708042">ಸಮೀಪದಲ್ಲಿ ಹಂಚಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="4681453295291708042">Nearby Share ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4681930562518940301">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ಮೂಲ &amp;ಚಿತ್ರವನ್ನು ತೆರೆಯಿರಿ</translation>
 <translation id="4682551433947286597">ಸೈನ್-ಇನ್ ಪರದೆಯ ಮೇಲೆ ವಾಲ್‌ಪೇಪರ್‌ಗಳು ಗೋಚರಿಸುತ್ತವೆ.</translation>
 <translation id="4683947955326903992">ಶೇಕಡಾ <ph name="PERCENTAGE" /> (ಡೀಫಾಲ್ಟ್)</translation>
@@ -3739,7 +3739,7 @@
 <translation id="5739017626473506901"><ph name="USER_NAME" /> ಅವರಿಗೆ ಶಾಲೆಯ ಖಾತೆಯನ್ನು ಸೇರಿಸುವುದಕ್ಕೆ ಸಹಾಯ ಮಾಡಲು ಸೈನ್ ಇನ್ ಮಾಡಿ</translation>
 <translation id="5739235828260127894">ಪರಿಶೀಲನೆಗಾಗಿ ನಿರೀಕ್ಷಿಸಲಾಗುತ್ತಿದೆ. <ph name="LINK_BEGIN" />ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ<ph name="LINK_END" /></translation>
 <translation id="5739458112391494395">ಅತ್ಯಂತ ದೊಡ್ಡದು</translation>
-<translation id="5740328398383587084">ಸಮೀಪದ ಹಂಚಿಕೆ</translation>
+<translation id="5740328398383587084">Nearby Share</translation>
 <translation id="574104302965107104">ಡಿಸ್‌ಪ್ಲೇ ಪ್ರತಿಬಿಂಬಿಸುವಿಕೆ</translation>
 <translation id="574209121243317957">ಪಿಚ್</translation>
 <translation id="5746169159649715125">PDF ನಂತೆ ಉಳಿಸಿ</translation>
@@ -4675,7 +4675,7 @@
 <translation id="6965978654500191972">ಸಾಧನ</translation>
 <translation id="696780070563539690">ವಿವಿಧ ಸೈಟ್‌ಗಳಾದ್ಯಂತ ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯನ್ನು ನೋಡಲು, ಉದಾಹರಣೆಗೆ ಜಾಹೀರಾತುಗಳನ್ನು ವೈಯಕ್ತೀಕರಿಸುವುದಕ್ಕಾಗಿ, ನಿಮ್ಮ ಕುಕೀಗಳನ್ನು ಬಳಸಲು ಸೈಟ್‌ಗಳಿಗೆ ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ</translation>
 <translation id="6968288415730398122">ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಕಾನ್ಫಿಗರ್ ಮಾಡಲು ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ನಮೂದಿಸಿ</translation>
-<translation id="6969047215179982698">'ಸಮೀದಲ್ಲಿ ಹಂಚಿಕೊಳ್ಳಿ' ಆಫ್ ಮಾಡಿ</translation>
+<translation id="6969047215179982698">Nearby Share ಆಫ್ ಮಾಡಿ</translation>
 <translation id="6970480684834282392">ಸ್ಟಾರ್ಟ್ಅಪ್ ಪ್ರಕಾರ</translation>
 <translation id="6970856801391541997">ನಿರ್ದಿಷ್ಟ ಪುಟಗಳನ್ನು ಮುದ್ರಿಸಿ</translation>
 <translation id="6972180789171089114">ಆಡಿಯೋ/ವೀಡಿಯೊ</translation>

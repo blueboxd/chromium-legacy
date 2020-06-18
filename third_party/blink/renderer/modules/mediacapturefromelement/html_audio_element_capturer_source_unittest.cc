@@ -18,6 +18,8 @@
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_track.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 
 namespace blink {
 
@@ -46,8 +48,8 @@ class MockMediaStreamAudioSink final : public blink::WebMediaStreamAudioSink {
 // - a WebAudioSourceProviderImpl, which in turn needs an Audio Sink, in this
 //  case a NullAudioSink. This is needed to plug HTMLAudioElementCapturerSource
 //  and inject audio.
-// - a WebMediaStreamSource, that owns the HTMLAudioElementCapturerSource under
-//  test, and a WebMediaStreamAudioTrack, that the class under test needs to
+// - a MediaStreamSource, that owns the HTMLAudioElementCapturerSource under
+//  test, and a MediaStreamComponent, that the class under test needs to
 //  connect to in order to operate correctly. This class has an inner content
 //  MediaStreamAudioTrack.
 // - finally, a MockMediaStreamAudioSink to observe captured audio frames, and
@@ -67,18 +69,18 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
   }
 
   void TearDown() override {
-    blink_audio_track_.Reset();
-    blink_audio_source_.Reset();
+    media_stream_component_ = nullptr;
+    media_stream_source_ = nullptr;
     blink::WebHeap::CollectAllGarbageForTesting();
   }
 
   HtmlAudioElementCapturerSource* source() const {
     return static_cast<HtmlAudioElementCapturerSource*>(
-        blink::MediaStreamAudioSource::From(blink_audio_source_));
+        MediaStreamAudioSource::From(media_stream_source_.Get()));
   }
 
   blink::MediaStreamAudioTrack* track() const {
-    return blink::MediaStreamAudioTrack::From(blink_audio_track_);
+    return blink::MediaStreamAudioTrack::From(media_stream_component_);
   }
 
   int InjectAudio(media::AudioBus* audio_bus) {
@@ -94,23 +96,23 @@ class HTMLAudioElementCapturerSourceTest : public testing::Test {
         kAudioTrackSamplesPerBuffer /* frames_per_buffer */);
     audio_source_->Initialize(params, &fake_callback_);
 
-    blink_audio_source_.Initialize(blink::WebString::FromUTF8("audio_id"),
-                                   blink::WebMediaStreamSource::kTypeAudio,
-                                   blink::WebString::FromUTF8("audio_track"),
-                                   false /* remote */);
-    blink_audio_track_.Initialize(blink_audio_source_.Id(),
-                                  blink_audio_source_);
+    media_stream_source_ = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8("audio_id"), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("audio_track"), false /* remote */);
+    media_stream_component_ = MakeGarbageCollected<MediaStreamComponent>(
+        media_stream_source_->Id(), media_stream_source_);
 
-    // |blink_audio_source_| takes ownership of HtmlAudioElementCapturerSource.
-    blink_audio_source_.SetPlatformSource(
-        std::make_unique<HtmlAudioElementCapturerSource>(
-            audio_source_.get(),
-            blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
-    ASSERT_TRUE(source()->ConnectToTrack(blink_audio_track_));
+    // |media_stream_source_| takes wnership of
+    // HtmlAudioElementCapturerSource.
+    auto capture_source = std::make_unique<HtmlAudioElementCapturerSource>(
+        audio_source_, blink::scheduler::GetSingleThreadTaskRunnerForTesting());
+    capture_source->SetOwner(media_stream_source_.Get());
+    media_stream_source_->SetPlatformSource(std::move(capture_source));
+    ASSERT_TRUE(source()->ConnectToTrack(media_stream_component_.Get()));
   }
 
-  blink::WebMediaStreamSource blink_audio_source_;
-  blink::WebMediaStreamTrack blink_audio_track_;
+  Persistent<MediaStreamSource> media_stream_source_;
+  Persistent<MediaStreamComponent> media_stream_component_;
 
   media::NullMediaLog media_log_;
   media::FakeAudioRenderCallback fake_callback_;

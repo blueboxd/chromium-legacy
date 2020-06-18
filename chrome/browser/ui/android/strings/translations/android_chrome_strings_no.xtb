@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Utforsk</translation>
 <translation id="1749561566933687563">Synkroniser bokmerkene dine</translation>
 <translation id="17513872634828108">Åpne faner</translation>
+<translation id="1754404134430936718">Teksten er kopiert</translation>
 <translation id="1779089405699405702">Bildedekoder</translation>
 <translation id="1782483593938241562">Sluttdato <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Installert</translation>
@@ -223,6 +224,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="2810645512293415242">Siden er forenklet for å spare data og laste den inn raskere.</translation>
 <translation id="281504910091592009">Se og administrer lagrede passord i <ph name="BEGIN_LINK" />Google-kontoen<ph name="END_LINK" /> din</translation>
 <translation id="2818669890320396765">For å få bokmerkene dine på alle enhetene dine, logg på og slå på synkronisering</translation>
+<translation id="2827278682606527653">Feedkortmenyen er åpnet i halv høyde</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2860954141821109167">Kontrollér at en telefon-app er påslått på denne enheten</translation>
 <translation id="2870560284913253234">Nettsted</translation>
@@ -346,6 +348,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedlastinger er slettet</translation>
 <translation id="3859306556332390985">Spol fremover</translation>
 <translation id="388596076286380598">Få artikler, videoer og annet innhold fra nettsteder du liker, selv om du er uten nett eller har dårlig tilkobling.</translation>
+<translation id="3892148308691398805">Kopiér teksten</translation>
 <translation id="3894427358181296146">Legg til en mappe</translation>
 <translation id="3895926599014793903">Tving zoom på</translation>
 <translation id="3912508018559818924">Vi finner det beste fra nettet …</translation>
@@ -412,6 +415,7 @@ Trykk og hold inne på et ord for å søke. For å finstemme søket, merk flere 
 <translation id="4479972344484327217">Installerer <ph name="MODULE" /> for Chrome …</translation>
 <translation id="4487967297491345095">Alle appdataene for Chrome slettes permanent. Dette omfatter alle filer, innstillinger, kontoer, databaser osv.</translation>
 <translation id="4493497663118223949">Forenklet modus er på</translation>
+<translation id="4508528996305412043">Feedkortmenyen er åpnet</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{for # dag siden}other{for # dager siden}}</translation>
 <translation id="451872707440238414">Søk i bokmerkene dine</translation>
 <translation id="4521489764227272523">De valgte dataene er er fjernet fra Chrome og de synkroniserte enhetene dine.
@@ -883,6 +887,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8200772114523450471">Fortsett</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="8218622182176210845">Administrer kontoen din</translation>
+<translation id="8223642481677794647">Feedkortmeny</translation>
 <translation id="8224471946457685718">Last ned artikler for deg via Wi-Fi</translation>
 <translation id="8232956427053453090">Behold dataene</translation>
 <translation id="8233540874193135768">For å skanne QR-koder, bruk en enhet med kamera.</translation>
@@ -1007,4 +1012,5 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="981121421437150478">Uten nett</translation>
 <translation id="983192555821071799">Lukk alle faner</translation>
 <translation id="987264212798334818">Generelt</translation>
+<translation id="996149300115483134">Feedkortmenyen er lukket</translation>
 </translationbundle>

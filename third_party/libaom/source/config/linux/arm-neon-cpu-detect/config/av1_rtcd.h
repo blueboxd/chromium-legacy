@@ -1895,7 +1895,31 @@ int64_t av1_lowbd_pixel_proj_error_c(const uint8_t* src8,
                                      int flt1_stride,
                                      int xq[2],
                                      const sgr_params_type* params);
-#define av1_lowbd_pixel_proj_error av1_lowbd_pixel_proj_error_c
+int64_t av1_lowbd_pixel_proj_error_neon(const uint8_t* src8,
+                                        int width,
+                                        int height,
+                                        int src_stride,
+                                        const uint8_t* dat8,
+                                        int dat_stride,
+                                        int32_t* flt0,
+                                        int flt0_stride,
+                                        int32_t* flt1,
+                                        int flt1_stride,
+                                        int xq[2],
+                                        const sgr_params_type* params);
+RTCD_EXTERN int64_t (*av1_lowbd_pixel_proj_error)(
+    const uint8_t* src8,
+    int width,
+    int height,
+    int src_stride,
+    const uint8_t* dat8,
+    int dat_stride,
+    int32_t* flt0,
+    int flt0_stride,
+    int32_t* flt1,
+    int flt1_stride,
+    int xq[2],
+    const sgr_params_type* params);
 
 void av1_nn_predict_c(const float* input_nodes,
                       const NN_CONFIG* const nn_config,
@@ -2098,7 +2122,14 @@ void av1_txb_init_levels_c(const tran_low_t* const coeff,
                            const int width,
                            const int height,
                            uint8_t* const levels);
-#define av1_txb_init_levels av1_txb_init_levels_c
+void av1_txb_init_levels_neon(const tran_low_t* const coeff,
+                              const int width,
+                              const int height,
+                              uint8_t* const levels);
+RTCD_EXTERN void (*av1_txb_init_levels)(const tran_low_t* const coeff,
+                                        const int width,
+                                        const int height,
+                                        uint8_t* const levels);
 
 void av1_upsample_intra_edge_c(uint8_t* p, int sz);
 #define av1_upsample_intra_edge av1_upsample_intra_edge_c
@@ -2564,6 +2595,9 @@ static void setup_rtcd_internal(void) {
   av1_lowbd_fwd_txfm = av1_lowbd_fwd_txfm_c;
   if (flags & HAS_NEON)
     av1_lowbd_fwd_txfm = av1_lowbd_fwd_txfm_neon;
+  av1_lowbd_pixel_proj_error = av1_lowbd_pixel_proj_error_c;
+  if (flags & HAS_NEON)
+    av1_lowbd_pixel_proj_error = av1_lowbd_pixel_proj_error_neon;
   av1_quantize_fp = av1_quantize_fp_c;
   if (flags & HAS_NEON)
     av1_quantize_fp = av1_quantize_fp_neon;
@@ -2582,6 +2616,9 @@ static void setup_rtcd_internal(void) {
   av1_selfguided_restoration = av1_selfguided_restoration_c;
   if (flags & HAS_NEON)
     av1_selfguided_restoration = av1_selfguided_restoration_neon;
+  av1_txb_init_levels = av1_txb_init_levels_c;
+  if (flags & HAS_NEON)
+    av1_txb_init_levels = av1_txb_init_levels_neon;
   av1_warp_affine = av1_warp_affine_c;
   if (flags & HAS_NEON)
     av1_warp_affine = av1_warp_affine_neon;

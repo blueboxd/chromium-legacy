@@ -545,6 +545,22 @@ std::string LoginScreenTestApi::GetDisplayedName(const AccountId& account_id) {
 }
 
 // static
+base::string16 LoginScreenTestApi::GetDisabledAuthMessage(
+    const AccountId& account_id) {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  LoginBigUserView* big_user_view = lock_contents_test.FindBigUser(account_id);
+  if (!big_user_view) {
+    ADD_FAILURE() << "Could not find user " << account_id.Serialize();
+    return base::string16();
+  }
+  LoginAuthUserView::TestApi auth_test(big_user_view->auth_user());
+
+  return auth_test.GetDisabledAuthMessageContent();
+}
+
+// static
 bool LoginScreenTestApi::IsOobeDialogVisible() {
   LockScreen::TestApi lock_screen_test(LockScreen::Get());
   LockContentsView::TestApi lock_contents_test(

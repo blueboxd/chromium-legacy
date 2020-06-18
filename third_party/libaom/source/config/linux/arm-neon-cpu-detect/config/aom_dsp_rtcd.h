@@ -13745,7 +13745,10 @@ RTCD_EXTERN unsigned int (*aom_variance8x8)(const uint8_t* src_ptr,
                                             unsigned int* sse);
 
 int aom_vector_var_c(const int16_t* ref, const int16_t* src, const int bwl);
-#define aom_vector_var aom_vector_var_c
+int aom_vector_var_neon(const int16_t* ref, const int16_t* src, const int bwl);
+RTCD_EXTERN int (*aom_vector_var)(const int16_t* ref,
+                                  const int16_t* src,
+                                  const int bwl);
 
 void aom_dsp_rtcd(void);
 
@@ -14100,6 +14103,9 @@ static void setup_rtcd_internal(void) {
   aom_variance8x8 = aom_variance8x8_c;
   if (flags & HAS_NEON)
     aom_variance8x8 = aom_variance8x8_neon;
+  aom_vector_var = aom_vector_var_c;
+  if (flags & HAS_NEON)
+    aom_vector_var = aom_vector_var_neon;
 }
 #endif
 

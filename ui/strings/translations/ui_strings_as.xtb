@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
 <translation id="6119846243427417423">সক্ৰিয় কৰক</translation>
 <translation id="6129953537138746214">স্পেচ</translation>
+<translation id="6134259848159370930">আপোনাৰ ডিভাইচ, এপ্‌, ছেটিংসমূহ বিচাৰক তথা ৱেবত সন্ধান কৰক।</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">সূচীখন সকলো এপ্‌ দেখুৱাকৈ বিস্তাৰ কৰক</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
+<translation id="6166852626429024716">আপোনাৰ ডিভাইচ, এপ্‌, ছেটিংসমূহ বিচাৰক তথা ৱেবত সন্ধান কৰক...</translation>
 <translation id="6264365405983206840">&amp;সকলো বাছনি কৰক</translation>
 <translation id="6351032674660237738">এপৰ পৰামৰ্শ</translation>
 <translation id="6364916375976753737">বাওঁফাললৈ স্ক্ৰ’ল কৰক</translation>
@@ -229,6 +231,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> ফাইল (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">শ্বেল্ফ সদায়েই দেখুওৱা হয়</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> কেবি/ছেকেণ্ড</translation>
+<translation id="8685326675965865247">আপোনাৰ ডিভাইচ, এপ্‌, ছেটিংসমূহ বিচাৰক তথা ৱেবত সন্ধান কৰক। আপোনাৰ এপ্‌সমূহ নেভিগে’ট কৰিবলৈ এৰ’ কীসমূহ ব্যৱহাৰ কৰক।</translation>
 <translation id="8725488761726303204">আৰু +<ph name="NUMBER" />টা</translation>
 <translation id="8730621377337864115">হ’ল</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{১ঘ}one{#ঘ}other{#ঘ}}</translation>

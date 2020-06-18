@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <memory>
 
+#include "android_webview/browser/aw_browser_process.h"
 #include "android_webview/browser/aw_render_process_gone_delegate.h"
-#include "android_webview/browser_jni_headers/AwBrowserProcess_jni.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
@@ -100,8 +100,7 @@ void OnRenderProcessGone(
 
   // By this point we have moved the minidump to the crash directory, so it can
   // now be copied and uploaded.
-  Java_AwBrowserProcess_triggerMinidumpUploading(
-      base::android::AttachCurrentThread());
+  AwBrowserProcess::TriggerMinidumpUploading();
 }
 
 }  // namespace

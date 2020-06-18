@@ -8,6 +8,7 @@ group("closure_compile") {
   deps = [ "sync_confirmation:closure_compile" ]
   if (!is_chromeos) {
     deps += [
+      "profile_picker:closure_compile",
       "signin_email_confirmation:closure_compile",
       "signin_error:closure_compile",
       "signin_reauth:closure_compile",

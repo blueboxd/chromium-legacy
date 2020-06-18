@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Odkrywaj</translation>
 <translation id="1749561566933687563">Synchronizuj swoje zakładki</translation>
 <translation id="17513872634828108">Otwarte karty</translation>
+<translation id="1754404134430936718">Tekst został skopiowany</translation>
 <translation id="1779089405699405702">Dekoder obrazów</translation>
 <translation id="1782483593938241562">Data zakończenia: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Zainstalowano</translation>
@@ -223,6 +224,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="2810645512293415242">Uproszczona wersja strony pozwala szybciej zapisywać i wczytywać dane.</translation>
 <translation id="281504910091592009">Zapisane hasła znajdziesz na swoim <ph name="BEGIN_LINK" />koncie Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Aby korzystać ze swoich zakładek na wszystkich urządzeniach, zaloguj się i włącz synchronizację</translation>
+<translation id="2827278682606527653">Menu karty kanału – połowa wysokości</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2860954141821109167">Sprawdź, czy na urządzeniu jest włączona aplikacja telefonu</translation>
 <translation id="2870560284913253234">Witryna</translation>
@@ -346,6 +348,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="3819178904835489326">Usunięte pobrane pliki: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
 <translation id="3859306556332390985">Przewiń do przodu</translation>
 <translation id="388596076286380598">Możesz czytać artykuły i oglądać filmy oraz inne treści ze swoich ulubionych stron nawet wtedy, gdy jesteś offline lub masz słabe połączenie.</translation>
+<translation id="3892148308691398805">Kopiuj tekst</translation>
 <translation id="3894427358181296146">Dodaj folder</translation>
 <translation id="3895926599014793903">Wymuś powiększenie</translation>
 <translation id="3912508018559818924">Szukam najlepszych treści w internecie…</translation>
@@ -412,6 +415,7 @@ Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować w
 <translation id="4479972344484327217">Instaluję moduł <ph name="MODULE" /> do Chrome…</translation>
 <translation id="4487967297491345095">Wszystkie dane aplikacji Chrome zostaną trwale usunięte. Dotyczy to wszystkich plików, ustawień, kont, baz danych itp.</translation>
 <translation id="4493497663118223949">Wersja uproszczona jest włączona</translation>
+<translation id="4508528996305412043">Menu karty kanału jest otwarte</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# dzień temu}few{# dni temu}many{# dni temu}other{# dnia temu}}</translation>
 <translation id="451872707440238414">Szukaj zakładek</translation>
 <translation id="4521489764227272523">Wybrane dane zostały usunięte z Chrome i ze zsynchronizowanych urządzeń.
@@ -883,6 +887,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8200772114523450471">Wznów</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="8218622182176210845">Zarządzaj kontem</translation>
+<translation id="8223642481677794647">Menu karty kanału</translation>
 <translation id="8224471946457685718">Pobieranie artykułów dla Ciebie przez Wi-Fi</translation>
 <translation id="8232956427053453090">Zachowaj dane</translation>
 <translation id="8233540874193135768">Aby zeskanować kod QR, użyj urządzenia z aparatem.</translation>
@@ -1007,4 +1012,5 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Zamknij wszystkie karty</translation>
 <translation id="987264212798334818">Ogólne</translation>
+<translation id="996149300115483134">Menu karty kanału jest zamknięte</translation>
 </translationbundle>

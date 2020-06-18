@@ -24,16 +24,26 @@ class WrongHWIDScreen : public BaseScreen {
                   const base::RepeatingClosure& exit_callback);
   ~WrongHWIDScreen() override;
 
-  // Called when screen is exited.
-  void OnExit();
   // This method is called, when view is being destroyed. Note, if Delegate
   // is destroyed earlier then it has to call SetDelegate(NULL).
   void OnViewDestroyed(WrongHWIDScreenView* view);
+
+  void OnExit();
+
+  void set_exit_callback_for_testing(
+      const base::RepeatingClosure& exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
+  const base::RepeatingClosure& get_exit_callback_for_testing() {
+    return exit_callback_;
+  }
 
  private:
   // BaseScreen implementation:
   void ShowImpl() override;
   void HideImpl() override;
+  void OnUserAction(const std::string& action_id) override;
 
   WrongHWIDScreenView* view_;
   base::RepeatingClosure exit_callback_;

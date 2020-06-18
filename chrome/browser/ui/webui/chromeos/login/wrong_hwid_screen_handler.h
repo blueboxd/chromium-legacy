@@ -23,7 +23,12 @@ class WrongHWIDScreenView {
 
   virtual void Show() = 0;
   virtual void Hide() = 0;
-  virtual void SetDelegate(WrongHWIDScreen* delegate) = 0;
+
+  // Binds |screen| to the view.
+  virtual void Bind(WrongHWIDScreen* screen) = 0;
+
+  // Unbinds the screen from the view.
+  virtual void Unbind() = 0;
 };
 
 // WebUI implementation of WrongHWIDScreenActor.
@@ -35,24 +40,19 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenView,
   explicit WrongHWIDScreenHandler(JSCallsContainer* js_calls_container);
   ~WrongHWIDScreenHandler() override;
 
+ private:
   // WrongHWIDScreenActor implementation:
   void Show() override;
   void Hide() override;
-  void SetDelegate(WrongHWIDScreen* delegate) override;
+  void Bind(WrongHWIDScreen* screen) override;
+  void Unbind() override;
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
   void Initialize() override;
 
-  // WebUIMessageHandler implementation:
-  void RegisterMessages() override;
-
- private:
-  // JS messages handlers.
-  void HandleOnSkip();
-
-  WrongHWIDScreen* delegate_ = nullptr;
+  WrongHWIDScreen* screen_ = nullptr;
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
@@ -63,4 +63,3 @@ class WrongHWIDScreenHandler : public WrongHWIDScreenView,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_WRONG_HWID_SCREEN_HANDLER_H_
-

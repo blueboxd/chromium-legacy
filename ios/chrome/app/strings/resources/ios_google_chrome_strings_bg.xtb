@@ -9,6 +9,7 @@
 <translation id="2199719347983604670">Данни от синхронизирането в Chrome</translation>
 <translation id="2347208864470321755">Когато тази функция е включена, Chrome ще предлага да преведе написаните на други езици страници посредством Google Преводач. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">За да запазите изображения, докоснете „Настройки“ и разрешете на Chrome да използва снимките ви</translation>
+<translation id="2574249610672786438">Влезте в профила си на всичките си устройства, за да виждате разделите си навсякъде, където използвате Chrome</translation>
 <translation id="2576431527583832481">Chrome току-що се подобри! Налице е нова версия.</translation>
 <translation id="257708665678654955">Искате ли следващия път Google Chrome да предложи да преведе от <ph name="LANGUAGE_NAME" /> страниците от този сайт?</translation>
 <translation id="2919738076569633423">С използването на Chrome приемате <ph name="BEGIN_LINK_TOS" />Общите условия<ph name="END_LINK_TOS" />.</translation>
@@ -19,6 +20,7 @@
 <translation id="3196546062792660320">С Chrome спестявате време, като свързвате профилите си с мрежата. Можете да добавяте или премахвате профили от настройките.</translation>
 <translation id="3282568296779691940">Вход в Chrome</translation>
 <translation id="3345341804167540816">Използвайте Chrome навсякъде</translation>
+<translation id="3522659714780527202">Включете синхронизирането, за да виждате разделите си навсякъде, където използвате Chrome</translation>
 <translation id="384394811301901750">В момента Google Chrome не може да използва камерата ви</translation>
 <translation id="3980220367029651214">Заменяте настоящия профил за синхронизиране (<ph name="USER_EMAIL1" />) с друг (<ph name="USER_EMAIL2" />). Съществуващите ви данни в Chrome се управляват от <ph name="DOMAIN" />. Те ще се изтрият от това устройство, но ще останат в профила <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome няма достъп до снимките или видеоклиповете ви. Активирайте го от „Settings“ &gt; „Privacy“ &gt; „Photos“ в iOS.</translation>
@@ -45,6 +47,7 @@
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
+<translation id="7662994914830945754">Влезте в профила си и включете синхронизирането, за да виждате разделите си навсякъде, където използвате Chrome</translation>
 <translation id="7698568245838009292">Chrome иска достъп до камерата</translation>
 <translation id="8370517070665726704">Авторски права <ph name="YEAR" /> г. Google LLC. Всички права запазени.</translation>
 <translation id="840168496893712993">Някои добавки водят до срив на Chrome. Моля, опитайте да ги деинсталирате.</translation>

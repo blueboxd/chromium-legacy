@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "components/url_matcher/url_matcher_factory.h"
 #include "ipc/ipc_message.h"
 

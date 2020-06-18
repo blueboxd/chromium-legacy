@@ -528,7 +528,7 @@
 <translation id="164936512206786300">Разлучыць прыладу Bluetooth</translation>
 <translation id="1650371550981945235">Паказаць параметры ўводу</translation>
 <translation id="1651008383952180276">Вам трэба двойчы ўвесці аднолькавую фразу-пароль</translation>
-<translation id="1652326691684645429">Уключыць "Абагульванне паблізу"</translation>
+<translation id="1652326691684645429">Уключыць функцыю "Абагульванне паблізу"</translation>
 <translation id="1653526288038954982">{NUM_PRINTER,plural, =1{Дадайце прынтар у Google Cloud Print – і друкуйце з любой прылады.}one{Дадайце # прынтар у Google Cloud Print – і друкуйце з любой прылады.}few{Дадайце # прынтары ў Google Cloud Print – і друкуйце з любой прылады.}many{Дадайце # прынтараў у Google Cloud Print – і друкуйце з любой прылады.}other{Дадайце # прынтара ў Google Cloud Print – і друкуйце з любой прылады.}}</translation>
 <translation id="1656528038316521561">Непразрыстасць фону</translation>
 <translation id="1657406563541664238">Дапамажыце палепшыць <ph name="PRODUCT_NAME" />, дазволіўшы аўтаматычна адпраўляць у Google статыстыку выкарыстання і справаздачы аб збоях</translation>
@@ -2926,7 +2926,7 @@
 <translation id="4673442866648850031">Адкрываць інструменты стыла, калі яно вымаецца</translation>
 <translation id="4677772697204437347">Памяць GPU</translation>
 <translation id="4680105648806843642">Гук на гэтай старонцы быў выключаны</translation>
-<translation id="4681453295291708042">Выключыць "Абагульванне паблізу"</translation>
+<translation id="4681453295291708042">Выключыць функцыю "Абагульванне паблізу"</translation>
 <translation id="4681930562518940301">Адкрыць зыходны &amp;відарыс у новай укладцы</translation>
 <translation id="4682551433947286597">Шпалеры паказваюцца на экране ўваходу.</translation>
 <translation id="4683947955326903992"><ph name="PERCENTAGE" />% (стандартна)</translation>
@@ -5133,7 +5133,7 @@
 <translation id="7552846755917812628">Паспрабуйце наступнае:</translation>
 <translation id="7553012839257224005">Ідзе праверка наяўнасці кантэйнера Linux</translation>
 <translation id="7553242001898162573">Увядзіце пароль</translation>
-<translation id="7554475479213504905">Перазагрузіць і паказаць усё роўна</translation>
+<translation id="7554475479213504905">Перазагрузіць і ўсё роўна паказаць</translation>
 <translation id="7554791636758816595">Новая ўкладка</translation>
 <translation id="7556033326131260574">Функцыі Smart Lock не ўдалося спраўдзіць ваш уліковы запіс. Каб увайсці, увядзіце пароль.</translation>
 <translation id="7556242789364317684">На жаль, аднавіць налады ў браўзеры <ph name="SHORT_PRODUCT_NAME" /> не ўдалося. Каб выправіць памылку, браўзеру <ph name="SHORT_PRODUCT_NAME" /> трэба скінуць налады прылады з дапамогай Powerwash.</translation>

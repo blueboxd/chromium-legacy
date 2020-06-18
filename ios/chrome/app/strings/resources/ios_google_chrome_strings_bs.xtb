@@ -9,6 +9,7 @@
 <translation id="2199719347983604670">Podaci od Sinhronizacije Chromea</translation>
 <translation id="2347208864470321755">Kada je ova funkcija uključena, Chrome će za stranice koje su napisane na drugim jezicima ponuditi prijevod pomoću Google Prevodioca. <ph name="BEGIN_LINK" />Saznajte više<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Da sačuvate slike, dodirnite Postavke kako bi Chrome koristio vaše fotografije</translation>
+<translation id="2574249610672786438">Da vidite kartice s bilo kojeg uređaja na kojem koristite Chrome, prijavite se na svim uređajima</translation>
 <translation id="2576431527583832481">Chrome je postao još bolji! Dostupna je nova verzija.</translation>
 <translation id="257708665678654955">Želite li da Google Chrome sljedeći put ponudi da se stranice s ove web lokacije prevedu na <ph name="LANGUAGE_NAME" /> jezik?</translation>
 <translation id="2919738076569633423">Korištenjem Chromea prihvatate <ph name="BEGIN_LINK_TOS" />Uslove korištenja usluge<ph name="END_LINK_TOS" />.</translation>
@@ -19,6 +20,7 @@
 <translation id="3196546062792660320">Chrome vam štedi vrijeme povezivanjem vaših računa s webom. Možete dodati ili ukloniti račune u Postavkama.</translation>
 <translation id="3282568296779691940">Prijava na Chrome</translation>
 <translation id="3345341804167540816">Koristite Chrome svugdje</translation>
+<translation id="3522659714780527202">Da vidite kartice s bilo kojeg uređaja na kojem koristite Chrome, uključite sinhronizaciju</translation>
 <translation id="384394811301901750">Google Chrome trenutno ne može koristiti vašu kameru</translation>
 <translation id="3980220367029651214">Prebacujete sinhronizirane račune s <ph name="USER_EMAIL1" /> na <ph name="USER_EMAIL2" />. Vašim postojećim Chrome podacima upravlja domena <ph name="DOMAIN" />. Ovo će izbrisati sve podatke s uređaja, ali vaši podaci će ostati na računu <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome nema pristup vašim fotografijama ili videozapisima. Omogućite pristup u meniju iOS postavke &gt; Privatnost &gt; Fotografije.</translation>
@@ -45,6 +47,7 @@
 <translation id="7400722733683201933">O Google Chromeu</translation>
 <translation id="756809126120519699">Chromeovi podaci su obrisani</translation>
 <translation id="7626032353295482388">Dobro došli u Chrome</translation>
+<translation id="7662994914830945754">Da vidite svoje kartice s bilo kojeg uređaja na kojem koristite Chrome, prijavite se i uključite sinhronizaciju</translation>
 <translation id="7698568245838009292">Chrome želi pristup kameri</translation>
 <translation id="8370517070665726704">Autorska prava <ph name="YEAR" /> Google LLC. Sva prava su zadržana.</translation>
 <translation id="840168496893712993">Neki dodaci uzrokuju pad aplikacije Chromea. Pokušajte ih deinstalirati.</translation>

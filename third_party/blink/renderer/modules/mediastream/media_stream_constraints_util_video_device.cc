@@ -52,15 +52,38 @@ WebString ToWebString(media::VideoFacingMode facing_mode) {
   }
 }
 
-// Returns the fitness distance between the ideal value of |constraint| and the
-// closest value to it in the range [min, max].
-// Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
+// Returns the fitness distance between the ideal value of |constraint| and
+// |value|. Based on
+// https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
 template <typename NumericConstraint>
 double NumericValueFitness(const NumericConstraint& constraint,
                            decltype(constraint.Min()) value) {
   return constraint.HasIdeal()
              ? NumericConstraintFitnessDistance(value, constraint.Ideal())
              : 0.0;
+}
+
+// Returns the fitness distance between the ideal value of |constraint| and the
+// closest value to it in the range [min, max].
+// If the ideal value is contained in the range, returns 1.
+// If there is no ideal value, returns 0;
+// Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance.
+template <typename NumericConstraint>
+double NumericRangeFitness(
+    const NumericConstraint& constraint,
+    const media_constraints::NumericRangeSet<decltype(constraint.Min())>&
+        range) {
+  DCHECK(!range.IsEmpty());
+  if (!constraint.HasIdeal())
+    return 0.0;
+
+  auto ideal = constraint.Ideal();
+  if (range.Max().has_value() && ideal > *range.Max())
+    return NumericConstraintFitnessDistance(ideal, *range.Max());
+  else if (range.Min().has_value() && ideal < *range.Min())
+    return NumericConstraintFitnessDistance(ideal, *range.Min());
+
+  return 1.0;
 }
 
 // Returns a custom distance between |native_value| and the ideal value and
@@ -402,6 +425,112 @@ bool FacingModeSatisfiesConstraint(media::VideoFacingMode value,
   return constraint.Matches(string_value);
 }
 
+class PTZDeviceState {
+ public:
+  explicit PTZDeviceState(const MediaTrackConstraintSetPlatform& constraint_set)
+      : pan_set_(DoubleRangeSet::FromConstraint(constraint_set.pan)),
+        tilt_set_(DoubleRangeSet::FromConstraint(constraint_set.tilt)),
+        zoom_set_(DoubleRangeSet::FromConstraint(constraint_set.zoom)) {}
+
+  PTZDeviceState(const DoubleRangeSet& pan_set,
+                 const DoubleRangeSet& tilt_set,
+                 const DoubleRangeSet& zoom_set)
+      : pan_set_(pan_set), tilt_set_(tilt_set), zoom_set_(zoom_set) {}
+
+  PTZDeviceState(const PTZDeviceState& other) = default;
+  PTZDeviceState& operator=(const PTZDeviceState& other) = default;
+
+  PTZDeviceState Intersection(
+      const MediaTrackConstraintSetPlatform& constraint_set) const {
+    DoubleRangeSet pan_intersection = pan_set_.Intersection(
+        DoubleRangeSet::FromConstraint(constraint_set.pan));
+    DoubleRangeSet tilt_intersection = tilt_set_.Intersection(
+        DoubleRangeSet::FromConstraint(constraint_set.tilt));
+    DoubleRangeSet zoom_intersection = zoom_set_.Intersection(
+        DoubleRangeSet::FromConstraint(constraint_set.zoom));
+
+    return PTZDeviceState(pan_intersection, tilt_intersection,
+                          zoom_intersection);
+  }
+
+  bool IsEmpty() const {
+    return pan_set_.IsEmpty() || tilt_set_.IsEmpty() || zoom_set_.IsEmpty();
+  }
+
+  double Fitness(const MediaTrackConstraintSetPlatform& basic_set) const {
+    return NumericRangeFitness(basic_set.pan, pan_set_) +
+           NumericRangeFitness(basic_set.tilt, tilt_set_) +
+           NumericRangeFitness(basic_set.zoom, zoom_set_);
+  }
+
+  const char* FailedConstraintName() const {
+    MediaTrackConstraintSetPlatform dummy;
+    if (!pan_set_.IsEmpty())
+      return dummy.pan.GetName();
+    if (!tilt_set_.IsEmpty())
+      return dummy.tilt.GetName();
+    if (!zoom_set_.IsEmpty())
+      return dummy.zoom.GetName();
+
+    // No failed constraint.
+    return nullptr;
+  }
+
+  base::Optional<double> SelectPan(
+      const MediaTrackConstraintSetPlatform& basic_set) const {
+    return SelectProperty(&PTZDeviceState::pan_set_, basic_set,
+                          &MediaTrackConstraintSetPlatform::pan);
+  }
+
+  base::Optional<double> SelectTilt(
+      const MediaTrackConstraintSetPlatform& basic_set) const {
+    return SelectProperty(&PTZDeviceState::tilt_set_, basic_set,
+                          &MediaTrackConstraintSetPlatform::tilt);
+  }
+
+  base::Optional<double> SelectZoom(
+      const MediaTrackConstraintSetPlatform& basic_set) const {
+    return SelectProperty(&PTZDeviceState::zoom_set_, basic_set,
+                          &MediaTrackConstraintSetPlatform::zoom);
+  }
+
+ private:
+  // Select the target value of a property based on the ideal value in
+  // |basic_set| as follows:
+  // If an ideal value is provided, return the value in the range closest to
+  // ideal.
+  // If no ideal value is provided:
+  // * If minimum is provided, return minimum.
+  // * Otherwise, if maximum is provided, return maximum.
+  // * Otherwise, return nullopt.
+  base::Optional<double> SelectProperty(
+      DoubleRangeSet PTZDeviceState::*ptz_field,
+      const MediaTrackConstraintSetPlatform& basic_set,
+      DoubleConstraint MediaTrackConstraintSetPlatform::*basic_set_field)
+      const {
+    if (!(basic_set.*basic_set_field).HasIdeal()) {
+      return (this->*ptz_field).Min().has_value() ? (this->*ptz_field).Min()
+                                                  : (this->*ptz_field).Max();
+    }
+
+    auto ideal = (basic_set.*basic_set_field).Ideal();
+    if ((this->*ptz_field).Min().has_value() &&
+        ideal < (this->*ptz_field).Min().value()) {
+      return (this->*ptz_field).Min();
+    }
+    if ((this->*ptz_field).Max().has_value() &&
+        ideal > (this->*ptz_field).Max().value()) {
+      return (this->*ptz_field).Max();
+    }
+
+    return ideal;
+  }
+
+  DoubleRangeSet pan_set_;
+  DoubleRangeSet tilt_set_;
+  DoubleRangeSet zoom_set_;
+};
+
 // Returns true if |constraint_set| can be satisfied by |device|. Otherwise,
 // returns false and, if |failed_constraint_name| is not null, updates
 // |failed_constraint_name| with the name of a constraint that could not be
@@ -425,6 +554,21 @@ bool DeviceSatisfiesConstraintSet(
                                      constraint_set.facing_mode)) {
     UpdateFailedConstraintName(constraint_set.facing_mode,
                                failed_constraint_name);
+    return false;
+  }
+
+  if (constraint_set.pan.IsPresent() && !device.pan_tilt_zoom_supported) {
+    UpdateFailedConstraintName(constraint_set.pan, failed_constraint_name);
+    return false;
+  }
+
+  if (constraint_set.tilt.IsPresent() && !device.pan_tilt_zoom_supported) {
+    UpdateFailedConstraintName(constraint_set.tilt, failed_constraint_name);
+    return false;
+  }
+
+  if (constraint_set.zoom.IsPresent() && !device.pan_tilt_zoom_supported) {
+    UpdateFailedConstraintName(constraint_set.zoom, failed_constraint_name);
     return false;
   }
 
@@ -464,11 +608,13 @@ double DeviceFitness(const DeviceInfo& device,
 // The track settings for |candidate| that correspond to the returned fitness
 // are returned in |track_settings|.
 double CandidateFitness(const DeviceInfo& device,
+                        const PTZDeviceState& ptz_state,
                         const CandidateFormat& candidate_format,
                         const base::Optional<bool>& noise_reduction,
                         const MediaTrackConstraintSetPlatform& constraint_set,
                         VideoTrackAdapterSettings* track_settings) {
   return DeviceFitness(device, constraint_set) +
+         ptz_state.Fitness(constraint_set) +
          candidate_format.Fitness(constraint_set, track_settings) +
          OptionalBoolFitness(noise_reduction,
                              constraint_set.goog_noise_reduction);
@@ -602,7 +748,14 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
       continue;
     }
 
+    PTZDeviceState ptz_device_state(constraints.Basic());
+    if (ptz_device_state.IsEmpty()) {
+      failed_constraint_name = ptz_device_state.FailedConstraintName();
+      continue;
+    }
+
     for (auto& format : device.formats) {
+      PTZDeviceState ptz_state_for_format = ptz_device_state;
       CandidateFormat candidate_format(format);
       if (!candidate_format.ApplyConstraintSet(constraints.Basic(),
                                                &failed_constraint_name)) {
@@ -624,8 +777,11 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
         // First criteria for valid candidates is satisfaction of advanced
         // constraint sets.
         for (const auto& advanced_set : constraints.Advanced()) {
+          PTZDeviceState ptz_advanced_state =
+              ptz_state_for_format.Intersection(advanced_set);
           bool satisfies_advanced_set =
               DeviceSatisfiesConstraintSet(device, advanced_set) &&
+              !ptz_advanced_state.IsEmpty() &&
               OptionalBoolSatisfiesConstraint(
                   noise_reduction, advanced_set.goog_noise_reduction) &&
               // This must be the last in the condition since it is the only
@@ -633,15 +789,18 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
               // previous two are true.
               candidate_format.ApplyConstraintSet(advanced_set);
 
+          if (satisfies_advanced_set)
+            ptz_state_for_format = ptz_advanced_state;
+
           candidate_distance_vector.push_back(
               satisfies_advanced_set ? 0 : HUGE_VAL);
         }
 
         VideoTrackAdapterSettings track_settings;
         // Second criterion is fitness distance.
-        candidate_distance_vector.push_back(
-            CandidateFitness(device, candidate_format, noise_reduction,
-                             constraints.Basic(), &track_settings));
+        candidate_distance_vector.push_back(CandidateFitness(
+            device, ptz_state_for_format, candidate_format, noise_reduction,
+            constraints.Basic(), &track_settings));
 
         // Third criterion is native fitness distance.
         candidate_distance_vector.push_back(
@@ -662,7 +821,10 @@ VideoCaptureSettings SelectSettingsVideoDeviceCapture(
           result = VideoCaptureSettings(
               device.device_id.Utf8(), capture_params, noise_reduction,
               track_settings, candidate_format.constrained_frame_rate().Min(),
-              candidate_format.constrained_frame_rate().Max());
+              candidate_format.constrained_frame_rate().Max(),
+              ptz_state_for_format.SelectPan(constraints.Basic()),
+              ptz_state_for_format.SelectTilt(constraints.Basic()),
+              ptz_state_for_format.SelectZoom(constraints.Basic()));
         }
       }
     }

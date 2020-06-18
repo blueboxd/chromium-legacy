@@ -207,8 +207,7 @@ class ZeroSuggestProvider : public BaseSearchProvider {
   // Loader used to retrieve results.
   std::unique_ptr<network::SimpleURLLoader> loader_;
 
-  // The verbatim match for the current text, whether it's a URL or search query
-  // (which can occur for Query in Omnibox / Query Refinements).
+  // The verbatim match for the current text, which is always a URL.
   AutocompleteMatch current_text_match_;
 
   // Contains suggest and navigation results as well as relevance parsed from

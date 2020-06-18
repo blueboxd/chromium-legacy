@@ -31,7 +31,6 @@
 /** @const */ var SCREEN_KIOSK_ENABLE = 'kiosk-enable';
 /** @const */ var SCREEN_TERMS_OF_SERVICE = 'terms-of-service';
 /** @const */ var SCREEN_ARC_TERMS_OF_SERVICE = 'arc-tos';
-/** @const */ var SCREEN_WRONG_HWID = 'wrong-hwid';
 /** @const */ var SCREEN_DEVICE_DISABLED = 'device-disabled';
 /** @const */ var SCREEN_UPDATE_REQUIRED = 'update-required';
 /** @const */ var SCREEN_ACTIVE_DIRECTORY_PASSWORD_CHANGE =
@@ -102,7 +101,6 @@ cr.define('cr.ui.login', function() {
     SCREEN_ERROR_MESSAGE,
     SCREEN_PASSWORD_CHANGED,
     SCREEN_ARC_TERMS_OF_SERVICE,
-    SCREEN_WRONG_HWID,
     SCREEN_CONFIRM_PASSWORD,
     SCREEN_UPDATE_REQUIRED,
     SCREEN_FATAL_ERROR,

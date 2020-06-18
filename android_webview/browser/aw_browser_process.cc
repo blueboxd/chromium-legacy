@@ -7,6 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/metrics/visibility_metrics_logger.h"
+#include "android_webview/browser_jni_headers/AwBrowserProcess_jni.h"
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
@@ -190,6 +191,12 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
 void AwBrowserProcess::OnAuthPrefsChanged() {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams());
+}
+
+// static
+void AwBrowserProcess::TriggerMinidumpUploading() {
+  Java_AwBrowserProcess_triggerMinidumpUploading(
+      base::android::AttachCurrentThread());
 }
 
 }  // namespace android_webview

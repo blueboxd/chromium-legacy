@@ -1868,28 +1868,13 @@ if (enable_java_templates) {
       }
 
       if (invoker.jacoco_instrument) {
-        # Jacoco must run after desugar (or else desugar sometimes fails).
-        _jacoco_target = "${target_name}_device__jacoco"
-        _jacoco_output_jar = "$target_out_dir/$target_name.instrumented.jar"
-
-        jacoco_instr(_jacoco_target) {
-          deps = _deps + invoker.jar_deps
-          forward_variables_from(invoker,
-                                 [
-                                   "java_files",
-                                   "java_sources_file",
-                                 ])
-
-          input_jar_path = _previous_output_jar
-          output_jar_path = _jacoco_output_jar
-        }
-
-        _deps = []
-        _deps = [ ":$_jacoco_target" ]
-        _previous_output_jar = _jacoco_output_jar
+        _filter_jar_target_name = "${target_name}_device__filter_jar"
+        _filter_jar_output_jar = "$target_out_dir/$target_name.filter.jar"
+      } else {
+        _filter_jar_target_name = "${target_name}_device"
+        _filter_jar_output_jar = invoker.device_jar_path
       }
-
-      filter_jar("${target_name}_device") {
+      filter_jar(_filter_jar_target_name) {
         forward_variables_from(invoker,
                                [
                                  "jar_excluded_patterns",
@@ -1898,7 +1883,7 @@ if (enable_java_templates) {
                                ])
         deps = _deps
         input_jar = _previous_output_jar
-        output_jar = invoker.device_jar_path
+        output_jar = _filter_jar_output_jar
         inputs = []
         if (defined(strip_resource_classes) && strip_resource_classes) {
           inputs += [ invoker.build_config ]
@@ -1908,6 +1893,23 @@ if (enable_java_templates) {
         if (!defined(invoker.host_jar_path) && defined(invoker.inputs)) {
           inputs += invoker.inputs
           deps += invoker.input_deps
+        }
+      }
+
+      if (invoker.jacoco_instrument) {
+        # Jacoco must run after desugar (or else desugar sometimes fails).
+        # It must run after filtering to avoid the same (filtered) class mapping
+        # to multiple .jar files.
+        jacoco_instr("${target_name}_device") {
+          deps = [ ":$_filter_jar_target_name" ] + invoker.jar_deps
+          forward_variables_from(invoker,
+                                 [
+                                   "java_files",
+                                   "java_sources_file",
+                                 ])
+
+          input_jar_path = _filter_jar_output_jar
+          output_jar_path = invoker.device_jar_path
         }
       }
     }

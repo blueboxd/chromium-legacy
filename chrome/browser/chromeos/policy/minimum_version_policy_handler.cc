@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/minimum_version_policy_handler_delegate_impl.h"
 #include "chrome/browser/chromeos/ui/update_required_notification.h"
+#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -57,6 +58,10 @@ void OpenNetworkSettings() {
       true /* show_by_click */);
 }
 
+void OpenEnterpriseInfoPage() {
+  SystemTrayClient::Get()->ShowEnterpriseInfo();
+}
+
 std::string GetEnterpriseDomainName() {
   return g_browser_process->platform_part()
       ->browser_policy_connector_chromeos()
@@ -70,6 +75,10 @@ BuildState* GetBuildState() {
 int GetDaysRounded(base::TimeDelta time) {
   return std::lround(time.InSecondsF() /
                      base::TimeDelta::FromDays(1).InSecondsF());
+}
+
+chromeos::UpdateEngineClient* GetUpdateEngineClient() {
+  return chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
 }
 
 }  // namespace
@@ -136,6 +145,7 @@ MinimumVersionPolicyHandler::MinimumVersionPolicyHandler(
 MinimumVersionPolicyHandler::~MinimumVersionPolicyHandler() {
   GetBuildState()->RemoveObserver(this);
   StopObservingNetwork();
+  GetUpdateEngineClient()->RemoveObserver(this);
 }
 
 void MinimumVersionPolicyHandler::AddObserver(Observer* observer) {
@@ -272,10 +282,8 @@ void MinimumVersionPolicyHandler::FetchEolInfo() {
     return;
 
   update_required_time_ = clock_->Now();
-  chromeos::UpdateEngineClient* update_engine_client =
-      chromeos::DBusThreadManager::Get()->GetUpdateEngineClient();
   // Request the End of Life (Auto Update Expiration) status.
-  update_engine_client->GetEolInfo(
+  GetUpdateEngineClient()->GetEolInfo(
       base::BindOnce(&MinimumVersionPolicyHandler::OnFetchEolInfo,
                      weak_factory_.GetWeakPtr()));
 }
@@ -411,8 +419,8 @@ void MinimumVersionPolicyHandler::MaybeShowNotificationOnLogin() {
 void MinimumVersionPolicyHandler::MaybeShowNotification(
     base::TimeDelta warning) {
   const NetworkStatus status = GetCurrentNetworkStatus();
-  if (status == NetworkStatus::kAllowed || !delegate_->IsUserLoggedIn() ||
-      !delegate_->IsUserManaged()) {
+  if ((!eol_reached_ && status == NetworkStatus::kAllowed) ||
+      !delegate_->IsUserLoggedIn() || !delegate_->IsUserManaged()) {
     return;
   }
 
@@ -421,20 +429,36 @@ void MinimumVersionPolicyHandler::MaybeShowNotification(
         std::make_unique<chromeos::UpdateRequiredNotification>();
   }
 
-  if (status == NetworkStatus::kOffline) {
-    notification_handler_->Show(
-        NotificationType::kNoConnection, warning, GetEnterpriseDomainName(),
-        base::BindOnce(&OpenNetworkSettings),
-        base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
-                       weak_factory_.GetWeakPtr()));
+  NotificationType type = NotificationType::kNoConnection;
+  base::OnceClosure button_click_callback;
+  std::string domain_name = GetEnterpriseDomainName();
+  auto close_callback =
+      base::BindOnce(&MinimumVersionPolicyHandler::StopObservingNetwork,
+                     weak_factory_.GetWeakPtr());
+  if (eol_reached_) {
+    type = NotificationType::kEolReached;
+    button_click_callback = base::BindOnce(&OpenEnterpriseInfoPage);
+  } else if (status == NetworkStatus::kMetered) {
+    type = NotificationType::kMeteredConnection;
+    button_click_callback = base::BindOnce(
+        &MinimumVersionPolicyHandler::UpdateOverMeteredPermssionGranted,
+        weak_factory_.GetWeakPtr());
+  } else if (status == NetworkStatus::kOffline) {
+    button_click_callback = base::BindOnce(&OpenNetworkSettings);
+  } else {
+    NOTREACHED();
+    return;
   }
-  // TODO(https://crbug.com/1048607): Show in-session notifications in case of
-  // end-of-life and metered network.
+  notification_handler_->Show(type, warning, domain_name,
+                              std::move(button_click_callback),
+                              std::move(close_callback));
 
-  chromeos::NetworkStateHandler* network_state_handler =
-      chromeos::NetworkHandler::Get()->network_state_handler();
-  if (!network_state_handler->HasObserver(this))
-    network_state_handler->AddObserver(this, FROM_HERE);
+  if (!eol_reached_) {
+    chromeos::NetworkStateHandler* network_state_handler =
+        chromeos::NetworkHandler::Get()->network_state_handler();
+    if (!network_state_handler->HasObserver(this))
+      network_state_handler->AddObserver(this, FROM_HERE);
+  }
 }
 
 void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
@@ -471,6 +495,7 @@ void MinimumVersionPolicyHandler::ShowAndScheduleNotification(
 void MinimumVersionPolicyHandler::OnUpdate(const BuildState* build_state) {
   // If the device has been successfully updated, the relaunch notifications
   // will reboot it for applying the updates.
+  GetUpdateEngineClient()->RemoveObserver(this);
   if (build_state->update_type() == BuildState::UpdateType::kNormalUpdate)
     ResetOnUpdateCompleted();
 }
@@ -495,6 +520,42 @@ void MinimumVersionPolicyHandler::StopObservingNetwork() {
   chromeos::NetworkStateHandler* network_state_handler =
       chromeos::NetworkHandler::Get()->network_state_handler();
   network_state_handler->RemoveObserver(this, FROM_HERE);
+}
+
+void MinimumVersionPolicyHandler::UpdateOverMeteredPermssionGranted() {
+  chromeos::UpdateEngineClient* const update_engine_client =
+      GetUpdateEngineClient();
+  if (!update_engine_client->HasObserver(this))
+    update_engine_client->AddObserver(this);
+  update_engine_client->RequestUpdateCheck(
+      base::BindOnce(&MinimumVersionPolicyHandler::OnUpdateCheckStarted,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void MinimumVersionPolicyHandler::OnUpdateCheckStarted(
+    chromeos::UpdateEngineClient::UpdateCheckResult result) {
+  if (result != chromeos::UpdateEngineClient::UPDATE_RESULT_SUCCESS)
+    GetUpdateEngineClient()->RemoveObserver(this);
+}
+
+void MinimumVersionPolicyHandler::UpdateStatusChanged(
+    const update_engine::StatusResult& status) {
+  if (status.current_operation() ==
+      update_engine::Operation::NEED_PERMISSION_TO_UPDATE) {
+    GetUpdateEngineClient()->SetUpdateOverCellularOneTimePermission(
+        status.new_version(), status.new_size(),
+        base::BindOnce(&MinimumVersionPolicyHandler::
+                           OnSetUpdateOverCellularOneTimePermission,
+                       weak_factory_.GetWeakPtr()));
+  }
+}
+
+void MinimumVersionPolicyHandler::OnSetUpdateOverCellularOneTimePermission(
+    bool success) {
+  if (success)
+    UpdateOverMeteredPermssionGranted();
+  else
+    GetUpdateEngineClient()->RemoveObserver(this);
 }
 
 void MinimumVersionPolicyHandler::OnDeadlineReached() {

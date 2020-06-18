@@ -282,6 +282,9 @@ struct ASH_PUBLIC_EXPORT LoginUserInfo {
 
   // Contains the public account information if user type is PUBLIC_ACCOUNT.
   base::Optional<PublicAccountInfo> public_account_info;
+
+  // True if this user chooses to use 24 hour clock in preference.
+  bool use_24hour_clock = false;
 };
 
 enum class AuthDisabledReason {

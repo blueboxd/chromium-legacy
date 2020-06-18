@@ -166,9 +166,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_allow_client_enabled_bbr_v2,
           false)
 
-// If true, will negotiate the ACK delay time.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, true)
-
 // If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
 // length-prefixed connection IDs.
 QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
@@ -228,10 +225,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q043, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q046, false)
 
 // If true, disable QUIC version Q048.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q048, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q048, true)
 
 // If true, disable QUIC version Q049.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q049, true)
 
 // If true, disable QUIC version Q050.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
@@ -408,7 +405,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_t050, false)
 
 // If true, do not arm PTO on half RTT packets if they are the only ones in
 // flight.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_server_pto_timeout, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_server_pto_timeout, true)
 
 // If true, default-enable 5RTO blachole detection.
 QUIC_FLAG(
@@ -433,3 +430,9 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_save_user_agent_in_quic_session,
           false)
+
+// When true, QUIC_CRYPTO versions of QUIC will not send the max ACK delay
+// unless it is configured to a non-default value.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_dont_send_max_ack_delay_if_default,
+          true)

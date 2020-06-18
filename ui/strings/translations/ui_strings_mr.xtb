@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6119846243427417423">सक्रिय करा</translation>
 <translation id="6129953537138746214">जागा</translation>
+<translation id="6134259848159370930">तुमच्या डिव्हाइस,अ‍ॅप्स, सेटिंग्ज, वेबवर शोधा.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तार करा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
+<translation id="6166852626429024716">तुमच्या डिव्हाइस,अ‍ॅप्स, सेटिंग्ज, वेबवर शोधा...</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
 <translation id="6351032674660237738">ॲप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> फाइल (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">शेल्फ नेहमी दाखवले जात आहे</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">तुमच्या डिव्हाइस, अ‍ॅप्स आणि वेबवर शोधा. तुमची अ‍ॅप्स नेव्हिगेट करण्यासाठी ॲरो की वापरा.</translation>
 <translation id="8725488761726303204">+आणखी <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">पूर्ण झाले</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1ता}other{#ता}}</translation>

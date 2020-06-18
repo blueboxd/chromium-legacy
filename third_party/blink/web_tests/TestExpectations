@@ -5341,9 +5341,6 @@ crbug.com/831796 fast/events/autoscroll-in-textfield.html [ Failure Pass ]
 crbug.com/831673 http/tests/devtools/reveal-objects.js [ Pass Timeout ]
 crbug.com/829952 fast/webgl/texImage-imageBitmap-from-image-resize.html [ Pass Timeout ]
 
-crbug.com/832274 [ Linux ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
-crbug.com/832274 [ Win ] fast/forms/search/search-appearance-basic.html [ Pass Failure ]
-
 # Sheriff 2018-04-13
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
@@ -5541,8 +5538,6 @@ crbug.com/912793 crbug.com/899087 virtual/android/fullscreen/full-screen-iframe-
 
 # Sheriff 2018-12-07
 crbug.com/912821 [ Mac ] http/tests/devtools/tracing/user-timing.js [ Pass Failure ]
-
-crbug.com/913173 fast/backgrounds/background-svg-scaling-zoom.html [ Failure Pass ]
 
 # Sheriff 2018-12-13
 crbug.com/910452 media/controls/buttons-after-reset.html [ Pass Failure ]
@@ -5785,9 +5780,6 @@ crbug.com/954297 [ Win ] http/tests/devtools/oopif/oopif-presentation-console-me
 
 # Sheriff 2019-04-22
 crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
-
-# Sheriff 2019-04-25
-crbug.com/956736 virtual/gpu-rasterization/images/imagemap-focus-ring-outline-color-not-inherited-from-map.html [ Pass Failure ]
 
 # Sheriff 2019-04-30
 crbug.com/948785 [ Debug ] fast/events/pointerevents/pointer-event-consumed-touchstart-in-slop-region.html [ Pass Failure ]
@@ -6287,7 +6279,6 @@ crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Pass Failure ]
 crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-declaration.html [ Failure ]
 
 # Sheriff 2020-01-16
-crbug.com/1042205 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Pass Timeout ]
 crbug.com/1042689 [ Linux ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 crbug.com/1042689 [ Win ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 
@@ -6824,7 +6815,7 @@ crbug.com/1095733 http/tests/devtools/tabbed-pane-closeable-persistence.js [ Ski
 
 # Sheriff 2020-06-17
 crbug.com/1095969 [ Mac ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
+crbug.com/1095969 [ Linux ] fast/canvas/OffscreenCanvas-MessageChannel-transfer.html [ Pass Failure ]
 crbug.com/1092975 http/tests/inspector-protocol/target/target-expose-devtools-protocol.js [ Pass Failure ]
-crbug.com/1093836 fast/canvas/canvas-composite-text-alpha.html [ Pass Timeout ]
 
 crbug.com/1096493 external/wpt/webaudio/the-audio-api/the-audiocontext-interface/processing-after-resume.https.html [ Failure ]

@@ -762,7 +762,7 @@
 <translation id="1928696683969751773">التحديثات</translation>
 <translation id="1929186283613845153">جارٍ فحص الملف.</translation>
 <translation id="1929546189971853037">قراءة سجل التصفح على كل الأجهزة التي سجلت الدخول إليها</translation>
-<translation id="1930879306590754738">‏تم حذف كلمة المرور من هذا الجهاز ومن حسابك على Google</translation>
+<translation id="1930879306590754738">‏تم حذف كلمة المرور من هذا الجهاز ومن حسابك على Google.</translation>
 <translation id="1931152874660185993">لم يتم تثبيت أي مكونات.</translation>
 <translation id="1932098463447129402">أول يوم لتفعيل الصلاحية</translation>
 <translation id="1933809209549026293">‏يُرجى توصيل الماوس أو لوحة المفاتيح. إذا كنت تستخدم جهاز Bluetooth، فتأكد من أنه جاهز للإقران.</translation>
@@ -3933,7 +3933,7 @@
 <translation id="5997337190805127100">مزيد من المعلومات عن إمكانية الوصول إلى الموقع الإلكتروني</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> من نتائج البحث عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6002210667729577411">نقل المجموعة إلى نافذة جديدة</translation>
-<translation id="6002452033851752583">‏تم حذف كلمة المرور من حسابك على Google</translation>
+<translation id="6002452033851752583">‏تم حذف كلمة المرور من حسابك على Google.</translation>
 <translation id="6002458620803359783">الأصوات المُفضَّلة</translation>
 <translation id="6006484371116297560">كلاسيكي</translation>
 <translation id="6007240208646052708">البحث الصوتي غير متاح بلغتك.</translation>
@@ -5177,7 +5177,7 @@
 <translation id="7616214729753637086">جارٍ تسجيل الجهاز...</translation>
 <translation id="7617263010641145920">‏تفعيل "متجر Play"</translation>
 <translation id="7617366389578322136">جارٍ الاتصال بـ "<ph name="DEVICE_NAME" />"</translation>
-<translation id="761763866592998929">وضع الاستراحة</translation>
+<translation id="761763866592998929">وضع عدم النشاط</translation>
 <translation id="7621382409404463535">تعذّر على النظام حفظ ضبط الجهاز.</translation>
 <translation id="7622114377921274169">جارٍ الشحن.</translation>
 <translation id="7622903810087708234">تفاصيل كلمة المرور</translation>
@@ -5959,7 +5959,7 @@
 <translation id="8585480574870650651">‏إزالة نظام التشغيل Crostini</translation>
 <translation id="8588866096426746242">عرض إحصاءات الملف الشخصي</translation>
 <translation id="8588868914509452556">‏<ph name="WINDOW_TITLE" /> - تقديم VR إلى سماعة الرأس</translation>
-<translation id="8589316013260923499">‏أوقف <ph name="DOMAIN" /> تفعيل خيار "تصحيح الأخطاء عبر ADB" . ولا يمكن تثبيت تطبيقات جديدة من مصادر غير معروفة.</translation>
+<translation id="8589316013260923499">‏أوقف <ph name="DOMAIN" /> تفعيل خيار "تصحيح الأخطاء عبر ADB". ولا يمكن تثبيت تطبيقات جديدة من مصادر غير معروفة.</translation>
 <translation id="8590375307970699841">إعداد التحديثات التلقائية</translation>
 <translation id="8591783563402255548">ثانية واحدة</translation>
 <translation id="8592141010104017453">عدم عرض الإشعارات على الإطلاق</translation>

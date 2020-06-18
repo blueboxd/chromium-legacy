@@ -392,7 +392,8 @@
         'swarming': {
           'dimension_sets': [
             {
-              'device_os': 'LMY48I',
+              # TODO(crbug.com/1091539): Move these over to LMY48M.
+              'device_os': 'LMY48M|LMY48I',
               'device_type': 'hammerhead',
               'os': 'Android',
             },
@@ -1761,6 +1762,23 @@
         'test_suites': {
           'gtest_tests': 'linux_viz_gtests',
           'isolated_scripts': 'skia_renderer_isolated_scripts',
+        },
+      },
+      'Mac Builder Next': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'scripts': 'chromium_mac_scripts',
+        }
+      },
+      'Mac10.15 Tests': {
+        'mixins': [
+            'mac_10.15',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromium_mac_gtests',
+          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
         },
       },
       'Mojo Android': {
@@ -4212,15 +4230,6 @@
         'mixins': [
             'mac_10.14',
             'no_gpu',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_mac_rel_isolated_scripts',
-        },
-      },
-      'Mac10.15 Tests': {
-        'mixins': [
-            'mac_10.15',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',

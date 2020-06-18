@@ -214,9 +214,10 @@ class TestingOmniboxEditController : public ChromeOmniboxEditController {
 // Base class that ensures ScopedFeatureList is initialized first.
 class OmniboxViewViewsTestBase : public ChromeViewsTestBase {
  public:
-  explicit OmniboxViewViewsTestBase(
-      const std::vector<base::Feature>& enabled_features) {
-    scoped_feature_list_.InitWithFeatures(enabled_features, {});
+  OmniboxViewViewsTestBase(
+      const std::vector<base::Feature>& enabled_features,
+      const std::vector<base::Feature>& disabled_features) {
+    scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
  protected:
@@ -225,10 +226,12 @@ class OmniboxViewViewsTestBase : public ChromeViewsTestBase {
 
 class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
  public:
-  explicit OmniboxViewViewsTest(
-      const std::vector<base::Feature>& enabled_features);
+  OmniboxViewViewsTest(const std::vector<base::Feature>& enabled_features,
+                       const std::vector<base::Feature>& disabled_features);
 
-  OmniboxViewViewsTest() : OmniboxViewViewsTest(std::vector<base::Feature>()) {}
+  OmniboxViewViewsTest()
+      : OmniboxViewViewsTest(std::vector<base::Feature>(),
+                             std::vector<base::Feature>()) {}
 
   TestLocationBarModel* location_bar_model() { return &location_bar_model_; }
   CommandUpdaterImpl* command_updater() { return &command_updater_; }
@@ -289,8 +292,9 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
 };
 
 OmniboxViewViewsTest::OmniboxViewViewsTest(
-    const std::vector<base::Feature>& enabled_features)
-    : OmniboxViewViewsTestBase(enabled_features),
+    const std::vector<base::Feature>& enabled_features,
+    const std::vector<base::Feature>& disabled_features)
+    : OmniboxViewViewsTestBase(enabled_features, disabled_features),
       command_updater_(nullptr),
       omnibox_edit_controller_(&command_updater_, &location_bar_model_) {}
 
@@ -784,10 +788,10 @@ TEST_P(OmniboxViewViewsClipboardTest, ClipboardCopyOrCutURL) {
     expected_text = base::ASCIIToUTF16("https://test.com/");
   EXPECT_EQ(expected_text, omnibox_view()->GetText());
 
-  // Make sure both HTML and Plain Text formats are available.
+  // Make sure the plain text format is available, but the HTML one isn't.
   EXPECT_TRUE(clipboard->IsFormatAvailable(
       ui::ClipboardFormatType::GetPlainTextType(), clipboard_buffer));
-  EXPECT_TRUE(clipboard->IsFormatAvailable(
+  EXPECT_FALSE(clipboard->IsFormatAvailable(
       ui::ClipboardFormatType::GetHtmlType(), clipboard_buffer));
 
   // Windows clipboard only supports text URLs.
@@ -838,16 +842,14 @@ INSTANTIATE_TEST_SUITE_P(OmniboxViewViewsClipboardTest,
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsSteadyStateElisionsTest()
-      : OmniboxViewViewsTest({
-            omnibox::kHideSteadyStateUrlScheme,
-            omnibox::kHideSteadyStateUrlTrivialSubdomains,
-        }) {}
+      : OmniboxViewViewsTest(
+            {
+                omnibox::kHideSteadyStateUrlScheme,
+                omnibox::kHideSteadyStateUrlTrivialSubdomains,
+            },
+            {}) {}
 
  protected:
-  explicit OmniboxViewViewsSteadyStateElisionsTest(
-      const std::vector<base::Feature>& enabled_features)
-      : OmniboxViewViewsTest(enabled_features) {}
-
   const int kCharacterWidth = 10;
   const GURL kFullUrl = GURL("https://www.example.com/");
 
@@ -1271,12 +1273,23 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
   ExpectFullUrlDisplayed();
 }
 
+class OmniboxViewViewsNoPathHidingTest : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsNoPathHidingTest()
+      : OmniboxViewViewsTest({},
+                             {
+                                 omnibox::kHideSteadyStateUrlPathQueryAndRef,
+                             }) {}
+
+  OmniboxViewViewsNoPathHidingTest(const OmniboxViewViewsNoPathHidingTest&) =
+      delete;
+  OmniboxViewViewsNoPathHidingTest& operator=(
+      const OmniboxViewViewsNoPathHidingTest&) = delete;
+};
+
 // Tests that when no path-hiding field trials are enabled, the path is not
 // hidden. Regression test for https://crbug.com/1093748.
-TEST_F(OmniboxViewViewsTest, PathNotHiddenByDefault) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {}, {omnibox::kHideSteadyStateUrlPathQueryAndRef});
+TEST_F(OmniboxViewViewsNoPathHidingTest, PathNotHiddenByDefault) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1287,14 +1300,23 @@ TEST_F(OmniboxViewViewsTest, PathNotHiddenByDefault) {
   EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
 }
 
+class OmniboxViewViewsRevealOnHoverTest : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsRevealOnHoverTest()
+      : OmniboxViewViewsTest(
+            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
+             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+            {}) {}
+
+  OmniboxViewViewsRevealOnHoverTest(const OmniboxViewViewsRevealOnHoverTest&) =
+      delete;
+  OmniboxViewViewsRevealOnHoverTest& operator=(
+      const OmniboxViewViewsRevealOnHoverTest&) = delete;
+};
+
 // Tests the field trial variation that hides the path by default and reveals on
 // hover.
-TEST_F(OmniboxViewViewsTest, RevealOnHover) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
-      {});
+TEST_F(OmniboxViewViewsRevealOnHoverTest, HoverAndExit) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1356,15 +1378,26 @@ TEST_F(OmniboxViewViewsTest, RevealOnHover) {
             path_fade_out_after_hover_animation->GetCurrentColor());
 }
 
+class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
+    : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest()
+      : OmniboxViewViewsTest(
+            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
+             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+            {}) {}
+
+  OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest(
+      const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
+  OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest& operator=(
+      const OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest&) = delete;
+};
+
 // Tests the field trial variation that hides the path when the user interacts
 // with the page and brings it back when the user hovers over the omnibox.
-TEST_F(OmniboxViewViewsTest, HideOnInteractionAndRevealOnHover) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
-      {});
+TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       UserInteractionAndHover) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1428,13 +1461,8 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionAndRevealOnHover) {
 
 // Tests that in the hide-on-interaction field trial, when the path changes
 // while being faded out, the animation is stopped.
-TEST_F(OmniboxViewViewsTest, PathChangeDuringAnimation) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
-      {});
+TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       PathChangeDuringAnimation) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1465,14 +1493,23 @@ TEST_F(OmniboxViewViewsTest, PathChangeDuringAnimation) {
   EXPECT_FALSE(fade_out->IsAnimating());
 }
 
+class OmniboxViewViewsHideOnInteractionTest : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsHideOnInteractionTest()
+      : OmniboxViewViewsTest(
+            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
+             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
+            {}) {}
+
+  OmniboxViewViewsHideOnInteractionTest(
+      const OmniboxViewViewsHideOnInteractionTest&) = delete;
+  OmniboxViewViewsHideOnInteractionTest& operator=(
+      const OmniboxViewViewsHideOnInteractionTest&) = delete;
+};
+
 // Tests that in the hide-on-interaction field trial, the path is shown on
 // cross-document main-frame navigations, but not on same-document navigations.
-TEST_F(OmniboxViewViewsTest, HideOnInteractionSameDocNavigations) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
-      {});
+TEST_F(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1547,13 +1584,8 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionSameDocNavigations) {
 
 // Tests that in the hide-on-interaction field trial, the path is not re-shown
 // on subframe navigations.
-TEST_F(OmniboxViewViewsTest, HideOnInteractionSubframeNavigations) {
+TEST_F(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
   content::RenderViewHostTestEnabler rvh_enabler;
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
-      {});
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1605,13 +1637,8 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionSubframeNavigations) {
 
 // Tests that in the hide-on-interaction field trial variation, the path is
 // faded out after omnibox focus and blur.
-TEST_F(OmniboxViewViewsTest, HideOnInteractionAfterFocusAndBlur) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
-       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
-      {});
+TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+       HideOnInteractionAfterFocusAndBlur) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));
@@ -1654,12 +1681,7 @@ TEST_F(OmniboxViewViewsTest, HideOnInteractionAfterFocusAndBlur) {
 // Tests that in the reveal-on-hover field trial variation (without
 // hide-on-interaction), the path is faded back in after focus, then blur, then
 // hover.
-TEST_F(OmniboxViewViewsTest, RevealOnHoverAfterBlur) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
-      {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction});
+TEST_F(OmniboxViewViewsRevealOnHoverTest, AfterBlur) {
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));

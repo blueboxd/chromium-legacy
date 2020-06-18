@@ -67,6 +67,7 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView,
     views::Button* external_binary_auth_button() const;
     views::Button* external_binary_enrollment_button() const;
     bool HasAuthMethod(AuthMethods auth_method) const;
+    const base::string16& GetDisabledAuthMessageContent() const;
 
    private:
     LoginAuthUserView* const view_;

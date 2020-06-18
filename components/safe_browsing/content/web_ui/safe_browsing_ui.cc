@@ -24,6 +24,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
@@ -271,6 +272,26 @@ void WebUIInfoSingleton::AddToDeepScanRequests(
         request.request_token(), deep_scan_requests_[request.request_token()]);
 }
 
+void WebUIInfoSingleton::AddToDeepScanRequests(
+    const enterprise_connectors::ContentAnalysisRequest& request) {
+  if (!HasListener())
+    return;
+
+  // Only update the request time the first time we see a token.
+  if (deep_scan_requests_.find(request.request_token()) ==
+      deep_scan_requests_.end()) {
+    deep_scan_requests_[request.request_token()].request_time =
+        base::Time::Now();
+  }
+
+  deep_scan_requests_[request.request_token()].content_analysis_request =
+      request;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyDeepScanJsListener(
+        request.request_token(), deep_scan_requests_[request.request_token()]);
+}
+
 void WebUIInfoSingleton::AddToDeepScanResponses(
     const std::string& token,
     const std::string& status,
@@ -281,6 +302,21 @@ void WebUIInfoSingleton::AddToDeepScanResponses(
   deep_scan_requests_[token].response_time = base::Time::Now();
   deep_scan_requests_[token].response_status = status;
   deep_scan_requests_[token].response = response;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyDeepScanJsListener(token, deep_scan_requests_[token]);
+}
+
+void WebUIInfoSingleton::AddToDeepScanResponses(
+    const std::string& token,
+    const std::string& status,
+    const enterprise_connectors::ContentAnalysisResponse& response) {
+  if (!HasListener())
+    return;
+
+  deep_scan_requests_[token].response_time = base::Time::Now();
+  deep_scan_requests_[token].response_status = status;
+  deep_scan_requests_[token].content_analysis_response = response;
 
   for (auto* webui_listener : webui_instances_)
     webui_listener->NotifyDeepScanJsListener(token, deep_scan_requests_[token]);
@@ -1303,6 +1339,52 @@ base::Value SerializeReportingEvent(const base::Value& event) {
 }
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
+std::string SerializeContentAnalysisRequest(
+    const enterprise_connectors::ContentAnalysisRequest& request) {
+  base::DictionaryValue request_dict;
+
+  request_dict.SetKey("device_token", base::Value(request.device_token()));
+  request_dict.SetKey("fcm_notification_token",
+                      base::Value(request.fcm_notification_token()));
+  switch (request.analysis_connector()) {
+    case enterprise_connectors::ANALYSIS_CONNECTOR_UNSPECIFIED:
+      request_dict.SetStringKey("analysis_connector", "UNSPECIFIED");
+      break;
+    case enterprise_connectors::FILE_ATTACHED:
+      request_dict.SetStringKey("analysis_connector", "FILE_ATTACHED");
+      break;
+    case enterprise_connectors::FILE_DOWNLOADED:
+      request_dict.SetStringKey("analysis_connector", "FILE_DOWNLOADED");
+      break;
+    case enterprise_connectors::BULK_DATA_ENTRY:
+      request_dict.SetStringKey("analysis_connector", "BULK_DATA_ENTRY");
+      break;
+  }
+
+  if (request.has_request_data()) {
+    base::DictionaryValue request_data;
+    request_data.SetStringKey("url", request.request_data().url());
+    request_data.SetStringKey("filename", request.request_data().filename());
+    request_data.SetStringKey("digest", request.request_data().digest());
+    // TODO(domfc): Improve this once csd is populated for this proto.
+    request_data.SetStringKey("csd",
+                              request.request_data().csd().SerializeAsString());
+    request_dict.SetKey("request_data", std::move(request_data));
+  }
+
+  base::ListValue tags;
+  for (const std::string& tag : request.tags())
+    tags.Append(base::Value(tag));
+  request_dict.SetKey("tags", std::move(tags));
+  request_dict.SetKey("request_token", base::Value(request.request_token()));
+
+  std::string request_serialized;
+  JSONStringValueSerializer serializer(&request_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(request_dict);
+  return request_serialized;
+}
+
 std::string SerializeDeepScanningRequest(
     const DeepScanningClientRequest& request) {
   base::DictionaryValue request_dict;
@@ -1359,6 +1441,68 @@ std::string SerializeDeepScanningRequest(
   serializer.set_pretty_print(true);
   serializer.Serialize(request_dict);
   return request_serialized;
+}
+
+std::string SerializeContentAnalysisResponse(
+    const enterprise_connectors::ContentAnalysisResponse& response) {
+  base::DictionaryValue response_dict;
+
+  response_dict.SetStringKey("token", response.request_token());
+
+  base::ListValue result_values;
+  for (const auto& result : response.results()) {
+    base::DictionaryValue result_value;
+    switch (result.status()) {
+      case enterprise_connectors::ContentAnalysisResponse::Result::
+          STATUS_UNKNOWN:
+        result_value.SetStringKey("status", "STATUS_UNKNOWN");
+        break;
+      case enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS:
+        result_value.SetStringKey("status", "SUCCESS");
+        break;
+      case enterprise_connectors::ContentAnalysisResponse::Result::FAILURE:
+        result_value.SetStringKey("status", "FAILURE");
+        break;
+    }
+    result_value.SetStringKey("tag", result.tag());
+
+    base::ListValue triggered_rules;
+    for (const auto& rule : result.triggered_rules()) {
+      base::DictionaryValue rule_value;
+
+      switch (rule.action()) {
+        case enterprise_connectors::ContentAnalysisResponse::Result::
+            TriggeredRule::ACTION_UNSPECIFIED:
+          rule_value.SetStringKey("action", "ACTION_UNSPECIFIED");
+          break;
+        case enterprise_connectors::ContentAnalysisResponse::Result::
+            TriggeredRule::REPORT_ONLY:
+          rule_value.SetStringKey("action", "REPORT_ONLY");
+          break;
+        case enterprise_connectors::ContentAnalysisResponse::Result::
+            TriggeredRule::WARN:
+          rule_value.SetStringKey("action", "WARN");
+          break;
+        case enterprise_connectors::ContentAnalysisResponse::Result::
+            TriggeredRule::BLOCK:
+          rule_value.SetStringKey("action", "BLOCK");
+          break;
+      }
+
+      rule_value.SetStringKey("rule_name", rule.rule_name());
+      rule_value.SetStringKey("rule_id", rule.rule_id());
+      triggered_rules.Append(std::move(rule_value));
+    }
+    result_value.SetKey("triggered_rules", std::move(triggered_rules));
+    result_values.Append(std::move(result_value));
+  }
+  response_dict.SetKey("results", std::move(result_values));
+
+  std::string response_serialized;
+  JSONStringValueSerializer serializer(&response_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(response_dict);
+  return response_serialized;
 }
 
 std::string SerializeDeepScanningResponse(
@@ -1470,6 +1614,9 @@ base::Value SerializeDeepScanDebugData(const std::string& token,
   if (data.request.has_value()) {
     value.SetStringKey("request",
                        SerializeDeepScanningRequest(data.request.value()));
+  } else if (data.content_analysis_request.has_value()) {
+    value.SetStringKey("request", SerializeContentAnalysisRequest(
+                                      data.content_analysis_request.value()));
   }
 
   if (!data.response_time.is_null()) {
@@ -1483,6 +1630,9 @@ base::Value SerializeDeepScanDebugData(const std::string& token,
   if (data.response.has_value()) {
     value.SetStringKey("response",
                        SerializeDeepScanningResponse(data.response.value()));
+  } else if (data.content_analysis_response.has_value()) {
+    value.SetStringKey("response", SerializeContentAnalysisResponse(
+                                       data.content_analysis_response.value()));
   }
 
   return std::move(value);

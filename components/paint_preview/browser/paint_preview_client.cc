@@ -340,7 +340,7 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
     // If the capture failed then cleanup the file.
     base::ThreadPool::PostTask(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(base::IgnoreResult(&base::DeleteFile), filename, false));
+        base::BindOnce(base::GetDeleteFileCallback(), filename));
 
     // If this is the main frame we should just abort the capture.
     if (is_main_frame) {

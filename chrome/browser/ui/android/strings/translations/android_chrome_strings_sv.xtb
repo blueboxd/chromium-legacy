@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Utforska</translation>
 <translation id="1749561566933687563">Synkronisera bokmärken</translation>
 <translation id="17513872634828108">Öppna flikar</translation>
+<translation id="1754404134430936718">Texten har kopierats</translation>
 <translation id="1779089405699405702">Bildavkodare</translation>
 <translation id="1782483593938241562">Slutdatum <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Installerat</translation>
@@ -223,6 +224,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2810645512293415242">Förenklad sida visades för att spara data och minska inläsningstiden.</translation>
 <translation id="281504910091592009">Visa och hantera sparade lösenord i <ph name="BEGIN_LINK" />Google-kontot<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Logga in och aktivera synkronisering om du vill ha dina bokmärken tillgängliga på alla enheter</translation>
+<translation id="2827278682606527653">Menyn med flödeskort är öppen och tar upp halva skärmen</translation>
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2860954141821109167">Kontrollera att en telefonapp har aktiverats på enheten</translation>
 <translation id="2870560284913253234">Webbplats</translation>
@@ -292,7 +294,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
 <translation id="3353615205017136254">Lite-sida tillhandahållen av Google. Tryck på knappen Läs in original för att läsa in den ursprungliga sidan.</translation>
 <translation id="3367813778245106622">Logga in igen om du vill påbörja synkroniseringen</translation>
-<translation id="337236281855091893">Om du vill söka trycker du länge på ett ord i stället för att trycka på det</translation>
+<translation id="337236281855091893">Om du vill söka trycker du länge på ett ord i stället för att bara trycka på det</translation>
 <translation id="3373979091428520308">Om du vill dela den här sidan med en annan enhet måste du aktivera synkronisering i inställningarna för Chrome på den andra enheten</translation>
 <translation id="3374023511497244703">Bokmärken, historik, lösenord och annan data i Chrome synkroniseras inte längre med ditt Google-konto</translation>
 <translation id="3384347053049321195">Dela bild</translation>
@@ -346,6 +348,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="388596076286380598">Kom åt artiklar, videor och annat innehåll från webbplatser som du gillar, även när du är offline eller har dålig anslutning.</translation>
+<translation id="3892148308691398805">Kopiera text</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
 <translation id="3912508018559818924">Letar efter det bästa på webben …</translation>
@@ -412,6 +415,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="4479972344484327217"><ph name="MODULE" /> installeras i Chrome …</translation>
 <translation id="4487967297491345095">All appdata i Chrome raderas permanent. Detta omfattar alla filer, inställningar, konton, databaser osv.</translation>
 <translation id="4493497663118223949">Begränsat läge har aktiverats</translation>
+<translation id="4508528996305412043">Menyn med flödeskort är öppen</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{för # dag sedan}other{för # dagar sedan}}</translation>
 <translation id="451872707440238414">Sök bland dina bokmärken</translation>
 <translation id="4521489764227272523">Markerad data har tagits bort från Chrome och från synkroniserade enheter.
@@ -883,6 +887,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8209050860603202033">Öppna bild</translation>
 <translation id="8218622182176210845">Hantera kontot</translation>
+<translation id="8223642481677794647">Menyn med flödeskort</translation>
 <translation id="8224471946457685718">Ladda ned artiklar för dig via Wi-Fi</translation>
 <translation id="8232956427053453090">Behåll data</translation>
 <translation id="8233540874193135768">Du behöver en enhet med kamera för att skanna en QR-kod.</translation>
@@ -1007,4 +1012,5 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Stäng alla flikar</translation>
 <translation id="987264212798334818">Allmänt</translation>
+<translation id="996149300115483134">Menyn med flödeskort är stängd</translation>
 </translationbundle>

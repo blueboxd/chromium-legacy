@@ -11,10 +11,24 @@
     <output filename="profile_picker_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
+    <includes>
+    <!-- Generated Polymer 3 elements -->
+      <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_MAIN_VIEW_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_main_view.js"
+               use_base_dir="false" type="BINDATA" preprocess="true"/>
+      <include name="IDR_PROFILE_PICKER_PROFILE_PICKER_APP_JS"
+               file="${root_gen_dir}/chrome/browser/resources/signin/profile_picker/profile_picker_app.js"
+               use_base_dir="false" type="BINDATA" preprocess="true"/>
+    </includes>
     <structures>
       <structure
           name="IDR_PROFILE_PICKER_PROFILE_PICKER_HTML"
           file="profile_picker.html"
+          type="chrome_html"
+          compress="false"/>
+      <structure
+          name="IDR_PROFILE_PICKER_ICONS_JS"
+          file="icons.js"
           type="chrome_html"
           compress="false"/>
     </structures>

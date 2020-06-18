@@ -1432,31 +1432,6 @@ void FrameLoader::DidDropNavigation() {
   }
 }
 
-bool FrameLoader::ShouldReuseDefaultView(
-    const scoped_refptr<const SecurityOrigin>& origin,
-    const ContentSecurityPolicy* csp) {
-  // Secure transitions can only happen when navigating from the initial empty
-  // document.
-  if (!state_machine_.IsDisplayingInitialEmptyDocument())
-    return false;
-
-  // The Window object should only be re-used if it is same-origin.
-  // Since sandboxing turns the origin into an opaque origin it needs to also
-  // be considered when deciding whether to reuse it.
-  // Spec:
-  // https://html.spec.whatwg.org/C/#initialise-the-document-object
-  if ((csp && (csp->GetSandboxMask() &
-               network::mojom::blink::WebSandboxFlags::kOrigin) !=
-                  network::mojom::blink::WebSandboxFlags::kNone) ||
-      ((EffectiveSandboxFlags() &
-        network::mojom::blink::WebSandboxFlags::kOrigin) !=
-       network::mojom::blink::WebSandboxFlags::kNone)) {
-    return false;
-  }
-
-  return frame_->GetDocument()->GetSecurityOrigin()->CanAccess(origin.get());
-}
-
 bool FrameLoader::CancelProvisionalLoaderForNewNavigation() {
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."

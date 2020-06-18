@@ -4,6 +4,8 @@
 
 #include "extensions/shell/browser/desktop_controller.h"
 
+#include <ostream>
+
 #include "base/check.h"
 #include "base/macros.h"
 

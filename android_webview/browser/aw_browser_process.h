@@ -71,6 +71,8 @@ class AwBrowserProcess {
 
   void PreMainMessageLoopRun();
 
+  static void TriggerMinidumpUploading();
+
  private:
   void CreateSafeBrowsingUIManager();
   void CreateSafeBrowsingWhitelistManager();

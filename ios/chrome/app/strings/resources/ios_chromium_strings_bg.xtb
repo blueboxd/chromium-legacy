@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">В момента Chromium не може да използва камерата ви</translation>
 <translation id="2195025571279539885">Искате ли следващия път Chromium да предложи да преведе от <ph name="LANGUAGE_NAME" /> страниците от този сайт?</translation>
 <translation id="2590893390871230428">Синхронизиране на данните ви в Chromium</translation>
+<translation id="2650312721222849884">Включете синхронизирането, за да виждате разделите си навсякъде, където използвате Chromium</translation>
 <translation id="2730884209570016437">Chromium не може да използва камерата ви, защото е заета от друго приложение</translation>
 <translation id="2915596697727466327">Chromium използва Face ID, за да обезпечи упълномощен достъп до паролите ви.</translation>
 <translation id="3256316712990552818">Копирано в Chromium</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Включване на скенера в Chromium</translation>
 <translation id="4787850887676698916">Тук ще се показват разделите, които сте отворили в Chromium на другите си устройства.</translation>
 <translation id="4999538639245140991">Тъй като излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />, данните ви в Chromium ще бъдат изтрити от това устройство, но ще останат в профила ви в Google.</translation>
+<translation id="5521125884468363740">Влезте в профила си и включете синхронизирането, за да виждате разделите си навсякъде, където използвате Chromium</translation>
 <translation id="5573014823074921752">Съвет за Chromium. За да видите още опции за разделите, докоснете и задръжте бутона „Показване на разделите“ в лентата с инструменти в долната или горната част на екрана.</translation>
 <translation id="5777187867430702742">Страница на Chromium</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Съвет за Chromium. Някои бутони, например тези за връщане назад, преминаване напред и търсене, вече са в долната част на екрана.</translation>
 <translation id="786327964234957808">Заменяте настоящия профил за синхронизиране (<ph name="USER_EMAIL1" />) с друг (<ph name="USER_EMAIL2" />). Съществуващите ви данни в Chromium се управляват от <ph name="DOMAIN" />. Те ще се изтрият от това устройство, но ще останат в профила <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Използване на скенера в Chromium</translation>
+<translation id="8013573822802650211">Влезте в профила си на всичките си устройства, за да виждате разделите си навсякъде, където използвате Chromium</translation>
 <translation id="8073677936375100957">Искате ли данните ви в Chromium да бъдат изчистени от устройството?</translation>
 <translation id="8175055321229419309">Съвет: <ph name="BEGIN_LINK" />Преместете Chromium в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Подобрете работата си с Google в Chromium въз основа на местоположението си.</translation>

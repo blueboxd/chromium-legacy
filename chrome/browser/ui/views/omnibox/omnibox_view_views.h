@@ -173,17 +173,21 @@ class OmniboxViewViews : public OmniboxView,
   bool IsDropCursorForInsertion() const override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHover);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
-                           HideOnInteractionAndRevealOnHover);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
-                           HideOnInteractionAfterFocusAndBlur);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, RevealOnHoverAfterBlur);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, PathChangeDuringAnimation);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
-                           HideOnInteractionSameDocNavigations);
-  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest,
-                           HideOnInteractionSubframeNavigations);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, HoverAndExit);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      UserInteractionAndHover);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      HideOnInteractionAfterFocusAndBlur);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsRevealOnHoverTest, AfterBlur);
+  FRIEND_TEST_ALL_PREFIXES(
+      OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
+      PathChangeDuringAnimation);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
+                           SameDocNavigations);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsHideOnInteractionTest,
+                           SubframeNavigations);
   // TODO(tommycli): Remove the rest of these friends after porting these
   // browser tests to unit tests.
   FRIEND_TEST_ALL_PREFIXES(OmniboxViewViewsTest, CloseOmniboxPopupOnTextDrag);

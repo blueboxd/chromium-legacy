@@ -3,6 +3,7 @@
 <translationbundle lang="hu">
 <translation id="1018656279737460067">Megszakítva</translation>
 <translation id="1195447618553298278">Ismeretlen hiba.</translation>
+<translation id="1413240736185167732">Sikertelen – Szűrőhiba</translation>
 <translation id="1468664791493211953">Ajánlatok</translation>
 <translation id="1482734542997480527">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt az eszközt, és előfordulhat, hogy megfigyeli az Ön tevékenységeit.</translation>
 <translation id="150962533380566081">Érvénytelen PUK-kód.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Az eszközt a vállalat felügyeli</translation>
 <translation id="1905710495812624430">Elérte az engedélyezett kísérletek maximális számát.</translation>
 <translation id="1930797645656624981">Chrome OS beviteli módszere szolgáltatás</translation>
+<translation id="1947737735496445907">Sikeres nyomtatás</translation>
 <translation id="1979103255016296513">Esedékes a jelszó frissítése</translation>
 <translation id="2049639323467105390">Ezt az eszközt a(z) <ph name="DOMAIN" /> domain kezeli.</translation>
 <translation id="2338501278241028356">Kapcsolja be a Bluetooth-t a közeli eszközök felfedezéséhez</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Alkalmazások</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="3008341117444806826">FRISSÍTÉS</translation>
+<translation id="3091839911843451378">Sikertelen – Leállítva</translation>
+<translation id="3268178239013324452">Sikertelen – Nyitva van a nyomtató fedele</translation>
 <translation id="3369013195428705271">Biztosan törli a nyomtatási előzményeket? A folyamatban lévő nyomtatási feladatok nem szakadnak meg.</translation>
+<translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> oldal kinyomtatva (összesen ennyiből: <ph name="TOTAL_PAGES" />).</translation>
 <translation id="3515615323037921860">Nyomtatási feladatok</translation>
+<translation id="3527036260304016759">Sikertelen – Ismeretlen hiba</translation>
 <translation id="3749289110408117711">Fájlnév</translation>
 <translation id="38114475217616659">Minden előzmény törlése</translation>
 <translation id="3820172043799983114">Érvénytelen PIN-kód.</translation>
 <translation id="3838338534323494292">Új jelszó</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> oldal összesen ennyiből: <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt az eszközt, ezért hozzáfér az összes felhasználói tevékenységhez, köztük a felkeresett webhelyekhez, a jelszavakhoz és az e-mailekhez.</translation>
+<translation id="4003384961948020559">Sikertelen – Megtelt a kimenet</translation>
 <translation id="4034824040120875894">Nyomtató</translation>
 <translation id="4227825898293920515">A jelszó <ph name="TIME" /> múlva lejár</translation>
+<translation id="428217921675623177">A 90 napnál régebbi nyomtatási feladatokat eltávolítja a rendszer</translation>
 <translation id="4429881212383817840">A Kerberos-jegy hamarosan lejár</translation>
 <translation id="445059817448385655">Régi jelszó</translation>
 <translation id="467510802200863975">A jelszavak nem egyeznek</translation>
@@ -37,24 +46,31 @@
 Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="5317780077021120954">Mentés</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Válasszon most új jelszót</translation>
 <translation id="5457599981699367932">Böngészés vendégként</translation>
 <translation id="54609108002486618">Kezelt</translation>
 <translation id="5832805196449965646">Személy hozzáadása</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
+<translation id="6048107060512778456">Sikertelen – Papírelakadás</translation>
 <translation id="6058625436358447366">A befejezéshez adja meg régi és új jelszavát</translation>
 <translation id="6106186594183574873">A befejezéshez adja meg régi jelszavát</translation>
 <translation id="6146993107019042706">A befejezéshez adja meg új jelszavát</translation>
 <translation id="6517239166834772319">Felfedezés</translation>
+<translation id="6564646048574748301">Sikertelen – Nem lehet hozzáférni a nyomtatóhoz</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="7162487448488904999">Galéria</translation>
+<translation id="7274587244503383581"><ph name="TOTAL_PAGES_NUMBER" />/<ph name="PRINTED_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="7690294790491645610">Új jelszó megerősítése</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="808894953321890993">Jelszó módosítása</translation>
 <translation id="8208861521865154048">Előnyök</translation>
 <translation id="8701136875688985581">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt a felhasználót. A domain távolról módosíthatja a beállításokat, és figyelheti a felhasználó tevékenységeit.</translation>
+<translation id="871560550817059752">Sikertelen – Kifogyott a tinta</translation>
 <translation id="8747900814994928677">Módosítás megerősítése</translation>
+<translation id="8919837981463578619">Sikertelen – Hiányzó tálca</translation>
+<translation id="8928727111548978589">Sikertelen – Kifogyott a papír</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> kísérlet maradt</translation>
 <translation id="910415269708673980">Frissítse a következőhöz tartozó jegyet: <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Feloldás</translation>

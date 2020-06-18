@@ -159,6 +159,9 @@
     "includes": [1700],
     "structures": [1720],
   },
+  "chrome/browser/resources/print_preview/print_preview_pdf_resources.grd": {
+    "includes": [1730],
+  },
   "chrome/browser/resources/settings/os_settings_resources_vulcanized.grd": {
     "includes": [1740],
   },
@@ -174,7 +177,8 @@
     "structures": [1820],
   },
   "chrome/browser/resources/signin/profile_picker/profile_picker_resources.grd": {
-    "structures": [1840],
+    "includes": [1840],
+    "structures": [1850],
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
     "structures": [1860],

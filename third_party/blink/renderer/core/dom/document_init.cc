@@ -517,6 +517,16 @@ DocumentInit& DocumentInit::WithWebBundleClaimedUrl(
   return *this;
 }
 
+bool DocumentInit::ShouldReuseDOMWindow() const {
+  DCHECK(GetFrame());
+  // Secure transitions can only happen when navigating from the initial empty
+  // document.
+  if (!GetFrame()->Loader().StateMachine()->IsDisplayingInitialEmptyDocument())
+    return false;
+  return GetFrame()->GetDocument()->GetSecurityOrigin()->CanAccess(
+      GetDocumentOrigin().get());
+}
+
 Document* DocumentInit::CreateDocument() const {
 #if DCHECK_IS_ON()
   DCHECK(document_loader_ || execution_context_ || for_test_);

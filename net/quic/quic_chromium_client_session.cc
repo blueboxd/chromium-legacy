@@ -136,7 +136,7 @@ void RecordConnectionCloseErrorCode(const quic::QuicConnectionCloseFrame& frame,
                                     quic::ConnectionCloseSource source,
                                     const std::string& hostname,
                                     bool handshake_confirmed) {
-  bool is_google_host = HasGoogleHost(GURL("https://" + hostname));
+  bool is_google_host = IsGoogleHost(hostname);
   std::string histogram = "Net.QuicSession.ConnectionCloseErrorCode";
 
   if (source == quic::ConnectionCloseSource::FROM_SELF) {

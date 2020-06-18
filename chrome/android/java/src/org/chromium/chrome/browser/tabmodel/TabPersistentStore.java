@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateExtractor;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -317,7 +318,7 @@ public class TabPersistentStore extends TabPersister {
                 int id = tab.getId();
                 boolean incognito = tab.isIncognito();
                 try {
-                    TabState state = TabState.from(tab);
+                    TabState state = TabStateExtractor.from(tab);
                     if (state != null) {
                         TabState.saveState(getTabStateFile(id, incognito), state, incognito);
                     }
@@ -1142,7 +1143,7 @@ public class TabPersistentStore extends TabPersister {
         @Override
         protected void onPreExecute() {
             if (mDestroyed || isCancelled()) return;
-            mState = TabState.from(mTab);
+            mState = TabStateExtractor.from(mTab);
         }
 
         @Override

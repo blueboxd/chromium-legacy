@@ -4,6 +4,7 @@
 
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
@@ -23,6 +24,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -43,10 +45,16 @@ const char kSbAppUploadUrl[] =
     "https://safebrowsing.google.com/safebrowsing/uploads/app";
 
 bool IsAdvancedProtectionRequest(const BinaryUploadService::Request& request) {
-  return !request.deep_scanning_request().has_dlp_scan_request() &&
-         request.deep_scanning_request().has_malware_scan_request() &&
-         request.deep_scanning_request().malware_scan_request().population() ==
-             MalwareDeepScanningClientRequest::POPULATION_TITANIUM;
+  if (request.use_legacy_proto()) {
+    return !request.deep_scanning_request().has_dlp_scan_request() &&
+           request.deep_scanning_request().has_malware_scan_request() &&
+           request.deep_scanning_request()
+                   .malware_scan_request()
+                   .population() ==
+               MalwareDeepScanningClientRequest::POPULATION_TITANIUM;
+  } else {
+    return request.device_token().empty();
+  }
 }
 
 std::string ResultToString(BinaryUploadService::Result result) {
@@ -126,7 +134,7 @@ void BinaryUploadService::MaybeUploadForDeepScanningCallback(
   if (!authorized) {
     // TODO(crbug/1028133): Add extra logic to handle UX for non-authorized
     // users.
-    request->FinishRequest(Result::UNAUTHORIZED, DeepScanningClientResponse());
+    request->FinishRequest(Result::UNAUTHORIZED);
     return;
   }
   UploadForDeepScanning(std::move(request));
@@ -149,14 +157,19 @@ void BinaryUploadService::UploadForDeepScanning(
     content::GetUIThreadTaskRunner({})->PostTask(
         FROM_HERE, base::BindOnce(&BinaryUploadService::FinishRequest,
                                   weakptr_factory_.GetWeakPtr(), raw_request,
-                                  Result::FAILED_TO_GET_TOKEN,
-                                  DeepScanningClientResponse()));
+                                  Result::FAILED_TO_GET_TOKEN));
     return;
   }
 
-  binary_fcm_service_->SetCallbackForToken(
-      token, base::BindRepeating(&BinaryUploadService::OnGetResponse,
-                                 weakptr_factory_.GetWeakPtr(), raw_request));
+  if (raw_request->use_legacy_proto()) {
+    binary_fcm_service_->SetCallbackForToken(
+        token, base::BindRepeating(&BinaryUploadService::OnGetLegacyResponse,
+                                   weakptr_factory_.GetWeakPtr(), raw_request));
+  } else {
+    binary_fcm_service_->SetCallbackForToken(
+        token, base::BindRepeating(&BinaryUploadService::OnGetConnectorResponse,
+                                   weakptr_factory_.GetWeakPtr(), raw_request));
+  }
   binary_fcm_service_->GetInstanceID(
       base::BindOnce(&BinaryUploadService::OnGetInstanceID,
                      weakptr_factory_.GetWeakPtr(), raw_request));
@@ -173,8 +186,7 @@ void BinaryUploadService::OnGetInstanceID(Request* request,
     return;
 
   if (instance_id == BinaryFCMService::kInvalidId) {
-    FinishRequest(request, Result::FAILED_TO_GET_TOKEN,
-                  DeepScanningClientResponse());
+    FinishRequest(request, Result::FAILED_TO_GET_TOKEN);
     return;
   }
 
@@ -197,7 +209,7 @@ void BinaryUploadService::OnGetRequestData(Request* request,
     return;
 
   if (result != Result::SUCCESS) {
-    FinishRequest(request, result, DeepScanningClientResponse());
+    FinishRequest(request, result);
     return;
   }
 
@@ -240,7 +252,7 @@ void BinaryUploadService::OnGetRequestData(Request* request,
         )");
 
   std::string metadata;
-  request->deep_scanning_request().SerializeToString(&metadata);
+  request->SerializeToString(&metadata);
   base::Base64Encode(metadata, &metadata);
 
   GURL url = request->url().is_valid()
@@ -251,11 +263,19 @@ void BinaryUploadService::OnGetRequestData(Request* request,
       traffic_annotation,
       base::BindOnce(&BinaryUploadService::OnUploadComplete,
                      weakptr_factory_.GetWeakPtr(), request));
+
+  if (request->use_legacy_proto()) {
+    WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+        request->deep_scanning_request());
+  } else {
+    WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+        request->content_analysis_request());
+  }
+
+  // |request| might have been deleted by the call to Start() in tests, so don't
+  // dereference it afterwards.
   upload_request->Start();
   active_uploads_[request] = std::move(upload_request);
-
-  WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
-      request->deep_scanning_request());
 }
 
 void BinaryUploadService::OnUploadComplete(Request* request,
@@ -265,53 +285,112 @@ void BinaryUploadService::OnUploadComplete(Request* request,
     return;
 
   if (!success) {
-    FinishRequest(request, Result::UPLOAD_FAILURE,
-                  DeepScanningClientResponse());
+    FinishRequest(request, Result::UPLOAD_FAILURE);
     return;
   }
 
-  DeepScanningClientResponse response;
-  if (!response.ParseFromString(response_data)) {
-    FinishRequest(request, Result::UPLOAD_FAILURE,
-                  DeepScanningClientResponse());
-    return;
+  if (request->use_legacy_proto()) {
+    DeepScanningClientResponse response;
+    if (!response.ParseFromString(response_data)) {
+      FinishRequest(request, Result::UPLOAD_FAILURE);
+      return;
+    }
+
+    active_uploads_.erase(request);
+
+    // Synchronous scans can return results in the initial response proto, so
+    // check for those.
+    OnGetLegacyResponse(request, response);
+  } else {
+    enterprise_connectors::ContentAnalysisResponse response;
+    if (!response.ParseFromString(response_data)) {
+      FinishRequest(request, Result::UPLOAD_FAILURE);
+      return;
+    }
+
+    active_uploads_.erase(request);
+
+    // Synchronous scans can return results in the initial response proto, so
+    // check for those.
+    OnGetConnectorResponse(request, response);
   }
-
-  active_uploads_.erase(request);
-
-  // Synchronous scans can return results in the initial response proto, so
-  // check for those.
-  OnGetResponse(request, response);
 }
 
-void BinaryUploadService::OnGetResponse(Request* request,
-                                        DeepScanningClientResponse response) {
+void BinaryUploadService::OnGetConnectorResponse(
+    Request* request,
+    enterprise_connectors::ContentAnalysisResponse response) {
+  if (!IsActive(request))
+    return;
+
+  for (const auto& result : response.results()) {
+    if (result.has_tag() && !result.tag().empty()) {
+      VLOG(1) << "Request " << request->request_token()
+              << " finished scanning tag <" << result.tag() << ">";
+      *received_connector_responses_[request].add_results() = result;
+    }
+  }
+
+  MaybeFinishConnectorRequest(request);
+}
+
+void BinaryUploadService::OnGetLegacyResponse(
+    Request* request,
+    DeepScanningClientResponse response) {
   if (!IsActive(request))
     return;
 
   if (response.has_dlp_scan_verdict()) {
-    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+    VLOG(1) << "Request " << request->request_token()
             << " finished DLP scanning";
     received_dlp_verdicts_[request].reset(response.release_dlp_scan_verdict());
   }
 
   if (response.has_malware_scan_verdict()) {
-    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+    VLOG(1) << "Request " << request->request_token()
             << " finished malware scanning";
     received_malware_verdicts_[request].reset(
         response.release_malware_scan_verdict());
   }
 
-  MaybeFinishRequest(request);
+  MaybeFinishLegacyRequest(request);
 }
 
 void BinaryUploadService::MaybeFinishRequest(Request* request) {
+  if (request->use_legacy_proto())
+    MaybeFinishLegacyRequest(request);
+  else
+    MaybeFinishConnectorRequest(request);
+}
+
+void BinaryUploadService::MaybeFinishConnectorRequest(Request* request) {
+  if (!received_connector_responses_.contains(request))
+    return;
+
+  for (const std::string& tag : request->content_analysis_request().tags()) {
+    const auto& results = received_connector_responses_[request].results();
+    if (std::none_of(
+            results.begin(), results.end(),
+            [&tag](const auto& result) { return result.tag() == tag; })) {
+      VLOG(1) << "Request " << request->request_token() << " is waiting for <"
+              << tag << "> scanning to complete.";
+      return;
+    }
+  }
+
+  // It's OK to move here since the map entry is about to be removed.
+  enterprise_connectors::ContentAnalysisResponse response =
+      std::move(received_connector_responses_[request]);
+  response.set_request_token(request->request_token());
+  FinishConnectorRequest(request, Result::SUCCESS, std::move(response));
+}
+
+void BinaryUploadService::MaybeFinishLegacyRequest(Request* request) {
   bool requested_dlp_scan_response =
       request->deep_scanning_request().has_dlp_scan_request();
   auto received_dlp_response = received_dlp_verdicts_.find(request);
   if (requested_dlp_scan_response &&
       received_dlp_response == received_dlp_verdicts_.end()) {
-    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+    VLOG(1) << "Request " << request->request_token()
             << " is waiting for DLP scanning to complete.";
     return;
   }
@@ -321,13 +400,13 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
   auto received_malware_response = received_malware_verdicts_.find(request);
   if (requested_malware_scan_response &&
       received_malware_response == received_malware_verdicts_.end()) {
-    VLOG(1) << "Request " << request->deep_scanning_request().request_token()
+    VLOG(1) << "Request " << request->request_token()
             << " is waiting for malware scanning to complete.";
     return;
   }
 
   DeepScanningClientResponse response;
-  response.set_token(request->deep_scanning_request().request_token());
+  response.set_token(request->request_token());
   if (requested_dlp_scan_response) {
     // Transfers ownership of the DLP response to |response|.
     response.set_allocated_dlp_scan_verdict(
@@ -340,17 +419,45 @@ void BinaryUploadService::MaybeFinishRequest(Request* request) {
         received_malware_response->second.release());
   }
 
-  FinishRequest(request, Result::SUCCESS, std::move(response));
+  FinishLegacyRequest(request, Result::SUCCESS, std::move(response));
 }
 
 void BinaryUploadService::OnTimeout(Request* request) {
   if (IsActive(request))
-    FinishRequest(request, Result::TIMEOUT, DeepScanningClientResponse());
+    FinishRequest(request, Result::TIMEOUT);
 }
 
-void BinaryUploadService::FinishRequest(Request* request,
-                                        Result result,
-                                        DeepScanningClientResponse response) {
+void BinaryUploadService::FinishRequest(Request* request, Result result) {
+  if (request->use_legacy_proto()) {
+    FinishLegacyRequest(request, result, DeepScanningClientResponse());
+  } else {
+    FinishConnectorRequest(request, result,
+                           enterprise_connectors::ContentAnalysisResponse());
+  }
+}
+
+void BinaryUploadService::FinishConnectorRequest(
+    Request* request,
+    Result result,
+    enterprise_connectors::ContentAnalysisResponse response) {
+  RecordRequestMetrics(request, result, response);
+
+  // We add the request here in case we never actually uploaded anything, so it
+  // wasn't added in OnGetRequestData
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+      request->content_analysis_request());
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
+      active_tokens_[request], ResultToString(result), response);
+
+  std::string instance_id = request->fcm_notification_token();
+  request->FinishConnectorRequest(result, response);
+  FinishRequestCleanup(request, instance_id);
+}
+
+void BinaryUploadService::FinishLegacyRequest(
+    Request* request,
+    Result result,
+    DeepScanningClientResponse response) {
   RecordRequestMetrics(request, result, response);
 
   // We add the request here in case we never actually uploaded anything, so it
@@ -360,15 +467,19 @@ void BinaryUploadService::FinishRequest(Request* request,
   WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
       active_tokens_[request], ResultToString(result), response);
 
-  std::string instance_id =
-      request->deep_scanning_request().fcm_notification_token();
+  std::string instance_id = request->fcm_notification_token();
+  request->FinishLegacyRequest(result, response);
+  FinishRequestCleanup(request, instance_id);
+}
 
-  request->FinishRequest(result, response);
+void BinaryUploadService::FinishRequestCleanup(Request* request,
+                                               const std::string& instance_id) {
   active_requests_.erase(request);
   active_timers_.erase(request);
   active_uploads_.erase(request);
   received_malware_verdicts_.erase(request);
   received_dlp_verdicts_.erase(request);
+  received_connector_responses_.erase(request);
 
   auto token_it = active_tokens_.find(request);
   DCHECK(token_it != active_tokens_.end());
@@ -401,17 +512,42 @@ void BinaryUploadService::InstanceIDUnregisteredCallback(bool) {
   }
 }
 
-void BinaryUploadService::RecordRequestMetrics(
-    Request* request,
-    Result result,
-    const DeepScanningClientResponse& response) {
+void BinaryUploadService::RecordRequestMetrics(Request* request,
+                                               Result result) {
   base::UmaHistogramEnumeration("SafeBrowsingBinaryUploadRequest.Result",
                                 result);
   base::UmaHistogramCustomTimes("SafeBrowsingBinaryUploadRequest.Duration",
                                 base::TimeTicks::Now() - start_times_[request],
                                 base::TimeDelta::FromMilliseconds(1),
                                 base::TimeDelta::FromMinutes(6), 50);
+}
 
+void BinaryUploadService::RecordRequestMetrics(
+    Request* request,
+    Result result,
+    const enterprise_connectors::ContentAnalysisResponse& response) {
+  RecordRequestMetrics(request, result);
+  for (const auto& result : response.results()) {
+    if (result.tag() == "malware") {
+      base::UmaHistogramBoolean(
+          "SafeBrowsingBinaryUploadRequest.MalwareResult",
+          result.status() !=
+              enterprise_connectors::ContentAnalysisResponse::Result::FAILURE);
+    }
+    if (result.tag() == "dlp") {
+      base::UmaHistogramBoolean(
+          "SafeBrowsingBinaryUploadRequest.DlpResult",
+          result.status() !=
+              enterprise_connectors::ContentAnalysisResponse::Result::FAILURE);
+    }
+  }
+}
+
+void BinaryUploadService::RecordRequestMetrics(
+    Request* request,
+    Result result,
+    const DeepScanningClientResponse& response) {
+  RecordRequestMetrics(request, result);
   if (response.has_malware_scan_verdict()) {
     base::UmaHistogramBoolean("SafeBrowsingBinaryUploadRequest.MalwareResult",
                               response.malware_scan_verdict().verdict() !=
@@ -442,11 +578,13 @@ BinaryUploadService::Request::~Request() = default;
 
 void BinaryUploadService::Request::set_request_dlp_scan(
     DlpDeepScanningClientRequest dlp_request) {
+  DCHECK(use_legacy_proto_);
   *deep_scanning_request_.mutable_dlp_scan_request() = std::move(dlp_request);
 }
 
 void BinaryUploadService::Request::set_request_malware_scan(
     MalwareDeepScanningClientRequest malware_request) {
+  DCHECK(use_legacy_proto_);
   *deep_scanning_request_.mutable_malware_scan_request() =
       std::move(malware_request);
 }
@@ -487,31 +625,81 @@ void BinaryUploadService::Request::set_digest(const std::string& digest) {
 }
 
 void BinaryUploadService::Request::clear_dlp_scan_request() {
+  DCHECK(use_legacy_proto_);
   deep_scanning_request_.clear_dlp_scan_request();
 }
 
 void BinaryUploadService::Request::set_analysis_connector(
     enterprise_connectors::AnalysisConnector connector) {
+  DCHECK(!use_legacy_proto_);
   content_analysis_request_.set_analysis_connector(connector);
 }
 
 void BinaryUploadService::Request::set_url(const std::string& url) {
+  DCHECK(!use_legacy_proto_);
   content_analysis_request_.mutable_request_data()->set_url(url);
 }
 
 void BinaryUploadService::Request::set_csd(ClientDownloadRequest csd) {
+  DCHECK(!use_legacy_proto_);
   *content_analysis_request_.mutable_request_data()->mutable_csd() =
       std::move(csd);
 }
 
 void BinaryUploadService::Request::add_tag(const std::string& tag) {
+  DCHECK(!use_legacy_proto_);
   content_analysis_request_.add_tags(tag);
 }
 
-void BinaryUploadService::Request::FinishRequest(
+const std::string& BinaryUploadService::Request::device_token() const {
+  if (use_legacy_proto_)
+    return deep_scanning_request_.dm_token();
+  else
+    return content_analysis_request_.device_token();
+}
+
+const std::string& BinaryUploadService::Request::request_token() const {
+  if (use_legacy_proto_)
+    return deep_scanning_request_.request_token();
+  else
+    return content_analysis_request_.request_token();
+}
+
+const std::string& BinaryUploadService::Request::fcm_notification_token()
+    const {
+  if (use_legacy_proto_)
+    return deep_scanning_request_.fcm_notification_token();
+  else
+    return content_analysis_request_.fcm_notification_token();
+}
+
+void BinaryUploadService::Request::FinishRequest(Result result) {
+  if (use_legacy_proto_) {
+    std::move(callback_).Run(result, DeepScanningClientResponse());
+  } else {
+    std::move(content_analysis_callback_)
+        .Run(result, enterprise_connectors::ContentAnalysisResponse());
+  }
+}
+
+void BinaryUploadService::Request::FinishConnectorRequest(
+    Result result,
+    enterprise_connectors::ContentAnalysisResponse response) {
+  std::move(content_analysis_callback_).Run(result, response);
+}
+
+void BinaryUploadService::Request::FinishLegacyRequest(
     Result result,
     DeepScanningClientResponse response) {
   std::move(callback_).Run(result, response);
+}
+
+void BinaryUploadService::Request::SerializeToString(
+    std::string* destination) const {
+  if (use_legacy_proto_)
+    deep_scanning_request_.SerializeToString(destination);
+  else
+    content_analysis_request_.SerializeToString(destination);
 }
 
 bool BinaryUploadService::IsActive(Request* request) {

@@ -1623,16 +1623,9 @@ void DocumentLoader::InstallNewDocument(
   // object.
   init.CalculateAndCacheDocumentOrigin();
 
-  // A javascript: url or XSLT inherits CSP from the document in which it was
-  // executed.
-  ContentSecurityPolicy* csp =
-      IsJavaScriptURLOrXSLTCommit()
-          ? frame_->GetDocument()->GetContentSecurityPolicy()
-          : content_security_policy_.Get();
-  global_object_reuse_policy_ =
-      GetFrameLoader().ShouldReuseDefaultView(init.GetDocumentOrigin(), csp)
-          ? GlobalObjectReusePolicy::kUseExisting
-          : GlobalObjectReusePolicy::kCreateNew;
+  global_object_reuse_policy_ = init.ShouldReuseDOMWindow()
+                                    ? GlobalObjectReusePolicy::kUseExisting
+                                    : GlobalObjectReusePolicy::kCreateNew;
 
   if (GetFrameLoader().StateMachine()->IsDisplayingInitialEmptyDocument()) {
     GetFrameLoader().StateMachine()->AdvanceTo(

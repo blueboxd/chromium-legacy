@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/notreached.h"
 #include "ui/events/event.h"
 
 namespace {

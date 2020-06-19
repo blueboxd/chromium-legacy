@@ -359,6 +359,11 @@ bool IsAutoJoinAllowed(AutoJoinPolicy policy,
   }
 }
 
+bool IsSiteInitiatedMirroringSource(const MediaSource::Id& source_id) {
+  return base::StartsWith(source_id, kMirroringAppUri,
+                          base::CompareCase::SENSITIVE);
+}
+
 CastAppInfo::CastAppInfo(
     const std::string& app_id,
     BitwiseOr<cast_channel::CastDeviceCapability> required_capabilities)

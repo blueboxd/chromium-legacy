@@ -47,8 +47,22 @@ class DeviceOAuth2TokenStoreDesktop : public DeviceOAuth2TokenStore {
  private:
   void OnServiceAccountIdentityChanged();
 
+  // Called the first time GetRefreshToken is called if |token_decrypted_| is
+  // false. It decrypts |refresh_token_| using OSCrypt and writes it back to
+  // |refresh_token_|.
+  void DecryptToken() const;
+
   PrefService* const local_state_;
-  std::string refresh_token_;
+
+  // This and the |token_decrypted_| field are mutable because they are modified
+  // on the first call to |GetRefreshToken()|, which is const.
+  mutable std::string refresh_token_;
+
+  // The token is decrypted the first time it's read rather than on Init,
+  // because OSCrypt hasn't been initialized early enough on some platforms.
+  // This field is false and |refresh_token_| is encrypted until the first token
+  // read.
+  mutable bool token_decrypted_ = false;
 
   base::WeakPtrFactory<DeviceOAuth2TokenStoreDesktop> weak_ptr_factory_{this};
 };

@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_EVENT_SHIM_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_EVENT_SHIM_H_
 
-#include "content/common/text_input_state.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 
 namespace content {
 
@@ -18,7 +18,8 @@ class InputEventShim {
  public:
   virtual ~InputEventShim() {}
   virtual void DidSetHasTouchEventHandlers(bool accept) = 0;
-  virtual void DidTextInputStateChange(const TextInputState& params) = 0;
+  virtual void DidTextInputStateChange(
+      const ui::mojom::TextInputState& params) = 0;
   virtual void DidLockMouse(bool user_gesture, bool privileged) = 0;
   virtual void DidUnlockMouse() = 0;
 };

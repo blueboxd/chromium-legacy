@@ -8,15 +8,15 @@
 #include <memory>
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_bubble_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
+#include "components/content_settings/browser/ui/cookie_controls_controller.h"
+#include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 
 // View for the cookie control icon in the Omnibox.
 class CookieControlsIconView : public PageActionIconView,
-                               public CookieControlsView {
+                               public content_settings::CookieControlsView {
  public:
   CookieControlsIconView(
       IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
@@ -47,8 +47,10 @@ class CookieControlsIconView : public PageActionIconView,
   CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
   bool has_blocked_cookies_ = false;
 
-  std::unique_ptr<CookieControlsController> controller_;
-  ScopedObserver<CookieControlsController, CookieControlsView> observer_{this};
+  std::unique_ptr<content_settings::CookieControlsController> controller_;
+  ScopedObserver<content_settings::CookieControlsController,
+                 content_settings::CookieControlsView>
+      observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CookieControlsIconView);
 };

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_export.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 
 namespace ash {

@@ -8,8 +8,11 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/version.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/version_info/version_info.h"
 #include "extensions/common/extension.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace media_router {
 
@@ -115,6 +118,23 @@ void MediaRouterMojoMetrics::RecordMediaRouteControllerCreationResult(
     bool success) {
   base::UmaHistogramBoolean(kHistogramProviderRouteControllerCreationOutcome,
                             success);
+}
+
+// static
+void MediaRouterMojoMetrics::RecordTabMirroringMetrics(
+    content::WebContents* web_contents) {
+  ukm::SourceId source_id =
+      ukm::GetSourceIdForWebContentsDocument(web_contents);
+  WebContentsAudioState audio_state = WebContentsAudioState::kWasNeverAudible;
+  if (web_contents->IsCurrentlyAudible()) {
+    audio_state = WebContentsAudioState::kIsCurrentlyAudible;
+  } else if (web_contents->WasEverAudible()) {
+    audio_state = WebContentsAudioState::kWasPreviouslyAudible;
+  }
+
+  ukm::builders::MediaRouter_TabMirroringStarted(source_id)
+      .SetAudioState(static_cast<int>(audio_state))
+      .Record(ukm::UkmRecorder::Get());
 }
 
 // static

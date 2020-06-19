@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -487,6 +488,13 @@ void OptimizationGuideHintsManager::OnHintCacheInitialized() {
     }
   }
 
+  // If the store is available, clear all hint state so newly registered types
+  // can have their hints immediately included in hint fetches.
+  if (hint_cache_->IsHintStoreAvailable() && should_clear_hints_for_new_type_) {
+    ClearHostKeyedHints();
+    should_clear_hints_for_new_type_ = false;
+  }
+
   // Register as an observer regardless of hint proto override usage. This is
   // needed as a signal during testing.
   optimization_guide_service_->AddObserver(this);
@@ -868,7 +876,6 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     const std::vector<optimization_guide::proto::OptimizationType>&
         optimization_types) {
   bool should_load_new_optimization_filter = false;
-  bool should_clear_hints_for_new_type = false;
 
   DictionaryPrefUpdate previously_registered_opt_types(
       pref_service_,
@@ -887,7 +894,7 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
         optimization_guide::proto::OptimizationType_Name(optimization_type));
     if (!value) {
       if (!ShouldIgnoreNewlyRegisteredOptimizationType(optimization_type))
-        should_clear_hints_for_new_type = true;
+        should_clear_hints_for_new_type_ = true;
       previously_registered_opt_types->SetBoolKey(
           optimization_guide::proto::OptimizationType_Name(optimization_type),
           true);
@@ -902,10 +909,12 @@ void OptimizationGuideHintsManager::RegisterOptimizationTypes(
     }
   }
 
-  // Clear all hint state so newly registered types can have their hints
-  // immediately included in hint fetches.
-  if (should_clear_hints_for_new_type)
-    ClearFetchedHints();
+  // If the store is available, clear all hint state so newly registered types
+  // can have their hints immediately included in hint fetches.
+  if (hint_cache_->IsHintStoreAvailable() && should_clear_hints_for_new_type_) {
+    ClearHostKeyedHints();
+    should_clear_hints_for_new_type_ = false;
+  }
 
   if (should_load_new_optimization_filter) {
     if (optimization_guide::switches::IsHintComponentProcessingDisabled()) {
@@ -1347,6 +1356,12 @@ bool OptimizationGuideHintsManager::HasAllInformationForDecisionAvailable(
 
 void OptimizationGuideHintsManager::ClearFetchedHints() {
   hint_cache_->ClearFetchedHints();
+  optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
+      pref_service_);
+}
+
+void OptimizationGuideHintsManager::ClearHostKeyedHints() {
+  hint_cache_->ClearHostKeyedHints();
   optimization_guide::HintsFetcher::ClearHostsSuccessfullyFetched(
       pref_service_);
 }

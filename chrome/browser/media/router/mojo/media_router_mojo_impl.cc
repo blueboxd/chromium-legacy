@@ -34,14 +34,11 @@
 #include "chrome/common/media_router/media_source.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/sessions/content/session_tab_helper.h"
-#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/desktop_streams_registry.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace media_router {
@@ -295,7 +292,7 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
         CastRemotingConnector::Get(web_contents);
     connector->ResetRemotingPermission();
 
-    RecordTabMirroringMetrics(web_contents);
+    MediaRouterMojoMetrics::RecordTabMirroringMetrics(web_contents);
   }
 
   MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());
@@ -1135,22 +1132,6 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
           },
           std::move(mr_callback), weak_factory_.GetWeakPtr(),
           request.stream_id));
-}
-
-void MediaRouterMojoImpl::RecordTabMirroringMetrics(
-    content::WebContents* web_contents) {
-  ukm::SourceId source_id =
-      ukm::GetSourceIdForWebContentsDocument(web_contents);
-  WebContentsAudioState audio_state = WebContentsAudioState::kWasNeverAudible;
-  if (web_contents->IsCurrentlyAudible()) {
-    audio_state = WebContentsAudioState::kIsCurrentlyAudible;
-  } else if (web_contents->WasEverAudible()) {
-    audio_state = WebContentsAudioState::kWasPreviouslyAudible;
-  }
-
-  ukm::builders::MediaRouter_TabMirroringStarted(source_id)
-      .SetAudioState(static_cast<int>(audio_state))
-      .Record(ukm::UkmRecorder::Get());
 }
 
 }  // namespace media_router

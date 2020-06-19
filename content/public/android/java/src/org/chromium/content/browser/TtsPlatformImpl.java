@@ -279,7 +279,7 @@ class TtsPlatformImpl implements ActivityStateListener {
      * we can call TtsPlatformImplJni.get().voicesChanged directly.
      */
     private void initialize() {
-        TraceEvent.begin("TtsPlatformImpl:initialize");
+        TraceEvent.startAsync("TtsPlatformImpl:initialize", hashCode());
 
         new AsyncTask<List<TtsVoice>>() {
             @Override
@@ -323,7 +323,8 @@ class TtsPlatformImpl implements ActivityStateListener {
 
                 if (mPendingUtterance != null) mPendingUtterance.speak();
 
-                TraceEvent.end("TtsPlatformImpl:initialize");
+                TraceEvent.finishAsync(
+                        "TtsPlatformImpl:initialize", TtsPlatformImpl.this.hashCode());
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }

@@ -79,6 +79,9 @@ message ClientContextProto {
   }
   // Whether the account from the intent and the chrome account match.
   optional AccountsMatchingStatus accounts_matching_status = 12;
+
+  // Whether a11y (talkback and touch exploration) is enabled or not.
+  optional bool accessibility_enabled = 13;
 }
 
 // Get the list of scripts that can potentially be run on a url.

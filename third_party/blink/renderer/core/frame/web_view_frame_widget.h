@@ -67,7 +67,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebInputEventResult DispatchBufferedTouchEvents() override;
   void SetCursorVisibilityState(bool is_visible) override;
   void MouseCaptureLost() override;
-  void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   WebURL GetURLForDebugTrace() override;
   WebString GetLastToolTipTextForTesting() const override;
@@ -107,6 +106,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
       cc::ElementId scroll_latched_element_id) override;
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
+  void FocusChanged(bool enabled) override;
 
   void Trace(Visitor*) const override;
 

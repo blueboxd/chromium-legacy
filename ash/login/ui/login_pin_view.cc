@@ -474,6 +474,14 @@ LoginPinView::LoginPinView(Style keyboard_style,
     row->AddChildView(submit_button_);
 }
 
+LoginPinView::LoginPinView(Style keyboard_style,
+                           const OnPinKey& on_key,
+                           const OnPinBackspace& on_backspace)
+    : LoginPinView(keyboard_style,
+                   on_key,
+                   on_backspace,
+                   base::RepeatingClosure()) {}
+
 LoginPinView::~LoginPinView() = default;
 
 void LoginPinView::NotifyAccessibilityLocationChanged() {

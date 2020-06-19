@@ -236,6 +236,15 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q050, false)
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
 
+// A testonly reloadable flag that will always default to true.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_true, true)
+
+// A testonly restart flag that will always default to false.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_testonly_default_false, false)
+
+// A testonly restart flag that will always default to true.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_testonly_default_true, true)
+
 // In BBR, slow pacing rate if it is likely causing overshoot.
 QUIC_FLAG(
     bool,

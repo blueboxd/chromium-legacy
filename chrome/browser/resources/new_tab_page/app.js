@@ -576,7 +576,8 @@ class AppElement extends PolymerElement {
    * @private
    */
   computeDoodleAllowed_() {
-    return !this.showBackgroundImage_ && this.theme_ &&
+    return loadTimeData.getBoolean('themeModeDoodlesEnabled') ||
+        !this.showBackgroundImage_ && this.theme_ &&
         this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT &&
         !this.theme_.isDark;
   }

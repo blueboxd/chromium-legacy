@@ -25,6 +25,7 @@ const char* GetInvalidationMetricName(PolicyInvalidationScope scope) {
     case PolicyInvalidationScope::kDevice:
       return kMetricDeviceRemoteCommandInvalidations;
     case PolicyInvalidationScope::kDeviceLocalAccount:
+    case PolicyInvalidationScope::kCBCM:
       NOTREACHED() << "Unexpected instance of remote commands invalidator with "
                       "device local account scope.";
       return "";
@@ -42,6 +43,7 @@ std::string ComposeOwnerName(PolicyInvalidationScope scope) {
     case PolicyInvalidationScope::kDevice:
       return "RemoteCommands.Device";
     case PolicyInvalidationScope::kDeviceLocalAccount:
+    case PolicyInvalidationScope::kCBCM:
       NOTREACHED() << "Unexpected instance of remote commands invalidator with "
                       "device local account scope.";
       return "";
@@ -89,12 +91,10 @@ void RemoteCommandsInvalidatorImpl::DoRemoteCommandsFetch(
   core_->remote_commands_service()->FetchRemoteCommands();
 }
 
-void RemoteCommandsInvalidatorImpl::OnCoreConnected(CloudPolicyCore* core) {
-}
+void RemoteCommandsInvalidatorImpl::OnCoreConnected(CloudPolicyCore* core) {}
 
 void RemoteCommandsInvalidatorImpl::OnRefreshSchedulerStarted(
-    CloudPolicyCore* core) {
-}
+    CloudPolicyCore* core) {}
 
 void RemoteCommandsInvalidatorImpl::OnCoreDisconnecting(CloudPolicyCore* core) {
   Stop();
@@ -109,8 +109,7 @@ void RemoteCommandsInvalidatorImpl::OnStoreLoaded(CloudPolicyStore* core) {
   ReloadPolicyData(core_->store()->policy());
 }
 
-void RemoteCommandsInvalidatorImpl::OnStoreError(CloudPolicyStore* core) {
-}
+void RemoteCommandsInvalidatorImpl::OnStoreError(CloudPolicyStore* core) {}
 
 void RemoteCommandsInvalidatorImpl::RecordInvalidationMetric(
     const syncer::Invalidation& invalidation) const {

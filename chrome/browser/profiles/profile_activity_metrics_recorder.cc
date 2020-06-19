@@ -179,8 +179,6 @@ void ProfileActivityMetricsRecorder::OnProfileWillBeDestroyed(
   // TODO(crbug.com/1096145): explore having
   // DesktopSessionDurationTracker call OnSessionEnded() when the
   // profile is destroyed. Remove this workaround if this is done.
-  RecordProfileSessionDuration(last_active_profile_,
-                               base::TimeTicks::Now() - profile_session_start_);
   profile_observer_.Remove(last_active_profile_);
   last_active_profile_ = nullptr;
   last_profile_session_end_ = base::TimeTicks::Now();

@@ -4,6 +4,7 @@
 
 #include "content/renderer/performance_manager/v8_per_frame_memory_reporter_impl.h"
 
+#include "base/containers/flat_map.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -44,6 +45,9 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
 
     result->unassociated_bytes_used = unattributed_size_in_bytes;
 
+    // Keep track of the per-frame data throughout this loop.
+    base::flat_map<blink::WebLocalFrame*, mojom::PerFrameV8MemoryUsageDataPtr>
+        frames;
     for (const auto& context_and_size : context_sizes_in_bytes) {
       const v8::Local<v8::Context>& context = context_and_size.first;
       const size_t size = context_and_size.second;
@@ -58,14 +62,14 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         ++(result->num_unassociated_contexts);
         result->unassociated_context_bytes_used += size;
       } else {
-        base::UnguessableToken token = frame->Client()->GetDevToolsFrameToken();
-
         mojom::PerFrameV8MemoryUsageData* per_frame_resources =
-            result->associated_memory[token].get();
+            frames[frame].get();
         if (!per_frame_resources) {
           auto new_resources = mojom::PerFrameV8MemoryUsageData::New();
+          new_resources->dev_tools_token =
+              frame->Client()->GetDevToolsFrameToken();
           per_frame_resources = new_resources.get();
-          result->associated_memory[token] = std::move(new_resources);
+          frames[frame] = std::move(new_resources);
         }
 
         mojom::V8IsolatedWorldMemoryUsagePtr isolated_world_usage =
@@ -86,6 +90,9 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
             std::move(isolated_world_usage);
       }
     }
+    // Move the per-frame memory values to the result.
+    for (auto& entry : frames)
+      result->associated_memory.push_back(std::move(entry.second));
 
     std::move(callback_).Run(std::move(result));
   }

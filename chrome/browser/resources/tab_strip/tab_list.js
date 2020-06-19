@@ -711,8 +711,8 @@ export class TabListElement extends CustomElement {
   placeTabElement(element, index, pinned, groupId) {
     const isInserting = !element.isConnected;
 
-    // TODO(johntlee): Animate pinned tabs and grouped tabs.
-    const shouldAnimate = !pinned && !groupId && !isInserting;
+    // TODO(johntlee): Animate pinned tabs.
+    const shouldAnimate = !pinned && !isInserting;
 
     // Cache the previous and next element siblings as these will be needed
     // after the placement to determine which tabs to animate.
@@ -739,7 +739,16 @@ export class TabListElement extends CustomElement {
    * @param {number} index
    */
   placeTabGroupElement(element, index) {
-    element.remove();
+    if (element.isConnected && element.childElementCount &&
+        this.getIndexOfTab(
+            /** @type {!TabElement} */ (element.firstElementChild)) < index) {
+      // If moving after its original position, the index value needs to be
+      // offset by 1 to consider itself already attached to the DOM.
+      index++;
+    }
+
+    const initialDomPrevSibling = element.previousElementSibling;
+    const initialDomNextSibling = element.nextElementSibling;
 
     let elementAtIndex = this.$all('tabstrip-tab')[index];
     if (elementAtIndex && elementAtIndex.parentElement &&
@@ -748,6 +757,7 @@ export class TabListElement extends CustomElement {
     }
 
     this.unpinnedTabsElement_.insertBefore(element, elementAtIndex);
+    animateElementMoved(element, initialDomPrevSibling, initialDomNextSibling);
   }
 
   /** @private */

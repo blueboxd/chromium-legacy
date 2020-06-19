@@ -80,6 +80,11 @@ class SaveUpdateWithAccountStoreBubbleController
   // account is signed in.
   ui::ImageModel GetPrimaryAccountAvatar(int icon_size_dip);
 
+  // Users need to reauth to their account to opt-in using their password
+  // account storage. This method returns whether account auth attempt during
+  // the last password save process failed or not.
+  bool DidAuthForAccountStoreOptInFail() const;
+
   // PasswordBubbleControllerBase methods:
   base::string16 GetTitle() const override;
 

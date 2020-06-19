@@ -30,6 +30,7 @@ group("updater") {
 # Conditional build is needed, otherwise the analyze script on Linux
 # requires all targets and it is going to include the targets below.
 if (is_win || is_mac) {
+  # This target must only have platform-neutral sources.
   source_set("base") {
     sources = [
       "action_handler.h",
@@ -39,24 +40,12 @@ if (is_win || is_mac) {
       "crash_client.h",
       "crash_reporter.cc",
       "crash_reporter.h",
-      "dm_cached_policy_info.cc",
-      "dm_cached_policy_info.h",
-      "dm_policy_manager.cc",
-      "dm_policy_manager.h",
-      "dm_storage.cc",
-      "dm_storage.h",
-      "external_constants.cc",
-      "external_constants.h",
-      "external_constants_impl.h",
       "patcher.cc",
       "patcher.h",
       "persisted_data.cc",
       "persisted_data.h",
       "policy_manager.cc",
       "policy_manager.h",
-      "prefs.cc",
-      "prefs.h",
-      "prefs_impl.h",
       "registration_data.cc",
       "registration_data.h",
       "unzipper.cc",
@@ -70,7 +59,6 @@ if (is_win || is_mac) {
     deps = [
       ":version_header",
       "//base",
-      "//chrome/updater/protos:omaha_proto",
       "//components/crash/core/common:crash_key_lib",
       "//components/prefs",
       "//components/update_client",
@@ -81,27 +69,6 @@ if (is_win || is_mac) {
       "//third_party/zlib/google:zip",
       "//url",
     ]
-
-    public_deps = [ "//components/policy/proto" ]
-
-    if (is_mac) {
-      sources += [
-        "dm_storage_mac.mm",
-        "external_constants_mac.mm",
-        "prefs_mac.mm",
-      ]
-    }
-
-    if (is_win) {
-      sources += [
-        "dm_storage_win.cc",
-        "external_constants_win.cc",
-        "prefs_win.cc",
-        "win/group_policy_manager.cc",
-        "win/group_policy_manager.h",
-      ]
-      deps += [ "//chrome/updater/win:constants" ]
-    }
   }
 
   source_set("lib") {
@@ -114,9 +81,21 @@ if (is_win || is_mac) {
       "app/app_wake.h",
       "configurator.cc",
       "configurator.h",
+      "dm_cached_policy_info.cc",
+      "dm_cached_policy_info.h",
+      "dm_policy_manager.cc",
+      "dm_policy_manager.h",
+      "dm_storage.cc",
+      "dm_storage.h",
+      "external_constants.cc",
+      "external_constants.h",
+      "external_constants_impl.h",
       "installer.cc",
       "installer.h",
       "lib_util.h",
+      "prefs.cc",
+      "prefs.h",
+      "prefs_impl.h",
       "tag.cc",
       "tag.h",
       "update_apps.h",
@@ -135,10 +114,13 @@ if (is_win || is_mac) {
         "app/server/mac/service_protocol.mm",
         "app/server/mac/update_service_wrappers.h",
         "app/server/mac/update_service_wrappers.mm",
+        "dm_storage_mac.mm",
+        "external_constants_mac.mm",
         "installer_mac.cc",
         "lib_util_mac.mm",
         "mac/update_service_out_of_process.h",
         "mac/update_service_out_of_process.mm",
+        "prefs_mac.mm",
         "update_apps_mac.mm",
       ]
     }
@@ -153,9 +135,14 @@ if (is_win || is_mac) {
         "app/server/win/server.h",
         "app/server/win/service_main.cc",
         "app/server/win/service_main.h",
+        "dm_storage_win.cc",
+        "external_constants_win.cc",
         "installer_win.cc",
         "lib_util_win.cc",
+        "prefs_win.cc",
         "update_apps_win.cc",
+        "win/group_policy_manager.cc",
+        "win/group_policy_manager.h",
       ]
     }
 
@@ -163,6 +150,7 @@ if (is_win || is_mac) {
       ":base",
       ":version_header",
       "//base",
+      "//chrome/updater/protos:omaha_proto",
       "//components/crash/core/common:crash_key",
       "//components/crx_file:crx_file",
       "//components/prefs",
@@ -170,6 +158,7 @@ if (is_win || is_mac) {
       "//components/version_info",
       "//url",
     ]
+    public_deps = [ "//components/policy/proto" ]
 
     if (is_win) {
       deps += [

@@ -381,7 +381,7 @@ void RenderViewTest::SetUp() {
   if (!render_thread_)
     render_thread_ = std::make_unique<MockRenderThread>();
 
-  render_widget_host_.reset(new FakeRenderWidgetHost());
+  render_widget_host_ = CreateRenderWidgetHost();
 
   // Blink needs to be initialized before calling CreateContentRendererClient()
   // because it uses blink internally.
@@ -830,6 +830,10 @@ ContentBrowserClient* RenderViewTest::CreateContentBrowserClient() {
 
 ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
+}
+
+std::unique_ptr<FakeRenderWidgetHost> RenderViewTest::CreateRenderWidgetHost() {
+  return std::make_unique<FakeRenderWidgetHost>();
 }
 
 VisualProperties RenderViewTest::InitialVisualProperties() {

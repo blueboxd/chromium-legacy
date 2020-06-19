@@ -383,8 +383,6 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   // Callback called by MRP's CreateMediaRouteController().
   void OnMediaControllerCreated(const MediaRoute::Id& route_id, bool success);
 
-  void RecordTabMirroringMetrics(content::WebContents* web_contents);
-
   // Method for obtaining a pointer to the provider associated with the given
   // object. Returns a nullopt when such a provider is not found.
   base::Optional<MediaRouteProviderId> GetProviderIdForSink(

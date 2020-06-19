@@ -27,6 +27,7 @@
 #include "components/password_manager/core/browser/password_generation_manager.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/possible_username_data.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -437,7 +438,9 @@ void PasswordFormManager::OnPasswordsRevealed() {
 }
 
 void PasswordFormManager::MoveCredentialsToAccountStore() {
-  password_save_manager_->MoveCredentialsToAccountStore();
+  password_save_manager_->MoveCredentialsToAccountStore(
+      metrics_util::MoveToAccountStoreTrigger::
+          kSuccessfulLoginWithProfileStorePassword);
 }
 
 void PasswordFormManager::BlockMovingCredentialsToAccountStore() {

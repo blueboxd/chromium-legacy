@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/node.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -995,8 +996,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   for (PseudoId pseudo_id = kFirstPublicPseudoId;
        pseudo_id < kAfterLastInternalPseudoId;
        pseudo_id = static_cast<PseudoId>(pseudo_id + 1)) {
-    if (pseudo_id == kPseudoIdMarker &&
-        !RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
+    if (!PseudoElement::IsWebExposed(pseudo_id, element))
       continue;
     // If the pseudo-element doesn't exist, exclude UA rules to avoid cluttering
     // all elements.

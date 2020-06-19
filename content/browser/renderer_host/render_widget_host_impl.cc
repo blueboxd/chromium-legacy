@@ -71,7 +71,6 @@
 #include "content/common/drag_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
@@ -644,10 +643,6 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(WidgetHostMsg_UpdateScreenRects_ACK,
                         OnUpdateScreenRectsAck)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_RequestSetBounds, OnRequestSetBounds)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_TextInputStateChanged,
-                        OnTextInputStateChanged)
-    IPC_MESSAGE_HANDLER(WidgetHostMsg_SelectionBoundsChanged,
-                        OnSelectionBoundsChanged)
     IPC_MESSAGE_HANDLER(DragHostMsg_StartDragging, OnStartDragging)
     IPC_MESSAGE_HANDLER(DragHostMsg_UpdateDragCursor, OnUpdateDragCursor)
     IPC_MESSAGE_HANDLER(WidgetHostMsg_FrameSwapMessages,
@@ -1942,10 +1937,15 @@ void RenderWidgetHostImpl::SelectionChanged(const base::string16& text,
     view_->SelectionChanged(text, static_cast<size_t>(offset), range);
 }
 
-void RenderWidgetHostImpl::OnSelectionBoundsChanged(
-    const WidgetHostMsg_SelectionBounds_Params& params) {
+void RenderWidgetHostImpl::SelectionBoundsChanged(
+    const gfx::Rect& anchor_rect,
+    base::i18n::TextDirection anchor_dir,
+    const gfx::Rect& focus_rect,
+    base::i18n::TextDirection focus_dir,
+    bool is_anchor_first) {
   if (view_)
-    view_->SelectionBoundsChanged(params);
+    view_->SelectionBoundsChanged(anchor_rect, anchor_dir, focus_rect,
+                                  focus_dir, is_anchor_first);
 }
 
 void RenderWidgetHostImpl::OnStartDragging(
@@ -2580,10 +2580,10 @@ TouchEmulator* RenderWidgetHostImpl::GetExistingTouchEmulator() {
   return delegate_->GetInputEventRouter()->GetTouchEmulator();
 }
 
-void RenderWidgetHostImpl::OnTextInputStateChanged(
-    const TextInputState& params) {
+void RenderWidgetHostImpl::TextInputStateChanged(
+    ui::mojom::TextInputStatePtr state) {
   if (view_)
-    view_->TextInputStateChanged(params);
+    view_->TextInputStateChanged(*state);
 }
 
 void RenderWidgetHostImpl::OnImeCompositionRangeChanged(

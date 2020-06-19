@@ -331,7 +331,6 @@ class CONTENT_EXPORT RenderWidget
   void DidCommitAndDrawCompositorFrame() override;
   void DidCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidCompletePageScaleAnimation() override;
-  void WillBeginMainFrame() override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
   void DidHandleGestureScrollEvent(
@@ -344,8 +343,6 @@ class CONTENT_EXPORT RenderWidget
                      const gfx::PointF& position_in_viewport,
                      const gfx::Vector2dF& velocity_in_viewport,
                      cc::OverscrollBehavior overscroll_behavior) override;
-  void ShowVirtualKeyboard() override;
-  void UpdateTextInputState() override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
   void QueueSyntheticEvent(
@@ -356,6 +353,15 @@ class CONTENT_EXPORT RenderWidget
       blink::CrossVariantMojoRemote<
           blink::mojom::WidgetInputHandlerHostInterfaceBase>
           widget_input_host_remote) override;
+  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override;
+  void SendCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) override;
+  bool CanComposeInline() override;
+  bool ShouldDispatchImeEventsToPepper() override;
+  blink::WebTextInputType GetPepperTextInputType() override;
+  gfx::Rect GetPepperCaretBounds() override;
+  void FocusChanged(bool enable) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
@@ -363,11 +369,7 @@ class CONTENT_EXPORT RenderWidget
   // position.
   float GetEmulatorScale() const override;
 
-  void ClearTextInputState();
-
-  // Override point to obtain that the current input method state and caret
-  // position.
-  ui::TextInputType GetTextInputType();
+  void UpdateTextInputState();
 
   // Sends a request to the browser to close this RenderWidget.
   void CloseWidgetSoon();
@@ -415,19 +417,10 @@ class CONTENT_EXPORT RenderWidget
   // handle composition range and composition character bounds.
   // If immediate_request is true, render sends the latest composition info to
   // the browser even if the composition info is not changed.
-  void UpdateCompositionInfo(bool immediate_request);
-
-  // Override point to obtain that the current composition character bounds.
-  // In the case of surrogate pairs, the character is treated as two characters:
-  // the bounds for first character is actual one, and the bounds for second
-  // character is zero width rectangle.
-  void GetCompositionCharacterBounds(std::vector<gfx::Rect>* character_bounds);
+  void UpdateCompositionInfo();
 
   // Called when the Widget has changed size as a result of an auto-resize.
   void DidAutoResize(const gfx::Size& new_size);
-
-  // Indicates whether this widget has focus.
-  bool has_focus() const { return has_focus_; }
 
   MouseLockDispatcher* mouse_lock_dispatcher() const {
     return mouse_lock_dispatcher_.get();
@@ -652,20 +645,6 @@ class CONTENT_EXPORT RenderWidget
       scoped_refptr<IPC::SyncMessageFilter> sync_message_filter,
       int source_frame_number);
 
-  // Returns the range of the text that is being composed or the selection if
-  // the composition does not exist.
-  void GetCompositionRange(gfx::Range* range);
-
-  // Returns true if the composition range or composition character bounds
-  // should be sent to the browser process.
-  bool ShouldUpdateCompositionInfo(
-      const gfx::Range& range,
-      const std::vector<gfx::Rect>& bounds);
-
-  // Override point to obtain that the current input method state about
-  // composition text.
-  bool CanComposeInline();
-
   // Set the pending window rect.
   // Because the real render_widget is hosted in another process, there is
   // a time period where we may have set a new window rect which has not yet
@@ -820,42 +799,6 @@ class CONTENT_EXPORT RenderWidget
   // the browser if they disagree.
   bool synchronous_resize_mode_for_testing_ = false;
 
-  // Stores information about the current text input.
-  blink::WebTextInputInfo text_input_info_;
-
-  // Stores the current text input type of |webwidget_|.
-  ui::TextInputType text_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
-
-  // Stores the current text input mode of |webwidget_|.
-  ui::TextInputMode text_input_mode_ = ui::TEXT_INPUT_MODE_DEFAULT;
-
-  // Stores the current virtualkeyboardpolicy of |webwidget_|.
-  ui::mojom::VirtualKeyboardPolicy vk_policy_ =
-      ui::mojom::VirtualKeyboardPolicy::AUTO;
-
-  // Stores the current text input flags of |webwidget_|.
-  int text_input_flags_ = 0;
-
-  // Indicates whether currently focused input field has next/previous focusable
-  // form input field.
-  int next_previous_flags_;
-
-  // Stores the current type of composition text rendering of |webwidget_|.
-  bool can_compose_inline_ = true;
-
-  // Stores whether the IME should always be hidden for |webwidget_|.
-  bool always_hide_ime_ = false;
-
-  // Stores the current selection bounds.
-  gfx::Rect selection_focus_rect_;
-  gfx::Rect selection_anchor_rect_;
-
-  // Stores the current composition character bounds.
-  std::vector<gfx::Rect> composition_character_bounds_;
-
-  // Stores the current composition range.
-  gfx::Range composition_range_ = gfx::Range::InvalidRange();
-
   // While we are waiting for the browser to update window sizes, we track the
   // pending size temporarily.
   int pending_window_rect_count_ = 0;
@@ -880,9 +823,6 @@ class CONTENT_EXPORT RenderWidget
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;
-
-  // True if the IME requests updated composition info.
-  bool monitor_composition_info_ = false;
 
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
 
@@ -909,9 +849,6 @@ class CONTENT_EXPORT RenderWidget
   std::unique_ptr<MouseLockDispatcher::LockTarget> webwidget_mouse_lock_target_;
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
-
-  // Indicates whether this widget has focus.
-  bool has_focus_ = false;
 
   // Whether this widget is for a child local root frame. This excludes widgets
   // that are not for a frame (eg popups) and excludes the widget for the main

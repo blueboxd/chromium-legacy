@@ -27,8 +27,8 @@ import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.Pe
 import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.site_settings.CookieControlsBridge;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
+import org.chromium.components.content_settings.CookieControlsBridge;
 import org.chromium.components.content_settings.CookieControlsObserver;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.page_info.PageInfoControllerDelegate;

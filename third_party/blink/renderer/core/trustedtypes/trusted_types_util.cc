@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
@@ -12,6 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/script/script_element_base.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script.h"
@@ -42,6 +44,11 @@ enum TrustedTypeViolationKind {
   kScriptExecution,
   kScriptExecutionAndDefaultPolicyFailed,
 };
+
+const char kFunctionConstructorFailureConsoleMessage[] =
+    "The JavaScript Function constructor does not accept TrustedString "
+    "arguments. See https://github.com/w3c/webappsec-trusted-types/wiki/"
+    "Trusted-Types-for-function-constructor for more information.";
 
 const char* GetMessage(TrustedTypeViolationKind kind) {
   switch (kind) {
@@ -165,6 +172,23 @@ bool TrustedTypeFail(TrustedTypeViolationKind kind,
               prefix == "Function" ? value.Substring(strlen(kAnonymousPrefix))
                                    : value,
               prefix);
+
+  // TODO(1087743): Add a console message for Trusted Type-related Function
+  // constructor failures, to warn the developer of the outstanding issues
+  // with TT and Function  constructors. This should be removed once the
+  // underlying issue has been fixed.
+  if (prefix == "Function" && !allow) {
+    DCHECK(kind == kTrustedScriptAssignment ||
+           kind == kTrustedScriptAssignmentAndDefaultPolicyFailed ||
+           kind == kTrustedScriptAssignmentAndNoDefaultPolicyExisted);
+    execution_context->GetSecurityContext()
+        .GetContentSecurityPolicy()
+        ->LogToConsole(MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kRecommendation,
+            mojom::blink::ConsoleMessageLevel::kInfo,
+            kFunctionConstructorFailureConsoleMessage));
+  }
+
   if (!allow) {
     exception_state.ThrowTypeError(GetMessage(kind));
   }

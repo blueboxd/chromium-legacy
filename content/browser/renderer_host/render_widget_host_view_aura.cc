@@ -45,7 +45,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_view_host.h"
@@ -73,6 +72,7 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/input_method.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/dip_util.h"
@@ -1300,12 +1300,13 @@ bool RenderWidgetHostViewAura::GetTextRange(gfx::Range* range) const {
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputState* state = text_input_manager_->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      text_input_manager_->GetTextInputState();
   if (!state)
     return false;
 
   range->set_start(0);
-  range->set_end(state->value.length());
+  range->set_end(state->value ? state->value->length() : 0);
   return true;
 }
 
@@ -1314,13 +1315,13 @@ bool RenderWidgetHostViewAura::GetCompositionTextRange(
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputState* state = text_input_manager_->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      text_input_manager_->GetTextInputState();
   // Return false when there is no composition.
-  if (!state || state->composition_start == -1)
+  if (!state || !state->composition)
     return false;
 
-  range->set_start(state->composition_start);
-  range->set_end(state->composition_end);
+  *range = state->composition.value();
   return true;
 }
 
@@ -1329,12 +1330,12 @@ bool RenderWidgetHostViewAura::GetEditableSelectionRange(
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputState* state = text_input_manager_->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      text_input_manager_->GetTextInputState();
   if (!state)
     return false;
 
-  range->set_start(state->selection_start);
-  range->set_end(state->selection_end);
+  *range = state->selection;
   return true;
 }
 
@@ -1360,7 +1361,8 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
   if (!text_input_manager_ || !GetFocusedWidget())
     return false;
 
-  const TextInputState* state = text_input_manager_->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      text_input_manager_->GetTextInputState();
   if (!state)
     return false;
 
@@ -1371,11 +1373,15 @@ bool RenderWidgetHostViewAura::GetTextFromRange(
     text->clear();
     return false;
   }
+  if (!state->value) {
+    text->clear();
+    return true;
+  }
   if (text_range.EqualsIgnoringDirection(range)) {
     // Avoid calling substr whose performance is low.
-    *text = state->value;
+    *text = *state->value;
   } else {
-    *text = state->value.substr(range.GetMin(), range.length());
+    *text = state->value->substr(range.GetMin(), range.length());
   }
   return true;
 }
@@ -1472,7 +1478,8 @@ void RenderWidgetHostViewAura::GetActiveTextInputControlLayoutBounds(
     base::Optional<gfx::Rect>* control_bounds,
     base::Optional<gfx::Rect>* selection_bounds) {
   if (text_input_manager_) {
-    const TextInputState* state = text_input_manager_->GetTextInputState();
+    const ui::mojom::TextInputState* state =
+        text_input_manager_->GetTextInputState();
     if (state) {
       if (state->edit_context_control_bounds)
         *control_bounds =
@@ -2375,7 +2382,8 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
   if (did_update_state)
     GetInputMethod()->OnTextInputTypeChanged(this);
 
-  const TextInputState* state = text_input_manager_->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      text_input_manager_->GetTextInputState();
   if (state && state->type != ui::TEXT_INPUT_TYPE_NONE &&
       state->mode != ui::TEXT_INPUT_MODE_NONE) {
     bool show_virtual_keyboard = true;

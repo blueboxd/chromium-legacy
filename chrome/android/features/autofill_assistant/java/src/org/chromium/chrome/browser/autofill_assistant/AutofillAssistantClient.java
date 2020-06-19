@@ -18,6 +18,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
+import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
 import org.chromium.components.signin.AccessTokenData;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.IdentityManager;
@@ -355,6 +356,12 @@ class AutofillAssistantClient {
     @CalledByNative
     private String getDeviceModel() {
         return Build.MODEL;
+    }
+
+    /** Returns whether a11y is enabled or not. */
+    @CalledByNative
+    private boolean isAccessibilityEnabled() {
+        return ChromeAccessibilityUtil.get().isAccessibilityEnabled();
     }
 
     /** Adds a dynamic action to the given reporter. */

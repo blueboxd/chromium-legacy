@@ -8,15 +8,14 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/i18n/rtl.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/common/text_input_state.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 #include "ui/gfx/selection_bound.h"
-
-struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace content {
 
@@ -148,7 +147,7 @@ class CONTENT_EXPORT TextInputManager {
   // Returns the currently stored TextInputState for |active_view_|. A state of
   // nullptr can be interpreted as a ui::TextInputType of
   // ui::TEXT_INPUT_TYPE_NONE.
-  const TextInputState* GetTextInputState() const;
+  const ui::mojom::TextInputState* GetTextInputState() const;
 
   // Returns the selection bounds information for |view|. If |view| == nullptr,
   // it will return the corresponding information for |active_view_| or nullptr
@@ -172,7 +171,7 @@ class CONTENT_EXPORT TextInputManager {
 
   // Updates the TextInputState for |view|.
   void UpdateTextInputState(RenderWidgetHostViewBase* view,
-                            const TextInputState& state);
+                            const ui::mojom::TextInputState& state);
 
   // The current IME composition has been cancelled on the renderer side for
   // the widget corresponding to |view|.
@@ -181,9 +180,12 @@ class CONTENT_EXPORT TextInputManager {
   // Updates the selection bounds for the |view|. In Aura, selection bounds are
   // used to provide the InputMethod with the position of the caret, e.g., in
   // setting the position of the ui::ImeWindow.
-  void SelectionBoundsChanged(
-      RenderWidgetHostViewBase* view,
-      const WidgetHostMsg_SelectionBounds_Params& params);
+  void SelectionBoundsChanged(RenderWidgetHostViewBase* view,
+                              const gfx::Rect& anchor_rect,
+                              base::i18n::TextDirection anchor_dir,
+                              const gfx::Rect& focus_rect,
+                              base::i18n::TextDirection focus_dir,
+                              bool is_anchor_first);
 
   // Notify observers that the selection bounds have been updated. This is also
   // called when a view with a selection is reactivated.
@@ -251,7 +253,7 @@ class CONTENT_EXPORT TextInputManager {
   // The following maps track corresponding IME state for views. For each view,
   // the values in the map are initialized and cleared in Register and
   // Unregister methods, respectively.
-  ViewMap<TextInputState> text_input_state_map_;
+  ViewMap<ui::mojom::TextInputState> text_input_state_map_;
   ViewMap<SelectionRegion> selection_region_map_;
   ViewMap<CompositionRangeInfo> composition_range_info_map_;
   ViewMap<TextSelection> text_selection_map_;

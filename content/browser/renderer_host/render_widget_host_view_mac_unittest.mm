@@ -31,7 +31,6 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -56,6 +55,7 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 #include "ui/base/cocoa/secure_password_input.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/base/test/scoped_fake_nswindow_focus.h"
 #include "ui/base/ui_base_features.h"
@@ -521,7 +521,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   void ActivateViewWithTextInputManager(RenderWidgetHostViewBase* view,
                                         ui::TextInputType type) {
-    TextInputState state;
+    ui::mojom::TextInputState state;
     state.type = type;
     view->TextInputStateChanged(state);
   }
@@ -638,14 +638,13 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
 
   gfx::Rect caret_rect(10, 11, 0, 10);
   gfx::Range caret_range(0, 0);
-  WidgetHostMsg_SelectionBounds_Params params;
 
   gfx::Rect rect;
   gfx::Range actual_range;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  params.anchor_rect = params.focus_rect = caret_rect;
-  params.anchor_dir = params.focus_dir = base::i18n::LEFT_TO_RIGHT;
-  rwhv_mac_->SelectionBoundsChanged(params);
+  rwhv_mac_->SelectionBoundsChanged(caret_rect, base::i18n::LEFT_TO_RIGHT,
+                                    caret_rect, base::i18n::LEFT_TO_RIGHT,
+                                    false);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
                                                              &actual_range));
   EXPECT_EQ(caret_rect, rect);
@@ -661,9 +660,10 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   // Caret moved.
   caret_rect = gfx::Rect(20, 11, 0, 10);
   caret_range = gfx::Range(1, 1);
-  params.anchor_rect = params.focus_rect = caret_rect;
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  rwhv_mac_->SelectionBoundsChanged(params);
+  rwhv_mac_->SelectionBoundsChanged(caret_rect, base::i18n::LEFT_TO_RIGHT,
+                                    caret_rect, base::i18n::LEFT_TO_RIGHT,
+                                    false);
   EXPECT_TRUE(rwhv_mac_->GetCachedFirstRectForCharacterRange(caret_range, &rect,
                                                              &actual_range));
   EXPECT_EQ(caret_rect, rect);
@@ -679,9 +679,9 @@ TEST_F(RenderWidgetHostViewMacTest, GetFirstRectForCharacterRangeCaretCase) {
   // No caret.
   caret_range = gfx::Range(1, 2);
   rwhv_mac_->SelectionChanged(kDummyString, kDummyOffset, caret_range);
-  params.anchor_rect = caret_rect;
-  params.focus_rect = gfx::Rect(30, 11, 0, 10);
-  rwhv_mac_->SelectionBoundsChanged(params);
+  rwhv_mac_->SelectionBoundsChanged(caret_rect, base::i18n::LEFT_TO_RIGHT,
+                                    gfx::Rect(30, 11, 0, 10),
+                                    base::i18n::LEFT_TO_RIGHT, false);
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
       gfx::Range(0, 0), &rect, &actual_range));
   EXPECT_FALSE(rwhv_mac_->GetCachedFirstRectForCharacterRange(
@@ -1749,7 +1749,7 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
 
   void SetTextInputType(RenderWidgetHostViewBase* view,
                         ui::TextInputType type) {
-    TextInputState state;
+    ui::mojom::TextInputState state;
     state.type = type;
     view->TextInputStateChanged(state);
   }
@@ -1987,7 +1987,7 @@ TEST_F(InputMethodMacTest, MonitorCompositionRangeForActiveWidget) {
   [window_ makeFirstResponder:tab_GetInProcessNSView()];
   EXPECT_TRUE(tab_view()->HasFocus());
 
-  TextInputState state;
+  ui::mojom::TextInputState state;
   state.type = ui::TEXT_INPUT_TYPE_TEXT;
 
   // Make the tab's widget active.

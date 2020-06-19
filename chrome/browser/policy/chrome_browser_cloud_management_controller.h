@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
+class DeviceIdentityProvider;
 class PrefService;
 
 namespace network {
@@ -25,6 +26,14 @@ namespace enterprise_reporting {
 class ReportScheduler;
 }
 
+namespace instance_id {
+class InstanceIDDriver;
+}
+
+namespace invalidation {
+class FCMInvalidationService;
+}
+
 namespace policy {
 class ChromeBrowserCloudManagementRegistrar;
 class ConfigurationPolicyProvider;
@@ -32,6 +41,7 @@ class MachineLevelUserCloudPolicyManager;
 class MachineLevelUserCloudPolicyFetcher;
 class ChromeBrowserCloudManagementRegisterWatcher;
 class MachineLevelDeviceAccountInitializerHelper;
+class CloudPolicyInvalidator;
 
 // A class that setups and manages all CBCM related features.
 class ChromeBrowserCloudManagementController
@@ -133,6 +143,14 @@ class ChromeBrowserCloudManagementController
       scoped_refptr<base::SequencedTaskRunner> task_runner);
   void CreateReportScheduler();
 
+  // Called by the DeviceAccountInitializer when the device service account is
+  // ready.
+  void AccountInitCallback(const std::string& account_email, bool success);
+
+  // Starts the services required for Policy Invalidations over FCM to be
+  // enabled.
+  void StartInvalidations();
+
   base::ObserverList<Observer, true>::Unchecked observers_;
 
   std::unique_ptr<ChromeBrowserCloudManagementRegistrar>
@@ -154,6 +172,12 @@ class ChromeBrowserCloudManagementController
       account_initializer_helper_;
 
   scoped_refptr<network::SharedURLLoaderFactory> gaia_url_loader_factory_;
+
+  // These objects are all involved in Policy Invalidations.
+  std::unique_ptr<DeviceIdentityProvider> identity_provider_;
+  std::unique_ptr<instance_id::InstanceIDDriver> device_instance_id_driver_;
+  std::unique_ptr<invalidation::FCMInvalidationService> invalidation_service_;
+  std::unique_ptr<CloudPolicyInvalidator> policy_invalidator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserCloudManagementController);
 };

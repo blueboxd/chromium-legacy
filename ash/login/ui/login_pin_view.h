@@ -91,12 +91,19 @@ class ASH_EXPORT LoginPinView : public NonAccessibleView {
   // non-null.
   // |on_backspace| is called when the user wants to erase the most recently
   // tapped key; must be non-null.
-  // |on_submit| is called when the user wants to submit the PIN / password;
-  // pass null in order to hide the submit button.
+  // |on_submit| is called when the user wants to submit the PIN / password.
   LoginPinView(Style keyboard_style,
                const OnPinKey& on_key,
                const OnPinBackspace& on_backspace,
                const OnPinSubmit& on_submit);
+
+  // Creates PIN view without submit button. This is useful when a submit button
+  // is already present in the password view, which is the case when the display
+  // password button feature is disabled.
+  LoginPinView(Style keyboard_style,
+               const OnPinKey& on_key,
+               const OnPinBackspace& on_backspace);
+
   ~LoginPinView() override;
 
   // Notify accessibility that location of rows and LoginPinView changed.

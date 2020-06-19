@@ -286,7 +286,8 @@ bool IsSimpleSelectorValidAfterPseudoElement(
       return true;
     case CSSSelector::kPseudoAfter:
     case CSSSelector::kPseudoBefore:
-      if (simple_selector.GetPseudoType() == CSSSelector::kPseudoMarker)
+      if (simple_selector.GetPseudoType() == CSSSelector::kPseudoMarker &&
+          RuntimeEnabledFeatures::CSSMarkerNestedPseudoElementEnabled())
         return true;
       break;
     case CSSSelector::kPseudoContent:

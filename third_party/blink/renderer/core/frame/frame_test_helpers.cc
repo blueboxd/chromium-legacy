@@ -46,6 +46,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom-blink.h"
+#include "third_party/blink/public/mojom/page/widget.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -70,6 +71,7 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 
 namespace blink {
 namespace frame_test_helpers {
@@ -267,11 +269,6 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
   mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
       widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
-  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host;
-  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
-      widget_host_receiver =
-          widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
-
   // Create a local root, if necessary.
   if (!frame->Parent()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
@@ -279,7 +276,7 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     // Eliminate this once WebView is no longer a WebWidget.
     WebFrameWidget* frame_widget = WebFrameWidget::CreateForMainFrame(
         widget_client.get(), frame, frame_widget_host.Unbind(),
-        std::move(frame_widget_receiver), widget_host.Unbind(),
+        std::move(frame_widget_receiver), widget_client->BindNewWidgetHost(),
         std::move(widget_receiver));
     widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
@@ -293,9 +290,8 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
 
     WebFrameWidget* frame_widget = WebFrameWidget::CreateForChildLocalRoot(
         widget_client.get(), frame, frame_widget_host.Unbind(),
-        std::move(frame_widget_receiver),
-        CrossVariantMojoAssociatedRemote<mojom::WidgetHostInterfaceBase>(),
-        CrossVariantMojoAssociatedReceiver<mojom::WidgetInterfaceBase>());
+        std::move(frame_widget_receiver), widget_client->BindNewWidgetHost(),
+        std::move(widget_receiver));
     widget_client->SetFrameWidget(frame_widget);
     // The WebWidget requires the compositor to be set before it is used.
     widget_client->set_layer_tree_host(frame_widget->InitializeCompositing(
@@ -356,13 +352,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
   mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
       widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
-  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host;
-  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
-      widget_host_receiver =
-          widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
   WebFrameWidget* frame_widget = WebFrameWidget::CreateForChildLocalRoot(
       widget_client, frame, frame_widget_host.Unbind(),
-      std::move(frame_widget_receiver), widget_host.Unbind(),
+      std::move(frame_widget_receiver), widget_client->BindNewWidgetHost(),
       std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
   widget_client->SetFrameWidget(frame_widget);
@@ -444,17 +436,12 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
   mojo::PendingAssociatedReceiver<mojom::blink::Widget> widget_receiver =
       widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
 
-  mojo::AssociatedRemote<mojom::blink::WidgetHost> widget_host;
-  mojo::PendingAssociatedReceiver<mojom::blink::WidgetHost>
-      widget_host_receiver =
-          widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
-
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
   WebFrameWidget* widget = blink::WebFrameWidget::CreateForMainFrame(
       test_web_widget_client_, frame, frame_widget_host.Unbind(),
-      std::move(frame_widget_receiver), widget_host.Unbind(),
-      std::move(widget_receiver));
+      std::move(frame_widget_receiver),
+      test_web_widget_client_->BindNewWidgetHost(), std::move(widget_receiver));
   // The WebWidget requires the compositor to be set before it is used.
   test_web_widget_client_->SetFrameWidget(widget);
   test_web_widget_client_->set_layer_tree_host(widget->InitializeCompositing(
@@ -741,6 +728,12 @@ void TestWebWidgetClient::SetFrameWidget(WebFrameWidget* widget) {
   frame_widget_ = widget;
 }
 
+mojo::PendingAssociatedRemote<mojom::blink::WidgetHost>
+TestWebWidgetClient::BindNewWidgetHost() {
+  receiver_.reset();
+  return receiver_.BindNewEndpointAndPassDedicatedRemoteForTesting();
+}
+
 void TestWebWidgetClient::SetPageScaleStateAndLimits(
     float page_scale_factor,
     bool is_pinch_gesture_active,
@@ -784,6 +777,22 @@ void TestWebWidgetClient::RequestNewLayerTreeFrameSink(
   // frames.
   std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
 }
+
+void TestWebWidgetClient::SetCursor(const ui::Cursor& cursor) {}
+
+void TestWebWidgetClient::SetToolTipText(
+    const String& tooltip_text,
+    base::i18n::TextDirection text_direction_hint) {}
+
+void TestWebWidgetClient::TextInputStateChanged(
+    ui::mojom::blink::TextInputStatePtr state) {}
+
+void TestWebWidgetClient::SelectionBoundsChanged(
+    const gfx::Rect& anchor_rect,
+    base::i18n::TextDirection anchor_dir,
+    const gfx::Rect& focus_rect,
+    base::i18n::TextDirection focus_dir,
+    bool is_anchor_first) {}
 
 void TestWebViewClient::DestroyChildViews() {
   child_web_views_.clear();

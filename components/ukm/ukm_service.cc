@@ -401,6 +401,12 @@ void UkmService::BuildAndStoreLog() {
   report.set_session_id(session_id_);
   report.set_report_id(++report_count_);
 
+  const auto product = static_cast<metrics::ChromeUserMetricsExtension_Product>(
+      client_->GetProduct());
+  // Only set the product if it differs from the default value.
+  if (product != report.product())
+    report.set_product(product);
+
   StoreRecordingsInReport(&report);
 
   metrics::MetricsLog::RecordCoreSystemProfile(client_,

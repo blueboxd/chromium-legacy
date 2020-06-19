@@ -106,10 +106,14 @@ void HintCache::PurgeExpiredFetchedHints() {
 void HintCache::ClearFetchedHints() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(optimization_guide_store_);
-  // TODO(mcrouse): Update to remove only fetched hints from
-  // |host_keyed_cache_|.
-  host_keyed_cache_.Clear();
   url_keyed_hint_cache_.Clear();
+  ClearHostKeyedHints();
+}
+
+void HintCache::ClearHostKeyedHints() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(optimization_guide_store_);
+  host_keyed_cache_.Clear();
   optimization_guide_store_->ClearFetchedHintsFromDatabase();
 }
 
@@ -310,6 +314,12 @@ void HintCache::AddHintForTesting(const GURL& url,
         std::make_unique<MemoryHint>(
             base::Time::Now() + base::TimeDelta::FromDays(7), std::move(hint)));
   }
+}
+
+bool HintCache::IsHintStoreAvailable() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(optimization_guide_store_);
+  return optimization_guide_store_->IsAvailable();
 }
 
 }  // namespace optimization_guide

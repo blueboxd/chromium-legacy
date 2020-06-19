@@ -1412,7 +1412,6 @@ IN_PROC_BROWSER_TEST_F(
     // should be recorded as covered by the hints fetcher.
     base::flat_set<std::string> expected_request;
     expected_request.insert(GURL(full_url).host());
-    expected_request.insert(GURL(full_url).spec());
     SetExpectedHintsRequestForHostsAndUrls(expected_request);
     ui_test_utils::NavigateToURL(browser(), GURL(full_url));
 
@@ -1426,8 +1425,8 @@ IN_PROC_BROWSER_TEST_F(
     histogram_tester->ExpectBucketCount(
         "OptimizationGuide.HintsManager.RaceNavigationFetchAttemptStatus",
         optimization_guide::RaceNavigationFetchAttemptStatus::
-            kRaceNavigationFetchHostAndURL,
-        2);
+            kRaceNavigationFetchHost,
+        1);
   }
 }
 

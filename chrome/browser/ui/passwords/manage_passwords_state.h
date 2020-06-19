@@ -113,6 +113,13 @@ class ManagePasswordsState {
     credentials_callback_ = callback;
   }
 
+  bool auth_for_account_storage_opt_in_failed() const {
+    return auth_for_account_storage_opt_in_failed_;
+  }
+  void set_auth_for_account_storage_opt_in_failed(bool failed) {
+    auth_for_account_storage_opt_in_failed_ = failed;
+  }
+
   // Current local forms. ManagePasswordsState is responsible for the forms.
   const std::vector<std::unique_ptr<autofill::PasswordForm>>& GetCurrentForms()
       const {
@@ -149,6 +156,10 @@ class ManagePasswordsState {
 
   // The client used for logging.
   password_manager::PasswordManagerClient* client_;
+
+  // Whether the last attempt to authenticate to opt-in using password account
+  // storage failed.
+  bool auth_for_account_storage_opt_in_failed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsState);
 };

@@ -177,7 +177,9 @@ bool IsSyscallForTestHarness(int sysno) {
   // UBSan_vptr checker needs mmap, munmap, pipe, write.
   // ASan and MSan don't need any of these for normal operation, but they
   // require at least mmap & munmap to print a report if an error is detected.
-  if (sysno == kMMapNr || sysno == __NR_munmap || sysno == __NR_pipe) {
+  // ASan requires sigaltstack.
+  if (sysno == kMMapNr || sysno == __NR_munmap || sysno == __NR_pipe ||
+      sysno == __NR_sigaltstack) {
     return true;
   }
 #endif

@@ -693,6 +693,7 @@ HRESULT TSFTextStore::RequestLock(DWORD lock_flags, HRESULT* result) {
 
   // reset the flag since we've already inserted/replaced the text.
   new_text_inserted_ = false;
+  is_selection_interim_char_ = false;
 
   // reset string_buffer_ if composition is no longer active.
   if (!text_input_client_->HasCompositionText()) {
@@ -759,6 +760,7 @@ HRESULT TSFTextStore::SetSelection(ULONG selection_buffer_size,
     }
     selection_.set_start(start_pos);
     selection_.set_end(end_pos);
+    is_selection_interim_char_ = selection_buffer[0].style.fInterimChar;
   }
   return S_OK;
 }
@@ -1051,6 +1053,10 @@ bool TSFTextStore::GetCompositionStatus(
       span.end_offset = start_pos + length;
       span.underline_color = SK_ColorBLACK;
       span.background_color = SK_ColorTRANSPARENT;
+      if (selection_.EqualsIgnoringDirection(
+              gfx::Range(span.start_offset, span.end_offset))) {
+        span.interim_char_selection = is_selection_interim_char_;
+      }
       if (has_display_attribute)
         GetStyle(display_attribute, &span);
       spans->push_back(span);

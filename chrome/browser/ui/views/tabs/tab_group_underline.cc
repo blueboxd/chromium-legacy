@@ -23,17 +23,9 @@ constexpr int TabGroupUnderline::kStrokeThickness;
 
 TabGroupUnderline::TabGroupUnderline(TabGroupViews* tab_group_views,
                                      const tab_groups::TabGroupId& group)
-    : tab_group_views_(tab_group_views), group_(group) {
-  // Set non-zero bounds to start with, so that painting isn't pruned.
-  // Needed because UpdateBounds() happens during OnPaint(), which is called
-  // after painting is pruned.
-  const int y = GetLayoutConstant(TAB_HEIGHT) - 1;
-  SetBounds(0, y - kStrokeThickness, kStrokeThickness * 2, kStrokeThickness);
-}
+    : tab_group_views_(tab_group_views), group_(group) {}
 
 void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
-  UpdateBounds();
-
   SkPath path = GetPath();
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
@@ -42,9 +34,9 @@ void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
   canvas->DrawPath(path, flags);
 }
 
-void TabGroupUnderline::UpdateBounds() {
-  const int start_x = GetStart();
-  const int end_x = GetEnd();
+void TabGroupUnderline::UpdateBounds(const gfx::Rect& group_bounds) {
+  const int start_x = GetStart(group_bounds);
+  const int end_x = GetEnd(group_bounds);
 
   // The width may be zero if the group underline and header are initialized at
   // the same time, as with tab restore. In this case, don't update the bounds
@@ -52,7 +44,7 @@ void TabGroupUnderline::UpdateBounds() {
   if (end_x <= start_x)
     return;
 
-  const int y = tab_group_views_->GetBounds().height() - 1;
+  const int y = group_bounds.height() - 1;
   SetBounds(start_x, y - kStrokeThickness, end_x - start_x, kStrokeThickness);
 }
 
@@ -61,15 +53,11 @@ int TabGroupUnderline::GetStrokeInset() {
   return TabStyle::GetTabOverlap() + kStrokeThickness;
 }
 
-int TabGroupUnderline::GetStart() const {
-  const gfx::Rect group_bounds = tab_group_views_->GetBounds();
-
+int TabGroupUnderline::GetStart(const gfx::Rect& group_bounds) const {
   return group_bounds.x() + GetStrokeInset();
 }
 
-int TabGroupUnderline::GetEnd() const {
-  const gfx::Rect group_bounds = tab_group_views_->GetBounds();
-
+int TabGroupUnderline::GetEnd(const gfx::Rect& group_bounds) const {
   const Tab* last_grouped_tab = tab_group_views_->GetLastTabInGroup();
   if (!last_grouped_tab)
     return group_bounds.right() - GetStrokeInset();

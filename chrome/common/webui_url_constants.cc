@@ -177,6 +177,7 @@ const char kChromeUIWelcomeWin10Host[] = "welcome-win10";
 
 #if defined(OS_ANDROID)
 const char kChromeUIExploreSitesInternalsHost[] = "explore-sites-internals";
+const char kChromeUIInternalsHost[] = "internals";
 const char kChromeUIJavaCrashURL[] = "chrome://java-crash/";
 const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
 const char kChromeUINativeExploreURL[] = "chrome-native://explore";

@@ -9,9 +9,11 @@ import './doodle_share_dialog.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {BrowserProxy} from './browser_proxy.js';
-import {skColorToRgba} from './utils.js';
+import {$$, skColorToRgba} from './utils.js';
 
 /** @type {number} */
 const SHARE_BUTTON_SIZE_PX = 26;
@@ -46,6 +48,15 @@ class LogoElement extends PolymerElement {
         reflectToAttribute: true,
         type: Boolean,
         value: false,
+      },
+
+      /**
+       * If true displays the dark mode doodle if possible.
+       * @type {boolean}
+       */
+      dark: {
+        observer: 'onDarkChange_',
+        type: Boolean,
       },
 
       /** @private */
@@ -149,13 +160,16 @@ class LogoElement extends PolymerElement {
   connectedCallback() {
     super.connectedCallback();
     this.eventTracker_.add(window, 'message', ({data}) => {
-      if (data['cmd'] !== 'resizeDoodle') {
-        return;
+      if (data['cmd'] === 'resizeDoodle') {
+        this.duration_ = assert(data.duration);
+        this.height_ = assert(data.height);
+        this.width_ = assert(data.width);
+      } else if (data['cmd'] === 'sendMode') {
+        this.sendMode_();
       }
-      this.duration_ = assert(data.duration);
-      this.height_ = assert(data.height);
-      this.width_ = assert(data.width);
     });
+    // Make sure the doodle gets the mode in case it has already requested it.
+    this.sendMode_();
   }
 
   /** @override */
@@ -306,6 +320,33 @@ class LogoElement extends PolymerElement {
   }
 
   /**
+   * Sends a postMessage to the interactive doodle whether the  current theme is
+   * dark or light. Won't do anything if we don't have an interactive doodle or
+   * we haven't been told yet whether the current theme is dark or light.
+   * @private
+   */
+  sendMode_() {
+    const iframe = $$(this, '#iframe');
+    if (!loadTimeData.getBoolean('themeModeDoodlesEnabled') ||
+        this.dark === undefined || !iframe) {
+      return;
+    }
+    BrowserProxy.getInstance().postMessage(
+        iframe,
+        {
+          cmd: 'changeMode',
+          dark: this.dark,
+        },
+        new URL(iframe.src).origin,
+    );
+  }
+
+  /** @private */
+  onDarkChange_() {
+    this.sendMode_();
+  }
+
+  /**
    * @return {string}
    * @private
    */
@@ -332,9 +373,15 @@ class LogoElement extends PolymerElement {
    * @private
    */
   computeIframeUrl_() {
-    return this.doodle_ && this.doodle_.content.interactiveDoodle &&
-        this.doodle_.content.interactiveDoodle.url.url ||
-        '';
+    if (this.doodle_ && this.doodle_.content.interactiveDoodle) {
+      const url = new URL(this.doodle_.content.interactiveDoodle.url.url);
+      if (loadTimeData.getBoolean('themeModeDoodlesEnabled')) {
+        url.searchParams.append('theme_messages', '0');
+      }
+      return url.href;
+    } else {
+      return '';
+    }
   }
 
   /**

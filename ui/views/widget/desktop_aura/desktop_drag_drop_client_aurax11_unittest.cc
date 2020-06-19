@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
+
 #include <map>
 #include <memory>
 #include <utility>
@@ -27,10 +29,12 @@
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_types.h"
 #include "ui/views/test/views_test_base.h"
-#include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/widget.h"
+
+// TODO(crbug.com/990756): Transfer all tests from this file to better places
+// when DDDClientAuraX11 goes away.
 
 namespace views {
 
@@ -403,106 +407,6 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(DesktopDragDropClientAuraX11Test);
 };
 
-namespace {
-
-void BasicStep2(TestDragDropClient* client, x11::Window toplevel) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  ClientMessageEventCollector collector(toplevel, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-
-  // XdndEnter should have been sent to |toplevel| before the XdndPosition
-  // message.
-  std::vector<XClientMessageEvent> events = collector.PopAllEvents();
-  ASSERT_EQ(2u, events.size());
-
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_EQ(client->source_xwindow(),
-            static_cast<x11::Window>(events[0].data.l[0]));
-  EXPECT_EQ(1, events[0].data.l[1] & 1);
-  std::vector<x11::Atom> targets;
-  ui::GetAtomArrayProperty(client->source_xwindow(), "XdndTypeList", &targets);
-  EXPECT_FALSE(targets.empty());
-
-  EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-  EXPECT_EQ(client->source_xwindow(),
-            static_cast<x11::Window>(events[0].data.l[0]));
-  const int kCoords =
-      TestDragDropClient::kMouseMoveX << 16 | TestDragDropClient::kMouseMoveY;
-  EXPECT_EQ(kCoords, events[1].data.l[2]);
-  EXPECT_EQ(client->GetAtom("XdndActionCopy"),
-            static_cast<x11::Atom>(events[1].data.l[4]));
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-
-  // Because there is no unprocessed XdndPosition, the drag drop client should
-  // send XdndDrop immediately after the mouse is released.
-  client->OnMouseReleased();
-
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
-  EXPECT_EQ(client->source_xwindow(),
-            static_cast<x11::Window>(events[0].data.l[0]));
-
-  // Send XdndFinished to indicate that the drag drop client can cleanup any
-  // data related to this drag. The move loop should end only after the
-  // XdndFinished message was received.
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-void BasicStep3(TestDragDropClient* client, x11::Window toplevel) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  ClientMessageEventCollector collector(toplevel, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-
-  std::vector<XClientMessageEvent> events = collector.PopAllEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndPosition"));
-
-  // We have not received an XdndStatus ack for the second XdndPosition message.
-  // Test that sending XdndDrop is delayed till the XdndStatus ack is received.
-  client->OnMouseReleased();
-  EXPECT_FALSE(collector.HasEvents());
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
-
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-}  // namespace
-
-TEST_F(DesktopDragDropClientAuraX11Test, Basic) {
-  x11::Window toplevel = static_cast<x11::Window>(1);
-
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&BasicStep2, client(), toplevel));
-  int result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
-
-  // Do another drag and drop to test that the data is properly cleaned up as a
-  // result of the XdndFinished message.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&BasicStep3, client(), toplevel));
-  result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
-}
-
 void HighDPIStep(TestDragDropClient* client) {
   float scale =
       display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
@@ -524,6 +428,8 @@ void HighDPIStep(TestDragDropClient* client) {
   client->OnMouseReleased();
 }
 
+// TODO(crbug.com/990756): Turn this into tests of DesktopDragDropClientOzone
+// or its equivalent.
 TEST_F(DesktopDragDropClientAuraX11Test, HighDPI200) {
   aura::TestScreen* screen =
       static_cast<aura::TestScreen*>(display::Screen::GetScreen());
@@ -535,6 +441,8 @@ TEST_F(DesktopDragDropClientAuraX11Test, HighDPI200) {
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
 }
 
+// TODO(crbug.com/990756): Turn this into tests of DesktopDragDropClientOzone
+// or its equivalent.
 TEST_F(DesktopDragDropClientAuraX11Test, HighDPI150) {
   aura::TestScreen* screen =
       static_cast<aura::TestScreen*>(display::Screen::GetScreen());
@@ -543,212 +451,6 @@ TEST_F(DesktopDragDropClientAuraX11Test, HighDPI150) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&HighDPIStep, client()));
   int result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
-}
-
-namespace {
-
-void TargetDoesNotRespondStep2(TestDragDropClient* client) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  x11::Window toplevel = static_cast<x11::Window>(1);
-  ClientMessageEventCollector collector(toplevel, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-
-  std::vector<XClientMessageEvent> events = collector.PopAllEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-
-  client->OnMouseReleased();
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndLeave"));
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-}  // namespace
-
-// Test that we do not wait for the target to send XdndStatus if we have not
-// received any XdndStatus messages at all from the target. The Unity
-// DNDCollectionWindow is an example of an XdndAware target which does not
-// respond to XdndPosition messages at all.
-TEST_F(DesktopDragDropClientAuraX11Test, TargetDoesNotRespond) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&TargetDoesNotRespondStep2, client()));
-  int result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
-}
-
-namespace {
-
-void QueuePositionStep2(TestDragDropClient* client) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  x11::Window toplevel = static_cast<x11::Window>(1);
-  ClientMessageEventCollector collector(toplevel, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-
-  std::vector<XClientMessageEvent> events = collector.PopAllEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndPosition"));
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(collector.HasEvents());
-
-  client->OnMouseReleased();
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
-
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-}  // namespace
-
-// Test that XdndPosition messages are queued till the pending XdndPosition
-// message is acked via an XdndStatus message.
-TEST_F(DesktopDragDropClientAuraX11Test, QueuePosition) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&QueuePositionStep2, client()));
-  int result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
-}
-
-namespace {
-
-void TargetChangesStep2(TestDragDropClient* client) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  x11::Window toplevel1 = static_cast<x11::Window>(1);
-  ClientMessageEventCollector collector1(toplevel1, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel1);
-
-  std::vector<XClientMessageEvent> events1 = collector1.PopAllEvents();
-  ASSERT_EQ(2u, events1.size());
-  EXPECT_TRUE(client->MessageHasType(events1[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events1[1], "XdndPosition"));
-
-  x11::Window toplevel2 = static_cast<x11::Window>(2);
-  ClientMessageEventCollector collector2(toplevel2, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel2);
-
-  // It is possible for |toplevel1| to send XdndStatus after the source has sent
-  // XdndLeave but before |toplevel1| has received the XdndLeave message. The
-  // XdndStatus message should be ignored.
-  client->OnStatus(toplevel1, true, client->GetAtom("XdndActionCopy"));
-  events1 = collector1.PopAllEvents();
-  ASSERT_EQ(1u, events1.size());
-  EXPECT_TRUE(client->MessageHasType(events1[0], "XdndLeave"));
-
-  std::vector<XClientMessageEvent> events2 = collector2.PopAllEvents();
-  ASSERT_EQ(2u, events2.size());
-  EXPECT_TRUE(client->MessageHasType(events2[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events2[1], "XdndPosition"));
-
-  client->OnStatus(toplevel2, true, client->GetAtom("XdndActionCopy"));
-  client->OnMouseReleased();
-  events2 = collector2.PopAllEvents();
-  ASSERT_EQ(1u, events2.size());
-  EXPECT_TRUE(client->MessageHasType(events2[0], "XdndDrop"));
-
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel2, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-}  // namespace
-
-// Test the behavior when the target changes during a drag.
-TEST_F(DesktopDragDropClientAuraX11Test, TargetChanges) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&TargetChangesStep2, client()));
-  int result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
-}
-
-namespace {
-
-void RejectAfterMouseReleaseStep2(TestDragDropClient* client) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  x11::Window toplevel = static_cast<x11::Window>(1);
-  ClientMessageEventCollector collector(toplevel, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-
-  std::vector<XClientMessageEvent> events = collector.PopAllEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(collector.HasEvents());
-
-  // Send another mouse move such that there is a pending XdndPosition.
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndPosition"));
-
-  client->OnMouseReleased();
-  // Reject the drop.
-  client->OnStatus(toplevel, false, x11::Atom::None);
-
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndLeave"));
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-void RejectAfterMouseReleaseStep3(TestDragDropClient* client) {
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-
-  x11::Window toplevel = static_cast<x11::Window>(2);
-  ClientMessageEventCollector collector(toplevel, client);
-  client->SetTopmostXWindowAndMoveMouse(toplevel);
-
-  std::vector<XClientMessageEvent> events = collector.PopAllEvents();
-  ASSERT_EQ(2u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-
-  client->OnStatus(toplevel, true, client->GetAtom("XdndActionCopy"));
-  EXPECT_FALSE(collector.HasEvents());
-
-  client->OnMouseReleased();
-  events = collector.PopAllEvents();
-  ASSERT_EQ(1u, events.size());
-  EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
-
-  EXPECT_TRUE(client->IsMoveLoopRunning());
-  client->OnFinished(toplevel, false, x11::Atom::None);
-  EXPECT_FALSE(client->IsMoveLoopRunning());
-}
-
-}  // namespace
-
-// Test that the source sends XdndLeave instead of XdndDrop if the drag
-// operation is rejected after the mouse is released.
-TEST_F(DesktopDragDropClientAuraX11Test, RejectAfterMouseRelease) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&RejectAfterMouseReleaseStep2, client()));
-  int result = StartDragAndDrop();
-  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
-
-  // Repeat the test but reject the drop in the XdndFinished message instead.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&RejectAfterMouseReleaseStep3, client()));
-  result = StartDragAndDrop();
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
 }
 
@@ -932,6 +634,8 @@ void ChromeSourceTargetStep2(SimpleTestDragDropClient* client,
 
 }  // namespace
 
+// TODO(crbug.com/990756): Turn this into tests of DesktopDragDropClientOzone
+// or its equivalent.
 TEST_F(DesktopDragDropClientAuraX11ChromeSourceTargetTest, Basic) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -940,6 +644,8 @@ TEST_F(DesktopDragDropClientAuraX11ChromeSourceTargetTest, Basic) {
   EXPECT_EQ(ui::DragDropTypes::DRAG_COPY, result);
 }
 
+// TODO(crbug.com/990756): Turn this into tests of DesktopDragDropClientOzone
+// or its equivalent.
 // Test that if 'Ctrl' is pressed during a drag and drop operation, that
 // the aura::client::DragDropDelegate is properly notified.
 TEST_F(DesktopDragDropClientAuraX11ChromeSourceTargetTest, CtrlPressed) {

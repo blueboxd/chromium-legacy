@@ -9,6 +9,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
+import "ui/base/ime/mojom/text_input_state.mojom";
 import "ui/base/cursor/mojom/cursor.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 
@@ -159,4 +160,15 @@ interface WidgetHost {
   // mouse position. An empty |tooltip_text| will hide the tooltip view.
   SetToolTipText(mojo_base.mojom.String16 tooltip_text,
                  mojo_base.mojom.TextDirection text_direction_hint);
+
+  // Sent when the text input state is changed. This usually happens when
+  // a text input entry is focused.
+  TextInputStateChanged(ui.mojom.TextInputState state);
+
+  // Sent when the current selection bounds are changed.
+  SelectionBoundsChanged(gfx.mojom.Rect anchor_rect,
+             mojo_base.mojom.TextDirection anchor_dir,
+             gfx.mojom.Rect focus_rect,
+             mojo_base.mojom.TextDirection focus_dir,
+             bool is_anchor_first);
 };

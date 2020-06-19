@@ -69,6 +69,7 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
             rhs.suggestion_highlight_color) &&
            (this->remove_on_finish_composing ==
             rhs.remove_on_finish_composing) &&
+           (this->interim_char_selection == rhs.interim_char_selection) &&
            (this->suggestions == rhs.suggestions);
   }
 
@@ -84,6 +85,7 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
   SkColor background_color;
   SkColor suggestion_highlight_color;
   bool remove_on_finish_composing = false;
+  bool interim_char_selection = false;
   std::vector<std::string> suggestions;
 };
 

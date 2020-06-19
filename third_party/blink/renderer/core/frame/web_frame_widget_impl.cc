@@ -565,7 +565,7 @@ void WebFrameWidgetImpl::MouseCaptureLost() {
   mouse_capture_element_ = nullptr;
 }
 
-void WebFrameWidgetImpl::SetFocus(bool enable) {
+void WebFrameWidgetImpl::FocusChanged(bool enable) {
   if (enable)
     GetPage()->GetFocusController().SetActive(true);
   GetPage()->GetFocusController().SetFocused(enable);
@@ -611,6 +611,7 @@ void WebFrameWidgetImpl::SetFocus(bool enable) {
       ime_accept_events_ = false;
     }
   }
+  Client()->FocusChanged(enable);
 }
 
 bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor_web,

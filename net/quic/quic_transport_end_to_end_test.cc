@@ -76,8 +76,10 @@ class TestConnectionHelper : public quic::QuicConnectionHelperInterface {
 class QuicTransportEndToEndTest : public TestWithTaskEnvironment {
  public:
   QuicTransportEndToEndTest() {
-    quic::QuicEnableVersion(
-        QuicTransportClient::QuicVersionsForWebTransportOriginTrial()[0]);
+    for (const quic::ParsedQuicVersion& version :
+         QuicTransportClient::QuicVersionsForWebTransportOriginTrial()) {
+      quic::QuicEnableVersion(version);
+    }
     origin_ = url::Origin::Create(GURL{"https://example.org"});
     isolation_key_ = NetworkIsolationKey(origin_, origin_);
 
@@ -265,8 +267,9 @@ TEST_F(QuicTransportEndToEndTest, CertificateFingerprintMismatch) {
 }
 
 TEST_F(QuicTransportEndToEndTest, OldVersion) {
-  SetQuicReloadableFlag(quic_enable_version_draft_29, false);
-  SetQuicReloadableFlag(quic_disable_version_draft_27, false);
+  // Ensure all WebTransport versions are enabled except the first one.
+  quic::QuicDisableVersion(
+      QuicTransportClient::QuicVersionsForWebTransportOriginTrial().front());
 
   StartServer();
   client_ = std::make_unique<QuicTransportClient>(
@@ -280,8 +283,11 @@ TEST_F(QuicTransportEndToEndTest, OldVersion) {
 }
 
 TEST_F(QuicTransportEndToEndTest, NoCommonVersion) {
-  SetQuicReloadableFlag(quic_enable_version_draft_29, false);
-  SetQuicReloadableFlag(quic_disable_version_draft_27, true);
+  // Disable all WebTransport versions.
+  for (const quic::ParsedQuicVersion& version :
+       QuicTransportClient::QuicVersionsForWebTransportOriginTrial()) {
+    quic::QuicDisableVersion(version);
+  }
 
   StartServer();
   client_ = std::make_unique<QuicTransportClient>(

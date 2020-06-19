@@ -319,6 +319,7 @@
 #include "third_party/blink/renderer/platform/weborigin/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
@@ -1029,10 +1030,6 @@ bool Document::IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const {
 
 SecureContextMode Document::GetSecureContextMode() const {
   return GetSecurityContext().GetSecureContextMode();
-}
-
-void Document::SetReferrerPolicy(network::mojom::ReferrerPolicy policy) {
-  GetExecutionContext()->SetReferrerPolicy(policy);
 }
 
 OriginTrialContext* Document::GetOriginTrialContext() const {
@@ -3515,7 +3512,8 @@ void Document::open(Document* entered_document,
 
     GetSecurityContext().SetSecurityOrigin(
         entered_document->GetMutableSecurityOrigin());
-    SetReferrerPolicy(entered_document->GetReferrerPolicy());
+    GetExecutionContext()->SetReferrerPolicy(
+        entered_document->GetExecutionContext()->GetReferrerPolicy());
     SetCookieURL(entered_document->CookieURL());
   }
 
@@ -4705,35 +4703,6 @@ bool Document::IsHttpRefreshScheduledWithin(base::TimeDelta interval) {
   return http_refresh_scheduler_->IsScheduledWithin(interval);
 }
 
-// https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
-String Document::OutgoingReferrer() const {
-  // Step 3.1: "If environment's global object is a Window object, then"
-
-  // Step 3.1.1: "Let document be the associated Document of environment's
-  // global object."
-  const Document* referrer_document = this;
-
-  // Step 3.1.2: "If document's origin is an opaque origin, return no referrer."
-  if (GetSecurityOrigin()->IsOpaque())
-    return String();
-
-  // Step 3.1.3: "While document is an iframe srcdoc document, let document be
-  // document's browsing context's browsing context container's node document."
-  if (LocalFrame* frame = GetFrame()) {
-    while (frame->GetDocument()->IsSrcdocDocument()) {
-      // Srcdoc documents must be local within the containing frame.
-      frame = To<LocalFrame>(frame->Tree().Parent());
-      // Srcdoc documents cannot be top-level documents, by definition,
-      // because they need to be contained in iframes with the srcdoc.
-      DCHECK(frame);
-    }
-    referrer_document = frame->GetDocument();
-  }
-
-  // Step: 3.1.4: "Let referrerSource be document's URL."
-  return referrer_document->url_.StrippedForUseAsReferrer();
-}
-
 network::mojom::ReferrerPolicy Document::GetReferrerPolicy() const {
   return GetExecutionContext() ? GetExecutionContext()->GetReferrerPolicy()
                                : network::mojom::ReferrerPolicy::kDefault;
@@ -5299,6 +5268,10 @@ void Document::NotifyFocusedElementChanged(Element* old_focused_element,
     if (old_document && old_document != this && old_document->GetFrame())
       old_document->GetFrame()->Client()->FocusedElementChanged(nullptr);
 
+    // Ensures that further text input state can be sent even when previously
+    // focused input and the newly focused input share the exact same state.
+    if (GetFrame()->GetWidgetForLocalRoot())
+      GetFrame()->GetWidgetForLocalRoot()->ClearTextInputState();
     GetFrame()->Client()->FocusedElementChanged(new_focused_element);
 
     GetPage()->GetChromeClient().SetKeyboardFocusURL(new_focused_element);

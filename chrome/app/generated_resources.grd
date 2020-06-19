@@ -5949,11 +5949,11 @@ the Bookmarks menu.">
         <message name="IDS_PASSWORD_MANAGER_IPH_TITLE_SAVE_TO_ACCOUNT" desc="Title of the in Product Help shown when the 'Save to account` is selected ">
           Choose where to save
         </message>
+        <message name="IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_REAUTH_FAIL" desc="Body of the in Product Help shown in the password save bubble when the account auth fails">
+          This password will be saved on this device
+        </message>
         <message name="IDS_PASSWORD_MANAGER_IPH_BODY_SAVE_TO_ACCOUNT" desc="Body of the in Product Help shown when the 'Save to account` is selected">
           You can save this password in your Google Account or only on this device
-        </message>
-        <message name="IDS_PASSWORD_MANAGER_IPH_TITLE_SAVE_TO_DEVICE" desc="Title of the in Product Help shown when the 'Save to device` is selected ">
-          This password will be saved on this device
         </message>
         <message name="IDS_PASSWORD_MANAGER_TOOLTIP_SAVE" desc="Text for the 'Manage Passwords' icon's 'password to be saved' state">
           Save your password

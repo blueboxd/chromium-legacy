@@ -38,6 +38,7 @@ import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
@@ -639,6 +640,10 @@ public class StartSurfaceTest {
             TestThreadUtils.runOnUiThreadBlocking(() -> {
                 mActivityTestRule.getActivity().getTabModelSelector().selectModel(true);
             });
+
+            // TODO(crbug.com/1097001): remove after fixing the default focus issue, which might
+            // relate to crbug.com/1076274 above since it doesn't exist for the other combinations.
+            assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.P);
         } else {
             onView(withId(R.id.incognito_switch)).perform(click());
         }

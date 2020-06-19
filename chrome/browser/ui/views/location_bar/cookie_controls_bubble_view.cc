@@ -48,11 +48,12 @@ std::unique_ptr<views::TooltipIcon> CreateInfoIcon() {
 }  // namespace
 
 // static
-void CookieControlsBubbleView::ShowBubble(views::View* anchor_view,
-                                          views::Button* highlighted_button,
-                                          content::WebContents* web_contents,
-                                          CookieControlsController* controller,
-                                          CookieControlsStatus status) {
+void CookieControlsBubbleView::ShowBubble(
+    views::View* anchor_view,
+    views::Button* highlighted_button,
+    content::WebContents* web_contents,
+    content_settings::CookieControlsController* controller,
+    CookieControlsStatus status) {
   DCHECK(web_contents);
   if (g_instance)
     return;
@@ -102,7 +103,7 @@ void CookieControlsBubbleView::OnBlockedCookiesCountChanged(
 CookieControlsBubbleView::CookieControlsBubbleView(
     views::View* anchor_view,
     content::WebContents* web_contents,
-    CookieControlsController* controller)
+    content_settings::CookieControlsController* controller)
     : LocationBarBubbleDelegateView(anchor_view, web_contents),
       controller_(controller) {
   controller_observer_.Add(controller);

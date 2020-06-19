@@ -724,6 +724,63 @@ IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithJavascriptHooks) {
                            base::StringPrintf(kRawImageDataScript, tab_id));
 }
 
+// Tests calling setIcon() from JS with `self` defined at the top-level.
+// Regression test for https://crbug.com/1087948.
+IN_PROC_BROWSER_TEST_P(MultiActionAPITest, SetIconWithSelfDefined) {
+  // TODO(devlin): Pull code to load an extension like this into a helper
+  // function.
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "JS Fun",
+           "manifest_version": 2,
+           "version": "0.1",
+           "%s": {},
+           "background": { "scripts": ["background.js"] }
+         })";
+
+  std::string blue_icon;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::ReadFileToString(
+        test_data_dir_.AppendASCII("icon_rgb_0_0_255.png"), &blue_icon));
+  }
+
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(base::StringPrintf(
+      kManifestTemplate, GetManifestKeyForActionType(GetParam())));
+
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"),
+                     base::StringPrintf(kSetIconBackgroundJsTemplate,
+                                        GetAPINameForActionType(GetParam())));
+  test_dir.WriteFile(FILE_PATH_LITERAL("blue_icon.png"), blue_icon);
+
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
+
+  ExtensionAction* action = GetExtensionAction(*extension);
+  ASSERT_TRUE(action);
+
+  int tab_id = GetActiveTabId();
+  EXPECT_TRUE(ActionHasDefaultState(*action, tab_id));
+  EnsureActionIsEnabledOnActiveTab(action);
+
+  // Override 'self' in a local variable.
+  constexpr char kOverrideSelfScript[] =
+      "var self = ''; domAutomationController.send('done');";
+  std::string result = browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension->id(), kOverrideSelfScript);
+  ASSERT_EQ("done", result);
+
+  // Try setting the icon. This should succeed. Previously, the custom bindings
+  // for the setIcon code looked at the 'self' variable, but this could be
+  // overridden by the extension.
+  // See also https://crbug.com/1087948.
+  constexpr char kSetIconScript[] =
+      "setIcon({tabId: %d, path: 'blue_icon.png'});";
+  RunTestAndWaitForSuccess(profile(), extension->id(),
+                           base::StringPrintf(kSetIconScript, tab_id));
+}
+
 // Tests various getter and setter methods.
 IN_PROC_BROWSER_TEST_P(MultiActionAPITest, GettersAndSetters) {
   // Load up an extension with default values.

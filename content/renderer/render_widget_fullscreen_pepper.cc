@@ -172,6 +172,18 @@ class PepperExternalWidgetClient : public blink::WebExternalWidgetClient {
                                    std::move(widget_input_host_remote));
   }
 
+  void SendCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) override {
+    return widget_->SendCompositionRangeChanged(range, character_bounds);
+  }
+
+  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override {
+    return widget_->HasCurrentImeGuard(request_to_show_virtual_keyboard);
+  }
+
+  void FocusChanged(bool enabled) override { widget_->FocusChanged(enabled); }
+
  private:
   RenderWidgetFullscreenPepper* widget_;
 };

@@ -39,9 +39,7 @@ std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
   // a temporary workaround only. The eventual goal is to support their usecase
   // using generic Presentation API.  See also cast_media_source.cc.
   std::vector<url::Origin> allowed_origins;
-  static const char kMirroringAppPrefix[] = "cast:0F5096E8";
-  if (base::StartsWith(source_id, kMirroringAppPrefix,
-                       base::CompareCase::SENSITIVE)) {
+  if (IsSiteInitiatedMirroringSource(source_id)) {
     allowed_origins.reserve(kPresentationApiWhitelist.size());
     for (const auto& origin : kPresentationApiWhitelist)
       allowed_origins.push_back(url::Origin::Create(GURL(origin)));

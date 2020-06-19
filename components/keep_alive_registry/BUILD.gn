@@ -27,6 +27,7 @@ source_set("unit_tests") {
   sources = [ "keep_alive_registry_unittest.cc" ]
   deps = [
     ":keep_alive_registry",
+    "//base",
     "//testing/gtest",
   ]
 }

@@ -55,6 +55,7 @@ class CORE_EXPORT ImeTextSpan {
               const Color& background_color,
               const Color& suggestion_highlight_color = Color::kTransparent,
               bool remove_on_finish_composing = false,
+              bool interim_char_selection_ = false,
               const Vector<String>& suggestions = Vector<String>());
 
   explicit ImeTextSpan(const ui::ImeTextSpan&);
@@ -75,6 +76,7 @@ class CORE_EXPORT ImeTextSpan {
   bool NeedsRemovalOnFinishComposing() const {
     return remove_on_finish_composing_;
   }
+  bool InterimCharSelection() const { return interim_char_selection_; }
   const Vector<String>& Suggestions() const { return suggestions_; }
 
  private:
@@ -88,6 +90,7 @@ class CORE_EXPORT ImeTextSpan {
   Color background_color_;
   Color suggestion_highlight_color_;
   bool remove_on_finish_composing_;
+  bool interim_char_selection_;
   Vector<String> suggestions_;
 };
 

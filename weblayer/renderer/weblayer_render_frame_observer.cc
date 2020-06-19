@@ -38,7 +38,7 @@ WebLayerRenderFrameObserver::WebLayerRenderFrameObserver(
   if (!render_frame->IsMainFrame())
     return;
 
-  // TODO(crbug.com/1025620): Handle case where subframe translation is enabled.
+  // TODO(crbug.com/1073370): Handle case where subframe translation is enabled.
   DCHECK(!translate::IsSubFrameTranslationEnabled());
   translate_agent_ =
       new translate::TranslateAgent(render_frame, ISOLATED_WORLD_ID_TRANSLATE,

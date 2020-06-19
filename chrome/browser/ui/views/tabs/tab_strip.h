@@ -622,7 +622,11 @@ class TabStrip : public views::AccessiblePaneView,
   void UpdateNewTabButtonBorder();
 
   // Called whenever a tab animation has progressed.
-  void OnTabAnimationProgressed();
+  void OnTabSlotAnimationProgressed(TabSlotView* view);
+
+  // Called to update the visuals for a tab group when tabs in the group are
+  // moved or resized.
+  void UpdateTabGroupVisuals(tab_groups::TabGroupId tab_group_id);
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

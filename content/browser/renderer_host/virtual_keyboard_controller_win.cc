@@ -6,9 +6,9 @@
 
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
-#include "content/common/text_input_state.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -87,7 +87,7 @@ void VirtualKeyboardControllerWin::HideVirtualKeyboard() {
 }
 
 void VirtualKeyboardControllerWin::UpdateTextInputState(
-    const TextInputState* state) {
+    const ui::mojom::TextInputState* state) {
   // Conditions to show the VK:
   // 1. User has to interact with the editable element.
   // 2. Pointer type has to be either touch or pen.

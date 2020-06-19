@@ -84,6 +84,14 @@ public class PaymentDetailsUpdateServiceHelperTest {
         return bundle;
     }
 
+    private Bundle defaultMethodDataBundle() {
+        Bundle bundle = new Bundle();
+        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method-name");
+        bundle.putString(
+                PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "{\"key\": \"value\"}");
+        return bundle;
+    }
+
     private boolean mBound;
     private IPaymentDetailsUpdateService mIPaymentDetailsUpdateService;
     private ServiceConnection mConnection = new ServiceConnection() {
@@ -297,11 +305,8 @@ public class PaymentDetailsUpdateServiceHelperTest {
     public void testConnectWhenPaymentAppNotInvoked() throws Throwable {
         installPaymentApp();
         startPaymentDetailsUpdateService();
-        Bundle bundle = new Bundle();
-        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method name");
-        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
-                bundle, new PaymentDetailsUpdateServiceCallback());
+                defaultMethodDataBundle(), new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mMethodChangeListenerNotified);
         // An unauthorized app won't get a callback with error.
@@ -315,11 +320,8 @@ public class PaymentDetailsUpdateServiceHelperTest {
     public void testSuccessfulChangePaymentMethod() throws Throwable {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
-        Bundle bundle = new Bundle();
-        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method name");
-        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
-                bundle, new PaymentDetailsUpdateServiceCallback());
+                defaultMethodDataBundle(), new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
         Assert.assertTrue(mMethodChangeListenerNotified);
         updateWithDefaultDetails();
@@ -347,7 +349,7 @@ public class PaymentDetailsUpdateServiceHelperTest {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
         Bundle bundle = new Bundle();
-        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
+        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "data");
         mIPaymentDetailsUpdateService.changePaymentMethod(
                 bundle, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
@@ -417,11 +419,8 @@ public class PaymentDetailsUpdateServiceHelperTest {
     public void testChangeWhileWaitingForPaymentDetailsUpdate() throws Throwable {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
-        Bundle bundle = new Bundle();
-        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method name");
-        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "details");
         mIPaymentDetailsUpdateService.changePaymentMethod(
-                bundle, new PaymentDetailsUpdateServiceCallback());
+                defaultMethodDataBundle(), new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(true);
         Assert.assertTrue(mMethodChangeListenerNotified);
 

@@ -114,6 +114,7 @@ const char* RemoteCommandsService::GetMetricNameReceivedRemoteCommand(
       return is_command_signed ? kMetricDeviceRemoteCommandReceived
                                : kMetricDeviceUnsignedRemoteCommandReceived;
     case PolicyInvalidationScope::kDeviceLocalAccount:
+    case PolicyInvalidationScope::kCBCM:
       NOTREACHED() << "Unexpected instance of remote commands service with "
                       "device local account scope.";
       return "";
@@ -139,6 +140,7 @@ std::string RemoteCommandsService::GetMetricNameExecutedRemoteCommand(
               : kMetricDeviceUnsignedRemoteCommandExecutedTemplate;
       break;
     case PolicyInvalidationScope::kDeviceLocalAccount:
+    case PolicyInvalidationScope::kCBCM:
       NOTREACHED() << "Unexpected instance of remote commands service with "
                       "device local account scope.";
       return "";
@@ -302,9 +304,8 @@ void RemoteCommandsService::EnqueueCommand(
       factory_->BuildJobForType(command.type(), this);
 
   if (!job || !job->Init(queue_.GetNowTicks(), command, signed_command)) {
-    SYSLOG(ERROR) << "Initialization of remote command type "
-                  << command.type() << " with id " << command.command_id()
-                  << " failed.";
+    SYSLOG(ERROR) << "Initialization of remote command type " << command.type()
+                  << " with id " << command.command_id() << " failed.";
     const auto metric = job == nullptr
                             ? MetricReceivedRemoteCommand::kInvalidScope
                             : MetricReceivedRemoteCommand::kInvalid;
@@ -323,8 +324,7 @@ void RemoteCommandsService::EnqueueCommand(
   queue_.AddJob(std::move(job));
 }
 
-void RemoteCommandsService::OnJobStarted(RemoteCommandJob* command) {
-}
+void RemoteCommandsService::OnJobStarted(RemoteCommandJob* command) {}
 
 void RemoteCommandsService::OnJobFinished(RemoteCommandJob* command) {
   has_finished_command_ = true;

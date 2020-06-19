@@ -226,7 +226,9 @@ void PasswordManagerPresenter::MovePasswordToAccountStoreHelper::
                      /*votes_uploader=*/nullptr);
   save_manager->CreatePendingCredentials(form_, {}, {}, /*is_http_auth=*/false,
                                          /*is_credential_api_save=*/false);
-  save_manager->MoveCredentialsToAccountStore();
+  save_manager->MoveCredentialsToAccountStore(
+      password_manager::metrics_util::MoveToAccountStoreTrigger::
+          kExplicitlyTriggeredInSettings);
   std::move(done_callback_).Run();
 }
 

@@ -456,8 +456,13 @@
       status: "test",
     },
     {
+      name: "CSSMarkerNestedPseudoElement",
+      status: "experimental",
+    },
+    {
       name: "CSSMarkerPseudoElement",
       status: "experimental",
+      implied_by: ["CSSMarkerNestedPseudoElement"],
     },
     // Enables dependency support for the MatchedPropertiesCache.
     {

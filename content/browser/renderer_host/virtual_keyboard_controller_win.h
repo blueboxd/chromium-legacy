@@ -14,13 +14,15 @@ class Rect;
 }
 
 namespace ui {
+namespace mojom {
+class TextInputState;
+}
 class InputMethod;
 }
 
 namespace content {
 
 class RenderWidgetHostViewAura;
-struct TextInputState;
 
 // This class implements the ui::InputMethodKeyboardControllerObserver interface
 // which provides notifications about the on-screen keyboard on Windows getting
@@ -41,7 +43,7 @@ class VirtualKeyboardControllerWin
   VirtualKeyboardControllerWin& operator=(const VirtualKeyboardControllerWin&) =
       delete;
 
-  void UpdateTextInputState(const TextInputState* state);
+  void UpdateTextInputState(const ui::mojom::TextInputState* state);
   void FocusedNodeChanged(bool is_editable);
 
   // InputMethodKeyboardControllerObserver overrides.

@@ -99,5 +99,6 @@ struct ImeTextSpan {
   uint32 background_color;
   uint32 suggestion_highlight_color;
   bool remove_on_finish_composing;
+  bool interim_char_selection;
   array<string> suggestions;
 };

@@ -10,6 +10,7 @@ include_rules = [
   "+media/base",
   "+media/cdm",
   "+media/filters",
+  "+media/mojo/mojom",
   "+mojo/core/embedder/embedder.h",
   "+mojo/public/cpp/bindings",
   "+ui/gfx/geometry",

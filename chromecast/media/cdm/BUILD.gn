@@ -33,3 +33,15 @@ cast_source_set("cdm") {
     ]
   }
 }
+
+cast_source_set("cdm_origin_provider") {
+  sources = [
+    "cast_cdm_origin_provider.cc",
+    "cast_cdm_origin_provider.h",
+  ]
+
+  deps = [
+    "//media/mojo/mojom",
+    "//mojo/public/cpp/bindings",
+  ]
+}

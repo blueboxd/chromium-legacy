@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 
 using blink::frame_test_helpers::LoadFrame;
 using blink::test::RunPendingTasks;
@@ -27,7 +28,11 @@ class ImeRequestTrackingWebWidgetClient
   ImeRequestTrackingWebWidgetClient() : virtual_keyboard_request_count_(0) {}
 
   // WebWidgetClient methods
-  void ShowVirtualKeyboard() override { ++virtual_keyboard_request_count_; }
+  void TextInputStateChanged(
+      ui::mojom::blink::TextInputStatePtr state) override {
+    if (state->show_ime_if_needed)
+      ++virtual_keyboard_request_count_;
+  }
 
   // Local methds
   void Reset() { virtual_keyboard_request_count_ = 0; }
@@ -116,6 +121,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
 
   if (!focus_element.IsNull())
     Focus(focus_element);
+  RunPendingTasks();
   if (expected_virtual_keyboard_request_count == 0) {
     EXPECT_EQ(0, client.VirtualKeyboardRequestCount());
   } else {

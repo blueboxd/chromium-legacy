@@ -113,6 +113,8 @@ extern const base::Feature kVirtualKeyboardFloatingDefault;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kLacrosSupport;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kLoginDisplayPasswordButton;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMediaApp;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kNativeRuleBasedTyping;
@@ -196,6 +198,7 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeSandboxEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 bool IsInstantTetheringBackgroundAdvertisingSupported();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsLacrosSupportEnabled();
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsLoginDisplayPasswordButtonEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsOobeScreensPriorityEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsParentalControlsSettingsEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsQuickAnswersDogfood();

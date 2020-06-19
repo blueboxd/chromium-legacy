@@ -253,6 +253,10 @@ const base::Feature kInstantTethering{"InstantTethering",
 const base::Feature kLacrosSupport{"LacrosSupport",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables or disables the display password button on login / lock screen.
+const base::Feature kLoginDisplayPasswordButton{
+    "LoginDisplayPasswordButton", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -457,6 +461,10 @@ bool IsInstantTetheringBackgroundAdvertisingSupported() {
 
 bool IsLacrosSupportEnabled() {
   return base::FeatureList::IsEnabled(kLacrosSupport);
+}
+
+bool IsLoginDisplayPasswordButtonEnabled() {
+  return base::FeatureList::IsEnabled(kLoginDisplayPasswordButton);
 }
 
 bool IsOobeScreensPriorityEnabled() {

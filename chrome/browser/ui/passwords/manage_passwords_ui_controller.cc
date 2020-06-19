@@ -405,6 +405,10 @@ ManagePasswordsUIController::GetCurrentInteractionStats() const {
       form_manager->GetPendingCredentials().username_value);
 }
 
+bool ManagePasswordsUIController::DidAuthForAccountStoreOptInFail() const {
+  return passwords_data_.auth_for_account_storage_opt_in_failed();
+}
+
 bool ManagePasswordsUIController::BubbleIsManualFallbackForSaving() const {
   return save_fallback_timer_.IsRunning();
 }
@@ -769,6 +773,7 @@ void ManagePasswordsUIController::AuthenticateUserForAccountStoreOptInCallback(
     const base::string16& password,
     password_manager::PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
   if (reauth_succeeded) {
+    passwords_data_.set_auth_for_account_storage_opt_in_failed(false);
     // Save the password only if it is the same origin and same form manager.
     // Otherwise it can be dangerous (e.g. saving the credentials against
     // another origin).
@@ -782,6 +787,7 @@ void ManagePasswordsUIController::AuthenticateUserForAccountStoreOptInCallback(
   // the state didn't change.
   GetPasswordFeatureManager()->SetDefaultPasswordStore(
       autofill::PasswordForm::Store::kProfileStore);
+  passwords_data_.set_auth_for_account_storage_opt_in_failed(true);
   if (passwords_data_.state() != password_manager::ui::PENDING_PASSWORD_STATE)
     return;
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;

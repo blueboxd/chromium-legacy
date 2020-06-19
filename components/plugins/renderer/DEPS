@@ -12,4 +12,5 @@ include_rules = [
   "+third_party/re2",
   "+skia",
   "+ui/base/cursor",
+  "+ui/base/ime/mojom",
 ]

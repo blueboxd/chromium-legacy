@@ -30,6 +30,7 @@ class Client;
 
 // Native autofill assistant service which communicates with the server to get
 // scripts and client actions.
+// TODO(b/158998456): Add unit tests.
 class ServiceImpl : public Service {
  public:
   // Convenience method for creating a service from a client.
@@ -110,6 +111,9 @@ class ServiceImpl : public Service {
       const std::string& locale,
       const std::string& country_code,
       const DeviceContext& device_context);
+  // Updates the subset of |client_context_| fields that may change during a
+  // flow.
+  void UpdateMutableClientContextFields();
 
   content::BrowserContext* context_;
   GURL script_server_url_;
@@ -136,7 +140,7 @@ class ServiceImpl : public Service {
 
   // The client context is cached here to avoid having to recreate it for
   // every message.
-  const ClientContextProto client_context_;
+  ClientContextProto client_context_;
 
   const Client* client_;
 

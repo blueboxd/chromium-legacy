@@ -176,7 +176,8 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
                                       scoped_refptr<SecurityOrigin> = nullptr,
                                       TestWebRemoteFrameClient* = nullptr);
 
-class TestWebWidgetClient : public WebWidgetClient {
+class TestWebWidgetClient : public WebWidgetClient,
+                            public mojom::blink::WidgetHost {
  public:
   TestWebWidgetClient();
   ~TestWebWidgetClient() override = default;
@@ -213,6 +214,8 @@ class TestWebWidgetClient : public WebWidgetClient {
     layer_tree_host_ = layer_tree_host;
   }
 
+  mojo::PendingAssociatedRemote<mojom::blink::WidgetHost> BindNewWidgetHost();
+
  protected:
   // WebWidgetClient overrides;
   void ScheduleAnimation() override { animation_scheduled_ = true; }
@@ -227,6 +230,18 @@ class TestWebWidgetClient : public WebWidgetClient {
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
 
+  // mojom::blink::WidgetHost overrides:
+  void SetCursor(const ui::Cursor& cursor) override;
+  void SetToolTipText(const String& tooltip_text,
+                      base::i18n::TextDirection text_direction_hint) override;
+  void TextInputStateChanged(
+      ui::mojom::blink::TextInputStatePtr state) override;
+  void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                              base::i18n::TextDirection anchor_dir,
+                              const gfx::Rect& focus_rect,
+                              base::i18n::TextDirection focus_dir,
+                              bool is_anchor_first) override;
+
  private:
   WebFrameWidget* frame_widget_ = nullptr;
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
@@ -238,6 +253,7 @@ class TestWebWidgetClient : public WebWidgetClient {
   int visually_non_empty_layout_count_ = 0;
   int finished_parsing_layout_count_ = 0;
   int finished_loading_layout_count_ = 0;
+  mojo::AssociatedReceiver<mojom::blink::WidgetHost> receiver_{this};
 };
 
 class TestWebViewClient : public WebViewClient {

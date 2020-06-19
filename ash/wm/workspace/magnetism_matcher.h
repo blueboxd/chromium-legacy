@@ -13,8 +13,8 @@
 
 #include "ash/ash_export.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ash {

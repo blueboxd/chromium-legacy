@@ -13,6 +13,7 @@ enum class PolicyInvalidationScope {
   kUser,
   kDevice,
   kDeviceLocalAccount,
+  kCBCM,
 };
 
 }  // namespace policy

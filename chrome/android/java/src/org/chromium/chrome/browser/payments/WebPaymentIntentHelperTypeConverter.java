@@ -218,9 +218,14 @@ public final class WebPaymentIntentHelperTypeConverter {
         if (update == null) return null;
         return new WebPaymentIntentHelperType.PaymentRequestDetailsUpdate(
                 fromMojoPaymentCurrencyAmount(update.total),
-                fromMojoShippingOptionList(Arrays.asList(update.shippingOptions)),
-                fromMojoPaymentHandlerModifierList(Arrays.asList(update.modifiers)), update.error,
-                update.stringifiedPaymentMethodErrors,
+                // Arrays.asList does not accept null.
+                update.shippingOptions == null
+                        ? null
+                        : fromMojoShippingOptionList(Arrays.asList(update.shippingOptions)),
+                update.modifiers == null
+                        ? null
+                        : fromMojoPaymentHandlerModifierList(Arrays.asList(update.modifiers)),
+                update.error, update.stringifiedPaymentMethodErrors,
                 fromMojoShippingAddressErrors(update.shippingAddressErrors));
     }
 }

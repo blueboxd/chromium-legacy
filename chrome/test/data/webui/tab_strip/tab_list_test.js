@@ -271,7 +271,7 @@ suite('TabList', () => {
    * @param {!Element} element
    * @param {number} scale
    */
-  function testPlaceTabElementAnimationParams(element, scale) {
+  function testPlaceElementAnimationParams(element, scale) {
     const animations = element.getAnimations();
 
     // TODO(crbug.com/1090645): Remove logging once the test no longer flakes.
@@ -313,32 +313,32 @@ suite('TabList', () => {
 
     const movedTab = unpinnedTabs[indexToMove];
     tabList.placeTabElement(movedTab, newIndex, false, undefined);
-    testPlaceTabElementAnimationParams(
-        movedTab, -1 * direction * (unpinnedTabs.length - 1));
+    testPlaceElementAnimationParams(
+        movedTab, -1 * direction * Math.abs(newIndex - indexToMove));
 
     Array.from(unpinnedTabs)
         .filter(tabElement => tabElement !== movedTab)
         .forEach(
             tabElement =>
-                testPlaceTabElementAnimationParams(tabElement, direction));
+                testPlaceElementAnimationParams(tabElement, direction));
   }
 
-  test('PlaceTabElementAnimatesTabMovedTowardsStart', async () => {
-    await testPlaceTabElementAnimation(tabs.length - 1, 0, -1);
+  test('PlaceTabElementAnimatesTabMovedTowardsStart', () => {
+    return testPlaceTabElementAnimation(tabs.length - 1, 0, -1);
   });
 
-  test('PlaceTabElementAnimatesTabMovedTowardsStartRTL', async () => {
+  test('PlaceTabElementAnimatesTabMovedTowardsStartRTL', () => {
     document.documentElement.dir = 'rtl';
-    await testPlaceTabElementAnimation(tabs.length - 1, 0, 1);
+    return testPlaceTabElementAnimation(tabs.length - 1, 0, 1);
   });
 
-  test('PlaceTabElementAnimatesTabMovedTowardsEnd', async () => {
-    await testPlaceTabElementAnimation(0, tabs.length - 1, 1);
+  test('PlaceTabElementAnimatesTabMovedTowardsEnd', () => {
+    return testPlaceTabElementAnimation(0, tabs.length - 1, 1);
   });
 
-  test('PlaceTabElementAnimatesTabMovedTowardsEndRTL', async () => {
+  test('PlaceTabElementAnimatesTabMovedTowardsEndRTL', () => {
     document.documentElement.dir = 'rtl';
-    await testPlaceTabElementAnimation(0, tabs.length - 1, -1);
+    return testPlaceTabElementAnimation(0, tabs.length - 1, -1);
   });
 
   test('PlacesTabGroupElement', () => {
@@ -352,6 +352,72 @@ suite('TabList', () => {
 
     // Group was inserted at index 2, so it should come after the 2nd tab.
     assertEquals(getUnpinnedTabs()[1], tabGroupElement.previousElementSibling);
+  });
+
+  /**
+   * @param {number} indexToGroup
+   * @param {number} newIndex
+   * @param {number} direction
+   */
+  async function testPlaceTabGroupElementAnimation(
+      indexToGroup, newIndex, direction) {
+    await tabList.animationPromises;
+
+    // Group the tab at indexToGroup.
+    const unpinnedTabs = getUnpinnedTabs();
+    const tabToGroup = unpinnedTabs[indexToGroup];
+    webUIListenerCallback(
+        'tab-group-state-changed', tabToGroup.tab.id, indexToGroup, 'group0');
+
+    const groupElement =
+        /** @type {!TabGroupElement} */ (tabToGroup.parentElement);
+    tabList.placeTabGroupElement(groupElement, newIndex);
+    testPlaceElementAnimationParams(
+        groupElement, -1 * direction * Math.abs(newIndex - indexToGroup));
+
+    // Test animations on all the other tabs.
+    Array.from(getUnpinnedTabs())
+        .filter(tabElement => tabElement.parentElement !== groupElement)
+        .forEach(
+            tabElement =>
+                testPlaceElementAnimationParams(tabElement, direction));
+  }
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsStart', () => {
+    return testPlaceTabGroupElementAnimation(tabs.length - 1, 0, -1);
+  });
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsStartRTL', () => {
+    document.documentElement.dir = 'rtl';
+    return testPlaceTabGroupElementAnimation(tabs.length - 1, 0, 1);
+  });
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsEnd', () => {
+    return testPlaceTabGroupElementAnimation(0, tabs.length - 1, 1);
+  });
+
+  test('PlaceTabGroupElementAnimatesTabGroupMovedTowardsEndRTL', () => {
+    document.documentElement.dir = 'rtl';
+    return testPlaceTabGroupElementAnimation(0, tabs.length - 1, -1);
+  });
+
+  test('PlaceTabGroupElementAnimationWithMultipleTabs', async () => {
+    await tabList.animationPromises;
+
+    // Group all tabs except for the first one.
+    const ungroupedTab = getUnpinnedTabs()[0];
+    tabs.slice(1).forEach(tab => {
+      webUIListenerCallback(
+          'tab-group-state-changed', tab.id, tab.index, 'group0');
+    });
+
+    // Move the group to index 0.
+    const tabGroup = getTabGroups()[0];
+    tabList.placeTabGroupElement(tabGroup, 0);
+
+    // Both the TabElement and TabGroupElement should move by a scale of 1.
+    testPlaceElementAnimationParams(tabGroup, 1);
+    testPlaceElementAnimationParams(ungroupedTab, -1);
   });
 
   test('AddNewTabGroup', () => {

@@ -17,7 +17,6 @@ per-file .vpython*=iannucci@chromium.org
 per-file .yapfignore=*
 per-file AUTHORS=*
 per-file BUILD.gn=file://build/OWNERS
-per-file codereview.settings=agable@chromium.org
 per-file CODE_OF_CONDUCT.md=dpranke@chromium.org
 per-file CODE_OF_CONDUCT.md=dpranke@google.com
 per-file CODE_OF_CONDUCT.md=groby@chromium.org

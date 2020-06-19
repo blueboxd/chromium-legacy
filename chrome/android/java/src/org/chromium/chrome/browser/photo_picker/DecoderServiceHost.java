@@ -17,13 +17,13 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
-import android.os.StrictMode;
 import android.os.SystemClock;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
@@ -520,8 +520,7 @@ public class DecoderServiceHost
 
         // The restricted utility process can't open the file to read the
         // contents, so we need to obtain a file descriptor to pass over.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
+        try (StrictModeContext ignored = StrictModeContext.allowAllThreadPolicies()) {
             AssetFileDescriptor afd = null;
             try {
                 afd = mContentResolver.openAssetFileDescriptor(params.mUri, "r");
@@ -539,8 +538,6 @@ public class DecoderServiceHost
                 closeRequestWithError(params.mUri.getPath());
                 return;
             }
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
         }
 
         // Prepare and send the data over.

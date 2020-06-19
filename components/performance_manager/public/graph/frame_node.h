@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/performance_manager/public/frame_priority/frame_priority.h"
 #include "components/performance_manager/public/graph/node.h"
 #include "components/performance_manager/public/mojom/coordination_unit.mojom.h"
@@ -25,6 +26,10 @@ class PageNode;
 class ProcessNode;
 class RenderFrameHostProxy;
 class WorkerNode;
+
+// A strongly typed unguessable token for the frame tokens.
+using FrameToken =
+    util::StrongAlias<class FrameTokenTag, base::UnguessableToken>;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -88,6 +93,10 @@ class FrameNode : public Node {
   // Gets the devtools token associated with this frame. This is a constant over
   // the lifetime of the frame.
   virtual const base::UnguessableToken& GetDevToolsToken() const = 0;
+
+  // Gets the unique token associated with this frame. This is a constant over
+  // the lifetime of the frame and unique across all frames for all time.
+  virtual const FrameToken& GetFrameToken() const = 0;
 
   // Gets the ID of the browsing instance to which this frame belongs. This is a
   // constant over the lifetime of the frame.

@@ -1236,10 +1236,10 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
 
   std::vector<TabGroupViews*> views = ListGroupViews();
   EXPECT_EQ(1u, views.size());
-  TabGroupUnderline* underline = views[0]->underline();
   // Update underline manually in the absence of a real Paint cycle.
-  underline->UpdateBounds();
+  views[0]->UpdateBounds();
 
+  const TabGroupUnderline* underline = views[0]->underline();
   EXPECT_EQ(underline->x(), TabGroupUnderline::GetStrokeInset());
   EXPECT_GT(underline->width(), 0);
   EXPECT_EQ(underline->bounds().right(),
@@ -1250,7 +1250,7 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   // Endpoints are different if the last grouped tab is active.
   controller_->AddTab(1, true);
   controller_->MoveTabIntoGroup(1, group);
-  underline->UpdateBounds();
+  views[0]->UpdateBounds();
 
   EXPECT_EQ(underline->x(), TabGroupUnderline::GetStrokeInset());
   EXPECT_EQ(underline->bounds().right(),

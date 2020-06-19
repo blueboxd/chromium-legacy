@@ -639,13 +639,6 @@ void LocalFrame::DidAttachDocument() {
   // even after the frame reattaches.
   GetEventHandler().Clear();
   Selection().DidAttachDocument(document);
-  if (IsCrossOriginToParentFrame() && !first_url_cross_origin_to_parent_) {
-    first_url_cross_origin_to_parent_ = GetDocument()->Url().GetString();
-  }
-}
-
-base::Optional<String> LocalFrame::FirstUrlCrossOriginToParent() const {
-  return first_url_cross_origin_to_parent_;
 }
 
 bool LocalFrame::CanAccessEvent(
@@ -2810,8 +2803,8 @@ void LocalFrame::GetSavableResourceLinks(
     return;
   }
 
-  auto referrer = mojom::blink::Referrer::New(
-      GetDocument()->Url(), GetDocument()->GetReferrerPolicy());
+  auto referrer = mojom::blink::Referrer::New(GetDocument()->Url(),
+                                              DomWindow()->GetReferrerPolicy());
 
   auto reply = mojom::blink::GetSavableResourceLinksReply::New();
   reply->resources_list = std::move(resources_list);

@@ -20,6 +20,7 @@
 #include "sql/database.h"
 #include "sql/database_memory_dump_provider.h"
 #include "sql/meta_table.h"
+#include "sql/sql_features.h"
 #include "sql/statement.h"
 #include "sql/test/database_test_peer.h"
 #include "sql/test/error_callback_support.h"
@@ -538,14 +539,18 @@ TEST_F(SQLDatabaseTest, RazeLocked) {
 
   // An unfinished read transaction in the other connection also
   // blocks raze.
-  const char* kQuery = "SELECT COUNT(*) FROM foo";
-  sql::Statement s(other_db.GetUniqueStatement(kQuery));
-  ASSERT_TRUE(s.Step());
-  ASSERT_FALSE(db().Raze());
+  // This doesn't happen in WAL mode because reads are no longer blocked by
+  // write operations when using a WAL.
+  if (!base::FeatureList::IsEnabled(sql::features::kEnableWALModeByDefault)) {
+    const char* kQuery = "SELECT COUNT(*) FROM foo";
+    sql::Statement s(other_db.GetUniqueStatement(kQuery));
+    ASSERT_TRUE(s.Step());
+    ASSERT_FALSE(db().Raze());
 
-  // Complete the statement unlocks the database.
-  ASSERT_FALSE(s.Step());
-  ASSERT_TRUE(db().Raze());
+    // Completing the statement unlocks the database.
+    ASSERT_FALSE(s.Step());
+    ASSERT_TRUE(db().Raze());
+  }
 }
 
 // Verify that Raze() can handle an empty file.  SQLite should treat
@@ -769,6 +774,11 @@ TEST_F(SQLDatabaseTest, RazeTruncate) {
     ASSERT_TRUE(
         db().Execute("INSERT INTO foo (value) VALUES (randomblob(1024))"));
   }
+
+  // In WAL mode, writes don't reach the database file until a checkpoint
+  // happens.
+  ASSERT_TRUE(db().CheckpointDatabase());
+
   int64_t db_size;
   ASSERT_TRUE(base::GetFileSize(db_path(), &db_size));
   ASSERT_GT(db_size, expected_size);
@@ -796,23 +806,55 @@ TEST_F(SQLDatabaseTest, SetTempDirForSQL) {
 }
 #endif  // defined(OS_ANDROID)
 
-TEST_F(SQLDatabaseTest, DeleteNonWal) {
+// Contained param indicates whether WAL mode is switched on or not.
+class JournalModeTest : public SQLDatabaseTest,
+                        public testing::WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+#if defined(OS_FUCHSIA)  // Exclusive mode needs to be enabled to enter WAL mode
+                         // on Fuchsia
+    if (IsWALEnabled()) {
+      db().set_exclusive_locking();
+    }
+#endif  // defined(OS_FUCHSIA)
+    db().want_wal_mode(IsWALEnabled());
+    SQLDatabaseTest::SetUp();
+  }
+
+  bool IsWALEnabled() { return GetParam(); }
+};
+
+TEST_P(JournalModeTest, Delete) {
   EXPECT_TRUE(db().Execute("CREATE TABLE x (x)"));
   db().Close();
 
-  // Should have both a main database file and a journal file because
-  // of journal_mode TRUNCATE.
   base::FilePath journal_path = sql::Database::JournalPath(db_path());
+  base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
+
+  // Should have both a main database file and a journal file if
+  // journal_mode is TRUNCATE. There is no WAL file as it is deleted on Close.
   ASSERT_TRUE(GetPathExists(db_path()));
-  ASSERT_TRUE(GetPathExists(journal_path));
+  if (!IsWALEnabled()) {  // TRUNCATE mode
+    ASSERT_TRUE(GetPathExists(journal_path));
+  }
 
   sql::Database::Delete(db_path());
   EXPECT_FALSE(GetPathExists(db_path()));
   EXPECT_FALSE(GetPathExists(journal_path));
+  EXPECT_FALSE(GetPathExists(wal_path));
 }
 
+// WAL mode is currently not supported on Fuchsia
+#if !defined(OS_FUCHSIA)
+INSTANTIATE_TEST_SUITE_P(SQLDatabaseTest, JournalModeTest, testing::Bool());
+#else
+INSTANTIATE_TEST_SUITE_P(SQLDatabaseTest,
+                         JournalModeTest,
+                         testing::Values(false));
+#endif
+
 #if defined(OS_POSIX)  // This test operates on POSIX file permissions.
-TEST_F(SQLDatabaseTest, PosixFilePermissions) {
+TEST_P(JournalModeTest, PosixFilePermissions) {
   db().Close();
   sql::Database::Delete(db_path());
   ASSERT_FALSE(GetPathExists(db_path()));
@@ -834,26 +876,10 @@ TEST_F(SQLDatabaseTest, PosixFilePermissions) {
   EXPECT_TRUE(base::GetPosixFilePermissions(db_path(), &mode));
   ASSERT_EQ(mode, 0600);
 
-  {
-    base::FilePath journal_path = sql::Database::JournalPath(db_path());
-    DLOG(ERROR) << "journal_path: " << journal_path;
-    ASSERT_TRUE(GetPathExists(journal_path));
-    EXPECT_TRUE(base::GetPosixFilePermissions(journal_path, &mode));
-    ASSERT_EQ(mode, 0600);
-  }
+  if (IsWALEnabled()) {  // WAL mode
+    // The WAL file is created lazily on first change.
+    ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
 
-  // Reopen the database and turn on WAL mode.
-  db().Close();
-  sql::Database::Delete(db_path());
-  ASSERT_FALSE(GetPathExists(db_path()));
-  ASSERT_TRUE(db().Open(db_path()));
-  ASSERT_TRUE(db().Execute("PRAGMA journal_mode = WAL"));
-  ASSERT_EQ("wal", ExecuteWithResult(&db(), "PRAGMA journal_mode"));
-
-  // The WAL file is created lazily on first change.
-  ASSERT_TRUE(db().Execute("CREATE TABLE foo (a, b)"));
-
-  {
     base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
     ASSERT_TRUE(GetPathExists(wal_path));
     EXPECT_TRUE(base::GetPosixFilePermissions(wal_path, &mode));
@@ -862,6 +888,12 @@ TEST_F(SQLDatabaseTest, PosixFilePermissions) {
     base::FilePath shm_path = sql::Database::SharedMemoryFilePath(db_path());
     ASSERT_TRUE(GetPathExists(shm_path));
     EXPECT_TRUE(base::GetPosixFilePermissions(shm_path, &mode));
+    ASSERT_EQ(mode, 0600);
+  } else {  // Truncate mode
+    base::FilePath journal_path = sql::Database::JournalPath(db_path());
+    DLOG(ERROR) << "journal_path: " << journal_path;
+    ASSERT_TRUE(GetPathExists(journal_path));
+    EXPECT_TRUE(base::GetPosixFilePermissions(journal_path, &mode));
     ASSERT_EQ(mode, 0600);
   }
 }
@@ -1218,6 +1250,84 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
   ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
   EXPECT_EQ(base::NumberToString(MetaTable::kMmapFailure),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
+}
+
+TEST_F(SQLDatabaseTest, EnableWALMode) {
+  db().want_wal_mode(true);
+#if defined(OS_FUCHSIA)  // Exclusive mode needs to be enabled to enter WAL mode
+                         // on Fuchsia
+  db().set_exclusive_locking();
+#endif  // defined(OS_FUCHSIA)
+  ASSERT_TRUE(Reopen());
+
+  EXPECT_EQ(ExecuteWithResult(&db(), "PRAGMA journal_mode"), "wal");
+}
+
+TEST_F(SQLDatabaseTest, DisableWALMode) {
+  db().want_wal_mode(true);
+#if defined(OS_FUCHSIA)  // Exclusive mode needs to be enabled to enter WAL mode
+                         // on Fuchsia
+  db().set_exclusive_locking();
+#endif  // defined(OS_FUCHSIA)
+  ASSERT_TRUE(Reopen());
+  ASSERT_EQ(ExecuteWithResult(&db(), "PRAGMA journal_mode"), "wal");
+
+  // Add some data to ensure that disabling WAL mode correctly handles a
+  // populated WAL file.
+  ASSERT_TRUE(
+      db().Execute("CREATE TABLE foo (id INTEGER UNIQUE, value INTEGER)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo VALUES (1, 1)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo VALUES (2, 2)"));
+
+  db().want_wal_mode(false);
+  ASSERT_TRUE(Reopen());
+  EXPECT_EQ(ExecuteWithResult(&db(), "PRAGMA journal_mode"), "truncate");
+  // Check that data is preserved
+  EXPECT_EQ(ExecuteWithResult(&db(), "SELECT SUM(value) FROM foo WHERE id < 3"),
+            "3");
+}
+
+TEST_F(SQLDatabaseTest, CheckpointDatabase) {
+  if (!db().UseWALMode()) {
+    db().Close();
+    sql::Database::Delete(db_path());
+    db().want_wal_mode(true);
+#if defined(OS_FUCHSIA)  // Exclusive mode needs to be enabled to enter WAL mode
+                         // on Fuchsia
+    db().set_exclusive_locking();
+#endif  // defined(OS_FUCHSIA)
+    ASSERT_TRUE(db().Open(db_path()));
+    ASSERT_EQ(ExecuteWithResult(&db(), "PRAGMA journal_mode"), "wal");
+  }
+
+  base::FilePath wal_path = sql::Database::WriteAheadLogPath(db_path());
+
+  int64_t wal_size = 0;
+  // WAL file initially empty.
+  EXPECT_TRUE(GetPathExists(wal_path));
+  base::GetFileSize(wal_path, &wal_size);
+  EXPECT_EQ(wal_size, 0);
+
+  ASSERT_TRUE(
+      db().Execute("CREATE TABLE foo (id INTEGER UNIQUE, value INTEGER)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo VALUES (1, 1)"));
+  ASSERT_TRUE(db().Execute("INSERT INTO foo VALUES (2, 2)"));
+
+  // Writes reach WAL file but not db file.
+  base::GetFileSize(wal_path, &wal_size);
+  EXPECT_GT(wal_size, 0);
+
+  int64_t db_size = 0;
+  base::GetFileSize(db_path(), &db_size);
+  EXPECT_EQ(db_size, db().page_size());
+
+  // Checkpoint database to immediately propagate writes to DB file.
+  EXPECT_TRUE(db().CheckpointDatabase());
+
+  base::GetFileSize(db_path(), &db_size);
+  EXPECT_GT(db_size, db().page_size());
+  EXPECT_EQ(ExecuteWithResult(&db(), "SELECT value FROM foo where id=1"), "1");
+  EXPECT_EQ(ExecuteWithResult(&db(), "SELECT value FROM foo where id=2"), "2");
 }
 
 // To prevent invalid SQL from accidentally shipping to production, prepared

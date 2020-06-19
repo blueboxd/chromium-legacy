@@ -1,10 +1,4 @@
-# (in PST)
-tbarzic@chromium.org
-xiyuan@chromium.org
-
-# (in CET)
-antrim@chromium.org
-rsorokin@chromium.org
+file://ash/login/LOGIN_LOCK_OWNERS
 
 # For login-screen issues use component UI>Shell>StartScreen
 #

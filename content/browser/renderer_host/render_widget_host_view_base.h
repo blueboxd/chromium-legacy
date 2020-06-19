@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
@@ -36,6 +37,7 @@
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-forward.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/display/display.h"
@@ -43,8 +45,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
-
-struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blink {
 class WebMouseEvent;
@@ -72,7 +72,6 @@ class TouchSelectionControllerClientManager;
 class WebCursor;
 class DelegatedFrameHost;
 struct DisplayFeature;
-struct TextInputState;
 
 // Basic implementation shared by concrete RenderWidgetHostView subclasses.
 class CONTENT_EXPORT RenderWidgetHostViewBase
@@ -403,7 +402,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // non-virtual (https://crbug.com/578168).
 
   // Updates the state of the input method attached to the view.
-  virtual void TextInputStateChanged(const TextInputState& text_input_state);
+  virtual void TextInputStateChanged(
+      const ui::mojom::TextInputState& text_input_state);
 
   // Cancel the ongoing composition of the input method attached to the view.
   virtual void ImeCancelComposition();
@@ -414,8 +414,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // starting position of the selection. The coordinates are with respect to
   // RenderWidget's window's origin. Focus and anchor bound are represented as
   // gfx::Rect.
-  virtual void SelectionBoundsChanged(
-      const WidgetHostMsg_SelectionBounds_Params& params);
+  virtual void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                                      base::i18n::TextDirection anchor_dir,
+                                      const gfx::Rect& focus_rect,
+                                      base::i18n::TextDirection focus_dir,
+                                      bool is_anchor_first);
 
   // Updates the range of the marked text in an IME composition.
   virtual void ImeCompositionRangeChanged(

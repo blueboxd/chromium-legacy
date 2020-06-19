@@ -34,6 +34,10 @@ class TabGroupViews {
   TabGroupHighlight* highlight() { return highlight_; }
   TabGroupUnderline* underline() { return underline_; }
 
+  // Updates bounds of all elements not explicitly positioned by the tab strip.
+  // This currently includes both the underline and highlight.
+  void UpdateBounds();
+
   // Updates the visuals of each view in preparation for repainting.
   void UpdateVisuals();
 

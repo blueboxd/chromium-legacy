@@ -53,6 +53,7 @@ class CORE_EXPORT PseudoElement : public Element {
       const ComputedStyle&);
 
   static const AtomicString& PseudoElementNameForEvents(PseudoId);
+  static bool IsWebExposed(PseudoId, const Node*);
 
   // Pseudo element are not allowed to be the inner node for hit testing. Find
   // the closest ancestor which is a real dom node.

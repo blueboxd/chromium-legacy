@@ -192,6 +192,7 @@ class RenderViewTest : public testing::Test {
   virtual ContentClient* CreateContentClient();
   virtual ContentBrowserClient* CreateContentBrowserClient();
   virtual ContentRendererClient* CreateContentRendererClient();
+  virtual std::unique_ptr<FakeRenderWidgetHost> CreateRenderWidgetHost();
 
   // Allows a subclass to customize the initial size of the RenderView.
   virtual VisualProperties InitialVisualProperties();

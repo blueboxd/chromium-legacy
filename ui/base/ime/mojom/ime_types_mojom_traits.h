@@ -67,6 +67,9 @@ struct COMPONENT_EXPORT(IME_SHARED_MOJOM_TRAITS)
   static bool remove_on_finish_composing(const ui::ImeTextSpan& c) {
     return c.remove_on_finish_composing;
   }
+  static bool interim_char_selection(const ui::ImeTextSpan& c) {
+    return c.interim_char_selection;
+  }
   static std::vector<std::string> suggestions(const ui::ImeTextSpan& c) {
     return c.suggestions;
   }

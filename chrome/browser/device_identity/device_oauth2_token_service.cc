@@ -263,17 +263,22 @@ bool DeviceOAuth2TokenService::HandleAccessTokenFetch(
     const std::string& client_id,
     const std::string& client_secret,
     const OAuth2AccessTokenManager::ScopeSet& scopes) {
+  if (!HasValidationResult()) {
+    // Add a pending request that will be satisfied once validation completes.
+    // This must happen before the call to |StartValidation()| because the
+    // latter can be synchronous on some platforms.
+    pending_requests_.push_back(new PendingRequest(
+        request->AsWeakPtr(), client_id, client_secret, scopes));
+    RequestValidation();
+  }
+
   switch (state_) {
     case STATE_VALIDATION_PENDING:
       // If this is the first request for a token, start validation.
       StartValidation();
-      FALLTHROUGH;
+      return true;
     case STATE_LOADING:
     case STATE_VALIDATION_STARTED:
-      // Add a pending request that will be satisfied once validation completes.
-      pending_requests_.push_back(new PendingRequest(
-          request->AsWeakPtr(), client_id, client_secret, scopes));
-      RequestValidation();
       return true;
     case STATE_NO_TOKEN:
       FailRequest(request, GoogleServiceAuthError::USER_NOT_SIGNED_UP);
@@ -381,4 +386,9 @@ void DeviceOAuth2TokenService::ReportServiceError(
     FlushPendingRequests(true, GoogleServiceAuthError::NONE);
   else
     FlushPendingRequests(false, error);
+}
+
+bool DeviceOAuth2TokenService::HasValidationResult() const {
+  return state_ == STATE_NO_TOKEN || state_ == STATE_TOKEN_INVALID ||
+         state_ == STATE_TOKEN_VALID;
 }

@@ -15,15 +15,16 @@ namespace features {
 // TODO(994227) Remove references to this now unused feature.
 POLICY_EXPORT extern const base::Feature kPolicyAtomicGroup;
 
-// Feature that controls whether the browser reads the service account
-// information from policy data.
-POLICY_EXPORT extern const base::Feature kCBCMServiceAccounts;
-
 #if defined(OS_MACOSX)
 // Feature that controls whether the browser ignores sensitive policies on an
 // unmanaged Mac.
 POLICY_EXPORT extern const base::Feature kIgnoreSensitivePoliciesOnUnmanagedMac;
 #endif
+
+// Feature that controls whether the browser registers for FCM invalidations for
+// Machine Level Policies. If enabled, |kCBCMServiceAccounts| must also be
+// enabled.
+POLICY_EXPORT extern const base::Feature kCBCMPolicyInvalidations;
 
 }  // namespace features
 }  // namespace policy

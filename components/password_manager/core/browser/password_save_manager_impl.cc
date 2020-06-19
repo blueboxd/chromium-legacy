@@ -315,7 +315,8 @@ void PasswordSaveManagerImpl::PasswordNoLongerGenerated() {
       PasswordFormMetricsRecorder::GeneratedPasswordStatus::kPasswordDeleted);
 }
 
-void PasswordSaveManagerImpl::MoveCredentialsToAccountStore() {
+void PasswordSaveManagerImpl::MoveCredentialsToAccountStore(
+    metrics_util::MoveToAccountStoreTrigger) {
   // Moving credentials is only supported in MultiStorePasswordSaveManager.
   NOTREACHED();
 }

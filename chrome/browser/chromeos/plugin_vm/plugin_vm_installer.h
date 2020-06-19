@@ -76,16 +76,11 @@ class PluginVmInstaller : public KeyedService,
     kInactive,
     kCheckingLicense,
     kCheckingDiskSpace,
-    kPausedLowDiskSpace,
     kDownloadingDlc,
     kCheckingForExistingVm,
     kDownloadingImage,
     kImporting,
   };
-
-  static constexpr int64_t kMinimumFreeDiskSpace = 16LL * 1024 * 1024 * 1024;
-  static constexpr int64_t kRecommendedFreeDiskSpace =
-      32LL * 1024 * 1024 * 1024;
 
   // Observer class for the PluginVm image related events.
   class Observer {
@@ -116,8 +111,6 @@ class PluginVmInstaller : public KeyedService,
 
   // Start the installation. Progress updates will be sent to the observer.
   void Start();
-  // Continue the installation if it was paused due to low disk space.
-  void Continue();
   // Cancel the installation.
   void Cancel();
 
@@ -146,6 +139,9 @@ class PluginVmInstaller : public KeyedService,
   // archive passes hash verification and false otherwise.
   // Public for testing purposes.
   bool VerifyDownload(const std::string& downloaded_archive_hash);
+
+  // Returns free disk space required to install Plugin VM in bytes.
+  int64_t RequiredFreeDiskSpace();
 
   void SetFreeDiskSpaceForTesting(int64_t bytes) {
     free_disk_space_for_testing_ = bytes;

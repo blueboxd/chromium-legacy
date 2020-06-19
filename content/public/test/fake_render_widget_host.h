@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 
 namespace content {
 
@@ -47,6 +48,12 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
   void SetCursor(const ui::Cursor& cursor) override;
   void SetToolTipText(const base::string16& tooltip_text,
                       base::i18n::TextDirection text_direction_hint) override;
+  void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
+  void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                              base::i18n::TextDirection anchor_dir,
+                              const gfx::Rect& focus_rect,
+                              base::i18n::TextDirection focus_dir,
+                              bool is_anchor_first) override;
 
   // blink::mojom::WidgetInputHandlerHost overrides.
   void SetTouchActionFromMain(cc::TouchAction touch_action) override;
@@ -67,9 +74,17 @@ class FakeRenderWidgetHost : public blink::mojom::FrameWidgetHost,
     return widget_host_receiver_;
   }
 
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler();
   blink::mojom::FrameWidgetInputHandler* GetFrameWidgetInputHandler();
 
+  gfx::Range LastCompositionRange() const { return last_composition_range_; }
+  const std::vector<gfx::Rect>& LastCompositionBounds() const {
+    return last_composition_bounds_;
+  }
+
  private:
+  gfx::Range last_composition_range_;
+  std::vector<gfx::Rect> last_composition_bounds_;
   mojo::AssociatedReceiver<blink::mojom::FrameWidgetHost>
       frame_widget_host_receiver_{this};
   mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget_remote_;

@@ -112,15 +112,6 @@ enum class PresentationUrlType {
   kPresentationUrlTypeCount
 };
 
-// Whether audio has been played since the last navigation. Do not modify
-// existing values, since they are used for metrics reporting. Add new values
-// only at the bottom, and also update tools/metrics/histograms/enums.xml.
-enum class WebContentsAudioState {
-  kWasNeverAudible = 0,
-  kIsCurrentlyAudible = 1,
-  kWasPreviouslyAudible = 2,  // Was playing audio, but not currently.
-};
-
 class MediaRouterMetrics {
  public:
   MediaRouterMetrics();

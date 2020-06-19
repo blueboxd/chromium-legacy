@@ -701,10 +701,10 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
   DCHECK_EQ(text_input_manager_, text_input_manager);
   // If there are no active widgets, the TextInputState.type should be reported
   // as none.
-  const TextInputState& state =
+  const ui::mojom::TextInputState& state =
       GetTextInputManager()->GetActiveWidget()
           ? *GetTextInputManager()->GetTextInputState()
-          : TextInputState();
+          : ui::mojom::TextInputState();
 
   if (!ime_adapter_android_)
     return;

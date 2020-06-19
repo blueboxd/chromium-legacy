@@ -9,7 +9,9 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/controls/button/image_button.h"
@@ -62,10 +64,64 @@ class LoginPasswordViewTest : public LoginTestBase {
   DISALLOW_COPY_AND_ASSIGN(LoginPasswordViewTest);
 };
 
+// LoginPasswordViewTest with display password button feature enabled.
+class LoginPasswordViewTestFeatureEnabled : public LoginPasswordViewTest {
+ protected:
+  LoginPasswordViewTestFeatureEnabled() {
+    feature_list_.InitWithFeatures(
+        {chromeos::features::kLoginDisplayPasswordButton}, {});
+  }
+  LoginPasswordViewTestFeatureEnabled(
+      const LoginPasswordViewTestFeatureEnabled&) = delete;
+  LoginPasswordViewTestFeatureEnabled& operator=(
+      const LoginPasswordViewTestFeatureEnabled&) = delete;
+  ~LoginPasswordViewTestFeatureEnabled() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 }  // namespace
 
+// Verifies that the submit button updates its UI state.
+TEST_F(LoginPasswordViewTest, SubmitButtonUpdatesUiState) {
+  LoginPasswordView::TestApi test_api(view_);
+  ui::test::EventGenerator* generator = GetEventGenerator();
+
+  // The submit button starts with the disabled state.
+  EXPECT_TRUE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+  // Enter 'a'. The submit button is enabled.
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+  // Enter 'b'. The submit button stays enabled.
+  generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+
+  // Clear password. The submit button is disabled.
+  view_->Clear();
+  EXPECT_TRUE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+
+  // Enter 'a'. The submit button is enabled.
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+  // Set the text field to be read-only. The submit button is disabled.
+  view_->SetReadOnly(true);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_FALSE(test_api.submit_button()->GetEnabled());
+  // Set the text field to be not read-only. The submit button is enabled.
+  view_->SetReadOnly(false);
+  EXPECT_FALSE(is_password_field_empty_);
+  EXPECT_TRUE(test_api.submit_button()->GetEnabled());
+}
+
 // Verifies that the display password button updates its UI state.
-TEST_F(LoginPasswordViewTest, DisplayPasswordButtonUpdatesUiState) {
+TEST_F(LoginPasswordViewTestFeatureEnabled,
+       DisplayPasswordButtonUpdatesUiState) {
   LoginPasswordView::TestApi test_api(view_);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -111,6 +167,23 @@ TEST_F(LoginPasswordViewTest, PasswordSubmitIncludesPasswordText) {
   generator->PressKey(ui::KeyboardCode::VKEY_C, 0);
   generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
   generator->PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+
+  ASSERT_TRUE(password_.has_value());
+  EXPECT_EQ(base::ASCIIToUTF16("abc1"), *password_);
+}
+
+// Verifies that password submit works when clicking the submit button.
+TEST_F(LoginPasswordViewTest, PasswordSubmitViaButton) {
+  LoginPasswordView::TestApi test_api(view_);
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->PressKey(ui::KeyboardCode::VKEY_A, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_B, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_C, 0);
+  generator->PressKey(ui::KeyboardCode::VKEY_1, 0);
+  generator->MoveMouseTo(
+      test_api.submit_button()->GetBoundsInScreen().CenterPoint());
+  generator->ClickLeftButton();
 
   ASSERT_TRUE(password_.has_value());
   EXPECT_EQ(base::ASCIIToUTF16("abc1"), *password_);
@@ -211,7 +284,7 @@ TEST_F(LoginPasswordViewTest, CtrlZDisabled) {
 
 // Verifies that the password textfield clears after a delay when the display
 // password button is shown.
-TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
+TEST_F(LoginPasswordViewTestFeatureEnabled, PasswordAutoClearsAndHides) {
   LoginPasswordView::TestApi test_api(view_);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -254,7 +327,7 @@ TEST_F(LoginPasswordViewTest, PasswordAutoClearsAndHides) {
 }
 
 // Verifies that the password textfield hides back when the content changes.
-TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
+TEST_F(LoginPasswordViewTestFeatureEnabled, PasswordHidesAfterTyping) {
   LoginPasswordView::TestApi test_api(view_);
   ui::test::EventGenerator* generator = GetEventGenerator();
 
@@ -286,7 +359,7 @@ TEST_F(LoginPasswordViewTest, PasswordHidesAfterTyping) {
 
 // Checks that the display password button is disabled when the textfield is
 // empty and enabled when it is not.
-TEST_F(LoginPasswordViewTest,
+TEST_F(LoginPasswordViewTestFeatureEnabled,
        DisplayPasswordButonIsEnabledIFFTextfieldIsNotEmpty) {
   LoginPasswordView::TestApi test_api(view_);
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -318,7 +391,7 @@ TEST_F(LoginPasswordViewTest,
 }
 
 // Verifies that focus returned to the textfield after InsertNumber is called.
-TEST_F(LoginPasswordViewTest, FocusReturn) {
+TEST_F(LoginPasswordViewTestFeatureEnabled, FocusReturn) {
   LoginPasswordView::TestApi test_api(view_);
   ui::test::EventGenerator* generator = GetEventGenerator();
   // Verify that focus is returned to view after the number insertion.

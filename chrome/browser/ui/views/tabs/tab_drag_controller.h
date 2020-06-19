@@ -126,6 +126,11 @@ class TabDragController : public views::WidgetObserver {
     return current_state_ == DragState::kDraggingWindow;
   }
 
+  // Returns the tab group being dragged, if any. Will only return a value if
+  // the user is dragging a tab group header, not an individual tab or tabs from
+  // a group.
+  const base::Optional<tab_groups::TabGroupId>& group() const { return group_; }
+
   // Returns true if currently dragging a tab with |contents|.
   bool IsDraggingTab(content::WebContents* contents);
 

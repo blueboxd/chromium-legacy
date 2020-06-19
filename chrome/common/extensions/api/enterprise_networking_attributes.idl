@@ -9,7 +9,7 @@
 [platforms = ("chromeos"),
  implemented_in = "chrome/browser/extensions/api/enterprise_networking_attributes/enterprise_networking_attributes_api.h"]
 namespace enterprise.networkingAttributes {
-  dictionary NetworkDetails {
+  [noinline_doc] dictionary NetworkDetails {
     // The device's MAC address.
     DOMString macAddress;
 

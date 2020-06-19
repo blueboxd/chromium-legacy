@@ -597,19 +597,19 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
 }
 
 TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
-  FLAGS_quic_reloadable_flag_quic_enable_version_draft_29 = false;
-  FLAGS_quic_reloadable_flag_quic_disable_version_draft_27 = false;
+  FLAGS_quic_reloadable_flag_quic_testonly_default_false = false;
+  FLAGS_quic_restart_flag_quic_testonly_default_true = true;
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["set_quic_flags"] =
-      "FLAGS_quic_reloadable_flag_quic_enable_version_draft_29=true,"
-      "FLAGS_quic_reloadable_flag_quic_disable_version_draft_27=true";
+      "FLAGS_quic_reloadable_flag_quic_testonly_default_false=true,"
+      "FLAGS_quic_restart_flag_quic_testonly_default_true=false";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_29);
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_disable_version_draft_27);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_testonly_default_false);
+  EXPECT_FALSE(FLAGS_quic_restart_flag_quic_testonly_default_true);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {

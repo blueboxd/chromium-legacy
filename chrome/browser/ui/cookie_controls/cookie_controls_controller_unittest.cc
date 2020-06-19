@@ -2,15 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
+#include "components/content_settings/browser/ui/cookie_controls_controller.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings_delegate.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/features.h"
@@ -23,7 +24,7 @@
 
 namespace {
 
-class MockCookieControlsView : public CookieControlsView {
+class MockCookieControlsView : public content_settings::CookieControlsView {
  public:
   MOCK_METHOD3(OnStatusChanged,
                void(CookieControlsStatus, CookieControlsEnforcement, int));
@@ -77,7 +78,8 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
     NavigateAndCommit(GURL("chrome://newtab"));
 
     cookie_controls_ =
-        std::make_unique<CookieControlsController>(web_contents(), nullptr);
+        std::make_unique<content_settings::CookieControlsController>(
+            CookieSettingsFactory::GetForProfile(profile()), nullptr);
     cookie_controls_->AddObserver(mock());
     testing::Mock::VerifyAndClearExpectations(mock());
   }
@@ -88,7 +90,9 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  CookieControlsController* cookie_controls() { return cookie_controls_.get(); }
+  content_settings::CookieControlsController* cookie_controls() {
+    return cookie_controls_.get();
+  }
 
   MockCookieControlsView* mock() { return &mock_; }
 
@@ -101,7 +105,7 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
  private:
   base::test::ScopedFeatureList feature_list;
   MockCookieControlsView mock_;
-  std::unique_ptr<CookieControlsController> cookie_controls_;
+  std::unique_ptr<content_settings::CookieControlsController> cookie_controls_;
 };
 
 TEST_F(CookieControlsTest, NewTabPage) {
@@ -205,7 +209,8 @@ TEST_F(CookieControlsTest, Incognito) {
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
-  // Create incognito web_contents and CookieControlsController.
+  // Create incognito web_contents and
+  // content_settings::CookieControlsController.
   std::unique_ptr<content::WebContents> incognito_web_contents =
       content::WebContentsTester::CreateTestWebContents(
           profile()->GetPrimaryOTRProfile(), nullptr);
@@ -215,8 +220,9 @@ TEST_F(CookieControlsTest, Incognito) {
           incognito_web_contents.get()));
   auto* tester = content::WebContentsTester::For(incognito_web_contents.get());
   MockCookieControlsView incognito_mock_;
-  CookieControlsController incognito_cookie_controls(
-      incognito_web_contents.get(), profile());
+  content_settings::CookieControlsController incognito_cookie_controls(
+      CookieSettingsFactory::GetForProfile(profile()->GetPrimaryOTRProfile()),
+      CookieSettingsFactory::GetForProfile(profile()));
   incognito_cookie_controls.AddObserver(&incognito_mock_);
 
   // Navigate incognito web_contents to the same URL.

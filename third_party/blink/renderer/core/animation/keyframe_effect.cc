@@ -122,8 +122,8 @@ KeyframeEffect* KeyframeEffect::Create(
     effect->target_pseudo_ = pseudo;
     if (element) {
       element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
-      effect->effect_target_ =
-          element->GetPseudoElement(CSSSelector::ParsePseudoId(pseudo));
+      effect->effect_target_ = element->GetPseudoElement(
+          CSSSelector::ParsePseudoId(pseudo, element));
     }
   }
   return effect;
@@ -208,7 +208,8 @@ void KeyframeEffect::RefreshTarget() {
   } else {
     target_element_->GetDocument().UpdateStyleAndLayoutTreeForNode(
         target_element_);
-    PseudoId pseudoId = CSSSelector::ParsePseudoId(target_pseudo_);
+    PseudoId pseudoId =
+        CSSSelector::ParsePseudoId(target_pseudo_, target_element_);
     new_target = target_element_->GetPseudoElement(pseudoId);
   }
 

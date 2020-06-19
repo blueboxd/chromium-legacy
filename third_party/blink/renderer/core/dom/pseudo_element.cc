@@ -94,6 +94,17 @@ const AtomicString& PseudoElement::PseudoElementNameForEvents(
     return PseudoElementTagName(pseudo_id).LocalName();
 }
 
+bool PseudoElement::IsWebExposed(PseudoId pseudo_id, const Node* parent) {
+  switch (pseudo_id) {
+    case kPseudoIdMarker:
+      if (parent && parent->IsPseudoElement())
+        return RuntimeEnabledFeatures::CSSMarkerNestedPseudoElementEnabled();
+      return RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled();
+    default:
+      return true;
+  }
+}
+
 PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
     : Element(PseudoElementTagName(pseudo_id),
               &parent->GetDocument(),

@@ -37,6 +37,7 @@ class PasswordsModelDelegateMock
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&());
   MOCK_CONST_METHOD0(GetCurrentInteractionStats,
                      password_manager::InteractionsStats*());
+  MOCK_CONST_METHOD0(DidAuthForAccountStoreOptInFail, bool());
   MOCK_CONST_METHOD0(BubbleIsManualFallbackForSaving, bool());
   MOCK_METHOD0(OnBubbleShown, void());
   MOCK_METHOD0(OnBubbleHidden, void());

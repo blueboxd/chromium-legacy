@@ -72,12 +72,21 @@ void AddPerFrameIsolateMemoryUsage(base::UnguessableToken frame_id,
                                    int64_t world_id,
                                    uint64_t bytes_used,
                                    mojom::PerProcessV8MemoryUsageData* data) {
-  if (!base::Contains(data->associated_memory, frame_id)) {
-    data->associated_memory[frame_id] = mojom::PerFrameV8MemoryUsageData::New();
+  mojom::PerFrameV8MemoryUsageData* per_frame_data = nullptr;
+  for (auto& datum : data->associated_memory) {
+    if (datum->dev_tools_token == frame_id) {
+      per_frame_data = datum.get();
+      break;
+    }
   }
 
-  mojom::PerFrameV8MemoryUsageData* per_frame_data =
-      data->associated_memory[frame_id].get();
+  if (!per_frame_data) {
+    mojom::PerFrameV8MemoryUsageDataPtr datum =
+        mojom::PerFrameV8MemoryUsageData::New();
+    datum->dev_tools_token = frame_id;
+    per_frame_data = datum.get();
+    data->associated_memory.push_back(std::move(datum));
+  }
   ASSERT_FALSE(base::Contains(per_frame_data->associated_bytes, world_id));
 
   auto isolated_world_usage = mojom::V8IsolatedWorldMemoryUsage::New();

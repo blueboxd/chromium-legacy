@@ -44,10 +44,10 @@ template("trichrome_library_apk_tmpl") {
                              "android_manifest",
                              "android_manifest_dep",
                              "apk_name",
+                             "expected_android_manifest",
+                             "expected_libs_and_assets",
                              "min_sdk_version",
                              "target_sdk_version",
-                             "verify_manifest",
-                             "verify_native_libs_and_assets",
                            ])
 
     # TODO(torne): since there's no real java code in the library right now,

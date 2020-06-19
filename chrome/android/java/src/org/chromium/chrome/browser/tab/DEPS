@@ -71,6 +71,6 @@ specific_include_rules = {
     "+chrome/browser/util/android/java/src/org/chromium/chrome/browser/util/ChromeAccessibilityUtil.java",
   ],
   'TabViewManagerImpl\.java': [
-    "+chrome/android/java/src/org/chromium/chrome/browser/fullscreen/BrowserControlsMarginSupplier.java",
+    "+chrome/browser/browser_controls/android/java/src/org/chromium/chrome/browser/browser_controls/BrowserControlsMarginSupplier.java",
   ]
 }

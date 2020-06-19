@@ -16,6 +16,10 @@ class GaiaIdHash;
 
 namespace password_manager {
 
+namespace metrics_util {
+enum class MoveToAccountStoreTrigger;
+}
+
 class PasswordManagerClient;
 class FormFetcher;
 class VotesUploader;
@@ -81,7 +85,10 @@ class PasswordSaveManager {
 
   // Moves the pending credentials together with any other PSL matched ones from
   // the profile store to the account store.
-  virtual void MoveCredentialsToAccountStore() = 0;
+  // |trigger| represents the user action that triggered the flow and is used
+  // for recording metrics.
+  virtual void MoveCredentialsToAccountStore(
+      metrics_util::MoveToAccountStoreTrigger trigger) = 0;
 
   // Adds the |gaia_id_hash| to the |moving_blocked_for_list| of the
   // PasswordForm returned by GetPendingCredentials() and stores it in the

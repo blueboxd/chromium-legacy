@@ -26,8 +26,7 @@ class CORE_EXPORT ComputedStylePropertyMap
     : public StylePropertyMapReadOnlyMainThread {
  public:
   ComputedStylePropertyMap(Node* node, const String& pseudo_element = String())
-      : StylePropertyMapReadOnlyMainThread(),
-        pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
+      : pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element, node)),
         node_(node) {}
 
   void Trace(Visitor* visitor) const override {

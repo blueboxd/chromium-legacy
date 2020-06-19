@@ -1120,10 +1120,6 @@ by a child template that "extends" this file.
         <receiver android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$SendTabToSelfNotificationReceiver"
             android:exported="false"/>
 
-        <!-- Save image notification receiver -->
-        <receiver android:name="org.chromium.chrome.browser.share.SaveImageNotificationManager$TapReceiver"
-            android:exported="false"/>
-
         <receiver android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"
             android:exported="false"/>
         <receiver android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardMessageHandler$TapReceiver"

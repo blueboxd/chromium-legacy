@@ -41,9 +41,9 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
     query_params.push_back(std::make_pair(tag, media_file));
     query_params.push_back(std::make_pair("loop", "true"));
 
-    std::string query = media::GetURLQueryString(query_params);
+    std::string query = ::media::GetURLQueryString(query_params);
     GURL gurl = content::GetFileUrlWithQuery(
-        media::GetTestDataFilePath("player.html"), query);
+        ::media::GetTestDataFilePath("player.html"), query);
 
     web_contents_ = NavigateToURL(gurl);
     WaitForLoadStop(web_contents_);

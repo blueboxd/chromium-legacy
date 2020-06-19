@@ -27,9 +27,10 @@ public class PaymentDetailsUpdateService extends Service {
                 @Override
                 public void changePaymentMethod(Bundle paymentHandlerMethodData,
                         IPaymentDetailsUpdateServiceCallback callback) {
+                    int callingUid = Binder.getCallingUid();
                     PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                         if (!PaymentDetailsUpdateServiceHelper.getInstance().isCallerAuthorized(
-                                    Binder.getCallingUid())) {
+                                    callingUid)) {
                             return;
                         }
                         PaymentDetailsUpdateServiceHelper.getInstance().changePaymentMethod(
@@ -39,9 +40,10 @@ public class PaymentDetailsUpdateService extends Service {
                 @Override
                 public void changeShippingOption(
                         String shippingOptionId, IPaymentDetailsUpdateServiceCallback callback) {
+                    int callingUid = Binder.getCallingUid();
                     PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                         if (!PaymentDetailsUpdateServiceHelper.getInstance().isCallerAuthorized(
-                                    Binder.getCallingUid())) {
+                                    callingUid)) {
                             return;
                         }
                         PaymentDetailsUpdateServiceHelper.getInstance().changeShippingOption(
@@ -51,9 +53,10 @@ public class PaymentDetailsUpdateService extends Service {
                 @Override
                 public void changeShippingAddress(
                         Bundle shippingAddress, IPaymentDetailsUpdateServiceCallback callback) {
+                    int callingUid = Binder.getCallingUid();
                     PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> {
                         if (!PaymentDetailsUpdateServiceHelper.getInstance().isCallerAuthorized(
-                                    Binder.getCallingUid())) {
+                                    callingUid)) {
                             return;
                         }
                         PaymentDetailsUpdateServiceHelper.getInstance().changeShippingAddress(

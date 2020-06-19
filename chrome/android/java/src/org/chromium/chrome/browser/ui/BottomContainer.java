@@ -9,7 +9,7 @@ import android.util.AttributeSet;
 import android.widget.FrameLayout;
 
 import org.chromium.base.Callback;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.ui.base.ApplicationViewportInsetSupplier;
 

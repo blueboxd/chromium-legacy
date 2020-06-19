@@ -56,7 +56,20 @@ if (optimize_webui) {
   unpak("unpak") {
     pak_file = settings_pak_file
     out_folder = unpak_folder
-
+    pak_base_dir = "../"
+    excludes = [
+      "../../ui/webui/settings/chromeos/constants/routes.mojom-lite.js",
+      "../../ui/webui/settings/chromeos/constants/setting.mojom-lite.js",
+      "../../../../skia/public/mojom/bitmap.mojom-lite.js",
+      "../../../../mojo/public/mojom/base/file_path.mojom-lite.js",
+      "../../../../skia/public/mojom/image_info.mojom-lite.js",
+      "../../../../ui/gfx/image/mojom/image.mojom-lite.js",
+      "../../ui/webui/app_management/app_management.mojom-lite.js",
+      "../../../../components/services/app_service/public/mojom/types.mojom-lite.js",
+      "../../ui/webui/settings/chromeos/search/search.mojom-lite.js",
+      "../../ui/webui/settings/chromeos/search/search_result_icon.mojom-lite.js",
+      "../../ui/webui/settings/chromeos/search/user_action_recorder.mojom-lite.js",
+    ]
     deps = [ ":flattened_resources" ]
   }
 

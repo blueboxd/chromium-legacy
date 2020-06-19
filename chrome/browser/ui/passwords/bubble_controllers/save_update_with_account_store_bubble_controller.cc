@@ -279,6 +279,11 @@ SaveUpdateWithAccountStoreBubbleController::GetPrimaryAccountAvatar(
                                    icon_size_dip, profiles::SHAPE_CIRCLE));
 }
 
+bool SaveUpdateWithAccountStoreBubbleController::
+    DidAuthForAccountStoreOptInFail() const {
+  return delegate_->DidAuthForAccountStoreOptInFail();
+}
+
 base::string16 SaveUpdateWithAccountStoreBubbleController::GetTitle() const {
   PasswordTitleType type = IsCurrentStateUpdate()
                                ? PasswordTitleType::UPDATE_PASSWORD

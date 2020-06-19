@@ -25,6 +25,7 @@ class MockClient : public Client {
   MOCK_CONST_METHOD0(GetLocale, std::string());
   MOCK_CONST_METHOD0(GetCountryCode, std::string());
   MOCK_CONST_METHOD0(GetDeviceContext, DeviceContext());
+  MOCK_CONST_METHOD0(IsAccessibilityEnabled, bool());
   MOCK_CONST_METHOD0(GetEmailAddressForAccessTokenAccount, std::string());
   MOCK_CONST_METHOD0(GetChromeSignedInEmailAddress, std::string());
   MOCK_CONST_METHOD0(GetWebContents, content::WebContents*());

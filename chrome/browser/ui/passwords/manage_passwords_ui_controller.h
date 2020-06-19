@@ -131,6 +131,7 @@ class ManagePasswordsUIController
       const override;
   const password_manager::InteractionsStats* GetCurrentInteractionStats()
       const override;
+  bool DidAuthForAccountStoreOptInFail() const override;
   bool BubbleIsManualFallbackForSaving() const override;
   void OnBubbleShown() override;
   void OnBubbleHidden() override;

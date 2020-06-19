@@ -224,6 +224,8 @@ public class IntentHandler {
     private static final String FACEBOOK_INTERNAL_BROWSER_REFERRER = "http://m.facebook.com";
     private static final String TWITTER_LINK_PREFIX = "http://t.co/";
     private static final String NEWS_LINK_PREFIX = "http://news.google.com/news/url?";
+    private static final String YOUTUBE_LINK_PREFIX_HTTPS = "https://www.youtube.com/redirect?";
+    private static final String YOUTUBE_LINK_PREFIX_HTTP = "http://www.youtube.com/redirect?";
 
     /**
      * Represents popular external applications that can load a page in Chrome via intent.
@@ -234,7 +236,8 @@ public class IntentHandler {
     @IntDef({ExternalAppId.OTHER, ExternalAppId.GMAIL, ExternalAppId.FACEBOOK, ExternalAppId.PLUS,
             ExternalAppId.TWITTER, ExternalAppId.CHROME, ExternalAppId.HANGOUTS,
             ExternalAppId.MESSENGER, ExternalAppId.NEWS, ExternalAppId.LINE, ExternalAppId.WHATSAPP,
-            ExternalAppId.GSA, ExternalAppId.WEBAPK, ExternalAppId.YAHOO_MAIL, ExternalAppId.VIBER})
+            ExternalAppId.GSA, ExternalAppId.WEBAPK, ExternalAppId.YAHOO_MAIL, ExternalAppId.VIBER,
+            ExternalAppId.YOUTUBE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ExternalAppId {
         int OTHER = 0;
@@ -252,8 +255,9 @@ public class IntentHandler {
         int WEBAPK = 12;
         int YAHOO_MAIL = 13;
         int VIBER = 14;
+        int YOUTUBE = 15;
         // Update ClientAppId in enums.xml when adding new items.
-        int NUM_ENTRIES = 15;
+        int NUM_ENTRIES = 16;
     }
 
     private static ComponentName getFakeComponentName(String packageName) {
@@ -358,6 +362,10 @@ public class IntentHandler {
                 externalId = ExternalAppId.FACEBOOK;
             } else if (url != null && url.startsWith(NEWS_LINK_PREFIX)) {
                 externalId = ExternalAppId.NEWS;
+            } else if (url != null
+                    && (url.startsWith(YOUTUBE_LINK_PREFIX_HTTPS)
+                            || url.startsWith(YOUTUBE_LINK_PREFIX_HTTP))) {
+                externalId = ExternalAppId.YOUTUBE;
             } else {
                 Bundle headers = IntentUtils.safeGetBundleExtra(intent, Browser.EXTRA_HEADERS);
                 if (headers != null

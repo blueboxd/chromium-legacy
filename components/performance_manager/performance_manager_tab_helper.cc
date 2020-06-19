@@ -167,6 +167,7 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
           render_frame_host->GetFrameTreeNodeId(),
           render_frame_host->GetRoutingID(),
           render_frame_host->GetDevToolsFrameToken(),
+          FrameToken(render_frame_host->GetFrameToken()),
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
           base::BindOnce(
               [](const GURL& url, bool is_current, FrameNodeImpl* frame_node) {

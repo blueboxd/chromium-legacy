@@ -24,7 +24,7 @@ from grit.format import data_pack
 def ParseLine(line):
   return re.match('  {"([^"]+)", ([^},]+)', line)
 
-def GetFileAndDirName(out_path, pak_dir, resource_path):
+def GetFileAndDirName(pak_dir, resource_path):
   dirname = os.path.dirname(resource_path)
   # When files are generated, |dirname| becomes
   # @out_folder@/<gen_path>/path_to_resource. To make the structure look as if
@@ -32,10 +32,10 @@ def GetFileAndDirName(out_path, pak_dir, resource_path):
   if ('@out_folder@' in dirname):
     dirname = os.path.relpath(dirname, os.path.join('@out_folder@', pak_dir))
   filename = os.path.basename(resource_path)
-  dirname = os.path.join(out_path, dirname)
+
   return (filename, dirname)
 
-def Unpack(pak_path, out_path):
+def Unpack(pak_path, out_path, pak_base_dir, excludes):
   pak_dir = os.path.dirname(pak_path)
   pak_id = os.path.splitext(os.path.basename(pak_path))[0]
 
@@ -62,13 +62,26 @@ def Unpack(pak_path, out_path):
         resource_filenames[res.group(2)] = res.group(1)
   assert resource_filenames
 
+  root_dir = pak_base_dir if pak_base_dir else pak_dir
+  excludes = excludes or []
   # Extract packed files, while preserving directory structure.
   for (resource_id, text) in data.resources.iteritems():
     (filename, dirname) = GetFileAndDirName(
-        out_path, pak_dir, resource_filenames[resource_ids[resource_id]])
-    if not os.path.exists(dirname):
-      os.makedirs(dirname)
-    with open(os.path.join(dirname, filename), 'w') as file:
+        root_dir, resource_filenames[resource_ids[resource_id]])
+    resource_path = os.path.join(dirname, filename).replace('\\', '/')
+    if (resource_path in excludes):
+      continue
+
+    normalized_dir = os.path.normpath(
+        os.path.join(out_path, dirname)).replace('\\', '/')
+    assert normalized_dir.startswith(out_path), \
+           'Cannot unpack files to locations not in %s. %s should be removed ' \
+           'from the pak file or excluded from unpack.' \
+           % (out_path, resource_path)
+
+    if not os.path.exists(normalized_dir):
+      os.makedirs(normalized_dir)
+    with open(os.path.join(normalized_dir, filename), 'w') as file:
       file.write(text)
 
 
@@ -76,9 +89,11 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--pak_file')
   parser.add_argument('--out_folder')
+  parser.add_argument('--pak_base_dir')
+  parser.add_argument('--excludes', nargs='*')
   args = parser.parse_args()
 
-  Unpack(args.pak_file, args.out_folder)
+  Unpack(args.pak_file, args.out_folder, args.pak_base_dir, args.excludes)
 
   timestamp_file_path = os.path.join(args.out_folder, _TIMESTAMP_FILENAME)
   with open(timestamp_file_path, 'a'):

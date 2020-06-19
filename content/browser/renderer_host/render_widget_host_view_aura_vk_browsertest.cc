@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   web_contents->GetFrameTree()->SetFocusedFrame(
       root, root->current_frame_host()->GetSiteInstance());
 
-  TextInputState text_input_state;
+  ui::mojom::TextInputState text_input_state;
   text_input_state.show_ime_if_needed = true;
   text_input_state.type = ui::TEXT_INPUT_TYPE_TEXT;
 
@@ -256,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewAuraBrowserMockIMETest,
   web_contents->GetFrameTree()->SetFocusedFrame(
       root, root->current_frame_host()->GetSiteInstance());
 
-  TextInputState text_input_state;
+  ui::mojom::TextInputState text_input_state;
   text_input_state.show_ime_if_needed = true;
   text_input_state.type = ui::TEXT_INPUT_TYPE_TEXT;
 

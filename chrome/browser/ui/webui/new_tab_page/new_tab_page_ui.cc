@@ -79,6 +79,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       "oneGoogleBarModalOverlaysEnabled",
       base::FeatureList::IsEnabled(ntp_features::kOneGoogleBarModalOverlays));
 
+  source->AddBoolean(
+      "themeModeDoodlesEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kWebUIThemeModeDoodles));
+
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
       {"title", IDS_NEW_TAB_TITLE},

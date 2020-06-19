@@ -27,6 +27,10 @@ class SimTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
+  // Create a remote frame as the main frame and create a local child frame.
+  void InitializeRemote();
+
+  // Load URL in the local frame root.
   void LoadURL(const String& url);
 
   // WebView is created after SetUp to allow test to customize
@@ -37,6 +41,7 @@ class SimTest : public testing::Test {
   Document& GetDocument();
   WebViewImpl& WebView();
   WebLocalFrameImpl& MainFrame();
+  WebLocalFrameImpl& LocalFrameRoot();
   frame_test_helpers::TestWebViewClient& WebViewClient();
   frame_test_helpers::TestWebWidgetClient& WebWidgetClient();
   frame_test_helpers::TestWebFrameClient& WebFrameClient();
@@ -54,6 +59,7 @@ class SimTest : public testing::Test {
   std::unique_ptr<frame_test_helpers::TestWebViewClient> web_view_client_;
   std::unique_ptr<SimPage> page_;
   std::unique_ptr<frame_test_helpers::WebViewHelper> web_view_helper_;
+  UntracedMember<WebLocalFrameImpl> local_frame_root_;
 };
 
 }  // namespace blink

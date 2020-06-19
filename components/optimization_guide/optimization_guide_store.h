@@ -253,6 +253,9 @@ class OptimizationGuideStore {
   // Clears all host model features from the database and resets the entry keys.
   void ClearHostModelFeaturesFromDatabase();
 
+  // Returns true if the current status is Status::kAvailable.
+  bool IsAvailable() const;
+
  private:
   friend class OptimizationGuideStoreTest;
   friend class StoreUpdateData;
@@ -311,9 +314,6 @@ class OptimizationGuideStore {
   // transition, and destroys the database in the case where the status
   // transitions to Status::kFailed.
   void UpdateStatus(Status new_status);
-
-  // Returns true if the current status is Status::kAvailable.
-  bool IsAvailable() const;
 
   // Asynchronously purges all existing entries from the database and runs the
   // callback after it completes. This should only be run during initialization.

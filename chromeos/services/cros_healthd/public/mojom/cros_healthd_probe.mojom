@@ -140,6 +140,13 @@ struct NonRemovableBlockDeviceInfo {
   uint64 read_time_seconds_since_last_boot;
   // Time spent writing since last boot.
   uint64 write_time_seconds_since_last_boot;
+  // Time spent doing I/O since last boot. Counts the time the disk and queue
+  // were busy, so unlike the fields above, parallel requests are not counted
+  // multiple times.
+  uint64 io_time_seconds_since_last_boot;
+  // Time spent discarding since last boot. Discarding is writing to clear
+  // blocks which are no longer in use. Supported on kernels 4.18+.
+  UInt64Value? discard_time_seconds_since_last_boot;
 };
 
 // Cached VPD probe result. Can either be populated with the CachedVpdInfo or an

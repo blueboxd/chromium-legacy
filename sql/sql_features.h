@@ -14,6 +14,8 @@ namespace features {
 
 COMPONENT_EXPORT(SQL) extern const base::Feature kSqlSkipPreload;
 
+COMPONENT_EXPORT(SQL) extern const base::Feature kEnableWALModeByDefault;
+
 }  // namespace features
 
 }  // namespace sql

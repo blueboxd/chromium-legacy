@@ -851,9 +851,6 @@
     'clipboard': {
       'filepath': 'clipboard|dnd|drag|drop',
     },
-    'codereview_settings': {
-      'filepath': 'codereview.settings',
-    },
     'components_deps': {
       'filepath': 'components/([^/]*/)*DEPS',
     },
@@ -2405,7 +2402,6 @@
                      'ukai+watch@chromium.org',
                      'vmpstr+watch@chromium.org'],
     'clipboard': ['dcheng@chromium.org'],
-    'codereview_settings': ['agable+watch@chromium.org'],
     'components_deps': ['droger+watchlist@chromium.org'],
     'compositor_animator': ['mdjones+watch@chromium.org'],
     'content_bluetooth': ['mattreynolds+watch@chromium.org',

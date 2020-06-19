@@ -566,6 +566,9 @@ void MachineLevelUserCloudPolicyStatusProvider::GetStatus(
               refresh_scheduler ? refresh_scheduler->GetActualRefreshDelay()
                                 : policy::CloudPolicyRefreshScheduler::
                                       kDefaultRefreshDelayMs)));
+  dict->SetBoolean(
+      "policiesPushAvailable",
+      refresh_scheduler ? refresh_scheduler->invalidations_available() : false);
 
   if (dmTokenStorage) {
     dict->SetString("enrollmentToken",

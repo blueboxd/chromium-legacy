@@ -52,6 +52,7 @@ void SimTest::SetUp() {
                                compositor_.get());
   compositor_->SetWebView(WebView(), *web_view_client_);
   page_->SetPage(WebView().GetPage());
+  local_frame_root_ = WebView().MainFrameImpl();
 }
 
 void SimTest::TearDown() {
@@ -66,16 +67,29 @@ void SimTest::TearDown() {
   web_frame_client_.reset();
   compositor_.reset();
   network_.reset();
+  local_frame_root_ = nullptr;
+}
+
+void SimTest::InitializeRemote() {
+  web_view_helper_->InitializeRemote();
+  compositor_->SetWebView(WebView(), *web_view_client_);
+  page_->SetPage(WebView().GetPage());
+  web_frame_client_ =
+      std::make_unique<frame_test_helpers::TestWebFrameClient>();
+  local_frame_root_ = frame_test_helpers::CreateLocalChild(
+      *WebView().MainFrame()->ToWebRemoteFrame(), "local_frame_root",
+      WebFrameOwnerProperties(), nullptr, web_frame_client_.get(),
+      compositor_.get());
 }
 
 void SimTest::LoadURL(const String& url_string) {
   KURL url(url_string);
-  frame_test_helpers::LoadFrameDontWait(WebView().MainFrameImpl(), url);
+  frame_test_helpers::LoadFrameDontWait(local_frame_root_.Get(), url);
   if (DocumentLoader::WillLoadUrlAsEmpty(url) || url.ProtocolIsData()) {
     // Empty documents and data urls are not using mocked out SimRequests,
     // but instead load data directly.
     frame_test_helpers::PumpPendingRequestsForFrameToLoad(
-        WebView().MainFrameImpl());
+        local_frame_root_.Get());
   }
 }
 
@@ -97,6 +111,10 @@ WebViewImpl& SimTest::WebView() {
 
 WebLocalFrameImpl& SimTest::MainFrame() {
   return *WebView().MainFrameImpl();
+}
+
+WebLocalFrameImpl& SimTest::LocalFrameRoot() {
+  return *local_frame_root_;
 }
 
 frame_test_helpers::TestWebViewClient& SimTest::WebViewClient() {

@@ -53,7 +53,6 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_view_aura.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/context_menu_params.h"
@@ -95,6 +94,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
 #include "ui/base/ime/mock_input_method.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/compositor/compositor.h"
@@ -592,13 +592,13 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
             ->GetTextInputManager();
     if (manager->GetActiveWidget()) {
       manager->active_view_for_testing()->TextInputStateChanged(
-          TextInputState());
+          ui::mojom::TextInputState());
     }
 
     if (!view)
       return;
 
-    TextInputState state_with_type_text;
+    ui::mojom::TextInputState state_with_type_text;
     state_with_type_text.type = type;
     state_with_type_text.show_ime_if_needed = true;
     view->TextInputStateChanged(state_with_type_text);
@@ -6007,21 +6007,19 @@ class InputMethodStateAuraTest : public InputMethodAuraTestBase {
 // This test is for caret bounds which are calculated based on the tracked value
 // for selection bounds.
 TEST_F(InputMethodStateAuraTest, GetCaretBounds) {
-  WidgetHostMsg_SelectionBounds_Params params;
-  params.is_anchor_first = true;
-  params.anchor_dir = base::i18n::LEFT_TO_RIGHT;
-  params.focus_dir = base::i18n::LEFT_TO_RIGHT;
-  params.anchor_rect = gfx::Rect(0, 0, 10, 10);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
-    params.focus_rect = gfx::Rect(10 + index, 10 + index, 10, 10);
-    views_[index]->SelectionBoundsChanged(params);
+    gfx::Rect anchor_rect = gfx::Rect(0, 0, 10, 10);
+    gfx::Rect focus_rect = gfx::Rect(10 + index, 10 + index, 10, 10);
+    views_[index]->SelectionBoundsChanged(anchor_rect,
+                                          base::i18n::LEFT_TO_RIGHT, focus_rect,
+                                          base::i18n::LEFT_TO_RIGHT, true);
 
     // Calculate the bounds.
     gfx::SelectionBound anchor_bound = GetSelectionBoundFromRect(
-        TransformRectToViewsRootCoordSpace(params.anchor_rect, views_[index]));
+        TransformRectToViewsRootCoordSpace(anchor_rect, views_[index]));
     gfx::SelectionBound focus_bound = GetSelectionBoundFromRect(
-        TransformRectToViewsRootCoordSpace(params.focus_rect, views_[index]));
+        TransformRectToViewsRootCoordSpace(focus_rect, views_[index]));
     anchor_bound.set_type(gfx::SelectionBound::LEFT);
     focus_bound.set_type(gfx::SelectionBound::RIGHT);
     gfx::Rect measured_rect =
@@ -6078,7 +6076,7 @@ TEST_F(InputMethodStateAuraTest, GetTextRange) {
 
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
-    TextInputState state;
+    ui::mojom::TextInputState state;
     state.type = ui::TEXT_INPUT_TYPE_TEXT;
     state.value = text;
     gfx::Range expected_range(0, 22);
@@ -6100,10 +6098,9 @@ TEST_F(InputMethodStateAuraTest, GetCompositionTextRange) {
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
     gfx::Range expected_range(1, 2 + index);
-    TextInputState state;
+    ui::mojom::TextInputState state;
     state.type = ui::TEXT_INPUT_TYPE_TEXT;
-    state.composition_start = expected_range.start();
-    state.composition_end = expected_range.end();
+    state.composition = expected_range;
     views_[index]->TextInputStateChanged(state);
     gfx::Range range_from_client;
 
@@ -6119,10 +6116,9 @@ TEST_F(InputMethodStateAuraTest, GetEditableSelectionRange) {
 
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
-    TextInputState state_with_selection;
+    ui::mojom::TextInputState state_with_selection;
     state_with_selection.type = ui::TEXT_INPUT_TYPE_TEXT;
-    state_with_selection.selection_start = expected_range.start();
-    state_with_selection.selection_end = expected_range.end();
+    state_with_selection.selection = expected_range;
     views_[index]->TextInputStateChanged(state_with_selection);
     gfx::Range range_from_client;
 
@@ -6142,7 +6138,7 @@ TEST_F(InputMethodStateAuraTest, GetTextFromRange) {
 
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
-    TextInputState state;
+    ui::mojom::TextInputState state;
     state.type = ui::TEXT_INPUT_TYPE_TEXT;
     state.value = text;
     views_[index]->TextInputStateChanged(state);
@@ -6340,13 +6336,9 @@ TEST_F(RenderWidgetHostViewAuraInputMethodTest, OnCaretBoundsChanged) {
 
   text_input_client_ = nullptr;
 
-  WidgetHostMsg_SelectionBounds_Params params;
-  params.is_anchor_first = true;
-  params.anchor_dir = base::i18n::LEFT_TO_RIGHT;
-  params.focus_dir = base::i18n::LEFT_TO_RIGHT;
-  params.anchor_rect = gfx::Rect(0, 0, 10, 10);
-  params.focus_rect = gfx::Rect(10, 10, 10, 10);
-  parent_view_->SelectionBoundsChanged(params);
+  parent_view_->SelectionBoundsChanged(
+      gfx::Rect(0, 0, 10, 10), base::i18n::LEFT_TO_RIGHT,
+      gfx::Rect(10, 10, 10, 10), base::i18n::LEFT_TO_RIGHT, true);
   EXPECT_EQ(parent_view_, text_input_client_);
 
   input_method->RemoveObserver(this);

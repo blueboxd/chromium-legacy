@@ -398,6 +398,18 @@ enum class PasswordAccountStorageUserState {
   // Syncing user.
   kSyncUser,
 };
+
+// Metrics: PasswordManager.MoveToAccountStoreTrigger.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MoveToAccountStoreTrigger {
+  // The user successfully logged in with a password from the profile store.
+  kSuccessfulLoginWithProfileStorePassword = 0,
+  // The user explicitly asked to move a password listed in Settings.
+  kExplicitlyTriggeredInSettings = 1,
+  kMaxValue = kExplicitlyTriggeredInSettings,
+};
+
 std::string GetPasswordAccountStorageUserStateHistogramSuffix(
     PasswordAccountStorageUserState user_state);
 

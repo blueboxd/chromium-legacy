@@ -20,6 +20,7 @@ ImeTextSpan::ImeTextSpan(Type type,
                          const Color& background_color,
                          const Color& suggestion_highlight_color,
                          bool remove_on_finish_composing,
+                         bool interim_char_selection,
                          const Vector<String>& suggestions)
     : type_(type),
       underline_color_(underline_color),
@@ -29,6 +30,7 @@ ImeTextSpan::ImeTextSpan(Type type,
       background_color_(background_color),
       suggestion_highlight_color_(suggestion_highlight_color),
       remove_on_finish_composing_(remove_on_finish_composing),
+      interim_char_selection_(interim_char_selection),
       suggestions_(suggestions) {
   // Sanitize offsets by ensuring a valid range corresponding to the last
   // possible position.
@@ -111,6 +113,7 @@ ImeTextSpan::ImeTextSpan(const ui::ImeTextSpan& ime_text_span)
                   Color(ime_text_span.background_color),
                   Color(ime_text_span.suggestion_highlight_color),
                   ime_text_span.remove_on_finish_composing,
+                  ime_text_span.interim_char_selection,
                   ConvertStdVectorOfStdStringsToVectorOfStrings(
                       ime_text_span.suggestions)) {}
 }  // namespace blink

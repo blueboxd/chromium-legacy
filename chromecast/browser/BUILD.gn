@@ -177,6 +177,7 @@ cast_source_set("browser") {
     "//chromecast/media:libcast_media",
     "//chromecast/media/base:media_codec_support",
     "//chromecast/media/base:video_plane_controller",
+    "//chromecast/media/cdm:cdm_origin_provider",
     "//chromecast/media/service",
     "//chromecast/media/service/mojom",
     "//chromecast/net",

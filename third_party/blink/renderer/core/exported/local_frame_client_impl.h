@@ -54,7 +54,7 @@ class WebLocalFrameImpl;
 class WebSpellCheckPanelHostClient;
 enum class GlobalObjectReusePolicy;
 
-class LocalFrameClientImpl final : public LocalFrameClient {
+class CORE_EXPORT LocalFrameClientImpl final : public LocalFrameClient {
  public:
   explicit LocalFrameClientImpl(WebLocalFrameImpl*);
   ~LocalFrameClientImpl() override;

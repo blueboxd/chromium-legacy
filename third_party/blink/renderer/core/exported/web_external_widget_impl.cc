@@ -112,6 +112,39 @@ void WebExternalWidgetImpl::ProcessInputEventSynchronously(
   widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
 }
 
+void WebExternalWidgetImpl::UpdateTextInputState() {
+  widget_base_->UpdateTextInputState();
+}
+
+void WebExternalWidgetImpl::UpdateCompositionInfo() {
+  widget_base_->UpdateCompositionInfo(/*immediate_request=*/false);
+}
+
+void WebExternalWidgetImpl::UpdateSelectionBounds() {
+  widget_base_->UpdateSelectionBounds();
+}
+
+void WebExternalWidgetImpl::ShowVirtualKeyboard() {
+  widget_base_->ShowVirtualKeyboard();
+}
+
+void WebExternalWidgetImpl::ForceTextInputStateUpdate() {
+  widget_base_->ForceTextInputStateUpdate();
+}
+
+void WebExternalWidgetImpl::RequestCompositionUpdates(bool immediate_request,
+                                                      bool monitor_updates) {
+  widget_base_->RequestCompositionUpdates(immediate_request, monitor_updates);
+}
+
+void WebExternalWidgetImpl::SetFocus(bool focus) {
+  widget_base_->SetFocus(focus);
+}
+
+bool WebExternalWidgetImpl::HasFocus() {
+  return widget_base_->has_focus();
+}
+
 void WebExternalWidgetImpl::DidOverscrollForTesting(
     const gfx::Vector2dF& overscroll_delta,
     const gfx::Vector2dF& accumulated_overscroll,
@@ -171,6 +204,21 @@ void WebExternalWidgetImpl::GetWidgetInputHandler(
     mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
     mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
   client_->GetWidgetInputHandler(std::move(request), std::move(host));
+}
+
+bool WebExternalWidgetImpl::HasCurrentImeGuard(
+    bool request_to_show_virtual_keyboard) {
+  return client_->HasCurrentImeGuard(request_to_show_virtual_keyboard);
+}
+
+void WebExternalWidgetImpl::SendCompositionRangeChanged(
+    const gfx::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+  client_->SendCompositionRangeChanged(range, character_bounds);
+}
+
+void WebExternalWidgetImpl::FocusChanged(bool enabled) {
+  client_->FocusChanged(enabled);
 }
 
 }  // namespace blink

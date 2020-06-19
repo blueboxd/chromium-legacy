@@ -349,6 +349,9 @@
                  file="lifetime_browser_proxy.js"
                  compress="false" type="chrome_html"
                  preprocess="true" />
+      <structure name="IDR_OS_SETTINGS_SEARCH_SETTINGS_HTML"
+                 file="search_settings.html"
+                 compress="false" type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_SEARCH_SETTINGS_JS"
                  file="search_settings.js"
                  compress="false" type="chrome_html" />

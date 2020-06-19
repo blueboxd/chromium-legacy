@@ -16,8 +16,8 @@
 namespace content {
 
 // SMS one-time-passcode format:
-// https://github.com/WebKit/explainers/blob/master/sms-one-time-code-format/README.md
-constexpr char kOtpFormatRegex[] = "(?:^|\\s)@([a-zA-Z0-9.-]+) #(.[^#\\s]+)";
+// https://wicg.github.io/sms-one-time-codes/#parsing
+constexpr char kOtpFormatRegex[] = "(?:^|\\s)@([a-zA-Z0-9.-]+) #([^#\\s]+)";
 
 SmsParser::Result::Result(const url::Origin& origin,
                           const std::string& one_time_code)

@@ -19,6 +19,7 @@ extern const char kPluginVmMicrophoneAllowed[];
 extern const char kPluginVmUserId[];
 extern const char kEngagementPrefsPrefix[];
 extern const char kPluginVmDataCollectionAllowed[];
+extern const char kPluginVmRequiredFreeDiskSpaceGB[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

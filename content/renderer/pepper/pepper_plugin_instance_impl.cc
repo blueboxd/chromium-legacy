@@ -557,7 +557,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
         !render_frame_->GetLocalRootRenderWidget()->is_hidden();
 
     // Set the initial focus.
-    SetContentAreaFocus(render_frame_->GetLocalRootRenderWidget()->has_focus());
+    SetContentAreaFocus(
+        render_frame_->GetLocalRootRenderWidget()->GetWebWidget()->HasFocus());
 
     if (!module_->IsProxied()) {
       created_in_process_instance_ = true;

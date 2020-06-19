@@ -66,6 +66,7 @@ class FrameNodeImpl
                 int frame_tree_node_id,
                 int render_frame_id,
                 const base::UnguessableToken& dev_tools_token,
+                const FrameToken& frame_token,
                 int32_t browsing_instance_id,
                 int32_t site_instance_id);
   ~FrameNodeImpl() override;
@@ -94,6 +95,7 @@ class FrameNodeImpl
   int frame_tree_node_id() const;
   int render_frame_id() const;
   const base::UnguessableToken& dev_tools_token() const;
+  const FrameToken& frame_token() const;
   int32_t browsing_instance_id() const;
   int32_t site_instance_id() const;
   const RenderFrameHostProxy& render_frame_host_proxy() const;
@@ -160,6 +162,7 @@ class FrameNodeImpl
   const ProcessNode* GetProcessNode() const override;
   int GetFrameTreeNodeId() const override;
   const base::UnguessableToken& GetDevToolsToken() const override;
+  const FrameToken& GetFrameToken() const override;
   int32_t GetBrowsingInstanceId() const override;
   int32_t GetSiteInstanceId() const override;
   bool VisitChildFrameNodes(const FrameNodeVisitor& visitor) const override;
@@ -255,6 +258,11 @@ class FrameNodeImpl
   // is never sent back from the renderer in control calls. It should never be
   // used to look up the FrameTreeNode instance.
   const base::UnguessableToken dev_tools_token_;
+
+  // This is the unique token for this frame instance as per e.g.
+  // RenderFrameHost::GetFrameToken().
+  const FrameToken frame_token_;
+
   // The unique ID of the BrowsingInstance this frame belongs to. Frames in the
   // same BrowsingInstance are allowed to script each other at least
   // asynchronously (if cross-site), and sometimes synchronously (if same-site,

@@ -53,6 +53,7 @@
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/cdm/cast_cdm_factory.h"
+#include "chromecast/media/cdm/cast_cdm_origin_provider.h"
 #include "chromecast/media/cma/backend/cma_backend_factory_impl.h"
 #include "chromecast/media/cma/backend/media_pipeline_backend_manager.h"
 #include "chromecast/media/service/cast_renderer.h"
@@ -303,7 +304,7 @@ bool CastContentBrowserClient::OverridesAudioManager() {
 std::unique_ptr<::media::CdmFactory> CastContentBrowserClient::CreateCdmFactory(
     ::media::mojom::FrameInterfaceFactory* frame_interfaces) {
   url::Origin cdm_origin;
-  if(!frame_interfaces->GetCdmOrigin(&cdm_origin))
+  if (!CastCdmOriginProvider::GetCdmOrigin(frame_interfaces, &cdm_origin))
     return nullptr;
 
   return std::make_unique<media::CastCdmFactory>(

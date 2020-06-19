@@ -118,12 +118,13 @@ std::unique_ptr<FrameNodeImpl> PerformanceManagerImpl::CreateFrameNode(
     int frame_tree_node_id,
     int render_frame_id,
     const base::UnguessableToken& dev_tools_token,
+    const FrameToken& frame_token,
     int32_t browsing_instance_id,
     int32_t site_instance_id,
     FrameNodeCreationCallback creation_callback) {
   return CreateNodeImpl<FrameNodeImpl>(
       std::move(creation_callback), process_node, page_node, parent_frame_node,
-      frame_tree_node_id, render_frame_id, dev_tools_token,
+      frame_tree_node_id, render_frame_id, dev_tools_token, frame_token,
       browsing_instance_id, site_instance_id);
 }
 

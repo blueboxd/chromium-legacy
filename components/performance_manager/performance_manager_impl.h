@@ -17,6 +17,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "components/performance_manager/graph/graph_impl.h"
+#include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/worker_node.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
@@ -92,6 +93,7 @@ class PerformanceManagerImpl : public PerformanceManager {
       int frame_tree_node_id,
       int render_frame_id,
       const base::UnguessableToken& dev_tools_token,
+      const FrameToken& frame_token,
       int32_t browsing_instance_id,
       int32_t site_instance_id,
       FrameNodeCreationCallback creation_callback =

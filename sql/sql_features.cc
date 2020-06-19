@@ -20,6 +20,10 @@ namespace features {
 const base::Feature kSqlSkipPreload{"SqlSkipPreload",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable WAL mode for all SQLite databases.
+const base::Feature kEnableWALModeByDefault{"EnableWALModeByDefault",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 
 }  // namespace sql

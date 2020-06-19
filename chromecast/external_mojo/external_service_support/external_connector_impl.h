@@ -5,6 +5,7 @@
 #ifndef CHROMECAST_EXTERNAL_MOJO_EXTERNAL_SERVICE_SUPPORT_EXTERNAL_CONNECTOR_IMPL_H_
 #define CHROMECAST_EXTERNAL_MOJO_EXTERNAL_SERVICE_SUPPORT_EXTERNAL_CONNECTOR_IMPL_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -21,12 +22,16 @@ namespace chromecast {
 namespace external_service_support {
 
 class ExternalConnectorImpl : public ExternalConnector {
+  class BrokerConnection;
+
  public:
   explicit ExternalConnectorImpl(const std::string& broker_path);
   explicit ExternalConnectorImpl(
-      const std::string& broker_path,
+      scoped_refptr<BrokerConnection> broker_connection);
+  // For in-process connectors only.
+  explicit ExternalConnectorImpl(
       mojo::PendingRemote<external_mojo::mojom::ExternalConnector>
-          connector_pending_remote);
+          pending_remote);
   ~ExternalConnectorImpl() override;
 
   // ExternalConnector implementation:
@@ -55,26 +60,17 @@ class ExternalConnectorImpl : public ExternalConnector {
   void BindInterfaceImmediately(const std::string& service_name,
                                 const std::string& interface_name,
                                 mojo::ScopedMessagePipeHandle interface_pipe);
+  void Connect();
   void OnMojoDisconnect();
-  bool BindConnectorIfNecessary();
-  void InitializeBrokerConnection();
-  void AttemptBrokerConnection();
+  void BindConnectorIfNecessary();
 
-  std::string broker_path_;
+  const scoped_refptr<BrokerConnection> broker_connection_;
 
+  int64_t connection_token_ = 0;
+  mojo::PendingRemote<external_mojo::mojom::ExternalConnector> pending_remote_;
   mojo::Remote<external_mojo::mojom::ExternalConnector> connector_;
 
   base::CallbackList<void()> error_callbacks_;
-
-  // If connecting to a broker, |connector_pending_receiver_for_broker_| is used
-  // to keep |connector_| bound while waiting for the broker.
-  mojo::PendingReceiver<external_mojo::mojom::ExternalConnector>
-      connector_pending_receiver_for_broker_;
-
-  // If cloned, |connector_pending_remote_from_clone_| is stored until an IO
-  // operation is performed to ensure it happens on the correct sequence.
-  mojo::PendingRemote<external_mojo::mojom::ExternalConnector>
-      connector_pending_remote_from_clone_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

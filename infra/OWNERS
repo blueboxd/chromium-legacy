@@ -1,10 +1,10 @@
 # This is reserved for people that are comfortable with Chromium builders
 # and understand the implications of changing their configurations.
 
-agable@chromium.org
 bpastene@chromium.org
 dpranke@chromium.org
 dpranke@google.com
+estaab@chromium.org
 gbeaty@chromium.org
 hans@chromium.org
 kbr@chromium.org

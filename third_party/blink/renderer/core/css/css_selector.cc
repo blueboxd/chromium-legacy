@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/css/css_selector_list.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -521,13 +522,12 @@ CSSSelector::PseudoType CSSSelector::ParsePseudoType(const AtomicString& name,
   return kPseudoUnknown;
 }
 
-PseudoId CSSSelector::ParsePseudoId(const String& name) {
+PseudoId CSSSelector::ParsePseudoId(const String& name, const Node* parent) {
   unsigned name_without_colons_start =
       name[0] == ':' ? (name[1] == ':' ? 2 : 1) : 0;
   PseudoId pseudo_id = GetPseudoId(ParsePseudoType(
       AtomicString(name.Substring(name_without_colons_start)), false));
-  if (pseudo_id == kPseudoIdMarker &&
-      !RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled())
+  if (!PseudoElement::IsWebExposed(pseudo_id, parent))
     return kPseudoIdNone;
   return pseudo_id;
 }

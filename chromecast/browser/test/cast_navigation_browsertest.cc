@@ -30,7 +30,7 @@ class CastNavigationBrowserTest : public CastBrowserTest {
 
   void SetUpOnMainThread() override {
     embedded_test_server()->ServeFilesFromSourceDirectory(
-        media::GetTestDataPath());
+        ::media::GetTestDataPath());
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
@@ -70,7 +70,7 @@ class CastNavigationBrowserTest : public CastBrowserTest {
   void RunMediaTestPage(const std::string& html_page,
                         const base::StringPairs& query_params,
                         const std::string& expected_title) {
-    std::string query = media::GetURLQueryString(query_params);
+    std::string query = ::media::GetURLQueryString(query_params);
     GURL gurl = embedded_test_server()->GetURL("/" + html_page + "?" + query);
     std::string final_title = RunTest(gurl, expected_title);
     EXPECT_EQ(expected_title, final_title);

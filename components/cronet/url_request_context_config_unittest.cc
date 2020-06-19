@@ -68,10 +68,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   options.SetPath({"QUIC", "connection_options"}, base::Value("TIME,TBBR,REJ"));
   options.SetPath(
       {"QUIC", "set_quic_flags"},
-      base::Value(
-          "FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count=5,"
-          "FLAGS_quic_reloadable_flag_quic_enable_version_draft_29=true,"
-          "FLAGS_quic_reloadable_flag_quic_disable_version_draft_27=true"));
+      base::Value("FLAGS_quic_reloadable_flag_quic_testonly_default_false=true,"
+                  "FLAGS_quic_restart_flag_quic_testonly_default_true=false"));
   options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "preloaded_report_to_headers"},
@@ -143,9 +141,8 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_TRUE(base::JSONWriter::Write(options, &options_json));
 
   // Initialize QUIC flags set by the config.
-  FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count = 0;
-  FLAGS_quic_reloadable_flag_quic_enable_version_draft_29 = false;
-  FLAGS_quic_reloadable_flag_quic_disable_version_draft_27 = false;
+  FLAGS_quic_reloadable_flag_quic_testonly_default_false = false;
+  FLAGS_quic_restart_flag_quic_testonly_default_true = true;
 
   URLRequestContextConfig config(
       // Enable QUIC.
@@ -196,9 +193,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   quic_connection_options.push_back(quic::kREJ);
   EXPECT_EQ(quic_connection_options, quic_params->connection_options);
 
-  EXPECT_EQ(FLAGS_quic_max_aggressive_retransmittable_on_wire_ping_count, 5);
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_draft_29);
-  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_disable_version_draft_27);
+  // Check QUIC flags.
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_testonly_default_false);
+  EXPECT_FALSE(FLAGS_quic_restart_flag_quic_testonly_default_true);
 
   // Check Custom QUIC User Agent Id.
   EXPECT_EQ("Custom QUIC UAID", quic_params->user_agent_id);

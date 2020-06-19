@@ -37,7 +37,8 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
 
 [['ResetPage', 'os_reset_page_test.m.js'],
  ['LocalizedLink', 'localized_link_test.m.js'],
- ['BluetoothPage', 'bluetooth_page_tests.m.js'],
+ // Disabled - very flaky (crbug.com/1097021)
+ // ['BluetoothPage', 'bluetooth_page_tests.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

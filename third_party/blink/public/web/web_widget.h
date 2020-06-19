@@ -151,6 +151,9 @@ class WebWidget {
   // Called to inform the WebWidget that it has gained or lost keyboard focus.
   virtual void SetFocus(bool) {}
 
+  // Returns the state of focus for the WebWidget.
+  virtual bool HasFocus() { return false; }
+
   // Sets the display mode, which comes from the top-level browsing context and
   // is applied to all widgets.
   virtual void SetDisplayMode(mojom::DisplayMode) {}
@@ -217,6 +220,30 @@ class WebWidget {
       const gfx::Vector2dF& accumulated_overscroll,
       const gfx::PointF& position_in_viewport,
       const gfx::Vector2dF& velocity_in_viewport) {}
+
+  // Requests the text input state be updated. If anything has changed the
+  // updated state will be sent to the browser.
+  virtual void UpdateTextInputState() = 0;
+
+  // Requests the text input state be updated. An updated state will always be
+  // sent to the browser.
+  virtual void ForceTextInputStateUpdate() = 0;
+
+  // Checks if the composition range or composition character bounds have been
+  // changed. If they are changed, the new value will be sent to the browser
+  // process. This method does nothing when the browser process is not able to
+  // handle composition range and composition character bounds.
+  virtual void UpdateCompositionInfo() = 0;
+
+  // Requests the selection bounds be updated.
+  virtual void UpdateSelectionBounds() = 0;
+
+  // Request the virtual keyboard be shown.
+  virtual void ShowVirtualKeyboard() = 0;
+
+  // Request composition updates be sent to the browser.
+  virtual void RequestCompositionUpdates(bool immediate_request,
+                                         bool monitor_updates) = 0;
 
  protected:
   ~WebWidget() = default;

@@ -1,11 +1,10 @@
+file://ash/login/LOGIN_LOCK_OWNERS
+
 # (in PST)
 achuith@chromium.org
 alemate@chromium.org
-tbarzic@chromium.org
-xiyuan@chromium.org
 
-# (in CET)
-antrim@chromium.org
-rsorokin@chromium.org
+per-file *wizard_controller.*=set noparent
+per-file *wizard_controller.*=file://ash/login/LOGIN_LOCK_OWNERS
 
 # COMPONENT: UI>Shell>OOBE

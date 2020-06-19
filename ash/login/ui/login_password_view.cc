@@ -8,6 +8,7 @@
 #include "ash/login/ui/horizontal_image_sequence_animation_decoder.h"
 #include "ash/login/ui/hover_notifier.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/login/ui/login_button.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/cpp/login_types.h"
@@ -19,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,6 +65,9 @@ constexpr int kPasswordFontDeltaSize = 5;
 
 // Spacing between glyphs.
 constexpr int kPasswordGlyphSpacing = 6;
+
+// Size (width/height) of the submit button.
+constexpr int kSubmitButtonSizeDp = 20;
 
 // Size (width/height) of the display password button.
 constexpr int kDisplayPasswordButtonSizeDp = 20;
@@ -418,11 +423,16 @@ LoginPasswordView::TestApi::~TestApi() = default;
 
 void LoginPasswordView::TestApi::SubmitPassword(const std::string& password) {
   view_->textfield_->SetText(base::ASCIIToUTF16(password));
+  view_->UpdateUiState();
   view_->SubmitPassword();
 }
 
 views::Textfield* LoginPasswordView::TestApi::textfield() const {
   return view_->textfield_;
+}
+
+views::View* LoginPasswordView::TestApi::submit_button() const {
+  return view_->submit_button_;
 }
 
 views::ToggleImageButton* LoginPasswordView::TestApi::display_password_button()
@@ -448,7 +458,9 @@ void LoginPasswordView::TestApi::SetTimers(
 }
 
 LoginPasswordView::LoginPasswordView()
-    : clear_password_timer_(std::make_unique<base::RetainingOneShotTimer>()),
+    : is_display_password_feature_enabled_(
+          chromeos::features::IsLoginDisplayPasswordButtonEnabled()),
+      clear_password_timer_(std::make_unique<base::RetainingOneShotTimer>()),
       hide_password_timer_(std::make_unique<base::RetainingOneShotTimer>()) {
   Shell::Get()->ime_controller()->AddObserver(this);
 
@@ -504,9 +516,27 @@ LoginPasswordView::LoginPasswordView()
   // OnCapsLockChanged with the actual caps lock state.
   capslock_icon_->SetVisible(false);
 
-  // Display password button.
-  display_password_button_ = password_row_->AddChildView(
-      std::make_unique<DisplayPasswordButton>(this));
+  if (is_display_password_feature_enabled_) {
+    // Display password button.
+    display_password_button_ = password_row_->AddChildView(
+        std::make_unique<DisplayPasswordButton>(this));
+  } else {
+    // Submit button.
+    submit_button_ =
+        password_row_->AddChildView(std::make_unique<LoginButton>(this));
+    submit_button_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kLockScreenArrowIcon, kSubmitButtonSizeDp,
+                              login_constants::kButtonEnabledColor));
+    submit_button_->SetImage(
+        views::Button::STATE_DISABLED,
+        gfx::CreateVectorIcon(
+            kLockScreenArrowIcon, kSubmitButtonSizeDp,
+            SkColorSetA(login_constants::kButtonEnabledColor,
+                        login_constants::kButtonDisabledAlpha)));
+    submit_button_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
+  }
 
   // Separator on bottom.
   separator_ = AddChildView(std::make_unique<NonAccessibleSeparator>());
@@ -519,6 +549,9 @@ LoginPasswordView::LoginPasswordView()
 
   // Initialize with the initial state of caps lock.
   OnCapsLockChanged(Shell::Get()->ime_controller()->IsCapsLockEnabled());
+
+  // Make sure the UI start with the correct states.
+  UpdateUiState();
 }
 
 LoginPasswordView::~LoginPasswordView() {
@@ -540,6 +573,7 @@ void LoginPasswordView::Init(
 
 void LoginPasswordView::SetEnabledOnEmptyPassword(bool enabled) {
   enabled_on_empty_password_ = enabled;
+  UpdateUiState();
 }
 
 void LoginPasswordView::SetEasyUnlockIcon(
@@ -559,14 +593,16 @@ void LoginPasswordView::SetAccessibleName(const base::string16& name) {
   textfield_->SetAccessibleName(name);
 }
 
-void LoginPasswordView::SetFocusEnabledOnTextfield(bool enable) {
+void LoginPasswordView::SetFocusEnabledForChildViews(bool enable) {
   auto behavior = enable ? FocusBehavior::ALWAYS : FocusBehavior::NEVER;
   textfield_->SetFocusBehavior(behavior);
 }
 
 void LoginPasswordView::SetDisplayPasswordButtonVisible(bool visible) {
+  if (!is_display_password_feature_enabled_)
+    return;
   display_password_button_->SetVisible(visible);
-  // Only start the timer if the display password feature is enabled.
+  // Only start the timer if the display password button is enabled.
   if (visible) {
     clear_password_timer_->Start(
         FROM_HERE, kClearPasswordAfterDelay,
@@ -576,9 +612,12 @@ void LoginPasswordView::SetDisplayPasswordButtonVisible(bool visible) {
 
 void LoginPasswordView::Reset() {
   Clear();
-  // A user could hit the display button, then quickly switch account and
-  // type; we want the password to be hidden in such a case.
-  HidePassword(false /*chromevox_exception*/);
+
+  if (is_display_password_feature_enabled_) {
+    // A user could hit the display button, then quickly switch account and
+    // type; we want the password to be hidden in such a case.
+    HidePassword(false /*chromevox_exception*/);
+  }
 }
 
 void LoginPasswordView::Clear() {
@@ -620,6 +659,7 @@ void LoginPasswordView::SetPlaceholderText(
 void LoginPasswordView::SetReadOnly(bool read_only) {
   textfield_->SetReadOnly(read_only);
   textfield_->SetCursorEnabled(!read_only);
+  UpdateUiState();
 }
 
 const char* LoginPasswordView::GetClassName() const {
@@ -658,8 +698,13 @@ void LoginPasswordView::InvertPasswordDisplayingState() {
 
 void LoginPasswordView::ButtonPressed(views::Button* sender,
                                       const ui::Event& event) {
-  DCHECK_EQ(sender, display_password_button_);
-  InvertPasswordDisplayingState();
+  if (is_display_password_feature_enabled_) {
+    DCHECK_EQ(sender, display_password_button_);
+    InvertPasswordDisplayingState();
+  } else {
+    DCHECK_EQ(sender, submit_button_);
+    SubmitPassword();
+  }
 }
 
 void LoginPasswordView::HidePassword(bool chromevox_exception) {
@@ -674,7 +719,12 @@ void LoginPasswordView::HidePassword(bool chromevox_exception) {
 void LoginPasswordView::ContentsChanged(views::Textfield* sender,
                                         const base::string16& new_contents) {
   DCHECK_EQ(sender, textfield_);
+  UpdateUiState();
   on_password_text_changed_.Run(new_contents.empty() /*is_empty*/);
+
+  if (!is_display_password_feature_enabled_)
+    return;
+
   // Only reset the timer if the display password feature is enabled.
   if (display_password_button_->GetVisible())
     clear_password_timer_->Reset();
@@ -708,6 +758,11 @@ bool LoginPasswordView::HandleKeyEvent(views::Textfield* sender,
   }
 
   return true;
+}
+
+void LoginPasswordView::UpdateUiState() {
+  if (!is_display_password_feature_enabled_)
+    submit_button_->SetEnabled(IsPasswordSubmittable());
 }
 
 void LoginPasswordView::OnCapsLockChanged(bool enabled) {

@@ -246,6 +246,11 @@ POLICY_EXPORT extern const char kMetricDeviceLocalAccountPolicyInvalidations[];
 POLICY_EXPORT extern const char
     kMetricDeviceLocalAccountPolicyInvalidationsFcm[];
 
+POLICY_EXPORT extern const char kMetricCBCMPolicyRefresh[];
+POLICY_EXPORT extern const char kMetricCBCMPolicyRefreshFcm[];
+POLICY_EXPORT extern const char kMetricCBCMPolicyInvalidations[];
+POLICY_EXPORT extern const char kMetricCBCMPolicyInvalidationsFcm[];
+
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistration[];
 POLICY_EXPORT extern const char kMetricPolicyInvalidationRegistrationFcm[];
 

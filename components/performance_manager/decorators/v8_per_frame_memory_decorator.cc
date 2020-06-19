@@ -134,9 +134,19 @@ void NodeAttachedProcessData::OnPerFrameV8MemoryUsageData(
   // existing frame is likewise accured to unassociated usage.
   uint64_t unassociated_v8_bytes_used = result->unassociated_bytes_used;
 
+  // Create a mapping from token to per-frame usage for the merge below.
+  // Note that in the presence of multiple records with identical
+  // dev_tools_token fields, this will throw away all but one of those
+  // records.
+  // TODO(https://crbug.com/1096543): Change to using the frame-unique token and
+  //     validate that multiple frames/records don't carry the same token.
+  std::vector<
+      std::pair<base::UnguessableToken, mojom::PerFrameV8MemoryUsageDataPtr>>
+      tmp;
+  for (auto& entry : result->associated_memory)
+    tmp.emplace_back(std::make_pair(entry->dev_tools_token, std::move(entry)));
   base::flat_map<base::UnguessableToken, mojom::PerFrameV8MemoryUsageDataPtr>
-      associated_memory;
-  associated_memory.swap(result->associated_memory);
+      associated_memory(std::move(tmp));
 
   base::flat_set<const FrameNode*> frame_nodes = process_node_->GetFrameNodes();
   for (const FrameNode* frame_node : frame_nodes) {

@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_WIDGET_CLIENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_meaningful_layout.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
@@ -273,12 +275,6 @@ class WebWidgetClient {
       const cc::OverscrollBehavior& overscroll_behavior,
       bool event_processed) {}
 
-  // Requests the virtual keyboard be displayed.
-  virtual void ShowVirtualKeyboard() {}
-
-  // Requests the text input state be updated.
-  virtual void UpdateTextInputState() {}
-
   // Called before gesture events are processed and allows the
   // client to handle the event itself. Return true if event was handled
   // and further processing should stop.
@@ -304,6 +300,41 @@ class WebWidgetClient {
           widget_input_receiver,
       CrossVariantMojoRemote<mojom::WidgetInputHandlerHostInterfaceBase>
           widget_input_host_remote) {}
+
+  // Since the widget input IPC channel is still on the content side send this
+  // message back to the embedder to then send it on that channel. All bounds
+  // are in window coordinates.
+  virtual void SendCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) {}
+
+  // The IME guard prevents sending IPC messages while messages are being
+  // processed. Returns true if there is a current guard.
+  // |request_to_show_virtual_keyboard| is whether the message that would have
+  // been sent would have requested the keyboard. This method will eventually be
+  // removed when all input handling is moved into blink.
+  virtual bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) {
+    return false;
+  }
+
+  // Determines whether composition can happen inline.
+  virtual bool CanComposeInline() { return false; }
+
+  // Determines if IME events should be sent to Pepper instead of processed to
+  // the currently focused frame.
+  virtual bool ShouldDispatchImeEventsToPepper() { return false; }
+
+  // Returns the current pepper text input type.
+  virtual WebTextInputType GetPepperTextInputType() {
+    return WebTextInputType::kWebTextInputTypeNone;
+  }
+
+  // Returns the current pepper caret bounds in window coordinates.
+  virtual gfx::Rect GetPepperCaretBounds() { return gfx::Rect(); }
+
+  // The state of the focus has changed for the WebWidget. |enabled|
+  // is the new state.
+  virtual void FocusChanged(bool enabled) {}
 };
 
 }  // namespace blink

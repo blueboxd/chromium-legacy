@@ -1673,18 +1673,14 @@ std::unique_ptr<protocol::Array<protocol::DOM::Node>>
 InspectorDOMAgent::BuildArrayForPseudoElements(Element* element,
                                                NodeToIdMap* nodes_map) {
   protocol::Array<protocol::DOM::Node> pseudo_elements;
-  if (element->GetPseudoElement(kPseudoIdBefore)) {
-    pseudo_elements.emplace_back(BuildObjectForNode(
-        element->GetPseudoElement(kPseudoIdBefore), 0, false, nodes_map));
-  }
-  if (element->GetPseudoElement(kPseudoIdAfter)) {
-    pseudo_elements.emplace_back(BuildObjectForNode(
-        element->GetPseudoElement(kPseudoIdAfter), 0, false, nodes_map));
-  }
-  if (element->GetPseudoElement(kPseudoIdMarker) &&
-      RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()) {
-    pseudo_elements.emplace_back(BuildObjectForNode(
-        element->GetPseudoElement(kPseudoIdMarker), 0, false, nodes_map));
+  for (PseudoId pseudo_id :
+       {kPseudoIdBefore, kPseudoIdAfter, kPseudoIdMarker}) {
+    if (!PseudoElement::IsWebExposed(pseudo_id, element))
+      continue;
+    if (PseudoElement* pseudo_element = element->GetPseudoElement(pseudo_id)) {
+      pseudo_elements.emplace_back(
+          BuildObjectForNode(pseudo_element, 0, false, nodes_map));
+    }
   }
   if (pseudo_elements.empty())
     return nullptr;
@@ -2096,12 +2092,10 @@ void InspectorDOMAgent::FrameOwnerContentUpdated(
 }
 
 void InspectorDOMAgent::PseudoElementCreated(PseudoElement* pseudo_element) {
-  if (pseudo_element->IsMarkerPseudoElement() &&
-      !RuntimeEnabledFeatures::CSSMarkerPseudoElementEnabled()) {
-    return;
-  }
   Element* parent = pseudo_element->ParentOrShadowHostElement();
   if (!parent)
+    return;
+  if (!PseudoElement::IsWebExposed(pseudo_element->GetPseudoId(), parent))
     return;
   int parent_id = document_node_to_id_map_->at(parent);
   if (!parent_id)

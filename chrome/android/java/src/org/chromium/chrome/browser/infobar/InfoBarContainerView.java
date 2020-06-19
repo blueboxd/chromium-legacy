@@ -16,8 +16,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsStateProvider;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsUtils;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsUtils;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBar;
 import org.chromium.chrome.browser.ui.messages.infobar.InfoBarUiItem;
 import org.chromium.ui.display.DisplayAndroid;

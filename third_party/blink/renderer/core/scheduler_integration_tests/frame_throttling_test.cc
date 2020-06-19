@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -1511,6 +1510,70 @@ TEST_P(FrameThrottlingTest, GraphicsLayerCollection) {
   ASSERT_NE(nullptr, paint_controller);
   // Now we should collect all graphics layers again.
   EXPECT_EQ(display_item_count, paint_controller->GetDisplayItemList().size());
+}
+
+TEST_P(FrameThrottlingTest, NestedFramesInRemoteFrameHiddenAndShown) {
+  InitializeRemote();
+
+  SimRequest local_root_resource("https://example.com/", "text/html");
+  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
+  SimRequest child_frame_resource("https://example.com/child-iframe.html",
+                                  "text/html");
+
+  LoadURL("https://example.com/");
+  local_root_resource.Complete(
+      "<iframe id=frame sandbox src=iframe.html></iframe>");
+  frame_resource.Complete(
+      "<iframe id=child-frame sandbox src=child-iframe.html></iframe>");
+  child_frame_resource.Complete("");
+
+  ViewportIntersectionState intersection;
+  intersection.main_frame_document_intersection = WebRect(0, 0, 100, 100);
+  intersection.main_frame_viewport_size = WebSize(100, 100);
+  intersection.viewport_intersection = WebRect(0, 0, 100, 100);
+  LocalFrameRoot().FrameWidget()->Resize(WebSize(300, 200));
+  LocalFrameRoot().FrameWidget()->SetRemoteViewportIntersection(intersection);
+
+  auto* root_document = LocalFrameRoot().GetFrame()->GetDocument();
+  auto* frame_document =
+      To<HTMLIFrameElement>(root_document->getElementById("frame"))
+          ->contentDocument();
+  auto* frame_view = frame_document->View();
+  auto* child_document =
+      To<HTMLIFrameElement>(frame_document->getElementById("child-frame"))
+          ->contentDocument();
+  auto* child_view = child_document->View();
+
+  CompositeFrame();
+  EXPECT_FALSE(frame_view->CanThrottleRendering());
+  EXPECT_FALSE(child_view->CanThrottleRendering());
+
+  // Hide the frame without any other change.
+  LocalFrameRoot().WasHidden();
+  EXPECT_TRUE(frame_view->CanThrottleRendering());
+  EXPECT_TRUE(child_view->CanThrottleRendering());
+  EXPECT_FALSE(Compositor().NeedsBeginFrame());
+
+  // Simulate a trivial style change that doesn't trigger layout, compositing
+  // update, but schedules layout tree update.
+  frame_document->documentElement()->setAttribute(html_names::kStyleAttr,
+                                                  "color: blue");
+  // This is needed to reproduce crbug.com/1054644 before the fix.
+  frame_view->SetNeedsPaintPropertyUpdate();
+
+  // Show the frame without any other change.
+  LocalFrameRoot().WasShown();
+  LocalFrameRoot().FrameWidget()->SetRemoteViewportIntersection(intersection);
+  CompositeFrame();
+  EXPECT_FALSE(frame_view->CanThrottleRendering());
+  // The child frame's throtting status is not updated because the parent
+  // document has pending visual update.
+  EXPECT_TRUE(child_view->CanThrottleRendering());
+
+  CompositeFrame();
+  EXPECT_FALSE(frame_view->CanThrottleRendering());
+  // The child frame's throttling status should be updated now.
+  EXPECT_FALSE(child_view->CanThrottleRendering());
 }
 
 }  // namespace blink

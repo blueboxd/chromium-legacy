@@ -78,7 +78,6 @@
 #endif
 
 class SkBitmap;
-struct WidgetHostMsg_SelectionBounds_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -109,7 +108,6 @@ class WebCursor;
 struct DisplayFeature;
 struct VisualProperties;
 struct ScreenInfo;
-struct TextInputState;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -272,6 +270,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // blink::mojom::WidgetHost implementation.
   void SetToolTipText(const base::string16& tooltip_text,
                       base::i18n::TextDirection text_direction_hint) override;
+  void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override;
+  void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                              base::i18n::TextDirection anchor_dir,
+                              const gfx::Rect& focus_rect,
+                              base::i18n::TextDirection focus_dir,
+                              bool is_anchor_first) override;
 
   // Notification that the screen info has changed.
   void NotifyScreenInfoChanged();
@@ -906,9 +910,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnClose();
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
-  void OnTextInputStateChanged(const TextInputState& params);
-  void OnSelectionBoundsChanged(
-      const WidgetHostMsg_SelectionBounds_Params& params);
   void OnStartDragging(const DropData& drop_data,
                        blink::WebDragOperationsMask operations_allowed,
                        const SkBitmap& bitmap,

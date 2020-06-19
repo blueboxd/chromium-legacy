@@ -28,6 +28,16 @@ ImeTextSpan CreateImeTextSpan(
                      Color::kTransparent, Color::kTransparent);
 }
 
+ImeTextSpan CreateImeTextSpan(unsigned start_offset,
+                              unsigned end_offset,
+                              bool interim_char_selection) {
+  return ImeTextSpan(
+      ImeTextSpan::Type::kComposition, start_offset, end_offset,
+      Color::kTransparent, ui::mojom::ImeTextSpanThickness::kNone,
+      ui::mojom::ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
+      Color::kTransparent, Color::kTransparent, false, interim_char_selection);
+}
+
 TEST(ImeTextSpanTest, OneChar) {
   ImeTextSpan ime_text_span = CreateImeTextSpan(0, 1);
   EXPECT_EQ(0u, ime_text_span.StartOffset());
@@ -101,6 +111,13 @@ TEST(ImeTextSpanTest, UnderlineStyles) {
       CreateImeTextSpan(0, 5, ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle);
   EXPECT_EQ(ui::mojom::ImeTextSpanUnderlineStyle::kSquiggle,
             ime_text_span.UnderlineStyle());
+}
+
+TEST(ImeTextSpanTest, InterimCharSelection) {
+  ImeTextSpan ime_text_span = CreateImeTextSpan(0, 1, false);
+  EXPECT_EQ(false, ime_text_span.InterimCharSelection());
+  ime_text_span = CreateImeTextSpan(0, 1, true);
+  EXPECT_EQ(true, ime_text_span.InterimCharSelection());
 }
 
 }  // namespace

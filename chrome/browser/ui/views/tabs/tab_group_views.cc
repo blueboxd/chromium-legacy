@@ -37,6 +37,12 @@ TabGroupViews::~TabGroupViews() {
   tab_strip_->RemoveChildViewT(highlight_);
 }
 
+void TabGroupViews::UpdateBounds() {
+  const gfx::Rect bounds = GetBounds();
+  underline_->UpdateBounds(bounds);
+  highlight_->SetBoundsRect(bounds);
+}
+
 void TabGroupViews::UpdateVisuals() {
   header_->VisualsChanged();
   underline_->SchedulePaint();

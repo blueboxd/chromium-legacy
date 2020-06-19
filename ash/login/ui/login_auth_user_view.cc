@@ -35,6 +35,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -824,14 +825,26 @@ LoginAuthUserView::LoginAuthUserView(const LoginUserInfo& user,
   password_view_->SetDisplayPasswordButtonVisible(
       user.show_display_password_button);
 
-  auto pin_view = std::make_unique<LoginPinView>(
-      LoginPinView::Style::kAlphanumeric,
-      base::BindRepeating(&LoginPasswordView::InsertNumber,
-                          base::Unretained(password_view.get())),
-      base::BindRepeating(&LoginPasswordView::Backspace,
-                          base::Unretained(password_view.get())),
-      base::BindRepeating(&LoginPasswordView::SubmitPassword,
-                          base::Unretained(password_view.get())));
+  std::unique_ptr<LoginPinView> pin_view;
+  // If the display password button feature is disabled, the PIN view does not
+  // need a submit button as the password view already has one.
+  if (chromeos::features::IsLoginDisplayPasswordButtonEnabled()) {
+    pin_view = std::make_unique<LoginPinView>(
+        LoginPinView::Style::kAlphanumeric,
+        base::BindRepeating(&LoginPasswordView::InsertNumber,
+                            base::Unretained(password_view.get())),
+        base::BindRepeating(&LoginPasswordView::Backspace,
+                            base::Unretained(password_view.get())),
+        base::BindRepeating(&LoginPasswordView::SubmitPassword,
+                            base::Unretained(password_view.get())));
+  } else {
+    pin_view = std::make_unique<LoginPinView>(
+        LoginPinView::Style::kAlphanumeric,
+        base::BindRepeating(&LoginPasswordView::InsertNumber,
+                            base::Unretained(password_view.get())),
+        base::BindRepeating(&LoginPasswordView::Backspace,
+                            base::Unretained(password_view.get())));
+  }
   pin_view_ = pin_view.get();
   DCHECK(pin_view_->layer());
 
@@ -985,7 +998,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
-  password_view_->SetFocusEnabledOnTextfield(has_password);
+  password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
   password_view_container_->SetVisible(has_password || !has_challenge_response);

@@ -39,7 +39,6 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #import "content/browser/renderer_host/text_input_client_mac.h"
 #import "content/browser/renderer_host/ui_events_helper.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -55,6 +54,7 @@
 #include "ui/base/cocoa/remote_accessibility_api.h"
 #import "ui/base/cocoa/secure_password_input.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/mojom/attributed_string.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -556,7 +556,8 @@ void RenderWidgetHostViewMac::OnUpdateTextInputStateCalled(
   if (!did_update_state)
     return;
 
-  const TextInputState* state = text_input_manager->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      text_input_manager->GetTextInputState();
   if (state)
     ns_view_->SetTextInputState(state->type, state->flags);
   else

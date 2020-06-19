@@ -29,7 +29,8 @@ std::unique_ptr<DeviceOAuth2TokenStore> CreatePlatformTokenStore(
   return std::make_unique<chromeos::DeviceOAuth2TokenStoreChromeOS>(
       local_state);
 #elif defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
-  DCHECK(base::FeatureList::IsEnabled(policy::features::kCBCMServiceAccounts));
+  DCHECK(
+      base::FeatureList::IsEnabled(policy::features::kCBCMPolicyInvalidations));
   return std::make_unique<DeviceOAuth2TokenStoreDesktop>(local_state);
 #else
   NOTREACHED();

@@ -24,6 +24,23 @@ export class TabGroupElement extends CustomElement {
     this.chip_.addEventListener('click', () => this.onClickChip_());
     this.chip_.addEventListener(
         'keydown', e => this.onKeydownChip_(/** @type {!KeyboardEvent} */ (e)));
+
+    /**
+     * Flag indicating if this element can accept dragover events. This flag
+     * is updated by TabListElement while animating.
+     * @private {boolean}
+     */
+    this.isValidDragOverTarget_ = true;
+  }
+
+  /** @return {boolean} */
+  get isValidDragOverTarget() {
+    return !this.hasAttribute('dragging_') && this.isValidDragOverTarget_;
+  }
+
+  /** @param {boolean} isValid */
+  set isValidDragOverTarget(isValid) {
+    this.isValidDragOverTarget_ = isValid;
   }
 
   /** @return {!HTMLElement} */

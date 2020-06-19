@@ -10142,6 +10142,7 @@ histogram as enum -->
   <int value="12" label="WebAPK"/>
   <int value="13" label="Yahoo Mail"/>
   <int value="14" label="Viber"/>
+  <int value="15" label="YouTube"/>
 </enum>
 
 <enum name="ClientCertSelectionResult">
@@ -52479,6 +52480,19 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Network/server error"/>
   <int value="2" label="Malformed response"/>
+</enum>
+
+<enum name="PasswordManager.MoveToAccountStoreTrigger">
+  <summary>
+    Triggers that will cause Chrome to offer to move a password from the profile
+    store to the account store.
+  </summary>
+  <int value="0" label="kSuccessfulLoginWithProfileStorePassword">
+    The user successfully logged in with a password from the profile store.
+  </int>
+  <int value="1" label="kExplicitlyTriggeredInSettings">
+    The user explicitly asked to move a password listed in Settings.
+  </int>
 </enum>
 
 <enum name="PasswordManager.ReauthResult">

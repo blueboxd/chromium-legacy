@@ -191,6 +191,7 @@
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "v8/include/v8.h"
 
@@ -12451,17 +12452,19 @@ TEST_F(WebFrameTest, ClearClosedOpener) {
 class ShowVirtualKeyboardObserverWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
-  ShowVirtualKeyboardObserverWidgetClient()
-      : did_show_virtual_keyboard_(false) {}
+  ShowVirtualKeyboardObserverWidgetClient() = default;
   ~ShowVirtualKeyboardObserverWidgetClient() override = default;
 
   // frame_test_helpers::TestWebWidgetClient:
-  void ShowVirtualKeyboard() override { did_show_virtual_keyboard_ = true; }
+  void TextInputStateChanged(
+      ui::mojom::blink::TextInputStatePtr state) override {
+    did_show_virtual_keyboard_ |= state->show_ime_if_needed;
+  }
 
   bool DidShowVirtualKeyboard() const { return did_show_virtual_keyboard_; }
 
  private:
-  bool did_show_virtual_keyboard_;
+  bool did_show_virtual_keyboard_ = false;
 };
 
 TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
@@ -12484,6 +12487,7 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
       WebScriptSource("window.focus();"
                       "document.querySelector('input').focus();"));
 
+  RunPendingTasks();
   // Verify that the right WebWidgetClient has been notified.
 #if defined(OS_CHROMEOS)
   EXPECT_FALSE(web_widget_client.DidShowVirtualKeyboard());

@@ -20,8 +20,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
+#include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 using ui::mojom::ImeTextSpanThickness;
 using ui::mojom::ImeTextSpanUnderlineStyle;
@@ -1399,6 +1401,28 @@ TEST_F(InputMethodControllerTest, SetCompositionPlainTextWithIme_Text_Span) {
 
   EXPECT_EQ(0u, GetDocument().Markers().Markers()[0]->StartOffset());
   EXPECT_EQ(1u, GetDocument().Markers().Markers()[0]->EndOffset());
+}
+
+TEST_F(InputMethodControllerTest,
+       SetCompositionPlainTextWithIme_Text_Span_Interim_Char_Selection) {
+  InsertHTMLElement("<div id='sample' contenteditable></div>", "sample");
+
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kComposition, 0, 1, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0, 0,
+      false, true /*interim_char_selection*/));
+
+  Controller().SetComposition("a", ime_text_spans, 0, 1);
+
+  ASSERT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  auto* styleable_marker =
+      DynamicTo<StyleableMarker>(GetDocument().Markers().Markers()[0].Get());
+  Color background_color =
+      LayoutTheme::GetTheme().ActiveSelectionBackgroundColor(
+          GetFrame().GetPage()->GetVisualViewport().UsedColorScheme());
+  EXPECT_EQ(background_color, styleable_marker->BackgroundColor());
 }
 
 TEST_F(InputMethodControllerTest, CommitPlainTextWithIme_Text_SpanInsert) {

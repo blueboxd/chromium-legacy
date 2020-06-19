@@ -5,15 +5,18 @@
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_security_origin.h"
+#include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_breakdown.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/frame_owner.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/page/frame_tree.h"
+#include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -77,7 +80,7 @@ bool MeasureMemoryDelegate::ShouldMeasure(v8::Local<v8::Context> context) {
 namespace {
 // Helper functions for constructing a memory measurement result.
 
-const LocalFrame* GetFrame(v8::Local<v8::Context> context) {
+LocalFrame* GetLocalFrame(v8::Local<v8::Context> context) {
   LocalDOMWindow* window = ToLocalDOMWindow(context);
   if (!window) {
     // The context was detached. Ignore it.
@@ -86,17 +89,63 @@ const LocalFrame* GetFrame(v8::Local<v8::Context> context) {
   return window->GetFrame();
 }
 
-String GetUrl(const LocalFrame* frame) {
-  if (frame->IsCrossOriginToParentFrame()) {
-    // The function must be called only for the first cross-origin iframe on
-    // the path down from the main frame. Thus the parent frame is guaranteed
-    // to be the same origin as the main frame.
-    DCHECK(!frame->Tree().Parent() ||
-           !frame->Tree().Parent()->IsCrossOriginToMainFrame());
-    base::Optional<String> url = frame->FirstUrlCrossOriginToParent();
-    return url ? url.value() : "";
+// Returns true if all frames on the path from the main frame to
+// the given frame (excluding the given frame) have the same origin.
+bool AllAncestorsAndOpenersAreSameOrigin(const WebFrame* main_frame,
+                                         const WebFrame* frame) {
+  while (frame != main_frame) {
+    frame = frame->Parent() ? frame->Parent() : frame->Opener();
+    if (!main_frame->GetSecurityOrigin().CanAccess(frame->GetSecurityOrigin()))
+      return false;
   }
-  return frame->GetDocument()->Url().GetString();
+  return true;
+}
+
+// Returns the URL corresponding to the given frame. It is:
+// - document's URL if the frame is a same-origin top frame.
+// - the src attribute of the owner iframe element if the frame is
+//   an iframe.
+// - nullopt, otherwise.
+// Preconditions:
+// - If the frame is cross-origin, then all its ancestors/openers
+//   must be of the same origin as the main frame.
+// - The frame must be attached to the DOM tree and the main frame
+//   must be reachable via child => parent and openee => opener edges.
+String GetUrl(const WebFrame* main_frame, const WebFrame* frame) {
+  DCHECK(AllAncestorsAndOpenersAreSameOrigin(main_frame, frame));
+  if (!frame->Parent()) {
+    // TODO(ulan): Turn this conditional into a DCHECK once the API
+    // is gated behind COOP+COEP. Only same-origin frames can appear here.
+    if (!main_frame->GetSecurityOrigin().CanAccess(frame->GetSecurityOrigin()))
+      return {};
+    // The frame must be local because it is in the same browsing context
+    // group as the main frame and has the same origin.
+    // Check to avoid memory corruption in the case if our invariant is off.
+    CHECK(IsA<LocalFrame>(WebFrame::ToCoreFrame(*frame)));
+    LocalFrame* local = To<LocalFrame>(WebFrame::ToCoreFrame(*frame));
+    return local->GetDocument()->Url().GetString();
+  }
+  FrameOwner* frame_owner = WebFrame::ToCoreFrame(*frame)->Owner();
+  // The frame owner must be local because the parent of the frame has
+  // the same origin as the main frame. Also the frame cannot be provisional
+  // here because it is attached and has a document.
+  // Check to avoid of memory corruption in the case if our invariant is off.
+  CHECK(IsA<HTMLFrameOwnerElement>(frame_owner));
+  HTMLFrameOwnerElement* owner_element = To<HTMLFrameOwnerElement>(frame_owner);
+  switch (owner_element->OwnerType()) {
+    case mojom::blink::FrameOwnerElementType::kIframe:
+      return owner_element->getAttribute(html_names::kSrcAttr);
+    case mojom::blink::FrameOwnerElementType::kObject:
+    case mojom::blink::FrameOwnerElementType::kEmbed:
+    case mojom::blink::FrameOwnerElementType::kFrame:
+    case mojom::blink::FrameOwnerElementType::kPortal:
+      // TODO(ulan): return the data/src attribute after adding tests.
+      return {};
+    case mojom::blink::FrameOwnerElementType::kNone:
+      // The main frame was handled as a local frame above.
+      NOTREACHED();
+      return {};
+  }
 }
 
 // To avoid information leaks cross-origin iframes are considered opaque for
@@ -104,50 +153,59 @@ String GetUrl(const LocalFrame* frame) {
 // in a cross-origin iframe is attributed to the cross-origin iframe.
 // See https://github.com/WICG/performance-measure-memory for more details.
 //
-// Given the main frame and the current context, this function walks up the
-// tree and finds the topmost cross-origin ancestor frame in the path.
-// If that doesn't exist, then all frames in the path are same-origin,
-// so the frame corresponding to the current context is returned.
+// Given the main frame and a frame, this function find the first cross-origin
+// frame in the path from the main frame to the given frame. Edges in the path
+// are parent/child and opener/openee edges.
+// If the path doesn't exist then it returns nullptr.
+// If there are no cross-origin frames, then it returns the given frame.
 //
-// The function returns nullptr if the context was detached.
-const LocalFrame* GetAttributionFrame(const LocalFrame* main_frame,
-                                      v8::Local<v8::Context> context) {
-  const LocalFrame* frame = GetFrame(context);
-  if (!frame) {
-    // The context was detached. Ignore it.
-    return nullptr;
-  }
-  if (&frame->Tree().Top() != main_frame) {
-    // This can happen if the frame was detached.
-    // See the comment in FrameTree::Top().
-    return nullptr;
-  }
-  // Walk up the tree and find the topmost cross-origin ancestor frame.
-  const LocalFrame* result = frame;
-  // The parent is guaranteed to be LocalFrame because |frame| and
-  // |main_frame| belong to the same JS agent.
-  frame = To<LocalFrame>(frame->Tree().Parent());
-  while (frame) {
-    if (frame->IsCrossOriginToMainFrame())
+// Precondition: the frame must be attached to the DOM tree.
+const WebFrame* GetAttributionFrame(const WebFrame* main_frame,
+                                    const WebFrame* frame) {
+  WebSecurityOrigin main_security_origin = main_frame->GetSecurityOrigin();
+  // Walk up the tree and the openers to find the first cross-origin frame
+  // on the path from the main frame to the given frame.
+  const WebFrame* result = frame;
+  while (frame != main_frame) {
+    if (frame->Parent()) {
+      frame = frame->Parent();
+    } else if (frame->Opener()) {
+      frame = frame->Opener();
+    } else {
+      // The opener was reset. We cannot get the attribution.
+      return nullptr;
+    }
+    if (!main_security_origin.CanAccess(frame->GetSecurityOrigin()))
       result = frame;
-    frame = To<LocalFrame>(frame->Tree().Parent());
   }
+  // The result frame must be attached because we started from an attached
+  // frame (precondition) and followed the parent and opener references until
+  // the main frame, which is also attached.
+  DCHECK(WebFrame::ToCoreFrame(*result)->IsAttached());
   return result;
 }
 
 // Return per-frame sizes based on the given per-context size.
 // TODO(ulan): Revisit this after Origin Trial and see if the results
 // are precise enough or if we need to additionally group by JS agent.
-HeapHashMap<Member<const LocalFrame>, size_t> GroupByFrame(
-    const LocalFrame* main_frame,
-    const std::vector<std::pair<v8::Local<v8::Context>, size_t>>&
-        context_sizes) {
-  HeapHashMap<Member<const LocalFrame>, size_t> per_frame;
+HashMap<const WebFrame*, size_t> GroupByFrame(
+    const WebFrame* main_frame,
+    const std::vector<std::pair<v8::Local<v8::Context>, size_t>>& context_sizes,
+    size_t& detached_size,
+    size_t& unknown_frame_size) {
+  detached_size = 0;
+  unknown_frame_size = 0;
+  HashMap<const WebFrame*, size_t> per_frame;
   for (const auto& context_size : context_sizes) {
-    const LocalFrame* frame =
-        GetAttributionFrame(main_frame, context_size.first);
+    const WebFrame* frame =
+        WebFrame::FromFrame(GetLocalFrame(context_size.first));
     if (!frame) {
-      // The context was detached. Ignore it.
+      detached_size += context_size.second;
+      continue;
+    }
+    frame = GetAttributionFrame(main_frame, frame);
+    if (!frame) {
+      unknown_frame_size += context_size.second;
       continue;
     }
     auto it = per_frame.find(frame);
@@ -183,12 +241,12 @@ void MeasureMemoryDelegate::MeasurementComplete(
     return;
   }
   v8::Local<v8::Context> context = context_.NewLocal(isolate_);
-  const LocalFrame* frame = GetFrame(context);
-  if (!frame) {
+  const WebFrame* main_frame = WebFrame::FromFrame(GetLocalFrame(context));
+  if (!main_frame) {
     // The context was detached in the meantime.
     return;
   }
-  DCHECK(frame->IsMainFrame());
+  DCHECK(!main_frame->Parent());
   v8::Context::Scope context_scope(context);
   size_t total_size = 0;
   for (const auto& context_size : context_sizes) {
@@ -197,23 +255,38 @@ void MeasureMemoryDelegate::MeasurementComplete(
   MeasureMemory* result = MeasureMemory::Create();
   result->setBytes(total_size + unattributed_size);
   HeapVector<Member<MeasureMemoryBreakdown>> breakdown;
-  HeapHashMap<Member<const LocalFrame>, size_t> per_frame(
-      GroupByFrame(frame, context_sizes));
+  size_t detached_size;
+  size_t unknown_frame_size;
+  HashMap<const WebFrame*, size_t> per_frame(GroupByFrame(
+      main_frame, context_sizes, detached_size, unknown_frame_size));
   size_t attributed_size = 0;
   const String kWindow("Window");
   const String kJS("JS");
+  const Vector<String> js_window_types = {kWindow, kJS};
   for (const auto& it : per_frame) {
+    String url = GetUrl(main_frame, it.key);
+    if (url.IsNull()) {
+      unknown_frame_size += it.value;
+      continue;
+    }
     attributed_size += it.value;
-    breakdown.push_back(CreateMeasureMemoryBreakdown(
-        it.value, Vector<String>{kWindow, kJS}, GetUrl(it.key)));
+    breakdown.push_back(
+        CreateMeasureMemoryBreakdown(it.value, js_window_types, url));
   }
-  const String kDetached("Detached");
-  const String kShared("Shared");
-  size_t detached_size = total_size - attributed_size;
-  breakdown.push_back(CreateMeasureMemoryBreakdown(
-      detached_size, Vector<String>{kWindow, kJS, kDetached}, ""));
-  breakdown.push_back(CreateMeasureMemoryBreakdown(
-      unattributed_size, Vector<String>{kWindow, kJS, kShared}, ""));
+  if (detached_size) {
+    const String kDetached("Detached");
+    breakdown.push_back(CreateMeasureMemoryBreakdown(
+        detached_size, Vector<String>{kWindow, kJS, kDetached}, ""));
+  }
+  if (unattributed_size) {
+    const String kShared("Shared");
+    breakdown.push_back(CreateMeasureMemoryBreakdown(
+        unattributed_size, Vector<String>{kWindow, kJS, kShared}, ""));
+  }
+  if (unknown_frame_size) {
+    breakdown.push_back(CreateMeasureMemoryBreakdown(
+        unknown_frame_size, Vector<String>{kWindow, kJS}, ""));
+  }
   result->setBreakdown(breakdown);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);

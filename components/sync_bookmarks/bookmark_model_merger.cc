@@ -588,6 +588,7 @@ void BookmarkModelMerger::MergeSubtree(
   if (!local_subtree_root->is_permanent_node() &&
       IsFullTitleReuploadNeeded(remote_update_entity.specifics.bookmark())) {
     bookmark_tracker_->IncrementSequenceNumber(entity);
+    ++valid_updates_without_full_title_;
   }
 
   // If there are remote child updates, try to match them.
@@ -740,6 +741,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
       specifics);
   if (IsFullTitleReuploadNeeded(specifics.bookmark())) {
     bookmark_tracker_->IncrementSequenceNumber(entity);
+    ++valid_updates_without_full_title_;
   }
 
   // Recursively, match by GUID or, if not possible, create local node for all

@@ -52,6 +52,10 @@ class BookmarkRemoteUpdatesHandler {
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdatesForTest(
       const syncer::UpdateResponseDataList* updates);
 
+  size_t valid_updates_without_full_title_for_uma() const {
+    return valid_updates_without_full_title_;
+  }
+
  private:
   // Reorders incoming updates such that parent creation is before child
   // creation and child deletion is before parent deletion, and deletions should
@@ -113,6 +117,9 @@ class BookmarkRemoteUpdatesHandler {
   bookmarks::BookmarkModel* const bookmark_model_;
   favicon::FaviconService* const favicon_service_;
   SyncedBookmarkTracker* const bookmark_tracker_;
+
+  // Counts number of initiated reuploads.
+  size_t valid_updates_without_full_title_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkRemoteUpdatesHandler);
 };

@@ -49,11 +49,16 @@ const char kEngagementPrefsPrefix[] = "plugin_vm.metrics";
 const char kPluginVmDataCollectionAllowed[] =
     "plugin_vm.data_collection_allowed";
 
+// A uint64 preference indicating free disk space (in GB) required in order to
+// proceed with Plugin VM installation
+const char kPluginVmRequiredFreeDiskSpaceGB[] =
+    "plugin_vm.required_free_disk_space";
+constexpr int64_t kDefaultRequiredFreeDiskSpaceGB = 20LL;
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPluginVmAllowed, false);
   registry->RegisterDictionaryPref(kPluginVmImage);
   registry->RegisterBooleanPref(kPluginVmImageExists, false);
-
   // TODO(crbug.com/1066760): For convenience this currently defaults to true,
   // but we'll need to revisit before launch.
   registry->RegisterBooleanPref(kPluginVmPrintersAllowed, true);
@@ -61,6 +66,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPluginVmMicrophoneAllowed, false);
   registry->RegisterStringPref(kPluginVmUserId, std::string());
   registry->RegisterBooleanPref(kPluginVmDataCollectionAllowed, false);
+  registry->RegisterInt64Pref(kPluginVmRequiredFreeDiskSpaceGB,
+                              kDefaultRequiredFreeDiskSpaceGB);
 
   guest_os::prefs::RegisterEngagementProfilePrefs(registry,
                                                   kEngagementPrefsPrefix);

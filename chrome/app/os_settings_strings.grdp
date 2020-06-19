@@ -2452,10 +2452,10 @@
     Looks like <ph name="WIDTH">$1<ex>1600</ex></ph> x <ph name="HEIGHT">$2<ex>1200</ex></ph> (Default)
   </message>
   <message name="IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MINIMUM" desc="In Device Settings > Displays, the label of the minimum value for the display size slider">
-    Tiny
+    Small
   </message>
   <message name="IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MAXIMUM" desc="In Device Settings > Displays, the label of the maximum value for the display size slider">
-    Huge
+    Large
   </message>
   <message name="IDS_SETTINGS_DISPLAY_SCREEN" desc="In Device Settings > Displays, the label for the dropdown menu for changing the dispay type.">
     Screen

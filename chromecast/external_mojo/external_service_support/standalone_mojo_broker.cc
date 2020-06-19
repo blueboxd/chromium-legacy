@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
       chromecast::external_mojo::GetBrokerPath());
 
   chromecast::external_service_support::ExternalConnectorImpl tracing_connector(
-      chromecast::external_mojo::GetBrokerPath(), broker.CreateConnector());
+      broker.CreateConnector());
   auto tracing_client =
       chromecast::external_service_support::TracingClient::Create(
           &tracing_connector);

@@ -13,21 +13,28 @@
 The buffering progress line (item 2 above) is omitted here, because it is not needed due to the fact
 that the videos are all readily available on disk and don't need to be downloaded. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@android:id/background">
-        <shape android:shape="line">
-            <stroke
-                android:color="@color/modern_grey_500"
-                android:width="@dimen/photo_picker_seek_bar_thickness" />
+    <item android:id="@android:id/background"
+        android:gravity="center_vertical|fill_horizontal">
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/photo_picker_seek_bar_edge_radius" />
+            <size android:height="@dimen/photo_picker_seek_bar_thickness" />
+            <gradient
+                android:angle="90"
+                android:startColor="@color/modern_grey_500"
+                android:endColor="@color/modern_grey_500" />
         </shape>
     </item>
 
-    <!-- @android:id/secondaryProgress can also be added, but is not necessary here. -->
-    <item android:id="@android:id/progress">
+    <item android:id="@android:id/progress"
+        android:gravity="center_vertical|fill_horizontal">
         <clip>
-            <shape android:shape="line">
-                <stroke
-                    android:color="@color/default_primary_color"
-                    android:width="@dimen/photo_picker_seek_bar_thickness" />
+            <shape android:shape="rectangle">
+                <corners android:radius="@dimen/photo_picker_seek_bar_edge_radius" />
+                <size android:height="@dimen/photo_picker_seek_bar_thickness" />
+                <gradient
+                    android:angle="90"
+                    android:startColor="@color/default_primary_color"
+                    android:endColor="@color/default_primary_color" />
             </shape>
         </clip>
     </item>

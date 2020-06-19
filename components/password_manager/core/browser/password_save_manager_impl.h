@@ -72,7 +72,8 @@ class PasswordSaveManagerImpl : public PasswordSaveManager {
   // Signals that the user cancels password generation.
   void PasswordNoLongerGenerated() override;
 
-  void MoveCredentialsToAccountStore() override;
+  void MoveCredentialsToAccountStore(
+      metrics_util::MoveToAccountStoreTrigger) override;
 
   void BlockMovingToAccountStoreFor(
       const autofill::GaiaIdHash& gaia_id_hash) override;

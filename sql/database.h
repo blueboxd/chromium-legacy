@@ -88,6 +88,23 @@ class COMPONENT_EXPORT(SQL) Database {
     cache_size_ = cache_size;
   }
 
+  // Returns whether a database will be opened in WAL mode.
+  bool UseWALMode() const;
+
+  // Enables/disables WAL mode (https://www.sqlite.org/wal.html) when
+  // opening a new database.
+  //
+  // WAL mode is currently not fully supported on FuchsiaOS. It will only be
+  // turned on if the database is also using exclusive locking mode.
+  // (https://crbug.com/1082059)
+  //
+  // Note: Changing page size is not supported when in WAL mode. So running
+  // 'PRAGMA page_size = <new-size>' or using set_page_size will result in
+  // no-ops.
+  //
+  // This must be called before Open() to have an effect.
+  void want_wal_mode(bool enabled) { want_wal_mode_ = enabled; }
+
   // Call to put the database in exclusive locking mode. There is no "back to
   // normal" flag because of some additional requirements sqlite puts on this
   // transaction (requires another access to the DB) and because we don't
@@ -396,6 +413,14 @@ class COMPONENT_EXPORT(SQL) Database {
   // See GetCachedStatement above for examples and error information.
   scoped_refptr<StatementRef> GetUniqueStatement(const char* sql);
 
+  // Performs a passive checkpoint on the main attached database if it is in
+  // WAL mode. Returns true if the checkpoint was successful and false in case
+  // of an error. It is a no-op if the database is not in WAL mode.
+  //
+  // Note: Checkpointing is a very slow operation and will block any writes
+  // until it is finished. Please use with care.
+  bool CheckpointDatabase();
+
   // Info querying -------------------------------------------------------------
 
   // Returns true if the given structure exists.  Instead of test-then-create,
@@ -693,7 +718,9 @@ class COMPONENT_EXPORT(SQL) Database {
   // use the default value.
   int page_size_;
   int cache_size_;
+
   bool exclusive_locking_;
+  bool want_wal_mode_;
 
   // Holds references to all cached statements so they remain active.
   //

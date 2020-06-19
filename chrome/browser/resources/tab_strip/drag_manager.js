@@ -359,7 +359,8 @@ class DragSession {
 
     const dragOverTabElement =
         /** @type {!TabElement|undefined} */ (composedPath.find(isTabElement));
-    if (dragOverTabElement && !dragOverTabElement.tab.pinned) {
+    if (dragOverTabElement && !dragOverTabElement.tab.pinned &&
+        dragOverTabElement.isValidDragOverTarget) {
       let dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
       dragOverIndex +=
           this.shouldOffsetIndexForGroup_(dragOverTabElement) ? 1 : 0;
@@ -369,7 +370,7 @@ class DragSession {
 
     const dragOverGroupElement = /** @type {!TabGroupElement|undefined} */ (
         composedPath.find(isTabGroupElement));
-    if (dragOverGroupElement) {
+    if (dragOverGroupElement && dragOverGroupElement.isValidDragOverTarget) {
       let dragOverIndex = this.delegate_.getIndexOfTab(
           /** @type {!TabElement} */ (dragOverGroupElement.firstElementChild));
       dragOverIndex +=
@@ -402,7 +403,8 @@ class DragSession {
     const dragOverTabGroup =
         /** @type {?TabGroupElement} */ (composedPath.find(isTabGroupElement));
     if (dragOverTabGroup &&
-        dragOverTabGroup.dataset.groupId !== previousGroupId) {
+        dragOverTabGroup.dataset.groupId !== previousGroupId &&
+        dragOverTabGroup.isValidDragOverTarget) {
       this.delegate_.placeTabElement(
           tabElement, this.dstIndex, false, dragOverTabGroup.dataset.groupId);
       return;

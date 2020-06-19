@@ -81,8 +81,14 @@ void BoundsAnimator::AnimateViewTo(
   // If the start bounds are empty we cannot derive a transform from start to
   // target. Views with existing transforms are not supported. Default back to
   // using the bounds update animation in these cases.
+  // Note that transform is not used if bounds animation requires scaling.
+  // Because for some views, their children cannot be scaled with the same scale
+  // factor. For example, ShelfAppButton's size in normal state and dense state
+  // is 56 and 48 respectively while the size of icon image, the child of
+  // ShelfAppButton, is 44 and 36 respectively.
   if (use_transforms_ && !data.start_bounds.IsEmpty() &&
-      view->GetTransform().IsIdentity()) {
+      view->GetTransform().IsIdentity() &&
+      data.start_bounds.size() == data.target_bounds.size()) {
     // Calculate the target transform. Note that we don't reset the transform if
     // there already was one, otherwise users will end up with visual bounds
     // different than what they set.

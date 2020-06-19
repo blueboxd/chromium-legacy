@@ -12,7 +12,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.supplier.DestroyableObservableSupplier;
-import org.chromium.chrome.browser.fullscreen.BrowserControlsMarginSupplier;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsMarginSupplier;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;

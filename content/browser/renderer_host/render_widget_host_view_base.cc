@@ -143,10 +143,15 @@ gfx::Size RenderWidgetHostViewBase::GetCompositorViewportPixelSize() {
 }
 
 void RenderWidgetHostViewBase::SelectionBoundsChanged(
-    const WidgetHostMsg_SelectionBounds_Params& params) {
+    const gfx::Rect& anchor_rect,
+    base::i18n::TextDirection anchor_dir,
+    const gfx::Rect& focus_rect,
+    base::i18n::TextDirection focus_dir,
+    bool is_anchor_first) {
 #if !defined(OS_ANDROID)
   if (GetTextInputManager())
-    GetTextInputManager()->SelectionBoundsChanged(this, params);
+    GetTextInputManager()->SelectionBoundsChanged(
+        this, anchor_rect, anchor_dir, focus_rect, focus_dir, is_anchor_first);
 #else
   NOTREACHED() << "Selection bounds should be routed through the compositor.";
 #endif
@@ -700,7 +705,7 @@ RenderWidgetHostViewBase::ExtractAndCancelActiveTouches() {
 }
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
-    const TextInputState& text_input_state) {
+    const ui::mojom::TextInputState& text_input_state) {
   if (GetTextInputManager())
     GetTextInputManager()->UpdateTextInputState(this, text_input_state);
 }

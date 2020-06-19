@@ -402,7 +402,7 @@ void TextInputController::ForceTextInputStateUpdate() {
   CHECK(main_frame) << "WebView does not have a local main frame and"
                     << " cannot handle input method controller tasks.";
   RenderWidget* main_widget = main_frame->GetLocalRootRenderWidget();
-  main_widget->ShowVirtualKeyboard();
+  main_widget->GetWebWidget()->ShowVirtualKeyboard();
 }
 
 blink::WebView* TextInputController::view() {

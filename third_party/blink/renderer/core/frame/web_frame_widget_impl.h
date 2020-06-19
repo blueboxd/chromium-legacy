@@ -99,7 +99,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void SetCursorVisibilityState(bool is_visible) override;
 
   void MouseCaptureLost() override;
-  void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
   void SetRemoteViewportIntersection(const ViewportIntersectionState&) override;
   void SetIsInertForSubFrame(bool) override;
@@ -145,6 +144,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void BeginCommitCompositorFrame() override;
   void EndCommitCompositorFrame(base::TimeTicks commit_start_time) override;
   void DidBeginMainFrame() override;
+  void FocusChanged(bool enable) override;
 
   void UpdateMainFrameLayoutSize();
 

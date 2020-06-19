@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/input_messages.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -25,6 +24,7 @@
 #include "ui/base/ime/ime_text_span.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_observer.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 
 #if defined(USE_AURA)
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
@@ -234,9 +234,10 @@ class InputMethodObserverAura : public TestInputMethodObserver,
 #endif
 
 ui::TextInputType GetTextInputTypeFromWebContents(WebContents* web_contents) {
-  const TextInputState* state = static_cast<WebContentsImpl*>(web_contents)
-                                    ->GetTextInputManager()
-                                    ->GetTextInputState();
+  const ui::mojom::TextInputState* state =
+      static_cast<WebContentsImpl*>(web_contents)
+          ->GetTextInputManager()
+          ->GetTextInputState();
   return !!state ? state->type : ui::TEXT_INPUT_TYPE_NONE;
 }
 
@@ -352,7 +353,7 @@ void TextInputManagerTester::SetOnTextSelectionChangedCallback(
 
 bool TextInputManagerTester::GetTextInputType(ui::TextInputType* type) {
   DCHECK(observer_->text_input_manager());
-  const TextInputState* state =
+  const ui::mojom::TextInputState* state =
       observer_->text_input_manager()->GetTextInputState();
   if (!state)
     return false;
@@ -362,18 +363,21 @@ bool TextInputManagerTester::GetTextInputType(ui::TextInputType* type) {
 
 bool TextInputManagerTester::GetTextInputValue(std::string* value) {
   DCHECK(observer_->text_input_manager());
-  const TextInputState* state =
+  const ui::mojom::TextInputState* state =
       observer_->text_input_manager()->GetTextInputState();
   if (!state)
     return false;
-  *value = base::UTF16ToUTF8(state->value);
+  if (state->value)
+    *value = base::UTF16ToUTF8(*state->value);
+  else
+    *value = std::string();
   return true;
 }
 
 bool TextInputManagerTester::GetTextInputVkPolicy(
     ui::mojom::VirtualKeyboardPolicy* vk_policy) {
   DCHECK(observer_->text_input_manager());
-  const TextInputState* state =
+  const ui::mojom::TextInputState* state =
       observer_->text_input_manager()->GetTextInputState();
   if (!state)
     return false;
@@ -384,7 +388,7 @@ bool TextInputManagerTester::GetTextInputVkPolicy(
 bool TextInputManagerTester::GetTextInputVkVisibilityRequest(
     ui::mojom::VirtualKeyboardVisibilityRequest* last_vk_visibility_request) {
   DCHECK(observer_->text_input_manager());
-  const TextInputState* state =
+  const ui::mojom::TextInputState* state =
       observer_->text_input_manager()->GetTextInputState();
   if (!state)
     return false;
@@ -395,7 +399,7 @@ bool TextInputManagerTester::GetTextInputVkVisibilityRequest(
 bool TextInputManagerTester::GetTextInputShowImeIfNeeded(
     bool* show_ime_if_needed) {
   DCHECK(observer_->text_input_manager());
-  const TextInputState* state =
+  const ui::mojom::TextInputState* state =
       observer_->text_input_manager()->GetTextInputState();
   if (!state)
     return false;
@@ -446,7 +450,7 @@ void TestRenderWidgetHostViewDestructionObserver::Wait() {
 }
 
 TextInputStateSender::TextInputStateSender(RenderWidgetHostView* view)
-    : text_input_state_(new TextInputState()),
+    : text_input_state_(ui::mojom::TextInputState::New()),
       view_(static_cast<RenderWidgetHostViewBase*>(view)) {}
 
 TextInputStateSender::~TextInputStateSender() {}

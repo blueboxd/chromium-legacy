@@ -4194,6 +4194,9 @@ void LocalFrameView::InvalidateForThrottlingChange() {
     layout_view->AddSubtreePaintPropertyUpdateReason(
         SubtreePaintPropertyUpdateReason::kPreviouslySkipped);
   }
+  // Ensure we'll recompute viewport intersection for the frame subtree during
+  // the scheduled visual update.
+  SetIntersectionObservationState(kRequired);
 }
 
 void LocalFrameView::SetNeedsForcedCompositingUpdate() {

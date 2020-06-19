@@ -152,6 +152,42 @@ class BoundsAnimatorTest : public testing::Test {
     animator_->SetAnimationDuration(base::TimeDelta::FromMilliseconds(10));
   }
 
+  // Animates |child_| to |target_bounds|. Returns the repaint time.
+  // |use_long_duration| indicates whether long or short bounds animation is
+  // created.
+  int GetRepaintTimeFromBoundsAnimation(const gfx::Rect& target_bounds,
+                                        bool use_long_duration) {
+    child()->set_repaint_count(0);
+
+    const base::TimeDelta animation_duration =
+        base::TimeDelta::FromMilliseconds(use_long_duration ? 2000 : 10);
+    animator()->SetAnimationDuration(animation_duration);
+
+    animator()->AnimateViewTo(child(), target_bounds);
+    animator()->SetAnimationDelegate(child(),
+                                     std::make_unique<TestAnimationDelegate>());
+
+    // The animator should be animating now.
+    EXPECT_TRUE(animator()->IsAnimating());
+    EXPECT_TRUE(animator()->IsAnimating(child()));
+
+    // Run the message loop; the delegate exits the loop when the animation is
+    // done.
+    if (use_long_duration)
+      task_environment_.FastForwardBy(animation_duration);
+    base::RunLoop().Run();
+
+    // Make sure the bounds match of the view that was animated match and the
+    // layer is destroyed.
+    EXPECT_EQ(target_bounds, child()->bounds());
+    EXPECT_FALSE(child()->layer());
+
+    // |child| shouldn't be animating anymore.
+    EXPECT_FALSE(animator()->IsAnimating(child()));
+
+    return child()->repaint_count();
+  }
+
   base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
@@ -271,47 +307,57 @@ TEST_F(BoundsAnimatorTest, StopAnimating) {
   EXPECT_TRUE(OwnedDelegate::GetAndClearCanceled());
 }
 
-// Tests using the transforms option.
+// Verify that transform is used when the animation target bounds have the
+// same size with the current bounds' meanwhile having the transform option
+// enabled.
 TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewTo) {
   RecreateAnimator(/*use_transforms=*/true);
 
-  gfx::Rect initial_bounds(0, 0, 10, 10);
+  const gfx::Rect initial_bounds(0, 0, 10, 10);
   child()->SetBoundsRect(initial_bounds);
-  gfx::Rect target_bounds(10, 10, 20, 20);
 
-  child()->set_repaint_count(0);
-  animator()->AnimateViewTo(child(), target_bounds);
-  animator()->SetAnimationDelegate(child(),
-                                   std::make_unique<TestAnimationDelegate>());
+  // Ensure that the target bounds have the same size with the initial bounds'
+  // to apply transform to bounds animation.
+  const gfx::Rect target_bounds_without_resize(gfx::Point(10, 10),
+                                               initial_bounds.size());
 
-  // The animator should be animating now.
-  EXPECT_TRUE(animator()->IsAnimating());
-  EXPECT_TRUE(animator()->IsAnimating(child()));
+  const int repaint_time_from_short_animation =
+      GetRepaintTimeFromBoundsAnimation(target_bounds_without_resize,
+                                        /*use_long_duration=*/false);
+  const int repaint_time_from_long_animation =
+      GetRepaintTimeFromBoundsAnimation(initial_bounds,
+                                        /*use_long_duration=*/true);
 
-  // Run the message loop; the delegate exits the loop when the animation is
-  // done.
-  base::RunLoop().Run();
+  // The number of repaints in long animation should be the same as with the
+  // short animation.
+  EXPECT_EQ(repaint_time_from_short_animation,
+            repaint_time_from_long_animation);
+}
 
-  // Make sure the bounds match of the view that was animated match and the
-  // layer is destroyed.
-  EXPECT_EQ(target_bounds, child()->bounds());
-  EXPECT_FALSE(child()->layer());
+// Verify that transform is not used when the animation target bounds have the
+// different size from the current bounds' even if transform is preferred.
+TEST_F(BoundsAnimatorTest, NoTransformForScalingAnimation) {
+  RecreateAnimator(/*use_transforms=*/true);
 
-  // |child| shouldn't be animating anymore.
-  EXPECT_FALSE(animator()->IsAnimating(child()));
+  const gfx::Rect initial_bounds(0, 0, 10, 10);
+  child()->SetBoundsRect(initial_bounds);
 
-  // Schedule a longer animation. The number of repaints should be the same as
-  // with the short animation.
-  const base::TimeDelta long_duration = base::TimeDelta::FromMilliseconds(2000);
-  const int repaint_count = child()->repaint_count();
-  animator()->SetAnimationDuration(long_duration);
-  child()->set_repaint_count(0);
-  animator()->AnimateViewTo(child(), initial_bounds);
-  animator()->SetAnimationDelegate(child(),
-                                   std::make_unique<TestAnimationDelegate>());
-  task_environment_.FastForwardBy(long_duration);
-  base::RunLoop().Run();
-  EXPECT_EQ(repaint_count, child()->repaint_count());
+  // Ensure that the target bounds have the different size with the initial
+  // bounds' to repaint bounds in each animation tick.
+  const gfx::Rect target_bounds_with_reize(gfx::Point(10, 10),
+                                           gfx::Size(20, 20));
+
+  const int repaint_time_from_short_animation =
+      GetRepaintTimeFromBoundsAnimation(target_bounds_with_reize,
+                                        /*use_long_duration=*/false);
+  const int repaint_time_from_long_animation =
+      GetRepaintTimeFromBoundsAnimation(initial_bounds,
+                                        /*use_long_duration=*/true);
+
+  // When creating bounds animation with repaint, the longer bounds animation
+  // should have more repaint counts.
+  EXPECT_GT(repaint_time_from_long_animation,
+            repaint_time_from_short_animation);
 }
 
 // Tests that the transforms option does not crash when a view's bounds start
@@ -343,9 +389,12 @@ TEST_F(BoundsAnimatorTest, UseTransformsAnimateViewToEmptySrc) {
 TEST_F(BoundsAnimatorTest, UseTransformsCancelAnimation) {
   RecreateAnimator(/*use_transforms=*/true);
 
-  gfx::Rect initial_bounds(0, 0, 10, 10);
+  // Ensure that |initial_bounds| has the same size with |target_bounds| to
+  // create bounds animation via the transform.
+  const gfx::Rect initial_bounds(0, 0, 10, 10);
+  const gfx::Rect target_bounds(10, 10, 10, 10);
+
   child()->SetBoundsRect(initial_bounds);
-  gfx::Rect target_bounds(10, 10, 20, 20);
 
   const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(200);
   animator()->SetAnimationDuration(duration);
@@ -359,7 +408,7 @@ TEST_F(BoundsAnimatorTest, UseTransformsCancelAnimation) {
 
   // Stop halfway and cancel. The child should have its bounds updated to
   // exactly halfway between |initial_bounds| and |target_bounds|.
-  const gfx::Rect expected_bounds(5, 5, 15, 15);
+  const gfx::Rect expected_bounds(5, 5, 10, 10);
   task_environment_.FastForwardBy(base::TimeDelta::FromMilliseconds(100));
   EXPECT_EQ(initial_bounds, child()->bounds());
   animator()->Cancel();

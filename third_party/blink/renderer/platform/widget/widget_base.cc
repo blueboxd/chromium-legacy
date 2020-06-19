@@ -15,14 +15,19 @@
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/widget/widget_base_client.h"
+#include "ui/base/ime/mojom/text_input_state.mojom-blink.h"
 #include "ui/gfx/presentation_feedback.h"
 
 namespace blink {
 
 namespace {
+
+static const int kInvalidNextPreviousFlagsValue = -1;
 
 scoped_refptr<base::SingleThreadTaskRunner> GetCleanupTaskRunner() {
   if (auto* main_thread_scheduler =
@@ -37,6 +42,28 @@ void OnDidPresentForceDrawFrame(
     mojom::blink::Widget::ForceRedrawCallback callback,
     const gfx::PresentationFeedback& feedback) {
   std::move(callback).Run();
+}
+
+bool IsDateTimeInput(ui::TextInputType type) {
+  return type == ui::TEXT_INPUT_TYPE_DATE ||
+         type == ui::TEXT_INPUT_TYPE_DATE_TIME ||
+         type == ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL ||
+         type == ui::TEXT_INPUT_TYPE_MONTH ||
+         type == ui::TEXT_INPUT_TYPE_TIME || type == ui::TEXT_INPUT_TYPE_WEEK;
+}
+
+ui::TextInputType ConvertWebTextInputType(blink::WebTextInputType type) {
+  // Check the type is in the range representable by ui::TextInputType.
+  DCHECK_LE(type, static_cast<int>(ui::TEXT_INPUT_TYPE_MAX))
+      << "blink::WebTextInputType and ui::TextInputType not synchronized";
+  return static_cast<ui::TextInputType>(type);
+}
+
+ui::TextInputMode ConvertWebTextInputMode(blink::WebTextInputMode mode) {
+  // Check the mode is in the range representable by ui::TextInputMode.
+  DCHECK_LE(mode, static_cast<int>(ui::TEXT_INPUT_MODE_MAX))
+      << "blink::WebTextInputMode and ui::TextInputMode not synchronized";
+  return static_cast<ui::TextInputMode>(mode);
 }
 
 }  // namespace
@@ -218,8 +245,15 @@ void WidgetBase::EndUpdateLayers() {
 }
 
 void WidgetBase::WillBeginMainFrame() {
+  TRACE_EVENT0("gpu", "WidgetBase::WillBeginMainFrame");
   client_->SetSuppressFrameRequestsWorkaroundFor704763Only(true);
   client_->WillBeginMainFrame();
+  UpdateSelectionBounds();
+
+  // The UpdateTextInputState can result in further layout and possibly
+  // enable GPU acceleration so they need to be called before any painting
+  // is done.
+  UpdateTextInputState();
 }
 
 void WidgetBase::SubmitThroughputData(ukm::SourceId source_id,
@@ -284,14 +318,155 @@ void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
                                ToBaseTextDirection(dir));
 }
 
+void WidgetBase::ShowVirtualKeyboard() {
+  UpdateTextInputStateInternal(true, false);
+}
+
+void WidgetBase::UpdateTextInputState() {
+  UpdateTextInputStateInternal(false, false);
+}
+
+bool WidgetBase::CanComposeInline() {
+  FrameWidget* frame_widget = client_->FrameWidget();
+  if (!frame_widget)
+    return true;
+  return frame_widget->Client()->CanComposeInline();
+}
+
+void WidgetBase::UpdateTextInputStateInternal(bool show_virtual_keyboard,
+                                              bool reply_to_request) {
+  TRACE_EVENT0("renderer", "WidgetBase::UpdateTextInputStateInternal");
+  if (client_->HasCurrentImeGuard(show_virtual_keyboard)) {
+    DCHECK(!reply_to_request);
+    return;
+  }
+  ui::TextInputType new_type = GetTextInputType();
+  if (IsDateTimeInput(new_type))
+    return;  // Not considered as a text input field in WebKit/Chromium.
+
+  FrameWidget* frame_widget = client_->FrameWidget();
+
+  blink::WebTextInputInfo new_info;
+  ui::mojom::VirtualKeyboardVisibilityRequest last_vk_visibility_request =
+      ui::mojom::VirtualKeyboardVisibilityRequest::NONE;
+  bool always_hide_ime = false;
+  if (frame_widget) {
+    new_info = frame_widget->TextInputInfo();
+    // This will be used to decide whether or not to show VK when VK policy is
+    // manual.
+    last_vk_visibility_request =
+        frame_widget->GetLastVirtualKeyboardVisibilityRequest();
+
+    // Check whether the keyboard should always be hidden for the currently
+    // focused element.
+    always_hide_ime = frame_widget->ShouldSuppressKeyboardForFocusedElement();
+  }
+  const ui::TextInputMode new_mode =
+      ConvertWebTextInputMode(new_info.input_mode);
+  const ui::mojom::VirtualKeyboardPolicy new_vk_policy =
+      new_info.virtual_keyboard_policy;
+  bool new_can_compose_inline = CanComposeInline();
+
+  // Only sends text input params if they are changed or if the ime should be
+  // shown.
+  if (show_virtual_keyboard || reply_to_request ||
+      text_input_type_ != new_type || text_input_mode_ != new_mode ||
+      text_input_info_ != new_info ||
+      can_compose_inline_ != new_can_compose_inline ||
+      always_hide_ime_ != always_hide_ime || vk_policy_ != new_vk_policy ||
+      (new_vk_policy == ui::mojom::VirtualKeyboardPolicy::MANUAL &&
+       (last_vk_visibility_request !=
+        ui::mojom::VirtualKeyboardVisibilityRequest::NONE))) {
+    ui::mojom::blink::TextInputStatePtr params =
+        ui::mojom::blink::TextInputState::New();
+    params->type = new_type;
+    params->mode = new_mode;
+    params->action = new_info.action;
+    params->flags = new_info.flags;
+    params->vk_policy = new_vk_policy;
+    params->last_vk_visibility_request = last_vk_visibility_request;
+    if (frame_widget) {
+      frame_widget->GetEditContextBoundsInWindow(
+          &params->edit_context_control_bounds,
+          &params->edit_context_selection_bounds);
+    }
+#if defined(OS_ANDROID)
+    if (next_previous_flags_ == kInvalidNextPreviousFlagsValue) {
+      // Due to a focus change, values will be reset by the frame.
+      // That case we only need fresh NEXT/PREVIOUS information.
+      // Also we won't send WidgetHostMsg_TextInputStateChanged if next/previous
+      // focusable status is changed.
+      if (frame_widget) {
+        next_previous_flags_ =
+            frame_widget->ComputeWebTextInputNextPreviousFlags();
+      } else {
+        // For safety in case GetInputMethodController() is null, because -1 is
+        // invalid value to send to browser process.
+        next_previous_flags_ = 0;
+      }
+    }
+#else
+    next_previous_flags_ = 0;
+#endif
+    params->flags |= next_previous_flags_;
+    params->value = new_info.value;
+    params->selection =
+        gfx::Range(new_info.selection_start, new_info.selection_end);
+    if (new_info.composition_start != -1) {
+      params->composition =
+          gfx::Range(new_info.composition_start, new_info.composition_end);
+    }
+    params->can_compose_inline = new_can_compose_inline;
+    // TODO(changwan): change instances of show_ime_if_needed to
+    // show_virtual_keyboard.
+    params->show_ime_if_needed = show_virtual_keyboard;
+    params->always_hide_ime = always_hide_ime;
+    params->reply_to_request = reply_to_request;
+    widget_host_->TextInputStateChanged(std::move(params));
+
+    text_input_info_ = new_info;
+    text_input_type_ = new_type;
+    text_input_mode_ = new_mode;
+    vk_policy_ = new_vk_policy;
+    can_compose_inline_ = new_can_compose_inline;
+    always_hide_ime_ = always_hide_ime;
+    text_input_flags_ = new_info.flags;
+    // Reset the show/hide state in the InputMethodController.
+    if (frame_widget) {
+      if (last_vk_visibility_request !=
+          ui::mojom::VirtualKeyboardVisibilityRequest::NONE) {
+        // Reset the visibility state.
+        frame_widget->ResetVirtualKeyboardVisibilityRequest();
+      }
+    }
+
+#if defined(OS_ANDROID)
+    // If we send a new TextInputStateChanged message, we must also deliver a
+    // new RenderFrameMetadata, as the IME will need this info to be updated.
+    // TODO(ericrk): Consider folding the above IPC into RenderFrameMetadata.
+    // https://crbug.com/912309
+    LayerTreeHost()->RequestForceSendMetadata();
+#endif
+  }
+}
+
+void WidgetBase::ClearTextInputState() {
+  text_input_info_ = blink::WebTextInputInfo();
+  text_input_type_ = ui::TextInputType::TEXT_INPUT_TYPE_NONE;
+  text_input_mode_ = ui::TextInputMode::TEXT_INPUT_MODE_DEFAULT;
+  can_compose_inline_ = false;
+  text_input_flags_ = 0;
+  next_previous_flags_ = kInvalidNextPreviousFlagsValue;
+}
+
 void WidgetBase::ShowVirtualKeyboardOnElementFocus() {
 #if defined(OS_CHROMEOS)
   // On ChromeOS, virtual keyboard is triggered only when users leave the
   // mouse button or the finger and a text input element is focused at that
   // time. Focus event itself shouldn't trigger virtual keyboard.
-  client_->UpdateTextInputState();
+  UpdateTextInputState();
 #else
-  client_->ShowVirtualKeyboard();
+  ShowVirtualKeyboard();
 #endif
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
@@ -303,6 +478,135 @@ void WidgetBase::ShowVirtualKeyboardOnElementFocus() {
 
 bool WidgetBase::ProcessTouchAction(cc::TouchAction touch_action) {
   return input_handler_.ProcessTouchAction(touch_action);
+}
+
+void WidgetBase::SetFocus(bool enable) {
+  has_focus_ = enable;
+  client_->FocusChanged(enable);
+}
+
+void WidgetBase::UpdateCompositionInfo(bool immediate_request) {
+  if (!monitor_composition_info_ && !immediate_request)
+    return;  // Do not calculate composition info if not requested.
+
+  TRACE_EVENT0("renderer", "WidgetBase::UpdateCompositionInfo");
+  gfx::Range range;
+  Vector<gfx::Rect> character_bounds;
+
+  if (GetTextInputType() == ui::TextInputType::TEXT_INPUT_TYPE_NONE) {
+    // Composition information is only available on editable node.
+    range = gfx::Range::InvalidRange();
+  } else {
+    GetCompositionRange(&range);
+    GetCompositionCharacterBounds(&character_bounds);
+  }
+
+  if (!immediate_request &&
+      !ShouldUpdateCompositionInfo(range, character_bounds)) {
+    return;
+  }
+  composition_character_bounds_ = character_bounds;
+  composition_range_ = range;
+
+  client_->SendCompositionRangeChanged(
+      composition_range_,
+      std::vector<gfx::Rect>(composition_character_bounds_.begin(),
+                             composition_character_bounds_.end()));
+}
+
+void WidgetBase::ForceTextInputStateUpdate() {
+#if defined(OS_ANDROID)
+  UpdateSelectionBounds();
+  UpdateTextInputStateInternal(false, true /* reply_to_request */);
+#endif
+}
+
+void WidgetBase::RequestCompositionUpdates(bool immediate_request,
+                                           bool monitor_updates) {
+  monitor_composition_info_ = monitor_updates;
+  if (!immediate_request)
+    return;
+  UpdateCompositionInfo(true /* immediate request */);
+}
+
+void WidgetBase::GetCompositionRange(gfx::Range* range) {
+  *range = gfx::Range::InvalidRange();
+  FrameWidget* frame_widget = client_->FrameWidget();
+  if (!frame_widget ||
+      frame_widget->Client()->ShouldDispatchImeEventsToPepper())
+    return;
+  *range = frame_widget->CompositionRange();
+}
+
+void WidgetBase::GetCompositionCharacterBounds(Vector<gfx::Rect>* bounds) {
+  DCHECK(bounds);
+  bounds->clear();
+
+  FrameWidget* frame_widget = client_->FrameWidget();
+  if (!frame_widget ||
+      frame_widget->Client()->ShouldDispatchImeEventsToPepper())
+    return;
+
+  frame_widget->GetCompositionCharacterBoundsInWindow(bounds);
+}
+
+bool WidgetBase::ShouldUpdateCompositionInfo(const gfx::Range& range,
+                                             const Vector<gfx::Rect>& bounds) {
+  if (!range.IsValid())
+    return false;
+  if (composition_range_ != range)
+    return true;
+  if (bounds.size() != composition_character_bounds_.size())
+    return true;
+  for (size_t i = 0; i < bounds.size(); ++i) {
+    if (bounds[i] != composition_character_bounds_[i])
+      return true;
+  }
+  return false;
+}
+
+ui::TextInputType WidgetBase::GetTextInputType() {
+  FrameWidget* frame_widget = client_->FrameWidget();
+  if (!frame_widget)
+    return ui::TextInputType::TEXT_INPUT_TYPE_NONE;
+  return ConvertWebTextInputType(frame_widget->TextInputType());
+}
+
+void WidgetBase::UpdateSelectionBounds() {
+  TRACE_EVENT0("renderer", "WidgetBase::UpdateSelectionBounds");
+  if (client_->HasCurrentImeGuard(false))
+    return;
+#if defined(USE_AURA)
+  // TODO(mohsen): For now, always send explicit selection IPC notifications for
+  // Aura beucause composited selection updates are not working for webview tags
+  // which regresses IME inside webview. Remove this when composited selection
+  // updates are fixed for webviews. See, http://crbug.com/510568.
+  bool send_ipc = true;
+#else
+  // With composited selection updates, the selection bounds will be reported
+  // directly by the compositor, in which case explicit IPC selection
+  // notifications should be suppressed.
+  bool send_ipc = !RuntimeEnabledFeatures::CompositedSelectionUpdateEnabled();
+#endif
+  if (send_ipc) {
+    bool is_anchor_first = false;
+    base::i18n::TextDirection focus_dir =
+        base::i18n::TextDirection::UNKNOWN_DIRECTION;
+    base::i18n::TextDirection anchor_dir =
+        base::i18n::TextDirection::UNKNOWN_DIRECTION;
+
+    FrameWidget* frame_widget = client_->FrameWidget();
+    if (!frame_widget)
+      return;
+    if (frame_widget->GetSelectionBoundsInWindow(
+            &selection_focus_rect_, &selection_anchor_rect_, &focus_dir,
+            &anchor_dir, &is_anchor_first)) {
+      widget_host_->SelectionBoundsChanged(selection_anchor_rect_, anchor_dir,
+                                           selection_focus_rect_, focus_dir,
+                                           is_anchor_first);
+    }
+  }
+  UpdateCompositionInfo(false /* not an immediate request */);
 }
 
 }  // namespace blink

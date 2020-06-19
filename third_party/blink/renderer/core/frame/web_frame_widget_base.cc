@@ -761,6 +761,9 @@ void WebFrameWidgetBase::QueueSyntheticEvent(
 }
 
 WebTextInputType WebFrameWidgetBase::GetTextInputType() {
+  if (Client()->ShouldDispatchImeEventsToPepper())
+    return Client()->GetPepperTextInputType();
+
   WebInputMethodController* controller = GetActiveWebInputMethodController();
   if (!controller)
     return WebTextInputType::kWebTextInputTypeNone;
@@ -771,6 +774,17 @@ void WebFrameWidgetBase::GetWidgetInputHandler(
     mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
     mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) {
   Client()->GetWidgetInputHandler(std::move(request), std::move(host));
+}
+
+bool WebFrameWidgetBase::HasCurrentImeGuard(
+    bool request_to_show_virtual_keyboard) {
+  return Client()->HasCurrentImeGuard(request_to_show_virtual_keyboard);
+}
+
+void WebFrameWidgetBase::SendCompositionRangeChanged(
+    const gfx::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+  Client()->SendCompositionRangeChanged(range, character_bounds);
 }
 
 void WebFrameWidgetBase::ApplyViewportChangesForTesting(
@@ -808,6 +822,31 @@ void WebFrameWidgetBase::ProcessInputEventSynchronously(
     const WebCoalescedInputEvent& event,
     HandledEventCallback callback) {
   widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
+}
+
+void WebFrameWidgetBase::UpdateTextInputState() {
+  widget_base_->UpdateTextInputState();
+}
+
+void WebFrameWidgetBase::ForceTextInputStateUpdate() {
+  widget_base_->ForceTextInputStateUpdate();
+}
+
+void WebFrameWidgetBase::UpdateCompositionInfo() {
+  widget_base_->UpdateCompositionInfo(/*immediate_request=*/false);
+}
+
+void WebFrameWidgetBase::UpdateSelectionBounds() {
+  widget_base_->UpdateSelectionBounds();
+}
+
+void WebFrameWidgetBase::ShowVirtualKeyboard() {
+  widget_base_->ShowVirtualKeyboard();
+}
+
+void WebFrameWidgetBase::RequestCompositionUpdates(bool immediate_request,
+                                                   bool monitor_updates) {
+  widget_base_->RequestCompositionUpdates(immediate_request, monitor_updates);
 }
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
@@ -1090,6 +1129,112 @@ void WebFrameWidgetBase::ClearEditCommands() {
   edit_commands_ = Vector<mojom::blink::EditCommandPtr>();
 }
 
+WebTextInputInfo WebFrameWidgetBase::TextInputInfo() {
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return WebTextInputInfo();
+  return controller->TextInputInfo();
+}
+
+ui::mojom::blink::VirtualKeyboardVisibilityRequest
+WebFrameWidgetBase::GetLastVirtualKeyboardVisibilityRequest() {
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return ui::mojom::blink::VirtualKeyboardVisibilityRequest::NONE;
+  return controller->GetLastVirtualKeyboardVisibilityRequest();
+}
+
+bool WebFrameWidgetBase::ShouldSuppressKeyboardForFocusedElement() {
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame)
+    return false;
+  return focused_frame->ShouldSuppressKeyboardForFocusedElement();
+}
+
+void WebFrameWidgetBase::GetEditContextBoundsInWindow(
+    base::Optional<gfx::Rect>* edit_context_control_bounds,
+    base::Optional<gfx::Rect>* edit_context_selection_bounds) {
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return;
+  WebRect control_bounds;
+  WebRect selection_bounds;
+  controller->GetLayoutBounds(&control_bounds, &selection_bounds);
+  client_->ConvertViewportToWindow(&control_bounds);
+  edit_context_control_bounds->emplace(control_bounds);
+  if (controller->IsEditContextActive()) {
+    client_->ConvertViewportToWindow(&selection_bounds);
+    edit_context_selection_bounds->emplace(selection_bounds);
+  }
+}
+
+int32_t WebFrameWidgetBase::ComputeWebTextInputNextPreviousFlags() {
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return 0;
+  return controller->ComputeWebTextInputNextPreviousFlags();
+}
+
+void WebFrameWidgetBase::ResetVirtualKeyboardVisibilityRequest() {
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return;
+  controller->SetVirtualKeyboardVisibilityRequest(
+      ui::mojom::blink::VirtualKeyboardVisibilityRequest::NONE);
+  ;
+}
+
+bool WebFrameWidgetBase::GetSelectionBoundsInWindow(
+    gfx::Rect* focus,
+    gfx::Rect* anchor,
+    base::i18n::TextDirection* focus_dir,
+    base::i18n::TextDirection* anchor_dir,
+    bool* is_anchor_first) {
+  if (Client()->ShouldDispatchImeEventsToPepper()) {
+    // TODO(kinaba) http://crbug.com/101101
+    // Current Pepper IME API does not handle selection bounds. So we simply
+    // use the caret position as an empty range for now. It will be updated
+    // after Pepper API equips features related to surrounding text retrieval.
+    gfx::Rect pepper_caret = Client()->GetPepperCaretBounds();
+    if (pepper_caret == *focus && pepper_caret == *anchor)
+      return false;
+    *focus = pepper_caret;
+    *anchor = *focus;
+    return true;
+  }
+  WebRect focus_webrect;
+  WebRect anchor_webrect;
+  SelectionBounds(focus_webrect, anchor_webrect);
+  client_->ConvertViewportToWindow(&focus_webrect);
+  client_->ConvertViewportToWindow(&anchor_webrect);
+
+  // if the bounds are the same return false.
+  if (gfx::Rect(focus_webrect) == *focus &&
+      gfx::Rect(anchor_webrect) == *anchor)
+    return false;
+  *focus = gfx::Rect(focus_webrect);
+  *anchor = gfx::Rect(anchor_webrect);
+
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame)
+    return true;
+  focused_frame->SelectionTextDirection(*focus_dir, *anchor_dir);
+  *is_anchor_first = focused_frame->IsSelectionAnchorFirst();
+  return true;
+}
+
+void WebFrameWidgetBase::ClearTextInputState() {
+  widget_base_->ClearTextInputState();
+}
+
+void WebFrameWidgetBase::SetFocus(bool focus) {
+  widget_base_->SetFocus(focus);
+}
+
+bool WebFrameWidgetBase::HasFocus() {
+  return widget_base_->has_focus();
+}
+
 void WebFrameWidgetBase::SetToolTipText(const String& tooltip_text,
                                         TextDirection dir) {
   widget_base_->SetToolTipText(tooltip_text, dir);
@@ -1142,14 +1287,6 @@ void WebFrameWidgetBase::FocusChangeComplete() {
     focused->AutofillClient()->DidCompleteFocusChangeInFrame();
 }
 
-void WebFrameWidgetBase::ShowVirtualKeyboard() {
-  Client()->ShowVirtualKeyboard();
-}
-
-void WebFrameWidgetBase::UpdateTextInputState() {
-  Client()->UpdateTextInputState();
-}
-
 void WebFrameWidgetBase::ShowVirtualKeyboardOnElementFocus() {
   widget_base_->ShowVirtualKeyboardOnElementFocus();
 }
@@ -1180,4 +1317,39 @@ void WebFrameWidgetBase::DidHandleGestureEvent(const WebGestureEvent& event,
 #endif
 }
 
+gfx::Range WebFrameWidgetBase::CompositionRange() {
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame)
+    return gfx::Range::InvalidRange();
+  blink::WebInputMethodController* controller =
+      focused_frame->GetInputMethodController();
+  WebRange web_range = controller->CompositionRange();
+  if (web_range.IsNull())
+    return gfx::Range::InvalidRange();
+  return gfx::Range(web_range.StartOffset(), web_range.EndOffset());
+}
+
+void WebFrameWidgetBase::GetCompositionCharacterBoundsInWindow(
+    Vector<gfx::Rect>* bounds) {
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame)
+    return;
+  blink::WebInputMethodController* controller =
+      focused_frame->GetInputMethodController();
+  blink::WebVector<blink::WebRect> bounds_from_blink;
+  if (!controller->GetCompositionCharacterBounds(bounds_from_blink))
+    return;
+
+  for (size_t i = 0; i < bounds_from_blink.size(); ++i) {
+    Client()->ConvertViewportToWindow(&bounds_from_blink[i]);
+    bounds->push_back(bounds_from_blink[i]);
+  }
+}
+
+WebTextInputType WebFrameWidgetBase::TextInputType() {
+  WebLocalFrame* focused_frame = FocusedWebLocalFrameInWidget();
+  if (!focused_frame)
+    return WebTextInputType::kWebTextInputTypeNone;
+  return focused_frame->GetInputMethodController()->TextInputType();
+}
 }  // namespace blink

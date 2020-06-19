@@ -35,7 +35,6 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/drag_messages.h"
 #include "content/common/frame_visual_properties.h"
-#include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_context.h"
@@ -379,9 +378,10 @@ void BrowserPluginGuest::RenderProcessGone(base::TerminationStatus status) {
 void BrowserPluginGuest::DidSetHasTouchEventHandlers(bool accept) {
 }
 
-void BrowserPluginGuest::DidTextInputStateChange(const TextInputState& params) {
+void BrowserPluginGuest::DidTextInputStateChange(
+    const ui::mojom::TextInputState& params) {
   // Save the state of text input so we can restore it on focus.
-  last_text_input_state_ = std::make_unique<TextInputState>(params);
+  last_text_input_state_ = params.Clone();
 
   SendTextInputTypeChangedToView(static_cast<RenderWidgetHostViewBase*>(
       web_contents()->GetRenderWidgetHostView()));

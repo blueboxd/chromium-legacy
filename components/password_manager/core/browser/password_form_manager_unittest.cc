@@ -31,6 +31,7 @@
 #include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 #include "components/password_manager/core/browser/password_store.h"
@@ -2361,7 +2362,8 @@ class MockPasswordSaveManager : public PasswordSaveManager {
   std::unique_ptr<PasswordSaveManager> Clone() override {
     return std::make_unique<MockPasswordSaveManager>();
   }
-  MOCK_METHOD0(MoveCredentialsToAccountStore, void());
+  MOCK_METHOD1(MoveCredentialsToAccountStore,
+               void(metrics_util::MoveToAccountStoreTrigger));
   MOCK_METHOD1(BlockMovingToAccountStoreFor, void(const autofill::GaiaIdHash&));
 
  private:
@@ -2548,7 +2550,10 @@ TEST_F(PasswordFormManagerTestWithMockedSaver, PermanentlyBlacklist) {
 }
 
 TEST_F(PasswordFormManagerTestWithMockedSaver, MoveCredentialsToAccountStore) {
-  EXPECT_CALL(*mock_password_save_manager(), MoveCredentialsToAccountStore());
+  EXPECT_CALL(*mock_password_save_manager(),
+              MoveCredentialsToAccountStore(
+                  metrics_util::MoveToAccountStoreTrigger::
+                      kSuccessfulLoginWithProfileStorePassword));
   form_manager_->MoveCredentialsToAccountStore();
 }
 

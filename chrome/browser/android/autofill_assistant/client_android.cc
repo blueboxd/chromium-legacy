@@ -518,6 +518,11 @@ DeviceContext ClientAndroid::GetDeviceContext() const {
   return context;
 }
 
+bool ClientAndroid::IsAccessibilityEnabled() const {
+  return Java_AutofillAssistantClient_isAccessibilityEnabled(
+      AttachCurrentThread(), java_object_);
+}
+
 content::WebContents* ClientAndroid::GetWebContents() const {
   return web_contents_;
 }

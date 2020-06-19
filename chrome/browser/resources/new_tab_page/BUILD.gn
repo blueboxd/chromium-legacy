@@ -262,6 +262,12 @@ if (optimize_webui) {
     pak_file = "new_tab_page_resources.pak"
     out_folder = "unpak"
     deps = [ ":unoptimized_resources" ]
+
+    excludes = [
+      "../../ui/webui/new_tab_page/new_tab_page.mojom-lite.js",
+      "../../../common/search/omnibox.mojom-lite.js",
+      "../../../../skia/public/mojom/skcolor.mojom-lite.js",
+    ]
   }
 
   optimize_webui("optimized_js") {

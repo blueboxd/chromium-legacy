@@ -5,7 +5,7 @@
 #include "ash/magnifier/magnifier_glass.h"
 
 #include "ash/shell.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/paint_recorder.h"

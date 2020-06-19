@@ -17,9 +17,11 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/password_manager/core/browser/mock_password_feature_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -663,6 +665,8 @@ class PasswordManagerPresenterTestWithAccountStore
 
 TEST_F(PasswordManagerPresenterTestWithAccountStore,
        TestMovePasswordToAccountStore) {
+  base::HistogramTester histogram_tester;
+
   // Fill the profile store with two entries in the same equivalence class.
   autofill::PasswordForm password =
       AddPasswordEntry(GURL(kExampleCom), kUsername, kPassword);
@@ -698,6 +702,12 @@ TEST_F(PasswordManagerPresenterTestWithAccountStore,
       GetUsernamesAndPasswords(
           GetPasswordsInStoreForRealm(*account_store(), kExampleCom)),
       ElementsAre(Pair(kUsername, kPassword), Pair(kUsername, kPassword)));
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted",
+      password_manager::metrics_util::MoveToAccountStoreTrigger::
+          kExplicitlyTriggeredInSettings,
+      1);
 }
 
 }  // namespace

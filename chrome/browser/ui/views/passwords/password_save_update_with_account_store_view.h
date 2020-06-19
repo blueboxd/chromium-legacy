@@ -50,6 +50,13 @@ class PasswordSaveUpdateWithAccountStoreView
   views::View* GetUsernameTextfieldForTest() const;
 
  private:
+  // Type of the currently shown IPH.
+  enum class IPHType {
+    kNone,     // No IPH is shown.
+    kRegular,  // The regular IPH introducing the user to destination picker.
+    kFailedReauth,  // The IPH shown after reauth failure informing the user
+                    // about the switch to local mode.
+  };
   class AutoResizingLayout;
   ~PasswordSaveUpdateWithAccountStoreView() override;
 
@@ -61,7 +68,7 @@ class PasswordSaveUpdateWithAccountStoreView
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::ComboboxListener:
-  // User for the destination combobox.
+  // Used for the destination combobox.
   void OnPerformAction(views::Combobox* combobox) override;
 
   // views::EditableComboboxListener:
@@ -92,7 +99,20 @@ class PasswordSaveUpdateWithAccountStoreView
   void UpdateBubbleUIElements();
   std::unique_ptr<views::View> CreateFooterView();
 
-  void OpenIPHBubbleIfAppropriate();
+  // Whether we should show the IPH informing the user about the destination
+  // picker and that they can now select where to store the passwords. It
+  // creates (if needed) and queries the |iph_tracker_|
+  bool ShouldShowRegularIPH();
+
+  // Whether we should shown an IPH upon account reauth failure that informs the
+  // user that the destination has been automatically switched to device.
+  bool ShouldShowFailedReauthIPH();
+
+  // Opens an IPH bubble of |type|. Callers should make sure the
+  // pre-conditions are satisfied by calling the corresponding ShouldShow*IPH()
+  // methods before invoking this method.
+  void ShowIPH(IPHType type);
+
   void CloseIPHBubbleIfOpen();
 
   SaveUpdateWithAccountStoreBubbleController controller_;
@@ -115,6 +135,8 @@ class PasswordSaveUpdateWithAccountStoreView
   // Promotional UI that appears next to the |destination_dropdown_|. Owned by
   // its NativeWidget.
   FeaturePromoBubbleView* account_storage_promo_ = nullptr;
+
+  IPHType currenly_shown_iph_type = IPHType::kNone;
 
   // Observes the |account_storage_promo_|'s Widget.  Used to tell whether the
   // promo is open and get called back when it closes.

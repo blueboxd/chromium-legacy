@@ -134,8 +134,12 @@ class OptimizationGuideHintsManager
       optimization_guide::proto::OptimizationType optimization_type,
       optimization_guide::OptimizationGuideDecisionCallback callback);
 
-  // Clears fetched hints from |hint_cache_|.
+  // Clears all fetched hints from |hint_cache_|.
   void ClearFetchedHints();
+
+  // Clears the host-keyed fetched hints from |hint_cache_|, both the persisted
+  // and in memory ones.
+  void ClearHostKeyedHints();
 
   // Returns the current batch update hints fetcher.
   optimization_guide::HintsFetcher* batch_update_hints_fetcher() const {
@@ -459,6 +463,10 @@ class OptimizationGuideHintsManager
   // The clock used to schedule fetching from the remote Optimization Guide
   // Service.
   const base::Clock* clock_;
+
+  // Whether fetched hints should be cleared when the store is initialized
+  // because a new optimization type was registered.
+  bool should_clear_hints_for_new_type_ = false;
 
   // The current estimate of the EffectiveConnectionType.
   net::EffectiveConnectionType current_effective_connection_type_ =

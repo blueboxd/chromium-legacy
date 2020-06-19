@@ -677,7 +677,7 @@ void WidgetBaseInputHandler::ShowVirtualKeyboard() {
     return;
   }
 #endif
-  widget_->client()->ShowVirtualKeyboard();
+  widget_->ShowVirtualKeyboard();
 }
 
 void WidgetBaseInputHandler::UpdateTextInputState() {
@@ -685,7 +685,7 @@ void WidgetBaseInputHandler::UpdateTextInputState() {
   if (handling_input_state_)
     return;
 #endif
-  widget_->client()->UpdateTextInputState();
+  widget_->UpdateTextInputState();
 }
 
 }  // namespace blink

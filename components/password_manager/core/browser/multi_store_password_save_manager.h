@@ -33,7 +33,8 @@ class MultiStorePasswordSaveManager : public PasswordSaveManagerImpl {
 
   std::unique_ptr<PasswordSaveManager> Clone() override;
 
-  void MoveCredentialsToAccountStore() override;
+  void MoveCredentialsToAccountStore(
+      metrics_util::MoveToAccountStoreTrigger trigger) override;
 
   void BlockMovingToAccountStoreFor(
       const autofill::GaiaIdHash& gaia_id_hash) override;

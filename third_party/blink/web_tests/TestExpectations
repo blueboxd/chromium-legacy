@@ -1622,6 +1622,8 @@ crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-elemen
 crbug.com/490511 external/wpt/html/rendering/non-replaced-elements/the-hr-element-0/width.html [ Failure ]
 crbug.com/692560 external/wpt/html/semantics/document-metadata/styling/LinkStyle.html [ Failure Pass ]
 
+crbug.com/860211 [ Mac ] external/wpt/editing/run/delete.html [ Failure ]
+
 crbug.com/821455 editing/pasteboard/drag-files-to-editable-element.html [ Failure ]
 
 crbug.com/688613 external/wpt/mediacapture-streams/MediaStreamTrack-MediaElement-disabled-audio-is-silence.https.html [ Skip ]
@@ -6803,6 +6805,9 @@ crbug.com/924472 external/wpt/css/css-transforms/transform-box/svgbox-stroke-box
 
 crbug.com/1092135 [ Linux ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Pass Timeout ]
 
+# FIXME(michaelludwig) - Suppress for Skia roll
+crbug.com/1097104 css3/filters/effect-reference-zoom-hw.html [ Pass Failure ]
+
 # Sheriff 2020-06-16
 crbug.com/1044825 http/tests/devtools/network/resource-priority.js [ Pass Timeout ]
 
@@ -6816,12 +6821,9 @@ crbug.com/1092975 http/tests/inspector-protocol/target/target-expose-devtools-pr
 
 crbug.com/1096493 external/wpt/webaudio/the-audio-api/the-audiocontext-interface/processing-after-resume.https.html [ Failure ]
 
-crbug.com/1097005 http/tests/devtools/console/console-object-preview.js [ Pass Failure ]
-crbug.com/1097005 http/tests/devtools/console/console-preserve-scroll.js [ Pass Failure ]
-crbug.com/1097005 http/tests/devtools/console/console-search.js [ Pass Failure ]
+crbug.com/1097005 http/tests/devtools/console/console-object-preview.js [ Pass Failure Crash Timeout ]
+crbug.com/1097005 http/tests/devtools/console/console-preserve-scroll.js [ Pass Failure Crash Timeout ]
+crbug.com/1097005 http/tests/devtools/console/console-search.js [ Pass Failure Crash Timeout ]
 
 crbug.com/1093445 http/tests/loading/pdf-commit-load-callbacks.html [ Pass Failure ]
 crbug.com/1093497 http/tests/history/client-redirect-after-push-state.html [ Pass Failure ]
-
-crbug.com/1097000 external/wpt/editing/run/forwarddelete.html [ Pass Failure ]
-crbug.com/1097000 external/wpt/editing/run/delete.html [ Pass Failure ]

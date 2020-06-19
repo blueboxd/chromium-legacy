@@ -24,6 +24,7 @@
 #include "third_party/blink/public/web/web_view_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 
 namespace blink {
 class WebLocalFrame;
@@ -194,6 +195,12 @@ class WebViewPlugin : public blink::WebPlugin,
     void SetCursor(const ui::Cursor& cursor) override {}
     void SetToolTipText(const base::string16& tooltip_text,
                         base::i18n::TextDirection hint) override;
+    void TextInputStateChanged(ui::mojom::TextInputStatePtr state) override {}
+    void SelectionBoundsChanged(const gfx::Rect& anchor_rect,
+                                base::i18n::TextDirection anchor_dir,
+                                const gfx::Rect& focus_rect,
+                                base::i18n::TextDirection focus_dir,
+                                bool is_anchor_first) override {}
 
    private:
     WebViewPlugin* plugin_;

@@ -190,8 +190,6 @@ source_set("common") {
     "skia_utils.h",
     "state_transitions.h",
     "text_input_client_messages.h",
-    "text_input_state.cc",
-    "text_input_state.h",
     "thread_pool_util.cc",
     "thread_pool_util.h",
     "unfreezable_frame_messages.h",

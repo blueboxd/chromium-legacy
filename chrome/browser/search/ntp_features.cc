@@ -64,6 +64,10 @@ const base::Feature kWebUI{"NtpWebUI", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kWebUIRealbox{"WebUIRealbox",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
+// If enabled, the Doodle will be shown on themed and dark mode NTPs.
+const base::Feature kWebUIThemeModeDoodles{"WebUIThemeModeDoodles",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsRealboxEnabled() {
   if (!base::FeatureList::IsEnabled(omnibox::kNewSearchFeatures))
     return false;

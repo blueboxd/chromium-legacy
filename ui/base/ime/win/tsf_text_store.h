@@ -391,6 +391,10 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
   //    |selection_.end()|: 4
   gfx::Range selection_;
 
+  // Indicates if the selection is an interim character. Please refer to
+  // https://docs.microsoft.com/en-us/windows/win32/api/textstor/ns-textstor-ts_selectionstyle
+  bool is_selection_interim_char_ = false;
+
   //  |start_offset| and |end_offset| of |text_spans_| indicates
   //  the offsets in |string_buffer_document_|.
   //  Example: "aoi" is committed. There are two underlines in "umi" and "no".

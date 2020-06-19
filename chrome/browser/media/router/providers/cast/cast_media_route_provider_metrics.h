@@ -15,6 +15,8 @@ static constexpr char kHistogramAppAvailabilitySuccess[] =
     "MediaRouter.Cast.App.Availability.Success";
 static constexpr char kHistogramAppAvailabilityFailure[] =
     "MediaRouter.Cast.App.Availability.Failure";
+static constexpr char kHistogramAudioSender[] =
+    "MediaRouter.CastStreaming.Audio.PlaybackOnReceiver";
 
 // Records the result of an app availability request and how long it took.
 // If |result| is kUnknown, then a failure is recorded. Otherwise, a success

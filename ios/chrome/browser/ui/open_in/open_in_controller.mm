@@ -10,6 +10,8 @@
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
@@ -339,6 +341,9 @@ class OpenInControllerBridge
 - (void)exportFileWithOpenInMenuAnchoredAt:(UIView*)view {
   DCHECK([view isKindOfClass:[UIView class]]);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
+
+  base::RecordAction(base::UserMetricsAction("IOS.OpenIn"));
+
   if (!_webState)
     return;
 

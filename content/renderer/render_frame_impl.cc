@@ -2020,8 +2020,7 @@ void RenderFrameImpl::PepperCancelComposition(
     host->ImeCancelComposition();
   }
 #if defined(OS_MACOSX) || defined(USE_AURA)
-  GetLocalRootRenderWidget()->UpdateCompositionInfo(
-      false /* not an immediate request */);
+  GetLocalRootRenderWidget()->UpdateCompositionInfo();
 #endif
 }
 
@@ -2785,7 +2784,7 @@ void RenderFrameImpl::CancelContextMenu(int request_id) {
 }
 
 void RenderFrameImpl::ShowVirtualKeyboard() {
-  GetLocalRootRenderWidget()->ShowVirtualKeyboard();
+  GetLocalRootRenderWidget()->GetWebWidget()->ShowVirtualKeyboard();
 }
 
 blink::WebPlugin* RenderFrameImpl::CreatePlugin(
@@ -5365,9 +5364,6 @@ void RenderFrameImpl::NotifyAccessibilityModeChange(ui::AXMode new_mode) {
 
 void RenderFrameImpl::FocusedElementChanged(const blink::WebElement& element) {
   has_scrolled_focused_editable_node_into_rect_ = false;
-  // Ensures that further text input state can be sent even when previously
-  // focused input and the newly focused input share the exact same state.
-  GetLocalRootRenderWidget()->ClearTextInputState();
 
   for (auto& observer : observers_)
     observer.FocusedElementChanged(element);

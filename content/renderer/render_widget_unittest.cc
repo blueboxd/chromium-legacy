@@ -210,6 +210,27 @@ int InteractiveRenderWidget::next_routing_id_ = 0;
 class RenderWidgetUnittest : public testing::Test {
  public:
   void SetUp() override {
+    mojo::AssociatedRemote<blink::mojom::FrameWidget> frame_widget_remote;
+    mojo::PendingAssociatedReceiver<blink::mojom::FrameWidget>
+        frame_widget_receiver =
+            frame_widget_remote
+                .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+    mojo::AssociatedRemote<blink::mojom::FrameWidgetHost> frame_widget_host;
+    mojo::PendingAssociatedReceiver<blink::mojom::FrameWidgetHost>
+        frame_widget_host_receiver =
+            frame_widget_host
+                .BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+    mojo::AssociatedRemote<blink::mojom::Widget> widget_remote;
+    mojo::PendingAssociatedReceiver<blink::mojom::Widget> widget_receiver =
+        widget_remote.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
+    mojo::AssociatedRemote<blink::mojom::WidgetHost> widget_host;
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetHost>
+        widget_host_receiver =
+            widget_host.BindNewEndpointAndPassDedicatedReceiverForTesting();
+
     web_view_ = blink::WebView::Create(/*client=*/&web_view_client_,
                                        /*is_hidden=*/false,
                                        /*compositing_enabled=*/true, nullptr,
@@ -219,15 +240,9 @@ class RenderWidgetUnittest : public testing::Test {
         web_view_, &web_frame_client_, nullptr,
         base::UnguessableToken::Create(), nullptr);
     web_frame_widget_ = blink::WebFrameWidget::CreateForMainFrame(
-        widget_.get(), web_local_frame_,
-        blink::CrossVariantMojoAssociatedRemote<
-            blink::mojom::FrameWidgetHostInterfaceBase>(),
-        blink::CrossVariantMojoAssociatedReceiver<
-            blink::mojom::FrameWidgetInterfaceBase>(),
-        blink::CrossVariantMojoAssociatedRemote<
-            blink::mojom::WidgetHostInterfaceBase>(),
-        blink::CrossVariantMojoAssociatedReceiver<
-            blink::mojom::WidgetInterfaceBase>());
+        widget_.get(), web_local_frame_, frame_widget_host.Unbind(),
+        std::move(frame_widget_receiver), widget_host.Unbind(),
+        std::move(widget_receiver));
     widget_->Init(web_frame_widget_, ScreenInfo());
     web_view_->DidAttachLocalMainFrame();
   }
@@ -633,7 +648,7 @@ TEST_F(RenderWidgetUnittest, ForceSendMetadataOnInput) {
   // We should not have any force send metadata requests at start.
   EXPECT_FALSE(layer_tree_host->TakeForceSendMetadataRequest());
   // ShowVirtualKeyboard will trigger a text input state update.
-  widget()->ShowVirtualKeyboard();
+  widget()->GetWebWidget()->ShowVirtualKeyboard();
   // We should now have a force send metadata request.
   EXPECT_TRUE(layer_tree_host->TakeForceSendMetadataRequest());
 }

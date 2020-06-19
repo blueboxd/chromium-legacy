@@ -75,6 +75,11 @@ class PasswordsModelDelegate {
   virtual const password_manager::InteractionsStats*
   GetCurrentInteractionStats() const = 0;
 
+  // Users need to reauth to their account to opt-in using their password
+  // account storage. This method returns whether account auth attempt during
+  // the last password save process failed or not.
+  virtual bool DidAuthForAccountStoreOptInFail() const = 0;
+
   // Returns true iff the current bubble is the manual fallback for saving.
   virtual bool BubbleIsManualFallbackForSaving() const = 0;
 

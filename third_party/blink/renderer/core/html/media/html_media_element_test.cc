@@ -129,6 +129,8 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
 
   bool CouldPlayIfEnoughData() { return Media()->CouldPlayIfEnoughData(); }
 
+  bool PotentiallyPlaying() { return Media()->PotentiallyPlaying(); }
+
   bool ShouldDelayLoadEvent() { return Media()->should_delay_load_event_; }
 
   void SetReadyState(HTMLMediaElement::ReadyState state) {
@@ -712,6 +714,37 @@ TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterAutoPlay) {
 
   ASSERT_TRUE(WasAutoplayInitiated());
   ASSERT_FALSE(Media()->paused());
+  EXPECT_FALSE(Media()->IsShowPosterFlagSet());
+}
+
+TEST_P(HTMLMediaElementTest, ShowPosterFlag_FalseAfterPlayBeforeReady) {
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+
+  // Initially we have nothing, we're not playing, trying to play, and the 'show
+  // poster' flag is set
+  EXPECT_EQ(Media()->getReadyState(), HTMLMediaElement::kHaveNothing);
+  EXPECT_TRUE(Media()->paused());
+  EXPECT_FALSE(PotentiallyPlaying());
+  EXPECT_TRUE(Media()->IsShowPosterFlagSet());
+
+  // Attempt to begin playback
+  Media()->Play();
+  test::RunPendingTasks();
+
+  // We still have no data, but we're not paused, and the 'show poster' flag is
+  // not set
+  EXPECT_EQ(Media()->getReadyState(), HTMLMediaElement::kHaveNothing);
+  EXPECT_FALSE(Media()->paused());
+  EXPECT_FALSE(PotentiallyPlaying());
+  EXPECT_FALSE(Media()->IsShowPosterFlagSet());
+
+  // Pretend we have data to begin playback
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+
+  // We should have data, be playing, and the show poster flag should be unset
+  EXPECT_EQ(Media()->getReadyState(), HTMLMediaElement::kHaveFutureData);
+  EXPECT_FALSE(Media()->paused());
+  EXPECT_TRUE(PotentiallyPlaying());
   EXPECT_FALSE(Media()->IsShowPosterFlagSet());
 }
 

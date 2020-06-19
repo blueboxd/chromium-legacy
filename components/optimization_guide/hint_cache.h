@@ -89,8 +89,12 @@ class HintCache {
   void PurgeExpiredFetchedHints();
 
   // Purges fetched hints from the owned |optimization_guide_store_| and resets
-  // the host-keyed cache.
+  // both in-memory hint caches.
   void ClearFetchedHints();
+
+  // Purges fetched hints from the owned |optimization_guide_store_| and resets
+  // the host-keyed cache.
+  void ClearHostKeyedHints();
 
   // Returns whether the cache has a hint data for |host| locally (whether
   // in the host-keyed cache or persisted on disk).
@@ -129,6 +133,9 @@ class HintCache {
   bool ProcessAndCacheHints(
       google::protobuf::RepeatedPtrField<proto::Hint>* hints,
       StoreUpdateData* update_data);
+
+  // Returns whether the persistent hint store owned by this is available.
+  bool IsHintStoreAvailable() const;
 
   // Override |clock_| for testing.
   void SetClockForTesting(const base::Clock* clock);

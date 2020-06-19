@@ -378,12 +378,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         [self shouldOpenNTPTabOnActivationOfBrowser:self.currentInterface
                                                         .browser]) {
       DCHECK(!self.dismissingTabSwitcher);
-      [self beginDismissingTabSwitcherWithCurrentBrowser:self.currentInterface
+      [self beginDismissingTabSwitcherWithCurrentBrowser:self.mainInterface
                                                              .browser
                                             focusOmnibox:NO];
 
-      OpenNewTabCommand* command = [OpenNewTabCommand
-          commandWithIncognito:self.currentInterface.incognito];
+      OpenNewTabCommand* command = [OpenNewTabCommand commandWithIncognito:NO];
       command.userInitiated = NO;
       Browser* browser = self.currentInterface.browser;
       id<ApplicationCommands> applicationHandler = HandlerForProtocol(

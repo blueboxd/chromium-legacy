@@ -103,6 +103,7 @@
 #include "components/feature_engagement/buildflags.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
+#include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
 #include "components/language/content/browser/geo_language_provider.h"
@@ -352,7 +353,6 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/timezone/timezone_resolver.h"
 #include "components/arc/arc_prefs.h"
-#include "components/invalidation/impl/fcm_invalidation_service.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/quirks/quirks_manager.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_item_storage.h"
@@ -677,6 +677,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   GpuModeManager::RegisterPrefs(registry);
   signin::IdentityManager::RegisterLocalStatePrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);
+  invalidation::FCMInvalidationService::RegisterPrefs(registry);
   language::GeoLanguageProvider::RegisterLocalStatePrefs(registry);
   language::UlpLanguageCodeLocator::RegisterLocalStatePrefs(registry);
   memory::EnterpriseMemoryLimitPrefObserver::RegisterPrefs(registry);
@@ -697,6 +698,8 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   sessions::SessionIdGenerator::RegisterPrefs(registry);
   SSLConfigServiceManager::RegisterPrefs(registry);
   subresource_filter::IndexedRulesetVersion::RegisterPrefs(registry);
+  syncer::InvalidatorRegistrarWithMemory::RegisterPrefs(registry);
+  syncer::PerUserTopicSubscriptionManager::RegisterPrefs(registry);
   SystemNetworkContextManager::RegisterPrefs(registry);
   update_client::RegisterPrefs(registry);
   variations::VariationsService::RegisterPrefs(registry);
@@ -787,7 +790,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   extensions::lock_screen_data::LockScreenItemStorage::RegisterLocalState(
       registry);
   extensions::login_api::RegisterLocalStatePrefs(registry);
-  invalidation::FCMInvalidationService::RegisterPrefs(registry);
   ::onc::RegisterPrefs(registry);
   policy::AutoEnrollmentClientImpl::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorChromeOS::RegisterPrefs(registry);
@@ -803,8 +805,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   policy::SystemFeaturesDisableListPolicyHandler::RegisterPrefs(registry);
   quirks::QuirksManager::RegisterPrefs(registry);
   UpgradeDetectorChromeos::RegisterPrefs(registry);
-  syncer::PerUserTopicSubscriptionManager::RegisterPrefs(registry);
-  syncer::InvalidatorRegistrarWithMemory::RegisterPrefs(registry);
   chromeos::cert_provisioning::RegisterLocalStatePrefs(registry);
 #endif  // defined(OS_CHROMEOS)
 

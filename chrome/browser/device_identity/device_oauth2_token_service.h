@@ -166,6 +166,10 @@ class DeviceOAuth2TokenService : public OAuth2AccessTokenManager::Delegate,
 
   void ReportServiceError(GoogleServiceAuthError::State error);
 
+  // Returns true if this object has already received the validation result for
+  // the token, false otherwise.
+  bool HasValidationResult() const;
+
   std::unique_ptr<OAuth2AccessTokenManager> token_manager_;
 
   // Currently open requests that are waiting while loading the system salt or

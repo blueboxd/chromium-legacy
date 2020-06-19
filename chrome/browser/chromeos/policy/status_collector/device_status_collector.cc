@@ -871,6 +871,14 @@ class DeviceStatusCollectorState : public StatusCollectorState {
                 storage->read_time_seconds_since_last_boot);
             disk_info_out->set_write_time_seconds_since_last_boot(
                 storage->write_time_seconds_since_last_boot);
+            disk_info_out->set_io_time_seconds_since_last_boot(
+                storage->io_time_seconds_since_last_boot);
+            const auto& discard_time =
+                storage->discard_time_seconds_since_last_boot;
+            if (!discard_time.is_null()) {
+              disk_info_out->set_discard_time_seconds_since_last_boot(
+                  discard_time->value);
+            }
           }
           break;
         }

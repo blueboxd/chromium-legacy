@@ -16,9 +16,9 @@
 
 namespace blink {
 
-static void SetReferrerForRequest(Document* origin_document,
+static void SetReferrerForRequest(ExecutionContext* origin_context,
                                   ResourceRequest& request) {
-  DCHECK(origin_document);
+  DCHECK(origin_context);
 
   // Always use the initiating document to generate the referrer. We need to
   // generateReferrer(), because we haven't enforced
@@ -28,10 +28,10 @@ static void SetReferrerForRequest(Document* origin_document,
       request.GetReferrerPolicy();
 
   if (referrer_to_use == Referrer::ClientReferrerString())
-    referrer_to_use = origin_document->OutgoingReferrer();
+    referrer_to_use = origin_context->OutgoingReferrer();
 
   if (referrer_policy_to_use == network::mojom::ReferrerPolicy::kDefault)
-    referrer_policy_to_use = origin_document->GetReferrerPolicy();
+    referrer_policy_to_use = origin_context->GetReferrerPolicy();
 
   Referrer referrer = SecurityPolicy::GenerateReferrer(
       referrer_policy_to_use, request.Url(), referrer_to_use);
@@ -73,7 +73,8 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
           blob_url_token_->data.BindNewPipeAndPassReceiver());
     }
 
-    SetReferrerForRequest(origin_document_, resource_request_);
+    SetReferrerForRequest(origin_document_->GetExecutionContext(),
+                          resource_request_);
   }
 }
 

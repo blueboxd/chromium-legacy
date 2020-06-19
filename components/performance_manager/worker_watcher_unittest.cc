@@ -557,7 +557,8 @@ content::GlobalFrameRoutingId TestFrameNodeSource::CreateFrameNode(
                                                      frame_id);
   auto frame_node = PerformanceManagerImpl::CreateFrameNode(
       process_node, page_node_.get(), nullptr, 0, frame_id,
-      base::UnguessableToken::Null(), 0, 0);
+      base::UnguessableToken::Null(),
+      FrameToken(base::UnguessableToken::Create()), 0, 0);
 
   bool inserted =
       frame_node_map_.insert({render_frame_host_id, std::move(frame_node)})

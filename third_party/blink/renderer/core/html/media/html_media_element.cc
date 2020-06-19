@@ -1185,8 +1185,6 @@ void HTMLMediaElement::LoadResource(const WebMediaPlayerSource& source,
 
   StartProgressEventTimer();
 
-  SetShowPosterFlag(true);
-
   SetPlayerPreload();
 
   DCHECK(!media_source_);
@@ -1531,11 +1529,14 @@ void HTMLMediaElement::WaitForSourceChange() {
   StopPeriodicTimers();
   load_state_ = kWaitingForSource;
 
-  // 6.17 - Waiting: Set the element's networkState attribute to the
+  // 17 - Waiting: Set the element's networkState attribute to the
   // NETWORK_NO_SOURCE value
   SetNetworkState(kNetworkNoSource);
 
-  // 6.18 - Set the element's delaying-the-load-event flag to false. This stops
+  // 18 - Set the element's show poster flag to true.
+  SetShowPosterFlag(true);
+
+  // 19 - Set the element's delaying-the-load-event flag to false. This stops
   // delaying the load event.
   SetShouldDelayLoadEvent(false);
 
@@ -1941,6 +1942,9 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
 }
 
 void HTMLMediaElement::SetShowPosterFlag(bool value) {
+  DVLOG(3) << "SetShowPosterFlag(" << *this << ", " << value
+           << ") - current state is " << show_poster_flag_;
+
   if (value == show_poster_flag_)
     return;
 

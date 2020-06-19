@@ -44,7 +44,7 @@ enum class PluginVmSetupResult {
   kVmAlreadyExists = 8,
   kUserCancelledCheckingForExistingVm = 9,
   // kErrorInsufficientDiskSpace = 10,
-  kUserCancelledLowDiskSpace = 11,
+  // kUserCancelledLowDiskSpace = 11,
   kUserCancelledCheckingDiskSpace = 12,
   // Failure reasons are broken down in PluginVm.SetupFailureReason.
   kError = 13,

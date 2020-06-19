@@ -272,7 +272,7 @@ CSSComputedStyleDeclaration::CSSComputedStyleDeclaration(
     : CSSStyleDeclaration(n ? n->GetExecutionContext() : nullptr),
       node_(n),
       pseudo_element_specifier_(
-          CSSSelector::ParsePseudoId(pseudo_element_name)),
+          CSSSelector::ParsePseudoId(pseudo_element_name, n)),
       allow_visited_style_(allow_visited_style) {}
 
 CSSComputedStyleDeclaration::~CSSComputedStyleDeclaration() = default;

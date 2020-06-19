@@ -116,6 +116,7 @@ class FlexItem {
   // - |min_max_main_sizes| is the resolved min and max size properties in the
   //   main axis direction (not intrinsic widths). It does not include
   //   border/padding.
+  //   |min_max_cross_sizes| does include cross_axis_border_padding.
   FlexItem(const FlexLayoutAlgorithm*,
            LayoutBox*,
            const ComputedStyle& style,

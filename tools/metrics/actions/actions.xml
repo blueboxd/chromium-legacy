@@ -8614,6 +8614,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOS.OpenIn">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>mrefaat@chromium.org</owner>
+  <description>
+    Recorded when the user taps on OPEN IN... button to share the page
+    (typically PDF).
+  </description>
+</action>
+
 <action name="IOS.PageZoom.ZoomIn">
   <owner>rkgibson@google.com</owner>
   <owner>gambard@chromium.org</owner>

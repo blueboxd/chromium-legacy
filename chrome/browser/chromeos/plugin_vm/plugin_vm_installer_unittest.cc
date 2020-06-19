@@ -76,6 +76,9 @@ const char kHash2[] =
     "02f06421ae27144aacdc598aebcd345a5e2e634405e8578300173628fe1574bd";
 // File size set in test_download_service.
 const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
+const int64_t kDefaultRequiredFreeDiskSpaceGB = 20LL;
+const int64_t kRequiredFreeDiskSpaceGB = 40LL;
+const int64_t kBytesPerGigabyte = 1024 * 1024 * 1024;
 
 constexpr char kFailureReasonHistogram[] = "PluginVm.SetupFailureReason";
 
@@ -195,6 +198,12 @@ class PluginVmInstallerTestBase : public testing::Test {
     base::DictionaryValue* plugin_vm_image = update.Get();
     plugin_vm_image->SetKey("url", base::Value(url));
     plugin_vm_image->SetKey("hash", base::Value(hash));
+  }
+
+  void SetRequiredFreeDiskSpaceGBPref(int64_t required_free_disk_space) {
+    profile_->GetPrefs()->SetInt64(
+        plugin_vm::prefs::kPluginVmRequiredFreeDiskSpaceGB,
+        required_free_disk_space);
   }
 
   base::FilePath CreateZipFile() {
@@ -396,7 +405,7 @@ TEST_F(PluginVmInstallerDownloadServiceTest, ProgressUpdates) {
 
 TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDisk) {
   installer_->SetFreeDiskSpaceForTesting(
-      PluginVmInstaller::kMinimumFreeDiskSpace - 1);
+      kDefaultRequiredFreeDiskSpaceGB * kBytesPerGigabyte - 1);
   ExpectObserverEventsUntil(InstallingState::kCheckingDiskSpace);
   EXPECT_CALL(*observer_, OnError(FailureReason::INSUFFICIENT_DISK_SPACE));
   StartAndRunToCompletion();
@@ -404,33 +413,16 @@ TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDisk) {
       kFailureReasonHistogram, FailureReason::INSUFFICIENT_DISK_SPACE, 1);
 }
 
-TEST_F(PluginVmInstallerDownloadServiceTest, LowDiskCancel) {
-  SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
-  installer_->SetFreeDiskSpaceForTesting(
-      PluginVmInstaller::kMinimumFreeDiskSpace);
-
+TEST_F(PluginVmInstallerDownloadServiceTest, InsufficientDiskWhenSetInPolicy) {
+  SetRequiredFreeDiskSpaceGBPref(kRequiredFreeDiskSpaceGB);
+  int64_t requred_free_disk_space_bytes =
+      kRequiredFreeDiskSpaceGB * kBytesPerGigabyte;
+  installer_->SetFreeDiskSpaceForTesting(requred_free_disk_space_bytes - 1);
   ExpectObserverEventsUntil(InstallingState::kCheckingDiskSpace);
-  EXPECT_CALL(*observer_, OnStateUpdated(InstallingState::kPausedLowDiskSpace));
+  EXPECT_CALL(*observer_, OnError(FailureReason::INSUFFICIENT_DISK_SPACE));
   StartAndRunToCompletion();
-  VerifyExpectations();
-
-  EXPECT_CALL(*observer_, OnCancelFinished());
-  installer_->Cancel();
-  task_environment_.RunUntilIdle();
-}
-
-TEST_F(PluginVmInstallerDownloadServiceTest, LowDiskContinue) {
-  SetupConciergeForSuccessfulDiskImageImport(fake_concierge_client_);
-  installer_->SetFreeDiskSpaceForTesting(
-      PluginVmInstaller::kRecommendedFreeDiskSpace - 1);
-
-  ExpectObserverEventsUntil(InstallingState::kImporting);
-  EXPECT_CALL(*observer_, OnStateUpdated(InstallingState::kPausedLowDiskSpace));
-  StartAndRunToCompletion();
-
-  EXPECT_CALL(*observer_, OnImported());
-  installer_->Continue();
-  task_environment_.RunUntilIdle();
+  histogram_tester_->ExpectUniqueSample(
+      kFailureReasonHistogram, FailureReason::INSUFFICIENT_DISK_SPACE, 1);
 }
 
 TEST_F(PluginVmInstallerDownloadServiceTest, VmExists) {

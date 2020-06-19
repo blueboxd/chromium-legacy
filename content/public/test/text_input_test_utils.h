@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/strings/string16.h"
+#include "ui/base/ime/mojom/text_input_state.mojom.h"
 #include "ui/base/ime/mojom/virtual_keyboard_types.mojom.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -43,7 +44,6 @@ class RenderWidgetHost;
 class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 class WebContents;
-struct TextInputState;
 
 // Returns the |TextInputState.type| from the TextInputManager owned by
 // |web_contents|.
@@ -219,7 +219,7 @@ class TextInputStateSender {
 #endif
 
  private:
-  std::unique_ptr<TextInputState> text_input_state_;
+  ui::mojom::TextInputStatePtr text_input_state_;
   RenderWidgetHostViewBase* const view_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputStateSender);

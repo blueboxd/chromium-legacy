@@ -12,7 +12,6 @@
 
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/shell_observer.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 

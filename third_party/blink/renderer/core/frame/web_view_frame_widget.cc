@@ -170,8 +170,9 @@ void WebViewFrameWidget::MouseCaptureLost() {
   web_view_->MouseCaptureLost();
 }
 
-void WebViewFrameWidget::SetFocus(bool enable) {
+void WebViewFrameWidget::FocusChanged(bool enable) {
   web_view_->SetFocus(enable);
+  Client()->FocusChanged(enable);
 }
 
 bool WebViewFrameWidget::SelectionBounds(WebRect& anchor,

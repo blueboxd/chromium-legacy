@@ -37,11 +37,11 @@ DlcHandler::~DlcHandler() = default;
 void DlcHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "dlcSubpageReady", base::BindRepeating(&DlcHandler::HandleDlcSubpageReady,
-                                             weak_ptr_factory_.GetWeakPtr()));
+                                             base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "purgeDlc", base::BindRepeating(&DlcHandler::HandlePurgeDlc,
-                                      weak_ptr_factory_.GetWeakPtr()));
+      "purgeDlc",
+      base::BindRepeating(&DlcHandler::HandlePurgeDlc, base::Unretained(this)));
 }
 
 void DlcHandler::OnJavascriptAllowed() {

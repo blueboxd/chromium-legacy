@@ -28,6 +28,9 @@ class SetIconNatives : public ObjectBackedNativeHandler {
       v8::Local<v8::Object>* bitmap_set_value);
   void SetIconCommon(const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Determines if the associated script context is for a ServiceWorker.
+  void IsInServiceWorker(const v8::FunctionCallbackInfo<v8::Value>& args);
+
   DISALLOW_COPY_AND_ASSIGN(SetIconNatives);
 };
 

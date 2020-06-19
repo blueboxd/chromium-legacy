@@ -27,6 +27,9 @@ struct V8IsolatedWorldMemoryUsage {
 
 // Returns the number of bytes used by the v8 heap per frame.
 struct PerFrameV8MemoryUsageData {
+  // The devtools token associated with the frame.
+  mojo_base.mojom.UnguessableToken dev_tools_token;
+
   // The resources used by this frame, mapped on the isolated world ID.
   // World ID 0 is the main world.
   map<int64, V8IsolatedWorldMemoryUsage> associated_bytes;
@@ -45,10 +48,8 @@ struct PerProcessV8MemoryUsageData {
   uint64 num_unassociated_contexts;
   uint64 unassociated_context_bytes_used;
 
-  // A map from devtools token associated with a frame, to the number
-  // of v8 heap bytes associated with that frame.
-  map<mojo_base.mojom.UnguessableToken, PerFrameV8MemoryUsageData>
-      associated_memory;
+  // The V8 memory usage by individual frames in this process.
+  array<PerFrameV8MemoryUsageData> associated_memory;
 };
 
 // Allows a browser to query the resource usage of sub-processes.

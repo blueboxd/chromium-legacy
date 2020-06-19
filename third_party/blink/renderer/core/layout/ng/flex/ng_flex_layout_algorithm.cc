@@ -558,7 +558,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         cross_size = min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
             cross_size);
         flex_base_border_box =
-            LayoutUnit(cross_size * GetMainOverCrossAspectRatio(child));
+            LayoutUnit((cross_size - cross_axis_border_padding) *
+                           GetMainOverCrossAspectRatio(child) +
+                       main_axis_border_padding);
       } else if (MainAxisIsInlineAxis(child)) {
         // We're now in parts C, D, and E for what are usually (horizontal-tb
         // containers AND children) row flex containers. I _think_ the C and D
@@ -644,20 +646,15 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           }
           content_size_suggestion = intrinsic_block_size;
         }
+        DCHECK_GE(content_size_suggestion, main_axis_border_padding);
 
         if (child.HasAspectRatio()) {
-          // TODO(dgrogan): We're including borders/padding in both
-          // content_size_suggestion and
-          // min_max_sizes_in_cross_axis_direction. Maybe we need to multiply
-          // the content size by the aspect ratio and then apply the
-          // border/padding from the other axis inside the Adjust* function.
-          // Test legacy/firefox. Start with
-          // https://jsfiddle.net/dgrogan/9uyg3aro/
           content_size_suggestion =
               AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
                   child, content_size_suggestion,
                   min_max_sizes_in_cross_axis_direction.min_size,
-                  min_max_sizes_in_cross_axis_direction.max_size);
+                  min_max_sizes_in_cross_axis_direction.max_size,
+                  main_axis_border_padding, cross_axis_border_padding);
         }
 
         LayoutUnit specified_size_suggestion = LayoutUnit::Max();
@@ -705,9 +702,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
             }
             double ratio = GetMainOverCrossAspectRatio(child);
             transferred_size_suggestion = LayoutUnit(
+                main_axis_border_padding +
                 ratio *
-                min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
-                    cross_axis_size));
+                    (min_max_sizes_in_cross_axis_direction.ClampSizeToMinAndMax(
+                         cross_axis_size) -
+                     cross_axis_border_padding));
           }
         }
 
@@ -732,8 +731,6 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
     DCHECK_GE(min_max_sizes_in_main_axis_direction.min_size, 0);
     DCHECK_GE(min_max_sizes_in_main_axis_direction.max_size, 0);
 
-    // TODO(dgrogan): Should min_max_sizes_in_cross_axis_direction include
-    // cross_axis_border_padding?
     algorithm_
         ->emplace_back(nullptr, child.Style(), flex_base_content_size,
                        min_max_sizes_in_main_axis_direction,
@@ -747,9 +744,11 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
 LayoutUnit
 NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
     const NGBlockNode& child,
-    LayoutUnit content_suggestion,
+    LayoutUnit content_size_suggestion,
     LayoutUnit cross_min,
-    LayoutUnit cross_max) {
+    LayoutUnit cross_max,
+    LayoutUnit main_axis_border_padding,
+    LayoutUnit cross_axis_border_padding) {
   DCHECK(child.HasAspectRatio());
 
   double ratio = GetMainOverCrossAspectRatio(child);
@@ -758,23 +757,31 @@ NGFlexLayoutAlgorithm::AdjustChildSizeForAspectRatioCrossAxisMinAndMax(
   const Length& cross_max_length = is_horizontal_flow_
                                        ? child.Style().MaxHeight()
                                        : child.Style().MaxWidth();
+  DCHECK_GE(cross_max, cross_axis_border_padding);
   // TODO(dgrogan): No tests fail if we unconditionally apply max_main_length.
   // Either add a test that needs it or remove it.
   if (IsItemCrossAxisLengthDefinite(child, cross_max_length)) {
-    LayoutUnit max_main_length = LayoutUnit(cross_max * ratio);
-    content_suggestion = std::min(max_main_length, content_suggestion);
+    LayoutUnit max_main_length =
+        main_axis_border_padding +
+        LayoutUnit((cross_max - cross_axis_border_padding) * ratio);
+    content_size_suggestion =
+        std::min(max_main_length, content_size_suggestion);
   }
 
   const Length& cross_min_length = is_horizontal_flow_
                                        ? child.Style().MinHeight()
                                        : child.Style().MinWidth();
+  DCHECK_GE(cross_min, cross_axis_border_padding);
   // TODO(dgrogan): Same as above with min_main_length here -- it may be
   // unneeded or untested.
   if (IsItemCrossAxisLengthDefinite(child, cross_min_length)) {
-    LayoutUnit min_main_length = LayoutUnit(cross_min * ratio);
-    content_suggestion = std::max(min_main_length, content_suggestion);
+    LayoutUnit min_main_length =
+        main_axis_border_padding +
+        LayoutUnit((cross_min - cross_axis_border_padding) * ratio);
+    content_size_suggestion =
+        std::max(min_main_length, content_size_suggestion);
   }
-  return content_suggestion;
+  return content_size_suggestion;
 }
 
 scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {

@@ -54,18 +54,15 @@ void DeviceOAuth2TokenStoreDesktop::Init(InitCallback callback) {
     return;
   }
 
-  std::string decrypted_token;
-  bool success = OSCrypt::DecryptString(decoded, &decrypted_token);
-  if (success) {
-    refresh_token_ = decrypted_token;
-    // If the robot account ID is not available yet, do not announce the token.
-    // It will be done from OnServiceAccountIdentityChanged() once the robot
-    // account ID becomes available as well.
-    if (observer() && !GetAccountId().empty())
-      observer()->OnRefreshTokenAvailable();
-  }
+  refresh_token_ = decoded;
 
-  std::move(callback).Run(success, true);
+  // If the robot account ID is not available yet, do not announce the token.
+  // It will be done from OnServiceAccountIdentityChanged() once the robot
+  // account ID becomes available as well.
+  if (observer() && !GetAccountId().empty())
+    observer()->OnRefreshTokenAvailable();
+
+  std::move(callback).Run(true, true);
 }
 
 CoreAccountId DeviceOAuth2TokenStoreDesktop::GetAccountId() const {
@@ -74,6 +71,11 @@ CoreAccountId DeviceOAuth2TokenStoreDesktop::GetAccountId() const {
 }
 
 std::string DeviceOAuth2TokenStoreDesktop::GetRefreshToken() const {
+  // Only trigger token decryption if there is a refresh token present already,
+  // it wasn't decrypted already.
+  if (!token_decrypted_ && !refresh_token_.empty())
+    DecryptToken();
+
   return refresh_token_;
 }
 
@@ -86,11 +88,19 @@ void DeviceOAuth2TokenStoreDesktop::SetAndSaveRefreshToken(
   if (success) {
     refresh_token_ = refresh_token;
 
+    // Set token_decrypted_ to true here, because it's possible that there was
+    // no encrypted token on disc, or that it wasn't read, meaning that follow
+    // up calls to GetRefreshToken would attempt to decrypt an already
+    // un-encrypted token.
+    token_decrypted_ = true;
+
     // The string must be encoded as base64 for storage in local state.
     std::string encoded;
     base::Base64Encode(encrypted_token, &encoded);
 
     local_state_->SetString(kCBCMServiceAccountRefreshToken, encoded);
+    if (observer() && !GetAccountId().empty())
+      observer()->OnRefreshTokenAvailable();
   }
 
   std::move(result_callback).Run(success);
@@ -115,4 +125,16 @@ void DeviceOAuth2TokenStoreDesktop::SetAccountEmail(
 void DeviceOAuth2TokenStoreDesktop::OnServiceAccountIdentityChanged() {
   if (observer() && !GetAccountId().empty() && !refresh_token_.empty())
     observer()->OnRefreshTokenAvailable();
+}
+
+void DeviceOAuth2TokenStoreDesktop::DecryptToken() const {
+  DCHECK(!token_decrypted_);
+  DCHECK(!refresh_token_.empty());
+
+  std::string decrypted_token;
+  bool success = OSCrypt::DecryptString(refresh_token_, &decrypted_token);
+  if (success) {
+    refresh_token_ = decrypted_token;
+    token_decrypted_ = true;
+  }
 }

@@ -4,12 +4,14 @@
 
 #include "components/password_manager/core/browser/multi_store_password_save_manager.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "components/autofill/core/common/gaia_id_hash.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_feature_manager_impl.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 
 using autofill::PasswordForm;
@@ -220,7 +222,11 @@ std::unique_ptr<PasswordSaveManager> MultiStorePasswordSaveManager::Clone() {
   return result;
 }
 
-void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore() {
+void MultiStorePasswordSaveManager::MoveCredentialsToAccountStore(
+    metrics_util::MoveToAccountStoreTrigger trigger) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted", trigger);
+
   // TODO(crbug.com/1032992): Moving credentials upon an update. FormFetch will
   // have an outdated credentials. Fix it if this turns out to be a product
   // requirement.

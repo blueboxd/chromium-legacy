@@ -108,6 +108,7 @@ class ClientAndroid : public Client,
   std::string GetLocale() const override;
   std::string GetCountryCode() const override;
   DeviceContext GetDeviceContext() const override;
+  bool IsAccessibilityEnabled() const override;
   content::WebContents* GetWebContents() const override;
   void Shutdown(Metrics::DropOutReason reason) override;
 

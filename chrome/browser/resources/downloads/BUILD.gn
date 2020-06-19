@@ -32,6 +32,7 @@ if (optimize_webui) {
   unpak("unpak") {
     pak_file = downloads_pak_file
     out_folder = unpak_folder
+    excludes = [ "../../ui/webui/downloads/downloads.mojom-lite.js" ]
 
     deps = [ ":flattened_resources" ]
   }

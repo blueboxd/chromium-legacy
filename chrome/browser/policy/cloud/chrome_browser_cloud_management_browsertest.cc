@@ -722,7 +722,7 @@ class MachineLevelUserCloudPolicyRobotAuthTest
  public:
   MachineLevelUserCloudPolicyRobotAuthTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        policy::features::kCBCMServiceAccounts);
+        policy::features::kCBCMPolicyInvalidations);
 
     BrowserDMTokenStorage::SetForTesting(&storage_);
     storage_.SetEnrollmentToken(kEnrollmentToken);
@@ -800,7 +800,6 @@ IN_PROC_BROWSER_TEST_F(MachineLevelUserCloudPolicyRobotAuthTest, Test) {
     // Listen to store event which is fired after policy validation if token is
     // valid.
     std::unique_ptr<PolicyFetchStoreObserver> store_observer;
-
     store_observer = std::make_unique<PolicyFetchStoreObserver>(
         manager->store(), run_loop.QuitClosure());
 

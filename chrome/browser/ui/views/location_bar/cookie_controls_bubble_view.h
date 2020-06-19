@@ -7,10 +7,10 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_controller.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
-#include "chrome/browser/ui/cookie_controls/cookie_controls_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "components/content_settings/browser/ui/cookie_controls_controller.h"
+#include "components/content_settings/browser/ui/cookie_controls_view.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
@@ -29,17 +29,17 @@ class Label;
 // View used to display the cookie controls ui.
 class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
                                  public views::TooltipIcon::Observer,
-                                 public CookieControlsView {
+                                 public content_settings::CookieControlsView {
  public:
   static void ShowBubble(views::View* anchor_view,
                          views::Button* highlighted_button,
                          content::WebContents* web_contents,
-                         CookieControlsController* controller,
+                         content_settings::CookieControlsController* controller,
                          CookieControlsStatus status);
 
   static CookieControlsBubbleView* GetCookieBubble();
 
-  // CookieControlsView:
+  // content_settings::CookieControlsView:
   void OnStatusChanged(CookieControlsStatus status,
                        CookieControlsEnforcement enforcement,
                        int blocked_cookies) override;
@@ -52,9 +52,10 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
     kTurnOffButton,
   };
 
-  CookieControlsBubbleView(views::View* anchor_view,
-                           content::WebContents* web_contents,
-                           CookieControlsController* cookie_contols);
+  CookieControlsBubbleView(
+      views::View* anchor_view,
+      content::WebContents* web_contents,
+      content_settings::CookieControlsController* cookie_contols);
   ~CookieControlsBubbleView() override;
 
   void UpdateUi();
@@ -77,7 +78,7 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   void OnTooltipBubbleShown(views::TooltipIcon* icon) override;
   void OnTooltipIconDestroying(views::TooltipIcon* icon) override;
 
-  CookieControlsController* controller_ = nullptr;
+  content_settings::CookieControlsController* controller_ = nullptr;
 
   CookieControlsStatus status_ = CookieControlsStatus::kUninitialized;
 
@@ -93,7 +94,8 @@ class CookieControlsBubbleView : public LocationBarBubbleDelegateView,
   views::View* extra_view_ = nullptr;
   views::View* show_cookies_link_ = nullptr;
 
-  ScopedObserver<CookieControlsController, CookieControlsView>
+  ScopedObserver<content_settings::CookieControlsController,
+                 content_settings::CookieControlsView>
       controller_observer_{this};
   ScopedObserver<views::TooltipIcon, views::TooltipIcon::Observer>
       tooltip_observer_{this};

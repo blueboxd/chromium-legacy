@@ -8,6 +8,7 @@
 #include "content/common/visual_properties.h"
 #include "content/common/widget_messages.h"
 #include "content/public/renderer/render_frame_visitor.h"
+#include "content/public/test/fake_render_widget_host.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_thread_impl.h"
@@ -37,8 +38,11 @@ class RenderWidgetTest : public RenderViewTest {
     widget()->OnMessageReceived(msg);
   }
 
-  void GetCompositionRange(gfx::Range* range) {
-    widget()->GetCompositionRange(range);
+  gfx::Range LastCompositionRange() {
+    render_widget_host_->GetWidgetInputHandler()->RequestCompositionUpdates(
+        true, false);
+    base::RunLoop().RunUntilIdle();
+    return render_widget_host_->LastCompositionRange();
   }
 
   blink::WebInputMethodController* GetInputMethodController() {
@@ -46,14 +50,13 @@ class RenderWidgetTest : public RenderViewTest {
   }
 
   void CommitText(std::string text) {
-    widget()->OnImeCommitText(base::UTF8ToUTF16(text),
-                              std::vector<ui::ImeTextSpan>(),
-                              gfx::Range::InvalidRange(), 0);
+    render_widget_host_->GetWidgetInputHandler()->ImeCommitText(
+        base::UTF8ToUTF16(text), std::vector<ui::ImeTextSpan>(),
+        gfx::Range::InvalidRange(), 0, base::DoNothing());
+    base::RunLoop().RunUntilIdle();
   }
 
-  ui::TextInputType GetTextInputType() { return widget()->GetTextInputType(); }
-
-  void SetFocus(bool focused) { widget()->OnSetFocus(focused); }
+  void SetFocus(bool focused) { GetWebWidget()->SetFocus(focused); }
 
   gfx::PointF GetCenterPointOfElement(const blink::WebString& id) {
     auto rect =
@@ -288,12 +291,13 @@ TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {
   LoadHTML(
       "<div contenteditable>EDITABLE</div>"
       "<script> document.querySelector('div').focus(); </script>");
+  gfx::Range range = LastCompositionRange();
+  EXPECT_FALSE(range.IsValid());
   blink::WebVector<ui::ImeTextSpan> empty_ime_text_spans;
   DCHECK(widget()->GetInputMethodController());
   widget()->GetInputMethodController()->SetComposition(
       "hello", empty_ime_text_spans, blink::WebRange(), 3, 3);
-  gfx::Range range;
-  GetCompositionRange(&range);
+  range = LastCompositionRange();
   EXPECT_TRUE(range.IsValid());
   EXPECT_EQ(0U, range.start());
   EXPECT_EQ(5U, range.end());
@@ -303,16 +307,14 @@ TEST_F(RenderWidgetTest, GetCompositionRangeForSelection) {
   LoadHTML(
       "<div>NOT EDITABLE</div>"
       "<script> document.execCommand('selectAll'); </script>");
-  gfx::Range range;
-  GetCompositionRange(&range);
+  gfx::Range range = LastCompositionRange();
   // Selection range should not be treated as composition range.
   EXPECT_FALSE(range.IsValid());
 }
 
 TEST_F(RenderWidgetTest, GetCompositionRangeInvalid) {
   LoadHTML("<div>NOT EDITABLE</div>");
-  gfx::Range range;
-  GetCompositionRange(&range);
+  gfx::Range range = LastCompositionRange();
   // If this test ever starts failing, one likely outcome is that WebRange
   // and gfx::Range::InvalidRange are no longer expressed in the same
   // values of start/end.
@@ -334,7 +336,8 @@ TEST_F(RenderWidgetTest, PageFocusIme) {
   EXPECT_TRUE(GetInputMethodController());
 
   // Verify the text input type.
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
+  EXPECT_EQ(blink::WebTextInputType::kWebTextInputTypeText,
+            GetInputMethodController()->TextInputType());
 
   // Commit some text.
   std::string text = "hello";
@@ -350,7 +353,8 @@ TEST_F(RenderWidgetTest, PageFocusIme) {
   EXPECT_TRUE(GetInputMethodController());
 
   // The text input type should not change.
-  EXPECT_EQ(ui::TEXT_INPUT_TYPE_TEXT, GetTextInputType());
+  EXPECT_EQ(blink::WebTextInputType::kWebTextInputTypeText,
+            GetInputMethodController()->TextInputType());
 
   // Commit the text again.
   text = " world";

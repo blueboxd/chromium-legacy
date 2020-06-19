@@ -14,8 +14,8 @@ namespace content {
 
 namespace {
 
-bool ShouldUpdateTextInputState(const content::TextInputState& old_state,
-                                 const content::TextInputState& new_state) {
+bool ShouldUpdateTextInputState(const ui::mojom::TextInputState& old_state,
+                                const ui::mojom::TextInputState& new_state) {
 #if defined(USE_AURA)
   return old_state.type != new_state.type || old_state.mode != new_state.mode ||
          old_state.flags != new_state.flags ||
@@ -61,7 +61,7 @@ RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
                         : nullptr;
 }
 
-const TextInputState* TextInputManager::GetTextInputState() const {
+const ui::mojom::TextInputState* TextInputManager::GetTextInputState() const {
   return !!active_view_ ? &text_input_state_map_.at(active_view_) : nullptr;
 }
 
@@ -91,7 +91,7 @@ const TextInputManager::TextSelection* TextInputManager::GetTextSelection(
 
 void TextInputManager::UpdateTextInputState(
     RenderWidgetHostViewBase* view,
-    const TextInputState& text_input_state) {
+    const ui::mojom::TextInputState& text_input_state) {
   DCHECK(IsRegistered(view));
 
   if (text_input_state.type == ui::TEXT_INPUT_TYPE_NONE &&
@@ -153,40 +153,42 @@ void TextInputManager::ImeCancelComposition(RenderWidgetHostViewBase* view) {
 
 void TextInputManager::SelectionBoundsChanged(
     RenderWidgetHostViewBase* view,
-    const WidgetHostMsg_SelectionBounds_Params& params) {
+    const gfx::Rect& anchor_rect,
+    base::i18n::TextDirection anchor_dir,
+    const gfx::Rect& focus_rect,
+    base::i18n::TextDirection focus_dir,
+    bool is_anchor_first) {
   DCHECK(IsRegistered(view));
   // Converting the anchor point to root's coordinate space (for child frame
   // views).
   gfx::Point anchor_origin_transformed =
-      view->TransformPointToRootCoordSpace(params.anchor_rect.origin());
+      view->TransformPointToRootCoordSpace(anchor_rect.origin());
 
   gfx::SelectionBound anchor_bound, focus_bound;
 
   anchor_bound.SetEdge(gfx::PointF(anchor_origin_transformed),
                        gfx::PointF(view->TransformPointToRootCoordSpace(
-                           params.anchor_rect.bottom_left())));
-  focus_bound.SetEdge(gfx::PointF(view->TransformPointToRootCoordSpace(
-                          params.focus_rect.origin())),
-                      gfx::PointF(view->TransformPointToRootCoordSpace(
-                          params.focus_rect.bottom_left())));
+                           anchor_rect.bottom_left())));
+  focus_bound.SetEdge(
+      gfx::PointF(view->TransformPointToRootCoordSpace(focus_rect.origin())),
+      gfx::PointF(
+          view->TransformPointToRootCoordSpace(focus_rect.bottom_left())));
 
-  if (params.anchor_rect == params.focus_rect) {
+  if (anchor_rect == focus_rect) {
     anchor_bound.set_type(gfx::SelectionBound::CENTER);
     focus_bound.set_type(gfx::SelectionBound::CENTER);
   } else {
     // Whether text is LTR at the anchor handle.
-    bool anchor_LTR = params.anchor_dir == base::i18n::LEFT_TO_RIGHT;
+    bool anchor_LTR = anchor_dir == base::i18n::LEFT_TO_RIGHT;
     // Whether text is LTR at the focus handle.
-    bool focus_LTR = params.focus_dir == base::i18n::LEFT_TO_RIGHT;
+    bool focus_LTR = focus_dir == base::i18n::LEFT_TO_RIGHT;
 
-    if ((params.is_anchor_first && anchor_LTR) ||
-        (!params.is_anchor_first && !anchor_LTR)) {
+    if ((is_anchor_first && anchor_LTR) || (!is_anchor_first && !anchor_LTR)) {
       anchor_bound.set_type(gfx::SelectionBound::LEFT);
     } else {
       anchor_bound.set_type(gfx::SelectionBound::RIGHT);
     }
-    if ((params.is_anchor_first && focus_LTR) ||
-        (!params.is_anchor_first && !focus_LTR)) {
+    if ((is_anchor_first && focus_LTR) || (!is_anchor_first && !focus_LTR)) {
       focus_bound.set_type(gfx::SelectionBound::RIGHT);
     } else {
       focus_bound.set_type(gfx::SelectionBound::LEFT);
@@ -200,15 +202,14 @@ void TextInputManager::SelectionBoundsChanged(
   selection_region_map_[view].anchor = anchor_bound;
   selection_region_map_[view].focus = focus_bound;
 
-  if (params.anchor_rect == params.focus_rect) {
+  if (anchor_rect == focus_rect) {
     selection_region_map_[view].caret_rect.set_origin(
         anchor_origin_transformed);
-    selection_region_map_[view].caret_rect.set_size(params.anchor_rect.size());
+    selection_region_map_[view].caret_rect.set_size(anchor_rect.size());
   }
   selection_region_map_[view].first_selection_rect.set_origin(
       anchor_origin_transformed);
-  selection_region_map_[view].first_selection_rect.set_size(
-      params.anchor_rect.size());
+  selection_region_map_[view].first_selection_rect.set_size(anchor_rect.size());
 
   NotifySelectionBoundsChanged(view);
 }
@@ -256,7 +257,7 @@ void TextInputManager::SelectionChanged(RenderWidgetHostViewBase* view,
 void TextInputManager::Register(RenderWidgetHostViewBase* view) {
   DCHECK(!IsRegistered(view));
 
-  text_input_state_map_[view] = TextInputState();
+  text_input_state_map_[view] = ui::mojom::TextInputState();
   selection_region_map_[view] = SelectionRegion();
   composition_range_info_map_[view] = CompositionRangeInfo();
   text_selection_map_[view] = TextSelection();

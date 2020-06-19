@@ -403,6 +403,39 @@ void WebPagePopupImpl::ProcessInputEventSynchronously(
   widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
 }
 
+void WebPagePopupImpl::UpdateTextInputState() {
+  widget_base_->UpdateTextInputState();
+}
+
+void WebPagePopupImpl::UpdateCompositionInfo() {
+  widget_base_->UpdateCompositionInfo(/*immediate_request=*/false);
+}
+
+void WebPagePopupImpl::UpdateSelectionBounds() {
+  widget_base_->UpdateSelectionBounds();
+}
+
+void WebPagePopupImpl::ShowVirtualKeyboard() {
+  widget_base_->ShowVirtualKeyboard();
+}
+
+void WebPagePopupImpl::ForceTextInputStateUpdate() {
+  widget_base_->ForceTextInputStateUpdate();
+}
+
+void WebPagePopupImpl::RequestCompositionUpdates(bool immediate_request,
+                                                 bool monitor_updates) {
+  widget_base_->RequestCompositionUpdates(immediate_request, monitor_updates);
+}
+
+void WebPagePopupImpl::SetFocus(bool focus) {
+  widget_base_->SetFocus(focus);
+}
+
+bool WebPagePopupImpl::HasFocus() {
+  return widget_base_->has_focus();
+}
+
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {
   widget_base_->SetCompositorVisible(visible);
 }
@@ -574,6 +607,17 @@ void WebPagePopupImpl::GetWidgetInputHandler(
   WidgetClient()->GetWidgetInputHandler(std::move(request), std::move(host));
 }
 
+bool WebPagePopupImpl::HasCurrentImeGuard(
+    bool request_to_show_virtual_keyboard) {
+  return WidgetClient()->HasCurrentImeGuard(request_to_show_virtual_keyboard);
+}
+
+void WebPagePopupImpl::SendCompositionRangeChanged(
+    const gfx::Range& range,
+    const std::vector<gfx::Rect>& character_bounds) {
+  WidgetClient()->SendCompositionRangeChanged(range, character_bounds);
+}
+
 WebInputEventResult WebPagePopupImpl::HandleCharEvent(
     const WebKeyboardEvent& event) {
   if (suppress_next_keypress_event_) {
@@ -690,12 +734,13 @@ WebInputEventResult WebPagePopupImpl::HandleInputEvent(
   return PageWidgetDelegate::HandleInputEvent(*this, event, &MainFrame());
 }
 
-void WebPagePopupImpl::SetFocus(bool enable) {
+void WebPagePopupImpl::FocusChanged(bool enable) {
   if (!page_)
     return;
   if (enable)
     page_->GetFocusController().SetActive(true);
   page_->GetFocusController().SetFocused(enable);
+  WidgetClient()->FocusChanged(enable);
 }
 
 WebURL WebPagePopupImpl::GetURLForDebugTrace() {

@@ -17468,7 +17468,7 @@ error::Error GLES2DecoderImpl::HandleDescheduleUntilFinishedCHROMIUM(
   if (fence)
     deschedule_until_finished_fences_.push_back(std::move(fence));
 
-  if (deschedule_until_finished_fences_.size() == 1)
+  if (deschedule_until_finished_fences_.size() <= 1)
     return error::kNoError;
 
   DCHECK_EQ(2u, deschedule_until_finished_fences_.size());

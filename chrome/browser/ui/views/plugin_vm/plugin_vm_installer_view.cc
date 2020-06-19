@@ -52,8 +52,6 @@ plugin_vm::PluginVmSetupResult BucketForCancelledInstall(
       return plugin_vm::PluginVmSetupResult::kUserCancelledValidatingLicense;
     case plugin_vm::PluginVmInstaller::InstallingState::kCheckingDiskSpace:
       return plugin_vm::PluginVmSetupResult::kUserCancelledCheckingDiskSpace;
-    case plugin_vm::PluginVmInstaller::InstallingState::kPausedLowDiskSpace:
-      return plugin_vm::PluginVmSetupResult::kUserCancelledLowDiskSpace;
     case plugin_vm::PluginVmInstaller::InstallingState::kDownloadingDlc:
       return plugin_vm::PluginVmSetupResult::
           kUserCancelledDownloadingPluginVmDlc;
@@ -211,13 +209,6 @@ bool PluginVmInstallerView::Accept() {
         base::DoNothing());
     return true;
   }
-  if (state_ == State::kInstalling) {
-    DCHECK_EQ(installing_state_, InstallingState::kPausedLowDiskSpace);
-    installing_state_ = InstallingState::kDownloadingDlc;
-    OnStateUpdated();
-    plugin_vm_installer_->Continue();
-    return false;
-  }
   DCHECK_EQ(state_, State::kError);
   // Retry button has been clicked to retry setting of PluginVm environment
   // after error occurred.
@@ -372,7 +363,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
       return l10n_util::GetStringFUTF16(
           IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_MESSAGE,
           ui::FormatBytesWithUnits(
-              plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
+              plugin_vm_installer_->RequiredFreeDiskSpace(),
               ui::DATA_UNITS_GIBIBYTE,
               /*show_units=*/true));
     case State::kInstalling:
@@ -380,14 +371,6 @@ base::string16 PluginVmInstallerView::GetMessage() const {
         case InstallingState::kInactive:
           NOTREACHED();
           FALLTHROUGH;
-        case InstallingState::kPausedLowDiskSpace:
-          return l10n_util::GetStringFUTF16(
-              IDS_PLUGIN_VM_INSTALLER_LOW_DISK_SPACE_MESSAGE,
-              ui::FormatBytesWithUnits(
-                  plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
-                  ui::DATA_UNITS_GIBIBYTE,
-                  /*show_units=*/true),
-              app_name_);
         case InstallingState::kCheckingLicense:
         case InstallingState::kCheckingDiskSpace:
         case InstallingState::kDownloadingDlc:
@@ -466,14 +449,10 @@ base::string16 PluginVmInstallerView::GetMessage() const {
           return l10n_util::GetStringFUTF16(
               IDS_PLUGIN_VM_INSUFFICIENT_DISK_SPACE_MESSAGE,
               ui::FormatBytesWithUnits(
-                  plugin_vm::PluginVmInstaller::kMinimumFreeDiskSpace,
+                  plugin_vm_installer_->RequiredFreeDiskSpace(),
                   ui::DATA_UNITS_GIBIBYTE,
                   /*show_units=*/true),
-              app_name_,
-              ui::FormatBytesWithUnits(
-                  plugin_vm::PluginVmInstaller::kRecommendedFreeDiskSpace,
-                  ui::DATA_UNITS_GIBIBYTE,
-                  /*show_units=*/true));
+              app_name_);
       }
   }
 }
@@ -491,8 +470,6 @@ PluginVmInstallerView::~PluginVmInstallerView() {
 int PluginVmInstallerView::GetCurrentDialogButtons() const {
   switch (state_) {
     case State::kInstalling:
-      if (installing_state_ == InstallingState::kPausedLowDiskSpace)
-        return ui::DIALOG_BUTTON_CANCEL | ui::DIALOG_BUTTON_OK;
       return ui::DIALOG_BUTTON_CANCEL;
     case State::kConfirmInstall:
     case State::kImported:
@@ -518,11 +495,6 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
               ? IDS_PLUGIN_VM_INSTALLER_INSTALL_BUTTON
               : IDS_APP_CANCEL);
     case State::kInstalling:
-      if (button == ui::DIALOG_BUTTON_OK) {
-        DCHECK_EQ(installing_state_, InstallingState::kPausedLowDiskSpace);
-        return l10n_util::GetStringUTF16(
-            IDS_PLUGIN_VM_INSTALLER_CONTINUE_BUTTON);
-      }
       DCHECK_EQ(button, ui::DIALOG_BUTTON_CANCEL);
       return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
     case State::kCreated:
@@ -568,9 +540,7 @@ void PluginVmInstallerView::OnStateUpdated() {
                    GetCurrentDialogButtonLabel(ui::DIALOG_BUTTON_CANCEL));
   }
 
-  const bool progress_bar_visible =
-      state_ == State::kInstalling &&
-      installing_state_ != InstallingState::kPausedLowDiskSpace;
+  const bool progress_bar_visible = state_ == State::kInstalling;
   progress_bar_->SetVisible(progress_bar_visible);
 
   const bool download_progress_message_label_visible =

@@ -126,6 +126,9 @@ bool IsAutoJoinAllowed(AutoJoinPolicy policy,
                        const url::Origin& origin2,
                        int tab_id2);
 
+// Returns true if |source_id| is a valid origin for site-initiated mirroring.
+bool IsSiteInitiatedMirroringSource(const MediaSource::Id& source_id);
+
 // Represents a MediaSource parsed into structured, Cast specific data. The
 // following MediaSources can be parsed into CastMediaSource:
 // - Cast Presentation URLs

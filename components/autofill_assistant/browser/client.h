@@ -76,6 +76,9 @@ class Client {
   // Returns details about the device.
   virtual DeviceContext GetDeviceContext() const = 0;
 
+  // Returns whether a11y (talkback and touch exploration) is enabled or not.
+  virtual bool IsAccessibilityEnabled() const = 0;
+
   // Returns current WebContents.
   virtual content::WebContents* GetWebContents() const = 0;
 

@@ -137,6 +137,25 @@ class CORE_EXPORT WebFrameWidgetBase
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override;
   void DidChangeCursor(const ui::Cursor&) override;
+  void GetCompositionCharacterBoundsInWindow(
+      Vector<gfx::Rect>* bounds) override;
+  gfx::Range CompositionRange() override;
+  WebTextInputType TextInputType() override;
+  WebTextInputInfo TextInputInfo() override;
+  ui::mojom::VirtualKeyboardVisibilityRequest
+  GetLastVirtualKeyboardVisibilityRequest() override;
+  bool ShouldSuppressKeyboardForFocusedElement() override;
+  void GetEditContextBoundsInWindow(
+      base::Optional<gfx::Rect>* control_bounds,
+      base::Optional<gfx::Rect>* selection_bounds) override;
+  int32_t ComputeWebTextInputNextPreviousFlags() override;
+  void ResetVirtualKeyboardVisibilityRequest() override;
+  bool GetSelectionBoundsInWindow(gfx::Rect* focus,
+                                  gfx::Rect* anchor,
+                                  base::i18n::TextDirection* focus_dir,
+                                  base::i18n::TextDirection* anchor_dir,
+                                  bool* is_anchor_first) override;
+  void ClearTextInputState() override;
 
   // WebFrameWidget implementation.
   WebLocalFrame* LocalRoot() const override;
@@ -201,6 +220,15 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetHandlingInputEvent(bool handling) override;
   void ProcessInputEventSynchronously(const WebCoalescedInputEvent&,
                                       HandledEventCallback) override;
+  void UpdateTextInputState() override;
+  void ForceTextInputStateUpdate() override;
+  void UpdateCompositionInfo() override;
+  void UpdateSelectionBounds() override;
+  void ShowVirtualKeyboard() override;
+  void RequestCompositionUpdates(bool immediate_request,
+                                 bool monitor_updates) override;
+  bool HasFocus() override;
+  void SetFocus(bool focus) override;
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
@@ -222,8 +250,6 @@ class CORE_EXPORT WebFrameWidgetBase
                             int impl_percent,
                             base::Optional<int> main_percent) override;
   void FocusChangeComplete() override;
-  void ShowVirtualKeyboard() override;
-  void UpdateTextInputState() override;
   bool WillHandleGestureEvent(const WebGestureEvent& event) override;
   bool WillHandleMouseEvent(const WebMouseEvent& event) override;
   void ObserveGestureEventAndResult(
@@ -239,6 +265,11 @@ class CORE_EXPORT WebFrameWidgetBase
   void GetWidgetInputHandler(
       mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
       mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) override;
+  bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) override;
+  blink::FrameWidget* FrameWidget() override { return this; }
+  void SendCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) override;
   void ScheduleAnimationForWebTests() override;
 
   // mojom::blink::FrameWidget methods.

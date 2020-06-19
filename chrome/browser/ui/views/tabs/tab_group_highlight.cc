@@ -23,8 +23,6 @@ TabGroupHighlight::TabGroupHighlight(TabGroupViews* tab_group_views,
 }
 
 void TabGroupHighlight::OnPaint(gfx::Canvas* canvas) {
-  SetBoundsRect(tab_group_views_->GetBounds());
-
   SkPath path = GetPath();
   cc::PaintFlags flags;
   flags.setAntiAlias(true);

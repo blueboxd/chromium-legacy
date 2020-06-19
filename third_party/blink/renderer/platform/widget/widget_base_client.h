@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_WIDGET_BASE_CLIENT_H_
 
+#include <vector>
+
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
@@ -21,6 +23,7 @@ class RenderFrameMetadataObserver;
 
 namespace blink {
 
+class FrameWidget;
 class WebGestureEvent;
 class WebMouseEvent;
 
@@ -122,8 +125,6 @@ class WidgetBaseClient {
                                     int impl_percent,
                                     base::Optional<int> main_percent) {}
   virtual void FocusChangeComplete() {}
-  virtual void ShowVirtualKeyboard() {}
-  virtual void UpdateTextInputState() {}
 
   virtual WebInputEventResult DispatchBufferedTouchEvents() = 0;
   virtual WebInputEventResult HandleInputEvent(
@@ -147,6 +148,20 @@ class WidgetBaseClient {
   virtual void GetWidgetInputHandler(
       mojo::PendingReceiver<mojom::blink::WidgetInputHandler> request,
       mojo::PendingRemote<mojom::blink::WidgetInputHandlerHost> host) = 0;
+
+  // The FrameWidget interface if this is a FrameWidget.
+  virtual FrameWidget* FrameWidget() { return nullptr; }
+
+  // Send the composition change to the browser.
+  virtual void SendCompositionRangeChanged(
+      const gfx::Range& range,
+      const std::vector<gfx::Rect>& character_bounds) = 0;
+
+  // Determine if there is a IME guard.
+  virtual bool HasCurrentImeGuard(bool request_to_show_virtual_keyboard) = 0;
+
+  // Called to inform the Widget that it has gained or lost keyboard focus.
+  virtual void FocusChanged(bool) = 0;
 
   // Test-specific methods below this point.
   virtual void ScheduleAnimationForWebTests() {}

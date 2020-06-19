@@ -992,6 +992,12 @@ message DiskInfo {
   optional uint64 bytes_written_since_last_boot = 9;
   optional uint64 read_time_seconds_since_last_boot = 10;
   optional uint64 write_time_seconds_since_last_boot = 11;
+  // Counts the time the disk and queue were busy, so unlike the fields above,
+  // parallel requests are not counted multiple times.
+  optional uint64 io_time_seconds_since_last_boot = 12;
+  // Time spent discarding since last boot. Discarding is writing to clear
+  // blocks which are no longer in use. Supported on kernels 4.18+.
+  optional uint64 discard_time_seconds_since_last_boot = 13;
 }
 
 // Status of the storage subsystem.

@@ -1278,6 +1278,7 @@ test("views_unittests") {
         sources += [
           "widget/desktop_aura/desktop_drag_drop_client_aurax11_unittest.cc",
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
+          "widget/desktop_aura/x11_drag_drop_client_unittest.cc",
         ]
         deps += [ "//ui/base/x:test_support" ]
       }

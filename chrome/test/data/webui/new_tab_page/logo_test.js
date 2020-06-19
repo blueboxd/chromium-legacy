@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
@@ -61,7 +62,7 @@ function createImageDoodle(width, height) {
   };
 }
 
-suite('NewTabPageLogoTest', () => {
+function createSuite(themeModeDoodlesEnabled) {
   /**
    * @implements {BrowserProxy}
    * @extends {TestBrowserProxy}
@@ -77,6 +78,10 @@ suite('NewTabPageLogoTest', () => {
     await flushTasks();
     return logo;
   }
+
+  suiteSetup(() => {
+    loadTimeData.overrideValues({themeModeDoodlesEnabled});
+  });
 
   setup(() => {
     PolymerTest.clearBody();
@@ -173,15 +178,60 @@ suite('NewTabPageLogoTest', () => {
         }
       }
     });
+    logo.dark = false;
 
     // Assert.
     assertNotStyle($$(logo, '#doodle'), 'display', 'none');
     assertEquals($$(logo, '#logo'), null);
-    assertEquals($$(logo, '#iframe').src, 'https://foo.com/');
     assertNotStyle($$(logo, '#iframe'), 'display', 'none');
     assertStyle($$(logo, '#iframe'), 'width', '200px');
     assertStyle($$(logo, '#iframe'), 'height', '100px');
     assertStyle($$(logo, '#imageContainer'), 'display', 'none');
+    if (themeModeDoodlesEnabled) {
+      assertEquals(
+          $$(logo, '#iframe').src, 'https://foo.com/?theme_messages=0');
+      assertEquals(1, testProxy.getCallCount('postMessage'));
+      const [iframe, {cmd, dark}, origin] =
+          await testProxy.whenCalled('postMessage');
+      assertEquals($$(logo, '#iframe'), iframe);
+      assertEquals('changeMode', cmd);
+      assertEquals(false, dark);
+      assertEquals('https://foo.com', origin);
+    } else {
+      assertEquals($$(logo, '#iframe').src, 'https://foo.com/');
+    }
+  });
+
+  test('message only after mode has been set', async () => {
+    // Act (no mode).
+    const logo = await createLogo({
+      content: {
+        interactiveDoodle: {
+          url: {url: 'https://foo.com'},
+          width: 200,
+          height: 100,
+        }
+      }
+    });
+
+    // Assert (no mode).
+    assertEquals(0, testProxy.getCallCount('postMessage'));
+
+    // Act (setting mode).
+    logo.dark = true;
+
+    // Assert (setting mode).
+    if (themeModeDoodlesEnabled) {
+      assertEquals(1, testProxy.getCallCount('postMessage'));
+      const [iframe, {cmd, dark}, origin] =
+          await testProxy.whenCalled('postMessage');
+      assertEquals($$(logo, '#iframe'), iframe);
+      assertEquals('changeMode', cmd);
+      assertEquals(true, dark);
+      assertEquals('https://foo.com', origin);
+    } else {
+      assertEquals(0, testProxy.getCallCount('postMessage'));
+    }
   });
 
   test('disallowing doodle shows logo', async () => {
@@ -293,6 +343,30 @@ suite('NewTabPageLogoTest', () => {
     // Assert.
     assertEquals($$(logo, '#iframe').offsetHeight, height);
     assertEquals($$(logo, '#iframe').offsetWidth, width);
+  });
+
+  test('receiving mode message sends mode', async () => {
+    // Arrange.
+    const logo = await createLogo(
+        {content: {interactiveDoodle: {url: {url: 'https://foo.com'}}}});
+    logo.dark = false;
+    testProxy.resetResolver('postMessage');
+
+    // Act.
+    window.postMessage({cmd: 'sendMode'}, '*');
+    await flushTasks();
+
+    // Assert.
+    if (themeModeDoodlesEnabled) {
+      assertEquals(1, testProxy.getCallCount('postMessage'));
+      const [_, {cmd, dark}, origin] =
+          await testProxy.whenCalled('postMessage');
+      assertEquals('changeMode', cmd);
+      assertEquals(false, dark);
+      assertEquals('https://foo.com', origin);
+    } else {
+      assertEquals(0, testProxy.getCallCount('postMessage'));
+    }
   });
 
   test('clicking simple doodle opens link', async () => {
@@ -510,5 +584,14 @@ suite('NewTabPageLogoTest', () => {
     assertEquals(newTabPage.mojom.DoodleShareChannel.TWITTER, channel);
     assertEquals('supi', doodleId);
     assertEquals('123', shareId);
+  });
+}
+
+suite('NewTabPageLogoTest', () => {
+  [true, false].forEach(themeModeDoodlesEnabled => {
+    const enabled = themeModeDoodlesEnabled ? 'enabled' : 'disabled';
+    suite(`theme mode doodles ${enabled}`, () => {
+      createSuite(themeModeDoodlesEnabled);
+    });
   });
 });

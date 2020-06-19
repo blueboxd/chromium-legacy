@@ -2679,8 +2679,6 @@ static_library("browser") {
       "android/preferences/browser_prefs_android.h",
       "android/preferences/clipboard_android.cc",
       "android/preferences/clipboard_android.h",
-      "android/preferences/cookie_controls_bridge.cc",
-      "android/preferences/cookie_controls_bridge.h",
       "android/preferences/cookie_controls_service_bridge.cc",
       "android/preferences/cookie_controls_service_bridge.h",
       "android/preferences/pref_change_registrar_android.cc",

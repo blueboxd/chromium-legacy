@@ -7,6 +7,7 @@
 
 import sys
 from xml.dom import minidom
+from xml.parsers import expat
 
 def _GetPolicyTemplates(template_path):
   # Read list of policies in the template. eval() is used instead of a JSON
@@ -205,7 +206,16 @@ def _CheckMissingPlaceholders(input_api, output_api, template_path):
     for key in ['desc', 'text']:
       if not key in item:
         continue
-      node = minidom.parseString('<msg>%s</msg>' % item[key]).childNodes[0]
+      try:
+        node = minidom.parseString('<msg>%s</msg>' % item[key]).childNodes[0]
+      except expat.ExpatError as e:
+        error = (
+            'Error when checking for missing placeholders: %s in:\n'
+            '!<Policy Start>!\n%s\n<Policy End>!' %
+            (e, item[key]))
+        results.append(output_api.PresubmitError(error))
+        continue
+
       for child in node.childNodes:
         if child.nodeType == minidom.Node.TEXT_NODE and '$' in child.data:
           warning = ('Character \'$\' found outside of a placeholder in "%s". '

@@ -3465,6 +3465,11 @@ bool WebMediaPlayerImpl::ShouldPausePlaybackWhenHidden() const {
   if (!HasVideo())
     return false;
 
+  if (using_media_player_renderer_ &&
+      pipeline_metadata_.natural_size.IsEmpty()) {
+    return false;
+  }
+
   if (!is_background_video_playback_enabled_)
     return true;
 

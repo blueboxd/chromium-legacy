@@ -36,6 +36,15 @@ const char kMetricDeviceLocalAccountPolicyInvalidations[] =
 const char kMetricDeviceLocalAccountPolicyInvalidationsFcm[] =
     "Enterprise.FCMInvalidationService.DeviceLocalAccountPolicyInvalidations2";
 
+const char kMetricCBCMPolicyRefresh[] = "Enterprise.CBCMPolicyRefresh";
+const char kMetricCBCMPolicyRefreshFcm[] =
+    "Enterprise.FCMInvalidationService.CBCMPolicyRefresh";
+
+const char kMetricCBCMPolicyInvalidations[] =
+    "Enterprise.CBCMPolicyInvalidations";
+const char kMetricCBCMPolicyInvalidationsFcm[] =
+    "Enterprise.FCMInvalidationService.CBCMPolicyInvalidations";
+
 const char kMetricPolicyInvalidationRegistration[] =
     "Enterprise.PolicyInvalidationsRegistrationResult";
 const char kMetricPolicyInvalidationRegistrationFcm[] =

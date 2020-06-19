@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -252,6 +253,10 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
     // Schedule save just in case one is needed.
     schedule_save_closure_.Run();
   }
+
+  base::UmaHistogramCounts10000(
+      "Sync.BookmarksWithoutFullTitle.OnRemoteUpdate",
+      updates_handler.valid_updates_without_full_title_for_uma());
 }
 
 const SyncedBookmarkTracker* BookmarkModelTypeProcessor::GetTrackerForTest()
@@ -457,9 +462,13 @@ void BookmarkModelTypeProcessor::OnInitialUpdateReceived(
         bookmark_model_, bookmark_undo_service_,
         bookmark_model_observer_.get());
 
-    BookmarkModelMerger(std::move(updates), bookmark_model_, favicon_service_,
-                        bookmark_tracker_.get())
-        .Merge();
+    BookmarkModelMerger model_merger(std::move(updates), bookmark_model_,
+                                     favicon_service_, bookmark_tracker_.get());
+    model_merger.Merge();
+
+    base::UmaHistogramCounts1M(
+        "Sync.BookmarksWithoutFullTitle.OnInitialMerge",
+        model_merger.valid_updates_without_full_title_for_uma());
   }
 
   // If any of the permanent nodes is missing, we treat it as failure.

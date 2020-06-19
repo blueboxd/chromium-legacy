@@ -6,9 +6,11 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "components/autofill/core/common/renderer_id.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/votes_uploader.h"
@@ -34,6 +36,9 @@ MATCHER_P2(MatchesUsernameAndPassword, username, password, "") {
 // Indices of username and password fields in the observed form.
 const int kUsernameFieldIndex = 1;
 const int kPasswordFieldIndex = 2;
+
+const auto kTrigger = metrics_util::MoveToAccountStoreTrigger::
+    kSuccessfulLoginWithProfileStorePassword;
 
 }  // namespace
 
@@ -744,6 +749,36 @@ TEST_F(MultiStorePasswordSaveManagerTest,
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
+       MoveCredentialsFromProfileToAccountStoreRecordsFlowAccepted) {
+  base::HistogramTester histogram_tester;
+
+  PasswordForm saved_match_in_profile_store(saved_match_);
+  saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
+  saved_match_in_profile_store.moving_blocked_for_list.push_back(
+      autofill::GaiaIdHash::FromGaiaId("user@gmail.com"));
+  SetNonFederatedAndNotifyFetchCompleted({&saved_match_in_profile_store});
+
+  password_save_manager()->CreatePendingCredentials(
+      saved_match_in_profile_store, observed_form_, submitted_form_,
+      /*is_http_auth=*/false,
+      /*is_credential_api_save=*/false);
+
+  PasswordForm saved_match_without_moving_blocked_list(
+      saved_match_in_profile_store);
+  saved_match_without_moving_blocked_list.moving_blocked_for_list.clear();
+
+  EXPECT_CALL(*mock_profile_form_saver(), Remove(saved_match_in_profile_store));
+  EXPECT_CALL(*mock_account_form_saver(),
+              Save(saved_match_without_moving_blocked_list, _, _));
+
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
+
+  histogram_tester.ExpectUniqueSample(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowAccepted", kTrigger,
+      1);
+}
+
+TEST_F(MultiStorePasswordSaveManagerTest,
        MoveCredentialsFromProfileToAccountStoreWhenExistsOnlyInProfileStore) {
   PasswordForm saved_match_in_profile_store(saved_match_);
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
@@ -764,7 +799,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_account_form_saver(),
               Save(saved_match_without_moving_blocked_list, _, _));
 
-  password_save_manager()->MoveCredentialsToAccountStore();
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
 }
 
 TEST_F(
@@ -787,7 +822,7 @@ TEST_F(
               Save(saved_match_in_profile_store, _, _))
       .Times(0);
 
-  password_save_manager()->MoveCredentialsToAccountStore();
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -813,7 +848,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_account_form_saver(),
               Save(psl_saved_match_in_profile_store, _, _));
 
-  password_save_manager()->MoveCredentialsToAccountStore();
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -835,7 +870,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_account_form_saver(),
               Save(federated_match_in_profile_store, _, _));
 
-  password_save_manager()->MoveCredentialsToAccountStore();
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -855,7 +890,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_profile_form_saver(), Remove(saved_match_in_profile_store));
   EXPECT_CALL(*mock_account_form_saver(), Save).Times(0);
 
-  password_save_manager()->MoveCredentialsToAccountStore();
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest,
@@ -886,7 +921,7 @@ TEST_F(MultiStorePasswordSaveManagerTest,
   EXPECT_CALL(*mock_account_form_saver(),
               Save(saved_match_in_profile_store, _, _));
 
-  password_save_manager()->MoveCredentialsToAccountStore();
+  password_save_manager()->MoveCredentialsToAccountStore(kTrigger);
 }
 
 TEST_F(MultiStorePasswordSaveManagerTest, BlockMovingWhenExistsInProfileStore) {

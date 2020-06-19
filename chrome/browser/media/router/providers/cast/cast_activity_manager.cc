@@ -11,9 +11,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/json/json_reader.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_record.h"
+#include "chrome/browser/media/router/providers/cast/cast_media_route_provider_metrics.h"
 #include "chrome/browser/media/router/providers/cast/cast_session_client.h"
 #include "chrome/browser/media/router/providers/cast/mirroring_activity_record.h"
 #include "chrome/common/media_router/media_source.h"
@@ -160,6 +162,10 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   const MediaRoute::Id& route_id = route.media_route_id();
   const MediaSinkInternal& sink = params.sink;
 
+  if (IsSiteInitiatedMirroringSource(cast_source.source_id())) {
+    base::UmaHistogramBoolean(kHistogramAudioSender,
+                              cast_source.allow_audio_capture());
+  }
   std::string app_id = ChooseAppId(cast_source, params.sink);
 
   DVLOG(2) << "Launching session with route ID = " << route_id

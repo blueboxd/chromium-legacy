@@ -86,6 +86,8 @@ def main():
         out = sys.stdout
         if not out.isatty():
             return
+        if total == 0:
+            return
         percentage = int(float(done) / float(total) * 100)
         message = "Blink-V8 bindings generation: {}% done\r".format(percentage)
         out.write(message)

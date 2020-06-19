@@ -322,7 +322,7 @@ public class RootUiCoordinator
 
                     selector.openNewTab(generateUrlParamsForSearch(tab, query),
                             TabLaunchType.FROM_LONGPRESS_FOREGROUND, tab, tab.isIncognito());
-                });
+                }, mShareDelegateSupplier);
         mVrModeObserver = new VrModeObserver() {
             @Override
             public void onEnterVr() {

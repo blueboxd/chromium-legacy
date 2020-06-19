@@ -11,9 +11,9 @@ static_library("common") {
     "prerender_messages.h",
     "prerender_origin.cc",
     "prerender_origin.h",
-    "prerender_types.h",
   ]
   deps = [
+    ":mojo_bindings",
     "//ipc",
     "//ipc:message_support",
     "//ipc:param_traits",
@@ -21,6 +21,9 @@ static_library("common") {
 }
 
 mojom("mojo_bindings") {
-  sources = [ "prerender_canceler.mojom" ]
+  sources = [
+    "prerender_canceler.mojom",
+    "prerender_types.mojom",
+  ]
   deps = [ "//url/mojom:url_mojom_gurl" ]
 }

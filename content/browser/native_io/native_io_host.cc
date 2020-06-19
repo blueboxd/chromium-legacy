@@ -155,6 +155,27 @@ void DidGetAllFileNames(
                           std::move(result.second));
 }
 
+// Performs the file I/O work in RenameFile().
+bool DoRenameFile(const base::FilePath& root_path,
+                  const std::string& old_name,
+                  const std::string& new_name) {
+  DCHECK(IsValidNativeIOName(old_name));
+  DCHECK(IsValidNativeIOName(new_name));
+
+  // If the origin's directory wasn't created yet, there's nothing to rename.
+  if (!base::PathExists(root_path))
+    return false;
+
+  // Do not overwrite an existing file.
+  if (base::PathExists(GetNativeIOFilePath(root_path, new_name)))
+    return false;
+
+  // TODO(rstz): Report error.
+  base::File::Error error;
+  return base::ReplaceFile(GetNativeIOFilePath(root_path, old_name),
+                           GetNativeIOFilePath(root_path, new_name), &error);
+}
+
 }  // namespace
 
 NativeIOHost::NativeIOHost(NativeIOContext* context,
@@ -255,6 +276,42 @@ void NativeIOHost::GetAllFileNames(GetAllFileNamesCallback callback) {
       base::BindOnce(&DidGetAllFileNames, std::move(callback)));
 }
 
+void NativeIOHost::RenameFile(const std::string& old_name,
+                              const std::string& new_name,
+                              RenameFileCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (!IsValidNativeIOName(old_name) || !IsValidNativeIOName(new_name)) {
+    mojo::ReportBadMessage("Invalid file name");
+    std::move(callback).Run(false);
+    return;
+  }
+
+  if (open_file_hosts_.find(old_name) != open_file_hosts_.end() ||
+      open_file_hosts_.find(new_name) != open_file_hosts_.end()) {
+    // TODO(rstz): Report that the file is locked.
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto old_iterator_and_success = io_pending_files_.insert(old_name);
+  if (!old_iterator_and_success.second) {
+    std::move(callback).Run(false);
+    return;
+  }
+  auto new_iterator_and_success = io_pending_files_.insert(new_name);
+  if (!new_iterator_and_success.second) {
+    io_pending_files_.erase(old_iterator_and_success.first);
+    std::move(callback).Run(false);
+    return;
+  }
+
+  file_task_runner_->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&DoRenameFile, root_path_, old_name, new_name),
+      base::BindOnce(&NativeIOHost::DidRenameFile, weak_factory_.GetWeakPtr(),
+                     old_name, new_name, std::move(callback)));
+}
+
 void NativeIOHost::OnFileClose(NativeIOFileHost* file_host) {
   DCHECK(open_file_hosts_.count(file_host->file_name()) > 0);
   DCHECK_EQ(open_file_hosts_[file_host->file_name()].get(), file_host);
@@ -296,6 +353,21 @@ void NativeIOHost::DidDeleteFile(const std::string& name,
   DCHECK(io_pending_files_.count(name));
   DCHECK(!open_file_hosts_.count(name));
   io_pending_files_.erase(name);
+
+  std::move(callback).Run(success);
+  return;
+}
+
+void NativeIOHost::DidRenameFile(const std::string& old_name,
+                                 const std::string& new_name,
+                                 RenameFileCallback callback,
+                                 bool success) {
+  DCHECK(io_pending_files_.count(old_name));
+  DCHECK(!open_file_hosts_.count(old_name));
+  DCHECK(io_pending_files_.count(new_name));
+  DCHECK(!open_file_hosts_.count(new_name));
+  io_pending_files_.erase(old_name);
+  io_pending_files_.erase(new_name);
 
   std::move(callback).Run(success);
   return;

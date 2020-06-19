@@ -23,7 +23,6 @@
 #include "components/viz/test/fake_external_begin_frame_source.h"
 #include "components/viz/test/fake_surface_observer.h"
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
-#include "components/viz/test/viz_test_suite.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -647,17 +646,13 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
       false /* not root frame sink */);
 
   bool did_receive_aborted_copy_result = false;
-  base::RunLoop aborted_copy_run_loop;
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
       base::BindOnce(
-          [](bool* got_nothing, base::OnceClosure finished,
-             std::unique_ptr<CopyOutputResult> result) {
+          [](bool* got_nothing, std::unique_ptr<CopyOutputResult> result) {
             *got_nothing = result->IsEmpty();
-            std::move(finished).Run();
           },
-          &did_receive_aborted_copy_result,
-          aborted_copy_run_loop.QuitClosure()));
+          &did_receive_aborted_copy_result));
 
   auto frame = MakeDefaultCompositorFrame();
   ResourceId frame_resource_ids[] = {1, 2, 3};
@@ -666,7 +661,6 @@ TEST_F(CompositorFrameSinkSupportTest, ProhibitsUnprivilegedCopyRequests) {
 
   EXPECT_FALSE(SubmitCompositorFrameWithCopyRequest(std::move(frame),
                                                     std::move(request)));
-  aborted_copy_run_loop.Run();
   EXPECT_TRUE(did_receive_aborted_copy_result);
 
   // All the resources in the rejected frame should have been returned.
@@ -785,10 +779,8 @@ TEST_F(CompositorFrameSinkSupportTest, EvictOlderSurfaces) {
 }
 
 void CopyRequestTestCallback(bool* called,
-                             base::OnceClosure finished,
                              std::unique_ptr<CopyOutputResult> result) {
   *called = true;
-  std::move(finished).Run();
 }
 
 TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
@@ -805,11 +797,9 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   }
 
   bool called1 = false;
-  base::RunLoop called1_run_loop;
   auto request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&CopyRequestTestCallback, &called1,
-                     called1_run_loop.QuitClosure()));
+      base::BindOnce(&CopyRequestTestCallback, &called1));
   request->set_source(kArbitrarySourceId1);
 
   support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
@@ -817,11 +807,9 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called1);
 
   bool called2 = false;
-  base::RunLoop called2_run_loop;
   request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&CopyRequestTestCallback, &called2,
-                     called2_run_loop.QuitClosure()));
+      base::BindOnce(&CopyRequestTestCallback, &called2));
   request->set_source(kArbitrarySourceId2);
 
   support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
@@ -831,17 +819,14 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   EXPECT_FALSE(called2);
 
   bool called3 = false;
-  base::RunLoop called3_run_loop;
   request = std::make_unique<CopyOutputRequest>(
       CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-      base::BindOnce(&CopyRequestTestCallback, &called3,
-                     called3_run_loop.QuitClosure()));
+      base::BindOnce(&CopyRequestTestCallback, &called3));
   request->set_source(kArbitrarySourceId1);
 
   support_->RequestCopyOfOutput(local_surface_id_, std::move(request));
   GetSurfaceForId(surface_id)->TakeCopyOutputRequestsFromClient();
   // Two callbacks are from source1, so the first should be called.
-  called1_run_loop.Run();
   EXPECT_TRUE(called1);
   EXPECT_FALSE(called2);
   EXPECT_FALSE(called3);
@@ -850,8 +835,6 @@ TEST_F(CompositorFrameSinkSupportTest, DuplicateCopyRequest) {
   ExpireAllTemporaryReferences();
   local_surface_id_ = LocalSurfaceId();
   manager_.surface_manager()->GarbageCollectSurfaces();
-  called2_run_loop.Run();
-  called3_run_loop.Run();
   EXPECT_TRUE(called1);
   EXPECT_TRUE(called2);
   EXPECT_TRUE(called3);

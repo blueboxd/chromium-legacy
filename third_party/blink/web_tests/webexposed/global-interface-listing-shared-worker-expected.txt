@@ -830,6 +830,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method delete
 [Worker]     method getAll
 [Worker]     method open
+[Worker]     method rename
 [Worker] interface NavigationPreloadManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

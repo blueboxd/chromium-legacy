@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "components/offline_pages/core/request_header/offline_page_navigation_ui_data.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
 #include "extensions/buildflags/buildflags.h"
@@ -60,7 +60,9 @@ class ChromeNavigationUIData : public content::NavigationUIData {
   }
 #endif
   WindowOpenDisposition window_open_disposition() const { return disposition_; }
-  prerender::PrerenderMode prerender_mode() const { return prerender_mode_; }
+  prerender::mojom::PrerenderMode prerender_mode() const {
+    return prerender_mode_;
+  }
   const std::string& prerender_histogram_prefix() {
     return prerender_histogram_prefix_;
   }
@@ -78,7 +80,8 @@ class ChromeNavigationUIData : public content::NavigationUIData {
 #endif
 
   WindowOpenDisposition disposition_;
-  prerender::PrerenderMode prerender_mode_ = prerender::NO_PRERENDER;
+  prerender::mojom::PrerenderMode prerender_mode_ =
+      prerender::mojom::PrerenderMode::kNoPrerender;
   std::string prerender_histogram_prefix_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeNavigationUIData);

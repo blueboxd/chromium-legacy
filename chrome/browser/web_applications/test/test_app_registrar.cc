@@ -4,6 +4,8 @@
 
 #include "chrome/browser/web_applications/test/test_app_registrar.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/check.h"
 #include "base/notreached.h"
@@ -143,6 +145,19 @@ std::vector<SquareSizePx> TestAppRegistrar::GetAppDownloadedIconSizes(
     const AppId& app_id) const {
   NOTIMPLEMENTED();
   return {};
+}
+
+std::vector<WebApplicationShortcutsMenuItemInfo>
+TestAppRegistrar::GetAppShortcutInfos(const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return {};
+}
+
+std::vector<std::vector<SquareSizePx>>
+TestAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
+    const AppId& app_id) const {
+  NOTIMPLEMENTED();
+  return {{}};
 }
 
 std::vector<AppId> TestAppRegistrar::GetAppIds() const {

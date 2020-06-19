@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_url_loader.h"
+#include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents_observer.h"
 
 class GURL;
@@ -232,6 +233,11 @@ class WebAppInstallTask : content::WebContentsObserver {
                           bool shortcut_created);
   void OnRegisteredRunOnOsLogin(const AppId& app_id,
                                 bool registered_run_on_os_login);
+  void OnUpdateFinalizedRegisterShortcutsMenu(
+      const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
+      const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
+      const AppId& app_id,
+      InstallResultCode code);
 
   // Whether we should just obtain WebApplicationInfo instead of the actual
   // installation.

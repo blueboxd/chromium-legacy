@@ -449,6 +449,51 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetRegistrationsForOrigin(
   return status;
 }
 
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetUsageForOrigin(
+    const url::Origin& origin,
+    int64_t& out_usage) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  out_usage = 0;
+
+  Status status = LazyOpen(false);
+  if (IsNewOrNonexistentDatabase(status))
+    return Status::kOk;
+  if (status != Status::kOk)
+    return status;
+
+  std::string prefix = CreateRegistrationKeyPrefix(origin.GetURL());
+
+  // Read all registrations.
+  {
+    std::unique_ptr<leveldb::Iterator> itr(
+        db_->NewIterator(leveldb::ReadOptions()));
+    for (itr->Seek(prefix); itr->Valid(); itr->Next()) {
+      status = LevelDBStatusToServiceWorkerDBStatus(itr->status());
+      if (status != Status::kOk)
+        break;
+
+      if (!RemovePrefix(itr->key().ToString(), prefix, nullptr))
+        break;
+
+      storage::mojom::ServiceWorkerRegistrationDataPtr registration;
+      status = ParseRegistrationData(itr->value().ToString(), &registration);
+      if (status != Status::kOk)
+        break;
+      out_usage += registration->resources_total_size_bytes;
+    }
+  }
+
+  // Count reading all registrations as one "read operation" for UMA
+  // purposes.
+  HandleReadResult(FROM_HERE, status);
+  if (status != Status::kOk) {
+    out_usage = 0;
+  }
+
+  return status;
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
     std::vector<storage::mojom::ServiceWorkerRegistrationDataPtr>*
         registrations) {

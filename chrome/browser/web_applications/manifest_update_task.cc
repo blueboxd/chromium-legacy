@@ -4,6 +4,12 @@
 
 #include "chrome/browser/web_applications/manifest_update_task.h"
 
+#include <map>
+#include <memory>
+#include <utility>
+#include <vector>
+
+#include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/web_applications/components/app_icon_manager.h"
@@ -13,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "ui/gfx/skia_util.h"
 
@@ -127,6 +134,13 @@ bool ManifestUpdateTask::IsUpdateNeededForManifest() const {
 
   if (web_application_info_->icon_infos != registrar_.GetAppIconInfos(app_id_))
     return true;
+
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      web_application_info_->shortcut_infos !=
+          registrar_.GetAppShortcutInfos(app_id_)) {
+    return true;
+  }
 
   // TODO(crbug.com/926083): Check more manifest fields.
   return false;

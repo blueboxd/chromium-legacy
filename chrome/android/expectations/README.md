@@ -43,31 +43,8 @@ Each Android application has a manifest that contains information about the app
 
 ### What are `*.AndroidManifest.expected` files?
 
-[monochrome_public_bundle__base_bundle_module.AndroidManifest.expected](monochrome_public_bundle__base_bundle_module.AndroidManifest.expected)
-contains the contents of the final merged manifest used when building
-MonochromePublic.aab.
-
-[trichrome_chrome_bundle__base_bundle_module.AndroidManifest.expected](trichrome_chrome_bundle__base_bundle_module.AndroidManifest.expected)
-contains the contents of the final merged manifest used when building
-TrichromeChrome.aab.
-
-[trichrome_library_apk.AndroidManifest.expected](trichrome_library_apk.AndroidManifest.expected)
-contains the contents of the final merged manifest used when building
-TrichromeLibrary.apk
-
-In addition, we have expectation files for Webviews.
-
-[trichrome_library_apk.AndroidManifest.expected](trichrome_library_apk.AndroidManifest.expected)
-contains the contents of the final merged manifest used when building
-TrichromeLibrary.apk
-
-[//android_webview/java/system_webview_apk.AndroidManifest.expected](../../../android_webview/java/system_webview_apk.AndroidManifest.expected)
-contains the contents of the final merged manifest used when building
-SystemWebView.apk
-
-[//android_webview/java/trichrome_webview_apk.AndroidManifest.expected](../../../android_webview/java/trichrome_webview_apk.AndroidManifest.expected)
-contains the contents of the final merged manifest used when building
-TrichromeWebView.apk
+They contain the contents of the final merged manifest used when building their
+associated targets.
 
 ### What are `*.AndroidManifest.diff.expected` files?
 For internal targets, we don't want to check that the generated manifest are
@@ -98,20 +75,10 @@ assets files (under assets/).
 `*.native_libs_and_assets.expected` files store in a text format the list of
 native libraries & assets, and their related information (whether it's
 compressed, how it's aligned).
-We have
-1. [chrome_modern_public_bundle__base.native_libs_and_assets.expected](chrome_modern_public_bundle__base__create.native_libs_and_assets.expected),
-which is for the base module of `chrome_modern_public_bundle`.
-2. [monochrome_public_bundle__base.native_libs_and_assets.expected](monochrome_public_bundle__base__create.native_libs_and_assets.expected),
-which is for the base module of `monochrome_public_bundle`.
-3. [trichrome_chrome_bundle__base.native_libs_and_assets.expected](trichrome_chrome_bundle__base__create.native_libs_and_assets.expected),
-which is for the base module of `trichrome_chrome_bundle`.
-4. [trichrome_library_apk.native_libs_and_assets.expected](trichrome_library_apk__create.native_libs_and_assets.expected),
-which is for `trichrome_library_apk`
 
 ### Why do we care about native libraries and assets discrepancies?
 When we change build gn files, the native libraries and assets can sometimes
 be changed in an unexpected way.
-
 
 ## Build failures caused by `*.expected` files
 
@@ -134,31 +101,23 @@ attention or the expected file needs updating.
 
 #### Option B: Update expected files with a local build
 
-1. Ensure that:
-
-   * Your args.gn contains these args:
+1. Ensure that your args.gn contain:
 
    ```
+   # For arm32:
+   is_debug = false
    enable_chrome_android_internal = false
-   is_java_debug = false
    android_channel = "stable"
+
+   # For arm64:
+   is_debug = false
+   enable_chrome_android_internal = false
    ```
-
-   * Your local branch is up-to-date with master
-
 
 2. Run:
 
-   For AndroidManifest failures:
-
    ```
-   autoninja -C $CHROMIUM_OUTPUT_DIR monochrome_public_bundle__base_bundle_module__merge_manifests
-   ```
-
-   For Proguard flags failures:
-
-   ```
-   autoninja -C $CHROMIUM_OUTPUT_DIR monochrome_public_bundle
+   autoninja -C $CHROMIUM_OUTPUT_DIR validate_expectations
    ```
 
 3. Run the command suggested in the error message to copy the contents of the
@@ -171,11 +130,12 @@ attention or the expected file needs updating.
 
 ### Trybot failures
 
-On the [android-binary-size](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size)
-trybot we set `check_android_configuration=true` which causes any differences
-between the expected and generated files to fail the build.
+The [android-binary-size] trybot fails when expectations do not match. The one
+exception is that arm64 native libs and assets expectations are checked by
+[android-pie-arm64-rel].
 
-Without this argument the error message is shown but doesn't fail the build.
+[android-binary-size]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-binary-size
+[android-pie-arm64-rel]: https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-pie-arm64-rel
 
 ### Troubleshooting
 

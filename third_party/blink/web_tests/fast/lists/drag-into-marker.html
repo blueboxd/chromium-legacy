@@ -69,7 +69,7 @@ selection_test(
         // can't get to. This (x, y) *should* be over the list marker.
         eventSender.mouseMoveTo(
             selection.computeLeft(ul) + 18,
-            selection.computeTop(li) + 3);
+            selection.computeTop(li) + li.offsetHeight / 2);
         eventSender.mouseUp();
     },
     [

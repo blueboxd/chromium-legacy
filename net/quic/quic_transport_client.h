@@ -85,6 +85,8 @@ class NET_EXPORT QuicTransportClient
   struct NET_EXPORT Parameters {
     Parameters();
     ~Parameters();
+    Parameters(const Parameters&);
+    Parameters(Parameters&&);
 
     // A vector of fingerprints for expected server certificates, as described
     // in

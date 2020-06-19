@@ -65,6 +65,10 @@ struct PreconnectRequest {
   PreconnectRequest(const url::Origin& origin,
                     int num_sockets,
                     const net::NetworkIsolationKey& network_isolation_key);
+  PreconnectRequest(const PreconnectRequest&) = default;
+  PreconnectRequest(PreconnectRequest&&) = default;
+  PreconnectRequest& operator=(const PreconnectRequest&) = default;
+  PreconnectRequest& operator=(PreconnectRequest&&) = default;
 
   url::Origin origin;
   // A zero-value means that we need to preresolve a host only.
@@ -73,16 +77,39 @@ struct PreconnectRequest {
   net::NetworkIsolationKey network_isolation_key;
 };
 
+struct PrefetchRequest {
+  PrefetchRequest(const GURL& url,
+                  const net::NetworkIsolationKey& network_isolation_key);
+
+  PrefetchRequest(const PrefetchRequest&) = default;
+  PrefetchRequest(PrefetchRequest&&) = default;
+  PrefetchRequest& operator=(const PrefetchRequest&) = default;
+  PrefetchRequest& operator=(PrefetchRequest&&) = default;
+
+  GURL url;
+  net::NetworkIsolationKey network_isolation_key;
+
+  // TODO(falken): Add resource type.
+};
+
 // Stores a result of preconnect prediction. The |requests| vector is the main
 // result of prediction and other fields are used for histograms reporting.
 struct PreconnectPrediction {
   PreconnectPrediction();
   PreconnectPrediction(const PreconnectPrediction& other);
+  PreconnectPrediction(PreconnectPrediction&& other);
+
+  PreconnectPrediction& operator=(const PreconnectPrediction& other);
+  PreconnectPrediction& operator=(PreconnectPrediction&& other);
   ~PreconnectPrediction();
 
   bool is_redirected = false;
   std::string host;
   std::vector<PreconnectRequest> requests;
+
+  // For LoadingPredictorPrefetch. When |prefetch_requests| is non-empty, it is
+  // used instead of |requests|.
+  std::vector<PrefetchRequest> prefetch_requests;
 };
 
 // Stores a result of a prediction from the optimization guide.

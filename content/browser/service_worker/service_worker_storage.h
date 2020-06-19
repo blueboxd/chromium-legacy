@@ -80,6 +80,9 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerDatabase::Status status,
       std::unique_ptr<RegistrationList> registrations,
       std::unique_ptr<std::vector<ResourceList>> resource_lists)>;
+  using GetUsageForOriginCallback =
+      base::OnceCallback<void(ServiceWorkerDatabase::Status status,
+                              int64_t usage)>;
   using GetAllRegistrationsCallback =
       base::OnceCallback<void(ServiceWorkerDatabase::Status status,
                               std::unique_ptr<RegistrationList> registrations)>;
@@ -139,6 +142,10 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Returns all stored registrations for a given origin.
   void GetRegistrationsForOrigin(const GURL& origin,
                                  GetRegistrationsDataCallback callback);
+
+  // Reads the total resource size stored in the storage for a given origin.
+  void GetUsageForOrigin(const url::Origin& origin,
+                         GetUsageForOriginCallback callback);
 
   // Returns all stored registrations.
   void GetAllRegistrations(GetAllRegistrationsCallback callback);
@@ -471,6 +478,11 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       int64_t registration_id,
       FindInDBCallback callback);
+  static void GetUsageForOriginInDB(
+      ServiceWorkerDatabase* database,
+      scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+      url::Origin origin,
+      GetUsageForOriginCallback callback);
   static void GetUserDataInDB(
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,

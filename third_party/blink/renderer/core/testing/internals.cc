@@ -2372,6 +2372,17 @@ void Internals::setPageScaleFactorLimits(float min_scale_factor,
   page->SetDefaultPageScaleLimits(min_scale_factor, max_scale_factor);
 }
 
+float Internals::pageZoomFactor(ExceptionState& exception_state) {
+  if (!document_->GetPage()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidAccessError,
+        "The document's page cannot be retrieved.");
+    return 0;
+  }
+  // Page zoom without Device Scale Factor.
+  return document_->GetPage()->GetChromeClient().UserZoomFactor();
+}
+
 void Internals::setIsCursorVisible(Document* document,
                                    bool is_visible,
                                    ExceptionState& exception_state) {

@@ -33,12 +33,14 @@
 
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
+#include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
@@ -58,13 +60,13 @@ namespace blink {
 
 int ScrollableArea::PixelsPerLineStep(LocalFrame* frame) {
   if (!frame)
-    return kPixelsPerLineStep;
+    return cc::kPixelsPerLineStep;
   return frame->GetPage()->GetChromeClient().WindowToViewportScalar(
-      frame, kPixelsPerLineStep);
+      frame, cc::kPixelsPerLineStep);
 }
 
 float ScrollableArea::MinFractionToStepWhenPaging() {
-  return kMinFractionToStepWhenPaging;
+  return cc::kMinFractionToStepWhenPaging;
 }
 
 int ScrollableArea::MaxOverlapBetweenPages() const {
@@ -74,7 +76,7 @@ int ScrollableArea::MaxOverlapBetweenPages() const {
 // static
 float ScrollableArea::DirectionBasedScrollDelta(ScrollGranularity granularity) {
   return (granularity == ScrollGranularity::kScrollByPercentage)
-             ? kPercentDeltaForDirectionalScroll
+             ? cc::kPercentDeltaForDirectionalScroll
              : 1;
 }
 
@@ -172,6 +174,34 @@ float ScrollableArea::ScrollStep(ScrollGranularity granularity,
   }
 }
 
+ScrollOffset ScrollableArea::ResolveScrollDelta(ScrollGranularity granularity,
+                                                const ScrollOffset& delta) {
+  gfx::SizeF step(ScrollStep(granularity, kHorizontalScrollbar),
+                  ScrollStep(granularity, kVerticalScrollbar));
+
+  if (granularity == ScrollGranularity::kScrollByPercentage) {
+    LocalFrame* local_frame = GetLayoutBox()->GetFrame();
+    DCHECK(local_frame);
+    gfx::SizeF viewport = gfx::SizeF(
+        FloatSize(local_frame->GetPage()->GetVisualViewport().Size()));
+
+    // Convert to screen coordinates (physical pixels).
+    float page_scale_factor = local_frame->GetPage()->PageScaleFactor();
+    step.Scale(page_scale_factor);
+
+    gfx::Vector2dF pixel_delta =
+        cc::ScrollUtils::ResolveScrollPercentageToPixels(gfx::Vector2dF(delta),
+                                                         step, viewport);
+
+    // Rescale back to rootframe coordinates.
+    pixel_delta.Scale(1 / page_scale_factor);
+
+    return ScrollOffset(pixel_delta.x(), pixel_delta.y());
+  }
+
+  return delta.ScaledBy(step.width(), step.height());
+}
+
 ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
                                         const ScrollOffset& delta,
                                         ScrollCallback on_finish) {
@@ -184,11 +214,7 @@ ScrollResult ScrollableArea::UserScroll(ScrollGranularity granularity,
   base::ScopedClosureRunner run_on_return(WTF::Bind(
       &ScrollableArea::RunScrollCompleteCallbacks, WrapWeakPersistent(this)));
 
-  float step_x = ScrollStep(granularity, kHorizontalScrollbar);
-  float step_y = ScrollStep(granularity, kVerticalScrollbar);
-
-  ScrollOffset pixel_delta(delta);
-  pixel_delta.Scale(step_x, step_y);
+  ScrollOffset pixel_delta = ResolveScrollDelta(granularity, delta);
 
   ScrollOffset scrollable_axis_delta(
       UserInputScrollable(kHorizontalScrollbar) ? pixel_delta.Width() : 0,

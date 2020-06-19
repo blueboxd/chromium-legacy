@@ -1,0 +1,61 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/gesture-util.js"></script>
+<script src="../../resources/scrollbar-util.js"></script>
+<script src="resources/percent-based-util.js"></script>
+<script src="../../resources/blink-coordinates-util.js"></script>
+<script src="resources/scroller-util.js"></script>
+<script src="resources/percent-based-util.js"></script>
+
+<style>
+  .scroller {
+    width: 50px;
+    height: 50px;
+    overflow: scroll;
+  }
+
+  .scroller>.child {
+    width: 4000px;
+    height: 4000px;
+  }
+</style>
+
+
+<div id="scroller" class="scroller">
+  <div class="child"></div>
+</div>
+<script>
+  const onMacPlatform = navigator.userAgent.includes("Mac OS X");
+
+  // As there is no page zoom, devicePixelRatio = deviceScaleFactor
+  // TODO(joalmei): When https://crbug.com/716231 is fixed, remove condition
+  // for mac.
+  const MIN_DELTA = onMacPlatform
+    ? MIN_SCROLL_DELTA_PCT_BASED
+    : MIN_SCROLL_DELTA_PCT_BASED / window.devicePixelRatio;
+
+  // 1 - Test arrows
+  promise_test(async function () {
+    // Mac doesn't have scrollbar arrows.
+    if (onMacPlatform)
+      return;
+
+    const expected_x = MIN_DELTA;
+    const expected_y = MIN_DELTA;
+
+    await runScrollbarArrowsTest(scroller, expected_x, expected_y)
+  }, "Percent scrolling using scrollbar arrows in scroller clamped by 16px");
+
+  // 2 - Test mousewheel
+  promise_test(async function () {
+    const SCROLL_PERCENTAGE = 0.1;
+
+    const expected_x = MIN_DELTA;
+    const expected_y = MIN_DELTA;
+
+    // Check if mousewheel scrolls are clamping by its minimum value.
+    await runMousewheelTest(scroller, expected_x, expected_y, SCROLL_PERCENTAGE);
+  }, "Percent scrolling using mousewheel in scroller clamped by 16px");
+
+</script>

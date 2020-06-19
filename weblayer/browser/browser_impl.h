@@ -80,6 +80,10 @@ class BrowserImpl : public Browser {
           j_minimal_persistence_state);
   void WebPreferencesChanged(JNIEnv* env);
   void OnFragmentStart(JNIEnv* env);
+  void OnFragmentResume(JNIEnv* env);
+  void OnFragmentPause(JNIEnv* env);
+
+  bool fragment_resumed() { return fragment_resumed_; }
 #endif
 
   // Used in tests to specify a non-default max (0 means use the default).
@@ -130,6 +134,7 @@ class BrowserImpl : public Browser {
   base::FilePath GetBrowserPersisterDataPath();
 
 #if defined(OS_ANDROID)
+  bool fragment_resumed_ = false;
   base::android::ScopedJavaGlobalRef<jobject> java_impl_;
 #endif
   base::ObserverList<BrowserObserver> browser_observers_;

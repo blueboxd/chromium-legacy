@@ -224,6 +224,8 @@
     [RaisesException] void setPageScaleFactor(float scaleFactor);
     [RaisesException] void setPageScaleFactorLimits(float minScaleFactor, float maxScaleFactor);
 
+    [RaisesException] float pageZoomFactor();
+
     [RaisesException] void setIsCursorVisible(Document document, boolean isVisible);
     void setMaxNumberOfFramesToTen(boolean enable);
 

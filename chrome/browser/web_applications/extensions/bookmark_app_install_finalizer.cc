@@ -139,8 +139,6 @@ void BookmarkAppInstallFinalizer::FinalizeUpdate(
 
   const Extension* existing_extension = GetEnabledExtension(expected_app_id);
   if (!existing_extension) {
-    DCHECK(ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-        expected_app_id));
     std::move(callback).Run(web_app::AppId(),
                             web_app::InstallResultCode::kWebAppDisabled);
     return;

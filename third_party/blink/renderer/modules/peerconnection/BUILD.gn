@@ -155,6 +155,8 @@ blink_modules_sources("peerconnection") {
     "rtc_void_request_promise_impl.h",
     "rtc_void_request_script_promise_resolver_impl.cc",
     "rtc_void_request_script_promise_resolver_impl.h",
+    "thermal_resource.cc",
+    "thermal_resource.h",
     "transceiver_state_surfacer.cc",
     "transceiver_state_surfacer.h",
     "web_rtc_stats_report_callback_resolver.cc",

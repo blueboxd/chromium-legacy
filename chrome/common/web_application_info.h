@@ -154,4 +154,10 @@ std::ostream& operator<<(std::ostream& out,
 bool operator==(const WebApplicationIconInfo& icon_info1,
                 const WebApplicationIconInfo& icon_info2);
 
+bool operator==(const WebApplicationShortcutsMenuItemInfo::Icon& icon1,
+                const WebApplicationShortcutsMenuItemInfo::Icon& icon2);
+
+bool operator==(const WebApplicationShortcutsMenuItemInfo& shortcut_info1,
+                const WebApplicationShortcutsMenuItemInfo& shortcut_info2);
+
 #endif  // CHROME_COMMON_WEB_APPLICATION_INFO_H_

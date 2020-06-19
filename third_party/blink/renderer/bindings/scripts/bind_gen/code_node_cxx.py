@@ -249,6 +249,7 @@ class CxxFuncDeclNode(CompositeNode):
             default: True makes this have the default implementation.
             delete: True makes this function be deleted.
         """
+        assert isinstance(name, str)
         assert isinstance(static, bool)
         assert isinstance(explicit, bool)
         assert isinstance(constexpr, bool)
@@ -330,6 +331,7 @@ class CxxFuncDefNode(CompositeNode):
             override: True makes this an overriding function.
             member_initializer_list: List of member initializers.
         """
+        assert isinstance(name, str)
         assert isinstance(static, bool)
         assert isinstance(inline, bool)
         assert isinstance(explicit, bool)
@@ -372,6 +374,7 @@ class CxxFuncDefNode(CompositeNode):
                 separator=", ",
                 head=" : ")
 
+        self._function_name = name
         self._body_node = SymbolScopeNode()
 
         CompositeNode.__init__(
@@ -391,6 +394,10 @@ class CxxFuncDefNode(CompositeNode):
             override=override,
             member_initializer_list=member_initializer_list,
             body=self._body_node)
+
+    @property
+    def function_name(self):
+        return self._function_name
 
     @property
     def body(self):

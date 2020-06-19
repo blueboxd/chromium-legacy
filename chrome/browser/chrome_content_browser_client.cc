@@ -232,6 +232,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prerender/common/prerender_final_status.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "components/previews/content/previews_decider.h"
 #include "components/previews/content/previews_decider_impl.h"
 #include "components/previews/content/previews_ui_service.h"
@@ -4362,7 +4363,8 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 #endif
 
   if (chrome_navigation_ui_data &&
-      chrome_navigation_ui_data->prerender_mode() != prerender::NO_PRERENDER) {
+      chrome_navigation_ui_data->prerender_mode() !=
+          prerender::mojom::PrerenderMode::kNoPrerender) {
     result.push_back(std::make_unique<prerender::PrerenderURLLoaderThrottle>(
         chrome_navigation_ui_data->prerender_mode(),
         chrome_navigation_ui_data->prerender_histogram_prefix(),

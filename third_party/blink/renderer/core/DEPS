@@ -34,6 +34,7 @@ include_rules = [
     "+cc/input/layer_selection_bound.h",
     "+cc/input/main_thread_scrolling_reason.h",
     "+cc/input/overscroll_behavior.h",
+    "+cc/input/scroll_utils.h",
     "+cc/input/scrollbar.h",
     "+cc/input/scroll_snap_data.h",
     "+cc/input/scroll_state.h",

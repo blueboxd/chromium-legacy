@@ -122,6 +122,39 @@ void RecordAppBackgroundPageLoadCompleted(bool completed_after_background) {
                         completed_after_background);
 }
 
+void DispatchFirstPaintAfterBackForwardCacheRestore(
+    PageLoadMetricsObserver* observer,
+    const std::vector<mojo::StructPtr<mojom::BackForwardCacheTiming>>&
+        last_timings,
+    const std::vector<mojo::StructPtr<mojom::BackForwardCacheTiming>>&
+        new_timings) {
+  DCHECK_GE(new_timings.size(), last_timings.size());
+
+  for (size_t i = 0; i < new_timings.size(); i++) {
+    auto first_paint =
+        new_timings[i]->first_paint_after_back_forward_cache_restore;
+
+    // The back-forward navigation happened, but the first-paint event has not
+    // happened yet.
+    if (first_paint.is_zero())
+      continue;
+
+    if (i < last_timings.size()) {
+      auto last_first_paint =
+          last_timings[i]->first_paint_after_back_forward_cache_restore;
+
+      // The first-paint after the page was restored from the cache was already
+      // recorded.
+      if (!last_first_paint.is_zero()) {
+        DCHECK_EQ(last_first_paint, first_paint);
+        continue;
+      }
+    }
+
+    observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(*new_timings[i]);
+  }
+}
+
 void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
                                      const mojom::PageLoadTiming& last_timing,
                                      const mojom::PageLoadTiming& new_timing) {
@@ -143,12 +176,9 @@ void DispatchObserverTimingCallbacks(PageLoadMetricsObserver* observer,
       !last_timing.paint_timing->first_paint) {
     observer->OnFirstPaintInPage(new_timing);
   }
-  if (new_timing.back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore.size() !=
-      last_timing.back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore.size()) {
-    observer->OnFirstPaintAfterBackForwardCacheRestoreInPage(new_timing);
-  }
+  DispatchFirstPaintAfterBackForwardCacheRestore(
+      observer, last_timing.back_forward_cache_timings,
+      new_timing.back_forward_cache_timings);
   if (new_timing.paint_timing->first_image_paint &&
       !last_timing.paint_timing->first_image_paint) {
     observer->OnFirstImagePaintInPage(new_timing);

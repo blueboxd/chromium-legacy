@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/agent_interference_recorder.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_scheduling_strategy.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/compositor_priority_experiments.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
@@ -73,6 +74,7 @@ class MockPageSchedulerImpl;
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm);
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, Tracing);
 }  // namespace main_thread_scheduler_impl_unittest
+class FrameSchedulerImpl;
 class PageSchedulerImpl;
 class TaskQueueThrottler;
 class WebRenderWidgetSchedulingState;
@@ -316,6 +318,13 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void RemovePageScheduler(PageSchedulerImpl*);
 
+  void OnFrameAdded(const FrameSchedulerImpl& frame_scheduler);
+  void OnFrameRemoved(const FrameSchedulerImpl& frame_scheduler);
+
+  AgentSchedulingStrategy& agent_scheduling_strategy() {
+    return *agent_scheduling_strategy_;
+  }
+
   // Called by an associated PageScheduler when frozen or resumed.
   void OnPageFrozen();
   void OnPageResumed();
@@ -366,7 +375,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     return task_queue_throttler_.get();
   }
 
-  void OnMainFramePaint();
+  void OnMainFramePaint(bool force_policy_update);
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 
@@ -719,6 +728,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void UpdateForInputEventOnCompositorThread(const WebInputEvent& event,
                                              InputEventState input_event_state);
 
+  // Notifies the per-agent scheduling strategy that an input event occurred.
+  void NotifyAgentSchedulerOnInputEvent();
+
   // The task cost estimators and the UserModel need to be reset upon page
   // nagigation. This function does that. Must be called from the main thread.
   void ResetForNavigationLocked();
@@ -852,13 +864,16 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   base::RepeatingClosure update_policy_closure_;
   DeadlineTaskRunner delayed_update_policy_runner_;
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
+  base::RepeatingClosure notify_agent_strategy_on_input_event_closure_;
 
   QueueingTimeEstimator queueing_time_estimator_;
   AgentInterferenceRecorder agent_interference_recorder_;
 
+  std::unique_ptr<AgentSchedulingStrategy> agent_scheduling_strategy_ =
+      AgentSchedulingStrategy::Create();
+
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
-
   struct MainThreadOnly {
     MainThreadOnly(
         MainThreadSchedulerImpl* main_thread_scheduler_impl,
@@ -1038,6 +1053,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   PollableThreadSafeFlag policy_may_need_update_;
+  PollableThreadSafeFlag notify_agent_strategy_task_posted_;
 
   base::WeakPtrFactory<MainThreadSchedulerImpl> weak_factory_{this};
 

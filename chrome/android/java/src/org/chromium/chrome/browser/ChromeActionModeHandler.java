@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.content.pm.ResolveInfo;
+import android.text.TextUtils;
 import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,11 +17,16 @@ import org.chromium.base.CollectionUtil;
 import org.chromium.base.Consumer;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
+import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
 import org.chromium.chrome.browser.tab.TabWebContentsObserver;
+import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.content.R;
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.SelectionPopupController;
@@ -46,13 +52,16 @@ public class ChromeActionModeHandler {
      * @param actionBarObserver observer called when the contextual action bar's visibility
      *        has changed.
      * @param searchCallback Callback to run when search action is selected in the action mode.
+     * @param shareDelegateSupplier The {@link Supplier} of the {@link ShareDelegate} that will be
+     *        notified when a share action is performed.
      */
     public ChromeActionModeHandler(ActivityTabProvider activityTabProvider,
-            Consumer<Boolean> actionBarObserver, Callback<String> searchCallback) {
+            Consumer<Boolean> actionBarObserver, Callback<String> searchCallback,
+            Supplier<ShareDelegate> shareDelegateSupplier) {
         mInitWebContentsObserver = (webContents) -> {
             SelectionPopupController.fromWebContents(webContents)
-                    .setActionModeCallback(new ActionModeCallback(
-                            mActiveTab, webContents, actionBarObserver, searchCallback));
+                    .setActionModeCallback(new ActionModeCallback(mActiveTab, webContents,
+                            actionBarObserver, searchCallback, shareDelegateSupplier));
         };
 
         mActivityTabTabObserver =
@@ -78,17 +87,25 @@ public class ChromeActionModeHandler {
 
     @VisibleForTesting
     static class ActionModeCallback implements ActionMode.Callback {
+        /**
+         * Android Intent size limitations prevent sending over a megabyte of data. Limit
+         * query lengths to 100kB because other things may be added to the Intent.
+         */
+        private static final int MAX_SHARE_QUERY_LENGTH_CHARS = 100000;
+
         private final Tab mTab;
         private final ActionModeCallbackHelper mHelper;
         private final Consumer<Boolean> mActionBarObserver;
         private final Callback<String> mSearchCallback;
+        private final Supplier<ShareDelegate> mShareDelegateSupplier;
 
-        protected ActionModeCallback(Tab tab, WebContents webContents, Consumer<Boolean> observer,
-                Callback<String> searchCallback) {
+        ActionModeCallback(Tab tab, WebContents webContents, Consumer<Boolean> observer,
+                Callback<String> searchCallback, Supplier<ShareDelegate> shareDelegateSupplier) {
             mTab = tab;
             mHelper = getActionModeCallbackHelper(webContents);
             mActionBarObserver = observer;
             mSearchCallback = searchCallback;
+            mShareDelegateSupplier = shareDelegateSupplier;
         }
 
         @VisibleForTesting
@@ -148,6 +165,13 @@ public class ChromeActionModeHandler {
                 LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
                         TabUtils.getActivity(mTab), callback);
                 mHelper.finishActionMode();
+            } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARING_HUB_V15)
+                    && item.getItemId() == R.id.select_action_menu_share) {
+                mShareDelegateSupplier.get().share(
+                        new ShareParams.Builder(mTab.getWindowAndroid(), /*url=*/"", /*title=*/"")
+                                .setText(sanitizeTextForShare(mHelper.getSelectedText()))
+                                .build(),
+                        new ChromeShareExtras.Builder().setSaveLastUsed(true).build());
             } else {
                 return mHelper.onActionItemClicked(mode, item);
             }
@@ -181,6 +205,13 @@ public class ChromeActionModeHandler {
             } else {
                 RecordUserAction.record("MobileActionBarShown.Toolbar");
             }
+        }
+
+        private static String sanitizeTextForShare(String text) {
+            if (TextUtils.isEmpty(text) || text.length() < MAX_SHARE_QUERY_LENGTH_CHARS) {
+                return text;
+            }
+            return text.substring(0, MAX_SHARE_QUERY_LENGTH_CHARS) + "…";
         }
     }
 }

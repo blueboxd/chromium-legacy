@@ -66,17 +66,6 @@ class WindowOpenApiTest : public ExtensionApiTest {
   }
 };
 
-// The test uses the chrome.browserAction.openPopup API, which requires that the
-// window can automatically be activated.
-// See comments at BrowserActionInteractiveTest::ShouldRunPopupTest
-// Fails flakily on all platforms. https://crbug.com/477691
-IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, DISABLED_WindowOpen) {
-  extensions::ResultCatcher catcher;
-  ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
-      .AppendASCII("window_open").AppendASCII("spanning")));
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
 bool WaitForTabsPopupsApps(Browser* browser,
                            int num_tabs,
                            int num_popups,

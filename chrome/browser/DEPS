@@ -345,7 +345,6 @@ include_rules = [
   "+services/metrics/metrics_mojo_service.h",
   "+services/metrics/public",
   "+services/network/cert_verifier_with_trust_anchors.h",
-  "+services/network/ignore_errors_cert_verifier.h",
   "+services/network/network_service.h",
   "+services/network/public",
   "+services/network/test",

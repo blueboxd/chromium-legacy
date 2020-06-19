@@ -80,6 +80,10 @@ void ArcIconOnceLoader::SizeSpecificLoader::LoadIcon(
     case apps::mojom::IconCompression::kCompressed:
       icon_type = ArcAppIcon::IconType::kCompressed;
       break;
+    case apps::mojom::IconCompression::kStandard:
+      // TODO(crbug.com/1083331): Set icon_type as
+      // ArcAppIcon::IconType::kTwoLayer.
+      break;
   }
   iter = icons_
              .insert(std::make_pair(

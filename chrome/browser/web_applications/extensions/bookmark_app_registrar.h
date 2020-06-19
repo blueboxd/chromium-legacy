@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_REGISTRAR_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_BOOKMARK_APP_REGISTRAR_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -50,6 +53,11 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   std::vector<WebApplicationIconInfo> GetAppIconInfos(
       const web_app::AppId& app_id) const override;
   std::vector<SquareSizePx> GetAppDownloadedIconSizes(
+      const web_app::AppId& app_id) const override;
+  std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutInfos(
+      const web_app::AppId& app_id) const override;
+  std::vector<std::vector<SquareSizePx>>
+  GetAppDownloadedShortcutsMenuIconsSizes(
       const web_app::AppId& app_id) const override;
   std::vector<web_app::AppId> GetAppIds() const override;
   web_app::WebAppRegistrar* AsWebAppRegistrar() override;

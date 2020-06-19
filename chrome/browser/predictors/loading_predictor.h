@@ -19,6 +19,7 @@
 #include "chrome/browser/predictors/loading_data_collector.h"
 #include "chrome/browser/predictors/navigation_id.h"
 #include "chrome/browser/predictors/preconnect_manager.h"
+#include "chrome/browser/predictors/prefetch_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -44,7 +45,8 @@ class LoadingStatsCollector;
 //
 // All methods must be called from the UI thread.
 class LoadingPredictor : public KeyedService,
-                         public PreconnectManager::Delegate {
+                         public PreconnectManager::Delegate,
+                         public PrefetchManager::Delegate {
  public:
   LoadingPredictor(const LoadingPredictorConfig& config, Profile* profile);
   ~LoadingPredictor() override;
@@ -70,6 +72,7 @@ class LoadingPredictor : public KeyedService,
   ResourcePrefetchPredictor* resource_prefetch_predictor();
   LoadingDataCollector* loading_data_collector();
   PreconnectManager* preconnect_manager();
+  PrefetchManager* prefetch_manager();
 
   // KeyedService:
   void Shutdown() override;
@@ -88,6 +91,9 @@ class LoadingPredictor : public KeyedService,
 
   // PreconnectManager::Delegate:
   void PreconnectFinished(std::unique_ptr<PreconnectStats> stats) override;
+
+  // PrefetchManager::Delegate:
+  void PrefetchFinished(std::unique_ptr<PrefetchStats> stats) override;
 
   size_t GetActiveHintsSizeForTesting() { return active_hints_.size(); }
   size_t GetTotalHintsActivatedForTesting() { return total_hints_activated_; }
@@ -114,12 +120,15 @@ class LoadingPredictor : public KeyedService,
       std::map<GURL, base::TimeTicks>::iterator hint_it);
   void CleanupAbandonedHintsAndNavigations(const NavigationID& navigation_id);
 
-  // May start preconnect and preresolve jobs according to |requests| for |url|
-  // with a given hint |origin|.
+  // May start preconnect and preresolve jobs according to |prediction| for
+  // |url| with a given hint |origin|.
+  //
+  // When LoadingPredictorPrefetch is enabled, starts prefetch
+  // jobs if |prediction| has prefetch requests.
   void MaybeAddPreconnect(const GURL& url,
-                          std::vector<PreconnectRequest> requests,
+                          PreconnectPrediction prediction,
                           HintOrigin origin);
-  // If a preconnect exists for |url|, stop it.
+  // If a preconnect or prefetch exists for |url|, stop it.
   void MaybeRemovePreconnect(const GURL& url);
 
   // May start a preconnect or a preresolve for |url|. |preconnectable|
@@ -150,6 +159,7 @@ class LoadingPredictor : public KeyedService,
   std::unique_ptr<LoadingStatsCollector> stats_collector_;
   std::unique_ptr<LoadingDataCollector> loading_data_collector_;
   std::unique_ptr<PreconnectManager> preconnect_manager_;
+  std::unique_ptr<PrefetchManager> prefetch_manager_;
   std::map<GURL, base::TimeTicks> active_hints_;
   std::set<NavigationID> active_navigations_;
   bool shutdown_ = false;

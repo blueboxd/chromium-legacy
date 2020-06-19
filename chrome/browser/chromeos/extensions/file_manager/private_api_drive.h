@@ -178,26 +178,6 @@ class FileManagerPrivateInternalGetDownloadUrlFunction
   std::unique_ptr<google_apis::AuthService> auth_service_;
 };
 
-class FileManagerPrivateInternalGetThumbnailFunction
-    : public LoggedExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getThumbnail",
-                             FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL)
-
-  FileManagerPrivateInternalGetThumbnailFunction();
-
- protected:
-  ~FileManagerPrivateInternalGetThumbnailFunction() override;
-
-  // ExtensionFunction overrides.
-  ResponseAction Run() override;
-
- private:
-  void GotThumbnail(const base::Optional<std::vector<uint8_t>>& data);
-
-  void SendEncodedThumbnail(std::string thumbnail_data_url);
-};
-
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_DRIVE_H_

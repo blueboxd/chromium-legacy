@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/agent_scheduling_strategy.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_type_names.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/widget_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -221,7 +223,8 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
                         helper_.GetClock(),
                         helper_.NowTicks()),
       any_thread_(this),
-      policy_may_need_update_(&any_thread_lock_) {
+      policy_may_need_update_(&any_thread_lock_),
+      notify_agent_strategy_task_posted_(&any_thread_lock_) {
   // Compositor task queue and default task queue should be managed by
   // WebThreadScheduler. Control task queue should not.
   task_runners_.emplace(helper_.DefaultMainThreadTaskQueue(), nullptr);
@@ -262,6 +265,9 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       &MainThreadSchedulerImpl::UpdatePolicy, weak_factory_.GetWeakPtr());
   end_renderer_hidden_idle_period_closure_.Reset(base::BindRepeating(
       &MainThreadSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
+  notify_agent_strategy_on_input_event_closure_ = base::BindRepeating(
+      &MainThreadSchedulerImpl::NotifyAgentSchedulerOnInputEvent,
+      weak_factory_.GetWeakPtr());
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "MainThreadScheduler",
@@ -1246,6 +1252,16 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
       break;
   }
 
+  // Make sure the per-agent scheduling strategy is notified there was an
+  // input event.
+  if (type != WebInputEvent::Type::kMouseMove &&
+      !notify_agent_strategy_task_posted_.IsSet() &&
+      agent_scheduling_strategy_->ShouldNotifyOnInputEvent()) {
+    notify_agent_strategy_task_posted_.SetWhileLocked(true);
+    control_task_queue_->task_runner()->PostTask(
+        FROM_HERE, notify_agent_strategy_on_input_event_closure_);
+  }
+
   // Avoid unnecessary policy updates if the use case did not change.
   UseCase use_case = ComputeCurrentUseCase(now, &unused_policy_duration);
 
@@ -1255,6 +1271,24 @@ void MainThreadSchedulerImpl::UpdateForInputEventOnCompositorThread(
     EnsureUrgentPolicyUpdatePostedOnMainThread(FROM_HERE);
   }
   GetCompositorThreadOnly().last_input_type = type;
+}
+
+void MainThreadSchedulerImpl::NotifyAgentSchedulerOnInputEvent() {
+  helper_.CheckOnValidThread();
+
+  if (agent_scheduling_strategy_->OnInputEvent() ==
+          AgentSchedulingStrategy::ShouldUpdatePolicy::kYes &&
+      !policy_may_need_update_.IsSet()) {
+    // MaybeUpdatePolicy() triggers a |kMayEarlyOutIfPolicyUnchanged| update,
+    // which may not account for per-agent strategy decisions correctly.
+    // However, if there is already a posted task to update it, it means that
+    // the use-case has changed, so it is OK to not trigger another update from
+    // here.
+    ForceUpdatePolicy();
+  }
+
+  base::AutoLock lock(any_thread_lock_);
+  notify_agent_strategy_task_posted_.SetWhileLocked(false);
 }
 
 void MainThreadSchedulerImpl::WillPostInputEventToMainThread(
@@ -1549,6 +1583,8 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   CreateTraceEventObjectSnapshotLocked();
 
   // TODO(alexclarke): Can we get rid of force update now?
+  // talp: Can't get rid of this, as per-agent scheduling happens on top of the
+  //  policy, based on agent states.
   if (update_type == UpdateType::kMayEarlyOutIfPolicyUnchanged &&
       new_policy == main_thread_only().current_policy) {
     return;
@@ -1587,7 +1623,12 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   Policy old_policy = main_thread_only().current_policy;
   main_thread_only().current_policy = new_policy;
 
-  if (ShouldUpdateTaskQueuePriorities(old_policy)) {
+  // TODO(talp): Extract the code updating queue policies/priorities to a
+  // separate method that can be called directly without having to recalculate
+  // the policy. Then revert the condition here to only check
+  // ShouldUpdateTaskQueuePriorities.
+  if (update_type == UpdateType::kForceUpdate ||
+      ShouldUpdateTaskQueuePriorities(old_policy)) {
     for (const auto& pair : task_runners_) {
       MainThreadTaskQueue* task_queue = pair.first.get();
       task_queue->SetQueuePriority(ComputePriority(task_queue));
@@ -1603,7 +1644,11 @@ void MainThreadSchedulerImpl::ApplyTaskQueuePolicy(
   DCHECK(old_task_queue_policy.IsQueueEnabled(task_queue) ||
          task_queue_enabled_voter);
   if (task_queue_enabled_voter) {
+    bool is_enabled_for_agent =
+        agent_scheduling_strategy_->QueueEnabledState(*task_queue)
+            .value_or(true);
     task_queue_enabled_voter->SetVoteToEnable(
+        is_enabled_for_agent &&
         new_task_queue_policy.IsQueueEnabled(task_queue));
   }
 
@@ -2207,7 +2252,7 @@ void MainThreadSchedulerImpl::DidCommitProvisionalLoad(
   }
 }
 
-void MainThreadSchedulerImpl::OnMainFramePaint() {
+void MainThreadSchedulerImpl::OnMainFramePaint(bool force_policy_update) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::OnMainFramePaint");
   base::AutoLock lock(any_thread_lock_);
@@ -2215,7 +2260,9 @@ void MainThreadSchedulerImpl::OnMainFramePaint() {
       IsAnyMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
       IsAnyMainFrameWaitingForFirstMeaningfulPaint();
-  UpdatePolicyLocked(UpdateType::kMayEarlyOutIfPolicyUnchanged);
+  UpdatePolicyLocked(force_policy_update
+                         ? UpdateType::kForceUpdate
+                         : UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
 void MainThreadSchedulerImpl::ResetForNavigationLocked() {
@@ -2406,6 +2453,22 @@ void MainThreadSchedulerImpl::RemovePageScheduler(
       IsAnyMainFrameWaitingForFirstContentfulPaint();
   any_thread().waiting_for_any_main_frame_meaningful_paint =
       IsAnyMainFrameWaitingForFirstMeaningfulPaint();
+}
+
+void MainThreadSchedulerImpl::OnFrameAdded(
+    const FrameSchedulerImpl& frame_scheduler) {
+  if (agent_scheduling_strategy_->OnFrameAdded(frame_scheduler) ==
+      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+    ForceUpdatePolicy();
+  }
+}
+
+void MainThreadSchedulerImpl::OnFrameRemoved(
+    const FrameSchedulerImpl& frame_scheduler) {
+  if (agent_scheduling_strategy_->OnFrameRemoved(frame_scheduler) ==
+      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+    ForceUpdatePolicy();
+  }
 }
 
 void MainThreadSchedulerImpl::OnPageFrozen() {

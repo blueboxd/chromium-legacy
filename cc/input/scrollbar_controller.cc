@@ -8,6 +8,7 @@
 
 #include "base/cancelable_callback.h"
 #include "cc/base/math_util.h"
+#include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -589,6 +590,29 @@ int ScrollbarController::GetViewportLength() const {
              : scroll_node->container_bounds.width();
 }
 
+int ScrollbarController::GetScrollDeltaForPercentBasedScroll() const {
+  const ScrollbarLayerImplBase* scrollbar = ScrollbarLayer();
+
+  const ScrollNode* scroll_node =
+      layer_tree_host_impl_->active_tree()
+          ->property_trees()
+          ->scroll_tree.FindNodeFromElementId(scrollbar->scroll_element_id());
+  DCHECK(scroll_node);
+
+  const gfx::Vector2dF scroll_delta =
+      scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+          ? gfx::Vector2dF(0, kPercentDeltaForDirectionalScroll)
+          : gfx::Vector2dF(kPercentDeltaForDirectionalScroll, 0);
+
+  const gfx::Vector2dF pixel_delta =
+      layer_tree_host_impl_->ResolveScrollPercentageToPixels(*scroll_node,
+                                                             scroll_delta);
+
+  return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
+             ? pixel_delta.y()
+             : pixel_delta.x();
+}
+
 int ScrollbarController::GetScrollDeltaForScrollbarPart(
     const ScrollbarPart scrollbar_part,
     const bool jump_key_modifier) const {
@@ -598,7 +622,7 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
     case ScrollbarPart::BACK_BUTTON:
     case ScrollbarPart::FORWARD_BUTTON:
       if (layer_tree_host_impl_->settings().percent_based_scrolling) {
-        scroll_delta = kPercentDeltaForDirectionalScroll * GetViewportLength();
+        scroll_delta = GetScrollDeltaForPercentBasedScroll();
       } else {
         scroll_delta = kPixelsPerLineStep * ScreenSpaceScaleFactor();
       }

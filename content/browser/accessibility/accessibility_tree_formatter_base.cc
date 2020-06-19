@@ -63,13 +63,15 @@ PropertyNode PropertyNode::FromPropertyFilter(
 
 PropertyNode::PropertyNode() = default;
 PropertyNode::PropertyNode(PropertyNode&& o)
-    : name_or_value(std::move(o.name_or_value)),
+    : key(std::move(o.key)),
+      name_or_value(std::move(o.name_or_value)),
       parameters(std::move(o.parameters)),
       original_property(std::move(o.original_property)),
       line_indexes(std::move(o.line_indexes)) {}
 PropertyNode::~PropertyNode() = default;
 
 PropertyNode& PropertyNode::operator=(PropertyNode&& o) {
+  key = std::move(o.key);
   name_or_value = std::move(o.name_or_value);
   parameters = std::move(o.parameters);
   original_property = std::move(o.original_property);
@@ -85,12 +87,34 @@ bool PropertyNode::IsArray() const {
   return name_or_value == base::ASCIIToUTF16("[]");
 }
 
+bool PropertyNode::IsDict() const {
+  return name_or_value == base::ASCIIToUTF16("{}");
+}
+
 base::Optional<int> PropertyNode::AsInt() const {
   int value = 0;
   if (!base::StringToInt(name_or_value, &value)) {
     return base::nullopt;
   }
   return value;
+}
+
+base::Optional<base::string16> PropertyNode::FindKey(const char* refkey) const {
+  for (const auto& param : parameters) {
+    if (param.key == base::ASCIIToUTF16(refkey)) {
+      return param.name_or_value;
+    }
+  }
+  return base::nullopt;
+}
+
+base::Optional<int> PropertyNode::FindIntKey(const char* refkey) const {
+  for (const auto& param : parameters) {
+    if (param.key == base::ASCIIToUTF16(refkey)) {
+      return param.AsInt();
+    }
+  }
+  return base::nullopt;
 }
 
 std::string PropertyNode::ToString() const {
@@ -105,6 +129,9 @@ std::string PropertyNode::ToString() const {
     out += ';';
   }
 
+  if (!key.empty()) {
+    out += base::UTF16ToUTF8(key) + ": ";
+  }
   out += base::UTF16ToUTF8(name_or_value);
   if (parameters.size()) {
     out += '(';
@@ -120,22 +147,31 @@ std::string PropertyNode::ToString() const {
 }
 
 // private
-PropertyNode::PropertyNode(const base::string16& name_or_value)
-    : name_or_value(name_or_value) {}
+PropertyNode::PropertyNode(PropertyNode::iterator key_begin,
+                           PropertyNode::iterator key_end,
+                           const base::string16& name_or_value)
+    : key(key_begin, key_end), name_or_value(name_or_value) {}
 PropertyNode::PropertyNode(PropertyNode::iterator begin,
                            PropertyNode::iterator end)
     : name_or_value(begin, end) {}
+PropertyNode::PropertyNode(PropertyNode::iterator key_begin,
+                           PropertyNode::iterator key_end,
+                           PropertyNode::iterator value_begin,
+                           PropertyNode::iterator value_end)
+    : key(key_begin, key_end), name_or_value(value_begin, value_end) {}
 
 // private static
 PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
                                            PropertyNode::iterator begin,
                                            PropertyNode::iterator end) {
   auto iter = begin;
+  auto key_begin = end, key_end = end;
   while (iter != end) {
     // Subnode begins: create a new node, record its name and parse its
     // arguments.
     if (*iter == '(') {
-      node->parameters.push_back(PropertyNode(begin, iter));
+      node->parameters.push_back(PropertyNode(key_begin, key_end, begin, iter));
+      key_begin = key_end = end;
       begin = iter = Parse(&node->parameters.back(), ++iter, end);
       continue;
     }
@@ -143,28 +179,54 @@ PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
     // Subnode begins: a special case for arrays, which have [arg1, ..., argN]
     // form.
     if (*iter == '[') {
-      node->parameters.push_back(PropertyNode(base::UTF8ToUTF16("[]")));
+      node->parameters.push_back(
+          PropertyNode(key_begin, key_end, base::UTF8ToUTF16("[]")));
+      key_begin = key_end = end;
+      begin = iter = Parse(&node->parameters.back(), ++iter, end);
+      continue;
+    }
+
+    // Subnode begins: a special case for dictionaries of {key1: value1, ...,
+    // key2: value2} form.
+    if (*iter == '{') {
+      node->parameters.push_back(
+          PropertyNode(key_begin, key_end, base::UTF8ToUTF16("{}")));
+      key_begin = key_end = end;
       begin = iter = Parse(&node->parameters.back(), ++iter, end);
       continue;
     }
 
     // Subnode ends.
-    if (*iter == ')' || *iter == ']') {
+    if (*iter == ')' || *iter == ']' || *iter == '}') {
       if (begin != iter) {
-        node->parameters.push_back(PropertyNode(begin, iter));
+        node->parameters.push_back(
+            PropertyNode(key_begin, key_end, begin, iter));
+        key_begin = key_end = end;
       }
       return ++iter;
     }
 
+    // Dictionary key
+    auto maybe_key_end = end;
+    if (*iter == ':') {
+      maybe_key_end = iter++;
+    }
+
     // Skip spaces, adjust new node start.
     if (*iter == ' ') {
+      if (maybe_key_end != end) {
+        key_begin = begin;
+        key_end = maybe_key_end;
+      }
       begin = ++iter;
+      continue;
     }
 
     // Subsequent scalar param case.
     if (*iter == ',' && begin != iter) {
-      node->parameters.push_back(PropertyNode(begin, iter));
+      node->parameters.push_back(PropertyNode(key_begin, key_end, begin, iter));
       iter++;
+      key_begin = key_end = end;
       begin = iter;
       continue;
     }

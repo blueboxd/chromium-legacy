@@ -48,6 +48,9 @@ NSString* const kLocalStorageErrorMessage =
 NSString* const kSessionStorageErrorMessage =
     @"Failed to read the 'sessionStorage' property from 'window': Access is "
     @"denied for this document";
+NSString* const kCacheNotAvailableErrorMessage = @"Can't find variable: caches";
+NSString* const kCacheErrorMessage = @"An attempt was made to break through "
+                                     @"the security policy of the user agent.";
 }
 
 namespace web {
@@ -547,6 +550,106 @@ TEST_F(CookieBlockingTest, SessionStorageBlockedUndeletable) {
       web::test::GetSessionStorage(main_frame, @"x", &result, &error_message));
   EXPECT_NSEQ(error_message, kSessionStorageErrorMessage);
   EXPECT_NSEQ(nil, result);
+}
+
+// Tests that Cache Storage is accessible from JavaScript in frames
+// when the blocking mode is set to allow.
+TEST_F(CookieBlockingTest, CacheStorageAllowed) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Use arbitrary third party url for iframe.
+  GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
+  std::string url_spec = kPageUrl + net::EscapeQueryParamValue(
+                                        iframe_url.spec(), /*use_plus=*/true);
+  test::LoadUrl(web_state(), server_.GetURL(url_spec));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
+  }));
+
+  bool one_frame_succeeded = false;
+
+  for (WebFrame* frame :
+       web_state()->GetWebFramesManager()->GetAllWebFrames()) {
+    NSString* error_message;
+    EXPECT_TRUE(
+        web::test::SetCache(frame, web_state(), @"x", @"value", &error_message))
+        << FailureMessage(frame);
+    if ([error_message isEqualToString:kCacheNotAvailableErrorMessage]) {
+      // Sometimes, the Cache API is not available. In these cases, the test
+      // shouldn't fail.
+      continue;
+    }
+    EXPECT_NSEQ(nil, error_message) << FailureMessage(frame);
+
+    error_message = nil;
+    NSString* result;
+    EXPECT_TRUE(
+        web::test::GetCache(frame, web_state(), @"x", &result, &error_message))
+        << FailureMessage(frame);
+    EXPECT_NSEQ(nil, error_message) << FailureMessage(frame);
+    EXPECT_NSEQ(@"value", result) << FailureMessage(frame);
+    one_frame_succeeded = true;
+  }
+  EXPECT_TRUE(one_frame_succeeded);
+}
+
+// Tests that Cache Storage is blocked from JavaScript in frames
+// when the blocking mode is set to blocked.
+TEST_F(CookieBlockingTest, CacheStorageBlocked) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Use arbitrary third party url for iframe.
+  GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
+  std::string url_spec = kPageUrl + net::EscapeQueryParamValue(
+                                        iframe_url.spec(), /*use_plus=*/true);
+  test::LoadUrl(web_state(), server_.GetURL(url_spec));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
+  }));
+
+  bool one_frame_succeeded = false;
+
+  for (WebFrame* frame :
+       web_state()->GetWebFramesManager()->GetAllWebFrames()) {
+    NSString* error_message;
+    EXPECT_TRUE(
+        web::test::SetCache(frame, web_state(), @"x", @"value", &error_message))
+        << FailureMessage(frame);
+    if ([error_message isEqualToString:kCacheNotAvailableErrorMessage]) {
+      // Sometimes, the Cache API is not available. In these cases, the test
+      // shouldn't fail.
+      continue;
+    }
+    EXPECT_NSEQ(kCacheErrorMessage, error_message) << FailureMessage(frame);
+
+    error_message = nil;
+    NSString* result;
+    EXPECT_TRUE(
+        web::test::GetCache(frame, web_state(), @"x", &result, &error_message))
+        << FailureMessage(frame);
+    EXPECT_NSEQ(kCacheErrorMessage, error_message) << FailureMessage(frame);
+    EXPECT_NSEQ(nil, result) << FailureMessage(frame);
+    one_frame_succeeded = true;
+  }
+  EXPECT_TRUE(one_frame_succeeded);
 }
 
 // Tests that the cookies sent in HTTP headers are allowed.

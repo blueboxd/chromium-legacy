@@ -213,9 +213,8 @@ SignedExchangeCertificateChain::IgnoreErrorsSPKIList::IgnoreErrorsSPKIList(
 
 void SignedExchangeCertificateChain::IgnoreErrorsSPKIList::Parse(
     const std::string& spki_list) {
-  hash_set_ =
-      network::IgnoreErrorsCertVerifier::MakeWhitelist(base::SplitString(
-          spki_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
+  hash_set_ = network::CreateSPKIHashSet(base::SplitString(
+      spki_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL));
 }
 
 SignedExchangeCertificateChain::IgnoreErrorsSPKIList::~IgnoreErrorsSPKIList() =

@@ -253,6 +253,9 @@ class CC_EXPORT ScrollbarController {
 
   int GetViewportLength() const;
 
+  // Returns the pixel delta for a percent-based scroll of the scrollbar
+  int GetScrollDeltaForPercentBasedScroll() const;
+
   LayerTreeHostImpl* layer_tree_host_impl_;
 
   // Used to safeguard against firing GSE without firing GSB and GSU. For

@@ -468,10 +468,12 @@ public class BrowserImpl extends IBrowser.Stub {
     public void onFragmentResume() {
         mFragmentResumed = true;
         WebLayerAccessibilityUtil.get().onBrowserResumed();
+        BrowserImplJni.get().onFragmentResume(mNativeBrowser);
     }
 
     public void onFragmentPause() {
         mFragmentResumed = false;
+        BrowserImplJni.get().onFragmentPause(mNativeBrowser);
     }
 
     public boolean isStarted() {
@@ -535,5 +537,7 @@ public class BrowserImpl extends IBrowser.Stub {
                 byte[] persistenceCryptoKey, byte[] minimalPersistenceState);
         void webPreferencesChanged(long nativeBrowserImpl);
         void onFragmentStart(long nativeBrowserImpl);
+        void onFragmentResume(long nativeBrowserImpl);
+        void onFragmentPause(long nativeBrowserImpl);
     }
 }

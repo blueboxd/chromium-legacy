@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_APP_REGISTRAR_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_APP_REGISTRAR_H_
 
+#include <map>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
@@ -63,6 +66,10 @@ class TestAppRegistrar : public AppRegistrar {
       const AppId& app_id) const override;
   std::vector<SquareSizePx> GetAppDownloadedIconSizes(
       const AppId& app_id) const override;
+  std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutInfos(
+      const AppId& app_id) const override;
+  std::vector<std::vector<SquareSizePx>>
+  GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
 

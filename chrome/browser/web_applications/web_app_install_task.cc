@@ -681,8 +681,11 @@ void WebAppInstallTask::OnIconsRetrievedFinalizeUpdate(
   FilterAndResizeIconsGenerateMissing(web_app_info.get(), &icons_map);
 
   install_finalizer_->FinalizeUpdate(
-      *web_app_info, base::BindOnce(&WebAppInstallTask::OnInstallFinalized,
-                                    weak_ptr_factory_.GetWeakPtr()));
+      *web_app_info,
+      base::BindOnce(&WebAppInstallTask::OnUpdateFinalizedRegisterShortcutsMenu,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     web_app_info->shortcut_infos,
+                     web_app_info->shortcuts_menu_icons_bitmaps));
 }
 
 void WebAppInstallTask::OnDialogCompleted(
@@ -824,7 +827,9 @@ void WebAppInstallTask::OnShortcutsCreated(
   if (base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
       !web_app_info->shortcut_infos.empty()) {
-    shortcut_manager_->RegisterShortcutsMenuWithOs(*web_app_info, app_id);
+    shortcut_manager_->RegisterShortcutsMenuWithOs(
+        app_id, web_app_info->shortcut_infos,
+        web_app_info->shortcuts_menu_icons_bitmaps);
   }
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsRunOnOsLogin)) {
@@ -851,6 +856,30 @@ void WebAppInstallTask::OnRegisteredRunOnOsLogin(
     const AppId& app_id,
     bool registered_run_on_os_login) {
   CallInstallCallback(app_id, InstallResultCode::kSuccessNewInstall);
+}
+
+// TODO(https://crbug.com/1087219): Move RegisterShortcutsMenuWithOs code into
+// OsIntegrationManager when that becomes available.
+void WebAppInstallTask::OnUpdateFinalizedRegisterShortcutsMenu(
+    const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps,
+    const AppId& app_id,
+    InstallResultCode code) {
+  if (ShouldStopInstall())
+    return;
+
+  if (base::FeatureList::IsEnabled(
+          features::kDesktopPWAsAppIconShortcutsMenu) &&
+      !shortcut_infos.empty()) {
+    shortcut_manager_->RegisterShortcutsMenuWithOs(
+        app_id, shortcut_infos, shortcuts_menu_icons_bitmaps);
+  } else {
+    // Unregister shortcuts menu when feature is disabled or shortcut_infos is
+    // empty.
+    shortcut_manager_->UnregisterShortcutsMenuWithOs(app_id);
+  }
+
+  CallInstallCallback(app_id, code);
 }
 
 }  // namespace web_app

@@ -108,14 +108,14 @@ bool LoadingPredictor::PrepareForPageLoad(
     AddInitialUrlToPreconnectPrediction(url, &prediction);
   }
 
-  // Return early if we do not have any preconnect requests.
-  if (prediction.requests.empty())
+  // Return early if we do not have any requests.
+  if (prediction.requests.empty() && prediction.prefetch_requests.empty())
     return false;
 
   ++total_hints_activated_;
   active_hints_.emplace(url, base::TimeTicks::Now());
   if (IsPreconnectAllowed(profile_))
-    MaybeAddPreconnect(url, std::move(prediction.requests), origin);
+    MaybeAddPreconnect(url, std::move(prediction), origin);
   return has_local_preconnect_prediction || preconnect_prediction;
 }
 
@@ -151,6 +151,21 @@ PreconnectManager* LoadingPredictor::preconnect_manager() {
   }
 
   return preconnect_manager_.get();
+}
+
+PrefetchManager* LoadingPredictor::prefetch_manager() {
+  if (!base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch))
+    return nullptr;
+
+  if (shutdown_ || !IsPreconnectFeatureEnabled())
+    return nullptr;
+
+  if (!prefetch_manager_) {
+    prefetch_manager_ =
+        std::make_unique<PrefetchManager>(GetWeakPtr(), profile_);
+  }
+
+  return prefetch_manager_.get();
 }
 
 void LoadingPredictor::Shutdown() {
@@ -224,20 +239,22 @@ void LoadingPredictor::CleanupAbandonedHintsAndNavigations(
   }
 }
 
-void LoadingPredictor::MaybeAddPreconnect(
-    const GURL& url,
-    std::vector<PreconnectRequest> requests,
-    HintOrigin origin) {
+void LoadingPredictor::MaybeAddPreconnect(const GURL& url,
+                                          PreconnectPrediction prediction,
+                                          HintOrigin origin) {
   DCHECK(!shutdown_);
-  preconnect_manager()->Start(url, std::move(requests));
+  if (!prediction.prefetch_requests.empty()) {
+    DCHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
+    prefetch_manager()->Start(url, std::move(prediction.prefetch_requests));
+    return;
+  }
+  preconnect_manager()->Start(url, std::move(prediction.requests));
 }
 
 void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
   DCHECK(!shutdown_);
-  if (!preconnect_manager_)
-    return;
-
-  preconnect_manager_->Stop(url);
+  if (preconnect_manager_)
+    preconnect_manager_->Stop(url);
 }
 
 void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {
@@ -275,6 +292,14 @@ void LoadingPredictor::PreconnectFinished(
   DCHECK(stats);
   active_hints_.erase(stats->url);
   stats_collector_->RecordPreconnectStats(std::move(stats));
+}
+
+void LoadingPredictor::PrefetchFinished(std::unique_ptr<PrefetchStats> stats) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (shutdown_)
+    return;
+
+  active_hints_.erase(stats->url);
 }
 
 void LoadingPredictor::PreconnectURLIfAllowed(

@@ -49,6 +49,7 @@ constexpr size_t kIconSizeInDip = 16;
 // upon whether it "thinks" it is binary or text content.
 constexpr char kUnknownBinaryMimeType[] = "application/octet-stream";
 constexpr char kUnknownTextMimeType[] = "text/plain";
+constexpr char kPluginVmAppNameSuffix[] = " (Windows)";
 
 GURL GeneratePNGDataUrl(const SkBitmap& sk_bitmap) {
   std::vector<unsigned char> output;
@@ -234,7 +235,12 @@ void FindGuestOsApps(
       continue;
 
     app_ids->push_back(app_id);
-    app_names->push_back(registration.Name());
+    if (registration.VmType() == guest_os::GuestOsRegistryService::VmType::
+                                     ApplicationList_VmType_PLUGIN_VM) {
+      app_names->push_back(registration.Name() + kPluginVmAppNameSuffix);
+    } else {
+      app_names->push_back(registration.Name());
+    }
     vm_types->push_back(registration.VmType());
   }
 }

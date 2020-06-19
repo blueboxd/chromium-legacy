@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 
 class GURL;
 
@@ -22,7 +22,8 @@ bool DoesURLHaveValidScheme(const GURL& url);
 bool DoesSubresourceURLHaveValidScheme(const GURL& url);
 
 // Returns true iff the method given is valid for prerendering.
-bool IsValidHttpMethod(PrerenderMode prerender_mode, const std::string& method);
+bool IsValidHttpMethod(prerender::mojom::PrerenderMode prerender_mode,
+                       const std::string& method);
 
 std::string ComposeHistogramName(const std::string& prefix_type,
                                  const std::string& name);

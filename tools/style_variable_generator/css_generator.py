@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from base_generator import Color, Modes, BaseGenerator
+from base_generator import Color, Modes, BaseGenerator, VariableType
+import collections
 
 
 class CSSStyleGenerator(BaseGenerator):
@@ -14,9 +15,16 @@ class CSSStyleGenerator(BaseGenerator):
                                   self.GetParameters())
 
     def GetParameters(self):
+        def BuildColorsForMode(mode):
+            colors = collections.OrderedDict()
+            for name, mode_values in self.model[VariableType.COLOR].items():
+                if mode in mode_values:
+                    colors[name] = mode_values[mode]
+            return colors
+
         return {
-            'light_variables': self._mode_variables[Modes.LIGHT],
-            'dark_variables': self._mode_variables[Modes.DARK],
+            'light_colors': BuildColorsForMode(Modes.LIGHT),
+            'dark_colors': BuildColorsForMode(Modes.DARK),
         }
 
     def GetFilters(self):

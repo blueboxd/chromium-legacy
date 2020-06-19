@@ -2097,9 +2097,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DeleteWebBluetoothService(
       WebBluetoothServiceImpl* web_bluetooth_service);
 
-  // Callback for connection error on the media::mojom::InterfaceFactory client.
-  void OnMediaInterfaceFactoryConnectionError();
-
 #if !defined(OS_ANDROID)
   void BindAuthenticatorReceiver(
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);

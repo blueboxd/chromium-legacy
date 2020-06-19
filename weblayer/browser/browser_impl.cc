@@ -29,6 +29,9 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
+#include "components/metrics/metrics_service.h"
+#include "components/ukm/ukm_service.h"
+#include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/browser_process.h"
 #include "weblayer/browser/java/jni/BrowserImpl_jni.h"
 #endif
@@ -47,6 +50,43 @@ std::vector<BrowserImpl*>& GetBrowsers() {
   static base::NoDestructor<std::vector<BrowserImpl*>> browsers;
   return *browsers;
 }
+
+#if defined(OS_ANDROID)
+void UpdateMetricsService() {
+  static bool s_foreground = false;
+  bool foreground = false;
+  for (auto* browser : GetBrowsers()) {
+    if (browser->fragment_resumed()) {
+      // We need at least one browser to be foreground.
+      foreground = true;
+      break;
+    }
+  }
+
+  if (foreground == s_foreground)
+    return;
+
+  s_foreground = foreground;
+
+  auto* metrics_service =
+      WebLayerMetricsServiceClient::GetInstance()->GetMetricsService();
+  if (metrics_service) {
+    if (foreground)
+      metrics_service->OnAppEnterForeground();
+    else
+      metrics_service->OnAppEnterBackground();
+  }
+
+  auto* ukm_service =
+      WebLayerMetricsServiceClient::GetInstance()->GetUkmService();
+  if (ukm_service) {
+    if (foreground)
+      ukm_service->OnAppEnterForeground();
+    else
+      ukm_service->OnAppEnterBackground();
+  }
+}
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -211,6 +251,16 @@ void BrowserImpl::OnFragmentStart(JNIEnv* env) {
   // FeatureListCreator is created before any Browsers.
   DCHECK(FeatureListCreator::GetInstance());
   FeatureListCreator::GetInstance()->OnBrowserFragmentStarted();
+}
+
+void BrowserImpl::OnFragmentResume(JNIEnv* env) {
+  fragment_resumed_ = true;
+  UpdateMetricsService();
+}
+
+void BrowserImpl::OnFragmentPause(JNIEnv* env) {
+  fragment_resumed_ = false;
+  UpdateMetricsService();
 }
 
 #endif

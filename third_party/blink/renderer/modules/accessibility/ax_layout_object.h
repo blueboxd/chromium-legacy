@@ -62,7 +62,6 @@ class MODULES_EXPORT AXLayoutObject : public AXNodeObject {
   Document* GetDocument() const override;
   LocalFrameView* DocumentFrameView() const override;
   Element* AnchorElement() const override;
-  AtomicString Language() const override;
 
  protected:
   LayoutObject* layout_object_;

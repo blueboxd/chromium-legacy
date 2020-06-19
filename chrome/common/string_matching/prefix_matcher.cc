@@ -79,6 +79,7 @@ PrefixMatcher::State::State(double relevance,
 PrefixMatcher::State::State(const PrefixMatcher::State& state) = default;
 
 bool PrefixMatcher::RunMatch() {
+  bool have_match_already = false;
   while (!query_iter_.end() && !text_iter_.end()) {
     if (query_iter_.Get() == text_iter_.Get()) {
       PushState();
@@ -97,7 +98,19 @@ bool PrefixMatcher::RunMatch() {
 
       query_iter_.NextChar();
       text_iter_.NextChar();
+      have_match_already = true;
     } else {
+      // There are two possibilities here:
+      // 1. Need to AdvanceToNextTextToken() after having at least a match in
+      // current token (e.g. match the first character of the token) and the
+      // next character doesn't match.
+      // 2. Need to AdvanceToNextTextToken() because there is no match in
+      // current token.
+      // If there is no match in current token and we already have match (in
+      // previous tokens) before, a token is skipped and we consider this as no
+      // match.
+      if (text_iter_.IsFirstCharOfToken() && have_match_already)
+        return false;
       AdvanceToNextTextToken();
     }
   }

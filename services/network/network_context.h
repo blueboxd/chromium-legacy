@@ -308,6 +308,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       const GURL& url,
       const url::Origin& origin,
       const net::NetworkIsolationKey& network_isolation_key,
+      std::vector<mojom::QuicTransportCertificateFingerprintPtr> fingerprints,
       mojo::PendingRemote<mojom::QuicTransportHandshakeClient> handshake_client)
       override;
   void CreateNetLogExporter(

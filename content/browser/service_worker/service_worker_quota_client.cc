@@ -42,16 +42,11 @@ void ReportToQuotaStatus(QuotaClient::DeletionCallback callback, bool status) {
 }
 
 void FindUsageForOrigin(QuotaClient::GetUsageCallback callback,
-                        const GURL& origin,
-                        const std::vector<StorageUsageInfo>& usage_info) {
-  for (const auto& info : usage_info) {
-    if (info.origin.GetURL() == origin) {
-      std::move(callback).Run(info.total_size_bytes);
-      return;
-    }
-  }
-  std::move(callback).Run(0);
+                        blink::ServiceWorkerStatusCode status,
+                        int64_t usage) {
+  std::move(callback).Run(usage);
 }
+
 }  // namespace
 
 ServiceWorkerQuotaClient::ServiceWorkerQuotaClient(
@@ -66,8 +61,8 @@ void ServiceWorkerQuotaClient::GetOriginUsage(const url::Origin& origin,
                                               StorageType type,
                                               GetUsageCallback callback) {
   DCHECK_EQ(type, StorageType::kTemporary);
-  context_->GetAllOriginsInfo(base::BindOnce(
-      &FindUsageForOrigin, std::move(callback), origin.GetURL()));
+  context_->GetStorageUsageForOrigin(
+      origin, base::BindOnce(&FindUsageForOrigin, std::move(callback)));
 }
 
 void ServiceWorkerQuotaClient::GetOriginsForType(StorageType type,

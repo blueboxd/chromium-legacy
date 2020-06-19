@@ -67,6 +67,9 @@ class NativeIOHost : public blink::mojom::NativeIOHost {
   void DeleteFile(const std::string& name,
                   DeleteFileCallback callback) override;
   void GetAllFileNames(GetAllFileNamesCallback callback) override;
+  void RenameFile(const std::string& old_name,
+                  const std::string& new_name,
+                  RenameFileCallback callback) override;
 
   // Called when one of the open files for this origin closes.
   //
@@ -88,6 +91,12 @@ class NativeIOHost : public blink::mojom::NativeIOHost {
   // Called after the file I/O part of DeleteFile() completed.
   void DidDeleteFile(const std::string& name,
                      DeleteFileCallback callback,
+                     bool success);
+
+  // Called after the file I/O part of RenameFile() completed.
+  void DidRenameFile(const std::string& old_name,
+                     const std::string& new_name,
+                     RenameFileCallback callback,
                      bool success);
 
   // The directory holding all the files for this origin.

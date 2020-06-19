@@ -454,12 +454,15 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
     for (const auto& restore_timing : restore_timings) {
       double navigation_start = restore_timing.navigation_start;
       double first_paint = restore_timing.first_paint;
-      if (!first_paint) {
-        continue;
+
+      auto back_forward_cache_timing = mojom::BackForwardCacheTiming::New();
+      if (first_paint) {
+        back_forward_cache_timing
+            ->first_paint_after_back_forward_cache_restore =
+            ClampDelta(first_paint, navigation_start);
       }
-      timing->back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore.push_back(
-              ClampDelta(first_paint, navigation_start));
+      timing->back_forward_cache_timings.push_back(
+          std::move(back_forward_cache_timing));
     }
   }
   if (perf.FirstImagePaint() > 0.0) {

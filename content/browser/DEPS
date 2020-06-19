@@ -163,11 +163,7 @@ specific_include_rules = {
     # TODO(crbug.com/1049894): Remove.
     "+services/network/throttling/throttling_controller.h",
   ],
-  "signed_exchange_certificate_chain\.h": [
-    "+services/network/ignore_errors_cert_verifier.h",
-  ],
   "signed_exchange_handler_unittest\.cc": [
-    "+services/network/ignore_errors_cert_verifier.h",
     "+services/network/network_context.h",
   ],
   "signed_exchange_subresource_prefetch_browsertest\.cc": [

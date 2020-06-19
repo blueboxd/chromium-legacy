@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_pref_names.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -658,6 +659,11 @@ void GuestOsRegistryService::ClearApplicationList(
 
   if (removed_apps.empty())
     return;
+
+  // Do not notify observers for Plugin VM.
+  if (vm_name == plugin_vm::kPluginVmName)
+    return;
+
   std::vector<std::string> updated_apps;
   std::vector<std::string> inserted_apps;
   for (Observer& obs : observers_)
@@ -770,11 +776,15 @@ void GuestOsRegistryService::UpdateApplicationList(
   }
   retry_icon_requests_.clear();
 
-  if (!updated_apps.empty() || !removed_apps.empty() ||
-      !inserted_apps.empty()) {
-    for (Observer& obs : observers_)
-      obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
-  }
+  if (updated_apps.empty() && removed_apps.empty() && inserted_apps.empty())
+    return;
+
+  // Do not notify observers for Plugin VM.
+  if (app_list.vm_name() == plugin_vm::kPluginVmName)
+    return;
+
+  for (Observer& obs : observers_)
+    obs.OnRegistryUpdated(this, updated_apps, removed_apps, inserted_apps);
 }
 
 void GuestOsRegistryService::RemoveAppData(const std::string& app_id) {

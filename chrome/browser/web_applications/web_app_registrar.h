@@ -8,6 +8,8 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -53,6 +55,10 @@ class WebAppRegistrar : public AppRegistrar, public ProfileManagerObserver {
       const AppId& app_id) const override;
   std::vector<SquareSizePx> GetAppDownloadedIconSizes(
       const AppId& app_id) const override;
+  std::vector<WebApplicationShortcutsMenuItemInfo> GetAppShortcutInfos(
+      const AppId& app_id) const override;
+  std::vector<std::vector<SquareSizePx>>
+  GetAppDownloadedShortcutsMenuIconsSizes(const AppId& app_id) const override;
   std::vector<AppId> GetAppIds() const override;
   WebAppRegistrar* AsWebAppRegistrar() override;
 

@@ -30,9 +30,12 @@ class QuicTransportConnectorImpl final
       const net::NetworkIsolationKey& network_isolation_key);
   ~QuicTransportConnectorImpl() override;
 
-  void Connect(const GURL& url,
-               mojo::PendingRemote<network::mojom::QuicTransportHandshakeClient>
-                   handshake_client) override;
+  void Connect(
+      const GURL& url,
+      std::vector<network::mojom::QuicTransportCertificateFingerprintPtr>
+          fingerprints,
+      mojo::PendingRemote<network::mojom::QuicTransportHandshakeClient>
+          handshake_client) override;
 
  private:
   const int process_id_;

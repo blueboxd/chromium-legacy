@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/startup_data_impl.h"
+#include "content/common/mojo_core_library_support.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/core/embedder/embedder.h"
@@ -22,13 +24,18 @@ ServiceManagerEnvironment::ServiceManagerEnvironment(
     : io_thread_(std::move(io_thread)) {
   scoped_refptr<base::SingleThreadTaskRunner> mojo_ipc_task_runner =
       io_thread_->task_runner();
-  if (base::FeatureList::IsEnabled(features::kMojoDedicatedThread)) {
-    mojo_ipc_thread_.StartWithOptions(
-        base::Thread::Options(base::MessagePumpType::IO, 0));
-    mojo_ipc_task_runner = mojo_ipc_thread_.task_runner();
+  if (!IsMojoCoreSharedLibraryEnabled()) {
+    // NOTE: If Mojo Core was loaded via shared library, IPC support is already
+    // initialized.
+    if (base::FeatureList::IsEnabled(features::kMojoDedicatedThread)) {
+      mojo_ipc_thread_.StartWithOptions(
+          base::Thread::Options(base::MessagePumpType::IO, 0));
+      mojo_ipc_task_runner = mojo_ipc_thread_.task_runner();
+    }
+    mojo_ipc_support_ = std::make_unique<mojo::core::ScopedIPCSupport>(
+        mojo_ipc_task_runner,
+        mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
   }
-  mojo_ipc_support_ = std::make_unique<mojo::core::ScopedIPCSupport>(
-      mojo_ipc_task_runner, mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
   service_manager_context_ =
       std::make_unique<ServiceManagerContext>(io_thread_->task_runner());
   ServiceManagerConnection::GetForProcess()->Start();

@@ -15,13 +15,13 @@ TODO(https://crbug.com/1062154): Remove once deprecated colors are removed from
 Chrome OS pages.
 -#}
 html:not(body) {
-{%- for var_name, color in light_variables.colors.items() %}
+{%- for var_name, color in light_colors.items() %}
   {{var_name | to_var_name}}-rgb: {{color | css_color_rgb}};
   {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
 {%  endfor %}
 }
 
-{% if dark_variables.colors -%}
+{% if dark_colors -%}
 @media (prefers-color-scheme: dark) {
 {#-
 The :not(body) adds extra selector specificity so that these colors 'win'
@@ -30,7 +30,7 @@ TODO(https://crbug.com/1062154): Remove once deprecated colors are removed from
 Chrome OS pages.
 #}
   html:not(body) {
-{%- for var_name, color in dark_variables.colors.items() %}
+{%- for var_name, color in dark_colors.items() %}
     {{var_name | to_var_name}}-rgb: {{color | css_color_rgb}};
     {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
 {%  endfor %}

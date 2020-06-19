@@ -4,6 +4,7 @@
 
 #include "chrome/browser/web_applications/extensions/bookmark_app_registrar.h"
 
+#include <map>
 #include <utility>
 
 #include "base/one_shot_event.h"
@@ -22,6 +23,8 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/unloaded_extension_reason.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/web_app_linked_shortcut_items.h"
+#include "extensions/common/manifest_handlers/web_app_shortcut_icons_handler.h"
 #include "url/gurl.h"
 
 using web_app::DisplayMode;
@@ -212,6 +215,59 @@ std::vector<SquareSizePx> BookmarkAppRegistrar::GetAppDownloadedIconSizes(
   const Extension* extension = GetBookmarkAppDchecked(app_id);
   return extension ? GetBookmarkAppDownloadedIconSizes(extension)
                    : std::vector<SquareSizePx>();
+}
+
+std::vector<WebApplicationShortcutsMenuItemInfo>
+BookmarkAppRegistrar::GetAppShortcutInfos(const web_app::AppId& app_id) const {
+  std::vector<WebApplicationShortcutsMenuItemInfo> result;
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
+  if (!extension)
+    return result;
+
+  const WebAppLinkedShortcutItems& linked_shortcut_items =
+      WebAppLinkedShortcutItems::GetWebAppLinkedShortcutItems(extension);
+  result.reserve(linked_shortcut_items.shortcut_item_infos.size());
+  for (const WebAppLinkedShortcutItems::ShortcutItemInfo& linked_item_info :
+       linked_shortcut_items.shortcut_item_infos) {
+    WebApplicationShortcutsMenuItemInfo shortcut_item_info;
+    shortcut_item_info.name = linked_item_info.name;
+    shortcut_item_info.url = linked_item_info.url;
+    shortcut_item_info.shortcut_icon_infos.reserve(
+        linked_item_info.shortcut_item_icon_infos.size());
+    for (const WebAppLinkedShortcutItems::ShortcutItemInfo::IconInfo&
+             shortcut_item_icon_info :
+         linked_item_info.shortcut_item_icon_infos) {
+      WebApplicationShortcutsMenuItemInfo::Icon shortcut_icon_info;
+      shortcut_icon_info.square_size_px = shortcut_item_icon_info.size;
+      shortcut_icon_info.url = shortcut_item_icon_info.url;
+      shortcut_item_info.shortcut_icon_infos.emplace_back(
+          std::move(shortcut_icon_info));
+    }
+    result.emplace_back(std::move(shortcut_item_info));
+  }
+  return result;
+}
+
+std::vector<std::vector<SquareSizePx>>
+BookmarkAppRegistrar::GetAppDownloadedShortcutsMenuIconsSizes(
+    const web_app::AppId& app_id) const {
+  std::vector<std::vector<SquareSizePx>> result;
+  const Extension* extension = GetBookmarkAppDchecked(app_id);
+  if (!extension)
+    return result;
+
+  const std::map<int, ExtensionIconSet>& shortcuts_menu_icons =
+      WebAppShortcutIconsInfo::GetShortcutIcons(extension);
+  result.reserve(shortcuts_menu_icons.size());
+  for (const auto& shortcuts_menu_icon : shortcuts_menu_icons) {
+    std::vector<SquareSizePx> shortcuts_menu_icon_sizes;
+    shortcuts_menu_icon_sizes.reserve(shortcuts_menu_icon.second.map().size());
+    for (const auto& icon_info : shortcuts_menu_icon.second.map()) {
+      shortcuts_menu_icon_sizes.emplace_back(icon_info.first);
+    }
+    result.push_back(std::move(shortcuts_menu_icon_sizes));
+  }
+  return result;
 }
 
 std::vector<web_app::AppId> BookmarkAppRegistrar::GetAppIds() const {

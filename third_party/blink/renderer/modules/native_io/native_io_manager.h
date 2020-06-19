@@ -40,10 +40,15 @@ class NativeIOManager final : public ScriptWrappable,
   ScriptPromise open(ScriptState*, String name, ExceptionState&);
   ScriptPromise Delete(ScriptState*, String name, ExceptionState&);
   ScriptPromise getAll(ScriptState*, ExceptionState&);
+  ScriptPromise rename(ScriptState*,
+                       String old_name,
+                       String new_name,
+                       ExceptionState&);
 
   NativeIOFileSync* openSync(String name, ExceptionState&);
   void deleteSync(String name, ExceptionState&);
   Vector<String> getAllSync(ExceptionState&);
+  void renameSync(String old_name, String new_name, ExceptionState&);
 
   // GarbageCollected
   void Trace(Visitor* visitor) const override;

@@ -7246,12 +7246,10 @@ void RenderFrameHostImpl::BindScreenEnumerationReceiver(
 
 void RenderFrameHostImpl::BindMediaInterfaceFactoryReceiver(
     mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
-  DCHECK(!media_interface_proxy_);
-  media_interface_proxy_.reset(new MediaInterfaceProxy(
-      this, std::move(receiver),
-      base::BindOnce(
-          &RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
-          base::Unretained(this))));
+  if (!media_interface_proxy_) {
+    media_interface_proxy_ = std::make_unique<MediaInterfaceProxy>(this);
+  }
+  media_interface_proxy_->Bind(std::move(receiver));
 }
 
 void RenderFrameHostImpl::BindMediaMetricsProviderReceiver(
@@ -7364,11 +7362,6 @@ void RenderFrameHostImpl::CreateDedicatedWorkerHostFactory(
           last_committed_origin_, cross_origin_embedder_policy_,
           std::move(coep_reporter)),
       std::move(receiver));
-}
-
-void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
-  DCHECK(media_interface_proxy_);
-  media_interface_proxy_.reset();
 }
 
 #if defined(OS_ANDROID)

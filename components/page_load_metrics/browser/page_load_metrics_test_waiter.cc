@@ -246,8 +246,9 @@ PageLoadMetricsTestWaiter::GetMatchedBits(
     matched_bits.Set(TimingField::kFirstInputOrScroll);
   if (timing.interactive_timing->first_input_delay)
     matched_bits.Set(TimingField::kFirstInputDelay);
-  if (!timing.back_forward_cache_timing
-           ->first_paint_after_back_forward_cache_restore.empty()) {
+  if (!timing.back_forward_cache_timings.empty() &&
+      !timing.back_forward_cache_timings.back()
+           ->first_paint_after_back_forward_cache_restore.is_zero()) {
     matched_bits.Set(TimingField::kFirstPaintAfterBackForwardCacheRestore);
   }
 

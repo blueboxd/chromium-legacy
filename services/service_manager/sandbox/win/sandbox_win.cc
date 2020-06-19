@@ -621,14 +621,15 @@ base::string16 GetAppContainerProfileName(
          sandbox_type == SandboxType::kXrCompositing);
   auto sha1 = base::SHA1HashString(appcontainer_id);
   std::string sandbox_base_name = (sandbox_type == SandboxType::kXrCompositing)
-                                      ? std::string("chrome.sandbox.xrdevice")
-                                      : std::string("chrome.sandbox.gpu");
+                                      ? std::string("cr.sb.xr")
+                                      : std::string("cr.sb.gpu");
   std::string profile_name = base::StrCat(
       {sandbox_base_name, base::HexEncode(sha1.data(), sha1.size())});
   // CreateAppContainerProfile requires that the profile name is at most 64
-  // characters.  The size of sha1 is a constant 40, so validate that the base
-  // names are sufficiently short that the total length is valid.
-  DCHECK_LE(profile_name.length(), 64U);
+  // characters but 50 on WCOS systems.  The size of sha1 is a constant 40,
+  // so validate that the base names are sufficiently short that the total
+  // length is valid on all systems.
+  DCHECK_LE(profile_name.length(), 50U);
   return base::UTF8ToWide(profile_name);
 }
 

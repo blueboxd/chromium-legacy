@@ -59,8 +59,8 @@ public class ChromeActionModeHandlerUnitTest {
     private Menu mMenu;
 
     private class TestChromeActionModeCallback extends ChromeActionModeHandler.ActionModeCallback {
-        public TestChromeActionModeCallback(Tab tab, ActionModeCallbackHelper helper) {
-            super(tab, null, visible -> {}, urlParams -> {});
+        TestChromeActionModeCallback(Tab tab, ActionModeCallbackHelper helper) {
+            super(tab, null, visible -> {}, urlParams -> {}, null);
         }
 
         @Override

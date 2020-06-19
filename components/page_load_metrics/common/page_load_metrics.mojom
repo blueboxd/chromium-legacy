@@ -146,13 +146,9 @@ struct PageLoadTiming {
   PaintTiming paint_timing;
   ParseTiming parse_timing;
 
-  // Time relative to the back-forward cache. This records only the last timing
-  // of back-foward cache usages.
-  //
-  // TODO(hajimehoshi): Now only the last one is recorded, but we might miss
-  // the information when, e.g., another back-forward navigation happens before
-  // recording the first contentful paint. We should have this as an array.
-  BackForwardCacheTiming back_forward_cache_timing;
+  // List of back-forward cache timings, one for each time a page was restored
+  // from the cache.
+  array<BackForwardCacheTiming> back_forward_cache_timings;
 
   // Time between user input and navigation start. This is set for navigations
   // where the input start timing is known; currently when the navigation is
@@ -360,11 +356,10 @@ interface PageLoadMetrics {
   SubmitThroughputData(ThroughputUkmData throughput_data);
 };
 
-// TimeDeltas below relative to the navigation restoring page from the back-
-// forward cache.
+// TimeDelta below relative to the navigation start of the navigation restoring
+// page from the back- forward cache.
 struct BackForwardCacheTiming {
-  // Times when the first paint is performed after the time when the page
+  // Time when the first paint is performed after the time when the page
   // is restored from the back-forward cache.
-  array<mojo_base.mojom.TimeDelta>
-      first_paint_after_back_forward_cache_restore;
+  mojo_base.mojom.TimeDelta first_paint_after_back_forward_cache_restore;
 };

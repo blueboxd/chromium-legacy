@@ -36,8 +36,6 @@ jumbo_component("network_service") {
     "data_pipe_element_reader.h",
     "dns_config_change_manager.cc",
     "dns_config_change_manager.h",
-    "empty_url_loader_client.cc",
-    "empty_url_loader_client.h",
     "host_resolver.cc",
     "host_resolver.h",
     "host_resolver_mdns_listener.cc",

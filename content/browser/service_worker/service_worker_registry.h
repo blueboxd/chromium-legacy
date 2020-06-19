@@ -63,6 +63,9 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   using GetUserDataForAllRegistrationsCallback = base::OnceCallback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status)>;
+  using GetStorageUsageForOriginCallback =
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status,
+                              int64_t usage)>;
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
 
@@ -133,6 +136,10 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   // Returns all stored and installing registrations for a given origin.
   void GetRegistrationsForOrigin(const GURL& origin,
                                  GetRegistrationsCallback callback);
+
+  // Reads the total resource size stored in the storage for a given origin.
+  void GetStorageUsageForOrigin(const url::Origin& origin,
+                                GetStorageUsageForOriginCallback callback);
 
   // Returns info about all stored and initially installing registrations.
   // TODO(crbug.com/807440,1055677): Consider removing this method. Getting all

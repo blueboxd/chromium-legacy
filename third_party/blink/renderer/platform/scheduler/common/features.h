@@ -221,6 +221,30 @@ GetIntensiveWakeUpThrottlingDurationBetweenWakeUps();
 // wake up throttling for the kIntensiveWakeUpThrottling feature.
 PLATFORM_EXPORT base::TimeDelta GetIntensiveWakeUpThrottlingGracePeriod();
 
+// Per-agent scheduling experiments.
+constexpr base::Feature kPerAgentSchedulingExperiments{
+    "BlinkSchedulerPerAgentSchedulingExperiments",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+enum class PerAgentSchedulingStrategyExperiments {
+  kNoOpStrategy,
+  kDisableTimersStrategy,
+  kBestEffortPriorityTimersStrategy,
+};
+
+constexpr base::FeatureParam<
+    PerAgentSchedulingStrategyExperiments>::Option kPerAgentOptions[] = {
+    {PerAgentSchedulingStrategyExperiments::kNoOpStrategy, "no-op"},
+    {PerAgentSchedulingStrategyExperiments::kDisableTimersStrategy,
+     "disable-timers"},
+    {PerAgentSchedulingStrategyExperiments::kBestEffortPriorityTimersStrategy,
+     "deprioritize-timers"}};
+
+constexpr base::FeatureParam<PerAgentSchedulingStrategyExperiments>
+    kPerAgentStrategy{&kPerAgentSchedulingExperiments, "study",
+                      PerAgentSchedulingStrategyExperiments::kNoOpStrategy,
+                      &kPerAgentOptions};
+
 }  // namespace scheduler
 }  // namespace blink
 

@@ -6,6 +6,7 @@
 
 #include <numeric>
 
+#include "ash/hud_display/hud_constants.h"
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "ui/gfx/canvas.h"
@@ -23,31 +24,35 @@ constexpr base::TimeDelta kGraphsDataRefreshInterval =
 ////////////////////////////////////////////////////////////////////////////////
 // GraphsContainerView, public:
 
+BEGIN_METADATA(GraphsContainerView)
+METADATA_PARENT_CLASS(View)
+END_METADATA()
+
 GraphsContainerView::GraphsContainerView()
     : graph_chrome_rss_private_(Graph::Baseline::BASELINE_BOTTOM,
                                 Graph::Fill::SOLID,
-                                SK_ColorRED),
+                                SkColorSetA(SK_ColorRED, kHUDAlpha)),
       graph_mem_free_(Graph::Baseline::BASELINE_BOTTOM,
                       Graph::Fill::NONE,
-                      SK_ColorDKGRAY),
+                      SkColorSetA(SK_ColorDKGRAY, kHUDAlpha)),
       graph_mem_used_unknown_(Graph::Baseline::BASELINE_BOTTOM,
                               Graph::Fill::SOLID,
-                              SK_ColorLTGRAY),
+                              SkColorSetA(SK_ColorLTGRAY, kHUDAlpha)),
       graph_renderers_rss_private_(Graph::Baseline::BASELINE_BOTTOM,
                                    Graph::Fill::SOLID,
-                                   SK_ColorCYAN),
+                                   SkColorSetA(SK_ColorCYAN, kHUDAlpha)),
       graph_arc_rss_private_(Graph::Baseline::BASELINE_BOTTOM,
                              Graph::Fill::SOLID,
-                             SK_ColorMAGENTA),
+                             SkColorSetA(SK_ColorMAGENTA, kHUDAlpha)),
       graph_gpu_rss_private_(Graph::Baseline::BASELINE_BOTTOM,
                              Graph::Fill::SOLID,
-                             SK_ColorRED),
+                             SkColorSetA(SK_ColorRED, kHUDAlpha)),
       graph_gpu_kernel_(Graph::Baseline::BASELINE_BOTTOM,
                         Graph::Fill::SOLID,
-                        SK_ColorYELLOW),
+                        SkColorSetA(SK_ColorYELLOW, kHUDAlpha)),
       graph_chrome_rss_shared_(Graph::Baseline::BASELINE_BOTTOM,
                                Graph::Fill::NONE,
-                               SK_ColorBLUE) {
+                               SkColorSetA(SK_ColorBLUE, kHUDAlpha)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(ui_sequence_checker_);
 
   refresh_timer_.Start(FROM_HERE, kGraphsDataRefreshInterval, this,

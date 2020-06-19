@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "base/logging.h"
 #include "base/win/registry.h"
 
 namespace cloud_print {

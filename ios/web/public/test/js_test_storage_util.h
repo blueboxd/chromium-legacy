@@ -10,6 +10,7 @@
 
 namespace web {
 class WebFrame;
+class WebState;
 
 namespace test {
 
@@ -33,12 +34,12 @@ bool SetLocalStorage(WebFrame* web_frame,
                      NSString** error_message);
 
 // Reads the value for the given |key| from local storage on |web_frame| and
-// places it in |value|. If |error_message| is provided, then if an error
+// places it in |result|. If |error_message| is provided, then if an error
 // occurs, it will be filled with the error message. Returns true on success and
 // false on failure.
 bool GetLocalStorage(WebFrame* web_frame,
                      NSString* key,
-                     NSString** value,
+                     NSString** result,
                      NSString** error_message);
 
 // Stores a given |key|, |value| in session storage on |web_frame|. If
@@ -50,13 +51,32 @@ bool SetSessionStorage(WebFrame* web_frame,
                        NSString** error_message);
 
 // Reads the value for the given |key| from session storage on |web_frame| and
-// places it in |value|. If |error_message| is provided, then if an error
+// places it in |result|. If |error_message| is provided, then if an error
 // occurs, it will be filled with the error message. Returns true on success and
 // false on failure.
 bool GetSessionStorage(WebFrame* web_frame,
                        NSString* key,
-                       NSString** value,
+                       NSString** result,
                        NSString** error_message);
+
+// Stores a given |key|, |value| in cache storage on |web_frame| + |web_state|.
+// If |error_message| is provided, then if an error occurs, it will be filled
+// with the error message. Returns true on success and false on failure.
+bool SetCache(WebFrame* web_frame,
+              WebState* web_state,
+              NSString* key,
+              NSString* value,
+              NSString** error_message);
+
+// Reads the value for the given |key| from session storage on |web_frame| +
+// |web_state| and places it in |result|. If |error_message| is provided, then
+// if an error occurs, it will be filled with the error message. Returns true on
+// success and false on failure.
+bool GetCache(WebFrame* web_frame,
+              WebState* web_state,
+              NSString* key,
+              NSString** result,
+              NSString** error_message);
 
 }  // namespace test
 }  // namespace web

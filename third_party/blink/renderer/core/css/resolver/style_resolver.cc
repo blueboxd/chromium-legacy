@@ -1467,6 +1467,9 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
                                                           standard_transitions);
   }
 
+  // Start loading resources used by animations.
+  state.LoadPendingResources();
+
   DCHECK(!state.GetFontBuilder().FontDirty());
 
   return true;
@@ -1908,12 +1911,12 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
     StyleResolverState& state,
     const CacheSuccess& cache_success,
     const MatchResult& match_result) {
+  state.LoadPendingResources();
   if (!state.IsAnimatingCustomProperties() &&
       !cache_success.cached_matched_properties && cache_success.key.IsValid() &&
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
-    state.LoadPendingResources();
     matched_properties_cache_.Add(cache_success.key, *state.Style(),
                                   *state.ParentStyle(), state.Dependencies());
   }

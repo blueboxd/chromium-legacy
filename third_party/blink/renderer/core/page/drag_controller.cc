@@ -712,12 +712,13 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   if (!local_root.ContentLayoutObject())
     return false;
 
-  PhysicalOffset point = local_root.View()->ConvertFromRootFrame(
-      PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
+  const PhysicalOffset point_in_local_root =
+      local_root.View()->ConvertFromRootFrame(
+          PhysicalOffset::FromFloatPointRound(drag_data->ClientPosition()));
 
-  HitTestLocation location(point);
-  HitTestResult result =
-      local_root.GetEventHandler().HitTestResultAtLocation(location);
+  const HitTestResult result =
+      local_root.GetEventHandler().HitTestResultAtLocation(
+          HitTestLocation(point_in_local_root));
 
   if (!result.InnerNode())
     return false;
@@ -732,9 +733,16 @@ bool DragController::CanProcessDrag(DragData* drag_data,
     return false;
   }
 
-  if (did_initiate_drag_ && document_under_mouse_ == drag_initiator_ &&
-      result.IsSelected(location))
-    return false;
+  if (did_initiate_drag_ && document_under_mouse_ == drag_initiator_) {
+    const PhysicalOffset point_in_frame =
+        result.InnerNode()
+            ->GetDocument()
+            .GetFrame()
+            ->View()
+            ->ConvertFromRootFrame(PhysicalOffset::FromFloatPointRound(
+                drag_data->ClientPosition()));
+    return !result.IsSelected(HitTestLocation(point_in_frame));
+  }
 
   return true;
 }

@@ -61,6 +61,8 @@ std::unique_ptr<quic::ProofVerifier> CreateProofVerifier(
 
 QuicTransportClient::Parameters::Parameters() = default;
 QuicTransportClient::Parameters::~Parameters() = default;
+QuicTransportClient::Parameters::Parameters(const Parameters&) = default;
+QuicTransportClient::Parameters::Parameters(Parameters&&) = default;
 
 QuicTransportClient::QuicTransportClient(
     const GURL& url,

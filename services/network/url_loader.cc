@@ -45,12 +45,12 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
-#include "services/network/empty_url_loader_client.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/origin_policy/origin_policy_constants.h"
 #include "services/network/origin_policy/origin_policy_manager.h"
 #include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/cross_origin_resource_policy.h"
+#include "services/network/public/cpp/empty_url_loader_client.h"
 #include "services/network/public/cpp/header_util.h"
 #include "services/network/public/cpp/net_adapters.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -1908,7 +1908,7 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
     receiver_.reset();
     EmptyURLLoaderClient::DrainURLRequest(
         url_loader_client_.BindNewPipeAndPassReceiver(),
-        receiver_.BindNewPipeAndPassRemote());
+        receiver_.BindNewPipeAndPassRemote(), base::OnceClosure());
     receiver_.set_disconnect_handler(
         base::BindOnce(&URLLoader::OnMojoDisconnect, base::Unretained(this)));
 

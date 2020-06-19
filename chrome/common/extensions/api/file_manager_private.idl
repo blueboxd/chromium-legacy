@@ -1186,7 +1186,7 @@ interface Functions {
   [nocompile]
   static void importCrostiniImage([instanceof=Entry] object entry);
 
-  // For a file in DriveFS, retrieves its thumbnail. If |cropToSquare| is true,
+  // For a given file entry, retrieves its thumbnail. If |cropToSquare| is true,
   // returns a thumbnail appropriate for file list or grid views; otherwise,
   // returns a thumbnail appropriate for quickview.
   [nocompile]

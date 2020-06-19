@@ -42,6 +42,7 @@
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_state.h"
+#include "cc/input/scroll_utils.h"
 #include "cc/input/scrollbar.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scroller_size_metrics.h"
@@ -127,6 +128,7 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
@@ -3768,12 +3770,20 @@ void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
 gfx::Vector2dF LayerTreeHostImpl::ResolveScrollPercentageToPixels(
     const ScrollNode& scroll_node,
     const gfx::Vector2dF& scroll_delta) {
-  gfx::Vector2dF scroll_delta_in_pixels;
-  scroll_delta_in_pixels.set_x(scroll_delta.x() *
-                               scroll_node.container_bounds.width());
-  scroll_delta_in_pixels.set_y(scroll_delta.y() *
-                               scroll_node.container_bounds.height());
-  return scroll_delta_in_pixels;
+  gfx::SizeF scroller_size = gfx::SizeF(scroll_node.container_bounds);
+
+  gfx::SizeF viewport_size =
+      InnerViewportScrollNode()
+          ? gfx::SizeF(InnerViewportScrollNode()->container_bounds)
+          : gfx::SizeF(active_tree()->GetDeviceViewport().size());
+
+  // Convert from rootframe coordinates to screen coordinates (physical pixels).
+  scroller_size.Scale(active_tree()->page_scale_factor_for_scroll());
+
+  gfx::Vector2dF pixel_delta = ScrollUtils::ResolveScrollPercentageToPixels(
+      scroll_delta, scroller_size, viewport_size);
+
+  return pixel_delta;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(

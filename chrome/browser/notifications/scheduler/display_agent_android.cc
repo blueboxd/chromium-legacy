@@ -26,7 +26,7 @@ using base::android::ScopedJavaLocalRef;
 namespace {
 
 notifications::UserActionHandler* GetUserActionHandler() {
-  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
+  ProfileKey* profile_key = ::android::GetLastUsedRegularProfileKey();
   DCHECK(profile_key);
   auto* service = NotificationScheduleServiceFactory::GetForKey(profile_key);
   DCHECK(service);

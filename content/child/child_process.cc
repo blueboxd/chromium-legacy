@@ -17,6 +17,9 @@
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/android/cpu_time_metrics.h"
+#include "content/common/mojo_core_library_support.h"
+#include "mojo/public/cpp/system/dynamic_library_support.h"
+#include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -37,6 +40,23 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
       io_thread_("Chrome_ChildIOThread") {
   DCHECK(!g_lazy_child_process_tls.Pointer()->Get());
   g_lazy_child_process_tls.Pointer()->Set(this);
+
+#if defined(OS_LINUX)
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (IsMojoCoreSharedLibraryEnabled()) {
+    // If we're in a child process on Linux and dynamic Mojo Core is in use, we
+    // expect early process startup code (see ContentMainRunnerImpl::Run()) to
+    // have already loaded the library via |mojo::LoadCoreLibrary()|, rendering
+    // this call safe even from within a strict sandbox.
+    MojoInitializeFlags flags = MOJO_INITIALIZE_FLAG_NONE;
+    if (service_manager::IsUnsandboxedSandboxType(
+            service_manager::SandboxTypeFromCommandLine(command_line))) {
+      flags |= MOJO_INITIALIZE_FLAG_FORCE_DIRECT_SHARED_MEMORY_ALLOCATION;
+    }
+    CHECK_EQ(MOJO_RESULT_OK, mojo::InitializeCoreLibrary(flags));
+  }
+#endif
 
   // Initialize ThreadPoolInstance if not already done. A ThreadPoolInstance may
   // already exist when ChildProcess is instantiated in the browser process or

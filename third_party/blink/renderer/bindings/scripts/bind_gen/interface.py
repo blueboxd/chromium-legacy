@@ -5049,8 +5049,18 @@ ${prototype_template}->SetImmutableProto();
     return func_decl, func_def, trampoline_def
 
 
+class PropInstallMode(object):
+    class Mode(int):
+        pass
+
+    UNCONDITIONAL = Mode(0)
+    CONTEXT_INDEPENDENT = Mode(1)
+    CONTEXT_DEPENDENT = Mode(2)
+    V8_CONTEXT_SNAPSHOT = Mode(3)
+
+
 def make_install_properties(cg_context, function_name, class_name,
-                            trampoline_var_name, is_context_dependent,
+                            prop_install_mode, trampoline_var_name,
                             attribute_entries, constant_entries,
                             exposed_construct_entries, operation_entries):
     """
@@ -5064,8 +5074,8 @@ def make_install_properties(cg_context, function_name, class_name,
     assert isinstance(cg_context, CodeGenContext)
     assert isinstance(function_name, str)
     assert _is_none_or_str(class_name)
+    assert isinstance(prop_install_mode, PropInstallMode.Mode)
     assert _is_none_or_str(trampoline_var_name)
-    assert isinstance(is_context_dependent, bool)
     assert isinstance(attribute_entries, (list, tuple))
     assert all(
         isinstance(entry, _PropEntryAttribute) for entry in attribute_entries)
@@ -5081,7 +5091,7 @@ def make_install_properties(cg_context, function_name, class_name,
         isinstance(entry, _PropEntryOperationGroup)
         for entry in operation_entries)
 
-    if is_context_dependent:
+    if prop_install_mode == PropInstallMode.CONTEXT_DEPENDENT:
         install_prototype_object_node = _make_install_prototype_object(
             cg_context)
     else:
@@ -5089,9 +5099,26 @@ def make_install_properties(cg_context, function_name, class_name,
 
     if not (attribute_entries or constant_entries or exposed_construct_entries
             or operation_entries or install_prototype_object_node):
-        return None, None, None
+        if prop_install_mode != PropInstallMode.V8_CONTEXT_SNAPSHOT:
+            return None, None, None
 
-    if is_context_dependent:
+    if prop_install_mode in (PropInstallMode.UNCONDITIONAL,
+                             PropInstallMode.CONTEXT_INDEPENDENT):
+        arg_decls = [
+            "v8::Isolate* isolate",
+            "const DOMWrapperWorld& world",
+            "v8::Local<v8::ObjectTemplate> instance_template",
+            "v8::Local<v8::ObjectTemplate> prototype_template",
+            "v8::Local<v8::FunctionTemplate> interface_template",
+        ]
+        arg_names = [
+            "isolate",
+            "world",
+            "instance_template",
+            "prototype_template",
+            "interface_template",
+        ]
+    elif prop_install_mode == PropInstallMode.CONTEXT_DEPENDENT:
         arg_decls = [
             "v8::Local<v8::Context> context",
             "const DOMWrapperWorld& world",
@@ -5110,22 +5137,28 @@ def make_install_properties(cg_context, function_name, class_name,
             "interface_template",
             "feature_selector",
         ]
-    else:
+    elif prop_install_mode == PropInstallMode.V8_CONTEXT_SNAPSHOT:
         arg_decls = [
-            "v8::Isolate* isolate",
+            "v8::Local<v8::Context> context",
             "const DOMWrapperWorld& world",
-            "v8::Local<v8::ObjectTemplate> instance_template",
-            "v8::Local<v8::ObjectTemplate> prototype_template",
+            "v8::Local<v8::Object> instance_object",
+            "v8::Local<v8::Object> prototype_object",
+            "v8::Local<v8::Function> interface_object",
             "v8::Local<v8::FunctionTemplate> interface_template",
         ]
         arg_names = [
-            "isolate",
+            "context",
             "world",
-            "instance_template",
-            "prototype_template",
+            "instance_object",
+            "prototype_object",
+            "interface_object",
             "interface_template",
         ]
     return_type = "void"
+
+    is_per_context_install = (
+        prop_install_mode in (PropInstallMode.CONTEXT_DEPENDENT,
+                              PropInstallMode.V8_CONTEXT_SNAPSHOT))
 
     if trampoline_var_name is None:
         trampoline_def = None
@@ -5141,11 +5174,10 @@ def make_install_properties(cg_context, function_name, class_name,
             args=", ".join(arg_names))
         trampoline_def.body.append(TextNode(text))
 
-    func_decl = CxxFuncDeclNode(
-        name=function_name,
-        arg_decls=arg_decls,
-        return_type=return_type,
-        static=True)
+    func_decl = CxxFuncDeclNode(name=function_name,
+                                arg_decls=arg_decls,
+                                return_type=return_type,
+                                static=bool(class_name))
 
     func_def = CxxFuncDefNode(
         name=function_name,
@@ -5162,7 +5194,7 @@ def make_install_properties(cg_context, function_name, class_name,
             body.add_template_var(arg_name, arg_name)
     bind_installer_local_vars(body, cg_context)
 
-    if is_context_dependent and install_prototype_object_node:
+    if install_prototype_object_node:
         body.extend([
             CxxLikelyIfNode(cond="${feature_selector}.IsAll()",
                             body=[install_prototype_object_node]),
@@ -5173,7 +5205,6 @@ def make_install_properties(cg_context, function_name, class_name,
         unconditional_entries = []
         conditional_to_entries = {}
         for entry in entries:
-            assert entry.is_context_dependent == is_context_dependent
             if entry.exposure_conditional.is_always_true:
                 unconditional_entries.append(entry)
             else:
@@ -5203,7 +5234,7 @@ def make_install_properties(cg_context, function_name, class_name,
         body.append(EmptyNode())
 
     table_name = "kAttributeTable"
-    if is_context_dependent:
+    if is_per_context_install:
         installer_call_text = (
             "V8DOMConfiguration::InstallAccessors(${isolate}, ${world}, "
             "${instance_object}, ${prototype_object}, ${interface_object}, "
@@ -5218,7 +5249,7 @@ def make_install_properties(cg_context, function_name, class_name,
                        _make_attribute_registration_table, installer_call_text)
 
     table_name = "kConstantCallbackTable"
-    if is_context_dependent:
+    if is_per_context_install:
         installer_call_text = (
             "V8DOMConfiguration::InstallConstants(${isolate}, "
             "${interface_object}, ${prototype_object}, "
@@ -5235,7 +5266,7 @@ def make_install_properties(cg_context, function_name, class_name,
                        installer_call_text)
 
     table_name = "kConstantValueTable"
-    if is_context_dependent:
+    if is_per_context_install:
         installer_call_text = (
             "V8DOMConfiguration::InstallConstants(${isolate}, "
             "${interface_object}, ${prototype_object}, "
@@ -5252,7 +5283,7 @@ def make_install_properties(cg_context, function_name, class_name,
                        installer_call_text)
 
     table_name = "kExposedConstructTable"
-    if is_context_dependent:
+    if is_per_context_install:
         installer_call_text = (
             "V8DOMConfiguration::InstallAttributes(${isolate}, ${world}, "
             "${instance_object}, ${prototype_object}, "
@@ -5267,7 +5298,7 @@ def make_install_properties(cg_context, function_name, class_name,
                        installer_call_text)
 
     table_name = "kOperationTable"
-    if is_context_dependent:
+    if is_per_context_install:
         installer_call_text = (
             "V8DOMConfiguration::InstallMethods(${isolate}, ${world}, "
             "${instance_object}, ${prototype_object}, ${interface_object}, "
@@ -5960,6 +5991,140 @@ static_assert(
 
 
 # ----------------------------------------------------------------------------
+# V8 Context Snapshot
+# ----------------------------------------------------------------------------
+
+
+def make_v8_context_snapshot_api(cg_context, attribute_entries,
+                                 constant_entries, constructor_entries,
+                                 exposed_construct_entries, operation_entries,
+                                 named_properties_object_callback_defs,
+                                 cross_origin_property_callback_defs):
+    derived_interfaces = cg_context.interface.deriveds
+    derived_names = map(lambda interface: interface.identifier,
+                        derived_interfaces)
+    derived_names.append(cg_context.interface.identifier)
+    if not ("Window" in derived_names or "HTMLDocument" in derived_names):
+        return None, None
+
+    header_ns = CxxNamespaceNode(name_style.namespace("v8_context_snapshot"))
+    source_ns = CxxNamespaceNode(name_style.namespace("v8_context_snapshot"))
+
+    (func_decl,
+     func_def) = make_v8_context_snapshot_get_reference_table_function(
+         cg_context, name_style.func("GetRefTableOf",
+                                     cg_context.class_name), attribute_entries,
+         constant_entries, constructor_entries, exposed_construct_entries,
+         operation_entries, named_properties_object_callback_defs,
+         cross_origin_property_callback_defs)
+    header_ns.body.extend([
+        func_decl,
+        EmptyNode(),
+    ])
+    source_ns.body.extend([
+        func_def,
+        EmptyNode(),
+    ])
+
+    (func_decl,
+     func_def) = make_v8_context_snapshot_install_properties_function(
+         cg_context, name_style.func("InstallPropsOf",
+                                     cg_context.class_name), attribute_entries,
+         constant_entries, exposed_construct_entries, operation_entries)
+    header_ns.body.extend([
+        func_decl,
+        EmptyNode(),
+    ])
+    source_ns.body.extend([
+        func_def,
+        EmptyNode(),
+    ])
+
+    return header_ns, source_ns
+
+
+def make_v8_context_snapshot_get_reference_table_function(
+        cg_context, function_name, attribute_entries, constant_entries,
+        constructor_entries, exposed_construct_entries, operation_entries,
+        named_properties_object_callback_defs,
+        cross_origin_property_callback_defs):
+    callback_names = []
+
+    for entry in attribute_entries:
+        if entry.exposure_conditional.is_always_true:
+            callback_names.append(entry.attr_get_callback_name)
+            callback_names.append(entry.attr_set_callback_name)
+    for entry in constant_entries:
+        if entry.exposure_conditional.is_always_true:
+            callback_names.append(entry.const_callback_name)
+    for entry in constructor_entries:
+        if entry.exposure_conditional.is_always_true:
+            callback_names.append(entry.ctor_callback_name)
+    for entry in exposed_construct_entries:
+        if entry.exposure_conditional.is_always_true:
+            callback_names.append(entry.prop_callback_name)
+    for entry in operation_entries:
+        if entry.exposure_conditional.is_always_true:
+            callback_names.append(entry.op_callback_name)
+
+    def collect_callbacks(node):
+        if isinstance(node, CxxFuncDefNode):
+            callback_names.append(node.function_name)
+        elif isinstance(node, ListNode):
+            for child_node in node:
+                collect_callbacks(child_node)
+
+    collect_callbacks(named_properties_object_callback_defs)
+    collect_callbacks(cross_origin_property_callback_defs)
+
+    entry_nodes = map(
+        lambda name: TextNode("reinterpret_cast<intptr_t>({}),".format(name)),
+        filter(None, callback_names))
+    table_node = ListNode([
+        TextNode("static const intptr_t kReferenceTable[] = {"),
+        ListNode(entry_nodes),
+        TextNode("};"),
+    ])
+
+    func_decl = CxxFuncDeclNode(name=function_name,
+                                arg_decls=[],
+                                return_type="base::span<const intptr_t>")
+
+    func_def = CxxFuncDefNode(name=function_name,
+                              arg_decls=[],
+                              return_type="base::span<const intptr_t>")
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    body = func_def.body
+    body.extend([table_node, TextNode("return kReferenceTable;")])
+
+    return func_decl, func_def
+
+
+def make_v8_context_snapshot_install_properties_function(
+        cg_context, function_name, attribute_entries, constant_entries,
+        exposed_construct_entries, operation_entries):
+    def selector(entry):
+        if entry.exposure_conditional.is_always_true:
+            return False
+        if entry.is_context_dependent:
+            return False
+        return True
+
+    func_decl, func_def, _ = make_install_properties(
+        cg_context,
+        function_name,
+        class_name=None,
+        prop_install_mode=PropInstallMode.V8_CONTEXT_SNAPSHOT,
+        trampoline_var_name=None,
+        attribute_entries=filter(selector, attribute_entries),
+        constant_entries=filter(selector, constant_entries),
+        exposed_construct_entries=filter(selector, exposed_construct_entries),
+        operation_entries=filter(selector, operation_entries))
+
+    return func_decl, func_def
+
+
+# ----------------------------------------------------------------------------
 # Main functions
 # ----------------------------------------------------------------------------
 
@@ -6261,8 +6426,8 @@ def generate_interface(interface):
          cg_context,
          FN_INSTALL_UNCONDITIONAL_PROPS,
          class_name=impl_class_name,
+         prop_install_mode=PropInstallMode.UNCONDITIONAL,
          trampoline_var_name=tp_install_unconditional_props,
-         is_context_dependent=False,
          attribute_entries=filter(is_unconditional, attribute_entries),
          constant_entries=filter(is_unconditional, constant_entries),
          exposed_construct_entries=filter(is_unconditional,
@@ -6274,8 +6439,8 @@ def generate_interface(interface):
          cg_context,
          FN_INSTALL_CONTEXT_INDEPENDENT_PROPS,
          class_name=impl_class_name,
+         prop_install_mode=PropInstallMode.CONTEXT_INDEPENDENT,
          trampoline_var_name=tp_install_context_independent_props,
-         is_context_dependent=False,
          attribute_entries=filter(is_context_independent, attribute_entries),
          constant_entries=filter(is_context_independent, constant_entries),
          exposed_construct_entries=filter(is_context_independent,
@@ -6286,8 +6451,8 @@ def generate_interface(interface):
          cg_context,
          FN_INSTALL_CONTEXT_DEPENDENT_PROPS,
          class_name=impl_class_name,
+         prop_install_mode=PropInstallMode.CONTEXT_DEPENDENT,
          trampoline_var_name=tp_install_context_dependent_props,
-         is_context_dependent=True,
          attribute_entries=filter(is_context_dependent, attribute_entries),
          constant_entries=filter(is_context_dependent, constant_entries),
          exposed_construct_entries=filter(is_context_dependent,
@@ -6349,6 +6514,14 @@ def generate_interface(interface):
                  install_context_independent_props_decl),
              has_context_dependent_props=bool(
                  install_context_dependent_props_decl))
+
+    # V8 Context Snapshot
+    (header_v8_context_snapshot_ns,
+     source_v8_context_snapshot_ns) = make_v8_context_snapshot_api(
+         cg_context, attribute_entries, constant_entries, constructor_entries,
+         exposed_construct_entries, operation_entries,
+         named_properties_object_callback_defs,
+         cross_origin_property_callback_defs)
 
     # Header part (copyright, include directives, and forward declarations)
     api_header_node.extend([
@@ -6440,7 +6613,10 @@ def generate_interface(interface):
         EmptyNode(),
     ])
     if is_cross_components:
-        impl_header_blink_ns.body.append(impl_class_def)
+        impl_header_blink_ns.body.extend([
+            impl_class_def,
+            EmptyNode(),
+        ])
 
     if constants_def:
         api_class_def.public_section.extend([
@@ -6512,6 +6688,18 @@ def generate_interface(interface):
         installer_function_defs,
         EmptyNode(),
     ])
+
+    if header_v8_context_snapshot_ns:
+        impl_header_blink_ns.body.extend([
+            CxxNamespaceNode(name=name_style.namespace("bindings"),
+                             body=header_v8_context_snapshot_ns),
+            EmptyNode(),
+        ])
+        impl_source_blink_ns.body.extend([
+            CxxNamespaceNode(name=name_style.namespace("bindings"),
+                             body=source_v8_context_snapshot_ns),
+            EmptyNode(),
+        ])
 
     # Write down to the files.
     write_code_node_to_file(api_header_node,

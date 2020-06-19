@@ -652,8 +652,9 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
           execution_context->GetTaskRunner(TaskType::kNetworking)));
 
   connector->Connect(
-      url_, handshake_client_receiver_.BindNewPipeAndPassRemote(
-                execution_context->GetTaskRunner(TaskType::kNetworking)));
+      url_, /*fingerprints=*/{},
+      handshake_client_receiver_.BindNewPipeAndPassRemote(
+          execution_context->GetTaskRunner(TaskType::kNetworking)));
 
   handshake_client_receiver_.set_disconnect_handler(
       WTF::Bind(&QuicTransport::OnConnectionError, WrapWeakPersistent(this)));

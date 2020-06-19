@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import os
-from base_generator import Color, Modes, BaseGenerator
+from base_generator import Color, Modes, BaseGenerator, VariableType
 
 
 class ViewsStyleGenerator(BaseGenerator):
@@ -40,14 +40,8 @@ class ViewsStyleGenerator(BaseGenerator):
 
     def _CreateColorList(self):
         color_list = []
-        for color_name in (
-                self._mode_variables[self._default_mode].colors.keys()):
-            color_obj = {'name': color_name, 'mode_values': {}}
-            for m in Modes.ALL:
-                mode_colors = self._mode_variables[m].colors
-                if color_name in mode_colors:
-                    color_obj['mode_values'][m] = mode_colors[color_name]
-            color_list.append(color_obj)
+        for name, mode_values in self.model[VariableType.COLOR].items():
+            color_list.append({'name': name, 'mode_values': mode_values})
 
         return color_list
 

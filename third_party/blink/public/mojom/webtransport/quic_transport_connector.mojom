@@ -12,6 +12,8 @@ import "url/mojom/url.mojom";
 interface QuicTransportConnector {
   // Starts an opening handshake.
   // It is recommended to detect mojo connection errors on |client|.
-  Connect(url.mojom.Url url,
-          pending_remote<network.mojom.QuicTransportHandshakeClient> client);
+  Connect(
+    url.mojom.Url url,
+    array<network.mojom.QuicTransportCertificateFingerprint> fingerprints,
+    pending_remote<network.mojom.QuicTransportHandshakeClient> client);
 };

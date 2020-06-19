@@ -23,7 +23,8 @@ PrerendererClient::~PrerendererClient() = default;
 
 bool PrerendererClient::IsPrefetchOnly() {
   return PrerenderHelper::GetPrerenderMode(
-             render_view()->GetMainRenderFrame()) == PREFETCH_ONLY;
+             render_view()->GetMainRenderFrame()) ==
+         prerender::mojom::PrerenderMode::kPrefetchOnly;
 }
 
 void PrerendererClient::OnDestruct() {

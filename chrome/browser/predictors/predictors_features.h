@@ -24,6 +24,8 @@ extern const base::Feature kLoadingPredictorDisregardAlwaysAccessesNetwork;
 
 extern const base::Feature kLoadingPredictorUseOptimizationGuide;
 
+extern const base::Feature kLoadingPredictorPrefetch;
+
 // Returns whether local predictions should be used to make preconnect
 // predictions.
 bool ShouldUseLocalPredictions();

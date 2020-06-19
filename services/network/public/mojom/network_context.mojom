@@ -1200,12 +1200,15 @@ interface NetworkContext {
   // Creates a QuicTransport connection to |url|. |origin| is used for the
   // client indication - see
   // https://tools.ietf.org/html/draft-vvv-webtransport-quic-01#section-3.2 .
+  // When |fingerprints| is not empty, it is used to verify the certificate.
+  // https://wicg.github.io/web-transport/#dom-quictransportconfiguration-server_certificate_fingerprints
   //
   // It is recommended to detect mojo connection errors on |handshake_client|.
   CreateQuicTransport(
         url.mojom.Url url,
         url.mojom.Origin origin,
         NetworkIsolationKey network_isolation_key,
+        array<QuicTransportCertificateFingerprint> fingerprints,
         pending_remote<QuicTransportHandshakeClient> handshake_client);
 
   // Create a NetLogExporter, which helps export NetLog to an existing file.

@@ -1091,4 +1091,5 @@ group("content_shell_crash_test") {
 mojom("shell_controller_mojom") {
   testonly = true
   sources = [ "common/shell_controller.test-mojom" ]
+  public_deps = [ "//mojo/public/mojom/base" ]
 }

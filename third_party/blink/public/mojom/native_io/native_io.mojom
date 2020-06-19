@@ -66,5 +66,12 @@ interface NativeIOHost {
   [Sync]
   GetAllFileNames() => (bool success, array<string> names);
 
+  // Renames a previously created file.
+  //
+  // Rename does not allow renaming any files that are currently open and does
+  // not override existing files.
+  [Sync]
+  RenameFile(string old_name, string new_name) => (bool success);
+
   // TODO(pwnall): Build quota integration before this API exits Dev Trials.
 };

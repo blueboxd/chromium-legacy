@@ -21,7 +21,7 @@
 #include "components/prerender/common/prerender_canceler.mojom.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_origin.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -116,8 +116,10 @@ class PrerenderContents : public content::NotificationObserver,
 
   // Set the mode of this contents. This must be called before prerender has
   // started.
-  void SetPrerenderMode(PrerenderMode mode);
-  PrerenderMode prerender_mode() const { return prerender_mode_; }
+  void SetPrerenderMode(prerender::mojom::PrerenderMode mode);
+  prerender::mojom::PrerenderMode prerender_mode() const {
+    return prerender_mode_;
+  }
 
   static Factory* CreateFactory();
 
@@ -263,7 +265,7 @@ class PrerenderContents : public content::NotificationObserver,
   std::unique_ptr<content::WebContents> CreateWebContents(
       content::SessionStorageNamespace* session_storage_namespace);
 
-  PrerenderMode prerender_mode_;
+  prerender::mojom::PrerenderMode prerender_mode_;
   bool prerendering_has_started_;
 
   // Time at which we started to load the URL.  This is used to compute

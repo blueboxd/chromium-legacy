@@ -80,9 +80,46 @@ addOverride(window, window, 'sessionStorage', function() {
       'SecurityError');
 }, null);
 
+// Caches are only supported in a SecureContext. Only add the override if
+// caches are supported.
+if (window.caches) {
+  const promiseException = new DOMException(
+      'An attempt was made to break through the security policy of the user ' +
+          'agent.',
+      'SecurityError');
+  addOverride(caches, CacheStorage.prototype, 'match', function() {
+    return function(request, options) {
+      return Promise.reject(promiseException);
+    }
+  });
+
+  addOverride(caches, CacheStorage.prototype, 'has', function() {
+    return function(cacheName) {
+      return Promise.reject(promiseException);
+    }
+  });
+
+  addOverride(caches, CacheStorage.prototype, 'open', function() {
+    return function(cacheName) {
+      return Promise.reject(promiseException);
+    }
+  });
+
+  addOverride(caches, CacheStorage.prototype, 'delete', function() {
+    return function(cacheName) {
+      return Promise.reject(promiseException);
+    }
+  });
+
+  addOverride(caches, CacheStorage.prototype, 'keys', function() {
+    return function() {
+      return Promise.reject(promiseException);
+    }
+  });
+}
+
 if (brokenOverrides.length > 0) {
   __gCrWeb.message.invokeOnHost(
       {'command': 'cookie.error', 'brokenOverrides': brokenOverrides});
 }
-
 }());

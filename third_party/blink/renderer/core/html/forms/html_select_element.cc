@@ -735,6 +735,7 @@ bool HTMLSelectElement::ChildrenChangedAllChildrenRemovedNeedsList() const {
 void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
                                        bool option_is_selected) {
   DCHECK_EQ(option.OwnerSelectElement(), this);
+  option.SetWasOptionInsertedCalled(true);
   SetRecalcListItems();
   if (option_is_selected) {
     SelectOption(&option, IsMultiple() ? 0 : kDeselectOtherOptionsFlag);
@@ -757,6 +758,7 @@ void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
 }
 
 void HTMLSelectElement::OptionRemoved(HTMLOptionElement& option) {
+  option.SetWasOptionInsertedCalled(false);
   SetRecalcListItems();
   if (option.Selected())
     ResetToDefaultSelection(kResetReasonSelectedOptionRemoved);
@@ -862,11 +864,13 @@ bool HTMLSelectElement::DeselectItemsWithoutValidation(
   }
   bool did_update_selection = false;
   for (auto* const option : GetOptionList()) {
-    if (option != exclude_element) {
-      if (option->Selected())
-        did_update_selection = true;
-      option->SetSelectedState(false);
-    }
+    if (option == exclude_element)
+      continue;
+    if (!option->WasOptionInsertedCalled())
+      continue;
+    if (option->Selected())
+      did_update_selection = true;
+    option->SetSelectedState(false);
   }
   return did_update_selection;
 }

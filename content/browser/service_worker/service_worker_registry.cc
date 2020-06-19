@@ -286,6 +286,23 @@ void ServiceWorkerRegistry::GetRegistrationsForOrigin(
                      weak_factory_.GetWeakPtr(), std::move(callback), origin));
 }
 
+void ServiceWorkerRegistry::GetStorageUsageForOrigin(
+    const url::Origin& origin,
+    GetStorageUsageForOriginCallback callback) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  storage()->GetUsageForOrigin(
+      origin,
+      base::BindOnce(
+          [](GetStorageUsageForOriginCallback callback,
+             storage::mojom::ServiceWorkerDatabaseStatus database_status,
+             int64_t usage) {
+            blink::ServiceWorkerStatusCode status =
+                DatabaseStatusToStatusCode(database_status);
+            std::move(callback).Run(status, usage);
+          },
+          std::move(callback)));
+}
+
 void ServiceWorkerRegistry::GetAllRegistrationsInfos(
     GetRegistrationsInfosCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());

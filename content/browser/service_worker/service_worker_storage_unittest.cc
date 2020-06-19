@@ -333,6 +333,23 @@ class ServiceWorkerStorageTest : public testing::Test {
     return result.value();
   }
 
+  ServiceWorkerDatabase::Status DeleteRegistrationById(int64_t registration_id,
+                                                       const GURL& origin) {
+    ServiceWorkerDatabase::Status result;
+    base::RunLoop loop;
+    storage()->DeleteRegistration(
+        registration_id, origin,
+        base::BindLambdaForTesting(
+            [&](ServiceWorkerDatabase::Status status,
+                ServiceWorkerStorage::OriginState, int64_t deleted_version,
+                const std::vector<int64_t>& newly_purgeable_resources) {
+              result = status;
+              loop.Quit();
+            }));
+    loop.Run();
+    return result;
+  }
+
   blink::ServiceWorkerStatusCode GetAllRegistrationsInfos(
       std::vector<ServiceWorkerRegistrationInfo>* registrations) {
     base::Optional<blink::ServiceWorkerStatusCode> result;
@@ -347,6 +364,22 @@ class ServiceWorkerStorageTest : public testing::Test {
     EXPECT_FALSE(result.has_value());  // always async
     loop.Run();
     return result.value();
+  }
+
+  blink::ServiceWorkerStatusCode GetStorageUsageForOrigin(
+      const url::Origin& origin,
+      int64_t& out_usage) {
+    blink::ServiceWorkerStatusCode result;
+    base::RunLoop loop;
+    registry()->GetStorageUsageForOrigin(
+        origin, base::BindLambdaForTesting(
+                    [&](blink::ServiceWorkerStatusCode status, int64_t usage) {
+                      result = status;
+                      out_usage = usage;
+                      loop.Quit();
+                    }));
+    loop.Run();
+    return result;
   }
 
   blink::ServiceWorkerStatusCode GetRegistrationsForOrigin(
@@ -1993,6 +2026,68 @@ TEST_F(ServiceWorkerStorageDiskTest, RegisteredOriginCount) {
     EXPECT_EQ(3UL, registered_origins().size());
     histogram_tester.ExpectTotalCount("ServiceWorker.RegisteredOriginCount", 0);
   }
+}
+
+// Tests reading storage usage from database.
+TEST_F(ServiceWorkerStorageTest, GetStorageUsageForOrigin) {
+  const GURL kScope1("https://www.example.com/foo/");
+  const GURL kScript1("https://www.example.com/foo/sw.js");
+  const GURL kScope2("https://www.example.com/bar/");
+  const GURL kScript2("https://www.example.com/bar/sw.js");
+  const GURL kScript3("https://www.example.com/bar/sub.js");
+
+  // Preparation: Store two registrations.
+  RegistrationData data1;
+  data1.registration_id = 1;
+  data1.scope = kScope1;
+  data1.script = kScript1;
+  data1.version_id = 1;
+  data1.is_active = true;
+  std::vector<ResourceRecord> resources1;
+  resources1.push_back(CreateResourceRecord(1, kScript1, 123));
+  data1.resources_total_size_bytes = 0;
+  for (auto& resource : resources1) {
+    data1.resources_total_size_bytes += resource->size_bytes;
+  }
+  WriteRegistrationToDB(data1, std::move(resources1));
+
+  RegistrationData data2;
+  data2.registration_id = 2;
+  data2.scope = kScope2;
+  data2.script = kScript2;
+  data2.version_id = 1;
+  data2.is_active = true;
+  std::vector<ResourceRecord> resources2;
+  resources2.push_back(CreateResourceRecord(2, kScript2, 456));
+  resources2.push_back(CreateResourceRecord(3, kScript3, 789));
+  data2.resources_total_size_bytes = 0;
+  for (auto& resource : resources2) {
+    data2.resources_total_size_bytes += resource->size_bytes;
+  }
+  WriteRegistrationToDB(data2, std::move(resources2));
+
+  // Storage usage should report total resource size from two registrations.
+  const url::Origin origin = url::Origin::Create(kScope1.GetOrigin());
+  int64_t usage;
+  EXPECT_EQ(GetStorageUsageForOrigin(origin, usage),
+            blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_EQ(usage, data1.resources_total_size_bytes +
+                       data2.resources_total_size_bytes);
+
+  // Delete the first registration. Storage usage should report only the second
+  // registration.
+  EXPECT_EQ(DeleteRegistrationById(data1.registration_id, origin.GetURL()),
+            ServiceWorkerDatabase::Status::kOk);
+  EXPECT_EQ(GetStorageUsageForOrigin(origin, usage),
+            blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_EQ(usage, data2.resources_total_size_bytes);
+
+  // Delete the second registration. No storage usage should be reported.
+  EXPECT_EQ(DeleteRegistrationById(data2.registration_id, origin.GetURL()),
+            ServiceWorkerDatabase::Status::kOk);
+  EXPECT_EQ(GetStorageUsageForOrigin(origin, usage),
+            blink::ServiceWorkerStatusCode::kOk);
+  EXPECT_EQ(usage, 0);
 }
 
 // Tests loading a registration with a disabled navigation preload

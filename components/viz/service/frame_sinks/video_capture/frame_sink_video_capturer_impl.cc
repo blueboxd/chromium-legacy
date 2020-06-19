@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -631,7 +630,6 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                      VideoCaptureOverlay::MakeCombinedRenderer(
                          GetOverlaysInOrder(), content_rect, frame->format()),
                      std::move(frame), base::TimeTicks::Now())));
-  request->set_result_task_runner(base::SequencedTaskRunnerHandle::Get());
   request->set_source(copy_request_source_);
   request->set_area(gfx::Rect(source_size));
   request->SetScaleRatio(

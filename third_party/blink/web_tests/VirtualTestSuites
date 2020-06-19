@@ -342,14 +342,16 @@
   },
   {
     "prefix": "compositor-threaded-percent-based-scrolling",
-    "bases": ["fast/scrolling/scrollbars"],
+    "bases": ["fast/scrolling/scrollbars",
+              "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
     "prefix": "compositor-threaded-percent-based-scrolling-dsf-2",
-    "bases": ["fast/scrolling/scrollbars/dsf-ready"],
+    "bases": ["fast/scrolling/scrollbars/dsf-ready",
+              "virtual/percent-based-scrolling"],
     "args": ["--enable-features=PercentBasedScrolling",
              "--enable-threaded-compositing",
              "--enable-prefer-compositing-to-lcd-text",

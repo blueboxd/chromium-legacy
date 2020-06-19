@@ -30,7 +30,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/prerender/common/prerender_final_status.h"
 #include "components/prerender/common/prerender_messages.h"
-#include "components/prerender/common/prerender_types.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -136,7 +135,8 @@ PrerenderContents::PrerenderContents(
     const content::Referrer& referrer,
     const base::Optional<url::Origin>& initiator_origin,
     Origin origin)
-    : prerender_mode_(DEPRECATED_FULL_PRERENDER),
+    : prerender_mode_(
+          prerender::mojom::PrerenderMode::kDeprecatedFullPrerender),
       prerendering_has_started_(false),
       prerender_manager_(prerender_manager),
       prerender_url_(url),
@@ -178,7 +178,7 @@ bool PrerenderContents::Init() {
   return AddAliasURL(prerender_url_);
 }
 
-void PrerenderContents::SetPrerenderMode(PrerenderMode mode) {
+void PrerenderContents::SetPrerenderMode(prerender::mojom::PrerenderMode mode) {
   DCHECK(!prerendering_has_started_);
   prerender_mode_ = mode;
 }
@@ -633,7 +633,8 @@ void PrerenderContents::PrepareForUse() {
 
   if (prerender_contents_.get()) {
     prerender_contents_->SendToAllFrames(new PrerenderMsg_SetIsPrerendering(
-        MSG_ROUTING_NONE, NO_PRERENDER, std::string()));
+        MSG_ROUTING_NONE, prerender::mojom::PrerenderMode::kNoPrerender,
+        std::string()));
   }
 
   NotifyPrerenderStop();

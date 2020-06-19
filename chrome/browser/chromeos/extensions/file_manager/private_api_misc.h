@@ -460,6 +460,48 @@ class FileManagerPrivateDetectCharacterEncodingFunction
   ResponseAction Run() override;
 };
 
+class FileManagerPrivateInternalGetThumbnailFunction
+    : public LoggedExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.getThumbnail",
+                             FILEMANAGERPRIVATEINTERNAL_GETTHUMBNAIL)
+
+  FileManagerPrivateInternalGetThumbnailFunction();
+
+ protected:
+  ~FileManagerPrivateInternalGetThumbnailFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  // Attempts to generate a thumbnail for the given url. This method
+  // checks that the URL references a Google Drive file.
+  ResponseAction GetDrivefsThumbnail(
+      const ChromeExtensionFunctionDetails& chrome_details,
+      const storage::FileSystemURL& url,
+      bool crop_to_square);
+
+  // Attempts to generate a thumbnail for the given url. This method checks
+  // that the URL references a local PDF file. If so, it attempts to generate
+  // a one page thumbnail.
+  ResponseAction GetLocalThumbnail(
+      const ChromeExtensionFunctionDetails& chrome_details,
+      const storage::FileSystemURL& url,
+      bool crop_to_square);
+
+  // A function that performs IO operations to read and render PDF thumbnail
+  // Must be run on the IO Thread.
+  void GetLocalThumbnailOnIOThread(const base::FilePath& path,
+                                   bool crop_to_square);
+
+  // A callback invoked when thumbnail data has been generated.
+  void GotThumbnail(const base::Optional<std::vector<uint8_t>>& data);
+
+  // Responds with a base64 encoded PNG thumbnail data.
+  void SendEncodedThumbnail(std::string thumbnail_data_url);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_PRIVATE_API_MISC_H_

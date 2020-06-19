@@ -77,3 +77,56 @@ __gCrWeb.cookieTest.setSessionStorage = function(key, value) {
     return false;
   }
 };
+
+async function setCache(key, value) {
+  const cache = await caches.open('cache');
+  return cache.put(`/${key}`, new Response(value));
+}
+
+async function getCache(key) {
+  const cache = await caches.open('cache');
+  const result = await cache.match(new Request(`/${key}`));
+  return result && result.text();
+}
+
+function onError(error) {
+  if (error instanceof DOMException || error instanceof ReferenceError) {
+    __gCrWeb.message.invokeOnHost({
+      command: 'cookieTest.result',
+      result: {message: error.message}
+    });
+    return;
+  }
+  __gCrWeb.message.invokeOnHost(
+      {command: 'cookieTest.result', result: false});
+}
+
+async function getCacheWrapper(key) {
+  try {
+    const value = await getCache(key);
+    __gCrWeb.message.invokeOnHost(
+        {command: 'cookieTest.result', result: value})
+  } catch (error) {
+    onError(error);
+  }
+}
+
+async function setCacheWrapper(key, value) {
+  try {
+    await setCache(key, value);
+    __gCrWeb.message.invokeOnHost(
+        {command: 'cookieTest.result', result: true})
+  } catch (error) {
+    onError(error);
+  }
+}
+
+__gCrWeb.cookieTest.setCache = function(key, value) {
+  setCacheWrapper(key, value);
+  return true;
+};
+
+__gCrWeb.cookieTest.getCache = function(key) {
+  getCacheWrapper(key);
+  return 'This is an async function.';
+};

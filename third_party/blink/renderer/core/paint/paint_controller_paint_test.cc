@@ -32,12 +32,17 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
   GetDocument().GetPage()->GetFocusController().SetActive(true);
   GetDocument().GetPage()->GetFocusController().SetFocused(true);
   auto& div = *To<Element>(GetDocument().body()->firstChild());
-  InlineTextBox& text_inline_box =
-      *ToLayoutText(div.firstChild()->GetLayoutObject())->FirstTextBox();
+  auto& layout_text = *To<Text>(div.firstChild())->GetLayoutObject();
+  const DisplayItemClient* text_inline_box = layout_text.FirstTextBox();
+  if (layout_text.IsInLayoutNGInlineFormattingContext()) {
+    NGInlineCursor cursor;
+    cursor.MoveTo(layout_text);
+    text_inline_box = cursor.Current().GetDisplayItemClient();
+  }
   EXPECT_THAT(RootPaintController().GetDisplayItemList(),
               ElementsAre(IsSameId(&ViewScrollingBackgroundClient(),
                                    kDocumentBackgroundType),
-                          IsSameId(&text_inline_box, kForegroundType)));
+                          IsSameId(text_inline_box, kForegroundType)));
 
   div.focus();
   UpdateAllLifecyclePhasesForTest();
@@ -46,7 +51,7 @@ TEST_P(PaintControllerPaintTest, FullDocumentPaintingWithCaret) {
       RootPaintController().GetDisplayItemList(),
       ElementsAre(
           IsSameId(&ViewScrollingBackgroundClient(), kDocumentBackgroundType),
-          IsSameId(&text_inline_box, kForegroundType),
+          IsSameId(text_inline_box, kForegroundType),
           // New!
           IsSameId(&CaretDisplayItemClientForTesting(), DisplayItem::kCaret)));
 }

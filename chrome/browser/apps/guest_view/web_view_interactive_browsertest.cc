@@ -1352,7 +1352,7 @@ IN_PROC_BROWSER_TEST_F(WebViewFocusInteractiveTest, Focus_FocusRestored) {
 
 // ui::TextInputClient is NULL for mac and android.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(OS_WIN)
 #define MAYBE_Focus_InputMethod DISABLED_Focus_InputMethod
 #else
 #define MAYBE_Focus_InputMethod Focus_InputMethod

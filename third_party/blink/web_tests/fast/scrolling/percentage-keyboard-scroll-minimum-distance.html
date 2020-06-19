@@ -12,7 +12,6 @@
     if (window.eventSender && window.internals) {
       internals.settings.setScrollAnimatorEnabled(false);
       internals.settings.setHideScrollbars(true);
-      internals.runtimeFlags.msExperimentalScrollingEnabled = true;
 
       test(() => {
         const scroller = document.getElementById("scroller");
@@ -29,4 +28,3 @@
   }
   addEventListener('load', runTest);
 </script>
-

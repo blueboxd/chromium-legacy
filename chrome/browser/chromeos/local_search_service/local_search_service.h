@@ -15,7 +15,7 @@ namespace local_search_service {
 
 class Index;
 
-enum class IndexId { kInvalid = -1, kCrosSettings = 0 };
+enum class IndexId { kCrosSettings = 0 };
 
 // LocalSearchService creates and owns content-specific Indices. Clients can
 // call it |GetIndex| method to get an Index for a given index id.

@@ -20,6 +20,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.components.metrics.ChromeUserMetricsExtensionProtos.ChromeUserMetricsExtension;
 import org.chromium.components.metrics.MetricsSwitches;
@@ -190,6 +191,7 @@ public class AwMetricsIntegrationTest {
     @Test
     @MediumTest
     @Feature({"AndroidWebView"})
+    @DisabledTest(message = "crbug.com/1096670")
     public void testMetadata_hardwareScreen() throws Throwable {
         ChromeUserMetricsExtension log = mPlatformServiceBridge.waitForNextMetricsLog();
         SystemProfileProto systemProfile = log.getSystemProfile();

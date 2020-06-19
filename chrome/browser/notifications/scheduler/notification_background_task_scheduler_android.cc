@@ -22,7 +22,7 @@ void JNI_NotificationSchedulerTask_OnStartTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller,
     const base::android::JavaParamRef<jobject>& j_callback) {
-  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
+  ProfileKey* profile_key = ::android::GetLastUsedRegularProfileKey();
   auto* service = NotificationScheduleServiceFactory::GetForKey(profile_key);
   auto* handler = service->GetBackgroundTaskSchedulerHandler();
   auto callback =
@@ -35,7 +35,7 @@ void JNI_NotificationSchedulerTask_OnStartTask(
 jboolean JNI_NotificationSchedulerTask_OnStopTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_caller) {
-  ProfileKey* profile_key = ::android::GetLastUsedProfileKey();
+  ProfileKey* profile_key = ::android::GetLastUsedRegularProfileKey();
   auto* service = NotificationScheduleServiceFactory::GetForKey(profile_key);
   auto* handler = service->GetBackgroundTaskSchedulerHandler();
   handler->OnStopTask();

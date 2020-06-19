@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -40,14 +41,10 @@ class RenderFrameHost;
 //   CDM types.
 class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
  public:
-  // Constructs MediaInterfaceProxy and bind |this| to the |request|. When
-  // connection error happens on the client interface, |error_handler| will be
-  // called, which could destroy |this|.
-  MediaInterfaceProxy(
-      RenderFrameHost* render_frame_host,
-      mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver,
-      base::OnceClosure error_handler);
+  MediaInterfaceProxy(RenderFrameHost* render_frame_host);
   ~MediaInterfaceProxy() final;
+
+  void Bind(mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver);
 
   // media::mojom::InterfaceFactory implementation.
   void CreateAudioDecoder(
@@ -112,9 +109,6 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
   // Safe to hold a raw pointer since |this| is owned by RenderFrameHostImpl.
   RenderFrameHost* const render_frame_host_;
 
-  // Receiver for incoming InterfaceFactoryRequest from the the RenderFrameImpl.
-  mojo::Receiver<InterfaceFactory> receiver_;
-
   mojo::UniqueReceiverSet<media::mojom::FrameInterfaceFactory> frame_factories_;
 
   // InterfacePtr to the remote InterfaceFactory implementation in the Media
@@ -139,6 +133,9 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
   base::ThreadChecker thread_checker_;
+
+  // Receivers for incoming interface requests from the the RenderFrameImpl.
+  mojo::ReceiverSet<media::mojom::InterfaceFactory> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaInterfaceProxy);
 };

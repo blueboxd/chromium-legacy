@@ -42,7 +42,7 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prerender/common/prerender_origin.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -516,7 +516,8 @@ TEST_F(PrerenderTest, NoStatePrefetchMode) {
       prerender_manager()->CreateNextPrerenderContents(
           url, FINAL_STATUS_PROFILE_DESTROYED);
   EXPECT_TRUE(AddSimplePrerender(url));
-  EXPECT_EQ(PREFETCH_ONLY, prerender_contents->prerender_mode());
+  EXPECT_EQ(prerender::mojom::PrerenderMode::kPrefetchOnly,
+            prerender_contents->prerender_mode());
 }
 
 TEST_F(PrerenderTest, SimpleLoadMode) {
@@ -1896,12 +1897,18 @@ TEST_F(PrerenderTest, LinkManagerExpireRevealingLaunch) {
 }
 
 TEST_F(PrerenderTest, PrerenderContentsIsValidHttpMethod) {
-  EXPECT_TRUE(IsValidHttpMethod(PREFETCH_ONLY, "GET"));
-  EXPECT_TRUE(IsValidHttpMethod(PREFETCH_ONLY, "HEAD"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "OPTIONS"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "POST"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "TRACE"));
-  EXPECT_FALSE(IsValidHttpMethod(PREFETCH_ONLY, "WHATEVER"));
+  EXPECT_TRUE(
+      IsValidHttpMethod(prerender::mojom::PrerenderMode::kPrefetchOnly, "GET"));
+  EXPECT_TRUE(IsValidHttpMethod(prerender::mojom::PrerenderMode::kPrefetchOnly,
+                                "HEAD"));
+  EXPECT_FALSE(IsValidHttpMethod(prerender::mojom::PrerenderMode::kPrefetchOnly,
+                                 "OPTIONS"));
+  EXPECT_FALSE(IsValidHttpMethod(prerender::mojom::PrerenderMode::kPrefetchOnly,
+                                 "POST"));
+  EXPECT_FALSE(IsValidHttpMethod(prerender::mojom::PrerenderMode::kPrefetchOnly,
+                                 "TRACE"));
+  EXPECT_FALSE(IsValidHttpMethod(prerender::mojom::PrerenderMode::kPrefetchOnly,
+                                 "WHATEVER"));
 }
 
 TEST_F(PrerenderTest, PrerenderContentsIncrementsByteCount) {

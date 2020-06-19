@@ -5,7 +5,10 @@
 import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
-  sources = [ "types.mojom" ]
+  sources = [
+    "local_search_service_proxy.mojom",
+    "types.mojom",
+  ]
 
   public_deps = [ "//mojo/public/mojom/base" ]
 

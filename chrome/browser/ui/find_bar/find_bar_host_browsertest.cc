@@ -436,6 +436,12 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_LargePage) {
 }
 
 // Find a very long string in a large page.
+// TODO(crbug.com/1096911): Test is flaky on Mac debug builds and Linux asan.
+#if (defined(OS_MACOSX) && !defined(NDEBUG)) || defined(ADDRESS_SANITIZER)
+#define MAYBE_FindLongString DISABLED_FindLongString
+#else
+#define MAYBE_FindLongString FindLongString
+#endif
 IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();

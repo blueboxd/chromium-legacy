@@ -1228,10 +1228,12 @@ void NetworkContext::CreateQuicTransport(
     const GURL& url,
     const url::Origin& origin,
     const net::NetworkIsolationKey& key,
+    std::vector<mojom::QuicTransportCertificateFingerprintPtr> fingerprints,
     mojo::PendingRemote<mojom::QuicTransportHandshakeClient>
         pending_handshake_client) {
-  quic_transports_.insert(std::make_unique<QuicTransport>(
-      url, origin, key, this, std::move(pending_handshake_client)));
+  quic_transports_.insert(
+      std::make_unique<QuicTransport>(url, origin, key, fingerprints, this,
+                                      std::move(pending_handshake_client)));
 }
 
 void NetworkContext::CreateNetLogExporter(

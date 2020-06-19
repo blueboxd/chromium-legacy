@@ -307,9 +307,9 @@ void ChromeRenderFrameObserver::OnDestruct() {
 }
 
 void ChromeRenderFrameObserver::OnSetIsPrerendering(
-    prerender::PrerenderMode mode,
+    prerender::mojom::PrerenderMode mode,
     const std::string& histogram_prefix) {
-  if (mode != prerender::NO_PRERENDER) {
+  if (mode != prerender::mojom::PrerenderMode::kNoPrerender) {
     // If the PrerenderHelper for this frame already exists, don't create it. It
     // can already be created for subframes during handling of
     // RenderFrameCreated, if the parent frame was prerendering at time of

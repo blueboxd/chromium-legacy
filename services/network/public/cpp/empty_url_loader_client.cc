@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/empty_url_loader_client.h"
+#include "services/network/public/cpp/empty_url_loader_client.h"
 
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 
 namespace network {
@@ -14,16 +15,21 @@ namespace network {
 // static
 void EmptyURLLoaderClient::DrainURLRequest(
     mojo::PendingReceiver<mojom::URLLoaderClient> client_receiver,
-    mojo::PendingRemote<mojom::URLLoader> url_loader) {
+    mojo::PendingRemote<mojom::URLLoader> url_loader,
+    base::OnceClosure callback) {
   // Raw |new| is okay, because the newly constructed EmptyURLLoaderClient will
   // delete itself after consuming all the data/callbacks.
-  new EmptyURLLoaderClient(std::move(client_receiver), std::move(url_loader));
+  new EmptyURLLoaderClient(std::move(client_receiver), std::move(url_loader),
+                           std::move(callback));
 }
 
 EmptyURLLoaderClient::EmptyURLLoaderClient(
     mojo::PendingReceiver<mojom::URLLoaderClient> receiver,
-    mojo::PendingRemote<mojom::URLLoader> url_loader)
-    : receiver_(this, std::move(receiver)), url_loader_(std::move(url_loader)) {
+    mojo::PendingRemote<mojom::URLLoader> url_loader,
+    base::OnceClosure callback)
+    : receiver_(this, std::move(receiver)),
+      url_loader_(std::move(url_loader)),
+      callback_(std::move(callback)) {
   receiver_.set_disconnect_handler(base::BindOnce(
       &EmptyURLLoaderClient::DeleteSelf, base::Unretained(this)));
 }
@@ -31,6 +37,8 @@ EmptyURLLoaderClient::EmptyURLLoaderClient(
 EmptyURLLoaderClient::~EmptyURLLoaderClient() {}
 
 void EmptyURLLoaderClient::DeleteSelf() {
+  if (callback_)
+    std::move(callback_).Run();
   delete this;
 }
 

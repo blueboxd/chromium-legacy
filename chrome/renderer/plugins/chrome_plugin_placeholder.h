@@ -13,7 +13,7 @@
 #include "chrome/common/plugin.mojom.h"
 #include "chrome/renderer/plugins/power_saver_info.h"
 #include "components/plugins/renderer/loadable_plugin_placeholder.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/renderer/context_menu_client.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -87,7 +87,7 @@ class ChromePluginPlaceholder final
   void UpdateFailure() override;
 
   // IPC message handlers:
-  void OnSetPrerenderMode(prerender::PrerenderMode mode,
+  void OnSetPrerenderMode(prerender::mojom::PrerenderMode mode,
                           const std::string& histogram_prefix);
 
   chrome::mojom::PluginStatus status_;

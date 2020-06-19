@@ -564,8 +564,14 @@ void FrameSchedulerImpl::DidCommitProvisionalLoad(
     waiting_for_contentful_paint_ = true;
     waiting_for_meaningful_paint_ = true;
   }
-  if (is_main_frame && !is_same_document)
+  if (is_main_frame && !is_same_document) {
     task_time_ = base::TimeDelta();
+    // Ignore result here, based on the assumption that
+    // MTSI::DidCommitProvisionalLoad will trigger an update policy.
+    ignore_result(main_thread_scheduler_->agent_scheduling_strategy()
+                      .OnDocumentChangedInMainFrame(*this));
+  }
+
   main_thread_scheduler_->DidCommitProvisionalLoad(
       is_web_history_inert_commit, navigation_type == NavigationType::kReload,
       is_main_frame);
@@ -843,13 +849,22 @@ SchedulingLifecycleState FrameSchedulerImpl::CalculateLifecycleState(
 void FrameSchedulerImpl::OnFirstContentfulPaint() {
   waiting_for_contentful_paint_ = false;
   if (GetFrameType() == FrameScheduler::FrameType::kMainFrame)
-    main_thread_scheduler_->OnMainFramePaint();
+    main_thread_scheduler_->OnMainFramePaint(/*force_policy_update=*/false);
 }
 
 void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   waiting_for_meaningful_paint_ = false;
-  if (GetFrameType() == FrameScheduler::FrameType::kMainFrame)
-    main_thread_scheduler_->OnMainFramePaint();
+
+  bool force_policy_update = false;
+  if (GetFrameType() == FrameScheduler::FrameType::kMainFrame) {
+    if (main_thread_scheduler_->agent_scheduling_strategy()
+            .OnMainFrameFirstMeaningfulPaint(*this) ==
+        AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+      force_policy_update = true;
+    }
+  }
+
+  main_thread_scheduler_->OnMainFramePaint(force_policy_update);
 }
 
 bool FrameSchedulerImpl::IsWaitingForContentfulPaint() const {
@@ -1007,6 +1022,14 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
       return TaskQueue::QueuePriority::kLowPriority;
     }
   }
+
+  // Consult per-agent scheduling strategy to see if it wants to affect queue
+  // priority. Done here to avoid interfering with other policy decisions.
+  base::Optional<TaskQueue::QueuePriority> per_agent_priority =
+      main_thread_scheduler_->agent_scheduling_strategy().QueuePriority(
+          *task_queue);
+  if (per_agent_priority.has_value())
+    return per_agent_priority.value();
 
   if (task_queue->GetPrioritisationType() ==
       MainThreadTaskQueue::QueueTraits::PrioritisationType::kLoadingControl) {

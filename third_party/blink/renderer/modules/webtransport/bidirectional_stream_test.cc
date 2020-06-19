@@ -231,6 +231,8 @@ class ScopedQuicTransport : public mojom::blink::QuicTransportConnector {
   // Implementation of mojom::blink::QuicTransportConnector.
   void Connect(
       const KURL&,
+      Vector<network::mojom::blink::QuicTransportCertificateFingerprintPtr>
+          fingerprints,
       mojo::PendingRemote<network::mojom::blink::QuicTransportHandshakeClient>
           pending_handshake_client) override {
     mojo::Remote<network::mojom::blink::QuicTransportHandshakeClient>

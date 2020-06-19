@@ -37,6 +37,11 @@ const base::Feature kLoadingPredictorDisregardAlwaysAccessesNetwork{
 const base::Feature kLoadingPredictorUseOptimizationGuide{
     "LoadingPredictorUseOptimizationGuide", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Modifies loading predictor so that it does prefetches of subresources instead
+// of preconnects.
+const base::Feature kLoadingPredictorPrefetch{
+    "LoadingPredictorPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldUseLocalPredictions() {
   return base::FeatureList::IsEnabled(kLoadingPredictorUseLocalPredictions);
 }

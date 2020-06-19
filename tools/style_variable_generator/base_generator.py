@@ -28,21 +28,33 @@ class Modes:
     ALL = [LIGHT, DARK]
 
 
+class VariableType:
+    COLOR = 'color'
+    OPACITY = 'opacity'
+
+
 class ModeVariables:
-    '''A representation of variables to generate for a single Mode.
+    '''A dictionary of variable names to their values in each mode.
+       e.g mode_variables['blue'][Modes.LIGHT] = Color(...)
     '''
 
-    def __init__(self):
-        self.colors = collections.OrderedDict()
+    def __init__(self, default_mode):
+        self.variables = collections.OrderedDict()
+        self._default_mode = default_mode
 
-    def AddColor(self, name, value_str):
-        if name in self.colors:
-            raise ValueError('%s defined more than once' % name)
+    def Add(self, mode, name, value):
+        if name not in self.variables:
+            self.variables[name] = {}
+        self.variables[name][mode] = value
 
-        try:
-            self.colors[name] = Color(value_str)
-        except Exception as err:
-            raise ValueError('Error parsing "%s": %s' % (value_str, err))
+    def keys(self):
+        return self.variables.keys()
+
+    def items(self):
+        return self.variables.items()
+
+    def __getitem__(self, key):
+        return self.variables[key]
 
 
 class BaseGenerator:
@@ -55,30 +67,43 @@ class BaseGenerator:
     def __init__(self):
         self.out_file_path = None
         self.in_files = []
-        self._mode_variables = dict()
+
         # The mode that colors will fallback to when not specified in a
         # non-default mode. An error will be raised if a color in any mode is
         # not specified in the default mode.
         self._default_mode = Modes.LIGHT
 
-        for mode in Modes.ALL:
-            self._mode_variables[mode] = ModeVariables()
+        # A dictionary of |VariableType| to dictionaries of variable names to
+        # values. May point to a ModeVariables instance which further adds a
+        # layer making the structure name -> mode -> value.
+        self.model = {
+            VariableType.COLOR: ModeVariables(self._default_mode),
+            VariableType.OPACITY: ModeVariables(self._default_mode),
+        }
 
     def AddColor(self, name, value_obj):
-        if isinstance(value_obj, unicode):
-            self._mode_variables[self._default_mode].AddColor(name, value_obj)
-        elif isinstance(value_obj, dict):
-            for mode in Modes.ALL:
-                if mode in value_obj:
-                    self._mode_variables[mode].AddColor(name, value_obj[mode])
+        try:
+            if isinstance(value_obj, unicode):
+                self.model[VariableType.COLOR].Add(self._default_mode, name,
+                                                   Color(value_obj))
+            elif isinstance(value_obj, dict):
+                for mode in Modes.ALL:
+                    if mode in value_obj:
+                        self.model[VariableType.COLOR].Add(
+                            mode, name, Color(value_obj[mode]))
+        except ValueError as err:
+            raise ValueError('Error parsing color "%s": %s' % (value_obj, err))
 
     def AddJSONFileToModel(self, path):
         self.in_files.append(path)
         with open(path, 'r') as f:
-            # TODO(calamity): Add allow_duplicate_keys=False once pyjson5 is
-            # rolled.
-            data = json5.loads(
-                f.read(), object_pairs_hook=collections.OrderedDict)
+            self.AddJSONToModel(f.read())
+
+    def AddJSONToModel(self, json_string):
+        # TODO(calamity): Add allow_duplicate_keys=False once pyjson5 is
+        # rolled.
+        data = json5.loads(json_string,
+                           object_pairs_hook=collections.OrderedDict)
 
         try:
             for name, value in data['colors'].items():
@@ -88,7 +113,7 @@ class BaseGenerator:
                         % name)
 
                 self.AddColor(name, value)
-        except Exception as err:
+        except ValueError as err:
             raise ValueError('\n%s:\n    %s' % (path, err))
 
     def ApplyTemplate(self, style_generator, path_to_template, params):
@@ -103,19 +128,23 @@ class BaseGenerator:
         return template.render(params)
 
     def Validate(self):
-        def CheckIsInDefaultModel(name):
-            if name not in self._mode_variables[self._default_mode].colors:
-                raise ValueError(
-                    "%s not defined in '%s' mode" % (name, self._default_mode))
+        colors = self.model[VariableType.COLOR]
 
-        # Check all colors in all models refer to colors that exist in the
+        def CheckColorInDefaultMode(name):
+            if (name not in colors.variables
+                    or self._default_mode not in colors.variables[name]):
+                raise ValueError("%s not defined in default mode '%s'" %
+                                 (name, self._default_mode))
+
+        # Check all colors in all modes refer to colors that exist in the
         # default mode.
-        for m in self._mode_variables.values():
-            for name, value in m.colors.items():
+        for name, mode_values in colors.variables.items():
+            for mode, value in mode_values.items():
+                CheckColorInDefaultMode(name)
                 if value.var:
-                    CheckIsInDefaultModel(value.var)
+                    CheckColorInDefaultMode(value.var)
                 if value.rgb_var:
-                    CheckIsInDefaultModel(value.rgb_var[:-4])
+                    CheckColorInDefaultMode(value.rgb_var[:-4])
 
         # TODO(calamity): Check for circular references.
 

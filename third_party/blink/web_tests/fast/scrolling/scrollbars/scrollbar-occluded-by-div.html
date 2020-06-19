@@ -3,6 +3,7 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/gesture-util.js"></script>
+<script src="../../../resources/blink-coordinates-util.js"></script>
 <script src="../../../resources/scrollbar-util.js"></script>
 <style>
 .appearance {
@@ -66,8 +67,8 @@
     // Remove the div and verify that scrolling takes place as expected.
     document.body.removeChild(occlusion_div);
     await mouseClickOn(down_arrow_x, down_arrow_y);
-    const EXPECTED_BUTTON_SCROLL_AMOUNT = internals.runtimeFlags.percentBasedScrollingEnabled ?
-        Math.floor(scroller.clientHeight * SCROLLBAR_SCROLL_PERCENTAGE) : SCROLLBAR_SCROLL_PIXELS;
+    const EXPECTED_BUTTON_SCROLL_AMOUNT =
+      getScrollbarButtonScrollDelta(scroller).y;
     const expected = onMacPlatform ? 74 : EXPECTED_BUTTON_SCROLL_AMOUNT;
     const pressedPart = onMacPlatform ? "track" : "down arrow";
     await waitForAnimationEndTimeBased(() => {return scroller.scrollTop;});

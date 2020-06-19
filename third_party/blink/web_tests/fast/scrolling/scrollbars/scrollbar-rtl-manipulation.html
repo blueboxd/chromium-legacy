@@ -3,6 +3,7 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/gesture-util.js"></script>
+<script src="../../../resources/blink-coordinates-util.js"></script>
 <script src="../../../resources/scrollbar-util.js"></script>
 <style>
   .rtl_container {
@@ -41,9 +42,7 @@ window.onload = () => {
     assert_equals(standardDiv.clientHeight, standardDiv.clientWidth,
     "This test assumes that the height and width of 'standardDiv' are equivalent." +
     "If this changes please update SCROLL_AMOUNT to be X/Y specific");
-    const SCROLL_AMOUNT = internals.runtimeFlags.percentBasedScrollingEnabled ?
-      Math.floor(standardDiv.clientHeight * SCROLLBAR_SCROLL_PERCENTAGE) :
-      SCROLLBAR_SCROLL_PIXELS;
+    const SCROLL_AMOUNT = getScrollbarButtonScrollDelta(standardDiv).y;
 
     // Since Mac scrollbars don't have arrows, this will end up testing track scrolls.
     const EXPECTED_DELTA = onMacPlatform ? 74 : SCROLL_AMOUNT;

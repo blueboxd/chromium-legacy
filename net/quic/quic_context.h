@@ -189,6 +189,11 @@ class NET_EXPORT_PRIVATE QuicContext {
     return params_.supported_versions;
   }
 
+  void SetHelperForTesting(
+      std::unique_ptr<quic::QuicConnectionHelperInterface> helper) {
+    helper_ = std::move(helper);
+  }
+
  private:
   std::unique_ptr<quic::QuicConnectionHelperInterface> helper_;
 

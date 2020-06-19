@@ -104,6 +104,21 @@ void OnGetAllResult(ScriptPromiseResolver* resolver,
   resolver->Resolve(file_names);
 }
 
+void OnRenameResult(ScriptPromiseResolver* resolver, bool backend_success) {
+  ScriptState* script_state = resolver->GetScriptState();
+  if (!script_state->ContextIsValid())
+    return;
+  ScriptState::Scope scope(script_state);
+
+  if (!backend_success) {
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kUnknownError,
+        "rename() failed"));
+    return;
+  }
+  resolver->Resolve();
+}
+
 }  // namespace
 
 NativeIOManager::NativeIOManager(
@@ -184,6 +199,27 @@ ScriptPromise NativeIOManager::getAll(ScriptState* script_state,
   return resolver->Promise();
 }
 
+ScriptPromise NativeIOManager::rename(ScriptState* script_state,
+                                      String old_name,
+                                      String new_name,
+                                      ExceptionState& exception_state) {
+  if (!IsValidNativeIOName(old_name) || !IsValidNativeIOName(new_name)) {
+    exception_state.ThrowTypeError("Invalid file name");
+    return ScriptPromise();
+  }
+
+  if (!backend_.is_bound()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "NativeIOHost backend went away");
+    return ScriptPromise();
+  }
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  backend_->RenameFile(old_name, new_name,
+                       WTF::Bind(&OnRenameResult, WrapPersistent(resolver)));
+  return resolver->Promise();
+}
+
 NativeIOFileSync* NativeIOManager::openSync(String name,
                                             ExceptionState& exception_state) {
   if (!IsValidNativeIOName(name)) {
@@ -256,6 +292,30 @@ Vector<String> NativeIOManager::getAllSync(ExceptionState& exception_state) {
                                       "getAllSync() failed");
   }
   return result;
+}
+
+void NativeIOManager::renameSync(String old_name,
+                                 String new_name,
+                                 ExceptionState& exception_state) {
+  if (!IsValidNativeIOName(old_name) || !IsValidNativeIOName(new_name)) {
+    exception_state.ThrowTypeError("Invalid file name");
+    return;
+  }
+
+  if (!backend_.is_bound()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "NativeIOHost backend went away");
+    return;
+  }
+
+  bool backend_success = false;
+  bool call_succeeded =
+      backend_->RenameFile(old_name, new_name, &backend_success);
+
+  if (!call_succeeded || !backend_success) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "renameSync() failed");
+  }
 }
 
 void NativeIOManager::Trace(Visitor* visitor) const {

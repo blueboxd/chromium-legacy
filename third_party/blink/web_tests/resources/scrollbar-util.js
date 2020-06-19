@@ -37,6 +37,44 @@ function resetScrollOffset(scrollElement) {
   }
 }
 
+// Returns the expected CSS pixels delta of a percent-based scroll of a
+// |scroller| element.
+function getScrollbarButtonScrollDelta(scroller) {
+  if (!internals.runtimeFlags.percentBasedScrollingEnabled) {
+    return { x: SCROLLBAR_SCROLL_PIXELS, y: SCROLLBAR_SCROLL_PIXELS };
+  }
+
+  percentBasedDelta = (size) => {
+    return {
+      x: Math.floor(SCROLLBAR_SCROLL_PERCENTAGE * size.x),
+      y: Math.floor(SCROLLBAR_SCROLL_PERCENTAGE * size.y)
+    }
+  };
+
+  clamp = (x, min, max) => Math.min(Math.max(x, min), max)
+
+  scroller_size = {x: scroller.clientWidth, y: scroller.clientHeight};
+
+  // All percent-based scroll clamping is made in physical pixels.
+  pixel_delta = percentBasedDelta(scaleCssToPhysicalPixels(scroller_size));
+  min_delta = MIN_SCROLL_DELTA_PCT_BASED;
+  // Note that, window.inner* matches the size of the innerViewport, and won't
+  // match the VisualViewport's dimensions at the C++ code in the presence of
+  // UI elements that resize it (e.g. chromeOS OSKs).
+  // Note also that window.inner* isn't affected by pinch-zoom, so converting
+  // to Blink pixels is enough to get its actual size in Physical pixels.
+  max_delta = percentBasedDelta(scaleCssToBlinkPixels({
+    x: window.innerWidth, y: window.innerHeight}));
+
+  pixel_delta.x = clamp(pixel_delta.x, min_delta, max_delta.x);
+  pixel_delta.y = clamp(pixel_delta.y, min_delta, max_delta.y);
+
+  return scalePhysicalToCssPixels(pixel_delta);
+}
+
+// The minimum amount of pixels scrolled if percent-based scrolling is enabled
+const MIN_SCROLL_DELTA_PCT_BASED = 16;
+
 // The percentage scrollbar arrows will scroll, if percent-based scrolling
 // is enabled.
 const SCROLLBAR_SCROLL_PERCENTAGE = 0.125;
@@ -46,3 +84,53 @@ const SCROLLBAR_SCROLL_PERCENTAGE = 0.125;
 const SCROLLBAR_SCROLL_PIXELS = 40;
 
 // TODO(arakeri): Add helpers for arrow widths.
+
+/*
+  Getters for the center point in a scroller's scrollbar buttons (CSS visual
+  coordinates).
+*/
+function downArrow(scroller) {
+  const scrollerRect = scroller.getBoundingClientRect();
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = TRACK_WIDTH;
+  const SCROLL_CORNER = TRACK_WIDTH;
+  const down_arrow = {
+    x: scrollerRect.right - BUTTON_WIDTH / 2,
+    y: scrollerRect.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2
+  };
+  return cssClientToCssVisual(down_arrow);
+}
+
+function upArrow(scroller) {
+  const scrollerRect = scroller.getBoundingClientRect();
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = TRACK_WIDTH;
+  const up_arrow = {
+    x: scrollerRect.right - BUTTON_WIDTH / 2,
+    y: scrollerRect.top + BUTTON_WIDTH / 2
+  };
+  return cssClientToCssVisual(up_arrow);
+}
+
+function leftArrow(scroller) {
+  const scrollerRect = scroller.getBoundingClientRect();
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = TRACK_WIDTH;
+  const left_arrow = {
+    x: scrollerRect.left + BUTTON_WIDTH / 2,
+    y: scrollerRect.bottom  - BUTTON_WIDTH / 2
+  };
+  return cssClientToCssVisual(left_arrow);
+}
+
+function rightArrow(scroller) {
+  const scrollerRect = scroller.getBoundingClientRect();
+  const TRACK_WIDTH = calculateScrollbarThickness();
+  const BUTTON_WIDTH = TRACK_WIDTH;
+  const SCROLL_CORNER = TRACK_WIDTH;
+  const right_arrow = {
+    x: scrollerRect.right - SCROLL_CORNER - BUTTON_WIDTH / 2,
+    y: scrollerRect.bottom  - BUTTON_WIDTH / 2
+  };
+  return cssClientToCssVisual(right_arrow);
+}

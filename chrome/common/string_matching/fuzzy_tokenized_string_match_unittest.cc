@@ -176,9 +176,9 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatcherTest) {
   {
     base::string16 query(base::UTF8ToUTF16("clash clan"));
     base::string16 text(base::UTF8ToUTF16("Clash of Clan"));
-    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
-                                                         TokenizedString(text)),
-                0.99, 0.01);
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                       TokenizedString(text)),
+              0.0);
   }
   {
     base::string16 query(base::UTF8ToUTF16("c o c"));
@@ -201,6 +201,27 @@ TEST_F(FuzzyTokenizedStringMatchTest, PrefixMatcherTest) {
                                                        TokenizedString(text)),
               0.0);
   }
+  {
+    base::string16 query(base::UTF8ToUTF16("rp"));
+    base::string16 text(base::UTF8ToUTF16("Remove Google Play Store"));
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                       TokenizedString(text)),
+              0.0);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("remove play"));
+    base::string16 text(base::UTF8ToUTF16("Remove Google Play Store"));
+    EXPECT_EQ(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                       TokenizedString(text)),
+              0.0);
+  }
+  {
+    base::string16 query(base::UTF8ToUTF16("google play"));
+    base::string16 text(base::UTF8ToUTF16("Remove Google Play Store"));
+    EXPECT_NEAR(FuzzyTokenizedStringMatch::PrefixMatcher(TokenizedString(query),
+                                                         TokenizedString(text)),
+                0.99, 0.01);
+  }
 }
 
 TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest1) {
@@ -215,9 +236,9 @@ TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest1) {
   {
     base::string16 query(base::UTF8ToUTF16("CC"));
     base::string16 text(base::UTF8ToUTF16("Clash Of Clan"));
-    EXPECT_TRUE(match.IsRelevant(TokenizedString(query), TokenizedString(text),
-                                 0.4, false, true, false,
-                                 kPartialMatchPenaltyRate, 0.0));
+    EXPECT_FALSE(match.IsRelevant(TokenizedString(query), TokenizedString(text),
+                                  0.25, false, true, false,
+                                  kPartialMatchPenaltyRate, 0.0));
   }
   {
     base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));
@@ -240,9 +261,9 @@ TEST_F(FuzzyTokenizedStringMatchTest, ParamThresholdTest2) {
   {
     base::string16 query(base::UTF8ToUTF16("CC"));
     base::string16 text(base::UTF8ToUTF16("Clash Of Clan"));
-    EXPECT_TRUE(match.IsRelevant(TokenizedString(query), TokenizedString(text),
-                                 0.5, false, true, false,
-                                 kPartialMatchPenaltyRate));
+    EXPECT_FALSE(match.IsRelevant(TokenizedString(query), TokenizedString(text),
+                                  0.25, false, true, false,
+                                  kPartialMatchPenaltyRate));
   }
   {
     base::string16 query(base::UTF8ToUTF16("Clash.of.clan"));

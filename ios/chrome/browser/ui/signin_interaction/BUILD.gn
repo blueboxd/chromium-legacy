@@ -7,8 +7,6 @@ source_set("eg_test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "signin_interaction_controller_app_interface.h",
-    "signin_interaction_controller_app_interface.mm",
     "signin_interaction_controller_egtest_util.h",
     "signin_interaction_controller_egtest_util.mm",
   ]
@@ -31,7 +29,6 @@ source_set("eg_test_support+eg2") {
   ]
   testonly = true
   sources = [
-    "signin_interaction_controller_app_interface.h",
     "signin_interaction_controller_egtest_util.h",
     "signin_interaction_controller_egtest_util.mm",
   ]
@@ -44,19 +41,5 @@ source_set("eg_test_support+eg2") {
     "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
-  ]
-}
-
-source_set("eg_app_support+eg2") {
-  defines = [ "CHROME_EARL_GREY_2" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "signin_interaction_controller_app_interface.h",
-    "signin_interaction_controller_app_interface.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/ui/authentication",
   ]
 }

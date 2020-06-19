@@ -7,10 +7,23 @@
 
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/chromeos/local_search_service/proxy/local_search_service_proxy.mojom.h"
 #include "chrome/browser/chromeos/local_search_service/proxy/types.mojom.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace mojo {
+
+// TODO(crbug/1092767): Consolidate the API to use mojo enums instead of
+// EnumTraits.
+
+template <>
+struct EnumTraits<local_search_service::mojom::IndexId,
+                  local_search_service::IndexId> {
+  static local_search_service::mojom::IndexId ToMojom(
+      local_search_service::IndexId input);
+  static bool FromMojom(local_search_service::mojom::IndexId input,
+                        local_search_service::IndexId* output);
+};
 
 template <>
 struct StructTraits<local_search_service::mojom::ContentDataView,

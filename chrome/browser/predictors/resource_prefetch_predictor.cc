@@ -76,10 +76,24 @@ PreconnectRequest::PreconnectRequest(
   DCHECK_GE(num_sockets, 0);
 }
 
+PrefetchRequest::PrefetchRequest(
+    const GURL& url,
+    const net::NetworkIsolationKey& network_isolation_key)
+    : url(url), network_isolation_key(network_isolation_key) {
+  DCHECK(base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch));
+}
+
 PreconnectPrediction::PreconnectPrediction() = default;
 PreconnectPrediction::PreconnectPrediction(
     const PreconnectPrediction& prediction) = default;
+PreconnectPrediction::PreconnectPrediction(PreconnectPrediction&& other) =
+    default;
 PreconnectPrediction::~PreconnectPrediction() = default;
+
+PreconnectPrediction& PreconnectPrediction::operator=(
+    const PreconnectPrediction& other) = default;
+PreconnectPrediction& PreconnectPrediction::operator=(
+    PreconnectPrediction&& other) = default;
 
 OptimizationGuidePrediction::OptimizationGuidePrediction() = default;
 OptimizationGuidePrediction::OptimizationGuidePrediction(

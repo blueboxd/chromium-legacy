@@ -25,7 +25,7 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
                      IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_CHANGE_IT_BACK));
   SetButtonLabel(ui::DIALOG_BUTTON_CANCEL,
                  l10n_util::GetStringUTF16(
-                     IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_IGNORE));
+                     IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_KEEP_IT));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   ChromeLayoutProvider* const layout_provider = ChromeLayoutProvider::Get();
   set_margins(

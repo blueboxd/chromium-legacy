@@ -1100,6 +1100,37 @@ void ServiceWorkerContextWrapper::GetAllRegistrationsOnCoreThread(
   context_core_->registry()->GetAllRegistrationsInfos(std::move(callback));
 }
 
+void ServiceWorkerContextWrapper::GetStorageUsageForOrigin(
+    const url::Origin& origin,
+    GetStorageUsageForOriginCallback callback) {
+  RunOrPostTaskOnCoreThread(
+      FROM_HERE,
+      base::BindOnce(
+          &ServiceWorkerContextWrapper::GetStorageUsageForOriginOnCoreThread,
+          this, origin,
+          base::BindOnce(
+              [](GetStorageUsageForOriginCallback callback,
+                 scoped_refptr<base::TaskRunner> callback_runner,
+                 blink::ServiceWorkerStatusCode status, int64_t usage) {
+                callback_runner->PostTask(
+                    FROM_HERE,
+                    base::BindOnce(std::move(callback), status, usage));
+              },
+              std::move(callback), base::ThreadTaskRunnerHandle::Get())));
+}
+
+void ServiceWorkerContextWrapper::GetStorageUsageForOriginOnCoreThread(
+    const url::Origin& origin,
+    GetStorageUsageForOriginCallback callback) {
+  DCHECK_CURRENTLY_ON(GetCoreThreadId());
+  if (!context_core_) {
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort, 0);
+    return;
+  }
+  context_core_->registry()->GetStorageUsageForOrigin(origin,
+                                                      std::move(callback));
+}
+
 void ServiceWorkerContextWrapper::GetRegistrationsForOrigin(
     const url::Origin& origin,
     GetRegistrationsCallback callback) {

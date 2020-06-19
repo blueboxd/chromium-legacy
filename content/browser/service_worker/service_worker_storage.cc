@@ -295,6 +295,33 @@ void ServiceWorkerStorage::GetRegistrationsForOrigin(
                      std::move(registrations), std::move(resource_lists)));
 }
 
+void ServiceWorkerStorage::GetUsageForOrigin(
+    const url::Origin& origin,
+    GetUsageForOriginCallback callback) {
+  switch (state_) {
+    case STORAGE_STATE_DISABLED:
+      RunSoon(FROM_HERE,
+              base::BindOnce(std::move(callback),
+                             ServiceWorkerDatabase::Status::kErrorDisabled,
+                             /*usage=*/0));
+      return;
+    case STORAGE_STATE_INITIALIZING:  // Fall-through.
+    case STORAGE_STATE_UNINITIALIZED:
+      LazyInitialize(base::BindOnce(&ServiceWorkerStorage::GetUsageForOrigin,
+                                    weak_factory_.GetWeakPtr(), origin,
+                                    std::move(callback)));
+      return;
+    case STORAGE_STATE_INITIALIZED:
+      break;
+  }
+
+  database_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ServiceWorkerStorage::GetUsageForOriginInDB,
+                     database_.get(), base::ThreadTaskRunnerHandle::Get(),
+                     origin, std::move(callback)));
+}
+
 void ServiceWorkerStorage::GetAllRegistrations(
     GetAllRegistrationsCallback callback) {
   switch (state_) {
@@ -1468,6 +1495,19 @@ void ServiceWorkerStorage::FindForIdOnlyInDB(
   }
   FindForIdInDB(database, original_task_runner, registration_id, origin,
                 std::move(callback));
+}
+
+// static
+void ServiceWorkerStorage::GetUsageForOriginInDB(
+    ServiceWorkerDatabase* database,
+    scoped_refptr<base::SequencedTaskRunner> original_task_runner,
+    url::Origin origin,
+    GetUsageForOriginCallback callback) {
+  int64_t usage = 0;
+  ServiceWorkerDatabase::Status status =
+      database->GetUsageForOrigin(origin, usage);
+  original_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), status, usage));
 }
 
 void ServiceWorkerStorage::GetUserDataInDB(

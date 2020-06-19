@@ -5,6 +5,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/input_messages.h"
@@ -78,8 +79,16 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
       // from the ui::MouseWheelEvent. ui::MouseWheelEvent does
       // not have a float value for delta, so that codepath ends up truncating.
       // So instead, dispatch the WebMouseWheelEvent directly through the
-      // RenderWidgetHostImpl.
-      host_->ForwardWheelEventWithLatencyInfo(web_wheel, latency_info);
+      // RenderWidgetHostInputEventRouter attached to the RenderWidgetHostImpl.
+
+      DCHECK(host_->delegate());
+      DCHECK(host_->delegate()->IsWidgetForMainFrame(host_));
+      DCHECK(host_->delegate()->GetInputEventRouter());
+
+      std::unique_ptr<WebInputEvent> wheel_evt_ptr = web_wheel.Clone();
+      host_->delegate()->GetInputEventRouter()->RouteMouseWheelEvent(
+          host_->GetView(),
+          static_cast<WebMouseWheelEvent*>(wheel_evt_ptr.get()), latency_info);
     }
   } else if (WebInputEvent::IsMouseEventType(event.GetType())) {
     const WebMouseEvent& web_mouse =

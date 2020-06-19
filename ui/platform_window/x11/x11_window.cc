@@ -883,7 +883,7 @@ int X11Window::PerformDrop() {
 
 void X11Window::EndDragLoop() {
   DCHECK(drag_handler_delegate_);
-  drag_handler_delegate_->OnDragFinished(0);
+  drag_handler_delegate_->OnDragFinished(drag_operation_);
   drag_handler_delegate_ = nullptr;
 }
 #endif  // defined(USE_OZONE)

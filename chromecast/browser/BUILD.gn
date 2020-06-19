@@ -619,6 +619,22 @@ if (is_android) {
   }
 }
 
+# Could be used in the internal build if the internal implementation won't be
+# included, for example, some unit tests.
+cast_source_set("simple_browser") {
+  sources = [
+    "cast_browser_main_parts_simple.cc",
+    "cast_content_browser_client_simple.cc",
+    "pref_service_helper_simple.cc",
+  ]
+
+  deps = [
+    ":browser",
+    ":prefs",
+    "//chromecast/base:default_create_sys_info",
+  ]
+}
+
 cast_source_set("web_contents_provider") {
   sources = [ "webview/web_contents_provider.h" ]
 

@@ -100,7 +100,8 @@ _enable_libs_and_assets_verification =
 # is wired up.
 # The channel is required because manifest entries vary based on channel.
 _enable_manifest_verification =
-    !enable_chrome_android_internal && android_channel == "stable"
+    !is_java_debug && !enable_chrome_android_internal &&
+    android_channel == "stable"
 
 jinja_template("chrome_public_android_manifest") {
   input = "java/AndroidManifest.xml"
@@ -1993,6 +1994,7 @@ template("monochrome_public_apk_or_module_tmpl") {
                            [
                              "apk_name",
                              "bundle_target",
+                             "expected_android_manifest",
                              "include_32_bit_webview",
                              "include_64_bit_webview",
                              "is_64_bit_browser",
@@ -2004,7 +2006,6 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "use_chromium_linker",
                              "use_modern_linker",
                              "use_trichrome_library",
-                             "verify_manifest",
                              "version_code",
                              "version_name",
                            ])
@@ -2068,8 +2069,13 @@ trichrome_library_apk_tmpl("trichrome_library_apk") {
     chrome_target = ":trichrome_chrome_bundle"
   }
 
-  verify_manifest = _enable_manifest_verification
-  verify_native_libs_and_assets = _enable_libs_and_assets_verification
+  if (_enable_manifest_verification) {
+    expected_android_manifest =
+        "expectations/trichrome_library_apk.AndroidManifest.expected"
+  }
+  if (_enable_libs_and_assets_verification) {
+    expected_libs_and_assets = "expectations/trichrome_library_apk.$target_cpu.libs_and_assets.expected"
+  }
 }
 
 if (android_64bit_target_cpu) {
@@ -2558,7 +2564,9 @@ chrome_bundle("chrome_modern_public_bundle") {
   module_descs = chrome_modern_module_descs
   version_code = chrome_modern_version_code
 
-  verify_native_libs_and_assets = _enable_libs_and_assets_verification
+  if (_enable_libs_and_assets_verification) {
+    expected_libs_and_assets = "expectations/chrome_modern_public_bundle.$target_cpu.libs_and_assets.expected"
+  }
 }
 
 if (is_official_build) {
@@ -2632,6 +2640,7 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
   monochrome_public_apk_or_module_tmpl(_base_module_target_name) {
     forward_variables_from(invoker,
                            [
+                             "expected_android_manifest",
                              "is_64_bit_browser",
                              "include_32_bit_webview",
                              "include_64_bit_webview",
@@ -2639,7 +2648,6 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "static_library_synchronized_proguard",
                              "resource_ids_provider_dep",
                              "use_trichrome_library",
-                             "verify_manifest",
                            ])
     target_type = "android_app_bundle_module"
     is_base_module = true
@@ -2660,8 +2668,8 @@ template("monochrome_or_trichrome_public_bundle_tmpl") {
                              "is_64_bit_browser",
                              "static_library_provider",
                              "static_library_synchronized_proguard",
-                             "verify_native_libs_and_assets",
-                             "verify_proguard_flags",
+                             "expected_libs_and_assets",
+                             "expected_proguard_config",
                            ])
     base_module_target = ":$_base_module_target_name"
     bundle_name = _bundle_name
@@ -2688,10 +2696,14 @@ if (public_android_sdk) {
       include_64_bit_webview = true
     }
 
-    verify_manifest = _enable_manifest_verification
-    verify_native_libs_and_assets = _enable_libs_and_assets_verification
-    if (!is_java_debug) {
-      verify_proguard_flags = _enable_manifest_verification
+    if (_enable_manifest_verification) {
+      expected_android_manifest =
+          "expectations/monochrome_public_bundle.AndroidManifest.expected"
+      expected_proguard_config =
+          "expectations/monochrome_public_bundle.proguard_flags.expected"
+    }
+    if (_enable_libs_and_assets_verification) {
+      expected_libs_and_assets = "expectations/monochrome_public_bundle.$target_cpu.libs_and_assets.expected"
     }
   }
 
@@ -2723,8 +2735,13 @@ if (public_android_sdk) {
       include_32_bit_webview = true
     }
 
-    verify_manifest = _enable_manifest_verification
-    verify_native_libs_and_assets = _enable_libs_and_assets_verification
+    if (_enable_manifest_verification) {
+      expected_android_manifest =
+          "expectations/trichrome_chrome_bundle.AndroidManifest.expected"
+    }
+    if (_enable_libs_and_assets_verification) {
+      expected_libs_and_assets = "expectations/trichrome_chrome_bundle.$target_cpu.libs_and_assets.expected"
+    }
   }
 
   if (is_official_build) {
@@ -3203,24 +3220,25 @@ generate_jni("native_j_unittests_jni_headers") {
   feature_list_file = "//chrome/browser/flags/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java"
 }
 
+# Used by android-binary-size trybot to know which expectations to validate.
 group("validate_expectations") {
   deps = []
   if (_enable_libs_and_assets_verification) {
     deps += [
-      "//chrome/android:chrome_modern_public_bundle__base_libs_and_assets_expectations",
-      "//chrome/android:monochrome_public_bundle__base_libs_and_assets_expectations",
-      "//chrome/android:trichrome_chrome_bundle__base_libs_and_assets_expectations",
-      "//chrome/android:trichrome_library_apk_libs_and_assets_expectations",
+      ":chrome_modern_public_bundle_validate_libs_and_assets",
+      ":monochrome_public_bundle_validate_libs_and_assets",
+      ":trichrome_chrome_bundle_validate_libs_and_assets",
+      ":trichrome_library_apk_validate_libs_and_assets",
     ]
   }
   if (_enable_manifest_verification) {
     deps += [
-      "//android_webview:system_webview_apk_manifest_expectations",
-      "//android_webview:trichrome_webview_apk_manifest_expectations",
-      "//chrome/android:monochrome_public_bundle__base_bundle_module_manifest_expectations",
-      "//chrome/android:monochrome_public_bundle_proguard_expectations",
-      "//chrome/android:trichrome_chrome_bundle__base_bundle_module_manifest_expectations",
-      "//chrome/android:trichrome_library_apk_manifest_expectations",
+      ":monochrome_public_bundle__base_bundle_module_validate_android_manifest",
+      ":monochrome_public_bundle_validate_proguard_config",
+      ":trichrome_chrome_bundle__base_bundle_module_validate_android_manifest",
+      ":trichrome_library_apk_validate_android_manifest",
+      "//android_webview:system_webview_base_bundle_module_validate_android_manifest",
+      "//android_webview:trichrome_webview_base_bundle_module_validate_android_manifest",
     ]
   }
 }

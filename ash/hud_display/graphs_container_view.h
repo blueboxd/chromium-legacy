@@ -17,6 +17,8 @@ namespace hud_display {
 // GraphsContainerView class draws a bunch of graphs.
 class GraphsContainerView : public views::View {
  public:
+  METADATA_HEADER(GraphsContainerView);
+
   GraphsContainerView();
   ~GraphsContainerView() override;
 

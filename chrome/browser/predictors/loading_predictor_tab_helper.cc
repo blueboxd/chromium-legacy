@@ -344,17 +344,23 @@ void LoadingPredictorTabHelper::OnOptimizationGuideDecision(
     if (!subresource_url.is_valid())
       continue;
     predicted_subresources.push_back(subresource_url);
-    url::Origin subresource_origin = url::Origin::Create(subresource_url);
-    if (subresource_origin == main_frame_origin) {
-      // We are already connecting to the main frame origin by default, so don't
-      // include this in the prediction.
-      continue;
+    if (base::FeatureList::IsEnabled(features::kLoadingPredictorPrefetch)) {
+      // TODO(falken): Detect duplicates.
+      prediction.prefetch_requests.emplace_back(subresource_url,
+                                                network_isolation_key);
+    } else {
+      url::Origin subresource_origin = url::Origin::Create(subresource_url);
+      if (subresource_origin == main_frame_origin) {
+        // We are already connecting to the main frame origin by default, so
+        // don't include this in the prediction.
+        continue;
+      }
+      if (predicted_origins.find(subresource_origin) != predicted_origins.end())
+        continue;
+      predicted_origins.insert(subresource_origin);
+      prediction.requests.emplace_back(subresource_origin, 1,
+                                       network_isolation_key);
     }
-    if (predicted_origins.find(subresource_origin) != predicted_origins.end())
-      continue;
-    predicted_origins.insert(subresource_origin);
-    prediction.requests.emplace_back(subresource_origin, 1,
-                                     network_isolation_key);
   }
 
   last_optimization_guide_prediction_->preconnect_prediction = prediction;

@@ -1319,6 +1319,8 @@ static_library("browser") {
     "predictors/predictors_enums.h",
     "predictors/predictors_features.cc",
     "predictors/predictors_features.h",
+    "predictors/prefetch_manager.cc",
+    "predictors/prefetch_manager.h",
     "predictors/proxy_lookup_client_impl.cc",
     "predictors/proxy_lookup_client_impl.h",
     "predictors/resolve_host_client_impl.cc",

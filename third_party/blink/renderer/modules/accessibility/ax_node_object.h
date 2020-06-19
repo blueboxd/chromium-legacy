@@ -230,6 +230,9 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   Document* GetDocument() const override;
   Node* GetNode() const override { return node_; }
 
+  // DOM and layout tree access.
+  AtomicString Language() const override;
+
   // Modify or take an action on an object.
   bool OnNativeFocusAction() final;
   bool OnNativeIncrementAction() final;

@@ -2,6 +2,7 @@
 <script src='../../resources/testharness.js'></script>
 <script src='../../resources/testharnessreport.js'></script>
 <script src='../../resources/gesture-util.js'></script>
+<script src="../../resources/scrollbar-util.js"></script>
 
 <style>
   body, html {
@@ -38,13 +39,21 @@
 <div class="hoverme">hover over me</div>
 
 <script>
-  const elementHeight = 50;
+  let elementHeight = 50;
 
   window.onload = async () => {
+    array = document.getElementsByClassName('hoverme');
+
+    // resize elements so 4 keyboard scrolls end up at 4th element.
+    if (internals.runtimeFlags.percentBasedScrollingEnabled) {
+      scroll_delta = getScrollbarButtonScrollDelta(document.documentElement);
+      elementHeight = scroll_delta.y * 1.25;
+      for (i = 0; i < array.length; i++)
+        array[i].style.height = elementHeight + "px";
+    }
 
     promise_test(async () => {
       await waitForCompositorCommit();
-      array = document.getElementsByClassName('hoverme');
 
       let x = array[0].offsetLeft + 10;
       let y = array[0].offsetTop + 25;

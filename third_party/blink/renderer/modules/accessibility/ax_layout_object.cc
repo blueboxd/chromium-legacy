@@ -1888,38 +1888,6 @@ Element* AXLayoutObject::AnchorElement() const {
   return nullptr;
 }
 
-AtomicString AXLayoutObject::Language() const {
-  if (!GetLayoutObject())
-    return AXNodeObject::Language();
-
-  // If it's the root, get the computed language for the document element,
-  // because the root LayoutObject doesn't have the right value.
-  if (RoleValue() == ax::mojom::blink::Role::kRootWebArea) {
-    Element* document_element = GetDocument()->documentElement();
-    if (!document_element)
-      return g_empty_atom;
-
-    AtomicString lang = document_element->ComputeInheritedLanguage();
-    if (!lang.IsEmpty())
-      return lang;
-  }
-
-  // Uses the style engine to figure out the object's language.
-  // The style engine relies on, for example, the "lang" attribute of the
-  // current node and its ancestors, and the document's "content-language"
-  // header. See the Language of a Node Spec at
-  // https://html.spec.whatwg.org/C/#language
-  const ComputedStyle* style = GetLayoutObject()->Style();
-  if (!style || !style->Locale())
-    return AXNodeObject::Language();
-
-  Vector<String> languages;
-  String(style->Locale()).Split(',', languages);
-  if (languages.IsEmpty())
-    return AXNodeObject::Language();
-  return AtomicString(languages[0].StripWhiteSpace());
-}
-
 //
 // Modify or take an action on an object.
 //

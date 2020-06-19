@@ -77,6 +77,8 @@ class QuicTransportConnector final
 
   void Connect(
       const KURL& url,
+      Vector<network::mojom::blink::QuicTransportCertificateFingerprintPtr>
+          fingerprints,
       mojo::PendingRemote<network::mojom::blink::QuicTransportHandshakeClient>
           handshake_client) override {
     connect_args_.push_back(ConnectArgs(url, std::move(handshake_client)));

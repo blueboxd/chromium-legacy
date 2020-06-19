@@ -28,10 +28,10 @@ class PluginVmPolicySubscription;
 
 // This is used by both the Plugin VM app and its installer.
 // Generated as crx_file::id_util::GenerateId("org.chromium.plugin_vm");
-constexpr char kPluginVmShelfAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
+extern const char kPluginVmShelfAppId[];
 
 // Name of the Plugin VM.
-constexpr char kPluginVmName[] = "PvmDefault";
+extern const char kPluginVmName[];
 
 const net::NetworkTrafficAnnotationTag kPluginVmNetworkTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("plugin_vm_image_download", R"(

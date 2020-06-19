@@ -749,6 +749,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   gfx::Vector2dF ComputeScrollDelta(const ScrollNode& scroll_node,
                                     const gfx::Vector2dF& delta);
 
+  // Resolves a pecent-based delta for the |scroll_node| dimensions. Output in
+  // physical pixels.
+  gfx::Vector2dF ResolveScrollPercentageToPixels(
+      const ScrollNode& scroll_node,
+      const gfx::Vector2dF& scroll_delta);
+
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 
   viz::CompositorFrameMetadata MakeCompositorFrameMetadata();
@@ -898,10 +904,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
  private:
   void CollectScrollDeltas(ScrollAndScaleSet* scroll_info);
   void CollectScrollbarUpdates(ScrollAndScaleSet* scroll_info) const;
-
-  gfx::Vector2dF ResolveScrollPercentageToPixels(
-      const ScrollNode& scroll_node,
-      const gfx::Vector2dF& resolved_pixels);
 
   // Returns the ScrollNode we should use to scroll, accounting for viewport
   // scroll chaining rules.

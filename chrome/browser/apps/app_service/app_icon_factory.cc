@@ -362,6 +362,8 @@ void IconLoadingPipeline::LoadWebAppIcon(
         }
         FALLTHROUGH;
       case apps::mojom::IconCompression::kUncompressed:
+        FALLTHROUGH;
+      case apps::mojom::IconCompression::kStandard:
         // If |icon_effects| are requested, we must always load the
         // uncompressed image to apply the icon effects, and then re-encode the
         // image if the compressed icon is requested.
@@ -370,6 +372,10 @@ void IconLoadingPipeline::LoadWebAppIcon(
             SkBitmapToImageSkiaCallback(base::BindOnce(
                 &IconLoadingPipeline::MaybeApplyEffectsAndComplete,
                 base::WrapRefCounted(this))));
+
+        // TODO(crbug.com/1083331): For kStandard icons, if the icon is
+        // generated or maskable, modify the icon effect, don't apply
+        // kResizeAndPad to shrink the icon.
         return;
       case apps::mojom::IconCompression::kUnknown:
         break;
@@ -413,6 +419,8 @@ void IconLoadingPipeline::LoadExtensionIcon(
       }
       FALLTHROUGH;
     case apps::mojom::IconCompression::kUncompressed:
+      FALLTHROUGH;
+    case apps::mojom::IconCompression::kStandard:
       // If |icon_effects| are requested, we must always load the
       // uncompressed image to apply the icon effects, and then re-encode
       // the image if the compressed icon is requested.
@@ -470,7 +478,9 @@ void IconLoadingPipeline::LoadIconFromResource(int icon_resource) {
         return;
       }
       FALLTHROUGH;
-    case apps::mojom::IconCompression::kUncompressed: {
+    case apps::mojom::IconCompression::kUncompressed:
+      FALLTHROUGH;
+    case apps::mojom::IconCompression::kStandard: {
       // For compressed icons with |icon_effects|, or for uncompressed
       // icons, we load the uncompressed image, apply the icon effects, and
       // then re-encode the image if necessary.
@@ -513,6 +523,11 @@ void IconLoadingPipeline::MaybeApplyEffectsAndComplete(
     return;
   }
   gfx::ImageSkia processed_image = image;
+
+  // TODO(crbug.com/1083331):
+  // 1. For kStandard icons, shrink and apply the mask.
+  // 2. For the default apps, use the raw image, and don't shrink and apply the
+  // mask.
 
   // Apply the icon effects on the uncompressed data. If the caller requests
   // an uncompressed icon, return the uncompressed result; otherwise, encode

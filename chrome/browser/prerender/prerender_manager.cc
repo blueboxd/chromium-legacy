@@ -50,7 +50,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prerender/common/prerender_final_status.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_frame_host.h"
@@ -370,8 +370,10 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
     return false;
   DCHECK(prerender_data->contents());
 
-  if (prerender_data->contents()->prerender_mode() != DEPRECATED_FULL_PRERENDER)
+  if (prerender_data->contents()->prerender_mode() !=
+      prerender::mojom::PrerenderMode::kDeprecatedFullPrerender) {
     return false;
+  }
 
   WebContents* new_web_contents = SwapInternal(
       url, web_contents, prerender_data, params->should_replace_current_entry);
@@ -592,7 +594,8 @@ std::vector<WebContents*> PrerenderManager::GetAllPrerenderingContents() const {
   for (const auto& prerender : active_prerenders_) {
     WebContents* contents = prerender->contents()->prerender_contents();
     if (contents &&
-        prerender->contents()->prerender_mode() == DEPRECATED_FULL_PRERENDER) {
+        prerender->contents()->prerender_mode() ==
+            prerender::mojom::PrerenderMode::kDeprecatedFullPrerender) {
       result.push_back(contents);
     }
   }
@@ -607,7 +610,8 @@ PrerenderManager::GetAllNoStatePrefetchingContentsForTesting() const {
 
   for (const auto& prerender : active_prerenders_) {
     WebContents* contents = prerender->contents()->prerender_contents();
-    if (contents && prerender->contents()->prerender_mode() == PREFETCH_ONLY) {
+    if (contents && prerender->contents()->prerender_mode() ==
+                        prerender::mojom::PrerenderMode::kPrefetchOnly) {
       result.push_back(contents);
     }
   }
@@ -891,8 +895,10 @@ PrerenderManager::AddPrerenderWithPreconnectFallback(
       CreatePrerenderContents(url, referrer, initiator_origin, origin);
   DCHECK(prerender_contents);
   PrerenderContents* prerender_contents_ptr = prerender_contents.get();
-  if (IsNoStatePrefetchEnabled())
-    prerender_contents_ptr->SetPrerenderMode(PREFETCH_ONLY);
+  if (IsNoStatePrefetchEnabled()) {
+    prerender_contents_ptr->SetPrerenderMode(
+        prerender::mojom::PrerenderMode::kPrefetchOnly);
+  }
   active_prerenders_.push_back(
       std::make_unique<PrerenderData>(this, std::move(prerender_contents),
                                       GetExpiryTimeForNewPrerender(origin)));

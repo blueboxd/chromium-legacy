@@ -903,6 +903,7 @@ interface NativeIOManager
     method delete
     method getAll
     method open
+    method rename
 interface NavigationPreloadManager
     attribute @@toStringTag
     method constructor

@@ -34,6 +34,9 @@
 
 namespace plugin_vm {
 
+const char kPluginVmShelfAppId[] = "lgjpclljbbmphhnalkeplcmnjpfmmaek";
+const char kPluginVmName[] = "PvmDefault";
+
 namespace {
 
 static std::string& GetFakeLicenseKey() {

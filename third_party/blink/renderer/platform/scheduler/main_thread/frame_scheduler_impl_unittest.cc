@@ -199,11 +199,11 @@ class FrameSchedulerImplTest : public testing::Test {
   }
 
   void ResetFrameScheduler(FrameScheduler::FrameType frame_type) {
-    frame_scheduler_delegate_ = std::make_unique<
+    auto new_delegate_ = std::make_unique<
         testing::StrictMock<FrameSchedulerDelegateForTesting>>();
-    frame_scheduler_ = CreateFrameScheduler(page_scheduler_.get(),
-                                            frame_scheduler_delegate_.get(),
-                                            nullptr, frame_type);
+    frame_scheduler_ = CreateFrameScheduler(
+        page_scheduler_.get(), new_delegate_.get(), nullptr, frame_type);
+    frame_scheduler_delegate_ = std::move(new_delegate_);
   }
 
   void TearDown() override {

@@ -96,6 +96,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
       std::vector<std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>>*
           opt_resources_list);
 
+  // Reads the total resource size stored in the database for |origin|.
+  Status GetUsageForOrigin(const url::Origin& origin, int64_t& out_usage);
+
   // Reads all registrations from the database. Returns OK if successfully read
   // or not found. Otherwise, returns an error.
   Status GetAllRegistrations(

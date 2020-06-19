@@ -57,9 +57,9 @@ bool DoesSubresourceURLHaveValidScheme(const GURL& url) {
   return DoesURLHaveValidScheme(url) || url == url::kAboutBlankURL;
 }
 
-bool IsValidHttpMethod(PrerenderMode prerender_mode,
+bool IsValidHttpMethod(prerender::mojom::PrerenderMode prerender_mode,
                        const std::string& method) {
-  DCHECK_NE(prerender_mode, NO_PRERENDER);
+  DCHECK_NE(prerender_mode, prerender::mojom::PrerenderMode::kNoPrerender);
   // |method| has been canonicalized to upper case at this point so we can just
   // compare them.
   DCHECK_EQ(method, base::ToUpperASCII(method));
@@ -68,7 +68,7 @@ bool IsValidHttpMethod(PrerenderMode prerender_mode,
       return true;
   }
 
-  if (prerender_mode == PREFETCH_ONLY)
+  if (prerender_mode == prerender::mojom::PrerenderMode::kPrefetchOnly)
     return false;
 
   for (auto* valid_method : kValidHttpMethodsForPrerendering) {

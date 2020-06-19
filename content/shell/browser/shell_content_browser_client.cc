@@ -110,6 +110,14 @@ class ShellControllerImpl : public mojom::ShellController {
       std::move(callback).Run(base::nullopt);
   }
 
+  void ExecuteJavaScript(const base::string16& script,
+                         ExecuteJavaScriptCallback callback) override {
+    CHECK(!Shell::windows().empty());
+    WebContents* contents = Shell::windows()[0]->web_contents();
+    contents->GetMainFrame()->ExecuteJavaScriptForTests(script,
+                                                        std::move(callback));
+  }
+
   void ShutDown() override { Shell::CloseAllWindows(); }
 };
 

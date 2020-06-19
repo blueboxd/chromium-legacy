@@ -103,6 +103,11 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   void SetMultiSelectFocusedState(bool);
   bool IsMultiSelectFocused() const;
 
+  void SetWasOptionInsertedCalled(bool flag) {
+    was_option_inserted_called_ = true;
+  }
+  bool WasOptionInsertedCalled() const { return was_option_inserted_called_; }
+
   // Callback for OptionTextObserver.
   void DidChangeTextContent();
 
@@ -133,6 +138,11 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   // Represents the option being focused on in a multi-select non-contiguous
   // traversal via the keyboard.
   bool is_multi_select_focused_ = false;
+
+  // True while HTMLSelectElement::OptionInserted(this) and OptionRemoved(this);
+  // This flag is necessary to detect a state where DOM tree is updated and
+  // OptionInserted() is not called yet.
+  bool was_option_inserted_called_ = false;
 };
 
 }  // namespace blink

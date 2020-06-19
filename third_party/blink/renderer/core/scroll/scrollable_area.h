@@ -551,6 +551,10 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual const Document* GetDocument() const;
 
+  // Resolves into un-zoomed physical pixels a scroll |delta| based on its
+  // ScrollGranularity units.
+  ScrollOffset ResolveScrollDelta(ScrollGranularity, const ScrollOffset& delta);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollableAreaTest,
                            PopupOverlayScrollbarShouldNotFadeOut);

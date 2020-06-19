@@ -5,15 +5,15 @@
 #ifndef COMPONENTS_PRERENDER_COMMON_PRERENDER_MESSAGES_H_
 #define COMPONENTS_PRERENDER_COMMON_PRERENDER_MESSAGES_H_
 
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
 
 #define IPC_MESSAGE_START PrerenderMsgStart
 
-IPC_ENUM_TRAITS_MAX_VALUE(prerender::PrerenderMode,
-                          prerender::PRERENDER_MODE_COUNT - 1)
+IPC_ENUM_TRAITS_MAX_VALUE(prerender::mojom::PrerenderMode,
+                          prerender::mojom::PrerenderMode::kMaxValue)
 
 // PrerenderLinkManager Messages
 
@@ -29,7 +29,7 @@ IPC_MESSAGE_CONTROL0(PrerenderHostMsg_PrefetchFinished)
 // before any navigation occurs, and only set to NO_PRERENDER at most once after
 // that.
 IPC_MESSAGE_ROUTED2(PrerenderMsg_SetIsPrerendering,
-                    prerender::PrerenderMode,
+                    prerender::mojom::PrerenderMode,
                     std::string /* histogram_prefix */)
 
 #endif  // COMPONENTS_PRERENDER_COMMON_PRERENDER_MESSAGES_H_

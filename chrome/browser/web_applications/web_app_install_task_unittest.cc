@@ -824,48 +824,6 @@ TEST_F(WebAppInstallTaskTest, InstallWebAppFromManifest_Success) {
   run_loop.Run();
 }
 
-TEST_F(WebAppInstallTaskTest,
-       InstallWebAppFromManifest_CreateShortcutsMenu_Success) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDesktopPWAsAppIconShortcutsMenu);
-  const GURL url = GURL("https://example.com/path");
-  const AppId app_id = GenerateAppIdFromURL(url);
-
-  auto manifest = std::make_unique<blink::Manifest>();
-  manifest->start_url = url;
-
-  // Add shortcuts to manifest.
-  blink::Manifest::ShortcutItem shortcut_item;
-  shortcut_item.name = base::UTF8ToUTF16("shortcut");
-  shortcut_item.url = GURL("https://example.com/path/page");
-  blink::Manifest::ImageResource icon;
-  icon.src = GURL("https://example.com/icons/shortcut.png");
-  icon.sizes.push_back(gfx::Size(10, 10));
-  shortcut_item.icons.push_back(icon);
-  manifest->shortcuts.push_back(shortcut_item);
-
-  data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
-
-  base::RunLoop run_loop;
-  bool callback_called = false;
-
-  install_task_->InstallWebAppFromManifest(
-      web_contents(), WebappInstallSource::MENU_BROWSER_TAB,
-      base::BindOnce(TestAcceptDialogCallback),
-      base::BindLambdaForTesting(
-          [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
-            EXPECT_EQ(app_id, installed_app_id);
-            callback_called = true;
-            run_loop.Quit();
-          }));
-
-  run_loop.Run();
-
-  EXPECT_TRUE(callback_called);
-}
-
 TEST_F(WebAppInstallTaskTest, InstallWebAppFromInfo_Success) {
   SetInstallFinalizerForTesting();
 
@@ -1298,6 +1256,254 @@ TEST_F(WebAppInstallTaskWithRunOnOsLoginTest,
   EXPECT_EQ(scope, web_app->scope());
   EXPECT_EQ(expected_theme_color, web_app->theme_color());
   EXPECT_EQ(0u, test_shortcut_manager().num_register_run_on_os_login_calls());
+}
+
+// TODO(https://crbug.com/1096953): Move these tests out into a dedicated
+// unittest file.
+class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
+ public:
+  WebAppInstallTaskTestWithShortcutsMenu() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kDesktopPWAsAppIconShortcutsMenu}, {});
+  }
+
+  GURL ShortcutIconUrl() {
+    return GURL("https://example.com/icons/shortcut_icon.png");
+  }
+
+  GURL ShortcutItemUrl() { return GURL("https://example.com/path/item"); }
+
+  // Installs the app and validates |final_web_app_info| matches the args passed
+  // in.
+  InstallResult InstallWebAppWithShortcutsMenuValidateAndGetResults(
+      GURL start_url,
+      SkColor theme_color,
+      std::string shortcut_name,
+      GURL shortcut_url,
+      SquareSizePx icon_size,
+      GURL icon_src) {
+    InstallResult result;
+    auto manifest = std::make_unique<blink::Manifest>();
+    manifest->start_url = start_url;
+    manifest->theme_color = theme_color;
+
+    // Add shortcuts to manifest.
+    blink::Manifest::ShortcutItem shortcut_item;
+    shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
+    shortcut_item.url = shortcut_url;
+    blink::Manifest::ImageResource icon;
+    icon.src = icon_src;
+    icon.sizes.emplace_back(gfx::Size(icon_size, icon_size));
+    shortcut_item.icons.emplace_back(icon);
+    manifest->shortcuts.emplace_back(shortcut_item);
+
+    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+
+    base::RunLoop run_loop;
+    bool callback_called = false;
+
+    SetInstallFinalizerForTesting();
+
+    install_task_->InstallWebAppFromManifest(
+        web_contents(), WebappInstallSource::MENU_BROWSER_TAB,
+        base::BindOnce(TestAcceptDialogCallback),
+        base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                       InstallResultCode code) {
+          result.app_id = installed_app_id;
+          result.code = code;
+          std::unique_ptr<WebApplicationInfo> final_web_app_info =
+              test_install_finalizer().web_app_info();
+          EXPECT_EQ(theme_color, final_web_app_info->theme_color);
+          EXPECT_EQ(1u, final_web_app_info->shortcut_infos.size());
+          EXPECT_EQ(base::UTF8ToUTF16(shortcut_name),
+                    final_web_app_info->shortcut_infos[0].name);
+          EXPECT_EQ(shortcut_url, final_web_app_info->shortcut_infos[0].url);
+          EXPECT_EQ(
+              1u,
+              final_web_app_info->shortcut_infos[0].shortcut_icon_infos.size());
+          EXPECT_EQ(icon_size, final_web_app_info->shortcut_infos[0]
+                                   .shortcut_icon_infos[0]
+                                   .square_size_px);
+          EXPECT_EQ(
+              icon_src,
+              final_web_app_info->shortcut_infos[0].shortcut_icon_infos[0].url);
+
+          callback_called = true;
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(callback_called);
+
+    return result;
+  }
+
+  // Updates the app and validates |final_web_app_info| matches the args passed
+  // in.
+  InstallResult UpdateWebAppWithShortcutsMenuValidateAndGetResults(
+      GURL url,
+      SkColor theme_color,
+      std::string shortcut_name,
+      GURL shortcut_url,
+      SquareSizePx icon_size,
+      GURL icon_src) {
+    InstallResult result;
+    const AppId app_id = GenerateAppIdFromURL(url);
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    WebApplicationShortcutsMenuItemInfo shortcut_item;
+    WebApplicationShortcutsMenuItemInfo::Icon icon;
+    web_app_info->app_url = url;
+    web_app_info->open_as_window = true;
+    web_app_info->theme_color = theme_color;
+
+    shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
+    shortcut_item.url = shortcut_url;
+
+    icon.url = icon_src;
+    icon.square_size_px = icon_size;
+    shortcut_item.shortcut_icon_infos.emplace_back(std::move(icon));
+    web_app_info->shortcut_infos.emplace_back(std::move(shortcut_item));
+
+    base::RunLoop run_loop;
+    bool callback_called = false;
+
+    SetInstallFinalizerForTesting();
+
+    install_task_->UpdateWebAppFromInfo(
+        web_contents(), app_id, std::move(web_app_info),
+        base::BindLambdaForTesting([&](const AppId& installed_app_id,
+                                       InstallResultCode code) {
+          result.app_id = installed_app_id;
+          result.code = code;
+          std::unique_ptr<WebApplicationInfo> final_web_app_info =
+              test_install_finalizer().web_app_info();
+          EXPECT_EQ(theme_color, final_web_app_info->theme_color);
+          EXPECT_EQ(1u, final_web_app_info->shortcut_infos.size());
+          EXPECT_EQ(base::UTF8ToUTF16(shortcut_name),
+                    final_web_app_info->shortcut_infos[0].name);
+          EXPECT_EQ(shortcut_url, final_web_app_info->shortcut_infos[0].url);
+          EXPECT_EQ(
+              1u,
+              final_web_app_info->shortcut_infos[0].shortcut_icon_infos.size());
+          EXPECT_EQ(icon_size, final_web_app_info->shortcut_infos[0]
+                                   .shortcut_icon_infos[0]
+                                   .square_size_px);
+          EXPECT_EQ(
+              icon_src,
+              final_web_app_info->shortcut_infos[0].shortcut_icon_infos[0].url);
+
+          callback_called = true;
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+
+    EXPECT_TRUE(callback_called);
+
+    return result;
+  }
+
+  static constexpr char kShortcutItemName[] = "shortcut item";
+  static constexpr SquareSizePx kIconSize = 128;
+  static constexpr SkColor kInitialThemeColor = 0x000000;
+  static constexpr SkColor kFinalThemeColor = 0xFFFFFF;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Declare constants needed by tests.
+constexpr char WebAppInstallTaskTestWithShortcutsMenu::kShortcutItemName[];
+constexpr SquareSizePx WebAppInstallTaskTestWithShortcutsMenu::kIconSize;
+constexpr SkColor WebAppInstallTaskTestWithShortcutsMenu::kInitialThemeColor;
+constexpr SkColor WebAppInstallTaskTestWithShortcutsMenu::kFinalThemeColor;
+
+TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
+       InstallWebAppFromManifest_Success) {
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  InstallResult result = InstallWebAppWithShortcutsMenuValidateAndGetResults(
+      url, kInitialThemeColor, "shortcut",
+      GURL("https://example.com/path/page"), kIconSize,
+      GURL("https://example.com/icons/shortcut.png"));
+  EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+  EXPECT_EQ(app_id, result.app_id);
+}
+
+TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
+       UpdateWebAppFromInfo_AddShortcutsMenu) {
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  // Install the app without a shortcuts menu.
+  {
+    CreateDefaultDataToRetrieve(url);
+    install_task().ExpectAppId(app_id);
+    InstallResult result = InstallWebAppFromManifestWithFallbackAndGetResults();
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+  }
+
+  // Update the installed app, adding a Shortcuts Menu in the process.
+  {
+    InstallResult result = UpdateWebAppWithShortcutsMenuValidateAndGetResults(
+        url, kInitialThemeColor, "shortcut",
+        GURL("https://example.com/path/page"), kIconSize, ShortcutIconUrl());
+    EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+  }
+}
+
+TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
+       UpdateWebAppFromInfo_UpdateShortcutsMenu) {
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  // Install the app.
+  {
+    InstallResult result = InstallWebAppWithShortcutsMenuValidateAndGetResults(
+        url, kInitialThemeColor, "shortcut",
+        GURL("https://example.com/path/page"), 2 * kIconSize,
+        GURL("https://example.com/icons/shortcut.png"));
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+  }
+
+  // Update the installed app, Shortcuts Menu has changed.
+  {
+    InstallResult result = UpdateWebAppWithShortcutsMenuValidateAndGetResults(
+        url, kInitialThemeColor, kShortcutItemName, ShortcutItemUrl(),
+        kIconSize, ShortcutIconUrl());
+    EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+  }
+}
+
+TEST_F(WebAppInstallTaskTestWithShortcutsMenu,
+       UpdateWebAppFromInfo_ShortcutsMenuNotChanged) {
+  const GURL url = GURL("https://example.com/path");
+  const AppId app_id = GenerateAppIdFromURL(url);
+
+  // Install the app.
+  {
+    InstallResult result = InstallWebAppWithShortcutsMenuValidateAndGetResults(
+        url, kInitialThemeColor, kShortcutItemName, ShortcutItemUrl(),
+        kIconSize, ShortcutIconUrl());
+    EXPECT_EQ(InstallResultCode::kSuccessNewInstall, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+  }
+
+  // Update the installed app. Only theme color changed, so Shortcuts Menu
+  // should stay the same.
+  {
+    InstallResult result = UpdateWebAppWithShortcutsMenuValidateAndGetResults(
+        url, kFinalThemeColor, kShortcutItemName, ShortcutItemUrl(), kIconSize,
+        ShortcutIconUrl());
+    EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, result.code);
+    EXPECT_EQ(app_id, result.app_id);
+  }
 }
 
 }  // namespace web_app

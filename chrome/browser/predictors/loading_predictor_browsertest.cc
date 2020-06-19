@@ -1833,4 +1833,104 @@ IN_PROC_BROWSER_TEST_F(LoadingPredictorBrowserTestWithNoLocalPredictions,
   EXPECT_EQ(0u, connection_tracker()->GetReadSocketCount());
 }
 
+// A fixture for testing prefetching with optimization guide hints.
+class LoadingPredictorPrefetchBrowserTest
+    : public LoadingPredictorBrowserTestWithOptimizationGuide {
+ public:
+  LoadingPredictorPrefetchBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kLoadingPredictorPrefetch);
+  }
+
+  void SetUp() override {
+    embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+        &LoadingPredictorPrefetchBrowserTest::MonitorRequest,
+        base::Unretained(this)));
+
+    LoadingPredictorBrowserTestWithOptimizationGuide::SetUp();
+  }
+
+ protected:
+  // Sets the requests to expect in WaitForRequests().
+  void SetExpectedRequests(base::flat_set<GURL> requests) {
+    expected_requests_ = std::move(requests);
+  }
+
+  // Returns once all expected requests have been received.
+  void WaitForRequests() {
+    if (expected_requests_.empty())
+      return;
+    base::RunLoop loop;
+    quit_ = loop.QuitClosure();
+    loop.Run();
+  }
+
+ private:
+  void MonitorRequest(const net::test_server::HttpRequest& request) {
+    // Monitor only prefetches.
+    if (request.headers.find("Purpose") == request.headers.end() ||
+        (request.headers.at("Purpose") != "prefetch")) {
+      return;
+    }
+
+    // |request.GetURL()| gives us the URL after it's already resolved to
+    // 127.0.0.1, so reconstruct the requested host via the Host header
+    // (which includes host+port).
+    GURL url = request.GetURL();
+    auto host_iter = request.headers.find("Host");
+    if (host_iter != request.headers.end())
+      url = GURL("http://" + host_iter->second + request.relative_url);
+
+    // Remove the expected request.
+    auto it = expected_requests_.find(url);
+    ASSERT_TRUE(it != expected_requests_.end())
+        << "Got unexpected request: " << url;
+    expected_requests_.erase(it);
+
+    // Finish if done.
+    if (expected_requests_.empty())
+      std::move(quit_).Run();
+  }
+
+  base::test::ScopedFeatureList feature_list_;
+  base::flat_set<GURL> expected_requests_;
+  base::OnceClosure quit_;
+};
+
+// Tests that the LoadingPredictor performs prefetching
+// for a navigation which it has a prediction for.
+IN_PROC_BROWSER_TEST_P(LoadingPredictorPrefetchBrowserTest,
+                       PrepareForPageLoadWithPredictionForPrefetch) {
+  GURL url = embedded_test_server()->GetURL(
+      "test.com", GetPathWithPortReplacement(kHtmlSubresourcesPath,
+                                             embedded_test_server()->port()));
+
+  // Set up optimization hints.
+  std::vector<std::string> hints(
+      {"skipsoverinvalidurl/////",
+       embedded_test_server()->GetURL("subresource.com", "/1").spec(),
+       embedded_test_server()->GetURL("subresource.com", "/2").spec(),
+       embedded_test_server()->GetURL("otherresource.com", "/2").spec()});
+  SetUpOptimizationHint(url, hints);
+
+  // Expect these prefetches.
+  std::vector<GURL> requests(
+      {embedded_test_server()->GetURL("subresource.com", "/1"),
+       embedded_test_server()->GetURL("subresource.com", "/2"),
+       embedded_test_server()->GetURL("otherresource.com", "/2")});
+  SetExpectedRequests(std::move(requests));
+
+  // Start a navigation and observe these prefetches.
+  auto observer = NavigateToURLAsync(url);
+  EXPECT_TRUE(observer->WaitForRequestStart());
+  WaitForRequests();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    LoadingPredictorPrefetchBrowserTest,
+    testing::Combine(
+        /*IsLocalPredictionEnabled()=*/testing::Values(false),
+        /*ShouldPreconnectUsingOptimizationGuidePredictions=*/
+        testing::Values(true)));
+
 }  // namespace predictors

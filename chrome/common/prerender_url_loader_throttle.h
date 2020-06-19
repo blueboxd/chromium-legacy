@@ -11,7 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
 #include "components/prerender/common/prerender_canceler.mojom.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -23,7 +23,7 @@ class PrerenderURLLoaderThrottle
       public base::SupportsWeakPtr<PrerenderURLLoaderThrottle> {
  public:
   PrerenderURLLoaderThrottle(
-      PrerenderMode mode,
+      prerender::mojom::PrerenderMode mode,
       const std::string& histogram_prefix,
       mojo::PendingRemote<prerender::mojom::PrerenderCanceler> canceler);
   ~PrerenderURLLoaderThrottle() override;
@@ -54,7 +54,7 @@ class PrerenderURLLoaderThrottle
 
   void OnTimedOut();
 
-  PrerenderMode mode_;
+  prerender::mojom::PrerenderMode mode_;
   std::string histogram_prefix_;
 
   bool deferred_ = false;

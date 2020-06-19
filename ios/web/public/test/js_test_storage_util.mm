@@ -11,6 +11,7 @@
 #import "base/test/ios/wait_util.h"
 #include "base/values.h"
 #include "ios/web/public/js_messaging/web_frame.h"
+#import "ios/web/public/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
@@ -91,16 +92,15 @@ bool SetStorage(web::WebFrame* web_frame,
   return success && set_success;
 }
 
-// Reads the value for the given |key| from session storage on |web_frame| using
-// the
-// __gCrWeb function |name|. The read value will be placed in |value| and any
-// JavaScript error will be placed in |error_message|.
+// Reads the value for the given |key| from storage on |web_frame| using
+// the __gCrWeb function |name|. The read value will be placed in |result| and
+// any JavaScript error will be placed in |error_message|.
 bool GetStorage(web::WebFrame* web_frame,
                 const std::string& get_function,
                 NSString* key,
-                NSString** value,
+                NSString** result,
                 NSString** error_message) {
-  __block NSString* result;
+  __block NSString* block_result;
   __block NSString* block_error_message;
   __block bool lookup_success = false;
   std::vector<base::Value> params;
@@ -109,7 +109,7 @@ bool GetStorage(web::WebFrame* web_frame,
       web_frame, get_function, params,
       base::BindOnce(^(const base::Value* value) {
         if (value->is_string()) {
-          result = base::SysUTF8ToNSString(value->GetString());
+          block_result = base::SysUTF8ToNSString(value->GetString());
           lookup_success = true;
         } else if (value->is_dict()) {
           block_error_message =
@@ -124,8 +124,8 @@ bool GetStorage(web::WebFrame* web_frame,
   if (error_message) {
     *error_message = block_error_message;
   }
-  if (value) {
-    *value = result;
+  if (result) {
+    *result = block_result;
   }
   return success && lookup_success;
 }
@@ -170,9 +170,9 @@ bool SetLocalStorage(WebFrame* web_frame,
 
 bool GetLocalStorage(WebFrame* web_frame,
                      NSString* key,
-                     NSString** value,
+                     NSString** result,
                      NSString** error_message) {
-  return GetStorage(web_frame, "cookieTest.getLocalStorage", key, value,
+  return GetStorage(web_frame, "cookieTest.getLocalStorage", key, result,
                     error_message);
 }
 
@@ -186,10 +186,106 @@ bool SetSessionStorage(WebFrame* web_frame,
 
 bool GetSessionStorage(WebFrame* web_frame,
                        NSString* key,
-                       NSString** value,
+                       NSString** result,
                        NSString** error_message) {
-  return GetStorage(web_frame, "cookieTest.getSessionStorage", key, value,
+  return GetStorage(web_frame, "cookieTest.getSessionStorage", key, result,
                     error_message);
+}
+
+bool SetCache(WebFrame* web_frame,
+              WebState* web_state,
+              NSString* key,
+              NSString* value,
+              NSString** error_message) {
+  // Cache is an async api. The test injected javascript will send a message
+  // when the async is done, so listen for that here.
+  __block bool async_success = false;
+  __block NSString* block_error_message;
+  std::unique_ptr<WebState::ScriptCommandSubscription> subscription_ =
+      web_state->AddScriptCommandCallback(
+          base::BindRepeating(^(const base::DictionaryValue& message,
+                                const GURL& page_url, bool user_is_interacting,
+                                web::WebFrame* sender_frame) {
+            const base::Value* result = message.FindPath("result");
+            if (!result) {
+              return;
+            }
+            if (result->is_bool()) {
+              async_success = result->GetBool();
+            } else {
+              block_error_message = base::SysUTF8ToNSString(
+                  result->FindPath("message")->GetString());
+              async_success = true;
+            }
+          }),
+          "cookieTest");
+
+  if (!SetStorage(web_frame, "cookieTest.setCache", key, value, nil)) {
+    return false;
+  }
+
+  bool success =
+      WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+        return async_success;
+      });
+
+  if (error_message) {
+    *error_message = block_error_message;
+  }
+
+  return success;
+}
+
+bool GetCache(WebFrame* web_frame,
+              WebState* web_state,
+              NSString* key,
+              NSString** result,
+              NSString** error_message) {
+  // Cache is an async api. The test injected javascript will send a message
+  // when the async is done, so listen for that here.
+  __block bool async_success = false;
+  __block NSString* block_result;
+  __block NSString* block_error_message;
+  std::unique_ptr<WebState::ScriptCommandSubscription> subscription_ =
+      web_state->AddScriptCommandCallback(
+          base::BindRepeating(^(const base::DictionaryValue& message,
+                                const GURL& page_url, bool user_is_interacting,
+                                web::WebFrame* sender_frame) {
+            const base::Value* javascript_result = message.FindPath("result");
+            if (!javascript_result) {
+              return;
+            }
+            if (javascript_result->is_string()) {
+              block_result =
+                  base::SysUTF8ToNSString(javascript_result->GetString());
+              async_success = true;
+            } else if (javascript_result->is_dict()) {
+              block_error_message = base::SysUTF8ToNSString(
+                  javascript_result->FindPath("message")->GetString());
+              async_success = true;
+            } else {
+              async_success = false;
+            }
+          }),
+          "cookieTest");
+
+  if (!GetStorage(web_frame, "cookieTest.getCache", key, nil, nil)) {
+    return false;
+  }
+
+  bool success =
+      WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool {
+        return async_success;
+      });
+
+  if (result) {
+    *result = block_result;
+  }
+  if (error_message) {
+    *error_message = block_error_message;
+  }
+
+  return success;
 }
 
 }  // namespace test

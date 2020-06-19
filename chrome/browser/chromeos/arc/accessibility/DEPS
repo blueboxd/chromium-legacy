@@ -1,7 +1,0 @@
-specific_include_rules = {
-  "arc_accessibility_helper_bridge.*": [
-    "+ash/system/message_center/arc/arc_notification_constants.h",
-    "+ash/system/message_center/arc/arc_notification_surface.h",
-    "+ash/system/message_center/arc/arc_notification_surface_manager.h",
-  ],
-}

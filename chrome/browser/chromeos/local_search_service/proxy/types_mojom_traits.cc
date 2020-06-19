@@ -7,6 +7,33 @@
 namespace mojo {
 
 // static
+local_search_service::mojom::IndexId
+EnumTraits<local_search_service::mojom::IndexId,
+           local_search_service::IndexId>::ToMojom(local_search_service::IndexId
+                                                       input) {
+  switch (input) {
+    case local_search_service::IndexId::kCrosSettings:
+      return local_search_service::mojom::IndexId::kCrosSettings;
+  }
+  NOTREACHED();
+  return local_search_service::mojom::IndexId::kCrosSettings;
+}
+
+// static
+bool EnumTraits<local_search_service::mojom::IndexId,
+                local_search_service::IndexId>::
+    FromMojom(local_search_service::mojom::IndexId input,
+              local_search_service::IndexId* output) {
+  switch (input) {
+    case local_search_service::mojom::IndexId::kCrosSettings:
+      *output = local_search_service::IndexId::kCrosSettings;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
 bool StructTraits<local_search_service::mojom::ContentDataView,
                   local_search_service::Content>::
     Read(local_search_service::mojom::ContentDataView data,

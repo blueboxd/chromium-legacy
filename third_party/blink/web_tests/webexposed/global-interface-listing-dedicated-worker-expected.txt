@@ -872,6 +872,8 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method getAllSync
 [Worker]     method open
 [Worker]     method openSync
+[Worker]     method rename
+[Worker]     method renameSync
 [Worker] interface NavigationPreloadManager
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor

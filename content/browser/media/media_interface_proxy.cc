@@ -304,15 +304,10 @@ class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory {
 
 }  // namespace
 
-MediaInterfaceProxy::MediaInterfaceProxy(
-    RenderFrameHost* render_frame_host,
-    mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver,
-    base::OnceClosure error_handler)
-    : render_frame_host_(render_frame_host),
-      receiver_(this, std::move(receiver)) {
+MediaInterfaceProxy::MediaInterfaceProxy(RenderFrameHost* render_frame_host)
+    : render_frame_host_(render_frame_host) {
   DVLOG(1) << __func__;
   DCHECK(render_frame_host_);
-  DCHECK(!error_handler.is_null());
 
   auto frame_factory_getter =
       base::BindRepeating(&MediaInterfaceProxy::GetFrameServices,
@@ -322,14 +317,17 @@ MediaInterfaceProxy::MediaInterfaceProxy(
   secondary_interface_factory_ = std::make_unique<MediaInterfaceFactoryHolder>(
       base::BindRepeating(&GetSecondaryMediaService), frame_factory_getter);
 
-  receiver_.set_disconnect_handler(std::move(error_handler));
-
   // |cdm_factory_map_| will be lazily connected in GetCdmFactory().
 }
 
 MediaInterfaceProxy::~MediaInterfaceProxy() {
   DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void MediaInterfaceProxy::Bind(
+    mojo::PendingReceiver<media::mojom::InterfaceFactory> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void MediaInterfaceProxy::CreateAudioDecoder(

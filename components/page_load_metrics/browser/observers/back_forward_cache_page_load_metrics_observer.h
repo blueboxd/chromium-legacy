@@ -24,7 +24,7 @@ class BackForwardCachePageLoadMetricsObserver
   OnEnterBackForwardCache(
       const page_load_metrics::mojom::PageLoadTiming& timing) override;
   void OnFirstPaintAfterBackForwardCacheRestoreInPage(
-      const page_load_metrics::mojom::PageLoadTiming& timing) override;
+      const page_load_metrics::mojom::BackForwardCacheTiming& timing) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BackForwardCachePageLoadMetricsObserver);

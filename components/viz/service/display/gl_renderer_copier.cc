@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/process/memory.h"
 #include "base/stl_util.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/frame_sinks/copy_output_util.h"
@@ -216,9 +215,7 @@ void GLRendererCopier::CopyFromTextureOrFramebuffer(
       // requires that the result be accessed via a task in the same task runner
       // sequence as the GLRendererCopier. Since I420_PLANES requests are meant
       // to be VIZ-internal, this is an acceptable limitation to enforce.
-      if (!request->SendsResultsInCurrentSequence() && !async_gl_task_runner_) {
-        request->set_result_task_runner(base::SequencedTaskRunnerHandle::Get());
-      }
+      DCHECK(request->SendsResultsInCurrentSequence() || async_gl_task_runner_);
 
       const gfx::Rect aligned_rect = RenderI420Textures(
           *request, flipped_source, color_space, source_texture,

@@ -263,7 +263,7 @@ class PageLoadTimingMerger {
                            *new_page_load_timing.interactive_timing,
                            is_main_frame);
     MergeBackForwardCacheTiming(navigation_start_offset,
-                                *new_page_load_timing.back_forward_cache_timing,
+                                new_page_load_timing.back_forward_cache_timings,
                                 is_main_frame);
   }
 
@@ -396,16 +396,15 @@ class PageLoadTimingMerger {
 
   void MergeBackForwardCacheTiming(
       base::TimeDelta navigation_start_offset,
-      const mojom::BackForwardCacheTiming& new_back_forward_cache_timing,
+      const std::vector<mojo::StructPtr<mojom::BackForwardCacheTiming>>&
+          new_back_forward_cache_timings,
       bool is_main_frame) {
-    mojom::BackForwardCacheTiming* target_back_forward_cache_timing =
-        target_->back_forward_cache_timing.get();
-
     if (is_main_frame) {
-      target_back_forward_cache_timing
-          ->first_paint_after_back_forward_cache_restore =
-          new_back_forward_cache_timing
-              .first_paint_after_back_forward_cache_restore;
+      target_->back_forward_cache_timings.clear();
+      target_->back_forward_cache_timings.reserve(
+          new_back_forward_cache_timings.size());
+      for (const auto& timing : new_back_forward_cache_timings)
+        target_->back_forward_cache_timings.push_back(timing.Clone());
     }
   }
 

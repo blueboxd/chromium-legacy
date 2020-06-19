@@ -393,6 +393,8 @@ class Internals final : public ScriptWrappable {
                                 float max_scale_factor,
                                 ExceptionState&);
 
+  float pageZoomFactor(ExceptionState&);
+
   void setIsCursorVisible(Document*, bool, ExceptionState&);
   void setMaxNumberOfFramesToTen(bool);
 

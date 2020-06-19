@@ -3,6 +3,7 @@
 <script src="../../../../resources/testharness.js"></script>
 <script src="../../../../resources/testharnessreport.js"></script>
 <script src="../../../../resources/gesture-util.js"></script>
+<script src="../../../../resources/blink-coordinates-util.js"></script>
 <script src="../../../../resources/scrollbar-util.js"></script>
 <style>
 .appearance {
@@ -92,14 +93,9 @@ window.onload = () => {
     await mouseClickOn(SCROLLBAR_BUTTON_FWD.x, SCROLLBAR_BUTTON_FWD.y);
     await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
 
-    const EXPECTED_SCROLL = (internals.runtimeFlags.percentBasedScrollingEnabled)
-      ? Math.floor(window.devicePixelRatio
-                  * standardDivFast.clientHeight
-                  * SCROLLBAR_SCROLL_PERCENTAGE)
-        / window.devicePixelRatio
-      : SCROLLBAR_SCROLL_PIXELS;
-
-    assert_equals(standardDivFast.scrollTop, EXPECTED_SCROLL, "Pressing the down arrow didn't scroll.");
+    const EXPECTED_SCROLL = getScrollbarButtonScrollDelta(standardDivFast).y;
+    assert_equals(standardDivFast.scrollTop, EXPECTED_SCROLL,
+      "Pressing the down arrow didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar arrows.");
 
   promise_test (async () => {

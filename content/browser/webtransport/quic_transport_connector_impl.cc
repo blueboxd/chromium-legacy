@@ -65,6 +65,8 @@ QuicTransportConnectorImpl::~QuicTransportConnectorImpl() = default;
 
 void QuicTransportConnectorImpl::Connect(
     const GURL& url,
+    std::vector<network::mojom::QuicTransportCertificateFingerprintPtr>
+        fingerprints,
     mojo::PendingRemote<network::mojom::QuicTransportHandshakeClient>
         handshake_client) {
   RenderProcessHost* process = RenderProcessHost::FromID(process_id_);
@@ -82,7 +84,7 @@ void QuicTransportConnectorImpl::Connect(
       handshake_client_to_pass.InitWithNewPipeAndPassReceiver());
 
   process->GetStoragePartition()->GetNetworkContext()->CreateQuicTransport(
-      url, origin_, network_isolation_key_,
+      url, origin_, network_isolation_key_, std::move(fingerprints),
       std::move(handshake_client_to_pass));
 }
 

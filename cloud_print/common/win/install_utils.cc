@@ -10,6 +10,7 @@
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/win/current_module.h"

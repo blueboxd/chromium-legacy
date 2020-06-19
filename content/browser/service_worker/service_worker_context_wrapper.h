@@ -75,6 +75,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ServiceWorkerRegistry::GetUserKeysAndDataCallback;
   using GetUserDataForAllRegistrationsCallback =
       ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback;
+  using GetStorageUsageForOriginCallback =
+      ServiceWorkerRegistry::GetStorageUsageForOriginCallback;
 
   explicit ServiceWorkerContextWrapper(BrowserContext* browser_context);
 
@@ -303,6 +305,11 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void ClearUserDataForAllRegistrationsByKeyPrefix(
       const std::string& key_prefix,
       StatusCallback callback);
+
+  // Returns total resource size stored in the storage for |origin|.
+  // This can be called from any thread.
+  void GetStorageUsageForOrigin(const url::Origin& origin,
+                                GetStorageUsageForOriginCallback callback);
 
   // Must be called on the core thread, and the callback is called on that
   // thread. This restriction is because the callback gets pointers to live
@@ -550,6 +557,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void StopAllServiceWorkersOnCoreThread(
       base::OnceClosure callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
+  void GetStorageUsageForOriginOnCoreThread(
+      const url::Origin& origin,
+      GetStorageUsageForOriginCallback callback);
 
   // Observers of |context_core_| which live within content's implementation
   // boundary. Shared with |context_core_|.

@@ -25,19 +25,6 @@ namespace web_app {
 
 namespace {
 
-void OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs(
-    const WebApplicationInfo& web_app_info,
-    std::unique_ptr<ShortcutInfo> shortcut_info) {
-  // |shortcut_data_dir| is located in per-app OS integration resources
-  // directory. See GetOsIntegrationResourcesDirectoryForApp function for more
-  // info.
-  base::FilePath shortcut_data_dir =
-      internals::GetShortcutDataDir(*shortcut_info);
-  RegisterShortcutsMenuWithOs(
-      std::move(shortcut_data_dir), std::move(shortcut_info->extension_id),
-      std::move(shortcut_info->profile_path), web_app_info);
-}
-
 AppShortcutManager::ShortcutCallback& GetShortcutUpdateCallbackForTesting() {
   static base::NoDestructor<AppShortcutManager::ShortcutCallback> callback;
   return *callback;
@@ -163,16 +150,42 @@ void AppShortcutManager::CreateShortcuts(const AppId& app_id,
 }
 
 void AppShortcutManager::RegisterShortcutsMenuWithOs(
-    const WebApplicationInfo& web_app_info,
-    const AppId& app_id) {
+    const AppId& app_id,
+    const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!web_app::ShouldRegisterShortcutsMenuWithOs() ||
+      suppress_shortcuts_for_testing()) {
+    return;
+  }
+
+  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
+  if (!shortcut_info)
+    return;
+
+  // |shortcut_data_dir| is located in per-app OS integration resources
+  // directory. See GetOsIntegrationResourcesDirectoryForApp function for more
+  // info.
+  base::FilePath shortcut_data_dir =
+      internals::GetShortcutDataDir(*shortcut_info);
+  web_app::RegisterShortcutsMenuWithOs(
+      shortcut_info->extension_id, shortcut_info->profile_path,
+      shortcut_data_dir, shortcut_infos, shortcuts_menu_icons_bitmaps);
+}
+
+void AppShortcutManager::UnregisterShortcutsMenuWithOs(const AppId& app_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!web_app::ShouldRegisterShortcutsMenuWithOs())
     return;
 
-  GetShortcutInfoForApp(
-      app_id,
-      base::BindOnce(&OnShortcutsInfoRetrievedRegisterShortcutsMenuWithOs,
-                     web_app_info));
+  // TODO(https://crbug.com/1069298): Get profile_path without using
+  // shortcut_info.
+  std::unique_ptr<ShortcutInfo> shortcut_info = BuildShortcutInfo(app_id);
+  if (!shortcut_info)
+    return;
+
+  web_app::UnregisterShortcutsMenuWithOs(shortcut_info->extension_id,
+                                         shortcut_info->profile_path);
 }
 
 void AppShortcutManager::OnShortcutsCreated(const AppId& app_id,
@@ -206,7 +219,8 @@ void AppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
   if (!base::FeatureList::IsEnabled(
           features::kDesktopPWAsAppIconShortcutsMenu) &&
       web_app::ShouldRegisterShortcutsMenuWithOs()) {
-    UnregisterShortcutsMenuWithOs(info->extension_id, info->profile_path);
+    web_app::UnregisterShortcutsMenuWithOs(info->extension_id,
+                                           info->profile_path);
   }
 
   internals::ScheduleCreatePlatformShortcuts(

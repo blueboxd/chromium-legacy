@@ -19,6 +19,23 @@
 
 namespace network {
 
+namespace {
+
+net::QuicTransportClient::Parameters CreateParameters(
+    const std::vector<mojom::QuicTransportCertificateFingerprintPtr>&
+        fingerprints) {
+  net::QuicTransportClient::Parameters params;
+
+  for (const auto& fingerprint : fingerprints) {
+    params.server_certificate_fingerprints.push_back(
+        quic::CertificateFingerprint{.algorithm = fingerprint->algorithm,
+                                     .fingerprint = fingerprint->fingerprint});
+  }
+  return params;
+}
+
+}  // namespace
+
 class QuicTransport::Stream final {
  public:
   class StreamVisitor final : public quic::QuicTransportStream::Visitor {
@@ -297,6 +314,8 @@ QuicTransport::QuicTransport(
     const GURL& url,
     const url::Origin& origin,
     const net::NetworkIsolationKey& key,
+    const std::vector<mojom::QuicTransportCertificateFingerprintPtr>&
+        fingerprints,
     NetworkContext* context,
     mojo::PendingRemote<mojom::QuicTransportHandshakeClient> handshake_client)
     : transport_(std::make_unique<net::QuicTransportClient>(
@@ -305,7 +324,7 @@ QuicTransport::QuicTransport(
           this,
           key,
           context->url_request_context(),
-          net::QuicTransportClient::Parameters())),
+          CreateParameters(fingerprints))),
       context_(context),
       receiver_(this),
       handshake_client_(std::move(handshake_client)) {

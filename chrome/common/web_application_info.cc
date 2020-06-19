@@ -84,3 +84,17 @@ std::ostream& operator<<(std::ostream& out,
     out << "none";
   return out;
 }
+
+bool operator==(const WebApplicationShortcutsMenuItemInfo::Icon& icon1,
+                const WebApplicationShortcutsMenuItemInfo::Icon& icon2) {
+  return std::tie(icon1.url, icon1.square_size_px) ==
+         std::tie(icon2.url, icon2.square_size_px);
+}
+
+bool operator==(const WebApplicationShortcutsMenuItemInfo& shortcut_info1,
+                const WebApplicationShortcutsMenuItemInfo& shortcut_info2) {
+  return std::tie(shortcut_info1.name, shortcut_info1.url,
+                  shortcut_info1.shortcut_icon_infos) ==
+         std::tie(shortcut_info2.name, shortcut_info2.url,
+                  shortcut_info2.shortcut_icon_infos);
+}

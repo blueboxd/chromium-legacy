@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/prerender/common/prerender_types.h"
+#include "components/prerender/common/prerender_types.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 
@@ -27,7 +27,7 @@ class PrerenderHelper
       public content::RenderFrameObserverTracker<PrerenderHelper> {
  public:
   PrerenderHelper(content::RenderFrame* render_frame,
-                  PrerenderMode prerender_mode,
+                  prerender::mojom::PrerenderMode prerender_mode,
                   const std::string& histogram_prefix);
 
   ~PrerenderHelper() override;
@@ -40,10 +40,12 @@ class PrerenderHelper
   // Returns true if |render_frame| is currently prerendering.
   static bool IsPrerendering(const content::RenderFrame* render_frame);
 
-  static PrerenderMode GetPrerenderMode(
+  static prerender::mojom::PrerenderMode GetPrerenderMode(
       const content::RenderFrame* render_frame);
 
-  PrerenderMode prerender_mode() const { return prerender_mode_; }
+  prerender::mojom::PrerenderMode prerender_mode() const {
+    return prerender_mode_;
+  }
   std::string histogram_prefix() const { return histogram_prefix_; }
 
  private:
@@ -52,14 +54,14 @@ class PrerenderHelper
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
 
-  void OnSetIsPrerendering(PrerenderMode mode,
+  void OnSetIsPrerendering(prerender::mojom::PrerenderMode mode,
                            const std::string& histogram_prefix);
 
   void AddThrottle(const base::WeakPtr<PrerenderURLLoaderThrottle>& throttle);
   void OnThrottleDestroyed();
   void SendPrefetchFinished();
 
-  PrerenderMode prerender_mode_;
+  prerender::mojom::PrerenderMode prerender_mode_;
   std::string histogram_prefix_;
 
   // Pending requests for this frame..

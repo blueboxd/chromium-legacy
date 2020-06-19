@@ -159,7 +159,7 @@ TEST_F(GuestOsFileTasksTest, PluginVm_AppRegistered) {
   FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
                   &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1"));
-  EXPECT_THAT(app_names_, testing::ElementsAre("name1"));
+  EXPECT_THAT(app_names_, testing::ElementsAre("name1 (Windows)"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(PLUGIN_VM));
 }
 
@@ -205,7 +205,8 @@ TEST_F(GuestOsFileTasksTest, PluginVm_MultipleAppsRegistered) {
   FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
                   &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1", "app2"));
-  EXPECT_THAT(app_names_, testing::ElementsAre("name1", "name2"));
+  EXPECT_THAT(app_names_,
+              testing::ElementsAre("name1 (Windows)", "name2 (Windows)"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(PLUGIN_VM, PLUGIN_VM));
 }
 
@@ -216,7 +217,7 @@ TEST_F(GuestOsFileTasksTest, MultipleAppsFromMultipleVmsRegistered) {
   FindGuestOsApps(&profile_, entries_, urls_, &app_ids_, &app_names_,
                   &app_vm_types_);
   EXPECT_THAT(app_ids_, testing::ElementsAre("app1", "app2"));
-  EXPECT_THAT(app_names_, testing::ElementsAre("name1", "name2"));
+  EXPECT_THAT(app_names_, testing::ElementsAre("name1", "name2 (Windows)"));
   EXPECT_THAT(app_vm_types_, testing::ElementsAre(VM_TERMINA, PLUGIN_VM));
 }
 

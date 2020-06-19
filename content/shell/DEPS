@@ -11,8 +11,6 @@ include_rules = [
   # content's public API.
   "+content/public",
 
-  "+services/network/ignore_errors_cert_verifier.h",
-
   # Network service public library.
   "+services/network/public/cpp",
 

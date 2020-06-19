@@ -135,16 +135,18 @@ bool ShouldRegisterShortcutsMenuWithOs() {
   return true;
 }
 
-void RegisterShortcutsMenuWithOsTask(const base::FilePath& shortcut_data_dir,
-                                     const AppId& app_id,
-                                     const base::FilePath& profile_path,
-                                     const WebApplicationInfo& web_app_info) {
+void RegisterShortcutsMenuWithOsTask(
+    const AppId& app_id,
+    const base::FilePath& profile_path,
+    const base::FilePath& shortcut_data_dir,
+    const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
   // Each entry in the ShortcutsMenu (JumpList on Windows) needs an icon in .ico
   // format. This helper writes these icon files to disk as a series of
   // <index>.ico files, where index is a particular shortcut's index in the
   // shortcuts vector.
-  if (!WriteShortcutsMenuIconsToIcoFiles(
-          shortcut_data_dir, web_app_info.shortcuts_menu_icons_bitmaps)) {
+  if (!WriteShortcutsMenuIconsToIcoFiles(shortcut_data_dir,
+                                         shortcuts_menu_icons_bitmaps)) {
     RecordRegistration(RegistrationResult::kFailedToWriteIcoFilesToDisk);
     return;
   }
@@ -160,7 +162,6 @@ void RegisterShortcutsMenuWithOsTask(const base::FilePath& shortcut_data_dir,
   ShellLinkItemList shortcut_list;
 
   // Limit JumpList entries.
-  const auto& shortcut_infos = web_app_info.shortcut_infos;
   int num_entries =
       std::min(static_cast<int>(shortcut_infos.size()), kMaxJumpListItems);
   for (int i = 0; i < num_entries; i++) {
@@ -197,14 +198,17 @@ void RegisterShortcutsMenuWithOsTask(const base::FilePath& shortcut_data_dir,
   RecordRegistration(RegistrationResult::kSuccess);
 }
 
-void RegisterShortcutsMenuWithOs(const base::FilePath& shortcut_data_dir,
-                                 const AppId& app_id,
-                                 const base::FilePath& profile_path,
-                                 const WebApplicationInfo& web_app_info) {
+void RegisterShortcutsMenuWithOs(
+    const AppId& app_id,
+    const base::FilePath& profile_path,
+    const base::FilePath& shortcut_data_dir,
+    const std::vector<WebApplicationShortcutsMenuItemInfo>& shortcut_infos,
+    const ShortcutsMenuIconsBitmaps& shortcuts_menu_icons_bitmaps) {
   base::ThreadPool::PostTask(
       FROM_HERE, {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-      base::BindOnce(&RegisterShortcutsMenuWithOsTask, shortcut_data_dir,
-                     app_id, profile_path, web_app_info));
+      base::BindOnce(&RegisterShortcutsMenuWithOsTask, app_id, profile_path,
+                     shortcut_data_dir, shortcut_infos,
+                     shortcuts_menu_icons_bitmaps));
 }
 
 void UnregisterShortcutsMenuWithOs(const AppId& app_id,

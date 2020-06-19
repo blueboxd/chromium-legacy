@@ -184,6 +184,31 @@ TEST_F(GuestOsRegistryServiceTest, Observer) {
   service()->UpdateApplicationList(app_list);
 }
 
+TEST_F(GuestOsRegistryServiceTest, NoObserverForPvmDefault) {
+  ApplicationList app_list = crostini::CrostiniTestHelper::BasicAppList(
+      "app 1", "PvmDefault", "container");
+  std::string app_id_1 = crostini::CrostiniTestHelper::GenerateAppId(
+      "app 1", "PvmDefault", "container");
+
+  Observer observer;
+  service()->AddObserver(&observer);
+
+  // Observers should not be called when apps are added or updated.
+  EXPECT_CALL(observer, OnRegistryUpdated(
+                            service(), testing::IsEmpty(), testing::IsEmpty(),
+                            testing::UnorderedElementsAre(app_id_1)))
+      .Times(0);
+  service()->UpdateApplicationList(app_list);
+
+  // Observers should not be called when apps are removed.
+  EXPECT_CALL(observer,
+              OnRegistryUpdated(service(), testing::IsEmpty(),
+                                testing::UnorderedElementsAre(app_id_1),
+                                testing::IsEmpty()))
+      .Times(0);
+  service()->ClearApplicationList("PvmDefault", "");
+}
+
 TEST_F(GuestOsRegistryServiceTest, ZeroAppsInstalledHistogram) {
   base::HistogramTester histogram_tester;
 

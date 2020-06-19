@@ -71,8 +71,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_EMBEDDER) MainDelegate {
   // return |ProcessType::kDefault| to avoid overriding.
   virtual ProcessType OverrideProcessType();
 
-  // Allows the embedder to override the process-wide Mojop configuration.
-  virtual void OverrideMojoConfiguration(mojo::core::Configuration* config);
+  // Allows the embedder to override the process-wide Mojo configuration and
+  // initialization.
+  virtual void InitializeMojo(mojo::core::Configuration* config);
 
   // Gets the list of service manifests with which to initialize the Service
   // Manager. This list must describe the complete set of usable services in

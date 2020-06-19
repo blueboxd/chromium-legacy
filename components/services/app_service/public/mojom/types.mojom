@@ -160,9 +160,15 @@ struct IconKey {
 };
 
 enum IconCompression {
+  // Sentinel value used in error cases.
   kUnknown,
+  // Icon as an uncompressed gfx::ImageSkia with no standard Chrome OS mask.
   kUncompressed,
+  // Icon as compressed bytes with no standard Chrome OS mask.
   kCompressed,
+  // Icon as an uncompressed gfx::ImageSkia with the standard Chrome OS mask
+  // applied. This is the default suggested icon type.
+  kStandard,
 };
 
 struct IconValue {

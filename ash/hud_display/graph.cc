@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include "cc/paint/paint_flags.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -106,6 +107,7 @@ void Graph::Draw(gfx::Canvas* canvas) const {
   }
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
+  flags.setBlendMode(SkBlendMode::kSrc);
   const cc::PaintFlags::Style style = (fill_ == Graph::Fill::NONE)
                                           ? cc::PaintFlags::kStroke_Style
                                           : cc::PaintFlags::kFill_Style;

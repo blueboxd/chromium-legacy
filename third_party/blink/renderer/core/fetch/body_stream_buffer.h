@@ -101,6 +101,8 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
     return side_data_blob_;
   }
 
+  bool IsMadeFromReadableStream() const { return made_from_readable_stream_; }
+
   void Trace(Visitor*) const override;
 
  private:

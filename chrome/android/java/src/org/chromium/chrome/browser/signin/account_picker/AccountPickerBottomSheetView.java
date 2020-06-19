@@ -58,6 +58,11 @@ class AccountPickerBottomSheetView implements BottomSheetContent {
     }
 
     @Override
+    public float getFullHeightRatio() {
+        return HeightMode.WRAP_CONTENT;
+    }
+
+    @Override
     public void destroy() {}
 
     @Override

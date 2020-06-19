@@ -1650,3 +1650,21 @@ util.isSameVolume = (entries, volumeManager) => {
 
   return true;
 };
+
+/**
+ * Sets line clamp properties on elements to limit element's text to specified
+ * number of lines and add ellipsis.
+ *
+ * @param {!Element} element Element to clamp.
+ * @param {string} lines Maximum number of lines in element.
+ * @return {!Element}
+ */
+util.setClampLine = (element, lines) => {
+  element.style.overflow = 'hidden';
+  element.style.textOverflow = 'ellipsis';
+  element.style.webkitBoxOrient = 'vertical';
+  element.style.display = '-webkit-box';
+  element.style.webkitLineClamp = lines;
+
+  return element;
+};

@@ -317,7 +317,10 @@ void SharingFCMSender::OnMessageSentViaSync(
     case sync_pb::SharingMessageCommitError::UNAUTHENTICATED:
     case sync_pb::SharingMessageCommitError::PERMISSION_DENIED:
     case sync_pb::SharingMessageCommitError::SYNC_TURNED_OFF:
+    case sync_pb::SharingMessageCommitError::
+        DEPRECATED_SYNC_SERVER_OR_AUTH_ERROR:
     case sync_pb::SharingMessageCommitError::SYNC_SERVER_ERROR:
+    case sync_pb::SharingMessageCommitError::SYNC_AUTH_ERROR:
       send_message_result = SharingSendMessageResult::kInternalError;
       break;
     case sync_pb::SharingMessageCommitError::SYNC_NETWORK_ERROR:

@@ -11,4 +11,5 @@ div { ((index):1 -> :1:6)
 div { (user agent stylesheet)
     display: block;
 
+StyleSheetChanged triggered
 

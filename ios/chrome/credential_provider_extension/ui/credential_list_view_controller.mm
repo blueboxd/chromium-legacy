@@ -68,40 +68,33 @@ const CGFloat kHeaderHeight = 70;
       NSLocalizedString(@"IDS_IOS_CREDENTIAL_PROVIDER_CREDENTIAL_LIST_TITLE",
                         @"AutoFill Chrome Password");
   self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-
   self.navigationItem.rightBarButtonItem = [self navigationCancelButton];
 
   self.searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
   self.searchController.searchResultsUpdater = self;
   self.searchController.obscuresBackgroundDuringPresentation = NO;
-  self.searchController.searchBar.translucent = YES;
   self.searchController.searchBar.barTintColor =
       [UIColor colorNamed:kBackgroundColor];
-
-  self.tableView.tableHeaderView = self.searchController.searchBar;
   // Add en empty space at the bottom of the list, the size of the search bar,
   // to allow scrolling up enough to see last result, otherwise it remains
   // hidden under the accessories.
   self.tableView.tableFooterView =
       [[UIView alloc] initWithFrame:self.searchController.searchBar.frame];
+  self.navigationItem.searchController = self.searchController;
+  self.navigationItem.hidesSearchBarWhenScrolling = NO;
 
-  self.navigationController.navigationBar.translucent = NO;
   self.navigationController.navigationBar.barTintColor =
       [UIColor colorNamed:kBackgroundColor];
   self.navigationController.navigationBar.tintColor =
       [UIColor colorNamed:kBlueColor];
   self.navigationController.navigationBar.shadowImage = [[UIImage alloc] init];
-  [self.navigationController.navigationBar
-      setBackgroundImage:[[UIImage alloc] init]
-           forBarMetrics:UIBarMetricsDefault];
 
   // Presentation of searchController will walk up the view controller hierarchy
   // until it finds the root view controller or one that defines a presentation
   // context. Make this class the presentation context so that the search
   // controller does not present on top of the navigation controller.
   self.definesPresentationContext = YES;
-
   [self.tableView registerClass:[UITableViewHeaderFooterView class]
       forHeaderFooterViewReuseIdentifier:kHeaderIdentifier];
 }

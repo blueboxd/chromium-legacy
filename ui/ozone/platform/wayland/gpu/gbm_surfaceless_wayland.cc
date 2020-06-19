@@ -18,10 +18,15 @@ namespace ui {
 
 namespace {
 
-void WaitForFence(EGLDisplay display, EGLSyncKHR fence) {
+void WaitForEGLFence(EGLDisplay display, EGLSyncKHR fence) {
   eglClientWaitSyncKHR(display, fence, EGL_SYNC_FLUSH_COMMANDS_BIT_KHR,
                        EGL_FOREVER_KHR);
   eglDestroySyncKHR(display, fence);
+}
+
+void WaitForGpuFences(std::vector<std::unique_ptr<gfx::GpuFence>> fences) {
+  for (auto& fence : fences)
+    fence->Wait();
 }
 
 }  // namespace
@@ -41,7 +46,7 @@ GbmSurfacelessWayland::GbmSurfacelessWayland(
 
 void GbmSurfacelessWayland::QueueOverlayPlane(OverlayPlane plane,
                                               uint32_t buffer_id) {
-  planes_.push_back({std::move(plane), buffer_id});
+  unsubmitted_frames_.back()->planes.push_back({std::move(plane), buffer_id});
 }
 
 bool GbmSurfacelessWayland::ScheduleOverlayPlane(
@@ -103,21 +108,35 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->completion_callback = std::move(completion_callback);
   frame->presentation_callback = std::move(presentation_callback);
+  frame->ScheduleOverlayPlanes(widget_);
+
   unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 
-  if (!use_egl_fence_sync_) {
+  if (!use_egl_fence_sync_ || !frame->schedule_planes_succeeded) {
     frame->ready = true;
     SubmitFrame();
     return;
   }
 
-  // TODO: the following should be replaced by a per surface flush as it gets
-  // implemented in GL drivers.
-  EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
-  CHECK_NE(fence, EGL_NO_SYNC_KHR) << "eglCreateSyncKHR failed";
+  std::vector<std::unique_ptr<gfx::GpuFence>> fences;
+  // Uset in-fences provided in the overlays. If there are none, we insert our
+  // own fence and wait.
+  for (auto& plane : frame->planes) {
+    if (plane.plane.gpu_fence)
+      fences.push_back(std::move(plane.plane.gpu_fence));
+  }
 
-  base::OnceClosure fence_wait_task =
-      base::BindOnce(&WaitForFence, GetDisplay(), fence);
+  base::OnceClosure fence_wait_task;
+  if (!fences.empty()) {
+    fence_wait_task = base::BindOnce(&WaitForGpuFences, std::move(fences));
+  } else {
+    // TODO: the following should be replaced by a per surface flush as it gets
+    // implemented in GL drivers.
+    EGLSyncKHR fence = InsertFence(has_implicit_external_sync_);
+    CHECK_NE(fence, EGL_NO_SYNC_KHR) << "eglCreateSyncKHR failed";
+
+    fence_wait_task = base::BindOnce(&WaitForEGLFence, GetDisplay(), fence);
+  }
 
   base::OnceClosure fence_retired_callback = base::BindOnce(
       &GbmSurfacelessWayland::FenceRetired, weak_factory_.GetWeakPtr(), frame);
@@ -182,12 +201,14 @@ GbmSurfacelessWayland::PendingFrame::PendingFrame() {}
 
 GbmSurfacelessWayland::PendingFrame::~PendingFrame() {}
 
-bool GbmSurfacelessWayland::PendingFrame::ScheduleOverlayPlanes(
+void GbmSurfacelessWayland::PendingFrame::ScheduleOverlayPlanes(
     gfx::AcceleratedWidget widget) {
-  for (auto& overlay : overlays)
+  for (auto& overlay : overlays) {
     if (!overlay.ScheduleOverlayPlane(widget))
-      return false;
-  return true;
+      return;
+  }
+  schedule_planes_succeeded = true;
+  return;
 }
 
 void GbmSurfacelessWayland::PendingFrame::Flush() {
@@ -202,10 +223,7 @@ void GbmSurfacelessWayland::SubmitFrame() {
     submitted_frame_ = std::move(unsubmitted_frames_.front());
     unsubmitted_frames_.erase(unsubmitted_frames_.begin());
 
-    bool schedule_planes_succeeded =
-        submitted_frame_->ScheduleOverlayPlanes(widget_);
-
-    if (!schedule_planes_succeeded) {
+    if (!submitted_frame_->schedule_planes_succeeded) {
       last_swap_buffers_result_ = false;
 
       std::move(submitted_frame_->completion_callback)
@@ -218,11 +236,13 @@ void GbmSurfacelessWayland::SubmitFrame() {
       return;
     }
 
-    submitted_frame_->buffer_id = planes_.back().buffer_id;
-    buffer_manager_->CommitBuffer(widget_, submitted_frame_->buffer_id,
+    DCHECK_EQ(submitted_frame_->planes.size(), 1u);
+    submitted_frame_->buffer_id = submitted_frame_->planes.back().buffer_id;
+    buffer_manager_->CommitBuffer(widget_,
+                                  submitted_frame_->planes.back().buffer_id,
                                   submitted_frame_->damage_region_);
 
-    planes_.clear();
+    submitted_frame_->planes.clear();
   }
 }
 

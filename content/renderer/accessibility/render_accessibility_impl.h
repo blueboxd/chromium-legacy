@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/ax_content_node_data.h"
+#include "content/common/ax_content_tree_data.h"
+#include "content/common/ax_content_tree_update.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "content/public/renderer/plugin_ax_tree_source.h"

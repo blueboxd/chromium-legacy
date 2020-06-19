@@ -4227,7 +4227,7 @@ TEST_F(ClientSocketPoolBaseTest, PreconnectWithoutBackupJob) {
   base::RunLoop loop;
   connect_job_factory_->set_job_type(TestConnectJob::kMockPendingJob);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, loop.QuitWhenIdleClosure(), base::TimeDelta::FromSeconds(1));
+      FROM_HERE, loop.QuitClosure(), base::TimeDelta::FromSeconds(1));
   loop.Run();
   EXPECT_FALSE(pool_->HasGroupForTesting(TestGroupId("a")));
 }

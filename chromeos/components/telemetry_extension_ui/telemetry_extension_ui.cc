@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <memory>
+#include "chromeos/components/telemetry_extension_ui/telemetry_extension_ui.h"
+
+#include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "chromeos/components/telemetry_extension_ui/telemetry_extension_ui.h"
+#include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
+#include "chromeos/components/telemetry_extension_ui/probe_service.h"
 #include "chromeos/components/telemetry_extension_ui/url_constants.h"
 #include "chromeos/grit/chromeos_telemetry_extension_resources.h"
 #include "content/public/browser/web_contents.h"
@@ -42,6 +45,11 @@ TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
                                   IDR_TELEMETRY_EXTENSION_MANIFEST);
   trusted_source->AddResourcePath("app_icon_96.png",
                                   IDR_TELEMETRY_EXTENSION_ICON_96);
+  trusted_source->AddResourcePath("trusted.js",
+                                  IDR_TELEMETRY_EXTENSION_TRUSTED_JS);
+  trusted_source->AddResourcePath(
+      "probe_service.mojom-lite.js",
+      IDR_TELEMETRY_EXTENSION_PROBE_SERVICE_MOJO_LITE_JS);
 
 #if !DCHECK_IS_ON()
   // If a user goes to an invalid url and non-DCHECK mode (DHECK = debug mode)
@@ -65,5 +73,12 @@ TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
 }
 
 TelemetryExtensionUI::~TelemetryExtensionUI() = default;
+
+void TelemetryExtensionUI::BindInterface(
+    mojo::PendingReceiver<health::mojom::ProbeService> receiver) {
+  probe_service_ = std::make_unique<ProbeService>(std::move(receiver));
+}
+
+WEB_UI_CONTROLLER_TYPE_IMPL(TelemetryExtensionUI)
 
 }  // namespace chromeos

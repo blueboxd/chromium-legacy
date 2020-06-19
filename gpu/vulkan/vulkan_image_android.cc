@@ -5,6 +5,7 @@
 #include "gpu/vulkan/vulkan_image.h"
 
 #include "base/android/android_hardware_buffer_compat.h"
+#include "base/logging.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 

@@ -35,6 +35,16 @@
   box-shadow: inset 0 0 4px 4px rgba(241, 243, 244, 0.5); /* #F1F3F4 */
 }
 
+.oobe-form {
+  /* 40px distance from subtitle (oobe forms spec) - 20px of footer-container */
+  padding-top: 20px;
+}
+
+cr-input.oobe-input {
+  max-width: 560px;
+  padding-bottom: 8px;
+}
+
 /* -- WebviewScrollShadowsHelper --
  * Variables that are used for displaying scroll shadows in OOBE.
  */

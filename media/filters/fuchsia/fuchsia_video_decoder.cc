@@ -15,8 +15,8 @@
 #include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -420,7 +420,7 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   decoder_params.set_promise_separate_access_units_on_input(true);
   decoder_params.set_require_hw(!enable_sw_decoding_);
 
-  auto decoder_factory = base::fuchsia::ComponentContextForCurrentProcess()
+  auto decoder_factory = base::ComponentContextForProcess()
                              ->svc()
                              ->Connect<fuchsia::mediacodec::CodecFactory>();
   decoder_factory->CreateDecoder(std::move(decoder_params),

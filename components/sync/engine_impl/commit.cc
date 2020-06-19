@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/data_type_histogram.h"
@@ -21,6 +22,7 @@
 namespace syncer {
 
 namespace {
+
 // The number of random ASCII bytes we'll add to CommitMessage. We choose 256
 // because it is not too large (to hurt performance and compression ratio), but
 // it is not too small to easily be canceled out using statistical analysis.
@@ -34,6 +36,43 @@ std::string RandASCIIString(size_t length) {
   for (size_t i = 0; i < length; ++i)
     result.push_back(static_cast<char>(base::RandInt(kMin, kMax)));
   return result;
+}
+
+SyncCommitError GetSyncCommitError(SyncerError syncer_error) {
+  switch (syncer_error.value()) {
+    case SyncerError::UNSET:
+    case SyncerError::CANNOT_DO_WORK:
+    case SyncerError::SYNCER_OK:
+    case SyncerError::DATATYPE_TRIGGERED_RETRY:
+    case SyncerError::SERVER_MORE_TO_DOWNLOAD:
+      NOTREACHED();
+      break;
+    case SyncerError::NETWORK_CONNECTION_UNAVAILABLE:
+    case SyncerError::NETWORK_IO_ERROR:
+      return SyncCommitError::kNetworkError;
+    case SyncerError::SYNC_AUTH_ERROR:
+    case SyncerError::SERVER_RETURN_INVALID_CREDENTIAL:
+      return SyncCommitError::kAuthError;
+    case SyncerError::SYNC_SERVER_ERROR:
+    case SyncerError::SERVER_RETURN_UNKNOWN_ERROR:
+    case SyncerError::SERVER_RETURN_THROTTLED:
+    case SyncerError::SERVER_RETURN_TRANSIENT_ERROR:
+    case SyncerError::SERVER_RETURN_MIGRATION_DONE:
+    case SyncerError::SERVER_RETURN_CLEAR_PENDING:
+    case SyncerError::SERVER_RETURN_NOT_MY_BIRTHDAY:
+    case SyncerError::SERVER_RETURN_CONFLICT:
+    case SyncerError::SERVER_RETURN_USER_ROLLBACK:
+    case SyncerError::SERVER_RETURN_PARTIAL_FAILURE:
+    case SyncerError::SERVER_RETURN_CLIENT_DATA_OBSOLETE:
+    case SyncerError::SERVER_RETURN_ENCRYPTION_OBSOLETE:
+    case SyncerError::SERVER_RETURN_DISABLED_BY_ADMIN:
+      return SyncCommitError::kServerError;
+    case SyncerError::SERVER_RESPONSE_VALIDATION_FAILED:
+      return SyncCommitError::kBadServerResponse;
+  }
+
+  NOTREACHED();
+  return SyncCommitError::kServerError;
 }
 
 }  // namespace
@@ -215,18 +254,7 @@ void Commit::CleanUp() {
 }
 
 void Commit::ReportFullCommitFailure(SyncerError syncer_error) {
-  SyncCommitError commit_error = SyncCommitError::kServerError;
-  switch (syncer_error.value()) {
-    case SyncerError::NETWORK_CONNECTION_UNAVAILABLE:
-    case SyncerError::NETWORK_IO_ERROR:
-      commit_error = SyncCommitError::kNetworkError;
-      break;
-    case SyncerError::SERVER_RESPONSE_VALIDATION_FAILED:
-      commit_error = SyncCommitError::kBadServerResponse;
-      break;
-    default:
-      commit_error = SyncCommitError::kServerError;
-  }
+  const SyncCommitError commit_error = GetSyncCommitError(syncer_error);
   for (auto& model_type_and_contribution : contributions_) {
     model_type_and_contribution.second->ProcessCommitFailure(commit_error);
   }

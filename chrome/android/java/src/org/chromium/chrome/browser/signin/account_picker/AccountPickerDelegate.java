@@ -5,11 +5,15 @@
 package org.chromium.chrome.browser.signin.account_picker;
 
 import android.accounts.Account;
+import android.content.Intent;
+
+import androidx.annotation.Nullable;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.SigninUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.AccountUtils;
@@ -69,6 +73,17 @@ public class AccountPickerDelegate implements AccountPickerCoordinator.Listener 
      */
     @Override
     public void addAccount() {
-        // TODO(https://crbug.com/1092398): Implement "add account" in delegate
+        // TODO(https//crbug.com/1097031): We should select the added account
+        // and collapse the account chooser after the account is actually added.
+        AccountManagerFacadeProvider.getInstance().createAddAccountIntent(
+                (@Nullable Intent intent) -> {
+                    if (intent != null) {
+                        mChromeActivity.startActivity(intent);
+                    } else {
+                        // AccountManagerFacade couldn't create intent, use SigninUtils to open
+                        // settings instead.
+                        SigninUtils.openSettingsForAllAccounts(mChromeActivity);
+                    }
+                });
     }
 }

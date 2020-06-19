@@ -60,7 +60,7 @@ class AXPlatformNodeTextChildProviderTest : public AXPlatformNodeWinTest {
 
     ui::AXNodeData text_child_of_text;
     text_child_of_text.id = 6;
-    text_child_of_text.role = ax::mojom::Role::kStaticText;
+    text_child_of_text.role = ax::mojom::Role::kInlineTextBox;
     text_child_of_text.SetName("text child of text.");
     text_child_of_root.child_ids.push_back(text_child_of_text.id);
 

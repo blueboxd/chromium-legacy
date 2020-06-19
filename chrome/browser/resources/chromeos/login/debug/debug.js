@@ -332,6 +332,7 @@ cr.define('cr.ui.login.debug', function() {
       // GAIA password changed.
       id: 'gaia-password-changed',
       kind: ScreenKind.OTHER,
+      handledSteps: 'password',
       data: {
         email: 'someone@example.com',
       },

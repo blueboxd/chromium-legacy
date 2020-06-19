@@ -689,14 +689,9 @@ const base::Feature kVideoPlaybackQuality{"VideoPlaybackQuality",
 const base::Feature kV8VmFuture{"V8VmFuture",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable WebAssembly baseline compilation and tier up.
+// Enable WebAssembly baseline compilation (Liftoff).
 const base::Feature kWebAssemblyBaseline{"WebAssemblyBaseline",
-#ifdef ARCH_CPU_X86_FAMILY
-                                         base::FEATURE_ENABLED_BY_DEFAULT
-#else
-                                         base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable WebAssembly lazy compilation (JIT on first call).
 const base::Feature kWebAssemblyLazyCompilation{

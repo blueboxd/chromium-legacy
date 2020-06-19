@@ -9,7 +9,7 @@
 #include <zircon/syscalls.h>
 
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/logging.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/time/time.h"
@@ -55,7 +55,7 @@ bool MixerOutputStreamFuchsia::Start(int requested_sample_rate, int channels) {
 
   // Connect |audio_renderer_|.
   fuchsia::media::AudioPtr audio_server =
-      base::fuchsia::ComponentContextForCurrentProcess()
+      base::ComponentContextForProcess()
           ->svc()
           ->Connect<fuchsia::media::Audio>();
   audio_server->CreateAudioRenderer(audio_renderer_.NewRequest());

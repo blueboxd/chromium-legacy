@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "base/format_macros.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/network_interfaces.h"
@@ -107,8 +107,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   DCHECK(networks);
 
   fuchsia::netstack::NetstackSyncPtr netstack;
-  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
-      netstack.NewRequest());
+  base::ComponentContextForProcess()->svc()->Connect(netstack.NewRequest());
 
   // TODO(kmarshall): Use NetworkChangeNotifier's cached interface list.
   std::vector<fuchsia::netstack::NetInterface> interfaces;

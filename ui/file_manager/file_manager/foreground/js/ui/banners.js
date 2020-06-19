@@ -216,6 +216,7 @@ class Banners extends cr.EventTarget {
     let close, links;
     if (util.isFilesNg()) {
       const message = util.createChild(wrapper, 'drive-welcome-message');
+      util.setClampLine(message, '2');
 
       const title = util.createChild(message, 'drive-welcome-title headline2');
       title.textContent = str('DRIVE_WELCOME_TITLE');
@@ -307,6 +308,7 @@ class Banners extends cr.EventTarget {
         text.textContent = strf(
             'DRIVE_SPACE_AVAILABLE_LONG',
             util.bytesToString(opt_sizeStats.remainingSize));
+        util.setClampLine(text, '2');
         box.appendChild(text);
 
         const buttonGroup = this.document_.createElement('div');
@@ -670,9 +672,10 @@ class Banners extends cr.EventTarget {
       const message = this.document_.createElement('div');
       message.className = 'warning-message';
       if (util.isFilesNg()) {
-        message.className += 'warning-message body2-primary';
+        message.className += ' body2-primary';
         message.innerHTML =
             util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING_FILESNG'));
+        util.setClampLine(message, '2');
       } else {
         message.innerHTML =
             util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));

@@ -10,7 +10,6 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/macros.h"
 #include "base/test/task_environment.h"

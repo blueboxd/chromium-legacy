@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/common/tracing_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_origin_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
@@ -42,6 +43,7 @@ class
 class CPUTimeBudgetPool;
 class FrameSchedulerImpl;
 class MainThreadSchedulerImpl;
+class MainThreadTaskQueue;
 class WakeUpBudgetPool;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
@@ -203,12 +205,26 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // a part of foregrounding the page.
   void SetPageFrozenImpl(bool frozen, NotificationPolicy notification_policy);
 
-  CPUTimeBudgetPool* background_cpu_time_budget_pool();
-  void MaybeInitializeBackgroundCPUTimeBudgetPool(
+  // Adds or removes a |task_queue| from the WakeUpBudgetPool associated with
+  // |frame_origin_type|. When the FrameOriginType of a FrameScheduler changes,
+  // it should remove all its TaskQueues from their current WakeUpBudgetPool and
+  // add them back to the WakeUpBudgetPool appropriate for the new
+  // FrameOriginType.
+  void AddQueueToWakeUpBudgetPool(MainThreadTaskQueue* task_queue,
+                                  FrameOriginType frame_origin_type,
+                                  base::sequence_manager::LazyNow* lazy_now);
+  void RemoveQueueFromWakeUpBudgetPool(
+      MainThreadTaskQueue* task_queue,
+      FrameOriginType frame_origin_type,
+      base::sequence_manager::LazyNow* lazy_now);
+  // Returns the WakeUpBudgetPool to use for a frame with |frame_origin_type|.
+  WakeUpBudgetPool* GetWakeUpBudgetPool(FrameOriginType frame_origin_type);
+  // Initializes WakeUpBudgetPools, if not already initialized.
+  void MaybeInitializeWakeUpBudgetPools(
       base::sequence_manager::LazyNow* lazy_now);
 
-  WakeUpBudgetPool* wake_up_budget_pool();
-  void MaybeInitializeWakeUpBudgetPool(
+  CPUTimeBudgetPool* background_cpu_time_budget_pool();
+  void MaybeInitializeBackgroundCPUTimeBudgetPool(
       base::sequence_manager::LazyNow* lazy_now);
 
   void OnThrottlingReported(base::TimeDelta throttling_duration);
@@ -218,9 +234,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void UpdateBackgroundSchedulingLifecycleState(
       NotificationPolicy notification_policy);
 
-  // Adjusts settings of a budget pool depending on current state of the page.
+  // Adjusts settings of budget pools depending on current state of the page.
   void UpdateCPUTimeBudgetPool(base::sequence_manager::LazyNow* lazy_now);
-  void UpdateWakeUpBudgetPool(base::sequence_manager::LazyNow* lazy_now);
+  void UpdateWakeUpBudgetPools(base::sequence_manager::LazyNow* lazy_now);
 
   // Callback for marking page is silent after a delay since last audible
   // signal.
@@ -265,7 +281,23 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool are_wake_ups_intensively_throttled_;
   bool keep_active_;
   CPUTimeBudgetPool* cpu_time_budget_pool_;
-  WakeUpBudgetPool* wake_up_budget_pool_;
+  // Throttles wake ups in throttleable TaskQueues of frames that have the same
+  // origin as the main frame.
+  //
+  // This pool allows aligned wake ups and unaligned wake ups if there hasn't
+  // been a recent wake up.
+  //
+  // TODO(https://crbug.com/1075553): Implement unaligned wake ups if there
+  // hasn't been a recent wake up.
+  WakeUpBudgetPool* same_origin_wake_up_budget_pool_;
+  // Throttles wake ups in throttleable TaskQueues of frames that are
+  // cross-origin with the main frame.
+  //
+  // This pool only allows aligned wake ups. Because wake ups do not depend on
+  // recent wake ups like in |same_origin_wake_up_budget_pool_|, tasks cannot
+  // easily learn about tasks running in other queues in the same pool. This is
+  // important because this pool can have queues from different origins.
+  WakeUpBudgetPool* cross_origin_wake_up_budget_pool_;
   PageScheduler::Delegate* delegate_;
   CancelableClosureHolder do_throttle_cpu_time_callback_;
   CancelableClosureHolder do_intensively_throttle_wake_ups_callback_;

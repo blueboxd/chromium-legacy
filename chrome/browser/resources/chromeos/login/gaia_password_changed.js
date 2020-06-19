@@ -2,16 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+'use strict';
+
+(function() {
+
+
+/**
+ * UI mode for the dialog.
+ * @enum {string}
+ */
+const UIState = {
+  PASSWORD: 'password',
+  FORGOT: 'forgot',
+  PROGRESS: 'progress',
+};
+
 Polymer({
   is: 'gaia-password-changed',
 
-  behaviors: [OobeI18nBehavior, LoginScreenBehavior],
+  behaviors: [
+    OobeI18nBehavior,
+    OobeDialogHostBehavior,
+    LoginScreenBehavior,
+    MultiStepBehavior,
+  ],
 
   properties: {
-    email: String,
+    email: {
+      type: String,
+      value: '',
+    },
+
+    password_: {
+      type: String,
+      value: '',
+    },
+
+    passwordInvalid_: {
+      type: Boolean,
+      value: false,
+    },
 
     disabled: {type: Boolean, value: false},
   },
+
+  defaultUIStep() {
+    return UIState.PASSWORD;
+  },
+
+  UI_STEPS: UIState,
 
   /** @override */
   ready() {
@@ -29,42 +68,36 @@ Polymer({
   onBeforeShow(data) {
     this.reset();
     this.email = data && 'email' in data && data.email;
-    this.$.oldPasswordInput.invalid =
-        data && 'showError' in data && data.showError;
+    this.passwordInvalid_ = data && 'showError' in data && data.showError;
   },
 
   reset() {
-    this.$.animatedPages.selected = 0;
+    this.setUIStep(UIState.PASSWORD);
     this.clearPassword();
     this.disabled = false;
-    this.$.navigation.closeVisible = true;
-    this.$.oldPasswordCard.classList.remove('disabled');
-  },
-
-  focus() {
-    if (this.$.animatedPages.selected == 0)
-      this.$.oldPasswordInput.focus();
   },
 
   /** @private */
-  onPasswordSubmitted_() {
+  submit_() {
+    if (this.disabled)
+      return;
     if (!this.$.oldPasswordInput.validate())
       return;
-    this.$.oldPasswordCard.classList.add('disabled');
+    this.setUIStep(UIState.PROGRESS);
     this.disabled = true;
+
     chrome.send('migrateUserData', [this.$.oldPasswordInput.value]);
   },
 
   /** @private */
   onForgotPasswordClicked_() {
+    this.setUIStep(UIState.FORGOT);
     this.clearPassword();
-    this.$.animatedPages.selected += 1;
   },
 
   /** @private */
   onTryAgainClicked_() {
-    this.$.oldPasswordInput.invalid = false;
-    this.$.animatedPages.selected -= 1;
+    this.setUIStep(UIState.PASSWORD);
   },
 
   /** @private */
@@ -73,22 +106,25 @@ Polymer({
   },
 
   clearPassword() {
-    this.$.oldPasswordInput.value = '';
-    this.$.oldPasswordInput.invalid = false;
+    this.password_ = '';
+    this.passwordInvalid_ = false;
   },
 
   /** @private */
   onProceedClicked_() {
+    if (this.disabled)
+      return;
+    this.setUIStep(UIState.PROGRESS);
     this.disabled = true;
-    this.$.navigation.closeVisible = false;
-    this.$.animatedPages.selected = 2;
-    chrome.send('login.GaiaPasswordChangedScreen.userActed', ['resync']);
+    this.clearPassword();
+    this.userActed('resync');
   },
 
   /** @private */
-  onClose_() {
-    if (!this.disabled) {
-      chrome.send('login.GaiaPasswordChangedScreen.userActed', ['cancel']);
-    }
+  onCancel_() {
+    if (this.disabled)
+      return;
+    this.userActed('cancel');
   }
 });
+})();

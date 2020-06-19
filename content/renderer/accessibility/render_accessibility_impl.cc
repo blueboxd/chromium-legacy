@@ -340,8 +340,9 @@ void RenderAccessibilityImpl::HitTest(
     }
 
     // Reply with the result.
-    std::move(callback).Run(mojom::HitTestResponse::New(
-        render_frame_->GetRoutingID(), point, ax_object.AxID()));
+    const auto& frame_token = render_frame_->GetWebFrame()->GetFrameToken();
+    std::move(callback).Run(
+        mojom::HitTestResponse::New(frame_token, point, ax_object.AxID()));
     return;
   }
 
@@ -350,8 +351,11 @@ void RenderAccessibilityImpl::HitTest(
   // If it's a remote frame, transform the point into the child frame's
   // coordinate system.
   gfx::Point transformed_point = point;
-  bool is_remote_frame = RenderFrameProxy::FromRoutingID(data.child_routing_id);
-  if (is_remote_frame) {
+  blink::WebFrame* child_frame =
+      blink::WebFrame::FromFrameOwnerElement(ax_object.GetNode());
+  DCHECK(child_frame);
+
+  if (child_frame->IsWebRemoteFrame()) {
     // Remote frames don't have access to the information from the visual
     // viewport regarding the visual viewport offset, so we adjust the
     // coordinates before sending them to the remote renderer.
@@ -365,9 +369,9 @@ void RenderAccessibilityImpl::HitTest(
         gfx::Vector2d(viewport_offset.x(), viewport_offset.y()) -
         gfx::Rect(rect).OffsetFromOrigin();
   }
+
   std::move(callback).Run(mojom::HitTestResponse::New(
-      data.child_routing_id, transformed_point, ax_object.AxID()));
-  return;
+      child_frame->GetFrameToken(), transformed_point, ax_object.AxID()));
 }
 
 void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {

@@ -229,9 +229,8 @@ IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, PRE_TestPrivacySecurityPrefs) {
   prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
 }
 
-// Flaky (crbug.com/1096966)
 // Verify the security preference under privacy across restarts. Part2
-IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, DISABLED_TestPrivacySecurityPrefs) {
+IN_PROC_BROWSER_TEST_F(PrefsFunctionalTest, TestPrivacySecurityPrefs) {
   PrefService* prefs = browser()->profile()->GetPrefs();
 
   EXPECT_EQ(chrome_browser_net::NETWORK_PREDICTION_NEVER,

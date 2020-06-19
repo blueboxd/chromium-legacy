@@ -6,6 +6,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/tests/gl_manager.h"

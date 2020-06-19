@@ -2672,6 +2672,25 @@
             ]
         }
     ],
+    "FixedMaxBestEffortTasks": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FixedMaxBestEffortTasks"
+                    ]
+                }
+            ]
+        }
+    ],
     "FlexNG": [
         {
             "platforms": [
@@ -3920,26 +3939,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "MaxOverlapBoundsForFixed"
-                    ]
-                }
-            ]
-        }
-    ],
-    "MayBlockWithoutDelay": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "FixedMaxBestEffortTasks",
-                        "MayBlockWithoutDelay"
                     ]
                 }
             ]

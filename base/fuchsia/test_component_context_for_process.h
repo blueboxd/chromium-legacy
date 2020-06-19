@@ -24,9 +24,8 @@ class FilteredServiceDirectory;
 }  // namespace fuchsia
 
 // Replaces the process-global sys::ComponentContext (as returned by the
-// base::fuchsia::ComponentContextForCurrentProcess() function) with an empty
-// instance which the calling test can configure, and restores the original
-// when deleted.
+// base::ComponentContextForProcess() function) with an empty instance which the
+// calling test can configure, and restores the original when deleted.
 //
 // The test ComponentContext runs on the test main thread, which means that:
 // - Tests using TestComponentContextForProcess must instantiate a

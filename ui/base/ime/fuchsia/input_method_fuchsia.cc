@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -22,7 +22,7 @@ InputMethodFuchsia::InputMethodFuchsia(internal::InputMethodDelegate* delegate,
     : InputMethodBase(delegate),
       event_converter_(this),
       ime_client_binding_(this),
-      ime_service_(base::fuchsia::ComponentContextForCurrentProcess()
+      ime_service_(base::ComponentContextForProcess()
                        ->svc()
                        ->Connect<fuchsia::ui::input::ImeService>()),
       virtual_keyboard_controller_(ime_service_.get()) {}

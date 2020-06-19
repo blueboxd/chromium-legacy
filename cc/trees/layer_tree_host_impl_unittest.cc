@@ -10985,22 +10985,27 @@ TEST_P(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
   LayerImpl* root = SetupDefaultRootLayer(gfx::Size(10, 10));
   struct Helper {
     std::unique_ptr<viz::CopyOutputResult> unprocessed_result;
-    void OnResult(std::unique_ptr<viz::CopyOutputResult> result) {
+    void OnResult(base::OnceClosure finished,
+                  std::unique_ptr<viz::CopyOutputResult> result) {
       unprocessed_result = std::move(result);
+      std::move(finished).Run();
     }
   } helper;
 
   GetEffectNode(root)->has_copy_request = true;
+  base::RunLoop copy_request_run_loop;
   GetPropertyTrees(root)->effect_tree.AddCopyRequest(
       root->effect_tree_index(),
       std::make_unique<viz::CopyOutputRequest>(
           viz::CopyOutputRequest::ResultFormat::RGBA_TEXTURE,
-          base::BindOnce(&Helper::OnResult, base::Unretained(&helper))));
+          base::BindOnce(&Helper::OnResult, base::Unretained(&helper),
+                         copy_request_run_loop.QuitClosure())));
   DrawFrame();
 
   auto* sii = context_provider->SharedImageInterface();
   // The CopyOutputResult has a ref on the viz::ContextProvider and a shared
   // image allocated.
+  copy_request_run_loop.Run();
   EXPECT_TRUE(helper.unprocessed_result);
   EXPECT_FALSE(context_provider->HasOneRef());
   EXPECT_EQ(1u, sii->shared_image_count());

@@ -5,6 +5,7 @@
 #include "gpu/vulkan/vulkan_swap_chain.h"
 
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/time/time.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"

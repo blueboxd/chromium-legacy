@@ -423,7 +423,6 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleLaunchSAMLPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
-  AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
   AddCallback("toggleEnableDebuggingScreen",
@@ -1095,20 +1094,6 @@ void SigninScreenHandler::HandleOfflineLogin(const base::ListValue* args) {
 void SigninScreenHandler::HandleRebootSystem() {
   chromeos::PowerManagerClient::Get()->RequestRestart(
       power_manager::REQUEST_RESTART_FOR_USER, "WebUI signin screen");
-}
-
-void SigninScreenHandler::HandleRemoveUser(const AccountId& account_id) {
-  if (delegate_ &&
-      (delegate_->IsUserSigninCompleted() || delegate_->IsSigninInProgress())) {
-    return;
-  }
-
-  ProfileMetrics::LogProfileDeleteUser(
-      ProfileMetrics::DELETE_PROFILE_USER_MANAGER);
-
-  if (!delegate_)
-    return;
-  delegate_->RemoveUser(account_id);
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {

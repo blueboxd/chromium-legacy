@@ -921,8 +921,15 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, IframeProceed) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+#if defined(OS_MACOSX)
+#define MAYBE_IframeOptInAndReportThreatDetails \
+  DISABLED_IframeOptInAndReportThreatDetails
+#else
+#define MAYBE_IframeOptInAndReportThreatDetails \
+  IframeOptInAndReportThreatDetails
+#endif
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
-                       IframeOptInAndReportThreatDetails) {
+                       MAYBE_IframeOptInAndReportThreatDetails) {
   // The extended reporting opt-in is presented in the interstitial for malware,
   // phishing, and UwS threats.
   const bool expect_threat_details =

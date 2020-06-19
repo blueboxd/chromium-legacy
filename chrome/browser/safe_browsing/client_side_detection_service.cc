@@ -97,7 +97,9 @@ ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
 
 ClientSideDetectionService::ClientSideDetectionService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader)
-    : enabled_(false), url_loader_factory_(url_loader) {
+    : enabled_(false),
+      extended_reporting_(false),
+      url_loader_factory_(url_loader) {
   base::Closure update_renderers =
       base::Bind(&ClientSideDetectionService::SendModelToRenderers,
                  base::Unretained(this));

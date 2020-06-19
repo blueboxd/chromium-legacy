@@ -4,6 +4,8 @@
 
 #include "components/exo/gaming_seat.h"
 
+#include <vector>
+
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat_delegate.h"
 #include "components/exo/shell_surface_util.h"
@@ -97,13 +99,13 @@ void GamingSeat::OnGamepadEvent(const ui::GamepadEvent& event) {
 
   switch (event.type()) {
     case ui::GamepadEventType::BUTTON:
-      it->second->OnButton(event.code(), event.value());
+      it->second->OnButton(event.code(), event.value(), event.timestamp());
       break;
     case ui::GamepadEventType::AXIS:
-      it->second->OnAxis(event.code(), event.value());
+      it->second->OnAxis(event.code(), event.value(), event.timestamp());
       break;
     case ui::GamepadEventType::FRAME:
-      it->second->OnFrame();
+      it->second->OnFrame(event.timestamp());
       break;
   }
 }

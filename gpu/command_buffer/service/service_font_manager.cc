@@ -7,6 +7,7 @@
 #include <inttypes.h>
 
 #include "base/debug/dump_without_crashing.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/strings/stringprintf.h"

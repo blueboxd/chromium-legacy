@@ -75,6 +75,12 @@ void NGContainerFragmentBuilder::PropagateChildData(
           IsInlineContainerForNode(descendant.node, inline_container))
         new_inline_container = inline_container;
 
+      // |oof_positioned_candidates_| should not have duplicated entries.
+      DCHECK(std::none_of(
+          oof_positioned_candidates_.begin(), oof_positioned_candidates_.end(),
+          [&descendant](const NGLogicalOutOfFlowPositionedNode& node) {
+            return node.node == descendant.node;
+          }));
       oof_positioned_candidates_.emplace_back(descendant.node, static_position,
                                               new_inline_container);
     }

@@ -186,11 +186,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 - (void)setSceneShowingBlockingUI:(SceneState*)newScene {
   _sceneShowingBlockingUI = newScene;
-  if (!newScene) {
     for (SceneState* scene in self.connectedScenes) {
-      scene.presentingModalOverlay = false;
+      // When there's a scene with blocking UI, all other scenes should show the
+      // overlay.
+      BOOL shouldPresentOverlay = (newScene != nil) && (scene != newScene);
+      scene.presentingModalOverlay = shouldPresentOverlay;
     }
-  }
 }
 
 #pragma mark - Public methods.

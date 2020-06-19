@@ -171,8 +171,8 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::CHILDREN_CHANGED: {
-      // If this node is ignored, notify from the platform parent if available,
-      // since it will be unignored.
+      // If this node is ignored, fire the event on the platform parent since
+      // ignored nodes cannot raise events.
       BrowserAccessibility* target_node =
           node->IsIgnored() ? node->PlatformGetParent() : node;
       if (target_node) {

@@ -8,8 +8,8 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "media/fuchsia/common/sysmem_buffer_reader.h"
 #include "media/fuchsia/common/sysmem_buffer_writer.h"
 
@@ -126,7 +126,7 @@ void SysmemBufferPool::OnError() {
 }
 
 BufferAllocator::BufferAllocator() {
-  allocator_ = base::fuchsia::ComponentContextForCurrentProcess()
+  allocator_ = base::ComponentContextForProcess()
                    ->svc()
                    ->Connect<fuchsia::sysmem::Allocator>();
 

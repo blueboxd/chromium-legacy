@@ -10,8 +10,6 @@
 #include "content/common/content_export.h"
 #include "ipc/ipc_message.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/ax_tree_data.h"
-#include "ui/accessibility/ax_tree_update.h"
 
 namespace content {
 
@@ -29,25 +27,6 @@ struct CONTENT_EXPORT AXContentNodeData : public ui::AXNodeData {
   // The routing ID of this node's child tree.
   int32_t child_routing_id = MSG_ROUTING_NONE;
 };
-
-// A subclass of AXTreeData that contains extra fields for
-// content-layer-specific AX attributes.
-struct CONTENT_EXPORT AXContentTreeData : public ui::AXTreeData {
-  AXContentTreeData() = default;
-  ~AXContentTreeData() override = default;
-
-  // Return a string representation of this data, for debugging.
-  std::string ToString() const override;
-
-  // The routing ID of this frame.
-  int routing_id = MSG_ROUTING_NONE;
-
-  // The routing ID of the parent frame.
-  int parent_routing_id = MSG_ROUTING_NONE;
-};
-
-typedef ui::AXTreeUpdateBase<content::AXContentNodeData,
-                             content::AXContentTreeData> AXContentTreeUpdate;
 
 }  // namespace content
 

@@ -85,10 +85,6 @@ void AppLaunchSigninScreen::Login(const UserContext& user_context,
 
 void AppLaunchSigninScreen::OnSigninScreenReady() {}
 
-void AppLaunchSigninScreen::RemoveUser(const AccountId& account_id) {
-  NOTREACHED();
-}
-
 void AppLaunchSigninScreen::ShowEnterpriseEnrollmentScreen() {
   NOTREACHED();
 }

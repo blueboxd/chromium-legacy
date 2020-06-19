@@ -10,9 +10,9 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/files/file_enumerator.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/run_loop.h"
 
 namespace base {
@@ -26,7 +26,7 @@ TestComponentContextForProcess::TestComponentContextForProcess(
   // Set up |incoming_services_| to use the ServiceDirectory from the current
   // default ComponentContext to fetch services from.
   context_services_ = std::make_unique<fuchsia::FilteredServiceDirectory>(
-      base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+      base::ComponentContextForProcess()->svc().get());
 
   // Push all services from /svc to the test context if requested.
   if (initial_state == InitialState::kCloneAll) {
@@ -47,7 +47,7 @@ TestComponentContextForProcess::TestComponentContextForProcess(
   // directory of |context_services_| published by the test, and with a request
   // for the process' root outgoing directory.
   fidl::InterfaceHandle<::fuchsia::io::Directory> published_root_directory;
-  old_context_ = ReplaceComponentContextForCurrentProcessForTest(
+  old_context_ = ReplaceComponentContextForProcessForTest(
       std::make_unique<sys::ComponentContext>(
           std::move(incoming_services),
           published_root_directory.NewRequest().TakeChannel()));
@@ -64,7 +64,7 @@ TestComponentContextForProcess::TestComponentContextForProcess(
 }
 
 TestComponentContextForProcess::~TestComponentContextForProcess() {
-  ReplaceComponentContextForCurrentProcessForTest(std::move(old_context_));
+  ReplaceComponentContextForProcessForTest(std::move(old_context_));
 }
 
 sys::OutgoingDirectory* TestComponentContextForProcess::additional_services() {

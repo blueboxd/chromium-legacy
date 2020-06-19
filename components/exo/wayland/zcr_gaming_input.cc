@@ -8,6 +8,8 @@
 #include <wayland-server-core.h>
 #include <wayland-server-protocol-core.h>
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "components/exo/gamepad_delegate.h"
@@ -64,27 +66,30 @@ class WaylandGamepadDelegate : public GamepadDelegate {
     wl_resource_set_user_data(gamepad_resource_, nullptr);
     delete this;
   }
-  void OnAxis(int axis, double value) override {
+  void OnAxis(int axis, double value, base::TimeTicks time_stamp) override {
     if (!gamepad_resource_) {
       return;
     }
-    zcr_gamepad_v2_send_axis(gamepad_resource_, NowInMilliseconds(), axis,
+    zcr_gamepad_v2_send_axis(gamepad_resource_,
+                             TimeTicksToMilliseconds(time_stamp), axis,
                              wl_fixed_from_double(value));
   }
-  void OnButton(int button, bool pressed) override {
+  void OnButton(int button, bool pressed, base::TimeTicks time_stamp) override {
     if (!gamepad_resource_) {
       return;
     }
     uint32_t state = pressed ? ZCR_GAMEPAD_V2_BUTTON_STATE_PRESSED
                              : ZCR_GAMEPAD_V2_BUTTON_STATE_RELEASED;
-    zcr_gamepad_v2_send_button(gamepad_resource_, NowInMilliseconds(), button,
+    zcr_gamepad_v2_send_button(gamepad_resource_,
+                               TimeTicksToMilliseconds(time_stamp), button,
                                state, wl_fixed_from_double(0));
   }
-  void OnFrame() override {
+  void OnFrame(base::TimeTicks time_stamp) override {
     if (!gamepad_resource_) {
       return;
     }
-    zcr_gamepad_v2_send_frame(gamepad_resource_, NowInMilliseconds());
+    zcr_gamepad_v2_send_frame(gamepad_resource_,
+                              TimeTicksToMilliseconds(time_stamp));
     wl_client_flush(client());
   }
 

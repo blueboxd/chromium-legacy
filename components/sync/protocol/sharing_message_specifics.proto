@@ -70,10 +70,15 @@ message SharingMessageCommitError {
     // Client-specific error codes.
     SYNC_TURNED_OFF = 8;
     SYNC_NETWORK_ERROR = 9;
-    // Error code for server error or unparsable server response.
-    SYNC_SERVER_ERROR = 10;
+    // Deprecated UMA bucket, prior to splitting between SYNC_SERVER_ERROR and
+    // SYNC_AUTH_ERROR.
+    DEPRECATED_SYNC_SERVER_OR_AUTH_ERROR = 10;
     // Message wasn't committed before timeout.
     SYNC_TIMEOUT = 11;
+    // Error code for server error or unparsable server response.
+    SYNC_SERVER_ERROR = 12;
+    // Auth error when communicating with the server.
+    SYNC_AUTH_ERROR = 13;
   }
 
   optional ErrorCode error_code = 1;

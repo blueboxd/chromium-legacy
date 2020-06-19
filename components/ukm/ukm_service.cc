@@ -111,6 +111,7 @@ void PurgeExtensionDataFromUnsentLogStore(
     const std::string& compressed_log_data =
         ukm_log_store->GetLogAtIndex(index);
     std::string uncompressed_log_data;
+    // TODO(crbug/1086910): Use the utilities in log_decoder.h instead.
     const bool uncompress_successful = compression::GzipUncompress(
         compressed_log_data, &uncompressed_log_data);
     DCHECK(uncompress_successful);

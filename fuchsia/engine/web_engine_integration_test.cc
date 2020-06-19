@@ -11,10 +11,10 @@
 
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/macros.h"
 #include "base/path_service.h"
@@ -105,7 +105,7 @@ class WebEngineIntegrationTest : public testing::Test {
   ContextParamsWithFilteredServiceDirectory() {
     filtered_service_directory_ =
         std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-            base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+            base::ComponentContextForProcess()->svc().get());
     fidl::InterfaceHandle<fuchsia::io::Directory> svc_dir;
     filtered_service_directory_->ConnectClient(svc_dir.NewRequest());
 

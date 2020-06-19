@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/tests/gl_manager.h"

@@ -13,25 +13,25 @@
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/drag_handlebar" />
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="8dp"
+        android:layout_gravity="center_horizontal"
         android:importantForAccessibility="no"
         app:srcCompat="@drawable/chrome_sync_logo" />
 
     <TextView
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:padding="8dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="center_horizontal"
         android:textAppearance="@style/TextAppearance.TextLarge.Primary"
         android:text="@string/signin_account_picker_dialog_title" />
 
@@ -41,9 +41,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/account_picker_item"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         tools:listitem="@layout/account_chooser_dialog_item" />
 </LinearLayout>

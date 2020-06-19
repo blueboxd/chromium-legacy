@@ -11,7 +11,7 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0>'
 ++++++++++ROLE_SYSTEM_STATICTEXT name='/' ia2_hypertext='/'
 ++++++++++ROLE_SYSTEM_SPINBUTTON name='Year' value='2008' FOCUSABLE ia2_hypertext='2008'
 ++++++++++++ROLE_SYSTEM_STATICTEXT name='2008' ia2_hypertext='2008'
-++++++ROLE_SYSTEM_BUTTONMENU name='Show date picker' FOCUSABLE HASPOPUP ia2_hypertext='Show date picker'
+++++++ROLE_SYSTEM_BUTTONMENU name='Show date picker' FOCUSABLE HASPOPUP
 ++++++ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0>'
 ++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0>'
 ++++++++++IA2_ROLE_SECTION ia2_hypertext='<obj0>'

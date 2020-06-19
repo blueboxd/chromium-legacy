@@ -6,8 +6,8 @@
 
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
 
 namespace util {
@@ -40,7 +40,7 @@ SystemMemoryPressureEvaluatorFuchsia::SystemMemoryPressureEvaluatorFuchsia(
   });
 
   DVLOG(1) << "Registering for memory pressure updates.";
-  auto provider = base::fuchsia::ComponentContextForCurrentProcess()
+  auto provider = base::ComponentContextForProcess()
                       ->svc()
                       ->Connect<fuchsia::memorypressure::Provider>();
   provider->RegisterWatcher(binding_.NewBinding());

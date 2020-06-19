@@ -147,7 +147,9 @@ class TwoClientWebAppsBMOSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(TwoClientWebAppsBMOSyncTest);
 };
 
-IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest, SyncDoubleInstallation) {
+// Test is flaky (crbug.com/1097050)
+IN_PROC_BROWSER_TEST_F(TwoClientWebAppsBMOSyncTest,
+                       DISABLED_SyncDoubleInstallation) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());

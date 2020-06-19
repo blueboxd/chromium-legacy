@@ -48,18 +48,15 @@ const char kUserEmail[] = "test-user@gmail.com";
 const char kGaiaID[] = "111111";
 const char kTokenHandle[] = "test_token_handle";
 
-const test::UIPath kPasswordStep = {"gaia-password-changed", "oldPasswordCard"};
+const test::UIPath kPasswordStep = {"gaia-password-changed", "passwordStep"};
 const test::UIPath kOldPasswordInput = {"gaia-password-changed",
                                         "oldPasswordInput"};
-const test::UIPath kSendPasswordButton = {"gaia-password-changed",
-                                          "oldPasswordInputForm", "button"};
+const test::UIPath kSendPasswordButton = {"gaia-password-changed", "next"};
 const test::UIPath kForgotPassword = {"gaia-password-changed",
-                                      "forgot-password-link"};
-const test::UIPath kTryAgain = {"gaia-password-changed", "try-again-link"};
-const test::UIPath kProceedAnyway = {"gaia-password-changed",
-                                     "proceedAnywayBtn"};
-const test::UIPath kCancel = {"gaia-password-changed", "navigation",
-                              "closeButton"};
+                                      "forgotPasswordLink"};
+const test::UIPath kTryAgain = {"gaia-password-changed", "tryAgain"};
+const test::UIPath kProceedAnyway = {"gaia-password-changed", "proceedAnyway"};
+const test::UIPath kCancel = {"gaia-password-changed", "cancel"};
 
 }  // namespace
 

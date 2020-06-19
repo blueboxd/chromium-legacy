@@ -143,6 +143,22 @@ function exceptionsListContainsUrl(exceptionList, url) {
   return false;
 }
 
+/**
+ * Simulates user who is eligible and opted-in for account storage. Should be
+ * called after the PasswordsSection element is created. The load time value for
+ * enableAccountStorage must be overridden separately.
+ * @param {TestPasswordManagerProxy} passwordManager
+ */
+function simulateAccountStorageUser(passwordManager) {
+  simulateSyncStatus({signedIn: false});
+  simulateStoredAccounts([{
+    fullName: 'john doe',
+    givenName: 'john',
+    email: 'john@gmail.com',
+  }]);
+  passwordManager.setIsOptedInForAccountStorageAndNotify(true);
+}
+
 suite('PasswordsSection', function() {
   /** @type {TestPasswordManagerProxy} */
   let passwordManager = null;
@@ -480,9 +496,9 @@ suite('PasswordsSection', function() {
     firstNode.$$('#passwordMenu').click();
     passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
 
-    const ids = await passwordManager.whenCalled('removeSavedPasswords');
+    const id = await passwordManager.whenCalled('removeSavedPassword');
     // Verify that the expected value was passed to the proxy.
-    assertDeepEquals([firstPassword.id], ids);
+    assertEquals(firstPassword.id, id);
     assertEquals(
         passwordsSection.i18n('passwordDeleted'),
         getToastManager().$.content.textContent);
@@ -500,6 +516,7 @@ suite('PasswordsSection', function() {
     flush();
 
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+    flush();
     assertTrue(
         passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').hidden);
   });
@@ -515,6 +532,7 @@ suite('PasswordsSection', function() {
     flush();
 
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+    flush();
     assertFalse(
         passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').hidden);
   });
@@ -966,6 +984,7 @@ suite('PasswordsSection', function() {
     // toast is shown.
     getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
     passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
+    flush();
     assertTrue(toastManager.isToastOpen);
 
     // Remove the passwords section from the DOM and check that this closes
@@ -1237,75 +1256,122 @@ suite('PasswordsSection', function() {
           passwordsSection.$.devicePasswordsLinkLabel.innerText);
     });
 
-    // Test verifies that the notification displayed after removing a password
-    // informs whether the password was stored on the device, in the account or
-    // in both, for users in account storage mode.
+    // Test verifies that, for account-scoped password storage users, removing
+    // a password stored in a single location indicates the location in the
+    // toast manager message.
     test(
-        'passwordDeletionMessageSpecifiesStoreIfAccountStorageIsEnabled',
+        'passwordRemovalMessageSpecifiesStoreForAccountStorageUsers',
         function() {
-          // Feature flag enabled.
           loadTimeData.overrideValues({enableAccountStorage: true});
 
-          // Create array with one account-only password, one device-only, and
-          // two duplicates that will be merged.
+          const passwordList = [
+            createPasswordEntry(
+                {username: 'account', id: 0, fromAccountStore: true}),
+            createPasswordEntry(
+                {username: 'local', id: 1, fromAccountStore: false}),
+          ];
           const passwordsSection = elementFactory.createPasswordsSection(
-              passwordManager,
-              [
-                createPasswordEntry(
-                    {username: 'account', id: 0, fromAccountStore: true}),
-                createPasswordEntry(
-                    {username: 'local', id: 1, fromAccountStore: false}),
-                createPasswordEntry({
-                  username: 'both',
-                  frontendId: 2,
-                  id: 21,
-                  fromAccountStore: false
-                }),
-                createPasswordEntry({
-                  username: 'both',
-                  frontendId: 2,
-                  id: 22,
-                  fromAccountStore: true
-                }),
-              ],
-              []);
+              passwordManager, passwordList, []);
 
-          // Setup user in account storage mode: sync disabled, user signed in
-          // and opted in.
-          simulateSyncStatus({signedIn: false});
-          simulateStoredAccounts([{
-            fullName: 'john doe',
-            givenName: 'john',
-            email: 'john@gmail.com',
-          }]);
-          passwordManager.setIsOptedInForAccountStorageAndNotify(true);
-
-          const passwordListItems =
-              passwordsSection.root.querySelectorAll('password-list-item');
+          simulateAccountStorageUser(passwordManager);
 
           // No removal actually happens, so all passwords keep their position.
-          // The merged entry comes last.
+          const passwordListItems =
+              passwordsSection.root.querySelectorAll('password-list-item');
           passwordListItems[0].$$('#passwordMenu').click();
           passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
+          flush();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromAccount'),
               getToastManager().$.content.textContent);
 
           passwordListItems[1].$$('#passwordMenu').click();
           passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
+          flush();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromDevice'),
               getToastManager().$.content.textContent);
-
-          // TODO(crbug.com/1049141): Update the test when the removal dialog
-          // is introduced.
-          passwordListItems[2].$$('#passwordMenu').click();
-          passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
-          assertEquals(
-              passwordsSection.i18n('passwordDeletedFromAccountAndDevice'),
-              getToastManager().$.content.textContent);
-
         });
+
+    // Test verifies that if the user attempts to remove a password stored
+    // both on the device and in the account, the PasswordRemoveDialog shows up.
+    // Clicking the button in the dialog then removes both versions of the
+    // password.
+    test('verifyPasswordRemoveDialogRemoveBothCopies', async function() {
+      loadTimeData.overrideValues({enableAccountStorage: true});
+
+      const accountCopy =
+          createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: true});
+      const deviceCopy =
+          createPasswordEntry({frontendId: 42, id: 1, fromAccountStore: false});
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, [accountCopy, deviceCopy], []);
+
+      simulateAccountStorageUser(passwordManager);
+
+      // At first the dialog is not shown.
+      assertTrue(
+          !passwordsSection.$.passwordsListHandler.$$('#passwordRemoveDialog'));
+
+      // Clicking remove in the overflow menu shows the dialog.
+      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
+      flush();
+      const removeDialog =
+          passwordsSection.$.passwordsListHandler.$$('#passwordRemoveDialog');
+      assertTrue(!!removeDialog);
+
+      // Both checkboxes are selected by default. Confirming removes from both
+      // account and device.
+      assertTrue(
+          removeDialog.$.removeFromAccountCheckbox.checked &&
+          removeDialog.$.removeFromDeviceCheckbox.checked);
+      removeDialog.$.removeButton.click();
+      const removedIds =
+          await passwordManager.whenCalled('removeSavedPasswords');
+      assertTrue(removedIds.includes(accountCopy.id));
+      assertTrue(removedIds.includes(deviceCopy.id));
+    });
+
+    // Test verifies that if the user attempts to remove a password stored
+    // both on the device and in the account, the PasswordRemoveDialog shows up.
+    // The user then chooses to remove only of the copies.
+    test('verifyPasswordRemoveDialogRemoveSingleCopy', async function() {
+      loadTimeData.overrideValues({enableAccountStorage: true});
+
+      const accountCopy =
+          createPasswordEntry({frontendId: 42, id: 0, fromAccountStore: true});
+      const deviceCopy =
+          createPasswordEntry({frontendId: 42, id: 1, fromAccountStore: false});
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, [accountCopy, deviceCopy], []);
+
+      simulateAccountStorageUser(passwordManager);
+
+      // At first the dialog is not shown.
+      assertTrue(
+          !passwordsSection.$.passwordsListHandler.$$('#passwordRemoveDialog'));
+
+      // Clicking remove in the overflow menu shows the dialog.
+      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
+      flush();
+      const removeDialog =
+          passwordsSection.$.passwordsListHandler.$$('#passwordRemoveDialog');
+      assertTrue(!!removeDialog);
+
+      // Uncheck the account checkboxes then confirm. Only the device copy is
+      // removed.
+      removeDialog.$.removeFromAccountCheckbox.click();
+      flush();
+      assertTrue(
+          !removeDialog.$.removeFromAccountCheckbox.checked &&
+          removeDialog.$.removeFromDeviceCheckbox.checked);
+      removeDialog.$.removeButton.click();
+      const removedIds =
+          await passwordManager.whenCalled('removeSavedPasswords');
+      assertTrue(removedIds.includes(deviceCopy.id));
+    });
   }
 
   // The export dialog is dismissable.
@@ -1577,6 +1643,7 @@ suite('PasswordsSection', function() {
     const passwordsSection =
         elementFactory.createPasswordsSection(passwordManager, [], []);
     passwordsSection.$$('#checkPasswordsButton').click();
+    flush();
     const router = Router.getInstance();
     assertEquals(routes.CHECK_PASSWORDS, router.currentRoute);
     assertEquals('true', router.getQueryParameters().get('start'));
@@ -1590,6 +1657,7 @@ suite('PasswordsSection', function() {
     const passwordsSection =
         elementFactory.createPasswordsSection(passwordManager, [], []);
     passwordsSection.$$('#checkPasswordsLinkRow').click();
+    flush();
     const router = Router.getInstance();
     assertEquals(routes.CHECK_PASSWORDS, router.currentRoute);
     assertEquals('true', router.getQueryParameters().get('start'));

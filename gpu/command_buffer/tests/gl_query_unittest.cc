@@ -7,6 +7,7 @@
 #include <GLES2/gl2extchromium.h>
 #include <stdint.h>
 
+#include "base/logging.h"
 #include "base/threading/platform_thread.h"
 #include "gpu/command_buffer/tests/gl_manager.h"
 #include "gpu/command_buffer/tests/gl_test_utils.h"

@@ -10,6 +10,7 @@
 
 import './password_edit_dialog.js';
 import './password_move_to_account_dialog.js';
+import './password_remove_dialog.js';
 import './password_list_item.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './password_edit_dialog.js';
@@ -19,12 +20,14 @@ import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {loadTimeData} from '../i18n_setup.js';
+
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
 import {PasswordManagerImpl} from './password_manager_proxy.js';
-import {RemovalResult} from './remove_password_behavior.js';
+import {PasswordRemoveDialogPasswordsRemovedEvent} from './password_remove_dialog.js';
 
 Polymer({
   is: 'passwords-list-handler',
@@ -80,6 +83,9 @@ Polymer({
     /** @private */
     showPasswordMoveToAccountDialog_: {type: Boolean, value: false},
 
+    /** @private */
+    showPasswordRemoveDialog_: {type: Boolean, value: false},
+
     /**
      * The element to return focus to, when the currently active dialog is
      * closed.
@@ -95,6 +101,8 @@ Polymer({
 
   listeners: {
     'password-menu-tap': 'onPasswordMenuTap_',
+    'password-remove-dialog-passwords-removed':
+        'onPasswordRemoveDialogPasswordsRemoved_',
   },
 
   /** @override */
@@ -177,26 +185,43 @@ Polymer({
   },
 
   /**
-   * Fires an event that should delete the saved password.
+   * Handler for the remove option in the overflow menu. If the password only
+   * exists in one location, deletes it directly. Otherwise, opens the remove
+   * dialog to allow choosing from which locations to remove.
    * @private
    */
   onMenuRemovePasswordTap_() {
-    // TODO(crbug.com/1049141): Open removal dialog if password is present in
-    // both locations. Add tests for when no password is selected in the dialog.
-    /** @type {!RemovalResult} */
-    const result = this.activePassword.requestRemove();
+    this.$.menu.close();
 
-    if (!result.removedFromDevice && !result.removedFromAccount) {
-      this.$.menu.close();
-      this.activePassword = null;
+    if (this.activePassword.entry.isPresentOnDevice() &&
+        this.activePassword.entry.isPresentInAccount()) {
+      this.showPasswordRemoveDialog_ = true;
       return;
     }
 
+    const idToRemove = this.activePassword.entry.isPresentInAccount() ?
+        this.activePassword.entry.accountId :
+        this.activePassword.entry.deviceId;
+    PasswordManagerImpl.getInstance().removeSavedPassword(idToRemove);
+    this.displayRemovalNotification_(
+        this.activePassword.entry.isPresentInAccount(),
+        this.activePassword.entry.isPresentOnDevice());
+    this.activePassword = null;
+  },
+
+  /**
+   * At least one of |removedFromAccount| or |removedFromDevice| must be true.
+   * @param {boolean} removedFromAccount
+   * @param {boolean} removedFromDevice
+   * @private
+   */
+  displayRemovalNotification_(removedFromAccount, removedFromDevice) {
+    assert(removedFromAccount || removedFromDevice);
     let text = this.i18n('passwordDeleted');
     if (this.shouldShowStorageDetails) {
-      if (result.removedFromAccount && result.removedFromDevice) {
+      if (removedFromAccount && removedFromDevice) {
         text = this.i18n('passwordDeletedFromAccountAndDevice');
-      } else if (result.removedFromAccount) {
+      } else if (removedFromAccount) {
         text = this.i18n('passwordDeletedFromAccount');
       } else {
         text = this.i18n('passwordDeletedFromDevice');
@@ -204,9 +229,14 @@ Polymer({
     }
     getToastManager().show(text);
     this.fire('iron-announce', {text: this.i18n('undoDescription')});
+  },
 
-    this.$.menu.close();
-    this.activePassword = null;
+  /**
+   * @param {PasswordRemoveDialogPasswordsRemovedEvent} event
+   */
+  onPasswordRemoveDialogPasswordsRemoved_(event) {
+    this.displayRemovalNotification_(
+        event.detail.removedFromAccount, event.detail.removedFromDevice);
   },
 
   /**
@@ -233,9 +263,21 @@ Polymer({
    */
   onPasswordMoveToAccountDialogClosed_() {
     this.showPasswordMoveToAccountDialog_ = false;
-    focusWithoutInk(assert(this.activeDialogAnchor_));
-    this.activeDialogAnchor_ = null;
     this.activePassword = null;
+
+    // The entry possibly disappeared, so don't reset the focus.
+    this.activeDialogAnchor_ = null;
+  },
+
+  /**
+   * @private
+   */
+  onPasswordRemoveDialogClosed_() {
+    this.showPasswordRemoveDialog_ = false;
+    this.activePassword = null;
+
+    // A removal possibly happened, so don't reset the focus.
+    this.activeDialogAnchor_ = null;
   },
 
 });

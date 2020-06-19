@@ -222,12 +222,12 @@ public class TasksViewBinderTest extends DummyUiActivityTestCase {
     @Test
     @SmallTest
     public void testSetIncognitoDescriptionVisibilityAndClickListener() {
-        assertFalse(isViewVisible(R.id.incognito_description_container_layout_stub));
+        assertFalse(isViewVisible(R.id.incognito_description_layout_stub));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTasksViewPropertyModel.set(INCOGNITO_LEARN_MORE_CLICK_LISTENER, mViewOnClickListener);
         });
-        assertFalse(isViewVisible(R.id.incognito_description_container_layout_stub));
+        assertFalse(isViewVisible(R.id.incognito_description_layout_stub));
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mTasksViewPropertyModel.set(INCOGNITO_COOKIE_CONTROLS_MANAGER, mCookieControlsManager);

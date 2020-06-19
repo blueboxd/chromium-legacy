@@ -8,7 +8,7 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_provider_impl.h"
 #include "base/test/task_environment.h"
@@ -107,7 +107,7 @@ TEST_F(WebRunnerSmokeTest, MAYBE_RequestHtmlAndImage) {
   fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/test.html").spec();
 
-  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+  auto launcher = base::ComponentContextForProcess()
                       ->svc()
                       ->Connect<fuchsia::sys::Launcher>();
 
@@ -128,7 +128,7 @@ TEST_F(WebRunnerSmokeTest, LifecycleTerminate) {
   launch_info.url = test_server_.GetURL("/test.html").spec();
   launch_info.directory_request = directory.NewRequest().TakeChannel();
 
-  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+  auto launcher = base::ComponentContextForProcess()
                       ->svc()
                       ->Connect<fuchsia::sys::Launcher>();
 
@@ -157,7 +157,7 @@ TEST_F(WebRunnerSmokeTest, ComponentExitOnFrameClose) {
   fuchsia::sys::LaunchInfo launch_info = LaunchInfoWithServices();
   launch_info.url = test_server_.GetURL("/window_close.html").spec();
 
-  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+  auto launcher = base::ComponentContextForProcess()
                       ->svc()
                       ->Connect<fuchsia::sys::Launcher>();
 
@@ -204,7 +204,7 @@ TEST_F(WebRunnerSmokeTest, RemoveSelfFromStoryOnFrameClose) {
   launch_info.additional_services->names.emplace_back(
       fuchsia::modular::ModuleContext::Name_);
 
-  auto launcher = base::fuchsia::ComponentContextForCurrentProcess()
+  auto launcher = base::ComponentContextForProcess()
                       ->svc()
                       ->Connect<fuchsia::sys::Launcher>();
 

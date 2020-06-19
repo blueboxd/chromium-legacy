@@ -15,9 +15,9 @@ namespace {
 
 CGFloat kTooltipTailHeight = 8;
 CGFloat kTooltipTailWidth = 16;
-CGFloat kTooltipHorizontalPadding = 10.0f;
-CGFloat kTooltipVerticalPadding = 4.0f;
-CGFloat kTooltipCornerRadius = 3.0f;
+CGFloat kTooltipHorizontalPadding = 16.0f;
+CGFloat kTooltipVerticalPadding = 10.0f;
+CGFloat kTooltipCornerRadius = 8.0f;
 CGFloat kTooltipFadeInTime = 0.2f;
 
 }  // namespace
@@ -59,7 +59,7 @@ static __weak TooltipView* _active;
 
   CGSize labelSize = [message sizeWithAttributes:@{
     NSFontAttributeName :
-        [UIFont preferredFontForTextStyle:UIFontTextStyleCallout]
+        [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]
   }];
 
   UILabel* label = [[UILabel alloc]
@@ -68,7 +68,7 @@ static __weak TooltipView* _active;
                                labelSize.width, labelSize.height)];
   label.textAlignment = NSTextAlignmentLeft;
   label.text = message;
-  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleCallout];
+  label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
   label.textColor = [UIColor colorNamed:kBackgroundColor];
 
   CGFloat width = labelSize.width + 2 * kTooltipHorizontalPadding;

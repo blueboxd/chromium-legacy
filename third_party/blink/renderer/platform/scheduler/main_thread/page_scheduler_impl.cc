@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_visibility_state.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/use_case.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -165,7 +166,8 @@ PageSchedulerImpl::PageSchedulerImpl(
       are_wake_ups_intensively_throttled_(false),
       keep_active_(main_thread_scheduler->SchedulerKeepActive()),
       cpu_time_budget_pool_(nullptr),
-      wake_up_budget_pool_(nullptr),
+      same_origin_wake_up_budget_pool_(nullptr),
+      cross_origin_wake_up_budget_pool_(nullptr),
       delegate_(delegate),
       delay_for_background_tab_freezing_(GetDelayForBackgroundTabFreezing()),
       freeze_on_network_idle_enabled_(base::FeatureList::IsEnabled(
@@ -197,8 +199,10 @@ PageSchedulerImpl::~PageSchedulerImpl() {
 
   if (cpu_time_budget_pool_)
     cpu_time_budget_pool_->Close();
-  if (wake_up_budget_pool_)
-    wake_up_budget_pool_->Close();
+  if (same_origin_wake_up_budget_pool_)
+    same_origin_wake_up_budget_pool_->Close();
+  if (cross_origin_wake_up_budget_pool_)
+    cross_origin_wake_up_budget_pool_->Close();
 }
 
 // static
@@ -347,7 +351,7 @@ void PageSchedulerImpl::RegisterFrameSchedulerImpl(
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
 
-  MaybeInitializeWakeUpBudgetPool(&lazy_now);
+  MaybeInitializeWakeUpBudgetPools(&lazy_now);
   MaybeInitializeBackgroundCPUTimeBudgetPool(&lazy_now);
 
   frame_schedulers_.insert(frame_scheduler);
@@ -507,7 +511,7 @@ void PageSchedulerImpl::OnAggressiveThrottlingStatusUpdated() {
     base::sequence_manager::LazyNow lazy_now(
         main_thread_scheduler_->tick_clock());
     UpdateCPUTimeBudgetPool(&lazy_now);
-    UpdateWakeUpBudgetPool(&lazy_now);
+    UpdateWakeUpBudgetPools(&lazy_now);
   }
 }
 
@@ -555,6 +559,36 @@ void PageSchedulerImpl::AsValueInto(
   state->EndDictionary();
 }
 
+void PageSchedulerImpl::AddQueueToWakeUpBudgetPool(
+    MainThreadTaskQueue* task_queue,
+    FrameOriginType frame_origin_type,
+    base::sequence_manager::LazyNow* lazy_now) {
+  GetWakeUpBudgetPool(frame_origin_type)->AddQueue(lazy_now->Now(), task_queue);
+}
+
+void PageSchedulerImpl::RemoveQueueFromWakeUpBudgetPool(
+    MainThreadTaskQueue* task_queue,
+    FrameOriginType frame_origin_type,
+    base::sequence_manager::LazyNow* lazy_now) {
+  GetWakeUpBudgetPool(frame_origin_type)
+      ->RemoveQueue(lazy_now->Now(), task_queue);
+}
+
+WakeUpBudgetPool* PageSchedulerImpl::GetWakeUpBudgetPool(
+    FrameOriginType frame_origin_type) {
+  switch (frame_origin_type) {
+    case FrameOriginType::kMainFrame:
+    case FrameOriginType::kSameOriginToMainFrame:
+      return same_origin_wake_up_budget_pool_;
+      break;
+    case FrameOriginType::kCrossOriginToMainFrame:
+      return cross_origin_wake_up_budget_pool_;
+    case FrameOriginType::kCount:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 CPUTimeBudgetPool* PageSchedulerImpl::background_cpu_time_budget_pool() {
   return cpu_time_budget_pool_;
 }
@@ -589,24 +623,27 @@ void PageSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool(
   UpdateCPUTimeBudgetPool(lazy_now);
 }
 
-WakeUpBudgetPool* PageSchedulerImpl::wake_up_budget_pool() {
-  return wake_up_budget_pool_;
-}
-
-void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPool(
+void PageSchedulerImpl::MaybeInitializeWakeUpBudgetPools(
     base::sequence_manager::LazyNow* lazy_now) {
-  if (wake_up_budget_pool_)
+  DCHECK_EQ(!!same_origin_wake_up_budget_pool_,
+            !!cross_origin_wake_up_budget_pool_);
+  if (same_origin_wake_up_budget_pool_)
     return;
 
-  wake_up_budget_pool_ =
+  same_origin_wake_up_budget_pool_ =
       main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
-          "Page Wake Up Throttling");
+          "Page Wake Up Throttling - Same-Origin as Main Frame");
+  cross_origin_wake_up_budget_pool_ =
+      main_thread_scheduler_->task_queue_throttler()->CreateWakeUpBudgetPool(
+          "Page Wake Up Throttling - Cross-Origin to Main Frame");
 
-  // The Wake Up Interval is set in UpdateWakeUpBudgetPool(), based on current
+  // The Wake Up Interval is set in UpdateWakeUpBudgetPools(), based on current
   // state. The Wake Up Duration is constant and is set here.
-  wake_up_budget_pool_->SetWakeUpDuration(kThrottledWakeUpDuration);
+  same_origin_wake_up_budget_pool_->SetWakeUpDuration(kThrottledWakeUpDuration);
+  cross_origin_wake_up_budget_pool_->SetWakeUpDuration(
+      kThrottledWakeUpDuration);
 
-  UpdateWakeUpBudgetPool(lazy_now);
+  UpdateWakeUpBudgetPools(lazy_now);
 }
 
 void PageSchedulerImpl::OnThrottlingReported(
@@ -641,14 +678,14 @@ void PageSchedulerImpl::UpdateBackgroundSchedulingLifecycleState(
 
     are_wake_ups_intensively_throttled_ = false;
     do_intensively_throttle_wake_ups_callback_.Cancel();
-    UpdateWakeUpBudgetPool(&lazy_now);
+    UpdateWakeUpBudgetPools(&lazy_now);
   } else {
     if (cpu_time_budget_pool_) {
       main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
           FROM_HERE, do_throttle_cpu_time_callback_.GetCallback(),
           kThrottlingDelayAfterBackgrounding);
     }
-    if (wake_up_budget_pool_ && IsIntensiveWakeUpThrottlingEnabled()) {
+    if (IsIntensiveWakeUpThrottlingEnabled()) {
       main_thread_scheduler_->ControlTaskRunner()->PostDelayedTask(
           FROM_HERE, do_intensively_throttle_wake_ups_callback_.GetCallback(),
           GetIntensiveWakeUpThrottlingGracePeriod());
@@ -676,7 +713,7 @@ void PageSchedulerImpl::DoIntensivelyThrottleWakeUps() {
 
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
-  UpdateWakeUpBudgetPool(&lazy_now);
+  UpdateWakeUpBudgetPools(&lazy_now);
   NotifyFrames();
 }
 
@@ -692,18 +729,25 @@ void PageSchedulerImpl::UpdateCPUTimeBudgetPool(
   }
 }
 
-void PageSchedulerImpl::UpdateWakeUpBudgetPool(
+void PageSchedulerImpl::UpdateWakeUpBudgetPools(
     base::sequence_manager::LazyNow* lazy_now) {
-  if (!wake_up_budget_pool_)
+  DCHECK_EQ(!!same_origin_wake_up_budget_pool_,
+            !!cross_origin_wake_up_budget_pool_);
+
+  if (!same_origin_wake_up_budget_pool_)
     return;
 
   if (are_wake_ups_intensively_throttled_ &&
       !opted_out_from_aggressive_throttling_) {
-    wake_up_budget_pool_->SetWakeUpInterval(
+    same_origin_wake_up_budget_pool_->SetWakeUpInterval(
+        lazy_now->Now(), GetIntensiveWakeUpThrottlingDurationBetweenWakeUps());
+    cross_origin_wake_up_budget_pool_->SetWakeUpInterval(
         lazy_now->Now(), GetIntensiveWakeUpThrottlingDurationBetweenWakeUps());
   } else {
-    wake_up_budget_pool_->SetWakeUpInterval(lazy_now->Now(),
-                                            kDefaultThrottledWakeUpInterval);
+    same_origin_wake_up_budget_pool_->SetWakeUpInterval(
+        lazy_now->Now(), kDefaultThrottledWakeUpInterval);
+    cross_origin_wake_up_budget_pool_->SetWakeUpInterval(
+        lazy_now->Now(), kDefaultThrottledWakeUpInterval);
   }
 }
 

@@ -8,7 +8,7 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/provision_fetcher_factory.h"
@@ -79,7 +79,7 @@ void MediaResourceProviderImpl::CreateCdm(
 
 void MediaResourceProviderImpl::CreateAudioConsumer(
     fidl::InterfaceRequest<fuchsia::media::AudioConsumer> request) {
-  auto factory = base::fuchsia::ComponentContextForCurrentProcess()
+  auto factory = base::ComponentContextForProcess()
                      ->svc()
                      ->Connect<fuchsia::media::SessionAudioConsumerFactory>();
   factory->CreateAudioConsumer(
@@ -100,7 +100,7 @@ void MediaResourceProviderImpl::CreateAudioCapturer(
     return;
   }
 
-  auto factory = base::fuchsia::ComponentContextForCurrentProcess()
+  auto factory = base::ComponentContextForProcess()
                      ->svc()
                      ->Connect<fuchsia::media::Audio>();
   factory->CreateAudioCapturer(std::move(request), /*loopback=*/false);
@@ -114,7 +114,7 @@ class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
   void CreateCdm(
       fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
           request) override {
-    auto widevine = base::fuchsia::ComponentContextForCurrentProcess()
+    auto widevine = base::ComponentContextForProcess()
                         ->svc()
                         ->Connect<fuchsia::media::drm::Widevine>();
     widevine->CreateContentDecryptionModule(std::move(request));
@@ -123,7 +123,7 @@ class WidevineHandler : public media::FuchsiaCdmManager::KeySystemHandler {
   fuchsia::media::drm::ProvisionerPtr CreateProvisioner() override {
     fuchsia::media::drm::ProvisionerPtr provisioner;
 
-    auto widevine = base::fuchsia::ComponentContextForCurrentProcess()
+    auto widevine = base::ComponentContextForProcess()
                         ->svc()
                         ->Connect<fuchsia::media::drm::Widevine>();
     widevine->CreateProvisioner(provisioner.NewRequest());
@@ -140,7 +140,7 @@ class PlayreadyHandler : public media::FuchsiaCdmManager::KeySystemHandler {
   void CreateCdm(
       fidl::InterfaceRequest<fuchsia::media::drm::ContentDecryptionModule>
           request) override {
-    auto playready = base::fuchsia::ComponentContextForCurrentProcess()
+    auto playready = base::ComponentContextForProcess()
                          ->svc()
                          ->Connect<fuchsia::media::drm::PlayReady>();
     playready->CreateContentDecryptionModule(std::move(request));

@@ -112,6 +112,7 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   IdOrError ParamByPropertyNode(const PropertyNode&) const;
   NSNumber* PropertyNodeToInt(const PropertyNode&) const;
   NSArray* PropertyNodeToIntArray(const PropertyNode&) const;
+  NSValue* PropertyNodeToRange(const PropertyNode&) const;
 
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
@@ -295,11 +296,14 @@ AccessibilityTreeFormatterMac::ParamByPropertyNode(
     param = PropertyNodeToInt(property_node);
   } else if (property_name == "AXCellForColumnAndRow") {  // IntArray
     param = PropertyNodeToIntArray(property_node);
+  } else if (property_name == "AXStringForRange") {  // NSRange
+    param = PropertyNodeToRange(property_node);
   }
 
   return param;
 }
 
+// NSNumber. Format: integer.
 NSNumber* AccessibilityTreeFormatterMac::PropertyNodeToInt(
     const PropertyNode& propnode) const {
   if (propnode.parameters.size() != 1) {
@@ -318,6 +322,7 @@ NSNumber* AccessibilityTreeFormatterMac::PropertyNodeToInt(
   return [NSNumber numberWithInt:*param];
 }
 
+// NSArray of two NSNumber. Format: [integer, integer].
 NSArray* AccessibilityTreeFormatterMac::PropertyNodeToIntArray(
     const PropertyNode& propnode) const {
   if (propnode.parameters.size() != 1) {
@@ -347,6 +352,41 @@ NSArray* AccessibilityTreeFormatterMac::PropertyNodeToIntArray(
     [array addObject:@(*param)];
   }
   return array;
+}
+
+// NSRange. Format: {loc: integer, len: integer}.
+NSValue* AccessibilityTreeFormatterMac::PropertyNodeToRange(
+    const PropertyNode& propnode) const {
+  if (propnode.parameters.size() != 1) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to NSRange: single argument is expected";
+    return nil;
+  }
+
+  const auto& dictnode = propnode.parameters[0];
+  if (!dictnode.IsDict()) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to NSRange: dictionary is expected";
+    return nil;
+  }
+
+  base::Optional<int> loc = dictnode.FindIntKey("loc");
+  if (!loc) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to NSRange: no loc key or loc key value "
+               << dictnode.name_or_value << " is not a number";
+    return nil;
+  }
+
+  base::Optional<int> len = dictnode.FindIntKey("len");
+  if (!len) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to NSRange: no len key or len key value "
+               << dictnode.name_or_value << " is not a number";
+    return nil;
+  }
+
+  return [NSValue valueWithRange:NSMakeRange(*loc, *len)];
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateSize(

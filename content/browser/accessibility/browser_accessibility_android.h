@@ -29,8 +29,6 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   void OnLocationChanged() override;
   base::string16 GetValue() const override;
 
-  bool PlatformIsLeafIncludingIgnored() const override;
-
   bool IsCheckable() const;
   bool IsChecked() const;
   bool IsClickable() const override;
@@ -82,6 +80,8 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool HasImage() const;
 
   const char* GetClassName() const;
+  bool IsChildOfLeaf() const override;
+  bool IsLeaf() const override;
   base::string16 GetInnerText() const override;
   base::string16 GetHint() const;
 

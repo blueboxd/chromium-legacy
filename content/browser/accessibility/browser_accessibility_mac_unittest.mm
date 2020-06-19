@@ -90,10 +90,10 @@ class BrowserAccessibilityMacTest : public ui::CocoaTest {
 
     ui::AXNodeData child1;
     child1.id = 1001;
+    child1.role = ax::mojom::Role::kButton;
     child1.SetName("Child1");
     child1.relative_bounds.bounds.set_width(250);
     child1.relative_bounds.bounds.set_height(100);
-    child1.role = ax::mojom::Role::kButton;
 
     ui::AXNodeData child2;
     child2.id = 1002;

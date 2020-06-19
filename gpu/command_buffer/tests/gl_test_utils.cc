@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/stl_util.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"

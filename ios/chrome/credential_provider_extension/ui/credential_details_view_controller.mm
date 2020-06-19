@@ -279,7 +279,7 @@ typedef NS_ENUM(NSInteger, RowIdentifier) {
   TooltipView* tooltip = [[TooltipView alloc] initWithKeyWindow:self.view
                                                          target:self
                                                          action:action];
-  [tooltip showMessage:message atBottomOf:cell.detailTextLabel];
+  [tooltip showMessage:message atBottomOf:cell];
 }
 
 @end

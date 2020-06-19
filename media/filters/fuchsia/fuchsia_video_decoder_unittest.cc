@@ -11,8 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/test/task_environment.h"
 #include "components/viz/test/test_context_support.h"
 #include "gpu/command_buffer/client/shared_image_interface.h"
@@ -30,7 +30,7 @@ namespace {
 class TestBufferCollection {
  public:
   explicit TestBufferCollection(zx::channel collection_token) {
-    sysmem_allocator_ = base::fuchsia::ComponentContextForCurrentProcess()
+    sysmem_allocator_ = base::ComponentContextForProcess()
                             ->svc()
                             ->Connect<fuchsia::sysmem::Allocator>();
     sysmem_allocator_.set_error_handler([](zx_status_t status) {

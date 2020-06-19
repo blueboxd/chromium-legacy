@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_AX_CONTENT_TREE_DATA_MOJOM_TRAITS_H_
 #define CONTENT_COMMON_AX_CONTENT_TREE_DATA_MOJOM_TRAITS_H_
 
-#include "content/common/ax_content_node_data.h"
+#include "content/common/ax_content_tree_data.h"
 #include "content/common/ax_content_tree_data.mojom-shared.h"
 #include "ui/accessibility/ax_tree_data.h"
 

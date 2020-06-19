@@ -25,15 +25,4 @@ std::string AXContentNodeData::ToString() const {
   return result;
 }
 
-std::string AXContentTreeData::ToString() const {
-  std::string result = AXTreeData::ToString();
-
-  if (routing_id != MSG_ROUTING_NONE)
-    result += " routing_id=" + NumberToString(routing_id);
-  if (parent_routing_id != MSG_ROUTING_NONE)
-    result += " parent_routing_id=" + NumberToString(parent_routing_id);
-
-  return result;
-}
-
 }  // namespace ui

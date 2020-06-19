@@ -137,14 +137,6 @@ class TasksView extends CoordinatorLayoutForPointer {
     }
 
     /**
-     * Set the visibility of the tasks surface body.
-     * @param isVisible Whether it's visible.
-     */
-    void setSurfaceBodyVisibility(boolean isVisible) {
-        getBodyViewContainer().setVisibility(isVisible ? View.VISIBLE : View.GONE);
-    }
-
-    /**
      * Set the visibility of the tab carousel.
      * @param isVisible Whether it's visible.
      */
@@ -198,11 +190,8 @@ class TasksView extends CoordinatorLayoutForPointer {
      */
     void initializeIncognitoDescriptionView() {
         assert mIncognitoDescriptionView == null;
-        ViewStub containerStub =
-                (ViewStub) findViewById(R.id.incognito_description_container_layout_stub);
-        View containerView = containerStub.inflate();
-        mIncognitoDescriptionView = (IncognitoDescriptionView) containerView.findViewById(
-                R.id.new_tab_incognito_container);
+        ViewStub stub = (ViewStub) findViewById(R.id.incognito_description_layout_stub);
+        mIncognitoDescriptionView = (IncognitoDescriptionView) stub.inflate();
         if (mIncognitoDescriptionLearnMoreListener != null) {
             setIncognitoDescriptionLearnMoreClickListener(mIncognitoDescriptionLearnMoreListener);
         }

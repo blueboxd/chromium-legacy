@@ -7,7 +7,9 @@
 
 #include "content/common/ax_content_node_data.h"
 #include "content/common/ax_content_node_data_mojom_traits.h"
+#include "content/common/ax_content_tree_data.h"
 #include "content/common/ax_content_tree_data_mojom_traits.h"
+#include "content/common/ax_content_tree_update.h"
 #include "content/common/ax_content_tree_update.mojom-shared.h"
 #include "ui/accessibility/mojom/ax_event_intent_mojom_traits.h"
 

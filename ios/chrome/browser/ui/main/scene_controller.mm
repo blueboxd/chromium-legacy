@@ -430,6 +430,11 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 
 // TODO(crbug.com/1072408): factor out into a new class.
 - (void)displayBlockingOverlay {
+  if (self.blockingOverlayViewController) {
+    // The overlay is already displayed, nothing to do.
+    return;
+  }
+
   // Make the window visible. This is because in safe mode it's not visible yet.
   if (self.sceneState.window.hidden) {
     [self.sceneState.window makeKeyAndVisible];

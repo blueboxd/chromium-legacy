@@ -17,7 +17,8 @@ namespace base {
 
 namespace fuchsia {
 
-// TODO(https://crbug.com/1090364): Move this to process_context.h.
+// TODO(https://crbug.com/1090364): Remove this file when external dependencies
+// have been migrated to process_context.
 // Returns default sys::ComponentContext for the current process.
 BASE_EXPORT sys::ComponentContext* ComponentContextForCurrentProcess();
 

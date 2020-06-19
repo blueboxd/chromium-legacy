@@ -125,12 +125,20 @@ grit("sample_system_web_app_resources") {
 grit("telemetry_extension_resources") {
   source = "../components/telemetry_extension_ui/resources/telemetry_extension_resources.grd"
 
+  deps = [ "../components/telemetry_extension_ui/mojom:mojom_js" ]
+
   outputs = [
     "grit/chromeos_telemetry_extension_resources.h",
     "grit/chromeos_telemetry_extension_resources_map.cc",
     "grit/chromeos_telemetry_extension_resources_map.h",
     "chromeos_telemetry_extension_resources.pak",
   ]
+
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+
   output_dir = "$root_gen_dir/chromeos"
 }
 

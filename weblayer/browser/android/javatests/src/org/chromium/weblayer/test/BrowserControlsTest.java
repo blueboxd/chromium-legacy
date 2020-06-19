@@ -19,7 +19,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -39,6 +38,8 @@ public class BrowserControlsTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
+    private BrowserControlsHelper mBrowserControlsHelper;
+
     // Height of the top-view. Set in setUp().
     private int mTopViewHeight;
     // Height from the page (obtained using getVisiblePageHeight()) with the top-controls.
@@ -54,13 +55,6 @@ public class BrowserControlsTest {
 
     private Tab getActiveTab() {
         return mActivityTestRule.getActivity().getBrowser().getActiveTab();
-    }
-
-    private void waitForBrowserControlsViewToBeVisible(View v) {
-        CriteriaHelper.pollUiThread(() -> {
-            Assert.assertTrue(v.getHeight() > 0);
-            Assert.assertEquals(View.VISIBLE, v.getVisibility());
-        });
     }
 
     private TestWebLayer getTestWebLayer() {
@@ -88,35 +82,16 @@ public class BrowserControlsTest {
         });
     }
 
-    // See TestWebLayer.waitForBrowserControlsMetadataState() for details on this.
-    private void waitForBrowserControlsMetadataState(int top, int bottom) throws Exception {
-        CallbackHelper helper = new CallbackHelper();
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                getTestWebLayer().waitForBrowserControlsMetadataState(
-                        getActiveTab(), top, bottom, () -> { helper.notifyCalled(); });
-            } catch (RemoteException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        helper.waitForCallback(0);
-    }
-
     @Before
     public void setUp() throws Throwable {
         final String url = mActivityTestRule.getTestDataURL("tall_page.html");
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(url);
 
-        // Poll until the top view becomes visible.
-        waitForBrowserControlsViewToBeVisible(activity.getTopContentsContainer());
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            mTopViewHeight = activity.getTopContentsContainer().getHeight();
-            Assert.assertTrue(mTopViewHeight > 0);
-        });
+        mBrowserControlsHelper =
+                BrowserControlsHelper.createAndBlockUntilBrowserControlsInitializedInSetUp(
+                        activity);
 
-        // Wait for cc to see the top-controls height.
-        waitForBrowserControlsMetadataState(mTopViewHeight, 0);
-
+        mTopViewHeight = mBrowserControlsHelper.getTopViewHeight();
         mPageHeightWithTopView = getVisiblePageHeight();
     }
 
@@ -133,7 +108,7 @@ public class BrowserControlsTest {
             return view;
         });
 
-        waitForBrowserControlsViewToBeVisible(bottomView);
+        mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(bottomView);
 
         int bottomViewHeight =
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return bottomView.getHeight(); });
@@ -144,7 +119,8 @@ public class BrowserControlsTest {
 
         // Wait for cc to see the bottom height. This is very important, as scrolling is gated by
         // cc getting the bottom height.
-        waitForBrowserControlsMetadataState(mTopViewHeight, bottomViewHeight);
+        mBrowserControlsHelper.waitForBrowserControlsMetadataState(
+                mTopViewHeight, bottomViewHeight);
 
         // Adding a bottom view should change the page height.
         CriteriaHelper.pollInstrumentationThread(
@@ -166,7 +142,7 @@ public class BrowserControlsTest {
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, maxViewsHeight);
 
-        waitForBrowserControlsViewToBeVisible(bottomView);
+        mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(bottomView);
         CriteriaHelper.pollInstrumentationThread(
                 () -> Assert.assertEquals(getVisiblePageHeight(), pageHeightWithTopAndBottomViews));
     }
@@ -181,7 +157,7 @@ public class BrowserControlsTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> { activity.getBrowser().setTopView(null); });
 
         // Wait for cc to see the top-controls height change.
-        waitForBrowserControlsMetadataState(0, 0);
+        mBrowserControlsHelper.waitForBrowserControlsMetadataState(0, 0);
 
         int pageHeightWithNoTopView = getVisiblePageHeight();
         Assert.assertNotEquals(pageHeightWithNoTopView, mPageHeightWithTopView);
@@ -194,12 +170,12 @@ public class BrowserControlsTest {
             return view;
         });
 
-        waitForBrowserControlsViewToBeVisible(bottomView);
+        mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(bottomView);
         int bottomViewHeight =
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return bottomView.getHeight(); });
         Assert.assertTrue(bottomViewHeight > 0);
         // Wait for cc to see the bottom-controls height change.
-        waitForBrowserControlsMetadataState(0, bottomViewHeight);
+        mBrowserControlsHelper.waitForBrowserControlsMetadataState(0, bottomViewHeight);
 
         int pageHeightWithBottomView = getVisiblePageHeight();
         Assert.assertNotEquals(pageHeightWithNoTopView, pageHeightWithBottomView);
@@ -218,7 +194,7 @@ public class BrowserControlsTest {
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, bottomViewHeight);
 
-        waitForBrowserControlsViewToBeVisible(bottomView);
+        mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(bottomView);
         CriteriaHelper.pollInstrumentationThread(
                 () -> Assert.assertEquals(getVisiblePageHeight(), pageHeightWithBottomView));
     }
@@ -245,7 +221,7 @@ public class BrowserControlsTest {
                 activity.getWindow().getDecorView(), 0, mTopViewHeight);
 
         // Wait for the page height to match initial height.
-        waitForBrowserControlsViewToBeVisible(topView);
+        mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(topView);
         CriteriaHelper.pollInstrumentationThread(
                 () -> Assert.assertEquals(getVisiblePageHeight(), mPageHeightWithTopView));
     }
@@ -298,7 +274,8 @@ public class BrowserControlsTest {
 
         // Turn on accessibility, which should force the controls to show.
         setAccessibilityEnabled(true);
-        waitForBrowserControlsViewToBeVisible(activity.getTopContentsContainer());
+        mBrowserControlsHelper.waitForBrowserControlsViewToBeVisible(
+                activity.getTopContentsContainer());
         CriteriaHelper.pollInstrumentationThread(
                 () -> Assert.assertEquals(getVisiblePageHeight(), mPageHeightWithTopView));
 
@@ -338,11 +315,11 @@ public class BrowserControlsTest {
                 TestThreadUtils.runOnUiThreadBlocking(() -> { return newTopView.getHeight(); });
         Assert.assertNotEquals(newTopViewHeight, mTopViewHeight);
         Assert.assertTrue(newTopViewHeight > 0);
-        waitForBrowserControlsMetadataState(newTopViewHeight, 0);
+        mBrowserControlsHelper.waitForBrowserControlsMetadataState(newTopViewHeight, 0);
 
         // Remove all, and ensure metadata and page-height change.
         TestThreadUtils.runOnUiThreadBlocking(() -> { newTopView.removeAllViews(); });
-        waitForBrowserControlsMetadataState(0, 0);
+        mBrowserControlsHelper.waitForBrowserControlsMetadataState(0, 0);
         CriteriaHelper.pollInstrumentationThread(
                 () -> Assert.assertNotEquals(getVisiblePageHeight(), mPageHeightWithTopView));
     }

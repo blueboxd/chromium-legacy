@@ -648,6 +648,21 @@ Request* Request::CreateRequestWithRequestOrString(
       return nullptr;
   }
 
+  // If body is non-null and body’s source is null, then:
+  if (temporary_body && temporary_body->IsMadeFromReadableStream()) {
+    // If r’s request’s mode is neither "same-origin" nor "cors", then throw a
+    // TypeError.
+    if (request->Mode() != network::mojom::RequestMode::kSameOrigin &&
+        request->Mode() != network::mojom::RequestMode::kCors) {
+      exception_state.ThrowTypeError(
+          "If request is made from ReadableStream, mode should be"
+          "\"same-origin\" or \"cors\"");
+      return nullptr;
+    }
+    // Set r’s request’s use-CORS-preflight flag.
+    request->SetMode(network::mojom::RequestMode::kCorsWithForcedPreflight);
+  }
+
   // "Set |r|'s request's body to |temporaryBody|.
   if (temporary_body)
     r->request_->SetBuffer(temporary_body);

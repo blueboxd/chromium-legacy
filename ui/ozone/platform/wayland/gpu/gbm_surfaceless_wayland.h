@@ -71,11 +71,19 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   void OnPresentation(uint32_t buffer_id,
                       const gfx::PresentationFeedback& feedback) override;
 
+  struct PlaneData {
+    OverlayPlane plane;
+    // The id of the buffer, which represents buffer that backs this overlay
+    // plane.
+    const uint32_t buffer_id;
+  };
+
   struct PendingFrame {
     PendingFrame();
     ~PendingFrame();
 
-    bool ScheduleOverlayPlanes(gfx::AcceleratedWidget widget);
+    // Queues overlay configs to |planes|.
+    void ScheduleOverlayPlanes(gfx::AcceleratedWidget widget);
     void Flush();
 
     bool ready = false;
@@ -90,11 +98,9 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
     std::vector<gl::GLSurfaceOverlay> overlays;
     SwapCompletionCallback completion_callback;
     PresentationCallback presentation_callback;
-  };
 
-  struct PlaneData {
-    OverlayPlane plane;
-    const uint32_t buffer_id;
+    bool schedule_planes_succeeded = false;
+    std::vector<PlaneData> planes;
   };
 
   void SubmitFrame();
@@ -106,7 +112,6 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
   void SetNoGLFlushForTests();
 
   WaylandBufferManagerGpu* const buffer_manager_;
-  std::vector<PlaneData> planes_;
 
   // The native surface. Deleting this is allowed to free the EGLNativeWindow.
   gfx::AcceleratedWidget widget_;

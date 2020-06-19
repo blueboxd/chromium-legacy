@@ -12,9 +12,9 @@
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/logging.h"
@@ -26,7 +26,7 @@ namespace {
 
 fuchsia::web::ContextPtr CreateWebContext(
     fuchsia::web::CreateContextParams context_params) {
-  auto context_provider = base::fuchsia::ComponentContextForCurrentProcess()
+  auto context_provider = base::ComponentContextForProcess()
                               ->svc()
                               ->Connect<fuchsia::web::ContextProvider>();
   fuchsia::web::ContextPtr web_context;

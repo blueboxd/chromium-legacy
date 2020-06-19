@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "gpu/config/gpu_info.h"  // nogncheck
 #include "gpu/config/vulkan_info.h"

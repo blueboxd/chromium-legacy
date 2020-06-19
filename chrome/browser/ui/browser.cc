@@ -467,14 +467,7 @@ Browser::Browser(const CreateParams& params)
   CHECK(g_browser_process);
   CHECK(!g_browser_process->IsShuttingDown());
 
-  // If this causes a crash then a window is being opened using a profile type
-  // that is disallowed by policy. The crash prevents the disabled window type
-  // from opening at all, but the path that triggered it should be fixed.
-  CHECK(IncognitoModePrefs::CanOpenBrowser(profile_));
-  CHECK(!profile_->IsGuestSession() || profile_->IsOffTheRecord())
-      << "Only off the record browser may be opened in guest mode";
-  CHECK(!profile_->IsSystemProfile())
-      << "The system profile should never have a real browser.";
+  CHECK(CanCreateBrowserForProfile(profile_));
 
   tab_strip_model_->AddObserver(this);
 

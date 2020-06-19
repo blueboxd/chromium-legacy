@@ -4,6 +4,7 @@
 
 #include "components/viz/service/surfaces/surface.h"
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "cc/test/scheduler_test_common.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
@@ -76,8 +77,10 @@ TEST(SurfaceTest, SurfaceIds) {
 }
 
 void TestCopyResultCallback(bool* called,
+                            base::OnceClosure finished,
                             std::unique_ptr<CopyOutputResult> result) {
   *called = true;
+  std::move(finished).Run();
 }
 
 // Test that CopyOutputRequests can outlive the current frame and be
@@ -97,11 +100,13 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   ASSERT_TRUE(surface);
 
   bool copy_called = false;
+  base::RunLoop copy_runloop;
   support->RequestCopyOfOutput(
       local_surface_id,
       std::make_unique<CopyOutputRequest>(
           CopyOutputRequest::ResultFormat::RGBA_BITMAP,
-          base::BindOnce(&TestCopyResultCallback, &copy_called)));
+          base::BindOnce(&TestCopyResultCallback, &copy_called,
+                         copy_runloop.QuitClosure())));
   surface->TakeCopyOutputRequestsFromClient();
   EXPECT_TRUE(surface_manager->GetSurfaceForId(surface_id));
   EXPECT_FALSE(copy_called);
@@ -135,6 +140,7 @@ TEST(SurfaceTest, CopyRequestLifetime) {
   ASSERT_EQ(1u, copy_requests.count(last_pass_id));
   EXPECT_FALSE(copy_called);
   copy_requests.clear();  // Deleted requests will auto-send an empty result.
+  copy_runloop.Run();
   EXPECT_TRUE(copy_called);
 }
 

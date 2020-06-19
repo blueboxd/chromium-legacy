@@ -72,6 +72,7 @@ android_library("weblayer_private_java_tests") {
     "src/org/chromium/weblayer/test/ResourceLoadingTest.java",
   ]
   deps = [
+    ":weblayer_java_private_test_support",
     ":weblayer_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -114,6 +115,21 @@ android_library("weblayer_java_test_support") {
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//weblayer/public/java",
+    "//weblayer/shell/android:weblayer_shell_java",
+  ]
+}
+
+android_library("weblayer_java_private_test_support") {
+  testonly = true
+  sources = [ "src/org/chromium/weblayer/test/BrowserControlsHelper.java" ]
+  deps = [
+    ":weblayer_java_test_support",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/junit:junit",
+    "//weblayer/public/java",
+    "//weblayer/public/javatestutil:test_java",
     "//weblayer/shell/android:weblayer_shell_java",
   ]
 }

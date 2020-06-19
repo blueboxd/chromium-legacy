@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/strings/string_piece.h"
 
 using ::fuchsia::intl::Profile;
@@ -19,7 +19,7 @@ namespace base {
 namespace fuchsia {
 
 IntlProfileWatcher::IntlProfileWatcher(ProfileChangeCallback on_profile_changed)
-    : IntlProfileWatcher(ComponentContextForCurrentProcess()
+    : IntlProfileWatcher(ComponentContextForProcess()
                              ->svc()
                              ->Connect<::fuchsia::intl::PropertyProvider>(),
                          on_profile_changed) {}
@@ -66,7 +66,7 @@ std::string IntlProfileWatcher::GetPrimaryTimeZoneIdFromProfile(
 // static
 std::string IntlProfileWatcher::GetPrimaryTimeZoneIdForIcuInitialization() {
   ::fuchsia::intl::PropertyProviderSyncPtr provider;
-  ComponentContextForCurrentProcess()->svc()->Connect(provider.NewRequest());
+  ComponentContextForProcess()->svc()->Connect(provider.NewRequest());
   return GetPrimaryTimeZoneIdFromPropertyProvider(std::move(provider));
 }
 

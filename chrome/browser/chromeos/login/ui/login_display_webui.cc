@@ -187,10 +187,6 @@ void LoginDisplayWebUI::OnSigninScreenReady() {
     delegate_->OnSigninScreenReady();
 }
 
-void LoginDisplayWebUI::RemoveUser(const AccountId& account_id) {
-  SignInScreenController::Get()->RemoveUser(account_id);
-}
-
 void LoginDisplayWebUI::ShowEnterpriseEnrollmentScreen() {
   if (delegate_)
     delegate_->OnStartEnterpriseEnrollment();

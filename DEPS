@@ -194,7 +194,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e7ae237eb9e93b06a7fc5fe37fefa5036a4da080',
+  'angle_revision': '84fb97ba9452c813e1996e85e87c5ec4135f0228',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'b76d781b4f8fa38d4f25950741da8f4337547981',
+  'devtools_frontend_revision': '23c845754ce814954336b512a73c7be2d88a621c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -289,7 +289,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spv_tools_revision': '99651228b23835fd0210ebc57d583fbba73f4621',
+  'spv_tools_revision': '545d158a2ff9c03dfecadb2ef00a715d2740764a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -528,7 +528,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '3817d4523195da79e9831a927d2e70562b4e1bd1',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'b71c4d499944d3130baf0a66b7764121a329de41',
       'condition': 'checkout_ios',
   },
 

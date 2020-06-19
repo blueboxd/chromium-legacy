@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/ax_content_node_data.h"
+#include "content/common/ax_content_tree_update.h"
 #include "content/common/content_export.h"
 #include "content/common/render_accessibility.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "content/common/ax_content_node_data.h"
+#include "content/common/ax_content_tree_update.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "ui/accessibility/ax_enum_util.h"

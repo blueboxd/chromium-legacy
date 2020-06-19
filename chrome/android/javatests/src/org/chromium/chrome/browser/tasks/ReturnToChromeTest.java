@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.tasks;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assume.assumeFalse;
 import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM;
@@ -55,9 +54,7 @@ import org.chromium.chrome.features.start_surface.InstantStartTest;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
-import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -267,79 +264,6 @@ public class ReturnToChromeTest {
         if (!mActivityTestRule.getActivity().isTablet()) {
             Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
         }
-    }
-
-    /**
-     * Test that overview mode is triggered in Single-pane stack tab switcher variation in non
-     * incognito mode when resuming from incognito mode.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ReturnToChrome"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/single/show_last_active_tab_only/true"
-            + "/show_stack_tab_switcher/true/open_ntp_instead_of_start/true"})
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1081754.
-    public void testTabSwitcherModeTriggeredWithinThreshold_WarmStart_FromIncognito_V2() throws Exception {
-        // clang-format on
-
-        // TODO(crbug.com/1093506): Remove it when instant start supports 'show_stack_tab_switcher =
-        // true'.
-        assumeFalse(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
-
-        testTabSwitcherModeTriggeredBeyondThreshold();
-
-        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), true, true);
-        Assert.assertTrue(
-                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
-        assertEquals(3, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-
-        // Trigger hide and resume.
-        ApplicationTestUtils.fireHomeScreenIntent(InstrumentationRegistry.getTargetContext());
-        mActivityTestRule.startMainActivityFromLauncher();
-
-        Assert.assertFalse(
-                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
-        assertEquals(3, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
-    }
-
-    /**
-     * Test that overview mode is triggered in Single-pane non stack tab switcher variation in
-     * incognito mode when resuming from incognito mode.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ReturnToChrome"})
-    // clang-format off
-    @CommandLineFlags.Add({BASE_PARAMS + "/" + TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0"
-            + "/start_surface_variation/single/"
-            + "show_last_active_tab_only/true/open_ntp_instead_of_start/true"})
-    @DisableIf.Device(type = {UiDisableIf.TABLET}) // See https://crbug.com/1081754.
-    public void testTabSwitcherModeTriggeredWithinThreshold_WarmStart_FromIncognito_NON_V2() throws Exception {
-        // clang-format on
-
-        // TODO(crbug.com/1095637): Make it work for instant start.
-        assumeFalse(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
-
-        testTabSwitcherModeTriggeredBeyondThreshold();
-
-        ChromeTabUtils.newTabFromMenu(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), true, true);
-        Assert.assertTrue(
-                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
-        assertEquals(3, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-
-        // Trigger hide and resume.
-        ApplicationTestUtils.fireHomeScreenIntent(InstrumentationRegistry.getTargetContext());
-        mActivityTestRule.startMainActivityFromLauncher();
-
-        Assert.assertTrue(
-                mActivityTestRule.getActivity().getTabModelSelector().isIncognitoSelected());
-        assertEquals(3, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
-        Assert.assertTrue(mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
     }
 
     /**

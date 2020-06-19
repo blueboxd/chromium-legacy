@@ -155,13 +155,8 @@ using chrome_test_util::SettingsDoneButton;
 //
 // Corresponds to RegularPlusIncognitoCheck in //chrome/browser/metrics/
 // ukm_browsertest.cc.
-#if defined(CHROME_EARL_GREY_1)
-// TODO(crbug.com/1033726): EG1 Test fails on iOS 12.
-#define MAYBE_testRegularPlusIncognito DISABLED_testRegularPlusIncognito
-#else
-#define MAYBE_testRegularPlusIncognito testRegularPlusIncognito
-#endif
-- (void)MAYBE_testRegularPlusIncognito {
+// TODO(crbug.com/1096582) Re-enable the test.
+- (void)DISABLED_testRegularPlusIncognito {
   const uint64_t originalClientID = [MetricsAppInterface UKMClientID];
 
   [self openNewIncognitoTab];

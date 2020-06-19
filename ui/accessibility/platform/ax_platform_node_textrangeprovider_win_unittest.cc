@@ -7,6 +7,9 @@
 #include <UIAutomationClient.h>
 #include <UIAutomationCoreApi.h>
 
+#include <memory>
+#include <utility>
+
 #include "base/win/atl.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_safearray.h"
@@ -3074,24 +3077,12 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
   update.tree_data = tree_data;
   update.has_tree_data = true;
   update.root_id = root_data.id;
-  update.nodes.push_back(root_data);
-  update.nodes.push_back(paragraph_data);
-  update.nodes.push_back(static_text_data1);
-  update.nodes.push_back(inline_text_data1);
-  update.nodes.push_back(link_data);
-  update.nodes.push_back(static_text_data2);
-  update.nodes.push_back(inline_text_data2);
-  update.nodes.push_back(link_data2);
-  update.nodes.push_back(list_data);
-  update.nodes.push_back(list_item_data);
-  update.nodes.push_back(static_text_data3);
-  update.nodes.push_back(inline_text_data3);
-  update.nodes.push_back(search_box);
-  update.nodes.push_back(search_text);
-  update.nodes.push_back(pdf_highlight_data);
-  update.nodes.push_back(static_text_data4);
-  update.nodes.push_back(inline_text_data4);
-
+  update.nodes = {root_data,         paragraph_data,    static_text_data1,
+                  inline_text_data1, link_data,         static_text_data2,
+                  inline_text_data2, link_data2,        list_data,
+                  list_item_data,    static_text_data3, inline_text_data3,
+                  search_box,        search_text,       pdf_highlight_data,
+                  static_text_data4, inline_text_data4};
   Init(update);
 
   // Set up variables from the tree for testing.

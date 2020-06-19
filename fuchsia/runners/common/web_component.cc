@@ -13,7 +13,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
 #include "fuchsia/runners/common/web_content_runner.h"

@@ -7057,8 +7057,10 @@ bool AXPlatformNodeWin::IsInaccessibleDueToAncestor() const {
 }
 
 bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
-  auto role = GetData().role;
+  if (IsPlainTextField())
+    return true;
 
+  auto role = GetData().role;
   if (HasPresentationalChildren(role))
     return true;
 
@@ -7080,7 +7082,6 @@ bool AXPlatformNodeWin::ShouldHideChildrenForUIA() const {
         return only_child && only_child->IsTextOnlyObject();
       }
       return false;
-    case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kPdfActionableHighlight:
       return true;
     default:

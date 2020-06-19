@@ -13,9 +13,9 @@
 
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/message_loop/message_pump_type.h"
@@ -82,7 +82,7 @@ GURL GetUrlFromArgs(const base::CommandLine::StringVector& args) {
 fuchsia::web::ContextProviderPtr ConnectToContextProvider(
     const base::CommandLine::StringVector& extra_command_line_arguments) {
   sys::ComponentContext* const component_context =
-      base::fuchsia::ComponentContextForCurrentProcess();
+      base::ComponentContextForProcess();
 
   // If there are no additional command-line arguments then use the
   // system instance of the ContextProvider.
@@ -257,7 +257,7 @@ int main(int argc, char** argv) {
     // Present a fullscreen view of |frame|.
     auto view_tokens = scenic::ViewTokenPair::New();
     frame->CreateView(std::move(view_tokens.view_token));
-    auto presenter = base::fuchsia::ComponentContextForCurrentProcess()
+    auto presenter = base::ComponentContextForProcess()
                          ->svc()
                          ->Connect<::fuchsia::ui::policy::Presenter>();
     presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),

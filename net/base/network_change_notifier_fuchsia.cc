@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "net/base/network_interfaces.h"
@@ -22,11 +22,10 @@ namespace net {
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     uint32_t required_features)
-    : NetworkChangeNotifierFuchsia(
-          base::fuchsia::ComponentContextForCurrentProcess()
-              ->svc()
-              ->Connect<fuchsia::netstack::Netstack>(),
-          required_features) {}
+    : NetworkChangeNotifierFuchsia(base::ComponentContextForProcess()
+                                       ->svc()
+                                       ->Connect<fuchsia::netstack::Netstack>(),
+                                   required_features) {}
 
 NetworkChangeNotifierFuchsia::NetworkChangeNotifierFuchsia(
     fuchsia::netstack::NetstackPtr netstack,

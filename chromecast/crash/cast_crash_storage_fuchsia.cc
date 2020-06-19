@@ -4,7 +4,7 @@
 
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/no_destructor.h"
 #include "chromecast/crash/fuchsia/cast_crash_storage_impl_fuchsia.h"
 
@@ -12,7 +12,7 @@ namespace chromecast {
 
 CastCrashStorage* CastCrashStorage::GetInstance() {
   static base::NoDestructor<CastCrashStorageImplFuchsia> storage(
-      base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+      base::ComponentContextForProcess()->svc().get());
   return storage.get();
 }
 

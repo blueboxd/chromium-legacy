@@ -9,8 +9,8 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "third_party/angle/src/common/fuchsia_egl/fuchsia_egl.h"
@@ -43,7 +43,7 @@ struct FuchsiaEGLWindowDeleter {
 
 fuchsia::ui::scenic::ScenicPtr ConnectToScenic() {
   fuchsia::ui::scenic::ScenicPtr scenic =
-      base::fuchsia::ComponentContextForCurrentProcess()
+      base::ComponentContextForProcess()
           ->svc()
           ->Connect<fuchsia::ui::scenic::Scenic>();
   scenic.set_error_handler([](zx_status_t status) {
@@ -130,8 +130,7 @@ class GLOzoneEGLScenic : public GLOzoneEGL {
 
 fuchsia::sysmem::AllocatorHandle ConnectSysmemAllocator() {
   fuchsia::sysmem::AllocatorHandle allocator;
-  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
-      allocator.NewRequest());
+  base::ComponentContextForProcess()->svc()->Connect(allocator.NewRequest());
   return allocator;
 }
 

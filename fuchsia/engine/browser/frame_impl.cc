@@ -10,8 +10,8 @@
 #include <limits>
 
 #include "base/bind_helpers.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
@@ -588,7 +588,7 @@ void FrameImpl::CreateViewWithViewRef(
   InitWindowTreeHost(std::move(view_token), std::move(view_ref_pair));
 
   fuchsia::accessibility::semantics::SemanticsManagerPtr semantics_manager =
-      base::fuchsia::ComponentContextForCurrentProcess()
+      base::ComponentContextForProcess()
           ->svc()
           ->Connect<fuchsia::accessibility::semantics::SemanticsManager>();
   accessibility_bridge_ = std::make_unique<AccessibilityBridge>(

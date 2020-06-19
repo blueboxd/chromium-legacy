@@ -67048,8 +67048,10 @@ would be helpful to identify which type is being sent.
   <int value="7" label="Permission denied"/>
   <int value="8" label="Sync turned off"/>
   <int value="9" label="Sync network error"/>
-  <int value="10" label="Sync server error"/>
+  <int value="10" label="[DEPRECATED] Sync server or auth error"/>
   <int value="11" label="Sync bridge timeout"/>
+  <int value="12" label="Sync server error"/>
+  <int value="13" label="Sync auth error"/>
 </enum>
 
 <enum name="SyncSimpleConflictResolutions">

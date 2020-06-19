@@ -6,12 +6,14 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <cmath>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/flat_set.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -354,6 +356,72 @@ int SendToAllFramesImpl(FrameTree& frame_tree,
   }
   delete message;
   return number_of_messages;
+}
+
+// Returns the set of all WebContentses that are reachable from |web_contents|
+// by applying some combination of WebContents::GetOriginalOpener() and
+// WebContents::GetOuterWebContents(). The |web_contents| parameter will be
+// included in the returned set.
+base::flat_set<WebContentsImpl*> GetAllOpeningWebContents(
+    WebContentsImpl* web_contents) {
+  base::flat_set<WebContentsImpl*> result;
+  base::flat_set<WebContentsImpl*> current;
+
+  current.insert(web_contents);
+
+  while (!current.empty()) {
+    WebContentsImpl* current_contents = *current.begin();
+    current.erase(current.begin());
+    auto insert_result = result.insert(current_contents);
+
+    if (insert_result.second) {
+      RenderFrameHostImpl* opener_rfh = current_contents->GetOriginalOpener();
+      if (opener_rfh) {
+        current.insert(static_cast<WebContentsImpl*>(
+            WebContents::FromRenderFrameHost(opener_rfh)));
+      }
+
+      WebContentsImpl* outer_contents = current_contents->GetOuterWebContents();
+      if (outer_contents)
+        current.insert(outer_contents);
+    }
+  }
+
+  return result;
+}
+
+// Used to attach the "set of fullscreen contents" to a browser context. Storing
+// sets of WebContents on their browser context is done for two reasons. One,
+// related WebContentses must necessarily share a browser context, so this saves
+// lookup time by restricting to one specific browser context. Two, separating
+// by browser context is preemptive paranoia about keeping things separate.
+class FullscreenContentsHolder : public base::SupportsUserData::Data {
+ public:
+  FullscreenContentsHolder() = default;
+  ~FullscreenContentsHolder() override = default;
+
+  FullscreenContentsHolder(const FullscreenContentsHolder&) = delete;
+  FullscreenContentsHolder& operator=(const FullscreenContentsHolder&) = delete;
+
+  base::flat_set<WebContentsImpl*>* set() { return &set_; }
+
+ private:
+  base::flat_set<WebContentsImpl*> set_;
+};
+
+const char kFullscreenContentsSet[] = "fullscreen-contents";
+
+base::flat_set<WebContentsImpl*>* FullscreenContentsSet(
+    BrowserContext* browser_context) {
+  auto* set_holder = static_cast<FullscreenContentsHolder*>(
+      browser_context->GetUserData(kFullscreenContentsSet));
+  if (!set_holder) {
+    auto new_holder = std::make_unique<FullscreenContentsHolder>();
+    set_holder = new_holder.get();
+    browser_context->SetUserData(kFullscreenContentsSet, std::move(new_holder));
+  }
+
+  return set_holder->set();
 }
 
 }  // namespace
@@ -700,6 +768,8 @@ WebContentsImpl::~WebContentsImpl() {
   // since this will lead to a use-after-free as it continues to notify later
   // observers.
   CHECK(!is_notifying_observers_);
+
+  FullscreenContentsSet(GetBrowserContext())->erase(this);
 
   rwh_input_event_router_.reset();
 
@@ -2522,7 +2592,14 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
 }
 
 bool WebContentsImpl::CanEnterFullscreenMode() {
-  return fullscreen_blocker_count_ == 0;
+  // It's possible that this WebContents was spawned while blocking UI was on
+  // the screen, or that it was downstream from a WebContents when UI was
+  // blocked. Therefore, disqualify it from fullscreen if it or any upstream
+  // WebContents has an active blocker.
+  auto openers = GetAllOpeningWebContents(this);
+  return std::all_of(openers.begin(), openers.end(), [](auto* opener) {
+    return opener->fullscreen_blocker_count_ == 0;
+  });
 }
 
 void WebContentsImpl::EnterFullscreenMode(
@@ -2547,6 +2624,8 @@ void WebContentsImpl::EnterFullscreenMode(
 
   for (auto& observer : observers_)
     observer.DidToggleFullscreenModeForTab(IsFullscreenForCurrentTab(), false);
+
+  FullscreenContentsSet(GetBrowserContext())->insert(this);
 }
 
 void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
@@ -2589,6 +2668,8 @@ void WebContentsImpl::ExitFullscreenMode(bool will_cause_resize) {
 
   if (display_cutout_host_impl_)
     display_cutout_host_impl_->DidExitFullscreen();
+
+  FullscreenContentsSet(GetBrowserContext())->erase(this);
 }
 
 void WebContentsImpl::FullscreenStateChanged(RenderFrameHost* rfh,
@@ -4247,37 +4328,47 @@ void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
 }
 
 base::ScopedClosureRunner WebContentsImpl::ForSecurityDropFullscreen() {
-  // There are two chains of WebContents to kick out of fullscreen.
-  //
-  // Chain 1, the inner/outer WebContents chain. If an inner WebContents has
-  // done something that requires the browser to drop fullscreen, drop
-  // fullscreen from it and any outer WebContents that may be in fullscreen.
-  //
-  // Chain 2, the opener WebContents chain. If a WebContents has done something
-  // that requires the browser to drop fullscreen, drop fullscreen from any
-  // WebContents that was involved in the chain of opening it.
-  //
-  // Note that these two chains don't interact, as only a top-level WebContents
-  // can have an opener. This simplifies things.
+  // Kick WebContentses that are "related" to this WebContents out of
+  // fullscreen. This needs to be done with two passes, because it is simple to
+  // walk _up_ the chain of openers and outer contents, but it not simple to
+  // walk _down_ the chain.
+
+  // First, determine if any WebContents that is in fullscreen has this
+  // WebContents as an upstream contents. Drop that WebContents out of
+  // fullscreen if it does. This is theoretically quadratic-ish (fullscreen
+  // contentses x each one's opener length) but neither of those is expected to
+  // ever be a large number.
+
+  auto fullscreen_set_copy = *FullscreenContentsSet(GetBrowserContext());
+  for (auto* fullscreen_contents : fullscreen_set_copy) {
+    // Checking IsFullscreenForCurrentTab() for tabs in the fullscreen set may
+    // seem redundant, but teeeeechnically fullscreen is run by the delegate,
+    // and it's possible that the delegate's notion of fullscreen may have
+    // changed outside of WebContents's notice.
+    if (fullscreen_contents->IsFullscreenForCurrentTab()) {
+      auto opener_contentses = GetAllOpeningWebContents(fullscreen_contents);
+      if (opener_contentses.count(this))
+        fullscreen_contents->ExitFullscreen(true);
+    }
+  }
+
+  // Second, walk upstream from this WebContents, and drop the fullscreen of
+  // all WebContentses that are in fullscreen. Block all the WebContentses in
+  // the chain from entering fullscreen while the returned closure runner is
+  // alive. It's OK that this set doesn't contain downstream WebContentses, as
+  // any request to enter fullscreen will have the upstream of the WebContents
+  // checked. (See CanEnterFullscreenMode().)
 
   std::vector<base::WeakPtr<WebContentsImpl>> blocked_contentses;
 
-  WebContentsImpl* web_contents = this;
-  while (web_contents) {
+  for (auto* opener : GetAllOpeningWebContents(this)) {
     // Drop fullscreen if the WebContents is in it, and...
-    if (web_contents->IsFullscreenForCurrentTab())
-      web_contents->ExitFullscreen(true);
+    if (opener->IsFullscreenForCurrentTab())
+      opener->ExitFullscreen(true);
 
     // ...block the WebContents from entering fullscreen until further notice.
-    ++web_contents->fullscreen_blocker_count_;
-    blocked_contentses.push_back(web_contents->weak_factory_.GetWeakPtr());
-
-    if (web_contents->HasOriginalOpener()) {
-      web_contents = static_cast<WebContentsImpl*>(
-          FromRenderFrameHost(web_contents->GetOriginalOpener()));
-    } else {
-      web_contents = web_contents->GetOuterWebContents();
-    }
+    ++opener->fullscreen_blocker_count_;
+    blocked_contentses.push_back(opener->weak_factory_.GetWeakPtr());
   }
 
   return base::ScopedClosureRunner(base::BindOnce(

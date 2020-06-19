@@ -11,8 +11,8 @@
 
 #include <utility>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 
 namespace ui {
 namespace fuchsia {
@@ -29,7 +29,7 @@ void InitializeViewTokenAndPresentView(
   window_properties_out->view_ref_pair = scenic::ViewRefPair::New();
 
   // Request Presenter to show the view full-screen.
-  auto presenter = base::fuchsia::ComponentContextForCurrentProcess()
+  auto presenter = base::ComponentContextForProcess()
                        ->svc()
                        ->Connect<::fuchsia::ui::policy::Presenter>();
 

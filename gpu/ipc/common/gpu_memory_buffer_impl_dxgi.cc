@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_impl_dxgi.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"

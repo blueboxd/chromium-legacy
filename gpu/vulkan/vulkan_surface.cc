@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "gpu/vulkan/vulkan_device_queue.h"

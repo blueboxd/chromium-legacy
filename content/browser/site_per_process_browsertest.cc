@@ -13324,8 +13324,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   histograms.ExpectTotalCount("Stability.ChildFrameCrash.Visibility", 0);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       ChildFrameCrashMetrics_KilledWhileHiddenThenShown) {
+// Test is flaky (crbug.com/1097060)
+IN_PROC_BROWSER_TEST_F(
+    SitePerProcessBrowserTest,
+    DISABLED_ChildFrameCrashMetrics_KilledWhileHiddenThenShown) {
   // Set-up a frame tree that helps verify what the metrics tracks:
   // 1) frames (12 frames are affected if B process gets killed) or
   // 2) widgets (10 b widgets and 1 c widget are affected if B is killed) or

@@ -7,8 +7,8 @@
 #include <lib/sys/cpp/component_context.h>
 #include <memory>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "ui/ozone/platform/scenic/ozone_platform_scenic.h"
 
 namespace ui {
@@ -33,7 +33,7 @@ std::unique_ptr<PlatformScreen> ScenicWindowManager::CreateScreen() {
 
 fuchsia::ui::scenic::Scenic* ScenicWindowManager::GetScenic() {
   if (!scenic_) {
-    scenic_ = base::fuchsia::ComponentContextForCurrentProcess()
+    scenic_ = base::ComponentContextForProcess()
                   ->svc()
                   ->Connect<fuchsia::ui::scenic::Scenic>();
     scenic_.set_error_handler(

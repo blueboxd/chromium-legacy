@@ -9,7 +9,6 @@
 #include <lib/sys/cpp/outgoing_directory.h>
 
 #include "base/command_line.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/logging.h"
@@ -39,7 +38,7 @@ void RegisterFeedbackAnnotations() {
   component_data.set_namespace_("web-engine");
   component_data.mutable_annotations()->push_back(
       {"version", version_info::GetVersionNumber()});
-  base::fuchsia::ComponentContextForCurrentProcess()
+  base::ComponentContextForProcess()
       ->svc()
       ->Connect<fuchsia::feedback::ComponentDataRegister>()
       ->Upsert(std::move(component_data), []() {});
@@ -64,7 +63,7 @@ int ContextProviderMain() {
 
   // Publish the ContextProvider and Debug services.
   sys::OutgoingDirectory* const directory =
-      base::fuchsia::ComponentContextForCurrentProcess()->outgoing().get();
+      base::ComponentContextForProcess()->outgoing().get();
   base::fuchsia::ScopedServiceBinding<fuchsia::web::ContextProvider> binding(
       directory, &context_provider);
   base::fuchsia::ScopedServiceBinding<fuchsia::web::Debug> debug_binding(

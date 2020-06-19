@@ -24,6 +24,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "components/metrics/log_decoder.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/test/test_metrics_provider.h"
 #include "components/metrics/test/test_metrics_service_client.h"
@@ -47,14 +48,14 @@
 namespace ukm {
 
 // Some arbitrary events used in tests.
-using TestEvent1 = ukm::builders::PageLoad;
+using TestEvent1 = builders::PageLoad;
 const char* kTestEvent1Metric1 =
     TestEvent1::kPaintTiming_NavigationToFirstContentfulPaintName;
 const char* kTestEvent1Metric2 = TestEvent1::kNet_CacheBytes2Name;
-using TestEvent2 = ukm::builders::Memory_Experimental;
+using TestEvent2 = builders::Memory_Experimental;
 const char* kTestEvent2Metric1 = TestEvent2::kArrayBufferName;
 const char* kTestEvent2Metric2 = TestEvent2::kBlinkGCName;
-using TestEvent3 = ukm::builders::Previews;
+using TestEvent3 = builders::Previews;
 
 std::string Entry1And2Whitelist() {
   return std::string(TestEvent1::kEntryName) + ',' + TestEvent2::kEntryName;
@@ -118,7 +119,7 @@ class MockDemographicMetricsProvider
 
   // DemographicMetricsProvider:
   MOCK_METHOD1(ProvideSyncedUserNoisedBirthYearAndGenderToReport,
-               void(ukm::Report* report));
+               void(Report* report));
 };
 
 class UkmServiceTest : public testing::Test {
@@ -145,7 +146,7 @@ class UkmServiceTest : public testing::Test {
   Report GetPersistedReport() {
     EXPECT_GE(GetPersistedLogCount(), 1);
     metrics::UnsentLogStore result_unsent_log_store(
-        std::make_unique<ukm::UnsentLogStoreMetricsImpl>(), &prefs_,
+        std::make_unique<UnsentLogStoreMetricsImpl>(), &prefs_,
         prefs::kUkmUnsentLogStore, /* meta_data_pref_name= */ nullptr,
         /* min_log_count= */ 3, /* min_log_bytes= */ 1000,
         /* max_log_size= */ 0,
@@ -154,12 +155,9 @@ class UkmServiceTest : public testing::Test {
     result_unsent_log_store.LoadPersistedUnsentLogs();
     result_unsent_log_store.StageNextLog();
 
-    std::string uncompressed_log_data;
-    EXPECT_TRUE(compression::GzipUncompress(
-      result_unsent_log_store.staged_log(), &uncompressed_log_data));
-
     Report report;
-    EXPECT_TRUE(report.ParseFromString(uncompressed_log_data));
+    EXPECT_TRUE(metrics::DecodeLogDataToProto(
+        result_unsent_log_store.staged_log(), &report));
     return report;
   }
 
@@ -275,7 +273,7 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   auto* unsent_log_store = service.reporting_service_.ukm_log_store();
 
   // Initialize a Report to be saved to the log store.
-  ukm::Report report;
+  Report report;
   report.set_client_id(1);
   report.set_session_id(1);
   report.set_report_id(1);
@@ -285,23 +283,21 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
       "chrome-extension://bmnlcjabgnpnenekpadlanbbkooimhnj/manifest.json";
 
   // Add both extension- and non-extension-related sources to the Report.
-  ukm::Source* proto_source_1 = report.add_sources();
-  ukm::SourceId source_id_1 =
-      ukm::ConvertToSourceId(1, ukm::SourceIdType::NAVIGATION_ID);
+  Source* proto_source_1 = report.add_sources();
+  SourceId source_id_1 = ConvertToSourceId(1, SourceIdType::NAVIGATION_ID);
   proto_source_1->set_id(source_id_1);
   proto_source_1->add_urls()->set_url(non_extension_url);
-  ukm::Source* proto_source_2 = report.add_sources();
-  ukm::SourceId source_id_2 =
-      ukm::ConvertToSourceId(2, ukm::SourceIdType::NAVIGATION_ID);
+  Source* proto_source_2 = report.add_sources();
+  SourceId source_id_2 = ConvertToSourceId(2, SourceIdType::NAVIGATION_ID);
   proto_source_2->set_id(source_id_2);
   proto_source_2->add_urls()->set_url(extension_url);
 
   // Add some entries for both sources.
-  ukm::Entry* entry_1 = report.add_entries();
+  Entry* entry_1 = report.add_entries();
   entry_1->set_source_id(source_id_2);
-  ukm::Entry* entry_2 = report.add_entries();
+  Entry* entry_2 = report.add_entries();
   entry_2->set_source_id(source_id_1);
-  ukm::Entry* entry_3 = report.add_entries();
+  Entry* entry_3 = report.add_entries();
   entry_3->set_source_id(source_id_2);
 
   // Save the Report to the store.
@@ -320,8 +316,9 @@ TEST_F(UkmServiceTest, PurgeExtensionDataFromUnsentLogStore) {
   const std::string& compressed_log_data = unsent_log_store->staged_log();
 
   std::string uncompressed_log_data;
+  // TODO(crbug/1086910): Use the utilities in log_decoder.h instead.
   compression::GzipUncompress(compressed_log_data, &uncompressed_log_data);
-  ukm::Report filtered_report;
+  Report filtered_report;
   filtered_report.ParseFromString(uncompressed_log_data);
 
   // Only proto_source_1  with non-extension URL is kept.
@@ -348,7 +345,7 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   navigation_data.urls = {GURL("https://google.com/initial"),
                           GURL("https://google.com/final")};
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.RecordNavigation(id, navigation_data);
 
   service.Flush();
@@ -376,7 +373,7 @@ TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   TestEvent1(id).Record(&service);
@@ -406,7 +403,7 @@ TEST_F(UkmServiceTest, MetricsProviderTest) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
   service.Flush();
@@ -433,7 +430,7 @@ TEST_F(UkmServiceTest, SystemProfileTest) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
   service.Flush();
@@ -460,7 +457,7 @@ TEST_F(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
               ProvideSyncedUserNoisedBirthYearAndGenderToReport(testing::_))
       .Times(2)
       .WillRepeatedly([&number_of_invocations, test_gender,
-                       test_birth_year](ukm::Report* report) {
+                       test_birth_year](Report* report) {
         report->mutable_user_demographics()->set_birth_year(test_birth_year);
         report->mutable_user_demographics()->set_gender(test_gender);
         ++number_of_invocations;
@@ -480,7 +477,7 @@ TEST_F(UkmServiceTest, AddUserDemograhicsWhenAvailableAndFeatureEnabled) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
   service.Flush();
@@ -505,7 +502,7 @@ TEST_F(UkmServiceTest,
   EXPECT_CALL(*provider,
               ProvideSyncedUserNoisedBirthYearAndGenderToReport(testing::_))
       .Times(2)
-      .WillRepeatedly([](ukm::Report* report) {});
+      .WillRepeatedly([](Report* report) {});
 
   UkmService service(&prefs_, &client_,
                      std::move(provider));
@@ -516,7 +513,7 @@ TEST_F(UkmServiceTest,
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
   service.Flush();
@@ -550,7 +547,7 @@ TEST_F(UkmServiceTest, DontAddUserDemograhicsWhenFeatureDisabled) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   TestEvent1(id).Record(&service);
   service.Flush();
@@ -575,7 +572,7 @@ TEST_F(UkmServiceTest, LogsRotation) {
   EXPECT_EQ(0, service.report_count());
 
   // Log rotation should generate a log.
-  const ukm::SourceId id = GetWhitelistedSourceId(0);
+  const SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   task_runner_->RunPendingTasks();
   EXPECT_EQ(1, service.report_count());
@@ -622,7 +619,7 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
   service.Flush();
   EXPECT_EQ(GetPersistedLogCount(), 0);
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
   // Includes a Source, so will persist.
   service.Flush();
@@ -647,9 +644,9 @@ TEST_F(UkmServiceTest, LogsUploadedOnlyWhenHavingSourcesOrEntries) {
 }
 
 TEST_F(UkmServiceTest, GetNewSourceID) {
-  ukm::SourceId id1 = UkmRecorder::GetNewSourceID();
-  ukm::SourceId id2 = UkmRecorder::GetNewSourceID();
-  ukm::SourceId id3 = UkmRecorder::GetNewSourceID();
+  SourceId id1 = UkmRecorder::GetNewSourceID();
+  SourceId id2 = UkmRecorder::GetNewSourceID();
+  SourceId id3 = UkmRecorder::GetNewSourceID();
   EXPECT_NE(id1, id2);
   EXPECT_NE(id1, id3);
   EXPECT_NE(id2, id3);
@@ -666,7 +663,7 @@ TEST_F(UkmServiceTest, RecordRedirectedUrl) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   UkmSource::NavigationData navigation_data;
   navigation_data.urls = {GURL("https://google.com/initial"),
                           GURL("https://google.com/final")};
@@ -704,12 +701,12 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
     service.EnableRecording(/*extensions=*/false);
     service.EnableReporting();
 
-    ukm::SourceId id1 = GetWhitelistedSourceId(0);
+    SourceId id1 = GetWhitelistedSourceId(0);
     recorder.UpdateSourceURL(id1, kURL);
     TestEvent1(id1).Record(&service);
 
     // Create a non-navigation-based sourceid, which should not be whitelisted.
-    ukm::SourceId id2 = GetNonWhitelistedSourceId(1);
+    SourceId id2 = GetNonWhitelistedSourceId(1);
     recorder.UpdateSourceURL(id2, kURL);
     TestEvent1(id2).Record(&service);
 
@@ -900,7 +897,7 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
 
     // Record with whitelisted ID to whitelist the URL.
     // Use a larger ID to make it last in the proto.
-    ukm::SourceId whitelisted_id = GetWhitelistedSourceId(100);
+    SourceId whitelisted_id = GetWhitelistedSourceId(100);
     recorder.UpdateSourceURL(whitelisted_id, kURL);
 
     std::vector<SourceId> ids;
@@ -1036,11 +1033,11 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
     service.EnableReporting();
 
     // Record with whitelisted ID to whitelist the URL.
-    ukm::SourceId whitelist_id = GetWhitelistedSourceId(1);
+    SourceId whitelist_id = GetWhitelistedSourceId(1);
     recorder.UpdateSourceURL(whitelist_id, kURL);
 
     // Record non whitelisted ID with an entry.
-    ukm::SourceId nonwhitelist_id = GetNonWhitelistedSourceId(100);
+    SourceId nonwhitelist_id = GetNonWhitelistedSourceId(100);
     recorder.UpdateSourceURL(nonwhitelist_id, test.url);
     TestEvent1(nonwhitelist_id).Record(&service);
 
@@ -1073,7 +1070,7 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
     // be unchanged, thus the the report should still contain the same numbers
     // of sources as before, that is, non-whitelisted URLs should not have
     // whitelisted themselves during the previous log rotation.
-    ukm::SourceId nonwhitelist_id2 = GetNonWhitelistedSourceId(101);
+    SourceId nonwhitelist_id2 = GetNonWhitelistedSourceId(101);
     recorder.UpdateSourceURL(nonwhitelist_id2, test.url);
     TestEvent1(nonwhitelist_id2).Record(&service);
     service.Flush();
@@ -1437,7 +1434,7 @@ TEST_F(UkmServiceTest, IdentifiabilityMetricsDontExplode) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   builders::Identifiability(id).SetStudyGeneration_626(0).Record(&service);
@@ -1474,7 +1471,7 @@ TEST_F(UkmServiceTest, FilterCanRemoveMetrics) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   // This event sticks around albeit with a single metric instead of two.
@@ -1532,7 +1529,7 @@ TEST_F(UkmServiceTest, FilterRejectsEvent) {
   service.EnableRecording(/*extensions=*/false);
   service.EnableReporting();
 
-  ukm::SourceId id = GetWhitelistedSourceId(0);
+  SourceId id = GetWhitelistedSourceId(0);
   recorder.UpdateSourceURL(id, GURL("https://google.com/foobar"));
 
   TestEvent1(id).SetCpuTime(0).Record(&service);

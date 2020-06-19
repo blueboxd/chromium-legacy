@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/client/client_font_manager.h"
 
+#include "base/logging.h"
+
 namespace gpu {
 namespace raster {
 

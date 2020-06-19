@@ -623,6 +623,12 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
 
   for (unsigned i = fragment_start; i < fragment_end; i++) {
     NGLogicalLineItem& child = (*line_box)[i];
+
+    // If |child| has a fragment created by previous |CreateBoxFragment|, skip
+    // children that were already added to |child|.
+    if (child.children_count)
+      i += child.children_count - 1;
+
     if (child.out_of_flow_positioned_box) {
       DCHECK(item->GetLayoutObject()->IsLayoutInline());
       NGBlockNode oof_box(ToLayoutBox(child.out_of_flow_positioned_box));

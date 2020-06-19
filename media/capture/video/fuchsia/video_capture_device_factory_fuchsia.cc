@@ -7,8 +7,8 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/check_op.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
@@ -186,7 +186,7 @@ void VideoCaptureDeviceFactoryFuchsia::Initialize() {
   DCHECK(!device_watcher_);
   DCHECK(devices_.empty());
 
-  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
+  base::ComponentContextForProcess()->svc()->Connect(
       device_watcher_.NewRequest());
 
   device_watcher_.set_error_handler(fit::bind_member(

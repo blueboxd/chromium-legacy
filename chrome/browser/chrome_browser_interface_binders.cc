@@ -36,6 +36,7 @@
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/contextual_search/buildflags.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
@@ -151,6 +152,11 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
+#endif
+
+#if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
+#include "chromeos/components/telemetry_extension_ui/mojom/probe_service.mojom.h"
+#include "chromeos/components/telemetry_extension_ui/telemetry_extension_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -555,6 +561,14 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::network_health::mojom::NetworkHealthService,
       chromeos::NetworkUI>(map);
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_CHROMEOS) && !defined(OFFICIAL_BUILD)
+  if (base::FeatureList::IsEnabled(chromeos::features::kTelemetryExtension)) {
+    RegisterWebUIControllerInterfaceBinder<
+        chromeos::health::mojom::ProbeService, chromeos::TelemetryExtensionUI>(
+        map);
+  }
+#endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)

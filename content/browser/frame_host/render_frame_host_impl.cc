@@ -2678,6 +2678,26 @@ void RenderFrameHostImpl::DidFocusFrame() {
   if (!IsCurrent())
     return;
 
+  // TODO(https://crbug.com/1093943): Remove this once closed.
+  if (IsPendingDeletion()) {
+    // FrameTree::SetFocusedFrame() is going to be called soon. This function
+    // will access the RenderFrameProxyHost of this frame seen from the
+    // SiteInstance of every active frames. In theory, they must always exist.
+    // However this is not guaranteed if this frame is pending deletion.
+    //
+    // Next block checks whether or not a crash will happen and replace it by a
+    // DumpWithoutCrashing and a return.
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1093943#c18
+    for (FrameTreeNode* node : frame_tree()->Nodes()) {
+      SiteInstance* instance = node->current_frame_host()->GetSiteInstance();
+      if (instance != site_instance_.get() &&
+          !frame_tree_node()->render_manager()->GetRenderFrameProxyHost(
+              instance)) {
+        base::debug::DumpWithoutCrashing();
+        return;
+      }
+    }
+  }
   // We need to handle receiving this IPC from a frame that is inside a portal
   // despite there being a renderer side check (see Document::IsFocusAllowed).
   // This is because the IPC to notify a page that it is inside a portal (see
@@ -7085,7 +7105,7 @@ void RenderFrameHostImpl::AccessibilityHitTestCallback(
   }
 
   auto frame_or_proxy = LookupRenderFrameHostOrProxy(
-      GetProcess()->GetID(), hit_test_response->hit_frame_routing_id);
+      GetProcess()->GetID(), hit_test_response->hit_frame_token);
   RenderFrameHostImpl* hit_frame =
       frame_or_proxy.proxy
           ? frame_or_proxy.proxy->frame_tree_node()->current_frame_host()
@@ -7099,7 +7119,7 @@ void RenderFrameHostImpl::AccessibilityHitTestCallback(
 
   // If the hit node's routing ID is the same frame, we're done. If a
   // callback was provided, call it with the information about the hit node.
-  if (hit_frame->GetRoutingID() == routing_id_) {
+  if (hit_frame->GetFrameToken() == frame_token_) {
     if (opt_callback) {
       std::move(opt_callback)
           .Run(hit_frame->browser_accessibility_manager(),

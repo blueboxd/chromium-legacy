@@ -68,16 +68,7 @@ enum class KeyRetrievalTriggerForUMA;
 - (void)showSettingsFromViewController:(UIViewController*)baseViewController;
 
 // TODO(crbug.com/779791) : Do not pass baseViewController through dispatcher.
-//
-// Shows the advanced sign-in settings. Only used when unified consent feature
-// is enabled.
-//
-// TODO(crbug.com/965992): This is a temporary command that was added as the
-// First Run and the Sign-in promo are not managed by the
-// |SigninInteractionCoordinator| and they need to present the advanced sign-in
-// settings via a dispatched command. |SigninInteractionCoordinator| should be
-// changed to present the|FirstRunChromeSigninViewController| and
-//|SigninPromoViewController| and this command should be removed.
+// Shows the advanced sign-in settings.
 - (void)showAdvancedSigninSettingsFromViewController:
     (UIViewController*)baseViewController;
 

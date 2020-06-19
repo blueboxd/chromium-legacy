@@ -28,10 +28,10 @@
 #include "base/command_line.h"
 #include "base/containers/span.h"
 #include "base/files/file_util.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/default_job.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/process.h"
@@ -167,7 +167,7 @@ SandboxPolicyFuchsia::SandboxPolicyFuchsia(service_manager::SandboxType type) {
     service_directory_task_runner_ = base::ThreadTaskRunnerHandle::Get();
     service_directory_ =
         std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-            base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+            base::ComponentContextForProcess()->svc().get());
     for (const char* service_name : kDefaultServices) {
       service_directory_->AddService(service_name);
     }

@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 
@@ -19,9 +18,6 @@ namespace content {
 
 class AXTreeServer final {
  public:
-  AXTreeServer(base::ProcessId pid,
-               const base::FilePath& filters_path,
-               bool use_json);
   AXTreeServer(gfx::AcceleratedWidget widget,
                const base::FilePath& filters_path,
                bool use_json);

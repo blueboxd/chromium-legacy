@@ -17,7 +17,6 @@ import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_FAKE_S
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_INITIALIZED;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_INCOGNITO_DESCRIPTION_VISIBLE;
-import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_SURFACE_BODY_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_VOICE_RECOGNITION_BUTTON_VISIBLE;
 import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.MORE_TABS_CLICK_LISTENER;
@@ -75,8 +74,6 @@ class TasksViewBinder {
                 model.get(INCOGNITO_COOKIE_CONTROLS_MANAGER).updateIfNecessary();
             }
             view.setIncognitoDescriptionVisibility(isVisible);
-        } else if (propertyKey == IS_SURFACE_BODY_VISIBLE) {
-            view.setSurfaceBodyVisibility(model.get(IS_SURFACE_BODY_VISIBLE));
         } else if (propertyKey == IS_TAB_CAROUSEL_VISIBLE) {
             view.setTabCarouselVisibility(model.get(IS_TAB_CAROUSEL_VISIBLE));
         } else if (propertyKey == IS_VOICE_RECOGNITION_BUTTON_VISIBLE) {

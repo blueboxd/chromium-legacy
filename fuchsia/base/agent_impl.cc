@@ -7,7 +7,6 @@
 #include <lib/sys/cpp/component_context.h>
 
 #include "base/bind.h"
-#include "base/fuchsia/default_context.h"
 
 namespace cr_fuchsia {
 

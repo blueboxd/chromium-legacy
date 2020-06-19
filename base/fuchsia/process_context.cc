@@ -4,17 +4,38 @@
 
 #include "base/fuchsia/process_context.h"
 
+#include <lib/sys/cpp/component_context.h>
 #include <lib/sys/inspect/cpp/component.h>
+#include <utility>
 
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/no_destructor.h"
 
 namespace base {
 
+namespace {
+std::unique_ptr<sys::ComponentContext>* ProcessComponentContextPtr() {
+  static base::NoDestructor<std::unique_ptr<sys::ComponentContext>> value(
+      std::make_unique<sys::ComponentContext>(
+          sys::ServiceDirectory::CreateFromNamespace()));
+  return value.get();
+}
+}  // namespace
+
 sys::ComponentInspector* ComponentInspectorForProcess() {
   static base::NoDestructor<sys::ComponentInspector> value(
-      fuchsia::ComponentContextForCurrentProcess());
+      ComponentContextForProcess());
   return value.get();
+}
+
+sys::ComponentContext* ComponentContextForProcess() {
+  return ProcessComponentContextPtr()->get();
+}
+
+std::unique_ptr<sys::ComponentContext> ReplaceComponentContextForProcessForTest(
+    std::unique_ptr<sys::ComponentContext> context) {
+  std::swap(*ProcessComponentContextPtr(), context);
+  return context;
 }
 
 }  // namespace base

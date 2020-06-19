@@ -15,7 +15,6 @@
 
 #include "base/bind.h"
 #include "base/containers/flat_map.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_provider_impl.h"
 #include "base/macros.h"

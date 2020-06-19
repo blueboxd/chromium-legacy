@@ -53,8 +53,8 @@
 #include <zircon/syscalls/exception.h>
 #include <zircon/types.h>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #endif  // OS_FUCHSIA
 
 namespace logging {
@@ -776,10 +776,9 @@ TEST_F(LoggingTest, FuchsiaSystemLogging) {
     std::unique_ptr<fuchsia::logger::LogFilterOptions> options =
         std::make_unique<fuchsia::logger::LogFilterOptions>();
     options->tags = {"base_unittests__exec"};
-    fuchsia::logger::LogPtr logger =
-        base::fuchsia::ComponentContextForCurrentProcess()
-            ->svc()
-            ->Connect<fuchsia::logger::Log>();
+    fuchsia::logger::LogPtr logger = base::ComponentContextForProcess()
+                                         ->svc()
+                                         ->Connect<fuchsia::logger::Log>();
     listener.set_on_dump_logs_done(dump_logs);
     logger->DumpLogsSafe(binding.NewBinding(), std::move(options));
   });

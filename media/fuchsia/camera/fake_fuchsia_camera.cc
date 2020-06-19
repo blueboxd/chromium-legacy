@@ -7,7 +7,7 @@
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/fuchsia/default_context.h"
+#include "base/fuchsia/process_context.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/message_loop/message_loop_current.h"
@@ -290,7 +290,7 @@ void FakeCameraStream::SetBufferCollection(
   SendBufferCollection();
 
   // Initialize the new collection using |local_token|.
-  auto allocator = base::fuchsia::ComponentContextForCurrentProcess()
+  auto allocator = base::ComponentContextForProcess()
                        ->svc()
                        ->Connect<fuchsia::sysmem::Allocator>();
 

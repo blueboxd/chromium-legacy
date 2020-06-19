@@ -4,13 +4,11 @@
 
 #include <fuchsia/accessibility/semantics/cpp/fidl.h>
 #include <fuchsia/accessibility/semantics/cpp/fidl_test_base.h>
-#include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_ref_pair.h>
 #include <zircon/types.h>
 
 #include "base/auto_reset.h"
 #include "base/check.h"
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/notreached.h"
 #include "base/test/bind_test_util.h"

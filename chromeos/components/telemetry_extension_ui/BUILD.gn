@@ -11,6 +11,8 @@ assert(!is_official_build,
 
 static_library("telemetry_extension_ui") {
   sources = [
+    "probe_service.cc",
+    "probe_service.h",
     "telemetry_extension_ui.cc",
     "telemetry_extension_ui.h",
     "url_constants.cc",
@@ -18,6 +20,7 @@ static_library("telemetry_extension_ui") {
   ]
 
   deps = [
+    "//chromeos/components/telemetry_extension_ui/mojom",
     "//chromeos/constants",
     "//chromeos/resources:telemetry_extension_resources",
     "//content/public/browser",
@@ -26,7 +29,15 @@ static_library("telemetry_extension_ui") {
 }
 
 js_type_check("closure_compile") {
-  deps = [ ":untrusted" ]
+  deps = [
+    ":trusted",
+    ":untrusted",
+  ]
+}
+
+js_library("trusted") {
+  sources = [ "resources/trusted.js" ]
+  deps = [ "//chromeos/components/telemetry_extension_ui/mojom:mojom_js_library_for_compile" ]
 }
 
 js_library("untrusted") {

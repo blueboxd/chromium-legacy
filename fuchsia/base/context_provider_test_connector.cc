@@ -12,8 +12,8 @@
 #include <zircon/processargs.h>
 #include <utility>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/strings/strcat.h"
 #include "fuchsia/base/release_channel.h"
 
@@ -43,8 +43,7 @@ fidl::InterfaceHandle<fuchsia::io::Directory> StartWebEngineForTests(
       web_engine_services_dir.NewRequest().TakeChannel();
 
   fuchsia::sys::LauncherPtr launcher;
-  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
-      launcher.NewRequest());
+  base::ComponentContextForProcess()->svc()->Connect(launcher.NewRequest());
   launcher->CreateComponent(std::move(launch_info),
                             std::move(component_controller_request));
 

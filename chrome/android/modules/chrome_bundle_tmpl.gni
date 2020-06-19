@@ -77,7 +77,6 @@ template("chrome_bundle") {
                              "base_module_target",
                              "bundle_name",
                              "compress_shared_libraries",
-                             "expected_proguard_config",
                              "keystore_name",
                              "keystore_password",
                              "keystore_path",
@@ -89,7 +88,8 @@ template("chrome_bundle") {
                              "sign_bundle",
                              "static_library_provider",
                              "static_library_synchronized_proguard",
-                             "expected_libs_and_assets",
+                             "verify_proguard_flags",
+                             "verify_native_libs_and_assets",
                              "version_code",
                            ])
     command_line_flags_file = "chrome-command-line"

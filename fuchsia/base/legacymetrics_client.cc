@@ -11,8 +11,8 @@
 #include <utility>
 #include <vector>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -34,7 +34,7 @@ void LegacyMetricsClient::Start(base::TimeDelta report_interval) {
   DCHECK(!metrics_recorder_) << "Start() called more than once.";
 
   report_interval_ = report_interval;
-  metrics_recorder_ = base::fuchsia::ComponentContextForCurrentProcess()
+  metrics_recorder_ = base::ComponentContextForProcess()
                           ->svc()
                           ->Connect<fuchsia::legacymetrics::MetricsRecorder>();
   metrics_recorder_.set_error_handler(fit::bind_member(

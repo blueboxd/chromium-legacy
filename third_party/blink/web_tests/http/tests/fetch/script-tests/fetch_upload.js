@@ -7,7 +7,7 @@ var {BASE_ORIGIN, OTHER_ORIGIN} = get_fetch_test_options();
 function fetch_echo(stream) {
   return fetch(
       '/serviceworker/resources/fetch-echo-body.php',
-      {method: 'POST', body: stream});
+      {method: 'POST', body: stream, mode: 'same-origin'});
 }
 
 function fetch_echo_body(stream) {
@@ -126,10 +126,43 @@ promise_test(async () => {
 promise_test(async (t) => {
   await promise_rejects_js(
       t, TypeError,
-      fetch('/serviceworker/resources/fetch-access-control.php?AuthFail', {
-        method: 'POST',
-        body: create_foo_stream(),
-      }));
+      fetch(
+          '/serviceworker/resources/fetch-access-control.php?AuthFail',
+          {method: 'POST', body: create_foo_stream(), mode: 'same-origin'}));
 }, 'Upload streaming with 401 Unauthorized response should fail.');
+
+function report(content) {
+  return content;
+}
+
+promise_test(async () => {
+  const request_url = OTHER_ORIGIN +
+      '/serviceworker/resources/fetch-access-control.php?' +
+      `ACAOrigin=*&PACAOrigin=*` +
+      `&PACAHeaders=*&ACAHeaders=*&PreflightTest` +
+      `&PACMAge=600&Token=${Date.now()}`
+  const response_text = await fetch(request_url, {
+                          method: 'POST',
+                          body: 'content a',
+                          mode: 'cors'
+                        }).then(r => r.text());
+  const report_json = eval(response_text);
+  assert_false(report_json['did_preflight'], 'Should not trigger preflight');
+}, 'Uploading text w/o header does not trigger preflight');
+
+promise_test(async () => {
+  const request_url = OTHER_ORIGIN +
+      '/serviceworker/resources/fetch-access-control.php?' +
+      `ACAOrigin=*&PACAOrigin=*` +
+      `&PACAHeaders=*&ACAHeaders=*&PreflightTest` +
+      `&PACMAge=600&Token=${Date.now()}`
+  const response_text = await fetch(request_url, {
+                          method: 'POST',
+                          body: create_foo_stream(),
+                          mode: 'cors',
+                        }).then(r => r.text());
+  const report_json = eval(response_text);
+  assert_true(report_json['did_preflight'], 'Should preflight');
+}, 'Uploading stream always trigger preflight');
 
 done();

@@ -122,9 +122,6 @@ class SigninScreenHandlerDelegate {
   // Cancels user adding.
   virtual void CancelUserAdding() = 0;
 
-  // Attempts to remove given user.
-  virtual void RemoveUser(const AccountId& account_id) = 0;
-
   // Let the delegate know about the handler it is supposed to be using.
   virtual void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) = 0;
 
@@ -309,7 +306,6 @@ class SigninScreenHandler
                                  const std::string& input_method);
   void HandleOfflineLogin(const base::ListValue* args);
   void HandleRebootSystem();
-  void HandleRemoveUser(const AccountId& account_id);
   void HandleToggleEnrollmentScreen();
   void HandleToggleEnrollmentAd();
   void HandleToggleEnableDebuggingScreen();

@@ -50,6 +50,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/common/associated_interfaces.mojom.h"
+#include "content/common/ax_content_tree_update.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"

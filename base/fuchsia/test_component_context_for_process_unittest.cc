@@ -7,8 +7,8 @@
 #include <fuchsia/intl/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
 #include "base/run_loop.h"
@@ -26,7 +26,7 @@ class TestComponentContextForProcessTest
 
   bool HasTestInterface() {
     return VerifyTestInterface(
-        fuchsia::ComponentContextForCurrentProcess()
+        ComponentContextForProcess()
             ->svc()
             ->Connect<fuchsia::testfidl::TestInterface>());
   }
@@ -85,8 +85,7 @@ TEST_F(TestComponentContextForProcessTest, InjectTestInterface) {
 TEST_F(TestComponentContextForProcessTest, PublishTestInterface) {
   // Publish TestInterface to the process' outgoing-directory.
   base::fuchsia::ScopedServiceBinding<fuchsia::testfidl::TestInterface>
-      service_binding(
-          fuchsia::ComponentContextForCurrentProcess()->outgoing().get(), this);
+      service_binding(ComponentContextForProcess()->outgoing().get(), this);
 
   // Attempt to use the TestInterface from the outgoing-directory.
   EXPECT_TRUE(HasPublishedTestInterface());
@@ -100,7 +99,7 @@ TEST_F(TestComponentContextForProcessTest, ProvideSystemService) {
 
   // Attempt to use the PropertyProvider via the process ComponentContext.
   RunLoop wait_loop;
-  auto property_provider = fuchsia::ComponentContextForCurrentProcess()
+  auto property_provider = ComponentContextForProcess()
                                ->svc()
                                ->Connect<::fuchsia::intl::PropertyProvider>();
   property_provider.set_error_handler(

@@ -136,6 +136,5 @@ static_library("ukm_test_helper") {
     "//components/metrics",
     "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/metrics_proto",
-    "//third_party/zlib/google:compression_utils",
   ]
 }

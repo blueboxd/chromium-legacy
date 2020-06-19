@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "media/base/limits.h"
@@ -299,6 +300,8 @@ void SlowWindowCapturerChromeOS::CaptureNextFrame() {
       gfx::Vector2d(source_size.width(), source_size.height()),
       gfx::Vector2d(content_rect.width(), content_rect.height()));
   request->set_result_selection(gfx::Rect(content_rect.size()));
+  request->set_result_task_runner(
+      base::SequencedTaskRunnerHandle::Get());
   target_->layer()->RequestCopyOfOutput(std::move(request));
 }
 

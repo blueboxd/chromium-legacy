@@ -6,8 +6,8 @@ ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE ia2_hypertext='<obj0><obj1><obj2>'
 ++++ROLE_SYSTEM_RADIOBUTTON FOCUSABLE IA2_STATE_CHECKABLE checkable:true
 ++++ROLE_SYSTEM_STATICTEXT name='Radio2' ia2_hypertext='Radio2'
 ++IA2_ROLE_FORM ia2_hypertext='<obj0><obj1>'
-++++ROLE_SYSTEM_RADIOBUTTON name='Radio3' FOCUSABLE IA2_STATE_CHECKABLE checkable:true ia2_hypertext='Radio3'
-++++ROLE_SYSTEM_RADIOBUTTON name='Radio4' CHECKED FOCUSABLE IA2_STATE_CHECKABLE checkable:true ia2_hypertext='Radio4'
+++++ROLE_SYSTEM_RADIOBUTTON name='Radio3' FOCUSABLE IA2_STATE_CHECKABLE checkable:true
+++++ROLE_SYSTEM_RADIOBUTTON name='Radio4' CHECKED FOCUSABLE IA2_STATE_CHECKABLE checkable:true
 ++IA2_ROLE_FORM ia2_hypertext='<obj0><obj1>'
-++++ROLE_SYSTEM_RADIOBUTTON name='Radio5' FOCUSABLE IA2_STATE_CHECKABLE checkable:true ia2_hypertext='Radio5'
-++++ROLE_SYSTEM_RADIOBUTTON name='Radio6' CHECKED FOCUSABLE IA2_STATE_CHECKABLE checkable:true ia2_hypertext='Radio6'
+++++ROLE_SYSTEM_RADIOBUTTON name='Radio5' FOCUSABLE IA2_STATE_CHECKABLE checkable:true
+++++ROLE_SYSTEM_RADIOBUTTON name='Radio6' CHECKED FOCUSABLE IA2_STATE_CHECKABLE checkable:true

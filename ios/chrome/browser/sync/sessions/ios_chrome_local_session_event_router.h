@@ -14,11 +14,11 @@
 #include "base/macros.h"
 #include "components/sync/model/syncable_service.h"
 #include "components/sync_sessions/local_session_event_router.h"
-#import "ios/chrome/browser/tabs/tab_model_list_observer.h"
 #include "ios/chrome/browser/web_state_list/web_state_list_observer.h"
 #include "ios/web/public/web_state_observer.h"
 
 class ChromeBrowserState;
+class AllWebStateListObservationRegistrar;
 
 namespace sync_sessions {
 class SyncSessionsClient;
@@ -27,10 +27,7 @@ class SyncSessionsClient;
 // A LocalEventRouter that drives session sync via observation of
 // web::WebState-related events.
 class IOSChromeLocalSessionEventRouter
-    : public sync_sessions::LocalSessionEventRouter,
-      public web::WebStateObserver,
-      public WebStateListObserver,
-      public TabModelListObserver {
+    : public sync_sessions::LocalSessionEventRouter {
  public:
   IOSChromeLocalSessionEventRouter(
       ChromeBrowserState* browser_state,
@@ -43,43 +40,54 @@ class IOSChromeLocalSessionEventRouter
       sync_sessions::LocalSessionEventHandler* handler) override;
   void Stop() override;
 
-  // TabModelListObserver:
-  void TabModelRegisteredWithBrowserState(
-      TabModel* tab_model,
-      ChromeBrowserState* browser_state) override;
-  void TabModelUnregisteredFromBrowserState(
-      TabModel* tab_model,
-      ChromeBrowserState* browser_state) override;
-
-  // web::WebStateObserver:
-  void TitleWasSet(web::WebState* web_state) override;
-  void DidFinishNavigation(web::WebState* web_state,
-                           web::NavigationContext* navigation_context) override;
-  void PageLoaded(
-      web::WebState* web_state,
-      web::PageLoadCompletionStatus load_completion_status) override;
-  void DidChangeBackForwardState(web::WebState* web_state) override;
-  void WebStateDestroyed(web::WebState* web_state) override;
-
-  // web::WebStateListObserver:
-  void WebStateInsertedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index,
-                          bool activating) override;
-  void WebStateReplacedAt(WebStateList* web_state_list,
-                          web::WebState* old_web_state,
-                          web::WebState* new_web_state,
-                          int index) override;
-  void WebStateDetachedAt(WebStateList* web_state_list,
-                          web::WebState* web_state,
-                          int index) override;
-  void WillBeginBatchOperation(WebStateList* web_state_list) override;
-  void BatchOperationEnded(WebStateList* web_state_list) override;
-
  private:
-  // Methods to add and remove WebStateList observer.
-  void StartObservingWebStateList(WebStateList* web_state_list);
-  void StopObservingWebStateList(WebStateList* web_state_list);
+  // Observer implementation for each browser state.
+  class Observer : public WebStateListObserver, public web::WebStateObserver {
+   public:
+    explicit Observer(IOSChromeLocalSessionEventRouter* session_router);
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+    ~Observer() override;
+
+   private:
+    // WebStateListObserver:
+    void WebStateInsertedAt(WebStateList* web_state_list,
+                            web::WebState* web_state,
+                            int index,
+                            bool activating) override;
+    void WebStateDetachedAt(WebStateList* web_state_list,
+                            web::WebState* web_state,
+                            int index) override;
+    void WebStateReplacedAt(WebStateList* web_state_list,
+                            web::WebState* old_web_state,
+                            web::WebState* new_web_state,
+                            int index) override;
+    void WillBeginBatchOperation(WebStateList* web_state_list) override;
+    void BatchOperationEnded(WebStateList* web_state_list) override;
+
+    // web::WebStateObserver:
+    void TitleWasSet(web::WebState* web_state) override;
+    void DidFinishNavigation(
+        web::WebState* web_state,
+        web::NavigationContext* navigation_context) override;
+    void PageLoaded(
+        web::WebState* web_state,
+        web::PageLoadCompletionStatus load_completion_status) override;
+    void DidChangeBackForwardState(web::WebState* web_state) override;
+    void WebStateDestroyed(web::WebState* web_state) override;
+
+    IOSChromeLocalSessionEventRouter* router_;
+  };
+
+  // Observation registrars for each browser state; each one owns an instance
+  // of IOSChromeLocalSessionEventRouter::Observer.
+  std::set<std::unique_ptr<AllWebStateListObservationRegistrar>> registrars_;
+
+  // Called before the Batch operation starts for a web state list.
+  void OnSessionEventStarting();
+
+  // Called when Batch operation is completed for a web state list.
+  void OnSessionEventEnded();
 
   // Called when a tab is parented.
   void OnTabParented(web::WebState* web_state);
@@ -88,7 +96,6 @@ class IOSChromeLocalSessionEventRouter
   void OnWebStateChange(web::WebState* web_state);
 
   sync_sessions::LocalSessionEventHandler* handler_;
-  ChromeBrowserState* const browser_state_;
   sync_sessions::SyncSessionsClient* const sessions_client_;
   syncer::SyncableService::StartSyncFlare flare_;
 

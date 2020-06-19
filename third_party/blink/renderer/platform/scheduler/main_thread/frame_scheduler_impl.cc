@@ -8,6 +8,8 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/sequence_manager/lazy_now.h"
+#include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -264,24 +266,20 @@ void FrameSchedulerImpl::RemoveThrottleableQueueFromBudgetPools(
 
   CPUTimeBudgetPool* cpu_time_budget_pool =
       parent_page_scheduler_->background_cpu_time_budget_pool();
-  WakeUpBudgetPool* wake_up_budget_pool =
-      parent_page_scheduler_->wake_up_budget_pool();
-
-  if (!cpu_time_budget_pool && !wake_up_budget_pool)
-    return;
 
   // On tests, the scheduler helper might already be shut down and tick is not
   // available.
-  base::TimeTicks now;
-  if (main_thread_scheduler_->tick_clock())
-    now = main_thread_scheduler_->tick_clock()->NowTicks();
-  else
-    now = base::TimeTicks::Now();
+  base::sequence_manager::LazyNow lazy_now =
+      main_thread_scheduler_->tick_clock()
+          ? base::sequence_manager::LazyNow(
+                main_thread_scheduler_->tick_clock())
+          : base::sequence_manager::LazyNow(base::TimeTicks::Now());
 
   if (cpu_time_budget_pool)
-    cpu_time_budget_pool->RemoveQueue(now, task_queue);
-  if (wake_up_budget_pool)
-    wake_up_budget_pool->RemoveQueue(now, task_queue);
+    cpu_time_budget_pool->RemoveQueue(lazy_now.Now(), task_queue);
+
+  parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(
+      task_queue, frame_origin_type_, &lazy_now);
 }
 
 void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
@@ -303,11 +301,40 @@ void FrameSchedulerImpl::SetCrossOriginToMainFrame(bool cross_origin) {
     DCHECK(!cross_origin);
     return;
   }
+
+  base::sequence_manager::LazyNow lazy_now(
+      main_thread_scheduler_->tick_clock());
+
+  // Remove throttleable TaskQueues from their current WakeUpBudgetPool.
+  //
+  // The WakeUpBudgetPool is selected based on origin. TaskQueues are reinserted
+  // in the appropriate WakeUpBudgetPool at the end of this method, after the
+  // |frame_origin_type_| is updated.
+  for (const auto& task_queue_and_voter :
+       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
+    if (task_queue_and_voter.first->CanBeThrottled()) {
+      parent_page_scheduler_->RemoveQueueFromWakeUpBudgetPool(
+          task_queue_and_voter.first, frame_origin_type_, &lazy_now);
+    }
+  }
+
+  // Update the FrameOriginType.
   if (cross_origin) {
     frame_origin_type_ = FrameOriginType::kCrossOriginToMainFrame;
   } else {
     frame_origin_type_ = FrameOriginType::kSameOriginToMainFrame;
   }
+
+  // Add throttleable TaskQueues to WakeUpBudgetPool that corresponds to the
+  // updated |frame_origin_type_|.
+  for (const auto& task_queue_and_voter :
+       frame_task_queue_controller_->GetAllTaskQueuesAndVoters()) {
+    if (task_queue_and_voter.first->CanBeThrottled()) {
+      parent_page_scheduler_->AddQueueToWakeUpBudgetPool(
+          task_queue_and_voter.first, frame_origin_type_, &lazy_now);
+    }
+  }
+
   UpdatePolicy();
 }
 
@@ -1112,19 +1139,17 @@ void FrameSchedulerImpl::OnTaskQueueCreated(
   UpdateQueuePolicy(task_queue, voter);
 
   if (task_queue->CanBeThrottled()) {
+    base::sequence_manager::LazyNow lazy_now(
+        main_thread_scheduler_->tick_clock());
+
     CPUTimeBudgetPool* cpu_time_budget_pool =
         parent_page_scheduler_->background_cpu_time_budget_pool();
     if (cpu_time_budget_pool) {
-      cpu_time_budget_pool->AddQueue(
-          main_thread_scheduler_->tick_clock()->NowTicks(), task_queue);
+      cpu_time_budget_pool->AddQueue(lazy_now.Now(), task_queue);
     }
 
-    WakeUpBudgetPool* wake_up_budget_pool =
-        parent_page_scheduler_->wake_up_budget_pool();
-    if (wake_up_budget_pool) {
-      wake_up_budget_pool->AddQueue(
-          main_thread_scheduler_->tick_clock()->NowTicks(), task_queue);
-    }
+    parent_page_scheduler_->AddQueueToWakeUpBudgetPool(
+        task_queue, frame_origin_type_, &lazy_now);
 
     if (task_queues_throttled_) {
       UpdateTaskQueueThrottling(task_queue, true);

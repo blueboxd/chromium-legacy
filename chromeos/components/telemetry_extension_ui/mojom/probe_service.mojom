@@ -1,0 +1,22 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This is mostly a copy of the cros_healthd probe service interface which is
+// located in src/platform2/diagnostics/mojo/cros_healthd_probe.mojom.
+
+// cros_healthd daemon implements ProbeService interface, but since callers are
+// third-party Telemetry Extensions, we have PII filtering and data post
+// processing service in the middle that lives in Chrome.
+
+// Currently we expose this interface to WebUI only in Chrome OS and on
+// non-official builds so that we can prototype Telemetry Extension, while we
+// decide how to expose API to third parties.
+
+// This Mojo interface will go through security review before shipping.
+
+module chromeos.health.mojom;
+
+// Interface for getting device telemetry information.
+interface ProbeService {
+};

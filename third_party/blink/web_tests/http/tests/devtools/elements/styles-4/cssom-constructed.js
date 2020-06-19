@@ -15,10 +15,20 @@
       document.adoptedStyleSheets = [s];
   `);
 
-  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', dump);
+  ElementsTestRunner.selectNodeAndWaitForStyles('inspected', modify);
 
-  async function dump() {
+  async function modify() {
     await ElementsTestRunner.dumpSelectedElementStyles(true);
-    TestRunner.completeTest();
+
+    TestRunner.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, onStyleSheetChanged, this);
+
+    function onStyleSheetChanged(event) {
+      TestRunner.addResult('StyleSheetChanged triggered');
+      TestRunner.completeTest();
+    }
+
+    await TestRunner.evaluateInPagePromise(`
+      s.insertRule('div {color: green}');
+    `);
   }
 })();

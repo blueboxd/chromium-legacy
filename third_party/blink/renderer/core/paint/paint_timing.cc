@@ -289,11 +289,9 @@ void PaintTiming::SetFirstPaintAfterBackForwardCacheRestoreSwap(
     base::TimeTicks stamp) {
   // The last element is already allocated when the page is restored from the
   // cache.
-  size_t last_index =
-      first_paints_after_back_forward_cache_restore_swap_.size() - 1;
-  DCHECK(first_paints_after_back_forward_cache_restore_swap_[last_index]
-             .is_null());
-  first_paints_after_back_forward_cache_restore_swap_[last_index] = stamp;
+  DCHECK(!first_paints_after_back_forward_cache_restore_swap_.IsEmpty());
+  DCHECK(first_paints_after_back_forward_cache_restore_swap_.back().is_null());
+  first_paints_after_back_forward_cache_restore_swap_.back() = stamp;
   NotifyPaintTimingChanged();
 }
 

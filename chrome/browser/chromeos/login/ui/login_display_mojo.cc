@@ -251,10 +251,6 @@ void LoginDisplayMojo::CancelUserAdding() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayMojo::RemoveUser(const AccountId& account_id) {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::SetWebUIHandler(
     LoginDisplayWebUIHandler* webui_handler) {
   webui_handler_ = webui_handler;

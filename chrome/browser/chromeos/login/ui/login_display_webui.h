@@ -35,7 +35,6 @@ class LoginDisplayWebUI : public LoginDisplay,
             bool show_users,
             bool allow_new_user) override;
   void OnPreferencesChanged() override;
-  void RemoveUser(const AccountId& account_id) override;
   void SetUIEnabled(bool is_enabled) override;
   void ShowError(int error_msg_id,
                  int login_attempts,

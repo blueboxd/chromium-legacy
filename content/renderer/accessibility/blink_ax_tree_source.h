@@ -12,6 +12,7 @@
 
 #include "base/optional.h"
 #include "content/common/ax_content_node_data.h"
+#include "content/common/ax_content_tree_data.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "ui/accessibility/ax_mode.h"

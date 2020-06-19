@@ -8,8 +8,8 @@
 #include <lib/sys/cpp/service_directory.h>
 #include <zircon/types.h>
 
-#include "base/fuchsia/default_context.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/no_destructor.h"
 #include "chromecast/public/reboot_shlib.h"
 #include "chromecast/system/reboot/reboot_util.h"
@@ -44,8 +44,7 @@ void InitializeRebootShlib(const std::vector<std::string>& argv,
 
 // static
 void RebootShlib::Initialize(const std::vector<std::string>& argv) {
-  InitializeRebootShlib(
-      argv, base::fuchsia::ComponentContextForCurrentProcess()->svc().get());
+  InitializeRebootShlib(argv, base::ComponentContextForProcess()->svc().get());
 }
 
 // static

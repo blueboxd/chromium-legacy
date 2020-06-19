@@ -60,7 +60,6 @@ class LoginDisplayMojo : public LoginDisplay,
   void ShowWrongHWIDScreen() override;
   void ShowUpdateRequiredScreen() override;
   void CancelUserAdding() override;
-  void RemoveUser(const AccountId& account_id) override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
   bool IsShowGuest() const override;
   bool IsShowUsers() const override;

@@ -15,6 +15,7 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/filtered_service_directory.h"
 #include "base/fuchsia/fuchsia_logging.h"
+#include "base/fuchsia/process_context.h"
 #include "base/logging.h"
 #include "fuchsia/base/agent_manager.h"
 #include "fuchsia/runners/cast/cast_streaming.h"
@@ -70,15 +71,13 @@ bool IsPermissionGrantedInAppConfig(
 CastRunner::CastRunner(bool is_headless)
     : is_headless_(is_headless),
       main_services_(std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-          base::fuchsia::ComponentContextForCurrentProcess()->svc().get())),
+          base::ComponentContextForProcess()->svc().get())),
       main_context_(std::make_unique<WebContentRunner>(
           base::BindRepeating(&CastRunner::GetMainContextParams,
                               base::Unretained(this)))),
       isolated_services_(
           std::make_unique<base::fuchsia::FilteredServiceDirectory>(
-              base::fuchsia::ComponentContextForCurrentProcess()
-                  ->svc()
-                  .get())) {
+              base::ComponentContextForProcess()->svc().get())) {
   // Specify the services to connect via the Runner process' service directory.
   for (const char* name : kServices) {
     main_services_->AddService(name);
@@ -330,8 +329,7 @@ void CastRunner::OnAudioServiceRequest(
   // Otherwise use the Runner's fuchsia.media.Audio service. fuchsia.media.Audio
   // may be used by frames without MICROPHONE permission to create AudioRenderer
   // instance.
-  base::fuchsia::ComponentContextForCurrentProcess()->svc()->Connect(
-      std::move(request));
+  base::ComponentContextForProcess()->svc()->Connect(std::move(request));
 }
 
 void CastRunner::OnCameraServiceRequest(

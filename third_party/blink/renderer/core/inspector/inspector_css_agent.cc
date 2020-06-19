@@ -2228,6 +2228,7 @@ void InspectorCSSAgent::DidMutateStyleSheet(CSSStyleSheet* css_style_sheet) {
   if (!style_sheet)
     return;
   style_sheet->MarkForSync();
+  StyleSheetChanged(style_sheet);
 }
 
 void InspectorCSSAgent::StyleSheetChanged(

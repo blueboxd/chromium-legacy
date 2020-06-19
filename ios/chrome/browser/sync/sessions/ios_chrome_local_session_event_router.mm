@@ -14,10 +14,9 @@
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/main/all_web_state_list_observation_registrar.h"
 #include "ios/chrome/browser/sync/glue/sync_start_util.h"
 #include "ios/chrome/browser/sync/ios_chrome_synced_tab_delegate.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #include "ios/chrome/browser/tabs/tab_parenting_global_observer.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 
@@ -41,7 +40,6 @@ IOSChromeLocalSessionEventRouter::IOSChromeLocalSessionEventRouter(
     sync_sessions::SyncSessionsClient* sessions_client,
     const syncer::SyncableService::StartSyncFlare& flare)
     : handler_(NULL),
-      browser_state_(browser_state),
       sessions_client_(sessions_client),
       flare_(flare) {
   tab_parented_subscription_ =
@@ -49,35 +47,20 @@ IOSChromeLocalSessionEventRouter::IOSChromeLocalSessionEventRouter(
           base::Bind(&IOSChromeLocalSessionEventRouter::OnTabParented,
                      base::Unretained(this)));
 
-  for (TabModel* tab_model in TabModelList::GetTabModelsForChromeBrowserState(
-           browser_state_)) {
-    StartObservingWebStateList(tab_model.webStateList);
-  }
-
-  TabModelList::AddObserver(this);
+  registrars_.insert(std::make_unique<AllWebStateListObservationRegistrar>(
+      browser_state, std::make_unique<Observer>(this),
+      AllWebStateListObservationRegistrar::Mode::REGULAR));
 }
 
-IOSChromeLocalSessionEventRouter::~IOSChromeLocalSessionEventRouter() {
-  for (TabModel* tab_model in TabModelList::GetTabModelsForChromeBrowserState(
-           browser_state_)) {
-    StopObservingWebStateList(tab_model.webStateList);
-  }
-  TabModelList::RemoveObserver(this);
-}
+IOSChromeLocalSessionEventRouter::~IOSChromeLocalSessionEventRouter() {}
 
-void IOSChromeLocalSessionEventRouter::TabModelRegisteredWithBrowserState(
-    TabModel* tab_model,
-    ChromeBrowserState* browser_state) {
-  StartObservingWebStateList(tab_model.webStateList);
-}
+IOSChromeLocalSessionEventRouter::Observer::Observer(
+    IOSChromeLocalSessionEventRouter* session_router)
+    : router_(session_router) {}
 
-void IOSChromeLocalSessionEventRouter::TabModelUnregisteredFromBrowserState(
-    TabModel* tab_model,
-    ChromeBrowserState* browser_state) {
-  StopObservingWebStateList(tab_model.webStateList);
-}
+IOSChromeLocalSessionEventRouter::Observer::~Observer() {}
 
-void IOSChromeLocalSessionEventRouter::WebStateInsertedAt(
+void IOSChromeLocalSessionEventRouter::Observer::WebStateInsertedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index,
@@ -85,81 +68,72 @@ void IOSChromeLocalSessionEventRouter::WebStateInsertedAt(
   web_state->AddObserver(this);
 }
 
-void IOSChromeLocalSessionEventRouter::WebStateReplacedAt(
+void IOSChromeLocalSessionEventRouter::Observer::WebStateReplacedAt(
     WebStateList* web_state_list,
     web::WebState* old_web_state,
     web::WebState* new_web_state,
     int index) {
-  OnWebStateChange(old_web_state);
+  router_->OnWebStateChange(old_web_state);
   old_web_state->RemoveObserver(this);
   DCHECK(new_web_state);
   new_web_state->AddObserver(this);
 }
 
-void IOSChromeLocalSessionEventRouter::WebStateDetachedAt(
+void IOSChromeLocalSessionEventRouter::Observer::WebStateDetachedAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
     int index) {
-  OnWebStateChange(web_state);
+  router_->OnWebStateChange(web_state);
   web_state->RemoveObserver(this);
 }
 
-void IOSChromeLocalSessionEventRouter::TitleWasSet(web::WebState* web_state) {
-  OnWebStateChange(web_state);
+void IOSChromeLocalSessionEventRouter::Observer::TitleWasSet(
+    web::WebState* web_state) {
+  router_->OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::DidFinishNavigation(
+void IOSChromeLocalSessionEventRouter::Observer::DidFinishNavigation(
     web::WebState* web_state,
     web::NavigationContext* navigation_context) {
-  OnWebStateChange(web_state);
+  router_->OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::PageLoaded(
+void IOSChromeLocalSessionEventRouter::Observer::PageLoaded(
     web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  OnWebStateChange(web_state);
+  router_->OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::DidChangeBackForwardState(
+void IOSChromeLocalSessionEventRouter::Observer::DidChangeBackForwardState(
     web::WebState* web_state) {
-  OnWebStateChange(web_state);
+  router_->OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::WebStateDestroyed(
+void IOSChromeLocalSessionEventRouter::Observer::WebStateDestroyed(
     web::WebState* web_state) {
-  OnWebStateChange(web_state);
+  router_->OnWebStateChange(web_state);
   web_state->RemoveObserver(this);
-}
-
-void IOSChromeLocalSessionEventRouter::StartObservingWebStateList(
-    WebStateList* web_state_list) {
-  web_state_list->AddObserver(this);
-  for (int index = 0; index < web_state_list->count(); ++index) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(index);
-    web_state->AddObserver(this);
-  }
-}
-
-void IOSChromeLocalSessionEventRouter::StopObservingWebStateList(
-    WebStateList* web_state_list) {
-  for (int index = 0; index < web_state_list->count(); ++index) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(index);
-    web_state->RemoveObserver(this);
-  }
-  web_state_list->RemoveObserver(this);
 }
 
 void IOSChromeLocalSessionEventRouter::OnTabParented(web::WebState* web_state) {
   OnWebStateChange(web_state);
 }
 
-void IOSChromeLocalSessionEventRouter::WillBeginBatchOperation(
+void IOSChromeLocalSessionEventRouter::Observer::WillBeginBatchOperation(
     WebStateList* web_state_list) {
+  router_->OnSessionEventStarting();
+}
+
+void IOSChromeLocalSessionEventRouter::Observer::BatchOperationEnded(
+    WebStateList* web_state_list) {
+  router_->OnSessionEventEnded();
+}
+
+void IOSChromeLocalSessionEventRouter::OnSessionEventStarting() {
   batch_in_progress_++;
 }
 
-void IOSChromeLocalSessionEventRouter::BatchOperationEnded(
-    WebStateList* web_state_list) {
+void IOSChromeLocalSessionEventRouter::OnSessionEventEnded() {
   DCHECK(batch_in_progress_ > 0);
   batch_in_progress_--;
   if (batch_in_progress_)

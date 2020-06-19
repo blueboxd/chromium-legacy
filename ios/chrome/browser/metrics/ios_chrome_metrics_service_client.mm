@@ -245,10 +245,8 @@ void IOSChromeMetricsServiceClient::Initialize() {
 
   if (IsMetricsReportingForceEnabled() ||
       base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
-    // Only restrict to allow-listed entries if metrics reporting is not forced.
-    bool restrict_to_allowed_entries = !IsMetricsReportingForceEnabled();
     ukm_service_ = std::make_unique<ukm::UkmService>(
-        local_state, this, restrict_to_allowed_entries,
+        local_state, this,
         std::make_unique<metrics::DemographicMetricsProvider>(
             std::make_unique<metrics::ChromeBrowserStateClient>(),
             metrics::MetricsLogUploader::MetricServiceType::UKM));

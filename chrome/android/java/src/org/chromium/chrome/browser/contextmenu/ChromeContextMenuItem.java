@@ -34,9 +34,10 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             Item.OPEN_IN_OTHER_WINDOW, Item.OPEN_IN_EPHEMERAL_TAB, Item.COPY_LINK_ADDRESS,
             Item.COPY_LINK_TEXT, Item.SAVE_LINK_AS, Item.LOAD_ORIGINAL_IMAGE, Item.SAVE_IMAGE,
             Item.OPEN_IMAGE, Item.OPEN_IMAGE_IN_NEW_TAB, Item.OPEN_IMAGE_IN_EPHEMERAL_TAB,
-            Item.COPY_IMAGE, Item.SEARCH_BY_IMAGE, Item.SEARCH_WITH_GOOGLE_LENS, Item.CALL,
-            Item.SEND_MESSAGE, Item.ADD_TO_CONTACTS, Item.COPY, Item.SAVE_VIDEO,
-            Item.OPEN_IN_CHROME})
+            Item.COPY_IMAGE, Item.SEARCH_BY_IMAGE, Item.SEARCH_WITH_GOOGLE_LENS,
+            Item.SHOP_SIMILAR_PRODUCTS, Item.SHOP_IMAGE_WITH_GOOGLE_LENS,
+            Item.SEARCH_SIMILAR_PRODUCTS, Item.CALL, Item.SEND_MESSAGE, Item.ADD_TO_CONTACTS,
+            Item.COPY, Item.SAVE_VIDEO, Item.OPEN_IN_CHROME})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Item {
         // Values are numerated from 0 and can't have gaps.
@@ -62,17 +63,20 @@ public class ChromeContextMenuItem implements ContextMenuItem {
         int COPY_IMAGE = 15;
         int SEARCH_BY_IMAGE = 16;
         int SEARCH_WITH_GOOGLE_LENS = 17;
+        int SHOP_SIMILAR_PRODUCTS = 18;
+        int SHOP_IMAGE_WITH_GOOGLE_LENS = 19;
+        int SEARCH_SIMILAR_PRODUCTS = 20;
         // Message Group
-        int CALL = 18;
-        int SEND_MESSAGE = 19;
-        int ADD_TO_CONTACTS = 20;
-        int COPY = 21;
+        int CALL = 21;
+        int SEND_MESSAGE = 22;
+        int ADD_TO_CONTACTS = 23;
+        int COPY = 24;
         // Video Group
-        int SAVE_VIDEO = 22;
+        int SAVE_VIDEO = 25;
         // Other
-        int OPEN_IN_CHROME = 23;
+        int OPEN_IN_CHROME = 26;
         // ALWAYS UPDATE!
-        int NUM_ENTRIES = 24;
+        int NUM_ENTRIES = 27;
     }
 
     /**
@@ -97,6 +101,9 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.id.contextmenu_copy_image, // Item.COPY_IMAGE
             R.id.contextmenu_search_by_image, // Item.SEARCH_BY_IMAGE
             R.id.contextmenu_search_with_google_lens, // Item.SEARCH_WITH_GOOGLE_LENS
+            R.id.contextmenu_shop_similar_products, // Item.SHOP_SIMILAR_PRODUCTS
+            R.id.contextmenu_shop_image_with_google_lens, // Item.SHOP_IMAGE_WITH_GOOGLE_LENS
+            R.id.contextmenu_search_similar_products, // Item.SEARCH_SIMILAR_PRODUCTS
             R.id.contextmenu_call, // Item.CALL
             R.id.contextmenu_send_message, // Item.SEND_MESSAGE
             R.id.contextmenu_add_to_contacts, // Item.ADD_TO_CONTACTS
@@ -127,6 +134,9 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             R.string.contextmenu_copy_image, // Item.COPY_IMAGE:
             R.string.contextmenu_search_web_for_image, // Item.SEARCH_BY_IMAGE:
             R.string.contextmenu_search_with_google_lens, // Item.SEARCH_WITH_GOOGLE_LENS:
+            R.string.contextmenu_shop_similar_products, // Item.SHOP_SIMILAR_PRODUCTS
+            R.string.contextmenu_shop_image_with_google_lens, // Item.SHOP_IMAGE_WITH_GOOGLE_LENS
+            R.string.contextmenu_search_similar_products, // Item.SEARCH_SIMILAR_PRODUCTS
             R.string.contextmenu_call, // Item.CALL:
             R.string.contextmenu_send_message, // Item.SEND_MESSAGE:
             R.string.contextmenu_add_to_contacts, // Item.ADD_TO_CONTACTS:
@@ -195,6 +205,15 @@ public class ChromeContextMenuItem implements ContextMenuItem {
             case Item.SEARCH_WITH_GOOGLE_LENS:
                 return addOrRemoveNewLabel(
                         context, ChromePreferenceKeys.CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED);
+            case Item.SHOP_SIMILAR_PRODUCTS:
+                return addOrRemoveNewLabel(
+                        context, ChromePreferenceKeys.CONTEXT_MENU_SHOP_SIMILAR_PRODUCTS_CLICKED);
+            case Item.SHOP_IMAGE_WITH_GOOGLE_LENS:
+                return addOrRemoveNewLabel(context,
+                        ChromePreferenceKeys.CONTEXT_MENU_SHOP_IMAGE_WITH_GOOGLE_LENS_CLICKED);
+            case Item.SEARCH_SIMILAR_PRODUCTS:
+                return addOrRemoveNewLabel(
+                        context, ChromePreferenceKeys.CONTEXT_MENU_SEARCH_SIMILAR_PRODUCTS_CLICKED);
             default:
                 return context.getString(getStringId(mItem));
         }

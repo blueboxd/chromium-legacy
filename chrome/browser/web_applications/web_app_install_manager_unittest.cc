@@ -346,6 +346,23 @@ class WebAppInstallManagerTest : public WebAppTest {
     return result;
   }
 
+  InstallResult FinalizeInstall(
+      const WebApplicationInfo& web_app_info,
+      const InstallFinalizer::FinalizeOptions& options) {
+    InstallResult result;
+    base::RunLoop run_loop;
+    finalizer().FinalizeInstall(
+        web_app_info, options,
+        base::BindLambdaForTesting(
+            [&](const AppId& app_id, InstallResultCode code) {
+              result.app_id = app_id;
+              result.code = code;
+              run_loop.Quit();
+            }));
+    run_loop.Run();
+    return result;
+  }
+
   int GetNumFullyInstalledApps() const {
     int num_apps = 0;
     for (const WebApp& app : test_registry_controller_->registrar().AllApps()) {

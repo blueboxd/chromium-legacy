@@ -84,8 +84,9 @@ class OsSettingsProvider : public SearchProvider,
   // display-ready vector. It:
   // - returns at most |kMaxShownResults| results
   // - removes results with duplicate IDs
+  // - removes results with relevance score below |min_score_|.
   // - removes results matching alternate text unless they meet extra
-  // requirements
+  //   requirements.
   //
   // The SearchHandler's vector is ranked high-to-low with this logic:
   // - compares SearchResultDefaultRank,
@@ -103,9 +104,11 @@ class OsSettingsProvider : public SearchProvider,
   void OnLoadIcon(apps::mojom::IconValuePtr icon_value);
 
   // Scoring and filtering parameters controlled from Finch.
-  size_t min_query_length_ = 1u;
+  bool accept_alternate_matches_ = false;
+  size_t min_query_length_ = 4u;
   size_t min_query_length_for_alternates_ = 4u;
-  float min_score_for_alternates_ = 0.35f;
+  float min_score_ = 0.4f;
+  float min_score_for_alternates_ = 0.4f;
 
   Profile* const profile_;
   chromeos::settings::SearchHandler* const search_handler_;

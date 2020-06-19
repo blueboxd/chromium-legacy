@@ -105,12 +105,7 @@ void DatabaseQuotaClient::GetOriginUsage(const url::Origin& origin,
                                          GetUsageCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
-
-  // All databases are in the default bucket.
-  if (type != StorageType::kTemporary) {
-    std::move(callback).Run(0);
-    return;
-  }
+  DCHECK_EQ(type, StorageType::kTemporary);
 
   base::PostTaskAndReplyWithResult(
       db_tracker_->task_runner(), FROM_HERE,
@@ -123,12 +118,7 @@ void DatabaseQuotaClient::GetOriginsForType(StorageType type,
                                             GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
-
-  // All databases are in the default bucket.
-  if (type != StorageType::kTemporary) {
-    std::move(callback).Run(std::set<url::Origin>());
-    return;
-  }
+  DCHECK_EQ(type, StorageType::kTemporary);
 
   std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
   db_tracker_->task_runner()->PostTaskAndReply(
@@ -144,12 +134,7 @@ void DatabaseQuotaClient::GetOriginsForHost(StorageType type,
                                             GetOriginsCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
-
-  // All databases are in the default bucket.
-  if (type != StorageType::kTemporary) {
-    std::move(callback).Run(std::set<url::Origin>());
-    return;
-  }
+  DCHECK_EQ(type, StorageType::kTemporary);
 
   std::set<url::Origin>* origins_ptr = new std::set<url::Origin>();
   db_tracker_->task_runner()->PostTaskAndReply(
@@ -166,12 +151,7 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
                                            DeletionCallback callback) {
   DCHECK(!callback.is_null());
   DCHECK(db_tracker_.get());
-
-  // All databases are in the default bucket.
-  if (type != StorageType::kTemporary) {
-    std::move(callback).Run(blink::mojom::QuotaStatusCode::kOk);
-    return;
-  }
+  DCHECK_EQ(type, StorageType::kTemporary);
 
   // DidDeleteOriginData() translates the net::Error response to a
   // blink::mojom::QuotaStatusCode if necessary, and no-ops as appropriate if
@@ -191,6 +171,8 @@ void DatabaseQuotaClient::DeleteOriginData(const url::Origin& origin,
 
 void DatabaseQuotaClient::PerformStorageCleanup(blink::mojom::StorageType type,
                                                 base::OnceClosure callback) {
+  DCHECK(!callback.is_null());
+  DCHECK_EQ(type, StorageType::kTemporary);
   std::move(callback).Run();
 }
 

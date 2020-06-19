@@ -573,23 +573,20 @@ TEST_F(VideoSenderTest, PopulatesResourceUtilizationInFrameMetadata) {
 
   for (int i = 0; i < 3; ++i) {
     scoped_refptr<media::VideoFrame> video_frame = GetNewVideoFrame();
-    ASSERT_FALSE(video_frame->metadata()->HasKey(
-        media::VideoFrameMetadata::RESOURCE_UTILIZATION));
+    ASSERT_FALSE(video_frame->metadata()->resource_utilization.has_value());
 
     const base::TimeTicks reference_time = testing_clock_.NowTicks();
     video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
     // Run encode tasks.  VideoSender::OnEncodedVideoFrame() will be called once
     // encoding of the frame is complete, and this is when the
-    // RESOURCE_UTILIZATION metadata is populated.
+    // resource_utilization metadata is populated.
     RunTasks(33);
 
-    // Check that the RESOURCE_UTILIZATION value is set and non-negative.  Don't
+    // Check that the resource_utilization value is set and non-negative.  Don't
     // check for specific values because they are dependent on real-world CPU
     // encode time, which can vary across test runs.
-    double utilization = -1.0;
-    EXPECT_TRUE(video_frame->metadata()->GetDouble(
-        media::VideoFrameMetadata::RESOURCE_UTILIZATION, &utilization));
+    double utilization = *video_frame->metadata()->resource_utilization;
     EXPECT_LE(0.0, utilization);
     if (i == 0)
       EXPECT_GE(1.0, utilization);  // Key frames never exceed 1.0.

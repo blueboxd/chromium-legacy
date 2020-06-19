@@ -9,8 +9,8 @@ import android.content.Intent;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.media.router.caf.BaseNotificationController;
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
-import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.media.router.R;
+import org.chromium.components.browser_ui.media.MediaNotificationUma;
 
 /** NotificationController implementation for remoting. */
 public class RemotingNotificationController extends BaseNotificationController {

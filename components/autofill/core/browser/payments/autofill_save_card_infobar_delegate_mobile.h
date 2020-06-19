@@ -63,7 +63,7 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   }
 
   // Called when a link in the legal message text was clicked.
-  void OnLegalMessageLinkClicked(GURL url);
+  virtual void OnLegalMessageLinkClicked(GURL url);
 
   // Google Pay branding is enabled with a flag and only for cards upstreamed
   // to Google.
@@ -87,9 +87,9 @@ class AutofillSaveCardInfoBarDelegateMobile : public ConfirmInfoBarDelegate {
   // Updates and then saves the card using |cardholder_name|,
   // |expiration_date_month| and |expiration_date_year|, which were provided
   // as part of the iOS save card Infobar dialog.
-  bool UpdateAndAccept(base::string16 cardholder_name,
-                       base::string16 expiration_date_month,
-                       base::string16 expiration_date_year);
+  virtual bool UpdateAndAccept(base::string16 cardholder_name,
+                               base::string16 expiration_date_month,
+                               base::string16 expiration_date_year);
 #endif  // defined(OS_IOS)
 
  private:

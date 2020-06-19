@@ -4,25 +4,27 @@
 
 #include "chrome/browser/chromeos/input_method/ui/undo_window.h"
 
+#include "chrome/app/vector_icons/vector_icons.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ui {
 namespace ime {
 
 namespace {
-constexpr int kUndoWindowCornerRadius = 5;
-const char kUndoButtonText[] = "⮌ Undo";
-
+const char kUndoButtonText[] = "Undo";
 class UndoWindowBorder : public views::BubbleBorder {
  public:
   UndoWindowBorder()
       : views::BubbleBorder(views::BubbleBorder::NONE,
                             views::BubbleBorder::SMALL_SHADOW,
-                            SK_ColorTRANSPARENT) {
-    SetCornerRadius(kUndoWindowCornerRadius);
+                            gfx::kPlaceholderColor) {
+    SetCornerRadius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
+        views::EmphasisMetric::EMPHASIS_MEDIUM));
     set_use_theme_background_color(true);
   }
   ~UndoWindowBorder() override = default;
@@ -44,6 +46,18 @@ UndoWindow::UndoWindow(gfx::NativeView parent, AssistiveDelegate* delegate)
       views::BoxLayout::Orientation::kHorizontal));
   undo_button_ = AddChildView(std::make_unique<views::LabelButton>(
       this, base::UTF8ToUTF16(kUndoButtonText)));
+  undo_button_->SetImageLabelSpacing(
+      views::LayoutProvider::Get()->GetDistanceMetric(
+          views::DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+}
+
+void UndoWindow::OnThemeChanged() {
+  undo_button_->SetImage(
+      views::Button::ButtonState::STATE_NORMAL,
+      gfx::CreateVectorIcon(kAutocorrectUndoIcon,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_DefaultIconColor)));
+  BubbleDialogDelegateView::OnThemeChanged();
 }
 
 UndoWindow::~UndoWindow() = default;

@@ -126,6 +126,8 @@ class ClientSession : public protocol::HostStub,
   void DeliverClientMessage(const protocol::ExtensionMessage& message) override;
   void SelectDesktopDisplay(
       const protocol::SelectDesktopDisplayRequest& select_display) override;
+  void ControlPeerConnection(
+      const protocol::PeerConnectionParameters& parameters) override;
 
   // protocol::ConnectionToClient::EventHandler interface.
   void OnConnectionAuthenticating() override;

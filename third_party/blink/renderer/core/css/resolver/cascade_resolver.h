@@ -41,6 +41,11 @@ class CORE_EXPORT CascadeResolver {
   // a cycle, and is therefore an error.
   bool IsLocked(const CSSProperty&) const;
 
+  // Returns the property we're currently applying.
+  const CSSProperty* CurrentProperty() const {
+    return stack_.size() ? stack_.back() : nullptr;
+  }
+
   // We do not allow substitution of animation-tainted values into
   // an animation-affecting property.
   //

@@ -1993,19 +1993,10 @@ IN_PROC_BROWSER_TEST_F(DownloadExtensionTest,
       download_url.c_str())).c_str());
 }
 
-// flaky on mac: crbug.com/392288
-#if defined(OS_MACOSX)
-#define MAYBE_DownloadExtensionTest_Download_InvalidURLs \
-        DISABLED_DownloadExtensionTest_Download_InvalidURLs
-#else
-#define MAYBE_DownloadExtensionTest_Download_InvalidURLs \
-        DownloadExtensionTest_Download_InvalidURLs
-#endif
-
 class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
  public:
   DownloadExtensionTestWithFtp() {
-    // DownloadExtensionTest_Download_InvalidURLs requires FTP support.
+    // DownloadExtensionTest_Download_InvalidURLs2 requires FTP support.
     // TODO(https://crbug.com/333943): Remove FTP tests and FTP feature flags.
     scoped_feature_list_.InitAndEnableFeature(features::kFtpProtocol);
   }
@@ -2016,27 +2007,27 @@ class DownloadExtensionTestWithFtp : public DownloadExtensionTest {
 
 // Test that downloading invalid URLs immediately returns kInvalidURLError.
 IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
-                       MAYBE_DownloadExtensionTest_Download_InvalidURLs) {
-  LoadExtension("downloads_split");
-  GoOnTheRecord();
-
-  static const char* const kInvalidURLs[] = {
-    "foo bar",
-    "../hello",
-    "/hello",
-    "http://",
-    "#frag",
-    "foo/bar.html#frag",
-    "google.com/",
+                       DownloadExtensionTest_Download_InvalidURLs1) {
+  static constexpr const char* kInvalidURLs[] = {
+      "foo bar", "../hello",          "/hello",      "http://",
+      "#frag",   "foo/bar.html#frag", "google.com/",
   };
 
-  for (size_t index = 0; index < base::size(kInvalidURLs); ++index) {
+  for (const char* url : kInvalidURLs) {
     EXPECT_STREQ(errors::kInvalidURL,
-                  RunFunctionAndReturnError(new DownloadsDownloadFunction(),
-                                            base::StringPrintf(
-        "[{\"url\": \"%s\"}]", kInvalidURLs[index])).c_str())
-      << kInvalidURLs[index];
+                 RunFunctionAndReturnError(
+                     new DownloadsDownloadFunction(),
+                     base::StringPrintf("[{\"url\": \"%s\"}]", url))
+                     .c_str())
+        << url;
   }
+}
+
+// Test various failure modes for downloading invalid URLs.
+IN_PROC_BROWSER_TEST_F(DownloadExtensionTestWithFtp,
+                       DownloadExtensionTest_Download_InvalidURLs2) {
+  LoadExtension("downloads_split");
+  GoOnTheRecord();
 
   int result_id = -1;
   std::unique_ptr<base::Value> result(RunFunctionAndReturnResult(

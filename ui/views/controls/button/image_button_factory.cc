@@ -110,21 +110,11 @@ void SetImageFromVectorIconWithColor(ImageButton* button,
   button->set_ink_drop_base_color(icon_color);
 }
 
-void SetToggledImageFromVectorIcon(ToggleImageButton* button,
-                                   const gfx::VectorIcon& icon,
-                                   int dip_size,
-                                   SkColor related_text_color) {
-  const SkColor icon_color =
-      color_utils::DeriveDefaultIconColor(related_text_color);
-  SetToggledImageFromVectorIconWithColor(button, icon, dip_size, icon_color);
-}
-
 void SetToggledImageFromVectorIconWithColor(ToggleImageButton* button,
                                             const gfx::VectorIcon& icon,
                                             int dip_size,
-                                            SkColor icon_color) {
-  const SkColor disabled_color =
-      SkColorSetA(icon_color, gfx::kDisabledControlAlpha);
+                                            SkColor icon_color,
+                                            SkColor disabled_color) {
   const gfx::ImageSkia normal_image =
       gfx::CreateVectorIcon(icon, dip_size, icon_color);
   const gfx::ImageSkia disabled_image =

@@ -1069,18 +1069,15 @@ void PictureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
 }
 
 void PictureLayerImpl::SetUseTransformedRasterization(bool use) {
+  // With transformed rasterization, the pixels along the edge of the layer may
+  // become translucent, so clear contents_opaque.
+  if (use)
+    SetContentsOpaque(false);
+
   if (use_transformed_rasterization_ == use)
     return;
 
   use_transformed_rasterization_ = use;
-  // With transformed rasterization, the pixels along the edge of the layer may
-  // become translucent, so clear contents_opaque.
-  if (use) {
-    // This doesn't affect contents_opaque_for_text.
-    bool opaque_for_text = contents_opaque_for_text();
-    SetContentsOpaque(false);
-    SetContentsOpaqueForText(opaque_for_text);
-  }
   NoteLayerPropertyChanged();
 }
 

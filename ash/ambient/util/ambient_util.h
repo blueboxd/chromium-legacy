@@ -14,6 +14,10 @@ namespace ash {
 namespace ambient {
 namespace util {
 
+// Returns true if Ambient Mode feature is enabled and also allowed for the
+// current active user session.
+ASH_EXPORT bool IsAmbientModeAllowed();
+
 // Returns true if Ash is showing lock screen.
 ASH_EXPORT bool IsShowing(LockScreen::ScreenType type);
 

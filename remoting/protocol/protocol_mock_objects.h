@@ -132,6 +132,8 @@ class MockHostStub : public HostStub {
                void(const ClientResolution& resolution));
   MOCK_METHOD1(ControlVideo, void(const VideoControl& video_control));
   MOCK_METHOD1(ControlAudio, void(const AudioControl& audio_control));
+  MOCK_METHOD1(ControlPeerConnection,
+               void(const PeerConnectionParameters& parameters));
   MOCK_METHOD1(SetCapabilities, void(const Capabilities& capabilities));
   MOCK_METHOD1(RequestPairing, void(const PairingRequest& pairing_request));
   MOCK_METHOD1(DeliverClientMessage, void(const ExtensionMessage& message));

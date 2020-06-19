@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.media.router;
 import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.RemoteMediaPlayer;
 
-import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
+import org.chromium.components.browser_ui.media.MediaNotificationInfo;
 import org.chromium.services.media_session.MediaMetadata;
 
 /**

@@ -355,6 +355,33 @@ IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AugmentImageNames) {
                   "image fotografia bianca e nero Appears to be: Puppy"));
 }
 
+IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, AugmentImageNamesInLinks) {
+  FakeAnnotator::SetReturnLabelResults(true);
+  FakeAnnotator::AddCustomLabelResultMapping("frog.jpg", "Tadpole");
+  FakeAnnotator::AddCustomLabelResultMapping("train.png", "Locomotive");
+
+  ui_test_utils::NavigateToURL(
+      browser(), https_server_.GetURL(
+                     "/accessibility/image_annotation_augment_links.html"));
+
+  // Block until the accessibility tree has at least 3 annotations. If
+  // that never happens, the test will time out.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui::AXTreeUpdate ax_tree_update =
+      content::GetAccessibilityTreeSnapshot(web_contents);
+  while (3 > DescribeNodesWithAnnotations(ax_tree_update).size()) {
+    content::WaitForAccessibilityTreeToChange(web_contents);
+    ax_tree_update = content::GetAccessibilityTreeSnapshot(web_contents);
+  }
+
+  EXPECT_THAT(
+      DescribeNodesWithAnnotations(ax_tree_update),
+      testing::ElementsAre("link photo background Appears to be: Locomotive",
+                           "image photo background Appears to be: Locomotive",
+                           "image the Appears to be: Tadpole"));
+}
+
 IN_PROC_BROWSER_TEST_F(ImageAnnotationBrowserTest, ImageDoc) {
   FakeAnnotator::SetReturnOcrResults(true);
   ui_test_utils::NavigateToURL(

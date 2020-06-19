@@ -387,7 +387,7 @@ void VideoDecoderClient::DecodeDoneTask(media::DecodeStatus status) {
 
 void VideoDecoderClient::FrameReadyTask(scoped_refptr<VideoFrame> video_frame) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_client_sequence_checker_);
-  DCHECK(video_frame->metadata()->IsTrue(VideoFrameMetadata::POWER_EFFICIENT));
+  DCHECK(video_frame->metadata()->power_efficient);
 
   frame_renderer_->RenderFrame(video_frame);
 

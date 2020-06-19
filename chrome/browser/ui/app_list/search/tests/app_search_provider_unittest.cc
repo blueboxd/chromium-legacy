@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -34,11 +35,13 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/crx_file/id_util.h"
@@ -60,6 +63,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using web_app::InstallResultCode;
 using web_app::ProviderType;
 
 namespace app_list {
@@ -710,6 +714,43 @@ class AppSearchProviderWebAppTest : public AppSearchProviderTest {
 
   ~AppSearchProviderWebAppTest() override = default;
 
+  web_app::AppId InstallWebApp(const std::string& app_name,
+                               const GURL& app_url) {
+    DCHECK(
+        base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions));
+    const web_app::AppId app_id = web_app::GenerateAppIdFromURL(app_url);
+
+    WebApplicationInfo web_app_info;
+
+    web_app_info.app_url = app_url;
+    web_app_info.scope = app_url;
+    web_app_info.title = base::UTF8ToUTF16(app_name);
+    web_app_info.description = base::UTF8ToUTF16(app_name);
+    web_app_info.open_as_window = true;
+
+    web_app::InstallFinalizer::FinalizeOptions options;
+    options.install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+
+    // In unit tests, we do not have Browser or WebContents instances.
+    // Hence we use FinalizeInstall instead of InstallWebAppFromManifest
+    // to install the web app.
+    base::RunLoop run_loop;
+    web_app::WebAppProviderBase::GetProviderBase(profile_.get())
+        ->install_finalizer()
+        .FinalizeInstall(web_app_info, options,
+                         base::BindLambdaForTesting(
+                             [&](const web_app::AppId& installed_app_id,
+                                 InstallResultCode code) {
+                               EXPECT_EQ(installed_app_id, app_id);
+                               EXPECT_EQ(code,
+                                         InstallResultCode::kSuccessNewInstall);
+                               run_loop.Quit();
+                             }));
+    run_loop.Run();
+    base::RunLoop().RunUntilIdle();
+    return app_id;
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -719,11 +760,7 @@ TEST_F(AppSearchProviderWebAppTest, WebApp) {
       apps::AppServiceProxyFactory::GetForProfile(testing_profile());
   proxy->FlushMojoCallsForTesting();
 
-  const web_app::AppId app_id = web_app::InstallDummyWebApp(
-      testing_profile(), kWebAppName, GURL(kWebAppUrl));
-
-  // Allow async callbacks to run.
-  base::RunLoop().RunUntilIdle();
+  const web_app::AppId app_id = InstallWebApp(kWebAppName, GURL(kWebAppUrl));
 
   CreateSearch();
   EXPECT_EQ("WebApp1", RunQuery("WebA"));

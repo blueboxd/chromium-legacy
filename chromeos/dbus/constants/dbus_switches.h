@@ -19,6 +19,8 @@ extern const char kFakeOobeConfiguration[];
 COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
 extern const char kShillStub[];
 COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
+extern const char kHermesFake[];
+COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
 extern const char kSmsTestMessages[];
 COMPONENT_EXPORT(CHROMEOS_DBUS_CONSTANTS)
 extern const char kSystemDevMode[];

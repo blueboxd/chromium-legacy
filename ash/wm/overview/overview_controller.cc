@@ -249,16 +249,6 @@ void OverviewController::OnWindowActivating(ActivationReason reason,
     overview_session_->OnWindowActivating(reason, gained_active, lost_active);
 }
 
-void OverviewController::OnAttemptToReactivateWindow(
-    aura::Window* request_active,
-    aura::Window* actual_active) {
-  if (InOverviewSession()) {
-    overview_session_->OnWindowActivating(
-        ::wm::ActivationChangeObserver::ActivationReason::ACTIVATION_CLIENT,
-        request_active, actual_active);
-  }
-}
-
 std::vector<aura::Window*>
 OverviewController::GetWindowsListInOverviewGridsForTest() {
   std::vector<aura::Window*> windows;

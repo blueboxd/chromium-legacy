@@ -116,6 +116,12 @@ public final class EventConstants {
             "contextual_search_triggered_by_longpress";
 
     /**
+     * Contextual Search attempted-trigger by Tap when user should Long-press.
+     */
+    public static final String CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS =
+            "contextual_search_tapped_but_should_longpress";
+
+    /**
      * The partner homepage was pressed.
      */
     public static final String PARTNER_HOME_PAGE_BUTTON_PRESSED =

@@ -13,19 +13,21 @@
 namespace updater {
 
 // Creates a ref-counted singleton instance of the type T. Use this function
-// to get instances of classes derived from updater::App.
-// TODO(crbug.com/1064498) - provide non-leaky creation for callers where
-// a singleton is not needed.
+// to get instances of classes derived from |updater::App|, only if a
+// singleton design is needed.
 template <typename T>
-scoped_refptr<T> AppInstance() {
+scoped_refptr<T> AppSingletonInstance() {
   static base::NoDestructor<scoped_refptr<T>> instance{
       base::MakeRefCounted<T>()};
   return *instance;
 }
 
 // An App is an abstract class used as a main processing mode for the updater.
-// Instances of classes derived from App must be accessed as singletons by
-// calling the function template AppInstance<T>.
+// Prefer creating non-singleton instances of |App| using |base::MakeRefCounted|
+// then use |updater::AppSingletonInstance| only when a singleton instance is
+// required by the design. Typically, |App| instances are not singletons but
+// there are cases where a singleton is needed, such as the Windows RPC
+// server app instance.
 class App : public base::RefCountedThreadSafe<App> {
  public:
   // Starts the thread pool and task executor, then runs a runloop on the main

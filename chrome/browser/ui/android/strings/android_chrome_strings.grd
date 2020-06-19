@@ -1772,6 +1772,15 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_CONTEXTMENU_SEARCH_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens. [CHAR-LIMIT=30]">
         Search with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
       </message>
+      <message name="IDS_CONTEXTMENU_SHOP_SIMILAR_PRODUCTS" desc="Context sensitive menu item for deep linking into google lens for shopping results. [CHAR-LIMIT=30]">
+        Shop similar products <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
+      <message name="IDS_CONTEXTMENU_SHOP_IMAGE_WITH_GOOGLE_LENS" desc="Context sensitive menu item for deep linking into google lens for shopping results. [CHAR-LIMIT=30]">
+        Shop image with Google Lens <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
+      <message name="IDS_CONTEXTMENU_SEARCH_SIMILAR_PRODUCTS" desc="Context sensitive menu item for deep linking into google lens for shopping results. [CHAR-LIMIT=30]">
+        Search similar products <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      </message>
       <message name="IDS_CONTEXTMENU_SEARCH_WEB_FOR_IMAGE" desc="Context sensitive menu item for search-for-Image command in a new tab. [CHAR-LIMIT=30]">
         Search <ph name="SEARCH_ENGINE">%1$s<ex>Google</ex></ph> for this image
       </message>
@@ -2260,26 +2269,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_EXTERNAL_APP_RESTRICTED_ACCESS_ERROR" desc="A message shown to the user if Chrome receives a file view request to something Chrome does not have access to view." formatter_data="android_java">
         Chrome does not have access to the requested resource.
-      </message>
-
-      <!-- Messages for remote media playback (casting) -->
-      <message name="IDS_ACCESSIBILITY_PLAY" desc="The play button that starts playing the media.">
-        Play
-      </message>
-      <message name="IDS_ACCESSIBILITY_PAUSE" desc="The pause button that pauses playing the media.">
-        Pause
-      </message>
-      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="The previous track button that switches media to the previous track.">
-        Previous track
-      </message>
-      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="The next track button that switches media to the next track.">
-        Next track
-      </message>
-      <message name="IDS_ACCESSIBILITY_SEEK_FORWARD" desc="The seek forward button that seeks media to a later position.">
-        Seek forward
-      </message>
-      <message name="IDS_ACCESSIBILITY_SEEK_BACKWARD" desc="The seek backward button that seeks media to an earlier position.">
-        Seek backward
       </message>
 
       <!-- New Tab Page strings -->
@@ -2827,10 +2816,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <message name="IDS_TAB_SWITCHER_BUTTON_LABEL" desc="Label for tab switcher button">
         Tabs
-      </message>
-
-      <message name="IDS_MEDIA_NOTIFICATION_INCOGNITO" desc="Text used as a placeholder for a media notification about playing media, when notification is shown from incognito tab.">
-        A site is playing media
       </message>
 
       <!-- Contextual Search -->

@@ -301,7 +301,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   // The frames must be copied when threaded texture mailboxes are in use
   // (http://crbug.com/582170).
   if (enable_threaded_texture_mailboxes)
-    frame->metadata()->SetBoolean(VideoFrameMetadata::COPY_REQUIRED, true);
+    frame->metadata()->copy_required = true;
 
   const bool is_surface_control =
       overlay_mode == OverlayMode::kSurfaceControlSecure ||
@@ -320,12 +320,9 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
     allow_overlay = !is_texture_owner_backed || wants_promotion_hints;
   }
 
-  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
-                                allow_overlay);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::WANTS_PROMOTION_HINT,
-                                wants_promotion_hints);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::TEXTURE_OWNER,
-                                is_texture_owner_backed);
+  frame->metadata()->allow_overlay = allow_overlay;
+  frame->metadata()->wants_promotion_hint = wants_promotion_hints;
+  frame->metadata()->texture_owner = is_texture_owner_backed;
 
   // TODO(liberato): if this is run via being dropped, then it would be nice
   // to find that out rather than treating the image as unused.  If the renderer

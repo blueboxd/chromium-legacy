@@ -30,11 +30,23 @@ class AccessibilityTreeFormatterBaseTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(AccessibilityTreeFormatterBaseTest);
 };
 
-void ParseAndCheck(const char* input, const char* expected) {
+PropertyNode Parse(const char* input) {
   AccessibilityTreeFormatter::PropertyFilter filter(
       base::UTF8ToUTF16(input),
       AccessibilityTreeFormatter::PropertyFilter::ALLOW);
-  auto got = PropertyNode::FromPropertyFilter(filter).ToString();
+  return PropertyNode::FromPropertyFilter(filter);
+}
+
+PropertyNode GetArgumentNode(const char* input) {
+  auto got = Parse(input);
+  if (got.parameters.size() == 0) {
+    return PropertyNode();
+  }
+  return std::move(got.parameters[0]);
+}
+
+void ParseAndCheck(const char* input, const char* expected) {
+  auto got = Parse(input).ToString();
   EXPECT_EQ(got, expected);
 }
 
@@ -57,6 +69,11 @@ TEST_F(AccessibilityTreeFormatterBaseTest, ParseProperty) {
   ParseAndCheck("Role(3", "Role(3)");
   ParseAndCheck("TableFor(CellBy(id", "TableFor(CellBy(id))");
   ParseAndCheck("[3, 4", "[](3, 4)");
+
+  // Arguments conversion
+  EXPECT_EQ(GetArgumentNode("ChildAt([3])").IsArray(), true);
+  EXPECT_EQ(GetArgumentNode("ChildAt(3)").IsArray(), false);
+  EXPECT_EQ(GetArgumentNode("ChildAt(3)").AsInt(), 3);
 }
 
 }  // namespace content

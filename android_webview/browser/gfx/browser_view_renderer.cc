@@ -266,6 +266,9 @@ bool BrowserViewRenderer::OnDrawHardware() {
   DCHECK(current_compositor_frame_consumer_);
   TRACE_EVENT0("android_webview", "BrowserViewRenderer::OnDrawHardware");
 
+  const bool did_invalidate = did_invalidate_since_last_draw_;
+  did_invalidate_since_last_draw_ = false;
+
   if (!CanOnDraw()) {
     return false;
   }
@@ -315,7 +318,7 @@ bool BrowserViewRenderer::OnDrawHardware() {
   std::unique_ptr<ChildFrame> child_frame = std::make_unique<ChildFrame>(
       std::move(future), frame_sink_id_, viewport_size_for_tile_priority,
       external_draw_constraints_.transform, offscreen_pre_raster_, dip_scale_,
-      std::move(requests));
+      std::move(requests), did_invalidate);
 
   ReturnUnusedResource(
       current_compositor_frame_consumer_->SetFrameOnUI(std::move(child_frame)));
@@ -397,6 +400,7 @@ void BrowserViewRenderer::ReturnUsedResources(
 }
 
 bool BrowserViewRenderer::OnDrawSoftware(SkCanvas* canvas) {
+  did_invalidate_since_last_draw_ = false;
   return CanOnDraw() && CompositeSW(canvas);
 }
 
@@ -892,6 +896,7 @@ void BrowserViewRenderer::PostInvalidate(
   if (compositor != compositor_)
     return;
 
+  did_invalidate_since_last_draw_ = true;
   client_->PostInvalidate();
 }
 

@@ -333,10 +333,7 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
   }
 
   // This is a signal frame saying that the stream is stopped.
-  bool end_of_stream = false;
-  if (frame->metadata()->GetBoolean(media::VideoFrameMetadata::END_OF_STREAM,
-                                    &end_of_stream) &&
-      end_of_stream) {
+  if (frame->metadata()->end_of_stream) {
     rendering_frame_buffer_.reset();
     RenderWithoutAlgorithm(std::move(frame));
     return;
@@ -345,16 +342,15 @@ void WebMediaPlayerMSCompositor::EnqueueFrame(
   // If we detect a bad frame without |render_time|, we switch off algorithm,
   // because without |render_time|, algorithm cannot work.
   // In general, this should not happen.
-  base::TimeTicks render_time;
-  if (!frame->metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+  if (!frame->metadata()->reference_time.has_value()) {
     DLOG(WARNING)
-        << "Incoming VideoFrames have no REFERENCE_TIME, switching off super "
+        << "Incoming VideoFrames have no reference_time, switching off super "
            "sophisticated rendering algorithm";
     rendering_frame_buffer_.reset();
     RenderWithoutAlgorithm(std::move(frame));
     return;
   }
+  base::TimeTicks render_time = *frame->metadata()->reference_time;
 
   // The code below handles the case where UpdateCurrentFrame() callbacks stop.
   // These callbacks can stop when the tab is hidden or the page area containing
@@ -400,9 +396,10 @@ bool WebMediaPlayerMSCompositor::UpdateCurrentFrame(
     tracing_or_dcheck_enabled = true;
 #endif  // DCHECK_IS_ON()
     if (tracing_or_dcheck_enabled) {
-      base::TimeTicks render_time;
-      if (!current_frame_->metadata()->GetTimeTicks(
-              media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+      base::TimeTicks render_time =
+          current_frame_->metadata()->reference_time.value_or(
+              base::TimeTicks());
+      if (!current_frame_->metadata()->reference_time.has_value()) {
         DCHECK(!rendering_frame_buffer_)
             << "VideoFrames need REFERENCE_TIME to use "
                "sophisticated video rendering algorithm.";
@@ -573,25 +570,20 @@ void WebMediaPlayerMSCompositor::SetCurrentFrame(
   // current frame.
   bool is_first_frame = true;
   bool has_frame_size_changed = false;
-  base::Optional<media::VideoRotation> new_rotation = media::VIDEO_ROTATION_0;
-  base::Optional<bool> new_opacity;
 
+  base::Optional<media::VideoRotation> new_rotation =
+      frame->metadata()->rotation.value_or(media::VIDEO_ROTATION_0);
+
+  base::Optional<bool> new_opacity;
   new_opacity = media::IsOpaque(frame->format());
-  media::VideoRotation current_video_rotation;
-  if (frame->metadata()->GetRotation(media::VideoFrameMetadata::ROTATION,
-                                     &current_video_rotation)) {
-    new_rotation = current_video_rotation;
-  }
 
   if (current_frame_) {
     // We have a current frame, so determine what has changed.
     is_first_frame = false;
 
-    if (!current_frame_->metadata()->GetRotation(
-            media::VideoFrameMetadata::ROTATION, &current_video_rotation)) {
-      // Assume VIDEO_ROTATION_0 for current frame without video rotation.
-      current_video_rotation = media::VIDEO_ROTATION_0;
-    }
+    media::VideoRotation current_video_rotation =
+        current_frame_->metadata()->rotation.value_or(media::VIDEO_ROTATION_0);
+
     if (current_video_rotation == *new_rotation) {
       new_rotation.reset();
     }

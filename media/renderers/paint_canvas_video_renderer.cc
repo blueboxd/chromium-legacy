@@ -330,8 +330,7 @@ void SynchronizeVideoFrameRead(scoped_refptr<VideoFrame> video_frame,
   SyncTokenClientImpl client(ri);
   video_frame->UpdateReleaseSyncToken(&client);
 
-  if (video_frame->metadata()->IsTrue(
-          VideoFrameMetadata::READ_LOCK_FENCES_ENABLED)) {
+  if (video_frame->metadata()->read_lock_fences_enabled) {
     // |video_frame| must be kept alive during read operations.
     DCHECK(context_support);
     unsigned query_id = 0;
@@ -1217,8 +1216,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
   DCHECK(video_frame);
   DCHECK(video_frame->HasTextures());
   if (video_frame->NumTextures() > 1 ||
-      video_frame->metadata()->IsTrue(
-          VideoFrameMetadata::READ_LOCK_FENCES_ENABLED)) {
+      video_frame->metadata()->read_lock_fences_enabled) {
     if (!raster_context_provider)
       return false;
     GrContext* gr_context = raster_context_provider->GrContext();

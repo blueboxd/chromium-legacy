@@ -114,6 +114,10 @@ bool ShelfViewTestAPI::CloseMenu() {
   return true;
 }
 
+const gfx::Rect& ShelfViewTestAPI::visible_shelf_item_bounds_union() const {
+  return shelf_view_->visible_shelf_item_bounds_union_;
+}
+
 ShelfTooltipManager* ShelfViewTestAPI::tooltip_manager() {
   return shelf_view_->shelf()->tooltip();
 }

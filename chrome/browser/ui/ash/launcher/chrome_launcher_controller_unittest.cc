@@ -88,9 +88,7 @@
 #include "chrome/browser/web_applications/components/externally_installed_web_app_prefs.h"
 #include "chrome/browser/web_applications/components/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
-#include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -4930,72 +4928,6 @@ TEST_P(ChromeLauncherControllerWithArcTest, PinAtIndex) {
   EXPECT_EQ(3, launcher_controller_->PinnedItemIndexByAppID(arc_app_id1));
 }
 
-class ChromeLauncherControllerWebAppTest : public ChromeLauncherControllerTest {
- protected:
-  ChromeLauncherControllerWebAppTest() {}
-
-  ~ChromeLauncherControllerWebAppTest() override = default;
-
-  void MaybeStartWebAppProvider() override {
-    DCHECK(
-        base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions));
-    auto system_web_app_manager =
-        std::make_unique<web_app::TestSystemWebAppManager>(profile());
-
-    auto* provider = web_app::TestWebAppProvider::Get(profile());
-    provider->SetSystemWebAppManager(std::move(system_web_app_manager));
-    provider->SetRunSubsystemStartupTasks(true);
-    provider->Start();
-  }
-};
-
-// Test the web app interaction flow: pin it, run it, unpin it, close it.
-TEST_P(ChromeLauncherControllerWebAppTest, WebAppPinRunUnpinClose) {
-  constexpr char kWebAppUrl[] = "https://webappone.com/";
-  constexpr char kWebAppName[] = "WebApp1";
-
-  InitLauncherController();
-
-  const web_app::AppId app_id =
-      web_app::InstallDummyWebApp(profile(), kWebAppName, GURL(kWebAppUrl));
-  base::RunLoop().RunUntilIdle();
-
-  // The model should only contain the browser shortcut item.
-  EXPECT_EQ(1, model_->item_count());
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
-  EXPECT_EQ(nullptr, launcher_controller_->GetItem(ash::ShelfID(app_id)));
-
-  // Pinning the app should create a new shelf item.
-  launcher_controller_->PinAppWithID(app_id);
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[1].type);
-  EXPECT_EQ(ash::STATUS_CLOSED, model_->items()[1].status);
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
-  EXPECT_NE(nullptr, launcher_controller_->GetItem(ash::ShelfID(app_id)));
-
-  // Reporting that the app is running should just update the existing item.
-  launcher_controller_->SetV1AppStatus(app_id, ash::STATUS_RUNNING);
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(ash::TYPE_PINNED_APP, model_->items()[1].type);
-  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[1].status);
-  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
-  EXPECT_NE(nullptr, launcher_controller_->GetItem(ash::ShelfID(app_id)));
-
-  // Unpinning the app should just update the existing item.
-  launcher_controller_->UnpinAppWithID(app_id);
-  EXPECT_EQ(2, model_->item_count());
-  EXPECT_EQ(ash::TYPE_APP, model_->items()[1].type);
-  EXPECT_EQ(ash::STATUS_RUNNING, model_->items()[1].status);
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
-  EXPECT_NE(nullptr, launcher_controller_->GetItem(ash::ShelfID(app_id)));
-
-  // Reporting that the app is closed should remove its shelf item.
-  launcher_controller_->SetV1AppStatus(app_id, ash::STATUS_CLOSED);
-  EXPECT_EQ(1, model_->item_count());
-  EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
-  EXPECT_EQ(nullptr, launcher_controller_->GetItem(ash::ShelfID(app_id)));
-}
-
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerTest,
@@ -5051,8 +4983,3 @@ INSTANTIATE_TEST_SUITE_P(
     ChromeLauncherControllerDemoModeTest,
     ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false),
                       std::make_pair(ProviderType::kWebApps, false)));
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    ChromeLauncherControllerWebAppTest,
-    ::testing::Values(std::make_pair(ProviderType::kWebApps, false)));

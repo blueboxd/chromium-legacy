@@ -471,9 +471,9 @@ VideoResourceUpdater::~VideoResourceUpdater() {
 
 void VideoResourceUpdater::ObtainFrameResources(
     scoped_refptr<VideoFrame> video_frame) {
-  if (video_frame->metadata()->GetUnguessableToken(
-          VideoFrameMetadata::OVERLAY_PLANE_ID, &overlay_plane_id_)) {
+  if (video_frame->metadata()->overlay_plane_id.has_value()) {
     // This is a hole punching VideoFrame, there is nothing to display.
+    overlay_plane_id_ = *video_frame->metadata()->overlay_plane_id;
     frame_resource_type_ = VideoFrameResourceType::VIDEO_HOLE;
     return;
   }
@@ -590,8 +590,8 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
           frame_resources_.size() > 3 ? frame_resources_[3].id : 0,
           frame->ColorSpace(), frame_resource_offset_,
           frame_resource_multiplier_, frame_bits_per_channel_);
-      if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
-        if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED)) {
+      if (frame->metadata()->protected_video) {
+        if (frame->metadata()->hw_protected) {
           yuv_video_quad->protected_video_type =
               gfx::ProtectedVideoType::kHardwareProtected;
         } else {
@@ -619,8 +619,8 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
       bool nearest_neighbor = false;
       gfx::ProtectedVideoType protected_video_type =
           gfx::ProtectedVideoType::kClear;
-      if (frame->metadata()->IsTrue(VideoFrameMetadata::PROTECTED_VIDEO)) {
-        if (frame->metadata()->IsTrue(VideoFrameMetadata::HW_PROTECTED))
+      if (frame->metadata()->protected_video) {
+        if (frame->metadata()->hw_protected)
           protected_video_type = gfx::ProtectedVideoType::kHardwareProtected;
         else
           protected_video_type = gfx::ProtectedVideoType::kSoftwareProtected;
@@ -820,8 +820,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   VideoFrameExternalResources external_resources;
   gfx::ColorSpace resource_color_space = video_frame->ColorSpace();
 
-  bool copy_required =
-      video_frame->metadata()->IsTrue(VideoFrameMetadata::COPY_REQUIRED);
+  bool copy_required = video_frame->metadata()->copy_required;
 
   GLuint target = video_frame->mailbox_holder(0).texture_target;
   // If |copy_required| then we will copy into a GL_TEXTURE_2D target.
@@ -863,19 +862,18 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       auto transfer_resource = viz::TransferableResource::MakeGL(
           mailbox_holder.mailbox, GL_LINEAR, mailbox_holder.texture_target,
           mailbox_holder.sync_token, plane_size,
-          video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY));
+          video_frame->metadata()->allow_overlay);
       transfer_resource.color_space = resource_color_space;
       transfer_resource.read_lock_fences_enabled =
-          video_frame->metadata()->IsTrue(
-              VideoFrameMetadata::READ_LOCK_FENCES_ENABLED);
+          video_frame->metadata()->read_lock_fences_enabled;
       transfer_resource.format = viz::GetResourceFormat(buffer_formats[i]);
       transfer_resource.ycbcr_info = video_frame->ycbcr_info();
 
 #if defined(OS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =
-          video_frame->metadata()->IsTrue(VideoFrameMetadata::TEXTURE_OWNER);
-      transfer_resource.wants_promotion_hint = video_frame->metadata()->IsTrue(
-          VideoFrameMetadata::WANTS_PROMOTION_HINT);
+          video_frame->metadata()->texture_owner;
+      transfer_resource.wants_promotion_hint =
+          video_frame->metadata()->wants_promotion_hint;
 #endif
       external_resources.resources.push_back(std::move(transfer_resource));
       external_resources.release_callbacks.push_back(

@@ -150,29 +150,29 @@ jumbo_source_set("blink_heap_unittests_sources") {
   testonly = true
   sources = [
     "../testing/run_all_tests.cc",
-    "blink_gc_memory_dump_provider_test.cc",
-    "card_table_test.cc",
-    "collection_support/heap_linked_stack_test.cc",
-    "concurrent_marking_test.cc",
-    "gc_info_test.cc",
-    "heap_compact_test.cc",
-    "heap_stats_collector_test.cc",
-    "heap_test.cc",
-    "heap_thread_test.cc",
-    "heap_traits_test.cc",
-    "incremental_marking_test.cc",
-    "marking_verifier_test.cc",
-    "name_trait_test.cc",
-    "object_start_bitmap_test.cc",
-    "persistent_test.cc",
-    "thread_state_scheduling_test.cc",
-    "weakness_marking_test.cc",
-    "worklist_test.cc",
-    "write_barrier_perftest.cc",
+    "test/blink_gc_memory_dump_provider_test.cc",
+    "test/card_table_test.cc",
+    "test/concurrent_marking_test.cc",
+    "test/gc_info_test.cc",
+    "test/heap_compact_test.cc",
+    "test/heap_linked_stack_test.cc",
+    "test/heap_stats_collector_test.cc",
+    "test/heap_test.cc",
+    "test/heap_thread_test.cc",
+    "test/heap_traits_test.cc",
+    "test/incremental_marking_test.cc",
+    "test/marking_verifier_test.cc",
+    "test/name_trait_test.cc",
+    "test/object_start_bitmap_test.cc",
+    "test/persistent_test.cc",
+    "test/thread_state_scheduling_test.cc",
+    "test/weakness_marking_test.cc",
+    "test/worklist_test.cc",
+    "test/write_barrier_perftest.cc",
   ]
 
   if (enable_blink_heap_young_generation) {
-    sources += [ "minor_gc_test.cc" ]
+    sources += [ "test/minor_gc_test.cc" ]
   }
 
   configs += [

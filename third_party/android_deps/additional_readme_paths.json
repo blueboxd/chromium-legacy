@@ -40,6 +40,7 @@
     "libs/androidx_lifecycle_lifecycle_livedata_core",
     "libs/androidx_lifecycle_lifecycle_runtime",
     "libs/androidx_lifecycle_lifecycle_viewmodel",
+    "libs/androidx_lifecycle_lifecycle_viewmodel_savedstate",
     "libs/androidx_loader_loader",
     "libs/androidx_localbroadcastmanager_localbroadcastmanager",
     "libs/androidx_media_media",

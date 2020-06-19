@@ -55,9 +55,7 @@ bool ShouldTriggerSafetyTipFromLookalike(
   }
 
   // If we're already displaying an interstitial, don't warn again.
-  if (base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestionsUI) &&
-      ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
+  if (ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
     return false;
   }
 
@@ -73,16 +71,14 @@ bool ShouldTriggerSafetyTipFromLookalike(
       return false;
     case LookalikeUrlMatchType::kTargetEmbeddingForSafetyTips:
       return kEnableLookalikeTargetEmbedding.Get();
+    case LookalikeUrlMatchType::kSkeletonMatchTop5k:
+      return kEnableLookalikeTopSites.Get();
     case LookalikeUrlMatchType::kSiteEngagement:
     case LookalikeUrlMatchType::kSkeletonMatchTop500:
       // We should only ever reach these cases when the lookalike interstitial
       // is disabled. Now that interstitial is fully launched, this only happens
       // in tests.
-      DCHECK(!base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestionsUI));
-      return true;
-    case LookalikeUrlMatchType::kSkeletonMatchTop5k:
-      return kEnableLookalikeTopSites.Get();
+      FALLTHROUGH;
     case LookalikeUrlMatchType::kNone:
       NOTREACHED();
   }

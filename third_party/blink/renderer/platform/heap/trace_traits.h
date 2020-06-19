@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/heap/heap_page.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -47,7 +48,17 @@ struct AdjustPointerTrait<T, true> {
   STATIC_ONLY(AdjustPointerTrait);
 
   static TraceDescriptor GetTraceDescriptor(const void* self) {
-    return static_cast<const T*>(self)->GetTraceDescriptor();
+    // Tracing an object, and more specifically GetTraceDescriptor for an
+    // object, implies having a reference whichmeans the object is at least in
+    // construction. Therefore it is guaranteed that the ObjectStartBitmap was
+    // already updated to include the object, and its HeapObjectHeader was
+    // already created.
+    HeapObjectHeader* const header = HeapObjectHeader::FromInnerAddress<
+        HeapObjectHeader::AccessMode::kAtomic>(self);
+    return {header->Payload(),
+            GCInfo::From(
+                header->GcInfoIndex<HeapObjectHeader::AccessMode::kAtomic>())
+                .trace};
   }
 };
 

@@ -40,7 +40,7 @@ declare_args() {
   # Enables Closure compilation of generated JS lite bindings. In environments
   # where compilation is supported, any mojom target "foo" will also have a
   # corresponding "foo_js_library_for_compile" target generated.
-  enable_mojom_closure_compile = closure_compile && optimize_webui
+  enable_mojom_closure_compile = enable_js_type_check && optimize_webui
 
   # Enables generating Typescript bindings and compiling them to JS bindings.
   enable_typescript_bindings = false
@@ -529,6 +529,12 @@ template("mojom") {
   if (defined(invoker.sources)) {
     sources_list = invoker.sources
   }
+
+  # Reset sources_assignment_filter for the BUILD.gn file to prevent
+  # regression during the migration of Chromium away from the feature.
+  # See docs/no_sources_assignment_filter.md for more information.
+  # TODO(crbug.com/1018739): remove this when migration is done.
+  set_sources_assignment_filter([])
 
   # Listed sources may be relative to the current target dir, or they may be
   # absolute paths, including paths to generated mojom files. While those are

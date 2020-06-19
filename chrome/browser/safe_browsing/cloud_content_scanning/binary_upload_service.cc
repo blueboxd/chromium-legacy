@@ -18,10 +18,12 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
@@ -574,6 +576,12 @@ BinaryUploadService::Request::Data::Data() = default;
 BinaryUploadService::Request::Request(Callback callback, GURL url)
     : use_legacy_proto_(true), callback_(std::move(callback)), url_(url) {}
 
+BinaryUploadService::Request::Request(ContentAnalysisCallback callback,
+                                      GURL url)
+    : use_legacy_proto_(false),
+      content_analysis_callback_(std::move(callback)),
+      url_(url) {}
+
 BinaryUploadService::Request::~Request() = default;
 
 void BinaryUploadService::Request::set_request_dlp_scan(
@@ -625,8 +633,14 @@ void BinaryUploadService::Request::set_digest(const std::string& digest) {
 }
 
 void BinaryUploadService::Request::clear_dlp_scan_request() {
-  DCHECK(use_legacy_proto_);
-  deep_scanning_request_.clear_dlp_scan_request();
+  if (use_legacy_proto()) {
+    deep_scanning_request_.clear_dlp_scan_request();
+  } else {
+    auto* tags = content_analysis_request_.mutable_tags();
+    auto it = std::find(tags->begin(), tags->end(), "dlp");
+    if (it != tags->end())
+      tags->erase(it);
+  }
 }
 
 void BinaryUploadService::Request::set_analysis_connector(
@@ -673,6 +687,20 @@ const std::string& BinaryUploadService::Request::fcm_notification_token()
     return content_analysis_request_.fcm_notification_token();
 }
 
+const std::string& BinaryUploadService::Request::filename() const {
+  if (use_legacy_proto_)
+    return deep_scanning_request_.filename();
+  else
+    return content_analysis_request_.request_data().filename();
+}
+
+const std::string& BinaryUploadService::Request::digest() const {
+  if (use_legacy_proto_)
+    return deep_scanning_request_.digest();
+  else
+    return content_analysis_request_.request_data().digest();
+}
+
 void BinaryUploadService::Request::FinishRequest(Result result) {
   if (use_legacy_proto_) {
     std::move(callback_).Run(result, DeepScanningClientResponse());
@@ -710,6 +738,10 @@ class ValidateDataUploadRequest : public BinaryUploadService::Request {
  public:
   explicit ValidateDataUploadRequest(BinaryUploadService::Callback callback,
                                      GURL url)
+      : BinaryUploadService::Request(std::move(callback), url) {}
+  explicit ValidateDataUploadRequest(
+      BinaryUploadService::ContentAnalysisCallback callback,
+      GURL url)
       : BinaryUploadService::Request(std::move(callback), url) {}
   ValidateDataUploadRequest(const ValidateDataUploadRequest&) = delete;
   ValidateDataUploadRequest& operator=(const ValidateDataUploadRequest&) =
@@ -749,17 +781,33 @@ void BinaryUploadService::IsAuthorized(const GURL& url,
       }
 
       pending_validate_data_upload_request_ = true;
-      auto request = std::make_unique<ValidateDataUploadRequest>(
-          base::BindOnce(
-              &BinaryUploadService::ValidateDataUploadRequestCallback,
-              weakptr_factory_.GetWeakPtr()),
-          url);
+      auto request =
+          base::FeatureList::IsEnabled(
+              enterprise_connectors::kEnterpriseConnectorsEnabled)
+              ? std::make_unique<ValidateDataUploadRequest>(
+                    base::BindOnce(
+                        &BinaryUploadService::
+                            ValidateDataUploadRequestConnectorCallback,
+                        weakptr_factory_.GetWeakPtr()),
+                    url)
+              : std::make_unique<ValidateDataUploadRequest>(
+                    base::BindOnce(
+                        &BinaryUploadService::ValidateDataUploadRequestCallback,
+                        weakptr_factory_.GetWeakPtr()),
+                    url);
       request->set_device_token(dm_token.value());
       UploadForDeepScanning(std::move(request));
     }
     return;
   }
   std::move(callback).Run(can_upload_enterprise_data_.value());
+}
+
+void BinaryUploadService::ValidateDataUploadRequestConnectorCallback(
+    BinaryUploadService::Result result,
+    enterprise_connectors::ContentAnalysisResponse response) {
+  pending_validate_data_upload_request_ = false;
+  can_upload_enterprise_data_ = result == BinaryUploadService::Result::SUCCESS;
 }
 
 void BinaryUploadService::ValidateDataUploadRequestCallback(

@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
@@ -16,8 +17,10 @@
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/entry_info.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "net/base/mime_util.h"
 
 namespace file_manager {
 namespace test {
@@ -125,6 +128,37 @@ base::WeakPtr<file_manager::Volume> InstallFileSystemProviderChromeApp(
 
   CHECK(volume);
   return volume;
+}
+
+std::vector<file_tasks::FullTaskDescriptor> GetTasksForFile(
+    Profile* profile,
+    const base::FilePath& file) {
+  std::string mime_type;
+  net::GetMimeTypeFromFile(file, &mime_type);
+  CHECK(!mime_type.empty());
+
+  std::vector<extensions::EntryInfo> entries;
+  entries.emplace_back(file, mime_type, false);
+
+  // Use empty URLs in this helper (i.e. only support files backed by volumes).
+  // FindExtensionAndAppTasks() does not pass them to FindWebTasks() or
+  // FindFileHandlerTasks() in any case.
+  std::vector<GURL> file_urls(entries.size(), GURL());
+
+  std::vector<file_tasks::FullTaskDescriptor> result;
+  bool invoked_synchronously = false;
+  auto callback = base::BindLambdaForTesting(
+      [&](std::unique_ptr<std::vector<file_tasks::FullTaskDescriptor>> tasks) {
+        result = *tasks;
+        invoked_synchronously = true;
+      });
+
+  FindAllTypesOfTasks(profile, entries, file_urls, callback);
+
+  // MIME sniffing requires a run loop, but the mime type must be explicitly
+  // available, and is provided in this helper.
+  CHECK(invoked_synchronously);
+  return result;
 }
 
 }  // namespace test

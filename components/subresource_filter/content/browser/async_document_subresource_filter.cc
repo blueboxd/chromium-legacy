@@ -121,6 +121,28 @@ AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
                      std::move(activation_state_callback)));
 }
 
+AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
+    VerifiedRuleset::Handle* ruleset_handle,
+    const url::Origin& inherited_document_origin,
+    const mojom::ActivationState& activation_state)
+    : task_runner_(ruleset_handle->task_runner()),
+      core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)) {
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
+            activation_state.activation_level);
+
+  VerifiedRuleset* verified_ruleset = ruleset_handle->ruleset_.get();
+  DCHECK(verified_ruleset);
+
+  // See previous constructor for the safety of posting |ruleset_handle|'s
+  // VerifiedRuleset pointer.
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Core::InitializeWithActivation,
+                                base::Unretained(core_.get()), activation_state,
+                                inherited_document_origin,
+                                ruleset_handle->ruleset_.get()));
+  OnActivateStateCalculated(base::DoNothing(), activation_state);
+}
+
 AsyncDocumentSubresourceFilter::~AsyncDocumentSubresourceFilter() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
@@ -225,6 +247,26 @@ mojom::ActivationState AsyncDocumentSubresourceFilter::Core::Initialize(
                   verified_ruleset->Get());
 
   return activation_state;
+}
+
+void AsyncDocumentSubresourceFilter::Core::InitializeWithActivation(
+    mojom::ActivationState activation_state,
+    const url::Origin& inherited_document_origin,
+    VerifiedRuleset* verified_ruleset) {
+  DCHECK(sequence_checker_.CalledOnValidSequence());
+  DCHECK(verified_ruleset);
+
+  // Avoids a crash in the rare case that the ruleset's status has changed to
+  // unavailable/corrupt since the caller checked.
+  if (!verified_ruleset->Get()) {
+    DLOG(DFATAL) << "Ruleset must be available and intact.";
+    return;
+  }
+
+  DCHECK_NE(mojom::ActivationLevel::kDisabled,
+            activation_state.activation_level);
+  filter_.emplace(inherited_document_origin, activation_state,
+                  verified_ruleset->Get());
 }
 
 }  // namespace subresource_filter

@@ -61,7 +61,7 @@ js_library("bindings_lite_sources") {
   deps = [ "//mojo/public/interfaces/bindings:bindings_js_library_for_compile" ]
 }
 
-if (enable_mojom_closure_compile || closure_compile) {
+if (enable_mojom_closure_compile || enable_js_type_check) {
   js_binary("bindings_lite") {
     outputs = [ bindings_lite_compiled_file ]
     deps = [ ":bindings_lite_sources" ]

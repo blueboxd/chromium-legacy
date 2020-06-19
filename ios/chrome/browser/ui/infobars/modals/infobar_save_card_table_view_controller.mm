@@ -200,7 +200,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.saveCardButtonItem.textAlignment = NSTextAlignmentNatural;
   self.saveCardButtonItem.buttonText =
       l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
-  self.saveCardButtonItem.enabled = self.currentCardSaved;
+  self.saveCardButtonItem.enabled = !self.currentCardSaved;
   self.saveCardButtonItem.disableButtonIntrinsicWidth = YES;
   [model addItem:self.saveCardButtonItem
       toSectionWithIdentifier:SectionIdentifierContent];

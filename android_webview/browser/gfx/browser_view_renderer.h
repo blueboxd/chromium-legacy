@@ -239,6 +239,9 @@ class BrowserViewRenderer : public content::SynchronousCompositorClient,
   bool on_new_picture_enable_;
   bool clear_view_;
 
+  // Used for metrics, indicates if we called invalidate since last draw.
+  bool did_invalidate_since_last_draw_ = false;
+
   // Approximates whether render thread functor has a frame to draw. It is safe
   // for Java side to stop blitting the background color once this is true.
   bool has_rendered_frame_ = false;

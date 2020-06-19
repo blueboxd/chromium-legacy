@@ -399,6 +399,13 @@ class PLATFORM_EXPORT ThreadState final {
            !forced_scheduled_gc_for_testing_;
   }
 
+  void EnterNoHeapVerificationScopeForTesting() {
+    ++disable_heap_verification_scope_;
+  }
+  void LeaveNoHeapVerificationScopeForTesting() {
+    --disable_heap_verification_scope_;
+  }
+
  private:
   class IncrementalMarkingScheduler;
 
@@ -658,6 +665,8 @@ class PLATFORM_EXPORT ThreadState final {
 
   base::JobHandle sweeper_handle_;
   std::atomic_bool has_unswept_pages_{false};
+
+  size_t disable_heap_verification_scope_ = 0;
 
   friend class BlinkGCObserver;
   friend class incremental_marking_test::IncrementalMarkingScope;

@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.media.router.caf;
 import android.content.Intent;
 
 import org.chromium.chrome.browser.document.ChromeIntentUtil;
-import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.media.router.R;
+import org.chromium.components.browser_ui.media.MediaNotificationUma;
 
 /** NotificationController implementation for presentation. */
 public class CafNotificationController extends BaseNotificationController {

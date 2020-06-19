@@ -204,8 +204,7 @@ class VideoResourceUpdaterTest : public testing::Test {
       bool needs_copy) {
     scoped_refptr<media::VideoFrame> video_frame = CreateTestHardwareVideoFrame(
         media::PIXEL_FORMAT_ARGB, GL_TEXTURE_EXTERNAL_OES);
-    video_frame->metadata()->SetBoolean(
-        media::VideoFrameMetadata::COPY_REQUIRED, needs_copy);
+    video_frame->metadata()->copy_required = needs_copy;
     return video_frame;
   }
 
@@ -531,8 +530,7 @@ TEST_F(VideoResourceUpdaterTest, CreateForHardwarePlanes) {
 
   video_frame = CreateTestYuvHardwareVideoFrame(media::PIXEL_FORMAT_I420, 3,
                                                 GL_TEXTURE_RECTANGLE_ARB);
-  video_frame->metadata()->SetBoolean(
-      media::VideoFrameMetadata::READ_LOCK_FENCES_ENABLED, true);
+  video_frame->metadata()->read_lock_fences_enabled = true;
 
   resources = updater->CreateExternalResourcesFromVideoFrame(video_frame);
   EXPECT_TRUE(resources.resources[0].read_lock_fences_enabled);

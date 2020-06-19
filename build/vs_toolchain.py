@@ -269,7 +269,7 @@ def _CopyUCRTRuntime(target_dir, source_dir, target_cpu, suffix):
       source_dir = os.path.join(vc_redist_root, 'debug_nonredist',
                                 'arm64', vc_toolset_dir)
   file_parts = ('msvcp140', 'vccorlib140', 'vcruntime140')
-  if target_cpu == 'x64':
+  if target_cpu == 'x64' and GetVisualStudioVersion() != '2017':
     file_parts = file_parts + ('vcruntime140_1', )
   for file_part in file_parts:
     dll = file_part + suffix

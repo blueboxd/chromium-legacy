@@ -323,7 +323,7 @@ public class BrowserImpl extends IBrowser.Stub {
 
     @CalledByNative
     private void onActiveTabChanged(TabImpl tab) {
-        mViewController.setActiveTab(tab);
+        if (mViewController != null) mViewController.setActiveTab(tab);
         if (mInDestroy) return;
         try {
             if (mClient != null) {

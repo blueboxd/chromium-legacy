@@ -39,7 +39,7 @@
         android:orientation="vertical"/>
 
     <LinearLayout
-        android:id="@+id/images_layout"
+        android:id="@+id/placeholders_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical" />

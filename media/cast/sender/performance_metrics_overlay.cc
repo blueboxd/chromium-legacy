@@ -275,19 +275,16 @@ scoped_refptr<VideoFrame> MaybeRenderPerformanceMetricsOverlay(
   frame->AddDestructionObserver(base::BindOnce(
       [](const VideoFrameMetadata* sent_frame_metadata,
          scoped_refptr<VideoFrame> source_frame) {
-        source_frame->metadata()->Clear();
-        source_frame->metadata()->MergeMetadataFrom(sent_frame_metadata);
+        source_frame->set_metadata(*sent_frame_metadata);
       },
       frame->metadata(), std::move(source)));
 
   // Line 3: Frame duration, resolution, and timestamp.
   int frame_duration_ms = 0;
   int frame_duration_ms_frac = 0;
-  base::TimeDelta frame_duration;
-  if (frame->metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                      &frame_duration)) {
+  if (frame->metadata()->frame_duration.has_value()) {
     const int decimilliseconds = base::saturated_cast<int>(
-        frame_duration.InMicroseconds() / 100.0 + 0.5);
+        frame->metadata()->frame_duration->InMicroseconds() / 100.0 + 0.5);
     frame_duration_ms = decimilliseconds / 10;
     frame_duration_ms_frac = decimilliseconds % 10;
   }
@@ -312,13 +309,13 @@ scoped_refptr<VideoFrame> MaybeRenderPerformanceMetricsOverlay(
   // Line 2: Capture duration, target playout delay, low-latency mode, and
   // target bitrate.
   int capture_duration_ms = 0;
-  base::TimeTicks capture_begin_time, capture_end_time;
-  if (frame->metadata()->GetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-                                      &capture_begin_time) &&
-      frame->metadata()->GetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
-                                      &capture_end_time)) {
-    capture_duration_ms = base::saturated_cast<int>(
-        (capture_end_time - capture_begin_time).InMillisecondsF() + 0.5);
+  if (frame->metadata()->capture_begin_time &&
+      frame->metadata()->capture_end_time) {
+    capture_duration_ms =
+        base::saturated_cast<int>((*frame->metadata()->capture_end_time -
+                                   *frame->metadata()->capture_begin_time)
+                                      .InMillisecondsF() +
+                                  0.5);
   }
   const int target_playout_delay_ms =
       static_cast<int>(target_playout_delay.InMillisecondsF() + 0.5);

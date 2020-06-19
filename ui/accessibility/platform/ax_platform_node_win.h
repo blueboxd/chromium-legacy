@@ -281,6 +281,10 @@ enum {
   UMA_API_WINDOW_GET_WINDOWVISUALSTATE = 243,
   UMA_API_WINDOW_GET_WINDOWINTERACTIONSTATE = 244,
   UMA_API_WINDOW_GET_ISTOPMOST = 245,
+  UMA_API_ELEMENT_PROVIDER_FROM_POINT = 246,
+  UMA_API_GET_FOCUS = 247,
+  UMA_API_ADVISE_EVENT_ADDED = 248,
+  UMA_API_ADVISE_EVENT_REMOVED = 249,
 
   // This must always be the last enum. It's okay for its value to
   // increase, but none of the other enum values may change.

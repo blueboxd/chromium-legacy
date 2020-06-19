@@ -512,8 +512,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       std::move(tabstrip_controller)));  // Takes ownership.
   tabstrip_controller_ptr->InitFromModel(tabstrip_);
 
-  tab_groups_iph_controller_ =
-      std::make_unique<TabGroupsIPHController>(browser_.get());
+  // Must be destroyed before the tab strip.
+  tab_groups_iph_controller_ = std::make_unique<TabGroupsIPHController>(
+      browser_.get(), base::BindRepeating(&TabStrip::GetTabViewForPromoAnchor,
+                                          base::Unretained(tabstrip_)));
 
   // Create WebViews early so |webui_tab_strip_| can observe their size.
   auto devtools_web_view =
@@ -591,6 +593,9 @@ BrowserView::~BrowserView() {
   if (global_registry->registry_for_active_window() ==
           extension_keybinding_registry_.get())
     global_registry->set_registry_for_active_window(nullptr);
+
+  // This has a reference to |tabstrip_| so destroy it first.
+  tab_groups_iph_controller_.reset();
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.

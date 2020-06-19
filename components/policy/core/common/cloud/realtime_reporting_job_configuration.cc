@@ -8,6 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/optional.h"
 #include "base/path_service.h"
+#include "components/enterprise/common/strings.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/dm_auth.h"
@@ -68,6 +69,8 @@ RealtimeReportingJobConfiguration::RealtimeReportingJobConfiguration(
   DCHECK(GetAuth().has_dm_token());
 
   AddParameter("key", google_apis::GetAPIKey());
+  AddParameter(enterprise::kUrlParamConnector, "OnSecurityEvent");
+  AddParameter(enterprise::kUrlParamDeviceToken, client->dm_token());
   InitializePayload(client);
 }
 

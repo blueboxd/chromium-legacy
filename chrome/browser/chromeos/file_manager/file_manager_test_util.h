@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 
 class Profile;
@@ -51,6 +52,13 @@ scoped_refptr<const extensions::Extension> InstallTestingChromeApp(
 // file system.
 base::WeakPtr<file_manager::Volume> InstallFileSystemProviderChromeApp(
     Profile* profile);
+
+// Gets the list of available tasks for the provided `file`. Note only the path
+// string is used for this helper, so it must have a well-known MIME type
+// according to net::GetMimeTypeFromFile().
+std::vector<file_tasks::FullTaskDescriptor> GetTasksForFile(
+    Profile* profile,
+    const base::FilePath& file);
 
 }  // namespace test
 }  // namespace file_manager

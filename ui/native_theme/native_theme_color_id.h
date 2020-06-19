@@ -155,7 +155,8 @@
   OP(kColorId_AlertSeverityMedium),                                            \
   OP(kColorId_AlertSeverityHigh),                                              \
   /* Colors for icons in non-menu contexts. */                                 \
-  OP(kColorId_DefaultIconColor)
+  OP(kColorId_DefaultIconColor),                                               \
+  OP(kColorId_DisabledIconColor)
 
 #if defined(OS_CHROMEOS)
 #define NATIVE_THEME_CHROMEOS_COLOR_IDS                                        \

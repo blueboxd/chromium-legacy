@@ -6,12 +6,13 @@ import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//chrome/test/include_js_tests.gni")
 import("//components/nacl/features.gni")
+import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
-if (closure_compile) {
+if (enable_js_type_check) {
   group("closure_compile") {
     deps = [
       "components:closure_compile",

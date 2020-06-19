@@ -260,11 +260,10 @@ void SlowWindowCapturerChromeOS::CaptureNextFrame() {
   auto* const frame = in_flight_frame->video_frame();
   DCHECK(frame);
   VideoFrameMetadata* const metadata = frame->metadata();
-  metadata->SetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME, begin_time);
-  metadata->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION, capture_period_);
-  metadata->SetDouble(VideoFrameMetadata::FRAME_RATE,
-                      1.0 / capture_period_.InSecondsF());
-  metadata->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME, begin_time);
+  metadata->capture_begin_time = begin_time;
+  metadata->frame_duration = capture_period_;
+  metadata->frame_rate = 1.0 / capture_period_.InSecondsF();
+  metadata->reference_time = begin_time;
   frame->set_color_space(gfx::ColorSpace::CreateREC709());
 
   // Compute the region of the VideoFrame that will contain the content. If
@@ -341,8 +340,7 @@ void SlowWindowCapturerChromeOS::DeliverFrame(
     std::unique_ptr<InFlightFrame> in_flight_frame) {
   auto* const frame = in_flight_frame->video_frame();
   DCHECK(frame);
-  frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
-                                  base::TimeTicks::Now());
+  frame->metadata()->capture_end_time = base::TimeTicks::Now();
 
   // Clone the buffer handle for the consumer.
   base::ReadOnlySharedMemoryRegion handle =
@@ -355,7 +353,7 @@ void SlowWindowCapturerChromeOS::DeliverFrame(
   // the consumer.
   media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
   info->timestamp = frame->timestamp();
-  info->metadata = frame->metadata()->GetInternalValues().Clone();
+  info->metadata = *(frame->metadata());
   info->pixel_format = frame->format();
   info->coded_size = frame->coded_size();
   info->visible_rect = frame->visible_rect();

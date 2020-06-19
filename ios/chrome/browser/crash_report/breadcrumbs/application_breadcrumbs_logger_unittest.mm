@@ -55,7 +55,7 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, UserAction) {
 
 // Tests that not_user_triggered User Action does not show up in breadcrumbs.
 TEST_F(ApplicationBreadcrumbsLoggerTest, LogNotUserTriggeredAction) {
-  base::RecordAction(base::UserMetricsAction("PageLoad"));
+  base::RecordAction(base::UserMetricsAction("ActiveTabChanged"));
 
   EXPECT_EQ(0U, breadcrumb_manager_.GetEvents(0).size());
 }

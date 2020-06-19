@@ -16,8 +16,10 @@
 #include "components/variations/hashing.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/android/channel_getter.h"
+#include "content/public/browser/browser_context.h"
 #include "weblayer/browser/android/metrics/weblayer_metrics_service_accessor.h"
 #include "weblayer/browser/java/jni/MetricsServiceClient_jni.h"
+#include "weblayer/browser/system_network_context_manager.h"
 #include "weblayer/browser/tab_impl.h"
 
 namespace weblayer {
@@ -74,8 +76,13 @@ WebLayerMetricsServiceClient* WebLayerMetricsServiceClient::GetInstance() {
   return client.get();
 }
 
-WebLayerMetricsServiceClient::WebLayerMetricsServiceClient() = default;
-WebLayerMetricsServiceClient::~WebLayerMetricsServiceClient() = default;
+WebLayerMetricsServiceClient::WebLayerMetricsServiceClient() {
+  ProfileImpl::AddProfileObserver(this);
+}
+
+WebLayerMetricsServiceClient::~WebLayerMetricsServiceClient() {
+  ProfileImpl::RemoveProfileObserver(this);
+}
 
 void WebLayerMetricsServiceClient::RegisterSyntheticMultiGroupFieldTrial(
     base::StringPiece trial_name,
@@ -146,6 +153,30 @@ void WebLayerMetricsServiceClient::RegisterAdditionalMetricsProviders(
 
 bool WebLayerMetricsServiceClient::EnablePersistentHistograms() {
   return true;
+}
+
+bool WebLayerMetricsServiceClient::IsOffTheRecordSessionActive() {
+  auto profiles = ProfileImpl::GetAllProfiles();
+  for (auto* profile : profiles) {
+    if (profile->GetBrowserContext()->IsOffTheRecord())
+      return true;
+  }
+
+  return false;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+WebLayerMetricsServiceClient::GetURLLoaderFactory() {
+  return SystemNetworkContextManager::GetInstance()
+      ->GetSharedURLLoaderFactory();
+}
+
+void WebLayerMetricsServiceClient::ProfileCreated(ProfileImpl* profile) {
+  UpdateUkmService();
+}
+
+void WebLayerMetricsServiceClient::ProfileDestroyed(ProfileImpl* profile) {
+  UpdateUkmService();
 }
 
 // static

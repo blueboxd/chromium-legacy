@@ -120,6 +120,7 @@ ModelLoader::ModelLoader(
       url_loader_factory_(url_loader_factory),
       last_client_model_status_(ClientModelStatus::MODEL_NEVER_FETCHED) {
   DCHECK(url_.is_valid());
+  StartFetch(/*only_from_cache=*/true);
 }
 
 // For testing only
@@ -141,12 +142,16 @@ ModelLoader::~ModelLoader() {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
 }
 
-void ModelLoader::StartFetch() {
+void ModelLoader::StartFetch(bool only_from_cache) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           kOverrideCsdModelFlag)) {
     OverrideModelWithLocalFile();
     return;
   }
+
+  // |url_loader_factory_| can be null in tests.
+  if (!url_loader_factory_)
+    return;
 
   // Start fetching the model either from the cache or possibly from the
   // network if the model isn't in the cache.
@@ -186,6 +191,8 @@ void ModelLoader::StartFetch() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url_;
+  if (only_from_cache)
+    resource_request->load_flags = net::LOAD_ONLY_FROM_CACHE;
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
@@ -274,7 +281,8 @@ void ModelLoader::ScheduleFetch(int64_t delay_ms) {
   DCHECK(fetch_sequence_checker_.CalledOnValidSequence());
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ModelLoader::StartFetch, weak_factory_.GetWeakPtr(),
+                     /*only_from_cache=*/false),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 

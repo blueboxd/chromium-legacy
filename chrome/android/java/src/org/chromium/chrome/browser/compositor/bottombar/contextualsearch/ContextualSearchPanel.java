@@ -603,7 +603,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     }
 
     /**
-     * Calculates the position of the Contextual Search panel in the screen.
+     * Calculates the position of the Contextual Search panel on the screen.
      * @return A {@link Rect} object that represents the Contextual Search panel's position in
      *         the screen, in pixels.
      */

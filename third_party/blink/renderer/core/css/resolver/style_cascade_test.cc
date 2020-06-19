@@ -71,6 +71,9 @@ class TestCascadeResolver {
   }
   uint8_t GetGeneration() { return resolver_.generation_; }
   CascadeResolver& InnerResolver() { return resolver_; }
+  const CSSProperty* CurrentProperty() const {
+    return resolver_.CurrentProperty();
+  }
 
  private:
   friend class TestCascadeAutoLock;
@@ -812,6 +815,34 @@ TEST_F(StyleCascadeTest, ResolverMarkApplied) {
   // Mark a second time to verify observation of the same generation.
   resolver.MarkApplied(&priority);
   EXPECT_EQ(2, priority.GetGeneration());
+}
+
+TEST_F(StyleCascadeTest, CurrentProperty) {
+  using AutoLock = TestCascadeAutoLock;
+
+  TestCascade cascade(GetDocument());
+  TestCascadeResolver resolver;
+
+  CustomProperty a("--a", GetDocument());
+  CustomProperty b("--b", GetDocument());
+  CustomProperty c("--c", GetDocument());
+
+  EXPECT_FALSE(resolver.CurrentProperty());
+  {
+    AutoLock lock(a, resolver);
+    EXPECT_EQ(&a, resolver.CurrentProperty());
+    {
+      AutoLock lock(b, resolver);
+      EXPECT_EQ(&b, resolver.CurrentProperty());
+      {
+        AutoLock lock(c, resolver);
+        EXPECT_EQ(&c, resolver.CurrentProperty());
+      }
+      EXPECT_EQ(&b, resolver.CurrentProperty());
+    }
+    EXPECT_EQ(&a, resolver.CurrentProperty());
+  }
+  EXPECT_FALSE(resolver.CurrentProperty());
 }
 
 TEST_F(StyleCascadeTest, ResolverMarkUnapplied) {

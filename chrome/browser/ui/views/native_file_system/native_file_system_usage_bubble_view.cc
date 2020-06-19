@@ -195,14 +195,17 @@ class CollapsibleListView : public views::View, public views::ButtonListener {
   // views::View
   void OnThemeChanged() override {
     views::View::OnThemeChanged();
-    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
-        ui::NativeTheme::kColorId_DefaultIconColor);
+    auto* theme = GetNativeTheme();
+    const SkColor icon_color =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DefaultIconColor);
+    const SkColor disabled_icon_color =
+        theme->GetSystemColor(ui::NativeTheme::kColorId_DisabledIconColor);
     views::SetImageFromVectorIconWithColor(
         expand_collapse_button_, kCaretDownIcon, ui::TableModel::kIconSize,
         icon_color);
     views::SetToggledImageFromVectorIconWithColor(
         expand_collapse_button_, kCaretUpIcon, ui::TableModel::kIconSize,
-        icon_color);
+        icon_color, disabled_icon_color);
   }
 
   // views::ButtonListener:

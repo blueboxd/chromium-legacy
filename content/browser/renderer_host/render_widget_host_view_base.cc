@@ -125,6 +125,8 @@ void RenderWidgetHostViewBase::OnRenderFrameMetadataChangedAfterActivation() {
       host()->GetRootBrowserAccessibilityManager();
   if (manager)
     manager->SetPageScaleFactor(metadata.page_scale_factor);
+
+  is_drawing_delegated_ink_trails_ = metadata.has_delegated_ink_metadata;
 }
 
 void RenderWidgetHostViewBase::OnRenderFrameSubmission() {}

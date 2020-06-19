@@ -18,3 +18,34 @@ component("cdm_factory_daemon_browser") {
   ]
   defines = [ "IS_CDM_FACTORY_DAEMON_IMPL" ]
 }
+
+component("cdm_factory_daemon_gpu") {
+  sources = [
+    "cdm_storage_adapter.cc",
+    "cdm_storage_adapter.h",
+  ]
+  public_deps = [
+    "//chromeos/components/cdm_factory_daemon/mojom",
+    "//media/mojo/mojom",
+  ]
+  deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+  ]
+  defines = [ "IS_CDM_FACTORY_DAEMON_IMPL" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "cdm_storage_adapter_unittest.cc" ]
+
+  deps = [
+    ":cdm_factory_daemon_gpu",
+    "//base",
+    "//base/test:test_support",
+    "//chromeos/components/cdm_factory_daemon/mojom",
+    "//mojo/public/cpp/bindings",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}

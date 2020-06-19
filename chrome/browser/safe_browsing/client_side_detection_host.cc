@@ -376,8 +376,7 @@ void ClientSideDetectionHost::DidFinishNavigation(
 void ClientSideDetectionHost::SendModelToRenderFrame(
     content::RenderProcessHost* process,
     Profile* profile,
-    ModelLoader* model_loader_standard,
-    ModelLoader* model_loader_extended) {
+    ModelLoader* model_loader) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!web_contents() || web_contents() != tab_)
     return;
@@ -386,21 +385,11 @@ void ClientSideDetectionHost::SendModelToRenderFrame(
     if (frame->GetProcess() != process)
       continue;
 
-    std::string model;
-    if (IsSafeBrowsingEnabled(*profile->GetPrefs())) {
-      if (IsExtendedReportingEnabled(*profile->GetPrefs()) ||
-          IsEnhancedProtectionEnabled(*profile->GetPrefs())) {
-        model = model_loader_extended->model_str();
-      } else {
-        model = model_loader_standard->model_str();
-      }
-    }
-
     if (phishing_detector_)
       phishing_detector_.reset();
     frame->GetRemoteInterfaces()->GetInterface(
         phishing_detector_.BindNewPipeAndPassReceiver());
-    phishing_detector_->SetPhishingModel(model);
+    phishing_detector_->SetPhishingModel(model_loader->model_str());
   }
 }
 
@@ -473,12 +462,8 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       base::TimeTicks::Now() - phishing_detection_start_time_);
   UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.PhishingDetectorResult", result);
   if (result == mojom::PhishingDetectorResult::CLASSIFIER_NOT_READY) {
-    Profile* profile =
-        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
-    UMA_HISTOGRAM_ENUMERATION(
-        "SBClientPhishing.ClassifierNotReadyReason",
-        csd_service_->GetLastModelStatus(
-            IsExtendedReportingEnabled(*profile->GetPrefs())));
+    UMA_HISTOGRAM_ENUMERATION("SBClientPhishing.ClassifierNotReadyReason",
+                              csd_service_->GetLastModelStatus());
   }
   if (result != mojom::PhishingDetectorResult::SUCCESS)
     return;

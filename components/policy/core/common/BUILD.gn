@@ -167,6 +167,7 @@ jumbo_source_set("internal") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//components/account_id",
+    "//components/enterprise/common:strings",
     "//components/prefs",
     "//components/signin/public/identity_manager",
     "//components/strings",

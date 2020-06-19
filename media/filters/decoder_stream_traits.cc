@@ -234,20 +234,16 @@ PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
     return PostDecodeAction::DELIVER;
 
   // Add a timestamp here to enable buffering delay measurements down the line.
-  buffer->metadata()->SetTimeTicks(VideoFrameMetadata::DECODE_BEGIN_TIME,
-                                   it->second.decode_begin_time);
-  buffer->metadata()->SetTimeTicks(VideoFrameMetadata::DECODE_END_TIME,
-                                   base::TimeTicks::Now());
+  buffer->metadata()->decode_begin_time = it->second.decode_begin_time;
+  buffer->metadata()->decode_end_time = base::TimeTicks::Now();
 
   auto action = it->second.should_drop ? PostDecodeAction::DROP
                                        : PostDecodeAction::DELIVER;
 
   // Provide duration information to help the rendering algorithm on the very
   // first and very last frames.
-  if (it->second.duration != kNoTimestamp) {
-    buffer->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                     it->second.duration);
-  }
+  if (it->second.duration != kNoTimestamp)
+    buffer->metadata()->frame_duration = it->second.duration;
 
   // We erase from the beginning onward to our target frame since frames should
   // be returned in presentation order. It's possible to accumulate entries in
@@ -259,14 +255,12 @@ PostDecodeAction DecoderStreamTraits<DemuxerStream::VIDEO>::OnDecodeDone(
 
 void DecoderStreamTraits<DemuxerStream::VIDEO>::OnOutputReady(
     OutputType* buffer) {
-  base::TimeTicks decode_begin_time;
-  if (!buffer->metadata()->GetTimeTicks(VideoFrameMetadata::DECODE_BEGIN_TIME,
-                                        &decode_begin_time)) {
+  if (!buffer->metadata()->decode_begin_time.has_value())
     return;
-  }
+
   // Tag buffer with elapsed time since creation.
-  buffer->metadata()->SetTimeDelta(VideoFrameMetadata::PROCESSING_TIME,
-                                   base::TimeTicks::Now() - decode_begin_time);
+  buffer->metadata()->processing_time =
+      base::TimeTicks::Now() - *buffer->metadata()->decode_begin_time;
 }
 
 }  // namespace media

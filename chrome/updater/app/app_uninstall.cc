@@ -36,8 +36,8 @@ void AppUninstall::FirstTaskRun() {
       base::BindOnce(&AppUninstall::Shutdown, this));
 }
 
-scoped_refptr<App> AppUninstallInstance() {
-  return AppInstance<AppUninstall>();
+scoped_refptr<App> MakeAppUninstall() {
+  return base::MakeRefCounted<AppUninstall>();
 }
 
 }  // namespace updater

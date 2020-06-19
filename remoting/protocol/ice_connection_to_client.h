@@ -55,6 +55,7 @@ class IceConnectionToClient : public ConnectionToClient,
   void set_clipboard_stub(ClipboardStub* clipboard_stub) override;
   void set_host_stub(HostStub* host_stub) override;
   void set_input_stub(InputStub* input_stub) override;
+  PeerConnectionControls* peer_connection_controls() override;
 
  private:
   // Session::EventHandler interface.

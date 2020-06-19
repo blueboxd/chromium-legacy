@@ -54,14 +54,12 @@ ForeignLayerDisplayItem::ForeignLayerDisplayItem(
     const DisplayItemClient& client,
     Type type,
     scoped_refptr<cc::Layer> layer,
-    const FloatPoint& offset,
-    const LayerAsJSONClient* json_client)
+    const FloatPoint& offset)
     : DisplayItem(
           *new ForeignLayerDisplayItemClient(client, std::move(layer), offset),
           type,
           sizeof(*this)),
-      offset_(offset),
-      json_client_(json_client) {
+      offset_(offset) {
   DCHECK(IsForeignLayerType(type));
   DCHECK(!IsCacheable());
 }
@@ -72,10 +70,6 @@ ForeignLayerDisplayItem::~ForeignLayerDisplayItem() {
 
 cc::Layer* ForeignLayerDisplayItem::GetLayer() const {
   return static_cast<const ForeignLayerDisplayItemClient&>(Client()).GetLayer();
-}
-
-const LayerAsJSONClient* ForeignLayerDisplayItem::GetLayerAsJSONClient() const {
-  return json_client_;
 }
 
 bool ForeignLayerDisplayItem::Equals(const DisplayItem& other) const {
@@ -93,13 +87,12 @@ void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 }
 #endif
 
-static void RecordForeignLayerInternal(GraphicsContext& context,
-                                       const DisplayItemClient& client,
-                                       DisplayItem::Type type,
-                                       scoped_refptr<cc::Layer> layer,
-                                       const FloatPoint& offset,
-                                       const LayerAsJSONClient* json_client,
-                                       const PropertyTreeState* properties) {
+void RecordForeignLayer(GraphicsContext& context,
+                        const DisplayItemClient& client,
+                        DisplayItem::Type type,
+                        scoped_refptr<cc::Layer> layer,
+                        const FloatPoint& offset,
+                        const PropertyTreeState* properties) {
   PaintController& paint_controller = context.GetPaintController();
   // This is like ScopedPaintChunkProperties but uses null id because foreign
   // layer chunk doesn't need an id nor a client.
@@ -109,21 +102,11 @@ static void RecordForeignLayerInternal(GraphicsContext& context,
     paint_controller.UpdateCurrentPaintChunkProperties(nullptr, *properties);
   }
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
-      client, type, std::move(layer), offset, json_client);
+      client, type, std::move(layer), offset);
   if (properties) {
     paint_controller.UpdateCurrentPaintChunkProperties(nullptr,
                                                        *previous_properties);
   }
-}
-
-void RecordForeignLayer(GraphicsContext& context,
-                        const DisplayItemClient& client,
-                        DisplayItem::Type type,
-                        scoped_refptr<cc::Layer> layer,
-                        const FloatPoint& offset,
-                        const PropertyTreeState* properties) {
-  RecordForeignLayerInternal(context, client, type, std::move(layer), offset,
-                             nullptr, properties);
 }
 
 }  // namespace blink

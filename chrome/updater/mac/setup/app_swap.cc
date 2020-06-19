@@ -40,12 +40,12 @@ void AppUninstallCandidate::FirstTaskRun() {
 
 }  // namespace
 
-scoped_refptr<App> AppPromoteCandidateInstance() {
-  return AppInstance<AppPromoteCandidate>();
+scoped_refptr<App> MakeAppPromoteCandidate() {
+  return base::MakeRefCounted<AppPromoteCandidate>();
 }
 
-scoped_refptr<App> AppUninstallCandidateInstance() {
-  return AppInstance<AppUninstallCandidate>();
+scoped_refptr<App> MakeAppUninstallCandidate() {
+  return base::MakeRefCounted<AppUninstallCandidate>();
 }
 
 }  // namespace updater

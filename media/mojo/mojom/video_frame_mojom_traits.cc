@@ -15,8 +15,8 @@
 #include "media/base/format_utils.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/mojom/hdr_metadata_mojom_traits.h"
+#include "media/mojo/mojom/video_frame_metadata_mojom_traits.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
-#include "mojo/public/cpp/base/values_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
@@ -31,7 +31,7 @@ namespace {
 
 media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     const media::VideoFrame* input) {
-  if (input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM)) {
+  if (input->metadata()->end_of_stream) {
     return media::mojom::VideoFrameData::NewEosData(
         media::mojom::EosVideoFrameData::New());
   }
@@ -275,11 +275,11 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!frame)
     return false;
 
-  base::Value metadata;
+  media::VideoFrameMetadata metadata;
   if (!input.ReadMetadata(&metadata))
     return false;
 
-  frame->metadata()->MergeInternalValuesFrom(metadata);
+  frame->set_metadata(metadata);
 
   gfx::ColorSpace color_space;
   if (!input.ReadColorSpace(&color_space))

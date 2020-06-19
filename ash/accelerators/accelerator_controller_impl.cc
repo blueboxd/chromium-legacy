@@ -996,7 +996,7 @@ bool CanHandleStartAmbientMode() {
 }
 
 void HandleToggleAmbientMode(const ui::Accelerator& accelerator) {
-  Shell::Get()->ambient_controller()->Toggle();
+  Shell::Get()->ambient_controller()->ToggleInSessionUI();
 }
 
 void HandleToggleAssistant(const ui::Accelerator& accelerator) {

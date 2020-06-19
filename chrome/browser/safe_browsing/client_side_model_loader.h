@@ -95,8 +95,10 @@ class ModelLoader {
               const std::string& model_name);
 
   // This is called periodically to check whether a new client model is
-  // available for download.
-  virtual void StartFetch();
+  // available for download. If |only_from_cache| is true, we will not make a
+  // network request, but will instead try to fetch the model from the local
+  // cache.
+  virtual void StartFetch(bool only_from_cache);
 
   // This method is called when we're done fetching the model either because
   // we hit an error somewhere or because we're actually done fetch and

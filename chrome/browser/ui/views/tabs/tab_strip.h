@@ -263,6 +263,11 @@ class TabStrip : public views::AccessiblePaneView,
   // Returns the index of the focused tab, if any.
   base::Optional<int> GetFocusedTabIndex() const;
 
+  // Returns a view for anchoring an in-product help promo. |index_hint|
+  // indicates at which tab the promo should be displayed, but is not
+  // binding.
+  views::View* GetTabViewForPromoAnchor(int index_hint);
+
   // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;

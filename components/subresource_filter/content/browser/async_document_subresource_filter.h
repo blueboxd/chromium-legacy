@@ -104,6 +104,28 @@ class AsyncDocumentSubresourceFilter {
       base::OnceCallback<void(mojom::ActivationState)>
           activation_state_callback);
 
+  // Creates a Core and initializes it asynchronously on a |task_runner| using
+  // the supplied |inherited_document_origin| (see below) and a VerifiedRuleset
+  // taken from the |ruleset_handle|. The core remains owned by |this| object,
+  // but lives on (and is accessed on) the |task_runner|.
+  //
+  // The mojom::ActivationState is immediately assigned to the provided
+  // |activation_state|. The activation state is therefore not computed in the
+  // usual way and none of the usual guarantees are enforced. Because of this,
+  // this constructor is only intended for certain edge cases.
+  //
+  // In particular, this method should only be used when it is infeasible to
+  // throttle the navigation until initialization (e.g., aborted loads), where
+  // the activation can be inherited (e.g. about:blank mainframes with an
+  // opener) and where it is expected that the ruleset will be available and
+  // intact (e.g. the activation level is not kDisabled).
+  // |inherited_document_origin| supplies the origin of the new document, which
+  // should have been inherited from the same frame as the |activation_state|.
+  AsyncDocumentSubresourceFilter(
+      VerifiedRuleset::Handle* ruleset_handle,
+      const url::Origin& inherited_document_origin,
+      const mojom::ActivationState& activation_state);
+
   ~AsyncDocumentSubresourceFilter();
 
   // Computes LoadPolicy on a |task_runner| and returns it back to the calling
@@ -128,7 +150,9 @@ class AsyncDocumentSubresourceFilter {
   void UpdateWithMoreAccurateState(
       const mojom::ActivationState& updated_page_state);
 
-  // Must be called after activation state computation is finished.
+  // Must be called after activation state computation is finished. In the case
+  // that the activation state is supplied to the constructor, this can be
+  // called immediately.
   const mojom::ActivationState& activation_state() const;
 
   bool has_activation_state() const { return activation_state_.has_value(); }
@@ -183,6 +207,13 @@ class AsyncDocumentSubresourceFilter::Core {
   // it. Returns the computed activation state.
   mojom::ActivationState Initialize(InitializationParams params,
                                     VerifiedRuleset* verified_ruleset);
+
+  // Initializes a DSF using the provided |activation_state|. Should only be
+  // used in certain uncommon situations. See the second
+  // AsyncDocumentSubresourceFilter constructor for details.
+  void InitializeWithActivation(mojom::ActivationState activation_state,
+                                const url::Origin& document_origin,
+                                VerifiedRuleset* verified_ruleset);
 
   base::Optional<DocumentSubresourceFilter> filter_;
   base::SequenceChecker sequence_checker_;

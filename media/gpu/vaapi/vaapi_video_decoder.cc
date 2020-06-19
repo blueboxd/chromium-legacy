@@ -379,7 +379,7 @@ void VaapiVideoDecoder::SurfaceReady(scoped_refptr<VASurface> va_surface,
   }
 
   const auto gfx_color_space = color_space.ToGfxColorSpace();
-  if (gfx_color_space.IsHDR())
+  if (gfx_color_space.IsValid())
     video_frame->set_color_space(gfx_color_space);
 
   output_cb_.Run(std::move(video_frame));

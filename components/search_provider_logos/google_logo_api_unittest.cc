@@ -394,7 +394,8 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
     },
     "dark_large_image": {
       "is_animated_gif": true,
-      "url": "https://www.doodle.com/dark_image.gif"
+      "url": "https://www.doodle.com/dark_image.gif",
+      "background_color": "#ABCDEF"
     },
     "cta_data_uri": "data:image/png;base64,YWJj",
     "dark_cta_data_uri": "data:image/png;base64,eHl6"
@@ -411,6 +412,7 @@ TEST(GoogleNewLogoApiTest, ParsesAnimatedImage) {
             logo->metadata.animated_url);
   EXPECT_EQ(GURL("https://www.doodle.com/dark_image.gif"),
             logo->metadata.dark_animated_url);
+  EXPECT_EQ("#ABCDEF", logo->metadata.dark_background_color);
   EXPECT_EQ("abc", logo->encoded_image->data());
   EXPECT_EQ("xyz", logo->dark_encoded_image->data());
   EXPECT_EQ(LogoType::ANIMATED, logo->metadata.type);
@@ -440,6 +442,33 @@ TEST(GoogleNewLogoApiTest, ParsesLoggingUrls) {
   ASSERT_TRUE(logo);
   EXPECT_EQ(GURL("https://base.doo/log?a=b"), logo->metadata.log_url);
   EXPECT_EQ(GURL("https://base.doo/ctalog?c=d"), logo->metadata.cta_log_url);
+}
+
+TEST(GoogleNewLogoApiTest, ParsesImageSize) {
+  const GURL base_url("https://base.doo/");
+  const std::string json = R"json()]}'
+{
+  "ddljson": {
+    "large_image": {
+      "width": 500,
+      "height": 200
+    },
+    "dark_large_image": {
+      "width": 600,
+      "height": 230
+    }
+  }
+})json";
+
+  bool failed = false;
+  std::unique_ptr<EncodedLogo> logo = ParseDoodleLogoResponse(
+      base_url, std::make_unique<std::string>(json), base::Time(), &failed);
+
+  ASSERT_FALSE(failed);
+  EXPECT_EQ(500, logo->metadata.width_px);
+  EXPECT_EQ(200, logo->metadata.height_px);
+  EXPECT_EQ(600, logo->metadata.dark_width_px);
+  EXPECT_EQ(230, logo->metadata.dark_height_px);
 }
 
 TEST(GoogleNewLogoApiTest, ParsesInteractiveDoodle) {

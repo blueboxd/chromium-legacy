@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, MAYBE_TabOpener) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "opener.html")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabGetCurrent) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabGetCurrent) {
   ASSERT_TRUE(RunExtensionTest("tabs/get_current")) << message_;
 }
 
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabOnRemoved) {
   ASSERT_TRUE(RunExtensionTest("tabs/on_removed")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_TabReload) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, TabReload) {
   ASSERT_TRUE(RunExtensionTest("tabs/reload")) << message_;
 }
 
@@ -277,11 +277,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, IncognitoDisabledByPref) {
   ASSERT_TRUE(RunExtensionTest("tabs/incognito_disabled")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_GetViewsOfCreatedPopup) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, GetViewsOfCreatedPopup) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_popup.html"))
       << message_;
 }
-IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, DISABLED_GetViewsOfCreatedWindow) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTabTest, GetViewsOfCreatedWindow) {
   ASSERT_TRUE(RunExtensionSubtest("tabs/basics", "get_views_window.html"))
       << message_;
 }

@@ -192,9 +192,8 @@ class DevToolsVideoConsumerTest : public testing::Test {
     callbacks.Bind(callbacks_remote.InitWithNewPipeAndPassReceiver());
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New(
-        base::TimeDelta(), base::Value(base::Value::Type::DICTIONARY), kFormat,
-        kResolution, gfx::Rect(kResolution), gfx::ColorSpace::CreateREC709(),
-        nullptr);
+        base::TimeDelta(), media::VideoFrameMetadata(), kFormat, kResolution,
+        gfx::Rect(kResolution), gfx::ColorSpace::CreateREC709(), nullptr);
 
     consumer_->OnFrameCaptured(std::move(data), std::move(info),
                                gfx::Rect(kResolution),

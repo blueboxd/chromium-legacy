@@ -5985,6 +5985,7 @@ TEST_F(LegacySWPictureLayerImplTest,
        TransformedRasterizationAndContentsOpaqueAndLCDText) {
   SetupDefaultTreesWithInvalidation(gfx::Size(200, 200), Region());
 
+  pending_layer()->SetBackgroundColor(SK_ColorWHITE);
   pending_layer()->SetContentsOpaque(true);
   pending_layer()->SetOffsetToTransformParent(gfx::Vector2dF(0.2, 0.3));
   EXPECT_TRUE(pending_layer()->contents_opaque());
@@ -5994,8 +5995,16 @@ TEST_F(LegacySWPictureLayerImplTest,
 
   pending_layer()->SetUseTransformedRasterization(true);
   EXPECT_FALSE(pending_layer()->contents_opaque());
-  EXPECT_TRUE(pending_layer()->contents_opaque_for_text());
-  EXPECT_EQ(LCDTextDisallowedReason::kNone,
+  EXPECT_FALSE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kContentsNotOpaque,
+            pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
+
+  // Simulate another push from main-thread with the same values.
+  pending_layer()->SetContentsOpaque(true);
+  pending_layer()->SetUseTransformedRasterization(true);
+  EXPECT_FALSE(pending_layer()->contents_opaque());
+  EXPECT_FALSE(pending_layer()->contents_opaque_for_text());
+  EXPECT_EQ(LCDTextDisallowedReason::kContentsNotOpaque,
             pending_layer()->ComputeLCDTextDisallowedReasonForTesting());
 }
 

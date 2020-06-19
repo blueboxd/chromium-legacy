@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
@@ -192,6 +193,8 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   double pageYOffset() const { return scrollY(); }
 
   DOMVisualViewport* visualViewport();
+
+  HeapVector<Member<DOMRect>> getWindowSegments() const;
 
   const AtomicString& name() const;
   void setName(const AtomicString&);

@@ -11,7 +11,7 @@ namespace updater {
 
 class App;
 
-scoped_refptr<App> AppServerInstance();
+scoped_refptr<App> MakeAppServer();
 
 }  // namespace updater
 

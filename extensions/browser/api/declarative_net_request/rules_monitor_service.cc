@@ -441,7 +441,7 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
     DCHECK_LE(matcher->GetRegexRulesCount(),
-              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+              static_cast<size_t>(GetRegexRuleLimit()));
     DCHECK_LE(matcher->GetRulesCount(), ruleset.source().rule_count_limit());
 
     if (ruleset.source().is_dynamic_ruleset()) {
@@ -450,13 +450,12 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
     }
 
     size_t new_rules_count = static_rules_count + matcher->GetRulesCount();
-    if (new_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES))
+    if (new_rules_count > static_cast<size_t>(GetStaticRuleLimit()))
       continue;
 
     size_t new_regex_rules_count =
         static_regex_rules_count + matcher->GetRegexRulesCount();
-    if (new_regex_rules_count >
-        static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+    if (new_regex_rules_count > static_cast<size_t>(GetRegexRuleLimit())) {
       continue;
     }
 
@@ -532,7 +531,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
     // Per-ruleset limits should have been enforced during
     // indexing/installation.
     DCHECK_LE(matcher->GetRegexRulesCount(),
-              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+              static_cast<size_t>(GetRegexRuleLimit()));
     DCHECK_LE(matcher->GetRulesCount(), ruleset.source().rule_count_limit());
 
     static_rules_count += matcher->GetRulesCount();
@@ -540,13 +539,12 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
     new_matchers.push_back(std::move(matcher));
   }
 
-  if (static_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES)) {
+  if (static_rules_count > static_cast<size_t>(GetStaticRuleLimit())) {
     std::move(callback).Run(kEnabledRulesetsRuleCountExceeded);
     return;
   }
 
-  if (static_regex_rules_count >
-      static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+  if (static_regex_rules_count > static_cast<size_t>(GetRegexRuleLimit())) {
     std::move(callback).Run(kEnabledRulesetsRegexRuleCountExceeded);
     return;
   }

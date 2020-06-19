@@ -27,6 +27,7 @@ import java.lang.annotation.RetentionPolicy;
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_PANEL_OPEN_FEATURE,
         FeatureConstants.CONTEXTUAL_SEARCH_OPT_IN_FEATURE,
+        FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_ADDRESS_FILL_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE,
         FeatureConstants.KEYBOARD_ACCESSORY_PAYMENT_FILLING_FEATURE,
@@ -81,6 +82,12 @@ public @interface FeatureConstants {
      * An IPH feature for encouraging users to opt-in for Contextual Search.
      */
     String CONTEXTUAL_SEARCH_OPT_IN_FEATURE = "IPH_ContextualSearchOptIn";
+
+    /**
+     * An IPH feature educating users that tap to use longpress instead.
+     */
+    String CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE =
+            "IPH_ContextualSearchTappedButShouldLongpress";
 
     /**
      * An IPH feature indicating to users that there are settings for downloads and they are

@@ -125,13 +125,13 @@ void PepperVideoCaptureHost::PostErrorReply() {
 void PepperVideoCaptureHost::OnFrameReady(const media::VideoFrame& frame) {
   if (alloc_size_ != frame.visible_rect().size() || buffers_.empty()) {
     alloc_size_ = frame.visible_rect().size();
-    double frame_rate;
     int rounded_frame_rate;
-    if (frame.metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                    &frame_rate))
-      rounded_frame_rate = static_cast<int>(frame_rate + 0.5 /* round */);
-    else
+    if (frame.metadata()->frame_rate.has_value()) {
+      rounded_frame_rate =
+          static_cast<int>(*frame.metadata()->frame_rate + 0.5 /* round */);
+    } else {
       rounded_frame_rate = blink::MediaStreamVideoSource::kUnknownFrameRate;
+    }
     AllocBuffers(alloc_size_, rounded_frame_rate);
   }
 

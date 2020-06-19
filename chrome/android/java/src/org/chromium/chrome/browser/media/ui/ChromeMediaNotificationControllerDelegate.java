@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.components.browser_ui.media.MediaNotificationController;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.ChromeNotificationBuilder;
 import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
@@ -95,7 +96,7 @@ class ChromeMediaNotificationControllerDelegate implements MediaNotificationCont
                 // The service has been started with startForegroundService() but the
                 // notification hasn't been shown. On O it will lead to the app crash.
                 // So show an empty notification before stopping the service.
-                MediaNotificationController.finishStartingForegroundService(this,
+                MediaNotificationController.finishStartingForegroundServiceOnO(this,
                         createChromeNotificationBuilder(mNotificationId).buildChromeNotification());
                 stopListenerService();
             }
@@ -194,6 +195,11 @@ class ChromeMediaNotificationControllerDelegate implements MediaNotificationCont
     public Intent createServiceIntent() {
         Class<?> serviceClass = sMapNotificationIdToOptions.get(mNotificationId).serviceClass;
         return (serviceClass != null) ? new Intent(getContext(), serviceClass) : null;
+    }
+
+    @Override
+    public String getAppName() {
+        return getContext().getString(R.string.app_name);
     }
 
     @Override

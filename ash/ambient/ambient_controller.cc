@@ -4,6 +4,7 @@
 
 #include "ash/ambient/ambient_controller.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -15,9 +16,10 @@
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
-#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind_helpers.h"
@@ -26,6 +28,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
@@ -35,11 +38,6 @@
 namespace ash {
 
 namespace {
-
-bool CanStartAmbientMode() {
-  return chromeos::features::IsAmbientModeEnabled() &&
-         AmbientClient::Get()->IsAmbientModeAllowedForActiveUser();
-}
 
 void CloseAssistantUi() {
   DCHECK(AssistantUiController::Get());
@@ -53,6 +51,23 @@ std::unique_ptr<AmbientBackendController> CreateAmbientBackendController() {
 #else
   return std::make_unique<FakeAmbientBackendControllerImpl>();
 #endif  // BUILDFLAG(ENABLE_CROS_AMBIENT_MODE_BACKEND)
+}
+
+// Returns the parent container of ambient widget. Will return a nullptr for
+// the in-session UI when lock-screen is currently not shown.
+aura::Window* GetWidgetContainer() {
+  if (ambient::util::IsShowing(LockScreen::ScreenType::kLock)) {
+    return Shell::GetContainer(Shell::GetPrimaryRootWindow(),
+                               kShellWindowId_LockScreenContainer);
+  }
+  return nullptr;
+}
+
+// Returns the name of the ambient widget.
+std::string GetWidgetName() {
+  if (ambient::util::IsShowing(LockScreen::ScreenType::kLock))
+    return "LockScreenAmbientModeContainer";
+  return "InSessionAmbientModeContainer";
 }
 
 }  // namespace
@@ -72,48 +87,58 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 AmbientController::AmbientController() {
   ambient_backend_controller_ = CreateAmbientBackendController();
-  ambient_state_.AddObserver(this);
+
+  ambient_ui_model_.AddObserver(this);
   // |SessionController| is initialized before |this| in Shell.
   Shell::Get()->session_controller()->AddObserver(this);
 }
 
 AmbientController::~AmbientController() {
+  if (container_view_)
+    container_view_->GetWidget()->CloseNow();
+
   // |SessionController| is destroyed after |this| in Shell.
   Shell::Get()->session_controller()->RemoveObserver(this);
-  ambient_state_.RemoveObserver(this);
-
-  if (container_view_)
-    DestroyContainerView();
+  ambient_ui_model_.RemoveObserver(this);
 }
 
-void AmbientController::OnWidgetDestroying(views::Widget* widget) {
-  ambient_photo_controller_.StopScreenUpdate();
+void AmbientController::OnAmbientUiVisibilityChanged(
+    AmbientUiVisibility visibility) {
+  switch (visibility) {
+    case AmbientUiVisibility::kShown:
+      if (!container_view_)
+        CreateWidget();
+      else
+        container_view_->GetWidget()->Show();
 
-  container_view_->GetWidget()->RemoveObserver(this);
-  container_view_ = nullptr;
+      DCHECK(container_view_);
+      // This will be no-op if the view is already visible.
+      container_view_->SetVisible(true);
+      StartRefreshingImages();
+      break;
+    case AmbientUiVisibility::kHidden:
+      container_view_->GetWidget()->Hide();
+      StopRefreshingImages();
+      break;
+    case AmbientUiVisibility::kClosed:
+      DCHECK(container_view_);
+      // |CloseNow()| will close the widget synchronously to ensure its
+      // view hierarchy being destroyed before |this|.
+      container_view_->GetWidget()->CloseNow();
 
-  // Call CloseUi() explicitly to sync states to |AssistantUiController|.
-  // This is a no-op if the UI has already been closed before the widget gets
-  // destroyed.
-  CloseAssistantUi();
-}
+      StopRefreshingImages();
+      CleanUpOnClosed();
 
-void AmbientController::OnAmbientModeEnabled(bool enabled) {
-  if (enabled) {
-    CreateContainerView();
-    container_view_->GetWidget()->Show();
-
-    ambient_photo_controller_.StartScreenUpdate();
-  } else {
-    DestroyContainerView();
+      // We close the Assistant UI after ambient screen not being shown to sync
+      // states to |AssistantUiController|. This will be a no-op if the
+      // Assistant UI has already been closed.
+      CloseAssistantUi();
+      break;
   }
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
   if (locked) {
-    // Show ambient mode when entering lock screen.
-    DCHECK(!container_view_);
-
     // We have 3 options to manage the token for lock screen. Here use option 1.
     // 1. Request only one time after entering lock screen. We will use it once
     //    to request all the image links and no more requests.
@@ -133,66 +158,13 @@ void AmbientController::OnLockStateChanged(bool locked) {
     //        has already been fetched, then there is not additional time to
     //        wait.
     RequestAccessToken(base::DoNothing());
-
-    Show();
+    ambient_ui_model_.SetUiMode(AmbientUiMode::kLockScreenUi);
+    ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
   } else {
-    // Destroy ambient mode after user re-login.
-    Destroy();
+    // Ambient screen will be destroyed along with the lock screen when user
+    // logs in.
+    ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kClosed);
   }
-}
-
-void AmbientController::Show() {
-  if (!CanStartAmbientMode()) {
-    // TODO(wutao): Show a toast to indicate that Ambient mode is not ready.
-    return;
-  }
-
-  // CloseUi to ensure the embedded Assistant UI doesn't exist when entering
-  // Ambient mode to avoid strange behavior caused by the embedded UI was
-  // only hidden at that time. This will be a no-op if UI was already closed.
-  // TODO(meilinw): Handle embedded UI.
-  CloseAssistantUi();
-
-  ambient_state_.SetAmbientModeEnabled(true);
-}
-
-void AmbientController::Destroy() {
-  ambient_state_.SetAmbientModeEnabled(false);
-}
-
-void AmbientController::Toggle() {
-  if (container_view_)
-    Destroy();
-  else
-    Show();
-}
-
-AmbientBackendModel* AmbientController::ambient_backend_model() {
-  return ambient_photo_controller_.ambient_backend_model();
-}
-
-void AmbientController::OnBackgroundPhotoEvents() {
-  ambient_photo_controller_.StopScreenUpdate();
-
-  // Move the |AmbientModeContainer| beneath the |LockScreenWidget| to show
-  // the lock screen contents on top before the fade-out animation.
-  auto* ambient_window = container_view_->GetWidget()->GetNativeWindow();
-  ambient_window->parent()->StackChildAtBottom(ambient_window);
-
-  // Start fading out the current background photo.
-  StartFadeOutAnimation();
-}
-
-void AmbientController::StartFadeOutAnimation() {
-  // We fade out the |PhotoView| on its own layer instead of using the general
-  // layer of the widget, otherwise it will reveal the color of the lockscreen
-  // wallpaper beneath.
-  container_view_->FadeOutPhotoView();
-}
-
-void AmbientController::RequestAccessToken(
-    AmbientAccessTokenController::AccessTokenCallback callback) {
-  access_token_controller_.RequestAccessToken(std::move(callback));
 }
 
 void AmbientController::AddAmbientViewDelegateObserver(
@@ -205,18 +177,97 @@ void AmbientController::RemoveAmbientViewDelegateObserver(
   delegate_.RemoveObserver(observer);
 }
 
-void AmbientController::CreateContainerView() {
+std::unique_ptr<AmbientContainerView> AmbientController::CreateContainerView() {
   DCHECK(!container_view_);
-  container_view_ = new AmbientContainerView(&delegate_);
-  container_view_->GetWidget()->AddObserver(this);
+
+  auto container = std::make_unique<AmbientContainerView>(&delegate_);
+  container_view_ = container.get();
+  return container;
 }
 
-void AmbientController::DestroyContainerView() {
-  // |container_view_|'s widget is owned by its native widget. After calling
-  // |CloseNow|, |OnWidgetDestroying| will be triggered immediately to reset
-  // |container_view_| to nullptr.
-  if (container_view_)
-    container_view_->GetWidget()->CloseNow();
+void AmbientController::HideContainerView() {
+  DCHECK(container_view_);
+
+  ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kHidden);
+}
+
+void AmbientController::ShowInSessionUI() {
+  // TODO(meilinw): move the eligibility check to the idle entry point once
+  // implemented: b/149246117.
+  if (!ambient::util::IsAmbientModeAllowed()) {
+    LOG(WARNING) << "Ambient mode is not allowed.";
+    return;
+  }
+
+  ambient_ui_model_.SetUiMode(AmbientUiMode::kInSessionUi);
+  ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
+}
+
+void AmbientController::CloseInSessionUI() {
+  DCHECK(container_view_);
+
+  ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kClosed);
+}
+
+void AmbientController::ToggleInSessionUI() {
+  if (!container_view_)
+    ShowInSessionUI();
+  else
+    CloseInSessionUI();
+}
+
+bool AmbientController::IsShown() const {
+  return container_view_ && container_view_->IsDrawn();
+}
+
+void AmbientController::OnBackgroundPhotoEvents() {
+  // Dismisses the ambient screen when user interacts with the background photo.
+  if (ambient_ui_model_.ui_mode() == AmbientUiMode::kInSessionUi)
+    CloseInSessionUI();
+  else
+    HideContainerView();
+}
+
+void AmbientController::UpdateUiMode(AmbientUiMode ui_mode) {
+  ambient_ui_model_.SetUiMode(ui_mode);
+}
+
+void AmbientController::RequestAccessToken(
+    AmbientAccessTokenController::AccessTokenCallback callback) {
+  access_token_controller_.RequestAccessToken(std::move(callback));
+}
+
+AmbientBackendModel* AmbientController::GetAmbientBackendModel() {
+  return ambient_photo_controller_.ambient_backend_model();
+}
+
+void AmbientController::CreateWidget() {
+  DCHECK(!container_view_);
+
+  views::Widget::InitParams params;
+  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
+  params.name = GetWidgetName();
+  params.show_state = ui::SHOW_STATE_FULLSCREEN;
+  params.parent = GetWidgetContainer();
+
+  views::Widget* widget = new views::Widget;
+  widget->Init(std::move(params));
+  widget->SetContentsView(CreateContainerView());
+
+  widget->Show();
+}
+
+void AmbientController::CleanUpOnClosed() {
+  // Invalidates the view pointer.
+  container_view_ = nullptr;
+}
+
+void AmbientController::StartRefreshingImages() {
+  ambient_photo_controller_.StartScreenUpdate();
+}
+
+void AmbientController::StopRefreshingImages() {
+  ambient_photo_controller_.StopScreenUpdate();
 }
 
 void AmbientController::set_backend_controller_for_testing(

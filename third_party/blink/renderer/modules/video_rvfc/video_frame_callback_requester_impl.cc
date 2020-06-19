@@ -139,30 +139,25 @@ void VideoFrameCallbackRequesterImpl::ExecuteVideoFrameCallbacks(
 
   metadata->setMediaTime(frame_metadata->media_time.InSecondsF());
 
-  base::TimeDelta processing_duration;
-  if (frame_metadata->metadata.GetTimeDelta(
-          media::VideoFrameMetadata::PROCESSING_TIME, &processing_duration)) {
-    metadata->setProcessingDuration(
-        GetCoarseClampedTimeInSeconds(processing_duration));
+  if (frame_metadata->metadata.processing_time) {
+    metadata->setProcessingDuration(GetCoarseClampedTimeInSeconds(
+        *frame_metadata->metadata.processing_time));
   }
 
-  base::TimeTicks capture_time;
-  if (frame_metadata->metadata.GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time)) {
+  if (frame_metadata->metadata.capture_begin_time) {
     metadata->setCaptureTime(GetClampedTimeInMillis(
-        time_converter.MonotonicTimeToZeroBasedDocumentTime(capture_time)));
+        time_converter.MonotonicTimeToZeroBasedDocumentTime(
+            *frame_metadata->metadata.capture_begin_time)));
   }
 
-  base::TimeTicks receive_time;
-  if (frame_metadata->metadata.GetTimeTicks(
-          media::VideoFrameMetadata::RECEIVE_TIME, &receive_time)) {
+  if (frame_metadata->metadata.receive_time) {
     metadata->setReceiveTime(GetClampedTimeInMillis(
-        time_converter.MonotonicTimeToZeroBasedDocumentTime(receive_time)));
+        time_converter.MonotonicTimeToZeroBasedDocumentTime(
+            *frame_metadata->metadata.receive_time)));
   }
 
-  double rtp_timestamp;
-  if (frame_metadata->metadata.GetDouble(
-          media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp)) {
+  if (frame_metadata->metadata.rtp_timestamp) {
+    double rtp_timestamp = *frame_metadata->metadata.rtp_timestamp;
     base::CheckedNumeric<uint32_t> uint_rtp_timestamp = rtp_timestamp;
     if (uint_rtp_timestamp.IsValid())
       metadata->setRtpTimestamp(rtp_timestamp);

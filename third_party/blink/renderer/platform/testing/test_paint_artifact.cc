@@ -82,8 +82,7 @@ TestPaintArtifact& TestPaintArtifact::ForeignLayer(
     const FloatPoint& offset) {
   DEFINE_STATIC_LOCAL(LiteralDebugNameClient, client, ("ForeignLayer"));
   display_item_list_.AllocateAndConstruct<ForeignLayerDisplayItem>(
-      client, DisplayItem::kForeignLayerFirst, std::move(layer), offset,
-      nullptr);
+      client, DisplayItem::kForeignLayerFirst, std::move(layer), offset);
   DidAddDisplayItem();
   return *this;
 }

@@ -310,6 +310,31 @@ TEST_F(AsyncDocumentSubresourceFilterTest, UpdateActivationState) {
   load_policy_2.ExpectReceivedOnce(LoadPolicy::DISALLOW);
 }
 
+// Tests the second constructor.
+TEST_F(AsyncDocumentSubresourceFilterTest,
+       ActivationStateProvided_ActivationStateImmediatelyAvailable) {
+  dealer_handle()->TryOpenAndSetRulesetFile(
+      ruleset().path, /*expected_checksum=*/0, base::DoNothing());
+  auto ruleset_handle = CreateRulesetHandle();
+
+  mojom::ActivationState provided_state;
+  provided_state.activation_level = mojom::ActivationLevel::kEnabled;
+
+  auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
+      ruleset_handle.get(), url::Origin::Create(GURL("http://example.com")),
+      provided_state);
+
+  EXPECT_TRUE(filter->has_activation_state());
+  EXPECT_EQ(provided_state.activation_level,
+            filter->activation_state().activation_level);
+
+  // Ensure the activation is not overwritten.
+  RunUntilIdle();
+  EXPECT_TRUE(filter->has_activation_state());
+  EXPECT_EQ(provided_state.activation_level,
+            filter->activation_state().activation_level);
+}
+
 // Tests for ComputeActivationState:
 
 class SubresourceFilterComputeActivationStateTest : public ::testing::Test {

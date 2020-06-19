@@ -1000,8 +1000,7 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
     auto frame = media::VideoFrame::CreateFrame(
         media::PIXEL_FORMAT_YV12, gfx::Size(8, 8), gfx::Rect(gfx::Size(8, 8)),
         gfx::Size(8, 8), i * frame_duration);
-    frame->metadata()->SetTimeDelta(
-        media::VideoFrameMetadata::WALLCLOCK_FRAME_DURATION, frame_duration);
+    frame->metadata()->wallclock_frame_duration = frame_duration;
     EXPECT_CALL(*video_frame_provider_, GetCurrentFrame())
         .WillRepeatedly(Return(frame));
 

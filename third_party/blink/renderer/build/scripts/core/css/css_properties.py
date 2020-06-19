@@ -354,6 +354,10 @@ class CSSProperties(object):
         ]
 
     @property
+    def properties_by_name(self):
+        return self._properties_by_name
+
+    @property
     def properties_by_id(self):
         return self._properties_by_id
 

@@ -36,6 +36,9 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate.ListenerService;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.components.browser_ui.media.MediaNotificationController;
+import org.chromium.components.browser_ui.media.MediaNotificationInfo;
+import org.chromium.components.browser_ui.media.MediaNotificationListener;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
 import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 import org.chromium.media_session.mojom.MediaSessionAction;
@@ -51,6 +54,7 @@ import java.util.stream.Stream;
  */
 public class MediaNotificationTestBase {
     private static final int NOTIFICATION_ID = 0;
+    private static final int TAB_ID = 0;
     static final String NOTIFICATION_GROUP_NAME = "group-name";
     static final Set<Integer> DEFAULT_ACTIONS =
             Stream.of(MediaSessionAction.PLAY).collect(Collectors.toSet());
@@ -117,7 +121,8 @@ public class MediaNotificationTestBase {
                         .setOrigin("https://example.com")
                         .setListener(mListener)
                         .setMediaSessionActions(DEFAULT_ACTIONS)
-                        .setId(getNotificationId());
+                        .setId(getNotificationId())
+                        .setInstanceId(TAB_ID);
 
         doNothing().when(getController()).onServiceStarted(any(ListenerService.class));
         // Robolectric does not have "ShadowMediaSession".

@@ -31,6 +31,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
@@ -364,7 +365,8 @@ class PLATFORM_EXPORT GraphicsContext {
                      int offset,
                      float border_radius,
                      float min_border_width,
-                     const Color&);
+                     const Color&,
+                     WebColorScheme color_scheme);
   void DrawFocusRing(const Path&, float width, int offset, const Color&);
 
   enum Edge {

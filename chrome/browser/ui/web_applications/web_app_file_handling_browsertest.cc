@@ -33,6 +33,10 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/web_launch/file_handling_expiry.mojom-test-utils.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
+#endif
+
 // A fake file handling expiry service. This service allows us to mock having an
 // origin trial which expires having a certain time, without needing to manage
 // actual origin trial tokens.
@@ -492,8 +496,21 @@ class WebAppFileHandlingOriginTrialTest
                                     kOriginTrialPublicKeyForTesting);
   }
 
+  void TearDownOnMainThread() override { interceptor_.reset(); }
+
  protected:
-  web_app::AppId InstallFileHandlingWebApp(const GURL& app_url) {
+  web_app::AppId InstallFileHandlingWebApp(GURL* app_url_out = nullptr) {
+    std::string origin = "https://file-handling-pwa";
+
+    // We need to use URLLoaderInterceptor (rather than a EmbeddedTestServer),
+    // because origin trial token is associated with a fixed origin, whereas
+    // EmbeddedTestServer serves content on a random port.
+    interceptor_ =
+        content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
+            kBaseDataDir, GURL(origin));
+
+    GURL app_url = GURL(origin + "/index.html");
+
     auto web_app_info = std::make_unique<WebApplicationInfo>();
     web_app_info->app_url = app_url;
     web_app_info->scope = app_url.GetWithoutFilename();
@@ -516,23 +533,19 @@ class WebAppFileHandlingOriginTrialTest
         LaunchApplication(profile(), app_id, app_url);
     web_content->Close();
 
+    if (app_url_out)
+      *app_url_out = app_url;
     return app_id;
   }
+
+ private:
+  std::unique_ptr<content::URLLoaderInterceptor> interceptor_;
 };
 
 IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialTest,
                        LaunchParamsArePassedCorrectly) {
-  std::string origin = "https://file-handling-pwa";
-
-  // We need to use URLLoaderInterceptor (rather than a EmbeddedTestServer),
-  // because origin trial token is associated with a fixed origin, whereas
-  // EmbeddedTestServer serves content on a random port.
-  auto interceptor =
-      content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-          kBaseDataDir, GURL(origin));
-
-  const GURL app_url = GURL(origin + "/index.html");
-  const web_app::AppId app_id = InstallFileHandlingWebApp(app_url);
+  GURL app_url;
+  const web_app::AppId app_id = InstallFileHandlingWebApp(&app_url);
   base::FilePath test_file_path = NewTestFilePath(FILE_PATH_LITERAL("txt"));
   content::WebContents* web_content = LaunchApplication(
       profile(), app_id, app_url,
@@ -543,6 +556,49 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialTest,
   EXPECT_EQ(test_file_path.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_content, "window.launchParams.files[0].name"));
 }
+
+#if defined(OS_CHROMEOS)
+
+// End-to-end test to ensure the file handler is registered on ChromeOS when the
+// extension system is initialized. Gives more coverage than the unit tests for
+// web_file_tasks.cc.
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialTest,
+                       IsFileHandlerOnChromeOS) {
+  const web_app::AppId app_id = InstallFileHandlingWebApp();
+  base::FilePath test_file_path = NewTestFilePath(FILE_PATH_LITERAL("txt"));
+  std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks =
+      file_manager::test::GetTasksForFile(profile(), test_file_path);
+
+  // Note that there are normally multiple tasks due to default-installed
+  // handlers (e.g. add to zip file). But those handlers are not installed by
+  // default in browser tests.
+  EXPECT_EQ(1u, tasks.size());
+  EXPECT_EQ(tasks[0].task_descriptor().app_id, app_id);
+}
+
+// Ensures correct behavior for files on "special volumes", such as file systems
+// provided by extensions. These do not have local files (i.e. backed by
+// inodes).
+IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialTest,
+                       NotHandlerForNonNativeFiles) {
+  const web_app::AppId app_id = InstallFileHandlingWebApp();
+  base::WeakPtr<file_manager::Volume> fsp_volume =
+      file_manager::test::InstallFileSystemProviderChromeApp(profile());
+
+  // File in chrome/test/data/extensions/api_test/file_browser/image_provider/.
+  base::FilePath test_file_path =
+      fsp_volume->mount_path().AppendASCII("readonly.txt");
+  std::vector<file_manager::file_tasks::FullTaskDescriptor> tasks =
+      file_manager::test::GetTasksForFile(profile(), test_file_path);
+
+  // Current expectation is for the task not to be found while the native
+  // filesystem API is still being built up. See https://crbug.com/1079065.
+  // When the "special file" check in file_manager::file_tasks::FindWebTasks()
+  // is removed, this test should work the same as IsFileHandlerOnChromeOS.
+  EXPECT_EQ(0u, tasks.size());
+}
+
+#endif  // OS_CHROMEOS
 
 INSTANTIATE_TEST_SUITE_P(All,
                          WebAppFileHandlingBrowserTest,

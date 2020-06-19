@@ -34,8 +34,8 @@
 namespace updater {
 
 // Returns a leaky singleton of the App instance.
-scoped_refptr<App> AppServerInstance() {
-  return AppInstance<ComServerApp>();
+scoped_refptr<ComServerApp> AppServerSingletonInstance() {
+  return AppSingletonInstance<ComServerApp>();
 }
 
 ComServerApp::ComServerApp()
@@ -133,7 +133,7 @@ void ComServerApp::Stop() {
   UnregisterClassObjects();
   main_task_runner_->PostTask(
       FROM_HERE, base::BindOnce([]() {
-        auto this_server = ComServerApp::Instance();
+        scoped_refptr<ComServerApp> this_server = AppServerSingletonInstance();
         this_server->config_->GetPrefService()->CommitPendingWrite();
         this_server->service_ = nullptr;
         this_server->config_ = nullptr;

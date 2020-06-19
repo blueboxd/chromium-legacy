@@ -131,6 +131,7 @@ static_library("protocol") {
     "pairing_host_authenticator.h",
     "pairing_registry.cc",
     "pairing_registry.h",
+    "peer_connection_controls.h",
     "performance_tracker.cc",
     "performance_tracker.h",
     "port_allocator.cc",

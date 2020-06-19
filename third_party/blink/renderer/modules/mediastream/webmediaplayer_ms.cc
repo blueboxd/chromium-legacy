@@ -247,11 +247,9 @@ class WebMediaPlayerMS::FrameDeliverer {
       bool tracing_enabled = false;
       TRACE_EVENT_CATEGORY_GROUP_ENABLED("media", &tracing_enabled);
       if (tracing_enabled) {
-        base::TimeTicks render_time;
-        if (frame->metadata()->GetTimeTicks(
-                media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
+        if (frame->metadata()->reference_time.has_value()) {
           TRACE_EVENT1("media", "EnqueueFrame", "Ideal Render Instant",
-                       render_time.ToInternalValue());
+                       frame->metadata()->reference_time->ToInternalValue());
         } else {
           TRACE_EVENT0("media", "EnqueueFrame");
         }

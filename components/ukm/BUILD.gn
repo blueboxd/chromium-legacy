@@ -11,6 +11,8 @@ static_library("ukm") {
   sources = [
     "app_source_url_recorder.cc",
     "app_source_url_recorder.h",
+    "field_trials_provider_helper.cc",
+    "field_trials_provider_helper.h",
     "scheme_constants.cc",
     "scheme_constants.h",
     "ukm_entry_filter.h",

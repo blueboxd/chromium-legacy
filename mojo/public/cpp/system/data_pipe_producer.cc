@@ -53,6 +53,8 @@ class DataPipeProducer::SequenceState
   void Cancel() {
     base::AutoLock lock(lock_);
     is_cancelled_ = true;
+    owning_task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&SequenceState::CancelOnSequence, this));
   }
 
   void Start(std::unique_ptr<DataSource> data_source) {
@@ -149,6 +151,13 @@ class DataPipeProducer::SequenceState
     callback_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback_),
                                   std::move(producer_handle_), result));
+  }
+
+  void CancelOnSequence() {
+    if (!data_source_)
+      return;
+    data_source_->Abort();
+    Finish(MOJO_RESULT_CANCELLED);
   }
 
   const scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;

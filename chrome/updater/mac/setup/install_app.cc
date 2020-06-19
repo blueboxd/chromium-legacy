@@ -28,8 +28,8 @@ void AppInstall::FirstTaskRun() {
 
 }  // namespace
 
-scoped_refptr<App> AppInstallInstance() {
-  return AppInstance<AppInstall>();
+scoped_refptr<App> MakeAppInstall() {
+  return base::MakeRefCounted<AppInstall>();
 }
 
 }  // namespace updater

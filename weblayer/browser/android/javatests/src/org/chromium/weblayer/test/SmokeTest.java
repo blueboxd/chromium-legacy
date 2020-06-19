@@ -4,6 +4,9 @@
 
 package org.chromium.weblayer.test;
 
+import android.app.Activity;
+import android.content.pm.ActivityInfo;
+
 import androidx.fragment.app.Fragment;
 import androidx.test.filters.SmallTest;
 
@@ -78,6 +81,32 @@ public class SmokeTest {
             }
             Assert.assertEquals(reference, enqueuedReference);
         });
+    }
+
+    @Test
+    @SmallTest
+    public void testRecreateInstance() {
+        try {
+            InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            });
+            mActivityTestRule.setRetainInstance(false);
+            Fragment firstFragment = mActivityTestRule.getFragment();
+
+            mActivityTestRule.recreateByRotatingToLandscape();
+            boolean destroyed =
+                    TestThreadUtils.runOnUiThreadBlockingNoException(() -> activity.isDestroyed());
+            Assert.assertTrue(destroyed);
+
+            Fragment secondFragment = mActivityTestRule.getFragment();
+            Assert.assertNotSame(firstFragment, secondFragment);
+        } finally {
+            Activity activity = mActivityTestRule.getActivity();
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            });
+        }
     }
 
     @Test

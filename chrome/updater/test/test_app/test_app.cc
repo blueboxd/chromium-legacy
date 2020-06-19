@@ -112,8 +112,8 @@ void TestApp::FirstTaskRun() {
   ParseCommandLine();
 }
 
-scoped_refptr<App> TestAppInstance() {
-  return AppInstance<TestApp>();
+scoped_refptr<App> MakeTestApp() {
+  return base::MakeRefCounted<TestApp>();
 }
 
 }  // namespace
@@ -124,7 +124,7 @@ int TestAppMain(int argc, const char** argv) {
   base::CommandLine::Init(argc, argv);
   updater::InitLogging(FILE_PATH_LITERAL("test_app.log"));
 
-  return TestAppInstance()->Run();
+  return MakeTestApp()->Run();
 }
 
 }  // namespace updater

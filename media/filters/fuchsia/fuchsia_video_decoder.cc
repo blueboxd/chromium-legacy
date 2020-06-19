@@ -102,8 +102,8 @@ class OutputMailbox {
         coded_size, visible_rect, natural_size, timestamp);
 
     // Request a fence we'll wait on before reusing the buffer.
-    frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
-                                  true);
+    frame->metadata()->read_lock_fences_enabled = true;
+
     return frame;
   }
 
@@ -932,10 +932,9 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
 
   // Mark the frame as power-efficient when software decoders are disabled. The
   // codec may still decode on hardware even when |enable_sw_decoding_| is set
-  // (i.e. POWER_EFFICIENT flag would not be set correctly in that case). It
+  // (i.e. power_efficient flag would not be set correctly in that case). It
   // doesn't matter because software decoders can be enabled only for tests.
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
-                                !enable_sw_decoding_);
+  frame->metadata()->power_efficient = !enable_sw_decoding_;
 
   output_cb_.Run(std::move(frame));
 }

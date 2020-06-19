@@ -338,8 +338,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateVideoHoleFrame(
   scoped_refptr<VideoFrame> frame =
       new VideoFrame(*layout, StorageType::STORAGE_OPAQUE,
                      gfx::Rect(natural_size), natural_size, timestamp);
-  frame->metadata()->SetUnguessableToken(VideoFrameMetadata::OVERLAY_PLANE_ID,
-                                         overlay_plane_id);
+  frame->metadata()->overlay_plane_id = overlay_plane_id;
   return frame;
 }
 
@@ -750,7 +749,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
   }
   scoped_refptr<VideoFrame> frame = new VideoFrame(
       *layout, STORAGE_UNKNOWN, gfx::Rect(), gfx::Size(), kNoTimestamp);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::END_OF_STREAM, true);
+  frame->metadata()->end_of_stream = true;
   return frame;
 }
 
@@ -1119,7 +1118,7 @@ gpu::SyncToken VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
 }
 
 std::string VideoFrame::AsHumanReadableString() const {
-  if (metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM))
+  if (metadata()->end_of_stream)
     return "end of stream";
 
   std::ostringstream s;

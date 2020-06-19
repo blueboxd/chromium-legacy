@@ -74,7 +74,6 @@
 #include "components/metrics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/entropy_state_provider.h"
-#include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -97,6 +96,7 @@
 #include "components/sync/driver/passphrase_type_metrics_provider.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_count_metrics_provider.h"
+#include "components/ukm/field_trials_provider_helper.h"
 #include "components/ukm/ukm_service.h"
 #include "components/version_info/version_info.h"
 #include "content/browser/accessibility/accessibility_metrics_provider.h"
@@ -417,9 +417,6 @@ MakeDemographicMetricsProvider(
 
 }  // namespace
 
-// UKM suffix for field trial recording.
-const char kUKMFieldTrialSuffix[] = "UKM";
-
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager) {
@@ -581,13 +578,10 @@ void ChromeMetricsServiceClient::Initialize() {
 
   if (IsMetricsReportingForceEnabled() ||
       base::FeatureList::IsEnabled(ukm::kUkmFeature)) {
-    // We only need to restrict to whitelisted Entries if metrics reporting
-    // is not forced.
-    bool restrict_to_whitelist_entries = !IsMetricsReportingForceEnabled();
     identifiability_study_state_ =
         std::make_unique<IdentifiabilityStudyState>(local_state);
     ukm_service_ = std::make_unique<ukm::UkmService>(
-        local_state, this, restrict_to_whitelist_entries,
+        local_state, this,
         MakeDemographicMetricsProvider(
             metrics::MetricsLogUploader::MetricServiceType::UKM));
     ukm_service_->SetIsWebstoreExtensionCallback(
@@ -759,6 +753,8 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
 }
 
 void ChromeMetricsServiceClient::RegisterUKMProviders() {
+  // Note: if you make changes here please also consider whether they should go
+  // in AndroidMetricsServiceClient::CreateUkmService().
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::NetworkMetricsProvider>(
           content::CreateNetworkConnectionTrackerAsyncGetter(),
@@ -779,10 +775,7 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
-  // TODO(crbug.com/754877): Support synthetic trials for UKM.
-  ukm_service_->RegisterMetricsProvider(
-      std::make_unique<variations::FieldTrialsProvider>(nullptr,
-                                                        kUKMFieldTrialSuffix));
+  ukm_service_->RegisterMetricsProvider(ukm::CreateFieldTrialsProviderForUkm());
 }
 
 void ChromeMetricsServiceClient::CollectFinalHistograms() {

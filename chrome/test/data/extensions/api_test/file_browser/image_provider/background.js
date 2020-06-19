@@ -24,6 +24,8 @@ const PNG_DATA = new Uint8Array([
 ]);
 const PNG_FILE = new File([PNG_DATA], 'readonly.png', {type: 'image/png'});
 
+const TXT_FILE = new File(['txt_data'], 'readonly.txt', {type: 'text/plain'});
+
 const GIF_ENTRY = Object.freeze({
   isDirectory: false,
   name: GIF_FILE.name,
@@ -42,6 +44,15 @@ const PNG_ENTRY = Object.freeze({
   file: PNG_FILE,
   writable: false
 });
+const TXT_ENTRY = Object.freeze({
+  isDirectory: false,
+  name: TXT_FILE.name,
+  size: TXT_FILE.size,
+  modificationTime: new Date(),
+  mimeType: TXT_FILE.type,
+  file: TXT_FILE,
+  writable: false
+});
 const ROOT_ENTRY = Object.freeze({
   isDirectory: true,
   name: '',
@@ -54,6 +65,7 @@ const ENTRY_PATHS = {
   ['/']: ROOT_ENTRY,
   [`/${GIF_ENTRY.name}`]: GIF_ENTRY,
   [`/${PNG_ENTRY.name}`]: PNG_ENTRY,
+  [`/${TXT_ENTRY.name}`]: TXT_ENTRY,
 };
 
 // A mapping from |requestId| to file entry. Used to respond to subsequent file

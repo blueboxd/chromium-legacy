@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WIDGET_FRAME_WIDGET_H_
 
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-blink.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -78,6 +79,9 @@ class PLATFORM_EXPORT FrameWidget {
 
   // Returns the DisplayMode in use for the widget.
   virtual mojom::blink::DisplayMode DisplayMode() const = 0;
+
+  // Returns the window segments for the widget.
+  virtual const WebVector<WebRect>& WindowSegments() const = 0;
 
   // Sets the ink metadata on the layer tree host
   virtual void SetDelegatedInkMetadata(

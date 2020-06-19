@@ -14,6 +14,7 @@
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/login/ui/lock_screen.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ui/aura/window.h"
@@ -29,34 +30,7 @@ namespace {
 // Appearance.
 constexpr int kHorizontalMarginDip = 16;
 constexpr int kVerticalMarginDip = 64;
-constexpr int kAssistantContainerViewPreferredHeightDip = 128;
-
-// TODO(meilinw): temporary values for dev purpose, need to be updated with the
-// final spec.
-constexpr float kBackgroundPhotoOpacity = 0.5f;
-constexpr base::TimeDelta kBackgroundPhotoFadeOutAnimationDuration =
-    base::TimeDelta::FromMilliseconds(500);
-
-aura::Window* GetContainer() {
-  aura::Window* container = nullptr;
-  if (ambient::util::IsShowing(LockScreen::ScreenType::kLock))
-    container = Shell::GetContainer(Shell::GetPrimaryRootWindow(),
-                                    kShellWindowId_LockScreenContainer);
-
-  return container;
-}
-
-void CreateWidget(AmbientContainerView* view) {
-  views::Widget::InitParams params;
-  params.parent = GetContainer();
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
-  params.delegate = view;
-  params.name = "AmbientModeContainer";
-
-  views::Widget* widget = new views::Widget;
-  widget->Init(std::move(params));
-  widget->SetFullscreen(true);
-}
+constexpr int kAssistantPreferredHeightDip = 128;
 
 }  // namespace
 
@@ -77,28 +51,12 @@ gfx::Size AmbientContainerView::CalculatePreferredSize() const {
 }
 
 void AmbientContainerView::Layout() {
-  if (photo_view_)
-    photo_view_->SetBoundsRect(GetLocalBounds());
+  // Layout child views first to have proper bounds set for children.
+  LayoutPhotoView();
+  LayoutAssistantView();
+  LayoutGlanceableInfoView();
 
-  if (ambient_assistant_container_view_) {
-    // The view has the same width as the container view and the widget.
-    int width = GetLocalBounds().width();
-    ambient_assistant_container_view_->SetBounds(
-        0, 0, width, kAssistantContainerViewPreferredHeightDip);
-  }
-
-  if (glanceable_info_view_)
-    LayoutGlanceableInfoView();
-}
-
-void AmbientContainerView::FadeOutPhotoView() {
-  DCHECK(photo_view_);
-
-  photo_view_->layer()->GetAnimator()->StartAnimation(
-      assistant::util::CreateLayerAnimationSequence(
-          assistant::util::CreateOpacityElement(
-              kBackgroundPhotoOpacity,
-              kBackgroundPhotoFadeOutAnimationDuration)));
+  View::Layout();
 }
 
 void AmbientContainerView::Init() {
@@ -113,8 +71,11 @@ void AmbientContainerView::Init() {
 
   glanceable_info_view_ =
       AddChildView(std::make_unique<GlanceableInfoView>(delegate_));
+}
 
-  CreateWidget(this);
+void AmbientContainerView::LayoutPhotoView() {
+  // |photo_view_| should have the same size as the widget.
+  photo_view_->SetBoundsRect(GetLocalBounds());
 }
 
 void AmbientContainerView::LayoutGlanceableInfoView() {
@@ -128,6 +89,13 @@ void AmbientContainerView::LayoutGlanceableInfoView() {
       container_size.height() - kVerticalMarginDip - preferred_size.height();
   glanceable_info_view_->SetBoundsRect(
       gfx::Rect(x, y, preferred_size.width(), preferred_size.height()));
+}
+
+void AmbientContainerView::LayoutAssistantView() {
+  int preferred_width = GetPreferredSize().width();
+  int preferred_height = kAssistantPreferredHeightDip;
+  ambient_assistant_container_view_->SetBoundsRect(
+      gfx::Rect(0, 0, preferred_width, preferred_height));
 }
 
 }  // namespace ash

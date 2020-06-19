@@ -13,6 +13,9 @@ namespace feed {
 namespace prefs {
 
 const char kEnableSnippets[] = "ntp_snippets.enable";
+// A boolean pref set to true if Feed articles are visible.
+// FEED_ARTICLES_LIST_VISIBLE in ChromePreferenceKeys.java is a pre-native cache
+// and should be consistent with this pref.
 const char kArticlesListVisible[] = "ntp_snippets.list_visible";
 
 void RegisterFeedSharedProfilePrefs(PrefRegistrySimple* registry) {

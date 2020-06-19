@@ -106,6 +106,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/base/resource/resource_bundle_android.h"
+#include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/android_descriptors.h"
 #include "weblayer/browser/devtools_manager_delegate_android.h"
 #include "weblayer/browser/safe_browsing/safe_browsing_service.h"
@@ -766,6 +767,14 @@ ContentBrowserClientImpl::CreateLoginDelegate(
 content::SpeechRecognitionManagerDelegate*
 ContentBrowserClientImpl::CreateSpeechRecognitionManagerDelegate() {
   return new WebLayerSpeechRecognitionManagerDelegate();
+}
+
+ukm::UkmService* ContentBrowserClientImpl::GetUkmService() {
+#if defined(OS_ANDROID)
+  return WebLayerMetricsServiceClient::GetInstance()->GetUkmService();
+#else
+  return nullptr;
+#endif
 }
 
 }  // namespace weblayer

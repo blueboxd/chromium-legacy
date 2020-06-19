@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/common/api/declarative_net_request.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
@@ -45,7 +46,7 @@ IndexHelper::Result CombineResults(
 
     // Per-ruleset limits should have been enforced during ruleset indexing.
     DCHECK_LE(index_result.regex_rules_count,
-              static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES));
+              static_cast<size_t>(GetRegexRuleLimit()));
     DCHECK_LE(index_result.rules_count, source->rule_count_limit());
 
     if (!index_result.success) {
@@ -72,12 +73,12 @@ IndexHelper::Result CombineResults(
 
   // Raise an install warning if the enabled rule count exceeds the API limits.
   // We don't raise a hard error to maintain forwards compatibility.
-  if (enabled_rules_count > static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES)) {
+  if (enabled_rules_count > static_cast<size_t>(GetStaticRuleLimit())) {
     total_result.warnings.emplace_back(
         kEnabledRuleCountExceeded, manifest_keys::kDeclarativeNetRequestKey,
         manifest_keys::kDeclarativeRuleResourcesKey);
   } else if (enabled_regex_rules_count >
-             static_cast<size_t>(dnr_api::MAX_NUMBER_OF_REGEX_RULES)) {
+             static_cast<size_t>(GetRegexRuleLimit())) {
     total_result.warnings.emplace_back(
         kEnabledRegexRuleCountExceeded,
         manifest_keys::kDeclarativeNetRequestKey,

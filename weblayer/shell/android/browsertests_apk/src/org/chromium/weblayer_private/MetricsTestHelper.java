@@ -4,11 +4,16 @@
 
 package org.chromium.weblayer_private;
 
+import android.content.Context;
+import android.text.TextUtils;
+
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.weblayer.WebLayer;
 
 /**
  * Helper for metrics_browsertest.cc
@@ -47,6 +52,26 @@ class MetricsTestHelper {
     @CalledByNative
     private static void installTestGmsBridge(boolean userConsent) {
         GmsBridge.injectInstance(new TestGmsBridge(userConsent));
+    }
+
+    @CalledByNative
+    private static void createProfile(String name) {
+        Context appContext = ContextUtils.getApplicationContext();
+        WebLayer weblayer = WebLayer.loadSync(appContext);
+
+        String nameOrNull = null;
+        if (!TextUtils.isEmpty(name)) nameOrNull = name;
+        weblayer.getProfile(nameOrNull);
+    }
+
+    @CalledByNative
+    private static void destroyProfile(String name) {
+        Context appContext = ContextUtils.getApplicationContext();
+        WebLayer weblayer = WebLayer.loadSync(appContext);
+
+        String nameOrNull = null;
+        if (!TextUtils.isEmpty(name)) nameOrNull = name;
+        weblayer.getProfile(nameOrNull).destroy();
     }
 
     @CalledByNative

@@ -208,7 +208,7 @@
     kExpirationMonthPrefKey : self.expirationMonth,
     kExpirationYearPrefKey : self.expirationYear,
     kLegalMessagesPrefKey : [self legalMessagesForModal],
-    kCurrentCardSavedPrefKey : @(!self.infobarAccepted),
+    kCurrentCardSavedPrefKey : @(self.infobarAccepted),
     kSupportsEditingPrefKey : @(supportsEditing)
   };
   [self.modalConsumer setupModalViewControllerWithPrefs:prefs];

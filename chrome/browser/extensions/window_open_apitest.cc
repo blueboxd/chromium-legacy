@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowArgumentsOverflow) {
   ASSERT_TRUE(RunExtensionTest("window_open/argument_overflow")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, DISABLED_WindowOpener) {
+IN_PROC_BROWSER_TEST_F(WindowOpenApiTest, WindowOpener) {
   ASSERT_TRUE(RunExtensionTest("window_open/opener")) << message_;
 }
 

@@ -47,6 +47,7 @@
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_text_input_info.h"
+#include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -153,6 +154,9 @@ class WebWidget {
   // Sets the display mode, which comes from the top-level browsing context and
   // is applied to all widgets.
   virtual void SetDisplayMode(mojom::DisplayMode) {}
+
+  // Sets the root widget's window segments.
+  virtual void SetWindowSegments(WebVector<WebRect> window_segments) {}
 
   // Returns the anchor and focus bounds of the current selection.
   // If the selection range is empty, it returns the caret bounds.

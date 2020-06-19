@@ -15,33 +15,10 @@ namespace ash {
 
 using AmbientContainerViewTest = AmbientAshTestBase;
 
-// Shows the widget for AmbientContainerView.
-TEST_F(AmbientContainerViewTest, Show) {
-  // Show the widget.
-  ambient_controller()->Toggle();
-  AmbientContainerView* ambient_container_view = GetView();
-  EXPECT_TRUE(ambient_container_view);
-
-  views::Widget* widget = ambient_container_view->GetWidget();
-  EXPECT_TRUE(widget);
-}
-
-// Tests that the window can be shown or closed by toggling.
-TEST_F(AmbientContainerViewTest, ToggleWindow) {
-  // Show the widget.
-  ambient_controller()->Toggle();
-  EXPECT_TRUE(GetView());
-
-  // Call |Toggle()| to close the widget.
-  ambient_controller()->Toggle();
-  EXPECT_FALSE(GetView());
-}
-
 // Tests that AmbientContainerView window should be fullscreen.
 TEST_F(AmbientContainerViewTest, WindowFullscreenSize) {
-  // Show the widget.
-  ambient_controller()->Toggle();
-  views::Widget* widget = GetView()->GetWidget();
+  ShowAmbientScreen();
+  views::Widget* widget = container_view()->GetWidget();
 
   gfx::Rect root_window_bounds =
       display::Screen::GetScreen()

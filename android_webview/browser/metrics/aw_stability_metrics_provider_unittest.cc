@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/metrics/user_action_tester.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
@@ -61,7 +60,6 @@ class TestMetricsProvider : public AwStabilityMetricsProvider {
 
 TEST_F(AwStabilityMetricsProviderTest, PageLoadCount) {
   base::HistogramTester histogram_tester;
-  base::UserActionTester user_action_tester;
   TestMetricsProvider provider(prefs());
   metrics::SystemProfileProto system_profile;
 
@@ -73,7 +71,6 @@ TEST_F(AwStabilityMetricsProviderTest, PageLoadCount) {
 
   provider.ProvideStabilityMetrics(&system_profile);
   EXPECT_EQ(1, system_profile.stability().page_load_count());
-  EXPECT_EQ(1, user_action_tester.GetActionCount("PageLoad"));
   histogram_tester.ExpectUniqueSample("Stability.Experimental.Counts",
                                       metrics::StabilityEventType::kPageLoad,
                                       1);

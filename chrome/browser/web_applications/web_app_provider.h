@@ -41,6 +41,7 @@ class WebAppAudioFocusIdMap;
 class WebAppInstallManager;
 class WebAppPolicyManager;
 class WebAppUiManager;
+class OsIntegrationManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
@@ -81,6 +82,7 @@ class WebAppProvider : public WebAppProviderBase {
   AppIconManager& icon_manager() override;
   AppShortcutManager& shortcut_manager() override;
   SystemWebAppManager& system_web_app_manager() override;
+  OsIntegrationManager& os_integration_manager() override;
 
   // KeyedService:
   void Shutdown() override;
@@ -132,6 +134,7 @@ class WebAppProvider : public WebAppProviderBase {
   std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
   std::unique_ptr<WebAppUiManager> ui_manager_;
+  std::unique_ptr<OsIntegrationManager> os_integration_manager_;
 
   base::OneShotEvent on_registry_ready_;
 

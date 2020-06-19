@@ -782,7 +782,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   frame->SetReleaseMailboxCB(
       base::BindOnce(release_mailbox_cb_, std::move(wait_complete_cb)));
 
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+  frame->metadata()->power_efficient = true;
   // For NV12, overlay is allowed by default. If the decoder is going to support
   // non-NV12 textures, then this may have to be conditionally set. Also note
   // that ALLOW_OVERLAY is required for encrypted video path.
@@ -797,8 +797,7 @@ bool D3D11VideoDecoder::OutputResult(const CodecPicture* picture,
   // presenter decide if it wants to.
   const bool allow_overlay =
       base::FeatureList::IsEnabled(kD3D11VideoDecoderAllowOverlay);
-  frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
-                                allow_overlay);
+  frame->metadata()->allow_overlay = allow_overlay;
 
   frame->set_color_space(output_color_space);
   output_cb_.Run(frame);

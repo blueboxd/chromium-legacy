@@ -34,6 +34,12 @@ const char kFakeOobeConfiguration[] = "fake-oobe-configuration-file";
 //  'interactive=3' - Interactive mode, connect/scan/etc requests take 3 secs
 const char kShillStub[] = "shill-stub";
 
+// Enables Hermes fake behavior. By default, no carrier profiles are setup.
+// If a value of "on" is passed for this switch, then hermes fakes are
+// initialized with a single installed carrier profile. Fake cellular service
+// corresponding to carrier profiles are also setup in Shill.
+const char kHermesFake[] = "hermes-fake";
+
 // Sends test messages on first call to RequestUpdate (stub only).
 const char kSmsTestMessages[] = "sms-test-messages";
 

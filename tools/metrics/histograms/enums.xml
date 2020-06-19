@@ -695,6 +695,16 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="245" label="UMA_API_WINDOW_GET_ISTOPMOST">
     UIA Window.get_IsTopmost
   </int>
+  <int value="246" label="UMA_API_ELEMENT_PROVIDER_FROM_POINT">
+    UIA FragmentRoot.ElementProviderFromPoint
+  </int>
+  <int value="247" label="UMA_API_GET_FOCUS">UIA FragmentRoot.GetFocus</int>
+  <int value="248" label="UMA_API_ADVISE_EVENT_ADDED">
+    UIA AdviseEvents.AdviseEventAdded
+  </int>
+  <int value="249" label="UMA_API_ADVISE_EVENT_REMOVED">
+    UIA AdviseEvents.AdviseEventRemoved
+  </int>
 </enum>
 
 <enum name="AccessibilityWinAPIGetPropertyValueEnum">
@@ -11396,7 +11406,7 @@ Called by update_net_error_codes.py.-->
 
 <enum name="ContextMenuLensSupportStatus">
   <summary>Whether lens is supported and if not the reason why.</summary>
-  <int value="0" label="Lens Supported"/>
+  <int value="0" label="Lens Search Supported"/>
   <int value="1" label="Not Google Search Engine"/>
   <int value="2" label="Activity Not Accessible"/>
   <int value="3" label="Out of Date"/>
@@ -11404,6 +11414,8 @@ Called by update_net_error_codes.py.-->
   <int value="5" label="OS Below Android O"/>
   <int value="6" label="Invalid Package"/>
   <int value="7" label="Image Format Not Support"/>
+  <int value="8" label="Lens Shop Supported"/>
+  <int value="9" label="Lens Search And Shop Supported"/>
 </enum>
 
 <enum name="ContextMenuOption">
@@ -39461,6 +39473,7 @@ from previous Chrome versions.
   <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
   <int value="-1469228683" label="QuickUnlockPinSignin:disabled"/>
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
+  <int value="-1467839547" label="ContextMenuShopWithGoogleLens:disabled"/>
   <int value="-1467642274" label="KeyboardShortcutViewer:disabled"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1467062925" label="AndroidDefaultBrowserPromo:enabled"/>
@@ -39850,6 +39863,8 @@ from previous Chrome versions.
   <int value="-1083736482" label="OmniboxCompactSuggestions:enabled"/>
   <int value="-1083547717" label="NotificationExpansionAnimation:disabled"/>
   <int value="-1082302549" label="scan-cards-in-web-payments"/>
+  <int value="-1081295536"
+      label="ContextMenuSearchAndShopWithGoogleLens:enabled"/>
   <int value="-1078093206" label="ash-debug-shortcuts"/>
   <int value="-1077752943" label="enable-password-generation"/>
   <int value="-1075156797" label="enable-brotli"/>
@@ -41825,6 +41840,8 @@ from previous Chrome versions.
   <int value="1155905651" label="DrawVerticallyEdgeToEdge:disabled"/>
   <int value="1155923106" label="NTPOfflinePages:enabled"/>
   <int value="1158333871" label="QueryTilesEnableQueryEditing:enabled"/>
+  <int value="1159760152"
+      label="ContextMenuSearchAndShopWithGoogleLens:disabled"/>
   <int value="1163255347" label="ash-enable-touch-view-touch-feedback"/>
   <int value="1164377197" label="SwipingFromLeftEdgeToGoBack:enabled"/>
   <int value="1164460660" label="AutofillEnableVirtualCard:enabled"/>
@@ -42405,6 +42422,7 @@ from previous Chrome versions.
   <int value="1798347197"
       label="ContextualSuggestionsIPHReverseScroll:disabled"/>
   <int value="1799521026" label="LegacyTLSEnforced:disabled"/>
+  <int value="1801585504" label="ContextMenuShopWithGoogleLens:enabled"/>
   <int value="1802874714" label="QueryTilesEnableQueryEditing:disabled"/>
   <int value="1803465156" label="enable-zero-suggest-most-visited"/>
   <int value="1803470125" label="SyncUSSSessions:enabled"/>
@@ -72770,6 +72788,17 @@ Called by update_scheduler_enums.py.-->
 <enum name="WebViewClientTypeEnum">
   <int value="0" label="Regular WebViewClient"/>
   <int value="1" label="WebViewClientCompat (via AndroidX)"/>
+</enum>
+
+<enum name="WebViewDrawAndSubmissionType">
+  <int value="0" label="No invalidate + no submission + same params"/>
+  <int value="1" label="Params changed"/>
+  <int value="2" label="Frame submitted"/>
+  <int value="3" label="Frame submitted + params changed"/>
+  <int value="4" label="Invalidate"/>
+  <int value="5" label="Invalidate + params changed"/>
+  <int value="6" label="Invalidate + frame submitted"/>
+  <int value="7" label="Invalidate + frame submitted + params changed"/>
 </enum>
 
 <enum name="WebViewExtraHeaders">

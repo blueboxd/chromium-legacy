@@ -193,15 +193,14 @@ class VideoCaptureImplTest : public ::testing::Test {
         media::mojom::blink::VideoFrameInfo::New();
 
     const base::TimeTicks now = base::TimeTicks::Now();
-    media::VideoFrameMetadata frame_metadata;
-    frame_metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME, now);
-    info->metadata = frame_metadata.GetInternalValues().Clone();
-
+    media::VideoFrameMetadata metadata;
+    metadata.reference_time = now;
     info->timestamp = now - base::TimeTicks();
     info->pixel_format = pixel_format;
     info->coded_size = size;
     info->visible_rect = gfx::Rect(size);
     info->color_space = gfx::ColorSpace();
+    info->metadata = metadata;
 
     video_capture_impl_->OnBufferReady(buffer_id, std::move(info));
   }

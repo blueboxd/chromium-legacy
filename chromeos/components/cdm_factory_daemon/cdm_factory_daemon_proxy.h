@@ -31,10 +31,11 @@ class COMPONENT_EXPORT(CDM_FACTORY_DAEMON) CdmFactoryDaemonProxy
   typedef base::OnceCallback<void(bool connected)> ValidateDaemonConnectionCB;
 
   CdmFactoryDaemonProxy();
-  ~CdmFactoryDaemonProxy() override;
 
   CdmFactoryDaemonProxy(const CdmFactoryDaemonProxy&) = delete;
   CdmFactoryDaemonProxy& operator=(const CdmFactoryDaemonProxy&) = delete;
+
+  ~CdmFactoryDaemonProxy() override;
 
   static void Create(mojo::PendingReceiver<CdmFactoryDaemon> receiver);
 

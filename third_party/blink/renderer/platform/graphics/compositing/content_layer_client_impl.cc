@@ -115,9 +115,10 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 
   cc_picture_layer_->SetIsDrawable(
       (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
-      // Backdrop effects require the layer to be drawable even if the layer
-      // draws nothing.
-      layer_state.Effect().HasBackdropEffect());
+      // Backdrop effects and filters require the layer to be drawable even if
+      // the layer draws nothing.
+      layer_state.Effect().HasBackdropEffect() ||
+      !layer_state.Effect().Filter().IsEmpty());
 
   auto safe_opaque_background_color =
       paint_artifact->SafeOpaqueBackgroundColor(paint_chunks);

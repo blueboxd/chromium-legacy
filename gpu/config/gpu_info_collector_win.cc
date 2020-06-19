@@ -289,7 +289,7 @@ bool BadAMDVulkanDriverVersion() {
   // broken.
   const base::Version kBadAMDVulkanDriverVersion("1.0.54.0");
   // CompareTo() returns -1, 0, 1 for <, ==, >.
-  if (amd_version.CompareTo(kBadAMDVulkanDriverVersion) == -1)
+  if (amd_version.CompareTo(kBadAMDVulkanDriverVersion) != 1)
     return true;
 
   return false;

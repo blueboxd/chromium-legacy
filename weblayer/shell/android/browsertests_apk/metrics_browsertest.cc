@@ -4,12 +4,13 @@
 
 #include <deque>
 
-#include "base/android/jni_android.h"
 #include "base/command_line.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
 #include "base/test/bind_test_util.h"
+#include "components/metrics/log_decoder.h"
+#include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
@@ -18,10 +19,10 @@
 #include "weblayer/public/navigation_controller.h"
 #include "weblayer/public/profile.h"
 #include "weblayer/public/tab.h"
+#include "weblayer/shell/android/browsertests_apk/metrics_test_helper.h"
 #include "weblayer/shell/browser/shell.h"
 #include "weblayer/test/weblayer_browser_test.h"
 #include "weblayer/test/weblayer_browser_test_utils.h"
-#include "weblayer/test/weblayer_browsertests_jni/MetricsTestHelper_jni.h"
 
 namespace weblayer {
 
@@ -42,13 +43,12 @@ bool HasHistogramWithHash(const metrics::ChromeUserMetricsExtension& uma_log,
 class MetricsBrowserTest : public WebLayerBrowserTest {
  public:
   void SetUp() override {
-    instance_ = this;
-
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitch(metrics::switches::kForceEnableMetricsReporting);
 
-    Java_MetricsTestHelper_installTestGmsBridge(
-        base::android::AttachCurrentThread(), HasUserConsent());
+    InstallTestGmsBridge(HasUserConsent(),
+                         base::BindRepeating(&MetricsBrowserTest::OnLogMetrics,
+                                             base::Unretained(this)));
     WebLayerMetricsServiceClient::GetInstance()->SetFastStartupForTesting(true);
     WebLayerMetricsServiceClient::GetInstance()->SetUploadIntervalForTesting(
         base::TimeDelta::FromMilliseconds(10));
@@ -56,17 +56,14 @@ class MetricsBrowserTest : public WebLayerBrowserTest {
   }
 
   void TearDown() override {
-    Java_MetricsTestHelper_removeTestGmsBridge(
-        base::android::AttachCurrentThread());
-    instance_ = nullptr;
+    RemoveTestGmsBridge();
     WebLayerBrowserTest::TearDown();
   }
 
-  static void OnLogMetrics(const metrics::ChromeUserMetricsExtension& metric) {
-    if (!instance_)
-      return;
-    instance_->metrics_logs_.push_back(metric);
-    std::move(instance_->on_new_log_).Run();
+  void OnLogMetrics(metrics::ChromeUserMetricsExtension metric) {
+    metrics_logs_.push_back(metric);
+    if (on_new_log_)
+      std::move(on_new_log_).Run();
   }
 
   metrics::ChromeUserMetricsExtension WaitForNextMetricsLog() {
@@ -89,20 +86,7 @@ class MetricsBrowserTest : public WebLayerBrowserTest {
   std::unique_ptr<Profile> profile_;
   std::deque<metrics::ChromeUserMetricsExtension> metrics_logs_;
   base::OnceClosure on_new_log_;
-  static MetricsBrowserTest* instance_;
 };
-
-MetricsBrowserTest* MetricsBrowserTest::instance_ = nullptr;
-
-void JNI_MetricsTestHelper_OnLogMetrics(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jbyteArray>& data) {
-  metrics::ChromeUserMetricsExtension proto;
-  jbyte* src_bytes = env->GetByteArrayElements(data, nullptr);
-  proto.ParseFromArray(src_bytes, env->GetArrayLength(data.obj()));
-  env->ReleaseByteArrayElements(data, src_bytes, JNI_ABORT);
-  MetricsBrowserTest::OnLogMetrics(proto);
-}
 
 IN_PROC_BROWSER_TEST_F(MetricsBrowserTest, ProtoHasExpectedFields) {
   metrics::ChromeUserMetricsExtension log = WaitForNextMetricsLog();

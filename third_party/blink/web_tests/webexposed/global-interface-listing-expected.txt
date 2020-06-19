@@ -11898,6 +11898,7 @@ interface webkitURL
     method getOriginPrivateDirectory
     method getScreens
     method getSelection
+    method getWindowSegments
     method matchMedia
     method moveBy
     method moveTo

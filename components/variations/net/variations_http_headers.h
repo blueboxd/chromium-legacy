@@ -100,7 +100,9 @@ bool IsVariationsHeader(const std::string& header_name);
 bool HasVariationsHeader(const network::ResourceRequest& request);
 
 // Calls the internal ShouldAppendVariationsHeader() for testing.
-bool ShouldAppendVariationsHeaderForTesting(const GURL& url);
+bool ShouldAppendVariationsHeaderForTesting(
+    const GURL& url,
+    const std::string& histogram_suffix);
 
 // Updates |cors_exempt_header_list| field of the given |param| to register the
 // variation headers.

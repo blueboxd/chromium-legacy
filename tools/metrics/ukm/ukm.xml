@@ -2965,6 +2965,12 @@ be describing additional metrics about the same event.
       option was displayed.
     </summary>
   </metric>
+  <metric name="ShopWithGoogleLens" enum="Boolean">
+    <summary>
+      Recorded when the context menu is constructed and logged if the lens
+      shopping option was displayed.
+    </summary>
+  </metric>
 </event>
 
 <event name="ContextualSearch">

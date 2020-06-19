@@ -284,9 +284,6 @@ extern const base::Feature kKernelnextVMs;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLiteVideo;
 
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kLookalikeUrlNavigationSuggestionsUI;
-
 #if defined(OS_MACOSX)
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kMacFullSizeContentView;

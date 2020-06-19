@@ -151,16 +151,15 @@ class TextureDeviceExerciser : public VirtualDeviceExerciser {
         access_permission_proxy.InitWithNewPipeAndPassReceiver());
 
     media::VideoFrameMetadata metadata;
-    metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, kDummyFrameRate);
-    metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
-                          base::TimeTicks::Now());
+    metadata.frame_rate = kDummyFrameRate;
+    metadata.reference_time = base::TimeTicks::Now();
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
     info->timestamp = timestamp;
     info->pixel_format = media::PIXEL_FORMAT_ARGB;
     info->coded_size = kDummyFrameCodedSize;
     info->visible_rect = gfx::Rect(kDummyFrameCodedSize);
-    info->metadata = metadata.GetInternalValues().Clone();
+    info->metadata = metadata;
 
     frame_being_consumed_[dummy_frame_index_] = true;
     virtual_device_->OnFrameReadyInBuffer(dummy_frame_index_,
@@ -300,16 +299,15 @@ class SharedMemoryDeviceExerciser : public VirtualDeviceExerciser,
       return;
 
     media::VideoFrameMetadata metadata;
-    metadata.SetDouble(media::VideoFrameMetadata::FRAME_RATE, kDummyFrameRate);
-    metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
-                          base::TimeTicks::Now());
+    metadata.frame_rate = kDummyFrameRate;
+    metadata.reference_time = base::TimeTicks::Now();
 
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
     info->timestamp = timestamp;
     info->pixel_format = media::PIXEL_FORMAT_I420;
     info->coded_size = kDummyFrameCodedSize;
     info->visible_rect = kDummyFrameVisibleRect;
-    info->metadata = metadata.GetInternalValues().Clone();
+    info->metadata = metadata;
     info->strides = strides_.Clone();
 
     const base::WritableSharedMemoryMapping& outgoing_buffer =

@@ -174,10 +174,8 @@ class AppLauncherHandler
   // Prompts the user to re-enable the app for |extension_id|.
   void PromptToEnableApp(const std::string& extension_id);
 
-  // Registers file handlers for |app_id|, after shortcuts have been
-  // created.
-  void OnShortcutsCreatedRegisterOsIntegration(const web_app::AppId& app_id,
-                                               bool shortcuts_created);
+  // Records result to UMA after OS Hooks are installed.
+  void OnOsHooksInstalled(const web_app::AppId& app_id, bool shortcuts_created);
 
   // ExtensionUninstallDialog::Delegate:
   void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
@@ -264,7 +262,7 @@ class AppLauncherHandler
   // Used for favicon loading tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
 
-  // Used to register file handlers after shortcuts have been created.
+  // Used for passing callbacks.
   base::WeakPtrFactory<AppLauncherHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppLauncherHandler);

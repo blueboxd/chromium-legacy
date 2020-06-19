@@ -204,8 +204,11 @@ bool FileManager::SerializePaintPreviewProto(const DirectoryKey& key,
 
   if (compress) {
     auto info = GetInfo(key);
-    base::UmaHistogramMemoryKB(
-        "Browser.PaintPreview.Capture.CompressedOnDiskSize", info->size / 1000);
+    if (info.has_value()) {
+      base::UmaHistogramMemoryKB(
+          "Browser.PaintPreview.Capture.CompressedOnDiskSize",
+          info->size / 1000);
+    }
   } else {
     size_t size_bytes = base::ComputeDirectorySize(path.value());
     base::UmaHistogramMemoryKB(

@@ -4,6 +4,10 @@
 
 import("//third_party/closure_compiler/compile_js.gni")
 
+# Lint checks are not well documented, but pick up some useful stuff. Currently
+# require it to be requested in developer builds only.
+enable_lint_checks = false
+
 # Note we compile with reportUnknownTypes while it works, but if dependencies
 # get more complex, we should remove it and only enable in developer builds.
 media_closure_flags = default_closure_args + [
@@ -21,6 +25,13 @@ media_closure_flags = default_closure_args + [
                         "hide_warnings_for=mojo/public/js/",
                         "hide_warnings_for=chromeos/components/media_app_ui/media_app_ui.mojom-lite-for-compile.js",
                       ]
+
+if (enable_lint_checks) {
+  media_closure_flags += [
+    "jscomp_error=lintChecks",
+    "hide_warnings_for=mojo/public/interfaces/bindings",
+  ]
+}
 
 group("closure_compile") {
   deps = [

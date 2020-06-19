@@ -108,15 +108,34 @@
       <structure type="chrome_html" name="IDR_ASSISTANT_VOICE_MATCH_ANIMATION" file="vector/voice_laptop.json" compress="gzip" />
       <structure type="chrome_html" name="IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION" file="vector/connecting_loop.json" compress="gzip" />
 
-      <!-- Launcher chip icons. See
-        /ui/file_manager/file_manager/foreground/images/launcher_filetypes/2x/
-      for the majority of launcher icon chips. This file contains only the
-      icons that need to be different between the chips and file manager. -->
+      <!-- Launcher chip icons. These correspond to 
+        /ui/file_manager/file_manager/foreground/images/launcher_filetypes/
+      but are circular rather than square. -->
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_ARCHIVE" file="launcher_chip_icons/filetype_archive.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_AUDIO" file="launcher_chip_icons/filetype_audio.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_CHART" file="launcher_chip_icons/filetype_chart.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_EXCEL" file="launcher_chip_icons/filetype_excel.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_FOLDER_SHARED" file="launcher_chip_icons/filetype_folder_shared.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_FOLDER" file="launcher_chip_icons/filetype_folder.png" />
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GDOC" file="launcher_chip_icons/filetype_gdoc.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GDRAW" file="launcher_chip_icons/filetype_gdraw.png" />
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GENERIC" file="launcher_chip_icons/filetype_generic.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GFORM" file="launcher_chip_icons/filetype_gform.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GMAP" file="launcher_chip_icons/filetype_gmap.png" />
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GSHEET" file="launcher_chip_icons/filetype_gsheet.png" />
-      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GSLIDES" file="launcher_chip_icons/filetype_gslides.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GSITE" file="launcher_chip_icons/filetype_gsite.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GSLIDE" file="launcher_chip_icons/filetype_gslide.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_GTABLE" file="launcher_chip_icons/filetype_gtable.png" />
       <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_IMAGE" file="launcher_chip_icons/filetype_image.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_LINUX" file="launcher_chip_icons/filetype_linux.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_PDF" file="launcher_chip_icons/filetype_pdf.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_PPT" file="launcher_chip_icons/filetype_ppt.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_SCRIPT" file="launcher_chip_icons/filetype_script.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_SITES" file="launcher_chip_icons/filetype_sites.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_DRIVE" file="launcher_chip_icons/filetype_team_drive.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_TINI" file="launcher_chip_icons/filetype_tini.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_VIDEO" file="launcher_chip_icons/filetype_video.png" />
+      <structure type="chrome_scaled_image" name="IDR_LAUNCHER_CHIP_ICON_WORD" file="launcher_chip_icons/filetype_word.png" />
     </structures>
   </release>
 </grit>

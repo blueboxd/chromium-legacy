@@ -434,7 +434,7 @@ void NormalPageArena::AddToFreeList(Address address, size_t size) {
   free_list_.Add(address, size);
   static_cast<NormalPage*>(PageFromObject(address))
       ->object_start_bit_map()
-      ->SetBit(address);
+      ->SetBit<HeapObjectHeader::AccessMode::kAtomic>(address);
 }
 
 void NormalPageArena::MakeConsistentForGC() {
@@ -715,6 +715,9 @@ void NormalPageArena::FreePage(NormalPage* page) {
   GetThreadState()->Heap().GetFreePagePool()->Add(ArenaIndex(), memory);
 }
 
+PlatformAwareObjectStartBitmap::PlatformAwareObjectStartBitmap(Address offset)
+    : ObjectStartBitmap(offset) {}
+
 ObjectStartBitmap::ObjectStartBitmap(Address offset) : offset_(offset) {
   Clear();
 }
@@ -724,6 +727,7 @@ void ObjectStartBitmap::Clear() {
 }
 
 void NormalPageArena::PromptlyFreeObject(HeapObjectHeader* header) {
+  DCHECK(!GetThreadState()->IsMarkingInProgress());
   DCHECK(!GetThreadState()->SweepForbidden());
   Address address = reinterpret_cast<Address>(header);
   Address payload = header->Payload();
@@ -897,7 +901,8 @@ void NormalPageArena::SetAllocationPoint(Address point, size_t size) {
     // because the area can grow or shrink. Will be added back before a GC when
     // clearing the allocation point.
     NormalPage* page = reinterpret_cast<NormalPage*>(PageFromObject(point));
-    page->object_start_bit_map()->ClearBit(point);
+    page->object_start_bit_map()
+        ->ClearBit<HeapObjectHeader::AccessMode::kAtomic>(point);
     // Mark page as containing young objects.
     page->SetAsYoung(true);
   }
@@ -1465,9 +1470,10 @@ void NormalPage::MergeFreeLists() {
 }
 
 bool NormalPage::Sweep(FinalizeType finalize_type) {
-  ObjectStartBitmap* bitmap;
+  PlatformAwareObjectStartBitmap* bitmap;
 #if BUILDFLAG(BLINK_HEAP_YOUNG_GENERATION)
-  cached_object_start_bit_map_ = std::make_unique<ObjectStartBitmap>(Payload());
+  cached_object_start_bit_map_ =
+      std::make_unique<PlatformAwareObjectStartBitmap>(Payload());
   bitmap = cached_object_start_bit_map_.get();
 #else
   object_start_bit_map()->Clear();
@@ -1759,29 +1765,6 @@ void NormalPage::VerifyMarking() {
 void LargeObjectPage::VerifyMarking() {
   MarkingVerifier verifier(Arena()->GetThreadState());
   verifier.VerifyObject(ObjectHeader());
-}
-
-Address ObjectStartBitmap::FindHeader(
-    ConstAddress address_maybe_pointing_to_the_middle_of_object) const {
-  size_t object_offset =
-      address_maybe_pointing_to_the_middle_of_object - offset_;
-  size_t object_start_number = object_offset / kAllocationGranularity;
-  size_t cell_index = object_start_number / kCellSize;
-#if DCHECK_IS_ON()
-  const size_t bitmap_size = kReservedForBitmap;
-  DCHECK_LT(cell_index, bitmap_size);
-#endif
-  size_t bit = object_start_number & kCellMask;
-  uint8_t byte = object_start_bit_map_[cell_index] & ((1 << (bit + 1)) - 1);
-  while (!byte) {
-    DCHECK_LT(0u, cell_index);
-    byte = object_start_bit_map_[--cell_index];
-  }
-  int leading_zeroes = base::bits::CountLeadingZeroBits(byte);
-  object_start_number =
-      (cell_index * kCellSize) + (kCellSize - 1) - leading_zeroes;
-  object_offset = object_start_number * kAllocationGranularity;
-  return object_offset + offset_;
 }
 
 HeapObjectHeader* NormalPage::ConservativelyFindHeaderFromAddress(

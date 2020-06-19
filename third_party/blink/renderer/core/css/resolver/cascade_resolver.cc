@@ -18,7 +18,7 @@ bool CascadeResolver::IsLocked(const CSSProperty& property) const {
 
 bool CascadeResolver::AllowSubstitution(CSSVariableData* data) const {
   if (data && data->IsAnimationTainted() && stack_.size()) {
-    const CSSProperty* property = stack_.back();
+    const CSSProperty* property = CurrentProperty();
     if (IsA<CustomProperty>(*property))
       return true;
     return !CSSAnimations::IsAnimationAffectingProperty(*property);

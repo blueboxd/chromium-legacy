@@ -619,6 +619,24 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
   DISALLOW_COPY_AND_ASSIGN(ShelfViewTextDirectionTest);
 };
 
+TEST_F(ShelfViewTest, VisibleShelfItemsBounds) {
+  // Add 3 pinned apps, and a normal app.
+  AddAppShortcut();
+  AddAppShortcut();
+  AddAppShortcut();
+  const auto app_id = AddApp();
+
+  EXPECT_EQ(model_->item_count(), shelf_view_->number_of_visible_apps());
+  const gfx::Rect visible_items_bounds =
+      test_api_->visible_shelf_item_bounds_union();
+
+  // Pin the app with `app_id` and expect that the visible items bounds union
+  // remains the same.
+  SetShelfItemTypeToAppShortcut(app_id);
+  EXPECT_EQ(model_->item_count(), shelf_view_->number_of_visible_apps());
+  EXPECT_EQ(visible_items_bounds, test_api_->visible_shelf_item_bounds_union());
+}
+
 // Checks that shelf view contents are considered in the correct drag group.
 TEST_F(ShelfViewTest, EnforceDragType) {
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP, TYPE_APP));

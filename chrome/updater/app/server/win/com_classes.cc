@@ -59,7 +59,7 @@ HRESULT UpdaterImpl::UpdateAll(IUpdaterObserver* observer) {
   using IUpdaterObserverPtr = Microsoft::WRL::ComPtr<IUpdaterObserver>;
 
   // Invoke the in-process |update_service| on the main sequence.
-  auto com_server = ComServerApp::Instance();
+  scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
   com_server->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(

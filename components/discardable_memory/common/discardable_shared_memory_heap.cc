@@ -6,9 +6,11 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/discardable_shared_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -116,10 +118,8 @@ DiscardableSharedMemoryHeap::Grow(
     int32_t id,
     base::OnceClosure deleted_callback) {
   // Memory must be aligned to block size.
-  DCHECK_EQ(
-      reinterpret_cast<size_t>(shared_memory->memory()) & (block_size_ - 1),
-      0u);
-  DCHECK_EQ(size & (block_size_ - 1), 0u);
+  DCHECK(base::IsAligned(shared_memory->memory(), block_size_));
+  DCHECK(base::IsAligned(size, block_size_));
 
   std::unique_ptr<Span> span(
       new Span(shared_memory.get(),

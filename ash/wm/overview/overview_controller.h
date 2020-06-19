@@ -84,8 +84,6 @@ class ASH_EXPORT OverviewController : public OverviewDelegate,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {}
-  void OnAttemptToReactivateWindow(aura::Window* request_active,
-                                   aura::Window* actual_active) override;
 
   OverviewSession* overview_session() { return overview_session_.get(); }
 

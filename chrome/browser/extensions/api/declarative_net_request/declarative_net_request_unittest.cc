@@ -38,6 +38,7 @@
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/test_extension_registry_observer.h"
@@ -335,9 +336,9 @@ class SingleRulesetTest : public DeclarativeNetRequestUnittest {
     else
       rules_count = rules_list_.size();
 
-    // We only index up to dnr_api::MAX_NUMBER_OF_RULES rules per ruleset.
-    rules_count = std::min(rules_count,
-                           static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES));
+    // We only index up to GetStaticRuleLimit() rules per ruleset.
+    rules_count =
+        std::min(rules_count, static_cast<size_t>(GetStaticRuleLimit()));
 
     DeclarativeNetRequestUnittest::LoadAndExpectSuccess(rules_count,
                                                         rules_count, true);
@@ -652,10 +653,14 @@ TEST_P(SingleRulesetTest, InvalidJSONRules_Parsed) {
   }
 }
 
-// Ensure that we can add up to MAX_NUMBER_OF_RULES.
+// Ensure that we can add up to GetStaticRuleLimit() rules.
 TEST_P(SingleRulesetTest, RuleCountLimitMatched) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+
   TestRule rule = CreateGenericRule();
-  for (int i = 0; i < dnr_api::MAX_NUMBER_OF_RULES; ++i) {
+  for (int i = 0; i < GetStaticRuleLimit(); ++i) {
     rule.id = kMinValidID + i;
     rule.condition->url_filter = std::to_string(i);
     AddRule(rule);
@@ -665,8 +670,12 @@ TEST_P(SingleRulesetTest, RuleCountLimitMatched) {
 
 // Ensure that we get an install warning on exceeding the rule count limit.
 TEST_P(SingleRulesetTest, RuleCountLimitExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+
   TestRule rule = CreateGenericRule();
-  for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_RULES + 1; ++i) {
+  for (int i = 1; i <= GetStaticRuleLimit() + 1; ++i) {
     rule.id = kMinValidID + i;
     rule.condition->url_filter = std::to_string(i);
     AddRule(rule);
@@ -749,10 +758,14 @@ TEST_P(SingleRulesetTest, WarningAndError) {
 // Ensure that we get an install warning on exceeding the regex rule count
 // limit.
 TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedRegexRuleLimitOverrideForTesting(100);
+
   TestRule regex_rule = CreateGenericRule();
   regex_rule.condition->url_filter.reset();
   int rule_id = kMinValidID;
-  for (int i = 1; i <= dnr_api::MAX_NUMBER_OF_REGEX_RULES + 5; ++i, ++rule_id) {
+  for (int i = 1; i <= GetRegexRuleLimit() + 5; ++i, ++rule_id) {
     regex_rule.id = rule_id;
     regex_rule.condition->regex_filter = std::to_string(i);
     AddRule(regex_rule);
@@ -767,8 +780,7 @@ TEST_P(SingleRulesetTest, RegexRuleCountExceeded) {
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
-  LoadAndExpectSuccess(dnr_api::MAX_NUMBER_OF_REGEX_RULES +
-                       kCountNonRegexRules);
+  LoadAndExpectSuccess(GetRegexRuleLimit() + kCountNonRegexRules);
   // TODO(crbug.com/879355): CrxInstaller reloads the extension after moving it,
   // which causes it to lose the install warning. This should be fixed.
   if (GetParam() != ExtensionLoadType::PACKED) {
@@ -952,10 +964,9 @@ class MultipleRulesetsTest : public DeclarativeNetRequestUnittest {
     for (const TestRulesetInfo& info : rulesets_) {
       size_t count = info.rules_value.GetList().size();
 
-      // We only index up to dnr_api::MAX_NUMBER_OF_RULES per ruleset, but may
+      // We only index up to GetStaticRuleLimit() rules per ruleset, but may
       // index more rules than this limit across rulesets.
-      count =
-          std::min(count, static_cast<size_t>(dnr_api::MAX_NUMBER_OF_RULES));
+      count = std::min(count, static_cast<size_t>(GetStaticRuleLimit()));
 
       rules_count += count;
       if (info.enabled)
@@ -1017,6 +1028,12 @@ TEST_P(MultipleRulesetsTest, ListNotPassed) {
 // Tests an extension with multiple static rulesets with each ruleset generating
 // some install warnings.
 TEST_P(MultipleRulesetsTest, InstallWarnings) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+  base::AutoReset<int> regex_rule_limit_override =
+      CreateScopedRegexRuleLimitOverrideForTesting(60);
+
   size_t expected_rule_count = 0;
   size_t enabled_rule_count = 0;
   std::vector<std::string> expected_warnings;
@@ -1045,29 +1062,27 @@ TEST_P(MultipleRulesetsTest, InstallWarnings) {
   {
     // Persist a ruleset with an install warning for exceeding the rule count.
     TestRulesetInfo info =
-        CreateRuleset(kId2, dnr_api::MAX_NUMBER_OF_RULES + 1, 0, false);
+        CreateRuleset(kId2, GetStaticRuleLimit() + 1, 0, false);
     AddRuleset(info);
 
     expected_warnings.push_back(
         GetErrorWithFilename(kRuleCountExceeded, info.relative_file_path));
 
-    expected_rule_count += dnr_api::MAX_NUMBER_OF_RULES;
+    expected_rule_count += GetStaticRuleLimit();
   }
 
   {
     // Persist a ruleset with an install warning for exceeding the regex rule
     // count.
     size_t kCountNonRegexRules = 5;
-    TestRulesetInfo info =
-        CreateRuleset(kId3, kCountNonRegexRules,
-                      dnr_api::MAX_NUMBER_OF_REGEX_RULES + 1, false);
+    TestRulesetInfo info = CreateRuleset(kId3, kCountNonRegexRules,
+                                         GetRegexRuleLimit() + 1, false);
     AddRuleset(info);
 
     expected_warnings.push_back(
         GetErrorWithFilename(kRegexRuleCountExceeded, info.relative_file_path));
 
-    expected_rule_count +=
-        kCountNonRegexRules + dnr_api::MAX_NUMBER_OF_REGEX_RULES;
+    expected_rule_count += kCountNonRegexRules + GetRegexRuleLimit();
   }
 
   extension_loader()->set_ignore_manifest_warnings(true);
@@ -1111,12 +1126,16 @@ TEST_P(MultipleRulesetsTest, EnabledRulesCount) {
 // Ensure that exceeding the rules count limit across rulesets raises an install
 // warning.
 TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(50);
+
   // Enabled on load.
   AddRuleset(CreateRuleset(kId1, 10, 0, true));
   // Disabled by default.
   AddRuleset(CreateRuleset(kId2, 20, 0, false));
   // Not enabled on load since including it exceeds the static rules count.
-  AddRuleset(CreateRuleset(kId3, dnr_api::MAX_NUMBER_OF_RULES + 10, 0, true));
+  AddRuleset(CreateRuleset(kId3, GetStaticRuleLimit() + 10, 0, true));
   // Enabled on load.
   AddRuleset(CreateRuleset(kId4, 30, 0, true));
 
@@ -1126,8 +1145,6 @@ TEST_P(MultipleRulesetsTest, StaticRuleCountExceeded) {
   {
     // To prevent timeouts in debug builds, increase the wait timeout to the
     // test launcher's timeout. See crbug.com/1071403.
-    // TODO(karandeepb): Provide a way to fake dnr_api::MAX_NUMBER_OF_RULES in
-    // tests to decrease test runtime.
     base::test::ScopedRunLoopTimeout specific_timeout(
         FROM_HERE, TestTimeouts::test_launcher_timeout());
     LoadAndExpectSuccess();
@@ -1167,7 +1184,7 @@ TEST_P(MultipleRulesetsTest, RegexRuleCountExceeded) {
   AddRuleset(CreateRuleset(kId1, 10000, 100, true));
   // Won't be enabled on load since including it will exceed the regex rule
   // count.
-  AddRuleset(CreateRuleset(kId2, 1, dnr_api::MAX_NUMBER_OF_REGEX_RULES, true));
+  AddRuleset(CreateRuleset(kId2, 1, GetRegexRuleLimit(), true));
   // Won't be enabled on load since it is disabled by default.
   AddRuleset(CreateRuleset(kId3, 10, 10, false));
   // Enabled on load.
@@ -1225,8 +1242,12 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_InvalidRulesetID) {
 }
 
 TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_RuleCountExceeded) {
+  // Override the API rule limit to prevent a timeout on loading the extension.
+  base::AutoReset<int> rule_limit_override =
+      CreateScopedStaticRuleLimitOverrideForTesting(100);
+
   AddRuleset(CreateRuleset(kId1, 10, 10, true));
-  AddRuleset(CreateRuleset(kId2, dnr_api::MAX_NUMBER_OF_RULES, 0, false));
+  AddRuleset(CreateRuleset(kId2, GetStaticRuleLimit(), 0, false));
 
   RulesetManagerObserver ruleset_waiter(manager());
   LoadAndExpectSuccess();
@@ -1245,7 +1266,7 @@ TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_RuleCountExceeded) {
 
 TEST_P(MultipleRulesetsTest, UpdateEnabledRulesets_RegexRuleCountExceeded) {
   AddRuleset(CreateRuleset(kId1, 0, 10, false));
-  AddRuleset(CreateRuleset(kId2, 0, dnr_api::MAX_NUMBER_OF_REGEX_RULES, true));
+  AddRuleset(CreateRuleset(kId2, 0, GetRegexRuleLimit(), true));
 
   RulesetManagerObserver ruleset_waiter(manager());
   LoadAndExpectSuccess();

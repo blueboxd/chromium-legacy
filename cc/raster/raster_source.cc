@@ -103,7 +103,7 @@ void RasterSource::PlaybackToCanvas(
   ScopedSubnormalFloatDisabler disabler;
 
   bool is_partial_raster = canvas_bitmap_rect != canvas_playback_rect;
-  if (!requires_clear_) {
+  if (!requires_clear_ && raster_transform.translation().IsZero()) {
     // Clear opaque raster sources.  Opaque rasters sources guarantee that all
     // pixels inside the opaque region are painted.  However, due to scaling
     // it's possible that the last row and column might include pixels that

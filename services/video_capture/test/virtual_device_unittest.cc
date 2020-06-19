@@ -146,7 +146,6 @@ TEST_F(VirtualDeviceTest, OnFrameReadyInBufferWithReceiver) {
                          std::move(handler_remote));
   for (auto buffer_id : received_buffer_ids_) {
     media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
-    info->metadata = base::Value(base::Value::Type::DICTIONARY);
     device_adapter_->OnFrameReadyInBuffer(buffer_id, std::move(info));
   }
   wait_loop.RunUntilIdle();

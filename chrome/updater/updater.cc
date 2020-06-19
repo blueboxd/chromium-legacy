@@ -90,7 +90,12 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
   }
 
   if (command_line->HasSwitch(kServerSwitch)) {
-    return AppServerInstance()->Run();
+#if defined(OS_WIN)
+    // By design, Windows uses a leaky singleton server for its RPC server.
+    return AppServerSingletonInstance()->Run();
+#else
+    return MakeAppServer()->Run();
+#endif
   }
 
 #if defined(OS_WIN)
@@ -99,20 +104,20 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 #endif  // OS_WIN
 
   if (command_line->HasSwitch(kInstallSwitch))
-    return AppInstallInstance()->Run();
+    return MakeAppInstall()->Run();
 
 #if defined(OS_MACOSX)
   if (command_line->HasSwitch(kPromoteCandidateSwitch))
-    return AppPromoteCandidateInstance()->Run();
+    return MakeAppPromoteCandidate()->Run();
   if (command_line->HasSwitch(kUninstallCandidateSwitch))
-    return AppUninstallCandidateInstance()->Run();
+    return MakeAppUninstallCandidate()->Run();
 #endif  // OS_MACOSX
 
   if (command_line->HasSwitch(kUninstallSwitch))
-    return AppUninstallInstance()->Run();
+    return MakeAppUninstall()->Run();
 
   if (command_line->HasSwitch(kWakeSwitch)) {
-    return AppWakeInstance()->Run();
+    return MakeAppWake()->Run();
   }
 
   VLOG(1) << "Unknown command line switch.";

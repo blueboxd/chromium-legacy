@@ -221,16 +221,11 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
   if (!should_deliver_frame || !client_)
     return;
 
-  frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
-                               params_.requested_format.frame_rate);
-  frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-                                  capture->begin_time);
-  frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
-                                  base::TimeTicks::Now());
-  frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                  capture->frame_duration);
-  frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
-                                  reference_time);
+  frame->metadata()->frame_rate = params_.requested_format.frame_rate;
+  frame->metadata()->capture_begin_time = capture->begin_time;
+  frame->metadata()->capture_end_time = base::TimeTicks::Now();
+  frame->metadata()->frame_duration = capture->frame_duration;
+  frame->metadata()->reference_time = reference_time;
 
   media::VideoCaptureFormat format(frame->coded_size(),
                                    params_.requested_format.frame_rate,

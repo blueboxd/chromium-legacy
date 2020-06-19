@@ -1509,7 +1509,7 @@ class MetaBuildWrapper(object):
       # If we're testing a CrOS simplechrome build, assume we need to prepare a
       # DUT for testing. So prepend the command to run with the test wrapper.
       if is_cros_device:
-        cmdline = [
+        cmdline += [
             os.path.join('bin', 'cros_test_wrapper'),
             '--logs-dir=${ISOLATED_OUTDIR}',
         ]

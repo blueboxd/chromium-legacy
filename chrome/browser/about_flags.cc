@@ -1548,6 +1548,24 @@ const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
      nullptr}};
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kContextMenuShopSimilarProducts[] = {
+    {"lensShopVariation", "ShopSimilarProducts"}};
+const FeatureEntry::FeatureParam kContextMenuShopImageWithGoogleLens[] = {
+    {"lensShopVariation", "ShopImageWithGoogleLens"}};
+const FeatureEntry::FeatureParam kContextMenuSearchSimilarProducts[] = {
+    {"lensShopVariation", "SearchSimilarProducts"}};
+
+const FeatureEntry::FeatureVariation
+    kContextMenuShopWithGoogleLensShopVariations[] = {
+        {"ShopSimilarProducts", kContextMenuShopSimilarProducts,
+         base::size(kContextMenuShopSimilarProducts), nullptr},
+        {"ShopImageWithGoogleLens", kContextMenuShopImageWithGoogleLens,
+         base::size(kContextMenuShopImageWithGoogleLens), nullptr},
+        {"SearchSimilarProducts", kContextMenuSearchSimilarProducts,
+         base::size(kContextMenuSearchSimilarProducts), nullptr}};
+#endif  // defined(OS_ANDROID)
+
 const FeatureEntry::FeatureParam kLazyFrameLoadingAutomatic[] = {
     {"automatic-lazy-load-frames-enabled", "true"},
     {"restrict-lazy-load-frames-to-data-saver-only", "false"},
@@ -5205,6 +5223,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextMenuSearchWithGoogleLensName,
      flag_descriptions::kContextMenuSearchWithGoogleLensDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kContextMenuSearchWithGoogleLens)},
+
+    {"context-menu-shop-with-google-lens",
+     flag_descriptions::kContextMenuShopWithGoogleLensName,
+     flag_descriptions::kContextMenuShopWithGoogleLensDescription, kOsAndroid,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(
+         chrome::android::kContextMenuShopWithGoogleLens,
+         kContextMenuShopWithGoogleLensShopVariations,
+         "ContextMenuShopWithGoogleLens")},
+
+    {"context-menu-search-and-shop-with-google-lens",
+     flag_descriptions::kContextMenuSearchAndShopWithGoogleLensName,
+     flag_descriptions::kContextMenuSearchAndShopWithGoogleLensDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::kContextMenuSearchAndShopWithGoogleLens)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

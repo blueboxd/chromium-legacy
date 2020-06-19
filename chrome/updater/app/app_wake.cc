@@ -54,8 +54,8 @@ void AppWake::FirstTaskRun() {
           base::BindOnce(&AppWake::Shutdown, this)));
 }
 
-scoped_refptr<App> AppWakeInstance() {
-  return AppInstance<AppWake>();
+scoped_refptr<App> MakeAppWake() {
+  return base::MakeRefCounted<AppWake>();
 }
 
 }  // namespace updater

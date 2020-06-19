@@ -83,7 +83,6 @@ class AemuTarget(qemu_target.QemuTarget):
   def _SetEnv(self):
     env = os.environ.copy()
     aemu_logging_env = {
-        "ANDROID_EMU_VK_LOG_CALLS": "1",
         "ANDROID_EMU_VK_NO_CLEANUP": "1",
         "ANDROID_EMUGL_LOG_PRINT": "1",
         "ANDROID_EMUGL_VERBOSE": "1",

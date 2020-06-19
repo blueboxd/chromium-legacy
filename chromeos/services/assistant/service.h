@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/ambient/ambient_mode_state.h"
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/mojom/assistant_controller.mojom.h"
@@ -71,7 +71,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
       public ash::AssistantStateObserver,
       public AssistantManagerService::CommunicationErrorObserver,
       public AssistantManagerService::StateObserver,
-      public ash::AmbientModeStateObserver {
+      public ash::AmbientUiModelObserver {
  public:
   Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
               pending_url_loader_factory,
@@ -126,8 +126,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   // AssistantManagerService::StateObserver overrides:
   void OnStateChanged(AssistantManagerService::State new_state) override;
 
-  // ash::AmbientModeStateObserver overrides:
-  void OnAmbientModeEnabled(bool enabled) override;
+  // ash::AmbientUiModelObserver overrides:
+  void OnAmbientUiVisibilityChanged(
+      ash::AmbientUiVisibility visibility) override;
 
   void UpdateAssistantManagerState();
 
@@ -162,6 +163,8 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   signin::IdentityManager* const identity_manager_;
   std::unique_ptr<ScopedAshSessionObserver> scoped_ash_session_observer_;
+  ScopedObserver<ash::AmbientUiModel, ash::AmbientUiModelObserver>
+      ambient_ui_model_observer_{this};
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
   int token_refresh_error_backoff_factor = 1;

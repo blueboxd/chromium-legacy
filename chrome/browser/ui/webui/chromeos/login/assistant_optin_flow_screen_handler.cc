@@ -259,11 +259,14 @@ void AssistantOptInFlowScreenHandler::OnEmailOptInResult(bool opted_in) {
     return;
   }
 
+  // TODO(b/159363597): Handle network disconnect when sending email opt-in
+  // result.
   RecordAssistantOptInStatus(opted_in ? EMAIL_OPTED_IN : EMAIL_OPTED_OUT);
   assistant::AssistantSettings::Get()->UpdateSettings(
       GetEmailOptInUpdate(opted_in).SerializeAsString(),
       base::BindOnce(&AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse,
                      weak_factory_.GetWeakPtr()));
+  HandleFlowFinished();
 }
 
 void AssistantOptInFlowScreenHandler::OnDialogClosed() {
@@ -477,7 +480,6 @@ void AssistantOptInFlowScreenHandler::OnUpdateSettingsResponse(
       // TODO(updowndta): Handle email optin update failure.
       LOG(ERROR) << "Email OptIn udpate error.";
     }
-    HandleFlowFinished();
     return;
   }
 

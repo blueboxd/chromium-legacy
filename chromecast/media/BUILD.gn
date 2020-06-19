@@ -76,7 +76,6 @@ test("cast_media_unittests") {
     "//chromecast:chromecast_buildflags",
     "//chromecast/base",
     "//chromecast/base/metrics:test_support",
-    "//chromecast/common:volume_control_enum_printer",
     "//chromecast/common/mojom",
     "//chromecast/media/api:test_support",
     "//chromecast/media/audio:unittests",

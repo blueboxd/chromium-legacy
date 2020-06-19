@@ -125,9 +125,6 @@ class PLATFORM_EXPORT BlinkGC final {
     kV8MajorGC,
   };
 
-  // Sentinel used to mark not-fully-constructed during mixins.
-  static constexpr void* kNotFullyConstructedObject = nullptr;
-
   static const char* ToString(GCReason);
   static const char* ToString(MarkingType);
   static const char* ToString(StackState);

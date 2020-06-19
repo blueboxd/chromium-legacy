@@ -84,7 +84,7 @@ public class FeedLoadingLayout extends LinearLayout {
     private void setPlaceholders() {
         setPadding();
         int currentOrientation = getResources().getConfiguration().orientation;
-        LinearLayout cardsParentView = (LinearLayout) findViewById(R.id.images_layout);
+        LinearLayout cardsParentView = (LinearLayout) findViewById(R.id.placeholders_layout);
         setPlaceholders(cardsParentView, currentOrientation == Configuration.ORIENTATION_LANDSCAPE);
     }
 

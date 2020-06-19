@@ -118,6 +118,13 @@ void ClientControlDispatcher::SelectDesktopDisplay(
   message_pipe()->Send(&message, {});
 }
 
+void ClientControlDispatcher::ControlPeerConnection(
+    const protocol::PeerConnectionParameters& parameters) {
+  ControlMessage message;
+  message.mutable_peer_connection_parameters()->CopyFrom(parameters);
+  message_pipe()->Send(&message, {});
+}
+
 void ClientControlDispatcher::OnIncomingMessage(
     std::unique_ptr<CompoundBuffer> buffer) {
   DCHECK(client_stub_);

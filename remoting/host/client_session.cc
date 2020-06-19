@@ -36,6 +36,7 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_thread_proxy.h"
 #include "remoting/protocol/pairing_registry.h"
+#include "remoting/protocol/peer_connection_controls.h"
 #include "remoting/protocol/session.h"
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/video_frame_pump.h"
@@ -283,6 +284,23 @@ void ClientSession::SelectDesktopDisplay(
       UpdateMouseClampingFilterOffset();
     }
   }
+}
+
+void ClientSession::ControlPeerConnection(
+    const protocol::PeerConnectionParameters& parameters) {
+  if (!connection_->peer_connection_controls()) {
+    return;
+  }
+  base::Optional<int> min_bitrate_bps;
+  base::Optional<int> max_bitrate_bps;
+  if (parameters.has_preferred_min_bitrate_bps()) {
+    min_bitrate_bps = parameters.preferred_min_bitrate_bps();
+  }
+  if (parameters.has_preferred_max_bitrate_bps()) {
+    max_bitrate_bps = parameters.preferred_max_bitrate_bps();
+  }
+  connection_->peer_connection_controls()->SetPreferredBitrates(
+      min_bitrate_bps, max_bitrate_bps);
 }
 
 void ClientSession::OnConnectionAuthenticating() {

@@ -56,17 +56,10 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
 
   FrameInfo info;
   info.token = token;
-  info.decode_time.emplace();
-  if (!frame.metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::DECODE_END_TIME,
-          &info.decode_time.value())) {
-    info.decode_time.reset();
-  }
+  info.decode_time = frame.metadata()->decode_end_time;
 
-  info.intended_duration.emplace();
-  if (frame.metadata()->GetTimeDelta(
-          media::VideoFrameMetadata::WALLCLOCK_FRAME_DURATION,
-          &info.intended_duration.value())) {
+  info.intended_duration = frame.metadata()->wallclock_frame_duration;
+  if (info.intended_duration) {
     if (render_interval > info.intended_duration.value()) {
       // In videos with FPS higher than display refresh rate we acknowledge
       // the fact that some frames will be dropped upstream and frame's intended
@@ -79,9 +72,8 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
         std::round(0.5 / info.intended_duration.value().InSecondsF());
     frames_window_size_ = std::max(kMinWindowSize, static_cast<int>(win_size));
     frames_window_size_ = std::min(frames_window_size_, kMaxWindowSize);
-  } else {
-    info.intended_duration.reset();
   }
+
   frames_.push_back(info);
 }
 

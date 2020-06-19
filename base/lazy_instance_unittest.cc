@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/at_exit.h"
@@ -13,6 +14,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/memory/aligned_memory.h"
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
@@ -178,9 +180,6 @@ class AlignedData {
 
 }  // namespace
 
-#define EXPECT_ALIGNED(ptr, align) \
-    EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) & (align - 1))
-
 TEST(LazyInstanceTest, Alignment) {
   using base::LazyInstance;
 
@@ -194,9 +193,9 @@ TEST(LazyInstanceTest, Alignment) {
   static LazyInstance<AlignedData<4096>>::DestructorAtExit align4096 =
       LAZY_INSTANCE_INITIALIZER;
 
-  EXPECT_ALIGNED(align4.Pointer(), 4);
-  EXPECT_ALIGNED(align32.Pointer(), 32);
-  EXPECT_ALIGNED(align4096.Pointer(), 4096);
+  EXPECT_TRUE(base::IsAligned(align4.Pointer(), 4));
+  EXPECT_TRUE(base::IsAligned(align32.Pointer(), 32));
+  EXPECT_TRUE(base::IsAligned(align4096.Pointer(), 4096));
 }
 
 namespace {

@@ -308,14 +308,14 @@ NSNumber* AccessibilityTreeFormatterMac::PropertyNodeToInt(
     return nil;
   }
 
-  int param = 0;
   const auto& intnode = propnode.parameters[0];
-  if (!base::StringToInt(intnode.name_or_value, &param)) {
+  base::Optional<int> param = intnode.AsInt();
+  if (!param) {
     LOG(ERROR) << "Failed to parse " << propnode.original_property
                << " to Int: " << intnode.name_or_value << " is not a number";
     return nil;
   }
-  return [NSNumber numberWithInt:param];
+  return [NSNumber numberWithInt:*param];
 }
 
 NSArray* AccessibilityTreeFormatterMac::PropertyNodeToIntArray(
@@ -337,14 +337,14 @@ NSArray* AccessibilityTreeFormatterMac::PropertyNodeToIntArray(
   NSMutableArray* array =
       [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
   for (const auto& paramnode : arraynode.parameters) {
-    int param = 0;
-    if (!base::StringToInt(paramnode.name_or_value, &param)) {
+    base::Optional<int> param = paramnode.AsInt();
+    if (!param) {
       LOG(ERROR) << "Failed to parse " << propnode.original_property
                  << " to IntArray: " << paramnode.name_or_value
                  << " is not a number";
       return nil;
     }
-    [array addObject:@(param)];
+    [array addObject:@(*param)];
   }
   return array;
 }

@@ -194,6 +194,7 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
       kDefaultAudioParams, "", ::media::AudioManager::LogCallback());
   EXPECT_TRUE(stream->Open());
 
+  EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
@@ -218,6 +219,7 @@ TEST_F(CastAudioManagerTest, CanMakeAC3Stream) {
   EXPECT_TRUE(stream);
   // Only run the rest of the test if the device supports AC3.
   if (stream->Open()) {
+    EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
     EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
         .WillRepeatedly(Invoke(OnMoreData));
     EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
@@ -237,6 +239,7 @@ TEST_F(CastAudioManagerTest, DISABLED_CanMakeStreamProxy) {
       audio_manager_->MakeAudioOutputStreamProxy(kDefaultAudioParams, "");
   EXPECT_TRUE(stream->Open());
   RunThreadsUntilIdle();
+  EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);
@@ -258,6 +261,7 @@ TEST_F(CastAudioManagerTest, CanMakeMixerStream) {
       kDefaultAudioParams, "", ::media::AudioManager::LogCallback());
   EXPECT_TRUE(stream->Open());
 
+  EXPECT_CALL(*mock_cma_backend_, Start(_)).WillOnce(Return(true));
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
       .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError(_)).Times(0);

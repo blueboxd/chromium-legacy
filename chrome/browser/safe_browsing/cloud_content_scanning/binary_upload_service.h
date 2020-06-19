@@ -95,7 +95,8 @@ class BinaryUploadService : public KeyedService {
   class Request {
    public:
     // |callback| will run on the UI thread.
-    explicit Request(Callback callback, GURL url);
+    Request(Callback callback, GURL url);
+    Request(ContentAnalysisCallback, GURL url);
     virtual ~Request();
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
@@ -150,7 +151,6 @@ class BinaryUploadService : public KeyedService {
     void set_request_malware_scan(
         MalwareDeepScanningClientRequest malware_request);
     void set_request_token(const std::string& token);
-    void clear_dlp_scan_request();
 
     // Methods for modifying the ContentAnalysisRequest.
     void set_analysis_connector(
@@ -164,11 +164,14 @@ class BinaryUploadService : public KeyedService {
     void set_device_token(const std::string& token);
     void set_filename(const std::string& filename);
     void set_digest(const std::string& digest);
+    void clear_dlp_scan_request();
 
     // Methods for accessing either internal proto requests.
     const std::string& device_token() const;
     const std::string& request_token() const;
     const std::string& fcm_notification_token() const;
+    const std::string& filename() const;
+    const std::string& digest() const;
 
     // Finish the request, with the given |result| and |response| from the
     // server.
@@ -264,6 +267,9 @@ class BinaryUploadService : public KeyedService {
                                           bool authorized);
 
   // Callback once the response from the backend is received.
+  void ValidateDataUploadRequestConnectorCallback(
+      BinaryUploadService::Result result,
+      enterprise_connectors::ContentAnalysisResponse response);
   void ValidateDataUploadRequestCallback(BinaryUploadService::Result result,
                                          DeepScanningClientResponse response);
 

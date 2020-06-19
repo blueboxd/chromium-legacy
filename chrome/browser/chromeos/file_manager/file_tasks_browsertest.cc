@@ -372,11 +372,9 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
 IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
                        ProvidedFileSystemFileSource) {
   // The current test expectation: a GIF file in the provided file system called
-  // "readwrite.gif" should open with Gallery.
-  // TODO(crbug/1079065): Open with MediaApp when the NativeFileSystem API has
-  // good support for ChromeOS special filesystems.
+  // "readwrite.gif" should open with the MediaApp.
   const char kTestFile[] = "readwrite.gif";
-  Expectation test = {"gif", kGalleryAppId};
+  Expectation test = {"gif", kMediaAppId};
   int remaining_expectations = 1;
 
   Profile* profile = browser()->profile();

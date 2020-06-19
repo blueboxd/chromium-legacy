@@ -575,9 +575,8 @@ viz::CompositorFrame VideoFrameSubmitter::CreateCompositorFrame(
           ? video_frame_provider_->GetPreferredRenderInterval()
           : viz::BeginFrameArgs::MinInterval();
 
-  base::TimeTicks value;
-  if (video_frame && video_frame->metadata()->GetTimeTicks(
-                         media::VideoFrameMetadata::DECODE_END_TIME, &value)) {
+  if (video_frame && video_frame->metadata()->decode_end_time.has_value()) {
+    base::TimeTicks value = *video_frame->metadata()->decode_end_time;
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(
         "media", "VideoFrameSubmitter", TRACE_ID_LOCAL(frame_token), value);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN_WITH_TIMESTAMP0(

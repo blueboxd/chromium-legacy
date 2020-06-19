@@ -11,7 +11,7 @@ namespace updater {
 
 class App;
 
-scoped_refptr<App> AppWakeInstance();
+scoped_refptr<App> MakeAppWake();
 
 }  // namespace updater
 

@@ -24,9 +24,6 @@ namespace app_list {
 namespace internal {
 
 IconType GetIconTypeForPath(const base::FilePath& filepath) {
-  // Changes to these three maps should be reflected in
-  // ui/file_manager/file_manager/common/js/file_type.js.
-
   static const base::NoDestructor<base::flat_map<std::string, IconType>>
       // Changes to this map should be reflected in
       // ui/file_manager/file_manager/common/js/file_type.js.
@@ -95,12 +92,12 @@ IconType GetIconTypeForPath(const base::FilePath& filepath) {
           // Hosted doc
           {".GDOC", IconType::GDOC},
           {".GSHEET", IconType::GSHEET},
-          {".GSLIDES", IconType::GSLIDES},
+          {".GSLIDES", IconType::GSLIDE},
           {".GDRAW", IconType::GDRAW},
           {".GTABLE", IconType::GTABLE},
           {".GLINK", IconType::GENERIC},
-          {".GFORM", IconType::GENERIC},
-          {".GMAPS", IconType::MAP},
+          {".GFORM", IconType::GFORM},
+          {".GMAPS", IconType::GMAP},
           {".GSITE", IconType::GSITE},
 
           // Other
@@ -137,24 +134,30 @@ int GetResourceIdForIconType(IconType icon) {
   // ui/file_manager/file_manager/common/js/file_type.js.
   static const base::NoDestructor<base::flat_map<IconType, int>>
       icon_to_2x_resource_id({
-          {IconType::AUDIO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_AUDIO},
           {IconType::ARCHIVE,
            IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_ARCHIVE},
+          {IconType::AUDIO, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_AUDIO},
           {IconType::CHART, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_CHART},
+          // TODO(crbug.com/1088395):  we're missing a generic square drive
+          // file icon.
+          {IconType::DRIVE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
           {IconType::EXCEL, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_EXCEL},
           {IconType::FOLDER, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER},
-          {IconType::FORM, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GFORM},
+          // TODO(crbug.com/1088395): we're missing a square shared folder icon.
+          {IconType::FOLDER_SHARED,
+           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_FOLDER},
           {IconType::GDOC, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDOC},
           {IconType::GDRAW, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GDRAW},
           {IconType::GENERIC,
            IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
+          {IconType::GFORM, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GFORM},
+          {IconType::GMAP, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GMAP},
           {IconType::GSHEET, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSHEET},
           {IconType::GSITE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSITE},
-          {IconType::GSLIDES,
-           IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES},
+          {IconType::GSLIDE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GSLIDES},
           {IconType::GTABLE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GTABLE},
           {IconType::IMAGE, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_IMAGE},
-          {IconType::MAP, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GMAP},
+          {IconType::LINUX, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_GENERIC},
           {IconType::PDF, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PDF},
           {IconType::PPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_PPT},
           {IconType::SCRIPT, IDR_FILE_MANAGER_IMG_LAUNCHER_FILETYPE_2X_SCRIPT},
@@ -172,19 +175,36 @@ int GetResourceIdForIconType(IconType icon) {
 int GetChipResourceIdForIconType(IconType icon) {
   static const base::NoDestructor<base::flat_map<IconType, int>>
       icon_to_chip_resource_id({
+          {IconType::ARCHIVE, IDR_LAUNCHER_CHIP_ICON_ARCHIVE},
+          {IconType::AUDIO, IDR_LAUNCHER_CHIP_ICON_AUDIO},
+          {IconType::CHART, IDR_LAUNCHER_CHIP_ICON_CHART},
+          {IconType::DRIVE, IDR_LAUNCHER_CHIP_ICON_DRIVE},
+          {IconType::EXCEL, IDR_LAUNCHER_CHIP_ICON_EXCEL},
+          {IconType::FOLDER, IDR_LAUNCHER_CHIP_ICON_FOLDER},
+          {IconType::FOLDER_SHARED, IDR_LAUNCHER_CHIP_ICON_FOLDER_SHARED},
           {IconType::GDOC, IDR_LAUNCHER_CHIP_ICON_GDOC},
+          {IconType::GDRAW, IDR_LAUNCHER_CHIP_ICON_GDRAW},
           {IconType::GENERIC, IDR_LAUNCHER_CHIP_ICON_GENERIC},
+          {IconType::GFORM, IDR_LAUNCHER_CHIP_ICON_GFORM},
+          {IconType::GMAP, IDR_LAUNCHER_CHIP_ICON_GMAP},
           {IconType::GSHEET, IDR_LAUNCHER_CHIP_ICON_GSHEET},
-          {IconType::GSLIDES, IDR_LAUNCHER_CHIP_ICON_GSLIDES},
+          {IconType::GSITE, IDR_LAUNCHER_CHIP_ICON_GSITE},
+          {IconType::GSLIDE, IDR_LAUNCHER_CHIP_ICON_GSLIDE},
+          {IconType::GTABLE, IDR_LAUNCHER_CHIP_ICON_GTABLE},
           {IconType::IMAGE, IDR_LAUNCHER_CHIP_ICON_IMAGE},
+          {IconType::LINUX, IDR_LAUNCHER_CHIP_ICON_LINUX},
+          {IconType::PDF, IDR_LAUNCHER_CHIP_ICON_PDF},
+          {IconType::PPT, IDR_LAUNCHER_CHIP_ICON_PPT},
+          {IconType::SCRIPT, IDR_LAUNCHER_CHIP_ICON_SCRIPT},
+          {IconType::SITES, IDR_LAUNCHER_CHIP_ICON_SITES},
+          {IconType::TINI, IDR_LAUNCHER_CHIP_ICON_TINI},
+          {IconType::VIDEO, IDR_LAUNCHER_CHIP_ICON_VIDEO},
+          {IconType::WORD, IDR_LAUNCHER_CHIP_ICON_WORD},
       });
 
   const auto& id_it = icon_to_chip_resource_id->find(icon);
-  if (id_it != icon_to_chip_resource_id->end()) {
-    return id_it->second;
-  } else {
-    return GetResourceIdForIconType(icon);
-  }
+  DCHECK(id_it != icon_to_chip_resource_id->end());
+  return id_it->second;
 }
 
 }  // namespace internal

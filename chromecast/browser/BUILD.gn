@@ -208,6 +208,7 @@ cast_source_set("browser") {
     "//gpu",
     "//ipc",
     "//media",
+    "//media/mojo/mojom:remoting",
     "//media/mojo/services",
     "//net",
     "//services/media_session/public/mojom",

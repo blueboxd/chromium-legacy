@@ -125,7 +125,6 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::GetLayersAsJSON(
         const auto& foreign_layer_display_item =
             static_cast<const ForeignLayerDisplayItem&>(display_item);
         layer = foreign_layer_display_item.GetLayer();
-        json_client = foreign_layer_display_item.GetLayerAsJSONClient();
       }
       // Need to retrieve the transform from |pending_layers_| so that
       // any decomposition is not double-reported via |layer|'s
@@ -856,7 +855,6 @@ static bool IsCompositedScrollbar(const DisplayItem& item) {
 
 void PaintArtifactCompositor::LayerizeGroup(
     const PaintArtifact& paint_artifact,
-    const Settings& settings,
     const EffectPaintPropertyNode& current_group,
     Vector<PaintChunk>::const_iterator& chunk_it) {
   // Skip paint chunks that are effectively invisible due to opacity and don't
@@ -921,7 +919,7 @@ void PaintArtifactCompositor::LayerizeGroup(
       // Case C: The following chunks belong to a subgroup. Process them by
       //         a recursion call.
       wtf_size_t first_layer_in_subgroup = pending_layers_.size();
-      LayerizeGroup(paint_artifact, settings, *unaliased_subgroup, chunk_it);
+      LayerizeGroup(paint_artifact, *unaliased_subgroup, chunk_it);
       // The above LayerizeGroup generated new layers in pending_layers_
       // [first_layer_in_subgroup .. pending_layers.size() - 1]. If it
       // generated 2 or more layer that we already know can't be merged
@@ -959,14 +957,12 @@ void PaintArtifactCompositor::LayerizeGroup(
 }
 
 void PaintArtifactCompositor::CollectPendingLayers(
-    const PaintArtifact& paint_artifact,
-    const Settings& settings) {
+    const PaintArtifact& paint_artifact) {
   Vector<PaintChunk>::const_iterator cursor =
       paint_artifact.PaintChunks().begin();
   // Shrink, but do not release the backing. Re-use it from the last frame.
   pending_layers_.Shrink(0);
-  LayerizeGroup(paint_artifact, settings, EffectPaintPropertyNode::Root(),
-                cursor);
+  LayerizeGroup(paint_artifact, EffectPaintPropertyNode::Root(), cursor);
   DCHECK_EQ(paint_artifact.PaintChunks().end(), cursor);
   pending_layers_.ShrinkToReasonableCapacity();
 }
@@ -1227,7 +1223,6 @@ void PaintArtifactCompositor::DecompositeTransforms(
 void PaintArtifactCompositor::Update(
     scoped_refptr<const PaintArtifact> paint_artifact,
     const ViewportProperties& viewport_properties,
-    const Settings& settings,
     const Vector<const TransformPaintPropertyNode*>& scroll_translation_nodes) {
   DCHECK(scroll_translation_nodes.IsEmpty() ||
          RuntimeEnabledFeatures::ScrollUnificationEnabled());
@@ -1249,7 +1244,7 @@ void PaintArtifactCompositor::Update(
   PropertyTreeManager property_tree_manager(*this, *host->property_trees(),
                                             *root_layer_, layer_list_builder,
                                             g_s_property_tree_sequence_number);
-  CollectPendingLayers(*paint_artifact, settings);
+  CollectPendingLayers(*paint_artifact);
 
   UpdateCompositorViewportProperties(viewport_properties, property_tree_manager,
                                      host);

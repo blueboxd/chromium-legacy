@@ -22,8 +22,6 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 public class CtrSuppression extends ContextualSearchHeuristic {
     private long mNativePointer;
 
-    private static Integer sCurrentWeekNumberCache;
-
     private final SharedPreferencesManager mPreferenceManager;
 
     /**
@@ -122,6 +120,15 @@ public class CtrSuppression extends ContextualSearchHeuristic {
                     ContextualSearchInteractionRecorder.Feature.PREVIOUS_28DAY_CTR_PERCENT,
                     previous28DayCtr);
         }
+    }
+
+    /** @return the CTR from the previous 28 days, or 0 if no data. */
+    int getPrevious28DayCtr() {
+        if (!CtrSuppressionJni.get().hasPrevious28DayData(mNativePointer, CtrSuppression.this)) {
+            return 0;
+        }
+        return (int) (100
+                * CtrSuppressionJni.get().getPrevious28DayCtr(mNativePointer, CtrSuppression.this));
     }
 
     // ============================================================================================

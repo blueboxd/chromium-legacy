@@ -1,9 +1,11 @@
 include_rules = [
   "+components/metrics",
   "+components/prefs",
+  "+components/ukm",
   "+components/version_info",
   "+content/public/browser",
   "+content/public/test",
+  "+services/network/public/cpp",
   "+services/resource_coordinator/public/cpp/memory_instrumentation",
   "+third_party/metrics_proto",
 ]

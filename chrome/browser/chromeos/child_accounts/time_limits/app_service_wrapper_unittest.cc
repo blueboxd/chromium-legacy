@@ -16,6 +16,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -44,11 +44,13 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using web_app::GenerateAppIdFromURL;
+using web_app::InstallResultCode;
 using web_app::ProviderType;
 using web_app::WebAppProviderBase;
 
@@ -170,10 +172,33 @@ class AppServiceWrapperTest : public ::testing::TestWithParam<ProviderType> {
 
     if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) &&
         app_id.app_type() == apps::mojom::AppType::kWeb) {
-      DCHECK(url.has_value());
-      const web_app::AppId installed_app_id =
-          web_app::InstallDummyWebApp(&profile_, app_name, GURL(url.value()));
-      EXPECT_EQ(installed_app_id, app_id.app_id());
+      WebApplicationInfo web_app_info;
+
+      web_app_info.app_url = GURL(*url);
+      web_app_info.scope = web_app_info.app_url;
+      web_app_info.title = base::UTF8ToUTF16(app_name);
+      web_app_info.description = base::UTF8ToUTF16(app_name);
+      web_app_info.open_as_window = true;
+
+      web_app::InstallFinalizer::FinalizeOptions options;
+      options.install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+
+      // In unit tests, we do not have Browser or WebContents instances.
+      // Hence we use FinalizeInstall instead of InstallWebAppFromManifest
+      // to install the web app.
+      base::RunLoop run_loop;
+      WebAppProviderBase::GetProviderBase(&profile_)
+          ->install_finalizer()
+          .FinalizeInstall(
+              web_app_info, options,
+              base::BindLambdaForTesting(
+                  [&](const web_app::AppId& installed_app_id,
+                      InstallResultCode code) {
+                    EXPECT_EQ(installed_app_id, app_id.app_id());
+                    EXPECT_EQ(code, InstallResultCode::kSuccessNewInstall);
+                    run_loop.Quit();
+                  }));
+      run_loop.Run();
       task_environment_.RunUntilIdle();
       return;
     }

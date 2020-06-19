@@ -27,7 +27,7 @@ class ReceivedFile {
    * @param{!Blob} blob
    */
   async overwriteOriginal(blob) {
-    /** @type{OverwriteFileMessage} */
+    /** @type {!OverwriteFileMessage} */
     const message = {token: this.token, blob: blob};
 
     await parentMessagePipe.sendMessage(Message.OVERWRITE_FILE, message);
@@ -143,7 +143,11 @@ const DELEGATE = {
         await parentMessagePipe.sendMessage(Message.OPEN_FEEDBACK_DIALOG);
     return /** @type {?string} */ (response['errorMessage']);
   },
-  async saveCopy(/** !mediaApp.AbstractFile */ abstractFile) {
+  /**
+   * @param {!mediaApp.AbstractFile} abstractFile
+   * @return {!Promise<?string>}
+   */
+  async saveCopy(abstractFile) {
     /** @type {!SaveCopyMessage} */
     const msg = {blob: abstractFile.blob, suggestedName: abstractFile.name};
     const response =

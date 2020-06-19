@@ -384,9 +384,8 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
           device->OnFrameCaptured(
               std::move(data),
               media::mojom::VideoFrameInfo::New(
-                  kMinCapturePeriod * frame_number,
-                  base::Value(base::Value::Type::DICTIONARY), kFormat,
-                  kResolution, gfx::Rect(kResolution),
+                  kMinCapturePeriod * frame_number, media::VideoFrameMetadata(),
+                  kFormat, kResolution, gfx::Rect(kResolution),
                   gfx::ColorSpace::CreateREC709(), nullptr),
               gfx::Rect(kResolution), std::move(callbacks_remote));
         },

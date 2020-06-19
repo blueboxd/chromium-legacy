@@ -65,10 +65,8 @@ class WebRtcVideoTrackSourceTest
       media::VideoFrame::StorageType storage_type) {
     scoped_refptr<media::VideoFrame> frame =
         CreateTestFrame(coded_size, visible_rect, natural_size, storage_type);
-    frame->metadata()->SetInteger(media::VideoFrameMetadata::CAPTURE_COUNTER,
-                                  capture_counter);
-    frame->metadata()->SetRect(media::VideoFrameMetadata::CAPTURE_UPDATE_RECT,
-                               update_rect);
+    frame->metadata()->capture_counter = capture_counter;
+    frame->metadata()->capture_update_rect = update_rect;
     track_source_->OnFrameCaptured(frame);
   }
 

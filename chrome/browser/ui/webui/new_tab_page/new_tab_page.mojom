@@ -202,6 +202,9 @@ struct ImageDoodleContent {
   url.mojom.Url on_click_url;
   // URL pointing to animated content (e.g. gif). Only set for animated doodles.
   url.mojom.Url? animation_url;
+  // Dimensions of the original image in pixels.
+  uint32 width;
+  uint32 height;
   // Specification of the share button.
   DoodleShareButton share_button;
   // URL displayed to users, which they can use to share the doodle.

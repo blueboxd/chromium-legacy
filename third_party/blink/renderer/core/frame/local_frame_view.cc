@@ -2972,10 +2972,6 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
     }
   }
 
-  PaintArtifactCompositor::Settings settings;
-  settings.prefer_compositing_to_lcd_text =
-      page->GetSettings().GetPreferCompositingToLCDTextEnabled();
-
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       (!paint_controller_ || visual_viewport_needs_repaint_)) {
     // Before CompositeAfterPaint, we need a transient PaintController to
@@ -3015,7 +3011,7 @@ void LocalFrameView::PushPaintArtifactToCompositor() {
 
   paint_artifact_compositor_->Update(
       paint_controller_->GetPaintArtifactShared(), viewport_properties,
-      settings, scroll_translation_nodes);
+      scroll_translation_nodes);
 
   probe::LayerTreePainted(&GetFrame());
 }

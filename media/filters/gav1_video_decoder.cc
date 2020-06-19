@@ -211,7 +211,7 @@ scoped_refptr<VideoFrame> FormatVideoFrame(
     color_space = container_color_space;
 
   frame->set_color_space(color_space.ToGfxColorSpace());
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, false);
+  frame->metadata()->power_efficient = false;
 
   return frame;
 }

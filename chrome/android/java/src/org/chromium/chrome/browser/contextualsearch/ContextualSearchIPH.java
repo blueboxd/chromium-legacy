@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.View;
@@ -30,6 +31,9 @@ public class ContextualSearchIPH {
     private RectProvider mRectProvider;
     private String mFeatureName;
     private boolean mIsShowing;
+    private boolean mIsPositionedByPanel;
+    private boolean mHasUserEverEngaged;
+    private Point mFloatingBubbleAnchorPoint;
 
     /**
      * Constructs the helper class.
@@ -46,7 +50,7 @@ public class ContextualSearchIPH {
     /**
      * @param parentView The parent view that the {@link TextBubble} will be attached to.
      */
-    public void setParentView(View parentView) {
+    void setParentView(View parentView) {
         mParentView = parentView;
     }
 
@@ -74,26 +78,54 @@ public class ContextualSearchIPH {
     }
 
     /**
+     * Should be called after the user taps but a tap will not trigger due to longpress activation.
+     * @param profile The active user profile.
+     * @param bubbleAnchorPoint The point where the bubble arrow should be positioned.
+     * @param hasUserEverEngaged Whether the user has ever engaged Contextual Search by opening
+     *        the panel.
+     */
+    void onNonTriggeringTap(Profile profile, Point bubbleAnchorPoint, boolean hasUserEverEngaged) {
+        mFloatingBubbleAnchorPoint = bubbleAnchorPoint;
+        mHasUserEverEngaged = hasUserEverEngaged;
+        maybeShow(FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE, profile,
+                false);
+    }
+
+    /**
      * Shows the appropriate In-Product Help UI if the conditions are met.
      * @param featureName Name of the feature in IPH, look at {@link FeatureConstants}.
      * @param profile The {@link Profile} used for {@link TrackerFactory}.
      */
     private void maybeShow(String featureName, Profile profile) {
-        if (mIsShowing) return;
-
-        if (mSearchPanel == null || mParentView == null || profile == null) return;
-
-        mFeatureName = featureName;
-        maybeShowBubbleAbovePanel(profile);
+        maybeShow(featureName, profile, true);
     }
 
     /**
-     * Shows a help bubble above the Contextual Search panel if the In-Product Help conditions are
-     * met.
+     * Shows the appropriate In-Product Help UI if the conditions are met.
+     * @param featureName Name of the feature in IPH, look at {@link FeatureConstants}.
+     * @param profile The {@link Profile} used for {@link TrackerFactory}.
+     * @param isPositionedByPanel Whether the bubble positioning should be based on the
+     *        panel position instead of floating somewhere on the base page.
+     */
+    private void maybeShow(String featureName, Profile profile, boolean isPositionedByPanel) {
+        mIsPositionedByPanel = isPositionedByPanel;
+        if (mIsShowing || profile == null || mParentView == null
+                || mIsPositionedByPanel && mSearchPanel == null) {
+            return;
+        }
+
+        mFeatureName = featureName;
+        maybeShowFeaturedBubble(profile);
+    }
+
+    /**
+     * Shows a help bubble if the In-Product Help conditions are met.
+     * Private state members are used to determine which message to show in the bubble
+     * and how to position it.
      * @param profile The {@link Profile} used for {@link TrackerFactory}.
      */
-    private void maybeShowBubbleAbovePanel(Profile profile) {
-        if (!mSearchPanel.isShowing()) return;
+    private void maybeShowFeaturedBubble(Profile profile) {
+        if (mIsPositionedByPanel && !mSearchPanel.isShowing()) return;
 
         final Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
         if (!tracker.shouldTriggerHelpUI(mFeatureName)) return;
@@ -108,6 +140,16 @@ public class ContextualSearchIPH {
                 break;
             case FeatureConstants.CONTEXTUAL_SEARCH_PROMOTE_TAP_FEATURE:
                 stringId = R.string.contextual_search_iph_tap;
+                break;
+            case FeatureConstants.CONTEXTUAL_SEARCH_TAPPED_BUT_SHOULD_LONGPRESS_FEATURE:
+                // TODO(donnd): put the engaged user variant behind a separate fieldtrial parameter
+                // so we can control it or collapse it later.
+                if (mHasUserEverEngaged) {
+                    stringId = R.string.contextual_search_iph_touch_and_hold_engaged;
+                } else {
+                    stringId = R.string.contextual_search_iph_touch_and_hold;
+                }
+                break;
         }
 
         assert stringId != 0;
@@ -140,9 +182,14 @@ public class ContextualSearchIPH {
      * @return A {@link Rect} object that represents the appropriate anchor for {@link TextBubble}.
      */
     private Rect getHelpBubbleAnchorRect() {
-        Rect anchorRect = mSearchPanel.getPanelRect();
         int yInsetPx = mParentView.getResources().getDimensionPixelOffset(
                 R.dimen.contextual_search_bubble_y_inset);
+        if (!mIsPositionedByPanel) {
+            return new Rect(mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y,
+                    mFloatingBubbleAnchorPoint.x, mFloatingBubbleAnchorPoint.y);
+        }
+
+        Rect anchorRect = mSearchPanel.getPanelRect();
         anchorRect.top -= yInsetPx;
         return anchorRect;
     }

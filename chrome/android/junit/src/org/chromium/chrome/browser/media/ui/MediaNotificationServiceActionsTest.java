@@ -18,6 +18,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.media.ui.ChromeMediaNotificationControllerDelegate.ListenerService;
+import org.chromium.components.browser_ui.media.MediaNotificationController;
+import org.chromium.components.browser_ui.media.MediaNotificationListener;
 import org.chromium.media_session.mojom.MediaSessionAction;
 
 /**

@@ -527,10 +527,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
     const VideoFrameMetadata& additional_metadata) {
   DFAKE_SCOPED_RECURSIVE_LOCK(call_from_producer_);
 
-  VideoFrameMetadata metadata;
-  metadata.MergeMetadataFrom(&additional_metadata);
-  metadata.SetDouble(VideoFrameMetadata::FRAME_RATE, format.frame_rate);
-  metadata.SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME, reference_time);
+  VideoFrameMetadata metadata = additional_metadata;
+  metadata.frame_rate = format.frame_rate;
+  metadata.reference_time = reference_time;
 
   mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
   info->timestamp = timestamp;
@@ -538,7 +537,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBufferExt(
   info->color_space = color_space;
   info->coded_size = format.frame_size;
   info->visible_rect = visible_rect;
-  info->metadata = metadata.GetInternalValues().Clone();
+  info->metadata = metadata;
 
   buffer_pool_->HoldForConsumers(buffer.id, 1);
   receiver_->OnFrameReadyInBuffer(

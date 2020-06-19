@@ -212,7 +212,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
     }
     bool EffectiveZoomChanged(const ComputedStyle&) const;
     bool FontChanged(const ComputedStyle&) const;
-    bool EffectiveZoomOrFontChanged(const ComputedStyle&) const;
+    bool InheritedVariablesChanged(const ComputedStyle&) const;
+    bool IsUsableAfterApplyInheritedOnly(const ComputedStyle&) const;
   };
 
   // These flags indicate whether an apply pass for a given CSSPropertyPriority

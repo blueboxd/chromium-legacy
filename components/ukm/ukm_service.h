@@ -18,6 +18,7 @@
 #include "components/metrics/delegating_provider.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/metrics_rotation_scheduler.h"
+#include "components/metrics/ukm_demographic_metrics_provider.h"
 #include "components/ukm/ukm_entry_filter.h"
 #include "components/ukm/ukm_recorder_impl.h"
 #include "components/ukm/ukm_reporting_service.h"
@@ -31,7 +32,6 @@ FORWARD_DECLARE_TEST(IOSChromeMetricsServiceClientTest,
 namespace metrics {
 class MetricsServiceClient;
 class UkmBrowserTestBase;
-class UkmDemographicMetricsProvider;
 }
 
 namespace ukm {
@@ -59,10 +59,10 @@ class UkmService : public UkmRecorderImpl {
   // Constructs a UkmService.
   // Calling code is responsible for ensuring that the lifetime of
   // |pref_service| is longer than the lifetime of UkmService. The parameters
-  // |pref_service|, |client|, and |demographics_provider| must not be null.
+  // |pref_service|, |client| must not be null. |demographics_provider| may be
+  // null.
   UkmService(PrefService* pref_service,
              metrics::MetricsServiceClient* client,
-             bool restrict_to_whitelist_entries,
              std::unique_ptr<metrics::UkmDemographicMetricsProvider>
                  demographics_provider);
   ~UkmService() override;
@@ -107,6 +107,10 @@ class UkmService : public UkmRecorderImpl {
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
   int32_t report_count() const { return report_count_; }
+
+  void set_restrict_to_whitelist_entries_for_testing(bool value) {
+    restrict_to_whitelist_entries_ = value;
+  }
 
   // Enables adding the synced user's noised birth year and gender to the UKM
   // report. For more details, see doc of metrics::DemographicMetricsProvider in

@@ -5832,6 +5832,9 @@ the Bookmarks menu.">
       <message name="IDS_REOPEN_TAB_PROMO_SCREENREADER" desc="Text announced encouraging users to reopen a tab with the given shortcut">
         <ph name="SHORTCUT">$1<ex>CTRL+SHIFT+T</ex></ph> can reopen accidentally closed tabs
       </message>
+      <message name="IDS_TAB_GROUPS_NEW_GROUP_PROMO" desc="Text shown on promotional UI encouraging users to create a tab group in their tab strip">
+        To group tabs together, right-click a tab
+      </message>
 
       <!-- Browser Hung Plugin Detector -->
       <if expr="is_win">

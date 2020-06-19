@@ -5,16 +5,21 @@
 package org.chromium.chrome.features.start_surface;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
+import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.Matchers.instanceOf;
 
 import static org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.M26_GOOGLE_COM;
 import static org.chromium.chrome.test.util.ViewUtils.onViewWaiting;
+import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -23,9 +28,11 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.SmallTest;
 
 import org.hamcrest.core.AllOf;
@@ -54,6 +61,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
@@ -94,6 +103,7 @@ public class InstantStartTest {
     // clang-format on
     private static final String IMMEDIATE_RETURN_PARAMS = "force-fieldtrial-params=Study.Group:"
             + ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM + "/0";
+    private static final int ARTICLE_SECTION_HEADER_POSITION = 0;
     private Bitmap mBitmap;
     private int mThumbnailFetchCount;
 
@@ -650,8 +660,104 @@ public class InstantStartTest {
         startMainActivityFromLauncher();
         Assert.assertFalse(mActivityTestRule.getActivity().isTablet());
         Assert.assertTrue(CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START));
-        onView(withId(org.chromium.chrome.start_surface.R.id.images_layout))
+        onView(withId(org.chromium.chrome.start_surface.R.id.placeholders_layout))
                 .check(matches(isDisplayed()));
         Assert.assertFalse(LibraryLoader.getInstance().isInitialized());
+    }
+
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    // clang-format off
+    @CommandLineFlags.Add({"force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    public void testFeedPlaceholderVisibility() {
+        // clang-format on
+        startMainActivityFromLauncher();
+        // FEED_ARTICLES_LIST_VISIBLE should equal to ARTICLES_LIST_VISIBLE.
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> Assert.assertEquals(PrefServiceBridge.getInstance().getBoolean(
+                                                       Pref.ARTICLES_LIST_VISIBLE),
+                                StartSurfaceConfiguration.getFeedArticlesVisibility()));
+
+        // Hide articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
+        // both false.
+        toggleHeader(false);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean suggestionsVisible =
+                    PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+            Assert.assertFalse(suggestionsVisible);
+            Assert.assertEquals(
+                    suggestionsVisible, StartSurfaceConfiguration.getFeedArticlesVisibility());
+        });
+
+        // Show articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
+        // both true.
+        toggleHeader(true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            boolean suggestionsVisible =
+                    PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
+            Assert.assertTrue(suggestionsVisible);
+            Assert.assertEquals(
+                    suggestionsVisible, StartSurfaceConfiguration.getFeedArticlesVisibility());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    public void testHidePlaceholder() {
+        // clang-format on
+        StartSurfaceConfiguration.setFeedVisibilityForTesting(false);
+        startMainActivityFromLauncher();
+
+        onView(withId(org.chromium.chrome.start_surface.R.id.placeholders_layout))
+                .check(doesNotExist());
+    }
+
+    @Test
+    @SmallTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    // clang-format off
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
+            "force-fieldtrials=Study/Group",
+            IMMEDIATE_RETURN_PARAMS + "/start_surface_variation/single"})
+    public void testShowPlaceholder() {
+        // clang-format on
+        StartSurfaceConfiguration.setFeedVisibilityForTesting(true);
+        startMainActivityFromLauncher();
+
+        onView(withId(org.chromium.chrome.start_surface.R.id.placeholders_layout))
+                .check(matches(isDisplayed()));
+    }
+
+    /**
+     * Toggles the header and checks whether the header has the right status.
+     *
+     * @param expanded Whether the header should be expanded.
+     */
+    private void toggleHeader(boolean expanded) {
+        onView(allOf(instanceOf(RecyclerView.class),
+                       withId(org.chromium.chrome.feed.R.id.feed_stream_recycler_view)))
+                .perform(RecyclerViewActions.scrollToPosition(ARTICLE_SECTION_HEADER_POSITION),
+                        RecyclerViewActions.actionOnItemAtPosition(
+                                ARTICLE_SECTION_HEADER_POSITION, click()));
+
+        waitForView((ViewGroup) mActivityTestRule.getActivity().findViewById(
+                            org.chromium.chrome.feed.R.id.feed_stream_recycler_view),
+                allOf(withId(org.chromium.chrome.R.id.header_status),
+                        withText(expanded ? org.chromium.chrome.R.string.hide
+                                          : org.chromium.chrome.R.string.show)));
     }
 }

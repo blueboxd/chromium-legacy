@@ -73,13 +73,21 @@ ClientSideDetectionService::ClientSideDetectionService(Profile* profile)
                                          : nullptr) {
   profile_ = profile;
 
-  // |profile_| and |url_loader_factory_| can be null in unit tests
-  if (!profile_ || !url_loader_factory_)
+  // |profile_| can be null in unit tests
+  if (!profile_)
     return;
 
   pref_change_registrar_.Init(profile_->GetPrefs());
   pref_change_registrar_.Add(
       prefs::kSafeBrowsingEnabled,
+      base::Bind(&ClientSideDetectionService::OnPrefsUpdated,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kSafeBrowsingEnhanced,
+      base::Bind(&ClientSideDetectionService::OnPrefsUpdated,
+                 base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kSafeBrowsingScoutReportingEnabled,
       base::Bind(&ClientSideDetectionService::OnPrefsUpdated,
                  base::Unretained(this)));
 
@@ -93,10 +101,6 @@ ClientSideDetectionService::ClientSideDetectionService(
   base::Closure update_renderers =
       base::Bind(&ClientSideDetectionService::SendModelToRenderers,
                  base::Unretained(this));
-  model_loader_standard_.reset(
-      new ModelLoader(update_renderers, url_loader_factory_, false));
-  model_loader_extended_.reset(
-      new ModelLoader(update_renderers, url_loader_factory_, true));
 
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CREATED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -111,27 +115,38 @@ void ClientSideDetectionService::Shutdown() {
 }
 
 void ClientSideDetectionService::OnPrefsUpdated() {
-  SetEnabledAndRefreshState(IsSafeBrowsingEnabled(*profile_->GetPrefs()));
-}
-
-void ClientSideDetectionService::SetEnabledAndRefreshState(bool enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   SendModelToRenderers();  // always refresh the renderer state
-  if (enabled == enabled_)
+  bool enabled = IsSafeBrowsingEnabled(*profile_->GetPrefs());
+  bool extended_reporting =
+      IsEnhancedProtectionEnabled(*profile_->GetPrefs()) ||
+      IsExtendedReportingEnabled(*profile_->GetPrefs());
+  if (enabled == enabled_ && extended_reporting_ == extended_reporting)
     return;
+
   enabled_ = enabled;
+  extended_reporting_ = extended_reporting;
+
   if (enabled_) {
+    if (!model_factory_.is_null()) {
+      model_loader_ = model_factory_.Run();
+    } else {
+      model_loader_ = std::make_unique<ModelLoader>(
+          base::BindRepeating(&ClientSideDetectionService::SendModelToRenderers,
+                              base::Unretained(this)),
+          url_loader_factory_, extended_reporting_);
+    }
     // Refresh the models when the service is enabled.  This can happen when
     // either of the preferences are toggled, or early during startup if
     // safe browsing is already enabled. In a lot of cases the model will be
     // in the cache so it  won't actually be fetched from the network.
     // We delay the first model fetches to avoid slowing down browser startup.
-    model_loader_standard_->ScheduleFetch(kInitialClientModelFetchDelayMs);
-    model_loader_extended_->ScheduleFetch(kInitialClientModelFetchDelayMs);
+    model_loader_->ScheduleFetch(kInitialClientModelFetchDelayMs);
   } else {
-    // Cancel model loads in progress.
-    model_loader_standard_->CancelFetcher();
-    model_loader_extended_->CancelFetcher();
+    if (model_loader_) {
+      // Cancel model loads in progress.
+      model_loader_->CancelFetcher();
+    }
     // Invoke pending callbacks with a false verdict.
     for (auto it = client_phishing_reports_.begin();
          it != client_phishing_reports_.end(); ++it) {
@@ -207,9 +222,7 @@ void ClientSideDetectionService::Observe(
       content::Source<content::RenderProcessHost>(source).ptr();
   if (process->GetBrowserContext() == profile_) {
     for (ClientSideDetectionHost* host : csd_hosts_) {
-      host->SendModelToRenderFrame(process, profile_,
-                                   model_loader_standard_.get(),
-                                   model_loader_extended_.get());
+      host->SendModelToRenderFrame(process, profile_, model_loader_.get());
     }
   }
 }
@@ -222,9 +235,7 @@ void ClientSideDetectionService::SendModelToRenderers() {
     if (process->IsInitializedAndNotDead() &&
         process->GetBrowserContext() == profile_) {
       for (ClientSideDetectionHost* host : csd_hosts_) {
-        host->SendModelToRenderFrame(process, profile_,
-                                     model_loader_standard_.get(),
-                                     model_loader_extended_.get());
+        host->SendModelToRenderFrame(process, profile_, model_loader_.get());
       }
     }
   }
@@ -245,8 +256,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   }
 
   // Fill in metadata about which model we used.
+  request->set_model_filename(model_loader_->name());
   if (is_extended_reporting || is_enhanced_reporting) {
-    request->set_model_filename(model_loader_extended_->name());
     if (is_enhanced_reporting) {
       request->mutable_population()->set_user_population(
           ChromeUserPopulation::ENHANCED_PROTECTION);
@@ -255,7 +266,6 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
           ChromeUserPopulation::EXTENDED_REPORTING);
     }
   } else {
-    request->set_model_filename(model_loader_standard_->name());
     request->mutable_population()->set_user_population(
         ChromeUserPopulation::SAFE_BROWSING);
   }
@@ -438,11 +448,21 @@ GURL ClientSideDetectionService::GetClientReportUrl(
   return url;
 }
 
-ModelLoader::ClientModelStatus ClientSideDetectionService::GetLastModelStatus(
-    bool use_extended_model) {
-  ModelLoader* model_loader = use_extended_model ? model_loader_extended_.get()
-                                                 : model_loader_standard_.get();
-  return model_loader->last_client_model_status();
+ModelLoader::ClientModelStatus
+ClientSideDetectionService::GetLastModelStatus() {
+  // |model_loader_| can be null in tests
+  return model_loader_ ? model_loader_->last_client_model_status()
+                       : ModelLoader::MODEL_NEVER_FETCHED;
+}
+
+void ClientSideDetectionService::SetModelLoaderFactoryForTesting(
+    base::RepeatingCallback<std::unique_ptr<ModelLoader>()> factory) {
+  model_factory_ = factory;
+}
+
+void ClientSideDetectionService::SetURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  url_loader_factory_ = url_loader_factory;
 }
 
 }  // namespace safe_browsing

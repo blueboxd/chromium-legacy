@@ -40,6 +40,11 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.is_mobile_optimized;
   }
 
+  static bool has_delegated_ink_metadata(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.has_delegated_ink_metadata;
+  }
+
   static float device_scale_factor(const cc::RenderFrameMetadata& metadata) {
     return metadata.device_scale_factor;
   }

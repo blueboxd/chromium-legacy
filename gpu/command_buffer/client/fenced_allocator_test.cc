@@ -119,7 +119,7 @@ TEST_F(FencedAllocatorTest, TestOutOfMemory) {
 
   const unsigned int kSize = 16;
   const unsigned int kAllocCount = kBufferSize / kSize;
-  CHECK(kAllocCount * kSize == kBufferSize);
+  CHECK_EQ(kAllocCount * kSize, kBufferSize);
 
   // Allocate several buffers to fill in the memory.
   FencedAllocator::Offset offsets[kAllocCount];
@@ -161,7 +161,7 @@ TEST_F(FencedAllocatorTest, TestFreePendingToken) {
 
   const unsigned int kSize = 16;
   const unsigned int kAllocCount = kBufferSize / kSize;
-  CHECK(kAllocCount * kSize == kBufferSize);
+  CHECK_EQ(kAllocCount * kSize, kBufferSize);
 
   // Allocate several buffers to fill in the memory.
   FencedAllocator::Offset offsets[kAllocCount];
@@ -209,7 +209,7 @@ TEST_F(FencedAllocatorTest, FreeUnused) {
 
   const unsigned int kSize = 16;
   const unsigned int kAllocCount = kBufferSize / kSize;
-  CHECK(kAllocCount * kSize == kBufferSize);
+  CHECK_EQ(kAllocCount * kSize, kBufferSize);
 
   // Allocate several buffers to fill in the memory.
   FencedAllocator::Offset offsets[kAllocCount];
@@ -406,7 +406,7 @@ TEST_F(FencedAllocatorWrapperTest, TestBasic) {
   allocator_->CheckConsistency();
 
   const unsigned int kSize = 16;
-  void *pointer = allocator_->Alloc(kSize);
+  void* pointer = allocator_->Alloc(kSize);
   ASSERT_TRUE(pointer);
   EXPECT_LE(buffer_.get(), static_cast<char *>(pointer));
   EXPECT_GE(kBufferSize, static_cast<char *>(pointer) - buffer_.get() + kSize);
@@ -415,14 +415,14 @@ TEST_F(FencedAllocatorWrapperTest, TestBasic) {
   allocator_->Free(pointer);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
-  char *pointer_char = allocator_->AllocTyped<char>(kSize);
+  char* pointer_char = allocator_->AllocTyped<char>(kSize);
   ASSERT_TRUE(pointer_char);
   EXPECT_LE(buffer_.get(), pointer_char);
   EXPECT_GE(buffer_.get() + kBufferSize, pointer_char + kSize);
   allocator_->Free(pointer_char);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
-  unsigned int *pointer_uint = allocator_->AllocTyped<unsigned int>(kSize);
+  unsigned int* pointer_uint = allocator_->AllocTyped<unsigned int>(kSize);
   ASSERT_TRUE(pointer_uint);
   EXPECT_LE(buffer_.get(), reinterpret_cast<char *>(pointer_uint));
   EXPECT_GE(buffer_.get() + kBufferSize,
@@ -439,7 +439,7 @@ TEST_F(FencedAllocatorWrapperTest, TestBasic) {
 TEST_F(FencedAllocatorWrapperTest, TestAllocZero) {
   allocator_->CheckConsistency();
 
-  void *pointer = allocator_->Alloc(0);
+  void* pointer = allocator_->Alloc(0);
   ASSERT_FALSE(pointer);
   EXPECT_TRUE(allocator_->CheckConsistency());
 }
@@ -449,15 +449,15 @@ TEST_F(FencedAllocatorWrapperTest, TestAlignment) {
   allocator_->CheckConsistency();
 
   const unsigned int kSize1 = 75;
-  void *pointer1 = allocator_->Alloc(kSize1);
+  void* pointer1 = allocator_->Alloc(kSize1);
   ASSERT_TRUE(pointer1);
-  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer1) & (kAllocAlignment - 1), 0);
+  EXPECT_TRUE(base::IsAligned(pointer1, kAllocAlignment));
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   const unsigned int kSize2 = 43;
-  void *pointer2 = allocator_->Alloc(kSize2);
+  void* pointer2 = allocator_->Alloc(kSize2);
   ASSERT_TRUE(pointer2);
-  EXPECT_EQ(reinterpret_cast<intptr_t>(pointer2) & (kAllocAlignment - 1), 0);
+  EXPECT_TRUE(base::IsAligned(pointer2, kAllocAlignment));
   EXPECT_TRUE(allocator_->CheckConsistency());
 
   allocator_->Free(pointer2);
@@ -473,10 +473,10 @@ TEST_F(FencedAllocatorWrapperTest, TestOutOfMemory) {
 
   const unsigned int kSize = 16;
   const unsigned int kAllocCount = kBufferSize / kSize;
-  CHECK(kAllocCount * kSize == kBufferSize);
+  CHECK_EQ(kAllocCount * kSize, kBufferSize);
 
   // Allocate several buffers to fill in the memory.
-  void *pointers[kAllocCount];
+  void* pointers[kAllocCount];
   for (unsigned int i = 0; i < kAllocCount; ++i) {
     pointers[i] = allocator_->Alloc(kSize);
     EXPECT_TRUE(pointers[i]);
@@ -484,7 +484,7 @@ TEST_F(FencedAllocatorWrapperTest, TestOutOfMemory) {
   }
 
   // This allocation should fail.
-  void *pointer_failed = allocator_->Alloc(kSize);
+  void* pointer_failed = allocator_->Alloc(kSize);
   EXPECT_FALSE(pointer_failed);
   EXPECT_TRUE(allocator_->CheckConsistency());
 
@@ -513,10 +513,10 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
 
   const unsigned int kSize = 16;
   const unsigned int kAllocCount = kBufferSize / kSize;
-  CHECK(kAllocCount * kSize == kBufferSize);
+  CHECK_EQ(kAllocCount * kSize, kBufferSize);
 
   // Allocate several buffers to fill in the memory.
-  void *pointers[kAllocCount];
+  void* pointers[kAllocCount];
   for (unsigned int i = 0; i < kAllocCount; ++i) {
     pointers[i] = allocator_->Alloc(kSize);
     EXPECT_TRUE(pointers[i]);
@@ -524,7 +524,7 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
   }
 
   // This allocation should fail.
-  void *pointer_failed = allocator_->Alloc(kSize);
+  void* pointer_failed = allocator_->Alloc(kSize);
   EXPECT_FALSE(pointer_failed);
   EXPECT_TRUE(allocator_->CheckConsistency());
 

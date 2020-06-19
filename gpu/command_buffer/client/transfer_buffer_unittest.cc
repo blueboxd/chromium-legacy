@@ -12,6 +12,7 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
+#include "base/memory/aligned_memory.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"
 #include "gpu/command_buffer/common/command_buffer.h"
@@ -218,11 +219,11 @@ TEST_F(TransferBufferTest, TooLargeAllocation) {
 TEST_F(TransferBufferTest, MemoryAlignmentAfterZeroAllocation) {
   Initialize();
   void* ptr = transfer_buffer_->Alloc(0);
-  EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
+  EXPECT_TRUE(base::IsAligned(ptr, kAlignment));
   transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
   // Check that the pointer is aligned on the following allocation.
   ptr = transfer_buffer_->Alloc(4);
-  EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
+  EXPECT_TRUE(base::IsAligned(ptr, kAlignment));
   transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
 }
 

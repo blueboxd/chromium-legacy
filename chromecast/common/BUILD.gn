@@ -26,15 +26,6 @@ cast_source_set("resource_delegate") {
   ]
 }
 
-cast_source_set("volume_control_enum_printer") {
-  sources = [ "volume_control_enum_printer.cc" ]
-
-  deps = [
-    "//base",
-    "//chromecast/public",
-  ]
-}
-
 cast_source_set("activity_url_filter") {
   sources = [
     "activity_filtering_url_loader_throttle.cc",

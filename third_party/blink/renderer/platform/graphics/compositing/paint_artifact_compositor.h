@@ -136,10 +136,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
     const TransformPaintPropertyNode* outer_scroll_translation = nullptr;
   };
 
-  struct Settings {
-    bool prefer_compositing_to_lcd_text = false;
-  };
-
   // Updates the layer tree to match the provided paint artifact.
   //
   // Populates |animation_element_ids| with the CompositorElementId of all
@@ -150,7 +146,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // property tree.
   void Update(scoped_refptr<const PaintArtifact>,
               const ViewportProperties& viewport_properties,
-              const Settings& settings,
               const Vector<const TransformPaintPropertyNode*>&
                   scroll_translation_nodes);
 
@@ -287,7 +282,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
-  void CollectPendingLayers(const PaintArtifact&, const Settings& settings);
+  void CollectPendingLayers(const PaintArtifact&);
 
   // This is the internal recursion of collectPendingLayers. This function
   // loops over the list of paint chunks, scoped by an isolated group
@@ -307,7 +302,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // overlap with other chunks in the parent group, if grouping requirement
   // can be satisfied (and the effect node has no direct reason).
   void LayerizeGroup(const PaintArtifact&,
-                     const Settings& settings,
                      const EffectPaintPropertyNode&,
                      Vector<PaintChunk>::const_iterator& chunk_cursor);
   static bool MightOverlap(const PendingLayer&, const PendingLayer&);

@@ -1229,6 +1229,8 @@ void NewTabPageHandler::OnLogoAvailable(
     if (logo->metadata.type == search_provider_logos::LogoType::ANIMATED) {
       image_doodle_content->animation_url = logo->metadata.animated_url;
     }
+    image_doodle_content->width = logo->metadata.width_px;
+    image_doodle_content->height = logo->metadata.height_px;
     image_doodle_content->share_button =
         new_tab_page::mojom::DoodleShareButton::New();
     image_doodle_content->share_button->x = logo->metadata.share_button_x;

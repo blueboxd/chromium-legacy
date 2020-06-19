@@ -174,3 +174,12 @@ message TransportInfo {
   // to "api-error".
   optional string protocol = 1;
 }
+
+// Next ID: 3
+message PeerConnectionParameters {
+  // Sets preferred minimum and maximum bitrates. Unset fields means no
+  // preference on the bitrate. Clients might need to keep track of existing
+  // parameters if they need to do incremental changes.
+  optional int32 preferred_min_bitrate_bps = 1;
+  optional int32 preferred_max_bitrate_bps = 2;
+}

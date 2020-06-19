@@ -4,8 +4,6 @@
 
 #include "components/variations/net/variations_http_headers.h"
 
-#include <stddef.h>
-
 #include <utility>
 #include <vector>
 
@@ -95,10 +93,12 @@ URLValidationResult GetUrlValidationResult(const GURL& url) {
 }
 
 // Returns true if the request to |url| should include a variations header.
-// Also, logs the result of validating |url| in a histogram.
-bool ShouldAppendVariationsHeader(const GURL& url) {
+// Also, logs the result of validating |url| in histograms, one of which ends in
+// |suffix|.
+bool ShouldAppendVariationsHeader(const GURL& url, const std::string& suffix) {
   URLValidationResult result = GetUrlValidationResult(url);
-  UMA_HISTOGRAM_ENUMERATION("Variations.Headers.URLValidationResult", result);
+  base::UmaHistogramEnumeration(
+      "Variations.Headers.URLValidationResult." + suffix, result);
   return result == URLValidationResult::kShouldAppend;
 }
 
@@ -203,7 +203,8 @@ class VariationsHeaderHelper {
     //         international TLD domains *.google.<TLD> or *.youtube.<TLD>.
     // 2. Only transmit for non-Incognito profiles.
     // 3. For the X-Client-Data header, only include non-empty variation IDs.
-    if ((incognito == InIncognito::kYes) || !ShouldAppendVariationsHeader(url))
+    if ((incognito == InIncognito::kYes) ||
+        !ShouldAppendVariationsHeader(url, "Append"))
       return false;
 
     // TODO(crbug/1094303): Use the result to determine which IDs to include.
@@ -259,7 +260,7 @@ void RemoveVariationsHeaderIfNeeded(
     const net::RedirectInfo& redirect_info,
     const network::mojom::URLResponseHead& response_head,
     std::vector<std::string>* to_be_removed_headers) {
-  if (!ShouldAppendVariationsHeader(redirect_info.new_url))
+  if (!ShouldAppendVariationsHeader(redirect_info.new_url, "Remove"))
     to_be_removed_headers->push_back(kClientDataHeader);
 }
 
@@ -300,8 +301,10 @@ bool HasVariationsHeader(const network::ResourceRequest& request) {
   return request.cors_exempt_headers.HasHeader(kClientDataHeader);
 }
 
-bool ShouldAppendVariationsHeaderForTesting(const GURL& url) {
-  return ShouldAppendVariationsHeader(url);
+bool ShouldAppendVariationsHeaderForTesting(
+    const GURL& url,
+    const std::string& histogram_suffix) {
+  return ShouldAppendVariationsHeader(url, histogram_suffix);
 }
 
 void UpdateCorsExemptHeaderForVariations(

@@ -221,12 +221,11 @@ void VpxVideoEncoder::ChangeOptions(const Options& options, StatusCB done_cb) {
 }
 
 uint64_t VpxVideoEncoder::GetFrameDuration(const VideoFrame& frame) {
-  base::TimeDelta result;
-  if (!frame.metadata()->GetTimeDelta(media::VideoFrameMetadata::FRAME_DURATION,
-                                      &result)) {
-    result = base::TimeDelta::FromSecondsD(1.0 / options_.framerate);
-  }
-  return result.InMicroseconds();
+  base::TimeDelta default_duration =
+      base::TimeDelta::FromSecondsD(1.0 / options_.framerate);
+  return frame.metadata()
+      ->frame_duration.value_or(default_duration)
+      .InMicroseconds();
 }
 
 VpxVideoEncoder::~VpxVideoEncoder() {

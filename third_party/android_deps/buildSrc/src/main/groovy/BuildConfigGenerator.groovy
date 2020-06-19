@@ -296,6 +296,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  ignore_proguard_configs = true\n')
                 sb.append('  custom_package = "androidx.core"\n')
                 break
+            case 'androidx_fragment_fragment':
+                sb.append('\n')
+                sb.append('  ignore_proguard_configs = true\n')
+                break
             case 'androidx_media_media':
             case 'androidx_versionedparcelable_versionedparcelable':
             case 'com_android_support_support_media_compat':

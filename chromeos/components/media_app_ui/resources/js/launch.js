@@ -66,12 +66,12 @@ guestMessagePipe.registerHandler(Message.OPEN_FEEDBACK_DIALOG, () => {
 });
 
 guestMessagePipe.registerHandler(Message.OVERWRITE_FILE, async (message) => {
-  const overwrite = /** @type {OverwriteFileMessage} */ (message);
+  const overwrite = /** @type {!OverwriteFileMessage} */ (message);
   await saveBlobToFile(fileHandleForToken(overwrite.token), overwrite.blob);
 });
 
 guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
-  const deleteMsg = /** @type{DeleteFileMessage} */ (message);
+  const deleteMsg = /** @type {!DeleteFileMessage} */ (message);
   const {handle, directory} =
       assertFileAndDirectoryMutable(deleteMsg.token, 'Delete');
 
@@ -97,7 +97,7 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
 
 /** Handler to rename the currently focused file. */
 guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
-  const renameMsg = /** @type{RenameFileMessage} */ (message);
+  const renameMsg = /** @type {!RenameFileMessage} */ (message);
   const {handle, directory} =
       assertFileAndDirectoryMutable(renameMsg.token, 'Rename');
 
@@ -131,7 +131,7 @@ guestMessagePipe.registerHandler(Message.RENAME_FILE, async (message) => {
 });
 
 guestMessagePipe.registerHandler(Message.NAVIGATE, async (message) => {
-  const navigate = /** @type {NavigateMessage} */ (message);
+  const navigate = /** @type {!NavigateMessage} */ (message);
 
   await advance(navigate.direction);
 });
@@ -276,7 +276,7 @@ async function refreshFile(fd) {
   fd.lastError = '';
   try {
     fd.file = (await getFileFromHandle(fd.handle)).file;
-  } catch (/** @type{!DOMException} */ e) {
+  } catch (/** @type {!DOMException} */ e) {
     fd.lastError = e.name;
     // A failure here is only a problem for the "current" file (and that needs
     // to be handled in the unprivileged context), so ignore known errors.
@@ -347,7 +347,7 @@ function assertFileAndDirectoryMutable(editFileToken, operation) {
  * Returns whether `handle` is in `currentDirectoryHandle`. Prevents mutating a
  * file that doesn't exist.
  * @param {!FileSystemFileHandle} handle
- * @return {!Promise<!boolean>}
+ * @return {!Promise<boolean>}
  */
 async function isHandleInCurrentDirectory(handle) {
   // Get the name from the file reference. Handles file renames.
@@ -359,7 +359,7 @@ async function isHandleInCurrentDirectory(handle) {
 /**
  * Returns if a`filename` exists in `currentDirectoryHandle`.
  * @param {string} filename
- * @return {!Promise<!boolean>}
+ * @return {!Promise<boolean>}
  */
 async function filenameExistsInCurrentDirectory(filename) {
   return (await getFileHandleFromCurrentDirectory(filename, true)) !== null;
@@ -369,7 +369,7 @@ async function filenameExistsInCurrentDirectory(filename) {
  * Returns the `FileSystemFileHandle` for `filename` if it exists in the current
  * directory, otherwise null.
  * @param {string} filename
- * @param {boolean} suppressError
+ * @param {boolean=} suppressError
  * @return {!Promise<!FileSystemHandle|null>}
  */
 async function getFileHandleFromCurrentDirectory(
@@ -379,7 +379,7 @@ async function getFileHandleFromCurrentDirectory(
   }
   try {
     return (await currentDirectoryHandle.getFile(filename, {create: false}));
-  } catch (/** @type {Object} */ e) {
+  } catch (/** @type {?Object} */ e) {
     if (!suppressError) {
       console.error(e);
     }
@@ -392,7 +392,7 @@ async function getFileHandleFromCurrentDirectory(
  * expected to be files should be passed to this function. Throws a DOMException
  * if opening the file fails - usually because the handle is stale.
  * @param {?FileSystemHandle} fileSystemHandle
- * @return {!Promise<!{file: !File, handle: !FileSystemFileHandle}>}
+ * @return {!Promise<{file: !File, handle: !FileSystemFileHandle}>}
  */
 async function getFileFromHandle(fileSystemHandle) {
   if (!fileSystemHandle || !fileSystemHandle.isFile) {
@@ -450,7 +450,7 @@ async function setCurrentDirectory(directory, focusFile) {
     let entry = null;
     try {
       entry = await getFileFromHandle(handle);
-    } catch (/** @type{!DOMException} */ e) {
+    } catch (/** @type {!DOMException} */ e) {
       // Ignore exceptions thrown trying to open "other" files in the folder,
       // and skip adding that file to `currentFiles`.
       // Note the focusFile is passed in as `File`, so should be openable.
@@ -495,7 +495,7 @@ async function launchWithDirectory(directory, handle) {
   let asFile;
   try {
     asFile = await getFileFromHandle(handle);
-  } catch (/** @type{!DOMException} */ e) {
+  } catch (/** @type {!DOMException} */ e) {
     console.warn(`${handle.name}: ${e.message}`);
     sendSnapshotToGuest([{token: -1, file: null, handle, error: e.name}]);
     return;
@@ -515,7 +515,7 @@ async function launchWithMultipleSelection(directory, handles) {
   currentFiles.length = 0;
   for (const handle of handles) {
     if (handle && handle.isFile) {
-      const fileHandle = /** @type{!FileSystemFileHandle} */ (handle);
+      const fileHandle = /** @type {!FileSystemFileHandle} */ (handle);
       currentFiles.push({
         token: generateToken(fileHandle),
         file: null,  // Just let sendSnapshotToGuest() "refresh" it.
@@ -549,7 +549,7 @@ async function advance(direction) {
 /**
  * The launchQueue consumer. This returns a promise to help tests, but the file
  * handling API will ignore it.
- * @param {LaunchParams} params
+ * @param {?LaunchParams} params
  * @return {!Promise<undefined>}
  */
 function launchConsumer(params) {
@@ -567,7 +567,7 @@ function launchConsumer(params) {
     return Promise.resolve();
   }
   const directory =
-      /** @type{!FileSystemDirectoryHandle} */ (params.files[0]);
+      /** @type {!FileSystemDirectoryHandle} */ (params.files[0]);
 
   // With a single file selected, launch with all files in the directory as
   // navigation candidates. Otherwise, launch with all selected files (except

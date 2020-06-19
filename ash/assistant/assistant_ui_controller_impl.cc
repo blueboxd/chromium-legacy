@@ -92,7 +92,7 @@ void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
   }
 
   if (chromeos::features::IsAmbientModeEnabled() &&
-      Shell::Get()->ambient_controller()->is_showing()) {
+      Shell::Get()->ambient_controller()->IsShown()) {
     model_.SetUiMode(AssistantUiMode::kAmbientUi);
     model_.SetVisible(entry_point);
     return;

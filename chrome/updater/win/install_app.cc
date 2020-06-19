@@ -766,12 +766,12 @@ void AppInstall::SetupDone(int result) {
       app_id, base::BindOnce(&AppInstall::Shutdown, this));
 }
 
-scoped_refptr<App> AppInstallInstance() {
+scoped_refptr<App> MakeAppInstall() {
   // TODO(sorin) "--install" must be run with "--single-process" until
   // crbug.com/1053729 is resolved.
   DCHECK(
       base::CommandLine::ForCurrentProcess()->HasSwitch(kSingleProcessSwitch));
-  return AppInstance<AppInstall>();
+  return base::MakeRefCounted<AppInstall>();
 }
 
 }  // namespace updater

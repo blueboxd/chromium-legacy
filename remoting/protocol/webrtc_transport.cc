@@ -612,6 +612,20 @@ const SessionOptions& WebrtcTransport::session_options() const {
   return session_options_;
 }
 
+void WebrtcTransport::SetPreferredBitrates(
+    base::Optional<int> min_bitrate_bps,
+    base::Optional<int> max_bitrate_bps) {
+  preferred_min_bitrate_bps_ = min_bitrate_bps;
+  preferred_max_bitrate_bps_ = max_bitrate_bps;
+  if (connected_) {
+    int actual_min_bitrate_bps, actual_max_bitrate_bps;
+    std::tie(actual_min_bitrate_bps, actual_max_bitrate_bps) =
+        BitratesForConnection();
+    SetPeerConnectionBitrates(actual_min_bitrate_bps, actual_max_bitrate_bps);
+    SetSenderBitrates(actual_min_bitrate_bps, actual_max_bitrate_bps);
+  }
+}
+
 // static
 void WebrtcTransport::SetDataChannelPollingIntervalForTests(
     base::TimeDelta new_polling_interval) {
@@ -961,32 +975,28 @@ std::tuple<int, int> WebrtcTransport::BitratesForConnection() {
     }
   }
 
-  base::Optional<int> max_bitrate_from_options =
-      session_options().GetInt("Max-Bitrate");
-  if (max_bitrate_from_options.has_value()) {
-    if (*max_bitrate_from_options >= 0 &&
-        *max_bitrate_from_options <= max_bitrate_bps) {
-      VLOG(0) << "Client sets max bitrate to " << *max_bitrate_from_options
+  if (preferred_max_bitrate_bps_.has_value()) {
+    if (*preferred_max_bitrate_bps_ >= 0 &&
+        *preferred_max_bitrate_bps_ <= max_bitrate_bps) {
+      VLOG(0) << "Client sets max bitrate to " << *preferred_max_bitrate_bps_
               << " bps.";
-      max_bitrate_bps = *max_bitrate_from_options;
+      max_bitrate_bps = *preferred_max_bitrate_bps_;
     } else {
-      LOG(WARNING) << "Max bitrate setting  " << *max_bitrate_from_options
+      LOG(WARNING) << "Max bitrate setting  " << *preferred_max_bitrate_bps_
                    << " bps ignored since it's not in the range of "
                    << "[0, " << max_bitrate_bps << "].";
     }
   }
 
   int min_bitrate_bps = 0;
-  base::Optional<int> min_bitrate_from_options =
-      session_options().GetInt("Min-Bitrate");
-  if (min_bitrate_from_options.has_value()) {
-    if (min_bitrate_from_options >= 0 &&
-        min_bitrate_from_options <= max_bitrate_bps) {
-      VLOG(0) << "Client sets min bitrate to " << *min_bitrate_from_options
+  if (preferred_min_bitrate_bps_.has_value()) {
+    if (preferred_min_bitrate_bps_ >= 0 &&
+        preferred_min_bitrate_bps_ <= max_bitrate_bps) {
+      VLOG(0) << "Client sets min bitrate to " << *preferred_min_bitrate_bps_
               << " bps.";
-      min_bitrate_bps = *min_bitrate_from_options;
+      min_bitrate_bps = *preferred_min_bitrate_bps_;
     } else {
-      LOG(WARNING) << "Min bitrate setting  " << *min_bitrate_from_options
+      LOG(WARNING) << "Min bitrate setting  " << *preferred_min_bitrate_bps_
                    << " bps ignored since it's not in the range of "
                    << "[0, " << max_bitrate_bps << "].";
     }
@@ -1000,6 +1010,8 @@ void WebrtcTransport::SetPeerConnectionBitrates(int min_bitrate_bps,
   webrtc::BitrateSettings bitrate;
   if (min_bitrate_bps > 0) {
     bitrate.min_bitrate_bps = min_bitrate_bps;
+  } else {
+    bitrate.min_bitrate_bps.reset();
   }
   bitrate.max_bitrate_bps = max_bitrate_bps;
   peer_connection()->SetBitrate(bitrate);
@@ -1030,6 +1042,8 @@ void WebrtcTransport::SetSenderBitrates(int min_bitrate_bps,
 
   if (min_bitrate_bps > 0) {
     parameters.encodings[0].min_bitrate_bps = min_bitrate_bps;
+  } else {
+    parameters.encodings[0].min_bitrate_bps.reset();
   }
   parameters.encodings[0].max_bitrate_bps = max_bitrate_bps;
   webrtc::RTCError result = sender->SetParameters(parameters);

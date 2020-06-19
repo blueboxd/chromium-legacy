@@ -95,7 +95,7 @@ scoped_refptr<VideoFrame> PlatformVideoFramePool::GetFrame() {
 
   // Clear all metadata before returning to client, in case origin frame has any
   // unrelated metadata.
-  wrapped_frame->metadata()->Clear();
+  wrapped_frame->clear_metadata();
   return wrapped_frame;
 }
 

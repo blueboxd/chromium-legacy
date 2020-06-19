@@ -172,7 +172,7 @@ void DevToolsVideoConsumer::OnFrameCaptured(
          mojo::PendingRemote<viz::mojom::FrameSinkVideoConsumerFrameCallbacks>
              callbacks) {},
       std::move(mapping), std::move(callbacks)));
-  frame->metadata()->MergeInternalValuesFrom(info->metadata);
+  frame->set_metadata(info->metadata);
   if (info->color_space.has_value())
     frame->set_color_space(info->color_space.value());
 

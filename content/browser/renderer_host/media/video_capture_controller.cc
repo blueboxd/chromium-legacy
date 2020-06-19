@@ -548,11 +548,8 @@ void VideoCaptureController::OnFrameReadyInBuffer(
                                frame_info->coded_size.height());
     double frame_rate = 0.0f;
     if (video_capture_format_) {
-      media::VideoFrameMetadata metadata;
-      metadata.MergeInternalValuesFrom(frame_info->metadata);
-      if (!metadata.GetDouble(VideoFrameMetadata::FRAME_RATE, &frame_rate)) {
-        frame_rate = video_capture_format_->frame_rate;
-      }
+      frame_rate = frame_info->metadata.frame_rate.value_or(
+          video_capture_format_->frame_rate);
     }
     UMA_HISTOGRAM_COUNTS_1M("Media.VideoCapture.FrameRate", frame_rate);
     UMA_HISTOGRAM_TIMES("Media.VideoCapture.DelayUntilFirstFrame",

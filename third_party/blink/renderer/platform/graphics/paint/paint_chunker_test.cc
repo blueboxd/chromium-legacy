@@ -56,8 +56,7 @@ class TestDisplayItemRequiringSeparateChunk : public ForeignLayerDisplayItem {
       : ForeignLayerDisplayItem(client,
                                 DisplayItem::kForeignLayerPlugin,
                                 cc::Layer::Create(),
-                                FloatPoint(),
-                                nullptr) {}
+                                FloatPoint()) {}
 };
 
 TEST_F(PaintChunkerTest, Empty) {

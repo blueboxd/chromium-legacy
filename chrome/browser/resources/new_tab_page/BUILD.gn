@@ -6,6 +6,7 @@ import("//chrome/browser/resources/optimize_webui.gni")
 import("//third_party/closure_compiler/compile_js.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/polymer/html_to_js.gni")
+import("//ui/webui/webui_features.gni")
 
 js_type_check("closure_compile") {
   is_polymer3 = true

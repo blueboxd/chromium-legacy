@@ -11,6 +11,8 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
+#include "base/no_destructor.h"
+#include "base/observer_list.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -24,6 +26,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "services/network/public/mojom/network_context.mojom.h"
+#include "weblayer/browser/android/metrics/weblayer_metrics_service_client.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/browsing_data_remover_delegate.h"
@@ -63,6 +66,18 @@ base::SequencedTaskRunner* GetBackgroundDiskOperationTaskRunner() {
       task_runner(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
   return task_runner.get()->get();
+}
+
+std::set<ProfileImpl*>& GetProfiles() {
+  static base::NoDestructor<std::set<ProfileImpl*>> s_all_profiles;
+  return *s_all_profiles;
+}
+
+base::ObserverList<ProfileImpl::ProfileObserver>::Unchecked& GetObservers() {
+  static base::NoDestructor<
+      base::ObserverList<ProfileImpl::ProfileObserver>::Unchecked>
+      s_observers;
+  return *s_observers;
 }
 
 #if defined(OS_ANDROID)
@@ -138,6 +153,10 @@ ProfileImpl::ProfileImpl(const std::string& name)
     info_ = CreateProfileInfo(name);
   }
 
+  GetProfiles().insert(this);
+  for (auto& observer : GetObservers())
+    observer.ProfileCreated(this);
+
   if (!g_first_profile_created) {
     g_first_profile_created = true;
     GetBackgroundDiskOperationTaskRunner()->PostTask(
@@ -152,11 +171,26 @@ ProfileImpl::ProfileImpl(const std::string& name)
 ProfileImpl::~ProfileImpl() {
   if (browser_context_)
     browser_context_->ShutdownStoragePartitions();
+  GetProfiles().erase(this);
+  for (auto& observer : GetObservers())
+    observer.ProfileDestroyed(this);
 }
 
 ProfileImpl* ProfileImpl::FromBrowserContext(
     content::BrowserContext* browser_context) {
   return static_cast<BrowserContextImpl*>(browser_context)->profile_impl();
+}
+
+std::set<ProfileImpl*> ProfileImpl::GetAllProfiles() {
+  return GetProfiles();
+}
+
+void ProfileImpl::AddProfileObserver(ProfileObserver* observer) {
+  GetObservers().AddObserver(observer);
+}
+
+void ProfileImpl::RemoveProfileObserver(ProfileObserver* observer) {
+  GetObservers().RemoveObserver(observer);
 }
 
 content::BrowserContext* ProfileImpl::GetBrowserContext() {
@@ -472,6 +506,13 @@ void ProfileImpl::SetBooleanSetting(SettingType type, bool value) {
           ->GetSafeBrowsingService(weblayer::GetUserAgent())
           ->SetSafeBrowsingDisabled(!basic_safe_browsing_enabled_);
 #endif
+      break;
+    case SettingType::UKM_ENABLED:
+      ukm_enabled_ = value;
+#if defined(OS_ANDROID)
+      WebLayerMetricsServiceClient::GetInstance()->EnableUkm(ukm_enabled_);
+#endif
+      break;
   }
 }
 
@@ -479,6 +520,8 @@ bool ProfileImpl::GetBooleanSetting(SettingType type) {
   switch (type) {
     case SettingType::BASIC_SAFE_BROWSING_ENABLED:
       return basic_safe_browsing_enabled_;
+    case SettingType::UKM_ENABLED:
+      return ukm_enabled_;
   }
   NOTREACHED();
 }

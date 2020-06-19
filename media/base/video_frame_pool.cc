@@ -94,7 +94,7 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
                                      natural_size)) {
       frame = pool_frame;
       frame->set_timestamp(timestamp);
-      frame->metadata()->Clear();
+      frame->clear_metadata();
       break;
     }
   }

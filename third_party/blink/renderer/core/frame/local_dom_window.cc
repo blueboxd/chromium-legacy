@@ -126,6 +126,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/widget/frame_widget.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "v8/include/v8.h"
 
@@ -1389,6 +1390,40 @@ double LocalDOMWindow::scrollY() const {
   double viewport_y = view->LayoutViewport()->GetScrollOffset().Height();
   return AdjustForAbsoluteZoom::AdjustScroll(viewport_y,
                                              GetFrame()->PageZoomFactor());
+}
+
+HeapVector<Member<DOMRect>> LocalDOMWindow::getWindowSegments() const {
+  HeapVector<Member<DOMRect>> window_segments;
+  LocalFrame* frame = GetFrame();
+  if (!frame)
+    return window_segments;
+
+  Page* page = frame->GetPage();
+  if (!page)
+    return window_segments;
+
+  WebVector<WebRect> web_segments =
+      frame->GetWidgetForLocalRoot()->WindowSegments();
+
+  // The rect passed to us from content is in DIP, relative to the main
+  // frame/widget. This doesn't take the page's zoom factor into account so we
+  // must scale by the inverse of the page zoom in order to get correct client
+  // coordinates.
+  // Note that when use-zoom-for-dsf is enabled, WindowToViewportScalar will
+  // be the device scale factor, and PageZoomFactor will be the combination
+  // of the device scale factor and the zoom percent of the page.
+  ChromeClient& chrome_client = page->GetChromeClient();
+  const float window_to_viewport_factor =
+      chrome_client.WindowToViewportScalar(frame, 1.0f);
+  const float page_zoom_factor = frame->PageZoomFactor();
+  const float scale_factor = window_to_viewport_factor / page_zoom_factor;
+  for (auto const& web_segment : web_segments) {
+    blink::FloatQuad quad = blink::FloatQuad(web_segment);
+    quad.Scale(scale_factor, scale_factor);
+    window_segments.push_back(DOMRect::FromFloatRect(quad.BoundingBox()));
+  }
+
+  return window_segments;
 }
 
 DOMVisualViewport* LocalDOMWindow::visualViewport() {

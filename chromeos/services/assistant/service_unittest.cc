@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/test_support/mock_assistant_controller.h"
 #include "base/check.h"
 #include "base/macros.h"
@@ -155,7 +156,7 @@ class AssistantServiceTest : public testing::Test {
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
-  ash::AmbientModeState* ambient_mode_state() { return &ambient_mode_state_; }
+  ash::AmbientUiModel* ambient_ui_model() { return &ambient_ui_model_; }
 
  private:
   base::test::TaskEnvironment task_environment_{
@@ -175,7 +176,7 @@ class AssistantServiceTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
-  ash::AmbientModeState ambient_mode_state_;
+  ash::AmbientUiModel ambient_ui_model_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantServiceTest);
 };
@@ -327,13 +328,13 @@ TEST_F(AssistantServiceTest,
   ASSERT_TRUE(assistant_manager()->access_token().has_value());
   ASSERT_EQ(assistant_manager()->access_token().value(), kAccessToken);
 
-  ambient_mode_state()->SetAmbientModeEnabled(true);
+  ambient_ui_model()->SetUiVisibility(ash::AmbientUiVisibility::kShown);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(identity_test_env()->IsAccessTokenRequestPending());
   ASSERT_FALSE(assistant_manager()->access_token().has_value());
 
   // Disabling ambient mode requests a new token.
-  ambient_mode_state()->SetAmbientModeEnabled(false);
+  ambient_ui_model()->SetUiVisibility(ash::AmbientUiVisibility::kClosed);
   EXPECT_TRUE(identity_test_env()->IsAccessTokenRequestPending());
 
   // Assistant manager receives the new token.

@@ -100,6 +100,7 @@ test("weblayer_browsertests") {
     "//components/strings",
     "//components/translate/content/browser",
     "//components/translate/content/browser:test_support",
+    "//components/ukm:ukm_test_helper",
     "//components/user_prefs",
     "//components/variations",
     "//components/variations/net",
@@ -150,8 +151,11 @@ test("weblayer_browsertests") {
   if (is_android) {
     sources += [
       "../browser/safe_browsing/safe_browsing_browsertest.cc",
+      "../browser/ukm_browsertest.cc",
       "../browser/url_bar/page_info_browsertest.cc",
       "../shell/android/browsertests_apk/metrics_browsertest.cc",
+      "../shell/android/browsertests_apk/metrics_test_helper.cc",
+      "../shell/android/browsertests_apk/metrics_test_helper.h",
       "../shell/android/browsertests_apk/weblayer_browser_tests_jni_onload.cc",
     ]
     deps += [

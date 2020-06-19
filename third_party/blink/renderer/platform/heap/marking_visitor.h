@@ -129,12 +129,6 @@ template <class Specialized>
 inline void MarkingVisitorBase<Specialized>::Visit(const void* object,
                                                    TraceDescriptor desc) {
   DCHECK(object);
-  if (desc.base_object_payload == BlinkGC::kNotFullyConstructedObject) {
-    // This means that the objects are not-yet-fully-constructed. See comments
-    // on GarbageCollectedMixin for how those objects are handled.
-    not_fully_constructed_worklist_.Push(object);
-    return;
-  }
   MarkHeader(HeapObjectHeader::FromPayload(desc.base_object_payload), desc);
 }
 

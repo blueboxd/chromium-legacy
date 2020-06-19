@@ -55,8 +55,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Send the model to the given render frame host.
   void SendModelToRenderFrame(content::RenderProcessHost* process,
                               Profile* profile,
-                              ModelLoader* model_loader_standard,
-                              ModelLoader* model_loader_extended);
+                              ModelLoader* model_loader);
 
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.

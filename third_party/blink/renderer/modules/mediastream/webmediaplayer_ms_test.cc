@@ -354,13 +354,11 @@ void MockMediaStreamVideoRenderer::QueueFrames(
 
       // MediaStreamRemoteVideoSource does not explicitly set the rotation
       // for unrotated frames, so that is not done here either.
-      if (rotation != media::VIDEO_ROTATION_0) {
-        frame->metadata()->SetRotation(media::VideoFrameMetadata::ROTATION,
-                                       rotation);
-      }
-      frame->metadata()->SetTimeTicks(
-          media::VideoFrameMetadata::Key::REFERENCE_TIME,
-          base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(token));
+      if (rotation != media::VIDEO_ROTATION_0)
+        frame->metadata()->rotation = rotation;
+
+      frame->metadata()->reference_time =
+          base::TimeTicks::Now() + base::TimeDelta::FromMilliseconds(token);
 
       AddFrame(FrameType::NORMAL_FRAME, frame);
       continue;

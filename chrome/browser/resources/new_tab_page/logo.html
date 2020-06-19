@@ -24,9 +24,16 @@
     background-image: url(chrome://resources/images/google_logo.svg);
   }
 
+  #doodle {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: center;
+  }
+
   #imageContainer {
     cursor: pointer;
-    display: grid;
+    display: flex;
     height: fit-content;
     outline: none;
     position: relative;
@@ -37,11 +44,6 @@
     box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
   }
 
-  #imageContainer > * {
-    grid-column-start: 1;
-    grid-row-start: 1;
-  }
-
   #image {
     max-height: var(--ntp-logo-height);
     max-width: 100%;
@@ -50,22 +52,31 @@
   #animation {
     height: 100%;
     pointer-events: none;
+    position: absolute;
     width: 100%;
   }
 
   #shareButton {
+    background-color: var(--ntp-logo-share-button-background-color, none);
     border: none;
-    height: 26px;
-    min-width: 26px;
+    height: var(--ntp-logo-share-button-height, 0);
+    left: var(--ntp-logo-share-button-x, 0);
+    min-width: var(--ntp-logo-share-button-width, 0);
     opacity: 0.8;
     outline: initial;
     padding: 2px;
     position: absolute;
-    width: 26px;
+    top: var(--ntp-logo-share-button-y, 0);
+    width: var(--ntp-logo-share-button-width, 0);
   }
 
   #shareButton:hover {
     opacity: 1;
+  }
+
+  #shareButton img {
+    height: 100%;
+    width: 100%;
   }
 
   #iframe {
@@ -98,10 +109,7 @@
             hidden="[[!showAnimation_]]">
         </ntp-untrusted-iframe>
         <cr-button id="shareButton" title="$i18n{shareDoodle}"
-            on-click="onShareButtonClick_"
-            style="background-color: [[rgbaOrUnset_(doodle_.content.imageDoodle.shareButton.backgroundColor)]];
-                   left: [[doodle_.content.imageDoodle.shareButton.x]]px;
-                   top: [[doodle_.content.imageDoodle.shareButton.y]]px;">
+            on-click="onShareButtonClick_">
           <img id="shareButtonImage"
               src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
           </img>

@@ -47,13 +47,9 @@ crbug.com/957674 external/wpt/largest-contentful-paint/invisible-images-composit
 crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images-composited-2.html [ Pass ]
 
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
-external/wpt/css/filter-effects/effect-reference-feimage-002.html [ Failure ]
 
 printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
 printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
-printing/offscreencanvas-2d-printing.html [ Failure ]
-printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
-printing/webgl-repeated-printing.html [ Failure ]
 
 transforms/3d/general/background-visibility-layers.html [ Failure ]
 
@@ -73,6 +69,9 @@ http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure ]
 
 # Outline paints incorrectly with columns.
 crbug.com/1047358 paint/pagination/composited-paginated-outlined-box.html [ Failure ]
+
+# Ad frame highlight size is incorrect
+crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Pass Failure ]
 
 compositing/gestures/gesture-tapHighlight-composited-img.html [ Pass Failure ]
 http/tests/images/image-decode-in-frame.html [ Pass Failure ]

@@ -325,10 +325,10 @@ class ExternalVideoEncoder::VEAClientImpl
 
       // If FRAME_DURATION metadata was provided in the source VideoFrame,
       // compute the utilization metrics.
-      base::TimeDelta frame_duration;
-      if (request.video_frame->metadata()->GetTimeDelta(
-              media::VideoFrameMetadata::FRAME_DURATION, &frame_duration) &&
-          frame_duration > base::TimeDelta()) {
+      base::TimeDelta frame_duration =
+          request.video_frame->metadata()->frame_duration.value_or(
+              base::TimeDelta());
+      if (frame_duration > base::TimeDelta()) {
         // Compute encoder utilization in terms of the number of frames in
         // backlog, including the current frame encode that is finishing
         // here. This "backlog" model works as follows: First, assume that all

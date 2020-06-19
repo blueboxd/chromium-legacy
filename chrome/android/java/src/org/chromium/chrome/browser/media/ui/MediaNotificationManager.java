@@ -8,6 +8,9 @@ import android.util.SparseArray;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.components.browser_ui.media.MediaNotificationController;
+import org.chromium.components.browser_ui.media.MediaNotificationInfo;
+
 /**
  * A class that manages the services/notifications for various media types.
  * Each notification is associated with a different {@link MediaNotificationController}.

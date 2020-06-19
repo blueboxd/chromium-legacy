@@ -130,24 +130,22 @@ void WebRtcVideoTrackSource::OnFrameCaptured(
   // rtc::AdaptedVideoTrackSource::OnFrame(). This region is going to be
   // relative to the coded frame data, i.e.
   // [0, 0, frame->coded_size().width(), frame->coded_size().height()].
-  gfx::Rect update_rect;
-  int capture_counter = 0;
-  bool has_capture_counter = frame->metadata()->GetInteger(
-      media::VideoFrameMetadata::CAPTURE_COUNTER, &capture_counter);
-  bool has_update_rect = frame->metadata()->GetRect(
-      media::VideoFrameMetadata::CAPTURE_UPDATE_RECT, &update_rect);
+  base::Optional<int> capture_counter = frame->metadata()->capture_counter;
+  base::Optional<gfx::Rect> update_rect =
+      frame->metadata()->capture_update_rect;
+
   const bool has_valid_update_rect =
-      has_update_rect && has_capture_counter &&
+      update_rect.has_value() && capture_counter.has_value() &&
       previous_capture_counter_.has_value() &&
-      (capture_counter == (previous_capture_counter_.value() + 1));
+      (*capture_counter == (*previous_capture_counter_ + 1));
   DVLOG(3) << "has_valid_update_rect = " << has_valid_update_rect;
-  if (has_capture_counter)
+  if (capture_counter)
     previous_capture_counter_ = capture_counter;
   if (has_valid_update_rect) {
     if (!accumulated_update_rect_) {
       accumulated_update_rect_ = update_rect;
     } else {
-      accumulated_update_rect_->Union(update_rect);
+      accumulated_update_rect_->Union(*update_rect);
     }
   } else {
     accumulated_update_rect_ = base::nullopt;

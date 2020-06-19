@@ -16,11 +16,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_registry.h"
 #include "third_party/blink/renderer/modules/mediastream/mock_media_stream_video_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -36,19 +37,20 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
  public:
   MediaStreamVideoRendererSinkTest()
       : mock_source_(new MockMediaStreamVideoSource()) {
-    blink_source_.Initialize(WebString::FromASCII("dummy_source_id"),
-                             WebMediaStreamSource::kTypeVideo,
-                             WebString::FromASCII("dummy_source_name"),
-                             false /* remote */);
-    blink_source_.SetPlatformSource(base::WrapUnique(mock_source_));
-    blink_track_ = MediaStreamVideoTrack::CreateVideoTrack(
+    media_stream_source_ = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeVideo,
+        String::FromUTF8("dummy_source_name"), false /* remote */);
+    mock_source_->SetOwner(media_stream_source_.Get());
+    media_stream_source_->SetPlatformSource(base::WrapUnique(mock_source_));
+    WebMediaStreamTrack web_track = MediaStreamVideoTrack::CreateVideoTrack(
         mock_source_, WebPlatformMediaStreamSource::ConstraintsOnceCallback(),
         true);
+    media_stream_component_ = *web_track;
     mock_source_->StartMockedSource();
     base::RunLoop().RunUntilIdle();
 
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
-        blink_track_,
+        media_stream_component_,
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &MediaStreamVideoRendererSinkTest::RepaintCallback,
             CrossThreadUnretained(this))),
@@ -61,8 +63,8 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
 
   void TearDown() override {
     media_stream_video_renderer_sink_ = nullptr;
-    blink_source_.Reset();
-    blink_track_.Reset();
+    media_stream_source_ = nullptr;
+    media_stream_component_ = nullptr;
     WebHeap::CollectAllGarbageForTesting();
 
     // Let the message loop run to finish destroying the pool.
@@ -99,12 +101,12 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
  protected:
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 
-  WebMediaStreamTrack blink_track_;
+  Persistent<MediaStreamComponent> media_stream_component_;
 
  private:
   void RunIOUntilIdle() const {
-    // |blink_track_| uses IO thread to send frames to sinks. Make sure that
-    // tasks on IO thread are completed before moving on.
+    // |media_stream_component_| uses IO thread to send frames to sinks. Make
+    // sure that tasks on IO thread are completed before moving on.
     base::RunLoop run_loop;
     Platform::Current()->GetIOTaskRunner()->PostTaskAndReply(
         FROM_HERE, base::BindOnce([] {}), run_loop.QuitClosure());
@@ -112,7 +114,7 @@ class MediaStreamVideoRendererSinkTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  WebMediaStreamSource blink_source_;
+  Persistent<MediaStreamSource> media_stream_source_;
   MockMediaStreamVideoSource* mock_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamVideoRendererSinkTest);
@@ -154,7 +156,7 @@ class MediaStreamVideoRendererSinkTransparencyTest
  public:
   MediaStreamVideoRendererSinkTransparencyTest() {
     media_stream_video_renderer_sink_ = new MediaStreamVideoRendererSink(
-        blink_track_,
+        media_stream_component_,
         ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
             &MediaStreamVideoRendererSinkTransparencyTest::
                 VerifyTransparentFrame,

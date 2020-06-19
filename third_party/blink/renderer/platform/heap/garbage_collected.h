@@ -85,81 +85,18 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
  public:
   typedef int IsGarbageCollectedMixinMarker;
   virtual void Trace(Visitor*) const {}
-  // Provide default implementations that indicate that the vtable is not yet
-  // set up properly. This way it is possible to get infos about mixins so that
-  // these objects can processed later on. This is necessary as
-  // not-fully-constructed mixin objects potentially require being processed
-  // as part emitting a write barrier for incremental marking. See
-  // |IncrementalMarkingTest::WriteBarrierDuringMixinConstruction| as an
-  // example.
-  //
-  // The not-fully-constructed objects are handled as follows:
-  //   1. Write barrier or marking of not fully constructed mixin gets called.
-  //   2. Default implementation of GetTraceDescriptor (and friends) returns
-  //      kNotFullyConstructedObject as object base payload.
-  //   3. Visitor (e.g. MarkingVisitor) can intercept that value and delay
-  //      processing that object until the atomic pause.
-  //   4. In the atomic phase, mark all not-fully-constructed objects that have
-  //      found in the step 1.-3. conservatively.
-  //
-  // In general, delaying is required as write barriers are omitted in certain
-  // scenarios, e.g., initializing stores. As a result, we cannot depend on the
-  // write barriers for catching writes to member fields and thus have to
-  // process the object (instead of just marking only the header).
-  virtual TraceDescriptor GetTraceDescriptor() const {
-    return {BlinkGC::kNotFullyConstructedObject, nullptr};
-  }
 };
-
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)                         \
- public:                                                                     \
-  TraceDescriptor GetTraceDescriptor() const override {                      \
-    static_assert(                                                           \
-        WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,    \
-                                  blink::GarbageCollected>::value,           \
-        "only garbage collected objects can have garbage collected mixins"); \
-    return {static_cast<const TYPE*>(this), TraceTrait<TYPE>::Trace};        \
-  }                                                                          \
-                                                                             \
- private:
 
 // The Oilpan GC plugin checks for proper usages of the
 // USING_GARBAGE_COLLECTED_MIXIN macro using a typedef marker.
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE) \
- public:                                                        \
-  typedef int HasUsingGarbageCollectedMixinMacro;               \
-                                                                \
- private:
+#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)       \
+ public:                                          \
+  typedef int HasUsingGarbageCollectedMixinMacro; \
+                                                  \
+ private:                                         \
+  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
-// The USING_GARBAGE_COLLECTED_MIXIN macro defines all methods and markers
-// needed for handling mixins.
-#define USING_GARBAGE_COLLECTED_MIXIN(TYPE)               \
-  DEFINE_GARBAGE_COLLECTED_MIXIN_CONSTRUCTOR_MARKER(TYPE) \
-  DEFINE_GARBAGE_COLLECTED_MIXIN_METHODS(TYPE)            \
-  IS_GARBAGE_COLLECTED_TYPE()
-
-// Merge two or more Mixins into one:
-//
-//  class A : public GarbageCollectedMixin {};
-//  class B : public GarbageCollectedMixin {};
-//  class C : public A, public B {
-//    // C::GetTraceDescriptor is now ambiguous because there are two
-//    // candidates: A::GetTraceDescriptor and B::GetTraceDescriptor.  Ditto for
-//    // other functions.
-//
-//    MERGE_GARBAGE_COLLECTED_MIXINS();
-//    // The macro defines C::GetTraceDescriptor, similar to
-//    GarbageCollectedMixin,
-//    // so that they are no longer ambiguous.
-//    // USING_GARBAGE_COLLECTED_MIXIN(TYPE) overrides them later and provides
-//    // the implementations.
-//  };
 #define MERGE_GARBAGE_COLLECTED_MIXINS()                   \
- public:                                                   \
-  TraceDescriptor GetTraceDescriptor() const override {    \
-    return {BlinkGC::kNotFullyConstructedObject, nullptr}; \
-  }                                                        \
-                                                           \
  private:                                                  \
   using merge_garbage_collected_mixins_requires_semicolon = void
 

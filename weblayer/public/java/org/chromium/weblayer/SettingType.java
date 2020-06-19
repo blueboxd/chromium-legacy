@@ -12,7 +12,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * @hide
  */
-@IntDef({SettingType.BASIC_SAFE_BROWSING_ENABLED})
+@IntDef({SettingType.BASIC_SAFE_BROWSING_ENABLED, SettingType.UKM_ENABLED})
 @Retention(RetentionPolicy.SOURCE)
 public @interface SettingType {
     /**
@@ -21,4 +21,8 @@ public @interface SettingType {
      */
     int BASIC_SAFE_BROWSING_ENABLED =
             org.chromium.weblayer_private.interfaces.SettingType.BASIC_SAFE_BROWSING_ENABLED;
+    /**
+     * Allows the embedder to enable URL-Keyed Metrics. Disabled by default.
+     */
+    int UKM_ENABLED = org.chromium.weblayer_private.interfaces.SettingType.UKM_ENABLED;
 }

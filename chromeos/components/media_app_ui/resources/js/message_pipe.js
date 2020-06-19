@@ -58,7 +58,7 @@ let DefensiveError;
  * defensively assign '' if the attribute is undefined. Without explicitly
  * extracting fields, `Errors` are sent as `{}` across the pipe.
  * @param {!DefensiveError} error
- * @return {GenericErrorResponse}
+ * @return {!GenericErrorResponse}
  */
 function serializeError(error) {
   return {

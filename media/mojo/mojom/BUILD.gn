@@ -80,7 +80,29 @@ mojom("mojom") {
     enabled_features = [ "enable_cast_renderer" ]
   }
 
+  shared_typemaps = [
+    {
+      types = [
+        {
+          mojom = "media.mojom.VideoFrameMetadata"
+          cpp = "::media::VideoFrameMetadata"
+        },
+      ]
+      traits_headers = [ "video_frame_metadata_mojom_traits.h" ]
+      traits_public_deps = [ ":shared_mojom_traits" ]
+    },
+  ]
+
   cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "media.mojom.VideoRotation"
+          cpp = "::media::VideoRotation"
+        },
+      ]
+      traits_headers = [ "media_types_enum_mojom_traits.h" ]
+    },
     {
       types = [
         {
@@ -196,10 +218,6 @@ mojom("mojom") {
           cpp = "::media::VideoPixelFormat"
         },
         {
-          mojom = "media.mojom.VideoRotation"
-          cpp = "::media::VideoRotation"
-        },
-        {
           mojom = "media.mojom.VideoTransformation"
           cpp = "::media::VideoTransformation"
         },
@@ -243,9 +261,29 @@ mojom("mojom") {
     },
   ]
 
+  cpp_typemaps += shared_typemaps
+  blink_cpp_typemaps = shared_typemaps
+
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/blink/public/platform/web_common.h"
+}
+
+source_set("shared_mojom_traits") {
+  sources = [
+    "video_frame_metadata_mojom_traits.cc",
+    "video_frame_metadata_mojom_traits.h",
+  ]
+
+  public_deps = [
+    ":mojom_shared",
+    "//gpu/ipc/common:common",
+    "//gpu/ipc/common:mojom_traits",
+    "//media",
+    "//media/base/ipc:ipc",
+    "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojom:mojom_traits",
+  ]
 }
 
 mojom("remoting_common") {
@@ -281,6 +319,7 @@ source_set("unit_tests") {
     "cdm_key_information_mojom_traits_unittest.cc",
     "video_decoder_config_mojom_traits_unittest.cc",
     "video_encode_accelerator_mojom_traits_unittest.cc",
+    "video_frame_metadata_mojom_traits_unittest.cc",
     "video_frame_mojom_traits_unittest.cc",
   ]
 

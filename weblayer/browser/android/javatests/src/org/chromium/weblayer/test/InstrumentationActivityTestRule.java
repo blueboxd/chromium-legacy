@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
@@ -137,18 +138,13 @@ public class InstrumentationActivityTestRule
         (new NavigationWaiter(url, tab, true /* expectFailure */, waitForPaint)).navigateAndWait();
     }
 
-    /**
-     * Recreates the Activity, blocking until finished.
-     * After calling this, getActivity() returns the new Activity.
-     */
-    public void recreateActivity() {
+    private void recreateActivityHelper(Runnable recreate) {
         Activity activity = getActivity();
-
         ActivityMonitor monitor =
                 new ActivityMonitor(InstrumentationActivity.class.getName(), null, false);
         InstrumentationRegistry.getInstrumentation().addMonitor(monitor);
 
-        TestThreadUtils.runOnUiThreadBlocking(activity::recreate);
+        recreate.run();
 
         CriteriaHelper.pollUiThread(
                 () -> monitor.getLastActivity() != null && monitor.getLastActivity() != activity);
@@ -163,6 +159,26 @@ public class InstrumentationActivityTestRule
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Recreates the Activity, blocking until finished.
+     * After calling this, getActivity() returns the new Activity.
+     */
+    public void recreateActivity() {
+        recreateActivityHelper(() -> {
+            Activity activity = getActivity();
+            TestThreadUtils.runOnUiThreadBlocking(activity::recreate);
+        });
+    }
+
+    public void recreateByRotatingToLandscape() {
+        recreateActivityHelper(() -> {
+            Activity activity = getActivity();
+            TestThreadUtils.runOnUiThreadBlocking(() -> {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            });
+        });
     }
 
     /**

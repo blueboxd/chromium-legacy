@@ -1160,42 +1160,13 @@ TEST_F(ClientSideDetectionHostTest, RecordsPhishingDetectionDuration) {
 }
 
 TEST_F(ClientSideDetectionHostTest, TestSendModelToRenderFrame) {
-  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, false);
-  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, false);
-  // Safe Browsing is not enabled.
-  StrictMock<MockModelLoader> standard;
-  standard.SetModelStrForTesting("standard");
-  StrictMock<MockModelLoader> extended;
-  extended.SetModelStrForTesting("extended");
+  StrictMock<MockModelLoader> loader;
+  loader.SetModelStrForTesting("standard");
   csd_host_->SendModelToRenderFrame(
-      web_contents()->GetMainFrame()->GetProcess(), profile(), &standard,
-      &extended);
-  base::RunLoop().RunUntilIdle();
-  fake_phishing_detector_.CheckModel("");
-  fake_phishing_detector_.Reset();
-
-  // Safe Browsing is enabled.
-  profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled, true);
-  csd_host_->SendModelToRenderFrame(
-      web_contents()->GetMainFrame()->GetProcess(), profile(), &standard,
-      &extended);
+      web_contents()->GetMainFrame()->GetProcess(), profile(), &loader);
   base::RunLoop().RunUntilIdle();
   fake_phishing_detector_.CheckModel("standard");
   fake_phishing_detector_.Reset();
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        safe_browsing::kEnhancedProtection);
-
-    // Safe Browsing enhanced protection is enabled.
-    profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnhanced, true);
-    csd_host_->SendModelToRenderFrame(
-        web_contents()->GetMainFrame()->GetProcess(), profile(), &standard,
-        &extended);
-    base::RunLoop().RunUntilIdle();
-    fake_phishing_detector_.CheckModel("extended");
-    fake_phishing_detector_.Reset();
-  }
 }
 
 }  // namespace safe_browsing

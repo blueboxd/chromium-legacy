@@ -29,6 +29,9 @@ class UI_CHROMEOS_EXPORT UndoWindow : public views::BubbleDialogDelegateView,
 
   views::Button* GetUndoButtonForTesting();
 
+ protected:
+  void OnThemeChanged() override;
+
  private:
   // views::BubbleDialogDelegateView:
   const char* GetClassName() const override;

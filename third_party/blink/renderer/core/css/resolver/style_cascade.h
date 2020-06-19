@@ -305,7 +305,8 @@ class CORE_EXPORT StyleCascade {
   bool ValidateFallback(const CustomProperty&, CSSParserTokenRange) const;
   // Marks the CustomProperty as referenced by something. Needed to avoid
   // animating these custom properties on the compositor.
-  void MarkIsReferenced(const CustomProperty&);
+  void MarkIsReferenced(const CSSProperty& referencer,
+                        const CustomProperty& referenced);
   // Marks a CSSProperty as having a reference to a custom property. Needed to
   // disable the matched property cache in some cases.
   void MarkHasVariableReference(const CSSProperty&);

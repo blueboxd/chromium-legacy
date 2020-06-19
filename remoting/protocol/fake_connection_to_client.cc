@@ -101,5 +101,9 @@ void FakeConnectionToClient::set_input_stub(InputStub* input_stub) {
   input_stub_ = input_stub;
 }
 
+PeerConnectionControls* FakeConnectionToClient::peer_connection_controls() {
+  return nullptr;
+}
+
 }  // namespace protocol
 }  // namespace remoting

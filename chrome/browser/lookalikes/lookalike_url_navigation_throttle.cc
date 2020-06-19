@@ -87,8 +87,6 @@ bool IsSafeRedirect(const std::string& matching_domain,
 LookalikeUrlNavigationThrottle::LookalikeUrlNavigationThrottle(
     content::NavigationHandle* navigation_handle)
     : content::NavigationThrottle(navigation_handle),
-      interstitials_enabled_(base::FeatureList::IsEnabled(
-          features::kLookalikeUrlNavigationSuggestionsUI)),
       profile_(Profile::FromBrowserContext(
           navigation_handle->GetWebContents()->GetBrowserContext())) {}
 
@@ -177,11 +175,6 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::HandleThrottleRequest(
         base::BindOnce(&LookalikeUrlNavigationThrottle::PerformChecksDeferred,
                        weak_factory_.GetWeakPtr(), url, navigated_domain,
                        check_safe_redirect));
-    // If we're not going to show an interstitial, there's no reason to delay
-    // the navigation any further.
-    if (!interstitials_enabled_) {
-      return content::NavigationThrottle::PROCEED;
-    }
     return content::NavigationThrottle::DEFER;
   }
 
@@ -272,10 +265,6 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
   ThrottleCheckResult result =
       PerformChecks(url, navigated_domain, check_safe_redirect, engaged_sites);
 
-  if (!interstitials_enabled_) {
-    return;
-  }
-
   if (result.action() == content::NavigationThrottle::PROCEED) {
     Resume();
     return;
@@ -327,8 +316,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     return content::NavigationThrottle::PROCEED;
   }
 
-  if (interstitials_enabled_ &&
-      ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
+  if (ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
     // matched_domain can be a top domain or an engaged domain. Simply use its
     // eTLD+1 as the suggested domain.
     // 1. If matched_domain is a top domain: Top domain list already contains

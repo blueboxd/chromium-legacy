@@ -31,7 +31,6 @@ js_type_check("closure_compile_module") {
     ":password_manager_proxy",
     ":password_move_to_account_dialog",
     ":password_remove_confirmation_dialog",
-    ":password_remove_dialog",
     ":passwords_device_section",
     ":passwords_export_dialog",
     ":passwords_list_handler",
@@ -210,7 +209,6 @@ js_library("passwords_list_handler") {
     ":password_edit_dialog",
     ":password_manager_proxy",
     ":password_move_to_account_dialog",
-    ":password_remove_dialog",
     ":remove_password_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu.m",
@@ -237,17 +235,6 @@ js_library("password_manager_proxy") {
   deps = [ "//ui/webui/resources/js:cr.m" ]
   externs_list =
       chrome_extension_public_externs + [ "$externs_path/passwords_private.js" ]
-}
-
-js_library("password_remove_dialog") {
-  deps = [
-    ":multi_store_password_ui_entry",
-    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
-    "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
-    "//ui/webui/resources/cr_elements/cr_checkbox:cr_checkbox.m",
-    "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
-    "//ui/webui/resources/js:assert.m",
-  ]
 }
 
 js_library("passwords_export_dialog") {
@@ -380,7 +367,6 @@ html_to_js("web_components") {
     "password_check_list_item.js",
     "password_check.js",
     "password_edit_dialog.js",
-    "password_remove_dialog.js",
     "password_list_item.js",
     "password_move_to_account_dialog.js",
     "password_remove_confirmation_dialog.js",

@@ -63,12 +63,12 @@ void LogVideoCaptureTimestamps(CastEnvironment* cast_environment,
   capture_end_event->width = video_frame.visible_rect().width();
   capture_end_event->height = video_frame.visible_rect().height();
 
-  if (!video_frame.metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-          &capture_begin_event->timestamp) ||
-      !video_frame.metadata()->GetTimeTicks(
-          media::VideoFrameMetadata::CAPTURE_END_TIME,
-          &capture_end_event->timestamp)) {
+  if (video_frame.metadata()->capture_begin_time.has_value() &&
+      video_frame.metadata()->capture_end_time.has_value()) {
+    capture_begin_event->timestamp =
+        *video_frame.metadata()->capture_begin_time;
+    capture_end_event->timestamp = *video_frame.metadata()->capture_end_time;
+  } else {
     // The frame capture timestamps were not provided by the video capture
     // source.  Simply log the events as happening right now.
     capture_begin_event->timestamp = capture_end_event->timestamp =
@@ -147,14 +147,13 @@ void VideoSender::InsertRawVideoFrame(
                        (reference_time - base::TimeTicks()).InMicroseconds(),
                        "rtp_timestamp", rtp_timestamp.lower_32_bits());
 
-  bool low_latency_mode;
-  if (video_frame->metadata()->GetBoolean(
-          VideoFrameMetadata::INTERACTIVE_CONTENT, &low_latency_mode)) {
-    if (low_latency_mode && !low_latency_mode_) {
+  {
+    bool new_low_latency_mode = video_frame->metadata()->interactive_content;
+    if (new_low_latency_mode && !low_latency_mode_) {
       VLOG(1) << "Interactive mode playout time " << min_playout_delay_;
       playout_delay_change_cb_.Run(min_playout_delay_);
     }
-    low_latency_mode_ = low_latency_mode;
+    low_latency_mode_ = new_low_latency_mode;
   }
 
   // Drop the frame if either its RTP or reference timestamp is not an increase
@@ -327,10 +326,10 @@ void VideoSender::OnEncodedVideoFrame(
     // Key frames are artificially capped to 1.0 because their actual
     // utilization is atypical compared to the other frames in the stream, and
     // this can misguide the producer of the input video frames.
-    video_frame->metadata()->SetDouble(
-        media::VideoFrameMetadata::RESOURCE_UTILIZATION,
-        encoded_frame->dependency == EncodedFrame::KEY ?
-            std::min(1.0, attenuated_utilization) : attenuated_utilization);
+    video_frame->metadata()->resource_utilization =
+        encoded_frame->dependency == EncodedFrame::KEY
+            ? std::min(1.0, attenuated_utilization)
+            : attenuated_utilization;
   }
 
   SendEncodedFrame(encoder_bitrate, std::move(encoded_frame));

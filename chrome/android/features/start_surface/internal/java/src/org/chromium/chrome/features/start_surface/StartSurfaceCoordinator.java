@@ -10,8 +10,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tasks.TasksSurface;
 import org.chromium.chrome.browser.tasks.TasksSurfaceProperties;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
@@ -117,8 +115,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
 
         // Show feed loading image.
-        if (mSurfaceMode == SurfaceMode.SINGLE_PANE
-                && CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START)) {
+        if (mStartSurfaceMediator.shouldShowFeedPlaceholder()) {
             FeedLoadingCoordinator feedLoadingCoordinator = new FeedLoadingCoordinator(
                     mActivity, mTasksSurface.getBodyViewContainer(), false);
             feedLoadingCoordinator.setUpLoadingView();

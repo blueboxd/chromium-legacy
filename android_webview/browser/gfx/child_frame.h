@@ -35,7 +35,8 @@ class ChildFrame {
       const gfx::Transform& transform_for_tile_priority,
       bool offscreen_pre_raster,
       float device_scale_factor,
-      CopyOutputRequestQueue copy_requests);
+      CopyOutputRequestQueue copy_requests,
+      bool did_invalidate);
   ~ChildFrame();
 
   // Helper to move frame from |frame_future| to |frame|.
@@ -56,7 +57,11 @@ class ChildFrame {
   const gfx::Transform transform_for_tile_priority;
   const bool offscreen_pre_raster;
   const float device_scale_factor;
+
   CopyOutputRequestQueue copy_requests;
+
+  // Used for metrics, indicates that we invalidated for this frame.
+  const bool did_invalidate;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChildFrame);

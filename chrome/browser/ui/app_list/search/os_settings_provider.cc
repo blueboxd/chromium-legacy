@@ -140,12 +140,17 @@ OsSettingsProvider::OsSettingsProvider(Profile* profile)
   }
 
   // Set parameters from Finch. Reasonable defaults are set in the header.
+  accept_alternate_matches_ = base::GetFieldTrialParamByFeatureAsBool(
+      app_list_features::kLauncherSettingsSearch, "accept_alternate_matches",
+      accept_alternate_matches_);
   min_query_length_ = base::GetFieldTrialParamByFeatureAsInt(
       app_list_features::kLauncherSettingsSearch, "min_query_length",
       min_query_length_);
   min_query_length_for_alternates_ = base::GetFieldTrialParamByFeatureAsInt(
       app_list_features::kLauncherSettingsSearch,
       "min_query_length_for_alternates", min_query_length_for_alternates_);
+  min_score_ = base::GetFieldTrialParamByFeatureAsDouble(
+      app_list_features::kLauncherSettingsSearch, "min_score", min_score_);
   min_score_for_alternates_ = base::GetFieldTrialParamByFeatureAsDouble(
       app_list_features::kLauncherSettingsSearch, "min_score_for_alternates",
       min_score_for_alternates_);
@@ -163,9 +168,10 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
   ClearResultsSilently();
 
-  // This provider does not handle zero-state, and shouldn't return any results
-  // for a single-character query because they aren't meaningful enough.
-  if (query.size() <= min_query_length_)
+  // Do not return results for queries that are too short, as the results
+  // generally aren't meaningful. Note this provider never provides zero-state
+  // results.
+  if (query.size() < min_query_length_)
     return;
 
   // Invalidate weak pointers to cancel existing searches.
@@ -230,12 +236,18 @@ OsSettingsProvider::FilterResults(
   std::vector<SettingsResultPtr> clean_results;
 
   for (const SettingsResultPtr& result : results) {
+    // Filter results below the score threshold.
+    if (result->relevance_score < min_score_) {
+      continue;
+    }
+
     // Check if query matched alternate text for the result. If so, only allow
     // results meeting extra requirements. Perform this check before checking
     // for duplicates to ensure a rejected alternate result doesn't preclude a
     // canonical result with a lower score from being shown.
     if (result->result_text != result->canonical_result_text &&
-        (query.size() < min_query_length_for_alternates_ ||
+        (!accept_alternate_matches_ ||
+         query.size() < min_query_length_for_alternates_ ||
          result->relevance_score < min_score_for_alternates_)) {
       continue;
     }

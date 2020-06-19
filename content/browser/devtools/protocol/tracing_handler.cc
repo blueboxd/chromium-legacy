@@ -952,10 +952,7 @@ void TracingHandler::OnFrameFromVideoConsumer(
     scoped_refptr<media::VideoFrame> frame) {
   const SkBitmap skbitmap = DevToolsVideoConsumer::GetSkBitmapFromFrame(frame);
 
-  base::TimeTicks reference_time;
-  const bool had_reference_time = frame->metadata()->GetTimeTicks(
-      media::VideoFrameMetadata::REFERENCE_TIME, &reference_time);
-  DCHECK(had_reference_time);
+  base::TimeTicks reference_time = *frame->metadata()->reference_time;
 
   TRACE_EVENT_OBJECT_SNAPSHOT_WITH_ID_AND_TIMESTAMP(
       TRACE_DISABLED_BY_DEFAULT("devtools.screenshot"), "Screenshot", 1,

@@ -21,9 +21,6 @@ namespace updater {
 class Configurator;
 class UpdateService;
 
-// Returns an application object bound to this COM server.
-scoped_refptr<App> AppServerInstance();
-
 // The COM objects involved in this server are free threaded. Incoming COM calls
 // arrive on COM RPC threads. Outgoing COM calls are posted from a blocking
 // sequenced task runner in the thread pool. Calls to the update service occur
@@ -45,11 +42,6 @@ scoped_refptr<App> AppServerInstance();
 class ComServerApp : public App {
  public:
   ComServerApp();
-
-  // Returns the singleton instance of this ComServerApp.
-  static scoped_refptr<ComServerApp> Instance() {
-    return static_cast<ComServerApp*>(AppServerInstance().get());
-  }
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() {
     return main_task_runner_;
@@ -98,6 +90,9 @@ class ComServerApp : public App {
   // The updater's Configurator.
   scoped_refptr<Configurator> config_;
 };
+
+// Returns a singleton application object bound to this COM server.
+scoped_refptr<ComServerApp> AppServerSingletonInstance();
 
 }  // namespace updater
 

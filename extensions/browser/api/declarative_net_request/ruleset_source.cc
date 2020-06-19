@@ -142,8 +142,7 @@ ReadJSONRulesResult ParseRulesFromJSON(const base::FilePath& json_path,
       }
 
       const bool is_regex_rule = !!parsed_rule.condition.regex_filter;
-      if (is_regex_rule &&
-          ++regex_rule_count > dnr_api::MAX_NUMBER_OF_REGEX_RULES) {
+      if (is_regex_rule && ++regex_rule_count > GetRegexRuleLimit()) {
         // Only add the install warning once.
         if (!regex_rule_count_exceeded) {
           regex_rule_count_exceeded = true;
@@ -317,7 +316,7 @@ RulesetSource RulesetSource::CreateStatic(
       extension.path().Append(info.relative_path),
       extension.path().Append(
           file_util::GetIndexedRulesetRelativePath(info.id.value())),
-      info.id, dnr_api::MAX_NUMBER_OF_RULES, extension.id(), info.enabled);
+      info.id, GetStaticRuleLimit(), extension.id(), info.enabled);
 }
 
 // static
@@ -330,7 +329,7 @@ RulesetSource RulesetSource::CreateDynamic(content::BrowserContext* context,
   return RulesetSource(
       dynamic_ruleset_directory.AppendASCII(kDynamicRulesJSONFilename),
       dynamic_ruleset_directory.AppendASCII(kDynamicIndexedRulesFilename),
-      kDynamicRulesetID, dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES, extension_id,
+      kDynamicRulesetID, GetDynamicRuleLimit(), extension_id,
       true /* enabled_by_default */);
 }
 

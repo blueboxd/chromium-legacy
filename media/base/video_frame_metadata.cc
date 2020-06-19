@@ -9,195 +9,56 @@
 #include <vector>
 
 #include "base/check_op.h"
-#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/util/values/values_util.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
-namespace {
-
-std::vector<std::string> CreateInternalKeys() {
-  std::vector<std::string> result(VideoFrameMetadata::NUM_KEYS);
-  for (size_t i = 0; i < result.size(); i++)
-    result[i] = base::NumberToString(i);
-  return result;
-}
-
-// Map enum key to internal StringPiece key used by base::DictionaryValue.
-inline base::StringPiece ToInternalKey(VideoFrameMetadata::Key key) {
-  DCHECK_LT(key, VideoFrameMetadata::NUM_KEYS);
-  static const base::NoDestructor<std::vector<std::string>> internal_keys(
-      CreateInternalKeys());
-  return (*internal_keys)[int{key}];
-}
-
-}  // namespace
-
 VideoFrameMetadata::VideoFrameMetadata() = default;
 
 VideoFrameMetadata::~VideoFrameMetadata() = default;
 
-bool VideoFrameMetadata::HasKey(Key key) const {
-  return dictionary_.HasKey(ToInternalKey(key));
-}
+VideoFrameMetadata::VideoFrameMetadata(const VideoFrameMetadata& other) =
+    default;
 
-void VideoFrameMetadata::SetBoolean(Key key, bool value) {
-  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
-}
-
-void VideoFrameMetadata::SetInteger(Key key, int value) {
-  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
-}
-
-void VideoFrameMetadata::SetDouble(Key key, double value) {
-  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
-}
-
-void VideoFrameMetadata::SetRotation(Key key, VideoRotation value) {
-  DCHECK_EQ(ROTATION, key);
-  dictionary_.SetKey(ToInternalKey(key), base::Value(value));
-}
-
-void VideoFrameMetadata::SetString(Key key, const std::string& value) {
-  dictionary_.SetKey(
-      ToInternalKey(key),
-
-      // Using BlobStorage since we don't want the |value| interpreted as having
-      // any particular character encoding (e.g., UTF-8) by
-      // base::DictionaryValue.
-      base::Value(base::Value::BlobStorage(value.begin(), value.end())));
-}
-
-void VideoFrameMetadata::SetTimeDelta(Key key, const base::TimeDelta& value) {
-  dictionary_.SetKey(ToInternalKey(key), util::TimeDeltaToValue(value));
-}
-
-void VideoFrameMetadata::SetTimeTicks(Key key, const base::TimeTicks& value) {
-  // Serialize TimeTicks as TimeDeltas.
-  dictionary_.SetKey(ToInternalKey(key),
-                     util::TimeDeltaToValue(value - base::TimeTicks()));
-}
-
-void VideoFrameMetadata::SetUnguessableToken(
-    Key key,
-    const base::UnguessableToken& value) {
-  dictionary_.SetKey(ToInternalKey(key), util::UnguessableTokenToValue(value));
-}
-
-void VideoFrameMetadata::SetRect(Key key, const gfx::Rect& value) {
-  base::Value init[] = {base::Value(value.x()), base::Value(value.y()),
-                        base::Value(value.width()),
-                        base::Value(value.height())};
-  dictionary_.SetKey(ToInternalKey(key),
-                     base::Value(base::Value::ListStorage(
-                         std::make_move_iterator(std::begin(init)),
-                         std::make_move_iterator(std::end(init)))));
-}
-
-bool VideoFrameMetadata::GetBoolean(Key key, bool* value) const {
-  DCHECK(value);
-  auto opt_bool = dictionary_.FindBoolKey(ToInternalKey(key));
-  if (opt_bool)
-    *value = opt_bool.value();
-
-  return opt_bool.has_value();
-}
-
-bool VideoFrameMetadata::GetInteger(Key key, int* value) const {
-  DCHECK(value);
-  auto opt_int = dictionary_.FindIntKey(ToInternalKey(key));
-  if (opt_int)
-    *value = opt_int.value();
-
-  return opt_int.has_value();
-}
-
-bool VideoFrameMetadata::GetDouble(Key key, double* value) const {
-  DCHECK(value);
-  auto opt_double = dictionary_.FindDoubleKey(ToInternalKey(key));
-  if (opt_double)
-    *value = opt_double.value();
-
-  return opt_double.has_value();
-}
-
-bool VideoFrameMetadata::GetRotation(Key key, VideoRotation* value) const {
-  DCHECK_EQ(ROTATION, key);
-  DCHECK(value);
-  auto opt_int = dictionary_.FindIntKey(ToInternalKey(key));
-  if (opt_int)
-    *value = static_cast<VideoRotation>(opt_int.value());
-  return opt_int.has_value();
-}
-
-bool VideoFrameMetadata::GetString(Key key, std::string* value) const {
-  DCHECK(value);
-  const base::Value::BlobStorage* const binary_value =
-      dictionary_.FindBlobKey(ToInternalKey(key));
-
-  if (!!binary_value)
-    value->assign(binary_value->begin(), binary_value->end());
-
-  return !!binary_value;
-}
-
-bool VideoFrameMetadata::GetTimeDelta(Key key, base::TimeDelta* value) const {
-  base::Optional<base::TimeDelta> delta =
-      util::ValueToTimeDelta(dictionary_.FindKey(ToInternalKey(key)));
-  if (!delta)
-    return false;
-  *value = *delta;
-  return true;
-}
-
-bool VideoFrameMetadata::GetTimeTicks(Key key, base::TimeTicks* value) const {
-  // Deserialize TimeTicks from TimeDelta.
-  base::Optional<base::TimeDelta> delta =
-      util::ValueToTimeDelta(dictionary_.FindKey(ToInternalKey(key)));
-  if (!delta)
-    return false;
-  *value = base::TimeTicks() + *delta;
-  return true;
-}
-
-bool VideoFrameMetadata::GetUnguessableToken(
-    Key key,
-    base::UnguessableToken* value) const {
-  base::Optional<base::UnguessableToken> token =
-      util::ValueToUnguessableToken(dictionary_.FindKey(ToInternalKey(key)));
-  if (!token)
-    return false;
-  *value = *token;
-  return true;
-}
-
-bool VideoFrameMetadata::GetRect(Key key, gfx::Rect* value) const {
-  const base::Value* internal_value =
-      dictionary_.FindListKey(ToInternalKey(key));
-  if (!internal_value || internal_value->GetList().size() != 4)
-    return false;
-  *value = gfx::Rect(internal_value->GetList()[0].GetInt(),
-                     internal_value->GetList()[1].GetInt(),
-                     internal_value->GetList()[2].GetInt(),
-                     internal_value->GetList()[3].GetInt());
-  return true;
-}
-
-bool VideoFrameMetadata::IsTrue(Key key) const {
-  bool value = false;
-  return GetBoolean(key, &value) && value;
-}
-
-void VideoFrameMetadata::MergeInternalValuesFrom(const base::Value& in) {
-  // This function CHECKs if |in| is a dictionary.
-  dictionary_.MergeDictionary(&in);
-}
+#define MERGE_FIELD(a, source) \
+  if (source->a)               \
+    this->a = source->a
 
 void VideoFrameMetadata::MergeMetadataFrom(
     const VideoFrameMetadata* metadata_source) {
-  dictionary_.MergeDictionary(&metadata_source->dictionary_);
+  MERGE_FIELD(allow_overlay, metadata_source);
+  MERGE_FIELD(capture_begin_time, metadata_source);
+  MERGE_FIELD(capture_end_time, metadata_source);
+  MERGE_FIELD(capture_counter, metadata_source);
+  MERGE_FIELD(capture_update_rect, metadata_source);
+  MERGE_FIELD(copy_required, metadata_source);
+  MERGE_FIELD(end_of_stream, metadata_source);
+  MERGE_FIELD(frame_duration, metadata_source);
+  MERGE_FIELD(frame_rate, metadata_source);
+  MERGE_FIELD(interactive_content, metadata_source);
+  MERGE_FIELD(reference_time, metadata_source);
+  MERGE_FIELD(resource_utilization, metadata_source);
+  MERGE_FIELD(read_lock_fences_enabled, metadata_source);
+  MERGE_FIELD(rotation, metadata_source);
+  MERGE_FIELD(texture_owner, metadata_source);
+  MERGE_FIELD(wants_promotion_hint, metadata_source);
+  MERGE_FIELD(protected_video, metadata_source);
+  MERGE_FIELD(hw_protected, metadata_source);
+  MERGE_FIELD(overlay_plane_id, metadata_source);
+  MERGE_FIELD(power_efficient, metadata_source);
+  MERGE_FIELD(device_scale_factor, metadata_source);
+  MERGE_FIELD(page_scale_factor, metadata_source);
+  MERGE_FIELD(root_scroll_offset_x, metadata_source);
+  MERGE_FIELD(root_scroll_offset_y, metadata_source);
+  MERGE_FIELD(top_controls_visible_height, metadata_source);
+  MERGE_FIELD(decode_begin_time, metadata_source);
+  MERGE_FIELD(decode_end_time, metadata_source);
+  MERGE_FIELD(processing_time, metadata_source);
+  MERGE_FIELD(rtp_timestamp, metadata_source);
+  MERGE_FIELD(receive_time, metadata_source);
+  MERGE_FIELD(wallclock_frame_duration, metadata_source);
 }
 
 }  // namespace media

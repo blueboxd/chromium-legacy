@@ -620,6 +620,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   FRIEND_TEST_ALL_PREFIXES(
       BrowserSideFlingBrowserTest,
       EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostDelegatedInkMetadataTest,
+                           FlagGetsSetFromRenderFrameMetadata);
 
   void SynchronizeVisualProperties();
 
@@ -659,6 +661,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool view_stopped_flinging_for_test_ = false;
 
   bool is_evicted_ = false;
+
+  // True when points should be forwarded from the
+  // RenderWidgetHostViewEventHandler directly to viz for use in a delegated
+  // ink trail.
+  // TODO(1052145): Use this to begin forwarding the points to viz.
+  bool is_drawing_delegated_ink_trails_ = false;
 
   base::WeakPtrFactory<RenderWidgetHostViewBase> weak_factory_{this};
 

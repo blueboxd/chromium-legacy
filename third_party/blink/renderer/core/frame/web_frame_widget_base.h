@@ -124,6 +124,7 @@ class CORE_EXPORT WebFrameWidgetBase
   cc::EventListenerProperties EventListenerProperties(
       cc::EventListenerClass) const final;
   mojom::blink::DisplayMode DisplayMode() const override;
+  const WebVector<WebRect>& WindowSegments() const override;
   void SetDelegatedInkMetadata(
       std::unique_ptr<viz::DelegatedInkMetadata> metadata) final;
   void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
@@ -194,6 +195,7 @@ class CORE_EXPORT WebFrameWidgetBase
   void ShowContextMenu(WebMenuSourceType) override;
   void SetCompositorVisible(bool visible) override;
   void SetDisplayMode(mojom::blink::DisplayMode) override;
+  void SetWindowSegments(WebVector<WebRect> window_segments) override;
   void SetCursor(const ui::Cursor& cursor) override;
   bool HandlingInputEvent() override;
   void SetHandlingInputEvent(bool handling) override;
@@ -416,6 +418,8 @@ class CORE_EXPORT WebFrameWidgetBase
   Member<WebLocalFrameImpl> local_root_;
 
   mojom::blink::DisplayMode display_mode_;
+
+  WebVector<WebRect> window_segments_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread, so we keep the TaskRunner where you post tasks to

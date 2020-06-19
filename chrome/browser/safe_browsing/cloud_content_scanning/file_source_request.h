@@ -21,6 +21,11 @@ class FileSourceRequest : public BinaryUploadService::Request {
       base::FilePath path,
       base::FilePath file_name,
       BinaryUploadService::Callback callback);
+  FileSourceRequest(
+      const enterprise_connectors::AnalysisSettings& analysis_settings,
+      base::FilePath path,
+      base::FilePath file_name,
+      BinaryUploadService::ContentAnalysisCallback callback);
   FileSourceRequest(const FileSourceRequest&) = delete;
   FileSourceRequest& operator=(const FileSourceRequest&) = delete;
   ~FileSourceRequest() override;
@@ -36,6 +41,10 @@ class FileSourceRequest : public BinaryUploadService::Request {
   void OnCheckedForEncryption(DataCallback callback,
                               Data data,
                               const ArchiveAnalyzerResults& analyzer_result);
+
+  // Helper functions to access the correct request proto.
+  bool FileTypeUnsupportedByDlp() const;
+  bool HasMalwareRequest() const;
 
   void CacheResultAndData(BinaryUploadService::Result result, Data data);
 

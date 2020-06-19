@@ -58,6 +58,10 @@ class CONTENT_EXPORT PropertyNode final {
   // be called for.
   std::vector<base::string16> line_indexes;
 
+  // Argument conversion methods.
+  bool IsArray() const;
+  base::Optional<int> AsInt() const;
+
   std::string ToString() const;
 
  private:

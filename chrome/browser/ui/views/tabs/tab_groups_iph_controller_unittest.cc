@@ -15,6 +15,7 @@
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/views/view.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
@@ -40,10 +41,29 @@ class TabGroupsIPHControllerTest : public BrowserWithTestWindowTest {
     EXPECT_CALL(*mock_tracker_, ShouldTriggerHelpUI(_))
         .Times(AnyNumber())
         .WillRepeatedly(Return(false));
+
+    iph_controller_ = std::make_unique<TabGroupsIPHController>(
+        browser(),
+        base::BindRepeating(&TabGroupsIPHControllerTest::GetAnchorView,
+                            base::Unretained(this)));
+  }
+
+  void TearDown() override {
+    iph_controller_.reset();
+    BrowserWithTestWindowTest::TearDown();
   }
 
  protected:
   feature_engagement::test::MockTracker* mock_tracker_;
+  std::unique_ptr<TabGroupsIPHController> iph_controller_;
+
+ private:
+  views::View* GetAnchorView(int tab_index) { return &dummy_anchor_view_; }
+
+  // TabGroupsIPHController takes a callback to get the promo's anchor
+  // view. These tests shouldn't trigger the promo, but we return this
+  // view just in case.
+  views::View dummy_anchor_view_;
 };
 
 TEST_F(TabGroupsIPHControllerTest, NotifyEventAndTriggerOnSixthTabOpened) {
@@ -55,8 +75,6 @@ TEST_F(TabGroupsIPHControllerTest, NotifyEventAndTriggerOnSixthTabOpened) {
               ShouldTriggerHelpUI(
                   Ref(feature_engagement::kIPHDesktopTabGroupsNewGroupFeature)))
       .Times(0);
-
-  TabGroupsIPHController iph_controller(browser());
 
   for (int i = 0; i < 5; ++i)
     chrome::NewTab(browser());
@@ -79,8 +97,6 @@ TEST_F(TabGroupsIPHControllerTest, NotifyEventOnTabGroupCreated) {
   EXPECT_CALL(*mock_tracker_,
               NotifyEvent(feature_engagement::events::kTabGroupCreated))
       .Times(0);
-
-  TabGroupsIPHController iph_controller(browser());
 
   chrome::NewTab(browser());
 

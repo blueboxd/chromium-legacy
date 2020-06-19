@@ -1591,7 +1591,7 @@ bool ThreadState::IsVerifyMarkingEnabled() const {
   bool should_verify_marking = base::FeatureList::IsEnabled(
       blink::features::kBlinkHeapIncrementalMarkingStress);
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
-  should_verify_marking = true;
+  should_verify_marking = (disable_heap_verification_scope_ == 0);
 #endif  // BLINK_HEAP_VERIFICATION
   return should_verify_marking;
 }

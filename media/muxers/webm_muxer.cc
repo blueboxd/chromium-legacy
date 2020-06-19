@@ -138,12 +138,9 @@ base::Optional<mkvmuxer::Colour> ColorFromColorSpace(
 WebmMuxer::VideoParameters::VideoParameters(
     scoped_refptr<media::VideoFrame> frame)
     : visible_rect_size(frame->visible_rect().size()),
-      frame_rate(0.0),
+      frame_rate(frame->metadata()->frame_rate.value_or(0.0)),
       codec(kUnknownVideoCodec),
-      color_space(frame->ColorSpace()) {
-  ignore_result(frame->metadata()->GetDouble(VideoFrameMetadata::FRAME_RATE,
-                                             &frame_rate));
-}
+      color_space(frame->ColorSpace()) {}
 
 WebmMuxer::VideoParameters::VideoParameters(
     gfx::Size visible_rect_size,

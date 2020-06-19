@@ -385,9 +385,7 @@ base::Optional<Picture> VdVideoDecodeAccelerator::GetPicture(
   }
   int32_t picture_buffer_id = it->second;
   int32_t bitstream_id = FakeTimestampToBitstreamId(frame.timestamp());
-  bool allow_overlay = false;
-  ignore_result(frame.metadata()->GetBoolean(VideoFrameMetadata::ALLOW_OVERLAY,
-                                             &allow_overlay));
+  bool allow_overlay = frame.metadata()->allow_overlay;
   return base::make_optional(Picture(picture_buffer_id, bitstream_id,
                                      frame.visible_rect(), frame.ColorSpace(),
                                      allow_overlay));

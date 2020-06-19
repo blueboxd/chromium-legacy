@@ -752,8 +752,12 @@ void RenderWidget::OnUpdateVisualProperties(
       root_widget_window_segments_ =
           visual_properties.root_widget_window_segments;
 
-      // TODO(crbug.com/1039050) Set this on WebWidget, so Blink can expose the
-      // values to JavaScript and CSS.
+      blink::WebVector<blink::WebRect> web_segments;
+      web_segments.reserve(root_widget_window_segments_.size());
+      for (const auto& segment : root_widget_window_segments_)
+        web_segments.emplace_back(segment);
+
+      GetWebWidget()->SetWindowSegments(std::move(web_segments));
 
       // Propagate changes down to child local root RenderWidgets in other frame
       // trees/processes.

@@ -231,12 +231,8 @@ void FrameSinkVideoCaptureDevice::OnFrameCaptured(
   }
   const BufferId buffer_id = static_cast<BufferId>(index);
 
-  // Set the INTERACTIVE_CONTENT frame metadata.
-  media::VideoFrameMetadata modified_metadata;
-  modified_metadata.MergeInternalValuesFrom(info->metadata);
-  modified_metadata.SetBoolean(media::VideoFrameMetadata::INTERACTIVE_CONTENT,
-                               cursor_controller_->IsUserInteractingWithView());
-  info->metadata = modified_metadata.GetInternalValues().Clone();
+  info->metadata.interactive_content =
+      cursor_controller_->IsUserInteractingWithView();
 
   // Pass the video frame to the VideoFrameReceiver. This is done by first
   // passing the shared memory buffer handle and then notifying it that a new

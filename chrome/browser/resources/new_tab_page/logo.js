@@ -13,6 +13,9 @@ import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/poly
 import {BrowserProxy} from './browser_proxy.js';
 import {skColorToRgba} from './utils.js';
 
+/** @type {number} */
+const SHARE_BUTTON_SIZE_PX = 26;
+
 // Shows the Google logo or a doodle if available.
 class LogoElement extends PolymerElement {
   static get is() {
@@ -49,7 +52,10 @@ class LogoElement extends PolymerElement {
       loaded_: Boolean,
 
       /** @private {newTabPage.mojom.Doodle} */
-      doodle_: Object,
+      doodle_: {
+        observer: 'onDoodleChange_',
+        type: Object,
+      },
 
       /** @private */
       canShowDoodle_: {
@@ -162,6 +168,23 @@ class LogoElement extends PolymerElement {
   ready() {
     super.ready();
     performance.measure('logo-creation', 'logo-creation-start');
+  }
+
+  /** @private */
+  onDoodleChange_() {
+    const imageDoodle = this.doodle_ && this.doodle_.content.imageDoodle;
+    this.updateStyles({
+      '--ntp-logo-share-button-background-color':
+          imageDoodle && skColorToRgba(imageDoodle.shareButton.backgroundColor),
+      '--ntp-logo-share-button-height':
+          imageDoodle && `${SHARE_BUTTON_SIZE_PX / imageDoodle.height * 100}%`,
+      '--ntp-logo-share-button-width':
+          imageDoodle && `${SHARE_BUTTON_SIZE_PX / imageDoodle.width * 100}%`,
+      '--ntp-logo-share-button-x': imageDoodle &&
+          `${imageDoodle.shareButton.x / imageDoodle.width * 100}%`,
+      '--ntp-logo-share-button-y': imageDoodle &&
+          `${imageDoodle.shareButton.y / imageDoodle.height * 100}%`,
+    });
   }
 
   /**
@@ -312,15 +335,6 @@ class LogoElement extends PolymerElement {
     return this.doodle_ && this.doodle_.content.interactiveDoodle &&
         this.doodle_.content.interactiveDoodle.url.url ||
         '';
-  }
-
-  /**
-   * @param {skia.mojom.SkColor} skColor
-   * @return {string}
-   * @private
-   */
-  rgbaOrUnset_(skColor) {
-    return skColor ? skColorToRgba(skColor) : 'unset';
   }
 
   /**

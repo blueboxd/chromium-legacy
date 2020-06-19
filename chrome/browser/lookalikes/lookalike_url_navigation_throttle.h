@@ -76,8 +76,6 @@ class LookalikeUrlNavigationThrottle : public content::NavigationThrottle {
                                        ukm::SourceId source_id,
                                        LookalikeUrlMatchType match_type);
 
-  bool interstitials_enabled_;
-
   Profile* profile_;
   base::WeakPtrFactory<LookalikeUrlNavigationThrottle> weak_factory_{this};
 };

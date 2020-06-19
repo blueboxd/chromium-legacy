@@ -231,11 +231,9 @@ void Vp8Encoder::Encode(scoped_refptr<media::VideoFrame> video_frame,
   const base::TimeDelta maximum_frame_duration =
       base::TimeDelta::FromSecondsD(static_cast<double>(kRestartFramePeriods) /
                                         cast_config_.max_frame_rate);
-  base::TimeDelta predicted_frame_duration;
-  if (!video_frame->metadata()->GetTimeDelta(
-          media::VideoFrameMetadata::FRAME_DURATION,
-          &predicted_frame_duration) ||
-      predicted_frame_duration <= base::TimeDelta()) {
+  base::TimeDelta predicted_frame_duration =
+      video_frame->metadata()->frame_duration.value_or(base::TimeDelta());
+  if (predicted_frame_duration <= base::TimeDelta()) {
     // The source of the video frame did not provide the frame duration.  Use
     // the actual amount of time between the current and previous frame as a
     // prediction for the next frame's duration.

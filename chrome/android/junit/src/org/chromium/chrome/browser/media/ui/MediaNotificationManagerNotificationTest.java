@@ -27,6 +27,8 @@ import org.robolectric.shadows.ShadowNotification;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
+import org.chromium.components.browser_ui.media.MediaNotificationController;
+import org.chromium.components.browser_ui.media.MediaNotificationInfo;
 import org.chromium.services.media_session.MediaMetadata;
 import org.chromium.services.media_session.MediaPosition;
 

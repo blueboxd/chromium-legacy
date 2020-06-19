@@ -384,8 +384,6 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
   static base::NoDestructor<FeatureList> default_feature_list(
       {{mojom::FeaturePolicyFeature::kAccelerometer,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
-       {mojom::FeaturePolicyFeature::kAccessibilityEvents,
-        FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kAmbientLightSensor,
         FeatureDefault(FeaturePolicy::FeatureDefault::EnableForSelf)},
        {mojom::FeaturePolicyFeature::kAutoplay,

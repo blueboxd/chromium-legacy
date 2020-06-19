@@ -13,7 +13,6 @@
 namespace blink {
 
 class GraphicsContext;
-class LayerAsJSONClient;
 
 // Represents foreign content (produced outside Blink) which draws to a layer.
 // A client supplies a layer which can be unwrapped and inserted into the full
@@ -26,13 +25,10 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem : public DisplayItem {
   ForeignLayerDisplayItem(const DisplayItemClient& client,
                           Type,
                           scoped_refptr<cc::Layer>,
-                          const FloatPoint& offset,
-                          const LayerAsJSONClient*);
+                          const FloatPoint& offset);
   ~ForeignLayerDisplayItem() override;
 
   cc::Layer* GetLayer() const;
-
-  const LayerAsJSONClient* GetLayerAsJSONClient() const;
 
   // DisplayItem
   bool Equals(const DisplayItem&) const final;
@@ -44,7 +40,6 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem : public DisplayItem {
 
  private:
   FloatPoint offset_;
-  const LayerAsJSONClient* json_client_;
 };
 
 // When a foreign layer's debug name is a literal string, define a instance of

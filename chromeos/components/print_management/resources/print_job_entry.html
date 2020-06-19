@@ -13,6 +13,7 @@
 
   #cancelPrintJobButton {
     margin-inline-start: 4px;
+    padding-bottom: 2px;
   }
 
   #fileIcon {
@@ -25,14 +26,9 @@
     margin-inline-end: 16px;
   }
 
-  #printProgress {
-    margin-top: 0px;
-  }
-
   paper-progress {
     --paper-progress-active-color: var(--google-blue-600);
     --paper-progress-container-color: rgba(var(--google-blue-600-rgb), .24);
-    margin-top: 5px;
     width: 72px;
   }
 </style>
@@ -66,7 +62,8 @@
     </template>
 
     <template is="dom-if" if="[[!isCompletedPrintJob_(jobEntry)]]" restamp>
-      <div id="activeStatusContainer" class="padded-left flex-center"
+      <div id="activeStatusContainer"
+          class="medium-text padded-left flex-center"
           aria-hidden="true">
         <div id="numericalProgress">[[readableProgress_]]</div>
         <paper-progress

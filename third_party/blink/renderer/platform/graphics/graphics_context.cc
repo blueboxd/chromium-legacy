@@ -439,7 +439,10 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
                                     int offset,
                                     float border_radius,
                                     float min_border_width,
-                                    const Color& color) {
+                                    const Color& color,
+                                    WebColorScheme color_scheme) {
+  const Color& inner_color =
+      color_scheme == WebColorScheme::kDark ? SK_ColorWHITE : color;
   if (::features::IsFormControlsRefreshEnabled()) {
     // The focus ring is made of two borders which have a 2:1 ratio.
     const float first_border_width = (width / 3) * 2;
@@ -450,15 +453,18 @@ void GraphicsContext::DrawFocusRing(const Vector<IntRect>& rects,
     if (min_border_width >= inside_border_width) {
       offset -= inside_border_width;
     }
-    // The white ring is drawn first, and we overdraw to ensure no gaps or AA
+    const Color& outer_color = color_scheme == WebColorScheme::kDark
+                                   ? SkColorSetRGB(0x10, 0x10, 0x10)
+                                   : SK_ColorWHITE;
+    // The outer ring is drawn first, and we overdraw to ensure no gaps or AA
     // artifacts.
     DrawFocusRingInternal(rects, first_border_width,
                           offset + std::ceil(second_border_width),
-                          border_radius, SK_ColorWHITE);
+                          border_radius, outer_color);
     DrawFocusRingInternal(rects, first_border_width, offset, border_radius,
-                          color);
+                          inner_color);
   } else {
-    DrawFocusRingInternal(rects, width, offset, border_radius, color);
+    DrawFocusRingInternal(rects, width, offset, border_radius, inner_color);
   }
 }
 

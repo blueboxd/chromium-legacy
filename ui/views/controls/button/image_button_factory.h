@@ -32,8 +32,7 @@ VIEWS_EXPORT std::unique_ptr<ImageButton> CreateVectorImageButton(
     ButtonListener* listener);
 
 // Creates a ToggleImageButton with an ink drop and a centered image in
-// preperation for applying a vector icon from SetImageFromVectorIcon and
-// SetToggledImageFromVectorIcon below.
+// preparation for applying a vector icon from SetImageFromVectorIcon below.
 VIEWS_EXPORT std::unique_ptr<ToggleImageButton> CreateVectorToggleImageButton(
     ButtonListener* listener);
 
@@ -73,7 +72,8 @@ VIEWS_EXPORT void SetToggledImageFromVectorIconWithColor(
     ToggleImageButton* button,
     const gfx::VectorIcon& icon,
     int dip_size,
-    SkColor icon_color);
+    SkColor icon_color,
+    SkColor disabled_color);
 
 }  // namespace views
 

@@ -49,20 +49,11 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
-// Common superclass for SharedImageBackingGLTexture and
+// Common helper functions for SharedImageBackingGLTexture and
 // SharedImageBackingPassthroughGLImage.
 class SharedImageBackingGLCommon : public SharedImageBacking {
  public:
-  SharedImageBackingGLCommon(const Mailbox& mailbox,
-                             viz::ResourceFormat format,
-                             const gfx::Size& size,
-                             const gfx::ColorSpace& color_space,
-                             uint32_t usage,
-                             bool is_passthrough);
-  ~SharedImageBackingGLCommon() override;
-
-  // This function explicitly initializes the GL texture according to the
-  // specified parameters.
+  // These parameters are used to explicitly initialize a GL texture.
   // TODO(https://crbug.com/1092155): The goal here is to cache these parameters
   // (which are specified at initialization), so that the GL texture can be
   // allocated and bound lazily. In that world, |service_id| will not be a
@@ -80,27 +71,6 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
     bool has_immutable_storage = false;
   };
 
-  GLenum GetGLTarget() const;
-  GLuint GetGLServiceId() const;
-
- protected:
-  // SharedImageBacking:
-  gfx::Rect ClearedRect() const final;
-  void SetClearedRect(const gfx::Rect& cleared_rect) final;
-  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;
-  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) final;
-  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
-  ProduceGLTexturePassthrough(SharedImageManager* manager,
-                              MemoryTypeTracker* tracker) final;
-  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker,
-      WGPUDevice device) final;
-
-  bool IsPassthrough() const { return is_passthrough_; }
-
   // Helper function to create a GL texture.
   static void MakeTextureAndSetParameters(
       GLenum target,
@@ -108,12 +78,6 @@ class SharedImageBackingGLCommon : public SharedImageBacking {
       bool framebuffer_attachment_angle,
       scoped_refptr<gles2::TexturePassthrough>* passthrough_texture,
       gles2::Texture** texture);
-
-  const bool is_passthrough_;
-  gles2::Texture* texture_ = nullptr;
-  scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
-
-  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 };
 
 // Skia representation for both SharedImageBackingGLCommon.
@@ -158,7 +122,7 @@ class SharedImageRepresentationSkiaImpl : public SharedImageRepresentationSkia {
 
 // Implementation of SharedImageBacking that creates a GL Texture that is not
 // backed by a GLImage.
-class SharedImageBackingGLTexture : public SharedImageBackingGLCommon {
+class SharedImageBackingGLTexture : public SharedImageBacking {
  public:
   SharedImageBackingGLTexture(const Mailbox& mailbox,
                               viz::ResourceFormat format,
@@ -171,26 +135,51 @@ class SharedImageBackingGLTexture : public SharedImageBackingGLCommon {
       delete;
   ~SharedImageBackingGLTexture() override;
 
-  void InitializeGLTexture(GLuint service_id,
-                           const InitializeGLTextureParams& params);
+  void InitializeGLTexture(
+      GLuint service_id,
+      const SharedImageBackingGLCommon::InitializeGLTextureParams& params);
+
+  GLenum GetGLTarget() const;
+  GLuint GetGLServiceId() const;
 
  private:
   // SharedImageBacking:
-  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
+  gfx::Rect ClearedRect() const final;
+  void SetClearedRect(const gfx::Rect& cleared_rect) final;
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) final;
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) final;
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      WGPUDevice device) final;
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
       scoped_refptr<SharedContextState> context_state) override;
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
+
+  bool IsPassthrough() const { return is_passthrough_; }
+
+  const bool is_passthrough_;
+  gles2::Texture* texture_ = nullptr;
+  scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
+
+  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 };
 
 // Implementation of SharedImageBacking that creates a GL Texture that is backed
 // by a GLImage and stores it as a gles2::Texture. Can be used with the legacy
 // mailbox implementation.
-class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
+class SharedImageBackingGLImage : public SharedImageBacking {
  public:
   SharedImageBackingGLImage(
       scoped_refptr<gl::GLImage> image,
@@ -206,17 +195,33 @@ class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
       delete;
   ~SharedImageBackingGLImage() override;
 
-  bool InitializeGLTexture(const InitializeGLTextureParams& params);
+  bool InitializeGLTexture(
+      const SharedImageBackingGLCommon::InitializeGLTextureParams& params);
   void InitializePixels(GLenum format, GLenum type, const uint8_t* data);
+
+  GLenum GetGLTarget() const;
+  GLuint GetGLServiceId() const;
 
  private:
   // SharedImageBacking:
-  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
+  scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
   void OnMemoryDump(const std::string& dump_name,
                     base::trace_event::MemoryAllocatorDump* dump,
                     base::trace_event::ProcessMemoryDump* pmd,
                     uint64_t client_tracing_id) override;
-  scoped_refptr<gfx::NativePixmap> GetNativePixmap() override;
+  gfx::Rect ClearedRect() const final;
+  void SetClearedRect(const gfx::Rect& cleared_rect) final;
+  bool ProduceLegacyMailbox(MailboxManager* mailbox_manager) final;
+  std::unique_ptr<SharedImageRepresentationGLTexture> ProduceGLTexture(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker) final;
+  std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+  ProduceGLTexturePassthrough(SharedImageManager* manager,
+                              MemoryTypeTracker* tracker) final;
+  std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
+      SharedImageManager* manager,
+      MemoryTypeTracker* tracker,
+      WGPUDevice device) final;
   std::unique_ptr<SharedImageRepresentationSkia> ProduceSkia(
       SharedImageManager* manager,
       MemoryTypeTracker* tracker,
@@ -224,13 +229,21 @@ class SharedImageBackingGLImage : public SharedImageBackingGLCommon {
   std::unique_ptr<SharedImageRepresentationGLTexture>
   ProduceRGBEmulationGLTexture(SharedImageManager* manager,
                                MemoryTypeTracker* tracker) override;
+  void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
 
   void BeginSkiaReadAccess();
+  bool IsPassthrough() const { return is_passthrough_; }
 
   scoped_refptr<gl::GLImage> image_;
-  gles2::Texture* rgb_emulation_texture_ = nullptr;
   const SharedImageBackingFactoryGLTexture::UnpackStateAttribs attribs_;
   scoped_refptr<gfx::NativePixmap> native_pixmap_;
+  const bool is_passthrough_;
+
+  gles2::Texture* rgb_emulation_texture_ = nullptr;
+  gles2::Texture* texture_ = nullptr;
+  scoped_refptr<gles2::TexturePassthrough> passthrough_texture_;
+
+  sk_sp<SkPromiseImageTexture> cached_promise_texture_;
 
   base::WeakPtrFactory<SharedImageBackingGLImage> weak_factory_;
 };

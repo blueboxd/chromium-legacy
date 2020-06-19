@@ -49,12 +49,15 @@ static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 6,
               "also updated kIndexedRulesetFormatVersion above.");
 
 constexpr int kInvalidIndexedRulesetFormatVersion = -1;
-
 int g_indexed_ruleset_format_version_for_testing =
     kInvalidIndexedRulesetFormatVersion;
 
 constexpr int kInvalidOverrideChecksumForTest = -1;
 int g_override_checksum_for_test = kInvalidOverrideChecksumForTest;
+
+constexpr int kInvalidRuleLimit = -1;
+int g_static_rule_limit_for_testing = kInvalidRuleLimit;
+int g_regex_rule_limit_for_testing = kInvalidRuleLimit;
 
 int GetIndexedRulesetFormatVersion() {
   return g_indexed_ruleset_format_version_for_testing ==
@@ -285,6 +288,32 @@ std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
     ids.push_back(GetPublicRulesetID(extension, matcher->id()));
 
   return ids;
+}
+
+int GetStaticRuleLimit() {
+  return g_static_rule_limit_for_testing == kInvalidRuleLimit
+             ? dnr_api::MAX_NUMBER_OF_RULES
+             : g_static_rule_limit_for_testing;
+}
+
+int GetDynamicRuleLimit() {
+  return dnr_api::MAX_NUMBER_OF_DYNAMIC_RULES;
+}
+
+int GetRegexRuleLimit() {
+  return g_regex_rule_limit_for_testing == kInvalidRuleLimit
+             ? dnr_api::MAX_NUMBER_OF_REGEX_RULES
+             : g_regex_rule_limit_for_testing;
+}
+
+ScopedRuleLimitOverride CreateScopedStaticRuleLimitOverrideForTesting(
+    int limit) {
+  return base::AutoReset<int>(&g_static_rule_limit_for_testing, limit);
+}
+
+ScopedRuleLimitOverride CreateScopedRegexRuleLimitOverrideForTesting(
+    int limit) {
+  return base::AutoReset<int>(&g_regex_rule_limit_for_testing, limit);
 }
 
 }  // namespace declarative_net_request

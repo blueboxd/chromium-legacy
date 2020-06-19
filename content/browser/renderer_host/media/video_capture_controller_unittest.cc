@@ -108,11 +108,7 @@ class MockVideoCaptureControllerEventHandler
       const media::mojom::VideoFrameInfoPtr& frame_info) override {
     EXPECT_EQ(expected_pixel_format_, frame_info->pixel_format);
     EXPECT_EQ(expected_color_space_, frame_info->color_space);
-    media::VideoFrameMetadata metadata;
-    metadata.MergeInternalValuesFrom(frame_info->metadata);
-    base::TimeTicks reference_time;
-    EXPECT_TRUE(metadata.GetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
-                                      &reference_time));
+    EXPECT_TRUE(frame_info->metadata.reference_time.has_value());
     DoBufferReady(id, frame_info->coded_size);
     if (enable_auto_return_buffer_on_buffer_ready_) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(

@@ -749,7 +749,8 @@ bool StyleCascade::ResolveVarInto(CSSParserTokenRange range,
   // Any custom property referenced (by anything, even just once) in the
   // document can currently not be animated on the compositor. Hence we mark
   // properties that have been referenced.
-  MarkIsReferenced(property);
+  DCHECK(resolver.CurrentProperty());
+  MarkIsReferenced(*resolver.CurrentProperty(), property);
 
   if (!resolver.DetectCycle(property)) {
     // We are about to substitute var(property). In order to do that, we must
@@ -870,15 +871,16 @@ bool StyleCascade::ValidateFallback(const CustomProperty& property,
   return property.ParseSingleValue(range, *context, local_context);
 }
 
-void StyleCascade::MarkIsReferenced(const CustomProperty& property) {
+void StyleCascade::MarkIsReferenced(const CSSProperty& referencer,
+                                    const CustomProperty& referenced) {
   // For simplicity, we mark all inherited custom property references as
   // dependencies, even though it might not be a dependency if this cascade
   // defines a value for that property.
-  if (property.IsInherited())
-    MarkDependency(property);
-  if (!property.IsRegistered())
+  if (!referencer.IsInherited() && referenced.IsInherited())
+    MarkDependency(referenced);
+  if (!referenced.IsRegistered())
     return;
-  const AtomicString& name = property.GetPropertyNameAtomicString();
+  const AtomicString& name = referenced.GetPropertyNameAtomicString();
   state_.GetDocument().EnsurePropertyRegistry().MarkReferenced(name);
 }
 

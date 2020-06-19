@@ -43,6 +43,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
   IFACEMETHODIMP get_HostRawElementProvider(
       IRawElementProviderSimple** host_element_provider) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_HOST_RAW_ELEMENT_PROVIDER);
     UIA_VALIDATE_CALL_1_ARG(host_element_provider);
 
     HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
@@ -51,6 +52,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
   IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
                                   VARIANT* result) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROPERTY_VALUE);
     UIA_VALIDATE_CALL_1_ARG(result);
 
     switch (property_id) {
@@ -84,6 +86,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
   IFACEMETHODIMP get_FragmentRoot(
       IRawElementProviderFragmentRoot** fragment_root) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FRAGMENTROOT);
     UIA_VALIDATE_CALL_1_ARG(fragment_root);
 
     QueryInterface(IID_PPV_ARGS(fragment_root));
@@ -97,6 +100,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
       double screen_physical_pixel_x,
       double screen_physical_pixel_y,
       IRawElementProviderFragment** element_provider) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ELEMENT_PROVIDER_FROM_POINT);
     UIA_VALIDATE_CALL_1_ARG(element_provider);
 
     *element_provider = nullptr;
@@ -124,6 +128,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   }
 
   IFACEMETHODIMP GetFocus(IRawElementProviderFragment** focus) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_FOCUS);
     UIA_VALIDATE_CALL_1_ARG(focus);
 
     *focus = nullptr;
@@ -157,6 +162,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   //
   IFACEMETHODIMP AdviseEventAdded(EVENTID event_id,
                                   SAFEARRAY* property_ids) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADVISE_EVENT_ADDED);
     if (event_id == UIA_LiveRegionChangedEventId) {
       live_region_change_listeners_++;
 
@@ -179,6 +185,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
 
   IFACEMETHODIMP AdviseEventRemoved(EVENTID event_id,
                                     SAFEARRAY* property_ids) override {
+    WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_ADVISE_EVENT_REMOVED);
     if (event_id == UIA_LiveRegionChangedEventId) {
       DCHECK(live_region_change_listeners_ > 0);
       live_region_change_listeners_--;

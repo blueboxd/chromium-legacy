@@ -44,10 +44,7 @@ class CastStreamingSession::Internal
       fidl::InterfaceRequest<fuchsia::web::MessagePort> message_port_request,
       scoped_refptr<base::SequencedTaskRunner> task_runner)
       : task_runner_(task_runner),
-        environment_(&openscreen::Clock::now,
-                     &task_runner_,
-                     openscreen::IPEndpoint{
-                         openscreen::IPAddress(0, 0, 0, 0, 0, 0, 0, 0), 0}),
+        environment_(&openscreen::Clock::now, &task_runner_),
         cast_message_port_impl_(std::move(message_port_request)),
         // TODO(crbug.com/1087520): Add streaming session Constraints and
         // DisplayDescription.

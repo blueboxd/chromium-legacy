@@ -566,8 +566,7 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
 
   last_frame_ready_time_ = tick_clock_->NowTicks();
 
-  const bool is_eos =
-      frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM);
+  const bool is_eos = frame->metadata()->end_of_stream;
   const bool is_before_start_time = !is_eos && IsBeforeStartTime(*frame);
   const bool cant_read = !video_decoder_stream_->CanReadWithoutStalling();
 
@@ -599,9 +598,9 @@ void VideoRendererImpl::FrameReady(VideoDecoderStream::ReadStatus status,
     // RemoveFramesForUnderflowOrBackgroundRendering() below to actually expire
     // this frame if it's too far behind the current media time. Without this,
     // we may resume too soon after a track change in the low delay case.
-    if (!frame->metadata()->HasKey(VideoFrameMetadata::FRAME_DURATION)) {
-      frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                      video_decoder_stream_->AverageDuration());
+    if (!frame->metadata()->frame_duration.has_value()) {
+      frame->metadata()->frame_duration =
+          video_decoder_stream_->AverageDuration();
     }
 
     AddReadyFrame_Locked(std::move(frame));
@@ -731,16 +730,12 @@ void VideoRendererImpl::TransitionToHaveNothing_Locked() {
 void VideoRendererImpl::AddReadyFrame_Locked(scoped_refptr<VideoFrame> frame) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   lock_.AssertAcquired();
-  DCHECK(!frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  DCHECK(!frame->metadata()->end_of_stream);
 
   ++stats_.video_frames_decoded;
 
-  bool power_efficient = false;
-  if (frame->metadata()->GetBoolean(VideoFrameMetadata::POWER_EFFICIENT,
-                                    &power_efficient) &&
-      power_efficient) {
+  if (frame->metadata()->power_efficient)
     ++stats_.video_frames_decoded_power_efficient;
-  }
 
   algorithm_->EnqueueFrame(std::move(frame));
 }
@@ -929,12 +924,13 @@ base::TimeTicks VideoRendererImpl::GetCurrentMediaTimeAsWallClockTime() {
 
 bool VideoRendererImpl::IsBeforeStartTime(const VideoFrame& frame) {
   // Prefer the actual frame duration over the average if available.
-  base::TimeDelta metadata_frame_duration;
-  if (frame.metadata()->GetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                     &metadata_frame_duration)) {
-    return frame.timestamp() + metadata_frame_duration < start_timestamp_;
+  if (frame.metadata()->frame_duration.has_value()) {
+    return frame.timestamp() + *frame.metadata()->frame_duration <
+           start_timestamp_;
   }
 
+  // TODO(tguilbert): video_decoder_stream_->AverageDuration() can be accessed
+  // from the wrong thread.
   return frame.timestamp() + video_decoder_stream_->AverageDuration() <
          start_timestamp_;
 }

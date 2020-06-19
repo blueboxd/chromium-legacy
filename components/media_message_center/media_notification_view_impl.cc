@@ -251,7 +251,6 @@ MediaNotificationViewImpl::MediaNotificationViewImpl(
       message_center::kNotificationCornerRadius,
       message_center::kNotificationCornerRadius, kMediaImageMaxWidthPct));
 
-  UpdateForegroundColor();
   UpdateCornerRadius(message_center::kNotificationCornerRadius,
                      message_center::kNotificationCornerRadius);
   UpdateViewForExpandedState();
@@ -452,6 +451,11 @@ void MediaNotificationViewImpl::UpdateWithVectorIcon(
                            kIconMediaNotificationHeaderInsets);
 }
 
+void MediaNotificationViewImpl::OnThemeChanged() {
+  MediaNotificationView::OnThemeChanged();
+  UpdateForegroundColor();
+}
+
 views::Button* MediaNotificationViewImpl::GetHeaderRowForTesting() const {
   return header_row_;
 }
@@ -592,6 +596,8 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   const SkColor foreground =
       GetMediaNotificationBackground()->GetForegroundColor(*this);
   const SkColor separator_color = SkColorSetA(foreground, 0x1F);
+  const SkColor disabled_icon_color =
+      SkColorSetA(foreground, gfx::kDisabledControlAlpha);
 
   title_label_->SetEnabledColor(foreground);
   artist_label_->SetEnabledColor(foreground);
@@ -616,7 +622,7 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   views::SetToggledImageFromVectorIconWithColor(
       play_pause_button_,
       *GetVectorIconForMediaAction(MediaSessionAction::kPause),
-      kMediaButtonIconSize, foreground);
+      kMediaButtonIconSize, foreground, disabled_icon_color);
 
   views::SetImageFromVectorIconWithColor(
       picture_in_picture_button_,
@@ -625,7 +631,7 @@ void MediaNotificationViewImpl::UpdateForegroundColor() {
   views::SetToggledImageFromVectorIconWithColor(
       picture_in_picture_button_,
       *GetVectorIconForMediaAction(MediaSessionAction::kExitPictureInPicture),
-      kMediaButtonIconSize, foreground);
+      kMediaButtonIconSize, foreground, disabled_icon_color);
 
   // Update action buttons.
   for (views::View* child : button_row_->children()) {

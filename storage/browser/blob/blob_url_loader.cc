@@ -212,10 +212,10 @@ void BlobURLLoader::HeadersCompleted(
 
   std::string mime_type;
   response->headers->GetMimeType(&mime_type);
-  // Match logic in StreamURLRequestJob::HeadersCompleted.
   if (mime_type.empty())
     mime_type = "text/plain";
   response->mime_type = mime_type;
+  response->headers->GetCharset(&response->charset);
 
   // TODO(jam): some of this code can be shared with
   // services/network/url_loader.h

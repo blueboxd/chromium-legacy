@@ -86,6 +86,13 @@ struct LogoMetadata {
   // The URL used for sharing doodles.
   GURL short_link;
 
+  // SIMPLE, ANIMATED: original dimensions of the image.
+  // INTERACTIVE: not used.
+  int width_px = 0;
+  int height_px = 0;
+  int dark_width_px = 0;
+  int dark_height_px = 0;
+
   // SIMPLE, ANIMATED: ignored
   // INTERACTIVE: appropriate dimensions for the iframe.
   int iframe_width_px = 0;

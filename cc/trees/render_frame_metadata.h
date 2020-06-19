@@ -55,6 +55,11 @@ class CC_EXPORT RenderFrameMetadata {
   // are the same).
   bool is_mobile_optimized = false;
 
+  // Flag used to notify the browser process to start or stop forwarding points
+  // to viz for use in a delegated ink trail. True the entire time points should
+  // be forwarded, and forwarding stops as soon as it is false again.
+  bool has_delegated_ink_metadata = false;
+
   // The device scale factor used to generate a CompositorFrame.
   float device_scale_factor = 1.f;
 

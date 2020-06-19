@@ -98,6 +98,9 @@
     <item type="id" name="contextmenu_search_by_image" />
     <item type="id" name="contextmenu_search_with_google_lens" />
     <item type="id" name="contextmenu_share_image" />
+    <item type="id" name="contextmenu_shop_similar_products" />
+    <item type="id" name="contextmenu_shop_image_with_google_lens" />
+    <item type="id" name="contextmenu_search_similar_products" />
 
     <!-- Message Group -->
     <item type="id" name="contextmenu_call" />

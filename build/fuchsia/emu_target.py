@@ -61,11 +61,10 @@ class EmuTarget(target.Target):
     temporary_system_log_file = None
     if self._system_log_file:
       stdout = self._system_log_file
-      stderr = subprocess.STDOUT
     else:
       temporary_system_log_file = tempfile.NamedTemporaryFile('w')
       stdout = temporary_system_log_file
-      stderr = sys.stderr
+    stderr = subprocess.STDOUT
     emu_env = self._SetEnv()
     self._emu_process = subprocess.Popen(emu_command,
                                          stdin=open(os.devnull),

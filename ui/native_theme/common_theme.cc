@@ -575,6 +575,10 @@ SkColor GetDefaultColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_MenuIconColor:
     case NativeTheme::kColorId_DefaultIconColor:
       return gfx::kGoogleGrey700;
+    case NativeTheme::kColorId_DisabledIconColor:
+      return SkColorSetA(
+          base_theme->GetSystemColor(NativeTheme::kColorId_DefaultIconColor),
+          gfx::kDisabledControlAlpha);
 
     // Sync info container
     case NativeTheme::kColorId_SyncInfoContainerPaused:

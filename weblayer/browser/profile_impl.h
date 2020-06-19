@@ -5,6 +5,8 @@
 #ifndef WEBLAYER_BROWSER_PROFILE_IMPL_H_
 #define WEBLAYER_BROWSER_PROFILE_IMPL_H_
 
+#include <set>
+
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -45,6 +47,21 @@ class ProfileImpl : public Profile {
   // Returns the ProfileImpl from the specified BrowserContext.
   static ProfileImpl* FromBrowserContext(
       content::BrowserContext* browser_context);
+
+  static std::set<ProfileImpl*> GetAllProfiles();
+
+  // Allows getting notified when profiles are created or destroyed.
+  class ProfileObserver {
+   public:
+    virtual void ProfileCreated(ProfileImpl* profile) {}
+    virtual void ProfileDestroyed(ProfileImpl* profile) {}
+
+   protected:
+    virtual ~ProfileObserver() = default;
+  };
+
+  static void AddProfileObserver(ProfileObserver* observer);
+  static void RemoveProfileObserver(ProfileObserver* observer);
 
   content::BrowserContext* GetBrowserContext();
 
@@ -141,6 +158,7 @@ class ProfileImpl : public Profile {
   std::unique_ptr<CookieManagerImpl> cookie_manager_;
 
   bool basic_safe_browsing_enabled_ = true;
+  bool ukm_enabled_ = false;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_profile_;

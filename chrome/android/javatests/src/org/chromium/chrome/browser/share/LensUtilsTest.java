@@ -174,12 +174,14 @@ public class LensUtilsTest {
                 intentWithContentUriZeroTimestamp.getData().toString());
     }
 
+    // TODO(yusuyoutube): Add unit tests for the intent type and requires confirmation.
     private Intent getShareWithGoogleLensIntentOnUiThread(Uri imageUri, boolean isIncognito,
             long currentTimeNanos, String srcUrl, String titleOrAltText) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(
-                ()
-                        -> LensUtils.getShareWithGoogleLensIntent(
-                                imageUri, isIncognito, currentTimeNanos, srcUrl, titleOrAltText));
+                () -> LensUtils.getShareWithGoogleLensIntent(
+                        imageUri, isIncognito, currentTimeNanos, srcUrl, titleOrAltText,
+                        /* intentType */ LensUtils.IntentType.DEFAULT,
+                        /* requiresConfirmation */ false));
     }
 
     /**

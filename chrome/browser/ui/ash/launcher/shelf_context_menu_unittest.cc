@@ -10,7 +10,6 @@
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_model.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -41,12 +40,14 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -63,6 +64,7 @@
 
 using crostini::CrostiniTestHelper;
 
+using web_app::InstallResultCode;
 using web_app::ProviderType;
 
 namespace {
@@ -219,6 +221,42 @@ class ShelfContextMenuTest
     // AppService checks the task id to decide whether the app is running, so
     // create the task id to simulate the running app.
     arc_test_.app_instance()->SendTaskCreated(task_id, info, std::string());
+  }
+
+  web_app::AppId InstallWebApp(const std::string& app_name,
+                               const GURL& app_url) {
+    DCHECK(
+        base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions));
+    const web_app::AppId app_id = web_app::GenerateAppIdFromURL(app_url);
+
+    WebApplicationInfo web_app_info;
+
+    web_app_info.app_url = app_url;
+    web_app_info.scope = app_url;
+    web_app_info.title = base::UTF8ToUTF16(app_name);
+    web_app_info.description = base::UTF8ToUTF16(app_name);
+    web_app_info.open_as_window = true;
+
+    web_app::InstallFinalizer::FinalizeOptions options;
+    options.install_source = WebappInstallSource::EXTERNAL_DEFAULT;
+
+    // In unit tests, we do not have Browser or WebContents instances.
+    // Hence we use FinalizeInstall instead of InstallWebAppFromManifest
+    // to install the web app.
+    base::RunLoop run_loop;
+    web_app::WebAppProviderBase::GetProviderBase(&profile_)
+        ->install_finalizer()
+        .FinalizeInstall(web_app_info, options,
+                         base::BindLambdaForTesting(
+                             [&](const web_app::AppId& installed_app_id,
+                                 InstallResultCode code) {
+                               EXPECT_EQ(installed_app_id, app_id);
+                               EXPECT_EQ(code,
+                                         InstallResultCode::kSuccessNewInstall);
+                               run_loop.Quit();
+                             }));
+    run_loop.Run();
+    return app_id;
   }
 
  private:
@@ -707,8 +745,7 @@ TEST_P(ShelfContextMenuWebAppTest, WebApp) {
   constexpr char kWebAppName[] = "WebApp1";
 
   app_service_test().FlushMojoCalls();
-  const web_app::AppId app_id =
-      web_app::InstallDummyWebApp(profile(), kWebAppName, GURL(kWebAppUrl));
+  const web_app::AppId app_id = InstallWebApp(kWebAppName, GURL(kWebAppUrl));
 
   controller()->PinAppWithID(app_id);
   const ash::ShelfItem* item = controller()->GetItem(ash::ShelfID(app_id));

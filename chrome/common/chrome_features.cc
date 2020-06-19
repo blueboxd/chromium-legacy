@@ -408,12 +408,6 @@ const base::Feature kHideCorsMitigationListPolicySupport{
 // (formerly DataSaver).
 const base::Feature kLiteVideo{"LiteVideo", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables navigation suggestions UI for lookalike URLs (e.g. internationalized
-// domain names that are visually similar to popular domains or to domains with
-// engagement score, such as googlé.com).
-const base::Feature kLookalikeUrlNavigationSuggestionsUI{
-    "LookalikeUrlNavigationSuggestionsUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 // A feature that controls whether Chrome warns about incompatible applications.
 // This feature requires Windows 10 or higher to work because it depends on

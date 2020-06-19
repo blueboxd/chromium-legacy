@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -22,6 +23,10 @@
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace metrics {
 class MetricsStateManager;
@@ -102,6 +107,14 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   std::unique_ptr<const base::FieldTrial::EntropyProvider>
   CreateLowEntropyProvider();
 
+  // Enables or disables URL-Keyed Metrics. This is disabled by default.
+  void EnableUkm(bool enable);
+
+  // Updates the state of the UKM service if it's running. This should be called
+  // when a BrowserContext is created or destroyed which would change the value
+  // of IsOffTheRecordSessionActive().
+  void UpdateUkmService();
+
   // Whether or not consent state has been determined, regardless of whether
   // it is positive or negative.
   bool IsConsentDetermined() const;
@@ -112,6 +125,7 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
 
   // MetricsServiceClient
   MetricsService* GetMetricsService() override;
+  ukm::UkmService* GetUkmService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   std::string GetApplicationLocale() override;
   bool GetBrand(std::string* brand_code) override;
@@ -126,6 +140,7 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
       MetricsLogUploader::MetricServiceType service_type,
       const MetricsLogUploader::UploadCallback& on_upload_complete) override;
   base::TimeDelta GetStandardUploadInterval() override;
+  bool IsUkmAllowedForAllProfiles() override;
   bool ShouldStartUpFastForTesting() const override;
 
   // Gets the embedding app's package name if it's OK to log. Otherwise, this
@@ -201,6 +216,12 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   // for testing.
   virtual std::string GetAppPackageNameInternal();
 
+  // Returns whether there are any OffTheRecord browsers/tabs open.
+  virtual bool IsOffTheRecordSessionActive();
+
+  // Returns a URLLoaderFactory when the system uploader isn't used.
+  virtual scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory();
+
   void EnsureOnValidSequence() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   }
@@ -215,9 +236,11 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
       MetricsStateManager* state_manager,
       AndroidMetricsServiceClient* client,
       PrefService* prefs);
+  void CreateUkmService();
 
   std::unique_ptr<MetricsStateManager> metrics_state_manager_;
   std::unique_ptr<MetricsService> metrics_service_;
+  std::unique_ptr<ukm::UkmService> ukm_service_;
   content::NotificationRegistrar registrar_;
   PrefService* pref_service_ = nullptr;
   bool init_finished_ = false;
@@ -226,6 +249,7 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   bool app_consent_ = false;
   bool is_in_sample_ = false;
   bool fast_startup_for_testing_ = false;
+  bool ukm_enabled_ = false;
 
   // When non-zero, this overrides the default value in
   // GetStandardUploadInterval().

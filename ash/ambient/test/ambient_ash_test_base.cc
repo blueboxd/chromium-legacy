@@ -4,6 +4,8 @@
 
 #include "ash/ambient/test/ambient_ash_test_base.h"
 
+#include <memory>
+
 #include "ash/ambient/ambient_photo_controller.h"
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/ui/ambient_container_view.h"
@@ -36,18 +38,19 @@ void AmbientAshTestBase::SetUp() {
 }
 
 void AmbientAshTestBase::TearDown() {
-  AshTestBase::TearDown();
-
   ambient_client_.reset();
   image_downloader_.reset();
+
+  AshTestBase::TearDown();
 }
 
-AmbientController* AmbientAshTestBase::ambient_controller() const {
-  return Shell::Get()->ambient_controller();
+void AmbientAshTestBase::ShowAmbientScreen() {
+  // The widget will be destroyed in |AshTestBase::TearDown()|.
+  ambient_controller()->CreateWidget();
 }
 
-AmbientPhotoController* AmbientAshTestBase::photo_controller() {
-  return ambient_controller()->get_ambient_photo_controller_for_testing();
+void AmbientAshTestBase::HideAmbientScreen() {
+  ambient_controller()->HideContainerView();
 }
 
 void AmbientAshTestBase::LockScreen() {
@@ -58,16 +61,10 @@ void AmbientAshTestBase::UnlockScreen() {
   GetSessionControllerClient()->UnlockScreen();
 }
 
-void AmbientAshTestBase::Toggle() {
-  ambient_controller()->Toggle();
-}
-
-AmbientContainerView* AmbientAshTestBase::GetView() {
-  return ambient_controller()->get_container_view_for_testing();
-}
-
 const gfx::ImageSkia& AmbientAshTestBase::GetImageInPhotoView() {
-  return GetView()->photo_view_for_testing()->GetCurrentImagesForTesting();
+  return container_view()
+      ->photo_view_for_testing()
+      ->GetCurrentImagesForTesting();
 }
 
 void AmbientAshTestBase::IssueAccessToken(const std::string& token,
@@ -77,6 +74,18 @@ void AmbientAshTestBase::IssueAccessToken(const std::string& token,
 
 bool AmbientAshTestBase::IsAccessTokenRequestPending() const {
   return ambient_client_->IsAccessTokenRequestPending();
+}
+
+AmbientController* AmbientAshTestBase::ambient_controller() {
+  return Shell::Get()->ambient_controller();
+}
+
+AmbientPhotoController* AmbientAshTestBase::photo_controller() {
+  return ambient_controller()->get_ambient_photo_controller_for_testing();
+}
+
+AmbientContainerView* AmbientAshTestBase::container_view() {
+  return ambient_controller()->get_container_view_for_testing();
 }
 
 }  // namespace ash

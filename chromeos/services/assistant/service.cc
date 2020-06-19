@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_alarm_timer_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
@@ -95,14 +96,21 @@ base::Optional<std::string> GetS3ServerUriOverride() {
 }
 #endif
 
+// Returns true if the system is currently in Ambient Mode (with ambient screen
+// shown or hidden, but not closed).
+bool InAmbientMode() {
+  DCHECK(chromeos::features::IsAmbientModeEnabled());
+  return ash::AmbientUiModel::Get()->ui_visibility() !=
+         ash::AmbientUiVisibility::kClosed;
+}
+
 // In the signed-out mode, we are going to run Assistant service without
 // using user's signed in account information.
 bool IsSignedOutMode() {
   // We will switch the Libassitsant mode to signed-out/signed-in when user
   // enters/exits the ambient mode.
   const bool entered_ambient_mode =
-      chromeos::features::IsAmbientModeEnabled() &&
-      ash::AmbientModeState::Get()->enabled();
+      chromeos::features::IsAmbientModeEnabled() && InAmbientMode();
 
   // Note that we shouldn't toggle the flag to true when exiting ambient
   // mode if we have been using fake gaia login, e.g. in the Tast test.
@@ -211,12 +219,6 @@ Service::Service(std::unique_ptr<network::PendingSharedURLLoaderFactory>
 
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Add null check for |AmbientModeState| in case that |Service| is released
-  // after ash has gone.
-  auto* const ambient_mode_state = ash::AmbientModeState::Get();
-  if (chromeos::features::IsAmbientModeEnabled() && ambient_mode_state)
-    ambient_mode_state->RemoveObserver(this);
-
   ash::AssistantState::Get()->RemoveObserver(this);
 }
 
@@ -236,10 +238,10 @@ void Service::Init() {
 
   ash::AssistantState::Get()->AddObserver(this);
 
-  DCHECK(!assistant_manager_service_);
-
   if (chromeos::features::IsAmbientModeEnabled())
-    ash::AmbientModeState::Get()->AddObserver(this);
+    ambient_ui_model_observer_.Add(ash::AmbientUiModel::Get());
+
+  DCHECK(!assistant_manager_service_);
 
   RequestAccessToken();
 }
@@ -356,7 +358,8 @@ void Service::OnStateChanged(AssistantManagerService::State new_state) {
   UpdateListeningState();
 }
 
-void Service::OnAmbientModeEnabled(bool enabled) {
+void Service::OnAmbientUiVisibilityChanged(
+    ash::AmbientUiVisibility visibility) {
   if (IsSignedOutMode()) {
     UpdateAssistantManagerState();
   } else {
@@ -418,10 +421,8 @@ void Service::UpdateAssistantManagerState() {
     case AssistantManagerService::State::RUNNING:
       if (assistant_state->settings_enabled().value()) {
         assistant_manager_service_->SetUser(GetUserInfo());
-        if (chromeos::features::IsAmbientModeEnabled()) {
-          assistant_manager_service_->EnableAmbientMode(
-              ash::AmbientModeState::Get()->enabled());
-        }
+        if (chromeos::features::IsAmbientModeEnabled())
+          assistant_manager_service_->EnableAmbientMode(InAmbientMode());
         assistant_manager_service_->EnableHotword(ShouldEnableHotword());
         assistant_manager_service_->SetArcPlayStoreEnabled(
             assistant_state->arc_play_store_enabled().value());

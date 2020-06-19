@@ -227,6 +227,8 @@ class FakeConnectionEventLogger::CounterHostStub
  private:
   void ControlAudio(const protocol::AudioControl& audio_control) override {}
   void ControlVideo(const protocol::VideoControl& video_control) override {}
+  void ControlPeerConnection(
+      const protocol::PeerConnectionParameters& parameters) override {}
   void DeliverClientMessage(const protocol::ExtensionMessage& message) override;
   void NotifyClientResolution(
       const protocol::ClientResolution& resolution) override {}

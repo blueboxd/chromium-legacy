@@ -35,8 +35,6 @@ namespace storage {
 // Declared to shorten the line lengths.
 static const blink::mojom::StorageType kTemp =
     blink::mojom::StorageType::kTemporary;
-static const blink::mojom::StorageType kPerm =
-    blink::mojom::StorageType::kPersistent;
 
 // Mock tracker class the mocks up those methods of the tracker
 // that are used by the QuotaClient.
@@ -208,13 +206,10 @@ TEST_F(DatabaseQuotaClientTest, GetOriginUsage) {
   auto client = base::MakeRefCounted<DatabaseQuotaClient>(mock_tracker());
 
   EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
 
   mock_tracker()->AddMockDatabase(kOriginA, "fooDB", 1000);
   EXPECT_EQ(1000, GetOriginUsage(client, kOriginA, kTemp));
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginA, kPerm));
 
-  EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kPerm));
   EXPECT_EQ(0, GetOriginUsage(client, kOriginB, kTemp));
 }
 
@@ -239,7 +234,6 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForHost) {
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
   EXPECT_TRUE(origins.find(kOriginB) != origins.end());
 
-  EXPECT_TRUE(GetOriginsForHost(client, kPerm, kOriginA.host()).empty());
   EXPECT_TRUE(GetOriginsForHost(client, kTemp, kOriginOther.host()).empty());
 }
 
@@ -247,24 +241,15 @@ TEST_F(DatabaseQuotaClientTest, GetOriginsForType) {
   auto client = base::MakeRefCounted<DatabaseQuotaClient>(mock_tracker());
 
   EXPECT_TRUE(GetOriginsForType(client, kTemp).empty());
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 
   mock_tracker()->AddMockDatabase(kOriginA, "fooDB", 1000);
   std::set<url::Origin> origins = GetOriginsForType(client, kTemp);
   EXPECT_EQ(origins.size(), 1ul);
   EXPECT_TRUE(origins.find(kOriginA) != origins.end());
-
-  EXPECT_TRUE(GetOriginsForType(client, kPerm).empty());
 }
 
 TEST_F(DatabaseQuotaClientTest, DeleteOriginData) {
   auto client = base::MakeRefCounted<DatabaseQuotaClient>(mock_tracker());
-
-  // Perm deletions are short circuited in the Client and
-  // should not reach the DatabaseTracker.
-  EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,
-            DeleteOriginData(client, kPerm, kOriginA));
-  EXPECT_EQ(0, mock_tracker()->delete_called_count());
 
   mock_tracker()->set_async_delete(false);
   EXPECT_EQ(blink::mojom::QuotaStatusCode::kOk,

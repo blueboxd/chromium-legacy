@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.graphics.Point;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
@@ -1444,10 +1445,20 @@ public class ContextualSearchManager
     }
 
     @Override
-    public void handleValidTap() {
+    public void handleValidTap(int x, int y) {
         if (isSuppressed()) return;
 
         mInternalStateController.enter(InternalState.TAP_RECOGNIZED);
+        if (!mPolicy.isTapSupported() && mPolicy.canResolveLongpress()) {
+            // User tapped when Longpress is needed.  Convert location to screen coordinates, and
+            // put up some in-product help.
+            int yOffset = (int) mActivity.getFullscreenManager().getTopVisibleContentOffset();
+            int parentScreenXy[] = new int[2];
+            mParentView.getLocationInWindow(parentScreenXy);
+            mInProductHelp.onNonTriggeringTap(Profile.getLastUsedRegularProfile(),
+                    new Point(x + parentScreenXy[0], y + yOffset + parentScreenXy[1]),
+                    new CtrSuppression().getPrevious28DayCtr() > 0);
+        }
     }
 
     @Override
@@ -1639,6 +1650,8 @@ public class ContextualSearchManager
             /** Starts showing the Tap UI by selecting a word around the current caret. */
             @Override
             public void startShowingTapUi() {
+                // Related Searches skips the "Show Tap UI" so the word tapped does not select.
+                // Otherwise the regular tap pipeline continues.
                 if (mPolicy.isProcessingRelatedSearch()) {
                     // Skip showing the tap-ui (selecting the word) for Related Searches.
                     mInternalStateController.notifyStartingWorkOn(

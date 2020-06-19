@@ -49,6 +49,10 @@ LogoMetadata GetExampleMetadata() {
   metadata.dark_share_button_opacity = 0.7;
   metadata.dark_share_button_icon = "dark_test_img";
   metadata.dark_share_button_bg = "#22ff22";
+  metadata.width_px = 500;
+  metadata.height_px = 200;
+  metadata.dark_width_px = 600;
+  metadata.dark_height_px = 230;
   return metadata;
 }
 
@@ -134,6 +138,15 @@ void ExpectMetadataEqual(const LogoMetadata& expected_metadata,
             actual_metadata.dark_share_button_icon);
   EXPECT_EQ(expected_metadata.dark_share_button_bg,
             actual_metadata.dark_share_button_bg);
+  EXPECT_EQ(expected_metadata.width_px, actual_metadata.width_px);
+  EXPECT_EQ(expected_metadata.height_px, actual_metadata.height_px);
+  EXPECT_EQ(expected_metadata.dark_width_px, actual_metadata.dark_width_px);
+  EXPECT_EQ(expected_metadata.dark_height_px, actual_metadata.dark_height_px);
+  EXPECT_EQ(expected_metadata.iframe_width_px, actual_metadata.iframe_width_px);
+  EXPECT_EQ(expected_metadata.iframe_height_px,
+            actual_metadata.iframe_height_px);
+  EXPECT_EQ(expected_metadata.dark_background_color,
+            actual_metadata.dark_background_color);
 }
 
 void ExpectLogosEqual(const EncodedLogo& expected_logo,

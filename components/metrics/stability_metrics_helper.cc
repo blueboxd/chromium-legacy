@@ -12,8 +12,6 @@
 #include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/user_metrics.h"
-#include "base/notreached.h"
 #include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -211,7 +209,6 @@ void StabilityMetricsHelper::BrowserChildProcessCrashed() {
 }
 
 void StabilityMetricsHelper::LogLoadStarted() {
-  base::RecordAction(base::UserMetricsAction("PageLoad"));
   IncrementPrefValue(prefs::kStabilityPageLoadCount);
   IncrementLongPrefsValue(prefs::kUninstallMetricsPageLoadCount);
   RecordStabilityEvent(StabilityEventType::kPageLoad);

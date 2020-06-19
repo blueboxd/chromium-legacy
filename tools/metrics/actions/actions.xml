@@ -18077,6 +18077,12 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PageLoad" not_user_triggered="true">
+  <obsolete>
+    Deprecated. Not a good representation of user behaviour for page loads.
+    Check the count of PageLoad.ParseTiming.NavigationToParseStart or
+    IOS.PageLoadCount.Counts (on that platform) for a better approximation of
+    page loads.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>
     When a page load starts. This can include page loads that are not completed,
@@ -18894,6 +18900,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_AddressesClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18902,6 +18909,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_CloseAllClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18910,6 +18918,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_CookieSettingsClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>msalama@chromium.org</owner>
   <description>
     User clicked on settings from the user menu prompted message to go to cookie
@@ -18919,6 +18928,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_GuestClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18927,6 +18937,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_ManageClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18935,6 +18946,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_ManageGoogleAccountClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>tangltom@chromium.org</owner>
@@ -18944,6 +18956,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_PasswordsClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18952,6 +18965,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_PaymentsClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18960,6 +18974,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_ProfileClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -18975,6 +18990,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ProfileChooser_SignInAgainClicked">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>vasilii@chromium.org</owner>
   <owner>ewald@chromium.org</owner>
   <description>
@@ -21991,6 +22007,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="Signin_Signout_FromUserMenu">
+  <obsolete>Removed since M85, replaced by a histogram.</obsolete>
   <owner>droger@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>tangltom@chromium.org</owner>
@@ -25579,6 +25596,8 @@ should be able to be added at any place in this file.
   <suffix name="ContextualSearchPromoteTap"
       label="For ContextualSearchPromoteTap feature."/>
   <suffix name="ContextualSearchTap" label="For ContextualSearchTap feature."/>
+  <suffix name="ContextualSearchTappedButShouldLongpress"
+      label="For ContextualSearchTappedButShouldLongpress feature."/>
   <suffix name="ContextualSearchWebSearch"
       label="For ContextualSearchWebSearch feature."/>
   <suffix name="ContextualSearchWebSearch"

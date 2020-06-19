@@ -130,6 +130,10 @@ void WebrtcConnectionToClient::ApplySessionOptions(
   transport_->ApplySessionOptions(options);
 }
 
+PeerConnectionControls* WebrtcConnectionToClient::peer_connection_controls() {
+  return transport_.get();
+}
+
 void WebrtcConnectionToClient::OnSessionStateChange(Session::State state) {
   DCHECK(thread_checker_.CalledOnValidThread());
 

@@ -57,6 +57,24 @@ cast_source_set("interleaved_channel_mixer") {
   ]
 }
 
+cast_source_set("cma_audio_output") {
+  sources = [
+    "cma_audio_output.cc",
+    "cma_audio_output.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/common/mojom",
+    "//chromecast/media/base",
+    "//chromecast/media/cma/backend",
+    "//chromecast/media/cma/base",
+    "//chromecast/public/media",
+    "//media",
+  ]
+}
+
 cast_source_set("audio") {
   sources = [
     "cast_audio_input_stream.cc",
@@ -74,6 +92,7 @@ cast_source_set("audio") {
 
   deps = [
     ":audio_buildflags",
+    ":cma_audio_output",
     "//base",
     "//chromecast/base",
     "//chromecast/common/mojom",

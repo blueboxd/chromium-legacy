@@ -94,16 +94,13 @@ class MetadataHelper {
     metadata_.width = 320;
     metadata_.height = 480;
     metadata_.media_time = base::TimeDelta::FromSecondsD(3.14);
-    metadata_.metadata.SetTimeDelta(media::VideoFrameMetadata::PROCESSING_TIME,
-                                    base::TimeDelta::FromMillisecondsD(60.982));
-    metadata_.metadata.SetTimeTicks(
-        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-        now + base::TimeDelta::FromMillisecondsD(5.6785));
-    metadata_.metadata.SetTimeTicks(
-        media::VideoFrameMetadata::RECEIVE_TIME,
-        now + base::TimeDelta::FromMillisecondsD(17.1234));
-    metadata_.metadata.SetDouble(media::VideoFrameMetadata::RTP_TIMESTAMP,
-                                 12345);
+    metadata_.metadata.processing_time =
+        base::TimeDelta::FromMillisecondsD(60.982);
+    metadata_.metadata.capture_begin_time =
+        now + base::TimeDelta::FromMillisecondsD(5.6785);
+    metadata_.metadata.receive_time =
+        now + base::TimeDelta::FromMillisecondsD(17.1234);
+    metadata_.metadata.rtp_timestamp = 12345;
 
     initialized = true;
   }
@@ -135,10 +132,7 @@ class VfcRequesterParameterVerifierCallback
     EXPECT_EQ((unsigned int)expected->height, metadata->height());
     EXPECT_EQ(expected->media_time.InSecondsF(), metadata->mediaTime());
 
-    double rtp_timestamp;
-    EXPECT_TRUE(expected->metadata.GetDouble(
-        media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp));
-    EXPECT_EQ(rtp_timestamp, metadata->rtpTimestamp());
+    EXPECT_EQ(*expected->metadata.rtp_timestamp, metadata->rtpTimestamp());
 
     // Verify that values were correctly clamped.
     VerifyTicksClamping(expected->presentation_time,
@@ -147,19 +141,13 @@ class VfcRequesterParameterVerifierCallback
                         metadata->expectedDisplayTime(),
                         "expected_display_time");
 
-    base::TimeTicks capture_time;
-    EXPECT_TRUE(expected->metadata.GetTimeTicks(
-        media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &capture_time));
-    VerifyTicksClamping(capture_time, metadata->captureTime(), "capture_time");
+    VerifyTicksClamping(*expected->metadata.capture_begin_time,
+                        metadata->captureTime(), "capture_time");
 
-    base::TimeTicks receive_time;
-    EXPECT_TRUE(expected->metadata.GetTimeTicks(
-        media::VideoFrameMetadata::RECEIVE_TIME, &receive_time));
-    VerifyTicksClamping(receive_time, metadata->receiveTime(), "receive_time");
+    VerifyTicksClamping(*expected->metadata.receive_time,
+                        metadata->receiveTime(), "receive_time");
 
-    base::TimeDelta processing_time;
-    EXPECT_TRUE(expected->metadata.GetTimeDelta(
-        media::VideoFrameMetadata::PROCESSING_TIME, &processing_time));
+    base::TimeDelta processing_time = *expected->metadata.processing_time;
     EXPECT_EQ(ClampElapsedProcessingTime(processing_time),
               metadata->processingDuration());
     EXPECT_NE(processing_time.InSecondsF(), metadata->processingDuration());

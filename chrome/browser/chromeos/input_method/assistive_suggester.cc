@@ -25,12 +25,12 @@ namespace {
 const char kMaxTextBeforeCursorLength = 50;
 const char kKeydown[] = "keydown";
 
-const char* kWhitelistDomainsForPersonalInfoSuggester[] = {
+const char* kAllowedDomainsForPersonalInfoSuggester[] = {
     "amazon.com", "facebook.com", "instagram.com", "netflix.com",
     "twitch.tv",  "twitter.com",  "youtube.com",
 };
 
-const char* kWhitelistDomainsForEmojiSuggester[] = {
+const char* kAllowedDomainsForEmojiSuggester[] = {
     "amazon.com", "facebook.com", "instagram.com", "netflix.com",
     "twitch.tv",  "twitter.com",  "youtube.com",
 };
@@ -40,13 +40,13 @@ const char* kTestUrls[] = {
     "simple_textarea.html",
 };
 
-const char* kWhitelistAppsForPersonalInfoSuggester[] = {
+const char* kAllowedAppsForPersonalInfoSuggester[] = {
     "pondihnpfglkihppmldjekdcjgbkpnen",  // Facebook messenger
     "cnbgggchhmkkdmeppjobngjoejnihlei",  // Google Play Store
     "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
 };
 
-const char* kWhitelistAppsForEmojiSuggester[] = {
+const char* kAllowedAppsForEmojiSuggester[] = {
     "pondihnpfglkihppmldjekdcjgbkpnen",  // Facebook messenger
     "cnbgggchhmkkdmeppjobngjoejnihlei",  // Google Play Store
     "mmfbcljfglbokpmkimbfghdkjmjhdgbg",  // System text
@@ -79,7 +79,7 @@ bool IsTestUrl(GURL url) {
 }
 
 template <size_t N>
-bool IsWhitelistedUrl(const char* (&whitelistDomains)[N]) {
+bool IsAllowedUrl(const char* (&allowedDomains)[N]) {
   Browser* browser = chrome::FindLastActive();
   if (browser && browser->window()->IsActive()) {
     GURL url = browser->tab_strip_model()
@@ -88,7 +88,7 @@ bool IsWhitelistedUrl(const char* (&whitelistDomains)[N]) {
     if (IsTestUrl(url))
       return true;
     for (size_t i = 0; i < N; i++) {
-      if (url.DomainIs(whitelistDomains[i])) {
+      if (url.DomainIs(allowedDomains[i])) {
         return true;
       }
     }
@@ -97,7 +97,7 @@ bool IsWhitelistedUrl(const char* (&whitelistDomains)[N]) {
 }
 
 template <size_t N>
-bool IsWhitelistedApp(const char* (&whitelistApps)[N]) {
+bool IsAllowedApp(const char* (&allowedApps)[N]) {
   // WMHelper is not available in Chrome on Linux.
   auto* wm_helper = exo::WMHelper::GetInstance();
   auto* window = wm_helper ? wm_helper->GetActiveWindow() : nullptr;
@@ -108,7 +108,7 @@ bool IsWhitelistedApp(const char* (&whitelistApps)[N]) {
   const std::string* app_id = window->GetProperty(ash::kAppIDKey);
   if (app_id) {
     for (size_t i = 0; i < N; i++) {
-      if (strcmp(app_id->c_str(), whitelistApps[i]) == 0) {
+      if (strcmp(app_id->c_str(), allowedApps[i]) == 0) {
         return true;
       }
     }
@@ -247,8 +247,8 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       return current_suggester_->Suggest(text_before_cursor);
     }
     if (IsAssistPersonalInfoEnabled() &&
-        (IsWhitelistedUrl(kWhitelistDomainsForPersonalInfoSuggester) ||
-         IsWhitelistedApp(kWhitelistAppsForPersonalInfoSuggester)) &&
+        (IsAllowedUrl(kAllowedDomainsForPersonalInfoSuggester) ||
+         IsAllowedApp(kAllowedAppsForPersonalInfoSuggester)) &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
       if (personal_info_suggester_.IsFirstShown()) {
@@ -256,8 +256,8 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
       }
       return true;
     } else if (IsEmojiSuggestAdditionEnabled() &&
-               (IsWhitelistedUrl(kWhitelistDomainsForEmojiSuggester) ||
-                IsWhitelistedApp(kWhitelistAppsForEmojiSuggester)) &&
+               (IsAllowedUrl(kAllowedDomainsForEmojiSuggester) ||
+                IsAllowedApp(kAllowedAppsForEmojiSuggester)) &&
                emoji_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &emoji_suggester_;
       RecordAssistiveCoverage(current_suggester_->GetProposeActionType());

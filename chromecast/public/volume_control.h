@@ -25,9 +25,21 @@ enum class AudioContentType {
   kNumTypes,       // Not a valid type; should always be last in the enum.
 };
 
-// In case of link issue, implement it by your own or depend on
-// c/common/volume_control_enum_printer
-std::ostream& operator<<(std::ostream& os, AudioContentType audio_type);
+inline std::ostream& operator<<(std::ostream& os, AudioContentType audio_type) {
+  switch (audio_type) {
+    case AudioContentType::kMedia:
+      return os << "MEDIA";
+    case AudioContentType::kAlarm:
+      return os << "ALARM";
+    case AudioContentType::kCommunication:
+      return os << "COMMUNICATION";
+    case AudioContentType::kOther:
+      return os << "OTHER";
+    default:
+      return os << "Add a new entry above, otherwise kNumTypes is not a valid "
+                   "type.";
+  }
+}
 
 // Different sources of volume changes. Used to change behaviour (eg feedback
 // sounds) based on the source.
@@ -38,10 +50,17 @@ enum class VolumeChangeSource {
                       // volume feedback UX.
 };
 
-// In case of link issue, implement it by your own or depend on
-// c/common/volume_control_enum_printer
-std::ostream& operator<<(std::ostream& os,
-                         VolumeChangeSource vol_change_source);
+inline std::ostream& operator<<(std::ostream& os,
+                                VolumeChangeSource vol_change_source) {
+  switch (vol_change_source) {
+    case VolumeChangeSource::kUser:
+      return os << "USER";
+    case VolumeChangeSource::kAutomatic:
+      return os << "AUTOMATIC";
+    case VolumeChangeSource::kAutoWithFeedback:
+      return os << "AUTO_WITH_FEEDBACK";
+  }
+}
 
 // Observer for volume/mute state changes. This is useful to detect volume
 // changes that occur outside of cast_shell. Add/RemoveVolumeObserver() must not

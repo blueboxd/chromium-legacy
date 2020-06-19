@@ -275,12 +275,12 @@
     ]
   }],
   "enterprise.networkingAttributes": [{
-    "channel": "dev",
+    "channel": "stable",
     "platforms": ["chromeos"],
     "extension_types": ["extension"],
     "location": "policy"
   }, {
-    "channel": "dev",
+    "channel": "stable",
     "extension_types": ["login_screen_extension"],
     "location": "policy",
     "platforms": ["chromeos"],

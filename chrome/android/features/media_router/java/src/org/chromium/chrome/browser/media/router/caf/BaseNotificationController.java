@@ -10,10 +10,10 @@ import com.google.android.gms.cast.CastDevice;
 import com.google.android.gms.cast.MediaStatus;
 import com.google.android.gms.cast.framework.media.RemoteMediaClient;
 
-import org.chromium.chrome.browser.media.ui.MediaNotificationInfo;
-import org.chromium.chrome.browser.media.ui.MediaNotificationListener;
 import org.chromium.chrome.browser.media.ui.MediaNotificationManager;
 import org.chromium.chrome.media.router.R;
+import org.chromium.components.browser_ui.media.MediaNotificationInfo;
+import org.chromium.components.browser_ui.media.MediaNotificationListener;
 import org.chromium.services.media_session.MediaMetadata;
 
 /** Base controller for updating media notification for Casting and MediaFling. */
@@ -35,7 +35,7 @@ public abstract class BaseNotificationController
                         // TODO(zqzhang): the same session might have more than one tab id. Should
                         // we track the last foreground alive tab and update the notification with
                         // it?
-                        .setTabId(mSessionController.getRouteCreationInfo().tabId)
+                        .setInstanceId(mSessionController.getRouteCreationInfo().tabId)
                         .setPrivate(mSessionController.getRouteCreationInfo().isIncognito)
                         .setActions(MediaNotificationInfo.ACTION_STOP)
                         .setContentIntent(createContentIntent())

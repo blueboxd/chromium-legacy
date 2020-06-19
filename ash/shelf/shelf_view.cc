@@ -420,8 +420,10 @@ void ShelfView::UpdateVisibleShelfItemBoundsUnion() {
   visible_shelf_item_bounds_union_.SetRect(0, 0, 0, 0);
   for (const int i : visible_views_indices_) {
     const views::View* child = view_model_->view_at(i);
-    if (ShouldShowTooltipForChildView(child))
-      visible_shelf_item_bounds_union_.Union(child->GetMirroredBounds());
+    if (ShouldShowTooltipForChildView(child)) {
+      visible_shelf_item_bounds_union_.Union(
+          GetChildViewTargetMirroredBounds(child));
+    }
   }
 }
 
@@ -1903,8 +1905,12 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
     gfx::Rect old_ideal_bounds = view_model_->ideal_bounds(model_index);
     view_model_->Remove(model_index);
     views::View* new_view = CreateViewForItem(item);
-    AddChildView(new_view);
+    // The view must be added to the |view_model_| before it's added as a child
+    // so that the model is consistent when UpdateShelfItemViewsVisibility() is
+    // called as a result the hierarchy changes caused by AddChildView(). See
+    // ScrollableShelfView::ViewHierarchyChanged().
     view_model_->Add(new_view, model_index);
+    AddChildView(new_view);
     view_model_->set_ideal_bounds(model_index, old_ideal_bounds);
 
     bounds_animator_->StopAnimatingView(new_view);
@@ -2277,6 +2283,12 @@ int ShelfView::CalculateAppIconsLayoutOffset() const {
 
 DragImageView* ShelfView::GetDragImage() {
   return static_cast<DragImageView*>(drag_image_widget_->GetContentsView());
+}
+
+gfx::Rect ShelfView::GetChildViewTargetMirroredBounds(
+    const views::View* child) const {
+  DCHECK_EQ(this, child->parent());
+  return GetMirroredRect(bounds_animator_->GetTargetBounds(child));
 }
 
 }  // namespace ash

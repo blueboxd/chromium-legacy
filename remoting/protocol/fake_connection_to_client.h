@@ -67,6 +67,8 @@ class FakeConnectionToClient : public ConnectionToClient {
   void set_host_stub(HostStub* host_stub) override;
   void set_input_stub(InputStub* input_stub) override;
 
+  PeerConnectionControls* peer_connection_controls() override;
+
   base::WeakPtr<FakeVideoStream> last_video_stream() {
     return last_video_stream_;
   }

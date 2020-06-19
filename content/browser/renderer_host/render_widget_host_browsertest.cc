@@ -177,6 +177,7 @@ class RenderWidgetHostTouchEmulatorBrowserTest : public ContentBrowserTest {
   }
 
   RenderWidgetHostImpl* host() { return host_; }
+  RenderWidgetHostViewBase* view() { return view_; }
 
  private:
   RenderWidgetHostViewBase* view_;
@@ -677,6 +678,41 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostBrowserTest,
   WaitForVisualPropertiesAck();
   EXPECT_EQ(screen_info.rect.size().ToString(),
             EvalJs(web_contents(), "`${screen.width}x${screen.height}`"));
+}
+
+class RenderWidgetHostDelegatedInkMetadataTest
+    : public RenderWidgetHostTouchEmulatorBrowserTest {
+ public:
+  RenderWidgetHostDelegatedInkMetadataTest() = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
+                                    "DelegatedInkTrails");
+  }
+};
+
+// Confirm that using the |updateInkTrailStartPoint| JS API results in the
+// |request_points_for_delegated_ink_| flag being set on the RWHVB.
+IN_PROC_BROWSER_TEST_F(RenderWidgetHostDelegatedInkMetadataTest,
+                       FlagGetsSetFromRenderFrameMetadata) {
+  ASSERT_TRUE(ExecJs(shell()->web_contents(), R"(
+      let presenter = navigator.ink.requestPresenter('delegated-ink-trail');
+      let style = { color: 'green', diameter: 21 };
+      window.addEventListener('pointermove' , evt => {
+        presenter.then( function(v) {
+          v.updateInkTrailStartPoint(evt, style);
+        });
+      });
+      )"));
+  SimulateRoutedMouseEvent(blink::WebInputEvent::Type::kMouseMove, 10, 10, 0,
+                           false);
+  RunUntilInputProcessed(host());
+  EXPECT_TRUE(view()->is_drawing_delegated_ink_trails_);
+
+  // Confirm that the flag is set back to false when the JS API isn't called.
+  RunUntilInputProcessed(host());
+  EXPECT_FALSE(view()->is_drawing_delegated_ink_trails_);
 }
 
 }  // namespace content

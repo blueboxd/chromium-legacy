@@ -561,4 +561,30 @@ TEST_F(StyleResolverTest, CSSMarkerPseudoElement) {
   }
 }
 
+TEST_F(StyleResolverTest, ApplyInheritedOnlyCustomPropertyChange) {
+  ScopedCSSMatchedPropertiesCacheDependenciesForTest scoped_feature(true);
+
+  // This test verifies that when we get a "apply inherited only"-type
+  // hit in the MatchesPropertiesCache, we're able to detect that custom
+  // properties changed, and that we therefore need to apply the non-inherited
+  // properties as well.
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      #parent1 { --a: 10px; }
+      #parent2 { --a: 20px; }
+      #child1, #child2 {
+        --b: var(--a);
+        width: var(--b);
+      }
+    </style>
+    <div id=parent1><div id=child1></div></div>
+    <div id=parent2><div id=child2></div></div>
+  )HTML");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_EQ("10px", ComputedValue("width", *StyleForId("child1")));
+  EXPECT_EQ("20px", ComputedValue("width", *StyleForId("child2")));
+}
+
 }  // namespace blink

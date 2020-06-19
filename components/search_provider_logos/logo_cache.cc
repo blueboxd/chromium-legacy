@@ -39,6 +39,10 @@ const char kDarkAnimatedUrlKey[] = "dark_animated_url";
 const char kLogUrlKey[] = "log_url";
 const char kCtaLogUrlKey[] = "cta_log_url";
 const char kShortLinkKey[] = "short_link";
+const char kWidthPx[] = "width_px";
+const char kHeightPx[] = "height_px";
+const char kDarkWidthPx[] = "dark_width_px";
+const char kDarkHeightPx[] = "dark_height_px";
 const char kIframeWidthPx[] = "iframe_width_px";
 const char kIframeHeightPx[] = "iframe_height_px";
 const char kDarkBackgroundColorKey[] = "dark_background_color";
@@ -252,6 +256,10 @@ std::unique_ptr<LogoMetadata> LogoCache::LogoMetadataFromString(
       !dict->GetString(kDarkShareButtonIcon,
                        &metadata->dark_share_button_icon) ||
       !dict->GetString(kDarkShareButtonBg, &metadata->dark_share_button_bg) ||
+      !dict->GetInteger(kWidthPx, &metadata->width_px) ||
+      !dict->GetInteger(kHeightPx, &metadata->height_px) ||
+      !dict->GetInteger(kDarkWidthPx, &metadata->dark_width_px) ||
+      !dict->GetInteger(kDarkHeightPx, &metadata->dark_height_px) ||
       !dict->GetInteger(kIframeWidthPx, &metadata->iframe_width_px) ||
       !dict->GetInteger(kIframeHeightPx, &metadata->iframe_height_px) ||
       !dict->GetString(kDarkBackgroundColorKey,
@@ -305,6 +313,10 @@ void LogoCache::LogoMetadataToString(const LogoMetadata& metadata,
   dict.SetDouble(kDarkShareButtonOpacity, metadata.dark_share_button_opacity);
   dict.SetString(kDarkShareButtonIcon, metadata.dark_share_button_icon);
   dict.SetString(kDarkShareButtonBg, metadata.dark_share_button_bg);
+  dict.SetInteger(kWidthPx, metadata.width_px);
+  dict.SetInteger(kHeightPx, metadata.height_px);
+  dict.SetInteger(kDarkWidthPx, metadata.dark_width_px);
+  dict.SetInteger(kDarkHeightPx, metadata.dark_height_px);
   dict.SetInteger(kIframeWidthPx, metadata.iframe_width_px);
   dict.SetInteger(kIframeHeightPx, metadata.iframe_height_px);
   dict.SetString(kDarkBackgroundColorKey, metadata.dark_background_color);

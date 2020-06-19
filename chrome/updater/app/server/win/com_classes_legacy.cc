@@ -103,7 +103,7 @@ STDMETHODIMP LegacyOnDemandImpl::initialize() {
 // callbacks to a sequenced task runner. |obj| is bound to this object.
 STDMETHODIMP LegacyOnDemandImpl::checkForUpdate() {
   using LegacyOnDemandImplPtr = Microsoft::WRL::ComPtr<LegacyOnDemandImpl>;
-  auto com_server = ComServerApp::Instance();
+  scoped_refptr<ComServerApp> com_server = AppServerSingletonInstance();
   com_server->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(

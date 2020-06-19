@@ -367,6 +367,8 @@ source_set("weblayer_lib_base") {
     "//components/translate/content/renderer",
     "//components/translate/core/browser",
     "//components/translate/core/common",
+    "//components/ukm",
+    "//components/ukm/content",
     "//components/user_prefs",
     "//components/variations",
     "//components/variations/net",

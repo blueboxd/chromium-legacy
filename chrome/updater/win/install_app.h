@@ -13,7 +13,7 @@ namespace updater {
 
 class App;
 
-scoped_refptr<App> AppInstallInstance();
+scoped_refptr<App> MakeAppInstall();
 
 }  // namespace updater
 

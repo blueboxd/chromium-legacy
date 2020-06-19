@@ -34,6 +34,7 @@ constexpr int kAvatarImageSizeDip = 32;
 
 // Greeting message.
 base::string16 GetGreetingMessage(const UserSession* user_session) {
+  DCHECK(user_session);
   const std::string& username = user_session->user_info.display_name;
   return l10n_util::GetStringFUTF16(IDS_ASSISTANT_AMBIENT_GREETING_MESSAGE,
                                     base::UTF8ToUTF16(username));
@@ -103,15 +104,19 @@ void AmbientAssistantContainerView::InitLayout() {
   // Greeting label.
   const UserSession* active_user_session =
       Shell::Get()->session_controller()->GetUserSession(0);
-  greeting_label_ = AddChildView(
-      std::make_unique<views::Label>(GetGreetingMessage(active_user_session)));
-  greeting_label_->SetEnabledColor(kTextColorSecondary);
-  greeting_label_->SetFontList(
-      assistant::ui::GetDefaultFontList()
-          .DeriveWithSizeDelta(8)
-          .DeriveWithWeight(gfx::Font::Weight::NORMAL));
-  greeting_label_->SetHorizontalAlignment(
-      gfx::HorizontalAlignment::ALIGN_CENTER);
+  // TODO(meilinw): uses login user info instead as no active user session is
+  // available on lock screen.
+  if (active_user_session) {
+    greeting_label_ = AddChildView(std::make_unique<views::Label>(
+        GetGreetingMessage(active_user_session)));
+    greeting_label_->SetEnabledColor(kTextColorSecondary);
+    greeting_label_->SetFontList(
+        assistant::ui::GetDefaultFontList()
+            .DeriveWithSizeDelta(8)
+            .DeriveWithWeight(gfx::Font::Weight::NORMAL));
+    greeting_label_->SetHorizontalAlignment(
+        gfx::HorizontalAlignment::ALIGN_CENTER);
+  }
 
   // Spacer.
   views::View* spacer = AddChildView(std::make_unique<views::View>());
@@ -124,9 +129,13 @@ void AmbientAssistantContainerView::InitLayout() {
       gfx::Size(kAvatarImageSizeDip, kAvatarImageSizeDip));
   avatar_view_->SetPreferredSize(
       gfx::Size(kAvatarImageSizeDip, kAvatarImageSizeDip));
-  gfx::ImageSkia avatar = active_user_session->user_info.avatar.image;
-  if (!avatar.isNull())
-    avatar_view_->SetImage(avatar);
+  // TODO(meilinw): uses login user info instead as no active user session is
+  // available on lock screen.
+  if (active_user_session) {
+    gfx::ImageSkia avatar = active_user_session->user_info.avatar.image;
+    if (!avatar.isNull())
+      avatar_view_->SetImage(avatar);
+  }
 
   SkPath circular_mask;
   constexpr int kClipCircleRadius = kAvatarImageSizeDip / 2;

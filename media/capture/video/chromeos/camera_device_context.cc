@@ -50,8 +50,8 @@ void CameraDeviceContext::SubmitCapturedVideoCaptureBuffer(
     base::TimeDelta timestamp) {
   VideoFrameMetadata metadata;
   // All frames are pre-rotated to the display orientation.
-  metadata.SetRotation(VideoFrameMetadata::Key::ROTATION,
-                       VideoRotation::VIDEO_ROTATION_0);
+  metadata.rotation = VideoRotation::VIDEO_ROTATION_0;
+
   // TODO: Figure out the right color space for the camera frame.  We may need
   // to populate the camera metadata with the color space reported by the V4L2
   // device.

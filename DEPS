@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'c950e05bafcdec649c81165214a9bb031d57ebea',
+  'skia_revision': 'd610c751569affd952034377648eb22c0b7d58c5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -194,11 +194,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '7b282eb5f8fbfdb1409e98cf5366ba45ce53e107',
+  'angle_revision': 'c81f0b7b921fa8a48eb005348caab860c77d0235',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
-  'swiftshader_revision': '974cfa9fbbdb72c25baef8d66e8e914e08631773',
+  'swiftshader_revision': 'eb6824408d08f03a51670ca494218b4ea0a75810',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
@@ -245,7 +245,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '22b0828640fba2dc8fc50c4a15aa33ee40c54274',
+  'catapult_revision': '4ac015d92df8914e07695676f8368dd6f5baf958',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -253,7 +253,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '4ca37e4df727779afc578f0d3898aff0735a5a34',
+  'devtools_frontend_revision': '72e8dbac26a88a807fe9678aa681105511ce8e30',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -875,7 +875,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '13d717d087e227dee2f928f2368c0120688b2ac9',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2410c8498c0b30459e5338b047230548fea3dc68',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1011,7 +1011,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '6fdad5388130757e1efb58a14b8e7f9494625691',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '9e7dae8c9a3f3b41afdf1a9f5e78f0299fb93e4e',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + '79326efe26e5440f530963704c3c0ff965b3a4ac',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1224,7 +1224,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '28c801fc37b854f49e3d0f5e00600821dba75f8e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'd64d998b9f1f6b365834107d65cc66dfcb03ea66',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1452,7 +1452,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'f46902c540c32f2c2507fde6998d5e1516158825',
+    Var('webrtc_git') + '/src.git' + '@' + '7a82467d0db0d61f466a1da54b94f6a136726a3c',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1524,7 +1524,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@477818f5075f2caeda311fd70dab2db7c278c324',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b1ca66dca9056a000a6d4bdcde2c2c7585bb16fb',
     'condition': 'checkout_src_internal',
   },
 
@@ -1671,7 +1671,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_activity_activity',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.1.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1737,7 +1737,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_arch_core_core_runtime',
-              'version': 'version:2.0.0-cr0',
+              'version': 'version:2.1.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1858,7 +1858,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_fragment_fragment',
-              'version': 'version:1.1.0-cr0',
+              'version': 'version:1.2.5-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -1968,7 +1968,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_lifecycle_lifecycle_common',
-              'version': 'version:2.1.0-cr0',
+              'version': 'version:2.2.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2001,7 +2001,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_lifecycle_lifecycle_livedata_core',
-              'version': 'version:2.0.0-cr0',
+              'version': 'version:2.2.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2012,7 +2012,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_lifecycle_lifecycle_runtime',
-              'version': 'version:2.1.0-cr0',
+              'version': 'version:2.2.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2023,7 +2023,18 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_lifecycle_lifecycle_viewmodel',
-              'version': 'version:2.1.0-cr0',
+              'version': 'version:2.2.0-cr0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
+  'src/third_party/android_deps/libs/androidx_lifecycle_lifecycle_viewmodel_savedstate': {
+      'packages': [
+          {
+              'package': 'chromium/third_party/android_deps/libs/androidx_lifecycle_lifecycle_viewmodel_savedstate',
+              'version': 'version:2.2.0-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -2100,7 +2111,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_deps/libs/androidx_preference_preference',
-              'version': 'version:1.0.0-cr0',
+              'version': 'version:1.1.1-cr0',
           },
       ],
       'condition': 'checkout_android',

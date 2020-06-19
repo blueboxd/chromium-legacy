@@ -39,6 +39,8 @@ class ClientControlDispatcher : public ChannelDispatcherBase,
   void DeliverClientMessage(const ExtensionMessage& message) override;
   void SelectDesktopDisplay(
       const SelectDesktopDisplayRequest& select_display) override;
+  void ControlPeerConnection(
+      const protocol::PeerConnectionParameters& parameters) override;
 
   // Sets the ClientStub that will be called for each incoming control
   // message. |client_stub| must outlive this object.

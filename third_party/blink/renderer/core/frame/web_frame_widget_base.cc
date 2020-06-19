@@ -573,6 +573,10 @@ mojom::blink::DisplayMode WebFrameWidgetBase::DisplayMode() const {
   return display_mode_;
 }
 
+const WebVector<WebRect>& WebFrameWidgetBase::WindowSegments() const {
+  return window_segments_;
+}
+
 void WebFrameWidgetBase::StartDeferringCommits(base::TimeDelta timeout) {
   if (!View()->does_composite())
     return;
@@ -781,6 +785,11 @@ void WebFrameWidgetBase::SetDisplayMode(mojom::blink::DisplayMode mode) {
     frame->MediaQueryAffectingValueChangedForLocalSubtree(
         MediaValueChange::kOther);
   }
+}
+
+void WebFrameWidgetBase::SetWindowSegments(WebVector<WebRect> window_segments) {
+  if (!window_segments_.Equals(window_segments))
+    window_segments_ = std::move(window_segments);
 }
 
 void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {

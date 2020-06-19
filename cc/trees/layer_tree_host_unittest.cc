@@ -8914,5 +8914,112 @@ class LayerTreeHostCustomThrougputTrackerTest : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCustomThrougputTrackerTest);
 
+// Confirm that DelegatedInkMetadata set on the LTH propagates to the
+// CompositorFrameMetadata and RenderFrameMetadata, and then both are correctly
+// reset when another frame is drawn without DelegatedInkMetadata.
+class LayerTreeHostTestDelegatedInkMetadataOnAndOff
+    : public LayerTreeHostTest,
+      public RenderFrameMetadataObserver {
+ public:
+  // Provides a wrapper which can be passed to LayerTreeHost, but just forwards
+  // to the test class.
+  class ForwardingRenderFrameMetadataObserver
+      : public RenderFrameMetadataObserver {
+   public:
+    explicit ForwardingRenderFrameMetadataObserver(
+        RenderFrameMetadataObserver* target)
+        : target_(target) {}
+
+    // RenderFrameMetadataObserver implementation.
+    void BindToCurrentThread() override { target_->BindToCurrentThread(); }
+    void OnRenderFrameSubmission(
+        const RenderFrameMetadata& render_frame_metadata,
+        viz::CompositorFrameMetadata* compositor_frame_metadata,
+        bool force_send) override {
+      target_->OnRenderFrameSubmission(render_frame_metadata,
+                                       compositor_frame_metadata, force_send);
+    }
+
+   private:
+    RenderFrameMetadataObserver* target_ = nullptr;
+  };
+
+  void BeginTest() override {
+    // Set up a basic render frame observer for the LTH/LTHI to forward to.
+    layer_tree_host()->SetRenderFrameObserver(
+        std::make_unique<ForwardingRenderFrameMetadataObserver>(this));
+
+    // Setting up a basic frame that can be redrawn.
+    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(10, 10), 1.f,
+                                               viz::LocalSurfaceIdAllocation());
+    layer_tree_host()->root_layer()->SetBounds(gfx::Size(10, 10));
+    layer_ = FakePictureLayer::Create(&client_);
+    layer_tree_host()->root_layer()->AddChild(layer_);
+    client_.set_bounds(layer_->bounds());
+
+    // Values chosen arbitrarily
+    SkColor color = SK_ColorDKGRAY;
+    double diameter = 1.000002;
+    gfx::PointF point = gfx::PointF(135, 45);
+    gfx::RectF area = gfx::RectF(173, 438);
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+
+    expected_metadata_ =
+        viz::DelegatedInkMetadata(point, diameter, color, timestamp, area);
+    layer_tree_host()->SetDelegatedInkMetadata(
+        std::make_unique<viz::DelegatedInkMetadata>(
+            expected_metadata_.value()));
+  }
+
+  void DidCommitAndDrawFrame() override {
+    // Cause a redraw to occur.
+    layer_->SetNeedsDisplay();
+  }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* impl) override {
+    if (expected_metadata_.has_value()) {
+      // Now try again with no metadata to confirm everything is cleared out.
+      expected_metadata_.reset();
+    }
+  }
+
+  void ExpectMetadata(bool had_delegated_ink_metadata,
+                      viz::DelegatedInkMetadata* actual_metadata) {
+    if (expected_metadata_.has_value()) {
+      EXPECT_TRUE(had_delegated_ink_metadata);
+      EXPECT_TRUE(actual_metadata);
+      EXPECT_EQ(expected_metadata_->point(), actual_metadata->point());
+      EXPECT_EQ(expected_metadata_->color(), actual_metadata->color());
+      EXPECT_EQ(expected_metadata_->diameter(), actual_metadata->diameter());
+      EXPECT_EQ(expected_metadata_->presentation_area(),
+                actual_metadata->presentation_area());
+      EXPECT_EQ(expected_metadata_->timestamp(), actual_metadata->timestamp());
+    } else {
+      EXPECT_FALSE(had_delegated_ink_metadata);
+      EXPECT_FALSE(actual_metadata);
+      EndTest();
+    }
+  }
+
+  void AfterTest() override {}
+
+  // RenderFrameMetadataObserver implementation.
+  void BindToCurrentThread() override {}
+  void OnRenderFrameSubmission(
+      const RenderFrameMetadata& render_frame_metadata,
+      viz::CompositorFrameMetadata* compositor_frame_metadata,
+      bool force_send) override {
+    ExpectMetadata(render_frame_metadata.has_delegated_ink_metadata,
+                   compositor_frame_metadata->delegated_ink_metadata.get());
+  }
+
+ private:
+  base::Optional<viz::DelegatedInkMetadata> expected_metadata_;
+  FakeContentLayerClient client_;
+  scoped_refptr<Layer> layer_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDelegatedInkMetadataOnAndOff);
+
 }  // namespace
 }  // namespace cc

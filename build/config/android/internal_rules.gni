@@ -250,9 +250,6 @@ template("write_build_config") {
         rebase_path(invoker.java_resources_jar, root_build_dir),
       ]
     }
-    if (defined(invoker.enable_jetify) && invoker.enable_jetify) {
-      args += [ "--enable-jetify" ]
-    }
     if (defined(invoker.jetified_jar_path)) {
       args += [
         "--jetified-jar-path",
@@ -1764,14 +1761,11 @@ if (enable_java_templates) {
     not_needed([ "_rebased_build_config" ])
     not_needed(invoker, [ "build_config_dep" ])
 
-    _enable_jetify = defined(invoker.enable_jetify) && invoker.enable_jetify
     _deps = invoker.jar_deps
     _previous_output_jar = invoker.input_jar_path
 
-    if (_enable_jetify) {
+    if (defined(invoker.jetified_jar_path)) {
       _jetify_target = "${target_name}__jetify"
-      _jetify_input_jar = _previous_output_jar
-      _jetify_output_jar = "$target_out_dir/$target_name.jetified.jar"
 
       action_with_pydeps(_jetify_target) {
         script = "//build/android/gyp/jetify_jar.py"
@@ -1782,15 +1776,15 @@ if (enable_java_templates) {
             "//third_party/jetifier_standalone/config/ignore_R.config"
 
         inputs = [
-          _jetify_input_jar,
+          _previous_output_jar,
           _jetify_jar_path,
         ]
-        outputs = [ _jetify_output_jar ]
+        outputs = [ invoker.jetified_jar_path ]
         args = [
           "--input-path",
           rebase_path(invoker.input_jar_path, root_build_dir),
           "--output-path",
-          rebase_path(_jetify_output_jar, root_build_dir),
+          rebase_path(invoker.jetified_jar_path, root_build_dir),
           "--jetify-path",
           rebase_path(_jetify_jar_path, root_build_dir),
           "--jetify-config-path",
@@ -1800,7 +1794,7 @@ if (enable_java_templates) {
 
       _deps = []
       _deps = [ ":$_jetify_target" ]
-      _previous_output_jar = _jetify_output_jar
+      _previous_output_jar = invoker.jetified_jar_path
     }
 
     # Create the .jar in lib.java for use by java_binary.
@@ -3414,6 +3408,11 @@ if (enable_java_templates) {
         _unprocessed_jar_path = _javac_jar_path
       }
     }
+    if (_build_host_jar || _build_device_jar) {
+      if (defined(invoker.enable_jetify) && invoker.enable_jetify) {
+        _jetified_jar_path = "$target_out_dir/${_main_target_name}.jetified.jar"
+      }
+    }
 
     if (_is_prebuilt || _has_sources) {
       _java_header_deps = []
@@ -3543,8 +3542,9 @@ if (enable_java_templates) {
       chromium_code = _chromium_code
       build_config = _build_config
       is_prebuilt = _is_prebuilt
-      enable_jetify = defined(invoker.enable_jetify) && invoker.enable_jetify
-      jetified_jar_path = "$target_out_dir/${invoker.target_name}__process_prebuilt.jetified.jar"
+      if (defined(invoker.enable_jetify) && invoker.enable_jetify) {
+        jetified_jar_path = _jetified_jar_path
+      }
 
       possible_config_deps = []
       if (defined(_extra_java_deps)) {
@@ -3713,7 +3713,6 @@ if (enable_java_templates) {
       process_java_prebuilt(_process_prebuilt_target_name) {
         forward_variables_from(invoker,
                                [
-                                 "enable_jetify",
                                  "jar_excluded_patterns",
                                  "jar_included_patterns",
                                ])
@@ -3738,6 +3737,9 @@ if (enable_java_templates) {
           if (enable_desugar) {
             classpath_deps = _full_classpath_deps
           }
+        }
+        if (defined(invoker.enable_jetify) && invoker.enable_jetify) {
+          jetified_jar_path = _jetified_jar_path
         }
 
         # proguard_configs listed on java_library targets need to be marked

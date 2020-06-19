@@ -99,6 +99,23 @@ std::string GetPublicRulesetID(const Extension& extension,
 std::vector<std::string> GetPublicRulesetIDs(const Extension& extension,
                                              const CompositeMatcher& matcher);
 
+// Returns the per-extension static rule limit.
+int GetStaticRuleLimit();
+
+// Returns the per-extension dynamic rule limit.
+int GetDynamicRuleLimit();
+
+// Returns the per-extension regex rules limit. This is enforced separately for
+// static and dynamic rulesets.
+int GetRegexRuleLimit();
+
+// Test helpers to override the various rule limits until the returned value is
+// in scope.
+using ScopedRuleLimitOverride = base::AutoReset<int>;
+ScopedRuleLimitOverride CreateScopedStaticRuleLimitOverrideForTesting(
+    int limit);
+ScopedRuleLimitOverride CreateScopedRegexRuleLimitOverrideForTesting(int limit);
+
 // Helper to convert a flatbufffers::String to a string-like object with type T.
 template <typename T>
 T CreateString(const flatbuffers::String& str) {

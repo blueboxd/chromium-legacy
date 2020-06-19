@@ -1034,9 +1034,8 @@ void FakeShillManagerClient::SetupDefaultEnvironment() {
 void FakeShillManagerClient::PassStubProperties(
     DictionaryValueCallback callback) const {
   base::Value stub_properties = stub_properties_.Clone();
-  stub_properties.SetKey(
-      shill::kServiceCompleteListProperty,
-      GetEnabledServiceList(shill::kServiceCompleteListProperty));
+  stub_properties.SetKey(shill::kServiceCompleteListProperty,
+                         GetEnabledServiceList());
   std::move(callback).Run(DBUS_METHOD_CALL_SUCCESS,
                           base::Value::AsDictionaryValue(stub_properties));
 }
@@ -1067,7 +1066,7 @@ void FakeShillManagerClient::NotifyObserversPropertyChanged(
     return;
   }
   if (property == shill::kServiceCompleteListProperty) {
-    base::Value services = GetEnabledServiceList(property);
+    base::Value services = GetEnabledServiceList();
     for (auto& observer : observer_list_)
       observer.OnPropertyChanged(property, services);
     return;
@@ -1118,11 +1117,11 @@ void FakeShillManagerClient::SetTechnologyEnabled(const std::string& type,
   SortManagerServices(true);
 }
 
-base::Value FakeShillManagerClient::GetEnabledServiceList(
-    const std::string& property) const {
+base::Value FakeShillManagerClient::GetEnabledServiceList() const {
   base::Value new_service_list(base::Value::Type::LIST);
   const base::ListValue* service_list;
-  if (stub_properties_.GetListWithoutPathExpansion(property, &service_list)) {
+  if (stub_properties_.GetListWithoutPathExpansion(
+          shill::kServiceCompleteListProperty, &service_list)) {
     ShillServiceClient::TestInterface* service_client =
         ShillServiceClient::Get()->GetTestInterface();
     for (base::ListValue::const_iterator iter = service_list->begin();

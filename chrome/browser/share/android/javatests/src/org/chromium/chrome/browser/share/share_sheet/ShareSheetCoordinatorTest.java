@@ -90,10 +90,8 @@ public final class ShareSheetCoordinatorTest {
         mShareSheetCoordinator.disableFirstPartyFeaturesForTesting();
         Activity activity = mActivityTestRule.getActivity();
 
-        ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
-
         List<PropertyModel> propertyModels =
-                mShareSheetCoordinator.createTopRowPropertyModels(bottomSheet, activity,
+                mShareSheetCoordinator.createTopRowPropertyModels(activity,
                         /*shareParams=*/null, ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES);
         assertEquals("Property model list should be empty.", 0, propertyModels.size());
     }
@@ -102,11 +100,10 @@ public final class ShareSheetCoordinatorTest {
     @MediumTest
     public void testCreateBottomRowPropertyModels() {
         Activity activity = mActivityTestRule.getActivity();
-        ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
-        List<PropertyModel> propertyModels = mShareSheetCoordinator.createBottomRowPropertyModels(
-                bottomSheet, activity, /*shareParams=*/null,
-                ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES, /*saveLastUsed=*/false);
+        List<PropertyModel> propertyModels =
+                mShareSheetCoordinator.createBottomRowPropertyModels(activity, /*shareParams=*/null,
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES, /*saveLastUsed=*/false);
         assertEquals("Incorrect number of property models.", 3, propertyModels.size());
         assertEquals("First property model isn't testModel1.", "testModel1",
                 propertyModels.get(0).get(ShareSheetItemViewProperties.LABEL));

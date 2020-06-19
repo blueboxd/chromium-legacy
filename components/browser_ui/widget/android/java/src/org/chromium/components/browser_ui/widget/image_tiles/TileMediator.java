@@ -54,7 +54,7 @@ class TileMediator {
                 "Search." + mConfig.umaPrefix + ".Bitmap.Available", visualsAvailable);
 
         String fetchDurationHistogramName = "Search." + mConfig.umaPrefix
-                + (visualsAvailable ? ".Bitmap " : ".NoBitmap") + ".FetchDuration";
+                + (visualsAvailable ? ".Bitmap" : ".NoBitmap") + ".FetchDuration";
         RecordHistogram.recordTimesHistogram(fetchDurationHistogramName, durationMs);
     }
 }

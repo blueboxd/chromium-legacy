@@ -15,6 +15,7 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
@@ -38,10 +39,17 @@ void FindWebTasks(Profile* profile,
   DCHECK(!entries.empty());
   DCHECK(result_list);
 
-  // WebApps only support files backed by inodes. See https://crbug.com/1079065.
+  // WebApps only have full support files backed by inodes, so tasks provided by
+  // most Web Apps will be skipped if any non-native files are present. "System"
+  // Web Apps are an exception: we have more control over what they can do, so
+  // tasks provided by System Web Apps are the only ones permitted at present.
+  // See https://crbug.com/1079065.
+  bool has_special_file = false;
   for (const auto& entry : entries) {
-    if (util::IsUnderNonNativeLocalPath(profile, entry.path))
-      return;
+    if (util::IsUnderNonNativeLocalPath(profile, entry.path)) {
+      has_special_file = true;
+      break;
+    }
   }
 
   web_app::WebAppProviderBase* provider =
@@ -50,8 +58,11 @@ void FindWebTasks(Profile* profile,
   web_app::FileHandlerManager& file_handler_manager =
       provider->file_handler_manager();
 
-  auto app_ids = registrar.GetAppIds();
+  std::vector<web_app::AppId> app_ids = registrar.GetAppIds();
   for (const auto& app_id : app_ids) {
+    if (has_special_file && app_id != chromeos::default_web_apps::kMediaAppId)
+      continue;
+
     if (!file_handler_manager.IsFileHandlingAPIAvailable(app_id))
       continue;
 

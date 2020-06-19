@@ -205,7 +205,7 @@ bool GetNewDynamicRules(const RulesetSource& source,
   int regex_rule_count = std::count_if(
       new_rules->begin(), new_rules->end(),
       [](const dnr_api::Rule& rule) { return !!rule.condition.regex_filter; });
-  if (regex_rule_count > dnr_api::MAX_NUMBER_OF_REGEX_RULES) {
+  if (regex_rule_count > GetRegexRuleLimit()) {
     *status = UpdateDynamicRulesStatus::kErrorRegexRuleCountExceeded;
     *error = kDynamicRegexRuleCountExceeded;
     return false;

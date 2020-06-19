@@ -86,12 +86,7 @@ class TileListView {
      * Called to show enter animation for the list items.
      */
     void showAnimation(boolean animate) {
-        if (animate) {
-            mView.setLayoutAnimation(mLayoutAnimationController);
-            mView.scheduleLayoutAnimation();
-        } else {
-            mView.setLayoutAnimation(null);
-        }
+        // TODO(shaktisahu): Fix animations.
     }
 
     private class ItemDecorationImpl extends ItemDecoration {

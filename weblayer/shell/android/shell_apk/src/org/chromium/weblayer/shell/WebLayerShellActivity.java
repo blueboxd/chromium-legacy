@@ -45,6 +45,7 @@ import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.NewTabCallback;
 import org.chromium.weblayer.NewTabType;
 import org.chromium.weblayer.Profile;
+import org.chromium.weblayer.SettingType;
 import org.chromium.weblayer.SiteSettingsActivity;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TabCallback;
@@ -260,6 +261,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         fragment.setRetainInstance(true);
         mBrowser = Browser.fromFragment(fragment);
         mProfile = mBrowser.getProfile();
+        mProfile.setBooleanSetting(SettingType.UKM_ENABLED, true);
         setTabCallbacks(mBrowser.getActiveTab(), fragment);
 
         mBrowser.setTopView(mTopContentsContainer);

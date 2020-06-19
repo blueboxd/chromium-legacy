@@ -248,11 +248,17 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
 
   if (is_simple || is_animated) {
     const base::DictionaryValue* image = nullptr;
-    std::string bg_color;
-    if (ddljson->GetDictionary("dark_large_image", &image)) {
-      image->GetString("background_color", &bg_color);
+    if (ddljson->GetDictionary("large_image", &image)) {
+      image->GetInteger("width", &logo->metadata.width_px);
+      image->GetInteger("height", &logo->metadata.height_px);
     }
-    logo->metadata.dark_background_color = bg_color;
+    const base::DictionaryValue* dark_image = nullptr;
+    if (ddljson->GetDictionary("dark_large_image", &dark_image)) {
+      dark_image->GetString("background_color",
+                            &logo->metadata.dark_background_color);
+      dark_image->GetInteger("width", &logo->metadata.dark_width_px);
+      dark_image->GetInteger("height", &logo->metadata.dark_height_px);
+    }
   }
 
   const bool is_eligible_for_share_button =

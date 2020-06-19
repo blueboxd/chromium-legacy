@@ -6,11 +6,46 @@ import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
 import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
 
-function createImageDoodle() {
+/**
+ * @param {!Element} element
+ * @param {!Element} reference
+ * @return {!{top: number, right: number, bottom: number, left: number}}
+ */
+function getRelativePosition(element, reference) {
+  const referenceRect = reference.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  return {
+    top: elementRect.top - referenceRect.top,
+    right: elementRect.right - referenceRect.right,
+    bottom: elementRect.bottom - referenceRect.bottom,
+    left: elementRect.left - referenceRect.left,
+  };
+}
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @return {string}
+ */
+function createImageDataUrl(width, height) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  return canvas.toDataURL('image/png');
+}
+
+/**
+ * @param {number} width
+ * @param {number} height
+ * @return {!newTabPage.mojom.Doodle}
+ */
+function createImageDoodle(width, height) {
+  width = width || 500;
+  height = height || 200;
   return {
     content: {
       imageDoodle: {
-        imageUrl: {url: 'data:foo'},
+        imageUrl: {url: createImageDataUrl(width, height)},
         onClickUrl: {url: 'https://foo.com'},
         shareButton: {
           backgroundColor: {value: 0xFFFF0000},
@@ -19,6 +54,8 @@ function createImageDoodle() {
           iconUrl: {url: 'data:bar'},
         },
         imageImpressionLogUrl: {url: 'https://log.com'},
+        width,
+        height,
       }
     }
   };
@@ -55,12 +92,11 @@ suite('NewTabPageLogoTest', () => {
 
   test('setting simple doodle shows image', async () => {
     // Arrange.
-    const doodle = createImageDoodle();
-    doodle.content.imageDoodle.imageUrl = {url: 'data:foo'};
+    const doodle = createImageDoodle(/*width=*/ 500, /*height=*/ 200);
     doodle.content.imageDoodle.shareButton = {
       backgroundColor: {value: 0xFFFF0000},
-      x: 11,
-      y: 12,
+      x: 10,
+      y: 20,
       iconUrl: {url: 'data:bar'},
     };
 
@@ -70,15 +106,42 @@ suite('NewTabPageLogoTest', () => {
     // Assert.
     assertNotStyle($$(logo, '#doodle'), 'display', 'none');
     assertEquals($$(logo, '#logo'), null);
-    assertEquals($$(logo, '#image').src, 'data:foo');
+    assertEquals(
+        $$(logo, '#image').src, doodle.content.imageDoodle.imageUrl.url);
     assertNotStyle($$(logo, '#image'), 'display', 'none');
+    assertEquals(500, $$(logo, '#image').offsetWidth);
+    assertEquals(200, $$(logo, '#image').offsetHeight);
     assertNotStyle($$(logo, '#shareButton'), 'display', 'none');
     assertStyle($$(logo, '#shareButton'), 'background-color', 'rgb(255, 0, 0)');
-    assertStyle($$(logo, '#shareButton'), 'left', '11px');
-    assertStyle($$(logo, '#shareButton'), 'top', '12px');
+    const shareButtonPosition =
+        getRelativePosition($$(logo, '#shareButton'), $$(logo, '#image'));
+    assertEquals(10, shareButtonPosition.left);
+    assertEquals(20, shareButtonPosition.top);
+    assertEquals(26, $$(logo, '#shareButton').offsetWidth);
+    assertEquals(26, $$(logo, '#shareButton').offsetHeight);
     assertEquals($$(logo, '#shareButtonImage').src, 'data:bar');
     assertStyle($$(logo, '#animation'), 'display', 'none');
     assertFalse(!!$$(logo, '#iframe'));
+  });
+
+  test('setting too large image doodle resizes image', async () => {
+    // Arrange.
+    const doodle = createImageDoodle(/*width=*/ 1000, /*height=*/ 500);
+    doodle.content.imageDoodle.shareButton.x = 10;
+    doodle.content.imageDoodle.shareButton.y = 20;
+
+    // Act.
+    const logo = await createLogo(doodle);
+
+    // Assert.
+    assertEquals(460, $$(logo, '#image').offsetWidth);
+    assertEquals(230, $$(logo, '#image').offsetHeight);
+    const shareButtonPosition =
+        getRelativePosition($$(logo, '#shareButton'), $$(logo, '#image'));
+    assertEquals(5, Math.round(shareButtonPosition.left));
+    assertEquals(9, Math.round(shareButtonPosition.top));
+    assertEquals(12, $$(logo, '#shareButton').offsetWidth);
+    assertEquals(12, $$(logo, '#shareButton').offsetHeight);
   });
 
   test('setting animated doodle shows image', async () => {
@@ -276,6 +339,9 @@ suite('NewTabPageLogoTest', () => {
     assertNotStyle($$(logo, '#image'), 'display', 'none');
     assertNotStyle($$(logo, '#animation'), 'display', 'none');
     assertEquals($$(logo, '#animation').path, 'image?https://foo.com');
+    assertDeepEquals(
+        $$(logo, '#image').getBoundingClientRect(),
+        $$(logo, '#animation').getBoundingClientRect());
   });
 
   test('clicking animation of animated doodle opens link', async () => {

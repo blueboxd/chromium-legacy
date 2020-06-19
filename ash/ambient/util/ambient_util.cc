@@ -4,11 +4,18 @@
 
 #include "ash/ambient/util/ambient_util.h"
 
+#include "ash/public/cpp/ambient/ambient_client.h"
 #include "base/no_destructor.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace ash {
 namespace ambient {
 namespace util {
+
+bool IsAmbientModeAllowed() {
+  return chromeos::features::IsAmbientModeEnabled() &&
+         ash::AmbientClient::Get()->IsAmbientModeAllowedForActiveUser();
+}
 
 bool IsShowing(LockScreen::ScreenType type) {
   return LockScreen::HasInstance() && LockScreen::Get()->screen_type() == type;

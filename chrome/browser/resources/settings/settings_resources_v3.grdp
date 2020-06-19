@@ -160,11 +160,6 @@
            use_base_dir="false"
            compress="false" type="BINDATA"
            preprocess="true" />
-  <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORD_REMOVE_DIALOG_JS"
-           file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/password_remove_dialog.js"
-           use_base_dir="false"
-           compress="false" type="BINDATA"
-           preprocess="true" />
   <include name="IDR_SETTINGS_AUTOFILL_PAGE_PASSWORDS_EXPORT_DIALOG_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/autofill_page/passwords_export_dialog.js"
            use_base_dir="false"

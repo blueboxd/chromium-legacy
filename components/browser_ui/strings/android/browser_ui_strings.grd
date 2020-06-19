@@ -521,6 +521,29 @@
         Share via
       </message>
 
+      <!-- Messages for media playback (casting, MediaSession, etc) -->
+      <message name="IDS_ACCESSIBILITY_PLAY" desc="The play button that starts playing the media.">
+        Play
+      </message>
+      <message name="IDS_ACCESSIBILITY_PAUSE" desc="The pause button that pauses playing the media.">
+        Pause
+      </message>
+      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="The previous track button that switches media to the previous track.">
+        Previous track
+      </message>
+      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="The next track button that switches media to the next track.">
+        Next track
+      </message>
+      <message name="IDS_ACCESSIBILITY_SEEK_FORWARD" desc="The seek forward button that seeks media to a later position.">
+        Seek forward
+      </message>
+      <message name="IDS_ACCESSIBILITY_SEEK_BACKWARD" desc="The seek backward button that seeks media to an earlier position.">
+        Seek backward
+      </message>
+      <message name="IDS_MEDIA_NOTIFICATION_INCOGNITO" desc="Text used as a placeholder for a media notification about playing media, when notification is shown from incognito tab.">
+        A site is playing media
+      </message>
+
       <!-- BottomSheet -->
       <message name="IDS_BOTTOM_SHEET_ACCESSIBILITY_DESCRIPTION" desc="Accessibility string read when the bottom sheet is focused informing the user that the sheet can be closed by swiping down.">
         Swipe down to close.

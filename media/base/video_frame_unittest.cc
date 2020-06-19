@@ -47,6 +47,99 @@ void CreateTestY16Frame(const gfx::Size& coded_size,
     }
   }
 }
+
+// Returns a VideoFrameMetadata object with a value for each field.
+media::VideoFrameMetadata GetFullVideoFrameMetadata() {
+  // Assign a non-default, distinct (when possible), value to all fields, and
+  // make sure values are preserved across serialization.
+  media::VideoFrameMetadata metadata;
+
+  // ints
+  metadata.capture_counter = 123;
+
+  // gfx::Rects
+  metadata.capture_update_rect = gfx::Rect(12, 34, 360, 480);
+
+  // media::VideoRotations
+  metadata.rotation = media::VideoRotation::VIDEO_ROTATION_90;
+
+  // bools
+  metadata.allow_overlay = true;
+  metadata.copy_required = true;
+  metadata.end_of_stream = true;
+  metadata.texture_owner = true;
+  metadata.wants_promotion_hint = true;
+  metadata.protected_video = true;
+  metadata.hw_protected = true;
+  metadata.power_efficient = true;
+  metadata.read_lock_fences_enabled = true;
+  metadata.interactive_content = true;
+
+  // base::UnguessableTokens
+  metadata.overlay_plane_id = base::UnguessableToken::Create();
+
+  // doubles
+  metadata.device_scale_factor = 2.0;
+  metadata.page_scale_factor = 2.1;
+  metadata.root_scroll_offset_x = 100.2;
+  metadata.root_scroll_offset_y = 200.1;
+  metadata.top_controls_visible_height = 25.5;
+  metadata.resource_utilization = 95.8;
+  metadata.frame_rate = 29.94;
+  metadata.rtp_timestamp = 1.0;
+
+  // base::TimeTicks
+  base::TimeTicks now = base::TimeTicks::Now();
+  metadata.receive_time = now + base::TimeDelta::FromMilliseconds(10);
+  metadata.capture_begin_time = now + base::TimeDelta::FromMilliseconds(20);
+  metadata.capture_end_time = now + base::TimeDelta::FromMilliseconds(30);
+  metadata.decode_begin_time = now + base::TimeDelta::FromMilliseconds(40);
+  metadata.decode_end_time = now + base::TimeDelta::FromMilliseconds(50);
+  metadata.reference_time = now + base::TimeDelta::FromMilliseconds(60);
+
+  // base::TimeDeltas
+  metadata.processing_time = base::TimeDelta::FromMilliseconds(500);
+  metadata.frame_duration = base::TimeDelta::FromMilliseconds(16);
+  metadata.wallclock_frame_duration = base::TimeDelta::FromMilliseconds(17);
+
+  return metadata;
+}
+
+void VerifyVideoFrameMetadataEquality(const media::VideoFrameMetadata& a,
+                                      const media::VideoFrameMetadata& b) {
+  EXPECT_EQ(a.allow_overlay, b.allow_overlay);
+  EXPECT_EQ(a.capture_begin_time, b.capture_begin_time);
+  EXPECT_EQ(a.capture_end_time, b.capture_end_time);
+  EXPECT_EQ(a.capture_counter, b.capture_counter);
+  EXPECT_EQ(a.capture_update_rect, b.capture_update_rect);
+  EXPECT_EQ(a.copy_required, b.copy_required);
+  EXPECT_EQ(a.end_of_stream, b.end_of_stream);
+  EXPECT_EQ(a.frame_duration, b.frame_duration);
+  EXPECT_EQ(a.frame_rate, b.frame_rate);
+  EXPECT_EQ(a.interactive_content, b.interactive_content);
+  EXPECT_EQ(a.reference_time, b.reference_time);
+  EXPECT_EQ(a.resource_utilization, b.resource_utilization);
+  EXPECT_EQ(a.read_lock_fences_enabled, b.read_lock_fences_enabled);
+  EXPECT_EQ(a.rotation, b.rotation);
+  EXPECT_EQ(a.texture_owner, b.texture_owner);
+  EXPECT_EQ(a.wants_promotion_hint, b.wants_promotion_hint);
+  EXPECT_EQ(a.protected_video, b.protected_video);
+  EXPECT_EQ(a.hw_protected, b.hw_protected);
+  EXPECT_EQ(a.overlay_plane_id, b.overlay_plane_id);
+  EXPECT_EQ(a.power_efficient, b.power_efficient);
+  EXPECT_EQ(a.device_scale_factor, b.device_scale_factor);
+  EXPECT_EQ(a.page_scale_factor, b.page_scale_factor);
+  EXPECT_EQ(a.root_scroll_offset_x, b.root_scroll_offset_x);
+  EXPECT_EQ(a.root_scroll_offset_y, b.root_scroll_offset_y);
+  EXPECT_EQ(a.top_controls_visible_height, b.top_controls_visible_height);
+  EXPECT_EQ(a.decode_begin_time, b.decode_begin_time);
+  EXPECT_EQ(a.decode_end_time, b.decode_end_time);
+  EXPECT_EQ(a.processing_time, b.processing_time);
+  EXPECT_EQ(a.rtp_timestamp, b.rtp_timestamp);
+  EXPECT_EQ(a.receive_time, b.receive_time);
+  EXPECT_EQ(a.wallclock_frame_duration, b.wallclock_frame_duration);
+}
+
 }  // namespace
 
 namespace media {
@@ -198,8 +291,7 @@ TEST(VideoFrame, CreateFrame) {
 
   // Test an empty frame.
   frame = VideoFrame::CreateEOSFrame();
-  EXPECT_TRUE(
-      frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_TRUE(frame->metadata()->end_of_stream);
 }
 
 TEST(VideoFrame, CreateZeroInitializedFrame) {
@@ -235,8 +327,7 @@ TEST(VideoFrame, CreateBlackFrame) {
 
   // Test basic properties.
   EXPECT_EQ(0, frame->timestamp().InMicroseconds());
-  EXPECT_FALSE(
-      frame->metadata()->IsTrue(VideoFrameMetadata::END_OF_STREAM));
+  EXPECT_FALSE(frame->metadata()->end_of_stream);
 
   // Test |frame| properties.
   EXPECT_EQ(PIXEL_FORMAT_I420, frame->format());
@@ -278,8 +369,7 @@ TEST(VideoFrame, WrapVideoFrame) {
 
     gfx::Rect visible_rect(1, 1, 1, 1);
     gfx::Size natural_size = visible_rect.size();
-    wrapped_frame->metadata()->SetTimeDelta(
-        media::VideoFrameMetadata::FRAME_DURATION, kFrameDuration);
+    wrapped_frame->metadata()->frame_duration = kFrameDuration;
     frame = media::VideoFrame::WrapVideoFrame(
         wrapped_frame, wrapped_frame->format(), visible_rect, natural_size);
     wrapped_frame->AddDestructionObserver(
@@ -293,18 +383,12 @@ TEST(VideoFrame, WrapVideoFrame) {
     EXPECT_EQ(natural_size, frame->natural_size());
 
     // Verify metadata was copied to the wrapped frame.
-    base::TimeDelta frame_duration;
-    ASSERT_TRUE(frame->metadata()->GetTimeDelta(
-        media::VideoFrameMetadata::FRAME_DURATION, &frame_duration));
-
-    EXPECT_EQ(frame_duration, kFrameDuration);
+    EXPECT_EQ(*frame->metadata()->frame_duration, kFrameDuration);
 
     // Verify the metadata copy was a deep copy.
-    wrapped_frame->metadata()->Clear();
-    EXPECT_NE(
-        wrapped_frame->metadata()->HasKey(
-            media::VideoFrameMetadata::FRAME_DURATION),
-        frame->metadata()->HasKey(media::VideoFrameMetadata::FRAME_DURATION));
+    wrapped_frame->clear_metadata();
+    EXPECT_NE(wrapped_frame->metadata()->frame_duration.has_value(),
+              frame->metadata()->frame_duration.has_value());
   }
 
   // Verify that |wrapped_frame| outlives |frame|.
@@ -643,111 +727,44 @@ TEST(VideoFrame, AllocationSize_OddSize) {
   }
 }
 
-TEST(VideoFrameMetadata, SetAndThenGetAllKeysForAllTypes) {
-  VideoFrameMetadata metadata;
+TEST(VideoFrameMetadata, MergeMetadata) {
+  VideoFrameMetadata reference_metadata = GetFullVideoFrameMetadata();
+  VideoFrameMetadata full_metadata = reference_metadata;
+  VideoFrameMetadata empty_metadata;
 
-  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
-    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
+  // Merging empty metadata into full metadata should be a no-op.
+  full_metadata.MergeMetadataFrom(&empty_metadata);
+  VerifyVideoFrameMetadataEquality(full_metadata, reference_metadata);
 
-    EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetBoolean(key, true);
-    EXPECT_TRUE(metadata.HasKey(key));
-    bool bool_value = false;
-    EXPECT_TRUE(metadata.GetBoolean(key, &bool_value));
-    EXPECT_EQ(true, bool_value);
-    metadata.Clear();
-
-    EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetInteger(key, i);
-    EXPECT_TRUE(metadata.HasKey(key));
-    int int_value = -999;
-    EXPECT_TRUE(metadata.GetInteger(key, &int_value));
-    EXPECT_EQ(i, int_value);
-    metadata.Clear();
-
-    EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetDouble(key, 3.14 * i);
-    EXPECT_TRUE(metadata.HasKey(key));
-    double double_value = -999.99;
-    EXPECT_TRUE(metadata.GetDouble(key, &double_value));
-    EXPECT_EQ(3.14 * i, double_value);
-    metadata.Clear();
-
-    EXPECT_FALSE(metadata.HasKey(key));
-    metadata.SetString(key, base::StringPrintf("\xfe%d\xff", i));
-    EXPECT_TRUE(metadata.HasKey(key));
-    std::string string_value;
-    EXPECT_TRUE(metadata.GetString(key, &string_value));
-    EXPECT_EQ(base::StringPrintf("\xfe%d\xff", i), string_value);
-    metadata.Clear();
-
-    EXPECT_FALSE(metadata.HasKey(key));
-    base::TimeDelta reference_delta = base::TimeDelta::FromMilliseconds(42 + i);
-    metadata.SetTimeDelta(key, reference_delta);
-    EXPECT_TRUE(metadata.HasKey(key));
-    base::TimeDelta delta_value;
-    EXPECT_TRUE(metadata.GetTimeDelta(key, &delta_value));
-    EXPECT_EQ(reference_delta, delta_value);
-    metadata.Clear();
-
-    EXPECT_FALSE(metadata.HasKey(key));
-    base::TimeTicks reference_ticks =
-        base::TimeTicks() + base::TimeDelta::FromMilliseconds(1234 + i);
-    metadata.SetTimeTicks(key, reference_ticks);
-    EXPECT_TRUE(metadata.HasKey(key));
-    base::TimeTicks ticks_value;
-    EXPECT_TRUE(metadata.GetTimeTicks(key, &ticks_value));
-    EXPECT_EQ(reference_ticks, ticks_value);
-    metadata.Clear();
-
-    EXPECT_FALSE(metadata.HasKey(key));
-    gfx::Rect reference_rect = gfx::Rect(3, 5, 240, 360);
-    metadata.SetRect(key, reference_rect);
-    EXPECT_TRUE(metadata.HasKey(key));
-    gfx::Rect rect_value;
-    EXPECT_TRUE(metadata.GetRect(key, &rect_value));
-    EXPECT_EQ(reference_rect, rect_value);
-    metadata.Clear();
-  }
-
-  // The Get/SetRotation methods only accept ROTATION as a key.
-  auto rot_key = VideoFrameMetadata::Key::ROTATION;
-  EXPECT_FALSE(metadata.HasKey(rot_key));
-  VideoRotation reference_rot = VideoRotation::VIDEO_ROTATION_270;
-  metadata.SetRotation(rot_key, reference_rot);
-  EXPECT_TRUE(metadata.HasKey(rot_key));
-  VideoRotation rot_value;
-  EXPECT_TRUE(metadata.GetRotation(rot_key, &rot_value));
-  EXPECT_EQ(reference_rot, rot_value);
-  metadata.Clear();
+  // Merging full metadata into empty metadata should fill it up.
+  empty_metadata.MergeMetadataFrom(&full_metadata);
+  VerifyVideoFrameMetadataEquality(empty_metadata, reference_metadata);
 }
 
-TEST(VideoFrameMetadata, PassMetadataViaIntermediary) {
-  VideoFrameMetadata expected;
-  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
-    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
-    expected.SetInteger(key, i);
-  }
+TEST(VideoFrameMetadata, PartialMergeMetadata) {
+  VideoFrameMetadata full_metadata = GetFullVideoFrameMetadata();
 
-  VideoFrameMetadata result;
-  result.MergeMetadataFrom(&expected);
+  const gfx::Rect kTempRect{100, 200, 300, 400};
+  const base::TimeTicks kTempTicks =
+      base::TimeTicks::Now() + base::TimeDelta::FromSeconds(2);
+  const base::TimeDelta kTempDelta = base::TimeDelta::FromMilliseconds(31415);
+  const double kTempDouble = 123.45;
 
-  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
-    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
-    int value = -1;
-    EXPECT_TRUE(result.GetInteger(key, &value));
-    EXPECT_EQ(i, value);
-  }
+  VideoFrameMetadata partial_metadata;
+  partial_metadata.capture_update_rect = kTempRect;
+  partial_metadata.reference_time = kTempTicks;
+  partial_metadata.processing_time = kTempDelta;
+  partial_metadata.resource_utilization = kTempDouble;
+  partial_metadata.allow_overlay = false;
 
-  result.Clear();
-  result.MergeInternalValuesFrom(expected.GetInternalValues());
+  // Merging partial metadata into full metadata partially override it.
+  full_metadata.MergeMetadataFrom(&partial_metadata);
 
-  for (int i = 0; i < VideoFrameMetadata::NUM_KEYS; ++i) {
-    const VideoFrameMetadata::Key key = static_cast<VideoFrameMetadata::Key>(i);
-    int value = -1;
-    EXPECT_TRUE(result.GetInteger(key, &value));
-    EXPECT_EQ(i, value);
-  }
+  EXPECT_EQ(partial_metadata.capture_update_rect, kTempRect);
+  EXPECT_EQ(partial_metadata.reference_time, kTempTicks);
+  EXPECT_EQ(partial_metadata.processing_time, kTempDelta);
+  EXPECT_EQ(partial_metadata.resource_utilization, kTempDouble);
+  EXPECT_EQ(partial_metadata.allow_overlay, false);
 }
 
 }  // namespace media

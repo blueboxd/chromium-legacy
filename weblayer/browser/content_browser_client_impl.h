@@ -126,10 +126,11 @@ class ContentBrowserClientImpl : public content::ContentBrowserClient {
       bool first_auth_attempt,
       LoginAuthRequiredCallback auth_required_callback) override;
 #endif  // OS_ANDROID
-
-  void CreateFeatureListAndFieldTrials();
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
+  ukm::UkmService* GetUkmService() override;
+
+  void CreateFeatureListAndFieldTrials();
 
  private:
   std::unique_ptr<PrefService> CreateLocalState();

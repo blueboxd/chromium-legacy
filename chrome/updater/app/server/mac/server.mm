@@ -77,8 +77,8 @@ void AppServer::FirstTaskRun() {
   }
 }
 
-scoped_refptr<App> AppServerInstance() {
-  return AppInstance<AppServer>();
+scoped_refptr<App> MakeAppServer() {
+  return base::MakeRefCounted<AppServer>();
 }
 
 }  // namespace updater

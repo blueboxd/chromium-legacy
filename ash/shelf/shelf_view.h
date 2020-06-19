@@ -514,6 +514,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // Get the |drag_image_widget_| content view as DragImageView.
   DragImageView* GetDragImage();
 
+  // Returns the bounds of the given |child| view taken into account RTL layouts
+  // and on-going bounds animations on |child|.
+  gfx::Rect GetChildViewTargetMirroredBounds(const views::View* child) const;
+
   // The model; owned by Launcher.
   ShelfModel* model_;
 

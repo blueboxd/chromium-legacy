@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/external_web_app_manager.h"
 #include "chrome/browser/web_applications/file_utils_wrapper.h"
 #include "chrome/browser/web_applications/manifest_update_manager.h"
+#include "chrome/browser/web_applications/os_integration_manager.h"
 #include "chrome/browser/web_applications/pending_app_manager_impl.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -148,6 +149,11 @@ SystemWebAppManager& WebAppProvider::system_web_app_manager() {
   return *system_web_app_manager_;
 }
 
+OsIntegrationManager& WebAppProvider::os_integration_manager() {
+  CheckIsConnected();
+  return *os_integration_manager_;
+}
+
 void WebAppProvider::Shutdown() {
   ui_manager_->Shutdown();
   shortcut_manager_->Shutdown();
@@ -183,6 +189,7 @@ void WebAppProvider::CreateCommonSubsystems(Profile* profile) {
   external_web_app_manager_ = std::make_unique<ExternalWebAppManager>(profile);
   system_web_app_manager_ = std::make_unique<SystemWebAppManager>(profile);
   web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile);
+  os_integration_manager_ = std::make_unique<OsIntegrationManager>();
 }
 
 void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
@@ -266,6 +273,8 @@ void WebAppProvider::ConnectSubsystems() {
   web_app_policy_manager_->SetSubsystems(pending_app_manager_.get());
   file_handler_manager_->SetSubsystems(registrar_.get());
   shortcut_manager_->SetSubsystems(registrar_.get());
+  os_integration_manager_->SetSubsystems(shortcut_manager_.get(),
+                                         file_handler_manager_.get());
 
   connected_ = true;
 }

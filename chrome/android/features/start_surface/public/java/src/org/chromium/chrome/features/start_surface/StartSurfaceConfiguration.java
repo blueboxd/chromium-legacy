@@ -4,12 +4,17 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import androidx.annotation.VisibleForTesting;
+
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 /**
@@ -64,5 +69,36 @@ public class StartSurfaceConfiguration {
     public static boolean isStartSurfaceStackTabSwitcherEnabled() {
         return isStartSurfaceSinglePaneEnabled()
                 && START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue();
+    }
+
+    /**
+     * Add an observer to keep {@link ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE} consistent
+     * with {@link Pref.ARTICLES_LIST_VISIBLE}.
+     */
+    public static void addFeedVisibilityObserver() {
+        updateFeedVisibility();
+        PrefChangeRegistrar prefChangeRegistrar = new PrefChangeRegistrar();
+        prefChangeRegistrar.addObserver(
+                Pref.ARTICLES_LIST_VISIBLE, StartSurfaceConfiguration::updateFeedVisibility);
+    }
+
+    private static void updateFeedVisibility() {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE,
+                PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE));
+    }
+
+    /**
+     * @return Whether the Feed articles are visible.
+     */
+    public static boolean getFeedArticlesVisibility() {
+        return SharedPreferencesManager.getInstance().readBoolean(
+                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, true);
+    }
+
+    @VisibleForTesting
+    static void setFeedVisibilityForTesting(boolean isVisible) {
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, isVisible);
     }
 }

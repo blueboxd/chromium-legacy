@@ -184,6 +184,8 @@ class WebVector {
     data_.insert(begin() + index, value);
   }
 
+  bool Equals(const WebVector<T>& other) const { return data_ == other.data_; }
+
  private:
   std::vector<T> data_;
 };

@@ -96,6 +96,7 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   bool GetFastTransitionStatus() override;
   void SetSimulateConfigurationResult(
       FakeShillSimulatedResult configuration_result) override;
+  base::Value GetEnabledServiceList() const override;
 
   // Constants used for testing.
   static const char kFakeEthernetNetworkGuid[];
@@ -111,7 +112,6 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   void SetTechnologyEnabled(const std::string& type,
                             base::OnceClosure callback,
                             bool enabled);
-  base::Value GetEnabledServiceList(const std::string& property) const;
   void ScanCompleted(const std::string& device_path);
 
   // Parses the command line for Shill stub switches and sets initial states.

@@ -40,11 +40,9 @@ uint64_t VideoFrame::timestamp() const {
 }
 
 base::Optional<uint64_t> VideoFrame::duration() const {
-  base::TimeDelta result;
-  if (frame_ && frame_->metadata()->GetTimeDelta(
-                    media::VideoFrameMetadata::FRAME_DURATION, &result)) {
-    return result.InMicroseconds();
-  }
+  if (frame_ && frame_->metadata()->frame_duration.has_value())
+    return frame_->metadata()->frame_duration->InMicroseconds();
+
   return base::Optional<uint64_t>();
 }
 

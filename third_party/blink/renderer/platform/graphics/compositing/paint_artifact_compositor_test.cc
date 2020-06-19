@@ -142,16 +142,14 @@ class PaintArtifactCompositorTest : public testing::Test,
   }
 
   using ViewportProperties = PaintArtifactCompositor::ViewportProperties;
-  using Settings = PaintArtifactCompositor::Settings;
 
   void Update(
       scoped_refptr<const PaintArtifact> artifact,
       const ViewportProperties& viewport_properties = ViewportProperties(),
-      const Settings& settings = Settings(),
       const WTF::Vector<const TransformPaintPropertyNode*>&
           scroll_translation_nodes = {}) {
     paint_artifact_compositor_->SetNeedsUpdate();
-    paint_artifact_compositor_->Update(artifact, viewport_properties, settings,
+    paint_artifact_compositor_->Update(artifact, viewport_properties,
                                        scroll_translation_nodes);
     layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
@@ -4971,8 +4969,7 @@ TEST_P(PaintArtifactCompositorTest, AddNonCompositedScrollNodes) {
   scroll_translation_nodes.push_back(scroll_translation.get());
 
   TestPaintArtifact artifact;
-  Update(artifact.Build(), ViewportProperties(), Settings(),
-         scroll_translation_nodes);
+  Update(artifact.Build(), ViewportProperties(), scroll_translation_nodes);
 
   auto& scroll_tree = GetPropertyTrees().scroll_tree;
   auto* scroll_node = scroll_tree.FindNodeFromElementId(scroll_element_id);

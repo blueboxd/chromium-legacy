@@ -229,18 +229,19 @@ bool SearchForExactlyOneInnerImage(WebAXObject obj,
     if (!inner_image->IsDetached())
       return false;
     *inner_image = obj;
+  } else {
+    // If we found something else with a name, fail.
+    if (!ui::IsDocument(obj.Role()) && !ui::IsLink(obj.Role())) {
+      blink::WebString web_name = obj.GetName();
+      if (!base::ContainsOnlyChars(web_name.Utf8(), base::kWhitespaceASCII)) {
+        return false;
+      }
+    }
   }
 
   // Fail if we recursed to |max_depth| and there's more of a subtree.
   if (max_depth == 0 && obj.ChildCount())
     return false;
-
-  // If we found something else with a name, fail.
-  if (obj.Role() != ax::mojom::Role::kRootWebArea) {
-    blink::WebString web_name = obj.GetName();
-    if (!base::ContainsOnlyChars(web_name.Utf8(), base::kWhitespaceASCII))
-      return false;
-  }
 
   // Recurse.
   for (unsigned int i = 0; i < obj.ChildCount(); i++) {
@@ -1187,11 +1188,12 @@ void BlinkAXTreeSource::SerializeOtherScreenReaderAttributes(
   if (dst->role == ax::mojom::Role::kImage)
     AddImageAnnotations(src, dst);
 
-  // If a link or web area isn't otherwise labeled and contains
-  // exactly one image (searching only to a max depth of 2),
-  // annotate the link/web area with the image's annotation, too.
-  if (dst->role == ax::mojom::Role::kLink ||
-      dst->role == ax::mojom::Role::kRootWebArea) {
+  // If a link or web area isn't otherwise labeled and contains exactly one
+  // image (searching only to a max depth of 2), and the link doesn't have
+  // accessible text from an attribute like aria-label, then annotate the
+  // link/web area with the image's annotation, too.
+  if ((ui::IsLink(dst->role) || ui::IsDocument(dst->role)) &&
+      dst->GetNameFrom() != ax::mojom::NameFrom::kAttribute) {
     WebAXObject inner_image;
     if (FindExactlyOneInnerImageInMaxDepthTwo(src, &inner_image))
       AddImageAnnotations(inner_image, dst);

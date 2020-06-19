@@ -158,24 +158,12 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
                           double* page_scale_factor,
                           gfx::Vector2dF* root_scroll_offset,
                           double* top_controls_visible_height) {
-  // Get metadata from |frame| and ensure that no metadata is missing.
-  bool success = true;
-  double root_scroll_offset_x, root_scroll_offset_y;
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::DEVICE_SCALE_FACTOR, device_scale_factor);
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::PAGE_SCALE_FACTOR, page_scale_factor);
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_X, &root_scroll_offset_x);
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &root_scroll_offset_y);
-  success &= frame.metadata()->GetDouble(
-      media::VideoFrameMetadata::TOP_CONTROLS_VISIBLE_HEIGHT,
-      top_controls_visible_height);
-  DCHECK(success);
-
-  root_scroll_offset->set_x(root_scroll_offset_x);
-  root_scroll_offset->set_y(root_scroll_offset_y);
+  // Get metadata from |frame|. This will CHECK if metadata is missing.
+  *device_scale_factor = *frame.metadata()->device_scale_factor;
+  *page_scale_factor = *frame.metadata()->page_scale_factor;
+  root_scroll_offset->set_x(*frame.metadata()->root_scroll_offset_x);
+  root_scroll_offset->set_y(*frame.metadata()->root_scroll_offset_y);
+  *top_controls_visible_height = *frame.metadata()->top_controls_visible_height;
 }
 
 }  // namespace

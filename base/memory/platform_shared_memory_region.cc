@@ -4,6 +4,7 @@
 
 #include "base/memory/platform_shared_memory_region.h"
 
+#include "base/memory/aligned_memory.h"
 #include "base/memory/shared_memory_mapping.h"
 #include "base/memory/shared_memory_security_policy.h"
 #include "base/metrics/histogram_functions.h"
@@ -15,7 +16,7 @@ namespace subtle {
 namespace {
 
 void RecordMappingWasBlockedHistogram(bool blocked) {
-  base::UmaHistogramBoolean("SharedMemory.MapBlockedForSecurity", blocked);
+  UmaHistogramBoolean("SharedMemory.MapBlockedForSecurity", blocked);
 }
 
 }  // namespace
@@ -62,14 +63,13 @@ bool PlatformSharedMemoryRegion::MapAt(off_t offset,
   if (!SharedMemorySecurityPolicy::AcquireReservationForMapping(size)) {
     RecordMappingWasBlockedHistogram(/*blocked=*/true);
     return false;
-  } else {
-    RecordMappingWasBlockedHistogram(/*blocked=*/false);
   }
+
+  RecordMappingWasBlockedHistogram(/*blocked=*/false);
 
   bool success = MapAtInternal(offset, size, memory, mapped_size);
   if (success) {
-    DCHECK_EQ(
-        0U, reinterpret_cast<uintptr_t>(*memory) & (kMapMinimumAlignment - 1));
+    DCHECK(IsAligned(*memory, kMapMinimumAlignment));
   } else {
     SharedMemorySecurityPolicy::ReleaseReservationForMapping(size);
   }

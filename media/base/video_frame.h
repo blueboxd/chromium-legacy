@@ -535,8 +535,16 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   //
   // TODO(miu): Move some of the "extra" members of VideoFrame (below) into
   // here as a later clean-up step.
+  //
+  // TODO(https://crbug.com/1096727): change the return type to const&.
   const VideoFrameMetadata* metadata() const { return &metadata_; }
   VideoFrameMetadata* metadata() { return &metadata_; }
+  void set_metadata(const VideoFrameMetadata& metadata) {
+    metadata_ = metadata;
+  }
+
+  // Resets |metadata_|.
+  void clear_metadata() { set_metadata(VideoFrameMetadata()); }
 
   // The time span between the current frame and the first frame of the stream.
   // This is the media timestamp, and not the reference time.

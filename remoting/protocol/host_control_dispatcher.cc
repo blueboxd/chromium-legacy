@@ -124,6 +124,8 @@ void HostControlDispatcher::OnIncomingMessage(
     host_stub_->DeliverClientMessage(message->extension_message());
   } else if (message->has_select_display()) {
     host_stub_->SelectDesktopDisplay(message->select_display());
+  } else if (message->has_peer_connection_parameters()) {
+    host_stub_->ControlPeerConnection(message->peer_connection_parameters());
   } else {
     LOG(WARNING) << "Unknown control message received.";
   }

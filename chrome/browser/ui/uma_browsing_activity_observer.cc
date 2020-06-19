@@ -110,6 +110,7 @@ void UMABrowsingActivityObserver::LogRenderProcessHostCount() const {
 void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   int tab_count = 0;
   int tab_group_count = 0;
+  int collapsed_tab_group_count = 0;
   int customized_tab_group_count = 0;
   int app_window_count = 0;
   int popup_window_count = 0;
@@ -131,6 +132,9 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
       if (tab_group->IsCustomized() ||
           !tab_group->visual_data()->title().empty()) {
         ++customized_tab_group_count;
+      }
+      if (tab_group->visual_data()->is_collapsed()) {
+        ++collapsed_tab_group_count;
       }
     }
 
@@ -174,6 +178,10 @@ void UMABrowsingActivityObserver::LogBrowserTabCount() const {
   // all windows.
   UMA_HISTOGRAM_COUNTS_100("TabGroups.UserCustomizedGroupCountPerLoad",
                            customized_tab_group_count);
+
+  // Record how many tab groups are collapsed across all windows.
+  UMA_HISTOGRAM_COUNTS_100("TabGroups.CollapsedGroupCountPerLoad",
+                           collapsed_tab_group_count);
 
   // Record how many windows are open, by type.
   UMA_HISTOGRAM_COUNTS_100("WindowManager.AppWindowCountPerLoad",

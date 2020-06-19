@@ -8,11 +8,6 @@ declare_args() {
   # speed benefits at runtime (so we skip in debug builds).
   optimize_webui = !is_debug
 
-  # Enable closure type-checking for Chrome's web technology-based UI. This
-  # enables the webui_closure_compile target which does a no-op without this
-  # flag enabled. Requires Java.
-  closure_compile = is_chromeos || is_linux || is_android
-
   # Enable the WebUI version of the browser's tab strip.
   enable_webui_tab_strip = is_chromeos || is_linux || is_win
 }

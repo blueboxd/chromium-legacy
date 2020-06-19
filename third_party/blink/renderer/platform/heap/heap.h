@@ -175,12 +175,9 @@ class ObjectAliveTrait<T, true> {
   NO_SANITIZE_ADDRESS
   static bool IsHeapObjectAlive(const T* object) {
     static_assert(sizeof(T), "T must be fully defined");
-    const HeapObjectHeader* header = HeapObjectHeader::FromTraceDescriptor(
-        TraceTrait<T>::GetTraceDescriptor(object));
-    if (header == BlinkGC::kNotFullyConstructedObject) {
-      // Objects under construction are always alive.
-      return true;
-    }
+    const HeapObjectHeader* header = HeapObjectHeader::FromPayload(
+        TraceTrait<T>::GetTraceDescriptor(object).base_object_payload);
+    DCHECK(!header->IsInConstruction() || header->IsMarked());
     return header->IsMarked();
   }
 };

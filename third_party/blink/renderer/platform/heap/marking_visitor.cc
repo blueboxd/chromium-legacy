@@ -65,9 +65,9 @@ void MarkingVisitorCommon::VisitWeak(const void* object,
   // Filter out already marked values. The write barrier for WeakMember
   // ensures that any newly set value after this point is kept alive and does
   // not require the callback.
-  if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
-      HeapObjectHeader::FromPayload(desc.base_object_payload)
-          ->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
+  HeapObjectHeader* header =
+      HeapObjectHeader::FromPayload(desc.base_object_payload);
+  if (header->IsMarked<HeapObjectHeader::AccessMode::kAtomic>())
     return;
   RegisterWeakCallback(callback, object_weak_ref);
 }
@@ -136,7 +136,7 @@ bool MarkingVisitor::MarkValue(void* value,
   if (UNLIKELY(IsInConstruction(header))) {
     // It is assumed that objects on not_fully_constructed_worklist_ are not
     // marked.
-    header->Unmark();
+    header->Unmark<HeapObjectHeader::AccessMode::kAtomic>();
     visitor->not_fully_constructed_worklist_.Push(header->Payload());
     return true;
   }

@@ -90,8 +90,7 @@ class FakeMediaStreamVideoSink : public MediaStreamVideoSink {
   void OnVideoFrame(scoped_refptr<media::VideoFrame> frame,
                     base::TimeTicks capture_time) {
     *capture_time_ = capture_time;
-    metadata_->Clear();
-    metadata_->MergeMetadataFrom(frame->metadata());
+    *metadata_ = *frame->metadata();
     std::move(got_frame_cb_).Run();
   }
 
@@ -245,17 +244,14 @@ TEST_F(MediaStreamVideoCapturerSourceTest, CaptureTimeAndMetadataPlumbing) {
   fake_sink.ConnectToTrack(track);
   const scoped_refptr<media::VideoFrame> frame =
       media::VideoFrame::CreateBlackFrame(gfx::Size(2, 2));
-  frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE, 30.0);
+  frame->metadata()->frame_rate = 30.0;
   PostCrossThreadTask(
       *Platform::Current()->GetIOTaskRunner(), FROM_HERE,
       CrossThreadBindOnce(deliver_frame_cb, frame, reference_capture_time));
   run_loop.Run();
   fake_sink.DisconnectFromTrack();
   EXPECT_EQ(reference_capture_time, capture_time);
-  double metadata_value;
-  EXPECT_TRUE(metadata.GetDouble(media::VideoFrameMetadata::FRAME_RATE,
-                                 &metadata_value));
-  EXPECT_EQ(30.0, metadata_value);
+  EXPECT_EQ(30.0, *metadata.frame_rate);
 }
 
 TEST_F(MediaStreamVideoCapturerSourceTest, Restart) {

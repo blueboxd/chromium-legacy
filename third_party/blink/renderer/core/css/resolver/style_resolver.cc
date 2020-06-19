@@ -1834,9 +1834,18 @@ bool StyleResolver::CacheSuccess::FontChanged(
          style.GetFontDescription();
 }
 
-bool StyleResolver::CacheSuccess::EffectiveZoomOrFontChanged(
+bool StyleResolver::CacheSuccess::InheritedVariablesChanged(
     const ComputedStyle& style) const {
-  return EffectiveZoomChanged(style) || FontChanged(style);
+  if (!cached_matched_properties)
+    return false;
+  return cached_matched_properties->computed_style->InheritedVariables() !=
+         style.InheritedVariables();
+}
+
+bool StyleResolver::CacheSuccess::IsUsableAfterApplyInheritedOnly(
+    const ComputedStyle& style) const {
+  return !EffectiveZoomChanged(style) && !FontChanged(style) &&
+         !InheritedVariablesChanged(style);
 }
 
 StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
@@ -2175,7 +2184,7 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
 
   if (cache_success.ShouldApplyInheritedOnly()) {
     cascade.Apply(CascadeFilter(CSSProperty::kInherited, false));
-    if (cache_success.EffectiveZoomOrFontChanged(state.StyleRef()))
+    if (!cache_success.IsUsableAfterApplyInheritedOnly(state.StyleRef()))
       cascade.Apply(CascadeFilter(CSSProperty::kInherited, true));
   } else {
     cascade.Apply();

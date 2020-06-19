@@ -21,6 +21,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.components.browser_ui.media.MediaNotificationController;
+import org.chromium.components.browser_ui.media.MediaNotificationInfo;
 
 /**
  * JUnit tests for checking {@link MediaNotificationController} throttles notification updates

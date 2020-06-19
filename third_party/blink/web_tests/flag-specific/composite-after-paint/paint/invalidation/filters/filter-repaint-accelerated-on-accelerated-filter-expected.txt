@@ -9,7 +9,6 @@
     {
       "name": "LayoutNGBlockFlow DIV class='blur accelerated'",
       "bounds": [200, 200],
-      "drawsContent": false,
       "transform": 1
     },
     {

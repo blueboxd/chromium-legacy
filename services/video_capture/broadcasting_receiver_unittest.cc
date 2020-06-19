@@ -96,8 +96,6 @@ TEST_F(
       access_permission.InitWithNewPipeAndPassReceiver());
   media::mojom::VideoFrameInfoPtr frame_info =
       media::mojom::VideoFrameInfo::New();
-  media::VideoFrameMetadata frame_metadata;
-  frame_info->metadata = frame_metadata.GetInternalValues().Clone();
   broadcaster_.OnFrameReadyInBuffer(kArbiraryBufferId, kArbiraryFrameFeedbackId,
                                     std::move(access_permission),
                                     std::move(frame_info));
@@ -160,8 +158,6 @@ TEST_F(BroadcastingReceiverTest,
       access_permission.InitWithNewPipeAndPassReceiver());
   media::mojom::VideoFrameInfoPtr frame_info =
       media::mojom::VideoFrameInfo::New();
-  media::VideoFrameMetadata frame_metadata;
-  frame_info->metadata = frame_metadata.GetInternalValues().Clone();
   broadcaster_.OnFrameReadyInBuffer(kArbiraryBufferId, kArbiraryFrameFeedbackId,
                                     std::move(access_permission),
                                     std::move(frame_info));

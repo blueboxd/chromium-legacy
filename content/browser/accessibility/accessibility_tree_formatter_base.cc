@@ -81,6 +81,18 @@ PropertyNode::operator bool() const {
   return !name_or_value.empty();
 }
 
+bool PropertyNode::IsArray() const {
+  return name_or_value == base::ASCIIToUTF16("[]");
+}
+
+base::Optional<int> PropertyNode::AsInt() const {
+  int value = 0;
+  if (!base::StringToInt(name_or_value, &value)) {
+    return base::nullopt;
+  }
+  return value;
+}
+
 std::string PropertyNode::ToString() const {
   std::string out;
   for (const auto& index : line_indexes) {

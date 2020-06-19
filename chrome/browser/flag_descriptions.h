@@ -204,6 +204,12 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kContextMenuSearchWithGoogleLensName[];
 extern const char kContextMenuSearchWithGoogleLensDescription[];
 
+extern const char kContextMenuShopWithGoogleLensName[];
+extern const char kContextMenuShopWithGoogleLensDescription[];
+
+extern const char kContextMenuSearchAndShopWithGoogleLensName[];
+extern const char kContextMenuSearchAndShopWithGoogleLensDescription[];
+
 extern const char kOmniboxContextMenuShowFullUrlsName[];
 extern const char kOmniboxContextMenuShowFullUrlsDescription[];
 

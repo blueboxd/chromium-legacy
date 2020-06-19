@@ -345,6 +345,20 @@ const char kContextMenuSearchWithGoogleLensDescription[] =
     "Replaces default image search with an intent to Google Lens when "
     "supported.";
 
+const char kContextMenuShopWithGoogleLensName[] =
+    "Google Lens powered image search for shoppable images in the context "
+    "menu.";
+const char kContextMenuShopWithGoogleLensDescription[] =
+    "Replaces default image search with a Shopping intent to Google Lens when "
+    "supported";
+
+const char kContextMenuSearchAndShopWithGoogleLensName[] =
+    "Google Lens powered image search and shopping in the context menu.";
+const char kContextMenuSearchAndShopWithGoogleLensDescription[] =
+    "Replaces default image search with an intent to Google Lens when "
+    "supported. Also display an additional menu item for a Shopping intent to "
+    "Google Lens when supported";
+
 const char kOmniboxContextMenuShowFullUrlsName[] =
     "Context menu show full URLs";
 const char kOmniboxContextMenuShowFullUrlsDescription[] =

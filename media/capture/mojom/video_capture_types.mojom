@@ -5,9 +5,9 @@
 module media.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
+import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gfx/mojom/color_space.mojom";
@@ -279,7 +279,7 @@ struct PlaneStrides {
 
 struct VideoFrameInfo{
   mojo_base.mojom.TimeDelta timestamp;
-  mojo_base.mojom.DictionaryValue metadata;
+  VideoFrameMetadata metadata;
   VideoCapturePixelFormat pixel_format;
   gfx.mojom.Size coded_size;
   gfx.mojom.Rect visible_rect;

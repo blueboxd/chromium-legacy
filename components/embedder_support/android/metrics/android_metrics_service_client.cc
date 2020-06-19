@@ -33,17 +33,20 @@
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/cellular_logic_helper.h"
+#include "components/metrics/net/net_metrics_log_uploader.h"
 #include "components/metrics/net/network_metrics_provider.h"
 #include "components/metrics/persistent_histograms.h"
 #include "components/metrics/stability_metrics_helper.h"
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 #include "components/metrics/version_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/ukm/field_trials_provider_helper.h"
+#include "components/ukm/ukm_service.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 namespace metrics {
 
 namespace {
@@ -193,6 +196,7 @@ void AndroidMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   metrics::FileMetricsProvider::RegisterPrefs(registry,
                                               kCrashpadHistogramAllocatorName);
   metrics::StabilityMetricsHelper::RegisterPrefs(registry);
+  ukm::UkmService::RegisterPrefs(registry);
 }
 
 void AndroidMetricsServiceClient::Initialize(PrefService* pref_service) {
@@ -232,6 +236,8 @@ void AndroidMetricsServiceClient::MaybeStartMetrics() {
         // for a matching Stop() call.
         metrics_service_->Start();
       }
+
+      CreateUkmService();
     } else {
       OnMetricsNotStarted();
       pref_service_->ClearPref(prefs::kMetricsClientID);
@@ -273,6 +279,28 @@ AndroidMetricsServiceClient::CreateMetricsService(
   return service;
 }
 
+void AndroidMetricsServiceClient::CreateUkmService() {
+  ukm_service_ = std::make_unique<ukm::UkmService>(
+      pref_service_, this, /*demographics_provider=*/nullptr);
+
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::NetworkMetricsProvider>(
+          content::CreateNetworkConnectionTrackerAsyncGetter()));
+
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::GPUMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::CPUMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::ScreenInfoMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(ukm::CreateFieldTrialsProviderForUkm());
+
+  UpdateUkmService();
+}
+
 void AndroidMetricsServiceClient::RegisterForNotifications() {
   registrar_.Add(this, content::NOTIFICATION_LOAD_START,
                  content::NotificationService::AllSources());
@@ -311,6 +339,37 @@ AndroidMetricsServiceClient::CreateLowEntropyProvider() {
   return metrics_state_manager_->CreateLowEntropyProvider();
 }
 
+void AndroidMetricsServiceClient::EnableUkm(bool enable) {
+  bool must_purge = ukm_enabled_ && !enable;
+  ukm_enabled_ = enable;
+
+  if (!ukm_service_)
+    return;
+  if (must_purge) {
+    ukm_service_->Purge();
+    ukm_service_->ResetClientState(ukm::ResetReason::kOnUkmAllowedStateChanged);
+  }
+
+  UpdateUkmService();
+}
+
+void AndroidMetricsServiceClient::UpdateUkmService() {
+  if (!ukm_service_)
+    return;
+
+  bool consent_or_flag = IsConsentGiven() || IsMetricsReportingForceEnabled();
+  bool allowed = IsUkmAllowedForAllProfiles();
+  bool is_incognito = IsOffTheRecordSessionActive();
+
+  if (consent_or_flag && allowed && !is_incognito) {
+    ukm_service_->EnableRecording(/*extensions=*/false);
+    ukm_service_->EnableReporting();
+  } else {
+    ukm_service_->DisableRecording();
+    ukm_service_->DisableReporting();
+  }
+}
+
 bool AndroidMetricsServiceClient::IsConsentDetermined() const {
   return init_finished_ && set_consent_finished_;
 }
@@ -333,6 +392,10 @@ MetricsService* AndroidMetricsServiceClient::GetMetricsService() {
   // This will be null if initialization hasn't finished, or if metrics
   // collection is disabled.
   return metrics_service_.get();
+}
+
+ukm::UkmService* AndroidMetricsServiceClient::GetUkmService() {
+  return ukm_service_.get();
 }
 
 // In Chrome, UMA and Crashpad are enabled/disabled together by the same
@@ -383,6 +446,15 @@ std::unique_ptr<MetricsLogUploader> AndroidMetricsServiceClient::CreateUploader(
     base::StringPiece mime_type,
     MetricsLogUploader::MetricServiceType service_type,
     const MetricsLogUploader::UploadCallback& on_upload_complete) {
+  if (service_type == metrics::MetricsLogUploader::UKM) {
+    // Clearcut doesn't handle UKMs.
+    auto url_loader_factory = GetURLLoaderFactory();
+    DCHECK(url_loader_factory);
+    return std::make_unique<metrics::NetMetricsLogUploader>(
+        url_loader_factory, server_url, insecure_server_url, mime_type,
+        service_type, on_upload_complete);
+  }
+
   // |server_url|, |insecure_server_url|, and |mime_type| are unused because
   // AndroidMetricsServiceClients send metrics to the platform logging mechanism
   // rather than to Chrome's metrics server.
@@ -404,6 +476,10 @@ base::TimeDelta AndroidMetricsServiceClient::GetStandardUploadInterval() {
     return overridden_upload_interval_;
   }
   return metrics::GetUploadInterval(false /* use_cellular_upload_interval */);
+}
+
+bool AndroidMetricsServiceClient::IsUkmAllowedForAllProfiles() {
+  return ukm_enabled_;
 }
 
 bool AndroidMetricsServiceClient::ShouldStartUpFastForTesting() const {
@@ -482,6 +558,15 @@ std::string AndroidMetricsServiceClient::GetAppPackageNameInternal() {
   if (j_app_name)
     return ConvertJavaStringToUTF8(env, j_app_name);
   return std::string();
+}
+
+bool AndroidMetricsServiceClient::IsOffTheRecordSessionActive() {
+  return false;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+AndroidMetricsServiceClient::GetURLLoaderFactory() {
+  return nullptr;
 }
 
 }  // namespace metrics

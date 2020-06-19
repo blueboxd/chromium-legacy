@@ -137,7 +137,7 @@ class LinkedObject : public GarbageCollected<LinkedObject> {
   LinkedObject* next() const { return next_; }
   Member<LinkedObject>& next_ref() { return next_; }
 
-  void Trace(Visitor* visitor) const { visitor->Trace(next_); }
+  virtual void Trace(Visitor* visitor) const { visitor->Trace(next_); }
 
  private:
   Member<LinkedObject> next_;

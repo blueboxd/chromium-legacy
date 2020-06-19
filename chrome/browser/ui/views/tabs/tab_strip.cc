@@ -24,6 +24,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -1601,6 +1602,10 @@ base::Optional<int> TabStrip::GetFocusedTabIndex() const {
       return i;
   }
   return base::nullopt;
+}
+
+views::View* TabStrip::GetTabViewForPromoAnchor(int index_hint) {
+  return tab_at(base::ClampToRange(index_hint, 0, tab_count()));
 }
 
 const ui::ListSelectionModel& TabStrip::GetSelectionModel() const {

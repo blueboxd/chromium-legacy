@@ -18,8 +18,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.mediarouter.app.MediaRouteButton;
 
 import org.chromium.chrome.browser.media.router.caf.BaseSessionController;
-import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.media.router.R;
+import org.chromium.components.browser_ui.media.MediaNotificationUma;
 import org.chromium.third_party.android.media.MediaController;
 
 /**

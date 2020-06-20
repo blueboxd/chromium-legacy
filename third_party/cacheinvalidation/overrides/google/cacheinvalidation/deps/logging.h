@@ -5,6 +5,7 @@
 #ifndef GOOGLE_CACHEINVALIDATION_DEPS_LOGGING_H_
 #define GOOGLE_CACHEINVALIDATION_DEPS_LOGGING_H_
 
+#include "base/check.h"
 #include "base/logging.h"
 
 namespace invalidation {

@@ -22,7 +22,7 @@ namespace mojo {
 // SyncHandleWatcher is used for sync methods. While a sync call is waiting for
 // response, we would like to block the sequence. On the other hand, we need
 // incoming sync method requests on the same sequence to be able to reenter. We
-// also need master interface endpoints to continue dispatching messages for
+// also need primary interface endpoints to continue dispatching messages for
 // associated endpoints on different sequence.
 //
 // This class is not thread safe.

@@ -84,7 +84,7 @@
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event.h"
-#include "components/autofill/android/autofill_provider_android.h"
+#include "components/autofill/android/provider/autofill_provider_android.h"
 #include "components/embedder_support/android/contextmenu/context_menu_builder.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
 #include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck

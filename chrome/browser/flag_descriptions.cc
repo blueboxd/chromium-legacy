@@ -1465,6 +1465,12 @@ const char kOmniboxSuggestionsWrapAroundName[] =
 const char kOmniboxSuggestionsWrapAroundDescription[] =
     "Allow long search suggestions to wrap around to reveal their content";
 
+const char kOmniboxTabSwitchSuggestionsName[] =
+    "Omnibox switch to tab suggestions";
+const char kOmniboxTabSwitchSuggestionsDescription[] =
+    "Enable URL suggestions to optionally take the user to a tab where a "
+    "website is already opened.";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =
@@ -3067,11 +3073,6 @@ const char kOmniboxShortBookmarkSuggestionsName[] =
 const char kOmniboxShortBookmarkSuggestionsDescription[] =
     "Match very short input words to beginning of words in bookmark "
     "suggestions.";
-
-const char kOmniboxTabSwitchSuggestionsName[] =
-    "Omnibox tab switch suggestions";
-const char kOmniboxTabSwitchSuggestionsDescription[] =
-    "Enable suggestions for switching to open tabs within the Omnibox.";
 
 const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
     "Omnibox dedicated row tab switch suggestions";

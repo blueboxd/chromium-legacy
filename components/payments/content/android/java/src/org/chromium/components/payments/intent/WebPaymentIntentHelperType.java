@@ -267,48 +267,10 @@ public final class WebPaymentIntentHelperType {
         }
     }
 
-    /** The class that mirrors mojom.PaymentHandlerModifier. */
-    public static final class PaymentHandlerModifier {
-        public static String EXTRA_TOTAL = "total";
-        public static String EXTRA_METHOD_DATA = "methodData";
-        @Nullable
-        public final PaymentCurrencyAmount total;
-        public final PaymentHandlerMethodData methodData;
-        public PaymentHandlerModifier(
-                @Nullable PaymentCurrencyAmount total, PaymentHandlerMethodData methodData) {
-            this.total = total;
-            this.methodData = methodData;
-        }
-
-        private Bundle asBundle() {
-            Bundle bundle = new Bundle();
-            if (total != null) bundle.putBundle(EXTRA_TOTAL, total.asBundle());
-            bundle.putBundle(EXTRA_METHOD_DATA, methodData.asBundle());
-            return bundle;
-        }
-
-        /**
-         * Create a parcelable array of payment handler modifiers.
-         * @param  modifiers The list of available modifiers.
-         * @return The parcelable array of payment handler modifiers passed to the native payment
-         *         app.
-         */
-        /* package */ static Parcelable[] buildPaymentHandlerModifierArray(
-                List<PaymentHandlerModifier> modifiers) {
-            Parcelable[] result = new Parcelable[modifiers.size()];
-            int index = 0;
-            for (PaymentHandlerModifier modifier : modifiers) {
-                result[index++] = modifier.asBundle();
-            }
-            return result;
-        }
-    }
-
     /** The class that mirrors mojom.PaymentRequestDetailsUpdate. */
     public static final class PaymentRequestDetailsUpdate {
         public static final String EXTRA_TOTAL = "total";
         public static final String EXTRA_SHIPPING_OPTIONS = "shippingOptions";
-        public static final String EXTRA_MODIFIERS = "modifiers";
         public static final String EXTRA_ERROR_MESSAGE = "error";
         public static final String EXTRA_STRINGIFIED_PAYMENT_METHOD_ERRORS =
                 "stringifiedPaymentMethodErrors";
@@ -319,8 +281,6 @@ public final class WebPaymentIntentHelperType {
         @Nullable
         public final List<PaymentShippingOption> shippingOptions;
         @Nullable
-        public final List<PaymentHandlerModifier> modifiers;
-        @Nullable
         public final String error;
         @Nullable
         public final String stringifiedPaymentMethodErrors;
@@ -328,13 +288,11 @@ public final class WebPaymentIntentHelperType {
         public final Bundle bundledShippingAddressErrors;
 
         public PaymentRequestDetailsUpdate(@Nullable PaymentCurrencyAmount total,
-                @Nullable List<PaymentShippingOption> shippingOptions,
-                @Nullable List<PaymentHandlerModifier> modifiers, @Nullable String error,
+                @Nullable List<PaymentShippingOption> shippingOptions, @Nullable String error,
                 @Nullable String stringifiedPaymentMethodErrors,
                 @Nullable Bundle bundledShippingAddressErrors) {
             this.total = total;
             this.shippingOptions = shippingOptions;
-            this.modifiers = modifiers;
             this.error = error;
             this.stringifiedPaymentMethodErrors = stringifiedPaymentMethodErrors;
             this.bundledShippingAddressErrors = bundledShippingAddressErrors;
@@ -353,10 +311,6 @@ public final class WebPaymentIntentHelperType {
             if (shippingOptions != null && !shippingOptions.isEmpty()) {
                 bundle.putParcelableArray(EXTRA_SHIPPING_OPTIONS,
                         PaymentShippingOption.buildPaymentShippingOptionList(shippingOptions));
-            }
-            if (modifiers != null && !modifiers.isEmpty()) {
-                bundle.putParcelableArray(EXTRA_MODIFIERS,
-                        PaymentHandlerModifier.buildPaymentHandlerModifierArray(modifiers));
             }
             if (!TextUtils.isEmpty(error)) bundle.putString(EXTRA_ERROR_MESSAGE, error);
             if (!TextUtils.isEmpty(stringifiedPaymentMethodErrors)) {

@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"

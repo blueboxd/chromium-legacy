@@ -5,12 +5,18 @@
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 
 #include "base/bind.h"
+#include "base/callback_forward.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/clock.h"
+#include "base/time/default_clock.h"
+#include "base/time/time_to_iso8601.h"
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_service_factory.h"
+#include "chrome/browser/media/feeds/media_feeds_store.mojom-forward.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom-shared.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -44,6 +50,15 @@ GURL Normalize(const GURL& url) {
   replacements.ClearQuery();
   replacements.ClearRef();
   return url.ReplaceComponents(replacements);
+}
+
+media_history::MediaHistoryKeyedService::MediaFeedFetchDetails
+FetchDetailsFromFeed(const mojom::MediaFeedPtr& media_feed) {
+  media_history::MediaHistoryKeyedService::MediaFeedFetchDetails details;
+  details.url = media_feed->url;
+  details.last_fetch_result = media_feed->last_fetch_result;
+  details.reset_token = media_feed->reset_token;
+  return details;
 }
 
 class CookieChangeListener : public network::mojom::CookieChangeListener {
@@ -120,13 +135,21 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
 const char MediaFeedsService::kSafeSearchResultHistogramName[] =
     "Media.Feeds.SafeSearch.Result";
 
+// The maximum number of feeds to fetch when getting the top feeds.
+const int kMaxTopFeedsToFetch = 5;
+
+// The minimum watchtime required on the feed's origin before a feed can be
+// considered a top feed.
+constexpr base::TimeDelta kTopFeedsMinWatchTime =
+    base::TimeDelta::FromMinutes(30);
+
 MediaFeedsService::MediaFeedsService(Profile* profile)
-    :
-      cookie_change_listener_(std::make_unique<CookieChangeListener>(
+    : cookie_change_listener_(std::make_unique<CookieChangeListener>(
           profile,
           base::BindRepeating(&MediaFeedsService::OnResetOriginFromCookie,
                               base::Unretained(this)))),
-      profile_(profile) {
+      profile_(profile),
+      clock_(base::DefaultClock::GetInstance()) {
   DCHECK(!profile->IsOffTheRecord());
 
   pref_change_registrar_.Init(profile_->GetPrefs());
@@ -182,7 +205,9 @@ void MediaFeedsService::SetSafeSearchCompletionCallbackForTest(
   safe_search_completion_callback_ = std::move(callback);
 }
 
-void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
+void MediaFeedsService::FetchMediaFeed(const int64_t feed_id,
+                                       const bool bypass_cache,
+                                       media_feeds::mojom::MediaFeedPtr feed,
                                        FetchMediaFeedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -198,9 +223,19 @@ void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
                                          GetURLLoaderFactoryForFetcher()),
                                      std::move(callback)));
 
-  GetMediaHistoryService()->GetMediaFeedFetchDetails(
-      feed_id, base::BindOnce(&MediaFeedsService::OnGotFetchDetails,
-                              weak_factory_.GetWeakPtr(), feed_id));
+  if (feed) {
+    OnGotFetchDetails(feed_id, bypass_cache, FetchDetailsFromFeed(feed));
+  } else {
+    GetMediaHistoryService()->GetMediaFeedFetchDetails(
+        feed_id,
+        base::BindOnce(&MediaFeedsService::OnGotFetchDetails,
+                       weak_factory_.GetWeakPtr(), feed_id, bypass_cache));
+  }
+}
+
+void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
+                                       FetchMediaFeedCallback callback) {
+  FetchMediaFeed(feed_id, false, nullptr, std::move(callback));
 }
 
 media_history::MediaHistoryKeyedService*
@@ -296,6 +331,45 @@ void MediaFeedsService::ResetMediaFeed(const url::Origin& origin,
   GetMediaHistoryService()->ResetMediaFeed(origin, reason);
 }
 
+void MediaFeedsService::FetchTopMediaFeeds(base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (!IsBackgroundFetchingEnabled())
+    return;
+
+  GetMediaHistoryService()->GetMediaFeeds(
+      media_history::MediaHistoryKeyedService::GetMediaFeedsRequest::
+          CreateTopFeedsForFetch(kMaxTopFeedsToFetch, kTopFeedsMinWatchTime),
+      base::BindOnce(&MediaFeedsService::OnGotTopFeeds,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void MediaFeedsService::OnGotTopFeeds(
+    base::OnceClosure callback,
+    std::vector<media_feeds::mojom::MediaFeedPtr> feeds) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  int feeds_fetched = 0;
+  auto it = feeds.begin();
+
+  while (feeds_fetched < kMaxTopFeedsToFetch && it != feeds.end()) {
+    auto& feed = *it;
+
+    auto background_fetch_feed_settings = GetBackgroundFetchFeedSettings(feed);
+    if (background_fetch_feed_settings.should_fetch) {
+      auto feed_id = feed->id;
+      FetchMediaFeed(
+          feed_id, /*bypass_cache=*/background_fetch_feed_settings.bypass_cache,
+          std::move(feed), base::DoNothing());
+      feeds_fetched++;
+    }
+
+    ++it;
+  }
+
+  std::move(callback).Run();
+}
+
 void MediaFeedsService::OnCheckURLDone(
     const media_history::MediaHistoryKeyedService::SafeSearchID id,
     const GURL& original_url,
@@ -388,6 +462,7 @@ MediaFeedsService::InflightSafeSearchCheck::~InflightSafeSearchCheck() =
 
 void MediaFeedsService::OnGotFetchDetails(
     const int64_t feed_id,
+    bool bypass_cache,
     base::Optional<
         media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
         details) {
@@ -399,11 +474,12 @@ void MediaFeedsService::OnGotFetchDetails(
     return;
   }
 
+  bool should_bypass_cache =
+      bypass_cache ||
+      details->last_fetch_result != media_feeds::mojom::FetchResult::kSuccess;
+
   fetches_.at(feed_id).fetcher->FetchFeed(
-      details->url,
-      // If the last fetch result was not successful then we should make sure
-      // we don't get the bad result from the cache.
-      details->last_fetch_result != media_feeds::mojom::FetchResult::kSuccess,
+      details->url, should_bypass_cache,
       // Use of unretained is safe because the callback is owned
       // by fetcher_, which will not outlive this.
       base::BindOnce(&MediaFeedsService::OnFetchResponse,
@@ -478,6 +554,48 @@ void MediaFeedsService::OnResetOriginFromCookie(
 
   if (!cookie_change_callback_.is_null())
     std::move(cookie_change_callback_).Run();
+}
+
+MediaFeedsService::BackgroundFetchFeedSettings
+MediaFeedsService::GetBackgroundFetchFeedSettings(
+    const media_feeds::mojom::MediaFeedPtr& feed) {
+  BackgroundFetchFeedSettings settings;
+  settings.should_fetch = false;
+  settings.bypass_cache = false;
+
+  // Fetches should be spaced 15 minutes apart with exponential backoff
+  // based on how many sequential times the fetch has failed.
+  if (feed->last_fetch_time.has_value()) {
+    // TODO(crbug.com/1064751): Consider using net::BackoffEntry for this.
+    base::Time next_fetch_time =
+        feed->last_fetch_time.value() +
+        base::TimeDelta::FromMinutes(15 * pow(2, feed->fetch_failed_count));
+    settings.should_fetch = next_fetch_time < clock_->Now();
+  }
+
+  // If we haven't gotten a non-cached version of the feed in a while, we should
+  // fetch.
+  if (feed->last_fetch_time_not_cache_hit.has_value()) {
+    base::Time next_fetch_time = feed->last_fetch_time_not_cache_hit.value() +
+                                 base::TimeDelta::FromHours(24);
+    if (next_fetch_time < clock_->Now()) {
+      settings.should_fetch = true;
+      settings.bypass_cache = true;
+    }
+  }
+
+  // If the feed has never been fetched, we should fetch it.
+  if (!feed->last_fetch_time.has_value()) {
+    settings.should_fetch = true;
+  }
+
+  // If the feed has been reset, we should fetch and ignore the cache.
+  if (feed->reset_reason != mojom::ResetReason::kNone) {
+    settings.should_fetch = true;
+    settings.bypass_cache = true;
+  }
+
+  return settings;
 }
 
 scoped_refptr<::network::SharedURLLoaderFactory>

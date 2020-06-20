@@ -8,6 +8,8 @@
 #include <wincodec.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/test/task_environment.h"
 #include "media/capture/video/win/sink_filter_win.h"
 #include "media/capture/video/win/video_capture_device_factory_win.h"
 #include "media/capture/video/win/video_capture_device_mf_win.h"
@@ -413,11 +415,34 @@ class MockMFCaptureEngine
     EXPECT_TRUE(pAttributes);
     EXPECT_TRUE(pVideoSource);
     event_callback = pEventCallback;
-    OnCorrectInitialize();
+    OnCorrectInitializeQueued();
+
+    ON_CALL(*this, OnInitStatus).WillByDefault(Return(S_OK));
+    ON_CALL(*this, OnInitEventGuid)
+        .WillByDefault(Return(MF_CAPTURE_ENGINE_INITIALIZED));
+    // HW Cameras usually add about 500ms latency on init
+    ON_CALL(*this, InitEventDelay)
+        .WillByDefault(Return(base::TimeDelta::FromMilliseconds(500)));
+
+    base::TimeDelta event_delay = InitEventDelay();
+
+    base::ThreadPool::PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&MockMFCaptureEngine::FireCaptureEvent, this,
+                       OnInitEventGuid(), OnInitStatus()),
+        event_delay);
+    // if zero is passed ensure event fires before wait starts
+    if (event_delay == base::TimeDelta::FromMilliseconds(0)) {
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(200));
+    }
+
     return S_OK;
   }
 
-  MOCK_METHOD0(OnCorrectInitialize, void(void));
+  MOCK_METHOD0(OnCorrectInitializeQueued, void(void));
+  MOCK_METHOD0(OnInitEventGuid, GUID(void));
+  MOCK_METHOD0(OnInitStatus, HRESULT(void));
+  MOCK_METHOD0(InitEventDelay, base::TimeDelta(void));
 
   IFACEMETHODIMP StartPreview(void) override {
     OnStartPreview();
@@ -456,8 +481,14 @@ class MockMFCaptureEngine
   }
   MOCK_METHOD0(DoGetSource, IMFCaptureSource*());
 
+  void FireCaptureEvent(GUID event, HRESULT hrStatus) {
+    ComPtr<IMFMediaEvent> captureEvent;
+    MFCreateMediaEvent(MEExtendedType, event, hrStatus, nullptr, &captureEvent);
+    if (event_callback) {
+      event_callback->OnEvent(captureEvent.Get());
+    }
+  }
   scoped_refptr<IMFCaptureEngineOnEventCallback> event_callback;
-
  private:
   friend class base::RefCountedThreadSafe<MockMFCaptureEngine>;
   virtual ~MockMFCaptureEngine() = default;
@@ -872,7 +903,7 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
     device_->set_max_retry_count_for_testing(3);
     device_->set_retry_delay_in_ms_for_testing(1);
 
-    EXPECT_CALL(*(engine_.Get()), OnCorrectInitialize());
+    EXPECT_CALL(*(engine_.Get()), OnCorrectInitializeQueued());
     EXPECT_TRUE(device_->Init());
     EXPECT_CALL(*(engine_.Get()), DoGetSource())
         .WillRepeatedly(Invoke([this]() {
@@ -1079,6 +1110,7 @@ class VideoCaptureDeviceMFWinTest : public ::testing::Test {
 
   scoped_refptr<MockMFCaptureSource> capture_source_;
   scoped_refptr<MockCapturePreviewSink> capture_preview_sink_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   const bool media_foundation_supported_;
@@ -1116,6 +1148,60 @@ TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnErrorMediaEvent) {
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
   capture_preview_sink_->sample_callback->OnSample(nullptr);
   engine_->event_callback->OnEvent(media_event_error.get());
+}
+
+// Expects Init to fail due to OnError() event
+TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnErrorDurringInit) {
+  if (ShouldSkipTest())
+    return;
+
+  VideoCaptureDeviceDescriptor descriptor = VideoCaptureDeviceDescriptor();
+  Microsoft::WRL::ComPtr<MockMFMediaSource> media_source =
+      new MockMFMediaSource();
+  Microsoft::WRL::ComPtr<MockMFCaptureEngine> engine =
+      new MockMFCaptureEngine();
+  std::unique_ptr<VideoCaptureDeviceMFWin> device =
+      std::make_unique<VideoCaptureDeviceMFWin>(descriptor, media_source,
+                                                engine);
+
+  EXPECT_CALL(*(engine.Get()), OnInitEventGuid).WillOnce([]() {
+    return MF_CAPTURE_ENGINE_INITIALIZED;
+  });
+  // E_ACCESSDENIED is thrown if application is denied access in settings UI
+  EXPECT_CALL(*(engine.Get()), OnInitStatus).WillOnce([]() {
+    return E_ACCESSDENIED;
+  });
+
+  EXPECT_CALL(*(engine.Get()), OnCorrectInitializeQueued());
+
+  EXPECT_FALSE(device->Init());
+}
+
+// Expects Init to succeed but MF_CAPTURE_ENGINE_INITIALIZED fired before
+// WaitOnCaptureEvent is called.
+TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnFireCaptureEngineInitEarly) {
+  if (ShouldSkipTest())
+    return;
+
+  VideoCaptureDeviceDescriptor descriptor = VideoCaptureDeviceDescriptor();
+  Microsoft::WRL::ComPtr<MockMFMediaSource> media_source =
+      new MockMFMediaSource();
+  Microsoft::WRL::ComPtr<MockMFCaptureEngine> engine =
+      new MockMFCaptureEngine();
+  std::unique_ptr<VideoCaptureDeviceMFWin> device =
+      std::make_unique<VideoCaptureDeviceMFWin>(descriptor, media_source,
+                                                engine);
+
+  EXPECT_CALL(*(engine.Get()), OnInitEventGuid).WillOnce([]() {
+    return MF_CAPTURE_ENGINE_INITIALIZED;
+  });
+  EXPECT_CALL(*(engine.Get()), InitEventDelay).WillOnce([]() {
+    return base::TimeDelta::FromMilliseconds(0);
+  });
+
+  EXPECT_CALL(*(engine.Get()), OnCorrectInitializeQueued());
+
+  EXPECT_TRUE(device->Init());
 }
 
 // Allocates device with flaky methods failing with MF_E_INVALIDREQUEST and

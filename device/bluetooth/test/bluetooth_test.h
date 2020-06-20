@@ -274,6 +274,10 @@ class BluetoothTestBase : public testing::Test {
 
   virtual BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal);
 
+  // Simulates a signal by the OS that an ongoing discovery aborted because of
+  // some unexpected error.
+  virtual void SimulateLowEnergyDiscoveryFailure();
+
   // Simulates a connected low energy device. Used before starting a low energy
   // discovey session.
   virtual void SimulateConnectedLowEnergyDevice(

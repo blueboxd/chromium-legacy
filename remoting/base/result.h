@@ -8,7 +8,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 
 // Result<SuccessType, ErrorType> represents the success or failure of an

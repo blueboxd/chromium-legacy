@@ -3494,7 +3494,7 @@ void Internals::generateTestReport(const String& message) {
       MakeGarbageCollected<Report>("test", document_->Url().GetString(), body);
 
   // Send the test report to any ReportingObservers.
-  ReportingContext::From(document_->ExecutingWindow())->QueueReport(report);
+  ReportingContext::From(document_->domWindow())->QueueReport(report);
 }
 
 }  // namespace blink

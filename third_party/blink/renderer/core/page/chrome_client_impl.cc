@@ -352,10 +352,21 @@ bool ChromeClientImpl::CanOpenBeforeUnloadConfirmPanel() {
 bool ChromeClientImpl::OpenBeforeUnloadConfirmPanelDelegate(LocalFrame* frame,
                                                             bool is_reload) {
   NotifyPopupOpeningObservers();
+
+  if (before_unload_confirm_panel_result_for_testing_.has_value()) {
+    bool success = before_unload_confirm_panel_result_for_testing_.value();
+    before_unload_confirm_panel_result_for_testing_.reset();
+    return success;
+  }
   bool success = false;
   // Synchronous mojo call.
   frame->GetLocalFrameHostRemote().RunBeforeUnloadConfirm(is_reload, &success);
   return success;
+}
+
+void ChromeClientImpl::SetBeforeUnloadConfirmPanelResultForTesting(
+    bool result) {
+  before_unload_confirm_panel_result_for_testing_ = result;
 }
 
 void ChromeClientImpl::CloseWindowSoon() {

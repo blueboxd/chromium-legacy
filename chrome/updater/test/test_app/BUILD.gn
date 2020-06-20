@@ -80,7 +80,7 @@ source_set("app_sources") {
   if (is_win) {
     deps += [
       "//chrome/updater/app/server/win:updater_idl_idl",
-      "//chrome/updater/win:base",
+      "//chrome/updater/win:lib",
     ]
   }
 }

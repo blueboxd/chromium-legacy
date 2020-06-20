@@ -286,10 +286,10 @@ if (optimize_webui) {
       "chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/text_direction.mojom-lite.js",
       "chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js",
+      "chrome://resources/mojo/skia/public/mojom/skcolor.mojom-lite.js",
       "chrome://resources/mojo/url/mojom/url.mojom-lite.js",
       "new_tab_page.mojom-lite.js",
       "omnibox.mojom-lite.js",
-      "skcolor.mojom-lite.js",
     ]
   }
 }

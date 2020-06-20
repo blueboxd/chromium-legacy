@@ -8,8 +8,8 @@
 #include <vulkan/vulkan.h>
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/component_export.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/config/vulkan_info.h"
 #include "ui/gfx/extension_set.h"

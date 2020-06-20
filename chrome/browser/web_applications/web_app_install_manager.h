@@ -121,10 +121,6 @@ class WebAppInstallManager final : public InstallManager,
                              const AppId& app_id,
                              InstallResultCode code);
   // For the new USS-based system only:
-  void OnWebAppInstalledAfterSync(const AppId& app_in_sync_install_id,
-                                  OnceInstallCallback callback,
-                                  const AppId& installed_app_id,
-                                  InstallResultCode code);
   void OnWebAppUninstalledAfterSync(std::unique_ptr<WebApp> web_app,
                                     OnceUninstallCallback callback,
                                     bool uninstalled);
@@ -150,9 +146,17 @@ class WebAppInstallManager final : public InstallManager,
 
   // Tasks can be queued for sequential completion (to be run one at a time).
   // FIFO. This is a subset of |tasks_|.
-  using TaskQueue = base::queue<base::OnceClosure>;
+  struct PendingTask {
+    PendingTask();
+    PendingTask(PendingTask&&);
+    ~PendingTask();
+
+    const WebAppInstallTask* task = nullptr;
+    base::OnceClosure start;
+  };
+  using TaskQueue = base::queue<PendingTask>;
   TaskQueue task_queue_;
-  bool is_running_queued_task_ = false;
+  const WebAppInstallTask* current_queued_task_ = nullptr;
 
   struct AppSyncInstallRequest {
     AppSyncInstallRequest();

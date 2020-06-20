@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/atomicops.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"

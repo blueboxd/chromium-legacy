@@ -2743,18 +2743,6 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
   if (!is_disjoint_window || !ContainsLocalMainFrame())
     return;
 
-  UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
-                      queueing_time);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.ExpectedTaskQueueingDuration3",
-                              base::saturated_cast<base::HistogramBase::Sample>(
-                                  queueing_time.InMicroseconds()),
-                              kMinExpectedQueueingTimeBucket,
-                              kMaxExpectedQueueingTimeBucket,
-                              kNumberExpectedQueueingTimeBuckets);
-  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "estimated_queueing_time_for_window",
-                 queueing_time.InMillisecondsF());
-
   if (auto* renderer_resource_coordinator =
           RendererResourceCoordinator::Get()) {
     renderer_resource_coordinator->SetExpectedTaskQueueingDuration(

@@ -109,8 +109,10 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
      *
      * @param model Property model to update.
      * @param suggestion Suggestion associated with the action button.
+     * @param position The position of the button in the list.
      */
-    protected void setTabSwitchOrRefineAction(PropertyModel model, OmniboxSuggestion suggestion) {
+    protected void setTabSwitchOrRefineAction(
+            PropertyModel model, OmniboxSuggestion suggestion, int position) {
         @DrawableRes
         int icon = 0;
         @StringRes
@@ -119,7 +121,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         if (suggestion.hasTabMatch()) {
             icon = R.drawable.switch_to_tab;
             iconString = R.string.accessibility_omnibox_switch_to_tab;
-            action = () -> mSuggestionHost.onSwitchToTab(suggestion);
+            action = () -> mSuggestionHost.onSwitchToTab(suggestion, position);
         } else {
             icon = R.drawable.btn_suggestion_refine;
             iconString = R.string.accessibility_omnibox_btn_refine;

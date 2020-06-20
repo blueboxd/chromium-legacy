@@ -256,6 +256,7 @@ class IsolatedPrerenderBrowserTest
     origin_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
     origin_server_->ServeFilesFromSourceDirectory("chrome/test/data");
+    origin_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     origin_server_->RegisterRequestHandler(
         base::BindRepeating(&IsolatedPrerenderBrowserTest::HandleOriginRequest,
                             base::Unretained(this)));
@@ -312,8 +313,8 @@ class IsolatedPrerenderBrowserTest
     // Ensure the service gets created before the tests start.
     IsolatedPrerenderServiceFactory::GetForProfile(browser()->profile());
 
-    host_resolver()->AddRule("testorigin.com", "127.0.0.1");
-    host_resolver()->AddRule("badprobe.testorigin.com", "127.0.0.1");
+    host_resolver()->AddRule("a.test", "127.0.0.1");
+    host_resolver()->AddRule("badprobe.a.test", "127.0.0.1");
     host_resolver()->AddRule("proxy.com", "127.0.0.1");
     host_resolver()->AddRule("insecure.com", "127.0.0.1");
   }
@@ -418,6 +419,17 @@ class IsolatedPrerenderBrowserTest
     }
   }
 
+  bool CheckForResourceInIsolatedCache(const GURL& url) {
+    IsolatedPrerenderTabHelper* tab_helper =
+        IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+    DCHECK(tab_helper);
+    DCHECK(tab_helper->GetIsolatedContextForTesting());
+    return net::OK == content::LoadBasicRequest(
+                          tab_helper->GetIsolatedContextForTesting(), url,
+                          /*process_id=*/0,
+                          /*render_frame_id=*/0, net::LOAD_ONLY_FROM_CACHE);
+  }
+
   base::Optional<int64_t> GetUKMMetric(const GURL& url,
                                        const std::string& event_name,
                                        const std::string& metric_name) {
@@ -486,11 +498,11 @@ class IsolatedPrerenderBrowserTest
   }
 
   GURL GetOriginServerURL(const std::string& path) const {
-    return origin_server_->GetURL("testorigin.com", path);
+    return origin_server_->GetURL("a.test", path);
   }
 
   GURL GetOriginServerURLWithBadProbe(const std::string& path) const {
-    return origin_server_->GetURL("badprobe.testorigin.com", path);
+    return origin_server_->GetURL("badprobe.a.test", path);
   }
 
  private:
@@ -529,7 +541,7 @@ class IsolatedPrerenderBrowserTest
     // the Host header since the request URL is always 127.0.0.1), check if this
     // is a probe request. The probe only requests "/" whereas the navigation
     // will request the HTML file, i.e.: "/simple.html".
-    if (request.headers.find("Host")->second.find("badprobe.testorigin.com") !=
+    if (request.headers.find("Host")->second.find("badprobe.a.test") !=
             std::string::npos &&
         request.relative_url == "/") {
       // This is an invalid response to the net stack and will cause a NetError.
@@ -570,8 +582,8 @@ class IsolatedPrerenderBrowserTest
     EXPECT_EQ("HTTP/1.1", request_line[2]);
 
     GURL request_origin("https://" + request_line[1]);
-    EXPECT_TRUE("testorigin.com" == request_origin.host() ||
-                "badprobe.testorigin.com" == request_origin.host());
+    EXPECT_TRUE("a.test" == request_origin.host() ||
+                "badprobe.a.test" == request_origin.host());
 
     bool found_chrome_proxy_header = false;
     for (const std::string& header : request_lines) {
@@ -874,12 +886,12 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
   // Note: The only difference between eligible and non-eligible urls is the
   // scheme.
   //
-  //  (eligible)                   https://testorigin.com/1
-  //  (eligible)                https://testorigin.com/2  |
+  //  (eligible)                           https://a.test/1
+  //  (eligible)                        https://a.test/2  |
   //  (not eligible)        http://not-eligible.com/1  |  |
   //  (not eligible)     http://not-eligible.com/2  |  |  |
   //  (not eligible)  http://not-eligible.com/3  |  |  |  |
-  //  (eligible)    https://testorigin.com/3  |  |  |  |  |
+  //  (eligible)            https://a.test/3  |  |  |  |  |
   //                                       |  |  |  |  |  |
   //                                       V  V  V  V  V  V
   // int64_t expected_bitmask =        0b  1  0  0  0  1  1;
@@ -1526,6 +1538,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
   // Check that the page's Javascript was NSP'd, but not the mainframe.
   bool found_nsp_javascript = false;
   bool found_nsp_mainframe = false;
+  bool found_image = false;
   for (size_t i = origin_requests_before_prerender.size();
        i < origin_requests_after_prerender.size(); ++i) {
     net::test_server::HttpRequest request = origin_requests_after_prerender[i];
@@ -1534,9 +1547,11 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
     GURL nsp_url = request.GetURL();
     found_nsp_javascript |= nsp_url.path() == "/prerender/isolated/prefetch.js";
     found_nsp_mainframe |= nsp_url.path() == eligible_link.path();
+    found_image |= nsp_url.path() == "/prerender/isolated/image.png";
   }
   EXPECT_TRUE(found_nsp_javascript);
   EXPECT_FALSE(found_nsp_mainframe);
+  EXPECT_FALSE(found_image);
 
   // Verify the resource load was reported to the subresource manager.
   IsolatedPrerenderService* service =
@@ -1552,6 +1567,40 @@ IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,
       GetOriginServerURL("/prerender/isolated/prefetch-redirect-end.js"),
   };
   EXPECT_EQ(expected_subresources, manager->successfully_loaded_subresources());
+
+  EXPECT_TRUE(CheckForResourceInIsolatedCache(
+      GetOriginServerURL("/prerender/isolated/prefetch.js")));
+  EXPECT_TRUE(CheckForResourceInIsolatedCache(
+      GetOriginServerURL("/prerender/isolated/prefetch-redirect-end.js")));
+
+  // Navigate to the predicted site. We expect:
+  // * The mainframe HTML will not be requested from the origin server.
+  // * The JavaScript will not be requested from the origin server.
+  // * The prefetched JavaScript will be executed.
+  // * The image will be fetched.
+  ui_test_utils::NavigateToURL(browser(), eligible_link);
+
+  std::vector<net::test_server::HttpRequest> proxy_requests_after_click =
+      proxy_server_requests();
+
+  // Nothing should have gone through the proxy.
+  EXPECT_EQ(proxy_requests_after_prerender.size(),
+            proxy_requests_after_click.size());
+
+  std::vector<net::test_server::HttpRequest> origin_requests_after_click =
+      origin_server_requests();
+
+  // Only one request for the image is expected.
+  ASSERT_EQ(origin_requests_after_prerender.size() + 1,
+            origin_requests_after_click.size());
+  EXPECT_EQ(origin_requests_after_click[origin_requests_after_click.size() - 1]
+                .GetURL()
+                .path(),
+            "/prerender/isolated/image.png");
+
+  // Check that the JavaScript ran.
+  EXPECT_EQ(base::ASCIIToUTF16("JavaScript Executed"),
+            GetWebContents()->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderWithNSPBrowserTest,

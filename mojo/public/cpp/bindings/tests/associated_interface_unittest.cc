@@ -1049,10 +1049,10 @@ TEST_F(AssociatedInterfaceTest, AssociateWithDisconnectedPipe) {
   sender->Send(42);
 }
 
-TEST_F(AssociatedInterfaceTest, AsyncErrorHandlersWhenClosingMasterInterface) {
+TEST_F(AssociatedInterfaceTest, AsyncErrorHandlersWhenClosingPrimaryInterface) {
   // Ensures that associated interface error handlers are not invoked
-  // synchronously when the master interface pipe is closed. Regression test for
-  // https://crbug.com/864731.
+  // synchronously when the primary interface pipe is closed. Regression test
+  // for https://crbug.com/864731.
 
   Remote<IntegerSenderConnection> connection_remote;
   IntegerSenderConnectionImpl connection(

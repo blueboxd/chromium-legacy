@@ -16,7 +16,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/oobe_configuration.h"
@@ -167,13 +166,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void OnOobeConfigurationChanged() override;
 
   // Handlers for JS WebUI messages.
-  void HandleEnableLargeCursor(bool enabled);
-  void HandleEnableHighContrast(bool enabled);
-  void HandleEnableVirtualKeyboard(bool enabled);
-  void HandleEnableScreenMagnifier(bool enabled);
-  void HandleEnableSpokenFeedback(bool /* enabled */);
-  void HandleEnableSelectToSpeak(bool /* enabled */);
-  void HandleEnableDockedMagnifier(bool /* enabled */);
   void HandleHideOobeDialog();
   void HandleInitialized();
   void HandleSkipUpdateEnrollAfterEula();
@@ -205,9 +197,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // to tab/shift-tab event.
   void HandleRaiseTabKeyEvent(bool reverse);
 
-  // Updates a11y menu state based on the current a11y features state(on/off).
-  void UpdateA11yState();
-
   // Calls javascript to sync OOBE UI visibility with show_oobe_ui_.
   void UpdateOobeUIVisibility();
 
@@ -220,10 +209,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // Updates client area size based on the primary screen size.
   void UpdateClientAreaSize();
 
-  // Notification of a change in the accessibility settings.
-  void OnAccessibilityStatusChanged(
-      const AccessibilityStatusEventDetails& details);
-
   // True if we should show OOBE instead of login.
   bool show_oobe_ui_ = false;
 
@@ -232,8 +217,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
-
-  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DemoModeDetector demo_mode_detector_;
 

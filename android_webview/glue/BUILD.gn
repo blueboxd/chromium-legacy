@@ -18,7 +18,7 @@ android_library("glue_java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android:autofill_java",
-    "//components/autofill/android:provider_java",
+    "//components/autofill/android/provider:java",
     "//components/content_capture/android:java",
     "//components/embedder_support/android:application_java",
     "//content/public/android:content_java",

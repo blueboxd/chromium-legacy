@@ -53,7 +53,6 @@ constexpr int kSideIconBetweenChildSpacing = 16;
 
 // These time values are non-const in order to be overridden in test so they
 // complete faster.
-base::TimeDelta initial_ui_delay_ = base::TimeDelta::FromMilliseconds(200);
 base::TimeDelta minimum_pending_dialog_time_ = base::TimeDelta::FromSeconds(2);
 base::TimeDelta success_dialog_timeout_ = base::TimeDelta::FromSeconds(1);
 
@@ -169,11 +168,6 @@ class DeepScanningMessageView : public DeepScanningBaseView,
 };
 
 // static
-base::TimeDelta DeepScanningDialogViews::GetInitialUIDelay() {
-  return initial_ui_delay_;
-}
-
-// static
 base::TimeDelta DeepScanningDialogViews::GetMinimumPendingDialogTime() {
   return minimum_pending_dialog_time_;
 }
@@ -196,12 +190,7 @@ DeepScanningDialogViews::DeepScanningDialogViews(
   if (observer_for_testing)
     observer_for_testing->ConstructorCalled(this, base::TimeTicks::Now());
 
-  // Show the pending dialog after a delay in case the response is fast enough.
-  content::GetUIThreadTaskRunner({})->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&DeepScanningDialogViews::Show,
-                     weak_ptr_factory_.GetWeakPtr()),
-      GetInitialUIDelay());
+  Show();
 }
 
 base::string16 DeepScanningDialogViews::GetWindowTitle() const {
@@ -651,12 +640,6 @@ SkColor DeepScanningDialogViews::GetSideImageLogoColor() const {
       // logo should have the same color as the background.
       return GetBackgroundColor(widget);
   }
-}
-
-// static
-void DeepScanningDialogViews::SetInitialUIDelayForTesting(
-    base::TimeDelta delta) {
-  initial_ui_delay_ = delta;
 }
 
 // static

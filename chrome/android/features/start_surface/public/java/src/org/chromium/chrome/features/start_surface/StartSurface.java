@@ -146,4 +146,11 @@ public interface StartSurface {
      * @return TabDialogDelegation implementation that can be used to access the Tab Dialog.
      */
     TabSwitcher.TabDialogDelegation getTabDialogDelegate();
+
+    /**
+     * Called after the Chrome activity is launched. This is only called if the StartSurface is
+     * shown when Chrome is launched from cold start.
+     * @param activityCreationTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
+     */
+    void onOverviewShownAtLaunch(final long activityCreationTimeMs);
 }

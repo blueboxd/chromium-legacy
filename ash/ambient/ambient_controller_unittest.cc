@@ -13,6 +13,7 @@
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/time/time.h"
 
 namespace ash {
 

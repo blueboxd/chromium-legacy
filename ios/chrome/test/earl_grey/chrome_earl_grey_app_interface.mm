@@ -363,6 +363,11 @@ NSString* SerializedPref(const PrefService::Preference* pref) {
   return nil;
 }
 
++ (BOOL)webStateContainsElement:(ElementSelector*)selector {
+  return web::test::IsWebViewContainingElement(
+      chrome_test_util::GetCurrentWebState(), selector);
+}
+
 + (BOOL)webStateContainsText:(NSString*)text {
   return web::test::IsWebViewContainingText(
       chrome_test_util::GetCurrentWebState(), base::SysNSStringToUTF8(text));

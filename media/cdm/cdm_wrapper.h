@@ -9,9 +9,9 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/media_switches.h"
 #include "media/cdm/api/content_decryption_module.h"

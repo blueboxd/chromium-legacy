@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "sandbox/win/src/policy_engine_params.h"

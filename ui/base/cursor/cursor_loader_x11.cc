@@ -16,136 +16,6 @@
 
 namespace ui {
 
-namespace {
-
-// Load a cursor with a list of css names or shapes in order of decreasing
-// priority.
-::Cursor LoadFontCursor() {
-  return x11::None;
-}
-
-template <typename... Ts>
-::Cursor LoadFontCursor(int shape, Ts... ts);
-
-template <typename... Ts>
-::Cursor LoadFontCursor(const char* name, Ts... ts) {
-  ::Cursor cursor = XcursorLibraryLoadCursor(gfx::GetXDisplay(), name);
-  if (cursor != x11::None)
-    return cursor;
-  return LoadFontCursor(ts...);
-}
-
-template <typename... Ts>
-::Cursor LoadFontCursor(int shape, Ts... ts) {
-  ::Cursor cursor = XCreateFontCursor(gfx::GetXDisplay(), shape);
-  if (cursor != x11::None)
-    return cursor;
-  return LoadFontCursor(ts...);
-}
-
-::Cursor LoadFontCursorForCursorType(mojom::CursorType id) {
-  switch (id) {
-    case mojom::CursorType::kMiddlePanning:
-      return LoadFontCursor("all-scroll", XC_fleur);
-    case mojom::CursorType::kMiddlePanningVertical:
-      return LoadFontCursor("v-scroll");
-    case mojom::CursorType::kMiddlePanningHorizontal:
-      return LoadFontCursor("h-scroll");
-    case mojom::CursorType::kNone:
-      return LoadFontCursor("none");
-    case mojom::CursorType::kGrab:
-      return LoadFontCursor("openhand", "grab");
-    case mojom::CursorType::kGrabbing:
-      return LoadFontCursor("closedhand", "grabbing", XC_hand2);
-    case mojom::CursorType::kNull:
-    case mojom::CursorType::kPointer:
-      return LoadFontCursor("left_ptr", XC_left_ptr);
-    case mojom::CursorType::kMove:
-      return LoadFontCursor("all-scroll", XC_fleur);
-    case mojom::CursorType::kCross:
-      return LoadFontCursor("crosshair", XC_cross);
-    case mojom::CursorType::kHand:
-      return LoadFontCursor("pointer", "hand", XC_hand2);
-    case mojom::CursorType::kIBeam:
-      return LoadFontCursor("text", XC_xterm);
-    case mojom::CursorType::kProgress:
-      return LoadFontCursor("progress", "left_ptr_watch", XC_watch);
-    case mojom::CursorType::kWait:
-      return LoadFontCursor("wait", XC_watch);
-    case mojom::CursorType::kHelp:
-      return LoadFontCursor("help");
-    case mojom::CursorType::kEastResize:
-    case mojom::CursorType::kEastPanning:
-      return LoadFontCursor("e-resize", XC_right_side);
-    case mojom::CursorType::kNorthResize:
-    case mojom::CursorType::kNorthPanning:
-      return LoadFontCursor("n-resize", XC_top_side);
-    case mojom::CursorType::kNorthEastResize:
-    case mojom::CursorType::kNorthEastPanning:
-      return LoadFontCursor("ne-resize", XC_top_right_corner);
-    case mojom::CursorType::kNorthWestResize:
-    case mojom::CursorType::kNorthWestPanning:
-      return LoadFontCursor("nw-resize", XC_top_left_corner);
-    case mojom::CursorType::kSouthResize:
-    case mojom::CursorType::kSouthPanning:
-      return LoadFontCursor("s-resize", XC_bottom_side);
-    case mojom::CursorType::kSouthEastResize:
-    case mojom::CursorType::kSouthEastPanning:
-      return LoadFontCursor("se-resize", XC_bottom_right_corner);
-    case mojom::CursorType::kSouthWestResize:
-    case mojom::CursorType::kSouthWestPanning:
-      return LoadFontCursor("sw-resize", XC_bottom_left_corner);
-    case mojom::CursorType::kWestResize:
-    case mojom::CursorType::kWestPanning:
-      return LoadFontCursor("w-resize", XC_right_side);
-    case mojom::CursorType::kNorthSouthResize:
-      return LoadFontCursor(XC_sb_v_double_arrow, "ns-resize");
-    case mojom::CursorType::kEastWestResize:
-      return LoadFontCursor(XC_sb_h_double_arrow, "ew-resize");
-    case mojom::CursorType::kColumnResize:
-      return LoadFontCursor("col-resize", XC_sb_h_double_arrow);
-    case mojom::CursorType::kRowResize:
-      return LoadFontCursor("row-resize", XC_sb_v_double_arrow);
-    case mojom::CursorType::kNorthEastSouthWestResize:
-      return LoadFontCursor("size_bdiag", "nesw-resize", "fd_double_arrow");
-    case mojom::CursorType::kNorthWestSouthEastResize:
-      return LoadFontCursor("size_fdiag", "nwse-resize", "bd_double_arrow");
-    case mojom::CursorType::kVerticalText:
-      return LoadFontCursor("vertical-text");
-    case mojom::CursorType::kZoomIn:
-      return LoadFontCursor("zoom-in");
-    case mojom::CursorType::kZoomOut:
-      return LoadFontCursor("zoom-out");
-    case mojom::CursorType::kCell:
-      return LoadFontCursor("cell", XC_plus);
-    case mojom::CursorType::kContextMenu:
-      return LoadFontCursor("context-menu");
-    case mojom::CursorType::kAlias:
-      return LoadFontCursor("alias");
-    case mojom::CursorType::kNoDrop:
-      return LoadFontCursor("no-drop");
-    case mojom::CursorType::kCopy:
-      return LoadFontCursor("copy");
-    case mojom::CursorType::kNotAllowed:
-      return LoadFontCursor("not-allowed", "crossed_circle");
-    case mojom::CursorType::kDndNone:
-      return LoadFontCursor("dnd-none", XC_hand2);
-    case mojom::CursorType::kDndMove:
-      return LoadFontCursor("dnd-move", XC_hand2);
-    case mojom::CursorType::kDndCopy:
-      return LoadFontCursor("dnd-copy", XC_hand2);
-    case mojom::CursorType::kDndLink:
-      return LoadFontCursor("dnd-link", XC_hand2);
-    case mojom::CursorType::kCustom:
-      NOTREACHED();
-      return LoadFontCursor();
-  }
-  NOTREACHED() << "Case not handled for " << static_cast<int>(id);
-  return LoadFontCursor();
-}
-
-}  // namespace
-
 CursorLoader* CursorLoader::Create() {
   return new CursorLoaderX11;
 }
@@ -270,7 +140,7 @@ bool CursorLoaderX11::IsImageCursor(gfx::NativeCursor native_cursor) {
   }
 
   // First try to load the cursor directly.
-  ::Cursor cursor = LoadFontCursorForCursorType(id);
+  ::Cursor cursor = LoadCursorFromType(id);
   if (cursor != x11::None) {
     font_cursors_[id] = cursor;
     return cursor;

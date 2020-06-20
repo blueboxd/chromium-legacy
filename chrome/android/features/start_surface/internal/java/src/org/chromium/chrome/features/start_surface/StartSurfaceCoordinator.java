@@ -84,6 +84,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     private boolean mIsInitPending;
 
     private boolean mIsSecondaryTaskInitPending;
+    private FeedLoadingCoordinator mFeedLoadingCoordinator;
 
     // TODO(http://crbug.com/1093421): Remove dependency on ChromeActivity.
     public StartSurfaceCoordinator(ChromeActivity activity, ScrimCoordinator scrimCoordinator) {
@@ -116,9 +117,9 @@ public class StartSurfaceCoordinator implements StartSurface {
 
         // Show feed loading image.
         if (mStartSurfaceMediator.shouldShowFeedPlaceholder()) {
-            FeedLoadingCoordinator feedLoadingCoordinator = new FeedLoadingCoordinator(
+            mFeedLoadingCoordinator = new FeedLoadingCoordinator(
                     mActivity, mTasksSurface.getBodyViewContainer(), false);
-            feedLoadingCoordinator.setUpLoadingView();
+            mFeedLoadingCoordinator.setUpLoadingView();
         }
     }
 
@@ -225,6 +226,14 @@ public class StartSurfaceCoordinator implements StartSurface {
     @Override
     public TabSwitcher.TabDialogDelegation getTabDialogDelegate() {
         return mTabSwitcher.getTabGridDialogDelegation();
+    }
+
+    @Override
+    public void onOverviewShownAtLaunch(long activityCreationTimeMs) {
+        mStartSurfaceMediator.onOverviewShownAtLaunch(activityCreationTimeMs);
+        if (mFeedLoadingCoordinator != null) {
+            mFeedLoadingCoordinator.onOverviewShownAtLaunch(activityCreationTimeMs);
+        }
     }
 
     @VisibleForTesting

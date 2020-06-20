@@ -47,7 +47,7 @@ namespace internal {
 // MultiplexRouter supports routing messages for multiple interfaces over a
 // single message pipe.
 //
-// It is created on the sequence where the master interface of the message pipe
+// It is created on the sequence where the primary interface of the message pipe
 // lives.
 // Some public methods are only allowed to be called on the creating sequence;
 // while the others are safe to call from any sequence. Please see the method
@@ -61,14 +61,14 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
       public PipeControlMessageHandlerDelegate {
  public:
   enum Config {
-    // There is only the master interface running on this router. Please note
+    // There is only the primary interface running on this router. Please note
     // that because of interface versioning, the other side of the message pipe
-    // may use a newer master interface definition which passes associated
+    // may use a newer primary interface definition which passes associated
     // interfaces. In that case, this router may still receive pipe control
     // messages or messages targetting associated interfaces.
     SINGLE_INTERFACE,
-    // Similar to the mode above, there is only the master interface running on
-    // this router. Besides, the master interface has sync methods.
+    // Similar to the mode above, there is only the primary interface running on
+    // this router. Besides, the primary interface has sync methods.
     SINGLE_INTERFACE_WITH_SYNC_METHODS,
     // There may be associated interfaces running on this router.
     MULTI_INTERFACE
@@ -85,10 +85,10 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) MultiplexRouter
   // before dispatch.
   void SetIncomingMessageFilter(std::unique_ptr<MessageFilter> filter);
 
-  // Sets the master interface name for this router. Only used when reporting
+  // Sets the primary interface name for this router. Only used when reporting
   // message header or control message validation errors.
   // |name| must be a string literal.
-  void SetMasterInterfaceName(const char* name);
+  void SetPrimaryInterfaceName(const char* name);
 
   // Adds this object to a ConnectionGroup identified by |ref|. All receiving
   // pipe endpoints decoded from inbound messages on this MultiplexRouter will

@@ -61,7 +61,7 @@
 #include "base/supports_user_data.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/autofill/android/autofill_provider_android.h"
+#include "components/autofill/android/provider/autofill_provider_android.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"

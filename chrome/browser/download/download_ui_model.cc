@@ -22,7 +22,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "ui/gfx/text_elider.h"
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/browser.h"
@@ -247,13 +246,11 @@ base::string16 DownloadUIModel::GetTooltipText() const {
   return tooltip;
 }
 
-base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
-                                               int base_width) const {
+base::string16 DownloadUIModel::GetWarningText(const base::string16& filename,
+                                               size_t* offset) const {
+  *offset = std::string::npos;
   // Should only be called if IsDangerous() or IsMixedContent().
   DCHECK(IsDangerous() || IsMixedContent());
-  base::string16 elided_filename =
-      gfx::ElideFilename(GetFileNameToReportUser(), font_list, base_width);
-
   switch (GetDangerType()) {
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL: {
       return l10n_util::GetStringUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_URL);
@@ -264,13 +261,13 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
             IDS_PROMPT_DANGEROUS_DOWNLOAD_EXTENSION);
       } else {
         return l10n_util::GetStringFUTF16(IDS_PROMPT_DANGEROUS_DOWNLOAD,
-                                          elided_filename);
+                                          filename, offset);
       }
     }
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST: {
       return l10n_util::GetStringFUTF16(IDS_PROMPT_MALICIOUS_DOWNLOAD_CONTENT,
-                                        elided_filename);
+                                        filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT: {
       bool request_ap_verdicts = false;
@@ -284,31 +281,31 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
           request_ap_verdicts
               ? IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT_IN_ADVANCED_PROTECTION
               : IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT,
-          elided_filename);
+          filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED: {
       return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_CHANGES_SETTINGS,
-                                        elided_filename);
+                                        filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_TOO_LARGE: {
       return l10n_util::GetStringFUTF16(IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE,
-                                        elided_filename);
+                                        filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_PASSWORD_PROTECTED: {
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_BLOCKED_PASSWORD_PROTECTED, elided_filename);
+          IDS_PROMPT_DOWNLOAD_BLOCKED_PASSWORD_PROTECTED, filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_WARNING: {
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_WARNING, elided_filename);
+          IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_WARNING, filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_SENSITIVE_CONTENT_BLOCK: {
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_BLOCKED, elided_filename);
+          IDS_PROMPT_DOWNLOAD_SENSITIVE_CONTENT_BLOCKED, filename, offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING: {
-      return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_DEEP_SCANNING,
-                                        elided_filename);
+      return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_DEEP_SCANNING, filename,
+                                        offset);
     }
     case download::DOWNLOAD_DANGER_TYPE_BLOCKED_UNSUPPORTED_FILETYPE:
     case download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE:
@@ -326,10 +323,10 @@ base::string16 DownloadUIModel::GetWarningText(const gfx::FontList& font_list,
   switch (GetMixedContentStatus()) {
     case download::DownloadItem::MixedContentStatus::BLOCK:
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED, elided_filename);
+          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED, filename, offset);
     case download::DownloadItem::MixedContentStatus::WARN:
       return l10n_util::GetStringFUTF16(
-          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING, elided_filename);
+          IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING, filename, offset);
     case download::DownloadItem::MixedContentStatus::UNKNOWN:
     case download::DownloadItem::MixedContentStatus::SAFE:
     case download::DownloadItem::MixedContentStatus::VALIDATED:

@@ -1413,13 +1413,6 @@ LocalDOMWindow* Document::ExecutingWindow() const {
   return nullptr;
 }
 
-LocalFrame* Document::ExecutingFrame() {
-  LocalDOMWindow* window = ExecutingWindow();
-  if (!window)
-    return nullptr;
-  return window->GetFrame();
-}
-
 DocumentFragment* Document::createDocumentFragment() {
   return DocumentFragment::Create(*this);
 }
@@ -4036,11 +4029,21 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
   MainThreadDisallowSynchronousXHRScope disallow_synchronous_xhr;
   auto& before_unload_event = *MakeGarbageCollected<BeforeUnloadEvent>();
   before_unload_event.initEvent(event_type_names::kBeforeunload, false, true);
-  load_event_progress_ = kBeforeUnloadEventInProgress;
   const base::TimeTicks beforeunload_event_start = base::TimeTicks::Now();
-  dom_window_->DispatchEvent(before_unload_event, this);
+
+  {
+    // We want to avoid progressing to kBeforeUnloadEventHandled if the page
+    // cancels the unload. Because a subframe may cancel unload on our behalf,
+    // only the caller, which makes this call over the frame subtree, can know
+    // whether or not  we'll unload so the caller is responsible for advancing
+    // to kBeforeUnloadEventHandled. Here, we'll reset back to our prior value
+    // once the handler has run.
+    base::AutoReset<LoadEventProgress> set_in_progress(
+        &load_event_progress_, kBeforeUnloadEventInProgress);
+    dom_window_->DispatchEvent(before_unload_event, this);
+  }
+
   const base::TimeTicks beforeunload_event_end = base::TimeTicks::Now();
-  load_event_progress_ = kBeforeUnloadEventCompleted;
   DEFINE_STATIC_LOCAL(
       CustomCountHistogram, beforeunload_histogram,
       ("DocumentEventTiming.BeforeUnloadDuration", 0, 10000000, 50));
@@ -4226,7 +4229,7 @@ Document::PageDismissalType Document::PageDismissalEventBeingDispatched()
     case kLoadEventNotRun:
     case kLoadEventInProgress:
     case kLoadEventCompleted:
-    case kBeforeUnloadEventCompleted:
+    case kBeforeUnloadEventHandled:
     case kUnloadEventHandled:
       return kNoDismissal;
   }

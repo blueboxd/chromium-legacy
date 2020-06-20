@@ -9,6 +9,7 @@ import static com.google.android.material.appbar.AppBarLayout.LayoutParams.SCROL
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -201,6 +202,10 @@ class TasksView extends CoordinatorLayoutForPointer {
         ViewStub containerStub =
                 (ViewStub) findViewById(R.id.incognito_description_container_layout_stub);
         View containerView = containerStub.inflate();
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            containerView.setFocusable(true);
+            containerView.setFocusableInTouchMode(true);
+        }
         mIncognitoDescriptionView = (IncognitoDescriptionView) containerView.findViewById(
                 R.id.new_tab_incognito_container);
         if (mIncognitoDescriptionLearnMoreListener != null) {

@@ -1407,6 +1407,15 @@ bool FrameLoader::ShouldClose(bool is_reload) {
     }
   }
 
+  // Now that none of the unloading frames canceled the BeforeUnload, tell each
+  // of them so they can advance to the appropriate load state.
+  frame_->GetDocument()->BeforeUnloadDoneWillUnload();
+  for (Member<LocalFrame>& descendant_frame : descendant_frames) {
+    if (!descendant_frame->Tree().IsDescendantOf(frame_))
+      continue;
+    descendant_frame->GetDocument()->BeforeUnloadDoneWillUnload();
+  }
+
   return true;
 }
 

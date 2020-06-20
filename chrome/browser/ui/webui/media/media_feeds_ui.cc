@@ -72,7 +72,8 @@ void MediaFeedsUI::GetItemsForMediaFeed(int64_t feed_id,
 
 void MediaFeedsUI::FetchMediaFeed(int64_t feed_id,
                                   FetchMediaFeedCallback callback) {
-  GetMediaFeedsService()->FetchMediaFeed(feed_id, std::move(callback));
+  GetMediaFeedsService()->FetchMediaFeed(feed_id, /*bypass_cache=*/false,
+                                         nullptr, std::move(callback));
 }
 
 void MediaFeedsUI::GetDebugInformation(GetDebugInformationCallback callback) {

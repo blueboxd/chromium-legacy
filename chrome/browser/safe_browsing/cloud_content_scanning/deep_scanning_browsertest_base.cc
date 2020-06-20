@@ -23,8 +23,6 @@ namespace {
 
 constexpr char kDmToken[] = "dm_token";
 
-constexpr base::TimeDelta kInitialUIDelay =
-    base::TimeDelta::FromMilliseconds(100);
 constexpr base::TimeDelta kMinimumPendingDelay =
     base::TimeDelta::FromMilliseconds(400);
 constexpr base::TimeDelta kSuccessTimeout =
@@ -80,7 +78,6 @@ DeepScanningBrowserTestBase::DeepScanningBrowserTestBase(
 
   // Change the time values of the upload UI to smaller ones to make tests
   // showing it run faster.
-  DeepScanningDialogViews::SetInitialUIDelayForTesting(kInitialUIDelay);
   DeepScanningDialogViews::SetMinimumPendingDialogTimeForTesting(
       kMinimumPendingDelay);
   DeepScanningDialogViews::SetSuccessDialogTimeoutForTesting(kSuccessTimeout);

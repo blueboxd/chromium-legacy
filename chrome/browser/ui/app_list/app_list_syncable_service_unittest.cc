@@ -26,8 +26,10 @@
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "extensions/common/constants.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using crx_file::id_util::GenerateId;
+using testing::ElementsAre;
 
 namespace {
 
@@ -274,6 +276,24 @@ class AppListSyncableServiceTest : public AppListTestBase {
                                     extensions::kInstallFlagNone);
     // Allow async callbacks to run.
     base::RunLoop().RunUntilIdle();
+  }
+
+  // Gets the ids of the items in model updater ordered by item's ordinal
+  // position.
+  std::vector<std::string> GetIdsOfSortedItemsFromModelUpdater() {
+    std::vector<ChromeAppListItem*> items;
+    for (size_t i = 0; i < model_updater()->ItemCount(); ++i)
+      items.push_back(model_updater()->ItemAtForTest(i));
+    std::sort(items.begin(), items.end(),
+              [](ChromeAppListItem* const& item1,
+                 ChromeAppListItem* const& item2) -> bool {
+                return item1->position().LessThan(item2->position());
+              });
+    std::vector<std::string> ids;
+    for (auto*& item : items)
+      ids.push_back(item->id());
+
+    return ids;
   }
 
  private:
@@ -937,6 +957,184 @@ TEST_F(AppListSyncableServiceTest, PruneRedundantPageBreakItems) {
   ASSERT_FALSE(GetSyncItem(kPageBreakItemId4));
   ASSERT_TRUE(GetSyncItem(kItemId2));
   ASSERT_FALSE(GetSyncItem(kPageBreakItemId5));
+}
+
+// This test simulates the following overflow case. Assume the maximum items
+// on each page is three. Both device 1 and device 2 have the identical apps,
+// the apps layout looks like the following.
+// page 1: A1, A2 [page break]
+// page 2: B1, B2, B3 [page break]
+// page 3: C1 [page break]
+// On device 1, move A1 from page 1 to page 2 and insert between B1 and B2.
+// After the move, the apps layout should look like the following
+// page 1: A2 [page break]
+// page 2: B1, A1, B2 [page break]
+// page 3: B3, C1 [page break]
+// Notice that B3 is overflowed from page 2 to page 3 and placed before C1.
+// After the changes are synced to device 2, it should have the same app layout
+// as shown on device 1.
+// This test simulates that device 2 gets the sync changes from device 1, and
+// applies the changes in model updater and the apps should have the same layout
+// as the ones on the device 1. It verifies the fix for the repro issue
+// described in http://crbug.com/938098#c15.
+TEST_F(AppListSyncableServiceTest, PageBreakWithOverflowItem) {
+  RemoveAllExistingItems();
+
+  // Create 2 apps on the page 1.
+  syncer::SyncDataList sync_list;
+  const std::string kItemIdA1 = extensions::kWebStoreAppId;
+  const std::string kItemIdA2 = CreateNextAppId(extensions::kWebStoreAppId);
+  const std::string kPageBreakItemId1 = GenerateId("page_break_item_id1");
+  sync_list.push_back(CreateAppRemoteData(
+      kItemIdA1, "A1", "", GetLastPositionString(), "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(
+      kItemIdA2, "A2", "", GetLastPositionString(), "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(
+      kPageBreakItemId1, "page_break_item1_name", "" /* parent_id */,
+      GetLastPositionString(), "pinordinal",
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK));
+
+  // Create 3 apps on the page 2, which makes it a full page.
+  const std::string kItemIdB1 = CreateNextAppId(kItemIdA2);
+  const std::string kItemIdB2 = CreateNextAppId(kItemIdB1);
+  const std::string kItemIdB3 = CreateNextAppId(kItemIdB2);
+  const std::string kPageBreakItemId2 = GenerateId("page_break_item_id2");
+  sync_list.push_back(CreateAppRemoteData(
+      kItemIdB1, "B1", "", GetLastPositionString(), "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(
+      kItemIdB2, "B2", "", GetLastPositionString(), "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(
+      kItemIdB3, "B3", "", GetLastPositionString(), "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(
+      kPageBreakItemId2, "page_break_item2_name", "" /* parent_id */,
+      GetLastPositionString(), "pinordinal",
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK));
+
+  // Create 1 app on page 3.
+  const std::string kItemIdC1 = CreateNextAppId(kItemIdB3);
+  const std::string kPageBreakItemId3 = GenerateId("page_break_item_id3");
+  sync_list.push_back(CreateAppRemoteData(
+      kItemIdC1, "C1", "", GetLastPositionString(), "pinordinal"));
+  sync_list.push_back(CreateAppRemoteData(
+      kPageBreakItemId3, "page_break_item3_name", "" /* parent_id */,
+      GetLastPositionString(), "pinordinal",
+      sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK));
+
+  app_list_syncable_service()->MergeDataAndStartSyncing(
+      syncer::APP_LIST, sync_list,
+      std::make_unique<syncer::FakeSyncChangeProcessor>(),
+      std::make_unique<syncer::SyncErrorFactoryMock>());
+  content::RunAllTasksUntilIdle();
+
+  // Verify the sync items on page 1.
+  ASSERT_TRUE(GetSyncItem(kItemIdA1));
+  ASSERT_TRUE(GetSyncItem(kItemIdA2));
+  ASSERT_TRUE(GetSyncItem(kPageBreakItemId1));
+
+  // Verify the sync items on page 2.
+  ASSERT_TRUE(GetSyncItem(kItemIdB1));
+  ASSERT_TRUE(GetSyncItem(kItemIdB2));
+  ASSERT_TRUE(GetSyncItem(kItemIdB3));
+  ASSERT_TRUE(GetSyncItem(kPageBreakItemId2));
+
+  // Verify the sync items on page 3.
+  ASSERT_TRUE(GetSyncItem(kItemIdC1));
+  ASSERT_TRUE(GetSyncItem(kPageBreakItemId3));
+
+  // Install all the apps.
+  scoped_refptr<extensions::Extension> app_A1 =
+      MakeApp("app_A1_name", kItemIdA1,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(app_A1.get());
+  scoped_refptr<extensions::Extension> app_A2 =
+      MakeApp("app_A2_name", kItemIdA2,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(app_A2.get());
+  scoped_refptr<extensions::Extension> app_B1 =
+      MakeApp("app_B1_name", kItemIdB1,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(app_B1.get());
+  scoped_refptr<extensions::Extension> app_B2 =
+      MakeApp("app_B2_name", kItemIdB2,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(app_B2.get());
+  scoped_refptr<extensions::Extension> app_B3 =
+      MakeApp("app_B3_name", kItemIdB3,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(app_B3.get());
+  scoped_refptr<extensions::Extension> app_C1 =
+      MakeApp("app_C1_name", kItemIdC1,
+              extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
+  InstallExtension(app_C1.get());
+
+  // Verify all apps and page breaks are created and the items
+  // in the model updater should look like:
+  // A1 A2 [page break 1]
+  // B1 B2 B3 [page break 2]
+  // C1 [page break 3]
+  auto ordered_items = GetIdsOfSortedItemsFromModelUpdater();
+  EXPECT_THAT(
+      ordered_items,
+      ElementsAre(kItemIdA1, kItemIdA2, kPageBreakItemId1,
+                  kItemIdB1, kItemIdB2, kItemIdB3, kPageBreakItemId2,
+                  kItemIdC1, kPageBreakItemId3));
+
+  // On device 1, move A1 from page 1 to page 2 and insert it between B1 and B2.
+  // Device 2 should get the following 3 sync changes from device 1:
+  //    1. Remove the previous page break after B3.
+  //    2. Add a new page break after B2.
+  //    3. Update A1 for position change to move it between B1 and B2.
+  syncer::SyncChangeList change_list;
+  // Sync change for removing the previous page break after B3.
+  ChromeAppListItem* app_item_B1 = model_updater()->FindItem(kItemIdB1);
+  ChromeAppListItem* pagebreak_2 = model_updater()->FindItem(kPageBreakItemId2);
+  ChromeAppListItem* app_item_B2 = model_updater()->FindItem(kItemIdB2);
+  ChromeAppListItem* app_item_B3 = model_updater()->FindItem(kItemIdB3);
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_DELETE,
+      CreateAppRemoteData(
+          kPageBreakItemId2, "page_break_item2_name", "" /* parent_id */,
+          pagebreak_2->position().ToDebugString(), "pinordinal")));
+  // Sync change for adding a new page break after B2.
+  const std::string kNewPageBreakItemId = GenerateId("new_page_break_item_id");
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_ADD,
+      CreateAppRemoteData(
+          kNewPageBreakItemId, "new_page_break_item_name", "" /* parent_id */,
+          app_item_B2->position()
+              .CreateBetween(app_item_B3->position())
+              .ToDebugString(),
+          "pinordinal",
+          sync_pb::AppListSpecifics_AppListItemType_TYPE_PAGE_BREAK)));
+  // Sync change for moving A1 between B1 and B2.
+  change_list.push_back(syncer::SyncChange(
+      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+      CreateAppRemoteData(kItemIdA1, "A1", "" /* parent_id */,
+                          app_item_B1->position()
+                              .CreateBetween(app_item_B2->position())
+                              .ToDebugString(),
+                          "pinordinal")));
+
+  app_list_syncable_service()->ProcessSyncChanges(base::Location(),
+                                                  change_list);
+  content::RunAllTasksUntilIdle();
+
+  // Verify the original page break item after B3 is removed.
+  EXPECT_FALSE(GetSyncItem(kPageBreakItemId2));
+  EXPECT_FALSE(model_updater()->FindItem(kPageBreakItemId2));
+
+  // Verify a new page break sync item is created.
+  EXPECT_TRUE(GetSyncItem(kNewPageBreakItemId));
+
+  // Verify the items in model updater now looks like:
+  // A2 [pagebreak 1]
+  // B1 A1 B2 [new pagebreak]
+  // B3 C1 [pagebreak 3]
+  auto ordered_items_after_sync = GetIdsOfSortedItemsFromModelUpdater();
+  EXPECT_THAT(ordered_items_after_sync,
+              ElementsAre(kItemIdA2, kPageBreakItemId1,
+                          kItemIdB1, kItemIdA1, kItemIdB2, kNewPageBreakItemId,
+                          kItemIdB3, kItemIdC1, kPageBreakItemId3));
 }
 
 TEST_F(AppListSyncableServiceTest, FirstAvailablePosition) {

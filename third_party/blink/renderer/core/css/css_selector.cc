@@ -1094,7 +1094,7 @@ bool CSSSelector::IsAllowedAfterPart() const {
   if (Match() != CSSSelector::kPseudoElement) {
     return false;
   }
-  // Everything that makes sense should work following ::part. This whitelist
+  // Everything that makes sense should work following ::part. This list
   // restricts it to what has been tested.
   switch (GetPseudoType()) {
     case kPseudoBefore:

@@ -15,6 +15,8 @@
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/screens/welcome_screen.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
@@ -47,6 +49,12 @@ WelcomeScreenHandler::WelcomeScreenHandler(JSCallsContainer* js_calls_container,
       core_oobe_view_(core_oobe_view) {
   set_user_acted_method_path("login.WelcomeScreen.userActed");
   DCHECK(core_oobe_view_);
+
+  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
+  CHECK(accessibility_manager);
+  accessibility_subscription_ = accessibility_manager->RegisterCallback(
+      base::Bind(&WelcomeScreenHandler::OnAccessibilityStatusChanged,
+                 base::Unretained(this)));
 }
 
 WelcomeScreenHandler::~WelcomeScreenHandler() {
@@ -145,6 +153,17 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("keyboardDropdownTitle", IDS_KEYBOARD_DROPDOWN_TITLE);
   builder->Add("keyboardDropdownLabel", IDS_KEYBOARD_DROPDOWN_LABEL);
 
+  // OOBE accessibility options menu strings shown on each screen.
+  builder->Add("accessibilityLink", IDS_OOBE_ACCESSIBILITY_LINK);
+  builder->Add("spokenFeedbackOption", IDS_OOBE_SPOKEN_FEEDBACK_OPTION);
+  builder->Add("selectToSpeakOption", IDS_OOBE_SELECT_TO_SPEAK_OPTION);
+  builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
+  builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
+  builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
+  builder->Add("dockedMagnifierOption", IDS_OOBE_DOCKED_MAGNIFIER_OPTION);
+  builder->Add("virtualKeyboardOption", IDS_OOBE_VIRTUAL_KEYBOARD_OPTION);
+  builder->Add("closeAccessibilityMenu", IDS_OOBE_CLOSE_ACCESSIBILITY_MENU);
+
   builder->Add("a11ySettingToggleOptionOff",
                IDS_A11Y_SETTING_TOGGLE_OPTION_OFF);
   builder->Add("a11ySettingToggleOptionOn", IDS_A11Y_SETTING_TOGGLE_OPTION_ON);
@@ -162,6 +181,21 @@ void WelcomeScreenHandler::DeclareJSCallbacks() {
               &WelcomeScreenHandler::HandleSetInputMethodId);
   AddCallback("WelcomeScreen.setTimezoneId",
               &WelcomeScreenHandler::HandleSetTimezoneId);
+
+  AddCallback("WelcomeScreen.enableHighContrast",
+              &WelcomeScreenHandler::HandleEnableHighContrast);
+  AddCallback("WelcomeScreen.enableLargeCursor",
+              &WelcomeScreenHandler::HandleEnableLargeCursor);
+  AddCallback("WelcomeScreen.enableVirtualKeyboard",
+              &WelcomeScreenHandler::HandleEnableVirtualKeyboard);
+  AddCallback("WelcomeScreen.enableScreenMagnifier",
+              &WelcomeScreenHandler::HandleEnableScreenMagnifier);
+  AddCallback("WelcomeScreen.enableSpokenFeedback",
+              &WelcomeScreenHandler::HandleEnableSpokenFeedback);
+  AddCallback("WelcomeScreen.enableSelectToSpeak",
+              &WelcomeScreenHandler::HandleEnableSelectToSpeak);
+  AddCallback("WelcomeScreen.enableDockedMagnifier",
+              &WelcomeScreenHandler::HandleEnableDockedMagnifier);
 }
 
 void WelcomeScreenHandler::GetAdditionalParameters(
@@ -227,7 +261,10 @@ void WelcomeScreenHandler::Initialize() {
   // Reload localized strings if they are already resolved.
   if (screen_ && screen_->language_list())
     ReloadLocalizedContent();
+  UpdateA11yState();
 }
+
+// WelcomeScreenHandler, private: ----------------------------------------------
 
 void WelcomeScreenHandler::HandleSetLocaleId(const std::string& locale_id) {
   if (screen_)
@@ -245,7 +282,71 @@ void WelcomeScreenHandler::HandleSetTimezoneId(const std::string& timezone_id) {
     screen_->SetTimezone(timezone_id);
 }
 
-// WelcomeScreenHandler, private: ----------------------------------------------
+void WelcomeScreenHandler::HandleEnableHighContrast(bool enabled) {
+  AccessibilityManager::Get()->EnableHighContrast(enabled);
+}
+
+void WelcomeScreenHandler::HandleEnableLargeCursor(bool enabled) {
+  AccessibilityManager::Get()->EnableLargeCursor(enabled);
+}
+
+void WelcomeScreenHandler::HandleEnableVirtualKeyboard(bool enabled) {
+  AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
+}
+
+void WelcomeScreenHandler::HandleEnableScreenMagnifier(bool enabled) {
+  DCHECK(MagnificationManager::Get());
+  MagnificationManager::Get()->SetMagnifierEnabled(enabled);
+}
+
+void WelcomeScreenHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
+  // Checkbox is initialized on page init and updates when spoken feedback
+  // setting is changed so just toggle spoken feedback here.
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      !AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+}
+
+void WelcomeScreenHandler::HandleEnableSelectToSpeak(bool /* enabled */) {
+  // Checkbox is initialized on page init and updates when Select to Speak
+  // setting is changed so just toggle Select to Speak here.
+  AccessibilityManager::Get()->SetSelectToSpeakEnabled(
+      !AccessibilityManager::Get()->IsSelectToSpeakEnabled());
+}
+
+void WelcomeScreenHandler::HandleEnableDockedMagnifier(bool enabled) {
+  // Checkbox is initialized on page init and updates when the docked magnifier
+  // setting is changed so just toggle Select to Speak here.
+  DCHECK(MagnificationManager::Get());
+  MagnificationManager::Get()->SetDockedMagnifierEnabled(enabled);
+}
+
+void WelcomeScreenHandler::OnAccessibilityStatusChanged(
+    const AccessibilityStatusEventDetails& details) {
+  if (details.notification_type == ACCESSIBILITY_MANAGER_SHUTDOWN)
+    accessibility_subscription_.reset();
+  else
+    UpdateA11yState();
+}
+
+void WelcomeScreenHandler::UpdateA11yState() {
+  base::DictionaryValue a11y_info;
+  a11y_info.SetBoolean("highContrastEnabled",
+                       AccessibilityManager::Get()->IsHighContrastEnabled());
+  a11y_info.SetBoolean("largeCursorEnabled",
+                       AccessibilityManager::Get()->IsLargeCursorEnabled());
+  a11y_info.SetBoolean("spokenFeedbackEnabled",
+                       AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  a11y_info.SetBoolean("selectToSpeakEnabled",
+                       AccessibilityManager::Get()->IsSelectToSpeakEnabled());
+  DCHECK(MagnificationManager::Get());
+  a11y_info.SetBoolean("screenMagnifierEnabled",
+                       MagnificationManager::Get()->IsMagnifierEnabled());
+  a11y_info.SetBoolean("dockedMagnifierEnabled",
+                       MagnificationManager::Get()->IsDockedMagnifierEnabled());
+  a11y_info.SetBoolean("virtualKeyboardEnabled",
+                       AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
+  CallJS("login.WelcomeScreen.refreshA11yInfo", a11y_info);
+}
 
 // static
 std::unique_ptr<base::ListValue> WelcomeScreenHandler::GetTimezoneList() {

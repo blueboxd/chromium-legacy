@@ -748,7 +748,7 @@ if (!is_ios && !is_fuchsia) {
 if (is_android) {
   junit_binary("components_junit_tests") {
     deps = [
-      "//components/autofill/android/junit:components_autofill_junit_tests",
+      "//components/autofill/android/provider/junit:components_autofill_junit_tests",
       "//components/background_task_scheduler:components_background_task_scheduler_junit_tests",
       "//components/browser_ui/android/bottomsheet/internal:junit_tests",
       "//components/browser_ui/media/android:junit",

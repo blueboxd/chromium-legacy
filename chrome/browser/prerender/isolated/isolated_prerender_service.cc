@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 
 IsolatedPrerenderService::IsolatedPrerenderService(Profile* profile)
     : profile_(profile),
@@ -38,13 +39,13 @@ void IsolatedPrerenderService::Shutdown() {
 }
 
 bool IsolatedPrerenderService::MaybeProxyURLLoaderFactory(
+    content::RenderFrameHost* frame,
     int render_process_id,
-    int frame_tree_node_id,
     content::ContentBrowserClient::URLLoaderFactoryType type,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
   for (const auto& manager_pair : subresource_managers_) {
     if (manager_pair.second->MaybeProxyURLLoaderFactory(
-            render_process_id, frame_tree_node_id, type, factory_receiver)) {
+            frame, render_process_id, type, factory_receiver)) {
       return true;
     }
   }
@@ -69,6 +70,17 @@ IsolatedPrerenderService::GetSubresourceManagerForURL(const GURL& url) const {
   if (iter == subresource_managers_.end())
     return nullptr;
   return iter->second.get();
+}
+
+std::unique_ptr<IsolatedPrerenderSubresourceManager>
+IsolatedPrerenderService::TakeSubresourceManagerForURL(const GURL& url) {
+  auto iter = subresource_managers_.find(url);
+  if (iter == subresource_managers_.end())
+    return nullptr;
+  std::unique_ptr<IsolatedPrerenderSubresourceManager> manager =
+      std::move(iter->second);
+  subresource_managers_.erase(iter);
+  return manager;
 }
 
 void IsolatedPrerenderService::DestroySubresourceManagerForURL(

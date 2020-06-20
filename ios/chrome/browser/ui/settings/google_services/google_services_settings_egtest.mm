@@ -47,6 +47,25 @@ using chrome_test_util::SettingsDoneButton;
 
 @implementation GoogleServicesSettingsTestCase
 
+- (AppLaunchConfiguration)appConfigurationForTestCase {
+  AppLaunchConfiguration config;
+
+  // Features are enabled or disabled based on the name of the test that is
+  // running. This is done because it is inefficient to use
+  // ensureAppLaunchedWithConfiguration for each test.
+  if ([self isRunningTest:@selector(testToggleSafeBrowsing)] ||
+      [self isRunningTest:@selector
+            (testTogglePasswordLeakCheckWhenSafeBrowsingAvailable)]) {
+    config.features_enabled.push_back(
+        safe_browsing::kSafeBrowsingAvailableOnIOS);
+  } else if ([self isRunningTest:@selector
+                   (testTogglePasswordLeakCheckWhenSafeBrowsingNotAvailable)]) {
+    config.features_disabled.push_back(
+        safe_browsing::kSafeBrowsingAvailableOnIOS);
+  }
+  return config;
+}
+
 // Opens the Google services settings view, and closes it.
 - (void)testOpenGoogleServicesSettings {
   [self openGoogleServicesSettings];
@@ -164,14 +183,49 @@ using chrome_test_util::SettingsDoneButton;
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
 }
 
+// Tests that the Safe Browsing toggle reflects the current value of the
+// Safe Browsing preference, and updating the toggle also updates the
+// preference.
+- (void)testToggleSafeBrowsing {
+  // Start in the default (opted-in) state for Safe Browsing.
+  [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSafeBrowsingEnabled];
+
+  [self openGoogleServicesSettings];
+
+  // Check that Safe Browsing is enabled, and toggle it off.
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SettingsSwitchCell(
+                 kSafeBrowsingItemAccessibilityIdentifier,
+                 /*is_toggled_on=*/YES,
+                 /*enabled=*/YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(NO)];
+
+  // Check the underlying pref value.
+  GREYAssertFalse([ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnabled],
+                  @"Failed to toggle-off Safe Browsing");
+
+  // Close settings.
+  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
+      performAction:grey_tap()];
+
+  // Open settings again, verify Safe Browsing is still disabled, and re-enable
+  // it.
+  [self openGoogleServicesSettings];
+  [[self elementInteractionWithGreyMatcher:
+             chrome_test_util::SettingsSwitchCell(
+                 kSafeBrowsingItemAccessibilityIdentifier,
+                 /*is_toggled_on=*/NO,
+                 /*enabled=*/YES)]
+      performAction:chrome_test_util::TurnSettingsSwitchOn(YES)];
+
+  // Check the underlying pref value.
+  GREYAssertTrue([ChromeEarlGrey userBooleanPref:prefs::kSafeBrowsingEnabled],
+                 @"Failed to toggle-on Safe Browsing");
+}
+
 // Tests that password leak detection can be toggled when Safe Browsing isn't
 // available.
 - (void)testTogglePasswordLeakCheckWhenSafeBrowsingNotAvailable {
-  AppLaunchConfiguration config;
-  config.features_disabled.push_back(
-      safe_browsing::kSafeBrowsingAvailableOnIOS);
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
-
   // Ensure that Safe Browsing and password leak detection opt-outs start in
   // their default (opted-in) state.
   [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSafeBrowsingEnabled];
@@ -232,10 +286,6 @@ using chrome_test_util::SettingsDoneButton;
 // Tests that when Safe Browsing is available, password leak detection can only
 // be toggled if Safe Browsing is enabled.
 - (void)testTogglePasswordLeakCheckWhenSafeBrowsingAvailable {
-  AppLaunchConfiguration config;
-  config.features_enabled.push_back(safe_browsing::kSafeBrowsingAvailableOnIOS);
-  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
-
   // Ensure that Safe Browsing and password leak detection opt-outs start in
   // their default (opted-in) state.
   [ChromeEarlGrey setBoolValue:YES forUserPref:prefs::kSafeBrowsingEnabled];
@@ -391,6 +441,22 @@ using chrome_test_util::SettingsDoneButton;
           IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_TEXT
                detailTextID:
                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL];
+}
+
+// Returns YES if the test method name extracted from |selector| matches the
+// name of the currently running test method.
+- (BOOL)isRunningTest:(SEL)selector {
+  return [[self currentTestMethodName] isEqual:NSStringFromSelector(selector)];
+}
+
+// Returns the method name, e.g. "testSomething" of the test that is currently
+// running. The name is extracted from the string for the test's name property,
+// e.g. "-[GoogleServicesSettingsTestCase testSomething]".
+- (NSString*)currentTestMethodName {
+  int testNameStart = [self.name rangeOfString:@"test"].location;
+  return [self.name
+      substringWithRange:NSMakeRange(testNameStart,
+                                     self.name.length - testNameStart - 1)];
 }
 
 @end

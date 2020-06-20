@@ -4476,6 +4476,9 @@
             "experiments": [
                 {
                     "name": "Enabled",
+                    "params": {
+                        "ImageSearchSuggestionThumbnail": "true"
+                    },
                     "enable_features": [
                         "OmniboxEnableClipboardProviderImageSuggestions"
                     ]

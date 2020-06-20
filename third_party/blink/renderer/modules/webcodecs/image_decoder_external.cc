@@ -88,23 +88,23 @@ ImageDecoderExternal::ImageDecoderExternal(ScriptState* script_state,
   // TODO: Data is owned by the caller who may be free to manipulate it. We will
   // probably need to make a copy to our own internal data or neuter the buffers
   // as seen by JS.
-  auto sr = SegmentReader::CreateFromSkData(
+  segment_reader_ = SegmentReader::CreateFromSkData(
       SkData::MakeWithoutCopy(buffer.Data(), buffer.ByteLengthAsSizeT()));
-  if (!sr) {
+  if (!segment_reader_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
                                       "Failed to read image data");
     return;
   }
 
   data_complete_ = true;
-  MaybeCreateImageDecoder(std::move(sr));
+  MaybeCreateImageDecoder();
   if (!decoder_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kConstraintError,
                                       "Failed to create image decoder");
     return;
   }
 
-  UpdateFrameAndRepetitionCount();
+  MaybeUpdateMetadata();
   if (decoder_->Failed()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
                                       "Image decoding failed");
@@ -125,6 +125,16 @@ ScriptPromise ImageDecoderExternal::decode(uint32_t frame_index,
   pending_decodes_.push_back(MakeGarbageCollected<DecodeRequest>(
       resolver, frame_index, complete_frames_only));
   MaybeSatisfyPendingDecodes();
+  return promise;
+}
+
+ScriptPromise ImageDecoderExternal::decodeMetadata() {
+  DVLOG(1) << __func__;
+
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
+  auto promise = resolver->Promise();
+  pending_metadata_decodes_.push_back(resolver);
+  MaybeSatisfyPendingMetadataDecodes();
   return promise;
 }
 
@@ -165,11 +175,11 @@ void ImageDecoderExternal::OnStateChange() {
 
     data_complete_ = result == BytesConsumer::Result::kDone;
     if (!decoder_)
-      MaybeCreateImageDecoder(nullptr);
+      MaybeCreateImageDecoder();
     else
       decoder_->SetData(stream_buffer_, data_complete_);
 
-    UpdateFrameAndRepetitionCount();
+    MaybeUpdateMetadata();
     MaybeSatisfyPendingDecodes();
   }
 }
@@ -182,6 +192,7 @@ void ImageDecoderExternal::Trace(Visitor* visitor) const {
   visitor->Trace(script_state_);
   visitor->Trace(consumer_);
   visitor->Trace(pending_decodes_);
+  visitor->Trace(pending_metadata_decodes_);
   visitor->Trace(init_data_);
   visitor->Trace(options_);
   ScriptWrappable::Trace(visitor);
@@ -268,8 +279,15 @@ void ImageDecoderExternal::MaybeSatisfyPendingDecodes() {
       static_cast<wtf_size_t>(new_end - pending_decodes_.begin()));
 }
 
-void ImageDecoderExternal::MaybeCreateImageDecoder(
-    scoped_refptr<SegmentReader> sr) {
+void ImageDecoderExternal::MaybeSatisfyPendingMetadataDecodes() {
+  DCHECK(decoder_);
+  DCHECK(decoder_->Failed() || frame_count_ > 0);
+  for (auto& resolver : pending_metadata_decodes_)
+    resolver->Resolve();
+  pending_metadata_decodes_.clear();
+}
+
+void ImageDecoderExternal::MaybeCreateImageDecoder() {
   // TODO: This does not handle SVG Images since they use another "decoder." It
   // is highly coupled with the DOM today, so isn't suitable for this API.
 
@@ -298,7 +316,6 @@ void ImageDecoderExternal::MaybeCreateImageDecoder(
     if (!ImageDecoder::HasSufficientDataToSniffImageType(*stream_buffer_))
       return;
 
-    DCHECK(!sr);
     decoder_ = ImageDecoder::Create(
         stream_buffer_, data_complete_, premultiply_alpha,
         ImageDecoder::kHighBitDepthToHalfFloat, color_behavior,
@@ -308,18 +325,20 @@ void ImageDecoderExternal::MaybeCreateImageDecoder(
 
   DCHECK(data_complete_);
   decoder_ = ImageDecoder::Create(
-      std::move(sr), data_complete_, premultiply_alpha,
+      segment_reader_, data_complete_, premultiply_alpha,
       ImageDecoder::kHighBitDepthToHalfFloat, color_behavior,
       ImageDecoder::OverrideAllowDecodeToYuv::kDeny, desired_size);
 }
 
-void ImageDecoderExternal::UpdateFrameAndRepetitionCount() {
+void ImageDecoderExternal::MaybeUpdateMetadata() {
   if (!decoder_)
     return;
 
   const size_t decoded_frame_count = decoder_->FrameCount();
-  if (decoder_->Failed())
+  if (decoder_->Failed()) {
+    MaybeSatisfyPendingMetadataDecodes();
     return;
+  }
 
   // TODO: Is this useful? We should have each decoder indicate its own mime
   // type then.
@@ -332,6 +351,8 @@ void ImageDecoderExternal::UpdateFrameAndRepetitionCount() {
   const int decoded_repetition_count = decoder_->RepetitionCount();
   if (decoded_repetition_count > 0)
     repetition_count_ = decoded_repetition_count;
+
+  MaybeSatisfyPendingMetadataDecodes();
 }
 
 }  // namespace blink

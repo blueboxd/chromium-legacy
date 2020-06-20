@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/services/app_service/public/cpp/file_handler.h"
 #include "components/sync/base/model_type.h"
@@ -149,9 +150,19 @@ std::unique_ptr<WebAppProto> WebAppDatabase::CreateWebAppProto(
   sync_data->set_name(web_app.sync_data().name);
   if (web_app.sync_data().theme_color.has_value())
     sync_data->set_theme_color(web_app.sync_data().theme_color.value());
+  if (web_app.sync_data().scope.is_valid())
+    sync_data->set_scope(web_app.sync_data().scope.spec());
+  for (const WebApplicationIconInfo& icon_info :
+       web_app.sync_data().icon_infos) {
+    sync_pb::WebAppIconInfo* icon_info_proto = sync_data->add_icon_infos();
+    if (icon_info.square_size_px)
+      icon_info_proto->set_size_in_px(*icon_info.square_size_px);
+    DCHECK(!icon_info.url.is_empty());
+    icon_info_proto->set_url(icon_info.url.spec());
+  }
 
   for (const WebApplicationIconInfo& icon_info : web_app.icon_infos()) {
-    WebAppIconInfoProto* icon_info_proto = local_data->add_icon_infos();
+    sync_pb::WebAppIconInfo* icon_info_proto = local_data->add_icon_infos();
     if (icon_info.square_size_px)
       icon_info_proto->set_size_in_px(*icon_info.square_size_px);
     DCHECK(!icon_info.url.is_empty());
@@ -301,34 +312,21 @@ std::unique_ptr<WebApp> WebAppDatabase::CreateWebApp(
     web_app->SetInstallTime(syncer::ProtoTimeToTime(local_data.install_time()));
   }
 
-  // Parse sync_data from sync proto.
-  WebApp::SyncData parsed_sync_data;
-  if (sync_data.has_name())
-    parsed_sync_data.name = sync_data.name();
-  if (sync_data.has_theme_color())
-    parsed_sync_data.theme_color = sync_data.theme_color();
-  web_app->SetSyncData(std::move(parsed_sync_data));
-
-  std::vector<WebApplicationIconInfo> icon_infos;
-  for (const WebAppIconInfoProto& icon_info_proto : local_data.icon_infos()) {
-    WebApplicationIconInfo icon_info;
-    if (icon_info_proto.has_size_in_px())
-      icon_info.square_size_px = icon_info_proto.size_in_px();
-    if (!icon_info_proto.has_url()) {
-      DLOG(ERROR) << "WebApp IconInfo has missing url";
-      return nullptr;
-    }
-    GURL icon_url(icon_info_proto.url());
-    if (icon_url.is_empty() || !icon_url.is_valid()) {
-      DLOG(ERROR) << "WebApp IconInfo proto url parse error: "
-                  << icon_url.possibly_invalid_spec();
-      return nullptr;
-    }
-    icon_info.url = icon_url;
-
-    icon_infos.push_back(std::move(icon_info));
+  base::Optional<WebApp::SyncData> parsed_sync_data =
+      ParseWebAppSyncData(sync_data);
+  if (!parsed_sync_data.has_value()) {
+    // ParseWebAppSyncData() reports any errors.
+    return nullptr;
   }
-  web_app->SetIconInfos(std::move(icon_infos));
+  web_app->SetSyncData(std::move(parsed_sync_data.value()));
+
+  base::Optional<std::vector<WebApplicationIconInfo>> parsed_icon_infos =
+      ParseWebAppIconInfos("WebApp", local_data.icon_infos());
+  if (!parsed_icon_infos.has_value()) {
+    // ParseWebAppIconInfos() reports any errors.
+    return nullptr;
+  }
+  web_app->SetIconInfos(std::move(parsed_icon_infos.value()));
 
   std::vector<SquareSizePx> icon_sizes_on_disk;
   for (int32_t size : local_data.downloaded_icon_sizes())

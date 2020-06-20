@@ -20,7 +20,6 @@ android_resources("weblayer_resources") {
     "res/values/colors.xml",
     "res/values/dimens.xml",
     "res/values/styles.xml",
-    "res/values/styles.xml",
   ]
   custom_package = "org.chromium.weblayer_private"
   deps = [
@@ -76,7 +75,6 @@ java_cpp_enum("generated_enums") {
 
 android_library("java") {
   sources = [
-    "org/chromium/weblayer_private/AccessibilityUtil.java",
     "org/chromium/weblayer_private/ActionModeCallback.java",
     "org/chromium/weblayer_private/AutocompleteSchemeClassifierImpl.java",
     "org/chromium/weblayer_private/AutofillView.java",
@@ -150,7 +148,7 @@ android_library("java") {
     ":weblayer_resources",
     "//base:base_java",
     "//base:jni_java",
-    "//components/autofill/android:provider_java",
+    "//components/autofill/android/provider:java",
     "//components/browser_ui/http_auth/android:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/notifications/android:java",

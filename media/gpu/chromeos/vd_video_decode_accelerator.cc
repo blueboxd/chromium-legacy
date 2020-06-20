@@ -136,8 +136,7 @@ bool VdVideoDecodeAccelerator::Initialize(const Config& config,
   std::unique_ptr<VdaVideoFramePool> frame_pool =
       std::make_unique<VdaVideoFramePool>(weak_this_, client_task_runner_);
   vd_ = create_vd_cb_.Run(client_task_runner_, std::move(frame_pool),
-                          std::make_unique<VideoFrameConverter>(),
-                          nullptr /* gpu_memory_buffer_factory */);
+                          std::make_unique<VideoFrameConverter>());
   if (!vd_)
     return false;
 

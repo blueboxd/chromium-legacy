@@ -29,9 +29,6 @@ class TestInstallFinalizer final : public InstallFinalizer {
   void FinalizeInstall(const WebApplicationInfo& web_app_info,
                        const FinalizeOptions& options,
                        InstallFinalizedCallback callback) override;
-  void FinalizeFallbackInstallAfterSync(
-      const AppId& app_id,
-      InstallFinalizedCallback callback) override;
   void FinalizeUninstallAfterSync(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   void FinalizeUpdate(const WebApplicationInfo& web_app_info,

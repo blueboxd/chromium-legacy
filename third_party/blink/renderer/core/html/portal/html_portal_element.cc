@@ -279,6 +279,13 @@ ScriptPromise HTMLPortalElement::activate(ScriptState* script_state,
         "Cannot activate a portal that is inside another portal.");
     return ScriptPromise();
   }
+  if (GetDocument().BeforeUnloadStarted()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot activate portal while document is in beforeunload or has "
+        "started unloading.");
+    return ScriptPromise();
+  }
 
   BlinkTransferableMessage data =
       ActivateDataAsMessage(script_state, options, exception_state);

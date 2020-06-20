@@ -12,7 +12,7 @@
 #include <string>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/memory/read_only_shared_memory_region.h"

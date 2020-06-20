@@ -901,7 +901,7 @@ CustomElementDefinition* HTMLConstructionSite::LookUpCustomElementDefinition(
     return nullptr;
 
   // "2. If document does not have a browsing context, return null."
-  LocalDOMWindow* window = document.ExecutingWindow();
+  LocalDOMWindow* window = document.domWindow();
   if (!window)
     return nullptr;
 

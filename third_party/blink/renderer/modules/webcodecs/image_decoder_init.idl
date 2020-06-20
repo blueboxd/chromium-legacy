@@ -7,5 +7,9 @@
 typedef (ArrayBuffer or ArrayBufferView or ReadableStream) ImageBufferSource;
 dictionary ImageDecoderInit {
   required ImageBufferSource data;
+
+  // Options to use when creating ImageBitmap objects from decoded frames. The
+  // resize width and height are additionally used to facilitate reduced
+  // resolution decoding.
   ImageBitmapOptions options;
 };

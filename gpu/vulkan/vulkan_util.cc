@@ -7,6 +7,9 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
+#include "gpu/config/gpu_info.h"  // nogncheck
+#include "gpu/config/vulkan_info.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
 
 namespace gpu {
@@ -98,6 +101,50 @@ void ReportQueueSubmitPerSwapBuffers() {
   UMA_HISTOGRAM_CUSTOM_COUNTS("GPU.Vulkan.QueueSubmitPerSwapBuffers",
                               g_submit_count - last_count, 1, 50, 50);
   last_count = g_submit_count;
+}
+
+bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
+                              const GPUInfo& gpu_info) {
+// Android uses AHB and SyncFD for interop. They are imported into GL with other
+// API.
+#if !defined(OS_ANDROID)
+#if defined(OS_WIN)
+  constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_win32";
+  constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_win32";
+#elif defined(OS_FUCHSIA)
+  constexpr char kMemoryObjectExtension[] = "GL_ANGLE_memory_object_fuchsia";
+  constexpr char kSemaphoreExtension[] = "GL_ANGLE_semaphore_fuchsia";
+#else
+  constexpr char kMemoryObjectExtension[] = "GL_EXT_memory_object_fd";
+  constexpr char kSemaphoreExtension[] = "GL_EXT_semaphore_fd";
+#endif
+  // If both Vulkan and GL are using native GPU (non swiftshader), check
+  // necessary extensions for GL and Vulkan interop.
+  const auto extensions = gfx::MakeExtensionSet(gpu_info.gl_extensions);
+  if (!gfx::HasExtension(extensions, kMemoryObjectExtension) ||
+      !gfx::HasExtension(extensions, kSemaphoreExtension)) {
+    DLOG(ERROR) << kMemoryObjectExtension << " or " << kSemaphoreExtension
+                << " is not supported.";
+    return false;
+  }
+#endif  // !defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+  if (vulkan_info.physical_devices.empty())
+    return false;
+
+  const auto& device_info = vulkan_info.physical_devices.front();
+  constexpr uint32_t kVendorARM = 0x13b5;
+
+  // https://crbug.com/1096222: Display problem with Huawei and Honor devices
+  // with Mali GPU. The Mali driver version is < 19.0.0.
+  if (device_info.properties.vendorID == kVendorARM &&
+      device_info.properties.driverVersion < VK_MAKE_VERSION(19, 0, 0)) {
+    return false;
+  }
+#endif  // defined(OS_ANDROID)
+
+  return true;
 }
 
 }  // namespace gpu

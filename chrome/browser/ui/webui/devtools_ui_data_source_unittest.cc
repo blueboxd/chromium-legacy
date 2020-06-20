@@ -128,7 +128,7 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithQueryParam) {
   EXPECT_FALSE(data().empty());
 }
 
-TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithSwitch) {
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledFileURLWithSwitch) {
 #if defined(OS_WIN)
   const char* flag_value = "file://C:/tmp/";
 #else
@@ -141,6 +141,17 @@ TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledURLWithSwitch) {
   StartRequest(path.path());
   EXPECT_TRUE(data_received());
   EXPECT_EQ(data(), "file: devtools_app.html");
+}
+
+TEST_F(DevToolsUIDataSourceTest, TestDevToolsBundledRemoteURLWithSwitch) {
+  const char* flag_value = "http://example.com/example/path/";
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kCustomDevtoolsFrontend, flag_value);
+  const GURL path =
+      DevToolsUrl().Resolve(DevToolsBundledPath(kDevToolsUITestFrontEndUrl));
+  StartRequest(path.path());
+  EXPECT_TRUE(data_received());
+  EXPECT_EQ(data(), "url: http://example.com/example/path/devtools_app.html");
 }
 
 TEST_F(DevToolsUIDataSourceTest, TestDevToolsInvalidBundledURL) {

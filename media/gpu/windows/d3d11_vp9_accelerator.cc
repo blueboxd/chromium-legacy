@@ -185,19 +185,16 @@ void D3D11VP9Accelerator::CopyLoopFilterParams(
 
   // base::size(...) doesn't work well in an array initializer.
   DCHECK_EQ(4lu, base::size(pic_params->ref_deltas));
-  int ref_deltas[4] = {0};
   for (size_t i = 0; i < base::size(pic_params->ref_deltas); i++) {
-    if (loop_filter_params.update_ref_deltas[i])
-      ref_deltas[i] = loop_filter_params.ref_deltas[i];
-    pic_params->ref_deltas[i] = ref_deltas[i];
+    // The update_ref_deltas[i] is _only_ for parsing! it allows omission of the
+    // 6 bytes that would otherwise be needed for a new value to overwrite the
+    // global one. It has nothing to do with setting the ref_deltas here.
+    pic_params->ref_deltas[i] = loop_filter_params.ref_deltas[i];
   }
 
-  int mode_deltas[2] = {0};
   DCHECK_EQ(2lu, base::size(pic_params->mode_deltas));
   for (size_t i = 0; i < base::size(pic_params->mode_deltas); i++) {
-    if (loop_filter_params.update_mode_deltas[i])
-      mode_deltas[i] = loop_filter_params.mode_deltas[i];
-    pic_params->mode_deltas[i] = mode_deltas[i];
+    pic_params->mode_deltas[i] = loop_filter_params.mode_deltas[i];
   }
 }
 

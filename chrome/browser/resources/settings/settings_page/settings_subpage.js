@@ -154,7 +154,7 @@ Polymer({
   },
 
   /** Focuses the back button when page is loaded. */
-  initialFocus() {
+  focusBackButton() {
     if (this.hideCloseButton) {
       return;
     }
@@ -163,11 +163,21 @@ Polymer({
   },
 
   /** @protected */
-  currentRouteChanged(route) {
-    this.active_ = this.getAttribute('route-path') === route.path;
+  currentRouteChanged(newRoute, oldRoute) {
+    this.active_ = this.getAttribute('route-path') === newRoute.path;
     if (this.active_ && this.searchLabel && this.preserveSearchTerm) {
       this.getSearchField_().then(() => this.restoreSearchInput_());
     }
+    // <if expr="chromeos">
+    if (!oldRoute && loadTimeData.valueExists('isOSSettings') &&
+        loadTimeData.getBoolean('isOSSettings')) {
+      // If an OS settings subpage is opened directly (i.e the |oldRoute| is
+      // null, e.g via an OS settings search result that surfaces from the
+      // Chrome OS launcher), the back button should be focused since it's the
+      // first actionable element in the the subpage.
+      this.focusBackButton();
+    }
+    // </if>
   },
 
   /** @private */

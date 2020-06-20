@@ -30,6 +30,10 @@ AuthenticatorBioEnrollmentSheetView::AuthenticatorBioEnrollmentSheetView(
 AuthenticatorBioEnrollmentSheetView::~AuthenticatorBioEnrollmentSheetView() =
     default;
 
+views::View* AuthenticatorBioEnrollmentSheetView::GetInitiallyFocusedView() {
+  return nullptr;
+}
+
 std::unique_ptr<views::View>
 AuthenticatorBioEnrollmentSheetView::BuildStepSpecificContent() {
   auto* bio_model = static_cast<AuthenticatorBioEnrollmentSheetModel*>(model());

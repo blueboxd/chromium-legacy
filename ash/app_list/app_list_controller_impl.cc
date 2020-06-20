@@ -1211,13 +1211,6 @@ void AppListControllerImpl::ViewClosing() {
     Shell::Get()->home_screen_controller()->OnAppListViewClosing();
 }
 
-void AppListControllerImpl::ViewClosed() {
-  // Clear results to prevent initializing the next app list view with outdated
-  // results.
-  if (client_)
-    client_->StartSearch(base::string16());
-}
-
 const std::vector<SkColor>&
 AppListControllerImpl::GetWallpaperProminentColors() {
   return Shell::Get()->wallpaper_controller()->GetWallpaperColors();

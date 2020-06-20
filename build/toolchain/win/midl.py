@@ -192,6 +192,16 @@ def main(arch, gendir, outdir, dynamic_guid, tlb, h, dlldata, iid, proxy, idl,
   if sys.platform != 'win32':
     return 0
 
+  # Skip the verification step on Windows 7 to avoid issues running the
+  # compiler.
+  ver = sys.getwindowsversion()
+  # Impossible version number, but just in case...
+  if ver.major < 6:
+    return 0
+  # Check for before Windows 8.
+  if ver.major == 6 and ver.minor < 2:
+    return 0;
+
   # On Windows, run midl.exe on the input and check that its outputs are
   # identical to the checked-in outputs (after possibly replacing their main
   # class guid).

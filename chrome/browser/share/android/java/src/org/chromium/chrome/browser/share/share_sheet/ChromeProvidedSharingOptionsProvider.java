@@ -43,7 +43,7 @@ import java.util.Set;
  * Provides {@code PropertyModel}s of Chrome-provided sharing options.
  */
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
-class ChromeProvidedSharingOptionsProvider {
+public class ChromeProvidedSharingOptionsProvider {
     private final Activity mActivity;
     private final Supplier<Tab> mTabProvider;
     private final BottomSheetController mBottomSheetController;
@@ -53,6 +53,7 @@ class ChromeProvidedSharingOptionsProvider {
     private final Callback<Tab> mPrintTabCallback;
     private final long mShareStartTime;
     private final List<FirstPartyOption> mOrderedFirstPartyOptions;
+    private final ChromeOptionShareCallback mChromeOptionShareCallback;
     private ScreenshotCoordinator mScreenshotCoordinator;
 
     /**
@@ -68,11 +69,14 @@ class ChromeProvidedSharingOptionsProvider {
      * @param shareParams The {@link ShareParams} for the current share.
      * @param printTab A {@link Callback} that will print a given Tab.
      * @param shareStartTime The start time of the current share.
+     * @param chromeOptionShareCallback A ChromeOptionShareCallback that can be used by
+     *         Chrome-provdied sharing options.
      */
     ChromeProvidedSharingOptionsProvider(Activity activity, Supplier<Tab> tabProvider,
             BottomSheetController bottomSheetController,
             ShareSheetBottomSheetContent bottomSheetContent, PrefServiceBridge prefServiceBridge,
-            ShareParams shareParams, Callback<Tab> printTab, long shareStartTime) {
+            ShareParams shareParams, Callback<Tab> printTab, long shareStartTime,
+            ChromeOptionShareCallback chromeOptionShareCallback) {
         mActivity = activity;
         mTabProvider = tabProvider;
         mBottomSheetController = bottomSheetController;
@@ -83,6 +87,7 @@ class ChromeProvidedSharingOptionsProvider {
         mShareStartTime = shareStartTime;
         mOrderedFirstPartyOptions = new ArrayList<>();
         initializeFirstPartyOptionsInOrder();
+        mChromeOptionShareCallback = chromeOptionShareCallback;
     }
 
     /**
@@ -170,8 +175,8 @@ class ChromeProvidedSharingOptionsProvider {
                     RecordHistogram.recordMediumTimesHistogram(
                             "Sharing.SharingHubAndroid.TimeToShare",
                             System.currentTimeMillis() - mShareStartTime);
-                    mScreenshotCoordinator =
-                            new ScreenshotCoordinator(mActivity, mTabProvider.get());
+                    mScreenshotCoordinator = new ScreenshotCoordinator(
+                            mActivity, mTabProvider.get(), mChromeOptionShareCallback);
                     // Capture a screenshot once the bottom sheet is fully hidden. The
                     // observer will then remove itself.
                     mBottomSheetController.addObserver(mSheetObserver);

@@ -885,7 +885,9 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
 
 int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
                                              bool start_service_manager_only) {
-  TRACE_EVENT0("startup", "ContentMainRunnerImpl::RunServiceManager");
+  TRACE_EVENT_INSTANT0("startup",
+                       "ContentMainRunnerImpl::RunServiceManager (begin)",
+                       TRACE_EVENT_SCOPE_THREAD);
   if (is_browser_main_loop_started_)
     return -1;
 

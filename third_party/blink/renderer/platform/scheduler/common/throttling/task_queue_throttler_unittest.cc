@@ -132,6 +132,13 @@ class TaskQueueThrottlerTest : public testing::Test {
     return task_queue->BlockedByFence();
   }
 
+  void ForwardTimeToNextMinute() {
+    test_task_runner_->FastForwardBy(
+        test_task_runner_->NowTicks().SnappedToNextTick(
+            base::TimeTicks(), base::TimeDelta::FromMinutes(1)) -
+        test_task_runner_->NowTicks());
+  }
+
  protected:
   virtual const base::TickClock* GetTickClock() const {
     return test_task_runner_->GetMockTickClock();
@@ -1375,6 +1382,75 @@ TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_EnableDisableThrottling) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(180),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(240),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(300)));
+}
+
+TEST_F(TaskQueueThrottlerTest, WakeUpBasedThrottling_UnalignedWakeUps) {
+  // All throttled wake ups are aligned on 1-second intervals by
+  // TaskQueueThrottler, irrespective of BudgetPools. Start the test at a time
+  // aligned on a 1-minute interval, to simplify expectations.
+  ForwardTimeToNextMinute();
+  const base::TimeTicks start_time = test_task_runner_->NowTicks();
+
+  Vector<base::TimeTicks> run_times;
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  wake_up_budget_pool_->AllowUnalignedWakeUpIfNoRecentWakeUp();
+
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(90));
+
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(run_times,
+              ElementsAre(start_time + base::TimeDelta::FromSeconds(90)));
+}
+
+TEST_F(TaskQueueThrottlerTest,
+       WakeUpBasedThrottling_UnalignedWakeUps_MultipleTasks) {
+  // Start at a 1-minute aligned time to simplify expectations.
+  ForwardTimeToNextMinute();
+  const base::TimeTicks initial_time = test_task_runner_->NowTicks();
+  wake_up_budget_pool_->SetWakeUpInterval(test_task_runner_->NowTicks(),
+                                          base::TimeDelta::FromMinutes(1));
+  wake_up_budget_pool_->AllowUnalignedWakeUpIfNoRecentWakeUp();
+  Vector<base::TimeTicks> run_times;
+  task_queue_throttler_->IncreaseThrottleRefCount(timer_queue_.get());
+  // Task delay:        Expected run time:    Reason:
+  // 30 seconds         30 seconds            >= 60 seconds after last wake up
+  // 80 seconds         90 seconds            >= 60 seconds after last wake up
+  // 95 seconds         120 seconds           Aligned
+  // 100 seconds        120 seconds           Aligned
+  // 130 seconds        180 seconds           Aligned
+  // 251 seconds        251 seconds           >= 60 seconds after last wake up
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(30));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(80));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(95));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(100));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(130));
+  timer_task_runner_->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TestTask, &run_times, test_task_runner_),
+      base::TimeDelta::FromSeconds(251));
+  test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_THAT(run_times,
+              ElementsAre(initial_time + base::TimeDelta::FromSeconds(30),
+                          initial_time + base::TimeDelta::FromSeconds(90),
+                          initial_time + base::TimeDelta::FromSeconds(120),
+                          initial_time + base::TimeDelta::FromSeconds(120),
+                          initial_time + base::TimeDelta::FromSeconds(180),
+                          initial_time + base::TimeDelta::FromSeconds(251)));
 }
 
 TEST_F(TaskQueueThrottlerTest,

@@ -134,6 +134,10 @@ declare_args() {
 
   # Set to true to enable media overlay for volume bar, etc.
   enable_media_overlay = false
+
+  # Set to true to forward crashes to the system's crash handler instead of
+  # handling them internally.  This disables the built-in crash handler.
+  use_system_crash_handler = false
 }
 
 declare_args() {

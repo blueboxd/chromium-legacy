@@ -75,14 +75,14 @@ bool ExtensionsPermissionsTracker::IsSafePerms(
   const PermissionSet& active_permissions = perms_data->active_permissions();
   const APIPermissionSet& api_permissions = active_permissions.apis();
   for (auto* permission : api_permissions) {
-    if (!permission->info()->requires_managed_session_full_login_warning()) {
+    if (permission->info()->requires_managed_session_full_login_warning()) {
       return false;
     }
   }
   const ManifestPermissionSet& manifest_permissions =
       active_permissions.manifest_permissions();
   for (const auto* permission : manifest_permissions) {
-    if (!permission->RequiresManagedSessionFullLoginWarning()) {
+    if (permission->RequiresManagedSessionFullLoginWarning()) {
       return false;
     }
   }

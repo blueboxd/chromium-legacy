@@ -1461,6 +1461,22 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="NEON support"/>
 </enum>
 
+<enum name="AndroidDefaultBrowserPromoOutcomeType">
+  <int value="0" label="No Default"/>
+  <int value="1" label="Other Default"/>
+  <int value="2" label="Chrome Default"/>
+</enum>
+
+<enum name="AndroidDefaultBrowserPromoType">
+  <int value="0" label="No Default"/>
+  <int value="1" label="Other Default"/>
+</enum>
+
+<enum name="AndroidDefaultBrowserPromoUserActionType">
+  <int value="0" label="Change Default"/>
+  <int value="1" label="No Thanks"/>
+</enum>
+
 <enum name="AndroidDownloadExtensionType">
   <int value="0" label="Other"/>
   <int value="1" label="APK"/>
@@ -51229,6 +51245,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="604" label="Assistant: Ok Google"/>
   <int value="605" label="Assistant: Notifications"/>
   <int value="606" label="Assistant: Voice Input"/>
+  <int value="607" label="Assistant: Train voice model"/>
   <int value="700" label="Manage Android Preferences"/>
   <int value="701" label="Remove Play Store"/>
   <int value="702" label="Turn On Play Store"/>
@@ -51281,6 +51298,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1525" label="Switch Action: Auto Scan Keyboard"/>
   <int value="1526" label="Get Image Descriptions From Google"/>
   <int value="1527" label="Live Captions"/>
+  <int value="1528" label="Cursor Colors: On/Off"/>
   <int value="1600" label="Powerwash"/>
   <int value="1700" label="Change Chrome Channel"/>
   <int value="1701" label="Copy Detailed Build Info"/>
@@ -51352,6 +51370,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="100" label="Bluetooth Devices"/>
   <int value="200" label="Multi Device Features"/>
   <int value="201" label="Smart Lock"/>
+  <int value="202" label="Nearby Share"/>
   <int value="300" label="My Accounts"/>
   <int value="301" label="Sync"/>
   <int value="302" label="Sync (Deprecated)"/>
@@ -51385,6 +51404,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1200" label="Languages And Input Details"/>
   <int value="1201" label="Manage Input Methods"/>
   <int value="1202" label="Smart Inputs"/>
+  <int value="1203" label="Input Method Options"/>
   <int value="1300" label="Network File Shares"/>
   <int value="1400" label="Printing Details"/>
   <int value="1500" label="Manage Accessibility"/>

@@ -103,9 +103,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kIsolateCompositedDescendants,
      "isolateCompositedDescendants",
      "Should isolate descendants to apply a blend effect"},
-    {CompositingReason::kPositionFixedWithCompositedDescendants,
-     "positionFixedWithCompositedDescendants"
-     "Is a position:fixed element with composited descendants"},
     {CompositingReason::kRoot, "root", "Is the root layer"},
     {CompositingReason::kLayerForHorizontalScrollbar,
      "layerForHorizontalScrollbar",

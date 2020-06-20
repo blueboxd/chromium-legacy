@@ -187,7 +187,7 @@ void SVGAnimateElement::ResolveTargetProperty() {
                             AttributeName().LocalName())
             : CSSPropertyID::kInvalid;
   }
-  // Blacklist <script> targets here for now to prevent unpleasantries. This
+  // Disallow <script> targets here for now to prevent unpleasantries. This
   // also disallows the perfectly "valid" animation of 'className' on said
   // element. If SVGScriptElement.href is transitioned off of SVGAnimatedHref,
   // this can be removed.

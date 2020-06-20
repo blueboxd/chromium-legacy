@@ -197,7 +197,8 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
       "mediaFeed.reset_reason, "
       "mediaFeed.user_identifier, "
       "mediaFeed.cookie_name_filter, "
-      "mediaFeed.safe_search_result");
+      "mediaFeed.safe_search_result, "
+      "mediaFeed.reset_token ");
 
   sql::Statement statement;
 
@@ -372,6 +373,12 @@ std::vector<media_feeds::mojom::MediaFeedPtr> MediaHistoryFeedsTable::GetRows(
 
     if (statement.GetColumnType(17) == sql::ColumnType::kText)
       feed->cookie_name_filter = statement.ColumnString(17);
+
+    if (statement.GetColumnType(19) == sql::ColumnType::kBlob) {
+      media_feeds::FeedResetToken token;
+      if (GetProto(statement, 19, token))
+        feed->reset_token = ProtoToUnguessableToken(token);
+    }
 
     feeds.push_back(std::move(feed));
 

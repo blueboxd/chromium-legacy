@@ -6,6 +6,8 @@
 
 #include <linux/input.h>
 
+#include <cstring>
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/notreached.h"

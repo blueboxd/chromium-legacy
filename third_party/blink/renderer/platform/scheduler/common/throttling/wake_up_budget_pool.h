@@ -32,6 +32,13 @@ class PLATFORM_EXPORT WakeUpBudgetPool : public BudgetPool {
   // should be called only during initialization of a WakeUpBudgetPool.
   void SetWakeUpDuration(base::TimeDelta duration);
 
+  // If called, the budget pool allows an unaligned wake up when there hasn't
+  // been a wake up in the last |wake_up_interval_|.
+  //
+  // This does not have an immediate effect and should be called only during
+  // initialization of a WakeUpBudgetPool.
+  void AllowUnalignedWakeUpIfNoRecentWakeUp();
+
   // BudgetPool implementation:
   void RecordTaskRunTime(base::sequence_manager::TaskQueue* queue,
                          base::TimeTicks start_time,
@@ -54,6 +61,8 @@ class PLATFORM_EXPORT WakeUpBudgetPool : public BudgetPool {
  private:
   base::TimeDelta wake_up_interval_;
   base::TimeDelta wake_up_duration_;
+
+  bool allow_unaligned_wake_up_is_no_recent_wake_up_ = false;
 
   base::Optional<base::TimeTicks> last_wake_up_;
 

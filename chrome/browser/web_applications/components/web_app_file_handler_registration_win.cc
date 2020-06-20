@@ -204,6 +204,7 @@ void RegisterFileHandlersWithOsTask(
     return;
   }
   base::CommandLine app_specific_launcher_command(app_specific_launcher_path);
+  app_specific_launcher_command.AppendArg("%1");
   app_specific_launcher_command.AppendSwitchPath(switches::kProfileDirectory,
                                                  profile_path.BaseName());
   app_specific_launcher_command.AppendSwitchASCII(switches::kAppId, app_id);

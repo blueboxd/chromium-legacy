@@ -9,7 +9,7 @@
 #include <limits>
 #include <map>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace media {
 

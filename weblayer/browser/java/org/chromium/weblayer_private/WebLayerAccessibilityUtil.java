@@ -4,6 +4,8 @@
 
 package org.chromium.weblayer_private;
 
+import org.chromium.ui.util.AccessibilityUtil;
+
 /**
  * Exposes information about the current accessibility state.
  */

@@ -8,6 +8,7 @@ import static org.chromium.components.browser_ui.widget.listmenu.BasicListMenu.b
 
 import android.content.res.Resources;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.ScrollView;
 
@@ -83,6 +84,7 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     private int mThumbnailWidth;
     private int mThumbnailHeight;
     private int mThumbnailScrollY;
+    private long mContentFirstAvailableTimeMs;
 
     /**
      * @param coordinator The {@link FeedSurfaceCoordinator} that interacts with this class.
@@ -176,9 +178,19 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
             stream.addScrollListener(mStreamScrollListener);
         }
 
-        mStreamContentChangedListener = () -> {
-            mStreamContentChanged = true;
-            if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
+        mStreamContentChangedListener = new ContentChangedListener() {
+            @Override
+            public void onContentChanged() {
+                mStreamContentChanged = true;
+                if (mSnapScrollHelper != null) mSnapScrollHelper.resetSearchBoxOnScroll(true);
+            }
+
+            @Override
+            public void onAddFinished() {
+                if (mContentFirstAvailableTimeMs == 0) {
+                    mContentFirstAvailableTimeMs = SystemClock.elapsedRealtime();
+                }
+            }
         };
         stream.addOnContentChangedListener(mStreamContentChangedListener);
 
@@ -508,6 +520,10 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
     @Override
     public void onPrimaryAccountCleared(CoreAccountInfo account) {
         updateSectionHeader();
+    }
+
+    long getContentFirstAvailableTimeMs() {
+        return mContentFirstAvailableTimeMs;
     }
 
     /**

@@ -29,12 +29,6 @@
         <item name="android:textAppearance">@style/TextAppearance.TextMedium.Secondary</item>
     </style>
 
-    <!-- TODO(crbug.com/1077375): Consider removing this text style. -->
-    <style name="TextAppearance.PreferenceMediumText" tools:ignore="UnusedResources">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-    </style>
-
     <style name="PreferenceLayout">
         <item name="android:background">?android:attr/activatedBackgroundIndicator</item>
         <item name="android:minHeight">?android:attr/listPreferredItemHeightSmall</item>
@@ -49,5 +43,42 @@
         <item name="android:layout_height">1dp</item>
         <item name="android:layout_marginTop">2dp</item>
         <item name="android:background">@color/modern_grey_600</item>
+    </style>
+
+    <style name="PreferenceTheme">
+        <item name="preferenceStyle">@style/PreferenceItem</item>
+        <item name="preferenceFragmentCompatStyle">@style/SettingsFragment</item>
+        <item name="preferenceFragmentListStyle">@style/SettingsFragmentList</item>
+        <item name="dialogPreferenceStyle">@style/DialogPreference</item>
+        <item name="checkBoxPreferenceStyle">@style/CheckBoxPreference</item>
+        <item name="switchPreferenceCompatStyle">@style/SwitchPreference</item>
+    </style>
+
+    <style name="SettingsFragment">
+        <item name="android:divider">?android:attr/listDivider</item>
+    </style>
+
+    <style name="PreferenceItem">
+        <item name="android:layout">@layout/preference_compat</item>
+    </style>
+
+    <style name="SettingsFragmentList">
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
+    </style>
+
+    <style name="DialogPreference">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:negativeButtonText">@android:string/cancel</item>
+    </style>
+
+    <style name="CheckBoxPreference">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
+    </style>
+
+    <style name="SwitchPreference">
+        <item name="android:layout">@layout/preference_compat</item>
+        <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>
     </style>
 </resources>

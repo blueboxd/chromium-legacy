@@ -57,7 +57,7 @@ Polymer({
    * @private
    */
   onIronSelect_(e) {
-    // Call initialFocus() on the selected subpage, only if:
+    // Call focusBackButton() on the selected subpage, only if:
     //  1) Not a direct navigation (such that the search box stays focused), and
     //  2) Not a "back" navigation, in which case the anchor element should be
     //     focused (further below in this function).
@@ -65,7 +65,7 @@ Polymer({
         !settings.Router.getInstance().lastRouteChangeWasPopstate()) {
       const subpage = this.querySelector('settings-subpage.iron-selected');
       if (subpage) {
-        subpage.initialFocus();
+        subpage.focusBackButton();
         return;
       }
     }

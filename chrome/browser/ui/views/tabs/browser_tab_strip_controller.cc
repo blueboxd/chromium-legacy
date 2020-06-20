@@ -348,9 +348,15 @@ void BrowserTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
 }
 
 void BrowserTabStripController::ToggleTabGroupCollapsedState(
-    const tab_groups::TabGroupId group) {
+    const tab_groups::TabGroupId group,
+    bool record_user_action) {
   const bool is_currently_collapsed = IsGroupCollapsed(group);
-  if (!is_currently_collapsed) {
+  if (is_currently_collapsed) {
+    if (record_user_action) {
+      base::RecordAction(
+          base::UserMetricsAction("TabGroups_TabGroupHeader_Expanded"));
+    }
+  } else {
     if (model_->GetTabGroupForTab(GetActiveIndex()) == group) {
       // If the active tab is in the group that is toggling to collapse, the
       // active tab should switch to the next available tab. If there are no
@@ -358,8 +364,10 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
       // toggle to collapse.
       const base::Optional<int> next_active =
           model_->GetNextExpandedActiveTab(GetActiveIndex(), group);
-      if (!next_active.has_value())
+      if (!next_active.has_value()) {
+        base::RecordAction(base::UserMetricsAction("TabGroups_CannotCollapse"));
         return;
+      }
       model_->ActivateTabAt(next_active.value(),
                             {TabStripModel::GestureType::kOther});
     } else {
@@ -368,6 +376,10 @@ void BrowserTabStripController::ToggleTabGroupCollapsedState(
       // tabs.
       model_->ActivateTabAt(GetActiveIndex(),
                             {TabStripModel::GestureType::kOther});
+    }
+    if (record_user_action) {
+      base::RecordAction(
+          base::UserMetricsAction("TabGroups_TabGroupHeader_Collapsed"));
     }
   }
 

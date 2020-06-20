@@ -277,7 +277,7 @@ bool CheckIfRequestCanSkipPreflight(
 // This is the same as that function except using KURL and SecurityOrigin
 // instead of GURL and url::Origin. We can't combine them because converting
 // SecurityOrigin to url::Origin loses information about origins that are
-// whitelisted by SecurityPolicy.
+// allowed by SecurityPolicy.
 //
 // This function also doesn't use a |tainted_origin| flag because Blink loaders
 // mutate the origin instead of using such a flag.

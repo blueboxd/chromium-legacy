@@ -10,14 +10,6 @@ option optimize_for = LITE_RUNTIME;
 
 package web_app;
 
-// Local data: Information about web app icon.
-message WebAppIconInfoProto {
-  // The size of the square app icon, in raw pixels.
-  optional int32 size_in_px = 1;
-  // The URL of the app icon.
-  optional string url = 2;
-}
-
 // A mapping between a MIME type and a set of file extensions for a file handler
 // "accept" entry. See chrome/browser/web_applications/web_app.h for details.
 message WebAppFileHandlerAcceptProto {
@@ -85,7 +77,7 @@ message WebAppProto {
   required bool is_locally_installed = 8;
   optional bool is_in_sync_install = 9;
   // A list of icon infos.
-  repeated WebAppIconInfoProto icon_infos = 10;
+  repeated sync_pb.WebAppIconInfo icon_infos = 10;
   // A list of icon sizes we successfully downloaded to store on disk.
   repeated int32 downloaded_icon_sizes = 11;
   // A list of file handlers.

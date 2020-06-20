@@ -14,8 +14,6 @@ import org.chromium.components.payments.intent.WebPaymentIntentHelperType;
 import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.payments.mojom.PaymentCurrencyAmount;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
-import org.chromium.payments.mojom.PaymentHandlerMethodData;
-import org.chromium.payments.mojom.PaymentHandlerModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.payments.mojom.PaymentOptions;
@@ -155,37 +153,6 @@ public final class WebPaymentIntentHelperTypeConverter {
     }
 
     @Nullable
-    private static WebPaymentIntentHelperType.PaymentHandlerModifier fromMojoPaymentHandlerModifier(
-            PaymentHandlerModifier handlerModifier) {
-        return new WebPaymentIntentHelperType.PaymentHandlerModifier(
-                fromMojoPaymentCurrencyAmount(handlerModifier.total),
-                fromMojoPaymentHandlerMethodData(handlerModifier.methodData));
-    }
-
-    @Nullable
-    private static List<WebPaymentIntentHelperType.PaymentHandlerModifier>
-    fromMojoPaymentHandlerModifierList(@Nullable List<PaymentHandlerModifier> modifiers) {
-        if (modifiers == null) return null;
-        List<WebPaymentIntentHelperType.PaymentHandlerModifier> compatibleModifiers =
-                new ArrayList<WebPaymentIntentHelperType.PaymentHandlerModifier>();
-        CollectionUtil.forEach(modifiers,
-                element
-                -> compatibleModifiers.add(
-                        WebPaymentIntentHelperTypeConverter.fromMojoPaymentHandlerModifier(
-                                element)));
-        return compatibleModifiers;
-    }
-
-    @Nullable
-    private static WebPaymentIntentHelperType.PaymentHandlerMethodData
-    fromMojoPaymentHandlerMethodData(@Nullable PaymentHandlerMethodData methodData) {
-        if (methodData == null) return null;
-        return new WebPaymentIntentHelperType.PaymentHandlerMethodData(
-                /*supportedMethod=*/methodData.methodName,
-                /*stringifiedData=*/methodData.stringifiedData);
-    }
-
-    @Nullable
     private static Bundle fromMojoShippingAddressErrors(@Nullable AddressErrors addressErrors) {
         if (addressErrors == null) return null;
         Bundle bundle = new Bundle();
@@ -222,9 +189,7 @@ public final class WebPaymentIntentHelperTypeConverter {
                 update.shippingOptions == null
                         ? null
                         : fromMojoShippingOptionList(Arrays.asList(update.shippingOptions)),
-                update.modifiers == null
-                        ? null
-                        : fromMojoPaymentHandlerModifierList(Arrays.asList(update.modifiers)),
+                // update.modifiers is intentionally redacted.
                 update.error, update.stringifiedPaymentMethodErrors,
                 fromMojoShippingAddressErrors(update.shippingAddressErrors));
     }

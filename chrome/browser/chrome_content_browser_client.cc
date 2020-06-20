@@ -4701,7 +4701,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
   // |frame| is null when |type| is service worker.
   if (frame && isolated_prerender_service) {
     use_proxy |= isolated_prerender_service->MaybeProxyURLLoaderFactory(
-        render_process_id, frame->GetFrameTreeNodeId(), type, factory_receiver);
+        frame, render_process_id, type, factory_receiver);
   }
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)

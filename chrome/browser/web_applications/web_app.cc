@@ -214,8 +214,13 @@ WebApp::SyncData::SyncData(const SyncData& sync_data) = default;
 WebApp::SyncData& WebApp::SyncData::operator=(SyncData&& sync_data) = default;
 
 std::ostream& operator<<(std::ostream& out, const WebApp::SyncData& sync_data) {
-  return out << "theme_color: " << ColorToString(sync_data.theme_color)
-             << " name: " << sync_data.name;
+  out << "    theme_color: " << ColorToString(sync_data.theme_color)
+      << std::endl
+      << "    name: " << sync_data.name << std::endl
+      << "    scope: " << sync_data.scope << std::endl;
+  for (const WebApplicationIconInfo& icon : sync_data.icon_infos)
+    out << "    icon_info: " << icon << std::endl;
+  return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const WebApp& app) {
@@ -236,12 +241,12 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
       << "  sources: " << app.sources_.to_string() << std::endl
       << "  is_locally_installed: " << is_locally_installed << std::endl
       << "  is_in_sync_install: " << is_in_sync_install << std::endl
-      << "  sync_data: " << app.sync_data_ << std::endl
-      << "  description: " << app.description_ << std::endl
+      << "  sync_data: " << std::endl
+      << app.sync_data_ << "  description: " << app.description_ << std::endl
       << "  last_launch_time: " << app.last_launch_time_ << std::endl
       << "  install_time: " << app.install_time_ << std::endl;
   for (const WebApplicationIconInfo& icon : app.icon_infos_)
-    out << "  icon_url: " << icon << std::endl;
+    out << "  icon_info: " << icon << std::endl;
   for (SquareSizePx size : app.downloaded_icon_sizes_)
     out << "  icon_size_on_disk: " << size << std::endl;
   for (const apps::FileHandler& file_handler : app.file_handlers_)
@@ -258,8 +263,10 @@ std::ostream& operator<<(std::ostream& out, const WebApp& app) {
 
 bool operator==(const WebApp::SyncData& sync_data1,
                 const WebApp::SyncData& sync_data2) {
-  return std::tie(sync_data1.name, sync_data1.theme_color) ==
-         std::tie(sync_data2.name, sync_data2.theme_color);
+  return std::tie(sync_data1.name, sync_data1.theme_color, sync_data1.scope,
+                  sync_data1.icon_infos) ==
+         std::tie(sync_data2.name, sync_data2.theme_color, sync_data2.scope,
+                  sync_data2.icon_infos);
 }
 
 bool operator!=(const WebApp::SyncData& sync_data1,

@@ -102,12 +102,12 @@ def ValidateFormat(src, dsc_format):
     # then the list applies to all keys of the dictionary, so we reset
     # the expected type and value.
     if exp_type is dict:
-      if type(value) is list:
+      if isinstance(value, list):
         exp_type = list
         exp_value = ''
 
     # Verify the key is of the expected type
-    if exp_type != type(value):
+    if not isinstance(value, exp_type):
       raise ValidationError('Key %s expects %s not %s.' % (
           key, exp_type.__name__.upper(), type(value).__name__.upper()))
 
@@ -117,7 +117,7 @@ def ValidateFormat(src, dsc_format):
 
     # If it's a string and there are expected values, make sure it matches
     if exp_type is str:
-      if type(exp_value) is list and exp_value:
+      if isinstance(exp_value, list) and exp_value:
         if value not in exp_value:
           raise ValidationError("Value '%s' not expected for %s." %
                                 (value, key))
@@ -126,19 +126,19 @@ def ValidateFormat(src, dsc_format):
     # if it's a list, then we need to validate the values
     if exp_type is list:
       # If we expect a dictionary, then call this recursively
-      if type(exp_value) is dict:
+      if isinstance(exp_value, dict):
         for val in value:
           ValidateFormat(val, exp_value)
         continue
       # If we expect a list of strings
-      if type(exp_value) is str:
+      if isinstance(exp_value, str):
         for val in value:
-          if type(val) is not str:
+          if not isinstance(val, str):
             raise ValidationError('Value %s in %s is not a string.' %
                                   (val, key))
         continue
       # if we expect a particular string
-      if type(exp_value) is list:
+      if isinstance(exp_value, list):
         for val in value:
           if val not in exp_value:
             raise ValidationError('Value %s not expected in %s.' %
@@ -228,9 +228,9 @@ def DescMatchesFilter(desc, filters):
     value = desc.get(key, False)
 
     # If we provide an expected list, match at least one
-    if type(expected) not in (list, tuple):
+    if not isinstance(expected, (list, tuple)):
       expected = set([expected])
-    if type(value) != list:
+    if not isinstance(value, list):
       value = set([value])
 
     if not set(expected) & set(value):

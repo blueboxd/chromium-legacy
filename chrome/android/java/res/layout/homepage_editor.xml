@@ -24,7 +24,9 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/homepage_url"
-                style="@style/PreferenceScreenLayout"
+                android:paddingTop="16dp"
+                android:paddingStart="@dimen/pref_autofill_content_spacing"
+                android:paddingEnd="@dimen/pref_autofill_content_spacing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" >
                 <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->

@@ -106,18 +106,12 @@ class DownloadItemView : public views::View,
   // views::AnimationDelegateViews implementation.
   void AnimationProgressed(const gfx::Animation* animation) override;
 
-  // Adds styling to the filename in |label|, if present.
-  void StyleFilenameInLabel(views::StyledLabel* label);
-
  protected:
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(DownloadItemViewDangerousDownloadLabelTest,
-                           AdjustTextAndGetSize);
-
   enum State { NORMAL = 0, HOT, PUSHED };
 
   enum Mode {
@@ -239,20 +233,10 @@ class DownloadItemView : public views::View,
   // same size).
   gfx::Size GetButtonSize() const;
 
-  // Sizes the dangerous download label to a minimum width available using 2
-  // lines.  The size is computed only the first time this method is invoked
-  // and simply returned on subsequent calls.
-  void SizeLabelToMinWidth();
-
-  // Given a multiline |label|, decides whether it should be displayed on one
-  // line (if short), or broken across two lines.  In the latter case,
-  // linebreaks near the middle of the string and sets the label's text
-  // accordingly.  Returns the preferred size for the label.
-  template <typename T>
-  static gfx::Size AdjustTextAndGetSize(
-      T* label,
-      base::RepeatingCallback<void(T*, const base::string16&)>
-          update_text_and_style);
+  // Returns either:
+  //   * 200, if |label| can fit in one line given at most 200 DIP width.
+  //   * The minimum width needed to display |label| on two lines.
+  int GetLabelWidth(const views::StyledLabel& label) const;
 
   // Reenables the item after it has been disabled when a user clicked it to
   // open the downloaded file.

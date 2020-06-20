@@ -116,6 +116,10 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool CanOpenBeforeUnloadConfirmPanel() override;
   bool OpenBeforeUnloadConfirmPanelDelegate(LocalFrame*,
                                             bool is_reload) override;
+  // Used in tests to set a mock value for a before unload confirmation dialog
+  // box. The value is cleared after being read.
+  void SetBeforeUnloadConfirmPanelResultForTesting(bool result_success);
+
   void CloseWindowSoon() override;
   bool OpenJavaScriptAlertDelegate(LocalFrame*, const String&) override;
   bool OpenJavaScriptConfirmDelegate(LocalFrame*, const String&) override;
@@ -302,6 +306,7 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   bool cursor_overridden_;
   Member<ExternalDateTimeChooser> external_date_time_chooser_;
   bool did_request_non_empty_tool_tip_;
+  base::Optional<bool> before_unload_confirm_panel_result_for_testing_;
 
   FRIEND_TEST_ALL_PREFIXES(FileChooserQueueTest, DerefQueuedChooser);
 };

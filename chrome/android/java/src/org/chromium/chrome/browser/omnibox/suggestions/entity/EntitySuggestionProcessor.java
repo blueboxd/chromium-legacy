@@ -182,6 +182,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
 
         model.set(EntitySuggestionViewProperties.SUBJECT_TEXT, suggestion.getDisplayText());
         model.set(EntitySuggestionViewProperties.DESCRIPTION_TEXT, suggestion.getDescription());
-        setTabSwitchOrRefineAction(model, suggestion);
+        setTabSwitchOrRefineAction(model, suggestion, position);
     }
 }

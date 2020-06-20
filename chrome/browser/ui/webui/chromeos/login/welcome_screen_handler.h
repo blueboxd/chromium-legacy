@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
 namespace base {
@@ -80,6 +81,20 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
   void HandleSetLocaleId(const std::string& locale_id);
   void HandleSetInputMethodId(const std::string& input_method_id);
   void HandleSetTimezoneId(const std::string& timezone_id);
+  void HandleEnableLargeCursor(bool enabled);
+  void HandleEnableHighContrast(bool enabled);
+  void HandleEnableVirtualKeyboard(bool enabled);
+  void HandleEnableScreenMagnifier(bool enabled);
+  void HandleEnableSpokenFeedback(bool /* enabled */);
+  void HandleEnableSelectToSpeak(bool /* enabled */);
+  void HandleEnableDockedMagnifier(bool /* enabled */);
+
+  // Notification of a change in the accessibility settings.
+  void OnAccessibilityStatusChanged(
+      const AccessibilityStatusEventDetails& details);
+
+  // Updates a11y menu state based on the current a11y features state(on/off).
+  void UpdateA11yState();
 
   // Returns available timezones. Caller gets the ownership.
   static std::unique_ptr<base::ListValue> GetTimezoneList();
@@ -89,6 +104,8 @@ class WelcomeScreenHandler : public WelcomeView, public BaseScreenHandler {
 
   // Keeps whether screen should be shown right after initialization.
   bool show_on_init_ = false;
+
+  std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeScreenHandler);
 };

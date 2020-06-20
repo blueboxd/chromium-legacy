@@ -63,7 +63,6 @@ using CompositingReasons = uint64_t;
   V(PerspectiveWith3DDescendants)                                             \
   V(Preserve3DWith3DDescendants)                                              \
   V(IsolateCompositedDescendants)                                             \
-  V(PositionFixedWithCompositedDescendants)                                   \
                                                                               \
   /* The root layer is a special case. It may be forced to be a layer, but it \
   also needs to be a layer if anything else in the subtree is composited. */  \

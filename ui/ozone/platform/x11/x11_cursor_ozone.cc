@@ -8,7 +8,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/x/x11.h"
 
 namespace ui {
 
@@ -36,18 +35,12 @@ X11CursorOzone::X11CursorOzone(const std::vector<SkBitmap>& bitmaps,
   XcursorImagesDestroy(images);
 }
 
-X11CursorOzone::X11CursorOzone(const char* name) {
-  xcursor_ = XcursorLibraryLoadCursor(gfx::GetXDisplay(), name);
-}
+X11CursorOzone::X11CursorOzone(::Cursor xcursor) : xcursor_(xcursor) {}
 
 // static
 scoped_refptr<X11CursorOzone> X11CursorOzone::CreateInvisible() {
-  scoped_refptr<X11CursorOzone> invisible_ = new X11CursorOzone();
-  invisible_->xcursor_ = CreateInvisibleCursor();
-  return invisible_;
+  return base::MakeRefCounted<X11CursorOzone>(CreateInvisibleCursor());
 }
-
-X11CursorOzone::X11CursorOzone() {}
 
 X11CursorOzone::~X11CursorOzone() {
   XFreeCursor(gfx::GetXDisplay(), xcursor_);

@@ -257,7 +257,7 @@ TEST_F(ResizeObserverUnitTest, TestMemoryLeaks) {
   v8::HandleScope scope(v8::Isolate::GetCurrent());
 
   ScriptController& script_controller =
-      GetDocument().ExecutingFrame()->GetScriptController();
+      Window().GetFrame()->GetScriptController();
 
   //
   // Test whether ResizeObserver is kept alive by direct JS reference

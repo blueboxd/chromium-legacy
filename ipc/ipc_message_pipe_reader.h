@@ -60,7 +60,7 @@ class COMPONENT_EXPORT(IPC) MessagePipeReader : public mojom::Channel {
   // Builds a reader that reads messages from |receive_handle| and lets
   // |delegate| know.
   //
-  // |pipe| is the message pipe handle corresponding to the channel's master
+  // |pipe| is the message pipe handle corresponding to the channel's primary
   // interface. This is the message pipe underlying both |sender| and
   // |receiver|.
   //

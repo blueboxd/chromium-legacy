@@ -132,9 +132,9 @@ class ChannelAssociatedGroupController
         control_message_proxy_(&control_message_proxy_thunk_) {
     thread_checker_.DetachFromThread();
     control_message_handler_.SetDescription(
-        "IPC::mojom::Bootstrap [master] PipeControlMessageHandler");
+        "IPC::mojom::Bootstrap [primary] PipeControlMessageHandler");
     dispatcher_.SetValidator(std::make_unique<mojo::MessageHeaderValidator>(
-        "IPC::mojom::Bootstrap [master] MessageHeaderValidator"));
+        "IPC::mojom::Bootstrap [primary] MessageHeaderValidator"));
 
     GetMemoryDumpProvider().AddController(this);
   }
@@ -302,10 +302,10 @@ class ChannelAssociatedGroupController
     if (!mojo::IsValidInterfaceId(id))
       return mojo::ScopedInterfaceEndpointHandle();
 
-    // Unless it is the master ID, |id| is from the remote side and therefore
+    // Unless it is the primary ID, |id| is from the remote side and therefore
     // its namespace bit is supposed to be different than the value that this
     // router would use.
-    if (!mojo::IsMasterInterfaceId(id) &&
+    if (!mojo::IsPrimaryInterfaceId(id) &&
         set_interface_id_namespace_bit_ ==
             mojo::HasInterfaceIdNamespaceBitSet(id)) {
       return mojo::ScopedInterfaceEndpointHandle();
@@ -341,7 +341,7 @@ class ChannelAssociatedGroupController
       MarkClosedAndMaybeRemove(endpoint);
     }
 
-    if (!mojo::IsMasterInterfaceId(id) || reason)
+    if (!mojo::IsPrimaryInterfaceId(id) || reason)
       control_message_proxy_.NotifyPeerEndpointClosed(id, reason);
   }
 
@@ -573,7 +573,7 @@ class ChannelAssociatedGroupController
     bool SyncWatch(const bool* should_stop) override {
       DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
-      // It's not legal to make sync calls from the master endpoint's thread,
+      // It's not legal to make sync calls from the primary endpoint's thread,
       // and in fact they must only happen from the proxy task runner.
       DCHECK(!controller_->task_runner_->BelongsToCurrentThread());
       DCHECK(controller_->proxy_task_runner_->BelongsToCurrentThread());
@@ -729,18 +729,18 @@ class ChannelAssociatedGroupController
       // information to the task scheduler.
       CHECK_LE(message->data_num_bytes(), Channel::kMaximumMessageSize);
 
-      // We always post tasks to the master endpoint thread when called from
+      // We always post tasks to the primary endpoint thread when called from
       // other threads in order to simulate IPC::ChannelProxy::Send behavior.
       task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(
-              &ChannelAssociatedGroupController::SendMessageOnMasterThread,
+              &ChannelAssociatedGroupController::SendMessageOnPrimaryThread,
               this, std::move(*message)));
       return true;
     }
   }
 
-  void SendMessageOnMasterThread(mojo::Message message) {
+  void SendMessageOnPrimaryThread(mojo::Message message) {
     DCHECK(thread_checker_.CalledOnValidThread());
     if (!SendMessage(&message))
       RaiseError();
@@ -899,8 +899,8 @@ class ChannelAssociatedGroupController
       return true;
     }
 
-    // We do not expect to receive sync responses on the master endpoint thread.
-    // If it's happening, it's a bug.
+    // We do not expect to receive sync responses on the primary endpoint
+    // thread. If it's happening, it's a bug.
     DCHECK(!message->has_flag(mojo::Message::kFlagIsSync) ||
            !message->has_flag(mojo::Message::kFlagIsResponse));
 
@@ -912,7 +912,7 @@ class ChannelAssociatedGroupController
     DCHECK(proxy_task_runner_->BelongsToCurrentThread());
 
     mojo::InterfaceId id = message.interface_id();
-    DCHECK(mojo::IsValidInterfaceId(id) && !mojo::IsMasterInterfaceId(id));
+    DCHECK(mojo::IsValidInterfaceId(id) && !mojo::IsPrimaryInterfaceId(id));
 
     base::AutoLock locker(lock_);
     Endpoint* endpoint = FindEndpoint(id);
@@ -996,7 +996,7 @@ class ChannelAssociatedGroupController
     return false;
   }
 
-  // Checked in places which must be run on the master endpoint's thread.
+  // Checked in places which must be run on the primary endpoint's thread.
   base::ThreadChecker thread_checker_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

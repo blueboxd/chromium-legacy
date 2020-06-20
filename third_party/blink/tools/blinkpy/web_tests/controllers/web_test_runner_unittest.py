@@ -104,7 +104,7 @@ class WebTestRunnerTests(unittest.TestCase):
         host = MockHost()
         port = port or host.port_factory.get(options.platform, options=options)
         return LockCheckingRunner(port, options, FakePrinter(), self, True,
-                                  CreateTestResultSink('/tmp/artifacts'))
+                                  CreateTestResultSink(port))
 
     def _run_tests(self, runner, tests):
         test_inputs = [TestInput(test, timeout_ms=6000) for test in tests]

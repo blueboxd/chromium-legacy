@@ -151,6 +151,12 @@ class AppElement extends PolymerElement {
         type: Boolean,
       },
 
+      /** @private {skia.mojom.SkColor} */
+      backgroundColor_: {
+        computed: 'computeBackgroundColor_(showBackgroundImage_, theme_)',
+        type: Object,
+      },
+
       /** @private */
       logoColor_: {
         type: String,
@@ -580,6 +586,17 @@ class AppElement extends PolymerElement {
         !this.showBackgroundImage_ && this.theme_ &&
         this.theme_.type === newTabPage.mojom.ThemeType.DEFAULT &&
         !this.theme_.isDark;
+  }
+
+  /**
+   * @return {skia.mojom.SkColor}
+   * @private
+   */
+  computeBackgroundColor_() {
+    if (this.showBackgroundImage_) {
+      return null;
+    }
+    return this.theme_ && this.theme_.backgroundColor;
   }
 
   /**

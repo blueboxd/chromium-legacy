@@ -14,6 +14,7 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
+#include "ash/public/cpp/presentation_time_recorder.h"
 #include "ash/public/cpp/test/assistant_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shelf/home_button.h"
@@ -105,6 +106,13 @@ class HotseatWidgetTest
 
       assistant_test_api_->WaitUntilIdle();
     }
+  }
+
+  void TearDown() override {
+    // Some tests may override this value, make sure it's reset.
+    PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(
+        false);
+    ShelfLayoutManagerTestBase::TearDown();
   }
 
   ShelfAutoHideBehavior shelf_auto_hide_behavior() const {
@@ -2134,6 +2142,156 @@ TEST_P(HotseatWidgetTest, NoBlurDuringAnimations) {
   EXPECT_EQ(
       ShelfConfig::Get()->shelf_blur_radius(),
       GetShelfWidget()->hotseat_widget()->GetHotseatBackgroundBlurForTest());
+}
+
+TEST_P(HotseatWidgetTest, PresentationTimeMetricDuringDrag) {
+  PresentationTimeRecorder::SetReportPresentationTimeImmediatelyForTest(true);
+
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  GetPrimaryShelf()->SetAutoHideBehavior(shelf_auto_hide_behavior());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  // Drag upwards from the bottom of the screen to bring up hotseat - this
+  // should request presentation time metric to be reported.
+  generator->PressTouch(display_bounds.bottom_center());
+
+  HotseatWidget* const hotseat_widget = GetPrimaryShelf()->hotseat_widget();
+  int last_hotseat_y = hotseat_widget->GetWindowBoundsInScreen().y();
+
+  // Returns whether the hotseat vertical position has changed comapred to
+  // |last_hotseat_y|, and updates |last_hotseat_y| to match the current hotseat
+  // position.
+  auto hotseat_moved = [&last_hotseat_y, &hotseat_widget]() -> bool {
+    const int hotseat_y = hotseat_widget->GetWindowBoundsInScreen().y();
+    const bool y_changed = hotseat_y != last_hotseat_y;
+    last_hotseat_y = hotseat_y;
+    return y_changed;
+  };
+
+  base::HistogramTester histogram_tester;
+
+  auto check_bucket_size = [&histogram_tester](int expected_size) {
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime", expected_size);
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime.MaxLatency", 0);
+  };
+
+  int expected_bucket_size = 0;
+  {
+    SCOPED_TRACE("Initial state");
+    check_bucket_size(expected_bucket_size);
+  }
+
+  const int shelf_height = GetShelfWidget()->GetWindowBoundsInScreen().height();
+
+  {
+    SCOPED_TRACE("Upward drag with move - 1");
+    generator->MoveTouchBy(0, -shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move - 2");
+    generator->MoveTouchBy(0, -shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Downward drag with move");
+    generator->MoveTouchBy(0, shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move - 3");
+    generator->MoveTouchBy(0, -shelf_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  const int hotseat_height =
+      GetPrimaryShelf()->hotseat_widget()->GetWindowBoundsInScreen().height();
+  {
+    SCOPED_TRACE("Upward drag with move above shelf - 1");
+    generator->MoveTouchBy(0, -hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move above shelf - 2");
+    generator->MoveTouchBy(0, -hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Downward drag with move above shelf");
+    generator->MoveTouchBy(0, hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag with move above shelf - 3");
+    generator->MoveTouchBy(0, -hotseat_height - hotseat_height / 2);
+    ASSERT_TRUE(hotseat_moved());
+    check_bucket_size(++expected_bucket_size);
+  }
+
+  // Once the hotseat has been fully extended, presentation time metric should
+  // stop being reported, as the hotseat is expected to stop moving.
+  {
+    SCOPED_TRACE("Upward drag without moving - 1");
+    generator->MoveTouchBy(0, -hotseat_height);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Upward drag without moving - 2");
+    generator->MoveTouchBy(0, -hotseat_height / 2);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  // Move hotseat downwards - the presentation time should not get reported
+  // until the hotseat starts moving downwards.
+  {
+    SCOPED_TRACE("Downward drag without moving - 1");
+    generator->MoveTouchBy(0, hotseat_height / 2);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  {
+    SCOPED_TRACE("Downward drag without moving - 2");
+    generator->MoveTouchBy(0, hotseat_height);
+    ASSERT_FALSE(hotseat_moved());
+    check_bucket_size(expected_bucket_size);
+  }
+
+  generator->ReleaseTouch();
+
+  window.reset();
+
+  {
+    SCOPED_TRACE("Drag ended.");
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime", expected_bucket_size);
+    histogram_tester.ExpectTotalCount(
+        "Ash.HotseatTransition.Drag.PresentationTime.MaxLatency", 1);
+  }
 }
 
 // TODO(manucornet): Enable this test once the new API for layer animation

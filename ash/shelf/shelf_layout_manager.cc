@@ -2337,10 +2337,9 @@ void ShelfLayoutManager::MaybeSetupHotseatDrag(
 void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
                                     float scroll_x,
                                     float scroll_y) {
-  if (hotseat_is_in_drag_) {
-    DCHECK(hotseat_presentation_time_recorder_);
-    hotseat_presentation_time_recorder_->RequestNext();
-  }
+  const int starting_hotseat_y =
+      shelf_->hotseat_widget()->GetTargetBounds().y();
+
   if (drag_status_ == kDragAppListInProgress) {
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
@@ -2366,6 +2365,17 @@ void ShelfLayoutManager::UpdateDrag(const ui::LocatedEvent& event_in_screen,
           event_in_screen.AsGestureEvent()->details().velocity_y();
     }
     LayoutShelf();
+
+    // Request a new hotseat presentation time record if the hotseat bounds
+    // changed while the hotseat is in drag. If hotseat bounds remained the
+    // same, there might be no changes to present, and the presentation time
+    // recorder may end up recording inflated times when it's reset.
+    if (hotseat_is_in_drag_ &&
+        starting_hotseat_y != shelf_->hotseat_widget()->GetTargetBounds().y()) {
+      DCHECK(hotseat_presentation_time_recorder_);
+      hotseat_presentation_time_recorder_->RequestNext();
+    }
+
     MaybeUpdateWindowDrag(event_in_screen, gfx::Vector2dF(scroll_x, scroll_y));
   }
 }

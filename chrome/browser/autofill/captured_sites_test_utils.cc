@@ -27,6 +27,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/common/autofill_clock.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
 #include "components/permissions/permission_request_manager.h"
@@ -43,6 +45,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_sync_message.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -74,13 +77,17 @@ const int kAutofillActionNumRetries = 5;
 // validation errors from WPR.
 const char kWebPageReplayCertSPKI[] =
     "PoNnQAwghMiLUPg1YNFtvTfGreNT8r9oeLEyzgNCJWc=";
+
+const char kClockNotSetMessage[] =
+    "No AutofillClock override set from wpr archive: ";
 }  // namespace
 
 namespace captured_sites_test_utils {
 
 CapturedSiteParams::CapturedSiteParams() = default;
 CapturedSiteParams::~CapturedSiteParams() = default;
-CapturedSiteParams::CapturedSiteParams(const CapturedSiteParams& other) = default;
+CapturedSiteParams::CapturedSiteParams(const CapturedSiteParams& other) =
+    default;
 
 std::ostream& operator<<(std::ostream& os, const CapturedSiteParams& param) {
   if (param.scenario_dir.empty())
@@ -308,13 +315,49 @@ bool TestRecipeReplayer::ReplayTest(const base::FilePath capture_file_path,
                                     const base::FilePath recipe_file_path) {
   if (!StartWebPageReplayServer(capture_file_path))
     return false;
-
+  if (OverrideAutofillClock(capture_file_path))
+    VLOG(1) << "AutofillClock was set to:" << autofill::AutofillClock::Now();
   return ReplayRecordedActions(recipe_file_path);
 }
 
 const std::vector<testing::AssertionResult>
 TestRecipeReplayer::GetValidationFailures() const {
   return validation_failures_;
+}
+
+// Extracts the time of the wpr recording from the wpr archive file and
+// overrides the autofill::AutofillClock to match that time.
+bool TestRecipeReplayer::OverrideAutofillClock(
+    const base::FilePath capture_file_path) {
+  std::string json_text;
+  if (!base::ReadFileToString(capture_file_path, &json_text)) {
+    VLOG(1) << kClockNotSetMessage << "Could not read file";
+    return false;
+  }
+  // Decompress the json text from gzip.
+  std::string decompressed_json_text;
+  if (!compression::GzipUncompress(json_text, &decompressed_json_text)) {
+    VLOG(1) << kClockNotSetMessage << "Could not gzip decompress file";
+    return false;
+  }
+  // Convert the file text into a json object.
+  base::Optional<base::Value> parsed_json =
+      base::JSONReader::Read(decompressed_json_text);
+  if (!parsed_json) {
+    VLOG(1) << kClockNotSetMessage << "Failed to deserialize json";
+    return false;
+  }
+  std::unique_ptr<base::DictionaryValue> wpr_info = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(*parsed_json)));
+
+  base::Value* time_value = wpr_info->FindKey("DeterministicTimeSeedMs");
+  if (!time_value) {
+    VLOG(1) << kClockNotSetMessage << "No DeterministicTimeSeedMs found";
+    return false;
+  }
+  // wpr archive stores time seed in ms, clock is set in seconds.
+  test_clock_.SetNow(base::Time::FromDoubleT(time_value->GetDouble() / 1000));
+  return true;
 }
 
 // static

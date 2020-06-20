@@ -8,6 +8,7 @@
 
 #include "crypto/aead.h"
 #include "crypto/sha2.h"
+#include "device/fido/fido_constants.h"
 #include "third_party/boringssl/src/include/openssl/digest.h"
 #include "third_party/boringssl/src/include/openssl/ec.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
@@ -124,8 +125,7 @@ base::Optional<std::vector<uint8_t>> Noise::DecryptAndHash(
 }
 
 void Noise::MixHashPoint(const EC_POINT* point) {
-  constexpr size_t kP256PointSize = 65;
-  uint8_t x962[kP256PointSize];
+  uint8_t x962[kP256X962Length];
   bssl::UniquePtr<EC_GROUP> p256(
       EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1));
   CHECK_EQ(sizeof(x962),

@@ -30,10 +30,6 @@
 
 namespace reporting {
 
-using reporting::EncryptedRecord;
-using reporting::Record;
-using reporting::WrappedRecord;
-
 std::unique_ptr<ReportQueue> ReportQueue::Create(
     std::unique_ptr<ReportQueueConfiguration> config,
     scoped_refptr<StorageModule> storage,
@@ -138,6 +134,11 @@ StatusOr<EncryptedRecord> ReportQueue::EncryptRecord(
 
   EncryptedRecord encrypted_record;
   encrypted_record.set_encrypted_wrapped_record(encrypted_string_record);
+
+  auto* sequencing_information =
+      encrypted_record.mutable_sequencing_information();
+  sequencing_information->set_priority(config_->priority());
+
   return encrypted_record;
 }
 

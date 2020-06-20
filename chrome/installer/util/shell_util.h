@@ -625,8 +625,8 @@ class ShellUtil {
   // |prog_id| is the ProgId used by Windows for file associations with this
   // application. Must not be empty or start with a '.'.
   // |command_line| is the command to execute when opening a file via this
-  // association. It must not contain the Windows filename placeholder "%1";
-  // this function will register |command_line| plus the filename placeholder.
+  // association. It should contain "%1" (to tell Windows to pass the filename
+  // as an argument).
   // |application_name| is the friendly name displayed for this application in
   // the Open With menu.
   // |file_type_name| is the friendly name for files of these types when

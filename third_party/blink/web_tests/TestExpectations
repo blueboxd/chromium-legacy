@@ -6609,6 +6609,8 @@ crbug.com/1059645 external/wpt/pointerevents/pointerevent_coalesced_events_attri
 crbug.com/1061226 [ Fuchsia ] fast/mediastream/MediaStream-onactive-oninactive.html [ Crash ]
 crbug.com/1061226 [ Fuchsia ] fast/speech/scripted/speechrecognition-restart-onend.html [ Crash ]
 crbug.com/1061226 [ Fuchsia ] external/wpt/mediacapture-streams/MediaStream-idl.https.html [ Crash ]
+crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html [ Crash ]
+crbug.com/1061226 [ Fuchsia ] external/wpt/webaudio/the-audio-api/the-pannernode-interface/panner-equalpower-stereo.html [ Crash ]
 
 # Sheriff 2020-03-13
 crbug.com/1061159 [ Fuchsia ] fast/inspector-support/cssURLQuotes.html [ Pass Failure ]

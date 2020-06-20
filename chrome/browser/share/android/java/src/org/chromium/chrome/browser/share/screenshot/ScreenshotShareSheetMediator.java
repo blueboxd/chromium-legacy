@@ -5,8 +5,16 @@
 package org.chromium.chrome.browser.share.screenshot;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.net.Uri;
 
+import org.chromium.chrome.browser.share.BitmapUriRequest;
+import org.chromium.chrome.browser.share.ChromeShareExtras;
 import org.chromium.chrome.browser.share.screenshot.ScreenshotShareSheetViewProperties.NoArgOperation;
+import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.browser_ui.share.ShareParams;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -16,8 +24,10 @@ import org.chromium.ui.modelutil.PropertyModel;
 class ScreenshotShareSheetMediator {
     private final PropertyModel mModel;
     private final Context mContext;
-    private final Runnable mDeleteRunnable;
     private final Runnable mSaveRunnable;
+    private final Runnable mDeleteRunnable;
+    private final ChromeOptionShareCallback mChromeOptionShareCallback;
+    private Tab mTab;
 
     /**
      * The ScreenshotShareSheetMediator constructor.
@@ -26,11 +36,14 @@ class ScreenshotShareSheetMediator {
      * @param deleteRunnable The action to take when cancel or delete is called.
      */
     ScreenshotShareSheetMediator(Context context, PropertyModel propertyModel,
-            Runnable deleteRunnable, Runnable saveRunnable) {
+            Runnable deleteRunnable, Runnable saveRunnable, Tab tab,
+            ChromeOptionShareCallback chromeOptionShareCallback) {
         mDeleteRunnable = deleteRunnable;
         mSaveRunnable = saveRunnable;
         mContext = context;
         mModel = propertyModel;
+        mTab = tab;
+        mChromeOptionShareCallback = chromeOptionShareCallback;
         mModel.set(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER,
                 operation -> { performNoArgOperation(operation); });
     }
@@ -55,6 +68,25 @@ class ScreenshotShareSheetMediator {
      * Sends the current image to the share target.
      */
     private void share() {
-        // TODO(crbug/1024586): export image
+        Bitmap bitmap = mModel.get(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP);
+        final Uri bitmapUri = Uri.parse(BitmapUriRequest.bitmapUri(bitmap));
+        // TODO(crbug.com/1093386) Add Metrics for tracking size or Uri and performance of
+        // UriRequest.
+
+        WindowAndroid window = mTab.getWindowAndroid();
+        String title = mTab.getTitle();
+        String visibleUrl = mTab.getUrlString();
+
+        ShareParams params = new ShareParams.Builder(window, title, visibleUrl)
+                                     .setScreenshotUri(bitmapUri)
+                                     .build();
+        ChromeShareExtras chromeShareExtras = new ChromeShareExtras.Builder()
+                                                      .setSaveLastUsed(false)
+                                                      .setShareDirectly(false)
+                                                      .setIsUrlOfVisiblePage(false)
+                                                      .build();
+        mChromeOptionShareCallback.showThirdPartyShareSheet(
+                params, chromeShareExtras, System.currentTimeMillis());
+        mDeleteRunnable.run();
     }
 }

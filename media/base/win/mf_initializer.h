@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "media/base/win/mf_initializer_export.h"
 
 namespace media {

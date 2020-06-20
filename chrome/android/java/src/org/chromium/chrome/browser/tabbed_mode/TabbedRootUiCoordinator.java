@@ -349,7 +349,8 @@ public class TabbedRootUiCoordinator extends RootUiCoordinator implements Native
                     mActivity, mActivity.getTabModelSelector().getCurrentModel().isIncognito())) {
             return true;
         }
-        if (DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(mActivity)) {
+        if (DefaultBrowserPromoUtils.prepareLaunchPromoIfNeeded(
+                    mActivity, mActivity.getLifecycleDispatcher(), mActivity.getWindowAndroid())) {
             return true;
         }
 

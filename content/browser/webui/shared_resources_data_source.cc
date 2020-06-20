@@ -29,6 +29,8 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "mojo/public/js/grit/mojo_bindings_resources_map.h"
+#include "skia/grit/skia_resources.h"
+#include "skia/grit/skia_resources_map.h"
 #include "ui/base/layout.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -139,6 +141,17 @@ const std::map<int, std::string> CreateMojoResourceIdToAliasMap() {
          "mojo/mojo/public/mojom/base/time.mojom-lite.js"},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
         //  defined(OS_ANDROID)
+  };
+}
+
+const std::map<int, std::string> CreateSkiaResourceIdToAliasMap() {
+  return std::map<int, std::string>{
+      {IDR_SKIA_BITMAP_MOJOM_LITE_JS,
+       "mojo/skia/public/mojom/bitmap.mojom-lite.js"},
+      {IDR_SKIA_IMAGE_INFO_MOJOM_LITE_JS,
+       "mojo/skia/public/mojom/image_info.mojom-lite.js"},
+      {IDR_SKIA_SKCOLOR_MOJOM_LITE_JS,
+       "mojo/skia/public/mojom/skcolor.mojom-lite.js"},
   };
 }
 
@@ -277,6 +290,8 @@ const ResourcesMap* CreateResourcesMap() {
   AddAliasedResourcesToMap(CreateMojoResourceIdToAliasMap(),
                            kMojoBindingsResources, kMojoBindingsResourcesSize,
                            result);
+  AddAliasedResourcesToMap(CreateSkiaResourceIdToAliasMap(), kSkiaResources,
+                           kSkiaResourcesSize, result);
 #if defined(OS_CHROMEOS)
   AddAliasedResourcesToMap(CreateChromeosMojoResourceIdToAliasMap(),
                            kChromeosResources, kChromeosResourcesSize, result);

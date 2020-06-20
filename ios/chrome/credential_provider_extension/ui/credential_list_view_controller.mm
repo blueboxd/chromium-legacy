@@ -156,16 +156,13 @@ const CGFloat kHeaderHeight = 70;
     cell.accessoryView = [self infoIconButton];
   }
 
-  cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-  cell.contentView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
-
   id<Credential> credential = [self credentialForIndexPath:indexPath];
-  cell.accessoryView.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   cell.textLabel.text = credential.serviceName;
   cell.textLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   cell.detailTextLabel.text = credential.user;
   cell.detailTextLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  cell.selectionStyle = UITableViewCellSelectionStyleNone;
+  cell.selectionStyle = UITableViewCellSelectionStyleDefault;
+  cell.backgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   return cell;
 }

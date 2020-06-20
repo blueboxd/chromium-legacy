@@ -23,10 +23,6 @@
 #include "chrome/browser/download/download_commands.h"
 #endif
 
-namespace gfx {
-class FontList;
-}
-
 using offline_items_collection::ContentId;
 
 // This class is an abstraction for common UI tasks and properties associated
@@ -78,12 +74,11 @@ class DownloadUIModel {
   //    Network disconnected
   base::string16 GetTooltipText() const;
 
-  // Get the warning text to display for a dangerous download. The |base_width|
-  // is the maximum width of an embedded filename (if there is one). The metrics
-  // for the filename will be based on |font_list|. Should only be called if
-  // IsDangerous() is true.
-  base::string16 GetWarningText(const gfx::FontList& font_list,
-                                int base_width) const;
+  // Get the warning text to display for a dangerous download. |filename| is the
+  // (possibly-elided) filename; if it is present in the resulting string,
+  // |offset| will be set to the starting position of the filename.
+  base::string16 GetWarningText(const base::string16& filename,
+                                size_t* offset) const;
 
   // Get the caption text for a button for confirming a dangerous download
   // warning.

@@ -1225,7 +1225,11 @@ class CORE_EXPORT Document : public ContainerNode,
     kLoadEventInProgress,
     kLoadEventCompleted,
     kBeforeUnloadEventInProgress,
-    kBeforeUnloadEventCompleted,
+    // Advanced to only if the beforeunload event in this document and
+    // subdocuments isn't canceled and will cause an unload. If beforeunload is
+    // canceled |load_event_progress_| will revert to its value prior to the
+    // beforeunload being dispatched.
+    kBeforeUnloadEventHandled,
     kPageHideInProgress,
     kUnloadVisibilityChangeInProgress,
     kUnloadEventInProgress,
@@ -1237,11 +1241,18 @@ class CORE_EXPORT Document : public ContainerNode,
   bool LoadEventFinished() const {
     return load_event_progress_ >= kLoadEventCompleted;
   }
-  bool UnloadStarted() const {
-    return load_event_progress_ >= kPageHideInProgress;
+  bool BeforeUnloadStarted() const {
+    return load_event_progress_ >= kBeforeUnloadEventInProgress;
   }
   bool ProcessingBeforeUnload() const {
     return load_event_progress_ == kBeforeUnloadEventInProgress;
+  }
+  bool UnloadStarted() const {
+    return load_event_progress_ >= kPageHideInProgress;
+  }
+
+  void BeforeUnloadDoneWillUnload() {
+    load_event_progress_ = kBeforeUnloadEventHandled;
   }
 
   void SetContainsPlugins() { contains_plugins_ = true; }
@@ -1380,8 +1391,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void AddConsoleMessage(ConsoleMessage* message,
                          bool discard_duplicates = false) const;
-
-  LocalFrame* ExecutingFrame();
 
   DocumentLifecycle& Lifecycle() { return lifecycle_; }
   const DocumentLifecycle& Lifecycle() const { return lifecycle_; }

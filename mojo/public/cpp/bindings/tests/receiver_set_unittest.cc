@@ -420,7 +420,7 @@ TEST_P(ReceiverSetTest, AssociatedReceiverSetContext) {
   EXPECT_TRUE(impl.ping_receivers().empty());
 }
 
-TEST_P(ReceiverSetTest, MasterInterfaceReceiverSetContext) {
+TEST_P(ReceiverSetTest, PrimaryInterfaceReceiverSetContext) {
   Remote<AssociatedPingProvider> provider_a, provider_b;
   PingProviderImpl impl;
   ReceiverSet<AssociatedPingProvider, int> receivers;
@@ -465,7 +465,7 @@ TEST_P(ReceiverSetTest, MasterInterfaceReceiverSetContext) {
   EXPECT_TRUE(receivers.empty());
 }
 
-TEST_P(ReceiverSetTest, MasterInterfaceReceiverSetDispatchReceiver) {
+TEST_P(ReceiverSetTest, PrimaryInterfaceReceiverSetDispatchReceiver) {
   Remote<AssociatedPingProvider> provider_a, provider_b;
   PingProviderImpl impl;
   ReceiverSet<AssociatedPingProvider, int> receivers;
@@ -513,13 +513,13 @@ TEST_P(ReceiverSetTest, MasterInterfaceReceiverSetDispatchReceiver) {
 }
 
 TEST_P(ReceiverSetTest, AssociatedReceiverSetConnectionErrorWithReason) {
-  Remote<AssociatedPingProvider> remote_master;
-  PingProviderImpl master_impl;
-  Receiver<AssociatedPingProvider> master_receiver(
-      &master_impl, remote_master.BindNewPipeAndPassReceiver());
+  Remote<AssociatedPingProvider> remote_primary;
+  PingProviderImpl primary_impl;
+  Receiver<AssociatedPingProvider> primary_receiver(
+      &primary_impl, remote_primary.BindNewPipeAndPassReceiver());
 
   base::RunLoop run_loop;
-  master_impl.ping_receivers().set_disconnect_with_reason_handler(
+  primary_impl.ping_receivers().set_disconnect_with_reason_handler(
       base::BindLambdaForTesting(
           [&](uint32_t custom_reason, const std::string& description) {
             EXPECT_EQ(2048u, custom_reason);
@@ -528,7 +528,7 @@ TEST_P(ReceiverSetTest, AssociatedReceiverSetConnectionErrorWithReason) {
           }));
 
   AssociatedRemote<PingService> remote_ping;
-  remote_master->GetPing(remote_ping.BindNewEndpointAndPassReceiver());
+  remote_primary->GetPing(remote_ping.BindNewEndpointAndPassReceiver());
 
   remote_ping.ResetWithReason(2048u, "bye");
 

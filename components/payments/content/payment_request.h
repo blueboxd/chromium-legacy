@@ -35,11 +35,11 @@ class ContentPaymentRequestDelegate;
 class PaymentRequestWebContentsManager;
 
 // This class manages the interaction between the renderer (through the
-// PaymentRequestClient and Mojo stub implementation) and the UI (through the
-// PaymentRequestDelegate). The API user (merchant) specification (supported
-// payment methods, required information, order details) is stored in
+// PaymentRequestClient and Mojo stub implementation) and the desktop Payment UI
+// (through the PaymentRequestDelegate). The API user (merchant) specification
+// (supported payment methods, required information, order details) is stored in
 // PaymentRequestSpec, and the current user selection state (and related data)
-// is stored in PaymentRequestSpec.
+// is stored in PaymentRequestState.
 class PaymentRequest : public mojom::PaymentRequest,
                        public PaymentHandlerHost::Delegate,
                        public PaymentRequestSpec::Observer,

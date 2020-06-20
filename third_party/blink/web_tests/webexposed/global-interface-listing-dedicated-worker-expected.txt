@@ -738,6 +738,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter type
 [Worker]     method constructor
 [Worker]     method decode
+[Worker]     method decodeMetadata
 [Worker] interface Lock
 [Worker]     attribute @@toStringTag
 [Worker]     getter mode

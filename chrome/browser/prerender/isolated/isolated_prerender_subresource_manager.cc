@@ -36,9 +36,20 @@ IsolatedPrerenderSubresourceManager::TakeMainframeResponse() {
   return std::move(mainframe_response_);
 }
 
-void IsolatedPrerenderSubresourceManager::SetIsolatedURLLoaderFactory(
-    scoped_refptr<network::SharedURLLoaderFactory> isolated_loader_factory) {
-  isolated_loader_factory_ = isolated_loader_factory;
+void IsolatedPrerenderSubresourceManager::
+    SetCreateIsolatedLoaderFactoryCallback(
+        CreateIsolatedLoaderFactoryRepeatingCallback callback) {
+  create_isolated_loader_factory_callback_ = std::move(callback);
+}
+
+void IsolatedPrerenderSubresourceManager::NotifyPageNavigatedToAfterSRP() {
+  DCHECK(create_isolated_loader_factory_callback_);
+  // We're navigating so take the extra work off the CPU.
+  if (nsp_handle_) {
+    OnPrerenderStop(nsp_handle_.get());
+  }
+
+  was_navigated_to_after_srp_ = true;
 }
 
 void IsolatedPrerenderSubresourceManager::OnPrerenderStop(
@@ -54,11 +65,9 @@ void IsolatedPrerenderSubresourceManager::OnPrerenderStop(
   nsp_handle_.reset();
 }
 
-bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
+bool IsolatedPrerenderSubresourceManager::ShouldProxyForPrerenderNavigation(
     int render_process_id,
-    int frame_tree_node_id,
-    content::ContentBrowserClient::URLLoaderFactoryType type,
-    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
+    content::ContentBrowserClient::URLLoaderFactoryType type) {
   if (type != content::ContentBrowserClient::URLLoaderFactoryType::
                   kDocumentSubResource) {
     return false;
@@ -83,12 +92,30 @@ bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
     return false;
   }
 
-  if (!isolated_loader_factory_) {
+  if (!create_isolated_loader_factory_callback_) {
     // This also shouldn't happen, and would imply that there is a bug in the
-    // code where a prerender was triggered without having an ioslated URL
-    // Loader Factory to use. Abort the prerender just to be safe.
+    // code where a prerender was triggered without having an isolated URL
+    // Loader Factory callback to use. Abort the prerender just to be safe.
     OnPrerenderStop(nsp_handle_.get());
     NOTREACHED();
+    return false;
+  }
+
+  return true;
+}
+
+bool IsolatedPrerenderSubresourceManager::ShouldProxyForAfterSRPNavigation()
+    const {
+  return was_navigated_to_after_srp_;
+}
+
+bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
+    content::RenderFrameHost* frame,
+    int render_process_id,
+    content::ContentBrowserClient::URLLoaderFactoryType type,
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver) {
+  if (!ShouldProxyForPrerenderNavigation(render_process_id, type) &&
+      !ShouldProxyForAfterSRPNavigation()) {
     return false;
   }
 
@@ -99,11 +126,12 @@ bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
       network_process_factory_remote.InitWithNewPipeAndPassReceiver();
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory_remote;
-  isolated_loader_factory_->Clone(
-      isolated_factory_remote.InitWithNewPipeAndPassReceiver());
+  create_isolated_loader_factory_callback_.Run(
+      isolated_factory_remote.InitWithNewPipeAndPassReceiver(),
+      frame->GetIsolationInfoForSubresources());
 
   auto proxy = std::make_unique<IsolatedPrerenderProxyingURLLoaderFactory>(
-      frame_tree_node_id, std::move(proxied_receiver),
+      frame->GetFrameTreeNodeId(), std::move(proxied_receiver),
       std::move(network_process_factory_remote),
       std::move(isolated_factory_remote),
       base::BindOnce(
@@ -112,6 +140,11 @@ bool IsolatedPrerenderSubresourceManager::MaybeProxyURLLoaderFactory(
       base::BindRepeating(
           &IsolatedPrerenderSubresourceManager::OnSubresourceLoadSuccessful,
           weak_factory_.GetWeakPtr()));
+
+  if (ShouldProxyForAfterSRPNavigation()) {
+    proxy->NotifyPageNavigatedToAfterSRP(successfully_loaded_subresources_);
+  }
+
   proxied_loader_factories_.emplace(std::move(proxy));
 
   return true;

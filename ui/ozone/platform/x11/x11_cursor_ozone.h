@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/gfx/x/x11.h"
 
@@ -29,23 +30,20 @@ class X11CursorOzone : public base::RefCounted<X11CursorOzone> {
   X11CursorOzone(const std::vector<SkBitmap>& bitmaps,
                  const gfx::Point& hotspot,
                  int frame_delay_ms);
-  // Loads an X11 cursor named |name| by calling XcursorLibraryLoadCursor().
-  // May end up wrapping an x11::None so validity must be checked after using
-  // this constructor.
-  explicit X11CursorOzone(const char* name);
+  // Wraps an X11 cursor |xcursor|.
+  explicit X11CursorOzone(::Cursor xcursor);
 
   // Creates a new cursor that is invisible.
   static scoped_refptr<X11CursorOzone> CreateInvisible();
 
-  XID xcursor() const { return xcursor_; }
+  ::Cursor xcursor() const { return xcursor_; }
 
  private:
   friend class base::RefCounted<X11CursorOzone>;
 
-  X11CursorOzone();
   ~X11CursorOzone();
 
-  XID xcursor_ = x11::None;
+  ::Cursor xcursor_ = x11::None;
 
   DISALLOW_COPY_AND_ASSIGN(X11CursorOzone);
 };

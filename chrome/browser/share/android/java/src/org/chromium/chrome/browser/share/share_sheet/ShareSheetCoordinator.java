@@ -31,7 +31,7 @@ import java.util.Set;
  * Coordinator for displaying the share sheet.
  */
 // TODO(crbug/1022172): Should be package-protected once modularization is complete.
-public class ShareSheetCoordinator implements ActivityStateObserver {
+public class ShareSheetCoordinator implements ActivityStateObserver, ChromeOptionShareCallback {
     private final BottomSheetController mBottomSheetController;
     private final Supplier<Tab> mTabProvider;
     private final ShareSheetPropertyModelBuilder mPropertyModelBuilder;
@@ -92,7 +92,8 @@ public class ShareSheetCoordinator implements ActivityStateObserver {
     }
 
     // Used by first party features to share with only non-chrome apps.
-    protected void showThirdPartyShareSheet(
+    @Override
+    public void showThirdPartyShareSheet(
             ShareParams params, ChromeShareExtras chromeShareExtras, long shareStartTime) {
         mExcludeFirstParty = true;
         showShareSheet(params, chromeShareExtras, shareStartTime);
@@ -106,7 +107,7 @@ public class ShareSheetCoordinator implements ActivityStateObserver {
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
                 new ChromeProvidedSharingOptionsProvider(activity, mTabProvider,
                         mBottomSheetController, mBottomSheet, mPrefServiceBridge, shareParams,
-                        mPrintTabCallback, mShareStartTime);
+                        mPrintTabCallback, mShareStartTime, this);
 
         return chromeProvidedSharingOptionsProvider.getPropertyModels(contentTypes);
     }

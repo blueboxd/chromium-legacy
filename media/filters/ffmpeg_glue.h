@@ -25,7 +25,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "media/base/container_names.h"
 #include "media/base/media_export.h"

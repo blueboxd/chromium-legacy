@@ -357,14 +357,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // is disabled for a node if there is no such browsing context, or if
   // scripting is disabled in that browsing context.</spec>
   Document& element_document = element_->GetDocument();
-  // TODO(timothygu): Investigate if we could switch from ExecutingFrame() to
-  // ExecutingWindow().
-  if (!element_document.ExecutingFrame())
-    return false;
-
-  LocalDOMWindow* context_window =
-      To<LocalDOMWindow>(element_->GetExecutionContext());
-  if (!context_window->GetFrame())
+  LocalDOMWindow* context_window = element_document.ExecutingWindow();
+  if (!context_window)
     return false;
   if (!context_window->CanExecuteScripts(kAboutToExecuteScript))
     return false;

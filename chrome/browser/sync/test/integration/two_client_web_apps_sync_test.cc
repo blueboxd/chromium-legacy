@@ -381,10 +381,6 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncWithoutUsingNameFallback) {
 }
 
 IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingIconUrlFallback) {
-  // TODO(crbug.com/1090227): Support this behaviour for BMO.
-  if (GetParam() == ProviderType::kWebApps)
-    return;
-
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameWebAppIds());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -392,12 +388,27 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingIconUrlFallback) {
   Profile* source_profile = GetProfile(0);
   Profile* dest_profile = GetProfile(1);
 
+  // Both bookmark app sync and web app sync happen at the same time. Disable
+  // one of them to simulate the other winning the "race".
+  InstallManager& install_manager =
+      WebAppProvider::Get(dest_profile)->install_manager();
+  switch (GetParam()) {
+    case ProviderType::kBookmarkApps:
+      install_manager.DisableWebAppSyncInstallForTesting();
+      break;
+    case ProviderType::kWebApps:
+      install_manager.DisableBookmarkAppSyncInstallForTesting();
+      break;
+  }
+
   WebAppInstallObserver dest_install_observer(dest_profile);
 
   // Install app with name.
   WebApplicationInfo info;
   info.title = base::UTF8ToUTF16("Blue icon");
   info.app_url = GURL("https://does-not-exist.org");
+  info.theme_color = SK_ColorBLUE;
+  info.scope = GURL("https://does-not-exist.org/scope");
   WebApplicationIconInfo icon_info;
   icon_info.square_size_px = 192;
   icon_info.url = embedded_test_server()->GetURL("/web_apps/blue-192.png");
@@ -423,6 +434,11 @@ IN_PROC_BROWSER_TEST_P(TwoClientWebAppsSyncTest, SyncUsingIconUrlFallback) {
             }));
     run_loop.Run();
   }
+
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppScope(synced_app_id),
+            GURL("https://does-not-exist.org/scope"));
+  EXPECT_EQ(GetRegistrar(dest_profile).GetAppThemeColor(synced_app_id),
+            SK_ColorBLUE);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

@@ -68,7 +68,6 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
-    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
     GetCreateVDFunctionsCB get_create_vd_functions_cb) {
   if (!client_task_runner || !frame_pool || !frame_converter) {
     VLOGF(1) << "One of arguments is nullptr.";
@@ -82,22 +81,19 @@ std::unique_ptr<VideoDecoder> VideoDecoderPipeline::Create(
 
   return base::WrapUnique<VideoDecoder>(new VideoDecoderPipeline(
       std::move(client_task_runner), std::move(frame_pool),
-      std::move(frame_converter), gpu_memory_buffer_factory,
-      std::move(get_create_vd_functions_cb)));
+      std::move(frame_converter), std::move(get_create_vd_functions_cb)));
 }
 
 VideoDecoderPipeline::VideoDecoderPipeline(
     scoped_refptr<base::SequencedTaskRunner> client_task_runner,
     std::unique_ptr<DmabufVideoFramePool> frame_pool,
     std::unique_ptr<VideoFrameConverter> frame_converter,
-    gpu::GpuMemoryBufferFactory* const gpu_memory_buffer_factory,
     GetCreateVDFunctionsCB get_create_vd_functions_cb)
     : client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(base::ThreadPool::CreateSingleThreadTaskRunner(
           {base::WithBaseSyncPrimitives(), base::TaskPriority::USER_VISIBLE},
           base::SingleThreadTaskRunnerThreadMode::DEDICATED)),
       main_frame_pool_(std::move(frame_pool)),
-      gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       frame_converter_(std::move(frame_converter)),
       get_create_vd_functions_cb_(std::move(get_create_vd_functions_cb)) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);

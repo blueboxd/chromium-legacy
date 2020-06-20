@@ -80,6 +80,7 @@ Polymer({
   /** Overridden from LoginScreenBehavior. */
   EXTERNAL_API: [
     'onInputMethodIdSetFromBackend',
+    'refreshA11yInfo',
   ],
 
   /**
@@ -392,6 +393,15 @@ Polymer({
     this.onKeyboardsChanged_();
   },
 
+  /**
+   * Refreshes a11y menu state.
+   * @param {!OobeTypes.A11yStatuses} data New dictionary with a11y features
+   *     state.
+   */
+  refreshA11yInfo(data) {
+    this.a11yStatus = data;
+  },
+
   onKeyboardsChanged_() {
     this.currentKeyboard = getSelectedTitle(this.keyboards);
   },
@@ -427,7 +437,8 @@ Polymer({
   onA11yOptionChanged_(event) {
     var a11ytarget = /** @type {{chromeMessage: string, checked: boolean}} */ (
         event.currentTarget);
-    chrome.send(a11ytarget.chromeMessage, [a11ytarget.checked]);
+    chrome.send(
+        'WelcomeScreen.' + a11ytarget.chromeMessage, [a11ytarget.checked]);
   },
 
   /** ******************** Timezone section ******************* */

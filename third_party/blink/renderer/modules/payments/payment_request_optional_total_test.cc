@@ -73,6 +73,8 @@ class MockPaymentProvider : public payments::mojom::blink::PaymentRequest {
   payments::mojom::blink::PaymentDetailsPtr details_;
 };
 
+// This test suite is about the optional total parameter of the PaymentRequest
+// constructor.
 class PaymentRequestOptionalTotalTest : public testing::Test {
  public:
   void SetUp() override {
@@ -108,8 +110,8 @@ TEST_F(PaymentRequestOptionalTotalTest,
   EXPECT_FALSE(payment_provider_->GetDetails());
 }
 
-// When the OptionalTotal is disabled: although this test requests a app-store
-// billing methods, total is required.
+// When the DigitalGoods flag is disabled: although this test requests a
+// app-store billing methods, total is required.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagDisabledTotalIsRequiredWhenMixMethods) {
   RuntimeEnabledFeatures::SetDigitalGoodsEnabled(false);
@@ -131,8 +133,8 @@ TEST_F(PaymentRequestOptionalTotalTest,
   EXPECT_FALSE(payment_provider_->GetDetails());
 }
 
-// When the OptionalTotal is enabled: undefined total gets a place holder when
-// only requesting app-store billing methods.
+// When the DigitalGoods flag is enabled: undefined total gets a place holder
+// when only requesting app-store billing methods.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagEnabledTotalGetPlaceHolder) {
   RuntimeEnabledFeatures::SetDigitalGoodsEnabled(true);
@@ -155,7 +157,7 @@ TEST_F(PaymentRequestOptionalTotalTest,
   EXPECT_EQ("ZZZ", payment_provider_->GetDetails()->total->amount->currency);
 }
 
-// When the OptionalTotal is disabled: undefined total is rejected.
+// When the DigitalGoods flag is disabled: undefined total is rejected.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagDisabledTotalGetRejected) {
   RuntimeEnabledFeatures::SetDigitalGoodsEnabled(false);
@@ -180,8 +182,8 @@ TEST_F(PaymentRequestOptionalTotalTest,
   EXPECT_FALSE(payment_provider_->GetDetails());
 }
 
-// When the OptionalTotal is enabled: total get overridden when only requesting
-// app-store billing methods.
+// When the DigitalGoods flag is enabled: total get overridden when only
+// requesting app-store billing methods.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagEnabledTotalGetOverridden) {
   RuntimeEnabledFeatures::SetDigitalGoodsEnabled(true);
@@ -206,8 +208,8 @@ TEST_F(PaymentRequestOptionalTotalTest,
   EXPECT_EQ("ZZZ", payment_provider_->GetDetails()->total->amount->currency);
 }
 
-// When the OptionalTotal is disabled: total does not get overridden when only
-// requesting app-store billing methods.
+// When the DigitalGoods flag is disabled: total does not get overridden when
+// only requesting app-store billing methods.
 TEST_F(PaymentRequestOptionalTotalTest,
        AppStoreBillingFlagDisabledTotalNotGetOverridden) {
   RuntimeEnabledFeatures::SetDigitalGoodsEnabled(false);

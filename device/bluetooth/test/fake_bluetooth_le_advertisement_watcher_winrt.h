@@ -77,6 +77,7 @@ class FakeBluetoothLEAdvertisementWatcherWinrt
 
   void SimulateLowEnergyDevice(
       const BluetoothTestBase::LowEnergyDeviceData& device_data);
+  void SimulateDiscoveryError();
 
  private:
   ABI::Windows::Devices::Bluetooth::Advertisement::
@@ -89,7 +90,14 @@ class FakeBluetoothLEAdvertisementWatcherWinrt
           BluetoothLEAdvertisementWatcher*,
       ABI::Windows::Devices::Bluetooth::Advertisement::
           BluetoothLEAdvertisementReceivedEventArgs*>>
-      handler_;
+      received_handler_;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementWatcher*,
+      ABI::Windows::Devices::Bluetooth::Advertisement::
+          BluetoothLEAdvertisementWatcherStoppedEventArgs*>>
+      stopped_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEAdvertisementWatcherWinrt);
 };

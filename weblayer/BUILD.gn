@@ -46,11 +46,11 @@ if (is_android) {
     # components_strings contains strings from all components. WebLayer
     # will never display most of them, so we try to limit the included
     # strings.
-    whitelist = rebase_path("grit_strings_whitelist.txt", root_build_dir)
-    inputs = [ "//weblayer/grit_strings_whitelist.txt" ]
+    allowlist = rebase_path("grit_strings_allowlist.txt", root_build_dir)
+    inputs = [ "//weblayer/grit_strings_allowlist.txt" ]
     grit_flags = [
       "-w",
-      whitelist,
+      allowlist,
     ]
     outputs =
         weblayer_components_strings_java_resources +
@@ -65,11 +65,11 @@ if (is_android) {
     # components_chromium_strings contains Chromium-specific strings. WebLayer
     # will never display most of them, so we try to limit the included
     # strings.
-    whitelist = rebase_path("grit_strings_whitelist.txt", root_build_dir)
-    inputs = [ "//weblayer/grit_strings_whitelist.txt" ]
+    allowlist = rebase_path("grit_strings_allowlist.txt", root_build_dir)
+    inputs = [ "//weblayer/grit_strings_allowlist.txt" ]
     grit_flags = [
       "-w",
-      whitelist,
+      allowlist,
     ]
     outputs = [ "grit/components_chromium_strings.h" ] +
               process_file_template(
@@ -502,7 +502,7 @@ source_set("weblayer_lib_base") {
       "//android_webview:generate_aw_resources",
       "//android_webview:generate_aw_strings",
       "//components/android_system_error_page",
-      "//components/autofill/android:provider",
+      "//components/autofill/android/provider",
       "//components/browser_ui/site_settings/android",
       "//components/cdm/browser",
       "//components/content_settings/android",

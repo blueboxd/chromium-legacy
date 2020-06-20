@@ -234,15 +234,17 @@ class WebAppInstallManagerTest : public WebAppTest {
       DisplayMode user_display_mode,
       SkColor theme_color,
       bool locally_installed,
+      const GURL& scope,
       const std::vector<WebApplicationIconInfo>& icon_infos) {
     auto web_app = CreateWebApp(launch_url, Source::kSync, user_display_mode);
     web_app->SetIsInSyncInstall(true);
     web_app->SetIsLocallyInstalled(locally_installed);
-    web_app->SetIconInfos(icon_infos);
 
     WebApp::SyncData sync_data;
     sync_data.name = app_name;
     sync_data.theme_color = theme_color;
+    sync_data.scope = scope;
+    sync_data.icon_infos = icon_infos;
     web_app->SetSyncData(std::move(sync_data));
     return web_app;
   }
@@ -466,11 +468,11 @@ TEST_F(WebAppInstallManagerTest,
   {
     std::unique_ptr<WebApp> app1 = CreateWebAppInSyncInstall(
         url1, "Name1 from sync", DisplayMode::kStandalone, SK_ColorRED,
-        /*is_locally_installed=*/false, /*icon_infos=*/{});
+        /*is_locally_installed=*/false, /*scope=*/GURL(), /*icon_infos=*/{});
 
     std::unique_ptr<WebApp> app2 = CreateWebAppInSyncInstall(
         url2, "Name2 from sync", DisplayMode::kBrowser, SK_ColorGREEN,
-        /*is_locally_installed=*/true, /*icon_infos=*/{});
+        /*is_locally_installed=*/true, /*scope=*/GURL(), /*icon_infos=*/{});
 
     Registry registry;
     registry.emplace(app1_id, std::move(app1));
@@ -610,7 +612,7 @@ TEST_F(WebAppInstallManagerTest,
   {
     std::unique_ptr<WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
         launch_url, "Name from sync", DisplayMode::kStandalone, SK_ColorRED,
-        /*is_locally_installed=*/true, /*icon_infos=*/{});
+        /*is_locally_installed=*/true, /*scope=*/GURL(), /*icon_infos=*/{});
 
     InitRegistrarWithApp(std::move(app_in_sync_install));
   }
@@ -675,12 +677,6 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   expected_app->SetDescription("Description");
   expected_app->SetThemeColor(SK_ColorCYAN);
   expected_app->SetDisplayMode(DisplayMode::kBrowser);
-  {
-    WebApp::SyncData sync_data;
-    sync_data.name = "Name";
-    sync_data.theme_color = SK_ColorCYAN;
-    expected_app->SetSyncData(std::move(sync_data));
-  }
 
   std::vector<WebApplicationIconInfo> icon_infos;
   std::vector<int> sizes;
@@ -695,10 +691,20 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Success) {
   expected_app->SetIconInfos(std::move(icon_infos));
   expected_app->SetDownloadedIconSizes(std::move(sizes));
 
+  {
+    WebApp::SyncData sync_data;
+    sync_data.name = "Name";
+    sync_data.theme_color = SK_ColorCYAN;
+    sync_data.scope = url;
+    sync_data.icon_infos = expected_app->icon_infos();
+    expected_app->SetSyncData(std::move(sync_data));
+  }
+
   std::unique_ptr<const WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
       expected_app->launch_url(), "Name from sync",
       expected_app->user_display_mode(), SK_ColorRED,
-      expected_app->is_locally_installed(), expected_app->icon_infos());
+      expected_app->is_locally_installed(), expected_app->scope(),
+      expected_app->icon_infos());
 
   // Init using a copy.
   InitRegistrarWithApp(std::make_unique<WebApp>(*app_in_sync_install));
@@ -735,15 +741,11 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
                    /*user_display_mode=*/DisplayMode::kBrowser);
   expected_app->SetIsInSyncInstall(false);
   expected_app->SetName("Name from sync");
+  expected_app->SetScope(url);
+  expected_app->SetDisplayMode(DisplayMode::kBrowser);
   expected_app->SetIsLocallyInstalled(false);
   expected_app->SetThemeColor(SK_ColorRED);
   // |scope| and |description| are empty here. |display_mode| is |kUndefined|.
-  {
-    WebApp::SyncData sync_data;
-    sync_data.name = "Name from sync";
-    sync_data.theme_color = SK_ColorRED;
-    expected_app->SetSyncData(std::move(sync_data));
-  }
 
   std::vector<WebApplicationIconInfo> icon_infos;
   std::vector<int> sizes;
@@ -758,10 +760,20 @@ TEST_F(WebAppInstallManagerTest, InstallWebAppsAfterSync_Fallback) {
   expected_app->SetIconInfos(std::move(icon_infos));
   expected_app->SetDownloadedIconSizes(std::move(sizes));
 
+  {
+    WebApp::SyncData sync_data;
+    sync_data.name = "Name from sync";
+    sync_data.theme_color = SK_ColorRED;
+    sync_data.scope = expected_app->scope();
+    sync_data.icon_infos = expected_app->icon_infos();
+    expected_app->SetSyncData(std::move(sync_data));
+  }
+
   std::unique_ptr<const WebApp> app_in_sync_install = CreateWebAppInSyncInstall(
       expected_app->launch_url(), expected_app->name(),
       expected_app->user_display_mode(), expected_app->theme_color().value(),
-      expected_app->is_locally_installed(), expected_app->icon_infos());
+      expected_app->is_locally_installed(), expected_app->scope(),
+      expected_app->icon_infos());
 
   // Init using a copy.
   InitRegistrarWithApp(std::make_unique<WebApp>(*app_in_sync_install));

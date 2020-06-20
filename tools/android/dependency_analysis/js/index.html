@@ -3,9 +3,26 @@
   <head>
     <link rel="stylesheet" type="text/css" href="./index.css"></link>
     <script type="text/javascript" src="./node_modules/d3/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
   </head>
   <body>
-    <svg width="960" height="600"></svg>
+    <div id="page-container">
+      <div id="page-controls">
+        <div id="filter-input-group">
+          <label for="filter-input">Add node to filter (exact name):</label>
+          <input v-model="filterInputText" type="text" id="filter-input">
+          <button @click="submitFilter" type="button">Add</button>
+        </div>
+        <ul id="filter-items">
+          <li @click="removeFilter" v-for="node in sharedState.includedNodes">
+            {{ node }}
+          </li>
+        </ul>
+      </div>
+      <div id="graph-container">
+        <svg id="graph-svg" width="960" height="600"></svg>
+      </div>
+    </div>
     <script type="module" src="./index.js"></script>
   </body>
 </html>

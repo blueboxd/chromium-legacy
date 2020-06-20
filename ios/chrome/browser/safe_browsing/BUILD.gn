@@ -32,6 +32,7 @@ source_set("safe_browsing") {
     "//components/safe_browsing/core:features",
     "//components/safe_browsing/core/browser",
     "//components/safe_browsing/core/common",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/safe_browsing/core/db",
     "//components/safe_browsing/core/db:database_manager",
     "//components/safe_browsing/core/db:v4_local_database_manager",
@@ -104,12 +105,16 @@ source_set("eg2_tests") {
   deps = [
     "//base",
     "//components/safe_browsing/core:features",
+    "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/strings:components_strings_grit",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",
     "//ios/third_party/earl_grey2:test_lib",
     "//ios/web/common:features",
+    "//ios/web/public/test:element_selector",
     "//ios/web/public/test/http_server",
     "//net:test_support",
+    "//ui/base",
   ]
   libs = [ "UIKit.framework" ]
 }

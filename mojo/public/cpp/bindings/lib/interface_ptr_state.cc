@@ -92,7 +92,7 @@ bool InterfacePtrStateBase::InitializeEndpointClient(
   DCHECK(runner_->RunsTasksInCurrentSequence());
   router_ = new MultiplexRouter(std::move(handle_), config, true, runner_);
   endpoint_client_.reset(new InterfaceEndpointClient(
-      router_->CreateLocalEndpointHandle(kMasterInterfaceId), nullptr,
+      router_->CreateLocalEndpointHandle(kPrimaryInterfaceId), nullptr,
       std::move(payload_validator), false, std::move(runner_),
       // The version is only queried from the client so the value passed here
       // will not be used.

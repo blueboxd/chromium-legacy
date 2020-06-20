@@ -5,6 +5,8 @@
  * @fileoverview Data structures for representing a directed graph.
  */
 
+import {GraphStore} from './graph_store.js';
+
 /** A node in a directed graph. */
 class Node {
   /**
@@ -44,21 +46,31 @@ class Node {
 
 /**
  * An edge in a directed graph.
- * Note that source/target are stored as strings, not Node objects.
  */
 class Edge {
   /**
-   * @param {string} source The ID of the source node.
-   * @param {string} target The ID of the target node.
+   * @param {string} id The unique ID for the edge.
+   * @param {!Node} source The source Node object.
+   * @param {!Node} target The target Node object.
    */
-  constructor(source, target) {
+  constructor(id, source, target) {
     /** @public @const {string} */
-    this.id = `${source} > ${target}`;
-    /** @public @const {string} */
+    this.id = id;
+    /** @public @const {!Node} */
     this.source = source;
-    /** @public @const {string} */
+    /** @public @const {!Node} */
     this.target = target;
   }
+}
+
+/**
+ * Generates and returns a unique edge ID from its source/target Node IDs.
+ * @param {string} sourceId The ID of the source node.
+ * @param {string} targetId The ID of the target node.
+ * @return {string} The ID uniquely identifying the edge source -> target.
+ */
+function getEdgeIdFromNodes(sourceId, targetId) {
+  return `${sourceId} > ${targetId}`;
 }
 
 /** A directed graph. */
@@ -90,38 +102,50 @@ class Graph {
   }
 
   /**
-   * Adds an Edge to the edge set.
-   * Also updates the inbound/outbound sets of the edge's nodes, if they exist.
-   * @param {!Edge} edge The edge to add.
+   * Creates and adds an Edge to the edge set.
+   * Also updates the inbound/outbound sets of the edge's nodes.
+   * @param {!Node} sourceNode The node at the start of the edge.
+   * @param {!Node} targetNode The node at the end of the edge.
    */
-  addEdgeIfNew(edge) {
-    if (!this.edges.has(edge.id)) {
-      this.edges.set(edge.id, edge);
-      const sourceNode = this.getNodeById(edge.source);
-      if (sourceNode !== null) {
-        const targetNode = this.getNodeById(edge.target);
-        if (targetNode !== null) {
-          sourceNode.addOutbound(targetNode);
-          targetNode.addInbound(sourceNode);
-        }
-      }
+  addEdgeIfNew(sourceNode, targetNode) {
+    const edgeId = getEdgeIdFromNodes(sourceNode.id, targetNode.id);
+    if (!this.edges.has(edgeId)) {
+      const edge = new Edge(edgeId, sourceNode, targetNode);
+      this.edges.set(edgeId, edge);
+      sourceNode.addOutbound(targetNode);
+      targetNode.addInbound(sourceNode);
     }
   }
 
   /**
    * Retrieves the list of nodes for visualization with d3.
+   * @param {GraphStore} filter The filter to apply to the data set.
    * @return {Array<Node>} The nodes to visualize.
    */
-  getNodesForD3() {
-    return [...this.nodes.values()];
+  getNodesForD3(filter) {
+    const resultNodes = [];
+    for (const node of this.nodes.values()) {
+      if (filter.includedNodeSet.has(node.id)) {
+        resultNodes.push(node);
+      }
+    }
+    return resultNodes;
   }
 
   /**
    * Retrieves the list of edges for visualization with d3.
+   * @param {GraphStore} filter The filter to apply to the data set.
    * @return {Array<Edge>} The edges to visualize.
    */
-  getEdgesForD3() {
-    return [...this.edges.values()];
+  getEdgesForD3(filter) {
+    const resultEdges = [];
+    for (const edge of this.edges.values()) {
+      if (filter.includedNodeSet.has(edge.source.id) &&
+          filter.includedNodeSet.has(edge.target.id)) {
+        resultEdges.push(edge);
+      }
+    }
+    return resultEdges;
   }
 }
 

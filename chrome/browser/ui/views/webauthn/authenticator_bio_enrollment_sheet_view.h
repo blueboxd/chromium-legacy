@@ -19,6 +19,9 @@ class AuthenticatorBioEnrollmentSheetView
       std::unique_ptr<AuthenticatorBioEnrollmentSheetModel> sheet_model);
   ~AuthenticatorBioEnrollmentSheetView() override;
 
+  // AuthenticatorRequestSheetView:
+  views::View* GetInitiallyFocusedView() override;
+
  private:
   // AuthenticatorRequestSheetView:
   std::unique_ptr<views::View> BuildStepSpecificContent() override;

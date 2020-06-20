@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 #include <vector>
 
 #include "base/bind.h"
@@ -15,16 +16,16 @@
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
-#include "base/i18n/break_iterator.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/math_constants.h"
 #include "base/single_thread_task_runner.h"
-#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/util/ranges/algorithm.h"
+#include "base/util/ranges/functional.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -61,7 +62,6 @@
 #include "components/url_formatter/elide_url.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/download_item_utils.h"
-#include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkScalar.h"
@@ -154,20 +154,6 @@ class SeparatorBorder : public views::Border {
   DISALLOW_COPY_AND_ASSIGN(SeparatorBorder);
 };
 
-base::string16 SplitStringWithNewLineAtPosition(const base::string16& text,
-                                                size_t pos) {
-  base::string16 new_text = text;
-  // This can be a low surrogate codepoint, but u_isUWhiteSpace will
-  // return false and inserting a new line after a surrogate pair
-  // is perfectly ok.
-  base::char16 line_end_char = text[pos - 1];
-  if (u_isUWhiteSpace(line_end_char))
-    new_text.replace(pos - 1, 1, 1, base::char16('\n'));
-  else
-    new_text.insert(pos, 1, base::char16('\n'));
-  return new_text;
-}
-
 // A stub subclass of Button that has no visuals.
 class TransparentButton : public views::Button {
  public:
@@ -208,6 +194,25 @@ class TransparentButton : public views::Button {
     return parent()->GetTooltipText(point);
   }
 };
+
+int GetFilenameStyle(const views::StyledLabel& label) {
+#if !defined(OS_LINUX)
+  if (base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings))
+    return STYLE_EMPHASIZED;
+#endif
+  return label.GetDefaultTextStyle();
+}
+
+void StyleFilename(views::StyledLabel& label, size_t pos, size_t len) {
+  // Ensure the label contains a nonempty filename.
+  if ((pos == base::string16::npos) || (len == 0))
+    return;
+
+  views::StyledLabel::RangeStyleInfo style;
+  style.text_style = GetFilenameStyle(label);
+  label.ClearStyleRanges();
+  label.AddStyleRange(gfx::Range(pos, pos + len), style);
+}
 
 // Get the opacity based on |animation_progress|, with values in [0.0, 1.0].
 // Range of return value is [0, 255].
@@ -459,8 +464,6 @@ void DownloadItemView::TransitionToNormalMode() {
   status_label_->SetText(GetStatusText());
   status_label_->GetViewAccessibility().OverrideIsIgnored(
       status_label_->GetText().empty());
-  AdjustTextAndGetSize(status_label_,
-                       base::BindRepeating(&views::Label::SetText));
   file_name_label_->SetY(GetYForFilenameText());
   switch (model_->GetState()) {
     case DownloadItem::IN_PROGRESS:
@@ -1130,14 +1133,18 @@ void DownloadItemView::ShowMixedContentDialog() {
     discard_button_ = AddChildView(std::move(discard_button));
   }
 
-  base::string16 dangerous_label =
-      model_->GetWarningText(font_list_, kTextWidth);
+  const base::string16 filename = ElidedFilename();
+  size_t filename_offset;
   auto dangerous_download_label = std::make_unique<views::StyledLabel>(
-      dangerous_label, /*listener=*/nullptr);
+      model_->GetWarningText(filename, &filename_offset), /*listener=*/nullptr);
+  dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   dangerous_download_label->SetAutoColorReadabilityEnabled(false);
+  dangerous_download_label->set_can_process_events_within_subtree(false);
   dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
-  SizeLabelToMinWidth();
+  StyleFilename(*dangerous_download_label_, filename_offset, filename.length());
+  dangerous_download_label_->SizeToFit(
+      GetLabelWidth(*dangerous_download_label_));
 
   open_button_->SetEnabled(false);
   file_name_label_->SetVisible(false);
@@ -1223,6 +1230,8 @@ void DownloadItemView::ShowWarningDialog() {
     save_button_ = AddChildView(std::move(save_button));
   }
 
+  const base::string16 unelided_filename =
+      model_->GetFileNameToReportUser().LossyDisplayName();
   if (danger_type == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING) {
     auto scan_button = views::MdTextButton::Create(
         this, l10n_util::GetStringUTF16(IDS_SCAN_DOWNLOAD));
@@ -1230,8 +1239,7 @@ void DownloadItemView::ShowWarningDialog() {
     announce_accessible_alert_soon_ = true;
     UpdateAccessibleAlert(
         l10n_util::GetStringFUTF16(
-            IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT,
-            model_->GetFileNameToReportUser().LossyDisplayName()),
+            IDS_PROMPT_APP_DEEP_SCANNING_ACCESSIBLE_ALERT, unelided_filename),
         false);
   } else {
     if (!ChromeDownloadManagerDelegate::IsDangerTypeBlocked(danger_type)) {
@@ -1239,19 +1247,23 @@ void DownloadItemView::ShowWarningDialog() {
           this, l10n_util::GetStringUTF16(IDS_DISCARD_DOWNLOAD));
       discard_button_ = AddChildView(std::move(discard_button));
     }
-    UpdateAccessibleAlert(model_->GetWarningText(font_list_, kTextWidth), true);
+    size_t ignore;
+    UpdateAccessibleAlert(model_->GetWarningText(unelided_filename, &ignore),
+                          true);
   }
 
-  base::string16 dangerous_label =
-      model_->GetWarningText(font_list_, kTextWidth);
+  const base::string16 filename = ElidedFilename();
+  size_t filename_offset;
   auto dangerous_download_label = std::make_unique<views::StyledLabel>(
-      dangerous_label, /*listener=*/nullptr);
+      model_->GetWarningText(filename, &filename_offset), /*listener=*/nullptr);
   dangerous_download_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   dangerous_download_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   dangerous_download_label->SetAutoColorReadabilityEnabled(false);
   dangerous_download_label->set_can_process_events_within_subtree(false);
   dangerous_download_label_ = AddChildView(std::move(dangerous_download_label));
-  SizeLabelToMinWidth();
+  StyleFilename(*dangerous_download_label_, filename_offset, filename.length());
+  dangerous_download_label_->SizeToFit(
+      GetLabelWidth(*dangerous_download_label_));
 
   bool open_button_enabled =
       (model_->GetDangerType() ==
@@ -1338,37 +1350,23 @@ void DownloadItemView::ShowDeepScanningDialog() {
   DCHECK_EQ(mode_, NORMAL_MODE);
   SetMode(DEEP_SCANNING_MODE);
 
-  base::string16 elided_filename = gfx::ElideFilename(
-      model_->GetFileNameToReportUser(), font_list_, kTextWidth);
-
-  // Use the enterprise-specific string if we did an enterprise upload
-  base::string16 deep_scanning_text;
-  if (model_->download() &&
-      safe_browsing::DeepScanningRequest::ShouldUploadBinary(
-          model_->download())) {
-    deep_scanning_text = l10n_util::GetStringFUTF16(
-        IDS_PROMPT_DEEP_SCANNING_DOWNLOAD, elided_filename);
-  } else {
-    deep_scanning_text = l10n_util::GetStringFUTF16(
-        IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD, elided_filename);
-  }
-
+  const int id = (model_->download() &&
+                  safe_browsing::DeepScanningRequest::ShouldUploadBinary(
+                      model_->download()))
+                     ? IDS_PROMPT_DEEP_SCANNING_DOWNLOAD
+                     : IDS_PROMPT_DEEP_SCANNING_APP_DOWNLOAD;
+  const base::string16 filename = ElidedFilename();
+  size_t filename_offset;
   auto deep_scanning_label = std::make_unique<views::StyledLabel>(
-      deep_scanning_text, /*listener=*/nullptr);
+      l10n_util::GetStringFUTF16(id, filename, &filename_offset),
+      /*listener=*/nullptr);
   deep_scanning_label->SetTextContext(CONTEXT_DOWNLOAD_SHELF);
   deep_scanning_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   deep_scanning_label->SetAutoColorReadabilityEnabled(false);
   deep_scanning_label->set_can_process_events_within_subtree(false);
   deep_scanning_label_ = AddChildView(std::move(deep_scanning_label));
-  deep_scanning_label_->SetSize(AdjustTextAndGetSize(
-      deep_scanning_label_,
-      base::BindRepeating(
-          [](DownloadItemView* view, views::StyledLabel* label,
-             const base::string16& text) {
-            label->SetText(text);
-            view->StyleFilenameInLabel(label);
-          },
-          base::Unretained(this))));
+  StyleFilename(*deep_scanning_label_, filename_offset, filename.length());
+  deep_scanning_label_->SizeToFit(GetLabelWidth(*deep_scanning_label_));
 
   if (enterprise_connectors::ConnectorsManager::GetInstance()
           ->DelayUntilVerdict(
@@ -1415,132 +1413,27 @@ gfx::Size DownloadItemView::GetButtonSize() const {
   return size;
 }
 
-// This method computes the minimum width of the label for displaying its text
-// on 2 lines.  It just breaks the string in 2 lines on the spaces and keeps the
-// configuration with minimum width.
-void DownloadItemView::SizeLabelToMinWidth() {
-  if (dangerous_download_label_sized_)
-    return;
+int DownloadItemView::GetLabelWidth(const views::StyledLabel& label) const {
+  auto lines_for_width = [&label](int width) {
+    return label.GetLayoutSizeInfoForWidth(width).line_sizes.size();
+  };
 
-  dangerous_download_label_->SetSize(AdjustTextAndGetSize(
-      dangerous_download_label_,
-      base::BindRepeating(
-          [](DownloadItemView* view, views::StyledLabel* label,
-             const base::string16& text) {
-            label->SetText(text);
-            view->StyleFilenameInLabel(label);
-          },
-          base::Unretained(this))));
-  dangerous_download_label_sized_ = true;
-}
+  // Return 200 if that much width is sufficient to fit |label| on one line.
+  int width = 200;
+  if (lines_for_width(width) < 2)
+    return width;
 
-// static
-template <typename T>
-gfx::Size DownloadItemView::AdjustTextAndGetSize(
-    T* label,
-    base::RepeatingCallback<void(T*, const base::string16&)>
-        update_text_and_style) {
-  gfx::Size size = label->GetPreferredSize();
+  // Find an upper bound width sufficient to fit |label| on two lines.
+  int min_width = 1, max_width;
+  for (max_width = width; lines_for_width(max_width) > 2; max_width *= 2)
+    min_width = max_width;
 
-  // If the label's width is already narrower than 200, we don't need to
-  // linebreak it, as it will fit on a single line.
-  if (size.width() <= 200)
-    return size;
-
-  base::string16 label_text = label->GetText();
-  base::TrimWhitespace(label_text, base::TRIM_ALL, &label_text);
-  DCHECK_EQ(base::string16::npos, label_text.find('\n'));
-
-  // Make the label big so that GetPreferredSize() is not constrained by the
-  // current width.
-  label->SetBounds(0, 0, 1000, 1000);
-
-  // Use a const string from here. BreakIterator requies that text.data() not
-  // change during its lifetime.
-  const base::string16 original_text(label_text);
-  // Using BREAK_WORD can work in most cases, but it can also break
-  // lines where it should not. Using BREAK_LINE is safer although
-  // slower for Chinese/Japanese. This is not perf-critical at all, though.
-  base::i18n::BreakIterator iter(original_text,
-                                 base::i18n::BreakIterator::BREAK_LINE);
-  bool status = iter.Init();
-  DCHECK(status);
-
-  // Create strings with line break position before and after the mid point, and
-  // compare the width to determine whether the best break position is before or
-  // after them.
-  base::string16 prev_text = original_text;
-  std::vector<size_t> break_points;
-
-  while (iter.pos() < original_text.length() / 2) {
-    iter.Advance();
-    break_points.emplace_back(iter.pos());
-  }
-
-  size_t pos = iter.pos();
-  bool searching_backward = false;
-  gfx::Size min_width_size = size;
-  // First add a line break after the mid point. If there is a very long
-  // word in the text, |pos| could reach the end of the text.
-  if (pos < original_text.length()) {
-    searching_backward = true;
-    prev_text = SplitStringWithNewLineAtPosition(original_text, pos);
-    update_text_and_style.Run(label, prev_text);
-    min_width_size = label->GetPreferredSize();
-  }
-
-  pos = iter.prev();
-  base::string16 current_text;
-  if (pos != 0) {
-    base::string16 current_text =
-        SplitStringWithNewLineAtPosition(original_text, pos);
-    update_text_and_style.Run(label, current_text);
-    size = label->GetPreferredSize();
-
-    if (size.width() == min_width_size.width()) {
-      // We found the best line break position.
-      update_text_and_style.Run(label, prev_text);
-      return size;
-    } else if (size.width() > min_width_size.width()) {
-      // The best line break position is after |pos|.
-      update_text_and_style.Run(label, prev_text);
-    } else {
-      // The best line break position is before |prev|.
-      searching_backward = false;
-      prev_text = current_text;
-      min_width_size = size;
-      break_points.pop_back();
-    }
-  }
-
-  // Go through the string and try each line break (starting with no line break)
-  // searching for the optimal line break position. Stop if we find one that
-  // yields minimum label width.
-  while (true) {
-    if (searching_backward) {
-      iter.Advance();
-      pos = iter.pos();
-      if (pos >= original_text.length())
-        break;
-    } else {
-      break_points.pop_back();
-      if (break_points.empty())
-        break;
-      pos = break_points.back();
-    }
-    current_text = SplitStringWithNewLineAtPosition(original_text, pos);
-    update_text_and_style.Run(label, current_text);
-    size = label->GetPreferredSize();
-
-    // If the width is growing again, it means we passed the optimal width spot.
-    if (size.width() > min_width_size.width()) {
-      update_text_and_style.Run(label, prev_text);
-      return min_width_size;
-    }
-    prev_text = current_text;
-    min_width_size = size;
-  }
-  return size;
+  // Binary-search for the smallest width that fits on two lines.
+  // TODO(pkasting): Can use std::iota_view() when C++20 is available.
+  std::vector<int> widths(max_width + 1 - min_width);
+  std::iota(widths.begin(), widths.end(), min_width);
+  return *util::ranges::lower_bound(widths, 2, util::ranges::greater{},
+                                    std::move(lines_for_width));
 }
 
 void DownloadItemView::Reenable() {
@@ -1688,23 +1581,6 @@ base::string16 DownloadItemView::ElidedFilename() {
 void DownloadItemView::OpenDownloadDuringAsyncScanning() {
   model_->CompleteSafeBrowsingScan();
   model_->SetOpenWhenComplete(true);
-}
-
-void DownloadItemView::StyleFilenameInLabel(views::StyledLabel* label) {
-  if (!base::FeatureList::IsEnabled(safe_browsing::kUseNewDownloadWarnings))
-    return;
-
-#if !defined(OS_LINUX)
-  base::string16 filename = ElidedFilename();
-  size_t file_name_position = label->GetText().find(filename);
-  if (file_name_position != std::string::npos) {
-    views::StyledLabel::RangeStyleInfo style;
-    style.text_style = STYLE_EMPHASIZED;
-    label->AddStyleRange(
-        gfx::Range(file_name_position, file_name_position + filename.size()),
-        style);
-  }
-#endif
 }
 
 // static

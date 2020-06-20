@@ -77,8 +77,11 @@ GetMemoryPressureLevelFromAvailable(int available_mb,
 
 uint64_t ReadFileToUint64(const base::FilePath& file) {
   std::string file_contents;
-  if (!ReadFileToString(file, &file_contents))
+  if (!base::ReadFileToStringNonBlocking(file, &file_contents)) {
+    PLOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Unable to read uint64 from: " << file;
     return 0;
+  }
   TrimWhitespaceASCII(file_contents, base::TRIM_ALL, &file_contents);
   uint64_t file_contents_uint64 = 0;
   if (!base::StringToUint64(file_contents, &file_contents_uint64))
@@ -212,7 +215,8 @@ std::vector<int> SystemMemoryPressureEvaluator::GetMarginFileParts(
     const std::string& file) {
   std::vector<int> margin_values;
   std::string margin_contents;
-  if (base::ReadFileToString(base::FilePath(file), &margin_contents)) {
+  if (base::ReadFileToStringNonBlocking(base::FilePath(file),
+                                        &margin_contents)) {
     std::vector<std::string> margins =
         base::SplitString(margin_contents, base::kWhitespaceASCII,
                           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -307,8 +311,9 @@ uint64_t SystemMemoryPressureEvaluator::CalculateReservedFreeKB(
 
 uint64_t SystemMemoryPressureEvaluator::GetReservedMemoryKB() {
   std::string file_contents;
-  if (!ReadFileToString(base::FilePath("/proc/zoneinfo"), &file_contents)) {
-    LOG(ERROR) << "Couldn't get /proc/zoneinfo";
+  if (!base::ReadFileToStringNonBlocking(base::FilePath("/proc/zoneinfo"),
+                                         &file_contents)) {
+    PLOG(ERROR) << "Couldn't get /proc/zoneinfo";
     return 0;
   }
 

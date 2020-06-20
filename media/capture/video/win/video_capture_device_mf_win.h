@@ -117,6 +117,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
                const base::Location& from_here,
                const char* message);
   void SendOnStartedIfNotYetSent();
+  HRESULT WaitOnCaptureEvent(GUID capture_event_guid);
 
   VideoFacingMode facing_mode_;
   CreateMFPhotoCallbackCB create_mf_photo_callback_;
@@ -145,6 +146,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceMFWin : public VideoCaptureDevice {
   bool focus_mode_manual_;
   bool white_balance_mode_manual_;
   base::queue<TakePhotoCallback> video_stream_take_photo_callbacks_;
+  base::WaitableEvent capture_initialize_;
+  base::WaitableEvent capture_error_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

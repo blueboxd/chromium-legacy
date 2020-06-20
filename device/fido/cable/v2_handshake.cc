@@ -170,7 +170,7 @@ HandshakeInitiator::HandshakeInitiator(
     base::span<const uint8_t, 32> psk_gen_key,
     base::span<const uint8_t, 8> nonce,
     base::span<const uint8_t, kCableEphemeralIdSize> eid,
-    base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
+    base::Optional<base::span<const uint8_t, kP256X962Length>> peer_identity,
     base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
         local_seed)
     : eid_(fido_parsing_utils::Materialize(eid)) {
@@ -206,7 +206,7 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
   ephemeral_key_.reset(EC_KEY_new_by_curve_name(NID_X9_62_prime256v1));
   const EC_GROUP* group = EC_KEY_get0_group(ephemeral_key_.get());
   CHECK(EC_KEY_generate_key(ephemeral_key_.get()));
-  uint8_t ephemeral_key_public_bytes[kP256PointSize];
+  uint8_t ephemeral_key_public_bytes[kP256X962Length];
   CHECK_EQ(sizeof(ephemeral_key_public_bytes),
            EC_POINT_point2oct(
                group, EC_KEY_get0_public_key(ephemeral_key_.get()),
@@ -249,11 +249,11 @@ std::vector<uint8_t> HandshakeInitiator::BuildInitialMessage() {
 base::Optional<std::pair<std::unique_ptr<Crypter>,
                          base::Optional<std::unique_ptr<CableDiscoveryData>>>>
 HandshakeInitiator::ProcessResponse(base::span<const uint8_t> response) {
-  if (response.size() < kP256PointSize) {
+  if (response.size() < kP256X962Length) {
     return base::nullopt;
   }
-  auto peer_point_bytes = response.subspan(0, kP256PointSize);
-  auto ciphertext = response.subspan(kP256PointSize);
+  auto peer_point_bytes = response.subspan(0, kP256X962Length);
+  auto ciphertext = response.subspan(kP256X962Length);
 
   bssl::UniquePtr<EC_POINT> peer_point(
       EC_POINT_new(EC_KEY_get0_group(ephemeral_key_.get())));
@@ -357,7 +357,7 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
   base::span<const uint8_t> peer_point_bytes;
   base::span<const uint8_t> ciphertext;
   if (!CBS_get_span(&cbs, &eid, device::kCableEphemeralIdSize) ||
-      !CBS_get_span(&cbs, &peer_point_bytes, kP256PointSize) ||
+      !CBS_get_span(&cbs, &peer_point_bytes, kP256X962Length) ||
       !CBS_get_span(&cbs, &ciphertext, 16) || CBS_len(&cbs) != 0) {
     return base::nullopt;
   }
@@ -415,7 +415,7 @@ base::Optional<std::unique_ptr<Crypter>> RespondToHandshake(
     return base::nullopt;
   }
 
-  uint8_t ephemeral_key_public_bytes[kP256PointSize];
+  uint8_t ephemeral_key_public_bytes[kP256X962Length];
   CHECK_EQ(sizeof(ephemeral_key_public_bytes),
            EC_POINT_point2oct(
                group, EC_KEY_get0_public_key(ephemeral_key.get()),

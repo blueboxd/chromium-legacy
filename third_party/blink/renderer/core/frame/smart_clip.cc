@@ -245,7 +245,7 @@ String SmartClip::ExtractTextFromNode(Node* node) {
       if (current_node.IsTextNode()) {
         String node_value = current_node.nodeValue();
 
-        // It's unclear why we blacklist solitary "\n" node values.
+        // It's unclear why we disallowed solitary "\n" node values.
         // Maybe we're trying to ignore <br> tags somehow?
         if (node_value == "\n")
           node_value = "";

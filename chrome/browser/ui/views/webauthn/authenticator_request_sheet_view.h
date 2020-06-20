@@ -72,7 +72,7 @@ class AuthenticatorRequestSheetView : public views::View,
   // Returns the control on this sheet that should initially have focus instead
   // of the OK/Cancel buttons on the dialog; or returns nullptr if the regular
   // dialog button should have focus.
-  views::View* GetInitiallyFocusedView();
+  virtual views::View* GetInitiallyFocusedView();
 
   AuthenticatorRequestSheetModel* model() { return model_.get(); }
 

@@ -5,17 +5,17 @@
 </head>
 <body>
 <script>
-description("This test ensures each import and master is in same JS context.");
+description("This test ensures each import and client is in same JS context.");
 
 var stringInImport = "Import";
-shouldBe("stringInMaster.__proto__", "stringInImport.__proto__");
+shouldBe("stringInClient.__proto__", "stringInImport.__proto__");
 
 var thisDocument = document.currentScript.ownerDocument;
 shouldBeTrue("thisDocument !== document");
 shouldBe("thisDocument.__proto__", "document.__proto__");
 shouldBe("thisDocument.head.__proto__", "document.head.__proto__");
 
-// Since the construcdtor belongs to master's window, its owner document is the master
+// Since the construcdtor belongs to client's window, its owner document is the client
 shouldBe("(new Image()).ownerDocument", "document");
 
 // With createElement(), we know who is the owner.

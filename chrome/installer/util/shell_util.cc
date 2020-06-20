@@ -1770,7 +1770,7 @@ base::string16 ShellUtil::FormatIconLocation(const base::FilePath& icon_path,
 
 base::string16 ShellUtil::GetChromeShellOpenCmd(
     const base::FilePath& chrome_exe) {
-  return base::CommandLine(chrome_exe).GetCommandLineStringForShell();
+  return L"\"" + chrome_exe.value() + L"\" -- \"%1\"";
 }
 
 base::string16 ShellUtil::GetChromeDelegateCommand(
@@ -2402,8 +2402,7 @@ bool ShellUtil::AddFileAssociations(
   app_info.file_type_name = file_type_name;
   app_info.file_type_icon_path = icon_path;
   app_info.file_type_icon_index = 0;
-  app_info.command_line = command_line.GetCommandLineStringForShell();
-
+  app_info.command_line = command_line.GetCommandLineStringWithPlaceholders();
   GetProgIdEntries(app_info, &entries);
 
   std::vector<base::string16> handled_file_extensions;

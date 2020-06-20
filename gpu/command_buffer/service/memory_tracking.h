@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 #include <string>
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/trace_event/trace_event.h"

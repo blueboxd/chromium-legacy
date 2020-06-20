@@ -79,6 +79,10 @@ message SequencingInformation {
   // UUID of the last boot that did not find the public key cached - can
   // happen after powerwash.
   optional uint64 generation_id = 2;
+
+  // Priority (required)
+  // Generation IDs are per Priority.
+  optional Priority priority = 3;
 }
 
 // |WrappedRecord| as it is stored on disc, and sent to the server.

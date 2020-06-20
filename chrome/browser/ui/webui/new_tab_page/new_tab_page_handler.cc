@@ -1231,6 +1231,7 @@ void NewTabPageHandler::OnLogoAvailable(
     }
     image_doodle_content->width = logo->metadata.width_px;
     image_doodle_content->height = logo->metadata.height_px;
+    image_doodle_content->background_color = SK_ColorWHITE;
     image_doodle_content->share_button =
         new_tab_page::mojom::DoodleShareButton::New();
     image_doodle_content->share_button->x = logo->metadata.share_button_x;

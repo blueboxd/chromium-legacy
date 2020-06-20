@@ -23,6 +23,9 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/bind_helpers.h"
+#include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "build/buildflag.h"
 #include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -38,6 +41,9 @@
 namespace ash {
 
 namespace {
+
+constexpr base::TimeDelta kAutoShowWaitTimeInterval =
+    base::TimeDelta::FromSeconds(15);
 
 void CloseAssistantUi() {
   DCHECK(AssistantUiController::Get());
@@ -71,6 +77,44 @@ std::string GetWidgetName() {
 }
 
 }  // namespace
+
+// AmbientController::InactivityMonitor----------------------------------
+
+// Monitors the events when ambient screen is hidden, and shows up the screen
+// automatically if the device has been inactive for a specific amount of time.
+class AmbientController::InactivityMonitor : public ui::EventHandler {
+ public:
+  using AutoShowCallback = base::OnceCallback<void()>;
+
+  InactivityMonitor(base::WeakPtr<views::Widget> target_widget,
+                    AutoShowCallback callback)
+      : target_widget_(target_widget) {
+    timer_.Start(FROM_HERE, kAutoShowWaitTimeInterval, std::move(callback));
+
+    DCHECK(target_widget_);
+    target_widget_->GetNativeWindow()->AddPreTargetHandler(this);
+  }
+
+  ~InactivityMonitor() override {
+    if (target_widget_) {
+      target_widget_->GetNativeWindow()->RemovePreTargetHandler(this);
+    }
+  }
+
+  InactivityMonitor(const InactivityMonitor&) = delete;
+  InactivityMonitor& operator=(const InactivityMonitor&) = delete;
+
+  // ui::EventHandler:
+  void OnEvent(ui::Event* event) override {
+    // Restarts the timer upon events from the target widget.
+    timer_.Reset();
+  }
+
+ private:
+  base::WeakPtr<views::Widget> target_widget_;
+  // Will be canceled when out-of-scope.
+  base::OneShotTimer timer_;
+};
 
 // static
 void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -111,6 +155,11 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       else
         container_view_->GetWidget()->Show();
 
+      if (inactivity_monitor_) {
+        // Resets the monitor and cancels the timer upon shown.
+        inactivity_monitor_.reset();
+      }
+
       DCHECK(container_view_);
       // This will be no-op if the view is already visible.
       container_view_->SetVisible(true);
@@ -119,6 +168,15 @@ void AmbientController::OnAmbientUiVisibilityChanged(
     case AmbientUiVisibility::kHidden:
       container_view_->GetWidget()->Hide();
       StopRefreshingImages();
+
+      // Creates the monitor and starts the auto-show timer upon hidden.
+      DCHECK(!inactivity_monitor_);
+      if (LockScreen::HasInstance()) {
+        inactivity_monitor_ = std::make_unique<InactivityMonitor>(
+            LockScreen::Get()->widget()->GetWeakPtr(),
+            base::BindOnce(&AmbientController::OnAutoShowTimeOut,
+                           weak_ptr_factory_.GetWeakPtr()));
+      }
       break;
     case AmbientUiVisibility::kClosed:
       DCHECK(container_view_);
@@ -135,6 +193,14 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       CloseAssistantUi();
       break;
   }
+}
+
+void AmbientController::OnAutoShowTimeOut() {
+  DCHECK_EQ(ambient_ui_model_.ui_visibility(), AmbientUiVisibility::kHidden);
+  DCHECK(!container_view_->GetWidget()->IsVisible());
+
+  // Show ambient screen after time out.
+  ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kShown);
 }
 
 void AmbientController::OnLockStateChanged(bool locked) {
@@ -260,6 +326,7 @@ void AmbientController::CreateWidget() {
 void AmbientController::CleanUpOnClosed() {
   // Invalidates the view pointer.
   container_view_ = nullptr;
+  inactivity_monitor_.reset();
 }
 
 void AmbientController::StartRefreshingImages() {

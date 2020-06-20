@@ -192,8 +192,6 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {omnibox::kSearchIconResourceName, IDR_WEBUI_IMAGES_ICON_SEARCH}};
   webui::AddResourcePathsBulk(source, kImages);
 
-  source->AddResourcePath("skcolor.mojom-lite.js",
-                          IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS);
   source->AddResourcePath("new_tab_page.mojom-lite.js",
                           IDR_NEW_TAB_PAGE_MOJO_LITE_JS);
   source->AddResourcePath("omnibox.mojom-lite.js",

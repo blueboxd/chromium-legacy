@@ -43,12 +43,6 @@ void TestInstallFinalizer::FinalizeUpdate(
            std::move(callback));
 }
 
-void TestInstallFinalizer::FinalizeFallbackInstallAfterSync(
-    const AppId& app_id,
-    InstallFinalizedCallback callback) {
-  NOTREACHED();
-}
-
 void TestInstallFinalizer::FinalizeUninstallAfterSync(
     const AppId& app_id,
     UninstallWebAppCallback callback) {

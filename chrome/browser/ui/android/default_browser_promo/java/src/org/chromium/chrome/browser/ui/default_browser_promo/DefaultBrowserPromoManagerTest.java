@@ -25,6 +25,8 @@ import org.chromium.base.BuildInfo;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.LifecycleObserver;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.browser_ui.widget.PromoDialog;
@@ -48,7 +50,23 @@ public class DefaultBrowserPromoManagerTest {
     public void setUp() {
         mRule.startMainActivityOnBlankPage();
         mActivity = mRule.getActivity();
-        mManager = DefaultBrowserPromoManager.create(mActivity);
+        mManager = DefaultBrowserPromoManager.create(mActivity, new ActivityLifecycleDispatcher() {
+            @Override
+            public void register(LifecycleObserver observer) {}
+
+            @Override
+            public void unregister(LifecycleObserver observer) {}
+
+            @Override
+            public int getCurrentActivityState() {
+                return 0;
+            }
+
+            @Override
+            public boolean isNativeInitializationFinished() {
+                return false;
+            }
+        }, mRule.getActivity().getWindowAndroid());
         mAppName = BuildInfo.getInstance().hostPackageLabel;
     }
 

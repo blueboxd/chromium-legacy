@@ -43,7 +43,7 @@ test(() => {
                       'Only <a-a#b> should remain in the imported document.');
   assert_array_equals(reactions, [a, c],
                       'appendChild() and adoptNode() should cause adoptedCallback.');
-}, 'adoptedCallback should be invoked when moving custom element from import to master document');
+}, 'adoptedCallback should be invoked when moving custom element from import to client document');
 
 test(() => {
   let reactions = [];
@@ -78,5 +78,5 @@ test(() => {
                       'Only <b-b#y> should remain in the imported document.');
   assert_array_equals(reactions, [x, z],
                       'appendChild() and adoptNode() should cause adoptedCallback.');
-}, 'adoptedCallback should be invoked when moving custom element from master document to import');
+}, 'adoptedCallback should be invoked when moving custom element from client document to import');
 </script>

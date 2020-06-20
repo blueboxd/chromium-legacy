@@ -16,10 +16,12 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/image_button_factory.h"
@@ -65,10 +67,9 @@ class OmniboxRowView::HeaderView : public views::View,
     if (row_view_->pref_service_) {
       pref_change_registrar_.Init(row_view_->pref_service_);
       // Unretained is appropriate here. 'this' will outlive the registrar.
-      pref_change_registrar_.Add(
-          omnibox::kOmniboxHiddenGroupIds,
-          base::BindRepeating(&HeaderView::UpdateHideButtonToggleState,
-                              base::Unretained(this)));
+      pref_change_registrar_.Add(omnibox::kOmniboxHiddenGroupIds,
+                                 base::BindRepeating(&HeaderView::OnPrefChanged,
+                                                     base::Unretained(this)));
     }
   }
 
@@ -80,8 +81,12 @@ class OmniboxRowView::HeaderView : public views::View,
     // Moreover, it seems unusual to do case conversion in Views in general.
     header_text_->SetText(base::i18n::ToUpper(header_text));
 
-    if (row_view_->pref_service_)
-      UpdateHideButtonToggleState();
+    if (row_view_->pref_service_) {
+      suggestion_group_hidden_ = omnibox::IsSuggestionGroupIdHidden(
+          row_view_->pref_service_, suggestion_group_id_);
+
+      header_toggle_button_->SetToggled(suggestion_group_hidden_);
+    }
   }
 
   // views::View:
@@ -109,6 +114,15 @@ class OmniboxRowView::HeaderView : public views::View,
     // When the theme is updated, also refresh the hover-specific UI, which is
     // all of the UI.
     UpdateUI();
+  }
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    // Hidden HeaderView instances are not associated with any group ID, so they
+    // are neither collapsed or expanded.s
+    if (!GetVisible())
+      return;
+
+    node_data->AddState(suggestion_group_hidden_ ? ax::mojom::State::kCollapsed
+                                                 : ax::mojom::State::kExpanded);
   }
 
   // views::ButtonListener:
@@ -166,10 +180,16 @@ class OmniboxRowView::HeaderView : public views::View,
 
  private:
   // Updates the hide button's toggle state.
-  void UpdateHideButtonToggleState() {
+  void OnPrefChanged() {
     DCHECK(row_view_->pref_service_);
-    header_toggle_button_->SetToggled(omnibox::IsSuggestionGroupIdHidden(
-        row_view_->pref_service_, suggestion_group_id_));
+    bool was_hidden = suggestion_group_hidden_;
+    suggestion_group_hidden_ = omnibox::IsSuggestionGroupIdHidden(
+        row_view_->pref_service_, suggestion_group_id_);
+
+    if (was_hidden != suggestion_group_hidden_)
+      NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
+
+    header_toggle_button_->SetToggled(suggestion_group_hidden_);
   }
 
   // Non-owning pointer our parent row view. We access a lot of private members
@@ -185,6 +205,10 @@ class OmniboxRowView::HeaderView : public views::View,
 
   // The group ID associated with this header.
   int suggestion_group_id_ = 0;
+
+  // Stores whether or not the group was hidden. This is used to fire correct
+  // accessibility change events.
+  bool suggestion_group_hidden_ = false;
 
   // A pref change registrar for toggling the toggle button's state. This is
   // needed because the preference state can change through multiple UIs.

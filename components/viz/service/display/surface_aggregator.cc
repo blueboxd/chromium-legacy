@@ -272,15 +272,25 @@ gfx::Rect SurfaceAggregator::CalculateOccludingSurfaceDamageRect(
 
   // Transform the quad to the parent root target space
   // Note: this quad is on the child root render pass.
-  gfx::Transform transform(parent_quad_to_root_target_transform,
-                           quad->shared_quad_state->quad_to_target_transform);
-  gfx::Rect surface_in_root_target_space =
-      cc::MathUtil::MapEnclosingClippedRect(transform, quad->visible_rect);
+  gfx::Rect quad_in_root_target_space;
+  if (quad->shared_quad_state->is_clipped) {
+    gfx::Rect quad_in_target_space = cc::MathUtil::MapEnclosingClippedRect(
+        quad->shared_quad_state->quad_to_target_transform, quad->visible_rect);
+    quad_in_target_space.Intersect(quad->shared_quad_state->clip_rect);
+    quad_in_root_target_space = cc::MathUtil::MapEnclosingClippedRect(
+        parent_quad_to_root_target_transform, quad_in_target_space);
+
+  } else {
+    gfx::Transform transform(parent_quad_to_root_target_transform,
+                             quad->shared_quad_state->quad_to_target_transform);
+    quad_in_root_target_space =
+        cc::MathUtil::MapEnclosingClippedRect(transform, quad->visible_rect);
+  }
 
   // damage_rects_union_of_surfaces_on_top_ is already in the parent root target
   // space.
   gfx::Rect occluding_damage_rect = damage_rects_union_of_surfaces_on_top_;
-  occluding_damage_rect.Intersect(surface_in_root_target_space);
+  occluding_damage_rect.Intersect(quad_in_root_target_space);
 
   return occluding_damage_rect;
 }

@@ -24025,6 +24025,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="TabGroups_CannotCollapse">
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User clicked on the tab group header of the last expanded tab group. This
+    user action means there are no more available tabs so the user saw a no-op.
+  </description>
+</action>
+
 <action name="TabGroups_SwitchGroupedTab">
   <owner>connily@chromium.org</owner>
   <owner>cyan@chromium.org</owner>
@@ -24088,6 +24097,24 @@ should be able to be added at any place in this file.
   <description>
     User removed all tabs in a group from that group by choosing 'Ungroup' from
     the tab group editor bubble.
+  </description>
+</action>
+
+<action name="TabGroups_TabGroupHeader_Collapsed">
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User clicked on the tab group header of an expanded tab group to collapse
+    the group.
+  </description>
+</action>
+
+<action name="TabGroups_TabGroupHeader_Expanded">
+  <owner>cyan@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <description>
+    User clicked on the tab group header of a collapsed tab group to expand the
+    group.
   </description>
 </action>
 

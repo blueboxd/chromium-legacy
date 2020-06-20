@@ -82,17 +82,15 @@ void HTMLLinkElement::ParseAttribute(
         // Show a warning that HTML Imports (<link rel=import>) were detected,
         // but HTML Imports have been disabled. Without this, the failure would
         // be silent.
-        if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
-          if (LocalFrame* frame = window->GetFrame()) {
-            frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
-                mojom::ConsoleMessageSource::kRendering,
-                mojom::ConsoleMessageLevel::kWarning,
-                "HTML Imports is deprecated and has now been removed as of "
-                "M80. See "
-                "https://www.chromestatus.com/features/5144752345317376 "
-                "and https://developers.google.com/web/updates/2019/07/"
-                "web-components-time-to-upgrade for more details."));
-          }
+        if (auto* context = GetExecutionContext()) {
+          context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kRendering,
+              mojom::blink::ConsoleMessageLevel::kWarning,
+              "HTML Imports is deprecated and has now been removed as of "
+              "M80. See "
+              "https://www.chromestatus.com/features/5144752345317376 "
+              "and https://developers.google.com/web/updates/2019/07/"
+              "web-components-time-to-upgrade for more details."));
         }
       }
     }

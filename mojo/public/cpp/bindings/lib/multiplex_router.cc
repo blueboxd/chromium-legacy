@@ -369,12 +369,12 @@ void MultiplexRouter::SetIncomingMessageFilter(
   dispatcher_.SetFilter(std::move(filter));
 }
 
-void MultiplexRouter::SetMasterInterfaceName(const char* name) {
+void MultiplexRouter::SetPrimaryInterfaceName(const char* name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   header_validator_->SetDescription(std::string(name) +
-                                    " [master] MessageHeaderValidator");
+                                    " [primary] MessageHeaderValidator");
   control_message_handler_.SetDescription(
-      std::string(name) + " [master] PipeControlMessageHandler");
+      std::string(name) + " [primary] PipeControlMessageHandler");
   connector_.SetWatcherHeapProfilerTag(name);
 }
 
@@ -454,7 +454,7 @@ void MultiplexRouter::CloseEndpointHandle(
   DCHECK(!endpoint->closed());
   UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
 
-  if (!IsMasterInterfaceId(id) || reason) {
+  if (!IsPrimaryInterfaceId(id) || reason) {
     MayAutoUnlock unlocker(&lock_);
     control_message_proxy_.NotifyPeerEndpointClosed(id, reason);
   }
@@ -575,7 +575,7 @@ bool MultiplexRouter::HasAssociatedEndpoints() const {
   if (endpoints_.size() == 0)
     return false;
 
-  return !base::Contains(endpoints_, kMasterInterfaceId);
+  return !base::Contains(endpoints_, kPrimaryInterfaceId);
 }
 
 void MultiplexRouter::EnableBatchDispatch() {
@@ -674,7 +674,7 @@ bool MultiplexRouter::OnPeerAssociatedEndpointClosed(
 
 bool MultiplexRouter::WaitForFlushToComplete(ScopedMessagePipeHandle pipe) {
   // If this MultiplexRouter has an associated interface on some task runner
-  // other than the master interface's task runner, it is possible to process
+  // other than the primary interface's task runner, it is possible to process
   // incoming control messages on that task runner. We don't support this
   // control message on anything but the main interface though.
   if (!task_runner_->RunsTasksInCurrentSequence())
@@ -1048,7 +1048,7 @@ bool MultiplexRouter::InsertEndpointsForMessage(const Message& message) {
   MayAutoLock locker(&lock_);
   for (uint32_t i = 0; i < num_ids; ++i) {
     // Message header validation already ensures that the IDs are valid and not
-    // the master ID.
+    // the primary ID.
     // The IDs are from the remote side and therefore their namespace bit is
     // supposed to be different than the value that this router would use.
     if (set_interface_id_namespace_bit_ ==

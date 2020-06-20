@@ -958,9 +958,8 @@ void LayoutFlexibleBox::LayoutFlexItems(bool relayout_children,
   PaintLayerScrollableArea::PreventRelayoutScope prevent_relayout_scope(
       layout_scope);
 
-  // Set up our master list of flex items. All of the rest of the algorithm
-  // should work off this list of a subset.
-  // TODO(cbiesinger): That second part is not yet true.
+  // Set up our list of flex items. All of the rest of the algorithm should
+  // work off this list of a subset.
   ChildLayoutType layout_type =
       relayout_children ? kForceLayout : kLayoutIfNeeded;
   const LayoutUnit line_break_length = MainAxisContentExtent(LayoutUnit::Max());

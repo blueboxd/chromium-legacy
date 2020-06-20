@@ -74,6 +74,7 @@ jumbo_component("x") {
     "//ui/base:hit_test",
     "//ui/base:wm_role_names",
     "//ui/base/clipboard:clipboard_types",
+    "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/dragdrop/file_info",
     "//ui/display/util",
     "//ui/events",

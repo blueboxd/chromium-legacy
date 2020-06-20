@@ -11,6 +11,14 @@ option optimize_for = LITE_RUNTIME;
 
 package sync_pb;
 
+// Sync & local data: Information about web app icon.
+message WebAppIconInfo {
+  // The size of the square app icon, in raw pixels.
+  optional int32 size_in_px = 1;
+  // The URL of the app icon.
+  optional string url = 2;
+}
+
 // WebApp data. This is a synced part of
 // chrome/browser/web_applications/proto/web_app.proto data.
 message WebAppSpecifics {
@@ -21,7 +29,7 @@ message WebAppSpecifics {
     // UNDEFINED is never serialized.
     BROWSER = 1;
     // MINIMAL_UI is never serialized.
-    STANDALONE= 3;
+    STANDALONE = 3;
     // FULLSCREEN is never serialized.
   }
 
@@ -29,4 +37,6 @@ message WebAppSpecifics {
   optional string name = 2;
   optional UserDisplayMode user_display_mode = 3;
   optional uint32 theme_color = 4;
+  optional string scope = 5;
+  repeated WebAppIconInfo icon_infos = 6;
 }

@@ -19,7 +19,6 @@
 
 #include "base/containers/queue.h"
 #include "base/containers/small_map.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"

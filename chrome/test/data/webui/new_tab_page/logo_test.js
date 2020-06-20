@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {$$, BrowserProxy} from 'chrome://new-tab-page/new_tab_page.js';
+import {$$, BrowserProxy, hexColorToSkColor} from 'chrome://new-tab-page/new_tab_page.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {assertNotStyle, assertStyle, createTestProxy, keydown} from 'chrome://test/new_tab_page/test_support.js';
 import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
@@ -57,6 +57,7 @@ function createImageDoodle(width, height) {
         imageImpressionLogUrl: {url: 'https://log.com'},
         width,
         height,
+        backgroundColor: {value: 0xffffffff},
       }
     }
   };
@@ -75,6 +76,7 @@ function createSuite(themeModeDoodlesEnabled) {
     }));
     const logo = document.createElement('ntp-logo');
     document.body.appendChild(logo);
+    logo.backgroundColor = {value: 0xffffffff};
     await flushTasks();
     return logo;
   }
@@ -127,6 +129,23 @@ function createSuite(themeModeDoodlesEnabled) {
     assertEquals($$(logo, '#shareButtonImage').src, 'data:bar');
     assertStyle($$(logo, '#animation'), 'display', 'none');
     assertFalse(!!$$(logo, '#iframe'));
+  });
+
+  [null, '#ff0000'].forEach(color => {
+    test(`${color || 'no'} background color shows box`, async () => {
+      // Arrange.
+      const doodle = createImageDoodle();
+      doodle.content.imageDoodle.backgroundColor.value = 0xff0000ff;
+
+      // Act.
+      const logo = await createLogo(doodle);
+      logo.backgroundColor = !color || hexColorToSkColor(color);
+
+      // Assert.
+      assertStyle($$(logo, '#imageDoodle'), 'padding', '16px 24px');
+      assertStyle(
+          $$(logo, '#imageDoodle'), 'background-color', 'rgb(0, 0, 255)');
+    });
   });
 
   test('setting too large image doodle resizes image', async () => {
@@ -186,7 +205,7 @@ function createSuite(themeModeDoodlesEnabled) {
     assertNotStyle($$(logo, '#iframe'), 'display', 'none');
     assertStyle($$(logo, '#iframe'), 'width', '200px');
     assertStyle($$(logo, '#iframe'), 'height', '100px');
-    assertStyle($$(logo, '#imageContainer'), 'display', 'none');
+    assertStyle($$(logo, '#imageDoodle'), 'display', 'none');
     if (themeModeDoodlesEnabled) {
       assertEquals(
           $$(logo, '#iframe').src, 'https://foo.com/?theme_messages=0');

@@ -2,6 +2,32 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+#page-container {
+  display: flex;
+  flex-direction: column;
+}
+
+#page-controls {
+  display: flex;
+  flex-direction: row;
+  height: 15vh;
+}
+
+#filter-input {
+  display: flex;
+  flex-direction: column;
+}
+
+#filter-items {
+  overflow: hidden;
+  overflow-y: scroll;
+  min-width: 100px;
+}
+
+#graph-svg {
+  background-color: #eee;
+}
+
 .graph-edges line {
   stroke: #999;
   stroke-opacity: 0.6;

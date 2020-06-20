@@ -91,7 +91,6 @@ struct HttpssvcFeatureConfig {
   bool use_integrity = false;
   bool use_httpssvc = false;
   bool control_domain_wildcard = false;
-  bool query_over_insecure = false;
   std::string experiment_domains;
   std::string control_domains;
 };
@@ -149,19 +148,24 @@ INSTANTIATE_TEST_SUITE_P(
     HttpssvcMetricsTestDomainParsing,
     HttpssvcDomainParsingTest,
     testing::Combine(
-        // DomainListQuirksTuple for experimental domains.
-        testing::Combine(testing::Range(0, 3),
-                         testing::Bool(),
-                         testing::Bool()),
+        // DomainListQuirksTuple for experimental domains. To fight back
+        // combinatorial explosion of tests, this tuple is pared down more than
+        // the one for control domains. This should not significantly hurt test
+        // coverage because |IsExperimentDomain| and |IsControlDomain| rely on a
+        // shared helper function.
+        testing::Combine(testing::Values(0, 1),
+                         testing::Values(false),
+                         testing::Values(false)),
         // DomainListQuirksTuple for control domains.
         testing::Combine(testing::Range(0, 3),
                          testing::Bool(),
                          testing::Bool()),
         // HttpssvcFeatureTuple
-        testing::Combine(testing::Bool() /* DnsHttpssvc feature enabled? */,
-                         testing::Bool() /*  use_integrity */,
-                         testing::Values(false) /* use_httpssvc */,
-                         testing::Values(false) /* query_over_insecure */)));
+        testing::Combine(
+            testing::Bool() /* DnsHttpssvc feature enabled? */,
+            testing::Bool() /* DnsHttpssvcUseIntegrity */,
+            testing::Values(false) /* DnsHttpssvcUseHttpssvc */,
+            testing::Values(false) /* DnsHttpssvcControlDomainWildcard */)));
 
 // Base for testing the metrics collection code in |HttpssvcMetrics|.
 class HttpssvcMetricsTest
@@ -283,9 +287,9 @@ INSTANTIATE_TEST_SUITE_P(
         // HttpssvcFeatureTuple
         testing::Combine(
             testing::Values(true) /* DnsHttpssvc feature enabled? */,
-            testing::Values(true) /* use_integrity */,
-            testing::Values(false) /* use_httpssvc */,
-            testing::Values(false) /* query_over_insecure */)));
+            testing::Values(true) /* DnsHttpssvcUseIntegrity */,
+            testing::Values(false) /* DnsHttpssvcUseHttpssvc */,
+            testing::Values(false) /* DnsHttpssvcControlDomainWildcard */)));
 
 TEST_P(HttpssvcDomainParsingTest, ParseFeatureParamIntegrityDomains) {
   // We are not testing this feature param yet.

@@ -683,7 +683,12 @@ VideoCaptureDeviceMFWin::VideoCaptureDeviceMFWin(
       has_sent_on_started_to_client_(false),
       exposure_mode_manual_(false),
       focus_mode_manual_(false),
-      white_balance_mode_manual_(false) {
+      white_balance_mode_manual_(false),
+      capture_initialize_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
+                          base::WaitableEvent::InitialState::NOT_SIGNALED),
+      // We never want to reset |capture_error_|.
+      capture_error_(base::WaitableEvent::ResetPolicy::MANUAL,
+                     base::WaitableEvent::InitialState::NOT_SIGNALED) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -731,6 +736,13 @@ bool VideoCaptureDeviceMFWin::Init() {
     LogError(FROM_HERE, hr);
     return false;
   }
+
+  hr = WaitOnCaptureEvent(MF_CAPTURE_ENGINE_INITIALIZED);
+  if (FAILED(hr)) {
+    LogError(FROM_HERE, hr);
+    return false;
+  }
+
   is_initialized_ = true;
   return true;
 }
@@ -1320,7 +1332,21 @@ void VideoCaptureDeviceMFWin::OnEvent(IMFMediaEvent* media_event) {
   base::AutoLock lock(lock_);
 
   HRESULT hr;
+  GUID capture_event_guid = GUID_NULL;
+
   media_event->GetStatus(&hr);
+  media_event->GetExtendedType(&capture_event_guid);
+  // TODO(http://crbug.com/1093521): Add cases for Start
+  // MF_CAPTURE_ENGINE_PREVIEW_STARTED and MF_CAPTURE_ENGINE_PREVIEW_STOPPED
+  // When MF_CAPTURE_ENGINE_ERROR is returned the captureengine object is no
+  // longer valid.
+  if (capture_event_guid == MF_CAPTURE_ENGINE_ERROR || FAILED(hr)) {
+    capture_error_.Signal();
+    // There should always be a valid error
+    hr = SUCCEEDED(hr) ? E_UNEXPECTED : hr;
+  } else if (capture_event_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
+    capture_initialize_.Signal();
+  }
 
   if (FAILED(hr))
     OnError(VideoCaptureError::kWinMediaFoundationGetMediaEventStatusFailed,
@@ -1350,4 +1376,35 @@ void VideoCaptureDeviceMFWin::SendOnStartedIfNotYetSent() {
   client_->OnStarted();
 }
 
+HRESULT VideoCaptureDeviceMFWin::WaitOnCaptureEvent(GUID capture_event_guid) {
+  HRESULT hr = S_OK;
+  HANDLE events[] = {nullptr, capture_error_.handle()};
+
+  // TODO(http://crbug.com/1093521): Add cases for Start
+  // MF_CAPTURE_ENGINE_PREVIEW_STARTED and MF_CAPTURE_ENGINE_PREVIEW_STOPPED
+  if (capture_event_guid == MF_CAPTURE_ENGINE_INITIALIZED) {
+    events[0] = capture_initialize_.handle();
+  } else {
+    // no registered event handle for the event requested
+    hr = E_NOTIMPL;
+    LogError(FROM_HERE, hr);
+    return hr;
+  }
+
+  DWORD wait_result =
+      ::WaitForMultipleObjects(base::size(events), events, FALSE, INFINITE);
+  switch (wait_result) {
+    case WAIT_OBJECT_0:
+      break;
+    case WAIT_FAILED:
+      hr = HRESULT_FROM_WIN32(::GetLastError());
+      LogError(FROM_HERE, hr);
+      break;
+    default:
+      hr = E_UNEXPECTED;
+      LogError(FROM_HERE, hr);
+      break;
+  }
+  return hr;
+}
 }  // namespace media

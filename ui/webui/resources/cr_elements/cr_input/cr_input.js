@@ -75,7 +75,7 @@ Polymer({
     errorMessage: {
       type: String,
       value: '',
-      observer: 'errorMessageChanged_',
+      observer: 'onInvalidOrErrorMessageChanged_',
     },
 
     /**
@@ -94,6 +94,7 @@ Polymer({
       value: false,
       notify: true,
       reflectToAttribute: true,
+      observer: 'onInvalidOrErrorMessageChanged_',
     },
 
     max: {
@@ -233,9 +234,11 @@ Polymer({
    * Uses IronA11yAnnouncer to notify screen readers that an error is set.
    * @private
    */
-  errorMessageChanged_() {
+  onInvalidOrErrorMessageChanged_() {
     Polymer.IronA11yAnnouncer.requestAvailability();
-    this.fire('iron-announce', {text: this.errorMessage});
+    if (this.invalid) {
+      this.fire('iron-announce', {text: this.errorMessage});
+    }
   },
 
   /**

@@ -7,6 +7,7 @@ package org.chromium.chrome.features.start_surface;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.SysUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -43,6 +44,11 @@ public class StartSurfaceConfiguration {
     public static final StringCachedFieldTrialParameter START_SURFACE_OMNIBOX_SCROLL_MODE =
             new StringCachedFieldTrialParameter(
                     ChromeFeatureList.START_SURFACE_ANDROID, "omnibox_scroll_mode", "");
+
+    private static final String STARTUP_UMA_PREFIX = "Startup.Android.";
+    private static final String INSTANT_START_SUBFIX = ".Instant";
+    private static final String REGULAR_START_SUBFIX = ".NoInstant";
+
     /**
      * @return Whether the Start Surface is enabled.
      */
@@ -100,5 +106,22 @@ public class StartSurfaceConfiguration {
     static void setFeedVisibilityForTesting(boolean isVisible) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FEED_ARTICLES_LIST_VISIBLE, isVisible);
+    }
+
+    /**
+     * Records histograms of showing the StartSurface. Nothing will be recorded if timeDurationMs
+     * isn't valid.
+     */
+    public static void recordHistogram(String name, long timeDurationMs, boolean isInstantStart) {
+        if (timeDurationMs < 0) return;
+
+        RecordHistogram.recordTimesHistogram(
+                getHistogramName(name, isInstantStart), timeDurationMs);
+    }
+
+    @VisibleForTesting
+    public static String getHistogramName(String name, boolean isInstantStart) {
+        return STARTUP_UMA_PREFIX + name
+                + (isInstantStart ? INSTANT_START_SUBFIX : REGULAR_START_SUBFIX);
     }
 }

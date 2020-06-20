@@ -4,6 +4,7 @@
 
 import {Node, Edge} from './graph_model.js';
 import {parseGraphFromJson} from './process_graph_json.js';
+import {GraphStore} from './graph_store.js';
 
 // For ease of development, we currently serve all our JSON and other assets
 // through a simple Python server at localhost:8888. This should be changed
@@ -43,7 +44,11 @@ function addArrowMarkerDef(defs, id, length, width) {
  * @param {Array<Edge>} inputEdges An array of edges to render.
  */
 function renderGraph(inputNodes, inputEdges) {
+  // TODO(yjlong): Reorganize this function so that we can selectively rerender
+  // (as opposed to removing all elements and rerendering on each call),
+
   const svg = d3.select('svg');
+  svg.selectAll('*').remove();
   const svgDefs = svg.append('defs');
   const graphGroup = svg.append('g'); // Contains entire graph (for zoom/pan).
 
@@ -102,6 +107,7 @@ function renderGraph(inputNodes, inputEdges) {
         if (node.classed('locked')) {
           d.fx = null;
           d.fy = null;
+          reheatSimulation();
         } else {
           d.fx = d.x;
           d.fy = d.y;
@@ -144,7 +150,46 @@ function renderGraph(inputNodes, inputEdges) {
 // the side. Replace this with a user upload or pull from some other source.
 document.addEventListener('DOMContentLoaded', () => {
   d3.json(`${LOCALHOST}/json_graph.txt`).then(data => {
+    const graphStore = GraphStore.instance;
     const graph = parseGraphFromJson(data.package_graph);
-    renderGraph(graph.getNodesForD3(), graph.getEdgesForD3());
+    // TODO(yjlong): This is test data. Remove this when no longer needed.
+    graphStore.addIncludedNode('org.chromium.base');
+    graphStore.addIncludedNode('org.chromium.chrome.browser.gsa');
+    graphStore.addIncludedNode('org.chromium.chrome.browser.omaha');
+    graphStore.addIncludedNode('org.chromium.chrome.browser.media');
+    graphStore.addIncludedNode('org.chromium.ui.base');
+
+    new Vue({
+      el: '#filter-input-group',
+      data: {
+        filterInputText: '',
+        sharedState: graphStore.state,
+      },
+      methods: {
+        submitFilter: function() {
+          graphStore.addIncludedNode(this.filterInputText);
+          renderGraph(
+              graph.getNodesForD3(graphStore), graph.getEdgesForD3(graphStore));
+        },
+      },
+    });
+
+    new Vue({
+      el: '#filter-items',
+      data: {
+        sharedState: graphStore.state,
+      },
+      methods: {
+        removeFilter: function(e) {
+          const filterText = e.target.textContent;
+          graphStore.removeIncludedNode(filterText.trim());
+          renderGraph(
+              graph.getNodesForD3(graphStore), graph.getEdgesForD3(graphStore));
+        },
+      },
+    });
+
+    renderGraph(
+        graph.getNodesForD3(graphStore), graph.getEdgesForD3(graphStore));
   });
 });

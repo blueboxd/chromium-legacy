@@ -16,6 +16,7 @@
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -79,6 +80,7 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   AmbientUiModel* ambient_ui_model() { return &ambient_ui_model_; }
 
  private:
+  class InactivityMonitor;
   friend class AmbientAshTestBase;
 
   // TODO(meilinw): reuses the lock-screen widget: b/156531168, b/157175030.
@@ -88,6 +90,10 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
 
   void StartRefreshingImages();
   void StopRefreshingImages();
+
+  // Invoked when the auto-show timer in |InactivityMonitor| gets fired after
+  // device being inactive for a specific amount of time.
+  void OnAutoShowTimeOut();
 
   void CleanUpOnClosed();
 
@@ -112,6 +118,10 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   std::unique_ptr<AmbientBackendController> ambient_backend_controller_;
   AmbientPhotoController ambient_photo_controller_;
 
+  // Monitors the device inactivity and controls the auto-show of ambient.
+  std::unique_ptr<InactivityMonitor> inactivity_monitor_;
+
+  base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AmbientController);
 };
 

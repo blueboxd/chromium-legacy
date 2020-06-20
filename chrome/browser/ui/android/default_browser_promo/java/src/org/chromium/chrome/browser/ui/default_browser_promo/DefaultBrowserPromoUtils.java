@@ -13,8 +13,10 @@ import androidx.annotation.IntDef;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,10 +36,13 @@ public class DefaultBrowserPromoUtils {
          * #isCurrentDefaultBrowserChrome() which looks for any Chrome.
          */
         int CHROME_DEFAULT = 2;
+        int NUM_ENTRIES = 3;
     }
 
     private static final int MIN_TRIGGER_SESSION_COUNT = 3;
+    private static final int MAX_PROMO_COUNT = 1;
     private static final String SESSION_COUNT_PARAM = "min_trigger_session_count";
+    private static final String PROMO_COUNT_PARAM = "max_promo_count";
 
     private static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
 
@@ -56,17 +61,24 @@ public class DefaultBrowserPromoUtils {
      *         are installed.
      *
      * @param activity The context.
+     * @param dispatcher The {@link ActivityLifecycleDispatcher} of the current activity.
+     * @param windowAndroid The {@link WindowAndroid} for sending an intent.
      * @return True if promo dialog will be displayed.
      */
-    public static boolean prepareLaunchPromoIfNeeded(Activity activity) {
+    public static boolean prepareLaunchPromoIfNeeded(Activity activity,
+            ActivityLifecycleDispatcher dispatcher, WindowAndroid windowAndroid) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO)) {
             return false;
         }
 
         // Criteria 1
-        // TODO(crbug.com/1090103): change to int if dialog will be re-promo.
-        if (SharedPreferencesManager.getInstance().readBoolean(
-                    ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_IS_PROMOED, false)) {
+        int maxPromoCount = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, PROMO_COUNT_PARAM,
+                MAX_PROMO_COUNT);
+
+        if (SharedPreferencesManager.getInstance().readInt(
+                    ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_COUNT, 0)
+                >= maxPromoCount) {
             return false;
         }
 
@@ -99,9 +111,9 @@ public class DefaultBrowserPromoUtils {
             return false;
         }
 
-        SharedPreferencesManager.getInstance().writeBoolean(
-                ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_IS_PROMOED, true);
-        DefaultBrowserPromoManager.create(activity).promo(state);
+        SharedPreferencesManager.getInstance().incrementInt(
+                ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_COUNT);
+        DefaultBrowserPromoManager.create(activity, dispatcher, windowAndroid).promo(state);
         return true;
     }
 
@@ -112,6 +124,34 @@ public class DefaultBrowserPromoUtils {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO)) return;
         SharedPreferencesManager.getInstance().incrementInt(
                 ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_SESSION_COUNT);
+    }
+
+    /**
+     * The current {@link DefaultBrowserState} in the system.
+     */
+    @DefaultBrowserState
+    public static int getCurrentDefaultBrowserState() {
+        ResolveInfo info = PackageManagerUtils.resolveDefaultWebBrowserActivity();
+        return getCurrentDefaultBrowserState(info);
+    }
+
+    /**
+     * Check the result of default browser promo on start up if needed.
+     * @return True if the default browser promo dialog is displayed in this session or last session
+     *         and the result has not been recorded yet.
+     */
+    public static void maybeRecordOutcomeOnStart() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO)) return;
+        if (!SharedPreferencesManager.getInstance().readBoolean(
+                    ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS, false)) {
+            return;
+        }
+        int previousState = SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_LAST_DEFAULT_STATE);
+        DefaultBrowserPromoMetrics.recordOutcome(previousState, getCurrentDefaultBrowserState());
+        // reset
+        SharedPreferencesManager.getInstance().writeBoolean(
+                ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS, false);
     }
 
     private static boolean isChromePreStableInstalled() {
@@ -140,14 +180,5 @@ public class DefaultBrowserPromoUtils {
             return DefaultBrowserState.CHROME_DEFAULT; // Already default
         }
         return DefaultBrowserState.OTHER_DEFAULT;
-    }
-
-    /**
-     * The current {@link DefaultBrowserState} in the system.
-     */
-    @DefaultBrowserState
-    public static int getCurrentDefaultBrowserState() {
-        ResolveInfo info = PackageManagerUtils.resolveDefaultWebBrowserActivity();
-        return getCurrentDefaultBrowserState(info);
     }
 }

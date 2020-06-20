@@ -1358,8 +1358,7 @@ void HTMLDocumentParser::NotifyScriptLoaded(PendingScript* pending_script) {
   DCHECK(!IsExecutingScript());
 
   scheduler::CooperativeSchedulingManager::AllowedStackScope
-      whitelisted_stack_scope(
-          scheduler::CooperativeSchedulingManager::Instance());
+      allowed_stack_scope(scheduler::CooperativeSchedulingManager::Instance());
 
   if (IsStopped()) {
     return;

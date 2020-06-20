@@ -1282,8 +1282,9 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest,
   EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
 }
 
-// Tests that activation early in navigation succeeds, cancelling the pending
-// navigation.
+// Tests that activation early in navigation fails. Even though the navigation
+// hasn't yet committed, allowing activation could allow a portal to prevent
+// the user from navigating away.
 IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateEarlyInNavigation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
@@ -1292,8 +1293,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateEarlyInNavigation) {
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title2.html");
-  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
-  WebContents* portal_contents = portal->GetPortalContents();
+  CreatePortalToUrl(web_contents_impl, url);
 
   // Have the outer page try to navigate away but stop it early in the request,
   // where it is still possible to stop.
@@ -1308,16 +1308,21 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateEarlyInNavigation) {
   web_contents_impl->GetController().LoadURLWithParams(params);
   ASSERT_TRUE(navigation_manager.WaitForRequestStart());
 
-  // Then activate the portal. Since this is early in navigation, it should be
-  // aborted and the portal activation should succeed.
-  PortalActivatedObserver activated_observer(portal);
-  ExecuteScriptAsync(main_frame,
-                     "document.querySelector('portal').activate();");
-  EXPECT_EQ(blink::mojom::PortalActivateResult::kPredecessorWillUnload,
-            activated_observer.WaitForActivateResult());
-  EXPECT_EQ(portal_contents, shell()->web_contents());
+  // Then activate the portal, because navigation has begun and beforeunload
+  // has been dispatched, the activation should fail.
+  EvalJsResult result = EvalJs(main_frame,
+                               "document.querySelector('portal').activate()"
+                               ".then(() => 'success', e => e.message)");
+  EXPECT_THAT(result.ExtractString(),
+              ::testing::HasSubstr("Cannot activate portal while document is in"
+                                   " beforeunload or has started unloading"));
+
+  // The navigation should commit properly thereafter.
+  navigation_manager.WaitForNavigationFinished();
   navigation_observer.Wait();
-  EXPECT_EQ(handle_observer.net_error_code(), net::ERR_ABORTED);
+  EXPECT_EQ(web_contents_impl, shell()->web_contents());
+  EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+  EXPECT_EQ(destination, navigation_observer.last_navigation_url());
 }
 
 // Tests that activation late in navigation is rejected (since it's too late to
@@ -1330,7 +1335,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateLateInNavigation) {
   RenderFrameHostImpl* main_frame = web_contents_impl->GetMainFrame();
 
   GURL url = embedded_test_server()->GetURL("a.com", "/title2.html");
-  Portal* portal = CreatePortalToUrl(web_contents_impl, url);
+  CreatePortalToUrl(web_contents_impl, url);
 
   // Have the outer page try to navigate away and reach the point where it's
   // about to process the response (after which it will commit). It is too late
@@ -1348,15 +1353,12 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, ActivateLateInNavigation) {
   // Then activate the portal. Since this is late in navigation, we expect the
   // activation to fail. Since commit hasn't actually happened yet, though,
   // there is time for the renderer to process the promise rejection.
-  PortalActivatedObserver activated_observer(portal);
   EvalJsResult result = EvalJs(main_frame,
                                "document.querySelector('portal').activate()"
                                ".then(() => 'success', e => e.message)");
   EXPECT_THAT(result.ExtractString(),
-              ::testing::HasSubstr("navigation is in progress"));
-  EXPECT_EQ(
-      blink::mojom::PortalActivateResult::kRejectedDueToPredecessorNavigation,
-      activated_observer.result());
+              ::testing::HasSubstr("Cannot activate portal while document is in"
+                                   " beforeunload or has started unloading"));
 
   // The navigation should commit properly thereafter.
   navigation_manager.ResumeNavigation();

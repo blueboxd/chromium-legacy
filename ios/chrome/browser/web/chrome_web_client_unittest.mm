@@ -337,6 +337,7 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageWithSSLInfo) {
 TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
   // Store an unsafe resource in |web_state|'s container.
   web::TestWebState web_state;
+  web_state.SetBrowserState(browser_state());
   SafeBrowsingUrlAllowList::CreateForWebState(&web_state);
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(

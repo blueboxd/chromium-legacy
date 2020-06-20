@@ -39,7 +39,10 @@ android_library("java") {
     "//ui/android:ui_full_java",
   ]
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  srcjar_deps = [ ":safety_check_enums" ]
+  srcjar_deps = [
+    ":bulk_leak_check_service_enums",
+    ":safety_check_enums",
+  ]
 }
 
 android_library("junit") {
@@ -75,4 +78,8 @@ android_resources("java_resources") {
 
 java_cpp_enum("safety_check_enums") {
   sources = [ "//components/safety_check/safety_check.h" ]
+}
+
+java_cpp_enum("bulk_leak_check_service_enums") {
+  sources = [ "//components/password_manager/core/browser/bulk_leak_check_service_interface.h" ]
 }

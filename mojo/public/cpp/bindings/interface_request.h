@@ -80,7 +80,7 @@ class InterfaceRequest {
 
     Message message =
         PipeControlMessageProxy::ConstructPeerEndpointClosedMessage(
-            kMasterInterfaceId, DisconnectReason(custom_reason, description));
+            kPrimaryInterfaceId, DisconnectReason(custom_reason, description));
     MojoResult result =
         WriteMessageNew(state_.pipe.get(), message.TakeMojoMessage(),
                         MOJO_WRITE_MESSAGE_FLAG_NONE);

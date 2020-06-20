@@ -19,6 +19,7 @@
 #include "media/gpu/video_frame_mapper_factory.h"
 #include "media/media_buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 
 namespace media {
 namespace test {
@@ -108,14 +109,39 @@ void VideoFrameValidator::ProcessVideoFrameTask(
   scoped_refptr<const VideoFrame> frame = video_frame;
   // If this is a DMABuf-backed memory frame we need to map it before accessing.
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
-  if (frame->storage_type() == VideoFrame::STORAGE_DMABUFS ||
-      frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+  if (frame->storage_type() == VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    // TODO(andrescj): This is a workaround. ClientNativePixmapFactoryDmabuf
+    // creates ClientNativePixmapOpaque for SCANOUT_VDA_WRITE buffers which does
+    // not allow us to map GpuMemoryBuffers easily for testing. Therefore, we
+    // extract the dma-buf FDs. Alternatively, we could consider creating our
+    // own ClientNativePixmapFactory for testing.
+    gfx::GpuMemoryBuffer* gmb = video_frame->GetGpuMemoryBuffer();
+    gfx::GpuMemoryBufferHandle gmb_handle = gmb->CloneHandle();
+    ASSERT_EQ(gmb_handle.type, gfx::GpuMemoryBufferType::NATIVE_PIXMAP);
+    std::vector<ColorPlaneLayout> planes;
+    std::vector<base::ScopedFD> dmabuf_fds;
+    for (auto& plane : gmb_handle.native_pixmap_handle.planes) {
+      planes.emplace_back(plane.stride, plane.offset, plane.size);
+      dmabuf_fds.emplace_back(plane.fd.release());
+    }
+    auto layout = VideoFrameLayout::CreateWithPlanes(
+        frame->format(), video_frame->coded_size(), std::move(planes),
+        VideoFrameLayout::kBufferAddressAlignment,
+        gmb_handle.native_pixmap_handle.modifier);
+    ASSERT_TRUE(layout);
+    frame = VideoFrame::WrapExternalDmabufs(
+        *layout, frame->visible_rect(), frame->natural_size(),
+        std::move(dmabuf_fds), frame->timestamp());
+    ASSERT_TRUE(frame);
+  }
+
+  if (frame->storage_type() == VideoFrame::STORAGE_DMABUFS) {
     // Create VideoFrameMapper if not yet created. The decoder's output pixel
     // format is not known yet when creating the VideoFrameValidator. We can
     // only create the VideoFrameMapper upon receiving the first video frame.
     if (!video_frame_mapper_) {
       video_frame_mapper_ = VideoFrameMapperFactory::CreateMapper(
-          video_frame->format(), video_frame->storage_type());
+          frame->format(), frame->storage_type());
       ASSERT_TRUE(video_frame_mapper_) << "Failed to create VideoFrameMapper";
     }
 

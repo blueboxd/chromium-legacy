@@ -126,7 +126,7 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
 
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  MaybeReportResourceLoadSuccess(status.error_code);
+  MaybeReportResourceLoadSuccess(status);
   target_client_->OnComplete(status);
 }
 
@@ -137,8 +137,9 @@ void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::InProgressRequest::
-    MaybeReportResourceLoadSuccess(int net_error) {
-  if (net_error != net::OK) {
+    MaybeReportResourceLoadSuccess(
+        const network::URLLoaderCompletionStatus& status) {
+  if (status.error_code != net::OK) {
     return;
   }
 
@@ -191,6 +192,16 @@ IsolatedPrerenderProxyingURLLoaderFactory::
 IsolatedPrerenderProxyingURLLoaderFactory::
     ~IsolatedPrerenderProxyingURLLoaderFactory() = default;
 
+void IsolatedPrerenderProxyingURLLoaderFactory::NotifyPageNavigatedToAfterSRP(
+    const std::set<GURL>& cached_subresources) {
+  previously_cached_subresources_ = cached_subresources;
+}
+
+bool IsolatedPrerenderProxyingURLLoaderFactory::
+    ShouldHandleRequestForPrerender() const {
+  return !previously_cached_subresources_.has_value();
+}
+
 void IsolatedPrerenderProxyingURLLoaderFactory::CreateLoaderAndStart(
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     int32_t routing_id,
@@ -199,22 +210,45 @@ void IsolatedPrerenderProxyingURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  // We must check if the request can be cached and set the appropriate load
-  // flag if so.
-  content::WebContents* web_contents =
-      content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
-  if (!web_contents) {
+  // If this request is happening during a prerender then check if it is
+  // eligible for caching before putting it on the network.
+  if (ShouldHandleRequestForPrerender()) {
+    // We must check if the request can be cached and set the appropriate load
+    // flag if so.
+    content::WebContents* web_contents =
+        content::WebContents::FromFrameTreeNodeId(frame_tree_node_id_);
+    if (!web_contents) {
+      return;
+    }
+
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents->GetBrowserContext());
+    IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
+        profile, request.url,
+        base::BindOnce(
+            &IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult,
+            weak_factory_.GetWeakPtr(), std::move(loader_receiver), routing_id,
+            request_id, options, request, std::move(client),
+            traffic_annotation));
     return;
   }
 
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  IsolatedPrerenderTabHelper::CheckEligibilityOfURL(
-      profile, request.url,
-      base::BindOnce(
-          &IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult,
-          weak_factory_.GetWeakPtr(), std::move(loader_receiver), routing_id,
-          request_id, options, request, std::move(client), traffic_annotation));
+  // This request is happening after the user clicked to a prerendered page.
+  DCHECK(previously_cached_subresources_.has_value());
+  const std::set<GURL>& cached_subresources = *previously_cached_subresources_;
+  if (cached_subresources.find(request.url) != cached_subresources.end()) {
+    // Load this resource from |isolated_factory_|'s cache.
+    requests_.insert(std::make_unique<InProgressRequest>(
+        this, isolated_factory_.get(), base::DoNothing(),
+        std::move(loader_receiver), routing_id, request_id, options, request,
+        std::move(client), traffic_annotation));
+  } else {
+    // Resource was not cached during the NSP, so load it normally.
+    requests_.insert(std::make_unique<InProgressRequest>(
+        this, network_process_factory_.get(), base::DoNothing(),
+        std::move(loader_receiver), routing_id, request_id, options, request,
+        std::move(client), traffic_annotation));
+  }
 }
 
 void IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult(
@@ -229,8 +263,10 @@ void IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult(
     bool eligible,
     base::Optional<IsolatedPrerenderTabHelper::PrefetchStatus> not_used) {
   DCHECK_EQ(request.url, url);
+  DCHECK(!previously_cached_subresources_.has_value());
   DCHECK(request.cors_exempt_headers.HasHeader(
       content::kCorsExemptPurposeHeaderName));
+  DCHECK(request.load_flags & net::LOAD_PREFETCH);
   DCHECK(!request.trusted_params.has_value());
 
   network::ResourceRequest isolated_request = request;
@@ -255,15 +291,21 @@ void IsolatedPrerenderProxyingURLLoaderFactory::OnEligibilityResult(
     isolated_request.headers.RemoveHeader(blink::kClientHintsHeaderMapping[i]);
   }
 
+  ResourceLoadSuccessfulCallback resource_load_successful_callback =
+      on_resource_load_successful_;
+
   // If this subresource is eligible for prefetching then it can be cached. If
   // not, it must still be put on the wire to avoid privacy attacks but should
   // not be cached.
   if (!eligible) {
     isolated_request.load_flags |= net::LOAD_DISABLE_CACHE;
+
+    // Don't report loaded resources that won't go in the cache.
+    resource_load_successful_callback = base::DoNothing();
   }
 
   requests_.insert(std::make_unique<InProgressRequest>(
-      this, isolated_factory_.get(), on_resource_load_successful_,
+      this, isolated_factory_.get(), resource_load_successful_callback,
       std::move(loader_receiver), routing_id, request_id, options,
       isolated_request, std::move(client), traffic_annotation));
 }

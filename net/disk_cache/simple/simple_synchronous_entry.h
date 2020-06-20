@@ -303,14 +303,6 @@ class SimpleSynchronousEntry {
   friend class SimpleFileTrackerTest;
   class PrefetchData;
 
-  enum CreateEntryResult {
-    CREATE_ENTRY_SUCCESS = 0,
-    CREATE_ENTRY_PLATFORM_FILE_ERROR = 1,
-    CREATE_ENTRY_CANT_WRITE_HEADER = 2,
-    CREATE_ENTRY_CANT_WRITE_KEY = 3,
-    CREATE_ENTRY_MAX = 4,
-  };
-
   enum FileRequired {
     FILE_NOT_REQUIRED,
     FILE_REQUIRED
@@ -367,9 +359,8 @@ class SimpleSynchronousEntry {
                         SimpleStreamPrefetchData stream_prefetch_data[2]);
 
   // Writes the header and key to a newly-created stream file. |index| is the
-  // index of the stream. Returns true on success; returns false and sets
-  // |*out_result| on failure.
-  bool InitializeCreatedFile(int index, CreateEntryResult* out_result);
+  // index of the stream. Returns true on success; returns false and failure.
+  bool InitializeCreatedFile(int index);
 
   // Returns a net error, including net::OK on success and net::FILE_EXISTS
   // when the entry already exists.
@@ -467,8 +458,6 @@ class SimpleSynchronousEntry {
                                       uint64_t entry_hash);
   static bool TruncateFilesForEntryHash(const base::FilePath& path,
                                         uint64_t entry_hash);
-
-  void RecordSyncCreateResult(CreateEntryResult result);
 
   base::FilePath GetFilenameFromFileIndex(int file_index) const;
 

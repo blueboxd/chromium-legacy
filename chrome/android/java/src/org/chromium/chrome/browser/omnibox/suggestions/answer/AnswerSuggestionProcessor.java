@@ -73,7 +73,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         super.populateModel(suggestion, model, position);
-        setStateForSuggestion(model, suggestion);
+        setStateForSuggestion(model, suggestion, position);
     }
 
     @Override
@@ -135,7 +135,8 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     /**
      * Sets both lines of the Omnibox suggestion based on an Answers in Suggest result.
      */
-    private void setStateForSuggestion(PropertyModel model, OmniboxSuggestion suggestion) {
+    private void setStateForSuggestion(
+            PropertyModel model, OmniboxSuggestion suggestion, int position) {
         AnswerText[] details = AnswerTextNewLayout.from(
                 getContext(), suggestion, mUrlBarEditingTextProvider.getTextWithoutAutocomplete());
 
@@ -162,7 +163,7 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
                         .setLarge(true)
                         .build());
 
-        setTabSwitchOrRefineAction(model, suggestion);
+        setTabSwitchOrRefineAction(model, suggestion, position);
         maybeFetchAnswerIcon(model, suggestion);
     }
 

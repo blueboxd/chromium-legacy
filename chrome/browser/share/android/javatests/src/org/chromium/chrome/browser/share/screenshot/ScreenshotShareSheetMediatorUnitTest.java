@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser.share.screenshot;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import android.app.Activity;
 
@@ -21,7 +24,12 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.share.BitmapUriRequest;
+import org.chromium.chrome.browser.share.BitmapUriRequestJni;
+import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -46,6 +54,18 @@ public class ScreenshotShareSheetMediatorUnitTest {
     @Mock
     Activity mContext;
 
+    @Mock
+    Tab mTab;
+
+    @Mock
+    ChromeOptionShareCallback mShareCallback;
+
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
+
+    @Mock
+    private BitmapUriRequest.Natives mBitmapUriRequest;
+
     private PropertyModel mModel;
     private ScreenshotShareSheetMediator mMediator;
 
@@ -54,13 +74,21 @@ public class ScreenshotShareSheetMediatorUnitTest {
         MockitoAnnotations.initMocks(this);
 
         doNothing().when(mDeleteRunnable).run();
+
         doNothing().when(mSaveRunnable).run();
+
+        doNothing().when(mShareCallback).showThirdPartyShareSheet(any(), any(), anyLong());
+
+        mJniMocker.mock(BitmapUriRequestJni.TEST_HOOKS, mBitmapUriRequest);
+
+        when(mBitmapUriRequest.bitmapUri(any())).thenReturn("bitmapUri");
 
         mModel = new PropertyModel(ScreenshotShareSheetViewProperties.ALL_KEYS);
 
-        mMediator =
-                new ScreenshotShareSheetMediator(mContext, mModel, mDeleteRunnable, mSaveRunnable);
+        mMediator = new ScreenshotShareSheetMediator(
+                mContext, mModel, mDeleteRunnable, mSaveRunnable, mTab, mShareCallback);
     }
+
     @Test
     public void onClickDelete() {
         Callback<Integer> callback =
@@ -77,6 +105,16 @@ public class ScreenshotShareSheetMediatorUnitTest {
         callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.SAVE);
 
         verify(mSaveRunnable).run();
+    }
+
+    @Test
+    public void onClickShare() {
+        Callback<Integer> callback =
+                mModel.get(ScreenshotShareSheetViewProperties.NO_ARG_OPERATION_LISTENER);
+        callback.onResult(ScreenshotShareSheetViewProperties.NoArgOperation.SHARE);
+
+        verify(mShareCallback).showThirdPartyShareSheet(any(), any(), anyLong());
+        verify(mDeleteRunnable).run();
     }
 
     @After

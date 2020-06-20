@@ -1139,23 +1139,23 @@ foo->SetBar(std::move(bar));
 
 ### Performance considerations
 
-When using associated interfaces on different sequences than the master sequence
-(where the master interface lives):
+When using associated interfaces on different sequences than the primary
+sequence (where the primary interface lives):
 
 * Sending messages: send happens directly on the calling sequence. So there
   isn't sequence hopping.
 * Receiving messages: associated interfaces bound on a different sequence from
-  the master interface incur an extra sequence hop during dispatch.
+  the primary interface incur an extra sequence hop during dispatch.
 
 Therefore, performance-wise associated interfaces are better suited for
-scenarios where message receiving happens on the master sequence.
+scenarios where message receiving happens on the primary sequence.
 
 ### Testing
 
-Associated interfaces need to be associated with a master interface before
+Associated interfaces need to be associated with a primary interface before
 they can be used. This means one end of the associated interface must be sent
-over one end of the master interface, or over one end of another associated
-interface which itself already has a master interface.
+over one end of the primary interface, or over one end of another associated
+interface which itself already has a primary interface.
 
 If you want to test an associated interface endpoint without first
 associating it, you can use `AssociatedRemote::BindNewEndpointAndPassDedicatedReceiverForTesting`.

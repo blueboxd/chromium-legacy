@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
 import json
 import os
 import shutil
@@ -16,6 +17,7 @@ if BLINK_TOOLS_DIR not in sys.path:
     sys.path.append(BLINK_TOOLS_DIR)
 
 from blinkpy.common.host import Host
+from blinkpy.web_tests.models import test_failures
 
 class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
     """The base class for script adapters that use wptrunner to execute web
@@ -102,18 +104,25 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
                     results_dir, path_so_far, log_artifact)
                 root_node["artifacts"]["actual_text"] = [artifact_subpath]
 
-            # TODO(lpz): For now we just discard the screenshot artifact to keep
-            # the output file size small. Writing screenshots to disk will be
-            # added in a follow-up.
             screenshot_artifact = root_node["artifacts"].pop("screenshots",
                                                              None)
+            if screenshot_artifact:
+                screenshot_paths_dict = self._write_screenshot_artifact(
+                    results_dir, path_so_far, screenshot_artifact)
+                for screenshot_key, path in screenshot_paths_dict.items():
+                    root_node["artifacts"][screenshot_key] = [path]
 
             # Fixup statuses so the results viewer understands them. We have to
             # use the deprecated statuses instead of "FAIL".
             if root_node["actual"] == "FAIL":
-                if screenshot_artifact:
+                if log_artifact and screenshot_artifact:
+                    root_node["actual"] = "IMAGE+TEXT"
+                elif screenshot_artifact:
                     root_node["actual"] = "IMAGE"
                 else:
+                    # Fallback to text even if there are no artifacts, because
+                    # the results viewer will not display a test at all if its
+                    # status remains "FAIL".
                     root_node["actual"] = "TEXT"
             return
 
@@ -145,7 +154,8 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
         log_artifact_sub_path = (
             os.path.join("layout-test-results",
                          self.port.output_filename(
-                             test_name, "-actual", ".txt"))
+                             test_name, test_failures.FILENAME_SUFFIX_ACTUAL,
+                             ".txt"))
         )
         log_artifact_full_path = os.path.join(results_dir,
                                               log_artifact_sub_path)
@@ -155,3 +165,53 @@ class BaseWptScriptAdapter(common.BaseIsolatedScriptArgsAdapter):
             artifact_file.write("\n".join(log_artifact).encode("utf-8"))
 
         return log_artifact_sub_path
+
+    def _write_screenshot_artifact(self, results_dir, test_name,
+                                   screenshot_artifact):
+        """Write screenshot artifact to disk.
+
+        The screenshot artifact is a list of strings, each of which has the
+        format <url>:<base64-encoded PNG>. Each url-png pair is a screenshot of
+        either the test, or one of its refs. We can identify which screenshot is
+        for the test by comparing the url piece to the test name.
+
+        Args:
+           results_dir: str path to the directory that results live in
+           test:name str name of the test that this artifact is for
+           screenshot_artifact: list of strings, each being a url-png pair as
+               described above.
+
+        Returns:
+             A dict mapping the screenshot key (ie: actual, expected) to the
+             path of the file for that screenshot
+        """
+        result={}
+        for screenshot_pair in screenshot_artifact:
+            screenshot_split = screenshot_pair.split(":")
+            url = screenshot_split[0]
+            # The url produced by wptrunner will have a leading / which we trim
+            # away for easier comparison to the test_name below.
+            if url.startswith("/"):
+                url = url[1:]
+            image_bytes = base64.b64decode(screenshot_split[1].strip())
+
+            screenshot_key = "expected_image"
+            file_suffix = test_failures.FILENAME_SUFFIX_EXPECTED
+            if test_name == url:
+                screenshot_key = "actual_image"
+                file_suffix = test_failures.FILENAME_SUFFIX_ACTUAL
+
+            screenshot_sub_path = (
+                os.path.join("layout-test-results",
+                             self.port.output_filename(
+                                 test_name, file_suffix, ".png"))
+            )
+            result[screenshot_key] = screenshot_sub_path
+
+            screenshot_full_path = os.path.join(results_dir,screenshot_sub_path)
+            if not os.path.exists(os.path.dirname(screenshot_full_path)):
+                os.makedirs(os.path.dirname(screenshot_full_path))
+            # Note: we are writing raw bytes to this file
+            with open(screenshot_full_path, "wb") as artifact_file:
+                artifact_file.write(image_bytes)
+        return result

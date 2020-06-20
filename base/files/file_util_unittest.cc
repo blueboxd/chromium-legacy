@@ -1633,6 +1633,41 @@ TEST_F(FileUtilTest, DeleteDirRecursiveWithOpenFile) {
 #endif
 }
 
+#if defined(OS_LINUX)
+// This test will validate that files which would block when read result in a
+// failure on a call to ReadFileToStringNonBlocking. To accomplish this we will
+// use a named pipe because it appears as a file on disk and we can control how
+// much data is available to read. This allows us to simulate a file which would
+// block.
+TEST_F(FileUtilTest, TestNonBlockingFileReadLinux) {
+  FilePath fifo_path = temp_dir_.GetPath().Append(FPL("fifo"));
+  int res = mkfifo(fifo_path.MaybeAsASCII().c_str(),
+                   S_IWUSR | S_IRUSR | S_IWGRP | S_IWGRP);
+  ASSERT_NE(res, -1);
+
+  base::ScopedFD fd(open(fifo_path.MaybeAsASCII().c_str(), O_RDWR));
+  ASSERT_TRUE(fd.is_valid());
+
+  std::string result;
+  // We will try to read when nothing is available on the fifo, the output
+  // string will be unmodified and it will fail with EWOULDBLOCK.
+  ASSERT_FALSE(ReadFileToStringNonBlocking(fifo_path, &result));
+  EXPECT_EQ(errno, EWOULDBLOCK);
+  EXPECT_TRUE(result.empty());
+
+  // Make a single byte available to read on the FIFO.
+  ASSERT_EQ(write(fd.get(), "a", 1), 1);
+
+  // Now the key part of the test we will call ReadFromFileNonBlocking which
+  // should fail, errno will be EWOULDBLOCK and the output string will contain
+  // the single 'a' byte.
+  ASSERT_FALSE(ReadFileToStringNonBlocking(fifo_path, &result));
+  EXPECT_EQ(errno, EWOULDBLOCK);
+  ASSERT_EQ(result.size(), 1u);
+  EXPECT_EQ(result[0], 'a');
+}
+#endif  // defined(OS_LINUX)
+
 TEST_F(FileUtilTest, MoveFileNew) {
   // Create a file
   FilePath file_name_from =

@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/android/chrome_jni_headers/AutocompleteController_jni.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_provider_client.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
@@ -150,12 +151,15 @@ void ZeroSuggestPrefetcher::SelfDestruct() {
 
 }  // namespace
 
-AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile)
-    : autocomplete_controller_(new AutocompleteController(
-          std::make_unique<ChromeAutocompleteProviderClient>(profile),
-          AutocompleteClassifier::DefaultOmniboxProviders())),
-      inside_synchronous_start_(false),
-      profile_(profile) {
+AutocompleteControllerAndroid::AutocompleteControllerAndroid(Profile* profile) {
+  std::unique_ptr<ChromeAutocompleteProviderClient> provider_client =
+      std::make_unique<ChromeAutocompleteProviderClient>(profile);
+  provider_client_ = provider_client.get();
+  autocomplete_controller_ = std::make_unique<AutocompleteController>(
+      std::move(provider_client),
+      AutocompleteClassifier::DefaultOmniboxProviders());
+  inside_synchronous_start_ = false;
+  profile_ = profile;
   autocomplete_controller_->AddObserver(this);
 
   OmniboxControllerEmitter* emitter =
@@ -357,6 +361,17 @@ ScopedJavaLocalRef<jobject> AutocompleteControllerAndroid::
       base::TimeDelta::FromMilliseconds(elapsed_time_since_input_change),
       &match);
   return url::GURLAndroid::FromNativeGURL(env, match.destination_url);
+}
+
+base::android::ScopedJavaLocalRef<jobject>
+AutocompleteControllerAndroid::FindMatchingTabWithUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jobject>& j_gurl) {
+  TabAndroid* tab = provider_client_->GetTabOpenWithURL(
+      *url::GURLAndroid::ToNativeGURL(env, j_gurl), nullptr);
+
+  return tab ? tab->GetJavaObject() : nullptr;
 }
 
 void AutocompleteControllerAndroid::Shutdown() {

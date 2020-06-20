@@ -9,6 +9,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.LayerDrawable;
+import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -44,6 +45,7 @@ public class FeedLoadingLayout extends LinearLayout {
     private @Nullable PersonalizedSigninPromoView mSigninPromoView;
     private int mCardPadding;
     private Resources mResources;
+    private long mLayoutInflationCompleteMs;
 
     public FeedLoadingLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -57,6 +59,7 @@ public class FeedLoadingLayout extends LinearLayout {
         super.onFinishInflate();
         // TODO (crbug.com/1079443): Inflate article suggestions section header here.
         setPlaceholders();
+        mLayoutInflationCompleteMs = SystemClock.elapsedRealtime();
     }
 
     @Override
@@ -192,5 +195,9 @@ public class FeedLoadingLayout extends LinearLayout {
         padding = Math.max(widePadding, padding);
 
         return padding;
+    }
+
+    long getLayoutInflationCompleteMs() {
+        return mLayoutInflationCompleteMs;
     }
 }

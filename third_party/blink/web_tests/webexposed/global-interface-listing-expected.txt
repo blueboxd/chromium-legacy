@@ -4544,6 +4544,7 @@ interface ImageDecoder
     getter type
     method constructor
     method decode
+    method decodeMetadata
 interface Ink
     attribute @@toStringTag
     method constructor

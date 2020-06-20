@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/feature_info.h"

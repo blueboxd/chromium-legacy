@@ -224,6 +224,10 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
   WebApp::SyncData sync_data;
   sync_data.name = bookmark_app_registrar_.GetAppShortName(app_id);
   sync_data.theme_color = bookmark_app_registrar_.GetAppThemeColor(app_id);
+  // Avoid using derived scope as we are transferring raw data.
+  sync_data.scope =
+      bookmark_app_registrar_.GetAppScopeInternal(app_id).value_or(GURL());
+  sync_data.icon_infos = bookmark_app_registrar_.GetAppIconInfos(app_id);
   web_app->SetSyncData(std::move(sync_data));
 
   const apps::FileHandlers* file_handlers =

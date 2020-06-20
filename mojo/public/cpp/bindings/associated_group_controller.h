@@ -38,7 +38,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS_BASE) AssociatedGroupController
   // Creates an interface endpoint handle from a given interface ID. The handle
   // joins this associated group.
   // Typically, this method is used to (1) create an endpoint handle for the
-  // master interface; or (2) create an endpoint handle on receiving an
+  // primary interface; or (2) create an endpoint handle on receiving an
   // interface ID from the message pipe.
   //
   // On failure, the method returns an invalid handle. Usually that is because

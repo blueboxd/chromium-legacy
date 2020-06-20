@@ -15,11 +15,17 @@
 #include "base/optional.h"
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "content/public/browser/content_browser_client.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+namespace content {
+class RenderFrameHost;
+}
 
 namespace prerender {
 class PrerenderHandle;
@@ -32,6 +38,13 @@ class IsolatedPrerenderProxyingURLLoaderFactory;
 class IsolatedPrerenderSubresourceManager
     : public prerender::PrerenderHandle::Observer {
  public:
+  // A callback to create new URL Loader Factories for subresources.
+  using CreateIsolatedLoaderFactoryRepeatingCallback =
+      base::RepeatingCallback<void(
+          mojo::PendingReceiver<network::mojom::URLLoaderFactory>
+              pending_receiver,
+          base::Optional<net::IsolationInfo> isolation_info)>;
+
   explicit IsolatedPrerenderSubresourceManager(
       const GURL& url,
       std::unique_ptr<PrefetchedMainframeResponseContainer> mainframe_response);
@@ -51,20 +64,24 @@ class IsolatedPrerenderSubresourceManager
   // Takes ownership of |mainframe_response_|.
   std::unique_ptr<PrefetchedMainframeResponseContainer> TakeMainframeResponse();
 
-  // Gives |this| a reference to the isolated URL Loader factory to use for
-  // Isolated Prerenders.
-  void SetIsolatedURLLoaderFactory(
-      scoped_refptr<network::SharedURLLoaderFactory> isolated_loader_factory);
+  // Gives |this| a callback to create the isolated URL Loader factory to use
+  // for Isolated Prerenders.
+  void SetCreateIsolatedLoaderFactoryCallback(
+      CreateIsolatedLoaderFactoryRepeatingCallback callback);
 
   // Called on commit to allow |this| to setup an intermediary (AKA: proxy, not
   // to be confused with a proxy server) URLLoaderFactory between the renderer
   // and network stack. Returns true when |factory_receiver| is proxied.
   bool MaybeProxyURLLoaderFactory(
+      content::RenderFrameHost* frame,
       int render_process_id,
-      int frame_tree_node_id,
       content::ContentBrowserClient::URLLoaderFactoryType type,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
           factory_receiver);
+
+  // Informs |this| that a navigation has taken place to this' |url_| and any
+  // prefetched subresources should be loaded from cache.
+  void NotifyPageNavigatedToAfterSRP();
 
   // prerender::PrerenderHandle::Observer:
   void OnPrerenderStart(prerender::PrerenderHandle* handle) override {}
@@ -81,6 +98,16 @@ class IsolatedPrerenderSubresourceManager
       const IsolatedPrerenderSubresourceManager&) = delete;
 
  private:
+  // Returns true if |MaybeProxyURLLoaderFactory| should proxy subresource loads
+  // for a NSP.
+  bool ShouldProxyForPrerenderNavigation(
+      int render_process_id,
+      content::ContentBrowserClient::URLLoaderFactoryType type);
+
+  // Returns true if |MaybeProxyURLLoaderFactory| should proxy subresource loads
+  // for a navigation was that previously prerendered.
+  bool ShouldProxyForAfterSRPNavigation() const;
+
   // Called when the given factory is done serving all requests and can be
   // destroyed.
   void RemoveProxiedURLLoaderFactory(
@@ -93,6 +120,12 @@ class IsolatedPrerenderSubresourceManager
 
   // The page that is being prerendered.
   const GURL url_;
+
+  // Set in |NotifyPageNavigatedToAfterSRP| to signify that any subresource
+  // loads in |successfully_loaded_subresources_| should be loaded from
+  // |isolated_loader_factory_|'s cache but otherwise this is a normal page load
+  // that can use the normal Profile's network context.
+  bool was_navigated_to_after_srp_ = false;
 
   // All the subresources that have been successfully loaded during the NSP.
   // Each step in a subresource's redirect chain is also added here so that
@@ -113,8 +146,9 @@ class IsolatedPrerenderSubresourceManager
            base::UniquePtrComparator>
       proxied_loader_factories_;
 
-  // The isolated URL Loader Factory (with proxy) to use during NSP.
-  scoped_refptr<network::SharedURLLoaderFactory> isolated_loader_factory_;
+  // A callback to create new URL Loader Factories for loading subresources.
+  CreateIsolatedLoaderFactoryRepeatingCallback
+      create_isolated_loader_factory_callback_;
 
   base::WeakPtrFactory<IsolatedPrerenderSubresourceManager> weak_factory_{this};
 };

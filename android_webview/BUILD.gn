@@ -530,7 +530,7 @@ android_library("browser_java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android:autofill_java",
-    "//components/autofill/android:provider_java",
+    "//components/autofill/android/provider:java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/content_capture/android:java",
     "//components/crash/android:handler_java",

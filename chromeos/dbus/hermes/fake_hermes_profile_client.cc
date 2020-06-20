@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chromeos/dbus/hermes/fake_hermes_profile_client.h"
+
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chromeos/dbus/hermes/hermes_profile_client.h"

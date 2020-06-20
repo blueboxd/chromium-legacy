@@ -21,6 +21,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
+#include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/platform_event.h"
@@ -144,6 +145,11 @@ COMPONENT_EXPORT(UI_BASE_X) void UnrefCustomXCursor(::Cursor cursor);
 COMPONENT_EXPORT(UI_BASE_X)
 XcursorImage* SkBitmapToXcursorImage(const SkBitmap& bitmap,
                                      const gfx::Point& hotspot);
+
+// Loads and returns an X11 cursor, trying to find one that matches |type|. If
+// unavailable, x11::None is returned.
+COMPONENT_EXPORT(UI_BASE_X)
+::Cursor LoadCursorFromType(mojom::CursorType type);
 
 // Coalesce all pending motion events (touch or mouse) that are at the top of
 // the queue, and return the number eliminated, storing the last one in

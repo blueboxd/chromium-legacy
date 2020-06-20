@@ -13,6 +13,8 @@ import android.os.Bundle;
 import androidx.appcompat.app.AlertDialog;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * ScreenshotShareSheetDialog is the main view for sharing non edited screenshots.
@@ -22,6 +24,8 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
     private ScreenshotShareSheetView mDialogView;
     private Bitmap mScreenshot;
     private Runnable mDeleteRunnable;
+    private Tab mTab;
+    private ChromeOptionShareCallback mShareCallback;
 
     /**
      * The ScreenshotShareSheetDialog constructor.
@@ -32,10 +36,15 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
      * Initialize the dialog outside of the constructor as fragments require default constructor.
      * @param screenshot The screenshot image to show.
      * @param deleteRunnable The function to call on delete.
+     * @param tab The shared tab.
+     * @param shareSheetCoordnator the base share sheet coordinator
      */
-    public void init(Bitmap screenshot, Runnable deleteRunnable) {
+    public void init(Bitmap screenshot, Runnable deleteRunnable, Tab tab,
+            ChromeOptionShareCallback shareSheetCallback) {
         mScreenshot = screenshot;
         mDeleteRunnable = deleteRunnable;
+        mTab = tab;
+        mShareCallback = shareSheetCallback;
     }
 
     @Override
@@ -53,8 +62,9 @@ public class ScreenshotShareSheetDialog extends DialogFragment {
                         org.chromium.chrome.browser.share.R.layout.screenshot_share_sheet, null);
         builder.setView(screenshotShareSheetView);
 
-        ScreenshotShareSheetCoordinator shareCoordinator = new ScreenshotShareSheetCoordinator(
-                mContext, mScreenshot, mDeleteRunnable, screenshotShareSheetView);
+        ScreenshotShareSheetCoordinator shareCoordinator =
+                new ScreenshotShareSheetCoordinator(mContext, mScreenshot, mDeleteRunnable,
+                        screenshotShareSheetView, mTab, mShareCallback);
         return builder.create();
     }
 }

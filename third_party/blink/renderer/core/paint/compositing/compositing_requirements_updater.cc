@@ -183,11 +183,6 @@ static CompositingReasons SubtreeReasonsForCompositing(
     subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
   }
 
-  if (layer->GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed) {
-    subtree_reasons |=
-        CompositingReason::kPositionFixedWithCompositedDescendants;
-  }
-
   // A layer with preserve-3d or perspective only needs to be composited if
   // there are descendant layers that will be affected by the preserve-3d or
   // perspective.

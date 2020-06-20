@@ -82,6 +82,8 @@ source_set("web_applications") {
     "web_app_install_manager.h",
     "web_app_install_task.cc",
     "web_app_install_task.h",
+    "web_app_proto_utils.cc",
+    "web_app_proto_utils.h",
     "web_app_registrar.cc",
     "web_app_registrar.h",
     "web_app_registry_update.cc",

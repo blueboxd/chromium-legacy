@@ -21,6 +21,12 @@ Polymer({
       reflectToAttribute: true
     },
 
+    autofocus: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     // Prompt text to display in the search field.
     label: String,
 

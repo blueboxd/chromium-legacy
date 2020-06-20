@@ -1,6 +1,7 @@
 <style include="cr-hidden-style">
   :host {
     --ntp-logo-height: 230px;
+    --ntp-logo-vertical-box-padding: 16px;
     display: inline-block;
     flex-shrink: 0;
     min-height: var(--ntp-logo-height);
@@ -31,22 +32,36 @@
     justify-content: center;
   }
 
-  #imageContainer {
+  #imageDoodle {
     cursor: pointer;
-    display: flex;
-    height: fit-content;
     outline: none;
-    position: relative;
-    width: fit-content;
   }
 
-  :host-context(.focus-outline-visible) #imageContainer:focus {
+  :host([doodle-boxed_]) #imageDoodle {
+    background-color: var(--ntp-logo-box-color);
+    border-radius: 20px;
+    padding: var(--ntp-logo-vertical-box-padding) 24px;
+  }
+
+  :host-context(.focus-outline-visible) #imageDoodle:focus {
     box-shadow: 0 0 0 2px rgba(var(--google-blue-600-rgb), .4);
+  }
+
+  #imageContainer {
+    display: flex;
+    height: fit-content;
+    position: relative;
+    width: fit-content;
   }
 
   #image {
     max-height: var(--ntp-logo-height);
     max-width: 100%;
+  }
+
+  :host([doodle-boxed_]) #image {
+    max-height: calc(
+        var(--ntp-logo-height) - 2 * var(--ntp-logo-vertical-box-padding));
   }
 
   #animation {
@@ -98,22 +113,24 @@
 <dom-if if="[[showDoodle_]]" restamp>
   <template>
     <div id="doodle" title="[[doodle_.description]]">
-      <div id="imageContainer" hidden="[[!doodle_.content.imageDoodle]]"
-          tabindex="1" on-click="onImageClick_" on-keydown="onImageKeydown_">
-        <!-- The static image is always visible and the animated image is
-             stacked on top of the static image so that there is no flicker when
-             starting the animation. -->
-        <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_">
-        </img>
-        <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
-            hidden="[[!showAnimation_]]">
-        </ntp-untrusted-iframe>
-        <cr-button id="shareButton" title="$i18n{shareDoodle}"
-            on-click="onShareButtonClick_">
-          <img id="shareButtonImage"
-              src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
+      <div id="imageDoodle" hidden="[[!doodle_.content.imageDoodle]]"
+          tabindex="0" on-click="onImageClick_" on-keydown="onImageKeydown_">
+        <div id="imageContainer">
+          <!-- The static image is always visible and the animated image is
+              stacked on top of the static image so that there is no flicker
+              when starting the animation. -->
+          <img id="image" src="[[imageUrl_]]" on-load="onImageLoad_">
           </img>
-        </cr-button>
+          <ntp-untrusted-iframe id="animation" path="[[animationUrl_]]"
+              hidden="[[!showAnimation_]]">
+          </ntp-untrusted-iframe>
+          <cr-button id="shareButton" title="$i18n{shareDoodle}"
+              on-click="onShareButtonClick_">
+            <img id="shareButtonImage"
+                src="[[doodle_.content.imageDoodle.shareButton.iconUrl.url]]">
+            </img>
+          </cr-button>
+        </div>
       </div>
       <template is="dom-if" if="[[iframeUrl_]]" restamp>
         <iframe id="iframe" src="[[iframeUrl_]]"></iframe>

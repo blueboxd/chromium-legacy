@@ -95,9 +95,9 @@ class RestoreOnStartupTest(ChromeEnterpriseTestCase):
 
     # The URL of the new tab can be one of the following:
     # - https://www.google.com/_/chrome/newtab?ie=UTF-8
-    # - chrome://newtab
+    # - chrome://new-tab-page/
     # - chrome-search://local-ntp/local-ntp.html
-    self.assertTrue('/newtab' in output_urls[0] or
+    self.assertTrue('new-tab-page' in output_urls[0] or
                     'local-ntp.html' in output_urls[0])
 
   @test

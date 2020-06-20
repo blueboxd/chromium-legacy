@@ -10,7 +10,6 @@
 #include <string>
 #include <unordered_set>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/media_export.h"

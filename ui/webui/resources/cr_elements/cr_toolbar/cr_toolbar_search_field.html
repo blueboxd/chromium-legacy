@@ -187,7 +187,7 @@
           on-keydown="onSearchTermKeydown_"
           on-focus="onInputFocus_"
           on-blur="onInputBlur_"
-          autofocus
+          autofocus$="[[autofocus]]"
           spellcheck="false">
     </div>
     <template is="dom-if" if="[[hasSearchText]]">

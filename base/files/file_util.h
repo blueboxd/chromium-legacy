@@ -245,6 +245,15 @@ BASE_EXPORT ScopedFD CreateAndOpenFdForTemporaryFileInDir(const FilePath& dir,
 
 #if defined(OS_POSIX)
 
+// ReadFileToStringNonBlocking is identical to ReadFileToString except it
+// guarantees that it will not block. This guarantee is provided on POSIX by
+// opening the file as O_NONBLOCK. This variant should only be used on files
+// which are guaranteed not to block (such as kernel files). Or in situations
+// where a partial read would be acceptable because the backing store returned
+// EWOULDBLOCK.
+BASE_EXPORT bool ReadFileToStringNonBlocking(const base::FilePath& file,
+                                             std::string* ret);
+
 // Creates a symbolic link at |symlink| pointing to |target|.  Returns
 // false on failure.
 BASE_EXPORT bool CreateSymbolicLink(const FilePath& target,

@@ -553,7 +553,9 @@
   "services/services_strings.grd": {
     "messages": [3460],
   },
-
+  "skia/skia_resources.grd": {
+    "includes": [3470],
+  },
   "third_party/blink/public/blink_image_resources.grd": {
     "structures": [3480],
   },

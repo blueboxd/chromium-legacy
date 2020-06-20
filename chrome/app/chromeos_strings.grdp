@@ -2281,6 +2281,9 @@
   </message>
 
   <!-- Common Network type strings -->
+  <message name="IDS_NETWORK_TYPE" desc="Label for network types">
+    Type
+  </message>
   <message name="IDS_NETWORK_TYPE_ETHERNET" desc="Label for Ethernet networks.">
     Ethernet
   </message>
@@ -2307,6 +2310,9 @@
   </message>
   <message name="IDS_NETWORK_TYPE_VPN_BUILTIN" desc="The built-in VPN types (Open VPN and L2TP/IPSec).">
     OpenVPN / L2TP
+  </message>
+  <message name="IDS_NETWORK_TYPE_WIRELESS" desc="Label for wireless networks (Cellular, Tether, and WiFi.).">
+    Wireless
   </message>
 
   <!-- Status bar -->
@@ -3474,6 +3480,35 @@
 
   <message name="IDS_DEVICE_LOG_LINK_TEXT" desc="Message preceeding link to chrome://device-log">
     For network logs, see: <ph name="DEVICE_LOG_LINK">&lt;a href="chrome://device-log"&gt;chrome://device-log&lt;/a&gt;</ph>
+  </message>
+
+  <!-- Network Health display strings -->
+  <message name="IDS_NETWORK_HEALTH_STATE" desc="Network Health State label">
+    State
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_UNINITIALIZED" desc="Network Health State - Uninitialized">
+    Uninitialized
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_DISABLED" desc="Network Health State - Disabled">
+    Disabled
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_PROHIBITED" desc="Network Health State - Prohibited">
+    Prohibited
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_NOT_CONNECTED" desc="Network Health State - Not Connected">
+    Not Connected
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_CONNECTING" desc="Network Health State - Connecting">
+    Connecting
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_PORTAL" desc="Network Health State - Portal">
+    Portal
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_CONNECTED" desc="Network Health State - Connected">
+    Connected
+  </message>
+  <message name="IDS_NETWORK_HEALTH_STATE_ONLINE" desc="Network Health State - Online">
+    Online
   </message>
 
   <!-- Set time/date UI display strings -->

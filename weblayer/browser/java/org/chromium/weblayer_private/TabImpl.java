@@ -115,7 +115,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
     private boolean mPostContainerViewInitDone;
 
-    private AccessibilityUtil.Observer mAccessibilityObserver;
+    private WebLayerAccessibilityUtil.Observer mAccessibilityObserver;
 
     private static class InternalAccessDelegateImpl
             implements ViewEventSink.InternalAccessDelegate {

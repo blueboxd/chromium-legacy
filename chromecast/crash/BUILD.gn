@@ -94,6 +94,7 @@ if (!is_fuchsia) {
       "//chromecast/base:default_create_sys_info",
       "//chromecast/public",
       "//chromecast/system/reboot:reboot_util",
+      "//third_party/crashpad/crashpad/client",
     ]
   }
 

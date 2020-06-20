@@ -202,8 +202,8 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    @VisibleForTesting
-    static void startSearchActivity(Intent intent, boolean startVoiceSearch) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PACKAGE_PRIVATE)
+    public static void startSearchActivity(Intent intent, boolean startVoiceSearch) {
         Log.d(SearchActivity.TAG, "Launching SearchActivity: VOICE=" + startVoiceSearch);
         Context context = getDelegate().getContext();
 

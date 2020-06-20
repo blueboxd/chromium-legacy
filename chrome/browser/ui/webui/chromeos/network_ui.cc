@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/net/network_health/network_health_localized_strings.h"
 #include "chrome/browser/chromeos/net/network_health/network_health_service.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/ui/webui/chromeos/cellular_setup/cellular_setup_dialog_launcher.h"
@@ -406,8 +407,10 @@ NetworkUI::NetworkUI(content::WebUI* web_ui)
   content::WebUIDataSource* html =
       content::WebUIDataSource::Create(chrome::kChromeUINetworkHost);
   html->AddLocalizedStrings(localized_strings);
+  network_health::AddLocalizedStrings(html);
 
   network_element::AddLocalizedStrings(html);
+  network_element::AddOncLocalizedStrings(html);
   html->UseStringsJs();
 
   html->AddResourcePath("network_ui.js", IDR_NETWORK_UI_JS);

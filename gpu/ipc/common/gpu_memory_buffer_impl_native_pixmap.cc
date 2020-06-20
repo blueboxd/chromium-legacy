@@ -106,8 +106,20 @@ void GpuMemoryBufferImplNativePixmap::Unmap() {
 }
 
 int GpuMemoryBufferImplNativePixmap::stride(size_t plane) const {
-  DCHECK_LT(plane, gfx::NumberOfPlanesForLinearBufferFormat(format_));
-  return pixmap_->GetStride(plane);
+  // The caller is responsible for ensuring that |plane| is within bounds.
+  CHECK_LT(plane, handle_.planes.size());
+
+  // |handle_|.planes[plane].stride is a uint32_t. For usages for which we
+  // create a ClientNativePixmapDmaBuf,
+  // ClientNativePixmapDmaBuf::ImportFromDmabuf() ensures that the stride fits
+  // on an int, so this checked_cast shouldn't fail. For usages for which we
+  // create a ClientNativePixmapOpaque, we don't validate the stride, but the
+  // expectation is that either a) the stride() method won't be called, or b)
+  // the stride() method is called on the GPU process and
+  // |handle_|.planes[plane].stride is also set on the GPU process so there's no
+  // need to validate it. Refer to http://crbug.com/1093644#c1 for a more
+  // detailed discussion.
+  return base::checked_cast<int>(handle_.planes[plane].stride);
 }
 
 gfx::GpuMemoryBufferType GpuMemoryBufferImplNativePixmap::GetType() const {

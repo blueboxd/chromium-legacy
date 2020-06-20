@@ -2,6 +2,7 @@ include_rules = [
   "+chrome/browser/browser_controls/android",
   "+chrome/browser/enterprise",
   "+chrome/browser/flags/android",
+  "+chrome/browser/fullscreen/android",
   "+chrome/browser/notifications",
   "+chrome/browser/preferences/android/java",
   "+chrome/browser/safety_check/android",

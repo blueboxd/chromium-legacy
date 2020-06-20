@@ -37,6 +37,7 @@ source_set("x11") {
   public_deps = [
     "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
+    "//ui/base/x",
   ]
 
   deps = [
@@ -50,7 +51,6 @@ source_set("x11") {
     "//ui/base/clipboard:clipboard_types",
     "//ui/base/cursor",
     "//ui/base/ime",
-    "//ui/base/x",
     "//ui/base/x:gl",
     "//ui/display/fake",
     "//ui/events",

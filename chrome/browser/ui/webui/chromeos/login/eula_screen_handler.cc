@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"

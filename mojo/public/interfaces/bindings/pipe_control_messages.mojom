@@ -38,7 +38,7 @@ struct DisconnectReason {
 // An event to notify that an interface endpoint set up at the message sender
 // side has been closed.
 //
-// This event is omitted if the endpoint belongs to the master interface and
+// This event is omitted if the endpoint belongs to the primary interface and
 // there is no disconnect reason specified.
 struct PeerAssociatedEndpointClosedEvent {
   // The interface ID.

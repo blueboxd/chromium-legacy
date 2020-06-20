@@ -740,6 +740,37 @@ bool CreateDirectoryAndGetError(const FilePath& full_path,
   return true;
 }
 
+// ReadFileToStringNonBlockingNonBlocking will read a file to a string. This
+// method should only be used on files which are known to be non-blocking such
+// as procfs or sysfs nodes. Additionally, the file is opened as O_NONBLOCK so
+// it WILL NOT block even if opened on a blocking file. It will return true if
+// the file read until EOF and it will return false otherwise, errno will remain
+// set on error conditions. |ret| will be populated with the contents of the
+// file.
+bool ReadFileToStringNonBlocking(const base::FilePath& file, std::string* ret) {
+  DCHECK(ret);
+  ret->clear();
+
+  base::ScopedFD fd(HANDLE_EINTR(
+      open(file.MaybeAsASCII().c_str(), O_CLOEXEC | O_NONBLOCK | O_RDONLY)));
+  if (!fd.is_valid()) {
+    return false;
+  }
+
+  ssize_t bytes_read = 0;
+  do {
+    char buf[4096];
+    bytes_read = HANDLE_EINTR(read(fd.get(), buf, sizeof(buf)));
+    if (bytes_read < 0) {
+      return false;
+    } else if (bytes_read > 0) {
+      ret->append(buf, bytes_read);
+    }
+  } while (bytes_read > 0);
+
+  return true;
+}
+
 bool NormalizeFilePath(const FilePath& path, FilePath* normalized_path) {
   FilePath real_path_result = MakeAbsoluteFilePath(path);
   if (real_path_result.empty())

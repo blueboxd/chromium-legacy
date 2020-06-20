@@ -22,7 +22,11 @@ js_type_check("closure_compile_module") {
 # Sources with Polymer 3 generated modules
 
 js_library("network_health_summary") {
-  deps = [ "//chromeos/services/network_health/public/mojom:mojom_js_library_for_compile" ]
+  deps = [
+    "//chromeos/services/network_health/public/mojom:mojom_js_library_for_compile",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
+    "//ui/webui/resources/js:i18n_behavior",
+  ]
 }
 
 js_library("network_health_summary.m") {
@@ -30,6 +34,8 @@ js_library("network_health_summary.m") {
   deps = [
     "//chromeos/services/network_health/public/mojom:mojom_js_library_for_compile",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_components/chromeos/network:onc_mojo",
+    "//ui/webui/resources/js:i18n_behavior.m",
   ]
   extra_deps = [ ":network_health_summary_module" ]
 }

@@ -115,13 +115,20 @@ void DevToolsDataSource::StartDataRequest(
                             base::CompareCase::INSENSITIVE_ASCII));
     std::string path_under_bundled =
         path_without_params.substr(bundled_path_prefix.length());
+    GURL custom_devtools_frontend = GetCustomDevToolsFrontendURL();
+    if (!custom_devtools_frontend.is_valid()) {
+      // Fetch from packaged resources.
+      StartBundledDataRequest(path_under_bundled, std::move(callback));
+      return;
+    }
     if (GetCustomDevToolsFrontendURL().SchemeIsFile()) {
       // Fetch from file system.
       StartFileRequest(path_under_bundled, std::move(callback));
-    } else {
-      // Fetch from packaged resources.
-      StartBundledDataRequest(path_under_bundled, std::move(callback));
+      return;
     }
+    GURL remote_url(custom_devtools_frontend.spec() + path_under_bundled);
+    // Fetch from remote URL.
+    StartCustomDataRequest(remote_url, std::move(callback));
     return;
   }
 

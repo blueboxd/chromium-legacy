@@ -21,6 +21,7 @@
 #include "chromecast/crash/linux/minidump_uploader.h"
 #include "chromecast/public/cast_sys_info.h"
 #include "chromecast/system/reboot/reboot_util.h"
+#include "third_party/crashpad/crashpad/client/crashpad_info.h"
 
 namespace {
 
@@ -36,6 +37,10 @@ int main(int argc, char** argv) {
   chromecast::RebootUtil::Initialize(command_line->argv());
   chromecast::RegisterPathProvider();
   logging::InitLogging(logging::LoggingSettings());
+
+  // Allow the system crash handler to handle our own crashes.
+  crashpad::CrashpadInfo::GetCrashpadInfo()
+      ->set_system_crash_reporter_forwarding(crashpad::TriState::kEnabled);
 
   LOG(INFO) << "Starting crash uploader...";
 

@@ -232,4 +232,16 @@ suite('cr-toolbar-search-field', function() {
     field.setValue('');
     assertFalse(field.showingSearch);
   });
+
+  test('autofocus propagated to search input', () => {
+    assertFalse(field.autofocus);
+    assertFalse(field.getSearchInput().hasAttribute('autofocus'));
+
+    field.remove();
+    field = document.createElement('cr-toolbar-search-field');
+    field.autofocus = true;
+
+    document.body.appendChild(field);
+    assertTrue(field.getSearchInput().hasAttribute('autofocus'));
+  });
 });

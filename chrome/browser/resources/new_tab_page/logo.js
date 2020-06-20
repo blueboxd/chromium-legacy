@@ -59,6 +59,13 @@ class LogoElement extends PolymerElement {
         type: Boolean,
       },
 
+      /**
+       * The NTP's background color. If null or undefined the NTP does not have
+       * a single background color, e.g. when a background image is set.
+       * @type {skia.mojom.SkColor}
+       */
+      backgroundColor: Object,
+
       /** @private */
       loaded_: Boolean,
 
@@ -84,6 +91,13 @@ class LogoElement extends PolymerElement {
       showDoodle_: {
         computed: 'computeShowDoodle_(doodleAllowed, loaded_, canShowDoodle_)',
         type: Boolean,
+      },
+
+      /** @private */
+      doodleBoxed_: {
+        reflectToAttribute: true,
+        type: Boolean,
+        computed: 'computeDoodleBoxed_(backgroundColor, doodle_)',
       },
 
       /** @private */
@@ -198,6 +212,8 @@ class LogoElement extends PolymerElement {
           `${imageDoodle.shareButton.x / imageDoodle.width * 100}%`,
       '--ntp-logo-share-button-y': imageDoodle &&
           `${imageDoodle.shareButton.y / imageDoodle.height * 100}%`,
+      '--ntp-logo-box-color':
+          imageDoodle && skColorToRgba(imageDoodle.backgroundColor),
     });
   }
 
@@ -226,6 +242,17 @@ class LogoElement extends PolymerElement {
    */
   computeShowDoodle_() {
     return !!this.doodleAllowed && this.canShowDoodle_;
+  }
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeDoodleBoxed_() {
+    return !this.backgroundColor ||
+        !!this.doodle_ && !!this.doodle_.content.imageDoodle &&
+        this.doodle_.content.imageDoodle.backgroundColor.value !==
+            this.backgroundColor.value;
   }
 
   /**

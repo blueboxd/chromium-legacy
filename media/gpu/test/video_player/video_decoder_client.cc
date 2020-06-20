@@ -189,8 +189,7 @@ void VideoDecoderClient::CreateDecoderTask(bool* success,
             base::ThreadTaskRunnerHandle::Get(),
             std::make_unique<PlatformVideoFramePool>(
                 gpu_memory_buffer_factory_),
-            std::make_unique<VideoFrameConverter>(),
-            gpu_memory_buffer_factory_);
+            std::make_unique<VideoFrameConverter>());
       } else {
         LOG(ERROR) << "VD-based video decoders only support import mode";
       }

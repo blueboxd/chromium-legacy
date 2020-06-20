@@ -86,10 +86,13 @@ suite('OSSettingsSearchBox', () => {
     });
   }
 
-  setup(function() {
+  function setupSearchBox() {
     chrome.metricsPrivate = new MockMetricsPrivate();
-    toolbar = document.querySelector('os-settings-ui').$$('os-toolbar');
+    toolbar = document.createElement('os-toolbar');
     assertTrue(!!toolbar);
+    document.body.appendChild(toolbar);
+    Polymer.dom.flush();
+
     searchBox = toolbar.$$('os-settings-search-box');
     assertTrue(!!searchBox);
     field = searchBox.$$('cr-toolbar-search-field');
@@ -106,6 +109,10 @@ suite('OSSettingsSearchBox', () => {
 
     userActionRecorder = new settings.FakeUserActionRecorder();
     settings.setUserActionRecorderForTesting(userActionRecorder);
+  }
+
+  setup(function() {
+    setupSearchBox();
     settings.Router.getInstance().navigateTo(settings.routes.BASIC);
   });
 
@@ -250,7 +257,7 @@ suite('OSSettingsSearchBox', () => {
   test('Keypress Enter on row causes route change', async () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
-    await simulateSearch('fake query');
+    await simulateSearch('fake query 1');
     await waitForListUpdate();
 
     const selectedOsRow = searchBox.getSelectedOsSearchResultRow_();
@@ -263,7 +270,7 @@ suite('OSSettingsSearchBox', () => {
     selectedOsRow.$.searchResultContainer.dispatchEvent(enterEvent);
     assertFalse(dropDown.opened);
     const router = settings.Router.getInstance();
-    assertEquals(router.getQueryParameters().get('search'), 'fake query');
+    assertEquals(router.getQueryParameters().get('search'), 'fake query 1');
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });
@@ -271,7 +278,7 @@ suite('OSSettingsSearchBox', () => {
   test('Route change when result row is clicked', async () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
-    await simulateSearch('fake query');
+    await simulateSearch('fake query 2');
     await waitForListUpdate();
 
     const searchResultRow = searchBox.getSelectedOsSearchResultRow_();
@@ -282,7 +289,7 @@ suite('OSSettingsSearchBox', () => {
 
     assertFalse(dropDown.opened);
     const router = settings.Router.getInstance();
-    assertEquals(router.getQueryParameters().get('search'), 'fake query');
+    assertEquals(router.getQueryParameters().get('search'), 'fake query 2');
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });
@@ -373,7 +380,7 @@ suite('OSSettingsSearchBox', () => {
         `Turn&nbsp;on  &nbsp;<b>Wi-F</b>i `);
   });
 
-  test.only('Test longest common substring for mispellings', async () => {
+  test('Test longest common substring for mispellings', async () => {
     settingsSearchHandler.setFakeResults([fakeResult('Linux')]);
     await simulateSearch(`Linuux`);
     await waitForListUpdate();
@@ -398,5 +405,16 @@ suite('OSSettingsSearchBox', () => {
     assertEquals(
         searchBox.getSelectedOsSearchResultRow_().$.resultText.innerHTML,
         `<b>ABCDEF</b> GHIJK <b>LM</b>NO`);
+  });
+
+  test('Focus search input behavior on attached', async () => {
+    PolymerTest.clearBody();
+    settings.Router.getInstance().navigateTo(settings.routes.BASIC);
+    setupSearchBox();
+    assertEquals(field.root.activeElement, field.$.searchInput);
+
+    PolymerTest.clearBody();
+    settings.Router.getInstance().navigateTo(settings.routes.KEYBOARD);
+    assertEquals(field.root.activeElement, null);
   });
 });

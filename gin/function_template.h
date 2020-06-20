@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/strings/strcat.h"
 #include "gin/arguments.h"

@@ -126,12 +126,12 @@ class TestSyncImpl : public TestSync, public TestSyncCommonImpl {
   DISALLOW_COPY_AND_ASSIGN(TestSyncImpl);
 };
 
-class TestSyncMasterImpl : public TestSyncMaster, public TestSyncCommonImpl {
+class TestSyncPrimaryImpl : public TestSyncPrimary, public TestSyncCommonImpl {
  public:
-  explicit TestSyncMasterImpl(PendingReceiver<TestSyncMaster> receiver)
+  explicit TestSyncPrimaryImpl(PendingReceiver<TestSyncPrimary> receiver)
       : receiver_(this, std::move(receiver)) {}
 
-  // TestSyncMaster implementation:
+  // TestSyncPrimary implementation:
   void Ping(PingCallback callback) override { PingImpl(std::move(callback)); }
   void Echo(int32_t value, EchoCallback callback) override {
     EchoImpl(value, std::move(callback));
@@ -146,12 +146,12 @@ class TestSyncMasterImpl : public TestSyncMaster, public TestSyncCommonImpl {
     SendReceiverImpl(std::move(receiver));
   }
 
-  Receiver<TestSyncMaster>* receiver() { return &receiver_; }
+  Receiver<TestSyncPrimary>* receiver() { return &receiver_; }
 
  private:
-  Receiver<TestSyncMaster> receiver_;
+  Receiver<TestSyncPrimary> receiver_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSyncMasterImpl);
+  DISALLOW_COPY_AND_ASSIGN(TestSyncPrimaryImpl);
 };
 
 class TestSyncAssociatedImpl : public TestSync, public TestSyncCommonImpl {
@@ -185,8 +185,8 @@ struct ImplTraits<TestSync> {
 };
 
 template <>
-struct ImplTraits<TestSyncMaster> {
-  using Type = TestSyncMasterImpl;
+struct ImplTraits<TestSyncPrimary> {
+  using Type = TestSyncPrimaryImpl;
 };
 
 template <typename Interface>
@@ -317,27 +317,27 @@ class SyncMethodAssociatedTest : public SyncMethodTest {
 
  protected:
   void SetUp() override {
-    master_impl_ = std::make_unique<TestSyncMasterImpl>(
-        master_remote_.BindNewPipeAndPassReceiver());
+    primary_impl_ = std::make_unique<TestSyncPrimaryImpl>(
+        primary_remote_.BindNewPipeAndPassReceiver());
 
     impl_pending_sync_receiver_ =
         impl_pending_sync_remote_.InitWithNewEndpointAndPassReceiver();
     client_pending_sync_receiver_ =
         client_pending_sync_remote_.InitWithNewEndpointAndPassReceiver();
 
-    master_impl_->set_send_remote_handler(
+    primary_impl_->set_send_remote_handler(
         [this](PendingAssociatedRemote<TestSync> remote) {
           client_pending_sync_remote_ = std::move(remote);
         });
     base::RunLoop run_loop;
-    master_impl_->set_send_receiver_handler(
+    primary_impl_->set_send_receiver_handler(
         [this, &run_loop](PendingAssociatedReceiver<TestSync> receiver) {
           impl_pending_sync_receiver_ = std::move(receiver);
           run_loop.Quit();
         });
 
-    master_remote_->SendRemote(std::move(client_pending_sync_remote_));
-    master_remote_->SendReceiver(std::move(impl_pending_sync_receiver_));
+    primary_remote_->SendRemote(std::move(client_pending_sync_remote_));
+    primary_remote_->SendReceiver(std::move(impl_pending_sync_receiver_));
     run_loop.Run();
   }
 
@@ -346,18 +346,18 @@ class SyncMethodAssociatedTest : public SyncMethodTest {
     impl_pending_sync_receiver_.reset();
     client_pending_sync_remote_.reset();
     client_pending_sync_receiver_.reset();
-    master_remote_.reset();
-    master_impl_.reset();
+    primary_remote_.reset();
+    primary_impl_.reset();
   }
 
-  Remote<TestSyncMaster> master_remote_;
-  std::unique_ptr<TestSyncMasterImpl> master_impl_;
+  Remote<TestSyncPrimary> primary_remote_;
+  std::unique_ptr<TestSyncPrimaryImpl> primary_impl_;
 
-  // An associated interface whose receiver lives at the |master_impl_| side.
+  // An associated interface whose receiver lives at the |primary_impl_| side.
   PendingAssociatedRemote<TestSync> impl_pending_sync_remote_;
   PendingAssociatedReceiver<TestSync> impl_pending_sync_receiver_;
 
-  // An associated interface whose receiver lives at the |master_remote_| side.
+  // An associated interface whose receiver lives at the |primary_remote_| side.
   PendingAssociatedRemote<TestSync> client_pending_sync_remote_;
   PendingAssociatedReceiver<TestSync> client_pending_sync_receiver_;
 };
@@ -440,7 +440,7 @@ void RunTestOnSequencedTaskRunner(
   run_loop.Run();
 }
 
-// TestSync (without associated interfaces) and TestSyncMaster (with associated
+// TestSync (without associated interfaces) and TestSyncPrimary (with associated
 // interfaces) exercise MultiplexRouter with different configurations.
 // Each test is run once with a Remote and once with a SharedRemote to ensure
 // that they behave the same with respect to sync calls. Finally, all such
@@ -452,10 +452,10 @@ using InterfaceTypes = testing::Types<
     TestParams<TestSync,
                false,
                BindingsTestSerializationMode::kSerializeBeforeSend>,
-    TestParams<TestSyncMaster,
+    TestParams<TestSyncPrimary,
                true,
                BindingsTestSerializationMode::kSerializeBeforeSend>,
-    TestParams<TestSyncMaster,
+    TestParams<TestSyncPrimary,
                false,
                BindingsTestSerializationMode::kSerializeBeforeSend>,
     TestParams<TestSync,
@@ -464,18 +464,18 @@ using InterfaceTypes = testing::Types<
     TestParams<TestSync,
                false,
                BindingsTestSerializationMode::kSerializeBeforeDispatch>,
-    TestParams<TestSyncMaster,
+    TestParams<TestSyncPrimary,
                true,
                BindingsTestSerializationMode::kSerializeBeforeDispatch>,
-    TestParams<TestSyncMaster,
+    TestParams<TestSyncPrimary,
                false,
                BindingsTestSerializationMode::kSerializeBeforeDispatch>,
     TestParams<TestSync, true, BindingsTestSerializationMode::kNeverSerialize>,
     TestParams<TestSync, false, BindingsTestSerializationMode::kNeverSerialize>,
-    TestParams<TestSyncMaster,
+    TestParams<TestSyncPrimary,
                true,
                BindingsTestSerializationMode::kNeverSerialize>,
-    TestParams<TestSyncMaster,
+    TestParams<TestSyncPrimary,
                false,
                BindingsTestSerializationMode::kNeverSerialize>>;
 
@@ -1170,8 +1170,8 @@ TEST_F(SyncMethodAssociatedTest,
   AssociatedRemote<TestSync> client_remote(
       std::move(client_pending_sync_remote_));
 
-  master_impl_->set_echo_handler(
-      [&](int32_t value, TestSyncMaster::EchoCallback callback) {
+  primary_impl_->set_echo_handler(
+      [&](int32_t value, TestSyncPrimary::EchoCallback callback) {
         int32_t result_value = -1;
 
         ASSERT_TRUE(client_remote->Echo(123, &result_value));
@@ -1180,7 +1180,7 @@ TEST_F(SyncMethodAssociatedTest,
       });
 
   int32_t result_value = -1;
-  ASSERT_TRUE(master_remote_->Echo(456, &result_value));
+  ASSERT_TRUE(primary_remote_->Echo(456, &result_value));
   EXPECT_EQ(456, result_value);
 }
 
@@ -1193,8 +1193,8 @@ TEST_F(SyncMethodAssociatedTest,
   TestSyncAssociatedImpl impl(std::move(impl_pending_sync_receiver_));
   AssociatedRemote<TestSync> remote(std::move(impl_pending_sync_remote_));
 
-  master_impl_->set_echo_handler(
-      [&](int32_t value, TestSyncMaster::EchoCallback callback) {
+  primary_impl_->set_echo_handler(
+      [&](int32_t value, TestSyncPrimary::EchoCallback callback) {
         int32_t result_value = -1;
 
         ASSERT_TRUE(remote->Echo(123, &result_value));
@@ -1203,7 +1203,7 @@ TEST_F(SyncMethodAssociatedTest,
       });
 
   int32_t result_value = -1;
-  ASSERT_TRUE(master_remote_->Echo(456, &result_value));
+  ASSERT_TRUE(primary_remote_->Echo(456, &result_value));
   EXPECT_EQ(456, result_value);
 }
 

@@ -30,7 +30,12 @@ group("updater") {
 # Conditional build is needed, otherwise the analyze script on Linux
 # requires all targets and it is going to include the targets below.
 if (is_win || is_mac) {
-  # This target must only have platform-neutral sources.
+  # This target must only have platform-neutral sources. Generally speaking,
+  # these sources are related to common, cross-platfrom aspects of the code,
+  # such as crash handling, or interfaces to cross platform dependencies from
+  # Chromium. If the sources are in platform-specific directories or their
+  # names contain platform-specific suffixes, they must go into the :lib
+  # target, or to targets in their platform directories.
   source_set("base") {
     sources = [
       "action_handler.h",
@@ -71,6 +76,7 @@ if (is_win || is_mac) {
     ]
   }
 
+  # Use this source set for code which has platform-specific modules.
   source_set("lib") {
     sources = [
       "app/app.cc",
@@ -141,8 +147,6 @@ if (is_win || is_mac) {
         "lib_util_win.cc",
         "prefs_win.cc",
         "update_apps_win.cc",
-        "win/group_policy_manager.cc",
-        "win/group_policy_manager.h",
       ]
     }
 
@@ -163,7 +167,6 @@ if (is_win || is_mac) {
     if (is_win) {
       deps += [
         "//chrome/updater/app/server/win:updater_idl_idl",
-        "//chrome/updater/win:base",
         "//chrome/updater/win:constants",
         "//chrome/updater/win:lib",
       ]
@@ -256,7 +259,6 @@ if (is_win || is_mac) {
       sources += [
         "external_constants_win_unittest.cc",
         "test/integration_tests_win.cc",
-        "win/group_policy_manager_unittest.cc",
       ]
 
       deps += [

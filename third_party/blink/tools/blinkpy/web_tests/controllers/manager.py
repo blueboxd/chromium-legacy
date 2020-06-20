@@ -93,7 +93,7 @@ class Manager(object):
         self._finder = WebTestFinder(self._port, self._options)
         self._path_finder = PathFinder(port.host.filesystem)
 
-        sink = CreateTestResultSink(self._artifacts_directory)
+        sink = CreateTestResultSink(self._port)
         self._runner = WebTestRunner(self._options, self._port, self._printer,
                                      self._results_directory,
                                      self._test_is_slow, sink)

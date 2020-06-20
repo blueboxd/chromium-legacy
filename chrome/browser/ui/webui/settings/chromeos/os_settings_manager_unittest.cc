@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_manager.h"
 
+#include "base/metrics/histogram_base.h"
 #include "base/no_destructor.h"
+#include "base/test/metrics/histogram_enum_reader.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/constants_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
@@ -42,34 +44,55 @@ class OsSettingsManagerTest : public testing::Test {
 };
 
 TEST_F(OsSettingsManagerTest, Initialization) {
-  // For each mojom::Section value, there should be an associated
-  // OsSettingsSection class registered.
+  base::Optional<base::HistogramEnumEntryMap> sections_enum_entry_map =
+      base::ReadEnumFromEnumsXml("OsSettingsSection");
+  ASSERT_TRUE(sections_enum_entry_map);
   for (const auto& section : constants::AllSections()) {
+    // For each mojom::Section value, there should be an associated
+    // OsSettingsSection class registered.
     EXPECT_TRUE(manager_->sections_->GetSection(section))
         << "No OsSettingsSection instance created for " << section << ".";
-  }
 
-  // Each mojom::Section should be registered in the hierarchy.
-  for (const auto& section : constants::AllSections()) {
+    // Each mojom::Section should be registered in the hierarchy.
     const Hierarchy::SectionMetadata& metadata =
         manager_->hierarchy_->GetSectionMetadata(section);
 
     // Only the "About Chrome OS" section contains only a link to a subpage.
     EXPECT_EQ(metadata.only_contains_link_to_subpage,
               section == mojom::Section::kAboutChromeOs);
+
+    EXPECT_TRUE(
+        base::Contains(*sections_enum_entry_map, static_cast<int32_t>(section)))
+        << "Missing OsSettingsSection enums.xml entry for " << section;
   }
 
-  // Each mojom::Subpage should be registered in the hierarchy. Note that
-  // GetSubpageMetadata() internally CHECK()s that the metadata exists before
-  // returning it.
-  for (const auto& subpage : constants::AllSubpages())
+  base::Optional<base::HistogramEnumEntryMap> subpages_enum_entry_map =
+      base::ReadEnumFromEnumsXml("OsSettingsSubpage");
+  ASSERT_TRUE(subpages_enum_entry_map);
+  for (const auto& subpage : constants::AllSubpages()) {
+    // Each mojom::Subpage should be registered in the hierarchy. Note that
+    // GetSubpageMetadata() internally CHECK()s that the metadata exists before
+    // returning it.
     manager_->hierarchy_->GetSubpageMetadata(subpage);
 
-  // Each mojom::Setting should be registered in the hierarchy. Note that
-  // GetSettingMetadata() internally CHECK()s that the metadata exists before
-  // returning it.
-  for (const auto& setting : constants::AllSettings())
+    EXPECT_TRUE(
+        base::Contains(*subpages_enum_entry_map, static_cast<int32_t>(subpage)))
+        << "Missing OsSettingsSubpage enums.xml entry for " << subpage;
+  }
+
+  base::Optional<base::HistogramEnumEntryMap> settings_enum_entry_map =
+      base::ReadEnumFromEnumsXml("OsSetting");
+  ASSERT_TRUE(settings_enum_entry_map);
+  for (const auto& setting : constants::AllSettings()) {
+    // Each mojom::Setting should be registered in the hierarchy. Note that
+    // GetSettingMetadata() internally CHECK()s that the metadata exists before
+    // returning it.
     manager_->hierarchy_->GetSettingMetadata(setting);
+
+    EXPECT_TRUE(
+        base::Contains(*settings_enum_entry_map, static_cast<int32_t>(setting)))
+        << "Missing OsSetting enums.xml entry for " << setting;
+  }
 }
 
 }  // namespace settings

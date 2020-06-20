@@ -6,6 +6,7 @@ import("//base/allocator/allocator.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/buildflags_paint_preview.gni")
 import("//build/config/chrome_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/compiler/pgo/pgo.gni")
 import("//build/config/crypto.gni")
 import("//build/config/features.gni")
@@ -4098,6 +4099,13 @@ static_library("browser") {
     sources += [
       "metrics/cached_metrics_profile.cc",
       "metrics/cached_metrics_profile.h",
+    ]
+  }
+
+  if (chromeos_is_browser_only) {
+    sources += [
+      "metrics/lacros_metrics_provider.cc",
+      "metrics/lacros_metrics_provider.h",
     ]
   }
 

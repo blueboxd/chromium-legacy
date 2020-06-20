@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.chrome.feed.R;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.widget.displaystyle.UiConfig;
@@ -62,6 +63,9 @@ import java.util.List;
  * Provides a surface that displays an interest feed rendered list of content suggestions.
  */
 public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
+    @VisibleForTesting
+    public static final String FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA = "FeedContentFirstLoadedTime";
+
     private final Activity mActivity;
     private final SnackbarManager mSnackbarManager;
     @Nullable
@@ -489,6 +493,12 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         if (topPosInStream > maxPosFraction * mRootView.getHeight()) return false;
 
         return true;
+    }
+
+    public void onOverviewShownAtLaunch(long activityCreationTimeMs) {
+        StartSurfaceConfiguration.recordHistogram(FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
+                mMediator.getContentFirstAvailableTimeMs() - activityCreationTimeMs,
+                mIsPlaceholderShown);
     }
 
     Tracker getFeatureEngagementTracker() {

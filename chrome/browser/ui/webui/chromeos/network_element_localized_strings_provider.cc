@@ -26,11 +26,13 @@ namespace network_element {
 namespace {
 
 constexpr webui::LocalizedString kElementLocalizedStrings[] = {
+    {"OncType", IDS_NETWORK_TYPE},
     {"OncTypeCellular", IDS_NETWORK_TYPE_CELLULAR},
     {"OncTypeEthernet", IDS_NETWORK_TYPE_ETHERNET},
     {"OncTypeMobile", IDS_NETWORK_TYPE_MOBILE_DATA},
     {"OncTypeTether", IDS_NETWORK_TYPE_TETHER},
     {"OncTypeVPN", IDS_NETWORK_TYPE_VPN},
+    {"OncTypeWireless", IDS_NETWORK_TYPE_WIRELESS},
     {"OncTypeWiFi", IDS_NETWORK_TYPE_WIFI},
     {"ipAddressNotAvailable", IDS_NETWORK_IP_ADDRESS_NA},
     {"networkListItemConnected", IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED},

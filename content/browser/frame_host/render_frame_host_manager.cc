@@ -1763,30 +1763,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
       return SiteInstanceDescriptor(opener_frame->GetSiteInstance());
   }
 
-  // Keep subframes in the parent's SiteInstance unless a dedicated process is
-  // required for either the parent or the subframe's destination URL.  This
-  // isn't a strict invariant but rather a heuristic to avoid unnecessary
-  // OOPIFs; see https://crbug.com/711006.
-  //
-  // TODO(alexmos): Remove this check after fixing https://crbug.com/787576.
-  //
-  // Also if kProcessSharingWithStrictSiteInstances is enabled, don't lump the
-  // subframe into the same SiteInstance as the parent. These separate
-  // SiteInstances can get assigned to the same process later.
-  if (!base::FeatureList::IsEnabled(
-          features::kProcessSharingWithStrictSiteInstances)) {
-    if (!frame_tree_node_->IsMainFrame()) {
-      RenderFrameHostImpl* parent = frame_tree_node_->parent();
-      bool dest_url_requires_dedicated_process =
-          SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-              parent->GetSiteInstance()->GetIsolationContext(), dest_url);
-      if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
-          !dest_url_requires_dedicated_process) {
-        return SiteInstanceDescriptor(parent->GetSiteInstance());
-      }
-    }
-  }
-
   // Start the new renderer in a new SiteInstance, but in the current
   // BrowsingInstance.
   return SiteInstanceDescriptor(dest_url, SiteInstanceRelation::RELATED);

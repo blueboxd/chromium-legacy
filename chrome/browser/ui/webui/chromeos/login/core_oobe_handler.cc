@@ -19,8 +19,6 @@
 #include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/configuration_keys.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
@@ -75,11 +73,6 @@ void LaunchResetScreen() {
 CoreOobeHandler::CoreOobeHandler(JSCallsContainer* js_calls_container)
     : BaseWebUIHandler(js_calls_container), version_info_updater_(this) {
   DCHECK(js_calls_container);
-  AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
-  CHECK(accessibility_manager);
-  accessibility_subscription_ = accessibility_manager->RegisterCallback(
-      base::Bind(&CoreOobeHandler::OnAccessibilityStatusChanged,
-                 base::Unretained(this)));
 
   ash::TabletMode::Get()->AddObserver(this);
 
@@ -101,17 +94,6 @@ void CoreOobeHandler::DeclareLocalizedValues(
   builder->Add("title", IDS_SHORT_PRODUCT_NAME);
   builder->Add("productName", IDS_SHORT_PRODUCT_NAME);
   builder->Add("learnMore", IDS_LEARN_MORE);
-
-  // OOBE accessibility options menu strings shown on each screen.
-  builder->Add("accessibilityLink", IDS_OOBE_ACCESSIBILITY_LINK);
-  builder->Add("spokenFeedbackOption", IDS_OOBE_SPOKEN_FEEDBACK_OPTION);
-  builder->Add("selectToSpeakOption", IDS_OOBE_SELECT_TO_SPEAK_OPTION);
-  builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
-  builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
-  builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
-  builder->Add("dockedMagnifierOption", IDS_OOBE_DOCKED_MAGNIFIER_OPTION);
-  builder->Add("virtualKeyboardOption", IDS_OOBE_VIRTUAL_KEYBOARD_OPTION);
-  builder->Add("closeAccessibilityMenu", IDS_OOBE_CLOSE_ACCESSIBILITY_MENU);
 
   // Strings for the device requisition prompt.
   builder->Add("deviceRequisitionPromptCancel",
@@ -145,7 +127,6 @@ void CoreOobeHandler::DeclareLocalizedValues(
 }
 
 void CoreOobeHandler::Initialize() {
-  UpdateA11yState();
   UpdateOobeUIVisibility();
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   version_info_updater_.StartUpdate(true);
@@ -172,18 +153,6 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleSkipUpdateEnrollAfterEula);
   AddCallback("updateCurrentScreen",
               &CoreOobeHandler::HandleUpdateCurrentScreen);
-  AddCallback("enableHighContrast", &CoreOobeHandler::HandleEnableHighContrast);
-  AddCallback("enableLargeCursor", &CoreOobeHandler::HandleEnableLargeCursor);
-  AddCallback("enableVirtualKeyboard",
-              &CoreOobeHandler::HandleEnableVirtualKeyboard);
-  AddCallback("enableScreenMagnifier",
-              &CoreOobeHandler::HandleEnableScreenMagnifier);
-  AddCallback("enableSpokenFeedback",
-              &CoreOobeHandler::HandleEnableSpokenFeedback);
-  AddCallback("enableSelectToSpeak",
-              &CoreOobeHandler::HandleEnableSelectToSpeak);
-  AddCallback("enableDockedMagnifier",
-              &CoreOobeHandler::HandleEnableDockedMagnifier);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
   AddCallback("skipToLoginForTesting",
@@ -311,44 +280,6 @@ void CoreOobeHandler::HandleUpdateCurrentScreen(
       screen == EulaView::kScreenId);
 }
 
-void CoreOobeHandler::HandleEnableHighContrast(bool enabled) {
-  AccessibilityManager::Get()->EnableHighContrast(enabled);
-}
-
-void CoreOobeHandler::HandleEnableLargeCursor(bool enabled) {
-  AccessibilityManager::Get()->EnableLargeCursor(enabled);
-}
-
-void CoreOobeHandler::HandleEnableVirtualKeyboard(bool enabled) {
-  AccessibilityManager::Get()->EnableVirtualKeyboard(enabled);
-}
-
-void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
-  DCHECK(MagnificationManager::Get());
-  MagnificationManager::Get()->SetMagnifierEnabled(enabled);
-}
-
-void CoreOobeHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
-  // Checkbox is initialized on page init and updates when spoken feedback
-  // setting is changed so just toggle spoken feedback here.
-  AccessibilityManager::Get()->EnableSpokenFeedback(
-      !AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-}
-
-void CoreOobeHandler::HandleEnableSelectToSpeak(bool /* enabled */) {
-  // Checkbox is initialized on page init and updates when Select to Speak
-  // setting is changed so just toggle Select to Speak here.
-  AccessibilityManager::Get()->SetSelectToSpeakEnabled(
-      !AccessibilityManager::Get()->IsSelectToSpeakEnabled());
-}
-
-void CoreOobeHandler::HandleEnableDockedMagnifier(bool enabled) {
-  // Checkbox is initialized on page init and updates when the docked magnifier
-  // setting is changed so just toggle Select to Speak here.
-  DCHECK(MagnificationManager::Get());
-  MagnificationManager::Get()->SetDockedMagnifierEnabled(enabled);
-}
-
 void CoreOobeHandler::HandleHideOobeDialog() {
   if (LoginDisplayHost::default_host())
     LoginDisplayHost::default_host()->HideOobeDialog();
@@ -429,26 +360,6 @@ void CoreOobeHandler::SetLoginUserCount(int user_count) {
 
 void CoreOobeHandler::ForwardAccelerator(std::string accelerator_name) {
   CallJS("cr.ui.Oobe.handleAccelerator", accelerator_name);
-}
-
-void CoreOobeHandler::UpdateA11yState() {
-  base::DictionaryValue a11y_info;
-  a11y_info.SetBoolean("highContrastEnabled",
-                       AccessibilityManager::Get()->IsHighContrastEnabled());
-  a11y_info.SetBoolean("largeCursorEnabled",
-                       AccessibilityManager::Get()->IsLargeCursorEnabled());
-  a11y_info.SetBoolean("spokenFeedbackEnabled",
-                       AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
-  a11y_info.SetBoolean("selectToSpeakEnabled",
-                       AccessibilityManager::Get()->IsSelectToSpeakEnabled());
-  DCHECK(MagnificationManager::Get());
-  a11y_info.SetBoolean("screenMagnifierEnabled",
-                       MagnificationManager::Get()->IsMagnifierEnabled());
-  a11y_info.SetBoolean("dockedMagnifierEnabled",
-                       MagnificationManager::Get()->IsDockedMagnifierEnabled());
-  a11y_info.SetBoolean("virtualKeyboardEnabled",
-                       AccessibilityManager::Get()->IsVirtualKeyboardEnabled());
-  CallJS("cr.ui.Oobe.refreshA11yInfo", a11y_info);
 }
 
 void CoreOobeHandler::UpdateOobeUIVisibility() {
@@ -547,14 +458,6 @@ void CoreOobeHandler::OnOobeConfigurationChanged() {
       chromeos::configuration::ConfigurationHandlerSide::HANDLER_JS,
       configuration);
   CallJS("cr.ui.Oobe.updateOobeConfiguration", configuration);
-}
-
-void CoreOobeHandler::OnAccessibilityStatusChanged(
-    const AccessibilityStatusEventDetails& details) {
-  if (details.notification_type == ACCESSIBILITY_MANAGER_SHUTDOWN)
-    accessibility_subscription_.reset();
-  else
-    UpdateA11yState();
 }
 
 void CoreOobeHandler::HandleLaunchHelpApp(double help_topic_id) {

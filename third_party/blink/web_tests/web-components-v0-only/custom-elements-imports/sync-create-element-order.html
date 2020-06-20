@@ -34,10 +34,10 @@ import1.href = 'resources/import-custom.html';
 
 // TODO(kochi): crbug.com/640465 synchronous creation fails in imports.
 import1.onload = test.step_func_done(() => {
-  let elementInMaster = document.querySelector('x-x');
+  let elementInClient = document.querySelector('x-x');
   let elementInImport = import1.import.querySelector('x-x');
 
-  assert_array_equals(reactions, [elementInMaster, elementInImport],
+  assert_array_equals(reactions, [elementInClient, elementInImport],
                       'Constructor should run in the order elements are created');
 });
 

@@ -5,54 +5,48 @@
 import contextlib
 import json
 import mock
-import os
 import sys
-import tempfile
 import unittest
 from urlparse import urlparse
 
+from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.controllers.test_result_sink import CreateTestResultSink
 from blinkpy.web_tests.controllers.test_result_sink import TestResultSink
 from blinkpy.web_tests.models import test_results
 from blinkpy.web_tests.models.typ_types import ResultType
 
 
-@contextlib.contextmanager
-def luci_context(**section_values):
-    if not section_values:
-        yield
-        return
+class TestResultSinkTestBase(unittest.TestCase):
+    def setUp(self):
+        super(TestResultSinkTestBase, self).setUpClass()
+        self.port = MockHost().port_factory.get()
 
-    tf = tempfile.NamedTemporaryFile(delete=False)
-    old_envvar = os.environ.get('LUCI_CONTEXT', None)
-    try:
-        json.dump(section_values, tf)
-        tf.close()
-        os.environ['LUCI_CONTEXT'] = tf.name
-        yield tf.name
-    finally:
-        os.unlink(tf.name)
-        if old_envvar is None:
-            del os.environ['LUCI_CONTEXT']
-        else:
-            os.environ['LUCI_CONTEXT'] = old_envvar
+    def luci_context(self, **section_values):
+        if not section_values:
+            return
+
+        host = self.port.host
+        f, fname = host.filesystem.open_text_tempfile()
+        json.dump(section_values, f)
+        f.close()
+        host.environ['LUCI_CONTEXT'] = f.path
 
 
-class TestCreateTestResultSink(unittest.TestCase):
+class TestCreateTestResultSink(TestResultSinkTestBase):
     def test_without_luci_context(self):
-        self.assertIsNone(CreateTestResultSink('/tmp/artifacts'))
+        self.assertIsNone(CreateTestResultSink(self.port))
 
     def test_without_result_sink_section(self):
-        with luci_context(app={'foo': 'bar'}):
-            self.assertIsNone(CreateTestResultSink('/tmp/artifacts'))
+        self.luci_context(app={'foo': 'bar'})
+        self.assertIsNone(CreateTestResultSink(self.port))
 
     @mock.patch('urllib2.urlopen')
     def test_with_result_sink_section(self, urlopen):
         ctx = {'address': 'localhost:123', 'auth_token': 'secret'}
-        with luci_context(result_sink=ctx):
-            r = CreateTestResultSink('/tmp/artifacts')
-            self.assertIsNotNone(r)
-            r.sink(True, test_results.TestResult('test'))
+        self.luci_context(result_sink=ctx)
+        r = CreateTestResultSink(self.port)
+        self.assertIsNotNone(r)
+        r.sink(True, test_results.TestResult('test'))
 
         urlopen.assert_called_once()
         req = urlopen.call_args[0][0]
@@ -61,17 +55,18 @@ class TestCreateTestResultSink(unittest.TestCase):
                          'ResultSink ' + ctx['auth_token'])
 
 
-class TestResultSinkMessage(unittest.TestCase):
+class TestResultSinkMessage(TestResultSinkTestBase):
     """Tests ResulkSink.sink."""
 
     def setUp(self):
+        super(TestResultSinkMessage, self).setUp()
         patcher = mock.patch.object(TestResultSink, '_send')
         self.mock_send = patcher.start()
         self.addCleanup(patcher.stop)
 
         ctx = {'address': 'localhost:123', 'auth_token': 'super-secret'}
-        with luci_context(result_sink=ctx):
-            self.r = CreateTestResultSink('/tmp/artifacts')
+        self.luci_context(result_sink=ctx)
+        self.r = CreateTestResultSink(self.port)
 
     def sink(self, expected, test_result):
         self.r.sink(expected, test_result)

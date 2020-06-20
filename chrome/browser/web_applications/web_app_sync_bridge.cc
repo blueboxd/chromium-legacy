@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -56,6 +57,14 @@ std::unique_ptr<syncer::EntityData> CreateSyncEntityData(const WebApp& app) {
   sync_data->set_name(app.sync_data().name);
   if (app.sync_data().theme_color.has_value())
     sync_data->set_theme_color(app.sync_data().theme_color.value());
+  if (app.scope().is_valid())
+    sync_data->set_scope(app.scope().spec());
+  for (const WebApplicationIconInfo& icon : app.icon_infos()) {
+    sync_pb::WebAppIconInfo* icon_info_proto = sync_data->add_icon_infos();
+    icon_info_proto->set_url(icon.url.spec());
+    if (icon.square_size_px.has_value())
+      icon_info_proto->set_size_in_px(icon.square_size_px.value());
+  }
 
   return entity_data;
 }
@@ -86,11 +95,13 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   // Always override user_display mode with a synced value.
   app->SetUserDisplayMode(ToMojomDisplayMode(sync_data.user_display_mode()));
 
-  WebApp::SyncData parsed_sync_data;
-  parsed_sync_data.name = sync_data.name();
-  if (sync_data.has_theme_color())
-    parsed_sync_data.theme_color = sync_data.theme_color();
-  app->SetSyncData(std::move(parsed_sync_data));
+  base::Optional<WebApp::SyncData> parsed_sync_data =
+      ParseWebAppSyncData(sync_data);
+  if (!parsed_sync_data.has_value()) {
+    // ParseWebAppSyncData() reports any errors.
+    return;
+  }
+  app->SetSyncData(std::move(parsed_sync_data.value()));
 }
 
 WebAppSyncBridge::WebAppSyncBridge(

@@ -16,6 +16,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/media_message_center/media_controls_progress_view.h"
 #include "components/media_message_center/media_notification_util.h"
 #include "components/vector_icons/vector_icons.h"
@@ -213,8 +214,15 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
   DCHECK(callbacks.hide_media_controls);
   DCHECK(callbacks.show_media_controls);
 
-  // Media controls should observer power events.
+  // Media controls should observe power events and handle the case of being
+  // created in suspended state.
   base::PowerMonitor::AddObserver(this);
+  if (base::PowerMonitor::IsProcessSuspended()) {
+    // Post OnSuspend call to run after LockContentsView is initialized.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&LockScreenMediaControlsView::OnSuspend,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  }
 
   // Media controls have not been dismissed initially.
   Shell::Get()->media_controller()->SetMediaControlsDismissed(false);

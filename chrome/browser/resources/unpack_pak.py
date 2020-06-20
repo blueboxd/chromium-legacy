@@ -24,16 +24,29 @@ from grit.format import data_pack
 def ParseLine(line):
   return re.match('  {"([^"]+)", ([^},]+)', line)
 
-def GetFileAndDirName(pak_dir, resource_path):
-  dirname = os.path.dirname(resource_path)
-  # When files are generated, |dirname| becomes
-  # @out_folder@/<gen_path>/path_to_resource. To make the structure look as if
-  # this file was not generated, remove @out_folder@ and <gen_path>.
-  if ('@out_folder@' in dirname):
-    dirname = os.path.relpath(dirname, os.path.join('@out_folder@', pak_dir))
-  filename = os.path.basename(resource_path)
+def UnpackResource(root_dir, out_path, excludes, resource_path, resource_text):
+    dirname = os.path.dirname(resource_path)
+    # When files are generated, |dirname| becomes
+    # @out_folder@/<gen_path>/path_to_resource. To make the structure look as if
+    # this file was not generated, remove @out_folder@ and <gen_path>.
+    if ('@out_folder@' in dirname):
+      dirname = os.path.relpath(dirname, os.path.join('@out_folder@', root_dir))
+    filename = os.path.basename(resource_path)
+    resource_path = os.path.join(dirname, filename).replace('\\', '/')
+    if (resource_path in excludes):
+      return
 
-  return (filename, dirname)
+    out_dir = os.path.normpath(
+        os.path.join(out_path, dirname)).replace('\\', '/')
+    assert out_dir.startswith(out_path), \
+           'Cannot unpack files to locations not in %s. %s should be removed ' \
+           'from the pak file or excluded from unpack.' \
+           % (out_path, resource_path)
+
+    if not os.path.exists(out_dir):
+      os.makedirs(out_dir)
+    with open(os.path.join(out_dir, filename), 'w') as file:
+      file.write(resource_text)
 
 def Unpack(pak_path, out_path, pak_base_dir, excludes):
   pak_dir = os.path.dirname(pak_path)
@@ -63,27 +76,10 @@ def Unpack(pak_path, out_path, pak_base_dir, excludes):
   assert resource_filenames
 
   root_dir = pak_base_dir if pak_base_dir else pak_dir
-  excludes = excludes or []
   # Extract packed files, while preserving directory structure.
   for (resource_id, text) in data.resources.iteritems():
-    (filename, dirname) = GetFileAndDirName(
-        root_dir, resource_filenames[resource_ids[resource_id]])
-    resource_path = os.path.join(dirname, filename).replace('\\', '/')
-    if (resource_path in excludes):
-      continue
-
-    normalized_dir = os.path.normpath(
-        os.path.join(out_path, dirname)).replace('\\', '/')
-    assert normalized_dir.startswith(out_path), \
-           'Cannot unpack files to locations not in %s. %s should be removed ' \
-           'from the pak file or excluded from unpack.' \
-           % (out_path, resource_path)
-
-    if not os.path.exists(normalized_dir):
-      os.makedirs(normalized_dir)
-    with open(os.path.join(normalized_dir, filename), 'w') as file:
-      file.write(text)
-
+    UnpackResource(root_dir, out_path, excludes or [],
+                   resource_filenames[resource_ids[resource_id]], text)
 
 def main():
   parser = argparse.ArgumentParser()

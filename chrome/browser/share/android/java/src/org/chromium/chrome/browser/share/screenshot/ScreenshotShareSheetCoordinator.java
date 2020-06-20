@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.share.screenshot;
 import android.content.Context;
 import android.graphics.Bitmap;
 
+import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -31,7 +33,8 @@ public class ScreenshotShareSheetCoordinator {
      * @param screenshotShareSheetView the view for the screenshot share sheet.
      */
     public ScreenshotShareSheetCoordinator(Context context, Bitmap screenshot,
-            Runnable deleteRunnable, ScreenshotShareSheetView screenshotShareSheetView) {
+            Runnable deleteRunnable, ScreenshotShareSheetView screenshotShareSheetView, Tab tab,
+            ChromeOptionShareCallback shareSheetCallback) {
         ArrayList<PropertyKey> allProperties =
                 new ArrayList<>(Arrays.asList(ScreenshotShareSheetViewProperties.ALL_KEYS));
         mModel = new PropertyModel(allProperties);
@@ -39,7 +42,7 @@ public class ScreenshotShareSheetCoordinator {
         mModel.set(ScreenshotShareSheetViewProperties.SCREENSHOT_BITMAP, screenshot);
         mSaveDelegate = new ScreenshotShareSheetSaveDelegate(context, mModel);
         mMediator = new ScreenshotShareSheetMediator(
-                context, mModel, deleteRunnable, mSaveDelegate::save);
+                context, mModel, deleteRunnable, mSaveDelegate::save, tab, shareSheetCallback);
 
         PropertyModelChangeProcessor.create(
                 mModel, screenshotShareSheetView, ScreenshotShareSheetViewBinder::bind);

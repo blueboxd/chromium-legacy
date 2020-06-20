@@ -13,8 +13,8 @@
 <script>
 'use strict';
 
-let master_my_el = document.getElementById('MyElement');
-let master_my_class = document.getElementById('OtherElement');
+let client_my_el = document.getElementById('MyElement');
+let client_my_class = document.getElementById('OtherElement');
 
 test(() => {
   assert_equals(document.compatMode, 'CSS1Compat');
@@ -22,24 +22,24 @@ test(() => {
 
 test(() => {
   assert_equals(document.getElementById('myelement'), null);
-  assert_equals(document.getElementById('MyElement'), master_my_el);
+  assert_equals(document.getElementById('MyElement'), client_my_el);
   assert_equals(document.getElementById('MYELEMENT'), null);
 }, 'getElementById should be case sensitive regardless of mode.');
 
 test(() => {
   assert_equals(document.getElementsByClassName('myclass').length, 0);
   assert_equals(document.getElementsByClassName('MyClass')[0],
-                master_my_class);
+                client_my_class);
   assert_equals(document.getElementsByClassName('MYCLASS').length, 0);
 }, 'getElementsByClassName should be case sensitive in no quirks mode.');
 
 test(() => {
   assert_equals(document.querySelector('#myelement'), null);
-  assert_equals(document.querySelector('#MyElement'), master_my_el);
+  assert_equals(document.querySelector('#MyElement'), client_my_el);
   assert_equals(document.querySelector('#MYELEMENT'), null);
 
   assert_equals(document.querySelector('.myclass'), null);
-  assert_equals(document.querySelector('.MyClass'), master_my_class);
+  assert_equals(document.querySelector('.MyClass'), client_my_class);
   assert_equals(document.querySelector('.MYCLASS'), null);
 }, 'querySelector should be case sensitive when in no quirks mode.');
 </script>

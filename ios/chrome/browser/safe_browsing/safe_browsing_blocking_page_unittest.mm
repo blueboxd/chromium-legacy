@@ -9,6 +9,7 @@
 #include "base/values.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -41,13 +42,16 @@ UnsafeResource CreateResource(web::WebState* web_state, const GURL& url) {
 class SafeBrowsingBlockingPageTest : public PlatformTest {
  public:
   SafeBrowsingBlockingPageTest()
-      : url_("http://www.chromium.test"),
-        resource_(CreateResource(&web_state_, url_)),
-        page_(SafeBrowsingBlockingPage::Create(resource_)) {
+      : browser_state_(TestChromeBrowserState::Builder().Build()),
+        url_("http://www.chromium.test"),
+        resource_(CreateResource(&web_state_, url_)) {
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
         std::make_unique<web::TestNavigationManager>();
+    navigation_manager->SetBrowserState(browser_state_.get());
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
+    web_state_.SetBrowserState(browser_state_.get());
+    page_ = SafeBrowsingBlockingPage::Create(resource_);
     SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
     SafeBrowsingUrlAllowList::FromWebState(&web_state_)
         ->AddPendingUnsafeNavigationDecision(url_, resource_.threat_type);
@@ -64,6 +68,7 @@ class SafeBrowsingBlockingPageTest : public PlatformTest {
  protected:
   web::WebTaskEnvironment task_environment_{
       web::WebTaskEnvironment::IO_MAINLOOP};
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   web::TestNavigationManager* navigation_manager_ = nullptr;
   GURL url_;

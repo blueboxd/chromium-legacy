@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -20,6 +21,7 @@ import androidx.annotation.StringRes;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -27,8 +29,10 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.ActivityTabTabObserver;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.document.ChromeIntentUtil;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -44,6 +48,8 @@ import org.chromium.chrome.browser.query_tiles.QueryTileUtils;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabSelectionType;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.query_tiles.QueryTile;
@@ -601,8 +607,35 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     }
 
     @Override
-    public void onSwitchToTab(OmniboxSuggestion suggestion) {
-        // TODO(1043372): implement function of switch to tab.
+    public void onSwitchToTab(OmniboxSuggestion suggestion, int position) {
+        Tab tab = mAutocomplete.findMatchingTabWithUrl(suggestion.getUrl());
+        if (tab == null) {
+            onSelection(suggestion, position);
+            return;
+        }
+
+        // When invoked directly from a browser, we want to trigger switch to tab animation.
+        // If invoded from other activitiies, ex. searchActivity, we do not need to trigger the
+        // animation since Android will show the animation for switching apps.
+        if (mWindowAndroid.equals(tab.getWindowAndroid())) {
+            // TODO(1097292):  Do not use Activity to get TabModelSelector.
+            assert tab.getWindowAndroid().getActivity().get() instanceof ChromeActivity;
+
+            ChromeActivity chromeActivity =
+                    (ChromeActivity) tab.getWindowAndroid().getActivity().get();
+            int tabIndex = TabModelUtils.getTabIndexById(
+                    chromeActivity.getTabModelSelector().getCurrentModel(), tab.getId());
+            chromeActivity.getTabModelSelector().getCurrentModel().setIndex(
+                    tabIndex, TabSelectionType.FROM_USER);
+            // TODO(crbug.com/1092268): Add animation.
+        } else {
+            Intent newIntent = ChromeIntentUtil.createBringTabToFrontIntent(tab.getId());
+            if (newIntent != null) {
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                ContextUtils.getApplicationContext().startActivity(newIntent);
+            }
+        }
+        // TODO(crbug.com/1092269): Add metrics for Omnibox.SuggestionUsed.SelectedTabMatch
     }
 
     /**

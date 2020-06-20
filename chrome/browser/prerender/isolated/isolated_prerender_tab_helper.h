@@ -20,13 +20,16 @@
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/base/isolation_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "url/gurl.h"
 
 class IsolatedPrerenderPageLoadMetricsObserver;
+class IsolatedPrerenderSubresourceManager;
 class Profile;
 
 namespace net {
@@ -239,6 +242,8 @@ class IsolatedPrerenderTabHelper
   void AddObserverForTesting(Observer* observer);
   void RemoveObserverForTesting(Observer* observer);
 
+  network::mojom::NetworkContext* GetIsolatedContextForTesting() const;
+
  protected:
   // Exposed for testing.
   explicit IsolatedPrerenderTabHelper(content::WebContents* web_contents);
@@ -301,6 +306,14 @@ class IsolatedPrerenderTabHelper
     // All urls have have been successfully no state prefetched and finished.
     std::vector<GURL> no_state_prefetched_urls_;
 
+    // If the current page load was prerendered, then this subresource manager
+    // is taken from |IsolatedPrerenderService| and used to facilitate loading
+    // of prefetched resources from cache. Note: An
+    // |IsolatedPrerenderSubresourceManager| is dependent on the
+    // |isolated_url_loader_factory_| and |isolated_network_context_| from the
+    // previous page load remaining alive.
+    std::unique_ptr<IsolatedPrerenderSubresourceManager> subresource_manager_;
+
     // The network context and url loader factory that will be used for
     // prefetches. A separate network context is used so that the prefetch proxy
     // can be used via a custom proxy configuration.
@@ -356,6 +369,13 @@ class IsolatedPrerenderTabHelper
   void OnGotEligibilityResult(const GURL& url,
                               bool eligible,
                               base::Optional<PrefetchStatus> status);
+
+  // Creates a new URL Loader Factory on |page_|'s isolated network context.
+  // |isolation_info| may be passed if the factory will be used in the renderer
+  // for subresources.
+  void CreateNewURLLoaderFactory(
+      mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
+      base::Optional<net::IsolationInfo> isolation_info);
 
   // Creates the isolated network context and url loader factory for this page.
   void CreateIsolatedURLLoaderFactory();

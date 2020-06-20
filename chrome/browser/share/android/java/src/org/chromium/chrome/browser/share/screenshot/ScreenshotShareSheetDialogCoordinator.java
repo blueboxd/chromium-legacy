@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.app.FragmentManager;
 import android.graphics.Bitmap;
 
+import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
+import org.chromium.chrome.browser.tab.Tab;
 /**
  * Coordinator for displaying the screenshot share sheet dialog.
  */
@@ -17,16 +19,17 @@ public class ScreenshotShareSheetDialogCoordinator {
     private final Bitmap mScreenshot;
 
     /**
-     * Constructs a new ShareSheetCoordinator.
+     * Constructs a new Screenshot Dialog.
      *
      * @param context The context to use for user permissions.
      * @param screenshot The screenshot to be shared.
      */
-    public ScreenshotShareSheetDialogCoordinator(Activity activity, Bitmap screenshot) {
+    public ScreenshotShareSheetDialogCoordinator(Activity activity, Bitmap screenshot, Tab tab,
+            ChromeOptionShareCallback shareCallback) {
         mFragmentManager = activity.getFragmentManager();
         mScreenshot = screenshot;
         mDialog = new ScreenshotShareSheetDialog();
-        mDialog.init(mScreenshot, this::dismiss);
+        mDialog.init(mScreenshot, this::dismiss, tab, shareCallback);
     }
 
     /**

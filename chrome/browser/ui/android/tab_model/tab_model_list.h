@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "components/sessions/core/session_id.h"
 
+class TabAndroid;
 class TabModel;
 class TabModelListObserver;
 
@@ -39,6 +40,7 @@ class TabModelList {
 
   static TabModel* GetTabModelForWebContents(
       content::WebContents* web_contents);
+  static TabModel* GetTabModelForTabAndroid(TabAndroid* tab_android);
   static TabModel* FindTabModelWithId(SessionID desired_id);
   static bool IsOffTheRecordSessionActive();
 

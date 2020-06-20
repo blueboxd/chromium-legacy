@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -39,7 +40,7 @@ using CableEidGeneratorKey = std::array<uint8_t, 32>;
 using CablePskGeneratorKey = std::array<uint8_t, 32>;
 // CableAuthenticatorIdentityKey is a P-256 public value used to authenticate a
 // paired phone.
-using CableAuthenticatorIdentityKey = std::array<uint8_t, 65>;
+using CableAuthenticatorIdentityKey = std::array<uint8_t, kP256X962Length>;
 using CableIdentityKeySeed = std::array<uint8_t, kCableIdentityKeySeedSize>;
 using CableQRData = std::array<uint8_t, kCableQRDataSize>;
 

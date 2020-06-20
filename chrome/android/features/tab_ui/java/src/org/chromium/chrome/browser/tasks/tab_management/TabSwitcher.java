@@ -121,6 +121,12 @@ public interface TabSwitcher {
          * @param activityCreateTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
          */
         void enableRecordingFirstMeaningfulPaint(long activityCreateTimeMs);
+
+        /**
+         * Called after the Chrome activity is launched.
+         * @param activityCreationTimeMs {@link SystemClock#elapsedRealtime} at activity creation.
+         */
+        void onOverviewShownAtLaunch(long activityCreationTimeMs);
     }
 
     /**

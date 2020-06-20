@@ -67,7 +67,7 @@ void TabModelList::HandlePopupNavigation(NavigateParams* params) {
 TabModel* TabModelList::GetTabModelForWebContents(
     content::WebContents* web_contents) {
   if (!web_contents)
-    return NULL;
+    return nullptr;
 
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); ++i) {
@@ -78,7 +78,23 @@ TabModel* TabModelList::GetTabModelForWebContents(
     }
   }
 
-  return NULL;
+  return nullptr;
+}
+
+TabModel* TabModelList::GetTabModelForTabAndroid(TabAndroid* tab_android) {
+  if (!tab_android)
+    return nullptr;
+
+  for (TabModelList::const_iterator i = TabModelList::begin();
+       i != TabModelList::end(); ++i) {
+    TabModel* model = *i;
+    for (int index = 0; index < model->GetTabCount(); index++) {
+      if (tab_android == model->GetTabAt(index))
+        return model;
+    }
+  }
+
+  return nullptr;
 }
 
 TabModel* TabModelList::FindTabModelWithId(SessionID desired_id) {
@@ -88,7 +104,7 @@ TabModel* TabModelList::FindTabModelWithId(SessionID desired_id) {
       return *i;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 bool TabModelList::IsOffTheRecordSessionActive() {

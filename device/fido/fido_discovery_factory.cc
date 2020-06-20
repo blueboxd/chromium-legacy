@@ -4,7 +4,6 @@
 
 #include "device/fido/fido_discovery_factory.h"
 
-#include "base/logging.h"
 #include "base/notreached.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/fido/cable/fido_cable_discovery.h"

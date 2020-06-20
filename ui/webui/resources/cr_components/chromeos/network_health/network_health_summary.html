@@ -3,17 +3,47 @@
 <link rel="import" href="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.html">
 <link rel="import" href="chrome://resources/mojo/chromeos/services/network_health/public/mojom/network_health.mojom.html">
 <link rel="import" href="../../../cr_elements/shared_style_css.html">
+<link rel="import" href="../../../html/i18n_behavior.html">
+
 
 <dom-module id="network-health-summary">
   <template>
     <style>
-      #outer {
-        white-space: pre-wrap;
+      table {
+        width: 100%;
+      }
+
+      tr,
+      td {
+        border: 1px solid rgb(220, 220, 220);
+        font-size: 13px;
+        padding: 5px;
+      }
+
+      .table-header {
+        font-size: 15px;
+        font-weight: bold;
+        padding-bottom: 15px;
       }
     </style>
-    <div id="outer" class="cr-container-shadow">
-      <div id="network-health"></div>
-    </div>
+    <table>
+      <tr class="table-header">
+        <td>[[i18n('OncName')]]</td>
+        <td>[[i18n('OncType')]]</td>
+        <td>[[i18n('NetworkHealthState')]]</td>
+        <td>[[i18n('OncMacAddress')]]</td>
+      </tr>
+      <hr>
+      <template is="dom-repeat"
+          items="[[networkHealthState_.networks]]" as="network">
+        <tr>
+          <td>[[network.name]]</td>
+          <td>[[getNetworkTypeString_(network.type)]]</td>
+          <td>[[getNetworkStateString_(network.state)]]</td>
+          <td>[[network.macAddress]]</td>
+        </tr>
+      </template>
+    </table>
   </template>
   <script src="network_health_summary.js"></script>
 </dom-module>

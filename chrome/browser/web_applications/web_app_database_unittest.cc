@@ -152,6 +152,8 @@ class WebAppDatabaseTest : public WebAppTest {
     WebApp::SyncData sync_data;
     sync_data.name = "Sync" + name;
     sync_data.theme_color = synced_theme_color;
+    sync_data.scope = app->scope();
+    sync_data.icon_infos = app->icon_infos();
     app->SetSyncData(std::move(sync_data));
 
     return app;

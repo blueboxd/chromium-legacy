@@ -12,7 +12,7 @@
 #include <string.h>
 
 #include "base/atomicops.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/rand_util.h"
 #include "base/trace_event/trace_event.h"

@@ -5,12 +5,8 @@
 #ifndef COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_
 #define COMPONENTS_TRANSLATE_CORE_COMMON_TRANSLATE_UTIL_H_
 
-#include <string>
-#include <vector>
-
 #include "base/feature_list.h"
-
-class GURL;
+#include "url/gurl.h"
 
 namespace translate {
 

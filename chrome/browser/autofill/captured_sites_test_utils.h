@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/strcat.h"
 #include "chrome/browser/ui/browser.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/browser_test_utils.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -319,9 +320,11 @@ class TestRecipeReplayer {
   void NavigateAwayAndDismissBeforeUnloadDialog();
   bool HasChromeStoredCredential(const base::DictionaryValue& action,
                                  bool* stored_cred);
+  bool OverrideAutofillClock(const base::FilePath capture_file_path);
   bool SetupSavedAutofillProfile(
       const base::Value& saved_autofill_profile_container);
   bool SetupSavedPasswords(const base::Value& saved_password_list_container);
+
   // Wait until Chrome finishes loading a page and updating the page's visuals.
   // If Chrome finishes loading a page but continues to paint every half
   // second, exit after |continuous_paint_timeout| expires since Chrome
@@ -339,6 +342,9 @@ class TestRecipeReplayer {
 
   // The Web Page Replay server that serves the captured sites.
   base::Process web_page_replay_server_;
+
+  // Overrides the AutofillClock to use the recorded date.
+  autofill::TestAutofillClock test_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRecipeReplayer);
 };

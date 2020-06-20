@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "remoting/protocol/port_range.h"
 

@@ -13,10 +13,8 @@ via ResultSink, and is activated only if LUCI_CONTEXT is present with ResultSink
 section.
 """
 
-import os
 import json
 import logging
-import os
 import urllib2
 
 from blinkpy.web_tests.models.typ_types import ResultType
@@ -46,34 +44,33 @@ _result_type_to_sink_status = {
 }
 
 
-def CreateTestResultSink(artifacts_directory):
+def CreateTestResultSink(port):
     """Creates TestResultSink, if result_sink is present in LUCI_CONTEXT.
 
     Args:
-        artifacts_directory: The path of the directory, where test artifacts
-            are stored.
+        port: A blinkpy.web_tests.port.Port object
     Returns:
         TestResultSink object if result_sink section is present in LUCI_CONTEXT.
             None, otherwise.
     """
-    luci_ctx_path = os.environ.get('LUCI_CONTEXT')
+    luci_ctx_path = port.host.environ.get('LUCI_CONTEXT')
     if luci_ctx_path is None:
         return None
 
-    with open(luci_ctx_path) as f:
+    with port.host.filesystem.open_text_file_for_reading(luci_ctx_path) as f:
         sink_ctx = json.load(f).get('result_sink')
-    if sink_ctx is None:
-        return None
+        if sink_ctx is None:
+            return None
 
-    return TestResultSink(sink_ctx, artifacts_directory)
+    return TestResultSink(port, sink_ctx)
 
 
 class TestResultSink(object):
     """A class for uploading test results and artifacts via ResultSink."""
 
-    def __init__(self, sink_ctx, artifacts_directory):
+    def __init__(self, port, sink_ctx):
+        self._port = port
         self._sink_ctx = sink_ctx
-        self._artifacts_directory = artifacts_directory
         self._sink_url = (
             'http://%s/prpc/luci.resultsink.v1.Sink/ReportTestResults' %
             self._sink_ctx['address'])
@@ -136,6 +133,7 @@ class TestResultSink(object):
             the value is a dict with the absolute file path.
         """
         ret = {}
+        base_dir = self._port.results_directory()
         for name, paths in result.artifacts.artifacts.iteritems():
             for p in paths:
                 art_id = name
@@ -145,7 +143,7 @@ class TestResultSink(object):
                     i += 1
 
                 ret[art_id] = {
-                    'filePath': os.path.join(self._artifacts_directory, p),
+                    'filePath': self._port.host.filesystem.join(base_dir, p),
                 }
 
         return ret

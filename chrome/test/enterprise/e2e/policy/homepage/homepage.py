@@ -68,9 +68,9 @@ class HomepageTest(ChromeEnterpriseTestCase):
 
     # The URL of the new tab can be one of the following:
     # - https://www.google.com/_/chrome/newtab?ie=UTF-8
-    # - chrome://newtab
+    # - chrome://new-tab-page/
     # - chrome-search://local-ntp/local-ntp.html
-    if ('newtab' in homepage
+    if ('new-tab-page' in homepage
        ) or homepage == 'chrome-search://local-ntp/local-ntp.html':
       pass
     else:

@@ -6,7 +6,6 @@
 #define EXTENSIONS_COMMON_CONSTANTS_H_
 
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/strings/string_piece_forward.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/version_info/channel.h"

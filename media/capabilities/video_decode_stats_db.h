@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/base/video_codecs.h"

@@ -8,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/location.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_piece.h"
@@ -18,6 +20,7 @@
 #include "base/time/time.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
 namespace chromeos {

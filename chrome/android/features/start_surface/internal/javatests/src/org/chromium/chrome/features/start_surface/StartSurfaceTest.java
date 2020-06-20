@@ -27,6 +27,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
@@ -52,12 +53,14 @@ import androidx.test.espresso.action.ViewActions;
 import androidx.test.espresso.contrib.RecyclerViewActions;
 import androidx.test.filters.MediumTest;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
 import org.chromium.base.test.params.ParameterSet;
@@ -68,13 +71,17 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
+import org.chromium.chrome.browser.feed.FeedSurfaceCoordinator;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil;
+import org.chromium.chrome.browser.tasks.SingleTabSwitcherMediator;
 import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
+import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper;
 import org.chromium.chrome.start_surface.R;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -97,7 +104,8 @@ import java.util.concurrent.ExecutionException;
 /** Integration tests of the {@link StartSurface}. */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
+@Restriction(
+        {UiRestriction.RESTRICTION_TYPE_PHONE, Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
 @EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
@@ -178,6 +186,7 @@ public class StartSurfaceTest {
             TabAttributeCache.setTitleForTesting(0, "tab title");
             startMainActivityFromLauncher();
         } else {
+            assertFalse(ReturnToChromeExperimentsUtil.shouldShowTabSwitcher(-1));
             // Cannot use startMainActivityFromLauncher().
             // Otherwise tab switcher could be shown immediately if single-pane is enabled.
             mActivityTestRule.startMainActivityOnBlankPage();
@@ -849,6 +858,64 @@ public class StartSurfaceTest {
                                    .getTabModelFilterProvider()
                                    .getCurrentTabModelFilter()
                                    .isTabModelRestored());
+    }
+
+    /**
+     * Tests that histograms are recorded only if the StartSurface is shown when Chrome is launched
+     * from cold start.
+     */
+    @Test
+    @MediumTest
+    @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
+    // clang-format off
+    @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study",
+            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
+            ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single/show_last_active_tab_only/true"})
+    public void startSurfaceRecordHistogramsTest() {
+        // clang-format on
+        if (!mImmediateReturn) {
+            assertNotEquals(0, ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+            onView(withId(org.chromium.chrome.tab_ui.R.id.home_button)).perform(click());
+        } else {
+            assertEquals(0, ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS.getValue());
+        }
+
+        Assert.assertEquals("single", StartSurfaceConfiguration.START_SURFACE_VARIATION.getValue());
+        Assert.assertTrue(StartSurfaceConfiguration.START_SURFACE_LAST_ACTIVE_TAB_ONLY.getValue());
+        Assert.assertFalse(
+                StartSurfaceConfiguration.START_SURFACE_SHOW_STACK_TAB_SWITCHER.getValue());
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> mActivityTestRule.getActivity().getLayoutManager() != null
+                        && mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
+
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> DeferredStartupHandler.getInstance().isDeferredStartupCompleteForApp(),
+                "Deferred startup never completed", 20000L,
+                CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
+        boolean isInstantStart = TabUiFeatureUtilities.supportInstantStart(false);
+        int expectedRecordCount = mImmediateReturn ? 1 : 0;
+        // Histograms should be only recorded when StartSurface is shown immediately after
+        // launch.
+        Assert.assertEquals(expectedRecordCount,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        StartSurfaceConfiguration.getHistogramName(
+                                SingleTabSwitcherMediator.SINGLE_TAB_TITLE_AVAILABLE_TIME_UMA,
+                                isInstantStart)));
+        Assert.assertEquals(expectedRecordCount,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        StartSurfaceConfiguration.getHistogramName(
+                                FeedSurfaceCoordinator.FEED_CONTENT_FIRST_LOADED_TIME_MS_UMA,
+                                isInstantStart)));
+        Assert.assertEquals(isInstantReturn() ? 1 : 0,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        StartSurfaceConfiguration.getHistogramName(
+                                FeedLoadingCoordinator.FEEDS_LOADING_PLACEHOLDER_SHOWN_TIME_UMA,
+                                true)));
     }
 }
 

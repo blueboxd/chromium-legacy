@@ -4,7 +4,14 @@
 
 #include "chrome/updater/prefs_impl.h"
 
+#include <windows.h>
+
+#include <memory>
+
 #include "base/time/time.h"
+#include "base/win/scoped_handle.h"
+#include "chrome/updater/win/constants.h"
+#include "chrome/updater/win/util.h"
 
 namespace updater {
 
@@ -13,7 +20,12 @@ class ScopedPrefsLockImpl {
   ScopedPrefsLockImpl() = default;
   ScopedPrefsLockImpl(const ScopedPrefsLockImpl&) = delete;
   ScopedPrefsLockImpl& operator=(const ScopedPrefsLockImpl&) = delete;
-  ~ScopedPrefsLockImpl() = default;
+  ~ScopedPrefsLockImpl();
+
+  bool Initialize(bool is_machine, base::TimeDelta timeout);
+
+ private:
+  base::win::ScopedHandle mutex_;
 };
 
 ScopedPrefsLock::ScopedPrefsLock(std::unique_ptr<ScopedPrefsLockImpl> impl)
@@ -23,9 +35,29 @@ ScopedPrefsLock::~ScopedPrefsLock() = default;
 
 std::unique_ptr<ScopedPrefsLock> AcquireGlobalPrefsLock(
     base::TimeDelta timeout) {
-  // TODO(crbug.com/1092936): implement the actual mutex.
-  return std::make_unique<ScopedPrefsLock>(
-      std::make_unique<ScopedPrefsLockImpl>());
+  auto lock = std::make_unique<ScopedPrefsLockImpl>();
+
+  // TODO(crbug.com/1096654): need to pass is_machine instead of 'false' here.
+  if (!lock->Initialize(false, timeout))
+    return nullptr;
+
+  return std::make_unique<ScopedPrefsLock>(std::move(lock));
+}
+
+bool ScopedPrefsLockImpl::Initialize(bool is_machine, base::TimeDelta timeout) {
+  NamedObjectAttributes lock_attr;
+  GetNamedObjectAttributes(kPrefsAccessMutex, is_machine, &lock_attr);
+  mutex_.Set(::CreateMutex(&lock_attr.sa, false, lock_attr.name.c_str()));
+  if (!mutex_.IsValid())
+    return false;
+
+  DWORD ret = ::WaitForSingleObject(mutex_.Get(), timeout.InMilliseconds());
+  return ret == WAIT_OBJECT_0 || ret == WAIT_ABANDONED;
+}
+
+ScopedPrefsLockImpl::~ScopedPrefsLockImpl() {
+  if (mutex_.IsValid())
+    ::ReleaseMutex(mutex_.Get());
 }
 
 }  // namespace updater

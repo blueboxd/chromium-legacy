@@ -101,6 +101,8 @@ class WebApp {
 
     std::string name;
     base::Optional<SkColor> theme_color;
+    GURL scope;
+    std::vector<WebApplicationIconInfo> icon_infos;
   };
   const SyncData& sync_data() const { return sync_data_; }
 

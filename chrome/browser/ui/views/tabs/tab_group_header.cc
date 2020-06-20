@@ -109,7 +109,8 @@ bool TabGroupHeader::OnKeyPressed(const ui::KeyEvent& event) {
     if (base::FeatureList::IsEnabled(features::kTabGroupsCollapse)) {
       // The collapse feature changes the behavior from showing the
       // editor bubble to toggling the collapsed state of the group.
-      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value());
+      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value(),
+                                                             true);
     } else {
       editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
           tab_strip_->controller()->GetBrowser(), group().value(), this));
@@ -164,7 +165,8 @@ void TabGroupHeader::OnMouseReleased(const ui::MouseEvent& event) {
     // The collapse feature changes the left click behavior from showing the
     // editor bubble to toggling the collapsed state of the group.
     if (event.IsLeftMouseButton() && !dragging())
-      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value());
+      tab_strip_->controller()->ToggleTabGroupCollapsedState(group().value(),
+                                                             true);
   } else if (!dragging() && !editor_bubble_tracker_.is_open()) {
     // (TODO): Delete this else statement once collapse launches since
     // ShowContextMenuForViewImpl() will handle spawning the bubble on right

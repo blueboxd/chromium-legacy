@@ -119,6 +119,10 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
     friend class base::RefCountedThreadSafe<UploaderInterface>;
   };
 
+  // Callback type for UploadInterface provider for this queue.
+  using StartUploadCb =
+      base::RepeatingCallback<StatusOr<scoped_refptr<UploaderInterface>>()>;
+
   // Creates StorageQueue instance with the specified options, and returns it
   // with the |completion_cb| callback. |start_upload_cb| is a factory callback
   // that instantiates UploaderInterface every time the queue starts uploading
@@ -126,8 +130,7 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   // upon explicit Flush request).
   static void Create(
       const Options& options,
-      base::RepeatingCallback<StatusOr<scoped_refptr<UploaderInterface>>()>
-          start_upload_cb,
+      StartUploadCb start_upload_cb,
       base::OnceCallback<void(StatusOr<scoped_refptr<StorageQueue>>)>
           completion_cb);
 
@@ -215,10 +218,7 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   };
 
   // Private constructor, to be called by Create factory method only.
-  StorageQueue(
-      const Options& options,
-      base::RepeatingCallback<StatusOr<scoped_refptr<UploaderInterface>>()>
-          start_upload_cb);
+  StorageQueue(const Options& options, StartUploadCb start_upload_cb);
 
   // Initializes the object by enumerating files in the assigned directory
   // and determines the sequencing information of the last record.
@@ -308,8 +308,7 @@ class StorageQueue : public base::RefCountedThreadSafe<StorageQueue> {
   base::RepeatingTimer upload_timer_;
 
   // Upload provider callback.
-  base::RepeatingCallback<StatusOr<scoped_refptr<UploaderInterface>>()>
-      start_upload_cb_;
+  const StartUploadCb start_upload_cb_;
 
   // Sequential task runner for all activities in this StorageQueue.
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;

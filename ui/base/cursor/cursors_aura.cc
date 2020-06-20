@@ -23,6 +23,7 @@
 #endif
 
 namespace ui {
+
 namespace {
 
 struct HotPoint {
@@ -282,120 +283,6 @@ bool SearchTable(const CursorData* table,
 }
 
 }  // namespace
-
-const char* CursorCssNameFromId(mojom::CursorType id) {
-  switch (id) {
-    case mojom::CursorType::kMiddlePanning:
-      return "all-scroll";
-    case mojom::CursorType::kMiddlePanningVertical:
-      return "v-scroll";
-    case mojom::CursorType::kMiddlePanningHorizontal:
-      return "h-scroll";
-    case mojom::CursorType::kEastPanning:
-      return "e-resize";
-    case mojom::CursorType::kNorthPanning:
-      return "n-resize";
-    case mojom::CursorType::kNorthEastPanning:
-      return "ne-resize";
-    case mojom::CursorType::kNorthWestPanning:
-      return "nw-resize";
-    case mojom::CursorType::kSouthPanning:
-      return "s-resize";
-    case mojom::CursorType::kSouthEastPanning:
-      return "se-resize";
-    case mojom::CursorType::kSouthWestPanning:
-      return "sw-resize";
-    case mojom::CursorType::kWestPanning:
-      return "w-resize";
-    case mojom::CursorType::kNone:
-      return "none";
-    case mojom::CursorType::kGrab:
-      return "grab";
-    case mojom::CursorType::kGrabbing:
-      return "grabbing";
-    case mojom::CursorType::kNull:
-      return "left_ptr";
-    case mojom::CursorType::kPointer:
-      return "left_ptr";
-    case mojom::CursorType::kMove:
-      // Returning "move" is the correct thing here, but Blink doesn't
-      // make a distinction between move and all-scroll.  Other
-      // platforms use a cursor more consistent with all-scroll, so
-      // use that.
-      return "all-scroll";
-    case mojom::CursorType::kCross:
-      return "crosshair";
-    case mojom::CursorType::kHand:
-      return "pointer";
-    case mojom::CursorType::kIBeam:
-      return "text";
-    case mojom::CursorType::kProgress:
-      return "progress";
-    case mojom::CursorType::kWait:
-      return "wait";
-    case mojom::CursorType::kHelp:
-      return "help";
-    case mojom::CursorType::kEastResize:
-      return "e-resize";
-    case mojom::CursorType::kNorthResize:
-      return "n-resize";
-    case mojom::CursorType::kNorthEastResize:
-      return "ne-resize";
-    case mojom::CursorType::kNorthWestResize:
-      return "nw-resize";
-    case mojom::CursorType::kSouthResize:
-      return "s-resize";
-    case mojom::CursorType::kSouthEastResize:
-      return "se-resize";
-    case mojom::CursorType::kSouthWestResize:
-      return "sw-resize";
-    case mojom::CursorType::kWestResize:
-      return "w-resize";
-    case mojom::CursorType::kNorthSouthResize:
-      return "ns-resize";
-    case mojom::CursorType::kEastWestResize:
-      return "ew-resize";
-    case mojom::CursorType::kColumnResize:
-      return "col-resize";
-    case mojom::CursorType::kRowResize:
-      return "row-resize";
-    case mojom::CursorType::kNorthEastSouthWestResize:
-      return "nesw-resize";
-    case mojom::CursorType::kNorthWestSouthEastResize:
-      return "nwse-resize";
-    case mojom::CursorType::kVerticalText:
-      return "vertical-text";
-    case mojom::CursorType::kZoomIn:
-      return "zoom-in";
-    case mojom::CursorType::kZoomOut:
-      return "zoom-out";
-    case mojom::CursorType::kCell:
-      return "cell";
-    case mojom::CursorType::kContextMenu:
-      return "context-menu";
-    case mojom::CursorType::kAlias:
-      return "alias";
-    case mojom::CursorType::kNoDrop:
-      return "no-drop";
-    case mojom::CursorType::kCopy:
-      return "copy";
-    case mojom::CursorType::kNotAllowed:
-      return "not-allowed";
-    case mojom::CursorType::kDndNone:
-      return "dnd-none";
-    case mojom::CursorType::kDndMove:
-      return "dnd-move";
-    case mojom::CursorType::kDndCopy:
-      return "dnd-copy";
-    case mojom::CursorType::kDndLink:
-      return "dnd-link";
-    case mojom::CursorType::kCustom:
-      NOTREACHED();
-      return "left_ptr";
-  }
-  NOTREACHED() << "Case not handled for " << static_cast<int>(id);
-  return "left_ptr";
-}
 
 bool GetCursorDataFor(CursorSize cursor_size,
                       mojom::CursorType id,

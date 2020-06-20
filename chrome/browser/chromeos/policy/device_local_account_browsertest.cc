@@ -2247,6 +2247,9 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
         embedded_test_server()->GetURL(std::string("/") +
                                        kGoodExtensionCRXPath));
     testing_update_manifest_provider->AddUpdate(
+        kHostedAppID, kHostedAppVersion,
+        embedded_test_server()->GetURL(std::string("/") + kHostedAppCRXPath));
+    testing_update_manifest_provider->AddUpdate(
         kShowManagedStorageID, kShowManagedStorageVersion,
         embedded_test_server()->GetURL(std::string("/") +
                                        kShowManagedStorageCRXPath));
@@ -2273,7 +2276,15 @@ class ManagedSessionsTest : public DeviceLocalAccountTest {
         embedded_test_server()->GetURL(kRelativeUpdateURL).spec().c_str()));
   }
 
-  void AddForceInstalledExtension() { AddExtension(kGoodExtensionID); }
+  void AddForceInstalledSafeExtension() { AddExtension(kHostedAppID); }
+
+  void AddForceInstalledUnsafeExtension() {
+    // has effective hosts:
+    // http://*.example.com/*
+    // http://*.google.com/*
+    // https://*.google.com/*
+    AddExtension(kGoodExtensionID);
+  }
 
   void AddForceInstalledWhitelistedExtension() {
     AddExtension(kShowManagedStorageID);
@@ -2364,10 +2375,54 @@ IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ManagedSessionsEnabledNonRisky) {
           broker));
 }
 
-IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledExtension) {
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledSafeExtension) {
   SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
   StartTestExtensionsServer();
-  AddForceInstalledExtension();
+  AddForceInstalledSafeExtension();
+
+  // Install and refresh the device policy now. This will also fetch the initial
+  // user policy for the device-local account now.
+  UploadAndInstallDeviceLocalAccountPolicy();
+  AddPublicSessionToDevicePolicy(kAccountId1);
+  WaitForPolicy();
+
+  const user_manager::User* user =
+      user_manager::UserManager::Get()->FindUser(account_id_1_);
+  ASSERT_TRUE(user);
+  auto* broker = GetDeviceLocalAccountPolicyBroker();
+  ASSERT_TRUE(broker);
+
+  // Check that 'DeviceLocalAccountManagedSessionEnabled' policy was applied
+  // correctly.
+  EXPECT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsManagedSessionEnabledForUser(
+          *user));
+
+  // Management disclosure warning is shown in the beginning, because
+  // kManagedSessionUseFullLoginWarning pref is set to true in the beginning.
+  ASSERT_TRUE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+
+  ExtensionInstallObserver install_observer(kHostedAppID);
+
+  ASSERT_NO_FATAL_FAILURE(StartLogin(std::string(), std::string()));
+  WaitForSessionStart();
+
+  install_observer.Wait();
+
+  // After the login, kManagedSessionUseFullLoginWarning pref is updated.
+  // Check that force-installed extension activates managed session mode for
+  // device-local users.
+  EXPECT_FALSE(
+      chromeos::ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(
+          broker));
+}
+
+IN_PROC_BROWSER_TEST_F(ManagedSessionsTest, ForceInstalledUnsafeExtension) {
+  SetManagedSessionsEnabled(/* managed_sessions_enabled */ true);
+  StartTestExtensionsServer();
+  AddForceInstalledUnsafeExtension();
 
   // Install and refresh the device policy now. This will also fetch the initial
   // user policy for the device-local account now.

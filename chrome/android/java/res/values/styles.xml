@@ -182,54 +182,10 @@
     </style>
 
     <!-- Settings -->
-    <style name="PreferenceTheme">
-        <item name="preferenceStyle">@style/PreferenceItem</item>
-        <item name="preferenceFragmentCompatStyle">@style/SettingsFragment</item>
-        <item name="preferenceFragmentListStyle">@style/SettingsFragmentList</item>
-        <item name="dialogPreferenceStyle">@style/DialogPreference</item>
-        <item name="checkBoxPreferenceStyle">@style/CheckBoxPreference</item>
-        <item name="switchPreferenceCompatStyle">@style/SwitchPreference</item>
-    </style>
-
-    <style name="SettingsFragment">
-        <item name="android:divider">?android:attr/listDivider</item>
-    </style>
-
-    <style name="PreferenceItem">
-        <item name="android:layout">@layout/preference_compat</item>
-    </style>
-
-    <style name="SettingsFragmentList">
-        <item name="android:paddingStart">0dp</item>
-        <item name="android:paddingEnd">0dp</item>
-    </style>
-
-    <style name="DialogPreference">
-        <item name="android:layout">@layout/preference_compat</item>
-        <item name="android:negativeButtonText">@android:string/cancel</item>
-    </style>
-
-    <style name="CheckBoxPreference">
-        <item name="android:layout">@layout/preference_compat</item>
-        <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
-    </style>
-
-    <style name="SwitchPreference">
-        <item name="android:layout">@layout/preference_compat</item>
-        <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>
-    </style>
-
     <style name="SettingsActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
       <item name="titleTextStyle">@style/TextAppearance.Headline.Primary</item>
     </style>
-    <style name="PreferenceScreenLayout">
-        <item name="android:paddingTop">16dp</item>
 
-        <!-- Additional padding is applied to each of the controls inside the layout, making this
-             a 16dp padding overall. -->
-        <item name="android:paddingStart">@dimen/pref_autofill_content_spacing</item>
-        <item name="android:paddingEnd">@dimen/pref_autofill_content_spacing</item>
-    </style>
     <style name="TextAppearance.AccessibilityTextPreference">
         <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
@@ -588,6 +544,11 @@
     </style>
     <style name="TextAppearance.SearchEngineRecentTitle" parent="TextAppearance.RobotoMediumStyle">
         <item name="android:textColor">@color/default_text_color_link</item>
+    </style>
+    <!-- TODO(crbug.com/1081933): Replace with a standard text appearance. -->
+    <style name="TextAppearance.ClearBrowsingDataText">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
     </style>
 
     <!-- New Tab Page -->

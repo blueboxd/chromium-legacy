@@ -205,6 +205,9 @@ struct ImageDoodleContent {
   // Dimensions of the original image in pixels.
   uint32 width;
   uint32 height;
+  // Color of the background the doodle was designed for. If the NTP background
+  // differs from that color we show the doodle in a box of that color.
+  skia.mojom.SkColor background_color;
   // Specification of the share button.
   DoodleShareButton share_button;
   // URL displayed to users, which they can use to share the doodle.

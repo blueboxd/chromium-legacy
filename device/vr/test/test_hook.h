@@ -5,7 +5,7 @@
 #ifndef DEVICE_VR_TEST_TEST_HOOK_H_
 #define DEVICE_VR_TEST_TEST_HOOK_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "device/vr/public/mojom/browser_test_interfaces.mojom.h"
 #include "ui/gfx/transform.h"
 

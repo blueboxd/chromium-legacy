@@ -3,34 +3,49 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
   'use strict';
-  function testCanvas_0f0(ctx, assert_compares) {
-    let colorData = ctx.getImageData(50, 50, 1, 1).data;
-    assert_compares(colorData[0], 0);
-    assert_compares(colorData[1], 255);
-    assert_compares(colorData[2], 0);
-    assert_compares(colorData[3], 255);
+  function testCanvas_0f0(ctx, width, height, assert_compares) {
+    let colorData = ctx.getImageData(0, 0, width, height).data;
+    for (let i = 0; i < width * height; i += 4) {
+      assert_compares(colorData[0], 0);
+      assert_compares(colorData[1], 255);
+      assert_compares(colorData[2], 0);
+      assert_compares(colorData[3], 255);
+    }
+  }
+
+  function testImageBitmapToAndFromVideoFrame(width, height) {
+    let canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    let ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#0f0';
+    ctx.fillRect(0, 0, width, height);
+    testCanvas_0f0(ctx, width, height, assert_equals);
+
+    return createImageBitmap(canvas)
+    .then((fromImageBitmap) => {
+      let videoFrame = new VideoFrame({ timestamp: 0 }, fromImageBitmap);
+      return videoFrame.createImageBitmap();
+    })
+    .then((toImageBitmap) => {
+        let myCanvas = document.createElement('canvas');
+        myCanvas.width = width;
+        myCanvas.height = height;
+        let myCtx = myCanvas.getContext('2d');
+        myCtx.drawImage(toImageBitmap, 0, 0);
+        let tolerance = 2;
+        testCanvas_0f0(myCtx, width, height, (actual, expected) => {
+          assert_approx_equals(actual, expected, tolerance);
+        });
+    });
   }
 
   promise_test(() => {
-    let canvas = document.createElement('canvas');
-    canvas.width = canvas.height = 100;
-    let ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#0f0';
-    ctx.fillRect(0, 0, 100, 100);
-    testCanvas_0f0(ctx, assert_equals);
+    return testImageBitmapToAndFromVideoFrame(320, 240);
+  }, 'ImageBitmap<->VideoFrame with canvas size 320x240.');
 
-    return createImageBitmap(canvas).then((fromImageBitmap) => {
-      let videoFrame = new VideoFrame({ timestamp: 0 }, fromImageBitmap);
-      videoFrame.createImageBitmap().then((toImageBitmap) => {
-        let myCanvas = document.createElement('canvas');
-        myCanvas.width = myCanvas.height = 100;
-        let myCtx = myCanvas.getContext('2d');
-        myCtx.drawImage(toImageBitmap, 0, 0);
-        testCanvas_0f0(myCtx, (actual, expected) => {
-          assert_approx_equals(actual, expected, 1);
-        });
-      });
-    });
-  }, 'Test should not return any error');
+  promise_test(() => {
+    return testImageBitmapToAndFromVideoFrame(640, 480);
+  }, 'ImageBitmap<->VideoFrame with canvas size 640x480.');
 
 </script>

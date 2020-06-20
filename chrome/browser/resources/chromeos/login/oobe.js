@@ -93,14 +93,6 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
-     * Refreshes a11y menu state.
-     * @param {!Object} data New dictionary with a11y features state.
-     */
-    refreshA11yInfo(data) {
-      $('connect').a11yStatus = data;
-    },
-
-    /**
      * Reloads content of the page (localized strings, options of the select
      * controls).
      * @param {!Object} data New dictionary with i18n values.

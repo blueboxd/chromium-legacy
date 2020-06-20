@@ -2974,7 +2974,6 @@ bool DiskCacheEntryTest::SimpleCacheMakeBadChecksumEntry(const std::string& key,
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
-  base::HistogramTester histogram_tester;
   SetSimpleCacheMode();
   InitCache();
 
@@ -2994,14 +2993,10 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
       base::MakeRefCounted<net::IOBuffer>(kLargeSize);
   EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 1, 0, read_buffer.get(), kLargeSize));
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadResult",
-      disk_cache::READ_RESULT_SYNC_CHECKSUM_FAILURE, 1);
 }
 
 // Tests that an entry that has had an IO error occur can still be Doomed().
 TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
-  base::HistogramTester histogram_tester;
   SetSimpleCacheMode();
   InitCache();
 
@@ -3020,9 +3015,6 @@ TEST_F(DiskCacheEntryTest, SimpleCacheErrorThenDoom) {
       base::MakeRefCounted<net::IOBuffer>(kLargeSize);
   EXPECT_EQ(net::ERR_CACHE_CHECKSUM_MISMATCH,
             ReadData(entry, 1, 0, read_buffer.get(), kLargeSize));
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadResult",
-      disk_cache::READ_RESULT_SYNC_CHECKSUM_FAILURE, 1);
   entry->Doom();  // Should not crash.
 }
 
@@ -5592,12 +5584,21 @@ class DiskCacheSimplePrefetchTest : public DiskCacheEntryTest {
     entry->Close();
   }
 
-  void TryRead(const std::string& key) {
+  void TryRead(const std::string& key, bool expect_preread_stream1) {
     disk_cache::Entry* entry = nullptr;
     ASSERT_THAT(OpenEntry(key, &entry), IsOk());
     scoped_refptr<net::IOBuffer> read_buf =
         base::MakeRefCounted<net::IOBuffer>(kEntrySize);
-    EXPECT_EQ(kEntrySize, ReadData(entry, 1, 0, read_buf.get(), kEntrySize));
+    net::TestCompletionCallback cb;
+    int rv = entry->ReadData(1, 0, read_buf.get(), kEntrySize, cb.callback());
+
+    // if preload happened, sync reply is expected.
+    if (expect_preread_stream1)
+      EXPECT_EQ(kEntrySize, rv);
+    else
+      EXPECT_EQ(net::ERR_IO_PENDING, rv);
+    rv = cb.GetResult(rv);
+    EXPECT_EQ(kEntrySize, rv);
     EXPECT_EQ(0, memcmp(read_buf->data(), payload_->data(), kEntrySize));
     entry->Close();
   }
@@ -5613,12 +5614,10 @@ TEST_F(DiskCacheSimplePrefetchTest, NoPrefetch) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_NONE, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, YesPrefetch) {
@@ -5627,12 +5626,10 @@ TEST_F(DiskCacheSimplePrefetchTest, YesPrefetch) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, YesPrefetchNoRead) {
@@ -5648,12 +5645,6 @@ TEST_F(DiskCacheSimplePrefetchTest, YesPrefetchNoRead) {
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
-  // Have to use GetHistogramSamplesSinceCreation here since it's the only
-  // API that handles the cases where the histogram hasn't even been created.
-  std::unique_ptr<base::HistogramSamples> samples(
-      histogram_tester.GetHistogramSamplesSinceCreation(
-          "SimpleCache.Http.ReadStream1FromPrefetched"));
-  EXPECT_EQ(0, samples->TotalCount());
 }
 
 // This makes sure we detect checksum error on entry that's small enough to be
@@ -5680,11 +5671,8 @@ TEST_F(DiskCacheSimplePrefetchTest, ChecksumNoPrefetch) {
   SetupFullPrefetch(0);
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
-  // Expect 2 CRCs --- stream 0 and stream 1.
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                      true, 2);
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
 }
@@ -5695,14 +5683,8 @@ TEST_F(DiskCacheSimplePrefetchTest, NoChecksumNoPrefetch) {
   SetupFullPrefetch(0);
   const char kKey[] = "a key";
   InitCacheAndCreateEntryWithNoCrc(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
-  // Stream 0 has CRC, stream 1 doesn't.
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     false, 1);
-  // EOF check is recorded even if there is no CRC there.
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
 }
@@ -5713,11 +5695,8 @@ TEST_F(DiskCacheSimplePrefetchTest, ChecksumPrefetch) {
   SetupFullPrefetch(2 * kEntrySize);
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
-  // Expect 2 CRCs --- stream 0 and stream 1.
-  histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                      true, 2);
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
 }
@@ -5728,13 +5707,8 @@ TEST_F(DiskCacheSimplePrefetchTest, NoChecksumPrefetch) {
   SetupFullPrefetch(2 * kEntrySize);
   const char kKey[] = "a key";
   InitCacheAndCreateEntryWithNoCrc(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
-  // Stream 0 has CRC, stream 1 doesn't.
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     true, 1);
-  histogram_tester.ExpectBucketCount("SimpleCache.Http.SyncCheckEOFHasCrc",
-                                     false, 1);
   // EOF check is recorded even if there is no CRC there.
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncCheckEOFResult",
                                       disk_cache::CHECK_EOF_RESULT_SUCCESS, 2);
@@ -5766,7 +5740,7 @@ TEST_F(DiskCacheSimplePrefetchTest, NoFullNoSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_NONE, 1);
@@ -5774,8 +5748,6 @@ TEST_F(DiskCacheSimplePrefetchTest, NoFullNoSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, NoFullSmallSpeculative) {
@@ -5784,7 +5756,7 @@ TEST_F(DiskCacheSimplePrefetchTest, NoFullSmallSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -5792,8 +5764,6 @@ TEST_F(DiskCacheSimplePrefetchTest, NoFullSmallSpeculative) {
                                     1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, NoFullLargeSpeculative) {
@@ -5804,7 +5774,7 @@ TEST_F(DiskCacheSimplePrefetchTest, NoFullLargeSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
@@ -5812,8 +5782,6 @@ TEST_F(DiskCacheSimplePrefetchTest, NoFullLargeSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, SmallFullNoSpeculative) {
@@ -5822,7 +5790,7 @@ TEST_F(DiskCacheSimplePrefetchTest, SmallFullNoSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_NONE, 1);
@@ -5830,8 +5798,6 @@ TEST_F(DiskCacheSimplePrefetchTest, SmallFullNoSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, LargeFullNoSpeculative) {
@@ -5840,7 +5806,7 @@ TEST_F(DiskCacheSimplePrefetchTest, LargeFullNoSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
@@ -5848,8 +5814,6 @@ TEST_F(DiskCacheSimplePrefetchTest, LargeFullNoSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, SmallFullSmallSpeculative) {
@@ -5858,7 +5822,7 @@ TEST_F(DiskCacheSimplePrefetchTest, SmallFullSmallSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -5866,8 +5830,6 @@ TEST_F(DiskCacheSimplePrefetchTest, SmallFullSmallSpeculative) {
                                     1);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimplePrefetchTest, LargeFullSmallSpeculative) {
@@ -5877,7 +5839,7 @@ TEST_F(DiskCacheSimplePrefetchTest, LargeFullSmallSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.Http.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
@@ -5885,8 +5847,6 @@ TEST_F(DiskCacheSimplePrefetchTest, LargeFullSmallSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount(
       "SimpleCache.Http.EntryTrailerPrefetchDelta", 0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.Http.ReadStream1FromPrefetched", true, 1);
 }
 
 class DiskCacheSimpleAppCachePrefetchTest : public DiskCacheSimplePrefetchTest {
@@ -5901,7 +5861,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullNoSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -5909,8 +5869,6 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullNoSpeculative) {
                                     1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullSmallSpeculative) {
@@ -5919,7 +5877,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullSmallSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -5927,8 +5885,6 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullSmallSpeculative) {
                                     1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullLargeSpeculative) {
@@ -5940,7 +5896,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullLargeSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -5948,8 +5904,6 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, NoFullLargeSpeculative) {
                                     1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullNoSpeculative) {
@@ -5958,7 +5912,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullNoSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -5966,8 +5920,6 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullNoSpeculative) {
                                     1);
   histogram_tester.ExpectUniqueSample(
       "SimpleCache.App.EntryTrailerPrefetchDelta", 0, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullNoSpeculative) {
@@ -5977,7 +5929,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullNoSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
@@ -5985,8 +5937,6 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullNoSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
                                     0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", true, 1);
 }
 
 TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullSmallSpeculative) {
@@ -5995,7 +5945,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullSmallSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ false);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_TRAILER, 1);
@@ -6003,8 +5953,6 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, SmallFullSmallSpeculative) {
                                     1);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
                                     1);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", false, 1);
 }
 
 TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullSmallSpeculative) {
@@ -6014,7 +5962,7 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullSmallSpeculative) {
 
   const char kKey[] = "a key";
   InitCacheAndCreateEntry(kKey);
-  TryRead(kKey);
+  TryRead(kKey, /* expect_preread_stream1 */ true);
 
   histogram_tester.ExpectUniqueSample("SimpleCache.App.SyncOpenPrefetchMode",
                                       disk_cache::OPEN_PREFETCH_FULL, 1);
@@ -6022,6 +5970,4 @@ TEST_F(DiskCacheSimpleAppCachePrefetchTest, LargeFullSmallSpeculative) {
                                     0);
   histogram_tester.ExpectTotalCount("SimpleCache.App.EntryTrailerPrefetchDelta",
                                     0);
-  histogram_tester.ExpectUniqueSample(
-      "SimpleCache.App.ReadStream1FromPrefetched", true, 1);
 }

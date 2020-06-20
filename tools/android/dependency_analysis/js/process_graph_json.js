@@ -32,8 +32,10 @@ function parseGraphFromJson(jsonGraph) {
     graph.addNodeIfNew(node);
   }
   for (const edgeData of jsonGraph.edges) {
-    const edge = new Edge(edgeData.begin, edgeData.end);
-    graph.addEdgeIfNew(edge);
+    // Assuming correctness of the JSON, we can assert non-null Nodes here.
+    const /** !Node */ beginNode = graph.getNodeById(edgeData.begin);
+    const /** !Node */ endNode = graph.getNodeById(edgeData.end);
+    graph.addEdgeIfNew(beginNode, endNode);
   }
   return graph;
 }

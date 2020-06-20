@@ -23,6 +23,7 @@
 class AutocompleteController;
 struct AutocompleteMatch;
 class AutocompleteResult;
+class ChromeAutocompleteProviderClient;
 class Profile;
 
 // The native part of the Java AutocompleteController class.
@@ -83,6 +84,10 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
       jint selected_index,
       jint hash_code,
       jlong elapsed_time_since_input_change);
+  base::android::ScopedJavaLocalRef<jobject> FindMatchingTabWithUrl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_gurl);
 
   // KeyedService:
   void Shutdown() override;
@@ -155,6 +160,7 @@ class AutocompleteControllerAndroid : public AutocompleteController::Observer,
 
   JavaObjectWeakGlobalRef weak_java_autocomplete_controller_android_;
   Profile* profile_;
+  ChromeAutocompleteProviderClient* provider_client_;
 
   // Whether the omnibox input is a query that starts building
   // by clicking on an image tile.

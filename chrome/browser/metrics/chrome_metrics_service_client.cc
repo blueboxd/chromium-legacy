@@ -109,6 +109,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "ui/base/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/metrics/chrome_android_metrics_provider.h"
@@ -135,6 +136,10 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/metrics/plugin_metrics_provider.h"
+#endif
+
+#if BUILDFLAG(LACROS)
+#include "chrome/browser/metrics/lacros_metrics_provider.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -691,6 +696,11 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::unique_ptr<metrics::MetricsProvider>(plugin_metrics_provider_));
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
+
+#if BUILDFLAG(LACROS)
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<LacrosMetricsProvider>());
+#endif  // BUILDFLAG(LACROS)
 
 #if defined(OS_CHROMEOS)
   metrics_service_->RegisterMetricsProvider(

@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_VIDEO_RENDERER_SINK_H_
 #define MEDIA_BASE_VIDEO_RENDERER_SINK_H_
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"

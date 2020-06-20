@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/time.mojom";
 import "url/mojom/origin.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 struct MediaFeed {
   // The ID of the field in storage.
@@ -66,6 +67,12 @@ struct MediaFeed {
   // The reason why the feed has been reset. If not kNone, this means the items
   // have been deleted and the feed status has been reset to default.
   ResetReason reset_reason;
+
+  // Token used to invalidate ongoing fetches for the feed. If there is a token
+  // mismatch when feed fetch data returns (the reset token when the fetch began
+  // does not match the feed's current reset token), the data is stale and
+  // shouldn't be stored because the feed has been reset.
+  mojo_base.mojom.UnguessableToken? reset_token;
 
   // Contains details about the user signed into the website.
   UserIdentifier? user_identifier;

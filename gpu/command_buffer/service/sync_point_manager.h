@@ -15,7 +15,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/callback.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/condition_variable.h"

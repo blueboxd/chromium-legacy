@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 

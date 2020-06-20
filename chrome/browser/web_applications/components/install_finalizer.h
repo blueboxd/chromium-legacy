@@ -53,11 +53,6 @@ class InstallFinalizer {
                                const FinalizeOptions& options,
                                InstallFinalizedCallback callback) = 0;
 
-  // For the new USS-based system only. Generate missing sync placeholder data
-  // and icons using |sync_data| fields.
-  virtual void FinalizeFallbackInstallAfterSync(
-      const AppId& app_id,
-      InstallFinalizedCallback callback) = 0;
   // Delete app data from disk (icon .png files). |app_id| must be unregistered.
   virtual void FinalizeUninstallAfterSync(const AppId& app_id,
                                           UninstallWebAppCallback callback) = 0;

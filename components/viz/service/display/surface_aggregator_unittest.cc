@@ -5795,6 +5795,41 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, OverlayOccludingDamageRect) {
     EXPECT_EQ(gfx::Rect(60, 0, 30, 40),
               video_sqs->occluding_damage_rect.value());
   }
+  // Frame #4 - Has occluding damage and clipping of the video quad is on
+  {
+    CompositorFrame child_surface_frame = MakeEmptyCompositorFrame();
+    AddPasses(&child_surface_frame.render_pass_list, child_surface_passes,
+              &child_surface_frame.metadata.referenced_surfaces);
+
+    auto* render_pass = child_surface_frame.render_pass_list[0].get();
+    auto* surface_quad_sqs = render_pass->shared_quad_state_list.front();
+    surface_quad_sqs->is_clipped = true;
+    surface_quad_sqs->clip_rect = gfx::Rect(20, 0, 60, 80);
+
+    child_sink_->SubmitCompositorFrame(child_local_surface_id,
+                                       std::move(child_surface_frame));
+
+    CompositorFrame root_frame = MakeEmptyCompositorFrame();
+    AddPasses(&root_frame.render_pass_list, root_passes,
+              &root_frame.metadata.referenced_surfaces);
+
+    root_sink_->SubmitCompositorFrame(root_local_surface_id_,
+                                      std::move(root_frame));
+
+    CompositorFrame aggregated_frame = AggregateFrame(root_surface_id);
+
+    auto* output_root_pass = aggregated_frame.render_pass_list.back().get();
+    // The video quad (10, 0, 80, 80) unions the solid quad on top (60, 0, 40,
+    // 40)
+    EXPECT_EQ(gfx::Rect(10, 0, 90, 80), output_root_pass->damage_rect);
+
+    const SharedQuadState* video_sqs =
+        output_root_pass->quad_list.back()->shared_quad_state;
+    // The solid quad on top (60, 0, 40, 40) intersects the clipped video quad
+    // (26, 0, 48, 64)
+    EXPECT_EQ(gfx::Rect(60, 0, 14, 40),
+              video_sqs->occluding_damage_rect.value());
+  }
 }
 
 // Tests that quads outside the damage rect are not ignored for cached render

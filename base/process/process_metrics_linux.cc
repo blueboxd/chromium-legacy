@@ -175,7 +175,7 @@ void ReadChromeOSGraphicsMemory(SystemMemoryInfoKB* meminfo) {
   // Incorporate Mali graphics memory if present.
   FilePath mali_memory_file("/sys/class/misc/mali0/device/memory");
   std::string mali_memory_data;
-  if (ReadFileToString(mali_memory_file, &mali_memory_data)) {
+  if (ReadFileToStringNonBlocking(mali_memory_file, &mali_memory_data)) {
     long long mali_size = -1;
     int num_res = sscanf(mali_memory_data.c_str(), "%lld bytes", &mali_size);
     if (num_res == 1)
@@ -317,7 +317,7 @@ int ProcessMetrics::GetOpenFdSoftLimit() const {
   FilePath fd_path = internal::GetProcPidDir(process_).Append("limits");
 
   std::string limits_contents;
-  if (!ReadFileToString(fd_path, &limits_contents))
+  if (!ReadFileToStringNonBlocking(fd_path, &limits_contents))
     return -1;
 
   for (const auto& line : SplitStringPiece(
@@ -593,7 +593,7 @@ bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   // Used memory is: total - free - buffers - caches
   FilePath meminfo_file("/proc/meminfo");
   std::string meminfo_data;
-  if (!ReadFileToString(meminfo_file, &meminfo_data)) {
+  if (!ReadFileToStringNonBlocking(meminfo_file, &meminfo_data)) {
     DLOG(WARNING) << "Failed to open " << meminfo_file.value();
     return false;
   }
@@ -624,7 +624,7 @@ bool GetVmStatInfo(VmStatInfo* vmstat) {
 
   FilePath vmstat_file("/proc/vmstat");
   std::string vmstat_data;
-  if (!ReadFileToString(vmstat_file, &vmstat_data)) {
+  if (!ReadFileToStringNonBlocking(vmstat_file, &vmstat_data)) {
     DLOG(WARNING) << "Failed to open " << vmstat_file.value();
     return false;
   }
@@ -703,7 +703,7 @@ bool GetSystemDiskInfo(SystemDiskInfo* diskinfo) {
 
   FilePath diskinfo_file("/proc/diskstats");
   std::string diskinfo_data;
-  if (!ReadFileToString(diskinfo_file, &diskinfo_data)) {
+  if (!ReadFileToStringNonBlocking(diskinfo_file, &diskinfo_data)) {
     DLOG(WARNING) << "Failed to open " << diskinfo_file.value();
     return false;
   }
@@ -903,7 +903,7 @@ bool GetSwapInfoImpl(SwapInfo* swap_info) {
   }
 
   std::string mm_stat_data;
-  if (!ReadFileToString(zram_mm_stat_file, &mm_stat_data)) {
+  if (!ReadFileToStringNonBlocking(zram_mm_stat_file, &mm_stat_data)) {
     DLOG(WARNING) << "Failed to open " << zram_mm_stat_file.value();
     return false;
   }
@@ -916,7 +916,7 @@ bool GetSwapInfoImpl(SwapInfo* swap_info) {
 
   FilePath zram_stat_file("/sys/block/zram0/stat");
   std::string stat_data;
-  if (!ReadFileToString(zram_stat_file, &stat_data)) {
+  if (!ReadFileToStringNonBlocking(zram_stat_file, &stat_data)) {
     DLOG(WARNING) << "Failed to open " << zram_stat_file.value();
     return false;
   }

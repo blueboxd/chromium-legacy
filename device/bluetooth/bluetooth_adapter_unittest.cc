@@ -132,12 +132,6 @@ class TestBluetoothAdapter final : public BluetoothAdapter {
 
   void TestErrorCallback() {}
 
-  void TestOnStartDiscoverySession(
-      std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
-    ++callback_count_;
-    discovery_sessions_holder_.push(std::move(discovery_session));
-  }
-
   void OnStartDiscoverySessionQuitLoop(
       base::Closure run_loop_quit,
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
@@ -724,7 +718,7 @@ TEST_F(BluetoothTest, MAYBE_ConstructDefaultAdapter) {
   EXPECT_EQ(adapter_->IsPowered(), adapter_->IsPowered());
   EXPECT_FALSE(adapter_->IsDiscoverable());
   EXPECT_FALSE(adapter_->IsDiscovering());
-}
+}  // namespace device
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
@@ -1420,6 +1414,29 @@ TEST_F(BluetoothTest, MAYBE_TogglePowerBeforeScan) {
   ASSERT_EQ((size_t)1, discovery_sessions_.size());
   EXPECT_TRUE(discovery_sessions_[0]->IsActive());
 }
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, DiscoverySessionFailure) {
+  InitWithFakeAdapter();
+  TestBluetoothAdapterObserver observer(adapter_);
+  EXPECT_FALSE(adapter_->IsDiscovering());
+
+  StartLowEnergyDiscoverySession();
+  EXPECT_EQ(1, callback_count_);
+  EXPECT_EQ(0, error_callback_count_);
+  EXPECT_TRUE(adapter_->IsDiscovering());
+  EXPECT_EQ(1, observer.discovering_changed_count());
+  EXPECT_TRUE(observer.last_discovering());
+  ASSERT_EQ((size_t)1, discovery_sessions_.size());
+  EXPECT_TRUE(discovery_sessions_[0]->IsActive());
+
+  SimulateLowEnergyDiscoveryFailure();
+  EXPECT_FALSE(adapter_->IsDiscovering());
+  EXPECT_FALSE(discovery_sessions_[0]->IsActive());
+  EXPECT_EQ(2, observer.discovering_changed_count());
+  EXPECT_FALSE(observer.last_discovering());
+}
+#endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
 #define MAYBE_TurnOffAdapterWithConnectedDevice \

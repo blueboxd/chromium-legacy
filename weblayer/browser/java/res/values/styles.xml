@@ -10,43 +10,6 @@
         <item name="alertDialogTheme">@style/Theme.Chromium.AlertDialog</item>
     </style>
 
-    <style name="PreferenceTheme">
-        <item name="preferenceStyle">@style/PreferenceItem</item>
-        <item name="preferenceFragmentCompatStyle">@style/SettingsFragment</item>
-        <item name="preferenceFragmentListStyle">@style/SettingsFragmentList</item>
-        <item name="dialogPreferenceStyle">@style/DialogPreference</item>
-        <item name="checkBoxPreferenceStyle">@style/CheckBoxPreference</item>
-        <item name="switchPreferenceCompatStyle">@style/SwitchPreference</item>
-    </style>
-
-    <style name="PreferenceItem">
-        <item name="android:layout">@layout/preference_compat</item>
-    </style>
-
-    <style name="SettingsFragment">
-        <item name="android:divider">?android:attr/listDivider</item>
-    </style>
-
-    <style name="SettingsFragmentList">
-        <item name="android:paddingStart">0dp</item>
-        <item name="android:paddingEnd">0dp</item>
-    </style>
-
-    <style name="DialogPreference">
-        <item name="android:layout">@layout/preference_compat</item>
-        <item name="android:negativeButtonText">@android:string/cancel</item>
-    </style>
-
-    <style name="CheckBoxPreference">
-        <item name="android:layout">@layout/preference_compat</item>
-        <item name="android:widgetLayout">@layout/preference_widget_checkbox</item>
-    </style>
-
-    <style name="SwitchPreference">
-        <item name="android:layout">@layout/preference_compat</item>
-        <item name="android:widgetLayout">@layout/preference_widget_switch_compat</item>
-    </style>
-
     <!-- The following styles may be used to style views provided by a CustomViewBinder or attached
          to the app menu as headers or footers. -->
 

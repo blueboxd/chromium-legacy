@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2020 The Chromium Authors. All rights reserved.
+# Copyright 2020 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Transform CBCM Takeout API Data (Python3)."""
@@ -8,6 +8,7 @@ import argparse
 import csv
 import json
 import sys
+import time
 
 import google_auth_httplib2
 
@@ -41,26 +42,20 @@ def ComputeExtensionsList(extensions_list, data):
             key = key + ' @ ' + extension['version']
           if key not in extensions_list:
             current_extension = {
-                'name':
-                    extension['name'],
-                'permissions':
-                    extension['permissions']
-                    if 'permissions' in extension else '',
-                'installed':
-                    set(),
-                'disabled':
-                    set(),
-                'forced':
-                    set()
+                'name': extension.get('name', ''),
+                'permissions': extension.get('permissions', ''),
+                'installed': set(),
+                'disabled': set(),
+                'forced': set()
             }
           else:
             current_extension = extensions_list[key]
 
           machine_name = device['machineName']
           current_extension['installed'].add(machine_name)
-          if 'installType' in extension and extension['installType'] == 3:
+          if extension.get('installType', '') == 'ADMIN':
             current_extension['forced'].add(machine_name)
-          if 'disabled' in extension and extension['disabled']:
+          if extension.get('disabled', False):
             current_extension['disabled'].add(machine_name)
 
           extensions_list[key] = current_extension
@@ -170,11 +165,21 @@ def main(args):
     browsers_processed = 0
     while True:
       print('Making request to server ...')
-      response = http.request(base_request_url + '?' + request_parameters,
-                              'GET')[1]
-      if isinstance(response, bytes):
-        response = response.decode('utf-8')
-      data = json.loads(response)
+
+      retrycount = 0
+      while retrycount < 5:
+        response = http.request(base_request_url + '?' + request_parameters,
+                                'GET')[1]
+
+        if isinstance(response, bytes):
+          response = response.decode('utf-8')
+        data = json.loads(response)
+        if 'browsers' not in data:
+          print('Response error, retrying...')
+          time.sleep(3)
+          retrycount += 1
+        else:
+          break
 
       browsers_in_data = len(data['browsers'])
       print('Request returned %s results, analyzing ...' % (browsers_in_data))

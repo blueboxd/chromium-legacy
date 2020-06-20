@@ -187,7 +187,7 @@ LayoutText* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
   }
 
   // No first letter text to display, we're done.
-  // FIXME: This black-list of disallowed LayoutText subclasses is fragile.
+  // FIXME: This list of disallowed LayoutText subclasses is fragile.
   // crbug.com/422336.
   // Should counter be on this list? What about LayoutTextFragment?
   if (!first_letter_text_layout_object ||

@@ -178,15 +178,12 @@ FidoCableV1HandshakeHandler::GetEncryptionKeyAfterSuccessfulHandshake(
                             /*derived_key_length=*/32);
 }
 
-// kP256PointSize is the number of bytes in an X9.62 encoding of a P-256 point.
-static constexpr size_t kP256PointSize = 65;
-
 FidoCableV2HandshakeHandler::FidoCableV2HandshakeHandler(
     FidoCableDevice* cable_device,
     base::span<const uint8_t, 32> psk_gen_key,
     base::span<const uint8_t, 8> nonce,
     base::span<const uint8_t, kCableEphemeralIdSize> eid,
-    base::Optional<base::span<const uint8_t, kP256PointSize>> peer_identity,
+    base::Optional<base::span<const uint8_t, kP256X962Length>> peer_identity,
     base::Optional<base::span<const uint8_t, kCableIdentityKeySeedSize>>
         local_seed,
     base::RepeatingCallback<void(std::unique_ptr<CableDiscoveryData>)>

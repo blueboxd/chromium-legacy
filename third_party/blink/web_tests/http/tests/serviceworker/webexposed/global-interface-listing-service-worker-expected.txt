@@ -795,6 +795,7 @@ interface ImageDecoder
     getter type
     method constructor
     method decode
+    method decodeMetadata
 interface InstallEvent : ExtendableEvent
     attribute @@toStringTag
     method constructor

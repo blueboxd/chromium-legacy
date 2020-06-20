@@ -12,7 +12,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"

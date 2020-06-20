@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 
+#include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/feeds/media_feeds_converter.h"
@@ -19,6 +20,10 @@
 
 class Profile;
 class GURL;
+
+namespace base {
+class Clock;
+}
 
 namespace safe_search_api {
 enum class Classification;
@@ -70,6 +75,12 @@ class MediaFeedsService : public KeyedService {
   // Fetches a media feed with the given ID and then store it in the
   // feeds table in media history. Runs the given callback after storing. The
   // fetch will be skipped if another fetch is currently ongoing.
+  // If the feed is not supplied, it will be looked up in media history store in
+  // order to get details related to fetching.
+  void FetchMediaFeed(const int64_t feed_id,
+                      const bool bypass_cache,
+                      media_feeds::mojom::MediaFeedPtr feed,
+                      FetchMediaFeedCallback callback);
   void FetchMediaFeed(int64_t feed_id, FetchMediaFeedCallback callback);
 
   // Stores a callback to be called once we have completed all inflight checks.
@@ -84,10 +95,16 @@ class MediaFeedsService : public KeyedService {
   void ResetMediaFeed(const url::Origin& origin,
                       media_feeds::mojom::ResetReason reason);
 
+  // Check the list of discovered feeds and fetch a collection of those with the
+  // highest watchtime. This should be called periodically in the background.
+  void FetchTopMediaFeeds(base::OnceClosure callback);
+
   bool HasCookieObserverForTest() const;
 
  private:
   friend class MediaFeedsServiceTest;
+
+  void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
   bool AddInflightSafeSearchCheck(
       const media_history::MediaHistoryKeyedService::SafeSearchID id,
@@ -110,8 +127,12 @@ class MediaFeedsService : public KeyedService {
 
   bool IsSafeSearchCheckingEnabled() const;
 
+  void OnGotTopFeeds(base::OnceClosure callback,
+                     std::vector<media_feeds::mojom::MediaFeedPtr> feeds);
+
   void OnGotFetchDetails(
       const int64_t feed_id,
+      bool bypass_cache,
       base::Optional<
           media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
           details);
@@ -133,6 +154,18 @@ class MediaFeedsService : public KeyedService {
                                const net::CookieChangeCause& cause);
 
   void OnDiscoveredFeed();
+
+  // Settings related to fetching a feed in the background.
+  struct BackgroundFetchFeedSettings {
+    // Whether this feed should be fetched now.
+    bool should_fetch;
+    // Whether to use cached data (false) or bypass and get fresh data (true).
+    bool bypass_cache;
+  };
+
+  // Returns whether the feed should be fetched in the background as a top feed.
+  BackgroundFetchFeedSettings GetBackgroundFetchFeedSettings(
+      const media_feeds::mojom::MediaFeedPtr& feed);
 
   media_history::MediaHistoryKeyedService* GetMediaHistoryService();
 
@@ -184,6 +217,9 @@ class MediaFeedsService : public KeyedService {
 
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
   Profile* const profile_;
+
+  // An internal clock for testing.
+  base::Clock* clock_;
 
   THREAD_CHECKER(thread_checker_);
 

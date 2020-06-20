@@ -3418,6 +3418,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSuggestionsWrapAroundName,
      flag_descriptions::kOmniboxSuggestionsWrapAroundDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionsWrapAround)},
+    {"omnibox-tab-switch-suggestions",
+     flag_descriptions::kOmniboxTabSwitchSuggestionsName,
+     flag_descriptions::kOmniboxTabSwitchSuggestionsDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestions)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-on-device-head-suggestions-incognito",

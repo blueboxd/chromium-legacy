@@ -188,6 +188,11 @@ void IsolatedPrerenderTabHelper::RemoveObserverForTesting(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+network::mojom::NetworkContext*
+IsolatedPrerenderTabHelper::GetIsolatedContextForTesting() const {
+  return page_->isolated_network_context_.get();
+}
+
 base::Optional<IsolatedPrerenderTabHelper::AfterSRPMetrics>
 IsolatedPrerenderTabHelper::after_srp_metrics() const {
   if (page_->after_srp_metrics_) {
@@ -220,6 +225,20 @@ void IsolatedPrerenderTabHelper::DidStartNavigation(
         "IsolatedPrerender.Prefetch.Mainframe.TotalRedirects",
         page_->srp_metrics_->prefetch_total_redirect_count_);
   }
+
+  // Notify the subresource manager (if applicable)  that its page is being
+  // navigated to so that the prefetched subresources can be used from cache.
+  IsolatedPrerenderService* service =
+      IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+  if (!service)
+    return;
+
+  IsolatedPrerenderSubresourceManager* subresource_manager =
+      service->GetSubresourceManagerForURL(navigation_handle->GetURL());
+  if (!subresource_manager)
+    return;
+
+  subresource_manager->NotifyPageNavigatedToAfterSRP();
 }
 
 void IsolatedPrerenderTabHelper::NotifyPrefetchProbeLatency(
@@ -255,43 +274,60 @@ void IsolatedPrerenderTabHelper::DidFinishNavigation(
 
   GURL url = navigation_handle->GetURL();
 
-  // If the previous page load was a Google SRP, the AfterSRPMetrics class needs
-  // to be created now from the SRP's |page_| and then set on the new one when
-  // we create it at the end of this method.
-  std::unique_ptr<AfterSRPMetrics> after_srp = nullptr;
+  std::unique_ptr<CurrentPageLoad> new_page =
+      std::make_unique<CurrentPageLoad>(navigation_handle);
+
   if (page_->srp_metrics_->predicted_urls_count_ > 0) {
-    after_srp = std::make_unique<AfterSRPMetrics>();
-    after_srp->url_ = url;
-    after_srp->prefetch_eligible_count_ =
+    // If the previous page load was a Google SRP, the AfterSRPMetrics class
+    // needs to be created now from the SRP's |page_| and then set on the new
+    // one when we set it at the end of this method.
+    new_page->after_srp_metrics_ = std::make_unique<AfterSRPMetrics>();
+    new_page->after_srp_metrics_->url_ = url;
+    new_page->after_srp_metrics_->prefetch_eligible_count_ =
         page_->srp_metrics_->prefetch_eligible_count_;
 
-    after_srp->probe_latency_ = page_->probe_latency_;
+    new_page->after_srp_metrics_->probe_latency_ = page_->probe_latency_;
 
     auto status_iter = page_->prefetch_status_by_url_.find(url);
     if (status_iter != page_->prefetch_status_by_url_.end()) {
-      after_srp->prefetch_status_ = status_iter->second;
+      new_page->after_srp_metrics_->prefetch_status_ = status_iter->second;
     } else {
-      after_srp->prefetch_status_ = PrefetchStatus::kNavigatedToLinkNotOnSRP;
+      new_page->after_srp_metrics_->prefetch_status_ =
+          PrefetchStatus::kNavigatedToLinkNotOnSRP;
     }
 
     // Whenever probe latency is set, the status should reflect that a probe
     // was attempted and vise versa.
-    DCHECK_EQ(after_srp->probe_latency_.has_value(),
-              after_srp->prefetch_status_ ==
+    DCHECK_EQ(new_page->after_srp_metrics_->probe_latency_.has_value(),
+              new_page->after_srp_metrics_->prefetch_status_ ==
                       PrefetchStatus::kPrefetchUsedProbeSuccess ||
-                  after_srp->prefetch_status_ ==
+                  new_page->after_srp_metrics_->prefetch_status_ ==
                       PrefetchStatus::kPrefetchNotUsedProbeFailed);
 
     auto position_iter = page_->original_prediction_ordering_.find(url);
     if (position_iter != page_->original_prediction_ordering_.end()) {
-      after_srp->clicked_link_srp_position_ = position_iter->second;
+      new_page->after_srp_metrics_->clicked_link_srp_position_ =
+          position_iter->second;
+    }
+
+    // See if the page being navigated to was prerendered. If so, copy over its
+    // subresource manager and networking pipes.
+    IsolatedPrerenderService* service =
+        IsolatedPrerenderServiceFactory::GetForProfile(profile_);
+    std::unique_ptr<IsolatedPrerenderSubresourceManager> manager =
+        service->TakeSubresourceManagerForURL(url);
+    if (manager) {
+      new_page->subresource_manager_ = std::move(manager);
+      new_page->isolated_url_loader_factory_ =
+          std::move(page_->isolated_url_loader_factory_);
+      new_page->isolated_network_context_ =
+          std::move(page_->isolated_network_context_);
     }
   }
 
   // |page_| is reset on commit so that any available cached prefetches that
   // result from a redirect get used.
-  page_ = std::make_unique<CurrentPageLoad>(navigation_handle);
-  page_->after_srp_metrics_ = std::move(after_srp);
+  page_ = std::move(new_page);
 }
 
 void IsolatedPrerenderTabHelper::OnVisibilityChanged(
@@ -606,7 +642,9 @@ void IsolatedPrerenderTabHelper::DoNoStatePrefetch() {
   // before the end of the method if the handle is not created.
   IsolatedPrerenderSubresourceManager* manager =
       service->OnAboutToNoStatePrefetch(url, CopyPrefetchResponseForNSP(url));
-  manager->SetIsolatedURLLoaderFactory(page_->isolated_url_loader_factory_);
+  manager->SetCreateIsolatedLoaderFactoryCallback(base::BindRepeating(
+      &IsolatedPrerenderTabHelper::CreateNewURLLoaderFactory,
+      weak_factory_.GetWeakPtr()));
 
   content::SessionStorageNamespace* session_storage_namespace =
       web_contents()->GetController().GetDefaultSessionStorageNamespace();
@@ -840,6 +878,23 @@ IsolatedPrerenderTabHelper::GetURLLoaderFactory() {
   return page_->isolated_url_loader_factory_.get();
 }
 
+void IsolatedPrerenderTabHelper::CreateNewURLLoaderFactory(
+    mojo::PendingReceiver<network::mojom::URLLoaderFactory> pending_receiver,
+    base::Optional<net::IsolationInfo> isolation_info) {
+  DCHECK(page_->isolated_network_context_);
+
+  auto factory_params = network::mojom::URLLoaderFactoryParams::New();
+  factory_params->process_id = network::mojom::kBrowserProcessId;
+  factory_params->is_trusted = true;
+  factory_params->is_corb_enabled = false;
+  if (isolation_info) {
+    factory_params->isolation_info = *isolation_info;
+  }
+
+  page_->isolated_network_context_->CreateURLLoaderFactory(
+      std::move(pending_receiver), std::move(factory_params));
+}
+
 void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
   page_->isolated_network_context_.reset();
   page_->isolated_url_loader_factory_.reset();
@@ -848,6 +903,7 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
       IsolatedPrerenderServiceFactory::GetForProfile(profile_);
 
   auto context_params = network::mojom::NetworkContextParams::New();
+  context_params->context_name = "IsolatedPrerender";
   context_params->user_agent = ::GetUserAgent();
   context_params->accept_language = net::HttpUtil::GenerateAcceptLanguageHeader(
       profile_->GetPrefs()->GetString(language::prefs::kAcceptLanguages));
@@ -858,6 +914,9 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
       network::mojom::CertVerifierCreationParams::New());
   context_params->cors_exempt_header_list = {
       content::kCorsExemptPurposeHeaderName};
+
+  context_params->http_cache_enabled = true;
+  DCHECK(!context_params->http_cache_path);
 
   // Also register a client config receiver so that updates to the set of proxy
   // hosts or proxy headers will be updated.
@@ -871,16 +930,10 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
       page_->isolated_network_context_.BindNewPipeAndPassReceiver(),
       std::move(context_params));
 
-  auto factory_params = network::mojom::URLLoaderFactoryParams::New();
-  factory_params->process_id = network::mojom::kBrowserProcessId;
-  factory_params->is_trusted = true;
-  factory_params->is_corb_enabled = false;
-
   mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory_remote;
 
-  page_->isolated_network_context_->CreateURLLoaderFactory(
-      isolated_factory_remote.InitWithNewPipeAndPassReceiver(),
-      std::move(factory_params));
+  CreateNewURLLoaderFactory(
+      isolated_factory_remote.InitWithNewPipeAndPassReceiver(), base::nullopt);
 
   page_->isolated_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
       std::make_unique<network::WrapperPendingSharedURLLoaderFactory>(

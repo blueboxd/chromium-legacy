@@ -18,6 +18,9 @@
 
 namespace gpu {
 
+struct GPUInfo;
+class VulkanInfo;
+
 // Submits semaphores to be signaled to the vulkan queue. Semaphores are
 // signaled once this submission is executed. vk_fence is an optional handle
 // to fence to be signaled once this submission completes execution.
@@ -78,6 +81,10 @@ VKAPI_ATTR VkResult VKAPI_CALL QueueSubmitHook(VkQueue queue,
                                                VkFence fence);
 
 COMPONENT_EXPORT(VULKAN) void ReportQueueSubmitPerSwapBuffers();
+
+COMPONENT_EXPORT(VULKAN)
+bool CheckVulkanCompabilities(const VulkanInfo& vulkan_info,
+                              const GPUInfo& gpu_info);
 
 }  // namespace gpu
 

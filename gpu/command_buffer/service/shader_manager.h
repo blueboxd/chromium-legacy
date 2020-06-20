@@ -8,7 +8,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"

@@ -336,10 +336,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
                              State state_to_restore,
                              int result);
 
-  void RecordReadResultConsideringChecksum(
-      const std::unique_ptr<SimpleSynchronousEntry::ReadResult>& read_result)
-      const;
-
   // Called after completion of an operation, to either incoproprate file info
   // received from I/O done on the worker pool, or to simply bump the
   // timestamps. Updates the metadata both in |this| and in the index.
@@ -381,7 +377,6 @@ class NET_EXPORT_PRIVATE SimpleEntryImpl : public Entry,
   const base::FilePath path_;
   const uint64_t entry_hash_;
   const bool use_optimistic_operations_;
-  bool is_initial_stream1_read_ = true;  // used for metrics only.
   std::string key_;
 
   // |last_used_|, |last_modified_| and |data_size_| are copied from the

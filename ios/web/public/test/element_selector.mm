@@ -64,6 +64,12 @@
                                      selectorDescription:description];
 }
 
++ (ElementSelector*)selectorWithScript:(NSString*)selectorScript
+                   selectorDescription:(NSString*)selectorDescription {
+  return [[ElementSelector alloc] initWithSelectorScript:selectorScript
+                                     selectorDescription:selectorDescription];
+}
+
 - (instancetype)initWithSelectorScript:(NSString*)selectorScript
                    selectorDescription:(NSString*)selectorDescription {
   if ((self = [super init])) {

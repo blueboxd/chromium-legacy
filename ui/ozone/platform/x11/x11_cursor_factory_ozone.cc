@@ -8,6 +8,7 @@
 #include "ui/base/cursor/cursor_lookup.h"
 #include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
+#include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace ui {
@@ -91,16 +92,16 @@ scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
 
   if (!default_cursors_.count(type)) {
     // First try to load a predefined X11 cursor.
-    auto cursor =
-        base::MakeRefCounted<X11CursorOzone>(CursorCssNameFromId(type));
-    if (cursor->xcursor() != x11::None) {
+    ::Cursor xcursor = LoadCursorFromType(type);
+    if (xcursor != x11::None) {
+      auto cursor = base::MakeRefCounted<X11CursorOzone>(xcursor);
       default_cursors_[type] = cursor;
       return cursor;
     }
 
     // Loads the default aura cursor bitmap for cursor type. Falls back on
     // pointer cursor then invisible cursor if this fails.
-    cursor = CreateAuraX11Cursor(type);
+    auto cursor = CreateAuraX11Cursor(type);
     if (!cursor.get()) {
       if (type != mojom::CursorType::kPointer) {
         cursor = GetDefaultCursorInternal(mojom::CursorType::kPointer);

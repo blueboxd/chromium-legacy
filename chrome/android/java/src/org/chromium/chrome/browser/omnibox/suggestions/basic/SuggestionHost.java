@@ -31,8 +31,9 @@ public interface SuggestionHost {
      * Triggered when the user selects switch to tab .
      *
      * @param suggestion Suggestion which sugegstions a URL that is opened in another tab.
+     * @param position The position of the button in the list.
      */
-    void onSwitchToTab(OmniboxSuggestion suggestion);
+    void onSwitchToTab(OmniboxSuggestion suggestion, int position);
 
     /**
      * Toggle expanded state of suggestion items belonging to specific group.

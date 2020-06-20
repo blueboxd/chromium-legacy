@@ -21,6 +21,10 @@ class IsolatedPrerenderServiceWorkersObserver;
 class IsolatedPrerenderSubresourceManager;
 class PrefetchedMainframeResponseContainer;
 
+namespace content {
+class RenderFrameHost;
+}
+
 // This service owns browser-level objects used in Isolated Prerenders.
 class IsolatedPrerenderService
     : public KeyedService,
@@ -40,8 +44,8 @@ class IsolatedPrerenderService
   // This call is forwarded to all |IsolatedPrerenderSubresourceManager| in
   // |subresource_managers_| see documentation there for more detail.
   bool MaybeProxyURLLoaderFactory(
+      content::RenderFrameHost* frame,
       int render_process_id,
-      int frame_tree_node_id,
       content::ContentBrowserClient::URLLoaderFactoryType type,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
           factory_receiver);
@@ -56,6 +60,11 @@ class IsolatedPrerenderService
   // returned pointer since it may be deleted without notice.
   IsolatedPrerenderSubresourceManager* GetSubresourceManagerForURL(
       const GURL& url) const;
+
+  // Passes ownership of an |IsolatedPrerenderSubresourceManager| for the given
+  // URL, if one exists and hasn't been destroyed.
+  std::unique_ptr<IsolatedPrerenderSubresourceManager>
+  TakeSubresourceManagerForURL(const GURL& url);
 
   // Destroys the subresource manager for the given url if one exists.
   void DestroySubresourceManagerForURL(const GURL& url);

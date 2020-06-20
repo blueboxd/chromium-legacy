@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -267,6 +268,8 @@ class ASH_EXPORT LockScreenMediaControlsView
 
   // True if the user is in the process of gesture-dragging |contents_view_|.
   bool is_in_drag_ = false;
+
+  base::WeakPtrFactory<LockScreenMediaControlsView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(LockScreenMediaControlsView);
 };

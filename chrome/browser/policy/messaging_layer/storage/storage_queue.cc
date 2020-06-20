@@ -66,8 +66,7 @@ struct RecordHeader {
 // static
 void StorageQueue::Create(
     const Options& options,
-    base::RepeatingCallback<StatusOr<scoped_refptr<UploaderInterface>>()>
-        start_upload_cb,
+    StartUploadCb start_upload_cb,
     base::OnceCallback<void(StatusOr<scoped_refptr<StorageQueue>>)>
         completion_cb) {
   // Initialize StorageQueue object loading the data.
@@ -112,10 +111,8 @@ void StorageQueue::Create(
                                  std::move(completion_cb));
 }
 
-StorageQueue::StorageQueue(
-    const Options& options,
-    base::RepeatingCallback<StatusOr<scoped_refptr<UploaderInterface>>()>
-        start_upload_cb)
+StorageQueue::StorageQueue(const Options& options,
+                           StartUploadCb start_upload_cb)
     : options_(options),
       start_upload_cb_(std::move(start_upload_cb)),
       sequenced_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(

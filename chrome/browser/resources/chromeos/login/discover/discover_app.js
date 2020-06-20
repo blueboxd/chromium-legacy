@@ -30,7 +30,6 @@ cr.define('cr.ui.Oobe', function() {
 
     // Dummy Oobe functions not present with stripped login UI.
     enableKeyboardFlow(data) {},
-    refreshA11yInfo(data) {},
     setClientAreaSize(data) {},
     setLabelText(data) {},
     setShelfHeight(data) {},

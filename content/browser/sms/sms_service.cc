@@ -103,7 +103,8 @@ void SmsService::OnReceive(const std::string& one_time_code) {
   DCHECK(!one_time_code_);
   DCHECK(!start_time_.is_null());
 
-  RecordSmsReceiveTime(base::TimeTicks::Now() - start_time_);
+  auto now = base::TimeTicks::Now();
+  RecordSmsReceiveTime(now - start_time_);
 
   one_time_code_ = one_time_code;
 
@@ -114,7 +115,7 @@ void SmsService::OnReceive(const std::string& one_time_code) {
     return;
   }
 
-  receive_time_ = base::TimeTicks::Now();
+  receive_time_ = now;
   OpenInfoBar(one_time_code);
 }
 

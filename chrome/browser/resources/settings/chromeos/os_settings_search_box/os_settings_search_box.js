@@ -148,6 +148,12 @@ Polymer({
   attached() {
     const toolbarSearchField = this.$.search;
     const searchInput = toolbarSearchField.getSearchInput();
+    if (settings.Router.getInstance().currentRoute === settings.routes.BASIC) {
+      // The search field should only focus initially if settings is opened
+      // directly to the base page, with no path. Opening to a section or a
+      // subpage should not focus the search field.
+      searchInput.focus();
+    }
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));
     searchInput.addEventListener(

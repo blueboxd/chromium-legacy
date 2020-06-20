@@ -11,6 +11,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.image_editor.ImageEditorDialogCoordinator;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.screenshot.EditorScreenshotTask;
+import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.modules.image_editor.ImageEditorModuleProvider;
 
@@ -24,13 +25,16 @@ public class ScreenshotCoordinator {
 
     private final Activity mActivity;
     private final Tab mTab;
+    private final ChromeOptionShareCallback mChromeOptionShareCallback;
 
     private EditorScreenshotTask mScreenshotTask;
     private Bitmap mScreenshot;
 
-    public ScreenshotCoordinator(Activity activity, Tab tab) {
+    public ScreenshotCoordinator(
+            Activity activity, Tab tab, ChromeOptionShareCallback chromeOptionShareCallback) {
         mActivity = activity;
         mTab = tab;
+        mChromeOptionShareCallback = chromeOptionShareCallback;
     }
 
     /**
@@ -79,7 +83,8 @@ public class ScreenshotCoordinator {
      */
     private void launchSharesheet() {
         ScreenshotShareSheetDialogCoordinator shareSheet =
-                new ScreenshotShareSheetDialogCoordinator(mActivity, mScreenshot);
+                new ScreenshotShareSheetDialogCoordinator(
+                        mActivity, mScreenshot, mTab, mChromeOptionShareCallback);
         shareSheet.showShareSheet();
         mScreenshot = null;
     }

@@ -1260,9 +1260,10 @@ void AppListSyncableService::DeleteSyncItemSpecifics(
   RemoveSyncItemFromLocalStorage(profile_, item_id);
   sync_items_.erase(iter);
 
-  // Only delete apps from the model. Folders will be deleted when all
-  // children have been deleted.
-  if (item_type == sync_pb::AppListSpecifics::TYPE_APP) {
+  // Only delete apps and page break from the model. Folders will be deleted
+  // when all children have been deleted.
+  if (item_type == sync_pb::AppListSpecifics::TYPE_APP ||
+      item_type == sync_pb::AppListSpecifics::TYPE_PAGE_BREAK) {
     model_updater_->RemoveItem(item_id);
   }
 }

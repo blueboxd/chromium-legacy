@@ -196,7 +196,7 @@ source_set("browser") {
     "//android_webview/browser/metrics",
     "//android_webview/common",
     "//base",
-    "//components/autofill/android:provider",
+    "//components/autofill/android/provider",
     "//components/autofill/content/browser",
     "//components/cdm/browser",
     "//components/content_capture/android",

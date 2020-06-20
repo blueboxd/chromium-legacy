@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "media/gpu/test/video_test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"

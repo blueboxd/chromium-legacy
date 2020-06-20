@@ -187,6 +187,9 @@
 // failed.
 + (NSError*)submitWebStateFormWithID:(NSString*)formID;
 
+// Returns YES if the current WebState contains an element matching |selector|.
++ (BOOL)webStateContainsElement:(ElementSelector*)selector;
+
 // Returns YES if the current WebState contains |text|.
 + (BOOL)webStateContainsText:(NSString*)text;
 

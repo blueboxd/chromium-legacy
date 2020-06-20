@@ -100,11 +100,9 @@ class DeepScanningDialogViews : public views::DialogDelegate,
 
   static void SetObserverForTesting(TestObserver* observer);
 
-  static void SetInitialUIDelayForTesting(base::TimeDelta delta);
   static void SetMinimumPendingDialogTimeForTesting(base::TimeDelta delta);
   static void SetSuccessDialogTimeoutForTesting(base::TimeDelta delta);
 
-  static base::TimeDelta GetInitialUIDelay();
   static base::TimeDelta GetMinimumPendingDialogTime();
   static base::TimeDelta GetSuccessDialogTimeout();
 

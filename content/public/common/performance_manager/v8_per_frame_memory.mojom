@@ -27,8 +27,8 @@ struct V8IsolatedWorldMemoryUsage {
 
 // Returns the number of bytes used by the v8 heap per frame.
 struct PerFrameV8MemoryUsageData {
-  // The devtools token associated with the frame.
-  mojo_base.mojom.UnguessableToken dev_tools_token;
+  // The frame-unique token.
+  mojo_base.mojom.UnguessableToken frame_token;
 
   // The resources used by this frame, mapped on the isolated world ID.
   // World ID 0 is the main world.

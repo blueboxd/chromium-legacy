@@ -293,8 +293,12 @@ public final class ChromePreferenceKeys {
      */
     public static final String DEFAULT_BROWSER_PROMO_SESSION_COUNT =
             "Chrome.DefaultBrowserPromo.SessionCount";
-    public static final String DEFAULT_BROWSER_PROMO_IS_PROMOED =
-            "Chrome.DefaultBrowserPromo.IsPromoed";
+    public static final String DEFAULT_BROWSER_PROMO_PROMOED_COUNT =
+            "Chrome.DefaultBrowserPromo.PromoedCount";
+    public static final String DEFAULT_BROWSER_PROMO_LAST_DEFAULT_STATE =
+            "Chrome.DefaultBrowserPromo.LastDefaultState";
+    public static final String DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS =
+            "Chrome.DefaultBrowserPromo.PromoedBySystemSettings";
 
     public static final String DOWNLOAD_AUTO_RESUMPTION_ATTEMPT_LEFT = "ResumptionAttemptLeft";
     public static final String DOWNLOAD_FOREGROUND_SERVICE_OBSERVERS = "ForegroundServiceObservers";
@@ -787,7 +791,9 @@ public final class ChromePreferenceKeys {
                 CONTEXT_MENU_SHOP_SIMILAR_PRODUCTS_CLICKED,
                 CONTEXT_MENU_SEARCH_SIMILAR_PRODUCTS_CLICKED,
                 CRYPTID_LAST_RENDER_TIMESTAMP,
-                DEFAULT_BROWSER_PROMO_IS_PROMOED,
+                DEFAULT_BROWSER_PROMO_LAST_DEFAULT_STATE,
+                DEFAULT_BROWSER_PROMO_PROMOED_BY_SYSTEM_SETTINGS,
+                DEFAULT_BROWSER_PROMO_PROMOED_COUNT,
                 DEFAULT_BROWSER_PROMO_SESSION_COUNT,
                 EXPLORE_OFFLINE_CONTENT_AVAILABILITY_STATUS,
                 FEED_ARTICLES_LIST_VISIBLE,

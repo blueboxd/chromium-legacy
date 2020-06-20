@@ -1109,7 +1109,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu.template',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -1124,7 +1124,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu.template',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },
@@ -1139,7 +1139,7 @@
             {
               'gpu': '10de:1cb3',
               'os': 'Ubuntu',
-              'pool': 'chromium.tests.gpu.template',
+              'pool': 'chromium.tests.gpu',
             },
           ],
         },

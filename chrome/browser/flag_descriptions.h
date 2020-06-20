@@ -857,6 +857,9 @@ extern const char kOmniboxSuggestionsRecyclerViewDescription[];
 extern const char kOmniboxSuggestionsWrapAroundName[];
 extern const char kOmniboxSuggestionsWrapAroundDescription[];
 
+extern const char kOmniboxTabSwitchSuggestionsName[];
+extern const char kOmniboxTabSwitchSuggestionsDescription[];
+
 extern const char kOmniboxUIHideSteadyStateUrlSchemeName[];
 extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
@@ -1760,9 +1763,6 @@ extern const char kOmniboxSuggestionButtonRowDescription[];
 
 extern const char kOmniboxReverseAnswersName[];
 extern const char kOmniboxReverseAnswersDescription[];
-
-extern const char kOmniboxTabSwitchSuggestionsName[];
-extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];

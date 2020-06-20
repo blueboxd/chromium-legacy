@@ -8,15 +8,18 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/ui/default_browser_promo/DefaultBrowserPromoDialog.java",
     "java/src/org/chromium/chrome/browser/ui/default_browser_promo/DefaultBrowserPromoManager.java",
+    "java/src/org/chromium/chrome/browser/ui/default_browser_promo/DefaultBrowserPromoMetrics.java",
     "java/src/org/chromium/chrome/browser/ui/default_browser_promo/DefaultBrowserPromoUtils.java",
   ]
   deps = [
     ":java_resources",
     "//base:base_java",
+    "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//components/browser_ui/widget/android:java",
+    "//ui/android:ui_full_java",
   ]
 }
 
@@ -58,6 +61,7 @@ android_library("javatests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
+    "//chrome/browser/android/lifecycle:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/browser_ui/widget/android:java",
     "//content/public/test/android:content_java_test_support",
@@ -68,6 +72,7 @@ android_library("javatests") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
+    "//ui/android:ui_full_java",
     "//ui/android:ui_java_test_support",
   ]
 }

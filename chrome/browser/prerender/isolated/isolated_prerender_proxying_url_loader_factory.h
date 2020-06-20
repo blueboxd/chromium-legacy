@@ -13,6 +13,7 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_tab_helper.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -20,6 +21,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "url/gurl.h"
 
 // This class is an intermediary URLLoaderFactory between the renderer and
 // network process, AKA proxy which should not be confused with a proxy server.
@@ -46,6 +48,13 @@ class IsolatedPrerenderProxyingURLLoaderFactory
       DisconnectCallback on_disconnect,
       ResourceLoadSuccessfulCallback on_resource_load_successful);
   ~IsolatedPrerenderProxyingURLLoaderFactory() override;
+
+  // Informs |this| that new subresource loads are being done after the user
+  // clicked on a link that was previously prerendered. From this point on, all
+  // requests for resources in |cached_subresources| will be done from
+  // |isolated_factory_|'s cache and any other request will be done by
+  // |network_process_factory_|.
+  void NotifyPageNavigatedToAfterSRP(const std::set<GURL>& cached_subresources);
 
   // network::mojom::URLLoaderFactory:
   void CreateLoaderAndStart(
@@ -106,7 +115,8 @@ class IsolatedPrerenderProxyingURLLoaderFactory
 
     // Runs |on_resource_load_successful_| for each url in |redirect_chain_| if
     // the resource was successfully loaded.
-    void MaybeReportResourceLoadSuccess(int net_error);
+    void MaybeReportResourceLoadSuccess(
+        const network::URLLoaderCompletionStatus& status);
 
     // Back pointer to the factory which owns this class.
     IsolatedPrerenderProxyingURLLoaderFactory* const parent_factory_;
@@ -154,6 +164,10 @@ class IsolatedPrerenderProxyingURLLoaderFactory
       bool eligible,
       base::Optional<IsolatedPrerenderTabHelper::PrefetchStatus> not_used);
 
+  // Returns true when this factory was created during a NoStatePrefetch.
+  // Internally, this means |NotifyPageNavigatedToAfterSRP| has not been called.
+  bool ShouldHandleRequestForPrerender() const;
+
   void OnNetworkProcessFactoryError();
   void OnIsolatedFactoryError();
   void OnProxyBindingError();
@@ -162,6 +176,11 @@ class IsolatedPrerenderProxyingURLLoaderFactory
 
   // For getting the web contents.
   const int frame_tree_node_id_;
+
+  // When |previously_cached_subresources_| is set,
+  // |NotifyPageNavigatedToAfterSRP| has been called and the behavior there will
+  // take place using this set as the resources that can be loaded from cache.
+  base::Optional<std::set<GURL>> previously_cached_subresources_;
 
   mojo::ReceiverSet<network::mojom::URLLoaderFactory> proxy_receivers_;
 

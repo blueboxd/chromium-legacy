@@ -191,7 +191,8 @@ public class ChromeProvidedSharingOptionsProviderTest {
                 new ShareSheetBottomSheetContent(mActivity), mPrefServiceBridge,
                 /*shareParams=*/null,
                 /*TabPrinterDelegate=*/null,
-                /*shareStartTime=*/0);
+                /*shareStartTime=*/0,
+                /*shareSheetCoordinator=*/null);
     }
 
     private void assertModelsAreInTheRightOrder(

@@ -129,6 +129,12 @@ public interface Stream {
          * created, the content of a card changing, etc...
          */
         void onContentChanged();
+
+        /**
+         * Called by Stream when an
+         * {@link androidx.recyclerview.widget.SimpleItemAnimator#onAddFinished} event is received.
+         */
+        default void onAddFinished(){};
     }
 
     /** Interface users can implement to be told about changes to scrolling in the Stream. */

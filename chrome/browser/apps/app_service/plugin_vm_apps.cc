@@ -13,6 +13,8 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service.h"
+#include "chrome/browser/chromeos/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager_factory.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
@@ -197,6 +199,8 @@ void PluginVmApps::SetPermission(const std::string& app_id,
 void PluginVmApps::Uninstall(const std::string& app_id,
                              bool clear_site_data,
                              bool report_abuse) {
+  guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
+      ->ClearApplicationList(plugin_vm::kPluginVmName, "");
   plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
       ->UninstallPluginVm();
 }

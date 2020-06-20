@@ -229,62 +229,6 @@ void WebAppInstallFinalizer::FinalizeInstall(
   }
 }
 
-void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
-    const AppId& app_id,
-    InstallFinalizedCallback callback) {
-  DCHECK(started_);
-
-  const WebApp* app_in_sync_install = GetWebAppRegistrar().GetAppById(app_id);
-  DCHECK(app_in_sync_install);
-
-  // This |is_in_sync_install| web app entry might be already overwritten by
-  // FinalizeInstall from a parallel bookmark app install. Do not overwrite
-  // the web app entry, ignore this fallback install to prefer bookmark app
-  // install data.
-  if (!app_in_sync_install->is_in_sync_install()) {
-    std::move(callback).Run(app_id,
-                            InstallResultCode::kSuccessAlreadyInstalled);
-    return;
-  }
-
-  // Promote the app in sync install to a full user-visible app using the poor
-  // data that we've got from sync. Prepare copy-on-write:
-  auto web_app = std::make_unique<WebApp>(*app_in_sync_install);
-  web_app->SetIsInSyncInstall(false);
-
-  web_app->SetName(web_app->sync_data().name);
-  web_app->SetThemeColor(web_app->sync_data().theme_color);
-
-  // If no color has been specified, use dark gray.
-  const SkColor background_icon_color =
-      web_app->sync_data().theme_color.has_value()
-          ? web_app->sync_data().theme_color.value()
-          : SK_ColorDKGRAY;
-
-  std::map<SquareSizePx, SkBitmap> icon_bitmaps =
-      GenerateIcons(web_app->sync_data().name, background_icon_color);
-  web_app->SetDownloadedIconSizes(GetSquareSizePxs(icon_bitmaps));
-
-  UpdateIntWebAppPref(profile_->GetPrefs(), app_id, kLatestWebAppInstallSource,
-                      static_cast<int>(WebappInstallSource::SYNC));
-
-  InstallFinalizedCallback fallback_install_callback =
-      base::BindOnce(&WebAppInstallFinalizer::OnFallbackInstallFinalized,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     app_in_sync_install->app_id(), std::move(callback));
-
-  CommitCallback commit_callback = base::BindOnce(
-      &WebAppInstallFinalizer::OnDatabaseCommitCompletedForInstall,
-      weak_ptr_factory_.GetWeakPtr(), std::move(fallback_install_callback),
-      app_id);
-
-  icon_manager_->WriteData(
-      std::move(app_id), std::move(icon_bitmaps),
-      base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(commit_callback),
-                     std::move(web_app), ShortcutsMenuIconsBitmaps{}));
-}
-
 void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
     const AppId& app_id,
     UninstallWebAppCallback callback) {
@@ -467,6 +411,8 @@ void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(
   WebApp::SyncData sync_data;
   sync_data.name = base::UTF16ToUTF8(web_app_info.title);
   sync_data.theme_color = web_app_info.theme_color;
+  sync_data.scope = web_app_info.scope;
+  sync_data.icon_infos = web_app_info.icon_infos;
   web_app->SetSyncData(std::move(sync_data));
 
   web_app->SetIconInfos(web_app_info.icon_infos);

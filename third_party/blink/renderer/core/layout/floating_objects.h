@@ -143,8 +143,7 @@ class FloatingObject {
         is_lowest_non_overhanging_float_in_child;
   }
 
-  // FIXME: Callers of these methods are dangerous and should be whitelisted
-  // explicitly or removed.
+  // FIXME: Callers of these methods are dangerous and should be removed.
   RootInlineBox* OriginatingLine() const { return originating_line_; }
   void SetOriginatingLine(RootInlineBox* line) { originating_line_ = line; }
 

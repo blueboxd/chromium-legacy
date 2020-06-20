@@ -63,6 +63,9 @@ constexpr size_t kAaguidLength = 16;
 // integer: https://www.w3.org/TR/webauthn/#sec-attested-credential-data
 constexpr size_t kCredentialIdLengthLength = 2;
 
+// Length of an X9.62-encoded, uncompresed, P-256 public key.
+constexpr size_t kP256X962Length = 1 /* type byte */ + 32 /* x */ + 32 /* y */;
+
 // CTAP protocol device response code, as specified in
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticator-api
 enum class CtapDeviceResponseCode : uint8_t {

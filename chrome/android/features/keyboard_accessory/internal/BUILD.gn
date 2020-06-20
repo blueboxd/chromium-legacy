@@ -16,6 +16,7 @@ android_library("internal_java") {
     "//chrome/android:chrome_java",
     "//chrome/android/features/keyboard_accessory/public:public_java",
     "//chrome/browser/flags:java",
+    "//chrome/browser/fullscreen/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/tab:java",
     "//chrome/browser/tabmodel:java",

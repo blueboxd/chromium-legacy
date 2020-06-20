@@ -695,6 +695,9 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
         mFirstMeaningfulPaintRecorder = new FirstMeaningfulPaintRecorder(activityCreateTimeMs);
     }
 
+    @Override
+    public void onOverviewShownAtLaunch(long activityCreationTimeMs) {}
+
     /**
      * Do clean-up work after the overview hiding animation is finished.
      * @see TabSwitcher.TabListDelegate#postHiding

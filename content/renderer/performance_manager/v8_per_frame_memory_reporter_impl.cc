@@ -65,9 +65,13 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         mojom::PerFrameV8MemoryUsageData* per_frame_resources =
             frames[frame].get();
         if (!per_frame_resources) {
+#if DCHECK_IS_ON()
+          // Check that the frame token didn't already occur.
+          for (const auto& entry : frames)
+            DCHECK_NE(entry.first->GetFrameToken(), frame->GetFrameToken());
+#endif
           auto new_resources = mojom::PerFrameV8MemoryUsageData::New();
-          new_resources->dev_tools_token =
-              frame->Client()->GetDevToolsFrameToken();
+          new_resources->frame_token = frame->GetFrameToken();
           per_frame_resources = new_resources.get();
           frames[frame] = std::move(new_resources);
         }

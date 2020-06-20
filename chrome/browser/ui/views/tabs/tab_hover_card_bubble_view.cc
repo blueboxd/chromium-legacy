@@ -51,6 +51,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/metrics_util.h"
+#include "base/optional.h"
 #endif
 
 namespace {
@@ -142,10 +143,6 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
   explicit WidgetFadeAnimationDelegate(views::Widget* hover_card)
       : AnimationDelegateViews(hover_card->GetRootView()),
         widget_(hover_card),
-#if defined(OS_CHROMEOS)
-        throughput_tracker_(
-            hover_card->GetCompositor()->RequestNewThroughputTracker()),
-#endif
         fade_animation_(std::make_unique<gfx::LinearAnimation>(this)) {
   }
   ~WidgetFadeAnimationDelegate() override = default;
@@ -181,7 +178,9 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
     fade_animation_ = std::make_unique<gfx::LinearAnimation>(this);
     fade_animation_->SetDuration(kFadeInDuration);
 #if defined(OS_CHROMEOS)
-    throughput_tracker_.Start(ash::metrics_util::ForSmoothness(
+    throughput_tracker_.emplace(
+        widget_->GetCompositor()->RequestNewThroughputTracker());
+    throughput_tracker_->Start(ash::metrics_util::ForSmoothness(
         base::BindRepeating(&RecordFadeInSmoothness)));
 #endif
     fade_animation_->Start();
@@ -196,7 +195,9 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
     set_animation_state(FadeAnimationState::FADE_OUT);
     fade_animation_->SetDuration(kFadeOutDuration);
 #if defined(OS_CHROMEOS)
-    throughput_tracker_.Start(ash::metrics_util::ForSmoothness(
+    throughput_tracker_.emplace(
+        widget_->GetCompositor()->RequestNewThroughputTracker());
+    throughput_tracker_->Start(ash::metrics_util::ForSmoothness(
         base::BindRepeating(&RecordFadeOutSmoothness)));
 #endif
     fade_animation_->Start();
@@ -208,7 +209,7 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
 
     fade_animation_->Stop();
 #if defined(OS_CHROMEOS)
-    throughput_tracker_.Cancel();
+    throughput_tracker_->Cancel();
 #endif
     set_animation_state(FadeAnimationState::IDLE);
     widget_->SetOpacity(1.0f);
@@ -236,14 +237,14 @@ class TabHoverCardBubbleView::WidgetFadeAnimationDelegate
   void AnimationEnded(const gfx::Animation* animation) override {
     AnimationProgressed(animation);
 #if defined(OS_CHROMEOS)
-    throughput_tracker_.Stop();
+    throughput_tracker_->Stop();
 #endif
     set_animation_state(FadeAnimationState::IDLE);
   }
 
   views::Widget* const widget_;
 #if defined(OS_CHROMEOS)
-  ui::ThroughputTracker throughput_tracker_;
+  base::Optional<ui::ThroughputTracker> throughput_tracker_;
 #endif
   std::unique_ptr<gfx::LinearAnimation> fade_animation_;
   FadeAnimationState animation_state_ = FadeAnimationState::IDLE;

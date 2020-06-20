@@ -113,7 +113,7 @@ Here is the instruction how to generate a new result.
 `chromium\src>for %file in (*.log) do DynamoRIO\tools\bin64\drcov2lcov.exe -input %file -output %file.info -src_filter layout/ng -src_skip_filter _test`
 * Merge all lcov files into one file
 `chromium\src>node lcov-result-merger\bin\lcov-result-merger.js *.info output.info`
-* Generate the coverage html from the master lcov file
+* Generate the coverage html from the lcov file
 `chromium\src>C:\Perl64\bin\perl.exe dynamorio.git\third_party\lcov\genhtml output.info -o output`
 
 ### Debugging, logging and testing ###

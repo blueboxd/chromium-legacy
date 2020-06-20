@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.omnibox.SuggestionAnswer;
 import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.content_public.browser.WebContents;
@@ -381,6 +382,17 @@ public class AutocompleteController {
                 hashCode, elapsedTimeSinceInputChange);
     }
 
+    /**
+     * To find out if there is an open tab with the given |url|. Return the matching tab.
+     *
+     * @param url The URL which the tab opened with.
+     * @return The tab opens |url|.
+     */
+    Tab findMatchingTabWithUrl(GURL url) {
+        return AutocompleteControllerJni.get().findMatchingTabWithUrl(
+                mNativeAutocompleteControllerAndroid, AutocompleteController.this, url);
+    }
+
     @NativeMethods
     interface Natives {
         long init(AutocompleteController caller, Profile profile);
@@ -406,6 +418,8 @@ public class AutocompleteController {
         GURL updateMatchDestinationURLWithQueryFormulationTime(
                 long nativeAutocompleteControllerAndroid, AutocompleteController caller,
                 int selectedIndex, int hashCode, long elapsedTimeSinceInputChange);
+        Tab findMatchingTabWithUrl(
+                long nativeAutocompleteControllerAndroid, AutocompleteController caller, GURL url);
         /**
          * Given a search query, this will attempt to see if the query appears to be portion of a
          * properly formed URL.  If it appears to be a URL, this will return the fully qualified

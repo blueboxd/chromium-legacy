@@ -229,7 +229,9 @@ void RenderPass::SetNew(uint64_t id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target) {
-  DCHECK(id);
+  // TODO(boliu): Temporarily making this a release check to catch
+  // crbug.com/1072407.
+  CHECK(id);
   DCHECK(damage_rect.IsEmpty() || output_rect.Contains(damage_rect))
       << "damage_rect: " << damage_rect.ToString()
       << " output_rect: " << output_rect.ToString();
@@ -256,7 +258,9 @@ void RenderPass::SetAll(
     bool cache_render_pass,
     bool has_damage_from_contributing_content,
     bool generate_mipmap) {
-  DCHECK(id);
+  // TODO(boliu): Temporarily making this a release check to catch
+  // crbug.com/1072407.
+  CHECK(id);
 
   this->id = id;
   this->output_rect = output_rect;

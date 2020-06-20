@@ -36,7 +36,7 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
       queried_subresource_paths_.push_back(resource_path);
     }
     String resource_string = resource_url.GetString();
-    for (const String& suffix : blacklisted_suffixes_) {
+    for (const String& suffix : blocklisted_suffixes_) {
       if (resource_string.EndsWith(suffix))
         return load_policy_;
     }
@@ -51,8 +51,8 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
 
   bool ShouldLogToConsole() override { return false; }
 
-  void AddToBlacklist(const String& suffix) {
-    blacklisted_suffixes_.push_back(suffix);
+  void AddToBlocklist(const String& suffix) {
+    blocklisted_suffixes_.push_back(suffix);
   }
 
   const Vector<String>& QueriedSubresourcePaths() const {
@@ -62,7 +62,7 @@ class TestDocumentSubresourceFilter : public WebDocumentSubresourceFilter {
  private:
   // Using STL types for compatibility with gtest/gmock.
   Vector<String> queried_subresource_paths_;
-  Vector<String> blacklisted_suffixes_;
+  Vector<String> blocklisted_suffixes_;
   LoadPolicy load_policy_;
 };
 
@@ -74,7 +74,7 @@ class SubresourceFilteringWebFrameClient
                            bool) override {
     subresource_filter_ =
         new TestDocumentSubresourceFilter(load_policy_for_next_load_);
-    subresource_filter_->AddToBlacklist("1x1.png");
+    subresource_filter_->AddToBlocklist("1x1.png");
     Frame()->GetDocumentLoader()->SetSubresourceFilter(subresource_filter_);
   }
 

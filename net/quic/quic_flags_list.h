@@ -445,3 +445,25 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_dont_send_max_ack_delay_if_default,
           true)
+
+// If true, remove the head of line blocking caused by an unprocessable packet
+// in the undecryptable packets list.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_undecryptable_packets,
+          false)
+
+// If true, QUIC client only tries to retransmit data when 1-RTT key is
+// available.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_do_not_retransmit_immediately_on_zero_rtt_reject,
+    true)
+
+// If true, try to bundle INITIAL data when trying to send INITIAL ACK.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bundle_crypto_data_with_initial_ack,
+          false)
+
+// If true, do not use QuicUtil::IsBidirectionalStreamId() to determine gQUIC
+// stream type.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_gquic_stream_type, true)

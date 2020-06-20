@@ -7,7 +7,6 @@
 
 #include "media/cdm/library_cdm/cdm_host_proxy.h"
 
-#include "base/logging.h"
 #include "base/macros.h"
 
 namespace media {

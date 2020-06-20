@@ -33,6 +33,7 @@ public class StreamItemAnimator extends DefaultItemAnimator {
         super.onAddFinished(item);
         // After first patch of articles are loaded, set recyclerView back to non-transparent.
         mParent.getBackground().setAlpha(255);
+        mContentChangedListener.onAddFinished();
     }
 
     @Override

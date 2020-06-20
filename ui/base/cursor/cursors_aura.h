@@ -20,10 +20,6 @@ enum class CursorSize;
 
 const int kAnimatedCursorFrameDelayMs = 25;
 
-// Returns CSS cursor name from an Aura cursor ID.
-COMPONENT_EXPORT(UI_BASE_CURSOR)
-const char* CursorCssNameFromId(mojom::CursorType id);
-
 // Returns data about |id|, where id is a cursor constant like
 // ui::mojom::CursorType::kHelp. The IDR will be placed in |resource_id| and
 // the hotspots for the different DPIs will be placed in |hot_1x| and

@@ -52,32 +52,6 @@ process_version_rc_template("version_resources") {
   output = "$target_gen_dir/updater_exe.rc"
 }
 
-source_set("base") {
-  sources = [
-    "scoped_handle.h",
-    "task_scheduler.cc",
-    "task_scheduler.h",
-    "user_info.cc",
-    "user_info.h",
-    "util.cc",
-    "util.h",
-  ]
-
-  defines = [ "SECURITY_WIN32" ]
-
-  deps = [
-    ":constants",
-    "//base",
-    "//chrome/updater:base",
-    "//chrome/updater:version_header",
-  ]
-
-  libs = [
-    "secur32.lib",
-    "taskschd.lib",
-  ]
-}
-
 source_set("constants") {
   sources = [
     "constants.cc",
@@ -93,6 +67,8 @@ source_set("constants") {
 source_set("lib") {
   sources = [
     "action_handler.cc",
+    "group_policy_manager.cc",
+    "group_policy_manager.h",
     "net/net_util.cc",
     "net/net_util.h",
     "net/network.h",
@@ -101,27 +77,40 @@ source_set("lib") {
     "net/network_winhttp.cc",
     "net/network_winhttp.h",
     "net/scoped_hinternet.h",
+    "scoped_handle.h",
     "setup/setup.cc",
     "setup/setup.h",
     "setup/setup_util.cc",
     "setup/setup_util.h",
     "setup/uninstall.cc",
     "setup/uninstall.h",
+    "task_scheduler.cc",
+    "task_scheduler.h",
     "update_service_out_of_process.cc",
     "update_service_out_of_process.h",
+    "user_info.cc",
+    "user_info.h",
+    "util.cc",
+    "util.h",
   ]
-
-  libs = [ "winhttp.lib" ]
 
   configs -= [ "//build/config/win:winver" ]
   configs += [ "//chrome/updater/app/server/win:winver" ]
 
+  defines = [ "SECURITY_WIN32" ]
+
+  libs = [
+    "secur32.lib",
+    "taskschd.lib",
+    "winhttp.lib",
+  ]
+
   deps = [
-    ":base",
     ":constants",
     "//base",
     "//chrome/installer/util:with_no_strings",
     "//chrome/updater:base",
+    "//chrome/updater:version_header",
     "//chrome/updater/app/server/win:updater_idl_idl",
     "//components/update_client",
     "//url:url",
@@ -149,7 +138,6 @@ source_set("install_app") {
   ]
 
   deps = [
-    ":base",
     ":install_progress_observer",
     ":lib",
     "//base",
@@ -170,12 +158,12 @@ source_set("updater_tests") {
   testonly = true
 
   sources = [
+    "group_policy_manager_unittest.cc",
     "net/network_unittest.cc",
     "util_unittest.cc",
   ]
 
   deps = [
-    ":base",
     ":constants",
     ":install_app",
     ":lib",
@@ -201,7 +189,6 @@ test("updater_unittests") {
   ]
 
   deps = [
-    ":base",
     ":install_app",
     ":lib",
     "//base",

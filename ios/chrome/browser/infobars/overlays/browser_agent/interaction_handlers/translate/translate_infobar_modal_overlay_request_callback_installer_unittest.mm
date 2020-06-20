@@ -6,7 +6,6 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/infobars/core/infobar_feature.h"
-#include "components/translate/core/browser/mock_translate_infobar_delegate.h"
 #include "ios/chrome/browser/infobars/infobar_ios.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/test/mock_translate_infobar_interaction_handler.h"
@@ -19,6 +18,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
+#import "ios/chrome/browser/translate/fake_translate_infobar_delegate.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -29,14 +29,12 @@
 #error "This file requires ARC support."
 #endif
 
-using translate::testing::MockTranslateInfoBarDelegate;
-
 // Test fixture for TranslateInfobarModalOverlayRequestCallbackInstaller.
 class TranslateInfobarModalOverlayRequestCallbackInstallerTest
     : public PlatformTest {
  public:
   TranslateInfobarModalOverlayRequestCallbackInstallerTest()
-      : installer_(&mock_handler_), delegate_factory_("fr", "en") {
+      : installer_(&mock_handler_) {
     scoped_feature_list_.InitWithFeatures({kIOSInfobarUIReboot},
                                           {kInfobarUIRebootOnlyiOS13});
     // Create the infobar and add it to the WebState's manager.
@@ -44,10 +42,8 @@ class TranslateInfobarModalOverlayRequestCallbackInstallerTest
         std::make_unique<web::TestNavigationManager>());
     InfoBarManagerImpl::CreateForWebState(&web_state_);
     TranslateOverlayTabHelper::CreateForWebState(&web_state_);
-    std::unique_ptr<MockTranslateInfoBarDelegate> delegate =
-        delegate_factory_.CreateMockTranslateInfoBarDelegate(
-            translate::TranslateStep::TRANSLATE_STEP_BEFORE_TRANSLATE);
-    delegate_ = delegate.get();
+    std::unique_ptr<FakeTranslateInfoBarDelegate> delegate =
+        delegate_factory_.CreateFakeTranslateInfoBarDelegate("fr", "en");
     std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
         InfobarType::kInfobarTypeTranslate, std::move(delegate));
 
@@ -78,8 +74,7 @@ class TranslateInfobarModalOverlayRequestCallbackInstallerTest
   OverlayRequest* request_ = nullptr;
   MockTranslateInfobarModalInteractionHandler mock_handler_;
   translate_infobar_overlay::ModalRequestCallbackInstaller installer_;
-  translate::testing::MockTranslateInfoBarDelegateFactory delegate_factory_;
-  translate::testing::MockTranslateInfoBarDelegate* delegate_;
+  FakeTranslateInfoBarDelegateFactory delegate_factory_;
 };
 
 TEST_F(TranslateInfobarModalOverlayRequestCallbackInstallerTest,

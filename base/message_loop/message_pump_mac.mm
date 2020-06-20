@@ -175,14 +175,6 @@ void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
 }
 
 void MessagePumpCFRunLoopBase::ScheduleDelayedWorkImpl(TimeDelta delta) {
-  // The tolerance needs to be set before the fire date or it may be ignored.
-  if(!__builtin_available(macOS 10.9,*)) {
-    if (timer_slack_ == TIMER_SLACK_MAXIMUM) {
-      CFRunLoopTimerSetTolerance(delayed_work_timer_, delta.InSecondsF() * 0.5);
-    } else {
-      CFRunLoopTimerSetTolerance(delayed_work_timer_, 0);
-    }
-  }
   CFRunLoopTimerSetNextFireDate(
       delayed_work_timer_, CFAbsoluteTimeGetCurrent() + delta.InSecondsF());
 }

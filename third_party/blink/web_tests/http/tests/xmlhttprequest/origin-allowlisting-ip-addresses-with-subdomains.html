@@ -11,7 +11,7 @@ function log(message)
 
 var iframe = document.createElement("iframe");
 document.body.appendChild(iframe);
-iframe.src = "http://localhost:8000/xmlhttprequest/resources/origin-whitelisting-ip-address-test.html#subdomains";
+iframe.src = "http://localhost:8000/xmlhttprequest/resources/origin-allowlisting-ip-address-test.html#subdomains";
 window.addEventListener("message", function(e) {
     if (e.data == "DONE")
         testRunner.notifyDone();

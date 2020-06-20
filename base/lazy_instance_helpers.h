@@ -7,7 +7,7 @@
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
-#include "base/check.h"
+#include "base/logging.h"
 
 // Helper methods used by LazyInstance and a few other base APIs for thread-safe
 // lazy construction.

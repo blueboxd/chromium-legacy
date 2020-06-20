@@ -219,23 +219,25 @@ export class Camera extends View {
       videoMode.takeSnapshot();
     });
 
-    document.querySelector('#pause-recordvideo')
-        .addEventListener('click', () => {
-          const videoMode = assertInstanceof(this.modes_.current, Video);
-          videoMode.togglePaused();
-        });
+    const pauseShutter = document.querySelector('#pause-recordvideo');
+    pauseShutter.addEventListener('click', () => {
+      const videoMode = assertInstanceof(this.modes_.current, Video);
+      videoMode.togglePaused();
+    });
 
-    // TODO(shik): Tune the timing for playing video shutter button
-    // animation. Currently the |TAKING| state is ended when the file is saved.
-    state.addObserver(state.State.TAKING, (taking) => {
-      if (!state.get(Mode.VIDEO)) {
-        return;
-      }
-      const label =
-          taking ? 'record_video_stop_button' : 'record_video_start_button';
-      videoShutter.setAttribute('i18n-label', label);
-      videoShutter.setAttribute(
-          'aria-label', browserProxy.getI18nMessage(label));
+    // TODO(shik): Tune the timing for playing video shutter button animation.
+    // Currently the |TAKING| state is ended when the file is saved.
+    util.bindElementAriaLabelWithState({
+      element: videoShutter,
+      state: state.State.TAKING,
+      onLabel: 'record_video_stop_button',
+      offLabel: 'record_video_start_button'
+    });
+    util.bindElementAriaLabelWithState({
+      element: pauseShutter,
+      state: state.State.RECORDING_PAUSED,
+      onLabel: 'record_video_resume_button',
+      offLabel: 'record_video_pause_button'
     });
 
     // Monitor the states to stop camera when locked/minimized.

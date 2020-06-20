@@ -32,7 +32,7 @@
 #ifndef BASE_THREAD_ANNOTATIONS_H_
 #define BASE_THREAD_ANNOTATIONS_H_
 
-#include "base/check_op.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 
 #if defined(__clang__)

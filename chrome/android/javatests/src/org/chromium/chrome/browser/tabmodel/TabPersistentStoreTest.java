@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.NextTabPolicy.NextTabPolicySupplier;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelSelectorMetadata;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabPersistentStoreObserver;
@@ -577,7 +578,7 @@ public class TabPersistentStoreTest {
 
             // Load up each TabState and confirm that values are still correct.
             for (int j = 0; j < info.numRegularTabs; j++) {
-                TabState currentState = TabState.restoreTabState(
+                TabState currentState = TabStateFileManager.restoreTabState(
                         mMockDirectory.getDataDirectory(), info.contents[j].tabId);
                 Assert.assertEquals(info.contents[j].title,
                         currentState.contentsState.getDisplayTitleFromState());

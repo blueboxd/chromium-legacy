@@ -6,7 +6,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"

@@ -24,7 +24,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.TabLaunchType;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory;
 import org.chromium.chrome.browser.tabmodel.TestTabModelDirectory.TabStateInfo;
@@ -154,7 +154,7 @@ public class IncognitoNotificationServiceTest {
         int normalCount = 0;
         for (File tabbedModeFile : tabbedModeFiles) {
             Pair<Integer, Boolean> tabFileInfo =
-                    TabState.parseInfoFromFilename(tabbedModeFile.getName());
+                    TabStateFileManager.parseInfoFromFilename(tabbedModeFile.getName());
             if (tabFileInfo.second) incognitoCount++;
             else normalCount++;
         }
@@ -171,7 +171,7 @@ public class IncognitoNotificationServiceTest {
                 int incognitoCount = 0;
                 for (File tabbedModeFile : tabbedModeFiles) {
                     Pair<Integer, Boolean> tabFileInfo =
-                            TabState.parseInfoFromFilename(tabbedModeFile.getName());
+                            TabStateFileManager.parseInfoFromFilename(tabbedModeFile.getName());
                     if (tabFileInfo != null && tabFileInfo.second) incognitoCount++;
                 }
                 return incognitoCount;
@@ -186,7 +186,7 @@ public class IncognitoNotificationServiceTest {
                 int normalCount = 0;
                 for (File tabbedModeFile : tabbedModeFiles) {
                     Pair<Integer, Boolean> tabFileInfo =
-                            TabState.parseInfoFromFilename(tabbedModeFile.getName());
+                            TabStateFileManager.parseInfoFromFilename(tabbedModeFile.getName());
                     if (tabFileInfo != null && !tabFileInfo.second) normalCount++;
                 }
                 return normalCount;

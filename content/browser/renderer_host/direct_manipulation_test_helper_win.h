@@ -10,7 +10,6 @@
 #include <wrl.h>
 #include <array>
 
-#include "base/logging.h"
 #include "base/macros.h"
 
 namespace content {

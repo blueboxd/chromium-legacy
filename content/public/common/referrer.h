@@ -5,7 +5,6 @@
 #ifndef CONTENT_PUBLIC_COMMON_REFERRER_H_
 #define CONTENT_PUBLIC_COMMON_REFERRER_H_
 
-#include "base/logging.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"

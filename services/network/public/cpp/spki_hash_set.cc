@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "services/network/public/cpp/spki_hash_set.h"
-
-#include "base/logging.h"
 #include "net/base/hash_value.h"
 
 namespace network {

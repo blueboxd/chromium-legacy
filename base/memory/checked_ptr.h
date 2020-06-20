@@ -10,8 +10,8 @@
 
 #include <utility>
 
-#include "base/check_op.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "build/build_config.h"
 
 // TEST: We can't use protection in the real code (yet) because it may lead to

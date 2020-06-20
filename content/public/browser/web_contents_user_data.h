@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_USER_DATA_H_
 #define CONTENT_PUBLIC_BROWSER_WEB_CONTENTS_USER_DATA_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "content/public/browser/web_contents.h"

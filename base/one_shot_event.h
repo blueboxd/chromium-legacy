@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"

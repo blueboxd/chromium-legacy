@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/common/content_export.h"
 
 namespace content {

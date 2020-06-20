@@ -10,8 +10,8 @@
 
 #include <algorithm>
 
-#include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/macros.h"
 
 namespace base {

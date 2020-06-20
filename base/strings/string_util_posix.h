@@ -11,7 +11,7 @@
 #include <string.h>
 #include <wchar.h>
 
-#include "base/check.h"
+#include "base/logging.h"
 
 namespace base {
 

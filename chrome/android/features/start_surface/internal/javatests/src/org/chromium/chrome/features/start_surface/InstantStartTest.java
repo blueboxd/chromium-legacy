@@ -65,6 +65,7 @@ import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore.TabModelMetadata;
@@ -166,14 +167,14 @@ public class InstantStartTest {
      * @param encrypted for Incognito mode
      */
     private static void saveTabState(int tabId, boolean encrypted) {
-        File file = TabState.getTabStateFile(
+        File file = TabStateFileManager.getTabStateFile(
                 TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory(), tabId,
                 encrypted);
         writeFile(file, M26_GOOGLE_COM.encodedTabState);
 
-        TabState tabState = TabState.restoreTabState(file, false);
+        TabState tabState = TabStateFileManager.restoreTabState(file, false);
         tabState.rootId = PseudoTab.fromTabId(tabId).getRootId();
-        TabState.saveState(file, tabState, encrypted);
+        TabStateFileManager.saveState(file, tabState, encrypted);
     }
 
     private static void writeFile(File file, String data) {

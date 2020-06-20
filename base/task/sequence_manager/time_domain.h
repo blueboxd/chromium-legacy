@@ -8,7 +8,7 @@
 #include <map>
 
 #include "base/callback.h"
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/task/common/intrusive_heap.h"
 #include "base/task/sequence_manager/lazy_now.h"

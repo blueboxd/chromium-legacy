@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import android.util.Log;
 
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 
 import java.io.File;
 
@@ -27,7 +28,7 @@ public abstract class TabPersister {
      * @return File pointing at the TabState for the Tab.
      */
     protected File getTabStateFile(int tabId, boolean encrypted) {
-        return TabState.getTabStateFile(getStateDirectory(), tabId, encrypted);
+        return TabStateFileManager.getTabStateFile(getStateDirectory(), tabId, encrypted);
     }
 
     /**
@@ -40,7 +41,7 @@ public abstract class TabPersister {
         if (state == null) return false;
 
         try {
-            TabState.saveState(getTabStateFile(tabId, encrypted), state, encrypted);
+            TabStateFileManager.saveState(getTabStateFile(tabId, encrypted), state, encrypted);
             return true;
         } catch (OutOfMemoryError e) {
             Log.e(TAG, "Out of memory error while attempting to save tab state.  Erasing.");
@@ -56,6 +57,6 @@ public abstract class TabPersister {
      * @param encrypted Whether or not the tab is encrypted.
      */
     public void deleteTabState(int id, boolean encrypted) {
-        TabState.deleteTabState(getStateDirectory(), id, encrypted);
+        TabStateFileManager.deleteTabState(getStateDirectory(), id, encrypted);
     }
 }

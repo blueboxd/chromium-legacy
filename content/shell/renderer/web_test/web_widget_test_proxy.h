@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/renderer/render_widget.h"

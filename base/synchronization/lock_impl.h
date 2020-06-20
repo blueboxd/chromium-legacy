@@ -6,7 +6,7 @@
 #define BASE_SYNCHRONIZATION_LOCK_IMPL_H_
 
 #include "base/base_export.h"
-#include "base/check_op.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/thread_annotations.h"
 #include "build/build_config.h"

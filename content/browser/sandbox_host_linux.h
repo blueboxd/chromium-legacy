@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
 #include "content/browser/sandbox_ipc_linux.h"

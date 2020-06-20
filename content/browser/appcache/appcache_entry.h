@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/blink/public/mojom/appcache/appcache_info.mojom-forward.h"
 
 namespace content {

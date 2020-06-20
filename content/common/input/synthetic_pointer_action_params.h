@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_INPUT_SYNTHETIC_POINTER_ACTION_PARAMS_H_
 #define CONTENT_COMMON_INPUT_SYNTHETIC_POINTER_ACTION_PARAMS_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/input/synthetic_gesture_params.h"

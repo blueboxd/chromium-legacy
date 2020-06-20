@@ -6,7 +6,7 @@
 #define BASE_WIN_COM_INIT_UTIL_H_
 
 #include "base/base_export.h"
-#include "base/check_op.h"
+#include "base/logging.h"
 
 namespace base {
 namespace win {

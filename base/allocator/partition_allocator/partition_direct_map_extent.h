@@ -8,7 +8,7 @@
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_bucket.h"
 #include "base/allocator/partition_allocator/partition_page.h"
-#include "base/check.h"
+#include "base/logging.h"
 
 namespace base {
 namespace internal {

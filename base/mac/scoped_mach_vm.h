@@ -11,7 +11,7 @@
 #include <algorithm>
 
 #include "base/base_export.h"
-#include "base/check_op.h"
+#include "base/logging.h"
 #include "base/macros.h"
 
 // Use ScopedMachVM to supervise ownership of pages in the current process

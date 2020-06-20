@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_PEERCONNECTION_RTC_VIDEO_DECODER_ADAPTER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -53,12 +54,11 @@ namespace blink {
 // way to synchronize this correctly.
 class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
  public:
-  // Currently, RTCVideoDecoderAdapter only tries one
-  // VideoDecoderImplementation.
-  // Since we use it in multiple places, memorize it here to make it clear that
-  // they must be changed together.
-  static constexpr media::VideoDecoderImplementation kImplementation =
-      media::VideoDecoderImplementation::kDefault;
+  // Lists which implementations can be queried, this can vary based on platform
+  // and enabled features.
+  static std::vector<media::VideoDecoderImplementation>
+  SupportedImplementations();
+
   // Creates and initializes an RTCVideoDecoderAdapter. Returns nullptr if
   // |format| cannot be supported.
   // Called on the worker thread.
@@ -95,7 +95,8 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
   // Called on the worker thread.
   RTCVideoDecoderAdapter(media::GpuVideoAcceleratorFactories* gpu_factories,
                          const media::VideoDecoderConfig& config,
-                         const webrtc::SdpVideoFormat& format);
+                         const webrtc::SdpVideoFormat& format,
+                         media::VideoDecoderImplementation implementation);
 
   bool InitializeSync(const media::VideoDecoderConfig& config);
   void InitializeOnMediaThread(const media::VideoDecoderConfig& config,
@@ -113,9 +114,10 @@ class PLATFORM_EXPORT RTCVideoDecoderAdapter : public webrtc::VideoDecoder {
                           FlushDoneCB flush_fail_cb);
 
   // Construction parameters.
-  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  media::GpuVideoAcceleratorFactories* gpu_factories_;
-  webrtc::SdpVideoFormat format_;
+  const scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
+  media::GpuVideoAcceleratorFactories* const gpu_factories_;
+  const webrtc::SdpVideoFormat format_;
+  const media::VideoDecoderImplementation implementation_;
   media::VideoDecoderConfig config_;
 
   // Media thread members.

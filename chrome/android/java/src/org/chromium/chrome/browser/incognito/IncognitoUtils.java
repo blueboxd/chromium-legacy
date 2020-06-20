@@ -18,7 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.util.AndroidTaskUtils;
 
@@ -117,7 +117,8 @@ public class IncognitoUtils {
 
         boolean deletionSuccessful = true;
         for (File file : tabStateFiles) {
-            Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(file.getName());
+            Pair<Integer, Boolean> tabInfo =
+                    TabStateFileManager.parseInfoFromFilename(file.getName());
             boolean isIncognito = tabInfo != null && tabInfo.second;
             if (isIncognito) {
                 deletionSuccessful &= file.delete();

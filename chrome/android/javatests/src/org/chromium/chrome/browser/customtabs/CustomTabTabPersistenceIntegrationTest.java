@@ -17,7 +17,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -47,7 +47,7 @@ public class CustomTabTabPersistenceIntegrationTest {
     @MediumTest
     public void testTabFilesDeletedOnClose() {
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
-        String expectedTabFileName = TabState.getTabStateFilename(tab.getId(), false);
+        String expectedTabFileName = TabStateFileManager.getTabStateFilename(tab.getId(), false);
 
         CustomTabTabPersistencePolicy tabPersistencePolicy = mCustomTabActivityTestRule
                 .getActivity().getComponent().resolveTabPersistencePolicy();

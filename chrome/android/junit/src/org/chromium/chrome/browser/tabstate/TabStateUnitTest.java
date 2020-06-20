@@ -18,6 +18,7 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tab.WebContentsState;
 
 import java.io.DataOutputStream;
@@ -49,9 +50,9 @@ public class TabStateUnitTest {
     public void testSaveTabStateWithMemoryMappedContentsState() throws IOException {
         File file = createTestTabStateFile();
         TabState state = createTabStateWithMappedByteBuffer(file);
-        TabState.saveState(file, state, false);
+        TabStateFileManager.saveState(file, state, false);
 
-        validateTestTabState(TabState.restoreTabState(file, false));
+        validateTestTabState(TabStateFileManager.restoreTabState(file, false));
     }
 
     private TabState createTabStateWithMappedByteBuffer(File file) throws IOException {

@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "content/browser/appcache/appcache_update_job.h"
 #include "net/base/io_buffer.h"
 #include "url/gurl.h"

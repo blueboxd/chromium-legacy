@@ -30,7 +30,7 @@
 #include <type_traits>
 
 #include "base/base_export.h"
-#include "base/check_op.h"
+#include "base/logging.h"
 #include "base/strings/char_traits.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece_forward.h"

@@ -9,7 +9,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_danger_type.h"

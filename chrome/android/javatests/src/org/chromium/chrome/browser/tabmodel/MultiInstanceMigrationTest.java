@@ -20,7 +20,7 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModelSelector;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -89,13 +89,15 @@ public class MultiInstanceMigrationTest {
                 "Could not create custom tabs state file", customTabsStateFile.createNewFile());
 
         // Create a couple of tabs for each tab state subdirectory.
-        File tab0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
-        File tab1 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
-        File tab2 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "2");
-        File tab3 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "3");
-        File tab4 = new File(stateDirs[2], TabState.SAVED_TAB_STATE_FILE_PREFIX + "4");
-        File tab5 = new File(stateDirs[2], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "5");
-        File tab6 = new File(stateDirs[3], TabState.SAVED_TAB_STATE_FILE_PREFIX + "6");
+        File tab0 = new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "0");
+        File tab1 = new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "1");
+        File tab2 = new File(stateDirs[1], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "2");
+        File tab3 = new File(
+                stateDirs[1], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "3");
+        File tab4 = new File(stateDirs[2], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "4");
+        File tab5 = new File(
+                stateDirs[2], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "5");
+        File tab6 = new File(stateDirs[3], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "6");
 
         Assert.assertTrue("Could not create tab 0 file", tab0.createNewFile());
         Assert.assertTrue("Could not create tab 1 file", tab1.createNewFile());
@@ -138,10 +140,14 @@ public class MultiInstanceMigrationTest {
         Assert.assertTrue("Could not find tab 1 file", tab1.exists());
 
         // Check that tabs 2-5 did move.
-        File newTab2 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "2");
-        File newTab3 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "3");
-        File newTab4 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "4");
-        File newTab5 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "5");
+        File newTab2 =
+                new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "2");
+        File newTab3 = new File(
+                stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "3");
+        File newTab4 =
+                new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "4");
+        File newTab5 = new File(
+                stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO + "5");
         Assert.assertTrue("Could not find new tab 2 file", newTab2.exists());
         Assert.assertTrue("Could not find new tab 3 file", newTab3.exists());
         Assert.assertTrue("Could not find new tab 4 file", newTab4.exists());
@@ -152,7 +158,8 @@ public class MultiInstanceMigrationTest {
         Assert.assertFalse("Could still find old tab 5 file", tab5.exists());
 
         // Check that the custom tab (tab 6) was deleted.
-        File newTab6 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "6");
+        File newTab6 =
+                new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "6");
         Assert.assertFalse("Could still find old tab 6 file", tab6.exists());
         Assert.assertFalse("Found new tab 6 file. It should have been deleted.", newTab6.exists());
 
@@ -177,8 +184,8 @@ public class MultiInstanceMigrationTest {
                 stateDirs[0], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
         File stateFile1 = new File(
                 stateDirs[1], TabbedModeTabPersistencePolicy.LEGACY_SAVED_STATE_FILE);
-        File tab0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
-        File tab1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
+        File tab0 = new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "0");
+        File tab1 = new File(stateDirs[1], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "1");
         File otherFile = new File(stateDirs[1], "other.file");
 
         Assert.assertTrue("Could not create state file 0", stateFile0.createNewFile());
@@ -209,7 +216,8 @@ public class MultiInstanceMigrationTest {
         Assert.assertTrue("Could not find tab 0 file", tab0.exists());
 
         // Check that tab 1 did move.
-        File newTab1 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
+        File newTab1 =
+                new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "1");
         Assert.assertTrue("Could not find tab 1 file", newTab1.exists());
         Assert.assertFalse("Could still find old tab 1 file", tab1.exists());
     }
@@ -234,8 +242,10 @@ public class MultiInstanceMigrationTest {
 
         // Create duplicate "tab0" files and ensure tab0Dir1 has been modified more recently so that
         // it overwrites tab0Dir0.
-        File tab0Dir0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
-        File tab0Dir1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "0");
+        File tab0Dir0 =
+                new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "0");
+        File tab0Dir1 =
+                new File(stateDirs[1], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "0");
         Assert.assertTrue("Could not create tab 0-0 file", tab0Dir0.createNewFile());
         Assert.assertTrue("Could not create tab 0-1 file", tab0Dir1.createNewFile());
         long expectedTab0LastModifiedTime = tab0Dir0.lastModified() + 1000;
@@ -245,8 +255,10 @@ public class MultiInstanceMigrationTest {
 
         // Create duplicate "tab1" files and ensure tab1Dir0 has been modified more recently so that
         // it does not get overwritten.
-        File tab1Dir0 = new File(stateDirs[0], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
-        File tab1Dir1 = new File(stateDirs[1], TabState.SAVED_TAB_STATE_FILE_PREFIX + "1");
+        File tab1Dir0 =
+                new File(stateDirs[0], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "1");
+        File tab1Dir1 =
+                new File(stateDirs[1], TabStateFileManager.SAVED_TAB_STATE_FILE_PREFIX + "1");
         Assert.assertTrue("Could not create tab 1-0 file", tab1Dir0.createNewFile());
         Assert.assertTrue("Could not create tab 1-1 file", tab1Dir1.createNewFile());
         long expectedTab1LastModifiedTime = tab1Dir1.lastModified() + 1000;

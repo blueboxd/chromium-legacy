@@ -25,7 +25,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 
 import java.io.BufferedInputStream;
 import java.io.DataInputStream;
@@ -204,7 +204,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             File[] files = oldFolder.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    if (TabState.parseInfoFromFilename(file.getName()) != null) {
+                    if (TabStateFileManager.parseInfoFromFilename(file.getName()) != null) {
                         if (!file.renameTo(new File(newFolder, file.getName()))) {
                             Log.e(TAG, "Failed to rename file: " + file);
                         }
@@ -260,7 +260,7 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             File[] files = otherStateDir.listFiles();
             if (files != null) {
                 for (File file : files) {
-                    if (TabState.parseInfoFromFilename(file.getName()) != null) {
+                    if (TabStateFileManager.parseInfoFromFilename(file.getName()) != null) {
                         // Custom tabs does not currently use tab files. Delete them rather than
                         // migrating.
                         if (i == TabModelSelectorImpl.CUSTOM_TABS_SELECTOR_INDEX) {
@@ -398,7 +398,8 @@ public class TabbedModeTabPersistencePolicy implements TabPersistencePolicy {
             if (mTabFileNames != null) {
                 List<String> filesToDelete = new ArrayList<>();
                 for (String fileName : mTabFileNames) {
-                    Pair<Integer, Boolean> data = TabState.parseInfoFromFilename(fileName);
+                    Pair<Integer, Boolean> data =
+                            TabStateFileManager.parseInfoFromFilename(fileName);
                     if (data != null) {
                         int tabId = data.first;
                         if (shouldDeleteTabFile(tabId, tabWindowManager)) {

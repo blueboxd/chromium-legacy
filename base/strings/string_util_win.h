@@ -14,8 +14,8 @@
 #include <string>
 #include <vector>
 
-#include "base/check.h"
 #include "base/containers/span.h"
+#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"

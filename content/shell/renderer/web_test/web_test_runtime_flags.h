@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "content/shell/renderer/web_test/tracked_dictionary.h"

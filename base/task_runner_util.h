@@ -10,7 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/post_task_and_reply_with_result_internal.h"
 #include "base/task_runner.h"
 

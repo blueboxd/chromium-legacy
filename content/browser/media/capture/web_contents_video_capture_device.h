@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/capture/frame_sink_video_capture_device.h"

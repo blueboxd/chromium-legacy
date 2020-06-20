@@ -439,3 +439,17 @@ export function fitWindow() {
     Object.assign(inner, {width, height, minWidth: width, minHeight: height});
   });
 }
+
+/**
+ * Binds on/off of specified state with different aria label on an element.
+ * @param {!{element: !Element, state: state.State, onLabel: string,
+ *     offLabel: string}} params
+ */
+export function bindElementAriaLabelWithState(
+    {element, state: s, onLabel, offLabel}) {
+  state.addObserver(s, (value) => {
+    const label = value ? onLabel : offLabel;
+    element.setAttribute('i18n-label', label);
+    element.setAttribute('aria-label', browserProxy.getI18nMessage(label));
+  });
+}

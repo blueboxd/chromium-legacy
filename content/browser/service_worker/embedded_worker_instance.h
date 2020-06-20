@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/check_op.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

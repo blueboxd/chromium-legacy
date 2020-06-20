@@ -4,7 +4,7 @@
 
 #include "base/test/gtest_links.h"
 
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 

@@ -5,8 +5,8 @@
 #ifndef CONTENT_COMMON_INPUT_EVENT_WITH_LATENCY_INFO_H_
 #define CONTENT_COMMON_INPUT_EVENT_WITH_LATENCY_INFO_H_
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"

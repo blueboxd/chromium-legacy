@@ -13,7 +13,7 @@
 #include <string>
 
 #include "base/at_exit.h"
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/tracing_buildflags.h"
 #include "build/build_config.h"

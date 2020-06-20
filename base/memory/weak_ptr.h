@@ -73,7 +73,7 @@
 #include <type_traits>
 
 #include "base/base_export.h"
-#include "base/check.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"

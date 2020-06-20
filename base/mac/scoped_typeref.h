@@ -5,8 +5,8 @@
 #ifndef BASE_MAC_SCOPED_TYPEREF_H_
 #define BASE_MAC_SCOPED_TYPEREF_H_
 
-#include "base/check.h"
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/scoped_policy.h"
 
 namespace base {

@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "base/check.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "content/common/content_export.h"

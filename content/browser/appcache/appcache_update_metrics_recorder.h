@@ -5,7 +5,7 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_METRICS_RECORDER_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_UPDATE_METRICS_RECORDER_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "content/browser/appcache/appcache_update_job_state.h"
 #include "content/common/content_export.h"
 

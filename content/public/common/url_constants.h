@@ -5,7 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 #define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "url/url_constants.h"

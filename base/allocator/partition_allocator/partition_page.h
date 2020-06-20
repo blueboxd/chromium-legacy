@@ -14,7 +14,7 @@
 #include "base/allocator/partition_allocator/partition_cookie.h"
 #include "base/allocator/partition_allocator/partition_freelist_entry.h"
 #include "base/allocator/partition_allocator/random.h"
-#include "base/check_op.h"
+#include "base/logging.h"
 #include "base/thread_annotations.h"
 
 namespace base {

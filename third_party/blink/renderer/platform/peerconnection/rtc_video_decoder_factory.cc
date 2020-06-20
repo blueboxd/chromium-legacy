@@ -189,12 +189,15 @@ RTCVideoDecoderFactory::GetSupportedFormats() const {
         media::VideoColorSpace(), media::kNoTransformation, kDefaultSize,
         gfx::Rect(kDefaultSize), kDefaultSize, media::EmptyExtraData(),
         media::EncryptionScheme::kUnencrypted);
-    if (gpu_factories_->IsDecoderConfigSupported(
-            RTCVideoDecoderAdapter::kImplementation, config) ==
-        media::GpuVideoAcceleratorFactories::Supported::kTrue) {
-      base::Optional<webrtc::SdpVideoFormat> format = VdcToWebRtcFormat(config);
-      if (format) {
-        supported_formats.push_back(*format);
+    for (auto impl : RTCVideoDecoderAdapter::SupportedImplementations()) {
+      if (gpu_factories_->IsDecoderConfigSupported(impl, config) ==
+          media::GpuVideoAcceleratorFactories::Supported::kTrue) {
+        base::Optional<webrtc::SdpVideoFormat> format =
+            VdcToWebRtcFormat(config);
+        if (format) {
+          supported_formats.push_back(*format);
+        }
+        break;
       }
     }
   }

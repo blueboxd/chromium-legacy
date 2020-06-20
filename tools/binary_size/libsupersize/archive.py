@@ -15,6 +15,7 @@ import logging
 import os
 import posixpath
 import re
+import shlex
 import string
 import subprocess
 import sys
@@ -1131,6 +1132,8 @@ def _ParsePakSymbols(symbols_by_id, object_paths_by_pak_id):
           full_name=symbol.full_name, object_path=path, aliases=aliases)
       aliases.append(new_sym)
       raw_symbols.append(new_sym)
+  # Sorting can ignore containers because symbols created here are all in the
+  # same container.
   raw_symbols.sort(key=lambda s: (s.section_name, s.address, s.object_path))
   raw_total = 0.0
   int_total = 0
@@ -1747,50 +1750,47 @@ def _AutoIdentifyInputFile(args):
   elif args.f.endswith('.map') or args.f.endswith('.map.gz'):
     logging.info('Auto-identified --map-file.')
     args.map_file = args.f
+  elif args.f.endswith('.ssargs'):
+    logging.info('Auto-identified --ssargs-file.')
+    args.ssargs_file = args.f
   else:
     return False
   return True
 
 
-def AddMainPathsArguments(parser):
-  """Add arguments for _DeduceMainPaths()."""
+def _AddContainerArguments(parser):
+  """Add arguments applicable to a single container."""
+
+  # Main container file arguments. These are mutually-exclusive.
   parser.add_argument('-f', metavar='FILE',
                       help='Auto-identify input file type.')
   parser.add_argument('--apk-file',
                       help='.apk file to measure. Other flags can generally be '
                            'derived when this is used.')
-  parser.add_argument(
-      '--resources-pathmap-file',
-      help='.pathmap.txt file that contains a maping from '
-      'original resource paths to shortened resource paths.')
   parser.add_argument('--minimal-apks-file',
                       help='.minimal.apks file to measure. Other flags can '
                            'generally be derived when this is used.')
-  parser.add_argument('--mapping-file',
-                      help='Proguard .mapping file for deobfuscation.')
   parser.add_argument('--elf-file',
                       help='Path to input ELF file. Currently used for '
                            'capturing metadata.')
+
+  # Auxiliary file arguments.
   parser.add_argument('--map-file',
                       help='Path to input .map(.gz) file. Defaults to '
                            '{{elf_file}}.map(.gz)?. If given without '
                            '--elf-file, no size metadata will be recorded.')
-  parser.add_argument('--no-source-paths', action='store_true',
-                      help='Do not use .ninja files to map '
-                           'object_path -> source_path')
-  parser.add_argument('--output-directory',
-                      help='Path to the root build directory.')
-  parser.add_argument('--tool-prefix',
-                      help='Path prefix for c++filt, nm, readelf.')
-
-
-def AddArguments(parser):
-  parser.add_argument('size_file', help='Path to output .size file.')
+  parser.add_argument('--mapping-file',
+                      help='Proguard .mapping file for deobfuscation.')
+  parser.add_argument('--resources-pathmap-file',
+                      help='.pathmap.txt file that contains a maping from '
+                      'original resource paths to shortened resource paths.')
   parser.add_argument('--pak-file', action='append',
                       help='Paths to pak files.')
   parser.add_argument('--pak-info-file',
                       help='This file should contain all ids found in the pak '
                            'files that have been passed in.')
+
+  # Non-file argument.
   parser.add_argument('--no-string-literals', dest='track_string_literals',
                       default=True, action='store_false',
                       help='Disable breaking down "** merge strings" into more '
@@ -1800,8 +1800,10 @@ def AddArguments(parser):
       action='store_true',
       help='Instead of counting binary size, count number of relative'
       'relocation instructions in ELF code.')
-  parser.add_argument('--source-directory',
-                      help='Custom path to the root source directory.')
+  parser.add_argument('--no-source-paths',
+                      action='store_true',
+                      help='Do not use .ninja files to map '
+                      'object_path -> source_path')
   parser.add_argument(
       '--java-only', action='store_true', help='Run on only Java symbols')
   parser.add_argument(
@@ -1815,7 +1817,63 @@ def AddArguments(parser):
       action='store_true',
       help='Include a padding field for each symbol, instead of rederiving '
       'from consecutive symbols on file load.')
-  AddMainPathsArguments(parser)
+
+
+def AddArguments(parser):
+  parser.add_argument('size_file', help='Path to output .size file.')
+  parser.add_argument('--source-directory',
+                      help='Custom path to the root source directory.')
+  parser.add_argument('--output-directory',
+                      help='Path to the root build directory.')
+  parser.add_argument('--tool-prefix',
+                      help='Path prefix for c++filt, nm, readelf.')
+
+  _AddContainerArguments(parser)
+  parser.add_argument('--ssargs-file',
+                      help='Path to SuperSize multi-container arguments file.')
+
+
+def _ParseSsargs(lines):
+  """Parses .ssargs data.
+
+  An .ssargs file is a text file to specify multiple containers as input to
+  SuperSize-archive. After '#'-based comments, start / end whitespaces, and
+  empty lines are stripped, each line specifies a distinct container. Format:
+  * Positional argument: |name| for the container.
+  * Main input file specified by -f, --apk-file, --elf-file, etc.:
+    * Can be an absolute path.
+    * Can be a relative path. In this case, it's up to the caller to supply the
+      base directory.
+    * -f switch must not specify another .ssargs file.
+  * For supported switches: See _AddContainerArguments().
+
+  Args:
+    lines: An iterator containing lines of .ssargs data.
+  Returns:
+    A list of arguments, one for each container.
+  Raises:
+    ValueError: Parse error, including input line number.
+  """
+  container_args_list = []
+  parser = argparse.ArgumentParser(add_help=False)
+  parser.error = lambda msg: (_ for _ in ()).throw(ValueError(msg))
+  parser.add_argument('name')
+  _AddContainerArguments(parser)
+  try:
+    for lineno, line in enumerate(lines, 1):
+      toks = shlex.split(line, comments=True)
+      if not toks:  # Skip if line is empty after stripping comments.
+        continue
+      container_args = parser.parse_args(toks)
+      if set(container_args.name) & set('<>'):
+        parser.error('container name cannot have characters in "<>"')
+      if container_args.f and container_args.f.endswith('.ssargs'):
+        parser.error('cannot nest .ssargs files')
+      container_args_list.append(container_args)
+  except ValueError as e:
+    e.args = ('Line %d: %s' % (lineno, e.args[0]), )
+    raise e
+  return container_args_list
 
 
 def _DeduceNativeInfo(tentative_output_dir, apk_path, elf_path, map_path,
@@ -1883,6 +1941,57 @@ def _DeduceAuxPaths(args, apk_prefix):
   return mapping_path, resources_pathmap_path
 
 
+def _DeduceDerivedArgs(args, is_top_level_args, on_config_error):
+  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
+  if is_top_level_args:
+    any_path = (args.apk_file or args.minimal_apks_file or args.elf_file
+                or args.map_file or args.ssargs_file)
+    if any_path is None:
+      on_config_error(
+          'Must pass at least one of --apk-file, --minimal-apks-file, '
+          '--elf-file, --map-file, --ssargs-file')
+    setattr(args, 'any_path_within_output_directory', any_path)
+
+
+def _ReadMultipleArgsFromStream(lines, base_dir, err_prefix, args,
+                                on_config_error):
+  try:
+    container_args_list = _ParseSsargs(lines)
+  except ValueError as e:
+    on_config_error('%s: %s' % (err_prefix, e.args[0]))
+  sub_args_list = []
+  for container_args in container_args_list:
+    # Clone |args| keys but assign empty values.
+    sub_args = argparse.Namespace(**{k: None for k in vars(args)})
+    # Copy parsed values to |sub_args|.
+    for k, v in container_args.__dict__.items():
+      # Translate ile arguments to be relative to |sub_dir|.
+      if (k.endswith('_file') or k == 'f') and v is not None:
+        v = os.path.join(base_dir, v)
+      sub_args.__dict__[k] = v
+    if sub_args.f is not None:
+      _AutoIdentifyInputFile(sub_args)
+    _DeduceDerivedArgs(sub_args,
+                       is_top_level_args=False,
+                       on_config_error=on_config_error)
+    logging.info('Container: %r' %
+                 {k: v
+                  for k, v in sub_args.__dict__.items() if v is not None})
+    sub_args_list.append(sub_args)
+  return sub_args_list
+
+
+def _ReadMultipleArgsFromFile(args, on_config_error):
+  with open(args.ssargs_file, 'r') as fh:
+    lines = list(fh)
+  err_prefix = 'In file ' + args.ssargs_file
+  # Supply |base_dir| as the directory containing the .ssargs file, to ensure
+  # consistent behavior wherever SuperSize-archive runs.
+  base_dir = os.path.dirname(os.path.abspath(args.ssargs_file))
+  return _ReadMultipleArgsFromStream(lines, base_dir, err_prefix, args,
+                                     on_config_error)
+
+
 def _DeduceMainPaths(args, on_config_error):
   """Generates main paths (may be deduced) for each containers given by input.
 
@@ -1904,13 +2013,12 @@ def _DeduceMainPaths(args, on_config_error):
       apk_path: Path to .apk file that can be opened for processing, but whose
         filename is unimportant (e.g., can be a temp file).
     """
-    # TODO(huangs): Assign distinct names for multiple containers.
-    assert idx == 0
-    container_name = ''
-
     output_directory = output_directory_finder.Tentative()
     opts = ContainerArchiveOptions(sub_args, output_directory=output_directory)
+    container_name = sub_args.name if hasattr(sub_args, 'name') else None
     if apk_prefix:
+      if not container_name:
+        container_name = apk_prefix
       # Allow either .minimal.apks or just .apks.
       apk_prefix = apk_prefix.replace('.minimal.apks', '.aab')
       apk_prefix = apk_prefix.replace('.apks', '.aab')
@@ -1931,6 +2039,8 @@ def _DeduceMainPaths(args, on_config_error):
             output_directory_finder=output_directory_finder,
             linker_name=linker_name)
         tool_prefix = tool_prefix_finder.Finalized()
+      if not container_name and elf_path:
+        container_name = elf_path
     else:
       # Trust that these values will not be used, and set to None.
       elf_path = None
@@ -1947,14 +2057,19 @@ def _DeduceMainPaths(args, on_config_error):
       size_info_prefix = os.path.join(output_directory, 'size-info',
                                       os.path.basename(apk_prefix))
 
+    if not container_name:
+      container_name = 'Container %d' % idx
+
     return (opts, output_directory, tool_prefix, container_name, apk_path,
             mapping_path, apk_so_path, elf_path, map_path,
             resources_pathmap_path, linker_name, size_info_prefix)
 
-  # One for each container.
-  # TODO(huangs): Add support for multiple containers
-  sub_args_list = [args]
+  if args.ssargs_file:
+    sub_args_list = _ReadMultipleArgsFromFile(args, on_config_error)
+  else:
+    sub_args_list = [args]
 
+  # Each element in |sub_args_list| specifies a container.
   for idx, sub_args in enumerate(sub_args_list):
     # If needed, extract .apk file to a temp file and process that instead.
     if sub_args.minimal_apks_file:
@@ -1974,17 +2089,9 @@ def Run(args, on_config_error):
       on_config_error('Cannot identify file %s' % args.f)
   if args.apk_file and args.minimal_apks_file:
     on_config_error('Cannot use both --apk-file and --minimal-apks-file.')
-
-  # Deduce arguments.
-  setattr(args, 'is_bundle', args.minimal_apks_file is not None)
-  any_path = (args.apk_file or args.minimal_apks_file or args.elf_file
-              or args.map_file)
-  if any_path is None:
-    on_config_error(
-        'Must pass at least one of --apk-file, --minimal-apks-file, '
-        '--elf-file, --map-file')
-  setattr(args, 'any_path_within_output_directory', any_path)
-
+  _DeduceDerivedArgs(args,
+                     is_top_level_args=True,
+                     on_config_error=on_config_error)
   knobs = SectionSizeKnobs()
 
   build_config = {}

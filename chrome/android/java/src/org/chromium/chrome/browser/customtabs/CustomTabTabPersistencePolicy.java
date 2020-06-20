@@ -25,7 +25,7 @@ import org.chromium.base.task.TaskRunner;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.dependency_injection.ActivityScope;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistencePolicy;
@@ -344,7 +344,8 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
                     continue;
                 }
 
-                Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(file.getName());
+                Pair<Integer, Boolean> tabInfo =
+                        TabStateFileManager.parseInfoFromFilename(file.getName());
                 if (tabInfo == null) continue;
                 allTabIds.add(tabInfo.first);
             }
@@ -381,7 +382,8 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
 
                 // The tab state is not referenced by any current activities or any metadata files,
                 // so mark it for deletion.
-                filesToDelete.add(TabState.getTabStateFilename(unreferencedTabId, false));
+                filesToDelete.add(
+                        TabStateFileManager.getTabStateFilename(unreferencedTabId, false));
             }
 
             for (int i = 0; i < mDeletableMetadataFiles.size(); i++) {
@@ -399,7 +401,7 @@ public class CustomTabTabPersistencePolicy implements TabPersistencePolicy {
                     SparseBooleanArray unusedTabIds = mTabIdsByMetadataFile.get(metadataFile);
                     if (unusedTabIds == null) continue;
                     for (int j = 0; j < unusedTabIds.size(); j++) {
-                        filesToDelete.add(TabState.getTabStateFilename(
+                        filesToDelete.add(TabStateFileManager.getTabStateFilename(
                                 unusedTabIds.keyAt(j), false));
                     }
                 } catch (NumberFormatException ex) {

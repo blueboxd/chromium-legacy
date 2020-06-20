@@ -174,11 +174,20 @@
       <message desc="Label for spoken feedback to read out grid-type: 3x3." name="IDS_ARIA_GRID_3X3">
         3 by 3
       </message>
+      <message desc="Label for the shutter button to take video snapshot." name="IDS_TAKE_VIDEO_SNAPSHOT_BUTTON">
+        Take video snapshot
+      </message>
       <message desc="Label for the shutter button to start recording." name="IDS_RECORD_VIDEO_START_BUTTON">
         Start recording
       </message>
       <message desc="Label for the shutter button to stop recording." name="IDS_RECORD_VIDEO_STOP_BUTTON">
         Stop recording
+      </message>
+      <message desc="Label for the shutter button to pause recording." name="IDS_RECORD_VIDEO_PAUSE_BUTTON">
+        Pause recording
+      </message>
+      <message desc="Label for the shutter button to resume recording." name="IDS_RECORD_VIDEO_RESUME_BUTTON">
+        Resume recording
       </message>
       <message desc="Label for the button to switch to next connected camera. Eg. switching from front facing to back facing, or a camera connected via USB. The button is shown only when more than one camera is connected." name="IDS_SWITCH_CAMERA_BUTTON">
         Switch to next camera

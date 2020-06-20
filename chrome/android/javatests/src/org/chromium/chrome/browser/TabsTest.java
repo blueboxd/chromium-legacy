@@ -59,7 +59,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
-import org.chromium.chrome.browser.tab.TabState;
+import org.chromium.chrome.browser.tab.TabStateFileManager;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -1825,10 +1825,10 @@ public class TabsTest {
         TabModel incognitoModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(true);
         File normalTabFile = new File(tabStateDir,
-                TabState.getTabStateFilename(
+                TabStateFileManager.getTabStateFilename(
                         normalModel.getTabAt(normalModel.getCount() - 1).getId(), false));
         File incognitoTabFile = new File(tabStateDir,
-                TabState.getTabStateFilename(incognitoModel.getTabAt(0).getId(), true));
+                TabStateFileManager.getTabStateFilename(incognitoModel.getTabAt(0).getId(), true));
 
         assertFileExists(normalTabFile, true);
         assertFileExists(incognitoTabFile, true);

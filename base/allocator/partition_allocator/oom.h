@@ -6,6 +6,7 @@
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_OOM_H_
 
 #include "base/allocator/partition_allocator/oom_callback.h"
+#include "base/logging.h"
 #include "base/process/memory.h"
 #include "build/build_config.h"
 

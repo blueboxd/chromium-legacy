@@ -8,7 +8,6 @@
 #include <ostream>
 
 #include "base/check.h"
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 

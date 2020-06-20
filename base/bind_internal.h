@@ -15,10 +15,11 @@
 
 #include "base/bind.h"
 #include "base/callback_internal.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/memory/raw_scoped_refptr_mismatch_checker.h"
 #include "base/memory/weak_ptr.h"
+#include "base/notreached.h"
 #include "base/template_util.h"
 #include "build/build_config.h"
 

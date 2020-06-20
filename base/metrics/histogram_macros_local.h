@@ -5,7 +5,6 @@
 #ifndef BASE_METRICS_HISTOGRAM_MACROS_LOCAL_H_
 #define BASE_METRICS_HISTOGRAM_MACROS_LOCAL_H_
 
-#include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros_internal.h"
 #include "base/time/time.h"

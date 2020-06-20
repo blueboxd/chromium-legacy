@@ -6,9 +6,9 @@
 #define BASE_THREADING_THREAD_RESTRICTIONS_H_
 
 #include "base/base_export.h"
+#include "base/check_op.h"
 #include "base/gtest_prod_util.h"
 #include "base/location.h"
-#include "base/logging.h"
 #include "base/macros.h"
 
 // -----------------------------------------------------------------------------

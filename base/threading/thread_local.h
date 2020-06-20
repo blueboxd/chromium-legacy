@@ -51,7 +51,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/threading/thread_local_internal.h"
 #include "base/threading/thread_local_storage.h"

@@ -10,8 +10,8 @@
 #include <stdint.h>
 
 #include "base/base_export.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 
 namespace base {
 namespace win {

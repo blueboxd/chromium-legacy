@@ -33,8 +33,8 @@ bool IsColorTransparent(const SkColor& color) {
   return (SkColorGetA(color) < 128);
 }
 
-const int kPixelsToSample = 1000;
-const int kBlocksCount1D = 10;
+const int kMaxSampledPixels = 1000;
+const int kMaxBlocks = 10;
 const float kMinOpaquePixelPercentageForForeground = 0.2;
 
 const int kMinImageSizeForClassification1D = 24;
@@ -97,7 +97,6 @@ class DarkModeImageClassificationCache {
            const SkRect& src,
            const DarkModeClassification result) {
     DCHECK(Get(image_id, src) == DarkModeClassification::kNotClassified);
-
     auto map = cache_.find(image_id);
     if (map == cache_.end())
       map = cache_.emplace(image_id, ClassificationMap()).first;
@@ -134,10 +133,7 @@ class DarkModeImageClassificationCache {
 
 }  // namespace
 
-DarkModeImageClassifier::DarkModeImageClassifier()
-    : pixels_to_sample_(kPixelsToSample),
-      blocks_count_horizontal_(kBlocksCount1D),
-      blocks_count_vertical_(kBlocksCount1D) {}
+DarkModeImageClassifier::DarkModeImageClassifier() = default;
 
 DarkModeImageClassifier::~DarkModeImageClassifier() = default;
 
@@ -184,12 +180,6 @@ DarkModeClassification DarkModeImageClassifier::Classify(
   return result;
 }
 
-void DarkModeImageClassifier::Reset() {
-  pixels_to_sample_ = kPixelsToSample;
-  blocks_count_horizontal_ = kBlocksCount1D;
-  blocks_count_vertical_ = kBlocksCount1D;
-}
-
 bool DarkModeImageClassifier::GetBitmap(const PaintImage& paint_image,
                                         const SkRect& src,
                                         SkBitmap* bitmap) {
@@ -212,23 +202,11 @@ bool DarkModeImageClassifier::GetBitmap(const PaintImage& paint_image,
 base::Optional<DarkModeImageClassifier::Features>
 DarkModeImageClassifier::GetFeatures(const PaintImage& paint_image,
                                      const SkRect& src) {
-  SkBitmap bitmap;
-  if (!GetBitmap(paint_image, src, &bitmap))
-    return base::nullopt;
-
-  if (pixels_to_sample_ > src.width() * src.height())
-    pixels_to_sample_ = src.width() * src.height();
-
-  if (blocks_count_horizontal_ > src.width())
-    blocks_count_horizontal_ = floor(src.width());
-
-  if (blocks_count_vertical_ > src.height())
-    blocks_count_vertical_ = floor(src.height());
-
   float transparency_ratio;
   float background_ratio;
   std::vector<SkColor> sampled_pixels;
-  GetSamples(bitmap, &sampled_pixels, &transparency_ratio, &background_ratio);
+  GetSamples(paint_image, src, &sampled_pixels, &transparency_ratio,
+             &background_ratio);
   // TODO(https://crbug.com/945434): Investigate why an incorrect resource is
   // loaded and how we can fetch the correct resource. This condition will
   // prevent going further with the rest of the classification logic.
@@ -241,34 +219,51 @@ DarkModeImageClassifier::GetFeatures(const PaintImage& paint_image,
 // Extracts sample pixels from the image. The image is separated into uniformly
 // distributed blocks through its width and height, each block is sampled, and
 // checked to see if it seems to be background or foreground.
-void DarkModeImageClassifier::GetSamples(const SkBitmap& bitmap,
+void DarkModeImageClassifier::GetSamples(const PaintImage& paint_image,
+                                         const SkRect& src,
                                          std::vector<SkColor>* sampled_pixels,
                                          float* transparency_ratio,
                                          float* background_ratio) {
-  int pixels_per_block =
-      pixels_to_sample_ / (blocks_count_horizontal_ * blocks_count_vertical_);
+  SkBitmap bitmap;
+  if (!GetBitmap(paint_image, src, &bitmap))
+    return;
+
+  int num_sampled_pixels = kMaxSampledPixels;
+  int num_blocks_x = kMaxBlocks;
+  int num_blocks_y = kMaxBlocks;
+
+  if (num_sampled_pixels > src.width() * src.height())
+    num_sampled_pixels = src.width() * src.height();
+
+  if (num_blocks_x > src.width())
+    num_blocks_x = floor(src.width());
+
+  if (num_blocks_y > src.height())
+    num_blocks_y = floor(src.height());
+
+  int pixels_per_block = num_sampled_pixels / (num_blocks_x * num_blocks_y);
 
   int transparent_pixels = 0;
   int opaque_pixels = 0;
   int blocks_count = 0;
 
-  std::vector<int> horizontal_grid(blocks_count_horizontal_ + 1);
-  std::vector<int> vertical_grid(blocks_count_vertical_ + 1);
+  std::vector<int> horizontal_grid(num_blocks_x + 1);
+  std::vector<int> vertical_grid(num_blocks_y + 1);
 
-  for (int block = 0; block <= blocks_count_horizontal_; block++) {
-    horizontal_grid[block] = static_cast<int>(round(
-        block * bitmap.width() / static_cast<float>(blocks_count_horizontal_)));
+  for (int block = 0; block <= num_blocks_x; block++) {
+    horizontal_grid[block] = static_cast<int>(
+        round(block * bitmap.width() / static_cast<float>(num_blocks_x)));
   }
-  for (int block = 0; block <= blocks_count_vertical_; block++) {
-    vertical_grid[block] = static_cast<int>(round(
-        block * bitmap.height() / static_cast<float>(blocks_count_vertical_)));
+  for (int block = 0; block <= num_blocks_y; block++) {
+    vertical_grid[block] = static_cast<int>(
+        round(block * bitmap.height() / static_cast<float>(num_blocks_y)));
   }
 
   sampled_pixels->clear();
   std::vector<gfx::Rect> foreground_blocks;
 
-  for (int y = 0; y < blocks_count_vertical_; y++) {
-    for (int x = 0; x < blocks_count_horizontal_; x++) {
+  for (int y = 0; y < num_blocks_y; y++) {
+    for (int x = 0; x < num_blocks_x; x++) {
       gfx::Rect block(horizontal_grid[x], vertical_grid[y],
                       horizontal_grid[x + 1] - horizontal_grid[x],
                       vertical_grid[y + 1] - vertical_grid[y]);

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "chromecast/media/api/cast_audio_resampler.h"
 #include "media/base/audio_bus.h"
 #include "media/base/multi_channel_resampler.h"

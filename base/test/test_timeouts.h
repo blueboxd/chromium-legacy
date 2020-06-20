@@ -5,7 +5,7 @@
 #ifndef BASE_TEST_TEST_TIMEOUTS_H_
 #define BASE_TEST_TEST_TIMEOUTS_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 

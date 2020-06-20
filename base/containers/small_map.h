@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 namespace {
 constexpr size_t kUsingFullMapSentinel = std::numeric_limits<size_t>::max();

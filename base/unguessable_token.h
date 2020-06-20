@@ -11,8 +11,8 @@
 #include <tuple>
 
 #include "base/base_export.h"
+#include "base/check.h"
 #include "base/hash/hash.h"
-#include "base/logging.h"
 #include "base/token.h"
 
 namespace base {

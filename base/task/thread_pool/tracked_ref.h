@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/atomic_ref_count.h"
+#include "base/check.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/synchronization/waitable_event.h"

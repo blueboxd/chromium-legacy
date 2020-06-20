@@ -20,8 +20,9 @@ namespace blink {
 
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, FeaturesAndClassification);
 FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, Caching);
-FORWARD_DECLARE_TEST(DarkModeImageClassifierTest, BlocksCount);
 
+// This class is not threadsafe as the cache used for storing classification
+// results is not threadsafe. So it can be used only in blink main thread.
 class PLATFORM_EXPORT DarkModeImageClassifier {
  public:
   virtual ~DarkModeImageClassifier();
@@ -68,13 +69,13 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
                  SkBitmap* bitmap);
   base::Optional<Features> GetFeatures(const PaintImage& paint_image,
                                        const SkRect& src);
-  void Reset();
 
   enum class ColorMode { kColor = 0, kGrayscale = 1 };
 
-  // Given a SkBitmap, extracts a sample set of pixels (|sampled_pixels|),
-  // |transparency_ratio|, and |background_ratio|.
-  void GetSamples(const SkBitmap& bitmap,
+  // Extracts a sample set of pixels (|sampled_pixels|), |transparency_ratio|,
+  // and |background_ratio|.
+  void GetSamples(const PaintImage& paint_image,
+                  const SkRect& src,
                   std::vector<SkColor>* sampled_pixels,
                   float* transparency_ratio,
                   float* background_ratio);
@@ -110,18 +111,9 @@ class PLATFORM_EXPORT DarkModeImageClassifier {
   // Returns the cache size for the given |image_id|.
   size_t GetCacheSize(PaintImage::Id image_id);
 
-  int pixels_to_sample_;
-  // Holds the number of blocks in the horizontal direction when the image is
-  // divided into a grid of blocks.
-  int blocks_count_horizontal_;
-  // Holds the number of blocks in the vertical direction when the image is
-  // divided into a grid of blocks.
-  int blocks_count_vertical_;
-
   FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest,
                            FeaturesAndClassification);
   FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest, Caching);
-  FRIEND_TEST_ALL_PREFIXES(DarkModeImageClassifierTest, BlocksCount);
 };
 
 }  // namespace blink

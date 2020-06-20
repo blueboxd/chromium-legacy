@@ -13,7 +13,7 @@
 
 #include "base/callback_forward.h"
 #include "base/callback_internal.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 
 // -----------------------------------------------------------------------------
 // Usage documentation

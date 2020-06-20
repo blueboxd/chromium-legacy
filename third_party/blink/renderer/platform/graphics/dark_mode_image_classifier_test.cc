@@ -60,7 +60,6 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
 
   // The data members of DarkModeImageClassifier have to be reset for every
   // image as the same classifier object is used for all the tests.
-  image_classifier()->Reset();
   image = GetImage("/images/resources/grid-large.png");
   features = image_classifier()
                  ->GetFeatures(image->PaintImageForCurrentFrame(),
@@ -80,7 +79,6 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Medium
   // Decision Tree: Can't Decide
   // Neural Network: Apply
-  image_classifier()->Reset();
   image = GetImage("/images/resources/apng08-ref.png");
   features = image_classifier()
                  ->GetFeatures(image->PaintImageForCurrentFrame(),
@@ -100,7 +98,6 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Low
   // Decision Tree: Apply
   // Neural Network: NA.
-  image_classifier()->Reset();
   image = GetImage("/images/resources/twitter_favicon.ico");
   features = image_classifier()
                  ->GetFeatures(image->PaintImageForCurrentFrame(),
@@ -120,7 +117,6 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: High
   // Decision Tree: Do Not Apply
   // Neural Network: NA.
-  image_classifier()->Reset();
   image = GetImage("/images/resources/blue-wheel-srgb-color-profile.png");
   features = image_classifier()
                  ->GetFeatures(image->PaintImageForCurrentFrame(),
@@ -140,7 +136,6 @@ TEST_F(DarkModeImageClassifierTest, FeaturesAndClassification) {
   // Color Buckets Ratio: Medium
   // Decision Tree: Apply
   // Neural Network: NA.
-  image_classifier()->Reset();
   image = GetImage("/images/resources/ycbcr-444-float.jpg");
   features = image_classifier()
                  ->GetFeatures(image->PaintImageForCurrentFrame(),
@@ -192,47 +187,6 @@ TEST_F(DarkModeImageClassifierTest, Caching) {
             DarkModeClassification::kApplyFilter);
 
   EXPECT_EQ(image_classifier()->GetCacheSize(image_id), 1u);
-}
-
-TEST_F(DarkModeImageClassifierTest, BlocksCount) {
-  scoped_refptr<BitmapImage> image =
-      GetImage("/images/resources/grid-large.png");
-  DarkModeImageClassifier::Features features;
-  image_classifier()->Reset();
-
-  // When the horizontal and vertical blocks counts are lesser than the
-  // image dimensions, they should remain unaltered.
-  image_classifier()->blocks_count_horizontal_ = image->width() - 1;
-  image_classifier()->blocks_count_vertical_ = image->height() - 1;
-  features = image_classifier()
-                 ->GetFeatures(image->PaintImageForCurrentFrame(),
-                               SkRect::MakeWH(image->width(), image->height()))
-                 .value();
-  EXPECT_EQ(image_classifier()->blocks_count_horizontal_, image->width() - 1);
-  EXPECT_EQ(image_classifier()->blocks_count_vertical_, image->height() - 1);
-
-  // When the horizontal and vertical blocks counts are lesser than the
-  // image dimensions, they should remain unaltered.
-  image_classifier()->blocks_count_horizontal_ = image->width();
-  image_classifier()->blocks_count_vertical_ = image->height();
-  features = image_classifier()
-                 ->GetFeatures(image->PaintImageForCurrentFrame(),
-                               SkRect::MakeWH(image->width(), image->height()))
-                 .value();
-  EXPECT_EQ(image_classifier()->blocks_count_horizontal_, image->width());
-  EXPECT_EQ(image_classifier()->blocks_count_vertical_, image->height());
-
-  // When the horizontal and vertical blocks counts are greater than the
-  // image dimensions, they should be reduced.
-  image_classifier()->blocks_count_horizontal_ = image->width() + 1;
-  image_classifier()->blocks_count_vertical_ = image->height() + 1;
-  features = image_classifier()
-                 ->GetFeatures(image->PaintImageForCurrentFrame(),
-                               SkRect::MakeWH(image->width(), image->height()))
-                 .value();
-  EXPECT_EQ(image_classifier()->blocks_count_horizontal_,
-            floor(image->width()));
-  EXPECT_EQ(image_classifier()->blocks_count_vertical_, floor(image->height()));
 }
 
 }  // namespace blink

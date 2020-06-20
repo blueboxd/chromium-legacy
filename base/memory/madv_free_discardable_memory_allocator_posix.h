@@ -13,7 +13,6 @@
 #include "base/base_export.h"
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/discardable_memory_allocator.h"

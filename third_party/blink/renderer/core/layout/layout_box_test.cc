@@ -1436,4 +1436,31 @@ TEST_P(LayoutBoxTest, HasNonCollapsedBorderDecoration) {
   EXPECT_TRUE(div->HasNonCollapsedBorderDecoration());
 }
 
+TEST_P(LayoutBoxTest,
+       ThickScrollbarSubpixelSizeMarginNoDirtyLayoutAfterLayout) {
+  // |target| creates horizontal scrollbar during layout because the contents
+  // overflow horizontally, which causes vertical overflow because the
+  // horizontal scrollbar reduces available height. For now we suppress
+  // creation of the vertical scrollbar because otherwise we would need another
+  // layout. The subpixel margin and size cause change of pixel snapped border
+  // size after layout which requires repositioning of the overflow controls.
+  // This test ensures there is no left-over dirty layout.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      ::-webkit-scrollbar {
+        width: 100px;
+        height: 100px;
+        background: blue;
+      }
+    </style>
+    <div id="target"
+         style="width: 150.3px; height: 150.3px; margin: 10.4px;
+                font-size: 30px; overflow: auto">
+      <div style="width: 200px; height: 80px"></div>
+    </div>
+  )HTML");
+
+  DCHECK(!GetLayoutObjectByElementId("target")->NeedsLayout());
+}
+
 }  // namespace blink

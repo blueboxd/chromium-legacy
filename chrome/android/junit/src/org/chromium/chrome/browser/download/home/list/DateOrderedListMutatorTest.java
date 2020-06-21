@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
 import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderType;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.home.list.mutator.ListMutationController;
 import org.chromium.components.browser_ui.util.date.CalendarFactory;
@@ -1190,15 +1191,22 @@ public class DateOrderedListMutatorTest {
         Assert.assertTrue(item instanceof SectionHeaderListItem);
         SectionHeaderListItem sectionHeader = (SectionHeaderListItem) item;
         assertDatesAreEqual(sectionHeader.date, calendar);
-        Assert.assertEquals(
-                SectionHeaderListItem.generateStableId(calendar.getTimeInMillis()), item.stableId);
+        Assert.assertEquals(SectionHeaderListItem.generateStableId(
+                                    SectionHeaderType.DATE, calendar.getTimeInMillis()),
+                item.stableId);
+        Assert.assertEquals(SectionHeaderListItem.generateStableId(
+                                    SectionHeaderType.JUST_NOW, calendar.getTimeInMillis()),
+                StableIds.JUST_NOW_SECTION);
+        Assert.assertEquals(SectionHeaderListItem.generateStableId(
+                                    SectionHeaderType.SCHEDULED_LATER, calendar.getTimeInMillis()),
+                StableIds.SCHEDULE_LATER_SECTION);
         Assert.assertEquals(sectionHeader.showTopDivider, showDivider);
     }
 
     private static void assertJustNowSection(ListItem item) {
         Assert.assertTrue(item instanceof SectionHeaderListItem);
         SectionHeaderListItem sectionHeader = (SectionHeaderListItem) item;
-        Assert.assertTrue(sectionHeader.isJustNow);
+        Assert.assertEquals(SectionHeaderType.JUST_NOW, sectionHeader.type);
         Assert.assertEquals(false, sectionHeader.showTopDivider);
         Assert.assertEquals(StableIds.JUST_NOW_SECTION, item.stableId);
     }

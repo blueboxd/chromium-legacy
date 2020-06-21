@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/download/public/common/auto_resumption_handler.h"
+#include "components/download/public/common/download_schedule.h"
 #include "components/download/public/common/download_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_item_utils.h"
@@ -21,6 +22,7 @@ using DownloadItem = download::DownloadItem;
 using ContentId = offline_items_collection::ContentId;
 using OfflineItem = offline_items_collection::OfflineItem;
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
+using OfflineItemSchedule = offline_items_collection::OfflineItemSchedule;
 using OfflineItemState = offline_items_collection::OfflineItemState;
 using OfflineItemProgressUnit =
     offline_items_collection::OfflineItemProgressUnit;
@@ -130,6 +132,12 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
   item.fail_state =
       ConvertDownloadInterruptReasonToFailState(download_item->GetLastReason());
   item.can_rename = download_item->GetState() == DownloadItem::COMPLETE;
+  const auto& download_schedule = download_item->GetDownloadSchedule();
+  if (download_schedule.has_value()) {
+    item.schedule = base::make_optional<OfflineItemSchedule>(
+        download_schedule->only_on_wifi(), download_schedule->start_time());
+  }
+
   switch (download_item->GetState()) {
     case DownloadItem::IN_PROGRESS:
       item.state = download_item->IsPaused() ? OfflineItemState::PAUSED
@@ -159,7 +167,6 @@ OfflineItem OfflineItemUtils::CreateOfflineItem(const std::string& name_space,
       } else {
         item.state = OfflineItemState::INTERRUPTED;
       }
-
     } break;
     default:
       NOTREACHED();

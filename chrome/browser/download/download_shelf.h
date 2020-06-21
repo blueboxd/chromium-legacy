@@ -14,9 +14,9 @@
 
 class Browser;
 
-using offline_items_collection::ContentId;
-using offline_items_collection::OfflineItem;
-using DownloadUIModelPtr = DownloadUIModel::DownloadUIModelPtr;
+namespace offline_items_collection {
+struct ContentId;
+}  // namespace offline_items_collection
 
 // This is an abstract base class for platform specific download shelf
 // implementations.
@@ -41,7 +41,7 @@ class DownloadShelf {
   // DownloadItemModel::ShouldRemoveFromShelfWhenComplete()). These transient
   // downloads are added to the shelf after a delay. If the download completes
   // before the delay duration, it will not be added to the shelf at all.
-  void AddDownload(DownloadUIModelPtr download);
+  void AddDownload(DownloadUIModel::DownloadUIModelPtr download);
 
   // Opens the shelf.
   void Open();
@@ -62,7 +62,7 @@ class DownloadShelf {
   bool is_hidden() { return is_hidden_; }
 
  protected:
-  virtual void DoAddDownload(DownloadUIModelPtr download) = 0;
+  virtual void DoShowDownload(DownloadUIModel::DownloadUIModelPtr download) = 0;
   virtual void DoOpen() = 0;
   virtual void DoClose() = 0;
   virtual void DoHide() = 0;
@@ -70,17 +70,17 @@ class DownloadShelf {
 
   // Time delay to wait before adding a transient download to the shelf.
   // Protected virtual for testing.
-  virtual base::TimeDelta GetTransientDownloadShowDelay();
+  virtual base::TimeDelta GetTransientDownloadShowDelay() const;
 
   Profile* profile() { return profile_; }
 
  private:
   // Show the download on the shelf immediately. Also displayes the download
   // started animation if necessary.
-  void ShowDownload(DownloadUIModelPtr download);
+  void ShowDownload(DownloadUIModel::DownloadUIModelPtr download);
 
   // Similar to ShowDownload() but refers to the download using an ID.
-  void ShowDownloadById(ContentId id);
+  void ShowDownloadById(const offline_items_collection::ContentId& id);
 
   Browser* const browser_;
   Profile* const profile_;

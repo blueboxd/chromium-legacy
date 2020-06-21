@@ -310,10 +310,33 @@ void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
   button->SetBgColorOverride(bg_color);
 }
 
-void DownloadShelfView::DoAddDownload(
+void DownloadShelfView::DoShowDownload(
     DownloadUIModel::DownloadUIModelPtr download) {
-  AddDownloadView(
-      new DownloadItemView(std::move(download), this, accessible_alert_));
+  mouse_watcher_.Stop();
+
+  const bool was_empty = download_views_.empty();
+
+  // Insert the new view as the first child, so the logical child order matches
+  // the visual order.  This ensures that tabbing through downloads happens in
+  // the order users would expect.
+  auto view = std::make_unique<DownloadItemView>(std::move(download), this,
+                                                 accessible_alert_);
+  download_views_.push_back(AddChildViewAt(std::move(view), 0));
+
+  // Max number of download views we'll contain. Any time a view is added and
+  // we already have this many download views, one is removed.
+  // TODO(pkasting): Maybe this should use a min width instead.
+  constexpr size_t kMaxDownloadViews = 15;
+  if (download_views_.size() > kMaxDownloadViews)
+    RemoveDownloadView(download_views_.front());
+
+  new_item_animation_.Reset();
+  new_item_animation_.Show();
+
+  if (was_empty && !shelf_animation_.is_animating() && GetVisible()) {
+    // Force a re-layout of the parent to adjust height of shelf properly.
+    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
+  }
 }
 
 void DownloadShelfView::DoOpen() {
@@ -362,26 +385,4 @@ views::View* DownloadShelfView::GetDefaultFocusableChild() {
     return download_views_.back();
 
   return show_all_view_;
-}
-
-void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
-  mouse_watcher_.Stop();
-
-  DCHECK(view);
-  const bool was_empty = download_views_.empty();
-  download_views_.push_back(view);
-
-  // Insert the new view as the first child, so the logical child order matches
-  // the visual order.  This ensures that tabbing through downloads happens in
-  // the order users would expect.
-  AddChildViewAt(view, 0);
-  if (download_views_.size() > kMaxDownloadViews)
-    RemoveDownloadView(*download_views_.begin());
-
-  new_item_animation_.Reset();
-  new_item_animation_.Show();
-  if (was_empty && !shelf_animation_.is_animating() && GetVisible()) {
-    // Force a re-layout of the parent to adjust height of shelf properly.
-    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
-  }
 }

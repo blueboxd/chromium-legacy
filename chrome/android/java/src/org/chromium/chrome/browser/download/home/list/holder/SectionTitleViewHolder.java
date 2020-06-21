@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.download.home.list.holder;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.download.R;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderType;
 import org.chromium.components.browser_ui.util.date.StringUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -20,8 +22,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  */
 public class SectionTitleViewHolder extends ListItemViewHolder {
     private final View mTopDivider;
-    private final TextView mDate;
-
+    private final TextView mTitle;
 
     /** Create a new {@link SectionTitleViewHolder} instance. */
     public static SectionTitleViewHolder create(ViewGroup parent) {
@@ -33,18 +34,28 @@ public class SectionTitleViewHolder extends ListItemViewHolder {
     private SectionTitleViewHolder(View view) {
         super(view);
         mTopDivider = view.findViewById(R.id.divider);
-        mDate = (TextView) view.findViewById(R.id.date);
+        mTitle = (TextView) view.findViewById(R.id.date);
     }
 
     // ListItemViewHolder implementation.
     @Override
     public void bind(PropertyModel properties, ListItem item) {
         SectionHeaderListItem sectionItem = (SectionHeaderListItem) item;
-
-        mDate.setText(sectionItem.isJustNow ? itemView.getContext().getResources().getString(
-                              R.string.download_manager_just_now)
-                                            : StringUtils.dateToHeaderString(sectionItem.date));
-
+        mTitle.setText(getSectionTitle(sectionItem, itemView.getContext()));
         mTopDivider.setVisibility(sectionItem.showTopDivider ? ViewGroup.VISIBLE : ViewGroup.GONE);
+    }
+
+    private static CharSequence getSectionTitle(
+            SectionHeaderListItem sectionItem, Context context) {
+        switch (sectionItem.type) {
+            case SectionHeaderType.DATE:
+                return StringUtils.dateToHeaderString(sectionItem.date);
+            case SectionHeaderType.JUST_NOW:
+                return context.getResources().getString(R.string.download_manager_just_now);
+            case SectionHeaderType.SCHEDULED_LATER:
+                return context.getResources().getString(R.string.download_manager_scheduled_later);
+        }
+        assert false : "Unknown section header type.";
+        return null;
     }
 }

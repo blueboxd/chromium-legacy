@@ -45,8 +45,7 @@ struct ContentId {
 // Contains all the information to schedule the download of the offline item.
 struct OfflineItemSchedule {
  public:
-  explicit OfflineItemSchedule(bool only_on_wifi);
-  explicit OfflineItemSchedule(base::Optional<base::Time> start_time);
+  OfflineItemSchedule(bool only_on_wifi, base::Optional<base::Time> start_time);
 
   OfflineItemSchedule(const OfflineItemSchedule& other);
   OfflineItemSchedule& operator=(const OfflineItemSchedule& other);
@@ -286,4 +285,4 @@ struct OfflineItemShareInfo {
 
 }  // namespace offline_items_collection
 
-#endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_OFFLINE_ITEM_H_
+#endif  // COMPONENTS_OFFLINE_ITEMS_COLLECTION_CORE_OFFLINE_ITEM_H_

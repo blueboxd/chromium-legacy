@@ -27,12 +27,12 @@ class TestDownloadShelf : public DownloadShelf {
   bool did_add_download() const { return did_add_download_; }
 
  protected:
-  void DoAddDownload(DownloadUIModelPtr download) override;
+  void DoShowDownload(DownloadUIModel::DownloadUIModelPtr download) override;
   void DoOpen() override;
   void DoClose() override;
   void DoHide() override;
   void DoUnhide() override;
-  base::TimeDelta GetTransientDownloadShowDelay() override;
+  base::TimeDelta GetTransientDownloadShowDelay() const override;
 
  private:
   bool is_showing_;

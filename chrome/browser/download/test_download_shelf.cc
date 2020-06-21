@@ -21,7 +21,8 @@ bool TestDownloadShelf::IsClosing() const {
   return false;
 }
 
-void TestDownloadShelf::DoAddDownload(DownloadUIModelPtr download) {
+void TestDownloadShelf::DoShowDownload(
+    DownloadUIModel::DownloadUIModelPtr download) {
   did_add_download_ = true;
 }
 
@@ -41,6 +42,6 @@ void TestDownloadShelf::DoUnhide() {
   is_showing_ = true;
 }
 
-base::TimeDelta TestDownloadShelf::GetTransientDownloadShowDelay() {
+base::TimeDelta TestDownloadShelf::GetTransientDownloadShowDelay() const {
   return base::TimeDelta();
 }

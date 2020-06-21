@@ -7,11 +7,14 @@ package org.chromium.chrome.browser.download.home.list;
 import android.util.Pair;
 import android.view.View;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.download.home.StableIds;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Date;
 
 /** An abstract class that represents a variety of possible list items to show in downloads home. */
@@ -125,25 +128,45 @@ public abstract class ListItem {
         }
     }
 
+    /**
+     * The type of the section header.
+     */
+    @IntDef({SectionHeaderType.DATE, SectionHeaderType.JUST_NOW, SectionHeaderType.SCHEDULED_LATER})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface SectionHeaderType {
+        int DATE = 0;
+        int JUST_NOW = 1;
+        int SCHEDULED_LATER = 2;
+    }
+
     /** A {@link ListItem} representing a section header. */
     public static class SectionHeaderListItem extends DateListItem {
-        public boolean isJustNow;
+        public @SectionHeaderType int type;
         public boolean showTopDivider;
 
         /**
          * Creates a {@link SectionHeaderListItem} instance for a given {@code timestamp}.
          */
-        public SectionHeaderListItem(long timestamp, boolean isJustNow, boolean showTopDivider) {
-            super(isJustNow ? StableIds.JUST_NOW_SECTION : generateStableId(timestamp),
-                    new Date(timestamp));
-            this.isJustNow = isJustNow;
+        public SectionHeaderListItem(
+                long timestamp, @SectionHeaderType int type, boolean showTopDivider) {
+            super(generateStableId(type, timestamp), new Date(timestamp));
+            this.type = type;
             this.showTopDivider = showTopDivider;
         }
 
         @VisibleForTesting
-        static long generateStableId(long timestamp) {
-            long hash = new Date(timestamp).hashCode();
-            return hash + SECTION_HEADER_HASH_CODE_OFFSET;
+        static long generateStableId(@SectionHeaderType int type, long timestamp) {
+            switch (type) {
+                case SectionHeaderType.DATE:
+                    long hash = new Date(timestamp).hashCode();
+                    return hash + SECTION_HEADER_HASH_CODE_OFFSET;
+                case SectionHeaderType.JUST_NOW:
+                    return StableIds.JUST_NOW_SECTION;
+                case SectionHeaderType.SCHEDULED_LATER:
+                    return StableIds.SCHEDULE_LATER_SECTION;
+            }
+            assert false : "Unknown section header type.";
+            return -1;
         }
     }
 

@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.list.ListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
+import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderType;
 import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.offline_items_collection.OfflineItem;
 
@@ -59,7 +60,7 @@ public class DateLabelAdder implements ListConsumer {
                     mJustNowProvider != null && mJustNowProvider.isJustNowItem(offlineItem);
             if (isJustNow) startOfNewDay = false;
             if (startOfNewDay || justNowSectionsDiffer(offlineItem, previousItem)) {
-                addDateHeader(listItems, offlineItem, i);
+                addSectionHeader(listItems, offlineItem, i);
             }
 
             listItems.add(listItem);
@@ -69,11 +70,13 @@ public class DateLabelAdder implements ListConsumer {
         return listItems;
     }
 
-    private void addDateHeader(List<ListItem> listItems, OfflineItem currentItem, int index) {
+    private void addSectionHeader(List<ListItem> listItems, OfflineItem currentItem, int index) {
         Date day = CalendarUtils.getStartOfDay(currentItem.creationTimeMs).getTime();
         boolean isJustNow = mJustNowProvider != null && mJustNowProvider.isJustNowItem(currentItem);
+        @SectionHeaderType
+        int type = isJustNow ? SectionHeaderType.JUST_NOW : SectionHeaderType.DATE;
         ListItem.SectionHeaderListItem sectionHeaderItem =
-                new ListItem.SectionHeaderListItem(day.getTime(), isJustNow, index != 0);
+                new ListItem.SectionHeaderListItem(day.getTime(), type, index != 0);
         listItems.add(sectionHeaderItem);
     }
 

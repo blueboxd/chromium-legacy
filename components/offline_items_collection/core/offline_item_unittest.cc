@@ -12,14 +12,12 @@ namespace offline_items_collection {
 namespace {
 
 TEST(OfflineItemTest, OfflineItemSchedule) {
-  OfflineItemSchedule schedule(true);
+  OfflineItemSchedule schedule(true, base::nullopt);
   EXPECT_TRUE(schedule.only_on_wifi);
-  schedule = OfflineItemSchedule(false);
-  EXPECT_FALSE(schedule.only_on_wifi);
+  EXPECT_FALSE(schedule.start_time.has_value());
 
-  auto time = base::make_optional(
-      base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromDays(1)));
-  schedule = OfflineItemSchedule(time);
+  base::Time time = base::Time::Now();
+  schedule = OfflineItemSchedule(false, time);
   EXPECT_FALSE(schedule.only_on_wifi);
   EXPECT_EQ(schedule.start_time, time);
 }

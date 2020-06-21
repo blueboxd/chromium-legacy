@@ -4,6 +4,8 @@
 
 #include "components/offline_items_collection/core/offline_item.h"
 
+#include <utility>
+
 namespace offline_items_collection {
 
 // -----------------------------------------------------------------------------
@@ -30,11 +32,9 @@ bool ContentId::operator<(const ContentId& content_id) const {
 
 // -----------------------------------------------------------------------------
 // OfflineItemSchedule.
-OfflineItemSchedule::OfflineItemSchedule(bool only_on_wifi)
-    : only_on_wifi(only_on_wifi) {}
-
-OfflineItemSchedule::OfflineItemSchedule(base::Optional<base::Time> start_time)
-    : only_on_wifi(false), start_time(start_time) {}
+OfflineItemSchedule::OfflineItemSchedule(bool only_on_wifi,
+                                         base::Optional<base::Time> start_time)
+    : only_on_wifi(only_on_wifi), start_time(std::move(start_time)) {}
 
 OfflineItemSchedule::OfflineItemSchedule(const OfflineItemSchedule& other) =
     default;

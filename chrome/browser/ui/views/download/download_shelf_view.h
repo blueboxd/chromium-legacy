@@ -69,7 +69,7 @@ class DownloadShelfView : public DownloadShelf,
 
  protected:
   // DownloadShelf:
-  void DoAddDownload(DownloadUIModel::DownloadUIModelPtr download) override;
+  void DoShowDownload(DownloadUIModel::DownloadUIModelPtr download) override;
   void DoOpen() override;
   void DoClose() override;
   void DoHide() override;
@@ -81,15 +81,6 @@ class DownloadShelfView : public DownloadShelf,
   views::View* GetDefaultFocusableChild() override;
 
  private:
-  // Max number of download views we'll contain. Any time a view is added and
-  // we already have this many download views, one is removed.
-  static constexpr size_t kMaxDownloadViews = 15;
-
-  // Adds a View representing a download to this DownloadShelfView.
-  // DownloadShelfView takes ownership of the View, and will delete it as
-  // necessary.
-  void AddDownloadView(DownloadItemView* view);
-
   // The animation for adding new items to the shelf.
   gfx::SlideAnimation new_item_animation_;
 

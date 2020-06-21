@@ -1061,9 +1061,18 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
   IntSize old_pixel_snapped_border_rect_size =
       PixelSnappedBorderBoxRect().Size();
   SetLocation(location);
+  // TODO(crbug.com/1020913): This is problematic because this function may be
+  // called after layout of this LayoutBox. Changing scroll container size here
+  // will cause inconsistent layout. Also we should be careful not to set
+  // this LayoutBox NeedsLayout. This will be unnecessary when we support
+  // subpixel layout of scrollable area and overflow controls.
   if (PixelSnappedBorderBoxRect().Size() !=
       old_pixel_snapped_border_rect_size) {
+    bool needed_layout = NeedsLayout();
+    PaintLayerScrollableArea::FreezeScrollbarsScope freeze_scrollbar;
     Layer()->UpdateSizeAndScrollingAfterLayout();
+    // The above call should not schedule new NeedsLayout.
+    DCHECK(needed_layout || !NeedsLayout());
   }
 }
 

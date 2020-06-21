@@ -33,8 +33,6 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/animation/animation.h"
 
-using download::DownloadItem;
-
 namespace {
 
 // Delay before we show a transient download.
@@ -42,33 +40,36 @@ const int64_t kDownloadShowDelayInSeconds = 2;
 
 void OnGetDownloadDoneForOfflineItem(
     Profile* profile,
-    base::OnceCallback<void(DownloadUIModelPtr)> callback,
-    const base::Optional<OfflineItem>& offline_item) {
+    base::OnceCallback<void(DownloadUIModel::DownloadUIModelPtr)> callback,
+    const base::Optional<offline_items_collection::OfflineItem>& offline_item) {
   if (!offline_item.has_value())
     return;
 
   OfflineItemModelManager* manager =
       OfflineItemModelManagerFactory::GetForBrowserContext(profile);
-  DownloadUIModelPtr model =
+  DownloadUIModel::DownloadUIModelPtr model =
       OfflineItemModel::Wrap(manager, offline_item.value());
 
   std::move(callback).Run(std::move(model));
 }
 
-void GetDownload(Profile* profile,
-                 ContentId id,
-                 base::OnceCallback<void(DownloadUIModelPtr)> callback) {
+void GetDownload(
+    Profile* profile,
+    const offline_items_collection::ContentId& id,
+    base::OnceCallback<void(DownloadUIModel::DownloadUIModelPtr)> callback) {
   if (OfflineItemUtils::IsDownload(id)) {
     content::DownloadManager* download_manager =
         content::BrowserContext::GetDownloadManager(profile);
     if (!download_manager)
       return;
 
-    DownloadItem* download = download_manager->GetDownloadByGuid(id.id);
+    download::DownloadItem* download =
+        download_manager->GetDownloadByGuid(id.id);
     if (!download)
       return;
 
-    DownloadUIModelPtr model = DownloadItemModel::Wrap(download);
+    DownloadUIModel::DownloadUIModelPtr model =
+        DownloadItemModel::Wrap(download);
     std::move(callback).Run(std::move(model));
   } else {
     offline_items_collection::OfflineContentAggregator* aggregator =
@@ -91,7 +92,7 @@ DownloadShelf::DownloadShelf(Browser* browser, Profile* profile)
 
 DownloadShelf::~DownloadShelf() {}
 
-void DownloadShelf::AddDownload(DownloadUIModelPtr model) {
+void DownloadShelf::AddDownload(DownloadUIModel::DownloadUIModelPtr model) {
   DCHECK(model);
   if (model->ShouldRemoveFromShelfWhenComplete()) {
     // If we are going to remove the download from the shelf upon completion,
@@ -141,12 +142,12 @@ void DownloadShelf::Unhide() {
   }
 }
 
-base::TimeDelta DownloadShelf::GetTransientDownloadShowDelay() {
+base::TimeDelta DownloadShelf::GetTransientDownloadShowDelay() const {
   return base::TimeDelta::FromSeconds(kDownloadShowDelayInSeconds);
 }
 
-void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
-  if (download->GetState() == DownloadItem::COMPLETE &&
+void DownloadShelf::ShowDownload(DownloadUIModel::DownloadUIModelPtr download) {
+  if (download->GetState() == download::DownloadItem::COMPLETE &&
       download->ShouldRemoveFromShelfWhenComplete())
     return;
 
@@ -160,7 +161,7 @@ void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
   if (is_hidden_)
     Unhide();
   Open();
-  DoAddDownload(std::move(download));
+  DoShowDownload(std::move(download));
 
   // browser_ can be null for tests.
   if (!browser_)
@@ -181,7 +182,8 @@ void DownloadShelf::ShowDownload(DownloadUIModelPtr download) {
   }
 }
 
-void DownloadShelf::ShowDownloadById(ContentId id) {
+void DownloadShelf::ShowDownloadById(
+    const offline_items_collection::ContentId& id) {
   GetDownload(profile_, id,
               base::BindOnce(&DownloadShelf::ShowDownload,
                              weak_ptr_factory_.GetWeakPtr()));

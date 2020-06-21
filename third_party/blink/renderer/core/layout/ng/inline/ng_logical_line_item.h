@@ -71,6 +71,8 @@ struct NGLogicalLineItem {
                     UBiDiLevel bidi_level)
       : inline_item(&inline_item),
         shape_result(std::move(shape_result)),
+        text_offset(
+            {this->shape_result->StartIndex(), this->shape_result->EndIndex()}),
         text_content(text_content),
         rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
         inline_size(inline_size),

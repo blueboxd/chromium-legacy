@@ -11214,7 +11214,7 @@
 
       If one feature in this policy is set to True, it will be enabled for the on-screen keyboard.
 
-      If one feature is set to False or left unset, it will be disabled for the non-screen keyboard.
+      If one feature in this policy is set to False or left unset, it will be disabled for the on-screen keyboard.
 
       NOTE: this policy is only supported in PWA Kiosk mode.'''
     },

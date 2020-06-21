@@ -40,7 +40,7 @@ class TileCoordinatorImpl implements ImageTileCoordinator {
         for (int i = 0; i < mModel.size(); i++) {
             oldTiles.add(mModel.get(i));
         }
-        boolean shouldAnimate = !oldTiles.isEmpty() && !oldTiles.equals(tiles);
+        boolean shouldAnimate = !oldTiles.isEmpty() && !tiles.isEmpty() && !oldTiles.equals(tiles);
 
         mModel.set(tiles);
         mView.scrollToBeginning();

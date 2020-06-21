@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 
@@ -58,7 +60,7 @@ class TileListView {
         mView.setItemAnimator(null);
         mLayoutAnimationController =
                 AnimationUtils.loadLayoutAnimation(context, R.anim.image_grid_enter);
-
+        configureAnimationListener();
         mTileSizeSupplier = new TileSizeSupplier(context);
 
         PropertyModelChangeProcessor.create(
@@ -86,7 +88,25 @@ class TileListView {
      * Called to show enter animation for the list items.
      */
     void showAnimation(boolean animate) {
-        // TODO(shaktisahu): Fix animations.
+        if (animate) {
+            mView.setLayoutAnimation(mLayoutAnimationController);
+            mView.scheduleLayoutAnimation();
+        }
+    }
+
+    private void configureAnimationListener() {
+        mView.setLayoutAnimationListener(new AnimationListener() {
+            @Override
+            public void onAnimationStart(Animation animation) {}
+
+            @Override
+            public void onAnimationEnd(Animation animation) {
+                mView.setLayoutAnimation(null);
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation animation) {}
+        });
     }
 
     private class ItemDecorationImpl extends ItemDecoration {

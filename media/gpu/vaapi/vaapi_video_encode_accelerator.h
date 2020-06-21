@@ -149,6 +149,11 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // Submits a H264BitstreamBuffer |buffer| to the driver.
   void SubmitH264BitstreamBuffer(scoped_refptr<H264BitstreamBuffer> buffer);
 
+  // Gets the encoded chunk size whose id is |buffer_id| and notifies |encoder_|
+  // the size.
+  void NotifyEncodedChunkSize(VABufferID buffer_id,
+                              VASurfaceID sync_surface_id);
+
   bool IsConfiguredForTesting() const {
     return !supported_profiles_for_testing_.empty();
   }

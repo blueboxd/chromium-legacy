@@ -172,10 +172,10 @@ For example, adding a test to `chrome_junit_tests` requires to update
 ninja -C out/Default chrome_junit_tests
 
 # Run the test suite.
-out/Default/run_chrome_junit_tests
+out/Default/bin/run_chrome_junit_tests
 
 # Run a subset of tests. You might need to pass the package name for some tests.
-out/Default/run_chrome_junit_tests -f "org.chromium.chrome.browser.media.*"
+out/Default/bin/run_chrome_junit_tests -f "org.chromium.chrome.browser.media.*"
 ```
 
 ### Debugging

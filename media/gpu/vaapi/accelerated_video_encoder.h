@@ -82,6 +82,12 @@ class AcceleratedVideoEncoder {
     // is executed.
     void AddSetupCallback(base::OnceClosure cb);
 
+    // Schedules a callback to be run immediately after this job is executed.
+    // Can be called multiple times to schedule multiple callbacks, and all
+    // of them will be run, in order added. Callbacks can be used to e.g. get
+    // the encoded buffer linear size.
+    void AddPostExecuteCallback(base::OnceClosure cb);
+
     // Adds |ref_pic| to the list of pictures to be used as reference pictures
     // for this frame, to ensure they remain valid until the job is executed
     // (or discarded).
@@ -124,6 +130,10 @@ class AcceleratedVideoEncoder {
     // Callbacks to be run (in the same order as the order of AddSetupCallback()
     // calls) to set up the job.
     base::queue<base::OnceClosure> setup_callbacks_;
+
+    // Callbacks to be run (in the same order as the order of
+    // AddPostExecuteCallback() calls) to do post processing after execute.
+    base::queue<base::OnceClosure> post_execute_callbacks_;
 
     // Callback to be run to execute this job.
     base::OnceClosure execute_callback_;

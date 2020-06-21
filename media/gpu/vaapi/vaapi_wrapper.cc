@@ -1985,6 +1985,28 @@ bool VaapiWrapper::CreateVABuffer(size_t size, VABufferID* buffer_id) {
   return true;
 }
 
+uint64_t VaapiWrapper::GetEncodedChunkSize(VABufferID buffer_id,
+                                           VASurfaceID sync_surface_id) {
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::GetEncodedChunkSize");
+  base::AutoLock auto_lock(*va_lock_);
+  TRACE_EVENT0("media,gpu", "VaapiWrapper::GetEncodedChunkSizeLocked");
+  VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
+  VA_SUCCESS_OR_RETURN(va_res, "vaSyncSurface", 0u);
+
+  ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
+  if (!mapping.IsValid())
+    return 0u;
+
+  uint64_t coded_data_size = 0;
+  for (auto* buffer_segment =
+           reinterpret_cast<VACodedBufferSegment*>(mapping.data());
+       buffer_segment; buffer_segment = reinterpret_cast<VACodedBufferSegment*>(
+                           buffer_segment->next)) {
+    coded_data_size += buffer_segment->size;
+  }
+  return coded_data_size;
+}
+
 bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
                                         VASurfaceID sync_surface_id,
                                         uint8_t* target_ptr,
@@ -2019,13 +2041,11 @@ bool VaapiWrapper::DownloadFromVABuffer(VABufferID buffer_id,
                    << ", the buffer segment size: " << buffer_segment->size;
         break;
       }
-
       memcpy(target_ptr, buffer_segment->buf, buffer_segment->size);
 
       target_ptr += buffer_segment->size;
-      *coded_data_size += buffer_segment->size;
       target_size -= buffer_segment->size;
-
+      *coded_data_size += buffer_segment->size;
       buffer_segment =
           reinterpret_cast<VACodedBufferSegment*>(buffer_segment->next);
     }

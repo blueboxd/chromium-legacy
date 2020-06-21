@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "ash/ambient/ambient_controller.h"
+#include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
+#include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "base/base64.h"
@@ -175,8 +177,6 @@ AmbientBackendControllerImpl::~AmbientBackendControllerImpl() = default;
 void AmbientBackendControllerImpl::FetchScreenUpdateInfo(
     int num_topics,
     OnScreenUpdateInfoFetchedCallback callback) {
-  // Consolidate the functions of FetchScreenUpdateInfoInternal,
-  // StartToGetSettings, and StartToUpdateSettings after this is done.
   Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal,
       weak_factory_.GetWeakPtr(), num_topics, std::move(callback)));
@@ -189,11 +189,11 @@ void AmbientBackendControllerImpl::GetSettings(GetSettingsCallback callback) {
 }
 
 void AmbientBackendControllerImpl::UpdateSettings(
-    AmbientModeTopicSource topic_source,
+    const AmbientSettings& settings,
     UpdateSettingsCallback callback) {
   Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::StartToUpdateSettings,
-      weak_factory_.GetWeakPtr(), topic_source, std::move(callback)));
+      weak_factory_.GetWeakPtr(), settings, std::move(callback)));
 }
 
 void AmbientBackendControllerImpl::SetPhotoRefreshInterval(
@@ -278,15 +278,16 @@ void AmbientBackendControllerImpl::OnGetSettings(
     std::unique_ptr<std::string> response) {
   DCHECK(backdrop_url_loader);
 
-  int topic_source = BackdropClientConfig::ParseGetSettingsResponse(*response);
-  if (topic_source == -1)
+  auto settings = BackdropClientConfig::ParseGetSettingsResponse(*response);
+  // |art_settings| should not be empty if parsed successfully.
+  if (settings.art_settings.empty())
     std::move(callback).Run(base::nullopt);
   else
-    std::move(callback).Run(static_cast<AmbientModeTopicSource>(topic_source));
+    std::move(callback).Run(settings);
 }
 
 void AmbientBackendControllerImpl::StartToUpdateSettings(
-    AmbientModeTopicSource topic_source,
+    const AmbientSettings& settings,
     UpdateSettingsCallback callback,
     const std::string& gaia_id,
     const std::string& access_token) {
@@ -297,8 +298,8 @@ void AmbientBackendControllerImpl::StartToUpdateSettings(
 
   std::string client_id = GetClientId();
   BackdropClientConfig::Request request =
-      backdrop_client_config_.CreateUpdateSettingsRequest(
-          gaia_id, access_token, client_id, static_cast<int>(topic_source));
+      backdrop_client_config_.CreateUpdateSettingsRequest(gaia_id, access_token,
+                                                          client_id, settings);
   auto resource_request = CreateResourceRequest(request);
 
   auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();

@@ -337,7 +337,7 @@ QUIC_FLAG(
     true)
 
 // If true, support for IETF QUIC 0-rtt is enabled.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_zero_rtt_for_tls, true)
 
 // If true, default on PTO which unifies TLP + RTO loss recovery.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_on_pto, false)
@@ -448,9 +448,7 @@ QUIC_FLAG(bool,
 
 // If true, remove the head of line blocking caused by an unprocessable packet
 // in the undecryptable packets list.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_fix_undecryptable_packets,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_undecryptable_packets, true)
 
 // If true, QUIC client only tries to retransmit data when 1-RTT key is
 // available.
@@ -467,3 +465,7 @@ QUIC_FLAG(bool,
 // If true, do not use QuicUtil::IsBidirectionalStreamId() to determine gQUIC
 // stream type.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_gquic_stream_type, true)
+
+// When true, do not pad the QUIC_CRYPTO CHLO message itself. Note that the
+// packet containing the CHLO will still be padded.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_dont_pad_chlo, false)

@@ -249,6 +249,15 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
+                       CrossOriginDocumentFromOpaqueOrigin) {
+  // Prefetching as=document from a data: URL does not crash the renderer.
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      GURL("data:text/html,<title>Data URL Prefetch Target</title><link "
+           "rel=prefetch as=document href=https://google.com>")));
+}
+
+IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest,
                        CrossOriginDocumentNotReusedAsNestedFrameNavigation) {
   // This test is relevant only with SplitCache.
   // TODO(crbug.com/910708): Remove this early-return when SplitCache is enabled

@@ -373,8 +373,10 @@ const struct QuicErrorMapping {
      "quic.zero_rtt_rejection_limit_reduced"},
     {quic::QUIC_ZERO_RTT_RESUMPTION_LIMIT_REDUCED,
      "quic.zero_rtt_resumption_limit_reduced"},
-    {quic::QUIC_HTTP_ZERO_RTT_SETTINGS_MISMATCH,
-     "quic.http_zero_rtt_settings_mismatch"},
+    {quic::QUIC_HTTP_ZERO_RTT_RESUMPTION_SETTINGS_MISMATCH,
+     "quic.http_zero_rtt_resumption_settings_mismatch"},
+    {quic::QUIC_HTTP_ZERO_RTT_REJECTION_SETTINGS_MISMATCH,
+     "quic.http_zero_rtt_rejection_settings_mismatch"},
 
     // QUIC_INVALID_APPLICATION_CLOSE_DATA was code 101. The code has been
     // deprecated, but to keep the assert below happy, there needs to be

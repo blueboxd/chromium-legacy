@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/ambient_mode_handler.h"
 
+#include "ash/public/cpp/ambient/ambient_backend_controller.h"
+#include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -28,8 +30,11 @@ void AmbientModeHandler::RegisterMessages() {
 }
 
 void AmbientModeHandler::OnJavascriptAllowed() {
-  if (topic_source_.has_value())
-    SendTopicSource();
+  GetSettings();
+}
+
+void AmbientModeHandler::OnJavascriptDisallowed() {
+  weak_factory_.InvalidateWeakPtrs();
 }
 
 void AmbientModeHandler::HandleInitialized(const base::ListValue* args) {
@@ -37,7 +42,6 @@ void AmbientModeHandler::HandleInitialized(const base::ListValue* args) {
   CHECK(args->empty());
 
   AllowJavascript();
-  GetSettings();
 }
 
 void AmbientModeHandler::HandleTopicSourceSelectedChanged(
@@ -60,32 +64,30 @@ void AmbientModeHandler::GetSettings() {
 }
 
 void AmbientModeHandler::OnGetSettings(
-    base::Optional<ash::AmbientModeTopicSource> topic_source) {
-  if (!topic_source.has_value()) {
+    const base::Optional<ash::AmbientSettings>& settings) {
+  if (!settings) {
     // TODO(b/152921891): Retry a small fixed number of times, then only retry
     // when user confirms in the error message dialog.
     return;
   }
 
-  topic_source_ = topic_source;
-  if (!IsJavascriptAllowed())
-    return;
-
+  settings_ = settings;
   SendTopicSource();
 }
 
 void AmbientModeHandler::SendTopicSource() {
+  DCHECK(settings_);
   FireWebUIListener("topic-source-changed",
-                    base::Value(
-
-                        static_cast<int>(topic_source_.value())));
+                    base::Value(static_cast<int>(settings_->topic_source)));
 }
 
 void AmbientModeHandler::UpdateSettings(
     ash::AmbientModeTopicSource topic_source) {
+  DCHECK(settings_);
+  settings_->topic_source = topic_source;
   ash::AmbientBackendController::Get()->UpdateSettings(
-      topic_source, base::BindOnce(&AmbientModeHandler::OnUpdateSettings,
-                                   weak_factory_.GetWeakPtr(), topic_source));
+      *settings_, base::BindOnce(&AmbientModeHandler::OnUpdateSettings,
+                                 weak_factory_.GetWeakPtr(), topic_source));
 }
 
 void AmbientModeHandler::OnUpdateSettings(

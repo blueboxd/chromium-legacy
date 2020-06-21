@@ -29,7 +29,7 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
       int num_topics,
       OnScreenUpdateInfoFetchedCallback callback) override;
   void GetSettings(GetSettingsCallback callback) override;
-  void UpdateSettings(AmbientModeTopicSource topic_source,
+  void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
   void SetPhotoRefreshInterval(base::TimeDelta interval) override;
 
@@ -55,7 +55,7 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
                      std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
                      std::unique_ptr<std::string> response);
 
-  void StartToUpdateSettings(AmbientModeTopicSource topic_source,
+  void StartToUpdateSettings(const AmbientSettings& settings,
                              UpdateSettingsCallback callback,
                              const std::string& gaia_id,
                              const std::string& access_token);

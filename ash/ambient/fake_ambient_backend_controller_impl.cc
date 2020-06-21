@@ -45,14 +45,15 @@ void FakeAmbientBackendControllerImpl::FetchScreenUpdateInfo(
 
 void FakeAmbientBackendControllerImpl::GetSettings(
     GetSettingsCallback callback) {
+  AmbientSettings settings;
+  settings.topic_source = kTopicSource;
   // Pretend to respond asynchronously.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback), base::make_optional(kTopicSource)));
+      FROM_HERE, base::BindOnce(std::move(callback), settings));
 }
 
 void FakeAmbientBackendControllerImpl::UpdateSettings(
-    AmbientModeTopicSource topic_source,
+    const AmbientSettings& settings,
     UpdateSettingsCallback callback) {
   // Pretend to respond asynchronously.
   base::SequencedTaskRunnerHandle::Get()->PostTask(

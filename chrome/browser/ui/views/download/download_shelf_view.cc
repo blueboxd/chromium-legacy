@@ -42,8 +42,19 @@ using download::DownloadItem;
 
 namespace {
 
+// TODO(pkasting): Replace these with LayoutProvider constants
+
 // Padding above the content.
 constexpr int kTopPadding = 1;
+
+// Padding from left edge and first download view.
+constexpr int kStartPadding = 4;
+
+// Padding from right edge and close button/show downloads link.
+constexpr int kEndPadding = 6;
+
+// Padding between the show all link and close button.
+constexpr int kCloseAndLinkPadding = 6;
 
 // Sets size->width() to view's preferred width + size->width().
 // Sets size->height() to the max of the view's preferred height and
@@ -61,8 +72,8 @@ int CenterPosition(int size, int target_size) {
 }  // namespace
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
-    : AnimationDelegateViews(this),
-      DownloadShelf(browser, browser->profile()),
+    : DownloadShelf(browser, browser->profile()),
+      AnimationDelegateViews(this),
       new_item_animation_(this),
       shelf_animation_(this),
       parent_(parent),
@@ -108,86 +119,12 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
 
 DownloadShelfView::~DownloadShelfView() = default;
 
-void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
-  mouse_watcher_.Stop();
-
-  DCHECK(view);
-  const bool was_empty = download_views_.empty();
-  download_views_.push_back(view);
-
-  // Insert the new view as the first child, so the logical child order matches
-  // the visual order.  This ensures that tabbing through downloads happens in
-  // the order users would expect.
-  AddChildViewAt(view, 0);
-  if (download_views_.size() > kMaxDownloadViews)
-    RemoveDownloadView(*download_views_.begin());
-
-  new_item_animation_.Reset();
-  new_item_animation_.Show();
-  if (was_empty && !shelf_animation_.is_animating() && GetVisible()) {
-    // Force a re-layout of the parent to adjust height of shelf properly.
-    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
-  }
+bool DownloadShelfView::IsShowing() const {
+  return GetVisible() && shelf_animation_.IsShowing();
 }
 
-void DownloadShelfView::DoAddDownload(
-    DownloadUIModel::DownloadUIModelPtr download) {
-  AddDownloadView(
-      new DownloadItemView(std::move(download), this, accessible_alert_));
-}
-
-void DownloadShelfView::MouseMovedOutOfHost() {
-  Close();
-}
-
-void DownloadShelfView::RemoveDownloadView(View* view) {
-  DCHECK(view);
-  auto i = find(download_views_.begin(), download_views_.end(), view);
-  DCHECK(i != download_views_.end());
-  download_views_.erase(i);
-  RemoveChildView(view);
-  delete view;
-  if (download_views_.empty())
-    Close();
-  else if (CanAutoClose())
-    mouse_watcher_.Start(GetWidget()->GetNativeWindow());
-  Layout();
-  SchedulePaint();
-}
-
-void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
-  DCHECK(GetThemeProvider());
-
-  button->SetEnabledTextColors(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
-  // For the normal theme, just use the default button bg color.
-  base::Optional<SkColor> bg_color;
-  if (!ThemeServiceFactory::GetForProfile(profile())->UsingDefaultTheme()) {
-    // For custom themes, we have to make up a background color for the
-    // button. Use a slight tint of the shelf background.
-    bg_color = color_utils::BlendTowardMaxContrast(
-        GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF),
-        0x10);
-  }
-  button->SetBgColorOverride(bg_color);
-}
-
-views::View* DownloadShelfView::GetDefaultFocusableChild() {
-  if (!download_views_.empty())
-    return download_views_.back();
-
-  return show_all_view_;
-}
-
-void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
-  canvas->FillRect(gfx::Rect(0, 0, width(), 1),
-                   GetThemeProvider()->GetColor(
-                       ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR));
-}
-
-void DownloadShelfView::OpenedDownload() {
-  if (CanAutoClose())
-    mouse_watcher_.Start(GetWidget()->GetNativeWindow());
+bool DownloadShelfView::IsClosing() const {
+  return shelf_animation_.IsClosing();
 }
 
 gfx::Size DownloadShelfView::CalculatePreferredSize() const {
@@ -206,44 +143,23 @@ gfx::Size DownloadShelfView::CalculatePreferredSize() const {
   return prefsize;
 }
 
-void DownloadShelfView::AnimationProgressed(const gfx::Animation* animation) {
-  if (animation == &new_item_animation_) {
-    Layout();
-    SchedulePaint();
-  } else if (animation == &shelf_animation_) {
-    // Force a re-layout of the parent, which will call back into
-    // GetPreferredSize, where we will do our animation. In the case where the
-    // animation is hiding, we do a full resize - the fast resizing would
-    // otherwise leave blank white areas where the shelf was and where the
-    // user's eye is. Thankfully bottom-resizing is a lot faster than
-    // top-resizing.
-    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
-  }
-}
-
-void DownloadShelfView::AnimationEnded(const gfx::Animation *animation) {
-  if (animation == &shelf_animation_) {
-    parent_->SetDownloadShelfVisible(shelf_animation_.IsShowing());
-    if (!shelf_animation_.IsShowing())
-      Closed();
-  }
-}
-
 void DownloadShelfView::Layout() {
   // Let our base class layout our child views
   views::View::Layout();
-
-  // If there is not enough room to show the first download item, show the
-  // "Show all downloads" link to the left to make it more visible that there is
-  // something to see.
-  bool show_link_only = !CanFitFirstDownloadItem();
 
   gfx::Size close_button_size = close_button_->GetPreferredSize();
   gfx::Size show_all_size = show_all_view_->GetPreferredSize();
   int max_download_x =
       std::max<int>(0, width() - kEndPadding - close_button_size.width() -
                            kCloseAndLinkPadding - show_all_size.width());
+  // If there is not enough room to show the first download item, show the
+  // "Show all downloads" link to the left to make it more visible that there is
+  // something to see.
+  bool show_link_only = !download_views_.empty() &&
+                        (download_views_.back()->GetPreferredSize().width() >
+                         (max_download_x - kStartPadding));
   int next_x = show_link_only ? kStartPadding : max_download_x;
+
   show_all_view_->SetBounds(next_x,
                             CenterPosition(show_all_size.height(), height()),
                             show_all_size.width(),
@@ -285,94 +201,33 @@ void DownloadShelfView::Layout() {
   }
 }
 
-bool DownloadShelfView::CanFitFirstDownloadItem() {
-  if (download_views_.empty())
-    return true;
-
-  gfx::Size close_button_size = close_button_->GetPreferredSize();
-  gfx::Size show_all_size = show_all_view_->GetPreferredSize();
-
-  // Let's compute the width available for download items, which is the width
-  // of the shelf minus the "Show all downloads" link, arrow and close button
-  // and the padding.
-  int available_width = width() - kEndPadding - close_button_size.width() -
-                        kCloseAndLinkPadding - show_all_size.width() -
-                        kStartPadding;
-  if (available_width <= 0)
-    return false;
-
-  gfx::Size item_size = (*download_views_.rbegin())->GetPreferredSize();
-  return item_size.width() < available_width;
+void DownloadShelfView::AnimationProgressed(const gfx::Animation* animation) {
+  if (animation == &new_item_animation_) {
+    Layout();
+    SchedulePaint();
+  } else if (animation == &shelf_animation_) {
+    // Force a re-layout of the parent, which will call back into
+    // GetPreferredSize, where we will do our animation. In the case where the
+    // animation is hiding, we do a full resize - the fast resizing would
+    // otherwise leave blank white areas where the shelf was and where the
+    // user's eye is. Thankfully bottom-resizing is a lot faster than
+    // top-resizing.
+    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
+  }
 }
 
-void DownloadShelfView::UpdateColorsFromTheme() {
-  if (!GetThemeProvider())
+void DownloadShelfView::AnimationEnded(const gfx::Animation* animation) {
+  if (animation != &shelf_animation_)
     return;
 
-  ConfigureButtonForTheme(show_all_view_);
+  const bool shown = shelf_animation_.IsShowing();
+  parent_->SetDownloadShelfVisible(shown);
 
-  SetBackground(views::CreateSolidBackground(
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF)));
-
-  views::SetImageFromVectorIcon(
-      close_button_, vector_icons::kCloseRoundedIcon,
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
-}
-
-void DownloadShelfView::AddedToWidget() {
-  UpdateColorsFromTheme();
-}
-
-void DownloadShelfView::OnThemeChanged() {
-  views::AccessiblePaneView::OnThemeChanged();
-  UpdateColorsFromTheme();
-}
-
-void DownloadShelfView::ButtonPressed(
-    views::Button* button, const ui::Event& event) {
-  if (button == close_button_)
-    Close();
-  else if (button == show_all_view_)
-    chrome::ShowDownloads(browser());
-  else
-    NOTREACHED();
-}
-
-bool DownloadShelfView::IsShowing() const {
-  return GetVisible() && shelf_animation_.IsShowing();
-}
-
-bool DownloadShelfView::IsClosing() const {
-  return shelf_animation_.IsClosing();
-}
-
-void DownloadShelfView::DoOpen() {
-  SetVisible(true);
-  shelf_animation_.Show();
-}
-
-void DownloadShelfView::DoClose() {
-  parent_->SetDownloadShelfVisible(false);
-  shelf_animation_.Hide();
-}
-
-void DownloadShelfView::DoHide() {
-  SetVisible(false);
-  parent_->ToolbarSizeChanged(false);
-  parent_->SetDownloadShelfVisible(false);
-}
-
-void DownloadShelfView::DoUnhide() {
-  SetVisible(true);
-  parent_->ToolbarSizeChanged(true);
-  parent_->SetDownloadShelfVisible(true);
-}
-
-void DownloadShelfView::Closed() {
-  // Don't remove completed downloads if the shelf is just being auto-hidden
-  // rather than explicitly closed by the user.
-  if (is_hidden())
+  // If the shelf was explicitly closed by the user, there are further steps to
+  // take to complete closing.
+  if (shown || is_hidden())
     return;
+
   // When the close animation is complete, remove all completed downloads.
   size_t i = 0;
   while (i < download_views_.size()) {
@@ -397,16 +252,136 @@ void DownloadShelfView::Closed() {
   // AccessiblePaneView::SetVisible or FocusManager to make this unnecessary.
   auto* focus_manager = GetFocusManager();
   if (focus_manager && Contains(focus_manager->GetFocusedView())) {
-    get_parent()->contents_web_view()->RequestFocus();
+    parent_->contents_web_view()->RequestFocus();
   }
 
   SetVisible(false);
 }
 
-bool DownloadShelfView::CanAutoClose() {
-  for (size_t i = 0; i < download_views_.size(); ++i) {
-    if (!download_views_[i]->model()->GetOpened())
-      return false;
+void DownloadShelfView::ButtonPressed(
+    views::Button* button, const ui::Event& event) {
+  if (button == close_button_)
+    Close();
+  else if (button == show_all_view_)
+    chrome::ShowDownloads(browser());
+  else
+    NOTREACHED();
+}
+
+void DownloadShelfView::MouseMovedOutOfHost() {
+  Close();
+}
+
+void DownloadShelfView::AutoClose() {
+  if (std::all_of(download_views_.cbegin(), download_views_.cend(),
+                  [](const auto* view) { return view->model()->GetOpened(); }))
+    mouse_watcher_.Start(GetWidget()->GetNativeWindow());
+}
+
+void DownloadShelfView::RemoveDownloadView(View* view) {
+  DCHECK(view);
+  auto i = find(download_views_.begin(), download_views_.end(), view);
+  DCHECK(i != download_views_.end());
+  download_views_.erase(i);
+  RemoveChildView(view);
+  delete view;
+  if (download_views_.empty())
+    Close();
+  else
+    AutoClose();
+  Layout();
+  SchedulePaint();
+}
+
+void DownloadShelfView::ConfigureButtonForTheme(views::MdTextButton* button) {
+  DCHECK(GetThemeProvider());
+
+  button->SetEnabledTextColors(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+  // For the normal theme, just use the default button bg color.
+  base::Optional<SkColor> bg_color;
+  if (!ThemeServiceFactory::GetForProfile(profile())->UsingDefaultTheme()) {
+    // For custom themes, we have to make up a background color for the
+    // button. Use a slight tint of the shelf background.
+    bg_color = color_utils::BlendTowardMaxContrast(
+        GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF),
+        0x10);
   }
-  return true;
+  button->SetBgColorOverride(bg_color);
+}
+
+void DownloadShelfView::DoAddDownload(
+    DownloadUIModel::DownloadUIModelPtr download) {
+  AddDownloadView(
+      new DownloadItemView(std::move(download), this, accessible_alert_));
+}
+
+void DownloadShelfView::DoOpen() {
+  SetVisible(true);
+  shelf_animation_.Show();
+}
+
+void DownloadShelfView::DoClose() {
+  parent_->SetDownloadShelfVisible(false);
+  shelf_animation_.Hide();
+}
+
+void DownloadShelfView::DoHide() {
+  SetVisible(false);
+  parent_->ToolbarSizeChanged(false);
+  parent_->SetDownloadShelfVisible(false);
+}
+
+void DownloadShelfView::DoUnhide() {
+  SetVisible(true);
+  parent_->ToolbarSizeChanged(true);
+  parent_->SetDownloadShelfVisible(true);
+}
+
+void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
+  canvas->FillRect(gfx::Rect(0, 0, width(), 1),
+                   GetThemeProvider()->GetColor(
+                       ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR));
+}
+
+void DownloadShelfView::OnThemeChanged() {
+  views::AccessiblePaneView::OnThemeChanged();
+
+  ConfigureButtonForTheme(show_all_view_);
+
+  SetBackground(views::CreateSolidBackground(
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF)));
+
+  views::SetImageFromVectorIcon(
+      close_button_, vector_icons::kCloseRoundedIcon,
+      GetThemeProvider()->GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT));
+}
+
+views::View* DownloadShelfView::GetDefaultFocusableChild() {
+  if (!download_views_.empty())
+    return download_views_.back();
+
+  return show_all_view_;
+}
+
+void DownloadShelfView::AddDownloadView(DownloadItemView* view) {
+  mouse_watcher_.Stop();
+
+  DCHECK(view);
+  const bool was_empty = download_views_.empty();
+  download_views_.push_back(view);
+
+  // Insert the new view as the first child, so the logical child order matches
+  // the visual order.  This ensures that tabbing through downloads happens in
+  // the order users would expect.
+  AddChildViewAt(view, 0);
+  if (download_views_.size() > kMaxDownloadViews)
+    RemoveDownloadView(*download_views_.begin());
+
+  new_item_animation_.Reset();
+  new_item_animation_.Show();
+  if (was_empty && !shelf_animation_.is_animating() && GetVisible()) {
+    // Force a re-layout of the parent to adjust height of shelf properly.
+    parent_->ToolbarSizeChanged(shelf_animation_.IsShowing());
+  }
 }

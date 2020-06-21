@@ -25,15 +25,6 @@ class DownloadShelf {
   DownloadShelf(Browser* browser, Profile* profile);
   virtual ~DownloadShelf();
 
-  // A new download has started. Add it to our shelf and show the download
-  // started animation.
-  //
-  // Some downloads are removed from the shelf on completion (See
-  // DownloadItemModel::ShouldRemoveFromShelfWhenComplete()). These transient
-  // downloads are added to the shelf after a delay. If the download completes
-  // before the delay duration, it will not be added to the shelf at all.
-  void AddDownload(DownloadUIModelPtr download);
-
   // The browser view needs to know when we are going away to properly return
   // the resize corner size to WebKit so that we don't draw on top of it.
   // This returns the showing state of our animation which is set to true at
@@ -42,6 +33,15 @@ class DownloadShelf {
 
   // Returns whether the download shelf is showing the close animation.
   virtual bool IsClosing() const = 0;
+
+  // A new download has started. Add it to our shelf and show the download
+  // started animation.
+  //
+  // Some downloads are removed from the shelf on completion (See
+  // DownloadItemModel::ShouldRemoveFromShelfWhenComplete()). These transient
+  // downloads are added to the shelf after a delay. If the download completes
+  // before the delay duration, it will not be added to the shelf at all.
+  void AddDownload(DownloadUIModelPtr download);
 
   // Opens the shelf.
   void Open();

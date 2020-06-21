@@ -23,7 +23,7 @@ class ASH_EXPORT FakeAmbientBackendControllerImpl
       int num_topics,
       OnScreenUpdateInfoFetchedCallback callback) override;
   void GetSettings(GetSettingsCallback callback) override;
-  void UpdateSettings(AmbientModeTopicSource topic_source,
+  void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
   void SetPhotoRefreshInterval(base::TimeDelta interval) override;
 

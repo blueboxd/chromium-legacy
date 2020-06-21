@@ -1382,7 +1382,7 @@ bool QuicChromiumClientSession::ShouldCreateIncomingStream(
   if (quic::QuicUtils::IsClientInitiatedStreamId(
           connection()->transport_version(), id) ||
       (connection()->version().HasIetfQuicFrames() &&
-       quic::QuicUtils::IsBidirectionalStreamId(id))) {
+       quic::QuicUtils::IsBidirectionalStreamId(id, connection()->version()))) {
     LOG(WARNING) << "Received invalid push stream id " << id;
     connection()->CloseConnection(
         quic::QUIC_INVALID_STREAM_ID,

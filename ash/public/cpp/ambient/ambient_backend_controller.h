@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/optional.h"
@@ -17,16 +18,6 @@ class TimeDelta;
 }  // namespace base
 
 namespace ash {
-
-// Enumeration of the topic source, i.e. where the photos come from.
-// Values need to stay in sync with the |topicSource_| in ambient_mode_page.js.
-// Art gallery is a super set of art related topic sources in Backdrop service.
-enum class AmbientModeTopicSource {
-  kMinValue = 0,
-  kGooglePhotos = kMinValue,
-  kArtGallery = 1,
-  kMaxValue = kArtGallery
-};
 
 // AmbientModeTopic contains the information we need for rendering photo frame
 // for Ambient Mode. Corresponding to the |backdrop::ScreenUpdate::Topic| proto.
@@ -86,8 +77,8 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
  public:
   using OnScreenUpdateInfoFetchedCallback =
       base::OnceCallback<void(const ScreenUpdate&)>;
-  using GetSettingsCallback = base::OnceCallback<void(
-      base::Optional<AmbientModeTopicSource> topic_source)>;
+  using GetSettingsCallback =
+      base::OnceCallback<void(const base::Optional<AmbientSettings>& settings)>;
   using UpdateSettingsCallback = base::OnceCallback<void(bool success)>;
 
   static AmbientBackendController* Get();
@@ -107,12 +98,10 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
       OnScreenUpdateInfoFetchedCallback callback) = 0;
 
   // Get ambient mode Settings from server.
-  // Currently only return the AmbientModeTopicSource.
   virtual void GetSettings(GetSettingsCallback callback) = 0;
 
   // Update ambient mode Settings to server.
-  // Currently only updating the AmbientModeTopicSource.
-  virtual void UpdateSettings(AmbientModeTopicSource topic_source,
+  virtual void UpdateSettings(const AmbientSettings& settings,
                               UpdateSettingsCallback callback) = 0;
 
   // Set the photo refresh interval in ambient mode.

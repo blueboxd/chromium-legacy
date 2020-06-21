@@ -5,11 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_DOWNLOAD_DOWNLOAD_SHELF_VIEW_H_
 
-#include <stddef.h>
-
 #include <vector>
 
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -32,39 +29,36 @@ class MdTextButton;
 //
 // DownloadShelfView does not hold an infinite number of download views, rather
 // it'll automatically remove views once a certain point is reached.
-class DownloadShelfView : public views::AccessiblePaneView,
+class DownloadShelfView : public DownloadShelf,
+                          public views::AccessiblePaneView,
                           public views::AnimationDelegateViews,
-                          public DownloadShelf,
                           public views::ButtonListener,
                           public views::MouseWatcherListener {
  public:
   DownloadShelfView(Browser* browser, BrowserView* parent);
   ~DownloadShelfView() override;
-  // Sent from the DownloadItemView when the user opens an item.
-  void OpenedDownload();
-
-  // Returns the parent_.
-  BrowserView* get_parent() { return parent_; }
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
-
-  // views::AnimationDelegateViews.
-  void AnimationProgressed(const gfx::Animation* animation) override;
-  void AnimationEnded(const gfx::Animation* animation) override;
-
-  // views::ButtonListener:
-  // Invoked when the user clicks the close button. Asks the browser to
-  // hide the download shelf.
-  void ButtonPressed(views::Button* button, const ui::Event& event) override;
 
   // DownloadShelf:
   bool IsShowing() const override;
   bool IsClosing() const override;
 
+  // views::AccessiblePaneView:
+  // TODO(crbug.com/1005568): Replace these with a LayoutManager
+  gfx::Size CalculatePreferredSize() const override;
+  void Layout() override;
+
+  // views::AnimationDelegateViews:
+  void AnimationProgressed(const gfx::Animation* animation) override;
+  void AnimationEnded(const gfx::Animation* animation) override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* button, const ui::Event& event) override;
+
   // views::MouseWatcherListener:
   void MouseMovedOutOfHost() override;
+
+  // Sent from the DownloadItemView when the user opens an item.
+  void AutoClose();
 
   // Removes a specified download view. The supplied view is deleted after
   // it's removed.
@@ -74,10 +68,6 @@ class DownloadShelfView : public views::AccessiblePaneView,
   void ConfigureButtonForTheme(views::MdTextButton* button);
 
  protected:
-  // views::View:
-  void AddedToWidget() override;
-  void OnThemeChanged() override;
-
   // DownloadShelf:
   void DoAddDownload(DownloadUIModel::DownloadUIModelPtr download) override;
   void DoOpen() override;
@@ -86,6 +76,8 @@ class DownloadShelfView : public views::AccessiblePaneView,
   void DoUnhide() override;
 
   // views::AccessiblePaneView:
+  void OnPaintBorder(gfx::Canvas* canvas) override;
+  void OnThemeChanged() override;
   views::View* GetDefaultFocusableChild() override;
 
  private:
@@ -93,38 +85,10 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // we already have this many download views, one is removed.
   static constexpr size_t kMaxDownloadViews = 15;
 
-  // Padding from left edge and first download view.
-  static constexpr int kStartPadding = 4;
-
-  // Padding from right edge and close button/show downloads link.
-  static constexpr int kEndPadding = 6;
-
-  // Padding between the show all link and close button.
-  static constexpr int kCloseAndLinkPadding = 6;
-
   // Adds a View representing a download to this DownloadShelfView.
   // DownloadShelfView takes ownership of the View, and will delete it as
   // necessary.
   void AddDownloadView(DownloadItemView* view);
-
-  // Paints the border.
-  void OnPaintBorder(gfx::Canvas* canvas) override;
-
-  // Returns true if the shelf is wide enough to show the first download item.
-  bool CanFitFirstDownloadItem();
-
-  // Called on theme change.
-  void UpdateColorsFromTheme();
-
-  // Called when the "close shelf" animation ended.
-  void Closed();
-
-  // Returns true if we can auto close. We can auto-close if all the items on
-  // the shelf have been opened.
-  bool CanAutoClose();
-
-  // Returns the color of text for the shelf (used for deriving icon color).
-  SkColor GetTextColorForIconMd();
 
   // The animation for adding new items to the shelf.
   gfx::SlideAnimation new_item_animation_;

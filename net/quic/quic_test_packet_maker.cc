@@ -254,7 +254,7 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeRstPacket(
   InitializeHeader(num, include_version);
 
   if (!version_.HasIetfQuicFrames() ||
-      quic::QuicUtils::IsBidirectionalStreamId(stream_id)) {
+      quic::QuicUtils::IsBidirectionalStreamId(stream_id, version_)) {
     AddQuicRstStreamFrame(stream_id, error_code);
   }
 
@@ -359,7 +359,7 @@ QuicTestPacketMaker::MakeAckAndRstPacket(
   AddQuicAckFrame(largest_received, smallest_received);
 
   if (!version_.HasIetfQuicFrames() ||
-      quic::QuicUtils::IsBidirectionalStreamId(stream_id)) {
+      quic::QuicUtils::IsBidirectionalStreamId(stream_id, version_)) {
     AddQuicRstStreamFrame(stream_id, error_code);
   }
 
@@ -1049,7 +1049,7 @@ std::string QuicTestPacketMaker::QpackEncodeHeaders(
                                                      &headers_frame_header);
 
   // Possible add a PUSH stream type.
-  if (!quic::QuicUtils::IsBidirectionalStreamId(stream_id) &&
+  if (!quic::QuicUtils::IsBidirectionalStreamId(stream_id, version_) &&
       stream_offsets_[stream_id] == 0) {
     // Push stream type header
     data += "\x01";

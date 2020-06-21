@@ -25,6 +25,8 @@ component("cpp") {
     "ambient/ambient_prefs.h",
     "ambient/ambient_ui_model.cc",
     "ambient/ambient_ui_model.h",
+    "ambient/common/ambient_settings.cc",
+    "ambient/common/ambient_settings.h",
     "android_intent_helper.cc",
     "android_intent_helper.h",
     "app_list/app_list_client.h",

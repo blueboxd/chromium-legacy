@@ -40,7 +40,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_cache_factory.h"
 #import "ios/chrome/browser/tabs/closing_web_state_observer.h"
 #import "ios/chrome/browser/tabs/synced_window_delegate_browser_agent.h"
-#import "ios/chrome/browser/tabs/tab_model_list.h"
 #import "ios/chrome/browser/tabs/tab_parenting_observer.h"
 #import "ios/chrome/browser/web/tab_id_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -314,9 +313,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
            selector:@selector(applicationDidEnterBackground:)
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
-
-    // Associate with ChromeBrowserState.
-    TabModelList::RegisterTabModelWithChromeBrowserState(_browserState, self);
   }
   return self;
 }
@@ -337,7 +333,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     return;
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  TabModelList::UnregisterTabModelFromChromeBrowserState(_browserState, self);
 
   _sessionRestorationBrowserAgent = nullptr;
   _tabUsageRecorder = nullptr;

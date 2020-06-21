@@ -48,7 +48,6 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Matchers;
 import org.chromium.base.test.util.Restriction;
@@ -669,7 +668,6 @@ public class InstantStartTest {
 
     @Test
     @SmallTest
-    @DisabledTest(message = "https://crbug.com/1097069")
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     @EnableFeatures({ChromeFeatureList.TAB_SWITCHER_ON_RETURN + "<Study,",
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
@@ -679,34 +677,32 @@ public class InstantStartTest {
     public void testFeedPlaceholderVisibility() {
         // clang-format on
         startMainActivityFromLauncher();
+        mActivityTestRule.waitForActivityNativeInitializationComplete();
         // FEED_ARTICLES_LIST_VISIBLE should equal to ARTICLES_LIST_VISIBLE.
+        CriteriaHelper.pollUiThread(
+                ()
+                        -> PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE)
+                        == StartSurfaceConfiguration.getFeedArticlesVisibility());
+
+        // Hide articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
+        // both false.
+        toggleHeader(false);
+        CriteriaHelper.pollUiThread(() -> !StartSurfaceConfiguration.getFeedArticlesVisibility());
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> Assert.assertEquals(PrefServiceBridge.getInstance().getBoolean(
                                                        Pref.ARTICLES_LIST_VISIBLE),
                                 StartSurfaceConfiguration.getFeedArticlesVisibility()));
 
-        // Hide articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
-        // both false.
-        toggleHeader(false);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            boolean suggestionsVisible =
-                    PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
-            Assert.assertFalse(suggestionsVisible);
-            Assert.assertEquals(
-                    suggestionsVisible, StartSurfaceConfiguration.getFeedArticlesVisibility());
-        });
-
         // Show articles and verify that FEED_ARTICLES_LIST_VISIBLE and ARTICLES_LIST_VISIBLE are
         // both true.
         toggleHeader(true);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            boolean suggestionsVisible =
-                    PrefServiceBridge.getInstance().getBoolean(Pref.ARTICLES_LIST_VISIBLE);
-            Assert.assertTrue(suggestionsVisible);
-            Assert.assertEquals(
-                    suggestionsVisible, StartSurfaceConfiguration.getFeedArticlesVisibility());
-        });
+        CriteriaHelper.pollUiThread(StartSurfaceConfiguration::getFeedArticlesVisibility);
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> Assert.assertEquals(PrefServiceBridge.getInstance().getBoolean(
+                                                       Pref.ARTICLES_LIST_VISIBLE),
+                                StartSurfaceConfiguration.getFeedArticlesVisibility()));
     }
 
     @Test

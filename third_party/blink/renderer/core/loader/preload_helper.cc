@@ -517,8 +517,15 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
 
     ResourceRequest resource_request(params.href);
 
-    if (EqualIgnoringASCIICase(params.as, "document"))
+    // Later a security check is done asserting that the initiator of a
+    // cross-origin prefetch request is same-origin with the origin that the
+    // browser process is aware of. However, since opaque request initiators are
+    // always cross-origin with every other origin, we must not request
+    // cross-origin prefetches from opaque requestors.
+    if (EqualIgnoringASCIICase(params.as, "document") &&
+        !document.GetSecurityOrigin()->IsOpaque()) {
       resource_request.SetPrefetchMaybeForTopLevelNavigation(true);
+    }
 
     // This request could have originally been a preload header on a prefetch
     // response, that was promoted to a prefetch request by LoadLinksFromHeader.

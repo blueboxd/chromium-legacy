@@ -12,6 +12,10 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
+namespace ash {
+struct AmbientSettings;
+}  // namespace ash
+
 namespace base {
 class ListValue;
 }  // namespace base
@@ -31,7 +35,7 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // settings::SettingsPageUIHandler:
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;
-  void OnJavascriptDisallowed() override {}
+  void OnJavascriptDisallowed() override;
 
  private:
   // WebUI call to signal js side is ready.
@@ -44,7 +48,7 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   void GetSettings();
 
   // Called when the initial settings is retrieved.
-  void OnGetSettings(base::Optional<ash::AmbientModeTopicSource> topic_source);
+  void OnGetSettings(const base::Optional<ash::AmbientSettings>& settings);
 
   // Send the "topic-source-changed" WebUIListener event when the initial
   // settings is retrieved.
@@ -57,8 +61,7 @@ class AmbientModeHandler : public ::settings::SettingsPageUIHandler {
   // |topic_source| is the value to retry if the update was failed.
   void OnUpdateSettings(ash::AmbientModeTopicSource topic_source, bool success);
 
-  // The topic source, i.e. from which category the photos will be displayed.
-  base::Optional<ash::AmbientModeTopicSource> topic_source_;
+  base::Optional<ash::AmbientSettings> settings_;
 
   base::WeakPtrFactory<AmbientModeHandler> weak_factory_{this};
 };

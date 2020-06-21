@@ -66,15 +66,32 @@ class DownloadItemView : public views::View,
                    views::View* accessible_alert);
   ~DownloadItemView() override;
 
-  // Timer callback for handling animations
-  void UpdateDownloadProgress();
-  void StartDownloadProgress();
-  void StopDownloadProgress();
+  // views::View:
+  void Layout() override;
+  bool OnMouseDragged(const ui::MouseEvent& event) override;
+  void OnMouseCaptureLost() override;
+  base::string16 GetTooltipText(const gfx::Point& p) const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
+  // DownloadUIModel::Observer:
+  void OnDownloadUpdated() override;
+  void OnDownloadOpened() override;
+  void OnDownloadDestroyed() override;
+
+  // views::AnimationDelegateViews:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
   // Returns the DownloadUIModel object belonging to this item.
   DownloadUIModel* model() { return model_.get(); }
+  const DownloadUIModel* model() const { return model_.get(); }
 
   // Submits download to download feedback service if the user has approved and
   // the download is suitable for submission, then apply |download_command|.
@@ -82,32 +99,9 @@ class DownloadItemView : public views::View,
   void MaybeSubmitDownloadToFeedbackService(
       DownloadCommands::Command download_command);
 
-  // DownloadUIModel::Observer:
-  void OnDownloadUpdated() override;
-  void OnDownloadOpened() override;
-  void OnDownloadDestroyed() override;
-
-  // views::View:
-  void Layout() override;
-  gfx::Size CalculatePreferredSize() const override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseCaptureLost() override;
-  base::string16 GetTooltipText(const gfx::Point& p) const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
-
-  // views::ContextMenuController.
-  void ShowContextMenuForViewImpl(View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::AnimationDelegateViews implementation.
-  void AnimationProgressed(const gfx::Animation* animation) override;
-
  protected:
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
 
@@ -148,12 +142,6 @@ class DownloadItemView : public views::View,
   bool SubmitDownloadToFeedbackService(
       DownloadCommands::Command download_command);
 
-  // If the user has |enabled| uploading, calls SubmitDownloadToFeedbackService.
-  // Otherwise, apply |download_command|.
-  void SubmitDownloadWhenFeedbackServiceEnabled(
-      DownloadCommands::Command download_command,
-      bool feedback_enabled);
-
   // This function calculates the vertical coordinate to draw the file name text
   // relative to local bounds.
   int GetYForFilenameText() const;
@@ -171,10 +159,6 @@ class DownloadItemView : public views::View,
   // coordinate system.
   void ShowContextMenuImpl(const gfx::Rect& rect,
                            ui::MenuSourceType source_type);
-
-  // Common code for handling pointer events (i.e. mouse or gesture).
-  void HandlePressEvent(const ui::LocatedEvent& event, bool active_event);
-  void HandleClickEvent(const ui::LocatedEvent& event, bool active_event);
 
   // Sets the state and triggers a repaint.
   void SetDropdownState(State new_state);
@@ -245,6 +229,10 @@ class DownloadItemView : public views::View,
   // Releases drop down button after showing a context menu.
   void ReleaseDropdown();
 
+  // Timer callback for handling animations
+  void StartDownloadProgress();
+  void StopDownloadProgress();
+
   // Update the accessible name to reflect the current state of the control,
   // so that screenreaders can access the filename, status text, and
   // dangerous download warning message (if any). The name will be presented
@@ -265,6 +253,8 @@ class DownloadItemView : public views::View,
   // reader to speak the current alert immediately.
   void AnnounceAccessibleAlert();
 
+  void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
+
   // Show/Hide/Reset |animation| based on the state transition specified by
   // |from| and |to|.
   void AnimateStateTransition(State from,
@@ -273,9 +263,6 @@ class DownloadItemView : public views::View,
 
   // Callback for |progress_timer_|.
   void ProgressTimerFired();
-
-  // Returns the base text color.
-  SkColor GetTextColor() const;
 
   // Returns the status text to show in the notification.
   base::string16 GetStatusText() const;

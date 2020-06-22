@@ -30,10 +30,12 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
@@ -221,6 +223,49 @@ class BaseTest : public testing::Test {
   std::unique_ptr<content::WebContents> web_contents_;
   base::RunLoop run_loop_;
 };
+
+enterprise_connectors::ContentAnalysisResponse::Result
+DlpVerdictToContentAnalysisResult(const DlpDeepScanningVerdict& dlp_verdict) {
+  enterprise_connectors::ContentAnalysisResponse::Result result;
+  result.set_tag("dlp");
+  switch (dlp_verdict.status()) {
+    case DlpDeepScanningVerdict::STATUS_UNKNOWN:
+      result.set_status(enterprise_connectors::ContentAnalysisResponse::Result::
+                            STATUS_UNKNOWN);
+      break;
+    case DlpDeepScanningVerdict::FAILURE:
+      result.set_status(
+          enterprise_connectors::ContentAnalysisResponse::Result::FAILURE);
+      break;
+    case DlpDeepScanningVerdict::SUCCESS:
+      result.set_status(
+          enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+  }
+  for (const auto& dlp_rule : dlp_verdict.triggered_rules()) {
+    auto* rule = result.add_triggered_rules();
+    rule->set_rule_name(dlp_rule.rule_name());
+    rule->set_rule_id(base::NumberToString(dlp_rule.rule_id()));
+    switch (dlp_rule.action()) {
+      case DlpDeepScanningVerdict::TriggeredRule::ACTION_UNKNOWN:
+        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                             Result::TriggeredRule::ACTION_UNSPECIFIED);
+        break;
+      case DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY:
+        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                             Result::TriggeredRule::REPORT_ONLY);
+        break;
+      case DlpDeepScanningVerdict::TriggeredRule::WARN:
+        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                             Result::TriggeredRule::WARN);
+        break;
+      case DlpDeepScanningVerdict::TriggeredRule::BLOCK:
+        rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                             Result::TriggeredRule::BLOCK);
+        break;
+    }
+  }
+  return result;
+}
 
 }  // namespace
 
@@ -744,7 +789,48 @@ class DeepScanningDialogDelegateAuditOnlyTest
 
   void PathFailsDeepScan(base::FilePath path,
                          DeepScanningClientResponse response) {
-    failures_.insert({std::move(path), std::move(response)});
+    if (use_legacy_policies_) {
+      failures_.insert({std::move(path), std::move(response)});
+    } else {
+      enterprise_connectors::ContentAnalysisResponse connector_response;
+
+      if (response.has_token())
+        connector_response.set_request_token(response.token());
+
+      if (response.has_malware_scan_verdict()) {
+        auto* result = connector_response.add_results();
+        result->set_tag("malware");
+        switch (response.malware_scan_verdict().verdict()) {
+          case MalwareDeepScanningVerdict::CLEAN:
+          case MalwareDeepScanningVerdict::UWS:
+          case MalwareDeepScanningVerdict::MALWARE:
+            result->set_status(enterprise_connectors::ContentAnalysisResponse::
+                                   Result::SUCCESS);
+            break;
+          case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
+            result->set_status(enterprise_connectors::ContentAnalysisResponse::
+                                   Result::STATUS_UNKNOWN);
+            break;
+          case MalwareDeepScanningVerdict::SCAN_FAILURE:
+            result->set_status(enterprise_connectors::ContentAnalysisResponse::
+                                   Result::FAILURE);
+        }
+        if (response.malware_scan_verdict().verdict() !=
+            MalwareDeepScanningVerdict::CLEAN) {
+          result->add_triggered_rules()->set_action(
+              enterprise_connectors::ContentAnalysisResponse::Result::
+                  TriggeredRule::BLOCK);
+        }
+      }
+
+      if (response.has_dlp_scan_verdict()) {
+        *connector_response.add_results() =
+            DlpVerdictToContentAnalysisResult(response.dlp_scan_verdict());
+      }
+
+      connector_failures_.insert(
+          {std::move(path), std::move(connector_response)});
+    }
   }
 
   void SetPathIsEncrypted(base::FilePath path) {
@@ -773,15 +859,28 @@ class DeepScanningDialogDelegateAuditOnlyTest
     SetDlpPolicy(CHECK_UPLOADS);
     SetMalwarePolicy(SEND_UPLOADS);
 
-    DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
-        &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure(),
-        base::BindRepeating(
-            &DeepScanningDialogDelegateAuditOnlyTest::StatusCallback,
-            base::Unretained(this)),
-        base::BindRepeating(
-            &DeepScanningDialogDelegateAuditOnlyTest::EncryptionStatusCallback,
-            base::Unretained(this)),
-        kDmToken));
+    if (use_legacy_policies_) {
+      DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
+          &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure(),
+          base::BindRepeating(
+              &DeepScanningDialogDelegateAuditOnlyTest::StatusCallback,
+              base::Unretained(this)),
+          base::BindRepeating(&DeepScanningDialogDelegateAuditOnlyTest::
+                                  EncryptionStatusCallback,
+                              base::Unretained(this)),
+          kDmToken));
+    } else {
+      DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
+          &FakeDeepScanningDialogDelegate::CreateForConnectors,
+          run_loop_.QuitClosure(),
+          base::BindRepeating(
+              &DeepScanningDialogDelegateAuditOnlyTest::ConnectorStatusCallback,
+              base::Unretained(this)),
+          base::BindRepeating(&DeepScanningDialogDelegateAuditOnlyTest::
+                                  EncryptionStatusCallback,
+                              base::Unretained(this)),
+          kDmToken));
+    }
   }
 
   DeepScanningClientResponse StatusCallback(const base::FilePath& path) {
@@ -799,6 +898,30 @@ class DeepScanningDialogDelegateAuditOnlyTest
     return response;
   }
 
+  enterprise_connectors::ContentAnalysisResponse ConnectorStatusCallback(
+      const base::FilePath& path) {
+    // The path succeeds if it is not in the |connector_failures_| maps.
+    auto it = connector_failures_.find(path);
+    enterprise_connectors::ContentAnalysisResponse response =
+        it != connector_failures_.end()
+            ? it->second
+            : FakeDeepScanningDialogDelegate::SuccessfulResponse([this]() {
+                std::set<std::string> tags;
+                if (include_dlp_ && !dlp_verdict_.has_value())
+                  tags.insert("dlp");
+                if (include_malware_)
+                  tags.insert("malware");
+                return tags;
+              }());
+
+    if (include_dlp_ && dlp_verdict_.has_value()) {
+      *response.add_results() =
+          DlpVerdictToContentAnalysisResult(dlp_verdict_.value());
+    }
+
+    return response;
+  }
+
   bool EncryptionStatusCallback(const base::FilePath& path) {
     return encrypted_.count(path) > 0;
   }
@@ -812,6 +935,8 @@ class DeepScanningDialogDelegateAuditOnlyTest
   // Paths in this map will be consider to have failed deep scan checks.
   // The actual failure response is given for each path.
   std::map<base::FilePath, DeepScanningClientResponse> failures_;
+  std::map<base::FilePath, enterprise_connectors::ContentAnalysisResponse>
+      connector_failures_;
 
   // Paths in this set will be considered to contain encryption and will
   // not be uploaded.
@@ -1656,14 +1781,26 @@ class DeepScanningDialogDelegateResultHandlingTest
     SetDlpPolicy(CHECK_UPLOADS);
     SetMalwarePolicy(SEND_UPLOADS);
 
-    DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
-        &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure(),
-        base::BindRepeating(
-            &DeepScanningDialogDelegateResultHandlingTest::StatusCallback,
-            base::Unretained(this)),
-        /*encryption_callback=*/
-        base::BindRepeating([](const base::FilePath& path) { return false; }),
-        kDmToken));
+    if (use_legacy_policies_) {
+      DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
+          &FakeDeepScanningDialogDelegate::Create, run_loop_.QuitClosure(),
+          base::BindRepeating(
+              &DeepScanningDialogDelegateResultHandlingTest::StatusCallback,
+              base::Unretained(this)),
+          /*encryption_callback=*/
+          base::BindRepeating([](const base::FilePath& path) { return false; }),
+          kDmToken));
+    } else {
+      DeepScanningDialogDelegate::SetFactoryForTesting(base::BindRepeating(
+          &FakeDeepScanningDialogDelegate::CreateForConnectors,
+          run_loop_.QuitClosure(),
+          base::BindRepeating(&DeepScanningDialogDelegateResultHandlingTest::
+                                  ConnectorStatusCallback,
+                              base::Unretained(this)),
+          /*encryption_callback=*/
+          base::BindRepeating([](const base::FilePath& path) { return false; }),
+          kDmToken));
+    }
   }
 
   BinaryUploadService::Result result() const { return std::get<0>(GetParam()); }
@@ -1673,6 +1810,12 @@ class DeepScanningDialogDelegateResultHandlingTest
         FakeDeepScanningDialogDelegate::SuccessfulResponse(
             /*dlp*/ true, /*malware=*/true);
     return response;
+  }
+
+  enterprise_connectors::ContentAnalysisResponse ConnectorStatusCallback(
+      const base::FilePath& path) {
+    return FakeDeepScanningDialogDelegate::SuccessfulResponse(
+        {"dlp", "malware"});
   }
 
  protected:

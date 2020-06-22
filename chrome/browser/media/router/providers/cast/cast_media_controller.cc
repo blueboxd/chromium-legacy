@@ -44,8 +44,13 @@ void SetIfValid(bool* out, const base::Value* value) {
     *out = value->GetBool();
 }
 void SetIfValid(base::TimeDelta* out, const base::Value* value) {
-  if (value && value->is_double())
-    *out = base::TimeDelta::FromSeconds(value->GetDouble());
+  if (!value)
+    return;
+  if (value->is_double()) {
+    *out = base::TimeDelta::FromSecondsD(value->GetDouble());
+  } else if (value->is_int()) {
+    *out = base::TimeDelta::FromSeconds(value->GetInt());
+  }
 }
 
 // If |value| has "width" and "height" fields with positive values, it gets

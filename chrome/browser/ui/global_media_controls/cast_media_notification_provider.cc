@@ -7,6 +7,28 @@
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/media_router/providers/cast/cast_media_source.h"
+
+namespace {
+
+bool ShouldHideNotification(const media_router::MediaRoute& route) {
+  if (!route.for_display() ||
+      route.controller_type() != media_router::RouteControllerType::kGeneric) {
+    return true;
+  }
+  if (!route.media_source().IsCastPresentationUrl()) {
+    return false;
+  }
+  std::unique_ptr<media_router::CastMediaSource> source =
+      media_router::CastMediaSource::FromMediaSource(route.media_source());
+  // If the session is multizone member, then it would appear as a duplicate of
+  // the multizone group's session, so it should instead be hidden.
+  return source && source->GetAppIds().size() == 1 &&
+         base::Contains(media_router::kMultizoneMemberAppIds,
+                        source->GetAppIds()[0]);
+}
+
+}  // namespace
 
 CastMediaNotificationProvider::CastMediaNotificationProvider(
     Profile* profile,
@@ -44,11 +66,8 @@ void CastMediaNotificationProvider::OnRoutesUpdated(
   });
 
   for (const auto& route : routes) {
-    if (!route.for_display() ||
-        route.controller_type() !=
-            media_router::RouteControllerType::kGeneric) {
+    if (ShouldHideNotification(route))
       continue;
-    }
     auto item_it =
         std::find_if(items_.begin(), items_.end(), [&route](const auto& item) {
           return item.first == route.media_route_id();

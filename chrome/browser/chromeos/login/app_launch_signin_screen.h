@@ -62,7 +62,6 @@ class AppLaunchSigninScreen : public SigninScreenHandlerDelegate,
   void ShowEnableDebuggingScreen() override;
   void ShowKioskEnableScreen() override;
   void ShowKioskAutolaunchScreen() override;
-  void ShowUpdateRequiredScreen() override;
   void ShowWrongHWIDScreen() override;
   void SetWebUIHandler(LoginDisplayWebUIHandler* webui_handler) override;
   bool IsShowGuest() const override;

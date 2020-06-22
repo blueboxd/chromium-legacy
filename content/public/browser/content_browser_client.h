@@ -934,10 +934,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) {}
 
-  // |schemes| is a return value parameter that gets a whitelist of schemes that
-  // should bypass the Is Privileged Context check.
+  // |schemes| is a return value parameter that gets an allowlist of schemes
+  // that should bypass the Is Privileged Context check.
   // See http://www.w3.org/TR/powerful-features/#settings-privileged
-  virtual void GetSchemesBypassingSecureContextCheckWhitelist(
+  virtual void GetSchemesBypassingSecureContextCheckAllowlist(
       std::set<std::string>* schemes) {}
 
   // Returns auto mount handlers for URL requests for FileSystem APIs.

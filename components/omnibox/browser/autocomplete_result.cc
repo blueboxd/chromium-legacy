@@ -268,7 +268,12 @@ void AutocompleteResult::SortAndCull(
                                                  matches_, comparing_object);
   matches_.resize(num_matches);
 
+#if defined(OS_ANDROID)
+  if (matches_.size() > 2 &&
+      !base::FeatureList::IsEnabled(omnibox::kAdaptiveSuggestionsCount)) {
+#else
   if (matches_.size() > 2) {
+#endif
     // Skip over default match.
     auto next = std::next(matches_.begin());
     // If it has submatches, skip them too.

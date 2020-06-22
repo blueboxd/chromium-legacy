@@ -362,8 +362,6 @@ void StyleCascade::ApplyInterpolationMap(const ActiveInterpolationsMap& map,
 
     CascadePriority* p = map_.Find(property.GetCSSPropertyName());
     if (!p || *p >= priority) {
-      if (p->IsImportant())
-        state_.SetHasImportantOverrides();
       continue;
     }
     *p = priority;
@@ -401,7 +399,6 @@ void StyleCascade::ApplyInterpolation(
         map_.Find(visited->GetCSSPropertyName());
     if (visited_priority && priority < *visited_priority) {
       DCHECK(visited_priority->IsImportant());
-      state_.SetHasImportantOverrides();
       // Resetting generation to zero makes it possible to apply the
       // visited property again.
       *visited_priority = CascadePriority(*visited_priority, 0);
@@ -531,6 +528,8 @@ bool StyleCascade::ShouldRevert(const CSSProperty& property,
          (state_.GetDocument().InForcedColorsMode() &&
           state_.Style()->ForcedColorAdjust() != EForcedColorAdjust::kNone &&
           property.IsAffectedByForcedColors() &&
+          !(property.PropertyID() == CSSPropertyID::kBackgroundImage &&
+            value.MayContainUrl()) &&
           origin >= CascadeOrigin::kAuthor);
 }
 

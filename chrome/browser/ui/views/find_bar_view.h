@@ -114,9 +114,6 @@ class FindBarView : public views::View,
   views::ImageButton* find_next_button_;
   views::ImageButton* close_button_;
 
-  // The preferred height of the find bar.
-  int preferred_height_;
-
   DISALLOW_COPY_AND_ASSIGN(FindBarView);
 };
 

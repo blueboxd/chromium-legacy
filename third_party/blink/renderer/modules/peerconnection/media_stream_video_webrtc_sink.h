@@ -34,7 +34,7 @@ class WebRtcVideoTrackSource;
 class MODULES_EXPORT MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
  public:
   MediaStreamVideoWebRtcSink(
-      const WebMediaStreamTrack& track,
+      MediaStreamComponent* component,
       PeerConnectionDependencyFactory* factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~MediaStreamVideoWebRtcSink() override;

@@ -39,10 +39,10 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class SiteSettingsCategory {
     @IntDef({Type.ALL_SITES, Type.ADS, Type.AUGMENTED_REALITY, Type.AUTOMATIC_DOWNLOADS,
-            Type.BACKGROUND_SYNC, Type.BLUETOOTH_SCANNING, Type.CAMERA, Type.CLIPBOARD,
-            Type.COOKIES, Type.DEVICE_LOCATION, Type.JAVASCRIPT, Type.MICROPHONE, Type.NFC,
-            Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA, Type.SENSORS, Type.SOUND,
-            Type.USB, Type.VIRTUAL_REALITY, Type.USE_STORAGE})
+            Type.BACKGROUND_SYNC, Type.BLUETOOTH, Type.BLUETOOTH_SCANNING, Type.CAMERA,
+            Type.CLIPBOARD, Type.COOKIES, Type.DEVICE_LOCATION, Type.JAVASCRIPT, Type.MICROPHONE,
+            Type.NFC, Type.NOTIFICATIONS, Type.POPUPS, Type.PROTECTED_MEDIA, Type.SENSORS,
+            Type.SOUND, Type.USB, Type.VIRTUAL_REALITY, Type.USE_STORAGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Type {
         // Values used to address array index - should be enumerated from 0 and can't have gaps.
@@ -67,12 +67,13 @@ public class SiteSettingsCategory {
         int SENSORS = 16;
         int SOUND = 17;
         int USB = 18;
-        int VIRTUAL_REALITY = 19;
-        int USE_STORAGE = 20; // Always last as it should appear in the UI at the bottom.
+        int BLUETOOTH = 19;
+        int VIRTUAL_REALITY = 20;
+        int USE_STORAGE = 21; // Always last as it should appear in the UI at the bottom.
         /**
          * Number of handled categories used for calculating array sizes.
          */
-        int NUM_ENTRIES = 21;
+        int NUM_ENTRIES = 22;
     }
 
     private final BrowserContextHandle mBrowserContextHandle;
@@ -156,6 +157,8 @@ public class SiteSettingsCategory {
                 return ContentSettingsType.AUTOMATIC_DOWNLOADS;
             case Type.BACKGROUND_SYNC:
                 return ContentSettingsType.BACKGROUND_SYNC;
+            case Type.BLUETOOTH:
+                return ContentSettingsType.BLUETOOTH_GUARD;
             case Type.BLUETOOTH_SCANNING:
                 return ContentSettingsType.BLUETOOTH_SCANNING;
             case Type.CAMERA:
@@ -201,6 +204,8 @@ public class SiteSettingsCategory {
         switch (type) {
             case ContentSettingsType.USB_GUARD:
                 return ContentSettingsType.USB_CHOOSER_DATA;
+            case ContentSettingsType.BLUETOOTH_GUARD:
+                return ContentSettingsType.BLUETOOTH_CHOOSER_DATA;
             default:
                 return -1; // Conversion unavailable.
         }
@@ -221,6 +226,8 @@ public class SiteSettingsCategory {
                 return "automatic_downloads";
             case Type.BACKGROUND_SYNC:
                 return "background_sync";
+            case Type.BLUETOOTH:
+                return "bluetooth";
             case Type.BLUETOOTH_SCANNING:
                 return "bluetooth_scanning";
             case Type.CAMERA:

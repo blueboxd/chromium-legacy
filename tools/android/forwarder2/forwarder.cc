@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/posix/eintr_wrapper.h"
 #include "tools/android/forwarder2/socket.h"

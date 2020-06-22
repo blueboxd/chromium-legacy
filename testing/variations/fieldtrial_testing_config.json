@@ -3274,21 +3274,6 @@
             ]
         }
     ],
-    "IOSWebPageTextAccessibility": [
-        {
-            "platforms": [
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "WebPageTextAccessibility"
-                    ]
-                }
-            ]
-        }
-    ],
     "IdentityDiscIPH": [
         {
             "platforms": [
@@ -6977,6 +6962,28 @@
             "experiments": [
                 {
                     "name": "On"
+                }
+            ]
+        }
+    ],
+    "TrustTokenOriginTrial": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "TrustTokenOperationsRequiringOriginTrial": "only-issuance-requires-origin-trial"
+                    },
+                    "enable_features": [
+                        "TrustTokens"
+                    ]
                 }
             ]
         }

@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_TABS_TAB_HELPER_DELEGATE_INSTALLER_H_
 #define IOS_CHROME_BROWSER_TABS_TAB_HELPER_DELEGATE_INSTALLER_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/main/browser_observer.h"

@@ -508,6 +508,43 @@ AsCTAPRequestValuePair(const PinTokenRequest& request) {
       });
 }
 
+PinTokenWithPermissionsRequest::PinTokenWithPermissionsRequest(
+    const std::string& pin,
+    const KeyAgreementResponse& peer_key,
+    const uint8_t permissions,
+    const base::Optional<std::string> rp_id)
+    : PinTokenRequest(pin, peer_key),
+      permissions_(permissions),
+      rp_id_(rp_id) {}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const PinTokenWithPermissionsRequest& request) {
+  uint8_t encrypted_pin[sizeof(request.pin_hash_)];
+  Encrypt(request.shared_key_.data(), request.pin_hash_, encrypted_pin);
+
+  return EncodePINCommand(
+      Subcommand::kGetPinUvAuthTokenUsingPinWithPermissions,
+      [&request, encrypted_pin](cbor::Value::MapValue* map) {
+        map->emplace(static_cast<int>(RequestKey::kKeyAgreement),
+                     std::move(request.cose_key_));
+        map->emplace(
+            static_cast<int>(RequestKey::kPINHashEnc),
+            base::span<const uint8_t>(encrypted_pin, sizeof(encrypted_pin)));
+        map->emplace(static_cast<int>(RequestKey::kPermissions),
+                     std::move(request.permissions_));
+        if (request.rp_id_) {
+          map->emplace(static_cast<int>(RequestKey::kPermissionsRPID),
+                       *request.rp_id_);
+        }
+      });
+}
+
+PinTokenWithPermissionsRequest::~PinTokenWithPermissionsRequest() = default;
+
+PinTokenWithPermissionsRequest::PinTokenWithPermissionsRequest(
+    PinTokenWithPermissionsRequest&& other) = default;
+
 UvTokenRequest::UvTokenRequest(const KeyAgreementResponse& peer_key,
                                base::Optional<std::string> rp_id)
     : TokenRequest(peer_key), rp_id_(rp_id) {}
@@ -516,6 +553,7 @@ UvTokenRequest::~UvTokenRequest() = default;
 
 UvTokenRequest::UvTokenRequest(UvTokenRequest&& other) = default;
 
+// static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
 AsCTAPRequestValuePair(const UvTokenRequest& request) {
   return EncodePINCommand(

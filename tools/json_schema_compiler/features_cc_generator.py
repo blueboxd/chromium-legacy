@@ -35,7 +35,7 @@ class _Generator(object):
       .Append()
       .Append('#include "%s.h"' % self._source_file_filename)
       .Append()
-      .Append('#include "base/logging.h"')
+      .Append('#include "base/notreached.h"')
       .Append()
       .Concat(cpp_util.OpenNamespace(self._namespace))
       .Append()

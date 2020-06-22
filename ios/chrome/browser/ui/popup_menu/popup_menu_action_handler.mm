@@ -203,6 +203,8 @@ using base::UserMetricsAction;
           }));
       break;
     }
+    case PopupMenuActionEnterpriseInfoMessage:
+      break;
     default:
       NOTREACHED() << "Unexpected identifier";
       break;

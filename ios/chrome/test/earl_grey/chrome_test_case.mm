@@ -332,6 +332,10 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   _isHTTPServerStopped = YES;
 }
 
+- (BOOL)isRunningTest:(SEL)selector {
+  return [[self currentTestMethodName] isEqual:NSStringFromSelector(selector)];
+}
+
 #pragma mark - Private methods
 
 + (void)disableMockAuthentication {
@@ -427,6 +431,16 @@ GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(ChromeTestCaseAppInterface)
   _isMockAuthenticationDisabled = NO;
   _tearDownHandler = nil;
   _originalOrientation = GetCurrentDeviceOrientation();
+}
+
+// Returns the method name, e.g. "testSomething" of the test that is currently
+// running. The name is extracted from the string for the test's name property,
+// e.g. "-[DemographicsTestCase testSomething]".
+- (NSString*)currentTestMethodName {
+  int testNameStart = [self.name rangeOfString:@"test"].location;
+  return [self.name
+      substringWithRange:NSMakeRange(testNameStart,
+                                     self.name.length - testNameStart - 1)];
 }
 
 #pragma mark - Handling system alerts

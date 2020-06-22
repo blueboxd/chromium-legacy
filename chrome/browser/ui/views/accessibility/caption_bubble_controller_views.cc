@@ -125,4 +125,12 @@ void CaptionBubbleControllerViews::SetActiveContents(
   caption_bubble_->SetModel(caption_bubble_models_[active_contents_].get());
 }
 
+bool CaptionBubbleControllerViews::IsWidgetVisibleForTesting() {
+  return caption_widget_ && caption_widget_->IsVisible();
+}
+
+std::string CaptionBubbleControllerViews::GetBubbleLabelTextForTesting() {
+  return caption_bubble_ ? caption_bubble_->GetLabelTextForTesting() : "";
+}
+
 }  // namespace captions

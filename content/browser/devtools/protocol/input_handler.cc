@@ -374,6 +374,7 @@ class InputHandler::InputInjector
   }
 
   void InjectKeyboardEvent(const NativeWebKeyboardEvent& keyboard_event,
+                           Maybe<Array<std::string>> commands,
                            std::unique_ptr<DispatchKeyEventCallback> callback) {
     if (!widget_host_) {
       callback->sendFailure(Response::InternalError());
@@ -383,7 +384,15 @@ class InputHandler::InputInjector
     widget_host_->Focus();
     input_queued_ = false;
     pending_key_callbacks_.push_back(std::move(callback));
-    widget_host_->ForwardKeyboardEvent(keyboard_event);
+    ui::LatencyInfo latency;
+    std::vector<blink::mojom::EditCommandPtr> edit_commands;
+    if (commands.isJust()) {
+      for (const std::string& command : *commands.fromJust())
+        edit_commands.push_back(blink::mojom::EditCommand::New(command, ""));
+    }
+
+    widget_host_->ForwardKeyboardEventWithCommands(keyboard_event, latency,
+                                                   std::move(edit_commands));
     if (!input_queued_) {
       pending_key_callbacks_.back()->sendSuccess();
       pending_key_callbacks_.pop_back();
@@ -537,6 +546,7 @@ void InputHandler::DispatchKeyEvent(
     Maybe<bool> is_keypad,
     Maybe<bool> is_system_key,
     Maybe<int> location,
+    Maybe<Array<std::string>> commands,
     std::unique_ptr<DispatchKeyEventCallback> callback) {
   blink::WebInputEvent::Type web_event_type;
 
@@ -609,7 +619,8 @@ void InputHandler::DispatchKeyEvent(
   else
     event.skip_in_browser = true;
 
-  EnsureInjector(widget_host)->InjectKeyboardEvent(event, std::move(callback));
+  EnsureInjector(widget_host)
+      ->InjectKeyboardEvent(event, std::move(commands), std::move(callback));
 }
 
 void InputHandler::InsertText(const std::string& text,

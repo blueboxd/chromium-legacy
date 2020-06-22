@@ -67,7 +67,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   // desired.
   void ColorCorrectImage(ImageFrame* buffer);
 
-  bool is_high_bit_depth_ = false;
+  uint8_t bit_depth_ = 0;
   bool decode_to_half_float_ = false;
   size_t decoded_frame_count_ = 0;
   std::unique_ptr<avifDecoder, void (*)(avifDecoder*)> decoder_{nullptr,

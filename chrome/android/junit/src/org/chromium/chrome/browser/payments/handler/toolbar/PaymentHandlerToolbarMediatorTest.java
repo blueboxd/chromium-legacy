@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.payments.handler.toolbar;
 
-import android.view.View;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -82,12 +80,5 @@ public class PaymentHandlerToolbarMediatorTest {
         Assert.assertEquals(123, mModel.get(PaymentHandlerToolbarProperties.SECURITY_ICON));
         Assert.assertEquals("this is content description.",
                 mModel.get(PaymentHandlerToolbarProperties.SECURITY_ICON_CONTENT_DESCRIPTION));
-    }
-
-    @Test
-    @Feature({"Payments"})
-    public void testClickSecurityIconToOpenPageInfoDialog() {
-        mMediator.onClick(Mockito.mock(View.class));
-        Mockito.verify(mMockDelegate).showPageInfoDialog();
     }
 }

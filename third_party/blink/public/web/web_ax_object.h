@@ -146,6 +146,9 @@ class WebAXObject {
   BLINK_EXPORT bool IsLineBreakingObject() const;
   BLINK_EXPORT bool IsLinked() const;
   BLINK_EXPORT bool IsModal() const;
+  // Returns true if this object is an input element of a text field type, such
+  // as type="text" or type="tel", or a textarea.
+  BLINK_EXPORT bool IsNativeTextControl() const;
   BLINK_EXPORT bool IsOffScreen() const;
   BLINK_EXPORT bool IsSelectedOptionActive() const;
   BLINK_EXPORT bool IsVisited() const;

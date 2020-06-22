@@ -115,6 +115,12 @@ const std::vector<SearchConcept>& GetWifiOnSearchConcepts() {
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kWifiOnOff},
        {IDS_OS_SETTINGS_TAG_WIFI_TURN_OFF_ALT1, SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_ADD_WIFI,
+       mojom::kWifiNetworksSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiAddNetwork}},
   });
   return *tags;
 }
@@ -148,12 +154,6 @@ const std::vector<SearchConcept>& GetWifiConnectedSearchConcepts() {
        {.setting = mojom::Setting::kPreferWifiNetwork},
        {IDS_OS_SETTINGS_TAG_PREFER_WIFI_NETWORK_ALT1,
         SearchConcept::kAltTagEnd}},
-      {IDS_OS_SETTINGS_TAG_WIFI_CONFIGURE,
-       mojom::kWifiDetailsSubpagePath,
-       mojom::SearchResultIcon::kWifi,
-       mojom::SearchResultDefaultRank::kMedium,
-       mojom::SearchResultType::kSetting,
-       {.setting = mojom::Setting::kConfigureWifi}},
       {IDS_OS_SETTINGS_TAG_FORGET_WIFI,
        mojom::kWifiDetailsSubpagePath,
        mojom::SearchResultIcon::kWifi,
@@ -194,6 +194,12 @@ const std::vector<SearchConcept>& GetWifiConnectedSearchConcepts() {
        {.setting = mojom::Setting::kWifiAutoConnectToNetwork},
        {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK_ALT1,
         SearchConcept::kAltTagEnd}},
+      {IDS_SETTINGS_INTERNET_NETWORK_METERED,
+       mojom::kWifiDetailsSubpagePath,
+       mojom::SearchResultIcon::kWifi,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kWifiMetered}},
   });
   return *tags;
 }
@@ -299,6 +305,12 @@ const std::vector<SearchConcept>& GetCellularConnectedSearchConcepts() {
        {.setting = mojom::Setting::kCellularAutoConnectToNetwork},
        {IDS_OS_SETTINGS_TAG_AUTO_CONNECT_NETWORK_ALT1,
         SearchConcept::kAltTagEnd}},
+      {IDS_SETTINGS_INTERNET_NETWORK_METERED,
+       mojom::kCellularDetailsSubpagePath,
+       mojom::SearchResultIcon::kCellular,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kCellularMetered}},
   });
   return *tags;
 }
@@ -388,11 +400,11 @@ const std::vector<mojom::Setting>& GetWifiDetailsSettings() {
       mojom::Setting::kDisconnectWifiNetwork,
       mojom::Setting::kPreferWifiNetwork,
       mojom::Setting::kForgetWifiNetwork,
-      mojom::Setting::kConfigureWifi,
       mojom::Setting::kWifiAutoConfigureIp,
       mojom::Setting::kWifiDns,
       mojom::Setting::kWifiProxy,
       mojom::Setting::kWifiAutoConnectToNetwork,
+      mojom::Setting::kWifiMetered,
   });
   return *settings;
 }
@@ -407,6 +419,7 @@ const std::vector<mojom::Setting>& GetCellularDetailsSettings() {
       mojom::Setting::kCellularDns,
       mojom::Setting::kCellularProxy,
       mojom::Setting::kCellularAutoConnectToNetwork,
+      mojom::Setting::kCellularMetered,
   });
   return *settings;
 }
@@ -678,8 +691,12 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_SETTINGS_INTERNET_WIFI_NETWORKS, mojom::Subpage::kWifiNetworks,
       mojom::SearchResultIcon::kWifi, mojom::SearchResultDefaultRank::kMedium,
       mojom::kWifiNetworksSubpagePath);
-  generator->RegisterNestedSetting(mojom::Setting::kWifiOnOff,
-                                   mojom::Subpage::kWifiNetworks);
+  static constexpr mojom::Setting kWifiNetworksSettings[] = {
+      mojom::Setting::kWifiOnOff,
+      mojom::Setting::kWifiAddNetwork,
+  };
+  RegisterNestedSettingBulk(mojom::Subpage::kWifiNetworks,
+                            kWifiNetworksSettings, generator);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kWifiOnOff);
 
   // Wi-Fi details.

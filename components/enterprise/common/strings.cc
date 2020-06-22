@@ -8,5 +8,6 @@ namespace enterprise {
 
 const char kUrlParamConnector[] = "connector";
 const char kUrlParamDeviceToken[] = "device_token";
+const char kUrlParamTag[] = "tag";
 
 }  // namespace enterprise

@@ -162,12 +162,6 @@ const base::FeatureParam<std::string>
 const base::Feature kDisableKeepaliveFetch{"DisableKeepaliveFetch",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// When kOutOfBlinkFrameAncestors is enabled, the frame-ancestors
-// directive is parsed from the Content-Security-Policy header in the network
-// service and enforced in the browser.
-const base::Feature kOutOfBlinkFrameAncestors{"OutOfBlinkFrameAncestors",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Attach the origin of the destination URL to the "origin" header
 const base::Feature
     kDeriveOriginFromUrlForNeitherGetNorHeadRequestWhenHavingSpecialAccess{

@@ -1,18 +1,15 @@
 # Render Tests
 
+Render tests are the way of performing pixel diff/image comparison tests in
+Chromium's Android instrumentation tests. They are backed by the Skia team's
+Gold image diffing service, which means that baselines (golden images) are
+stored outside of the repo. Image triage (approval/rejection) is handled via the
+Gold web UI, located [here](https://chrome-gold.skia.org/). The UI can also be
+used to look at what images are currently being produced for tests.
+
 ## Fixing a failing Render Test
 
-Which section applies to the test you are investigating is determined by whether
-the test class is manually creating a RenderTestRule or using the
-SkiaGoldBuilder.
-
-### Skia Gold Comparison
-
-The newer form of pixel comparison backed by
-[Skia Gold](https://skia.org/dev/testing/skiagold). If a test is running in
-this mode, there will be mentions of "Skia Gold" in the reported failure.
-
-#### Failing on trybots
+### Failing on trybots
 
 Anytime a patchset produces new golden images, Gold should automatically
 comment on your CL with a link to the triage page. If it fails to do so (e.g.
@@ -29,9 +26,12 @@ corresponding to the renders mentioned in the failure stack trace. The links
 will be named "Skia Gold triage link for entire CL".
 
 Once on the triage page, make sure you are logged in at the top-right.
-Currently, only @google.com accounts work, but other domains such as
-chromium.org can be whitelisted if requested. You should then be able to
-triage any newly produced images.
+Currently, only @google.com and @chromium.org accounts work, but other domains
+such as @opera.com can be allowed if requested. Any domain that can log into
+using the Google login flow (e.g. what's used to log into crbug.com) should be
+able to be allowed. @microsoft.com accounts are supposed to work, but currently
+don't due to some issues. You should then be able to triage any newly produced
+images.
 
 If the newly generated golden images are "breaking", i.e. it would be a
 regression if Chrome continued to produce the old golden images (such as due
@@ -51,7 +51,7 @@ that test class), so you may have to re-triage additional images. If there
 are many images that need to be triaged, you can use the "Bulk Triage" option
 in Gold under the "ACTIONS" menu item.
 
-#### Failing on CI bots
+### Failing on CI bots
 
 If a test is failing on the CI bots, i.e. after a CL has already been merged,
 you can perform the same steps as in the above section with the following
@@ -61,75 +61,14 @@ differences:
 comment to. Alternatively, you can check for untriaged images directly in the
 [gold instance](https://chrome-gold.skia.org).
 2. Triage links are for specific images instead of for an entire CL, and are
-thus named after the the render name.
+thus named after the render name.
 
-#### Failing locally
+### Failing locally
 
 Skia Gold does not allow you to update golden images from local runs. You will
 still have access to the generated image, the closest golden image, and the diff
 between them in the test results, but this is purely for local debugging. New
 golden images must come from either trybots or CI bots.
-
-### Legacy/Local Pixel Comparison
-
-The older form of pixel comparison that does everything locally. If a test is
-running in this mode, there will be no mention of "Skia Gold" in the reported
-failure.
-
-#### Failing on trybots
-
-To investigate why a Render Test is failing on the trybots:
-
-1. On the failed trybot run, locate and follow the `results_details` link under
-the `chrome_public_test_apk` step to go to the **Suites Summary** page.
-2. On the **Suites Summary** page, follow the link to the test suite that is
-failing.
-3. On the **Test Results of Suite** page, follow the links in the **log** column
-corresponding to the renders mentioned in the failure stack trace. The links
-will be of the form `<test class>.<render id>.<device details>.png`.
-
-Now you will see a **Render Results** page, showing:
-
-* Some useful links.
-* The **Failure** image, what the rendered Views look like on the test device.
-* The **Golden** image, what the rendered Views should look like, according to
-the golden files checked into the repository.
-* A **Diff** image to help compare.
-
-At this point, decide whether the UI change was intentional. If it was, follow
-the steps below to update the golden files stored in the repository. If not, go
-and fix your code! If there's some other error or flakiness, file a bug to
-`peconn@chromium.org`.
-
-1. Use the `Link to Golden` link to determine where in the repository the golden
-was stored.
-2. Right click on the `Download Failure Image` link to save the failure image in
-the appropriate place in your local repository.
-3. Run the script
-`//chrome/test/data/android/manage_render_test_goldens.py upload` to upload the
-new goldens to Google Storage and update the hashes used to download them.
-4. Reupload the CL and run it through the trybots again.
-
-When putting a change up for review that changes goldens, please include links
-to the results_details/Render Results pages that you grabbed the new goldens
-from. This will help reviewers confirm that the changes to the goldens are
-acceptable.
-
-If you add a new device/SDK combination that you expect golden images for, be
-sure to add it to `ALLOWED_DEVICE_SDK_COMBINATIONS` in
-`//chrome/test/data/android/manage_render_test_goldens.py`, otherwise the
-goldens for it will not be uploaded.
-
-#### Failing locally
-
-Follow the steps in [*Running the tests locally*](#running-the-tests-locally)
-below to generate renders.
-
-You can rename the renders as appropriate and move them to the correct place in
-the repository, or you can open the locally generated **Render Results** pages
-and follow steps 2-3 in the second part of the
-[*Failing on trybots*](#failing-on-trybots) section.
-
 
 ## Writing a new Render Test
 
@@ -138,18 +77,6 @@ and follow steps 2-3 in the second part of the
 To write a new test, start with the example in the javadoc for
 [RenderTestRule](https://cs.chromium.org/chromium/src/ui/android/javatests/src/org/chromium/ui/test/util/RenderTestRule.java)
 or [ChromeRenderTestRule](https://cs.chromium.org/chromium/src/chrome/test/android/javatests/src/org/chromium/chrome/test/util/ChromeRenderTestRule.java).
-
-To enable use of Skia Gold for managing golden images, use
-RenderTestRule.SkiaGoldBuilder instead of creating a
-RenderTestRule manually. This will become the default eventually, but is still
-going through the experimental stage. If you want maximum stability, prefer the
-older approach for now. If you want an easier rebaselining process in exchange
-for potentially running into some early growing pains, prefer the use of Skia
-Gold.
-
-Rebaselining the old way requires downloading all new goldens locally, running
-a script to upload them to a Google Storage bucket, and committing the updated
-SHA1 files. Rebaselining via Gold is done entirely through a web UI.
 
 If you want to separate your baselines from the default `android-render-tests`
 corpus in Gold, you can call `setCorpus()` on your
@@ -174,38 +101,6 @@ failed renders, eg:
 ./out/Debug/bin/run_chrome_public_test_apk -A Feature=RenderTest --local-output
 ```
 
-The golden images should be downloaded as part of the `gclient sync` process,
-but if there appear to be goldens missing that should be there, try running
-`//chrome/test/data/android/manage_render_test_goldens.py download` to ensure
-that the downloaded goldens are current for the git revision.
-
-### Generating golden images locally
-
-**Note that this section only applies to tests running in the legacy/local pixel
-comparison mode**
-
-New golden images may be downloaded from the trybots or retrieved locally. This
-section elaborates how to do the latter.
-
-You should always create your reference images on the same device type as the
-one running the tests. This is because each device/API version may produce a
-slightly different image, eg. due to different screen dimensions, DPI setting,
-or styling used across OS versions. This is also why each golden image name
-includes the device name and API version.
-
-When running a test with no goldens on the correct device, your tests should
-fail with an exception:
-
-```
-RenderTest Goldens missing for: <reference>. See RENDER_TESTS.md for how to fix this failure.
-```
-
-You will be able to find the images the device captured on the device's SD card.
-
-```
-adb -d shell ls /sdcard/chromium_tests_root/chrome/test/data/android/render_tests/failures
-```
-
 ## Implementation Details
 
 ### Supported devices
@@ -216,10 +111,11 @@ that occur on the trybots, otherwise the golden files will get out of date as
 changes occur and render tests will either fail on the Testers with no warning,
 or be useless.
 
-Currently, `chrome_public_test_apk` is only run on Nexus 5s running Android
-Lollipop, so that is the only model/sdk combination for which we store goldens.
-There [is work](https://crbug.com/731759) to expand this to include Nexus 5Xs
-running Marshmallow as well.
+Currently, the render tests are only run on the CQ on Nexus 5Xs running
+Android Marshmallow, so that is the only model/sdk combination for which we
+expect golden images to be maintained. The tests run on other devices and OS
+versions, but the results are made available mostly as an FYI, and a comparison
+failure on these other configurations will not result in a test failure.
 
 ### Sanitizing Views
 

@@ -35,6 +35,7 @@ source_set("toolbar") {
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main",
+    "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/policy:feature_flags",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/search_engines",

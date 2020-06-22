@@ -125,8 +125,6 @@ class MockUploadClient : public StorageQueue::UploaderInterface {
   };
 
  private:
-  ~MockUploadClient() override = default;  // Mandated by base::RefCounted
-
   Sequence test_upload_sequence_;
 };
 
@@ -161,8 +159,9 @@ class StorageQueueTest : public ::testing::TestWithParam<size_t> {
     return BuildStorageQueueOptionsImmediate().set_upload_period(upload_period);
   }
 
-  StatusOr<scoped_refptr<StorageQueue::UploaderInterface>> BuildMockUploader() {
-    auto uploader = base::MakeRefCounted<MockUploadClient>();
+  StatusOr<std::unique_ptr<StorageQueue::UploaderInterface>>
+  BuildMockUploader() {
+    auto uploader = std::make_unique<MockUploadClient>();
     set_mock_uploader_expectations_.Call(uploader.get());
     return uploader;
   }

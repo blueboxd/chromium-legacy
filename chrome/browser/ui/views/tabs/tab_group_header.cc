@@ -98,6 +98,8 @@ TabGroupHeader::TabGroupHeader(TabStrip* tab_strip,
   views::HighlightPathGenerator::Install(
       this,
       std::make_unique<TabGroupHighlightPathGenerator>(title_chip_, title_));
+
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 }
 
 TabGroupHeader::~TabGroupHeader() = default;
@@ -291,6 +293,17 @@ void TabGroupHeader::ShowContextMenuForViewImpl(
   editor_bubble_tracker_.Opened(TabGroupEditorBubbleView::Show(
       tab_strip_->controller()->GetBrowser(), group().value(), this,
       base::nullopt, nullptr, kStopContextMenuPropagation));
+}
+
+bool TabGroupHeader::DoesIntersectRect(const views::View* target,
+                                       const gfx::Rect& rect) const {
+  // Tab group headers are only highlighted with a tab shape while dragging, so
+  // visually the header is basically a rectangle between two tab separators.
+  // The distance from the endge of the view to the tab separator is half of the
+  // overlap distance. We should only accept events between the separators.
+  gfx::Rect contents_rect = GetLocalBounds();
+  contents_rect.Inset(TabStyle::GetTabOverlap() / 2, 0);
+  return contents_rect.Intersects(rect);
 }
 
 int TabGroupHeader::CalculateWidth() const {

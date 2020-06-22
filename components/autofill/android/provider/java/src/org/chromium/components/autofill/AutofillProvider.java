@@ -528,7 +528,7 @@ public class AutofillProvider {
     }
 
     @CalledByNative
-    protected void hidePopup() {
+    public void hidePopup() {
         if (mDatalistPopup != null) {
             mDatalistPopup.dismiss();
             mDatalistPopup = null;

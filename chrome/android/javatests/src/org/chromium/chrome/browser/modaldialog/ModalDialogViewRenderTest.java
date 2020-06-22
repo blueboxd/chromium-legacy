@@ -66,8 +66,7 @@ public class ModalDialogViewRenderTest extends DummyUiActivityTestCase {
     private TextView mCustomTextView2;
 
     @Rule
-    public RenderTestRule mRenderTestRule =
-            new RenderTestRule("chrome/test/data/android/render_tests");
+    public RenderTestRule mRenderTestRule = new RenderTestRule();
 
     public ModalDialogViewRenderTest(boolean nightModeEnabled) {
         // Sets a fake background color to make the screenshots easier to compare with bare eyes.

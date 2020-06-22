@@ -195,6 +195,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
       base::Time last_access_time,
       bool transient,
       const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+      base::Optional<DownloadSchedule> download_schedule,
       std::unique_ptr<DownloadEntry> download_entry);
 
   // Constructing for a regular download.
@@ -569,6 +570,10 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
                                            const base::FilePath& full_path);
 
   void OnTargetResolved();
+
+  // If |download_schedule_| presents, maybe interrupt the download and start
+  // later. Returns whether the download should be started later.
+  bool MaybeDownloadLater();
 
   // If all pre-requisites have been met, complete download processing, i.e. do
   // internal cleanup, file rename, and potentially auto-open.  (Dangerous

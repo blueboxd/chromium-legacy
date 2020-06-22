@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "build/chromecast_buildflags.h"
 #include "media/learning/mojo/mojo_learning_task_controller_service.h"
 #include "media/mojo/services/video_decode_stats_recorder.h"
 #include "media/mojo/services/watch_time_recorder.h"
@@ -22,9 +23,9 @@
 #include "media/filters/decrypting_video_decoder.h"
 #endif  // !defined(OS_ANDROID)
 
-#if defined(OS_FUCHSIA)
-#include "media/fuchsia/metrics/fuchsia_playback_events_recorder.h"
-#endif  // defined(OS_FUCHSIA)
+#if defined(OS_FUCHSIA) || (BUILDFLAG(IS_CHROMECAST) && defined(OS_ANDROID))
+#include "media/mojo/services/playback_events_recorder.h"
+#endif
 
 namespace media {
 
@@ -289,8 +290,8 @@ void MediaMetricsProvider::AcquireVideoDecodeStatsRecorder(
 
 void MediaMetricsProvider::AcquirePlaybackEventsRecorder(
     mojo::PendingReceiver<mojom::PlaybackEventsRecorder> receiver) {
-#if defined(OS_FUCHSIA)
-  FuchsiaPlaybackEventsRecorder::Create(std::move(receiver));
+#if defined(OS_FUCHSIA) || (BUILDFLAG(IS_CHROMECAST) && defined(OS_ANDROID))
+  PlaybackEventsRecorder::Create(std::move(receiver));
 #endif
 }
 

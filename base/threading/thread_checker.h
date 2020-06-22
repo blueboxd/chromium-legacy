@@ -5,8 +5,8 @@
 #ifndef BASE_THREADING_THREAD_CHECKER_H_
 #define BASE_THREADING_THREAD_CHECKER_H_
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/strings/string_piece.h"
 #include "base/thread_annotations.h"
 #include "base/threading/thread_checker_impl.h"
@@ -84,7 +84,7 @@
 #define DETACH_FROM_THREAD(name) (name).DetachFromThread()
 #else  // DCHECK_IS_ON()
 #define THREAD_CHECKER(name) static_assert(true, "")
-#define DCHECK_CALLED_ON_VALID_THREAD(name, ...) EAT_STREAM_PARAMETERS
+#define DCHECK_CALLED_ON_VALID_THREAD(name, ...) EAT_CHECK_STREAM_PARAMS()
 #define DETACH_FROM_THREAD(name)
 #endif  // DCHECK_IS_ON()
 

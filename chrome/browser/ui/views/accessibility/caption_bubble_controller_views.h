@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_
 
 #include <memory>
+#include <string>
 #include <unordered_map>
 
 #include "chrome/browser/ui/caption_bubble_controller.h"
@@ -68,6 +69,9 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // Sets the active contents to the given web contents, and creates a new
   // CaptionBubbleModel for that contents if one does not already exist.
   void SetActiveContents(content::WebContents* contents);
+
+  bool IsWidgetVisibleForTesting() override;
+  std::string GetBubbleLabelTextForTesting() override;
 
   CaptionBubble* caption_bubble_;
   views::Widget* caption_widget_;

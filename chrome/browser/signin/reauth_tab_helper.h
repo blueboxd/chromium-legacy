@@ -52,6 +52,7 @@ class ReauthTabHelper : public content::WebContentsUserData<ReauthTabHelper>,
   void WebContentsDestroyed() override;
 
   bool is_within_reauth_origin();
+  bool has_last_committed_error_page();
 
  private:
   friend class content::WebContentsUserData<ReauthTabHelper>;
@@ -64,6 +65,7 @@ class ReauthTabHelper : public content::WebContentsUserData<ReauthTabHelper>,
   const bool restrict_to_reauth_origin_;
   ReauthCallback callback_;
   bool is_within_reauth_origin_ = true;
+  bool has_last_committed_error_page_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

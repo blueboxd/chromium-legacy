@@ -1042,7 +1042,8 @@ static jboolean JNI_WebsitePreferenceBridge_IsContentSettingEnabled(
          type == ContentSettingsType::ADS ||
          type == ContentSettingsType::CLIPBOARD_READ_WRITE ||
          type == ContentSettingsType::USB_GUARD ||
-         type == ContentSettingsType::BLUETOOTH_SCANNING);
+         type == ContentSettingsType::BLUETOOTH_SCANNING ||
+         type == ContentSettingsType::BLUETOOTH_GUARD);
   return GetBooleanForContentSetting(jbrowser_context_handle, type);
 }
 
@@ -1060,12 +1061,14 @@ static void JNI_WebsitePreferenceBridge_SetContentSettingEnabled(
          type == ContentSettingsType::POPUPS ||
          type == ContentSettingsType::ADS ||
          type == ContentSettingsType::USB_GUARD ||
-         type == ContentSettingsType::BLUETOOTH_SCANNING);
+         type == ContentSettingsType::BLUETOOTH_SCANNING ||
+         type == ContentSettingsType::BLUETOOTH_GUARD);
 
   ContentSetting value = CONTENT_SETTING_BLOCK;
   if (allow) {
     if (type == ContentSettingsType::USB_GUARD ||
-        type == ContentSettingsType::BLUETOOTH_SCANNING) {
+        type == ContentSettingsType::BLUETOOTH_SCANNING ||
+        type == ContentSettingsType::BLUETOOTH_GUARD) {
       value = CONTENT_SETTING_ASK;
     } else {
       value = CONTENT_SETTING_ALLOW;

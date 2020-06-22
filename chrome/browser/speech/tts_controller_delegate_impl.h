@@ -33,8 +33,6 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
                                         double* rate,
                                         double* pitch,
                                         double* volume) override;
-  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override;
-  content::TtsEngineDelegate* GetTtsEngineDelegate() override;
 
  protected:
   TtsControllerDelegateImpl();
@@ -49,9 +47,6 @@ class TtsControllerDelegateImpl : public content::TtsControllerDelegate {
   virtual const PrefService* GetPrefService(content::TtsUtterance* utterance);
 
   friend struct base::DefaultSingletonTraits<TtsControllerDelegateImpl>;
-
-  // The delegate that processes TTS requests with user-installed extensions.
-  content::TtsEngineDelegate* tts_engine_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerDelegateImpl);
 };

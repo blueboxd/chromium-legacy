@@ -9,8 +9,8 @@
 #include <cstddef>
 #include <cstdint>
 
+#include "base/check.h"
 #include "base/hash/md5.h"
-#include "base/logging.h"
 
 namespace base {
 namespace internal {

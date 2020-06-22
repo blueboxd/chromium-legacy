@@ -136,7 +136,7 @@ class BinaryUploadService : public KeyedService {
     }
 
     // Returns the URL to send the request to.
-    const GURL& url() const { return url_; }
+    GURL GetUrlWithParams() const;
 
     // Returns the metadata to upload, as a ContentAnalysisRequest.
     const enterprise_connectors::ContentAnalysisRequest&

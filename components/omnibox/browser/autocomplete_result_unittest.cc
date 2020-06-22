@@ -260,7 +260,8 @@ void AutocompleteResultTest::SortMatchesAndVerifyOrder(
   ASSERT_EQ(expected_order.size(), result.size());
   for (size_t i = 0; i < expected_order.size(); ++i) {
     EXPECT_EQ(data[expected_order[i]].destination_url,
-              result.match_at(i)->destination_url.spec());
+              result.match_at(i)->destination_url.spec())
+        << "Unexpected item at position " << i;
   }
 }
 
@@ -1078,13 +1079,18 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
+  // Where Grouping suggestions by Search vs URL kicks in, search gets
+  // promoted to the top of the list.
+  const std::vector<size_t> expected_natural_order{1, 2, 3, 0};
+  const std::vector<size_t> expected_demoted_order{3, 2, 0, 1};
+
   // Because we want to ensure the highest naturally scoring
   // allowed-to-be default suggestion is the default, make sure history-title
   // is the default match despite demotion.
   // Make sure history-URL is the last match due to the logic which groups
   // searches and URLs together.
   SortMatchesAndVerifyOrder("a", OmniboxEventProto::HOME_PAGE, matches,
-                            {1, 2, 3, 0}, data);
+                            expected_natural_order, data);
 
   // However, in the fakebox/realbox, we do want to use the demoted score when
   // selecting the default match because we generally only expect it to be
@@ -1094,9 +1100,9 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   // which groups searches and URLs together.
   SortMatchesAndVerifyOrder(
       "a", OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
-      matches, {3, 2, 0, 1}, data);
+      matches, expected_demoted_order, data);
   SortMatchesAndVerifyOrder("a", OmniboxEventProto::NTP_REALBOX, matches,
-                            {3, 2, 0, 1}, data);
+                            expected_demoted_order, data);
 
   // Unless, the user's input looks like a URL, in which case we want to use
   // the natural scoring again to make sure the user gets a URL if they're
@@ -1106,9 +1112,9 @@ TEST_F(AutocompleteResultTest, DemoteByType) {
   SortMatchesAndVerifyOrder(
       "www.example.com",
       OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS, matches,
-      {1, 2, 3, 0}, data);
+      expected_natural_order, data);
   SortMatchesAndVerifyOrder("www.example.com", OmniboxEventProto::NTP_REALBOX,
-                            matches, {1, 2, 3, 0}, data);
+                            matches, expected_natural_order, data);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullReorderForDefaultMatch) {
@@ -1429,6 +1435,7 @@ TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
   EXPECT_EQ(900, result.match_at(2)->relevance);
 }
 
+#if !defined(OS_ANDROID)
 TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeaturesAndParameters(
@@ -1474,6 +1481,7 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
   AssertResultMatches(result, expected_data,
                       AutocompleteResult::GetMaxMatches());
 }
+#endif
 
 TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
   base::test::ScopedFeatureList feature_list;

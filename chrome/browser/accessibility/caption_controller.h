@@ -79,6 +79,7 @@ class CaptionController : public BrowserListObserver, public KeyedService {
 
  private:
   friend class CaptionControllerFactory;
+  friend class CaptionControllerTest;
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override;

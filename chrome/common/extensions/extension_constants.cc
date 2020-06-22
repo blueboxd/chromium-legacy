@@ -71,7 +71,7 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
     kMediaRouterStableExtensionId,
 #if defined(OS_CHROMEOS)
     kAssessmentAssistantExtensionId,
-    kAutoclickExtensionId,
+    kAccessibilityCommonExtensionId,
     kSelectToSpeakExtensionId,
     kSwitchAccessExtensionId,
     kFilesManagerAppId,
@@ -87,10 +87,13 @@ const char* const kBuiltInFirstPartyExtensionIds[] = {
 #if defined(OS_CHROMEOS)
 const char kAssessmentAssistantExtensionId[] =
     "gndmhdcefbhlchkhipcnnbkcmicncehk";
-const char kAutoclickExtensionId[] = "egfdjlfmgnehecnclamagfafdccgfndp";
-const char kAutoclickExtensionPath[] = "chromeos/accessibility";
-const char kAutoclickManifestFilename[] = "autoclick_manifest.json";
-const char kAutoclickGuestManifestFilename[] = "autoclick_manifest_guest.json";
+const char kAccessibilityCommonExtensionId[] =
+    "egfdjlfmgnehecnclamagfafdccgfndp";
+const char kAccessibilityCommonExtensionPath[] = "chromeos/accessibility";
+const char kAccessibilityCommonManifestFilename[] =
+    "accessibility_common_manifest.json";
+const char kAccessibilityCommonGuestManifestFilename[] =
+    "accessibility_common_manifest_guest.json";
 const char kChromeVoxExtensionPath[] = "chromeos/accessibility";
 const char kChromeVoxManifestFilename[] = "chromevox_manifest.json";
 const char kChromeVoxGuestManifestFilename[] = "chromevox_manifest_guest.json";

@@ -2071,15 +2071,7 @@ TEST_F(DisplayLockContextRenderingTest,
   auto* unrelated_element = GetDocument().getElementById("unrelated");
   auto* outer_element = GetDocument().getElementById("outer");
 
-  // Since visibility switch happens at the start of the next lifecycle, we
-  // should have clean layout for now.
-  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
-
+  // Ensure that the visibility switch happens.
   RunStartOfLifecycleTasks();
 
   // Now that the intersection observer notifications switch the visibility of
@@ -2210,15 +2202,7 @@ TEST_F(DisplayLockContextRenderingTest, NestedLockDoesHideWhenItIsOffscreen) {
   auto* unrelated_element = GetDocument().getElementById("unrelated");
   auto* outer_element = GetDocument().getElementById("outer");
 
-  // Since visibility switch happens at the start of the next lifecycle, we
-  // should have clean layout for now.
-  EXPECT_FALSE(outer_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(outer_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_FALSE(unrelated_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(unrelated_element->GetLayoutObject()->SelfNeedsLayout());
-  EXPECT_FALSE(inner_element->GetLayoutObject()->NeedsLayout());
-  EXPECT_FALSE(inner_element->GetLayoutObject()->SelfNeedsLayout());
-
+  // Ensure that the visibility switch happens.
   RunStartOfLifecycleTasks();
 
   // Now that the intersection observer notifications switch the visibility of
@@ -2652,6 +2636,70 @@ TEST_F(DisplayLockContextRenderingTest,
 
   auto scope = GetScopedForcedUpdate(hide, true /* include self */);
   EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdateForNode(*target));
+}
+
+TEST_F(DisplayLockContextRenderingTest,
+       AutoReachesStableStateOnContentSmallerThanLockedSize) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .spacer { height: 10000px; }
+      .auto {
+        content-visibility: auto;
+        contain-intrinsic-size: 1px 10000px;
+      }
+      .auto > div {
+        height: 3000px;
+      }
+    </style>
+
+    <div class=spacer></div>
+    <div id=e1 class=auto><div>content</div></div>
+    <div id=e2 class=auto><div>content</div></div>
+    <div class=spacer></div>
+  )HTML");
+
+  UpdateAllLifecyclePhasesForTest();
+
+  GetDocument().scrollingElement()->setScrollTop(19000);
+
+  Element* element = GetDocument().getElementById("e1");
+
+  // Note that this test also unlock/relocks #e2 but we only care about #e1
+  // settling into a steady state.
+
+  // Initially we start with locked in the viewport.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_EQ(GetDocument().scrollingElement()->scrollTop(), 19000.);
+
+  // It gets unlocked because it's in the viewport.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_EQ(GetDocument().scrollingElement()->scrollTop(), 19000.);
+
+  // By unlocking it, it shrinks so next time it gets relocked.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_EQ(GetDocument().scrollingElement()->scrollTop(), 19000.);
+
+  // It again gets unlocked and shrink.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_FALSE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_EQ(GetDocument().scrollingElement()->scrollTop(), 19000.);
+
+  // On the next relock we select the following element as an anchor and thus
+  // the scroll top changes to be higher.
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+  EXPECT_GT(GetDocument().scrollingElement()->scrollTop(), 19000.);
+
+  // Subsequent updates no longer unlock the element because even if its locked
+  // state it is far enough off-screen.
+  for (int i = 0; i < 5; ++i) {
+    UpdateAllLifecyclePhasesForTest();
+    EXPECT_TRUE(element->GetDisplayLockContext()->IsLocked());
+    EXPECT_GT(GetDocument().scrollingElement()->scrollTop(), 19000.);
+  }
 }
 
 class DisplayLockContextLegacyRenderingTest

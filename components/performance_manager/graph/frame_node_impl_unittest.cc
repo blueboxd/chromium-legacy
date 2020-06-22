@@ -397,8 +397,6 @@ TEST_F(FrameNodeImplTest, PublicInterface) {
             public_frame_node->GetProcessNode());
   EXPECT_EQ(frame_node->frame_tree_node_id(),
             public_frame_node->GetFrameTreeNodeId());
-  EXPECT_EQ(frame_node->dev_tools_token(),
-            public_frame_node->GetDevToolsToken());
   EXPECT_EQ(frame_node->frame_token(), public_frame_node->GetFrameToken());
   EXPECT_EQ(frame_node->browsing_instance_id(),
             public_frame_node->GetBrowsingInstanceId());

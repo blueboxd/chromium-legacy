@@ -131,30 +131,8 @@ class CORE_EXPORT StyleResolverState {
   void SetIsAnimatingCustomProperties(bool value) {
     is_animating_custom_properties_ = value;
   }
-  bool IsAnimatingRevert() const { return is_animating_revert_; }
-  void SetIsAnimatingRevert(bool value) { is_animating_revert_ = value; }
 
-  // Normally, we apply all active animation effects on top of the style created
-  // by regular CSS declarations. However, !important declarations have a
-  // higher priority than animation effects [1]. If we're currently animating
-  // (not transitioning) a property which was declared !important in the base
-  // style, this flag is set such that we can disable the base computed style
-  // optimization.
-  //
-  // [1] https://drafts.csswg.org/css-cascade-4/#cascade-origin
-  bool HasImportantOverrides() const { return has_important_overrides_; }
-  void SetHasImportantOverrides() { has_important_overrides_ = true; }
-
-  // This flag is set when applying an animation (or transition) for a font
-  // affecting property. When such properties are animated, font-relative
-  // units (e.g. em, ex) in the base style must respond to the animation.
-  // Therefore we can't use the base computed style optimization in such cases.
-  bool HasFontAffectingAnimation() const {
-    return has_font_affecting_animation_;
-  }
-  void SetHasFontAffectingAnimation() { has_font_affecting_animation_ = true; }
-
-  const Element* GetAnimatingElement() const;
+  Element* GetAnimatingElement() const;
 
   void SetParentStyle(scoped_refptr<const ComputedStyle>);
   const ComputedStyle* ParentStyle() const { return parent_style_.get(); }
@@ -308,12 +286,6 @@ class CORE_EXPORT StyleResolverState {
   CSSAnimationUpdate animation_update_;
   bool is_animation_interpolation_map_ready_ = false;
   bool is_animating_custom_properties_ = false;
-  // We can't use the base computed style optimization when 'revert' appears
-  // in a keyframe. (We need to build the cascade to know what to revert to).
-  // TODO(crbug.com/1068515): Refactor caching to remove these flags.
-  bool is_animating_revert_ = false;
-  bool has_important_overrides_ = false;
-  bool has_font_affecting_animation_ = false;
   bool has_dir_auto_attribute_ = false;
   PseudoElementStyleRequest::RequestType pseudo_request_type_;
 

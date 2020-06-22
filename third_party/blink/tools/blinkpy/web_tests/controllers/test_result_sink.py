@@ -112,15 +112,11 @@ class TestResultSink(object):
         """
         # the message structure of the dict can be found at
         # https://chromium.googlesource.com/infra/luci/luci-go/+/master/resultdb/proto/type/common.proto#56
+        pair = lambda k, v: {'key': k, 'value': v}
         return [
-            {
-                'key': 'web_tests_result_type',
-                'value': result.type,
-            },
-            {
-                'key': 'web_tests_device_failed',
-                'value': str(result.device_failed),
-            },
+            pair('test_name', result.test_name),
+            pair('web_tests_device_failed', str(result.device_failed)),
+            pair('web_tests_result_type', result.type),
         ]
 
     def _artifacts(self, result):

@@ -92,6 +92,8 @@ def _MatchSymbols(before, after, key_func, padding_by_section_name):
 def _DiffSymbolGroups(before, after):
   # For changed symbols, padding is zeroed out. In order to not lose the
   # information entirely, store it in aggregate.
+  # Ignoring Containers, i.e., paddings from sections across Containers are
+  # combined.
   padding_by_section_name = collections.defaultdict(int)
 
   # Usually >90% of symbols are exact matches, so all of the time is spent in
@@ -150,19 +152,25 @@ def _DiffObj(before_obj, after_obj):
 
 
 def _DiffContainerLists(before_containers, after_containers):
-  """Computes diffs between two lists of Containers."""
-  # TODO(huangs): Add support for multiple containers (needs name matching).
-  assert len(before_containers) == 1
-  assert len(after_containers) == 1
+  """Computes diff of Containers lists, matching names."""
+  # Find ordered unique names, preferring order of |container_after|.
+  pairs = collections.OrderedDict()
+  for c in after_containers:
+    pairs[c.name] = [models.Container.Empty(), c]
+  for c in before_containers:
+    if c.name in pairs:
+      pairs[c.name][0] = c
+    else:
+      pairs[c.name] = [c, models.Container.Empty()]
   ret = []
-  for (before_c, after_c) in zip(before_containers, after_containers):
-    name = after_c.name
-    assert before_c.name == name
+  for name, [before_c, after_c] in pairs.items():
     ret.append(
         models.Container(name=name,
                          metadata=_DiffObj(before_c.metadata, after_c.metadata),
                          section_sizes=_DiffObj(before_c.section_sizes,
                                                 after_c.section_sizes)))
+  # This update newly created diff Containers, not existing ones or EMPTY.
+  models.Container.AssignShortNames(ret)
   return ret
 
 

@@ -21,11 +21,10 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_media_stream.h"
-#include "third_party/blink/public/platform/web_media_stream_source.h"
-#include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/modules/mediastream/webmediaplayer_ms.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
@@ -141,7 +140,7 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
     scoped_refptr<base::SingleThreadTaskRunner>
         video_frame_compositor_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    const WebMediaStream& web_stream,
+    MediaStreamDescriptor* media_stream_descriptor,
     std::unique_ptr<WebVideoFrameSubmitter> submitter,
     WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
     const base::WeakPtr<WebMediaPlayerMS>& player)
@@ -170,12 +169,12 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
             weak_ptr_factory_.GetWeakPtr())));
   }
 
-  WebVector<WebMediaStreamTrack> video_tracks;
-  if (!web_stream.IsNull())
-    video_tracks = web_stream.VideoTracks();
+  HeapVector<Member<MediaStreamComponent>> video_components;
+  if (media_stream_descriptor)
+    video_components = media_stream_descriptor->VideoComponents();
 
   const bool remote_video =
-      video_tracks.size() && video_tracks[0].Source().Remote();
+      video_components.size() && video_components[0]->Source()->Remote();
 
   if (remote_video && Platform::Current()->RTCSmoothnessAlgorithmEnabled()) {
     base::AutoLock auto_lock(current_frame_lock_);
@@ -187,8 +186,9 @@ WebMediaPlayerMSCompositor::WebMediaPlayerMSCompositor(
   }
 
   // Just for logging purpose.
-  std::string stream_id =
-      web_stream.IsNull() ? std::string() : web_stream.Id().Utf8();
+  std::string stream_id = media_stream_descriptor
+                              ? media_stream_descriptor->Id().Utf8()
+                              : std::string();
   const uint32_t hash_value = base::Hash(stream_id);
   serial_ = (hash_value << 1) | (remote_video ? 1 : 0);
 }

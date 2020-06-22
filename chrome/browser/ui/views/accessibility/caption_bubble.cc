@@ -589,4 +589,8 @@ void CaptionBubble::UpdateContentSize() {
                                   close_button_->GetPreferredSize().height()));
 }
 
+std::string CaptionBubble::GetLabelTextForTesting() {
+  return base::UTF16ToUTF8(label_->GetText());
+}
+
 }  // namespace captions

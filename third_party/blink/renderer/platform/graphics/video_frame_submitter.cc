@@ -498,7 +498,7 @@ bool VideoFrameSubmitter::SubmitFrame(
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
-      std::move(compositor_frame), nullptr, 0);
+      std::move(compositor_frame), base::nullopt, 0);
   frame_trackers_.NotifySubmitFrame(frame_token, false, begin_frame_ack,
                                     last_begin_frame_args_);
   resource_provider_->ReleaseFrameResources();
@@ -527,7 +527,7 @@ void VideoFrameSubmitter::SubmitEmptyFrame() {
   compositor_frame_sink_->SubmitCompositorFrame(
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
-      std::move(compositor_frame), nullptr, 0);
+      std::move(compositor_frame), base::nullopt, 0);
   frame_trackers_.NotifySubmitFrame(frame_token, false, begin_frame_ack,
                                     last_begin_frame_args_);
 

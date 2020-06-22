@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/lacros/lacros_util.h"
 
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_paths.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
@@ -38,7 +41,12 @@ bool IsUserTypeAllowed(const User* user) {
 
 }  // namespace
 
-constexpr char kUserDataDir[] = "/home/chronos/user/lacros";
+base::FilePath GetUserDataDir() {
+  // Return a subdirectory "lacros" inside of the ash-chrome user data dir.
+  base::FilePath path;
+  base::PathService::Get(chrome::DIR_USER_DATA, &path);
+  return path.Append("lacros");
+}
 
 bool IsLacrosAllowed() {
   return IsLacrosAllowed(chrome::GetChannel());

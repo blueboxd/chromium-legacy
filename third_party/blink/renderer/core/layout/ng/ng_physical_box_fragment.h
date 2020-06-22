@@ -74,6 +74,20 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return *ComputePaddingAddress();
   }
 
+  bool HasOutOfFlowPositionedFragmentainerDescendants() const {
+    return has_oof_positioned_fragmentainer_descendants_;
+  }
+
+  base::span<NGPhysicalOutOfFlowPositionedNode>
+  OutOfFlowPositionedFragmentainerDescendants() const {
+    if (!HasOutOfFlowPositionedFragmentainerDescendants())
+      return base::span<NGPhysicalOutOfFlowPositionedNode>();
+    Vector<NGPhysicalOutOfFlowPositionedNode>* descendants =
+        const_cast<Vector<NGPhysicalOutOfFlowPositionedNode>*>(
+            ComputeOutOfFlowPositionedFragmentainerDescendantsAddress());
+    return {descendants->data(), descendants->size()};
+  }
+
   NGPixelSnappedPhysicalBoxStrut PixelSnappedPadding() const {
     if (!has_padding_)
       return NGPixelSnappedPhysicalBoxStrut();
@@ -163,14 +177,16 @@ class CORE_EXPORT NGPhysicalBoxFragment final
  private:
   const NGFragmentItems* ComputeItemsAddress() const {
     DCHECK(has_fragment_items_ || has_borders_ || has_padding_ ||
-           ink_overflow_computed_or_mathml_paint_info_);
+           ink_overflow_computed_or_mathml_paint_info_ ||
+           has_oof_positioned_fragmentainer_descendants_);
     const NGLink* children_end = children_ + Children().size();
     return reinterpret_cast<const NGFragmentItems*>(children_end);
   }
 
   const NGPhysicalBoxStrut* ComputeBordersAddress() const {
     DCHECK(has_borders_ || has_padding_ ||
-           ink_overflow_computed_or_mathml_paint_info_);
+           ink_overflow_computed_or_mathml_paint_info_ ||
+           has_oof_positioned_fragmentainer_descendants_);
     const NGFragmentItems* items = ComputeItemsAddress();
     if (!has_fragment_items_)
       return reinterpret_cast<const NGPhysicalBoxStrut*>(items);
@@ -179,17 +195,29 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   }
 
   const NGPhysicalBoxStrut* ComputePaddingAddress() const {
-    DCHECK(has_padding_ || ink_overflow_computed_or_mathml_paint_info_);
+    DCHECK(has_padding_ || ink_overflow_computed_or_mathml_paint_info_ ||
+           has_oof_positioned_fragmentainer_descendants_);
     const NGPhysicalBoxStrut* address = ComputeBordersAddress();
     return has_borders_ ? address + 1 : address;
   }
 
   NGMathMLPaintInfo* ComputeMathMLPaintInfoAddress() const {
-    DCHECK(ink_overflow_computed_or_mathml_paint_info_);
+    DCHECK(ink_overflow_computed_or_mathml_paint_info_ ||
+           has_oof_positioned_fragmentainer_descendants_);
     NGPhysicalBoxStrut* address =
         const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress());
     return has_padding_ ? reinterpret_cast<NGMathMLPaintInfo*>(address + 1)
                         : reinterpret_cast<NGMathMLPaintInfo*>(address);
+  }
+
+  const Vector<NGPhysicalOutOfFlowPositionedNode>*
+  ComputeOutOfFlowPositionedFragmentainerDescendantsAddress() const {
+    DCHECK(has_oof_positioned_fragmentainer_descendants_);
+    NGMathMLPaintInfo* address = ComputeMathMLPaintInfoAddress();
+    address =
+        ink_overflow_computed_or_mathml_paint_info_ ? address + 1 : address;
+    return reinterpret_cast<const Vector<NGPhysicalOutOfFlowPositionedNode>*>(
+        address);
   }
 
 #if DCHECK_IS_ON()
@@ -199,7 +227,8 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   LayoutUnit baseline_;
   LayoutUnit last_baseline_;
   NGLink children_[];
-  // borders and padding come from after |children_| if they are not zero.
+  // borders, padding, and oof_positioned_fragmentainer_descendants come after
+  // |children_| if they are not zero.
 };
 
 template <>

@@ -269,6 +269,18 @@
 
   <!-- Bluetooth -->
 
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_ASK" desc="Summary text explaining that the Bluetooth permission is set to ask the user for permission to access individual devices. To be shown in the list of permission categories.">
+    Ask before allowing sites to connect to a device (recommended)
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_BLOCKED" desc="Summary text explaining that the Bluetooth permission is set to block all requests for access to devices. To be shown in the list of permission categories.">
+    Block sites from connecting to devices
+  </message>
+  <message name="IDS_WEBSITE_SETTINGS_BLUETOOTH" desc="Title for Bluetooth settings, which control which of the user's Bluetooth devices can be accessed from websites.">
+    Bluetooth
+  </message>
+
+  <!-- Bluetooth Scanning -->
+
   <message name="IDS_WEBSITE_SETTINGS_CATEGORY_BLUETOOTH_SCANNING_ASK" desc="Summary text explaining that the Bluetooth scanning permission is set to ask the user for permission to do Bluetooth scanning. To be shown in the list of permission categories.">
     Ask when a site wants to discover nearby Bluetooth devices (recommended)
   </message>

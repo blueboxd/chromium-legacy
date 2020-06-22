@@ -340,7 +340,7 @@ void GetAssertionRequestHandler::DispatchRequest(
                 kSupportedAndConfigured &&
         request_.user_verification !=
             UserVerificationRequirement::kDiscouraged) {
-      if (authenticator->Options()->supports_uv_token) {
+      if (authenticator->Options()->supports_pin_uv_auth_token) {
         FIDO_LOG(DEBUG) << "Getting UV token from "
                         << authenticator->GetDisplayName();
         authenticator->GetUvToken(
@@ -662,7 +662,7 @@ void GetAssertionRequestHandler::OnHavePIN(std::string pin) {
 
   state_ = State::kRequestWithPIN;
   authenticator_->GetPINToken(
-      std::move(pin),
+      std::move(pin), {pin::Permissions::kGetAssertion}, request_.rp_id,
       base::BindOnce(&GetAssertionRequestHandler::OnHavePINToken,
                      weak_factory_.GetWeakPtr()));
 }

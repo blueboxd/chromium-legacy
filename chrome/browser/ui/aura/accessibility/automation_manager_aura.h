@@ -89,7 +89,9 @@ class AutomationManagerAura : public ui::AXActionHandler,
   // serializer to save memory.
   void Reset(bool reset_serializer);
 
-  void PostEvent(int32_t id, ax::mojom::Event event_type);
+  void PostEvent(int32_t id,
+                 ax::mojom::Event event_type,
+                 int action_request_id = -1);
 
   void SendPendingEvents();
 
@@ -113,7 +115,13 @@ class AutomationManagerAura : public ui::AXActionHandler,
 
   bool processing_posted_ = false;
 
-  std::vector<std::pair<int32_t, ax::mojom::Event>> pending_events_;
+  struct Event {
+    int id;
+    ax::mojom::Event event_type;
+    int action_request_id;
+  };
+
+  std::vector<Event> pending_events_;
 
   // The handler for AXEvents (e.g. the extensions subsystem in production, or
   // a fake for tests).

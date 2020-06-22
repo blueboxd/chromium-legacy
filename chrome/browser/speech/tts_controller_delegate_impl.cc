@@ -54,11 +54,9 @@ TtsControllerDelegateImpl* TtsControllerDelegateImpl::GetInstance() {
   return base::Singleton<TtsControllerDelegateImpl>::get();
 }
 
-TtsControllerDelegateImpl::TtsControllerDelegateImpl()
-    : tts_engine_delegate_(nullptr) {}
+TtsControllerDelegateImpl::TtsControllerDelegateImpl() = default;
 
-TtsControllerDelegateImpl::~TtsControllerDelegateImpl() {
-}
+TtsControllerDelegateImpl::~TtsControllerDelegateImpl() = default;
 
 int TtsControllerDelegateImpl::GetMatchingVoice(
     content::TtsUtterance* utterance,
@@ -221,13 +219,4 @@ const PrefService* TtsControllerDelegateImpl::GetPrefService(
       prefs = profile->GetPrefs();
   }
   return prefs;
-}
-
-void TtsControllerDelegateImpl::SetTtsEngineDelegate(
-    content::TtsEngineDelegate* delegate) {
-  tts_engine_delegate_ = delegate;
-}
-
-content::TtsEngineDelegate* TtsControllerDelegateImpl::GetTtsEngineDelegate() {
-  return tts_engine_delegate_;
 }

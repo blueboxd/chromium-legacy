@@ -49,11 +49,11 @@
 
 #include <ostream>
 
+#include "base/check.h"
 #include "base/debug/alias.h"
 #include "base/debug/debugging_buildflags.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"

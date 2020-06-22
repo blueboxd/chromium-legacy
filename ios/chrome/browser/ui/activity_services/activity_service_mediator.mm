@@ -6,7 +6,6 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"

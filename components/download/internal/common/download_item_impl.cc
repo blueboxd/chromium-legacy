@@ -314,6 +314,7 @@ DownloadItemImpl::DownloadItemImpl(
     base::Time last_access_time,
     bool transient,
     const std::vector<DownloadItem::ReceivedSlice>& received_slices,
+    base::Optional<DownloadSchedule> download_schedule,
     std::unique_ptr<DownloadEntry> download_entry)
     : request_info_(url_chain,
                     referrer_url,
@@ -352,7 +353,8 @@ DownloadItemImpl::DownloadItemImpl(
       last_modified_time_(last_modified),
       etag_(etag),
       received_slices_(received_slices),
-      is_updating_observers_(false) {
+      is_updating_observers_(false),
+      download_schedule_(std::move(download_schedule)) {
   delegate_->Attach();
   DCHECK(state_ == COMPLETE_INTERNAL || state_ == INTERRUPTED_INTERNAL ||
          state_ == CANCELLED_INTERNAL);
@@ -618,6 +620,7 @@ void DownloadItemImpl::Resume(bool user_resume) {
       paused_ = false;
       if (auto_resume_count_ >= kMaxAutoResumeAttempts) {
         RecordAutoResumeCountLimitReached(GetLastReason());
+        UpdateObservers();
         return;
       }
 
@@ -640,6 +643,7 @@ void DownloadItemImpl::UpdateResumptionInfo(bool user_resume) {
   }
 
   auto_resume_count_ = user_resume ? 0 : ++auto_resume_count_;
+  download_schedule_ = base::nullopt;
 }
 
 void DownloadItemImpl::Cancel(bool user_cancel) {
@@ -1670,6 +1674,15 @@ void DownloadItemImpl::OnDownloadTargetDetermined(
     return;
   }
 
+  if (base::FeatureList::IsEnabled(features::kDownloadLater)) {
+    // If the user select to download on wifi only, use |allow_metered_| to
+    // enforce it. If the user select to download later, allow download on
+    // metered network.
+    download_schedule_ = std::move(download_schedule);
+    if (download_schedule.has_value())
+      allow_metered_ = !download_schedule->only_on_wifi();
+  }
+
   // There were no other pending errors, and we just failed to determined the
   // download target. The target path, if it is non-empty, should be considered
   // suspect. The safe option here is to interrupt the download without doing an
@@ -1807,12 +1820,43 @@ void DownloadItemImpl::OnTargetResolved() {
     return;
   }
 
+  // The download will be started later, interrupt it for now.
+  if (MaybeDownloadLater()) {
+    UpdateObservers();
+    return;
+  }
+
   TransitionTo(IN_PROGRESS_INTERNAL);
   // TODO(asanka): Calling UpdateObservers() prior to MaybeCompleteDownload() is
   // not safe. The download could be in an underminate state after invoking
   // observers. http://crbug.com/586610
   UpdateObservers();
   MaybeCompleteDownload();
+}
+
+bool DownloadItemImpl::MaybeDownloadLater() {
+  if (!base::FeatureList::IsEnabled(features::kDownloadLater) ||
+      !download_schedule_.has_value()) {
+    return false;
+  }
+
+  bool network_type_ok = !download_schedule_->only_on_wifi() ||
+                         !delegate_->IsActiveNetworkMetered();
+  bool should_start_later = false;
+  if (download_schedule_->start_time().has_value() &&
+      download_schedule_->start_time() > base::Time::Now()) {
+    should_start_later = true;
+  }
+
+  if (!network_type_ok || should_start_later) {
+    // TODO(xingliu): Maybe add a new interrupt reason for download later
+    // feature.
+    InterruptWithPartialState(GetReceivedBytes(), std::move(hash_state_),
+                              DOWNLOAD_INTERRUPT_REASON_CRASH);
+    return true;
+  }
+
+  return false;
 }
 
 // When SavePackage downloads MHTML to GData (see
@@ -2396,8 +2440,11 @@ void DownloadItemImpl::SetFullPath(const base::FilePath& new_path) {
 void DownloadItemImpl::AutoResumeIfValid() {
   DVLOG(20) << __func__ << "() " << DebugString(true);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  ResumeMode mode = GetResumeMode();
 
+  if (download_schedule_.has_value())
+    return;
+
+  ResumeMode mode = GetResumeMode();
   if (mode != ResumeMode::IMMEDIATE_RESTART &&
       mode != ResumeMode::IMMEDIATE_CONTINUE) {
     return;

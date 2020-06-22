@@ -10,7 +10,6 @@
 #include <ostream>
 
 #include "base/check.h"
-#include "base/logging.h"
 #include "base/notreached.h"
 #include "build/build_config.h"
 #include "third_party/libpng/png.h"

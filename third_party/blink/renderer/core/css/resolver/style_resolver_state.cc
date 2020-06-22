@@ -219,7 +219,7 @@ CSSParserMode StyleResolverState::GetParserMode() const {
   return GetDocument().InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode;
 }
 
-const Element* StyleResolverState::GetAnimatingElement() const {
+Element* StyleResolverState::GetAnimatingElement() const {
   if (animating_element_type_ == AnimatingElementType::kElement)
     return &GetElement();
   DCHECK_EQ(AnimatingElementType::kPseudoElement, animating_element_type_);

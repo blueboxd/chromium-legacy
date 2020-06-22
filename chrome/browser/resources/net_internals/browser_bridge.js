@@ -18,7 +18,6 @@ const BrowserBridge = (function() {
     // List of observers for various bits of browser state.
     this.hstsObservers_ = [];
     this.expectCTObservers_ = [];
-    this.crosONCFileParseObservers_ = [];
     this.storeDebugLogsObservers_ = [];
     this.setNetworkDebugModeObservers_ = [];
   }
@@ -89,10 +88,6 @@ const BrowserBridge = (function() {
       this.send('flushSocketPools');
     },
 
-    importONCFile(fileContent, passcode) {
-      this.send('importONCFile', [fileContent, passcode]);
-    },
-
     storeDebugLogs() {
       this.send('storeDebugLogs');
     },
@@ -132,12 +127,6 @@ const BrowserBridge = (function() {
     receivedExpectCTTestReportResult(result) {
       for (let i = 0; i < this.expectCTObservers_.length; i++) {
         this.expectCTObservers_[i].onExpectCTTestReportResult(result);
-      }
-    },
-
-    receivedONCFileParse(error) {
-      for (let i = 0; i < this.crosONCFileParseObservers_.length; i++) {
-        this.crosONCFileParseObservers_[i].onONCFileParse(error);
       }
     },
 
@@ -185,16 +174,6 @@ const BrowserBridge = (function() {
      */
     addExpectCTObserver(observer) {
       this.expectCTObservers_.push(observer);
-    },
-
-    /**
-     * Adds a listener for ONC file parse status. The observer will be called
-     * back with:
-     *
-     *   observer.onONCFileParse(error);
-     */
-    addCrosONCFileParseObserver(observer) {
-      this.crosONCFileParseObservers_.push(observer);
     },
 
     /**

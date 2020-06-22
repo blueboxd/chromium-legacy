@@ -681,11 +681,6 @@
     "args": ["--enable-blink-features=CSSScrollTimeline"]
   },
   {
-    "prefix": "out-of-blink-frame-ancestors-disabled",
-    "bases": ["external/wpt/content-security-policy/frame-ancestors", "external/wpt/portals/csp"],
-    "args": ["--disable-features=OutOfBlinkFrameAncestors"]
-  },
-  {
     "prefix": "import-maps-disabled",
     "bases": ["external/wpt/import-maps/core/not-as-classic-script.html"],
     "args": ["--disable-blink-features=ExperimentalProductivityFeatures"]

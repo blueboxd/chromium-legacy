@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.permissions.PermissionTestRule.PermissionUpdateWaiter;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.LocationSettingsTestUtil;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.permissions.R;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -155,6 +156,11 @@ public class RuntimePermissionTest {
         });
     }
 
+    private void setupGeolocationSystemMock() {
+        LocationSettingsTestUtil.setSystemLocationSettingEnabled(true);
+        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+    }
+
     /**
      * Run a test related to the runtime permission prompt, based on the specified parameters.
      * @param testUrl The URL of the test page to load in order to run the text.
@@ -235,7 +241,7 @@ public class RuntimePermissionTest {
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
     public void testAllowRuntimeLocation() throws Exception {
-        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+        setupGeolocationSystemMock();
 
         runTest(GEOLOCATION_TEST, true /* expectPermissionAllowed */,
                 true /* permissionPromptAllow */, RuntimePromptResponse.GRANT,
@@ -272,7 +278,7 @@ public class RuntimePermissionTest {
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
     public void testDenyRuntimeLocation() throws Exception {
-        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+        setupGeolocationSystemMock();
 
         runTest(GEOLOCATION_TEST, false /* expectPermissionAllowed */,
                 true /* permissionPromptAllow */, RuntimePromptResponse.DENY,
@@ -343,7 +349,7 @@ public class RuntimePermissionTest {
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
     public void testDenyTriggersNoRuntime() throws Exception {
-        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+        setupGeolocationSystemMock();
 
         runTest(GEOLOCATION_TEST, false /* expectPermissionAllowed */,
                 false /* permissionPromptAllow */, RuntimePromptResponse.ASSERT_NEVER_ASKED,
@@ -400,7 +406,7 @@ public class RuntimePermissionTest {
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
     public void testAlreadyGrantedRuntimeLocation() throws Exception {
-        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+        setupGeolocationSystemMock();
 
         runTest(GEOLOCATION_TEST, true /* expectPermissionAllowed */,
                 true /* permissionPromptAllow */, RuntimePromptResponse.ALREADY_GRANTED,
@@ -414,7 +420,7 @@ public class RuntimePermissionTest {
     @MediumTest
     @Feature({"RuntimePermissions", "Location"})
     public void testAllowRuntimeLocationIncognito() throws Exception {
-        LocationProviderOverrider.setLocationProviderImpl(new MockLocationProvider());
+        setupGeolocationSystemMock();
         mPermissionTestRule.newIncognitoTabFromMenu();
 
         runTest(GEOLOCATION_TEST, true /* expectPermissionAllowed */,

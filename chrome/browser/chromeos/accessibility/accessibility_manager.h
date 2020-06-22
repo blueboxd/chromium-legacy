@@ -460,7 +460,8 @@ class AccessibilityManager
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_{this};
 
-  std::unique_ptr<AccessibilityExtensionLoader> autoclick_extension_loader_;
+  std::unique_ptr<AccessibilityExtensionLoader>
+      accessibility_common_extension_loader_;
 
   std::unique_ptr<AccessibilityExtensionLoader> chromevox_loader_;
 

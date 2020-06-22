@@ -34,10 +34,6 @@ class NativeUnwinderAndroid : public Unwinder {
   // all profiles in a process.
   static std::unique_ptr<unwindstack::Maps> CreateMaps();
   static std::unique_ptr<unwindstack::Memory> CreateProcessMemory();
-  // Adds modules found from executable loaded memory regions to |module_cache|.
-  static void AddInitialModulesFromMaps(
-      const unwindstack::Maps& memory_regions_map,
-      ModuleCache* module_cache);
 
   // |exclude_module_with_base_address| is used to exclude a specific module
   // and let another unwinder take control. TryUnwind() will exit with
@@ -58,6 +54,12 @@ class NativeUnwinderAndroid : public Unwinder {
                          uintptr_t stack_top,
                          ModuleCache* module_cache,
                          std::vector<Frame>* stack) const override;
+
+  // Adds modules found from executable loaded memory regions to |module_cache|.
+  // Public for test access.
+  static void AddInitialModulesFromMaps(
+      const unwindstack::Maps& memory_regions_map,
+      ModuleCache* module_cache);
 
  private:
   void EmitDexFrame(uintptr_t dex_pc,

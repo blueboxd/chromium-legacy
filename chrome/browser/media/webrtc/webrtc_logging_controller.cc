@@ -85,7 +85,10 @@ void WebRtcLoggingController::StartLogging(
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(render_process_id_);
 
-    // OK for this to replace an existing logging_agent_ connection.
+    // OK to rebind existing |logging_agent_| and |receiver_| connections.
+    logging_agent_.reset();
+    receiver_.reset();
+
     host->BindReceiver(logging_agent_.BindNewPipeAndPassReceiver());
     logging_agent_.set_disconnect_handler(
         base::BindOnce(&WebRtcLoggingController::OnAgentDisconnected, this));

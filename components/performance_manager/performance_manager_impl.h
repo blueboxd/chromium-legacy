@@ -92,7 +92,6 @@ class PerformanceManagerImpl : public PerformanceManager {
       FrameNodeImpl* parent_frame_node,
       int frame_tree_node_id,
       int render_frame_id,
-      const base::UnguessableToken& dev_tools_token,
       const FrameToken& frame_token,
       int32_t browsing_instance_id,
       int32_t site_instance_id,

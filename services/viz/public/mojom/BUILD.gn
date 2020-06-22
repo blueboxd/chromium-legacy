@@ -453,6 +453,36 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "viz.mojom.HitTestRegion"
+          cpp = "::viz::HitTestRegion"
+        },
+        {
+          mojom = "viz.mojom.HitTestRegionList"
+          cpp = "::viz::HitTestRegionList"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//services/viz/public/cpp/hit_test/hit_test_region_list_mojom_traits.h" ]
+      traits_public_deps = [
+        "//components/viz/common",
+        "//services/viz/public/cpp:crash_keys",
+        "//ui/gfx/geometry/mojom",
+      ]
+    },
+    {
+      types = [
+        {
+          mojom = "viz.mojom.CompositorFrameMetadata"
+          cpp = "::viz::CompositorFrameMetadata"
+          move_only = true
+        },
+      ]
+      traits_headers = [ "//services/viz/public/cpp/compositing/compositor_frame_metadata_mojom_traits.h" ]
+      traits_public_deps = [ "//components/viz/common" ]
+    },
+    {
+      types = [
+        {
           mojom = "viz.mojom.CompositorFrame"
           cpp = "::viz::CompositorFrame"
           move_only = true

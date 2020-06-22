@@ -2803,8 +2803,8 @@ void LocalFrame::GetSavableResourceLinks(
     return;
   }
 
-  auto referrer = mojom::blink::Referrer::New(GetDocument()->Url(),
-                                              DomWindow()->GetReferrerPolicy());
+  auto referrer = mojom::blink::Referrer::New(
+      GetDocument()->Url(), GetDocument()->GetReferrerPolicy());
 
   auto reply = mojom::blink::GetSavableResourceLinksReply::New();
   reply->resources_list = std::move(resources_list);

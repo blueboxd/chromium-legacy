@@ -12,6 +12,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -34,6 +35,8 @@ import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /** Builds DropdownItemViewInfo list from AutocompleteResult for the Suggestions list. */
@@ -47,6 +50,7 @@ class DropdownItemViewInfoListBuilder {
     private Supplier<ShareDelegate> mShareDelegateSupplier;
     private ImageFetcher mImageFetcher;
     private LargeIconBridge mIconBridge;
+    private boolean mEnableAdaptiveSuggestionsCount;
 
     DropdownItemViewInfoListBuilder() {
         mPriorityOrderedSuggestionProcessors = new ArrayList<>();
@@ -178,6 +182,9 @@ class DropdownItemViewInfoListBuilder {
 
     /** Signals that native initialization has completed. */
     void onNativeInitialized() {
+        mEnableAdaptiveSuggestionsCount =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT);
+
         mHeaderProcessor.onNativeInitialized();
         for (int index = 0; index < mPriorityOrderedSuggestionProcessors.size(); index++) {
             mPriorityOrderedSuggestionProcessors.get(index).onNativeInitialized();
@@ -201,6 +208,13 @@ class DropdownItemViewInfoListBuilder {
         final int newSuggestionsCount = newSuggestions.size();
         final List<DropdownItemViewInfo> viewInfoList = new ArrayList<>();
 
+        if (mEnableAdaptiveSuggestionsCount) {
+            // TODO(crbug.com/1073169): this should either infer the count from UI height or supply
+            // the default value if height is not known. For the time being we group the entire list
+            // to mimic the native behavior.
+            groupSuggestionsBySearchVsURL(newSuggestions, viewInfoList.size());
+        }
+
         int currentGroup = OmniboxSuggestion.INVALID_GROUP;
 
         for (int index = 0; index < newSuggestionsCount; index++) {
@@ -220,6 +234,52 @@ class DropdownItemViewInfoListBuilder {
             viewInfoList.add(new DropdownItemViewInfo(processor, model, currentGroup));
         }
         return viewInfoList;
+    }
+
+    /**
+     * Group suggestions in-place by Search vs URL.
+     * Creates two subgroups:
+     * - Group 1 contains items visible, or partially visible to the user,
+     * - Group 2 contains items that are not visible at the time user interacts with the suggestions
+     *   list.
+     *
+     * @param suggestionList List of Suggestions that will be rearranged.
+     * @param numVisibleSuggestions Number of suggestions that are visible to the user.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void groupSuggestionsBySearchVsURL(
+            List<OmniboxSuggestion> suggestionList, int numVisibleSuggestions) {
+        // Native counterpart ensures that suggestion with group headers always end up at the end of
+        // the list. This guarantees that these suggestions are both grouped at the end of the list
+        // and that there's nothing more we should do about them.
+        // See AutocompleteController::UpdateHeaders().
+        int firstIndexWithHeader;
+        for (firstIndexWithHeader = 0; firstIndexWithHeader < suggestionList.size();
+                firstIndexWithHeader++) {
+            if (suggestionList.get(firstIndexWithHeader).getGroupId()
+                    != OmniboxSuggestion.INVALID_GROUP) {
+                break;
+            }
+        }
+
+        // Make sure we do not accidentally rearrange grouped suggestions.
+        if (numVisibleSuggestions > firstIndexWithHeader) {
+            numVisibleSuggestions = firstIndexWithHeader;
+        }
+
+        if (numVisibleSuggestions == 0) return;
+
+        final Comparator<OmniboxSuggestion> comparator = (suggestion1, suggestion2) -> {
+            if (suggestion1.isSearchSuggestion() != suggestion2.isSearchSuggestion()) {
+                return suggestion1.isSearchSuggestion() ? -1 : 1;
+            }
+            return suggestion2.getRelevance() - suggestion1.getRelevance();
+        };
+
+        // Note: the first match is always the default match. We do not want to sort it.
+        Collections.sort(suggestionList.subList(1, numVisibleSuggestions), comparator);
+        Collections.sort(
+                suggestionList.subList(numVisibleSuggestions, firstIndexWithHeader), comparator);
     }
 
     /**

@@ -38,8 +38,7 @@ import java.lang.annotation.RetentionPolicy;
  * backend (the coordinator).
  */
 /* package */ class PaymentHandlerMediator extends WebContentsObserver
-        implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener,
-                   PaymentHandlerView.PaymentHandlerViewObserver {
+        implements BottomSheetObserver, PaymentHandlerToolbarObserver, View.OnLayoutChangeListener {
     // The value is picked in order to allow users to see the tab behind this UI.
     /* package */ static final float FULL_HEIGHT_RATIO = 0.9f;
     /* package */ static final float HALF_HEIGHT_RATIO = 0.5f;
@@ -101,6 +100,7 @@ import java.lang.annotation.RetentionPolicy;
         mWebContentsRef = webContents;
         mToolbarViewHeightPx = toolbarViewHeightPx;
         mModel = model;
+        mModel.set(PaymentHandlerProperties.BACK_PRESS_CALLBACK, this::onSystemBackButtonClicked);
         mHider = hider;
         mPaymentHandlerUiObserver = observer;
         mContainerTopPaddingPx = containerTopPaddingPx;
@@ -285,9 +285,7 @@ import java.lang.annotation.RetentionPolicy;
         mHandler.post(mHider);
     }
 
-    // Implement PaymentHandlerView.PaymentHandlerViewObserver
-    @Override
-    public void onSystemBackButtonClicked() {
+    private void onSystemBackButtonClicked() {
         NavigationController navigation = mWebContentsRef.getNavigationController();
         if (navigation.canGoBack()) navigation.goBack();
     }

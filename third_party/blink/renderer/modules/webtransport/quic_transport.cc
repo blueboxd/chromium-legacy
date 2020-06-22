@@ -25,7 +25,9 @@
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_fingerprint.h"
 #include "third_party/blink/renderer/modules/webtransport/bidirectional_stream.h"
+#include "third_party/blink/renderer/modules/webtransport/quic_transport_options.h"
 #include "third_party/blink/renderer/modules/webtransport/receive_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/web_transport_stream.h"
@@ -36,6 +38,7 @@
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -340,11 +343,13 @@ class QuicTransport::BidirectionalStreamVendor final
 
 QuicTransport* QuicTransport::Create(ScriptState* script_state,
                                      const String& url,
+                                     QuicTransportOptions* options,
                                      ExceptionState& exception_state) {
   DVLOG(1) << "QuicTransport::Create() url=" << url;
+  DCHECK(options);
   auto* transport =
       MakeGarbageCollected<QuicTransport>(PassKey(), script_state, url);
-  transport->Init(url, exception_state);
+  transport->Init(url, *options, exception_state);
   return transport;
 }
 
@@ -596,7 +601,9 @@ void QuicTransport::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
 }
 
-void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
+void QuicTransport::Init(const String& url,
+                         const QuicTransportOptions& options,
+                         ExceptionState& exception_state) {
   DVLOG(1) << "QuicTransport::Init() url=" << url << " this=" << this;
   if (!url_.IsValid()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kSyntaxError,
@@ -640,6 +647,16 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
     return;
   }
 
+  Vector<network::mojom::blink::QuicTransportCertificateFingerprintPtr>
+      fingerprints;
+  if (options.hasServerCertificateFingerprints()) {
+    for (const auto& fingerprint : options.serverCertificateFingerprints()) {
+      fingerprints.push_back(
+          network::mojom::blink::QuicTransportCertificateFingerprint::New(
+              fingerprint->algorithm(), fingerprint->value()));
+    }
+  }
+
   // TODO(ricea): Register SchedulingPolicy so that we don't get throttled and
   // to disable bfcache. Must be done before shipping.
 
@@ -652,7 +669,7 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
           execution_context->GetTaskRunner(TaskType::kNetworking)));
 
   connector->Connect(
-      url_, /*fingerprints=*/{},
+      url_, std::move(fingerprints),
       handshake_client_receiver_.BindNewPipeAndPassRemote(
           execution_context->GetTaskRunner(TaskType::kNetworking)));
 

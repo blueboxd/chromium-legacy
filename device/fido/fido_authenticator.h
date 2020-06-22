@@ -97,7 +97,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoAuthenticator {
   // GetPINToken uses the given PIN to request a PinUvAuthToken from an
   // authenticator. It is only valid to call this method if |Options| indicates
   // that the authenticator supports PINs.
-  virtual void GetPINToken(std::string pin, GetTokenCallback callback);
+  // |permissions| are flags indicating which commands the token may be used
+  // for.
+  // |rp_id| binds the token to operations related to a given RP ID. |rp_id|
+  // must be set if |permissions| includes MakeCredential or GetAssertion.
+  virtual void GetPINToken(std::string pin,
+                           const std::vector<pin::Permissions>& permissions,
+                           base::Optional<std::string> rp_id,
+                           GetTokenCallback callback);
   // GetUvToken uses internal user verification to request a PinUvAuthToken from
   // an authenticator. It is only valid to call this method if |Options|
   // indicates that the authenticator supports UV tokens.

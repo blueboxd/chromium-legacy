@@ -133,7 +133,8 @@ ConnectorsManager::~ConnectorsManager() = default;
 
 // static
 ConnectorsManager* ConnectorsManager::GetInstance() {
-  return base::Singleton<ConnectorsManager>::get();
+  return base::Singleton<ConnectorsManager,
+                         base::LeakySingletonTraits<ConnectorsManager>>::get();
 }
 
 bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) const {

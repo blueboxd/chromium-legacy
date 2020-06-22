@@ -5,7 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_MAIN_BROWSER_USER_DATA_H_
 #define IOS_CHROME_BROWSER_MAIN_BROWSER_USER_DATA_H_
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #import "ios/chrome/browser/main/browser.h"

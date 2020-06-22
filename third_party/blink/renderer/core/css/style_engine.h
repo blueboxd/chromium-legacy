@@ -161,7 +161,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       StyleEngine& master_engine,
       DocumentStyleSheetCollector& parent_collector);
   void UpdateActiveStyle();
-  void MarkAllTreeScopesDirty() { all_tree_scopes_dirty_ = true; }
 
   String PreferredStylesheetSetName() const {
     return preferred_stylesheet_set_name_;
@@ -398,9 +397,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
 
  private:
   bool NeedsActiveStyleSheetUpdate() const {
-    return all_tree_scopes_dirty_ || tree_scopes_removed_ ||
-           document_scope_dirty_ || dirty_tree_scopes_.size() ||
-           user_style_dirty_;
+    return tree_scopes_removed_ || document_scope_dirty_ ||
+           dirty_tree_scopes_.size() || user_style_dirty_;
   }
 
   TreeScopeStyleSheetCollection& EnsureStyleSheetCollectionFor(TreeScope&);
@@ -541,7 +539,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   StyleSheetCollectionMap style_sheet_collection_map_;
 
   bool document_scope_dirty_ = true;
-  bool all_tree_scopes_dirty_ = false;
   bool tree_scopes_removed_ = false;
   bool user_style_dirty_ = false;
   UnorderedTreeScopeSet dirty_tree_scopes_;

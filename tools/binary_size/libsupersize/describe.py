@@ -177,30 +177,33 @@ class DescriberText(Describer):
     self.recursive = recursive
     self.summarize = summarize
 
-  def _DescribeSectionSizes(self, unsummed_sections, summed_sections,
-                            section_sizes):
+  def _DescribeSectionSizes(self,
+                            unsummed_sections,
+                            summed_sections,
+                            section_sizes,
+                            indent=''):
     total_bytes, section_names = _GetSectionSizeInfo(unsummed_sections,
                                                      summed_sections,
                                                      section_sizes)
     yield ''
-    yield 'Section Sizes (Total={} ({} bytes)):'.format(
-        _PrettySize(total_bytes), total_bytes)
+    yield '{}Section Sizes (Total={} ({} bytes)):'.format(
+        indent, _PrettySize(total_bytes), total_bytes)
     for name in section_names:
       size = section_sizes[name]
       if name in unsummed_sections:
-        yield '    {}: {} ({} bytes) (not included in totals)'.format(
-            name, _PrettySize(size), size)
+        yield '{}    {}: {} ({} bytes) (not included in totals)'.format(
+            indent, name, _PrettySize(size), size)
       else:
         notes = ''
         if name not in summed_sections:
           notes = ' (counted in .other)'
         percent = _Divide(size, total_bytes)
-        yield '    {}: {} ({} bytes) ({:.1%}){}'.format(name, _PrettySize(size),
-                                                        size, percent, notes)
+        yield '{}    {}: {} ({} bytes) ({:.1%}){}'.format(
+            indent, name, _PrettySize(size), size, percent, notes)
 
     if self.verbose:
       yield ''
-      yield 'Other section sizes:'
+      yield '{}Other section sizes:'.format(indent)
       section_names = sorted(
           k for k in section_sizes.keys() if k not in section_names)
       for name in section_names:
@@ -209,12 +212,15 @@ class DescriberText(Describer):
           notes = ' (not included in totals)'
         elif name not in summed_sections:
           notes = ' (counted in .other)'
-        yield '    {}: {} ({} bytes){}'.format(name,
-                                               _PrettySize(section_sizes[name]),
-                                               section_sizes[name], notes)
+        yield '{}    {}: {} ({} bytes){}'.format(
+            indent, name, _PrettySize(section_sizes[name]), section_sizes[name],
+            notes)
 
   def _DescribeSymbol(self, sym, single_line=False):
-    # TODO(huangs): Render and display container name.
+    container_str = sym.container_short_name
+    if container_str:
+      container_str = '<{}>'.format(container_str)
+
     address = 'Group' if sym.IsGroup() else hex(sym.address)
 
     last_field = ''
@@ -242,11 +248,13 @@ class DescriberText(Describer):
       if last_field:
         last_field = '  ' + last_field
       if sym.IsDelta():
-        yield '{}@{:<9s}  {}{}'.format(
-            sym.section, address, pss_field, last_field)
+        yield '{}{}@{:<9s}  {}{}'.format(container_str, sym.section, address,
+                                         pss_field, last_field)
       else:
-        l = '{}@{:<9s}  pss={}  padding={}{}'.format(
-            sym.section, address, pss_field, sym.padding, last_field)
+        l = '{}{}@{:<9s}  pss={}  padding={}{}'.format(container_str,
+                                                       sym.section, address,
+                                                       pss_field, sym.padding,
+                                                       last_field)
         yield l
       yield '    source_path={} \tobject_path={}'.format(
           sym.source_path, sym.object_path)
@@ -265,16 +273,17 @@ class DescriberText(Describer):
       else:
         pss_field = '{:<14}'.format(pss_field)
       if single_line:
-        yield '{}@{:<9s}  {}  {}{}'.format(
-            sym.section, address, pss_field, sym.name, last_field)
+        yield '{}{}@{:<9s}  {}  {}{}'.format(container_str, sym.section,
+                                             address, pss_field, sym.name,
+                                             last_field)
       else:
         path = sym.source_path or sym.object_path
         if path and sym.generated_source:
           path = '$root_gen_dir/' + path
         path = path or '{no path}'
 
-        yield '{}@{:<9s}  {} {}'.format(
-            sym.section, address, pss_field, path)
+        yield '{}{}@{:<9s}  {} {}'.format(container_str, sym.section, address,
+                                          pss_field, path)
         if sym.name:
           yield '    {}{}'.format(sym.name, last_field)
 
@@ -398,7 +407,7 @@ class DescriberText(Describer):
     if group.container_name == '':
       title_parts.append('Section@Address')
     else:
-      raise ValueError('Multiple container not yet supported.')
+      title_parts.append('<Container>Section@Address')
     if self.verbose:
       title_parts.append('...')
     else:
@@ -497,7 +506,7 @@ class DescriberText(Describer):
     group_desc = self._DescribeSymbolGroup(delta_group)
     return itertools.chain(diff_summary_desc, path_delta_desc, group_desc)
 
-  def _DescribeDeltaDict(self, data_name, before_dict, after_dict):
+  def _DescribeDeltaDict(self, data_name, before_dict, after_dict, indent=''):
     common_items = {
         k: v
         for k, v in before_dict.items() if after_dict.get(k) == v
@@ -508,17 +517,41 @@ class DescriberText(Describer):
     }
     after_items = {k: v for k, v in after_dict.items() if k not in common_items}
     return itertools.chain(
-        ('Common %s:' % data_name, ), ('    %s' % line
-                                       for line in DescribeDict(common_items)),
-        ('Old %s:' % data_name, ), ('    %s' % line
-                                    for line in DescribeDict(before_items)),
-        ('New %s:' % data_name, ), ('    %s' % line
-                                    for line in DescribeDict(after_items)))
+        (indent + 'Common %s:' % data_name, ),
+        (indent + '    %s' % line for line in DescribeDict(common_items)),
+        (indent + 'Old %s:' % data_name, ),
+        (indent + '    %s' % line for line in DescribeDict(before_items)),
+        (indent + 'New %s:' % data_name, ),
+        (indent + '    %s' % line for line in DescribeDict(after_items)))
 
   def _DescribeDeltaSizeInfo(self, diff):
     desc_list = []
+    # Describe |build_config| and each container. If there is only one container
+    # then support legacy output by reporting |build_config| as part of the
+    # first container's metadata.
     if len(diff.containers) > 1:
-      raise ValueError('Multiple container not yet supported.')
+      desc_list.append(
+          self._DescribeDeltaDict('Build config', diff.before.build_config,
+                                  diff.after.build_config))
+      for c in diff.containers:
+        name = c.name
+        desc_list.append(('', ))
+        desc_list.append(('Container: <%s>' % name, ))
+        c_before = diff.before.ContainerForName(
+            name, default=models.Container.Empty())
+        c_after = diff.after.ContainerForName(name,
+                                              default=models.Container.Empty())
+        desc_list.append(
+            self._DescribeDeltaDict('Metadata',
+                                    c_before.metadata,
+                                    c_after.metadata,
+                                    indent='    '))
+        unsummed_sections, summed_sections = c.ClassifySections()
+        desc_list.append(
+            self._DescribeSectionSizes(unsummed_sections,
+                                       summed_sections,
+                                       c.section_sizes,
+                                       indent='    '))
     else:  # Legacy output for single Container case.
       desc_list.append(
           self._DescribeDeltaDict('Metadata', diff.before.metadata_legacy,
@@ -534,14 +567,26 @@ class DescriberText(Describer):
 
   def _DescribeSizeInfo(self, size_info):
     desc_list = []
+    # Describe |build_config| and each container. If there is only one container
+    # then support legacy output by reporting |build_config| as part of the
+    # first container's metadata.
     if len(size_info.containers) > 1:
-      raise ValueError('Multiple container not yet supported.')
-    else:
-      # Support legacy output by reporting |build_config| as part of metadata.
-      desc_list.append(('Metadata:', ))
+      desc_list.append(('Build Configs:', ))
       desc_list.append('    %s' % line
-                       for line in DescribeDict(size_info.metadata_legacy))
-      c = size_info.containers[0]
+                       for line in DescribeDict(size_info.build_config))
+      containers = size_info.containers
+    else:
+      containers = [
+          models.Container(name='',
+                           metadata=size_info.metadata_legacy,
+                           section_sizes=size_info.containers[0].section_sizes)
+      ]
+    for c in containers:
+      if c.name:
+        desc_list.append(('', ))
+        desc_list.append(('Container <%s>' % c.name, ))
+      desc_list.append(('Metadata:', ))
+      desc_list.append('    %s' % line for line in DescribeDict(c.metadata))
       unsummed_sections, summed_sections = c.ClassifySections()
       desc_list.append(
           self._DescribeSectionSizes(unsummed_sections, summed_sections,
@@ -559,8 +604,7 @@ def _DescribeSizeInfoContainerCoverage(raw_symbols, container):
   """Yields lines describing how accurate |size_info| is."""
   for section, section_name in models.SECTION_TO_SECTION_NAME.items():
     expected_size = container.section_sizes.get(section_name)
-    # TODO(huangs): Also filter by container.
-    in_section = raw_symbols.WhereInSection(section_name)
+    in_section = raw_symbols.WhereInSection(section_name, container=container)
     actual_size = in_section.size
 
     if expected_size is None:
@@ -650,12 +694,15 @@ def _DescribeSizeInfoContainerCoverage(raw_symbols, container):
 
 
 def DescribeSizeInfoCoverage(size_info):
-  # TODO(huangs): Add support for multiple containers.
-  assert len(size_info.containers) == 1
-  c = size_info.containers[0]
-  # TODO(huangs): Change to use "yield from" once linters allow this.
-  for line in _DescribeSizeInfoContainerCoverage(size_info.raw_symbols, c):
-    yield line
+  for i, container in enumerate(size_info.containers):
+    if i > 0:
+      yield ''
+    if container.name:
+      yield 'Container <%s>' % container.name
+    # TODO(huangs): Change to use "yield from" once linters allow this.
+    for line in _DescribeSizeInfoContainerCoverage(size_info.raw_symbols,
+                                                   container):
+      yield line
 
 
 class DescriberCsv(Describer):

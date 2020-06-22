@@ -2386,15 +2386,21 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
             box_model_object.OffsetForInFlowPosition();
         break;
       case EPosition::kAbsolute: {
+        // TODO(almaher): Remove call to IsInNGFragmentTraversal().
         DCHECK(full_context_.container_for_absolute_position ==
-               box_model_object.Container());
+                   box_model_object.Container() ||
+               (IsInNGFragmentTraversal() &&
+                box_model_object.IsInsideFlowThread()));
         context_.current = context_.absolute_position;
 
         // Absolutely positioned content in an inline should be positioned
         // relative to the inline.
         const auto* container = full_context_.container_for_absolute_position;
         if (container && container->IsLayoutInline()) {
-          DCHECK(container->CanContainAbsolutePositionObjects());
+          // TODO(almaher): Remove call to IsInNGFragmentTraversal().
+          DCHECK(container->CanContainAbsolutePositionObjects() ||
+                 (IsInNGFragmentTraversal() &&
+                  box_model_object.IsInsideFlowThread()));
           DCHECK(box_model_object.IsBox());
           context_.current.paint_offset +=
               ToLayoutInline(container)->OffsetForInFlowPositionedInline(
@@ -2405,8 +2411,11 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffset() {
       case EPosition::kSticky:
         break;
       case EPosition::kFixed: {
+        // TODO(almaher): Remove call to IsInNGFragmentTraversal().
         DCHECK(full_context_.container_for_fixed_position ==
-               box_model_object.Container());
+                   box_model_object.Container() ||
+               (IsInNGFragmentTraversal() &&
+                box_model_object.IsInsideFlowThread()));
         context_.current = context_.fixed_position;
         // Fixed-position elements that are fixed to the viewport have a
         // transform above the scroll of the LayoutView. Child content is

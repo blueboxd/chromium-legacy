@@ -4,6 +4,7 @@
 
 #include "device/fido/fido_device_authenticator.h"
 
+#include <numeric>
 #include <utility>
 
 #include "base/bind.h"
@@ -29,32 +30,33 @@ namespace {
 // Helper method for determining correct bio enrollment version.
 BioEnrollmentRequest::Version GetBioEnrollmentRequestVersion(
     const AuthenticatorSupportedOptions& options) {
-  // TODO(crbug.com/1087419): return default version for authenticators that
-  // support it regardless of preview availability once we implement
-  // getPinUvAuthTokenUsingPinWithPermissions.
   DCHECK(options.bio_enrollment_availability_preview !=
              AuthenticatorSupportedOptions::BioEnrollmentAvailability::
                  kNotSupported ||
          options.bio_enrollment_availability !=
              AuthenticatorSupportedOptions::BioEnrollmentAvailability::
                  kNotSupported);
-  return options.bio_enrollment_availability_preview !=
+  return options.bio_enrollment_availability !=
                  AuthenticatorSupportedOptions::BioEnrollmentAvailability::
                      kNotSupported
-             ? BioEnrollmentRequest::kPreview
-             : BioEnrollmentRequest::kDefault;
+             ? BioEnrollmentRequest::kDefault
+             : BioEnrollmentRequest::kPreview;
 }
 
 CredentialManagementRequest::Version GetCredentialManagementRequestVersion(
     const AuthenticatorSupportedOptions& options) {
-  // TODO(crbug.com/1087419): return default version for authenticators that
-  // support it regardless of preview availability once we implement
-  // getPinUvAuthTokenUsingPinWithPermissions.
   DCHECK(options.supports_credential_management_preview ||
          options.supports_credential_management);
-  return options.supports_credential_management_preview
-             ? CredentialManagementRequest::kPreview
-             : CredentialManagementRequest::kDefault;
+  return options.supports_credential_management
+             ? CredentialManagementRequest::kDefault
+             : CredentialManagementRequest::kPreview;
+}
+
+uint8_t PermissionsToByte(const std::vector<pin::Permissions>& permissions) {
+  return std::accumulate(permissions.begin(), permissions.end(), 0,
+                         [](uint8_t byte, pin::Permissions flag) {
+                           return byte |= static_cast<uint8_t>(flag);
+                         });
 }
 
 }  // namespace
@@ -149,26 +151,36 @@ void FidoDeviceAuthenticator::GetEphemeralKey(
   DCHECK(
       Options()->client_pin_availability !=
           AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported ||
-      Options()->supports_uv_token);
+      Options()->supports_pin_uv_auth_token);
 
   RunOperation<pin::KeyAgreementRequest, pin::KeyAgreementResponse>(
       pin::KeyAgreementRequest(), std::move(callback),
       base::BindOnce(&pin::KeyAgreementResponse::Parse));
 }
 
-void FidoDeviceAuthenticator::GetPINToken(std::string pin,
-                                          GetTokenCallback callback) {
+void FidoDeviceAuthenticator::GetPINToken(
+    std::string pin,
+    const std::vector<pin::Permissions>& permissions,
+    base::Optional<std::string> rp_id,
+    GetTokenCallback callback) {
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
+  DCHECK_NE(permissions.size(), 0u);
+  DCHECK(!((base::Contains(permissions, pin::Permissions::kMakeCredential)) ||
+           base::Contains(permissions, pin::Permissions::kGetAssertion)) ||
+         rp_id);
 
   GetEphemeralKey(base::BindOnce(
       &FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetPINToken,
-      weak_factory_.GetWeakPtr(), std::move(pin), std::move(callback)));
+      weak_factory_.GetWeakPtr(), std::move(pin),
+      PermissionsToByte(permissions), std::move(rp_id), std::move(callback)));
 }
 
 void FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetPINToken(
     std::string pin,
+    uint8_t permissions,
+    base::Optional<std::string> rp_id,
     GetTokenCallback callback,
     CtapDeviceResponseCode status,
     base::Optional<pin::KeyAgreementResponse> key) {
@@ -176,6 +188,16 @@ void FidoDeviceAuthenticator::OnHaveEphemeralKeyForGetPINToken(
     std::move(callback).Run(status, base::nullopt);
     return;
   }
+
+  if (Options()->supports_pin_uv_auth_token) {
+    pin::PinTokenWithPermissionsRequest request(pin, *key, permissions, rp_id);
+    std::array<uint8_t, 32> shared_key = request.shared_key();
+    RunOperation<pin::PinTokenWithPermissionsRequest, pin::TokenResponse>(
+        std::move(request), std::move(callback),
+        base::BindOnce(&pin::TokenResponse::Parse, std::move(shared_key)));
+    return;
+  }
+
   pin::PinTokenRequest request(pin, *key);
   std::array<uint8_t, 32> shared_key = request.shared_key();
   RunOperation<pin::PinTokenRequest, pin::TokenResponse>(

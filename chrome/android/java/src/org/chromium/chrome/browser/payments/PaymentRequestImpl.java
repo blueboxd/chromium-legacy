@@ -566,6 +566,8 @@ public class PaymentRequestImpl
      */
     private boolean mSkipUiForNonUrlPaymentMethodIdentifiers;
 
+    private TwaPackageManagerDelegate mTwaPackageManagerDelegate = new TwaPackageManagerDelegate();
+
     /**
      * Builds the PaymentRequest service implementation.
      *
@@ -2798,6 +2800,11 @@ public class PaymentRequestImpl
                         ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
             } else {
                 if (mNativeObserverForTest != null) mNativeObserverForTest.onNotSupportedError();
+
+                if (TextUtils.isEmpty(mRejectShowErrorMessage) && !isInTwa()
+                        && mMethodData.get(MethodStrings.GOOGLE_PLAY_BILLING) != null) {
+                    mRejectShowErrorMessage = ErrorStrings.APP_STORE_METHOD_ONLY_SUPPORTED_IN_TWA;
+                }
                 disconnectFromClientWithDebugMessage(
                         ErrorMessageUtil.getNotSupportedErrorMessage(mMethodData.keySet())
                                 + (TextUtils.isEmpty(mRejectShowErrorMessage)
@@ -2810,6 +2817,12 @@ public class PaymentRequestImpl
         }
 
         return disconnectForStrictShow();
+    }
+
+    private boolean isInTwa() {
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
+        if (activity == null) return false;
+        return mTwaPackageManagerDelegate.getTwaPackageName(activity) != null;
     }
 
     /**

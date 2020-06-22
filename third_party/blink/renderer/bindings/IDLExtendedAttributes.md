@@ -966,6 +966,13 @@ This attribute must be accompanied by either `[Measure]` or `[MeasureAs]`.
 [HighEntropy, Measure] const INTERESTING_CONSTANT = 1;
 ```
 
+Attributes labeled with `[HighEntropy=Direct]` are simple surfaces which can be expressed as a sequence of bytes without any need for additional parsing logic.
+For now, this label is only supported for attribute getters, although the `[HighEntropy]` label is supported more broadly.
+
+```webidl
+[HighEntropy=Direct, MeasureAs=SimpleNamedAttribute] attribute unsigned long simpleNamedAttribute;
+```
+
 ### [DeprecateAs] _(m, a, c)_
 
 Summary: Measures usage of a deprecated feature via UseCounter, and notifies developers about deprecation via a console warning.

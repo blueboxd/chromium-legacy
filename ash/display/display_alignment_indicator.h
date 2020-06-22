@@ -45,6 +45,7 @@ class ASH_EXPORT DisplayAlignmentIndicator {
 
  private:
   friend class DisplayAlignmentIndicatorTest;
+  friend class DisplayAlignmentControllerTest;
 
   // View and Widget for showing the blue indicator highlights on the edge of
   // the display.

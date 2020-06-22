@@ -20,9 +20,12 @@ static_library("telemetry_extension_ui") {
   ]
 
   deps = [
+    "//base",
     "//chromeos/components/telemetry_extension_ui/mojom",
     "//chromeos/constants",
     "//chromeos/resources:telemetry_extension_resources",
+    "//chromeos/services/cros_healthd/public/cpp",
+    "//chromeos/services/cros_healthd/public/mojom",
     "//content/public/browser",
     "//ui/webui",
   ]

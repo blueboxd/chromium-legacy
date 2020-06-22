@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -67,7 +69,10 @@ void SetClipboardText(ui::ClipboardBuffer buffer, const std::string& text) {
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {
  protected:
-  OmniboxViewViewsTest() {}
+  OmniboxViewViewsTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        omnibox::kOmniboxContextMenuShowFullUrls);
+  }
 
   static void GetOmniboxViewForBrowser(const Browser* browser,
                                        OmniboxView** omnibox_view) {
@@ -134,6 +139,8 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 #endif
     return native_window;
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxViewViewsTest);
 };
@@ -705,6 +712,34 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, ReloadAfterKill) {
   EXPECT_EQ(base::ASCIIToUTF16(""), omnibox_view_views->GetText());
   EXPECT_EQ(GURL(url::kAboutBlankURL),
             browser()->location_bar_model()->GetURL());
+}
+
+// Omnibox un-elides and elides URL appropriately according to the Always Show
+// Full URLs setting.
+IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, AlwaysShowFullURLs) {
+  OmniboxView* omnibox_view = nullptr;
+  ASSERT_NO_FATAL_FAILURE(GetOmniboxViewForBrowser(browser(), &omnibox_view));
+  OmniboxViewViews* omnibox_view_views =
+      static_cast<OmniboxViewViews*>(omnibox_view);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/title1.html");
+  base::string16 url_text = base::ASCIIToUTF16(url.spec());
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // By default, the elided URL should be shown.
+  EXPECT_EQ(url_text,
+            base::ASCIIToUTF16("http://") + omnibox_view_views->GetText());
+
+  // After toggling the setting, the full URL should be shown.
+  chrome::ToggleShowFullURLs(browser());
+  EXPECT_EQ(url_text, omnibox_view_views->GetText());
+
+  // Toggling the setting again should go back to the elided URL.
+  chrome::ToggleShowFullURLs(browser());
+  EXPECT_EQ(url_text,
+            base::ASCIIToUTF16("http://") + omnibox_view_views->GetText());
 }
 
 // The following set of tests require UIA accessibility support, which only

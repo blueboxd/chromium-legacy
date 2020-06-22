@@ -979,7 +979,6 @@ class LocalDeviceInstrumentationTestRun(
     if not self._render_tests_device_output_dir:
       return
     self._ProcessSkiaGoldRenderTestResults(device, results)
-    self._ProcessLocalRenderTestResults(device, results)
 
   def _ProcessSkiaGoldRenderTestResults(self, device, results):
     gold_dir = posixpath.join(self._render_tests_device_output_dir,
@@ -1106,62 +1105,6 @@ class LocalDeviceInstrumentationTestRun(
           logging.error(
               'Given unhandled SkiaGoldSession StatusCode %s with error %s',
               status, error)
-
-  def _ProcessLocalRenderTestResults(self, device, results):
-    failure_images_device_dir = posixpath.join(
-        self._render_tests_device_output_dir, 'failures')
-    if not device.FileExists(failure_images_device_dir):
-      return
-
-    diff_images_device_dir = posixpath.join(
-        self._render_tests_device_output_dir, 'diffs')
-
-    golden_images_device_dir = posixpath.join(
-        self._render_tests_device_output_dir, 'goldens')
-
-    for failure_filename in device.ListDirectory(failure_images_device_dir):
-
-      with self._env.output_manager.ArchivedTempfile(
-          'fail_%s' % failure_filename, 'render_tests',
-          output_manager.Datatype.PNG) as failure_image_host_file:
-        device.PullFile(
-            posixpath.join(failure_images_device_dir, failure_filename),
-            failure_image_host_file.name)
-      failure_link = failure_image_host_file.Link()
-
-      golden_image_device_file = posixpath.join(
-          golden_images_device_dir, failure_filename)
-      if device.PathExists(golden_image_device_file):
-        with self._env.output_manager.ArchivedTempfile(
-            'golden_%s' % failure_filename, 'render_tests',
-            output_manager.Datatype.PNG) as golden_image_host_file:
-          device.PullFile(
-              golden_image_device_file, golden_image_host_file.name)
-        golden_link = golden_image_host_file.Link()
-      else:
-        golden_link = ''
-
-      diff_image_device_file = posixpath.join(
-          diff_images_device_dir, failure_filename)
-      if device.PathExists(diff_image_device_file):
-        with self._env.output_manager.ArchivedTempfile(
-            'diff_%s' % failure_filename, 'render_tests',
-            output_manager.Datatype.PNG) as diff_image_host_file:
-          device.PullFile(
-              diff_image_device_file, diff_image_host_file.name)
-        diff_link = diff_image_host_file.Link()
-      else:
-        diff_link = ''
-
-      processed_template_output = _GenerateRenderTestHtml(
-          failure_filename, failure_link, golden_link, diff_link)
-
-      with self._env.output_manager.ArchivedTempfile(
-          '%s.html' % failure_filename, 'render_tests',
-          output_manager.Datatype.HTML) as html_results:
-        html_results.write(processed_template_output)
-        html_results.flush()
-      _SetLinkOnResults(results, failure_filename, html_results.Link())
 
   #override
   def _ShouldRetry(self, test, result):

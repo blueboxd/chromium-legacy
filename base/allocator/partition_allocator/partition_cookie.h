@@ -8,7 +8,6 @@
 #include "base/allocator/buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 
 namespace base {
 namespace internal {

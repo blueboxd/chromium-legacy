@@ -44,7 +44,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class Document;
 class PrerenderClient;
 
@@ -62,7 +61,7 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
 
   using PassKey = util::PassKey<PrerenderHandle>;
   PrerenderHandle(PassKey,
-                  ExecutionContext*,
+                  Document&,
                   PrerenderClient*,
                   const KURL&,
                   HeapMojoRemote<mojom::blink::PrerenderHandle,

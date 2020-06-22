@@ -186,8 +186,6 @@ void SigninReauthViewController::OnStateChanged() {
   if (user_confirmed_reauth_ &&
       gaia_reauth_page_state_ == GaiaReauthPageState::kDone) {
     DCHECK(gaia_reauth_page_result_);
-    // TODO(https://crbug.com/1085026): display an error if the page load has
-    // failed.
     CompleteReauth(*gaia_reauth_page_result_);
     return;
   }

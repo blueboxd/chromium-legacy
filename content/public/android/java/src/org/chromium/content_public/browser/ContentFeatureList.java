@@ -28,5 +28,8 @@ public class ContentFeatureList {
 
     public static final String SERVICE_GROUP_IMPORTANCE = "ServiceGroupImportance";
 
+    public static final String WEB_BLUETOOTH_NEW_PERMISSIONS_BACKEND =
+            "WebBluetoothNewPermissionsBackend";
+
     public static final String WEB_NFC = "WebNFC";
 }

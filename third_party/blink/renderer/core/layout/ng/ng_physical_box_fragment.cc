@@ -63,6 +63,9 @@ scoped_refptr<const NGPhysicalBoxFragment> NGPhysicalBoxFragment::Create(
     if (items_builder->Size())
       byte_size += NGFragmentItems::ByteSizeFor(items_builder->Size());
   }
+  if (builder->HasOutOfFlowFragmentainerDescendants())
+    byte_size += sizeof(NGPhysicalOutOfFlowPositionedNode);
+
   // We store the children list inline in the fragment as a flexible
   // array. Therefore, we need to make sure to allocate enough space for
   // that array here, which requires a manual allocation + placement new.
@@ -140,6 +143,28 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
   } else {
     has_last_baseline_ = false;
     last_baseline_ = LayoutUnit::Min();
+  }
+
+  PhysicalSize size = Size();
+  has_oof_positioned_fragmentainer_descendants_ = false;
+  if (!builder->oof_positioned_fragmentainer_descendants_.IsEmpty()) {
+    has_oof_positioned_fragmentainer_descendants_ = true;
+    Vector<NGPhysicalOutOfFlowPositionedNode>*
+        oof_positioned_fragmentainer_descendants =
+            const_cast<Vector<NGPhysicalOutOfFlowPositionedNode>*>(
+                ComputeOutOfFlowPositionedFragmentainerDescendantsAddress());
+    new (oof_positioned_fragmentainer_descendants)
+        Vector<NGPhysicalOutOfFlowPositionedNode>();
+    oof_positioned_fragmentainer_descendants->ReserveCapacity(
+        builder->oof_positioned_fragmentainer_descendants_.size());
+    for (const auto& descendant :
+         builder->oof_positioned_fragmentainer_descendants_) {
+      oof_positioned_fragmentainer_descendants->emplace_back(
+          descendant.node,
+          descendant.static_position.ConvertToPhysical(
+              builder->Style().GetWritingMode(), builder->Direction(), size),
+          descendant.inline_container, descendant.containing_block_fragment);
+    }
   }
 
 #if DCHECK_IS_ON()

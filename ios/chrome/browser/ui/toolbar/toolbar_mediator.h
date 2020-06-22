@@ -13,6 +13,7 @@ class BookmarkModel;
 namespace web {
 class WebState;
 }
+class OverlayPresenter;
 class PrefService;
 @protocol ToolbarConsumer;
 class WebStateList;
@@ -37,6 +38,11 @@ class WebStateList;
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
 @property(nonatomic, strong) id<ToolbarConsumer> consumer;
+
+// The overlay presenter for OverlayModality::kWebContentArea.  This mediator
+// listens for overlay presentation events to determine whether the share button
+// should be enabled.
+@property(nonatomic, assign) OverlayPresenter* webContentAreaOverlayPresenter;
 
 // Updates the consumer to conforms to |webState|.
 - (void)updateConsumerForWebState:(web::WebState*)webState;

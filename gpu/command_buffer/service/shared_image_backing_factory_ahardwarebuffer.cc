@@ -212,7 +212,8 @@ class SharedImageRepresentationGLTextureAHB
   gles2::Texture* GetTexture() override { return texture_; }
 
   bool BeginAccess(GLenum mode) override {
-    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
+    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
+        mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM) {
       base::ScopedFD write_sync_fd;
       if (!ahb_backing()->BeginRead(this, &write_sync_fd))
         return false;
@@ -227,7 +228,8 @@ class SharedImageRepresentationGLTextureAHB
         return false;
     }
 
-    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
+    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
+        mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM) {
       mode_ = RepresentationAccessMode::kRead;
     } else if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM) {
       mode_ = RepresentationAccessMode::kWrite;

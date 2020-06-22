@@ -62,5 +62,6 @@ specific_include_rules = {
     "+gpu/GLES2",
     "+media",
     "+third_party/libyuv",
+    "+ui/gl/gl_implementation.h",
   ],
 }

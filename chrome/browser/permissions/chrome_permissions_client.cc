@@ -6,6 +6,8 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context.h"
+#include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/engagement/important_sites_util.h"
@@ -71,6 +73,9 @@ permissions::ChooserContextBase* ChromePermissionsClient::GetChooserContext(
   switch (type) {
     case ContentSettingsType::USB_CHOOSER_DATA:
       return UsbChooserContextFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+    case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
+      return BluetoothChooserContextFactory::GetForProfile(
           Profile::FromBrowserContext(browser_context));
     default:
       NOTREACHED();

@@ -874,68 +874,68 @@ constexpr auto search_n(Range&& range,
                           value, std::move(pred), std::move(proj));
 }
 
-// [alg.nonmodifying] Mutating sequence operations
+// [alg.modifying.operations] Mutating sequence operations
 // Reference: https://wg21.link/alg.modifying.operations
 
 // [alg.copy] Copy
 // Reference: https://wg21.link/alg.copy
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.move] Move
 // Reference: https://wg21.link/alg.move
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.swap] Swap
 // Reference: https://wg21.link/alg.swap
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.transform] Transform
 // Reference: https://wg21.link/alg.transform
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.replace] Replace
 // Reference: https://wg21.link/alg.replace
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.fill] Fill
 // Reference: https://wg21.link/alg.fill
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.generate] Generate
 // Reference: https://wg21.link/alg.generate
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.remove] Remove
 // Reference: https://wg21.link/alg.remove
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.unique] Unique
 // Reference: https://wg21.link/alg.unique
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.reverse] Reverse
 // Reference: https://wg21.link/alg.reverse
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.rotate] Rotate
 // Reference: https://wg21.link/alg.rotate
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.random.shuffle] Shuffle
 // Reference: https://wg21.link/alg.random.shuffle
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.nonmodifying] Sorting and related operations
 // Reference: https://wg21.link/alg.sorting
@@ -946,32 +946,32 @@ constexpr auto search_n(Range&& range,
 // [sort] sort
 // Reference: https://wg21.link/sort
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [stable.sort] stable_sort
 // Reference: https://wg21.link/stable.sort
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [partial.sort] partial_sort
 // Reference: https://wg21.link/partial.sort
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [partial.sort.copy] partial_sort_copy
 // Reference: https://wg21.link/partial.sort.copy
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [is.sorted] is_sorted
 // Reference: https://wg21.link/is.sorted
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.nth.element] Nth element
 // Reference: https://wg21.link/alg.nth.element
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.binary.search] Binary search
 // Reference: https://wg21.link/alg.binary.search
@@ -1031,27 +1031,27 @@ constexpr auto lower_bound(Range&& range,
 // [upper.bound] upper_bound
 // Reference: https://wg21.link/upper.bound
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [equal.range] equal_range
 // Reference: https://wg21.link/equal.range
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [binary.search] binary_search
 // Reference: https://wg21.link/binary.search
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.partitions] Partitions
 // Reference: https://wg21.link/alg.partitions
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.merge] Merge
 // Reference: https://wg21.link/alg.merge
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.set.operations] Set operations on sorted structures
 // Reference: https://wg21.link/alg.set.operations
@@ -1059,27 +1059,27 @@ constexpr auto lower_bound(Range&& range,
 // [includes] includes
 // Reference: https://wg21.link/includes
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [set.union] set_union
 // Reference: https://wg21.link/set.union
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [set.intersection] set_intersection
 // Reference: https://wg21.link/set.intersection
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [set.difference] set_difference
 // Reference: https://wg21.link/set.difference
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [set.symmetric.difference] set_symmetric_difference
 // Reference: https://wg21.link/set.symmetric.difference
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.heap.operations] Heap operations
 // Reference: https://wg21.link/alg.heap.operations
@@ -1087,42 +1087,42 @@ constexpr auto lower_bound(Range&& range,
 // [push.heap] push_heap
 // Reference: https://wg21.link/push.heap
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [pop.heap] pop_heap
 // Reference: https://wg21.link/pop.heap
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [make.heap] make_heap
 // Reference: https://wg21.link/make.heap
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [sort.heap] sort_heap
 // Reference: https://wg21.link/sort.heap
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [is.heap] is_heap
 // Reference: https://wg21.link/is.heap
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.min.max] Minimum and maximum
 // Reference: https://wg21.link/alg.min.max
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.lex.comparison] Lexicographical comparison
 // Reference: https://wg21.link/alg.lex.comparison
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 // [alg.permutation.generators] Permutation generators
 // Reference: https://wg21.link/alg.permutation.generators
 
-// TODO(crbug.com/1095795): Implement.
+// TODO(crbug.com/1071094): Implement.
 
 }  // namespace ranges
 

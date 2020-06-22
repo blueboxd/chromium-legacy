@@ -198,25 +198,6 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
-    name = 'chromeos-kevin-compile-rel',
-    tryjob = try_.job(
-        location_regexp = [
-            '.+/[+]/chromeos/CHROMEOS_LKGM',
-        ],
-    ),
-)
-
-try_.chromium_chromiumos_builder(
-    name = 'chromeos-kevin-rel',
-    tryjob = try_.job(
-        location_regexp = [
-            '.+/[+]/build/chromeos/.+',
-            '.+/[+]/build/config/chromeos/.*',
-        ],
-    ),
-)
-
-try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-compile-dbg',
     tryjob = try_.job(),
 )

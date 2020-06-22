@@ -138,6 +138,8 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
 
   static bool HasAuthorBackground(const StyleResolverState&);
 
+  static bool CanReuseBaseComputedStyle(const StyleResolverState& state);
+
   scoped_refptr<ComputedStyle> StyleForInterpolations(
       Element& target,
       ActiveInterpolationsMap& animations);

@@ -4811,11 +4811,9 @@
       'id': 39,
       'caption': '''Block third party cookies''',
       'tags': [],
-      'desc': '''Enabling this setting prevents cookies from being set by web page elements that are not from the domain that is in the browser's address bar.
+      'desc': '''Setting the policy to True prevents webpage elements that aren't from the domain that's in the browser's address bar from setting cookies. Setting the policy to False lets those elements set cookies and prevents users from changing this setting.
 
-      Disabling this setting allows cookies to be set by web page elements that are not from the domain that is in the browser's address bar and prevents users from changing this setting.
-
-      If this policy is left not set, third party cookies will be enabled but the user will be able to change that.''',
+      Leaving it unset turns third-party cookies on, but users can change this setting.''',
     },
     {
       'name': 'DefaultSearchProviderEnabled',
@@ -5281,11 +5279,13 @@
       'id': 48,
       'caption': '''Default cookies setting''',
       'tags': [],
-      'desc': '''Allows you to set whether websites are allowed to set local data. Setting local data can be either allowed for all websites or denied for all websites.
+      'desc': '''Unless the <ph name="RESTORE_ON_STARTUP_POLICY_NAME">RestoreOnStartup</ph> policy is set to permanently restore URLs from previous sessions, then setting <ph name="COOKIES_SESSION_ONLY_FOR_URLS_POLICY_NAME">CookiesSessionOnlyForUrls</ph> lets you make a list of URL patterns that specify sites that can and can't set cookies for one session.
 
-          If this policy is set to 'Keep cookies for the duration of the session' then cookies will be cleared when the session closes. Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in 'background mode', the session may not close when the last window is closed. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behavior.
+      Leaving the policy unset results in the use of <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME">DefaultCookiesSetting</ph> for all sites, if it's set. If not, the user's personal setting applies. URLs not covered by the patterns specified also result in the use of defaults.
 
-          If this policy is left not set, 'AllowCookies' will be used and the user will be able to change it.''',
+      If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in Background mode, the session might stay active until the user exits the browser, not just closes the last window. See <ph name="BACKGROUND_MODE_ENABLED_POLICY_NAME">BackgroundModeEnabled</ph> for details about configuring this behavior.
+
+      While no specific policy takes precedence, see <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME">CookiesBlockedForUrls</ph> and <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME">CookiesAllowedForUrls</ph>. URL patterns among these 3 policies must not conflict.''',
     },
     {
       'name': 'DefaultImagesSetting',
@@ -5316,11 +5316,9 @@
       'id': 49,
       'caption': '''Default images setting''',
       'tags': [],
-      'desc': '''Allows you to set whether websites are allowed to display images. Displaying images can be either allowed for all websites or denied for all websites.
+      'desc': '''Setting the policy to 1 lets all websites display images. Setting the policy to 2 denies image display.
 
-          If this policy is left not set, 'AllowImages' will be used and the user will be able to change it.
-
-          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
+      Leaving it unset allows images, but users can change this setting.''',
     },
     {
       'name': 'DefaultJavaScriptSetting',
@@ -5351,9 +5349,9 @@
       'id': 50,
       'caption': '''Default JavaScript setting''',
       'tags': [],
-      'desc': '''Allows you to set whether websites are allowed to run JavaScript. Running JavaScript can be either allowed for all websites or denied for all websites.
+      'desc': '''Setting the policy to 1 lets websites run JavaScript. Setting the policy to 2 denies JavaScript.
 
-          If this policy is left not set, 'AllowJavaScript' will be used and the user will be able to change it.''',
+      Leaving it unset allows JavaScript, but users can change this setting.''',
     },
     {
       'name': 'DefaultPluginsSetting',
@@ -5389,13 +5387,11 @@
       'id': 51,
       'caption': '''Default <ph name="FLASH_PLUGIN_NAME">Flash</ph> setting''',
       'tags': [],
-      'desc': '''Allows you to set whether websites are allowed to automatically run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin. Automatically running the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin can be either allowed for all websites or denied for all websites.
+      'desc': '''Setting the policy to 1 lets you set whether all websites can automatically run the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin. Setting the policy to 2 denies this plugin for all websites. Click to play lets the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin run, but users click on the placeholder to start it.
 
-          Click to play allows the <ph name="FLASH_PLUGIN_NAME">Flash</ph> plugin to run but the user must click on the placeholder to start its execution.
+      Leaving the policy unset uses <ph name="BLOCK_PLUGINS_POLICY_NAME">BlockPlugins</ph> and lets users change this setting.
 
-          Automatic playback is only allowed for domains explictly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME">PluginsAllowedForUrls</ph> policy. If you want to enabled automatic playback for all sites consider adding http://* and https://* to this list.
-
-          If this policy is left not set, 'BlockPlugins' will be used and the user will be able to change this setting manually.''',
+      Note: Automatic playback is only for domains explicitly listed in the <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME">PluginsAllowedForUrls</ph> policy. To turn automatic playback on for all sites, add http://* and https://* to this list.''',
     },
     {
       'name': 'DefaultPopupsSetting',
@@ -5431,9 +5427,9 @@
       'id': 52,
       'caption': '''Default popups setting''',
       'tags': [],
-      'desc': '''Allows you to set whether websites are allowed to show pop-ups. Showing popups can be either allowed for all websites or denied for all websites.
+      'desc': '''Setting the policy to 1 lets websites display pop-ups. Setting the policy to 2 denies pop-ups.
 
-          If this policy is left not set, 'BlockPopups' will be used and the user will be able to change it.''',
+      Leaving it unset means <ph name="BLOCK_POPUPS_POLICY_NAME">BlockPopups</ph> applies, but users can change this setting.''',
     },
     {
       'name': 'DefaultNotificationsSetting',
@@ -5469,9 +5465,9 @@
       'id': 53,
       'caption': '''Default notification setting''',
       'tags': [],
-      'desc': '''Allows you to set whether websites are allowed to display desktop notifications. Displaying desktop notifications can be allowed by default, denied by default or the user can be asked every time a website wants to show desktop notifications.
+      'desc': '''Setting the policy to 1 lets websites display desktop notifications. Setting the policy to 2 denies desktop notifications.
 
-          If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.''',
+      Leaving it unset means <ph name="ASK_NOTIFICATIONS_POLICY_NAME">AskNotifications</ph> applies, but users can change this setting.''',
     },
     {
       'name': 'DefaultGeolocationSetting',
@@ -5507,9 +5503,9 @@
       'id': 54,
       'caption': '''Default geolocation setting''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
+      'desc': '''Setting the policy to 1 lets sites track the users' physical location as the default state. Setting the policy to 2 denies this tracking by default. You can set the policy to ask whenever a site wants to track the users' physical location.
 
-          If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.''',
+      Leaving the policy unset means the <ph name="ASK_GEOLOCATION_POLICY_NAME">AskGeolocation</ph> policy applies, but users can change this setting.''',
       'arc_support': 'If this policy is set to <ph name="BLOCK_GEOLOCATION_SETTING">BlockGeolocation</ph>, Android apps cannot access location information. If you set this policy to any other value or leave it unset, the user is asked to consent when an Android app wants to access location information.',
     },
     {
@@ -5575,9 +5571,9 @@
       'id': 320,
       'caption': '''Control use of the Web Bluetooth API''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set whether websites are allowed to get access to nearby Bluetooth devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to nearby Bluetooth devices.
+      'desc': '''Setting the policy to 3 lets websites ask for access to nearby Bluetooth devices. Setting the policy to 2 denies access to nearby Bluetooth devices.
 
-          If this policy is left not set, '3' will be used, and the user will be able to change it.''',
+      Leaving the policy unset lets sites ask for access, but users can change this setting.''',
     },
     {
       'name': 'DefaultKeygenSetting',
@@ -5641,11 +5637,9 @@
       'id': 434,
       'caption': '''Control use of the WebUSB API''',
       'tags': ['website-sharing'],
-      'desc': '''Allows you to set whether websites are allowed to get access to connected USB devices. Access can be completely blocked, or the user can be asked every time a website wants to get access to connected USB devices.
+      'desc': '''Setting the policy to 3 lets websites ask for access to connected USB devices. Setting the policy to 2 denies access to connected USB devices.
 
-          This policy can be overridden for specific URL patterns using the 'WebUsbAskForUrls' and 'WebUsbBlockedForUrls' policies.
-
-          If this policy is left not set, '3' will be used, and the user will be able to change it.''',
+      Leaving it unset lets websites ask for access, but users can change this setting.''',
     },
     {
       'name': 'WebUsbAllowDevicesForUrls',
@@ -5943,13 +5937,13 @@
       'id': 67,
       'caption': '''Block cookies on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
+      'desc': '''Setting the policy lets you make a list of URL patterns that specify sites that can't set cookies.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset results in the use of <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME">DefaultCookiesSetting</ph> for all sites, if it's set. If not, the user's personal setting applies.
 
-          See also policies 'CookiesAllowedForUrls' and 'CookiesSessionOnlyForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.
+      While no specific policy takes precedence, see <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME">CookiesBlockedForUrls</ph> and <ph name="COOKIES_SESSION_ONLY_FOR_URLS_POLICY_NAME">CookiesSessionOnlyForUrls</ph>. URL patterns among these 3 policies must not conflict.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'CookiesSessionOnlyForUrls',
@@ -5972,17 +5966,15 @@
       'id': 68,
       'caption': '''Limit cookies from matching URLs to the current session''',
       'tags': [],
-      'desc': '''Cookies set by pages matching these URL patterns will be limited to the current session, i.e. they will be deleted when the browser exits.
+      'desc': '''Unless the <ph name="RESTORE_ON_STARTUP_POLICY_NAME">RestoreOnStartup</ph> policy is set to permanently restore URLs from previous sessions, then setting <ph name="COOKIES_SESSION_ONLY_FOR_URLS_POLICY_NAME">CookiesSessionOnlyForUrls</ph> lets you make a list of URL patterns that specify sites that can and can't set cookies for one session.
 
-          For URLs not covered by the patterns specified here, or for all URLs if this policy is not set, the global default value will be used either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset results in the use of <ph name="DEFAULT_COOKIES_SETTINGS_POLICY_NAME">DefaultCookiesSetting</ph> for all sites, if it's set. If not, the user's personal setting applies. URLs not covered by the patterns specified also result in the use of defaults.
 
-          Note that if <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in 'background mode', the session may not be closed when the last browser window is closed, but will instead stay active until the browser exits. Please see the 'BackgroundModeEnabled' policy for more information about configuring this behavior.
+      If <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is running in Background mode, the session might stay active until the user exits the browser, not just closes the last window. See <ph name="BACKGROUND_MODE_ENABLED_POLICY_NAME">BackgroundModeEnabled</ph> for details about configuring this behavior.
 
-          See also policies 'CookiesAllowedForUrls' and 'CookiesBlockedForUrls'. Note that there must be no conflicting URL patterns between these three policies - it is unspecified which policy takes precedence.
+      While no specific policy takes precedence, see <ph name="COOKIES_BLOCKED_FOR_URLS_POLICY_NAME">CookiesBlockedForUrls</ph> and <ph name="COOKIES_ALLOWED_FOR_URLS_POLICY_NAME">CookiesAllowedForUrls</ph>. URL patterns among these 3 policies must not conflict.
 
-          If the "RestoreOnStartup" policy is set to restore URLs from previous sessions this policy will not be respected and cookies will be stored permanently for those sites.
-
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
     },
     {
       'name': 'ImagesAllowedForUrls',
@@ -6001,13 +5993,13 @@
       'id': 69,
       'caption': '''Allow images on these sites''',
       'tags': [],
-      'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to display images.
+      'desc': '''Setting the policy lets you set a list of URL patterns that specify sites that may display images.
 
-          If this policy is left not set the global default value will be used for all sites either from the 'DefaultImagesSetting' policy if it is set, or the user's personal configuration otherwise.
+      Leaving the policy unset means <ph name="DEFAULT_IMAGES_SETTING_ENABLED_POLICY_NAME">DefaultImagesSetting</ph> applies for all sites, if it's set. If not, the user's personal setting applies.
 
-          Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.
+      For detailed information on valid <ph name="URL_LABEL">url</ph> patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.
 
-          For detailed information on valid url patterns, please see https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns.''',
+      Note that previously this policy was erroneously enabled on Android, but this functionality has never been fully supported on Android.''',
     },
     {
       'name': 'ImagesBlockedForUrls',
@@ -6469,11 +6461,9 @@
       'id': 55,
       'caption': '''Disable support for 3D graphics APIs''',
       'tags': [],
-      'desc': '''Enabling this setting prevents web pages from accessing the graphics processing unit (GPU). Specifically, web pages can not access the WebGL API and plugins can not use the Pepper 3D API.
+      'desc': '''Setting the policy to True (or setting <ph name="HARDWARE_ACCELERATION_MODE_ENABLED_POLICY_NAME">HardwareAccelerationModeEnabled</ph> to False) prevents webpages from accessing the WebGL API, and plugins can't use the Pepper 3D API.
 
-      Disabling this setting or leaving it not set potentially allows web pages to use the WebGL API and plugins to use the Pepper 3D API. The default settings of the browser may still require command line arguments to be passed in order to use these APIs.
-
-      If HardwareAccelerationModeEnabled is set to false, Disable3DAPIs is ignored and it is equivalent to Disable3DAPIs being set to true.''',
+      Setting the policy to False or leaving it unset lets webpages use the WebGL API and plugins use the Pepper 3D API, but the browser's default settings might still require command line arguments to use these APIs.''',
     },
     {
       'name': 'PolicyRefreshRate',
@@ -7857,9 +7847,11 @@
       'id': 129,
       'caption': '''Enable online OCSP/CRL checks''',
       'tags': ['website-sharing'],
-      'desc': '''In light of the fact that soft-fail, online revocation checks provide no effective security benefit, they are disabled by default in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 19 and later. By setting this policy to true, the previous behavior is restored and online OCSP/CRL checks will be performed.
+      'desc': '''Setting the policy to True means online <ph name="OCSP_CRL_LABEL">OCSP/CRL</ph> checks are performed.
 
-      If the policy is not set, or is set to false, then <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not perform online revocation checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 19 and later.''',
+      Setting the policy to False or leaving it unset means <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> won't perform online revocation checks in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> 19 and later.
+
+      Note: <ph name="OCSP_CRL_LABEL">OCSP/CRL</ph> checks provide no effective security benefit.''',
     },
     {
       'name': 'RequireOnlineRevocationChecksForLocalAnchors',
@@ -9433,7 +9425,12 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:22-', 'chrome_os:22-', 'android:30-'],
+      'supported_on': [
+        'chrome.*:22-',
+        'chrome_os:22-',
+        'android:30-',
+        'ios:85-'
+      ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -17645,9 +17642,11 @@
       'id': 483,
       'caption': '''Enables managed extensions to use the Enterprise Hardware Platform API''',
       'tags': [],
-      'desc': '''When this policy is set to enabled, extensions installed by enterprise policy are allowed to use the Enterprise Hardware Platform API.
-      When this policy is set to disabled or not set, no extensions are allowed to use the Enterprise Hardware Platform API.
-      This policy also applies to component extensions such as the Hangout Services extension.''',
+      'desc': '''Setting the policy to True lets extensions installed by enterprise policy use the Enterprise Hardware Platform API.
+
+      Setting the policy to False or leaving it unset prevents extensions from using this API.
+
+      Note: This policy also applies to component extensions, such as the Hangout Services extension.''',
     },
     {
       'name': 'VpnConfigAllowed',

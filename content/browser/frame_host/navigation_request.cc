@@ -4755,29 +4755,61 @@ const CrossOriginOpenerPolicyStatus& NavigationRequest::coop_status() const {
 
 void NavigationRequest::CheckStateTransition(NavigationState state) const {
 #if DCHECK_IS_ON()
+  // See
+  // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.png
+  // clang-format off
   static const base::NoDestructor<StateTransitions<NavigationState>>
       transitions(StateTransitions<NavigationState>({
-          // See
-          // https://chromium.googlesource.com/chromium/src/+/HEAD/docs/navigation-request-navigation-state.png
-          {NOT_STARTED,
-           {WAITING_FOR_RENDERER_RESPONSE, WILL_START_NAVIGATION,
-            WILL_START_REQUEST}},
-          {WAITING_FOR_RENDERER_RESPONSE, {WILL_START_NAVIGATION}},
-          {WILL_START_NAVIGATION, {WILL_START_REQUEST, WILL_FAIL_REQUEST}},
-          {WILL_START_REQUEST,
-           {WILL_REDIRECT_REQUEST, WILL_PROCESS_RESPONSE, READY_TO_COMMIT,
-            DID_COMMIT, CANCELING, WILL_FAIL_REQUEST, DID_COMMIT_ERROR_PAGE}},
-          {WILL_REDIRECT_REQUEST,
-           {WILL_REDIRECT_REQUEST, WILL_PROCESS_RESPONSE, CANCELING,
-            WILL_FAIL_REQUEST}},
-          {WILL_PROCESS_RESPONSE,
-           {READY_TO_COMMIT, CANCELING, WILL_FAIL_REQUEST}},
-          {READY_TO_COMMIT, {NOT_STARTED, DID_COMMIT, DID_COMMIT_ERROR_PAGE}},
+          {NOT_STARTED, {
+              WAITING_FOR_RENDERER_RESPONSE,
+              WILL_START_NAVIGATION,
+              WILL_START_REQUEST,
+          }},
+          {WAITING_FOR_RENDERER_RESPONSE, {
+              WILL_START_NAVIGATION,
+          }},
+          {WILL_START_NAVIGATION, {
+              WILL_START_REQUEST,
+              WILL_FAIL_REQUEST,
+          }},
+          {WILL_START_REQUEST, {
+              WILL_REDIRECT_REQUEST,
+              WILL_PROCESS_RESPONSE,
+              READY_TO_COMMIT,
+              DID_COMMIT,
+              CANCELING,
+              WILL_FAIL_REQUEST,
+              DID_COMMIT_ERROR_PAGE,
+          }},
+          {WILL_REDIRECT_REQUEST, {
+              WILL_REDIRECT_REQUEST,
+              WILL_PROCESS_RESPONSE,
+              CANCELING,
+              WILL_FAIL_REQUEST,
+          }},
+          {WILL_PROCESS_RESPONSE, {
+              READY_TO_COMMIT,
+              CANCELING,
+              WILL_FAIL_REQUEST,
+          }},
+          {READY_TO_COMMIT, {
+              NOT_STARTED,
+              DID_COMMIT,
+              DID_COMMIT_ERROR_PAGE,
+          }},
+          {CANCELING, {
+              READY_TO_COMMIT,
+              WILL_FAIL_REQUEST,
+          }},
+          {WILL_FAIL_REQUEST, {
+              READY_TO_COMMIT,
+              CANCELING,
+              WILL_FAIL_REQUEST,
+          }},
           {DID_COMMIT, {}},
-          {CANCELING, {READY_TO_COMMIT, WILL_FAIL_REQUEST}},
-          {WILL_FAIL_REQUEST, {READY_TO_COMMIT, CANCELING, WILL_FAIL_REQUEST}},
           {DID_COMMIT_ERROR_PAGE, {}},
       }));
+  // clang-format on
   DCHECK_STATE_TRANSITION(transitions, state_, state);
 #endif  // DCHECK_IS_ON()
 }

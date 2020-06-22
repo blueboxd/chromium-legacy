@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_FULLSCREEN_SCOPED_FULLSCREEN_DISABLER_H_
 #define IOS_CHROME_BROWSER_UI_FULLSCREEN_SCOPED_FULLSCREEN_DISABLER_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 

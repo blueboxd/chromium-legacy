@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/infobars/overlays/browser_agent/infobar_overlay_browser_agent.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/confirm/confirm_infobar_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/passwords/password_infobar_interaction_handler.h"
+#import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/save_card/save_card_infobar_interaction_handler.h"
 #import "ios/chrome/browser/infobars/overlays/browser_agent/interaction_handlers/translate/translate_infobar_interaction_handler.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 
@@ -27,6 +28,6 @@ void AttachInfobarOverlayBrowserAgent(Browser* browser) {
       std::make_unique<ConfirmInfobarInteractionHandler>());
   browser_agent->AddInfobarInteractionHandler(
       std::make_unique<TranslateInfobarInteractionHandler>());
-  // TODO(crbug.com/1030357): Add InfobarInteractionHandlers for each
-  // InfobarType when implemented.
+  browser_agent->AddInfobarInteractionHandler(
+      std::make_unique<SaveCardInfobarInteractionHandler>());
 }

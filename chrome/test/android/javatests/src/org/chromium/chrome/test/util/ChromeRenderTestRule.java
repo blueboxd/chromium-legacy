@@ -39,11 +39,13 @@ import org.chromium.ui.test.util.RenderTestRule;
  * </pre>
  */
 public class ChromeRenderTestRule extends RenderTestRule {
-    /**
-     * Constructor using {@code "chrome/test/data/android/render_tests"} as default golden folder.
-     */
     public ChromeRenderTestRule() {
-        super("chrome/test/data/android/render_tests");
+        super();
+    }
+
+    protected ChromeRenderTestRule(int revision, @RenderTestRule.Corpus String corpus,
+            String description, boolean failOnUnsupportedConfigs) {
+        super(revision, corpus, description, failOnUnsupportedConfigs);
     }
 
     /**
@@ -52,5 +54,16 @@ public class ChromeRenderTestRule extends RenderTestRule {
      */
     public static void sanitize(View view) {
         TestThreadUtils.runOnUiThreadBlocking(() -> RenderTestRule.sanitize(view));
+    }
+
+    /**
+     * Builder to create a ChromeRenderTestRule for use with Skia Gold.
+     */
+    public static class SkiaGoldBuilder extends RenderTestRule.SkiaGoldBuilder {
+        @Override
+        public ChromeRenderTestRule build() {
+            return new ChromeRenderTestRule(
+                    mRevision, mCorpus, mDescription, mFailOnUnsupportedConfigs);
+        }
     }
 }

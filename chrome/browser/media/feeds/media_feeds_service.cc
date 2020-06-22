@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
+#include "base/task/task_traits.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -28,6 +29,8 @@
 #include "components/safe_search_api/safe_search/safe_search_url_checker_client.h"
 #include "components/safe_search_api/url_checker.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -135,6 +138,13 @@ class CookieChangeListener : public network::mojom::CookieChangeListener {
 const char MediaFeedsService::kSafeSearchResultHistogramName[] =
     "Media.Feeds.SafeSearch.Result";
 
+// static
+constexpr base::TimeDelta MediaFeedsService::kTimeBetweenBackgroundFetches;
+
+// static
+constexpr base::TimeDelta
+    MediaFeedsService::kTimeBetweenNonCachedBackgroundFetches;
+
 // The maximum number of feeds to fetch when getting the top feeds.
 const int kMaxTopFeedsToFetch = 5;
 
@@ -157,6 +167,17 @@ MediaFeedsService::MediaFeedsService(Profile* profile)
       prefs::kMediaFeedsSafeSearchEnabled,
       base::BindRepeating(&MediaFeedsService::OnSafeSearchPrefChanged,
                           weak_factory_.GetWeakPtr()));
+  pref_change_registrar_.Add(
+      prefs::kMediaFeedsBackgroundFetching,
+      base::BindRepeating(&MediaFeedsService::OnBackgroundFetchingPrefChanged,
+                          weak_factory_.GetWeakPtr()));
+
+  if (IsBackgroundFetchingEnabled()) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&MediaFeedsService::FetchTopMediaFeeds,
+                       weak_factory_.GetWeakPtr(), base::OnceClosure()));
+  }
 }
 
 // static
@@ -367,7 +388,14 @@ void MediaFeedsService::OnGotTopFeeds(
     ++it;
   }
 
-  std::move(callback).Run();
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&MediaFeedsService::FetchTopMediaFeeds,
+                     weak_factory_.GetWeakPtr(), base::OnceClosure()),
+      kTimeBetweenBackgroundFetches);
+
+  if (callback)
+    std::move(callback).Run();
 }
 
 void MediaFeedsService::OnCheckURLDone(
@@ -544,6 +572,16 @@ void MediaFeedsService::OnSafeSearchPrefChanged() {
                      weak_factory_.GetWeakPtr()));
 }
 
+void MediaFeedsService::OnBackgroundFetchingPrefChanged() {
+  if (!IsBackgroundFetchingEnabled())
+    return;
+
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&MediaFeedsService::FetchTopMediaFeeds,
+                     weak_factory_.GetWeakPtr(), base::OnceClosure()));
+}
+
 void MediaFeedsService::OnResetOriginFromCookie(
     const url::Origin& origin,
     const bool include_subdomains,
@@ -563,13 +601,14 @@ MediaFeedsService::GetBackgroundFetchFeedSettings(
   settings.should_fetch = false;
   settings.bypass_cache = false;
 
-  // Fetches should be spaced 15 minutes apart with exponential backoff
-  // based on how many sequential times the fetch has failed.
+  // Fetches should be spaced with exponential backoff based on how many
+  // sequential times the fetch has failed.
   if (feed->last_fetch_time.has_value()) {
     // TODO(crbug.com/1064751): Consider using net::BackoffEntry for this.
     base::Time next_fetch_time =
         feed->last_fetch_time.value() +
-        base::TimeDelta::FromMinutes(15 * pow(2, feed->fetch_failed_count));
+        base::TimeDelta::FromMinutes(kTimeBetweenBackgroundFetches.InMinutes() *
+                                     pow(2, feed->fetch_failed_count));
     settings.should_fetch = next_fetch_time < clock_->Now();
   }
 
@@ -577,7 +616,7 @@ MediaFeedsService::GetBackgroundFetchFeedSettings(
   // fetch.
   if (feed->last_fetch_time_not_cache_hit.has_value()) {
     base::Time next_fetch_time = feed->last_fetch_time_not_cache_hit.value() +
-                                 base::TimeDelta::FromHours(24);
+                                 kTimeBetweenNonCachedBackgroundFetches;
     if (next_fetch_time < clock_->Now()) {
       settings.should_fetch = true;
       settings.bypass_cache = true;

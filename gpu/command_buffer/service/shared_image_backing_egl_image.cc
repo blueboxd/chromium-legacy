@@ -37,7 +37,8 @@ class SharedImageRepresentationEglImageGLTexture
   }
 
   bool BeginAccess(GLenum mode) override {
-    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM) {
+    if (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
+        mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM) {
       if (!egl_backing()->BeginRead(this))
         return false;
       mode_ = RepresentationAccessMode::kRead;

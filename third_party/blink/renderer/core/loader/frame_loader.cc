@@ -199,9 +199,10 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
   // was initiated by something in the current document and should therefore
   // show the current document's url as the referrer.
   if (client_redirect_policy == ClientRedirectPolicy::kClientRedirect) {
-    LocalDOMWindow* window = frame_->DomWindow();
     Referrer referrer = SecurityPolicy::GenerateReferrer(
-        window->GetReferrerPolicy(), window->Url(), window->OutgoingReferrer());
+        frame_->GetDocument()->GetReferrerPolicy(),
+        frame_->GetDocument()->Url(),
+        frame_->GetDocument()->OutgoingReferrer());
     request.SetReferrerString(referrer.referrer);
     request.SetReferrerPolicy(referrer.referrer_policy);
   }
@@ -1769,13 +1770,6 @@ ContentSecurityPolicy* FrameLoader::CreateCSP(
   // Retrieve CSP stored in the OriginPolicy.
   if (origin_policy)
     ApplyOriginPolicy(csp, origin_policy.value());
-
-  // Check CSP frame-ancestor:
-  if (!base::FeatureList::IsEnabled(
-          network::features::kOutOfBlinkFrameAncestors)) {
-    if (!csp->AllowAncestors(frame_, response.CurrentRequestUrl()))
-      return nullptr;  // Document blocked.
-  }
 
   // Plugin inherits plugin's CSP from their navigation initiator.
   DocumentInit::Type document_type =

@@ -31,18 +31,22 @@
       white-space: pre-wrap;
     }
 
-    #cellular-error-text {
-      color: red;
-    }
-
     #select-div {
       display: flex;
       height: 400px;
       width: 500px;
     }
 
+    #onc-import-result {
+      margin: 10px 0
+    }
+
     network-select {
       flex: 1;
+    }
+
+    .error {
+      color: red;
     }
   </style>
 </head>
@@ -71,7 +75,9 @@
         <cr-button class="action-button" id="cellular-activation-button">
           $i18n{cellularActivationButtonText}
         </cr-button>
-        <div id="cellular-error-text" hidden>$i18n{noCellularErrorText}</div>
+        <div id="cellular-error-text" class="error" hidden>
+          $i18n{noCellularErrorText}
+        </div>
       </div>
 
       <div>
@@ -80,7 +86,13 @@
           $i18n{addNewWifiButtonText}
         </cr-button>
       </div>
-    </tabpanel>  
+
+      <div>
+        <h2>$i18n{importOncButtonText}</h2>
+        <input type="file" id="import-onc">
+        <div id="onc-import-result"></div>
+      </div>
+    </tabpanel>
 
     <tabpanel id="health">
       <h2>$i18n{networkHealthLabel}</h2>

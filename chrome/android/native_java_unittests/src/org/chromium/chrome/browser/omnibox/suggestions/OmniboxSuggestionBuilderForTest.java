@@ -202,4 +202,13 @@ public class OmniboxSuggestionBuilderForTest {
         mHasTabMatch = hasTabMatch;
         return this;
     }
+
+    /**
+     * @param relevance Relevance score for newly constructed suggestion.
+     * @return Omnibox suggestion builder.
+     */
+    public OmniboxSuggestionBuilderForTest setRelevance(int relevance) {
+        mRelevance = relevance;
+        return this;
+    }
 }

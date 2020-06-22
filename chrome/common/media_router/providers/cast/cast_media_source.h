@@ -28,6 +28,13 @@ static constexpr char kCastStreamingAudioAppId[] = "85CDB22F";
 // message.
 static constexpr char kMultizoneLeaderAppId[] = "MultizoneLeader";
 
+static const constexpr char* const kMultizoneMemberAppIds[] = {
+    kMultizoneLeaderAppId,
+    "531A4F84",  // MultizoneLeader
+    "MultizoneFollower",
+    "705D30C6"  // MultizoneFollower
+};
+
 static constexpr base::TimeDelta kDefaultLaunchTimeout =
     base::TimeDelta::FromSeconds(60);
 

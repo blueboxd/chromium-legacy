@@ -310,6 +310,12 @@ void PaymentRequestState::CheckRequestedMethodsSupported(
     get_all_payment_apps_error_ = errors::kStrictBasicCardShowReject;
   }
 
+  if (!supported && get_all_payment_apps_error_.empty() &&
+      base::Contains(spec_->payment_method_identifiers_set(),
+                     methods::kGooglePlayBilling)) {
+    get_all_payment_apps_error_ = errors::kAppStoreMethodOnlySupportedInTwa;
+  }
+
   std::move(callback).Run(supported, get_all_payment_apps_error_);
 }
 

@@ -27,12 +27,6 @@ class CONTENT_EXPORT RenderWidgetHostLatencyTracker {
   explicit RenderWidgetHostLatencyTracker(RenderWidgetHostDelegate* delegate);
   virtual ~RenderWidgetHostLatencyTracker();
 
-  void ComputeInputLatencyHistograms(
-      blink::WebInputEvent::Type type,
-      const ui::LatencyInfo& latency,
-      blink::mojom::InputEventResultState ack_result,
-      base::TimeTicks ack_timestamp);
-
   // Populates the LatencyInfo with relevant entries for latency tracking.
   // Called when an event is received by the RenderWidgetHost, prior to
   // that event being forwarded to the renderer (via the InputRouter).

@@ -24,6 +24,16 @@
 namespace device {
 namespace pin {
 
+// Permission list flags. See
+// https://drafts.fidoalliance.org/fido-2/stable-links-to-latest/fido-client-to-authenticator-protocol.html#permissions
+enum class Permissions : uint8_t {
+  kMakeCredential = 0x01,
+  kGetAssertion = 0x02,
+  kCredentialManagement = 0x04,
+  kBioEnrollment = 0x08,
+  kPlatformConfiguration = 0x10,
+};
+
 // kProtocolVersion is the version of the PIN protocol that this code
 // implements.
 constexpr int kProtocolVersion = 1;
@@ -166,8 +176,27 @@ class PinTokenRequest : public TokenRequest {
   friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
   AsCTAPRequestValuePair(const PinTokenRequest&);
 
- private:
+ protected:
   uint8_t pin_hash_[16];
+};
+
+class PinTokenWithPermissionsRequest : public PinTokenRequest {
+ public:
+  PinTokenWithPermissionsRequest(const std::string& pin,
+                                 const KeyAgreementResponse& peer_key,
+                                 const uint8_t permissions,
+                                 const base::Optional<std::string> rp_id);
+  PinTokenWithPermissionsRequest(PinTokenWithPermissionsRequest&&);
+  PinTokenWithPermissionsRequest(const PinTokenWithPermissionsRequest&) =
+      delete;
+  ~PinTokenWithPermissionsRequest() override;
+
+  friend std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+  AsCTAPRequestValuePair(const PinTokenWithPermissionsRequest&);
+
+ private:
+  uint8_t permissions_;
+  base::Optional<std::string> rp_id_;
 };
 
 class UvTokenRequest : public TokenRequest {

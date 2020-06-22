@@ -180,7 +180,8 @@ void AwContentsClientBridge::ProceedSslError(JNIEnv* env,
 }
 
 // This method is inspired by SelectClientCertificate() in
-// chrome/browser/ui/android/ssl_client_certificate_request.cc
+// components/browser_ui/client_certificate/android/
+// ssl_client_certificate_request.cc
 void AwContentsClientBridge::SelectClientCertificate(
     net::SSLCertRequestInfo* cert_request_info,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
@@ -237,7 +238,8 @@ void AwContentsClientBridge::SelectClientCertificate(
 }
 
 // This method is inspired by OnSystemRequestCompletion() in
-// chrome/browser/ui/android/ssl_client_certificate_request.cc
+// components/browser_ui/client_certificate/android/
+// ssl_client_certificate_request.cc
 void AwContentsClientBridge::ProvideClientCertificateResponse(
     JNIEnv* env,
     const JavaRef<jobject>& obj,

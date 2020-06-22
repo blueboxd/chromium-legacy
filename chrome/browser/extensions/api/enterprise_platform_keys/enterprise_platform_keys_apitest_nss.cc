@@ -25,6 +25,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "crypto/nss_util_internal.h"
+#include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "extensions/browser/extension_registry.h"
 #include "net/cert/nss_cert_database.h"
@@ -117,17 +118,17 @@ void ImportPrivateKeyPKCS8ToSlot(const unsigned char* pkcs8_der,
       const_cast<unsigned char*>(pkcs8_der),
       pkcs8_der_size};
 
-  SECKEYPrivateKey* seckey = NULL;
-  ASSERT_EQ(SECSuccess,
-            PK11_ImportDERPrivateKeyInfoAndReturnKey(slot,
-                                                     &pki_der_user,
-                                                     NULL,    // nickname
-                                                     NULL,    // publicValue
-                                                     true,    // isPerm
-                                                     true,    // isPrivate
-                                                     KU_ALL,  // usage
-                                                     &seckey,
-                                                     NULL));
+  SECKEYPrivateKey* seckey_raw = nullptr;
+  ASSERT_EQ(SECSuccess, PK11_ImportDERPrivateKeyInfoAndReturnKey(
+                            slot, &pki_der_user,
+                            /*nickname=*/nullptr,
+                            /*publicValue=*/nullptr,
+                            /*isPerm=*/true,
+                            /*isPrivate=*/true,
+                            /*usage=*/KU_ALL, &seckey_raw, /*wincx=*/nullptr));
+
+  // Make sure that the memory allocated for the key gets freed.
+  crypto::ScopedSECKEYPrivateKey seckey(seckey_raw);
 }
 
 // The managed_storage extension has a key defined in its manifest, so that

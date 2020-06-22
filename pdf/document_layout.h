@@ -8,7 +8,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "pdf/draw_utils/coordinates.h"
 #include "pdf/page_orientation.h"
 #include "ppapi/cpp/rect.h"

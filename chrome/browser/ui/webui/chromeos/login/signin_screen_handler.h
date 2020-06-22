@@ -115,9 +115,6 @@ class SigninScreenHandlerDelegate {
   // Show wrong hwid screen.
   virtual void ShowWrongHWIDScreen() = 0;
 
-  // Show update required screen.
-  virtual void ShowUpdateRequiredScreen() = 0;
-
   // --------------- Rest of the methods.
   // Cancels user adding.
   virtual void CancelUserAdding() = 0;

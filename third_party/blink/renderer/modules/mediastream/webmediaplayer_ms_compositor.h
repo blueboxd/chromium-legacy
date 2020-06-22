@@ -41,8 +41,8 @@ class SurfaceId;
 }
 
 namespace blink {
+class MediaStreamDescriptor;
 class WebMediaPlayerMS;
-class WebMediaStream;
 struct WebMediaPlayerMSCompositorTraits;
 
 // This class is designed to handle the work load on compositor thread for
@@ -64,7 +64,7 @@ class MODULES_EXPORT WebMediaPlayerMSCompositor
   WebMediaPlayerMSCompositor(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-      const WebMediaStream& web_stream,
+      MediaStreamDescriptor* media_stream_descriptor,
       std::unique_ptr<WebVideoFrameSubmitter> submitter,
       WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
       const base::WeakPtr<WebMediaPlayerMS>& player);

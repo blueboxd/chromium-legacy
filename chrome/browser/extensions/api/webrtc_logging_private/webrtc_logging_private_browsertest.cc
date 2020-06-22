@@ -80,3 +80,9 @@ IN_PROC_BROWSER_TEST_F(
       << message_;
 }
 #endif
+
+IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiBrowserTest, TestStartStopStart) {
+  ASSERT_TRUE(
+      RunPlatformAppTest("api_test/webrtc_logging_private/start_stop_start"))
+      << message_;
+}

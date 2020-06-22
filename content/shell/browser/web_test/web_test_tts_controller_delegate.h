@@ -22,9 +22,6 @@ class WebTestTtsControllerDelegate : public content::TtsControllerDelegate {
                                         double* rate,
                                         double* pitch,
                                         double* volume) override;
-  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override;
-  content::TtsEngineDelegate* GetTtsEngineDelegate() override;
-
  private:
   WebTestTtsControllerDelegate();
   ~WebTestTtsControllerDelegate() override;

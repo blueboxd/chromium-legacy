@@ -588,6 +588,28 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
   ScheduleSendPendingAccessibilityEvents();
 }
 
+bool RenderAccessibilityImpl::ShouldSerializeNodeForEvent(
+    const WebAXObject& obj,
+    const ui::AXEvent& event) const {
+  if (obj.IsDetached())
+    return false;
+
+  if (event.event_type == ax::mojom::Event::kTextSelectionChanged &&
+      !obj.IsNativeTextControl()) {
+    // Selection changes on non-native text controls cause no change to the
+    // control node's data.
+    //
+    // Selection offsets exposed via kTextSelStart and kTextSelEnd are only used
+    // for plain text controls, (input of a text field type, and textarea). Rich
+    // editable areas, such as contenteditables, use AXTreeData.
+    //
+    // TODO(nektar): Remove kTextSelStart and kTextSelEnd from the renderer.
+    return false;
+  }
+
+  return true;
+}
+
 void RenderAccessibilityImpl::ScheduleSendPendingAccessibilityEvents(
     bool scheduling_from_task) {
   // Don't send accessibility events for frames that are not in the frame tree
@@ -743,7 +765,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   page_language_ = root.Language().Utf8();
 
   // Loop over each event and generate an updated event message.
-  for (auto& event : src_events) {
+  for (ui::AXEvent& event : src_events) {
     if (event.event_type == ax::mojom::Event::kLayoutComplete)
       had_layout_complete_messages = true;
 
@@ -756,8 +778,22 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     if (!obj.UpdateLayoutAndCheckValidity())
       continue;
 
+    // Make sure it's a descendant of our root node - exceptions include the
+    // scroll area that's the parent of the main document (we ignore it), and
+    // possibly nodes attached to a different document.
+    if (!tree_source_.IsInTree(obj))
+      continue;
+
     // If it's ignored, find the first ancestor that's not ignored.
-    while (!obj.IsDetached() && obj.AccessibilityIsIgnored()) {
+    //
+    // Note that "IsDetached()" also calls "IsNull()". Additionally,
+    // "ParentObject()" always gets the first ancestor that is included in tree
+    // (ignored or unignored), so it will never return objects that are not
+    // included in the tree at all.
+    if (!obj.AccessibilityIsIncludedInTree())
+      obj = obj.ParentObject();
+    for (; !obj.IsDetached() && obj.AccessibilityIsIgnored();
+         obj = obj.ParentObject()) {
       // There are 3 states of nodes that we care about here.
       // (x) Unignored, included in tree
       // [x] Ignored, included in tree
@@ -775,9 +811,6 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       // change, but we must also re-serialize [2] since its children
       // have changed. <1> was never part of the ax tree, and therefore
       // does not need to be serialized.
-      //
-      // So on the way to the Unignored parent, ancestors that are
-      // included in the tree must also be serialized.
       // Note that [3] will be serialized to (3) during :
       // |AXTreeSerializer<>::SerializeChangedNodes| when node [2] is
       // being serialized, since it will detect the Ignored state had
@@ -786,32 +819,28 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
       // Similarly, during Event::kTextChanged, if any Ignored,
       // but included in tree ancestor uses NameFrom::kContents,
       // they must also be re-serialized in case the name changed.
-      if (obj.AccessibilityIsIncludedInTree()) {
+      if (ShouldSerializeNodeForEvent(obj, event)) {
         DirtyObject dirty_object;
         dirty_object.obj = obj;
         dirty_object.event_from = event.event_from;
         dirty_object.event_intents = event.event_intents;
         dirty_objects.push_back(dirty_object);
       }
-      obj = obj.ParentObject();
     }
-
-    // Make sure it's a descendant of our root node - exceptions include the
-    // scroll area that's the parent of the main document (we ignore it), and
-    // possibly nodes attached to a different document.
-    if (!tree_source_.IsInTree(obj))
-      continue;
 
     events.push_back(event);
 
     VLOG(1) << "Accessibility event: " << ui::ToString(event.event_type)
             << " on node id " << event.id;
 
-    DirtyObject dirty_object;
-    dirty_object.obj = obj;
-    dirty_object.event_from = event.event_from;
-    dirty_object.event_intents = event.event_intents;
-    dirty_objects.push_back(dirty_object);
+    // Some events don't cause any changes to their associated objects.
+    if (ShouldSerializeNodeForEvent(obj, event)) {
+      DirtyObject dirty_object;
+      dirty_object.obj = obj;
+      dirty_object.event_from = event.event_from;
+      dirty_object.event_intents = event.event_intents;
+      dirty_objects.push_back(dirty_object);
+    }
   }
 
   // Popups have a document lifecycle managed separately from the main document
@@ -970,7 +999,7 @@ void RenderAccessibilityImpl::SendLocationChanges() {
 }
 
 void RenderAccessibilityImpl::OnAccessibilityEventsHandled() {
-  DCHECK(event_schedule_status_ == EventScheduleStatus::kWaitingForAck);
+  DCHECK_EQ(event_schedule_status_, EventScheduleStatus::kWaitingForAck);
   event_schedule_status_ = EventScheduleStatus::kNotWaiting;
   switch (event_schedule_mode_) {
     case EventScheduleMode::kDeferEvents:

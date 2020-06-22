@@ -30,8 +30,17 @@ import org.chromium.url.GURL;
     /* package */ static final WritableObjectPropertyKey<String> SECURITY_ICON_CONTENT_DESCRIPTION =
             new WritableObjectPropertyKey<>();
 
+    /** The callback when the security icon is clicked. */
+    /* package */ static final WritableObjectPropertyKey<Runnable> SECURITY_ICON_ON_CLICK_CALLBACK =
+            new WritableObjectPropertyKey<>();
+
+    /** The callback when the close icon is clicked. */
+    /* package */ static final WritableObjectPropertyKey<Runnable> CLOSE_BUTTON_ON_CLICK_CALLBACK =
+            new WritableObjectPropertyKey<>();
+
     /* package */ static final PropertyKey[] ALL_KEYS = new PropertyKey[] {URL, TITLE,
-            LOAD_PROGRESS, PROGRESS_VISIBLE, SECURITY_ICON, SECURITY_ICON_CONTENT_DESCRIPTION};
+            LOAD_PROGRESS, PROGRESS_VISIBLE, SECURITY_ICON, SECURITY_ICON_CONTENT_DESCRIPTION,
+            SECURITY_ICON_ON_CLICK_CALLBACK, CLOSE_BUTTON_ON_CLICK_CALLBACK};
 
     // Prevent instantiation.
     private PaymentHandlerToolbarProperties() {}

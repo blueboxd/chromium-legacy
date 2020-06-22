@@ -37,6 +37,8 @@
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
+#include "third_party/blink/renderer/modules/peerconnection/rtc_dtls_fingerprint.h"
+#include "third_party/blink/renderer/modules/webtransport/quic_transport_options.h"
 #include "third_party/blink/renderer/modules/webtransport/receive_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/send_stream.h"
 #include "third_party/blink/renderer/modules/webtransport/test_utils.h"
@@ -66,11 +68,17 @@ class QuicTransportConnector final
   struct ConnectArgs {
     ConnectArgs(
         const KURL& url,
+        Vector<network::mojom::blink::QuicTransportCertificateFingerprintPtr>
+            fingerprints,
         mojo::PendingRemote<network::mojom::blink::QuicTransportHandshakeClient>
             handshake_client)
-        : url(url), handshake_client(std::move(handshake_client)) {}
+        : url(url),
+          fingerprints(std::move(fingerprints)),
+          handshake_client(std::move(handshake_client)) {}
 
     KURL url;
+    Vector<network::mojom::blink::QuicTransportCertificateFingerprintPtr>
+        fingerprints;
     mojo::PendingRemote<network::mojom::blink::QuicTransportHandshakeClient>
         handshake_client;
   };
@@ -81,7 +89,8 @@ class QuicTransportConnector final
           fingerprints,
       mojo::PendingRemote<network::mojom::blink::QuicTransportHandshakeClient>
           handshake_client) override {
-    connect_args_.push_back(ConnectArgs(url, std::move(handshake_client)));
+    connect_args_.push_back(
+        ConnectArgs(url, std::move(fingerprints), std::move(handshake_client)));
   }
 
   Vector<ConnectArgs> TakeConnectArgs() { return std::move(connect_args_); }
@@ -146,10 +155,14 @@ class QuicTransportTest : public ::testing::Test {
                             weak_ptr_factory_.GetWeakPtr()));
   }
 
+  static QuicTransportOptions* EmptyOptions() {
+    return MakeGarbageCollected<QuicTransportOptions>();
+  }
+
   // Creates a QuicTransport object with the given |url|.
   QuicTransport* Create(const V8TestingScope& scope, const String& url) {
     AddBinder(scope);
-    return QuicTransport::Create(scope.GetScriptState(), url,
+    return QuicTransport::Create(scope.GetScriptState(), url, EmptyOptions(),
                                  ASSERT_NO_EXCEPTION);
   }
 
@@ -286,7 +299,8 @@ class QuicTransportTest : public ::testing::Test {
 TEST_F(QuicTransportTest, FailWithNullURL) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
-  QuicTransport::Create(scope.GetScriptState(), String(), exception_state);
+  QuicTransport::Create(scope.GetScriptState(), String(), EmptyOptions(),
+                        exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
@@ -295,7 +309,8 @@ TEST_F(QuicTransportTest, FailWithNullURL) {
 TEST_F(QuicTransportTest, FailWithEmptyURL) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
-  QuicTransport::Create(scope.GetScriptState(), String(""), exception_state);
+  QuicTransport::Create(scope.GetScriptState(), String(""), EmptyOptions(),
+                        exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
@@ -306,7 +321,7 @@ TEST_F(QuicTransportTest, FailWithNoScheme) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
   QuicTransport::Create(scope.GetScriptState(), String("no-scheme"),
-                        exception_state);
+                        EmptyOptions(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
@@ -317,7 +332,7 @@ TEST_F(QuicTransportTest, FailWithHttpsURL) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
   QuicTransport::Create(scope.GetScriptState(), String("https://example.com/"),
-                        exception_state);
+                        EmptyOptions(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
@@ -330,7 +345,7 @@ TEST_F(QuicTransportTest, FailWithNoHost) {
   V8TestingScope scope;
   auto& exception_state = scope.GetExceptionState();
   QuicTransport::Create(scope.GetScriptState(), String("quic-transport:///"),
-                        exception_state);
+                        EmptyOptions(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
@@ -343,7 +358,7 @@ TEST_F(QuicTransportTest, FailWithURLFragment) {
   auto& exception_state = scope.GetExceptionState();
   QuicTransport::Create(scope.GetScriptState(),
                         String("quic-transport://example.com/#failing"),
-                        exception_state);
+                        EmptyOptions(), exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSyntaxError),
             exception_state.Code());
@@ -362,7 +377,7 @@ TEST_F(QuicTransportTest, FailByCSP) {
                          network::mojom::ContentSecurityPolicyType::kEnforce,
                          network::mojom::ContentSecurityPolicySource::kHTTP);
   QuicTransport::Create(scope.GetScriptState(),
-                        String("quic-transport://example.com/"),
+                        String("quic-transport://example.com/"), EmptyOptions(),
                         exception_state);
   EXPECT_TRUE(exception_state.HadException());
   EXPECT_EQ(static_cast<int>(DOMExceptionCode::kSecurityError),
@@ -383,7 +398,7 @@ TEST_F(QuicTransportTest, PassCSP) {
                          network::mojom::ContentSecurityPolicyType::kEnforce,
                          network::mojom::ContentSecurityPolicySource::kHTTP);
   QuicTransport::Create(scope.GetScriptState(),
-                        String("quic-transport://example.com/"),
+                        String("quic-transport://example.com/"), EmptyOptions(),
                         exception_state);
   EXPECT_FALSE(exception_state.HadException());
 }
@@ -393,13 +408,14 @@ TEST_F(QuicTransportTest, SendConnect) {
   AddBinder(scope);
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
-      ASSERT_NO_EXCEPTION);
+      EmptyOptions(), ASSERT_NO_EXCEPTION);
 
   test::RunPendingTasks();
 
   auto args = connector_.TakeConnectArgs();
   ASSERT_EQ(1u, args.size());
   EXPECT_EQ(KURL("quic-transport://example.com/"), args[0].url);
+  EXPECT_TRUE(args[0].fingerprints.IsEmpty());
   EXPECT_TRUE(quic_transport->HasPendingActivity());
 }
 
@@ -421,7 +437,7 @@ TEST_F(QuicTransportTest, FailedConnect) {
   AddBinder(scope);
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
-      ASSERT_NO_EXCEPTION);
+      EmptyOptions(), ASSERT_NO_EXCEPTION);
   ScriptPromiseTester ready_tester(scope.GetScriptState(),
                                    quic_transport->ready());
   ScriptPromiseTester closed_tester(scope.GetScriptState(),
@@ -443,12 +459,37 @@ TEST_F(QuicTransportTest, FailedConnect) {
   EXPECT_TRUE(closed_tester.IsRejected());
 }
 
+TEST_F(QuicTransportTest, SendConnectWithFingerprint) {
+  V8TestingScope scope;
+  AddBinder(scope);
+  auto* fingerprints = MakeGarbageCollected<RTCDtlsFingerprint>();
+  fingerprints->setAlgorithm("sha-256");
+  fingerprints->setValue(
+      "ED:3D:D7:C3:67:10:94:68:D1:DC:D1:26:5C:B2:74:D7:1C:A2:63:3E:94:94:C0:84:"
+      "39:D6:64:FA:08:B9:77:37");
+  auto* options = MakeGarbageCollected<QuicTransportOptions>();
+  options->setServerCertificateFingerprints({fingerprints});
+  QuicTransport::Create(scope.GetScriptState(),
+                        String("quic-transport://example.com/"), options,
+                        ASSERT_NO_EXCEPTION);
+
+  test::RunPendingTasks();
+
+  auto args = connector_.TakeConnectArgs();
+  ASSERT_EQ(1u, args.size());
+  ASSERT_EQ(1u, args[0].fingerprints.size());
+  EXPECT_EQ(args[0].fingerprints[0]->algorithm, "sha-256");
+  EXPECT_EQ(args[0].fingerprints[0]->fingerprint,
+            "ED:3D:D7:C3:67:10:94:68:D1:DC:D1:26:5C:B2:74:D7:1C:A2:63:3E:94:94:"
+            "C0:84:39:D6:64:FA:08:B9:77:37");
+}
+
 TEST_F(QuicTransportTest, CloseDuringConnect) {
   V8TestingScope scope;
   AddBinder(scope);
   auto* quic_transport = QuicTransport::Create(
       scope.GetScriptState(), String("quic-transport://example.com/"),
-      ASSERT_NO_EXCEPTION);
+      EmptyOptions(), ASSERT_NO_EXCEPTION);
   ScriptPromiseTester ready_tester(scope.GetScriptState(),
                                    quic_transport->ready());
   ScriptPromiseTester closed_tester(scope.GetScriptState(),
@@ -770,8 +811,9 @@ TEST_F(QuicTransportTest, CreateSendStreamBeforeConnect) {
   V8TestingScope scope;
 
   auto* script_state = scope.GetScriptState();
-  auto* quic_transport = QuicTransport::Create(
-      script_state, "quic-transport://example.com", ASSERT_NO_EXCEPTION);
+  auto* quic_transport =
+      QuicTransport::Create(script_state, "quic-transport://example.com",
+                            EmptyOptions(), ASSERT_NO_EXCEPTION);
   auto& exception_state = scope.GetExceptionState();
   ScriptPromise send_stream_promise =
       quic_transport->createSendStream(script_state, exception_state);

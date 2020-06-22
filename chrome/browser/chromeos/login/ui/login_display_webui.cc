@@ -207,11 +207,6 @@ void LoginDisplayWebUI::ShowKioskAutolaunchScreen() {
     delegate_->OnStartKioskAutolaunchScreen();
 }
 
-void LoginDisplayWebUI::ShowUpdateRequiredScreen() {
-  if (delegate_)
-    delegate_->ShowUpdateRequiredScreen();
-}
-
 void LoginDisplayWebUI::ShowWrongHWIDScreen() {
   if (delegate_)
     delegate_->ShowWrongHWIDScreen();

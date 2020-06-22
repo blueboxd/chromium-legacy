@@ -357,6 +357,7 @@ public class WebsitePreferenceBridge {
 
         switch (contentSettingsType) {
             case ContentSettingsType.ADS:
+            case ContentSettingsType.BLUETOOTH_GUARD:
             case ContentSettingsType.BLUETOOTH_SCANNING:
             case ContentSettingsType.JAVASCRIPT:
             case ContentSettingsType.POPUPS:
@@ -425,6 +426,9 @@ public class WebsitePreferenceBridge {
             case ContentSettingsType.POPUPS:
                 // Returns true if websites are allowed to request permission to access USB devices.
             case ContentSettingsType.USB_GUARD:
+                // Returns true if websites are allowed to request permission to access Bluetooth
+                // devices.
+            case ContentSettingsType.BLUETOOTH_GUARD:
             case ContentSettingsType.BLUETOOTH_SCANNING:
                 return isContentSettingEnabled(browserContextHandle, contentSettingsType);
             case ContentSettingsType.AR:

@@ -118,6 +118,16 @@ public class ContentSettingsResources {
                             R.string.background_sync_permission_title, ContentSettingValues.ALLOW,
                             ContentSettingValues.BLOCK,
                             R.string.website_settings_category_allowed_recommended, 0));
+            localMap.put(ContentSettingsType.BLUETOOTH_CHOOSER_DATA,
+                    new ResourceItem(R.drawable.settings_bluetooth, 0, 0, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK, 0, 0));
+            localMap.put(ContentSettingsType.BLUETOOTH_GUARD,
+                    new ResourceItem(R.drawable.settings_bluetooth,
+                            R.string.website_settings_bluetooth,
+                            R.string.website_settings_bluetooth, ContentSettingValues.ASK,
+                            ContentSettingValues.BLOCK,
+                            R.string.website_settings_category_bluetooth_ask,
+                            R.string.website_settings_category_bluetooth_blocked));
             localMap.put(ContentSettingsType.BLUETOOTH_SCANNING,
                     new ResourceItem(R.drawable.ic_bluetooth_searching_black_24dp,
                             R.string.website_settings_bluetooth_scanning,

@@ -55,9 +55,6 @@ class CORE_EXPORT ShadowData {
   bool operator==(const ShadowData&) const;
   bool operator!=(const ShadowData& o) const { return !(*this == o); }
 
-  ShadowData Blend(const ShadowData& from,
-                   double progress,
-                   const Color& current_color) const;
   static ShadowData NeutralValue();
 
   float X() const { return location_.X(); }

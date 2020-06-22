@@ -33,6 +33,15 @@ using MakeCredentialPINDisposition =
 
 namespace {
 
+// Permissions requested for PinUvAuthToken. GetAssertion is needed for silent
+// probing of credentials.
+const std::vector<pin::Permissions> GetMakeCredentialRequestPermissions() {
+  static const std::vector<pin::Permissions> kMakeCredentialRequestPermissions =
+      {pin::Permissions::kMakeCredential, pin::Permissions::kGetAssertion,
+       pin::Permissions::kBioEnrollment};
+  return kMakeCredentialRequestPermissions;
+}
+
 base::Optional<MakeCredentialStatus> ConvertDeviceResponseCode(
     CtapDeviceResponseCode device_response_code) {
   switch (device_response_code) {
@@ -436,7 +445,7 @@ void MakeCredentialRequestHandler::DispatchRequest(
         !request_.is_u2f_only &&
         authenticator->AuthenticatorTransport() !=
             FidoTransportProtocol::kInternal) {
-      if (authenticator->Options()->supports_uv_token) {
+      if (authenticator->Options()->supports_pin_uv_auth_token) {
         authenticator->GetUvToken(
             request_.rp.id,
             base::BindOnce(&MakeCredentialRequestHandler::OnHaveUvToken,
@@ -665,7 +674,7 @@ void MakeCredentialRequestHandler::OnHavePIN(std::string pin) {
   if (state_ == State::kWaitingForPIN) {
     state_ = State::kRequestWithPIN;
     authenticator_->GetPINToken(
-        std::move(pin),
+        std::move(pin), GetMakeCredentialRequestPermissions(), request_.rp.id,
         base::BindOnce(&MakeCredentialRequestHandler::OnHavePINToken,
                        weak_factory_.GetWeakPtr()));
     return;
@@ -721,7 +730,7 @@ void MakeCredentialRequestHandler::OnHaveSetPIN(
   // get a PIN token.
   state_ = State::kRequestWithPIN;
   authenticator_->GetPINToken(
-      std::move(pin),
+      std::move(pin), GetMakeCredentialRequestPermissions(), request_.rp.id,
       base::BindOnce(&MakeCredentialRequestHandler::OnHavePINToken,
                      weak_factory_.GetWeakPtr()));
 }

@@ -16,7 +16,7 @@ class WebFakeWidgetScheduler final : public WebWidgetScheduler {
   WebFakeWidgetScheduler() {
     input_task_runner_ = base::MakeRefCounted<FakeTaskRunner>();
   }
-  ~WebFakeWidgetScheduler() override {}
+  ~WebFakeWidgetScheduler() override;
 
   // Returns the input task runner.
   scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override {
@@ -24,7 +24,7 @@ class WebFakeWidgetScheduler final : public WebWidgetScheduler {
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
+  scoped_refptr<FakeTaskRunner> input_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFakeWidgetScheduler);
 };

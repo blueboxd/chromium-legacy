@@ -37,7 +37,7 @@
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "chrome/common/profiler/thread_profiler.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/secure_origin_whitelist.h"
+#include "chrome/common/secure_origin_allowlist.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -444,7 +444,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   }
 
   for (auto& scheme :
-       secure_origin_whitelist::GetSchemesBypassingSecureContextCheck()) {
+       secure_origin_allowlist::GetSchemesBypassingSecureContextCheck()) {
     WebSecurityPolicy::AddSchemeToSecureContextSafelist(
         WebString::FromASCII(scheme));
   }

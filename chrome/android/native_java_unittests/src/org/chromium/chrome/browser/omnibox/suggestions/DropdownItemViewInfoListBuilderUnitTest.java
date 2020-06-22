@@ -22,11 +22,14 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.base.annotations.NativeJavaTestFeatures;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderProcessor;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -63,58 +66,38 @@ public class DropdownItemViewInfoListBuilderUnitTest {
     }
 
     /**
-     * Build a fake suggestions list with elements named 'Suggestion #', where '#' is the suggestion
-     * index (1-based).
-     *
-     * @return List of suggestions.
+     * Verify that two lists have exactly same content.
+     * Note: this works similarly to Assert.assertEquals(list1, list2), but instead of printing out
+     * the content of both lists, simply reports elements that differ.
+     * OmniboxSuggestion.toString() is verbose enough that the result analysis may be difficult or
+     * even impossible for a small list if the output exceeds the Android's logcat entry length
+     * limit.
      */
-    private List<OmniboxSuggestion> buildDummySuggestionsList(int count, String prefix) {
-        List<OmniboxSuggestion> list = new ArrayList<>();
-        for (int index = 0; index < count; index++) {
-            list.add(OmniboxSuggestionBuilderForTest
-                             .searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
-                             .setDisplayText(prefix + (index + 1))
-                             .build());
+    private <T> void verifyListsMatch(List<T> expected, List<T> actual) {
+        Assert.assertEquals(expected.size(), actual.size());
+        for (int index = 0; index < expected.size(); index++) {
+            Assert.assertEquals("Item at position " + index + " does not match",
+                    expected.get(index), actual.get(index));
         }
-
-        return list;
-    }
-
-    /**
-     * Build a fake group headers map with elements named 'Header #', where '#' is the group header
-     * index (1-based) and 'Header' is the supplied prefix. Each header has a corresponding key
-     * computed as baseKey + #.
-     *
-     * @param count Number of group headers to build.
-     * @param baseKey Key of the first group header.
-     * @param prefix Name prefix for each group.
-     * @return Map of group headers (populated in random order).
-     */
-    private SparseArray<String> buildDummyGroupHeaders(int count, int baseKey, String prefix) {
-        SparseArray<String> headers = new SparseArray<>(count);
-        for (int index = 0; index < count; index++) {
-            headers.put(baseKey + index, prefix + " " + (index + 1));
-        }
-
-        return headers;
     }
 
     @CalledByNativeJavaTest
     public void headers_buildsHeaderForFirstSuggestion() {
-        final List<OmniboxSuggestion> list = new ArrayList<>();
-        final SparseArray<String> headers = buildDummyGroupHeaders(1, 1, "Header");
+        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final SparseArray<String> headers = new SparseArray<>();
+        headers.put(1, "Header 1");
 
         OmniboxSuggestion suggestion =
                 OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
                         .setGroupId(1)
                         .build();
 
-        list.add(suggestion);
-        list.add(suggestion);
+        actualList.add(suggestion);
+        actualList.add(suggestion);
 
         final InOrder verifier = inOrder(mMockSuggestionProcessor, mMockHeaderProcessor);
         final List<DropdownItemViewInfo> model =
-                mBuilder.buildDropdownViewInfoList(new AutocompleteResult(list, headers));
+                mBuilder.buildDropdownViewInfoList(new AutocompleteResult(actualList, headers));
 
         verifier.verify(mMockHeaderProcessor, times(1)).populateModel(any(), eq(1), eq("Header 1"));
         verifier.verify(mMockSuggestionProcessor, times(1))
@@ -136,8 +119,10 @@ public class DropdownItemViewInfoListBuilderUnitTest {
 
     @CalledByNativeJavaTest
     public void headers_buildsHeadersOnlyWhenGroupChanges() {
-        final List<OmniboxSuggestion> list = new ArrayList<>();
-        final SparseArray<String> headers = buildDummyGroupHeaders(2, 1, "Header");
+        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final SparseArray<String> headers = new SparseArray<>();
+        headers.put(1, "Header 1");
+        headers.put(2, "Header 2");
 
         OmniboxSuggestion suggestionWithNoGroup =
                 OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
@@ -151,15 +136,15 @@ public class DropdownItemViewInfoListBuilderUnitTest {
                         .setGroupId(2)
                         .build();
 
-        list.add(suggestionWithNoGroup);
-        list.add(suggestionForGroup1);
-        list.add(suggestionForGroup1);
-        list.add(suggestionForGroup2);
-        list.add(suggestionForGroup2);
+        actualList.add(suggestionWithNoGroup);
+        actualList.add(suggestionForGroup1);
+        actualList.add(suggestionForGroup1);
+        actualList.add(suggestionForGroup2);
+        actualList.add(suggestionForGroup2);
 
         final InOrder verifier = inOrder(mMockSuggestionProcessor, mMockHeaderProcessor);
         final List<DropdownItemViewInfo> model =
-                mBuilder.buildDropdownViewInfoList(new AutocompleteResult(list, headers));
+                mBuilder.buildDropdownViewInfoList(new AutocompleteResult(actualList, headers));
 
         verifier.verify(mMockSuggestionProcessor, times(1))
                 .populateModel(eq(suggestionWithNoGroup), any(), eq(0));
@@ -207,6 +192,7 @@ public class DropdownItemViewInfoListBuilderUnitTest {
         verifyNoMoreInteractions(mMockSuggestionProcessor);
     }
 
+    @NativeJavaTestFeatures.Disable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
     @CalledByNativeJavaTest
     public void builder_propagatesNativeInitializedEvent() {
         mBuilder.onNativeInitialized();
@@ -215,5 +201,156 @@ public class DropdownItemViewInfoListBuilderUnitTest {
 
         verifyNoMoreInteractions(mMockHeaderProcessor);
         verifyNoMoreInteractions(mMockSuggestionProcessor);
+    }
+
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @CalledByNativeJavaTest
+    public void grouping_noGroupingForSuggestionsWithHeaders() {
+        mBuilder.onNativeInitialized();
+        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+        final SparseArray<String> headers = new SparseArray<>();
+        headers.put(1, "Header 1");
+
+        OmniboxSuggestionBuilderForTest builder =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setGroupId(1);
+
+        // Build 4 mixed search/url suggestions with headers.
+        actualList.add(builder.setIsSearch(true).build());
+        actualList.add(builder.setIsSearch(false).build());
+        actualList.add(builder.setIsSearch(true).build());
+        actualList.add(builder.setIsSearch(false).build());
+
+        final List<OmniboxSuggestion> expectedList = new ArrayList<>();
+        expectedList.addAll(actualList);
+
+        mBuilder.groupSuggestionsBySearchVsURL(actualList, 4);
+        Assert.assertEquals(actualList, expectedList);
+    }
+
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @CalledByNativeJavaTest
+    public void grouping_shortMixedContentGrouping() {
+        mBuilder.onNativeInitialized();
+        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+
+        OmniboxSuggestionBuilderForTest builder = OmniboxSuggestionBuilderForTest.searchWithType(
+                OmniboxSuggestionType.SEARCH_SUGGEST);
+
+        // Default match.
+        actualList.add(builder.setRelevance(0).setIsSearch(false).build());
+        // Build 4 mixed search/url suggestions.
+        actualList.add(builder.setRelevance(16).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(14).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(12).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(10).setIsSearch(true).build());
+
+        // Build 4 mixed search/url suggestions with headers.
+        builder.setGroupId(1);
+        actualList.add(builder.setIsSearch(true).build());
+        actualList.add(builder.setIsSearch(false).build());
+        actualList.add(builder.setIsSearch(true).build());
+        actualList.add(builder.setIsSearch(false).build());
+
+        final List<OmniboxSuggestion> expectedList = new ArrayList<>();
+        expectedList.add(actualList.get(0)); // Default match.
+        expectedList.add(actualList.get(2)); // Highest scored search suggestion
+        expectedList.add(actualList.get(4)); // Next highest scored search suggestion
+        expectedList.add(actualList.get(1)); // Highest scored url suggestion
+        expectedList.add(actualList.get(3)); // Next highest scored url suggestion
+        expectedList.addAll(actualList.subList(5, 9));
+
+        mBuilder.groupSuggestionsBySearchVsURL(actualList, 8);
+        verifyListsMatch(expectedList, actualList);
+    }
+
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @CalledByNativeJavaTest
+    public void grouping_longMixedContentGrouping() {
+        mBuilder.onNativeInitialized();
+        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+
+        OmniboxSuggestionBuilderForTest builder = OmniboxSuggestionBuilderForTest.searchWithType(
+                OmniboxSuggestionType.SEARCH_SUGGEST);
+
+        // Default match.
+        actualList.add(builder.setRelevance(0).setIsSearch(false).build());
+        // Build 6 mixed search/url suggestions.
+        actualList.add(builder.setRelevance(18).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(16).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(14).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(12).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(10).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(8).setIsSearch(false).build());
+
+        // Build 4 mixed search/url suggestions with headers.
+        builder.setGroupId(1);
+        actualList.add(builder.setRelevance(100).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(100).setIsSearch(false).build());
+
+        // Request splitting point to be at 4 suggestions.
+        // This should split suggestions into 2 groups:
+        // - relevance 18, 14, 16 (in this order)
+        // - relevance 10, 18, 8 and 100 (in this order)
+        final List<OmniboxSuggestion> expectedList = new ArrayList<>();
+
+        // 3 visible suggestions
+        expectedList.add(actualList.get(0)); // Default match.
+        expectedList.add(actualList.get(1)); // Search suggestion scored 18
+        expectedList.add(actualList.get(2)); // URL suggestion scored 16
+
+        // Remaining, invisible suggestions
+        expectedList.add(actualList.get(3)); // Search suggestion scored 14
+        expectedList.add(actualList.get(5)); // Search suggestion scored 10
+        expectedList.add(actualList.get(4)); // URL suggestion scored 12
+        expectedList.add(actualList.get(6)); // URL suggestion scored 8
+        expectedList.addAll(actualList.subList(7, 9)); // Grouped suggestions.
+
+        mBuilder.groupSuggestionsBySearchVsURL(actualList, 3);
+        verifyListsMatch(expectedList, actualList);
+    }
+
+    @NativeJavaTestFeatures.Enable(ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT)
+    @CalledByNativeJavaTest
+    public void grouping_longHeaderlessContentGrouping() {
+        mBuilder.onNativeInitialized();
+        final List<OmniboxSuggestion> actualList = new ArrayList<>();
+
+        OmniboxSuggestionBuilderForTest builder = OmniboxSuggestionBuilderForTest.searchWithType(
+                OmniboxSuggestionType.SEARCH_SUGGEST);
+
+        // Default match.
+        actualList.add(builder.setRelevance(0).setIsSearch(false).build());
+        // Build 8 mixed search/url suggestions.
+        // The order is intentionally descending, as SortAndCull would order these items like this
+        // for us.
+        actualList.add(builder.setRelevance(20).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(18).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(16).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(14).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(12).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(10).setIsSearch(true).build());
+        actualList.add(builder.setRelevance(8).setIsSearch(false).build());
+        actualList.add(builder.setRelevance(6).setIsSearch(false).build());
+
+        // Request splitting point to be at 4 suggestions.
+        // This should split suggestions into 2 groups:
+        // - relevance 18, 14, 20, 16 (in this order)
+        // - relevance 10, 18, 8 and 100 (in this order)
+        final List<OmniboxSuggestion> expectedList = Arrays.asList(
+                // Top 4, visible suggestions
+                actualList.get(0), // Default match
+                actualList.get(2), // Search suggestion scored 18
+                actualList.get(1), // URL suggestion scored 20
+                actualList.get(3), // URL suggestion scored 16
+
+                actualList.get(4), // Search suggestion scored 14
+                actualList.get(6), // Search suggestion scored 10
+                actualList.get(5), // URL suggestion scored 12
+                actualList.get(7), // URL suggestion scored 8
+                actualList.get(8)); // URL suggestion scored 6
+
+        mBuilder.groupSuggestionsBySearchVsURL(actualList, 4);
+        verifyListsMatch(expectedList, actualList);
     }
 }

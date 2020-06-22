@@ -233,12 +233,11 @@ void WebDocument::WatchCSSSelectors(const WebVector<WebString>& web_selectors) {
 }
 
 network::mojom::ReferrerPolicy WebDocument::GetReferrerPolicy() const {
-  return ConstUnwrap<Document>()->GetExecutionContext()->GetReferrerPolicy();
+  return ConstUnwrap<Document>()->GetReferrerPolicy();
 }
 
 WebString WebDocument::OutgoingReferrer() {
-  return WebString(
-      Unwrap<Document>()->GetExecutionContext()->OutgoingReferrer());
+  return WebString(Unwrap<Document>()->OutgoingReferrer());
 }
 
 WebVector<WebDraggableRegion> WebDocument::DraggableRegions() const {

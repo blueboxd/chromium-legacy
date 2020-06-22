@@ -124,6 +124,8 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
 
   TtsControllerDelegate* delegate_;
 
+  TtsEngineDelegate* engine_delegate_ = nullptr;
+
   // A set of delegates that want to be notified when the voices change.
   base::ObserverList<VoicesChangedDelegate> voices_changed_delegates_;
 

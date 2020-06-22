@@ -290,6 +290,7 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   void ScheduleFormSubmission(FrameScheduler* scheduler,
                               FormSubmission* form_submission);
   void CancelFormSubmission();
+  bool IsFormSubmissionPending();
 
   // Asks the browser process to activate the page associated to the current
   // Frame, reporting |originating_frame| as the local frame originating this

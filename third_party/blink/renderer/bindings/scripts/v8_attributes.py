@@ -408,7 +408,8 @@ def getter_context(interface, attribute, context):
             or 'CachedAttribute' in extended_attributes
             or 'ReflectOnly' in extended_attributes
             or context['is_keep_alive_for_gc']
-            or context['is_getter_raises_exception']):
+            or context['is_getter_raises_exception']
+            or context['high_entropy'] == 'Direct'):
         context['cpp_value_original'] = cpp_value
         cpp_value = 'cpp_value'
 

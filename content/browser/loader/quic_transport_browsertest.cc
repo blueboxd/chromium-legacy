@@ -335,5 +335,53 @@ IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, BidirectionalStream) {
   ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
 }
 
+IN_PROC_BROWSER_TEST_F(QuicTransportBrowserTest, CertificateFingerprint) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title2.html")));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("Title Of Awesomeness")));
+
+  ASSERT_TRUE(ExecuteScript(
+      shell(), base::StringPrintf(R"JS(
+    async function run() {
+      // The connection fails because the fingerprint does not match.
+      const transport = new QuicTransport(
+          'quic-transport://localhost:%d/echo', {
+            serverCertificateFingerprints: [
+              {
+                algorithm: "sha-256",
+                value: "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:" +
+                       "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00",
+              },
+            ],
+          });
+
+      let fulfilled = false;
+      try {
+        await transport.ready;
+        fulfilled = true
+      } catch {}
+
+      if (fulfilled) {
+        throw Error('ready should be rejected');
+      }
+
+      try {
+        await transport.closed;
+      } catch (e) {
+        return;
+      }
+      throw Error('closed should be rejected');
+    }
+
+    run().then(() => { document.title = 'PASS'; },
+               (e) => { console.log(e); document.title = 'FAIL'; });
+)JS",
+                                  server_.server_address().port())));
+
+  ASSERT_TRUE(WaitForTitle(ASCIIToUTF16("PASS"), {ASCIIToUTF16("FAIL")}));
+}
+
 }  // namespace
 }  // namespace content

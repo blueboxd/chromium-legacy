@@ -2092,8 +2092,6 @@ if (enable_java_templates) {
   #     apk or module.
   #   resources_config_path: Path to the aapt2 optimize config file that tags
   #     resources with acceptable/non-acceptable optimizations.
-  #   verify_manifest: Enables verification of expected merged manifest based
-  #     on a golden file.
   #   expected_android_manifest: Enables verification of expected merged
   #     manifest based on a golden file.
   #   resource_ids_provider_dep: If passed, this target will use the resource
@@ -2495,19 +2493,6 @@ if (enable_java_templates) {
       min_sdk_version = _min_sdk_version
       target_sdk_version = _target_sdk_version
 
-      # TODO(agrieve): Remove verify_manifest in favor of expected_android_manifest.
-      if (defined(invoker.verify_manifest) && invoker.verify_manifest &&
-          !is_java_debug) {
-        _target_src_dir = get_label_info(":$target_name", "dir")
-        expected_android_manifest =
-            "$_target_src_dir/java/$_template_name.AndroidManifest.expected"
-        if (defined(invoker.expected_manifest_base_expectation)) {
-          expected_android_manifest_base =
-              invoker.expected_manifest_base_expectation
-          expected_android_manifest =
-              "$_target_src_dir/$_template_name.AndroidManifest.diff.expected"
-        }
-      }
       if (defined(expected_android_manifest)) {
         top_target_name = _template_name
       }
@@ -3539,10 +3524,8 @@ if (enable_java_templates) {
                                "library_always_compress",
                                "library_renames",
                                "use_chromium_linker",
-                               "verify_manifest",
                                "expected_android_manifest",
                                "expected_android_manifest_base",
-                               "expected_manifest_base_expectation",
                                "expected_libs_and_assets",
                                "version_code",
                                "version_name",
@@ -3666,10 +3649,8 @@ if (enable_java_templates) {
                                "library_renames",
                                "use_chromium_linker",
                                "use_modern_linker",
-                               "verify_manifest",
                                "expected_android_manifest",
                                "expected_android_manifest_base",
-                               "expected_manifest_base_expectation",
                                "version_code",
                                "version_name",
                              ])

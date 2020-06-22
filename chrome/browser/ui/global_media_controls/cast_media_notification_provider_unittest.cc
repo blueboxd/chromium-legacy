@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/global_media_controls/cast_media_notification_provider.h"
 
 #include "chrome/browser/media/router/test/mock_media_router.h"
+#include "chrome/common/media_router/media_route.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/media_message_center/media_notification_controller.h"
 #include "components/media_message_center/media_notification_view.h"
@@ -14,13 +15,14 @@
 #include "ui/gfx/vector_icon_types.h"
 
 using media_router::MediaRoute;
+using media_router::RouteControllerType;
 using testing::_;
 
 namespace {
 
-MediaRoute CreateRoute(const std::string& route_id) {
-  media_router::MediaRoute route(route_id,
-                                 media_router::MediaSource("source_id"),
+MediaRoute CreateRoute(const std::string& route_id,
+                       const std::string& source_id = "source_id") {
+  media_router::MediaRoute route(route_id, media_router::MediaSource(source_id),
                                  "sink_id", "description", true, true);
   route.set_controller_type(media_router::RouteControllerType::kGeneric);
   return route;
@@ -126,4 +128,17 @@ TEST_F(CastMediaNotificationProviderTest, UpdateRoute) {
                   metadata.source_title);
       });
   notification_provider_->OnRoutesUpdated({route}, {});
+}
+
+TEST_F(CastMediaNotificationProviderTest, RoutesWithoutNotifications) {
+  // These routes should not have notification items created for them.
+  MediaRoute non_display_route = CreateRoute("route-1");
+  non_display_route.set_for_display(false);
+  MediaRoute no_controller_route = CreateRoute("route-2");
+  no_controller_route.set_controller_type(RouteControllerType::kNone);
+  MediaRoute multizone_member_route = CreateRoute("route-3", "cast:705D30C6");
+
+  notification_provider_->OnRoutesUpdated(
+      {non_display_route, no_controller_route, multizone_member_route}, {});
+  EXPECT_FALSE(notification_provider_->HasItems());
 }

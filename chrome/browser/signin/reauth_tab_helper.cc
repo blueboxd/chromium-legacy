@@ -49,13 +49,15 @@ void ReauthTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame())
     return;
 
+  is_within_reauth_origin_ &=
+      url::IsSameOriginWith(reauth_url_, navigation_handle->GetURL());
+
   if (navigation_handle->IsErrorPage()) {
-    CompleteReauth(signin::ReauthResult::kLoadFailed);
+    has_last_committed_error_page_ = true;
     return;
   }
 
-  is_within_reauth_origin_ &=
-      url::IsSameOriginWith(reauth_url_, navigation_handle->GetURL());
+  has_last_committed_error_page_ = false;
 
   GURL::Replacements replacements;
   replacements.ClearQuery();
@@ -75,6 +77,10 @@ void ReauthTabHelper::WebContentsDestroyed() {
 
 bool ReauthTabHelper::is_within_reauth_origin() {
   return is_within_reauth_origin_;
+}
+
+bool ReauthTabHelper::has_last_committed_error_page() {
+  return has_last_committed_error_page_;
 }
 
 ReauthTabHelper::ReauthTabHelper(content::WebContents* web_contents,

@@ -89,9 +89,6 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
   virtual ~FilterOperation() = default;
   virtual void Trace(Visitor* visitor) const {}
 
-  static FilterOperation* Blend(const FilterOperation* from,
-                                const FilterOperation* to,
-                                double progress);
   virtual bool operator==(const FilterOperation&) const = 0;
   bool operator!=(const FilterOperation& o) const { return !(*this == o); }
 
@@ -117,8 +114,6 @@ class CORE_EXPORT FilterOperation : public GarbageCollected<FilterOperation> {
   OperationType type_;
 
  private:
-  virtual FilterOperation* Blend(const FilterOperation* from,
-                                 double progress) const = 0;
   DISALLOW_COPY_AND_ASSIGN(FilterOperation);
 };
 
@@ -143,12 +138,6 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void Trace(Visitor*) const override;
 
  private:
-  FilterOperation* Blend(const FilterOperation* from,
-                         double progress) const override {
-    NOTREACHED();
-    return nullptr;
-  }
-
   bool operator==(const FilterOperation&) const override;
 
   AtomicString url_;
@@ -173,8 +162,6 @@ class CORE_EXPORT BasicColorMatrixFilterOperation : public FilterOperation {
   double Amount() const { return amount_; }
 
  private:
-  FilterOperation* Blend(const FilterOperation* from,
-                         double progress) const override;
   bool operator==(const FilterOperation& o) const override {
     if (!IsSameType(o))
       return false;
@@ -214,8 +201,6 @@ class CORE_EXPORT BasicComponentTransferFilterOperation
   bool AffectsOpacity() const override { return type_ == OPACITY; }
 
  private:
-  FilterOperation* Blend(const FilterOperation* from,
-                         double progress) const override;
   bool operator==(const FilterOperation& o) const override {
     if (!IsSameType(o))
       return false;
@@ -254,8 +239,6 @@ class CORE_EXPORT BlurFilterOperation : public FilterOperation {
   FloatRect MapRect(const FloatRect&) const override;
 
  private:
-  FilterOperation* Blend(const FilterOperation* from,
-                         double progress) const override;
   bool operator==(const FilterOperation& o) const override {
     if (!IsSameType(o))
       return false;
@@ -286,8 +269,6 @@ class CORE_EXPORT DropShadowFilterOperation : public FilterOperation {
   FloatRect MapRect(const FloatRect&) const override;
 
  private:
-  FilterOperation* Blend(const FilterOperation* from,
-                         double progress) const override;
   bool operator==(const FilterOperation& o) const override {
     if (!IsSameType(o))
       return false;
@@ -318,8 +299,6 @@ class CORE_EXPORT BoxReflectFilterOperation : public FilterOperation {
   FloatRect MapRect(const FloatRect&) const override;
 
  private:
-  FilterOperation* Blend(const FilterOperation* from,
-                         double progress) const override;
   bool operator==(const FilterOperation&) const override;
 
   BoxReflection reflection_;

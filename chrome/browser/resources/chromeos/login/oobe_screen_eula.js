@@ -48,13 +48,13 @@ login.createScreen('EulaScreen', 'eula', function() {
   const TERMS_URL = 'chrome://terms';
 
   // EulaLoader assists on the process of loading an URL into a webview.
-  // It listens for events from the webRequest API for the given URL and loads
-  // an offline version of the EULA in case of failure.
-  // Calling setURL() multiple times with the same URL while requests are being
-  // made won't affect current requests. Instead, it will mark the flag
-  // 'reloadRequested' for the given URL. The reload will be performed only if
-  // the current requests fail. This prevents webview-loadAbort events from
-  // being fired and unnecessary reloads.
+  // It listens for events from the webRequest API for the given URL and
+  // loads an offline version of the EULA in case of failure. Calling
+  // setURL() multiple times with the same URL while requests are being made
+  // won't affect current requests. Instead, it will mark the flag
+  // 'reloadRequested' for the given URL. The reload will be performed only
+  // if the current requests fail. This prevents webview-loadAbort events
+  // from being fired and unnecessary reloads.
   class EulaLoader {
     constructor(webview, timeout, load_offline_callback, clear_anchors) {
       assert(webview.tagName === 'WEBVIEW');
@@ -214,6 +214,11 @@ login.createScreen('EulaScreen', 'eula', function() {
   EulaLoader.instances = {};
 
   return {
+    EXTERNAL_API: [
+      'setTpmPassword',
+      'setUsageStats',
+    ],
+
     /** @override */
     decorate() {
       $('oobe-eula-md').screen = this;
@@ -258,6 +263,14 @@ login.createScreen('EulaScreen', 'eula', function() {
      */
     setTpmPassword(password) {
       $('oobe-eula-md').password = password;
+    },
+
+    /**
+     * Sets usage statistics checkbox.
+     * @param {boolean} checked Is the checkbox checked?
+     */
+    setUsageStats(checked) {
+      $('oobe-eula-md').usageStatsChecked = checked;
     },
 
     /**

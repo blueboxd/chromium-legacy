@@ -998,6 +998,7 @@ void CupsPrintersHandler::HandleStartDiscovery(const base::ListValue* args) {
   UMA_HISTOGRAM_COUNTS_100(
       "Printing.CUPS.PrintersDiscovered",
       discovered_printers_.size() + automatic_printers_.size());
+  printers_manager_->RecordNearbyNetworkPrinterCounts();
   // Scan completes immediately right now.  Emit done.
   FireWebUIListener("on-printer-discovery-done");
 }

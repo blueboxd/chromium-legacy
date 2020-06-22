@@ -302,7 +302,6 @@ DownloadItemView::DownloadItemView(DownloadUIModel::DownloadUIModelPtr download,
       dropdown_state_(NORMAL),
       mode_(NORMAL_MODE),
       dragging_(false),
-      starting_drag_(false),
       model_(std::move(download)),
       save_button_(nullptr),
       discard_button_(nullptr),
@@ -444,31 +443,27 @@ void DownloadItemView::Layout() {
   }
 }
 
-// Handle drag (file copy) operations.
 bool DownloadItemView::OnMouseDragged(const ui::MouseEvent& event) {
+  // Handle drag (file copy) operations.
+
   // Mouse should not activate us in dangerous mode.
   if (IsShowingWarningDialog() || IsShowingMixedContentDialog())
     return true;
 
-  if (!starting_drag_) {
-    starting_drag_ = true;
+  if (!drag_start_point_)
     drag_start_point_ = event.location();
-  }
-  if (dragging_) {
-    if (model_->GetState() == DownloadItem::COMPLETE) {
-      IconManager* im = g_browser_process->icon_manager();
-      gfx::Image* icon = im->LookupIconFromFilepath(model_->GetTargetFilePath(),
-                                                    IconLoader::SMALL);
-      views::Widget* widget = GetWidget();
-      if (model_->download()) {
-        // TODO(shaktisahu): Make DragDownloadItem work with a model.
-        DragDownloadItem(model_->download(), icon,
-                         widget ? widget->GetNativeView() : nullptr);
-        RecordDownloadShelfDragEvent(DownloadShelfDragEvent::STARTED);
-      }
-    }
-  } else if (ExceededDragThreshold(event.location() - drag_start_point_)) {
-    dragging_ = true;
+  if (!dragging_) {
+    dragging_ = ExceededDragThreshold(event.location() - *drag_start_point_);
+  } else if ((model_->GetState() == DownloadItem::COMPLETE) &&
+             model_->download()) {
+    const gfx::Image* const file_icon =
+        g_browser_process->icon_manager()->LookupIconFromFilepath(
+            model_->GetTargetFilePath(), IconLoader::SMALL);
+    const views::Widget* const widget = GetWidget();
+    // TODO(shaktisahu): Make DragDownloadItem work with a model.
+    DragDownloadItem(model_->download(), file_icon,
+                     widget ? widget->GetNativeView() : nullptr);
+    RecordDownloadShelfDragEvent(DownloadShelfDragEvent::STARTED);
   }
   return true;
 }
@@ -481,7 +476,7 @@ void DownloadItemView::OnMouseCaptureLost() {
   if (dragging_) {
     // Starting a drag results in a MouseCaptureLost.
     dragging_ = false;
-    starting_drag_ = false;
+    drag_start_point_.reset();
   }
 }
 

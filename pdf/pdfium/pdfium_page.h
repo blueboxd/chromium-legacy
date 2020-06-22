@@ -181,60 +181,6 @@ class PDFiumPage {
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountPartialOverlaps);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountCompleteOverlaps);
 
-  // Returns a link index if the given character index is over a link, or -1
-  // otherwise.
-  int GetLink(int char_index, LinkTarget* target);
-  // Calculate the locations of any links on the page.
-  void CalculateLinks();
-  // Populates weblinks on the page.
-  void PopulateWebLinks();
-  // Populates annotation links on the page.
-  void PopulateAnnotationLinks();
-  // Calculate the locations of images on the page.
-  void CalculateImages();
-  // Populate annotations like highlight and text field on the page.
-  void PopulateAnnotations();
-  // Populate |highlights_| with |annot|.
-  void PopulateHighlight(FPDF_ANNOTATION annot);
-  // Populate |text_fields_| with |annot|.
-  void PopulateTextField(FPDF_ANNOTATION annot);
-  // Returns link type and fills target associated with a destination. Returns
-  // NONSELECTABLE_AREA if detection failed.
-  Area GetDestinationTarget(FPDF_DEST destination, LinkTarget* target);
-  // Returns link type and fills target associated with a URI action. Returns
-  // NONSELECTABLE_AREA if detection failed.
-  Area GetURITarget(FPDF_ACTION uri_action, LinkTarget* target) const;
-  // Calculates the set of character indices on which text runs need to be
-  // broken for page objects such as links and images.
-  void CalculatePageObjectTextRunBreaks();
-  // Set text run style information based on a character of the text run.
-  void CalculateTextRunStyleInfo(
-      int char_index,
-      pp::PDF::PrivateAccessibilityTextStyleInfo* style_info);
-  // Returns a boolean indicating if the character at index |char_index| has the
-  // same text style as the text run.
-  bool AreTextStyleEqual(
-      int char_index,
-      const pp::PDF::PrivateAccessibilityTextStyleInfo& style);
-
-  // Key    :  Marked content id for the image element as specified in the
-  //           struct tree.
-  // Value  :  Index of image in the |images_| vector.
-  using MarkedContentIdToImageMap = std::map<int, size_t>;
-  // Traverses the entire struct tree of the page recursively and extracts the
-  // alt text from struct tree elements corresponding to the marked content IDs
-  // present in |marked_content_id_image_map|.
-  void PopulateImageAltText(
-      const MarkedContentIdToImageMap& marked_content_id_image_map);
-  // Traverses a struct element and its sub-tree recursively and extracts the
-  // alt text from struct elements corresponding to the marked content IDs
-  // present in |marked_content_id_image_map|. Uses |visited_elements| to guard
-  // against malformed struct trees.
-  void PopulateImageAltTextForStructElement(
-      const MarkedContentIdToImageMap& marked_content_id_image_map,
-      FPDF_STRUCTELEMENT current_element,
-      std::set<FPDF_STRUCTELEMENT>* visited_elements);
-
   class ScopedUnloadPreventer {
    public:
     explicit ScopedUnloadPreventer(PDFiumPage* page);
@@ -289,23 +235,88 @@ class PDFiumPage {
     std::string note_text;
   };
 
-  // Represents a text field within the page.
-  struct TextField {
-    TextField();
-    TextField(const TextField& other);
-    ~TextField();
+  // Represents a form field within the page.
+  struct FormField {
+    FormField();
+    FormField(const FormField& other);
+    ~FormField();
 
+    pp::Rect bounding_rect;
     // Represents the name of form field as defined in the field dictionary.
     std::string name;
-    std::string value;
-    pp::Rect bounding_rect;
     // Represents the flags of form field as defined in the field dictionary.
     int flags;
   };
 
+  // Represents a text field within the page.
+  struct TextField : FormField {
+    TextField();
+    TextField(const TextField& other);
+    ~TextField();
+
+    std::string value;
+  };
+
+  // Returns a link index if the given character index is over a link, or -1
+  // otherwise.
+  int GetLink(int char_index, LinkTarget* target);
+  // Calculate the locations of any links on the page.
+  void CalculateLinks();
+  // Populates weblinks on the page.
+  void PopulateWebLinks();
+  // Populates annotation links on the page.
+  void PopulateAnnotationLinks();
+  // Calculate the locations of images on the page.
+  void CalculateImages();
+  // Populate annotations like highlight and text field on the page.
+  void PopulateAnnotations();
+  // Populate |highlights_| with |annot|.
+  void PopulateHighlight(FPDF_ANNOTATION annot);
+  // Populate |text_fields_| with |annot|.
+  void PopulateTextField(FPDF_ANNOTATION annot);
+  // Populate form fields like text field on the page.
+  void PopulateFormField(FPDF_ANNOTATION annot);
+  // Returns link type and fills target associated with a destination. Returns
+  // NONSELECTABLE_AREA if detection failed.
+  Area GetDestinationTarget(FPDF_DEST destination, LinkTarget* target);
+  // Returns link type and fills target associated with a URI action. Returns
+  // NONSELECTABLE_AREA if detection failed.
+  Area GetURITarget(FPDF_ACTION uri_action, LinkTarget* target) const;
+  // Calculates the set of character indices on which text runs need to be
+  // broken for page objects such as links and images.
+  void CalculatePageObjectTextRunBreaks();
+  // Set text run style information based on a character of the text run.
+  void CalculateTextRunStyleInfo(
+      int char_index,
+      pp::PDF::PrivateAccessibilityTextStyleInfo* style_info);
+  // Returns a boolean indicating if the character at index |char_index| has the
+  // same text style as the text run.
+  bool AreTextStyleEqual(
+      int char_index,
+      const pp::PDF::PrivateAccessibilityTextStyleInfo& style);
+
+  // Key    :  Marked content id for the image element as specified in the
+  //           struct tree.
+  // Value  :  Index of image in the |images_| vector.
+  using MarkedContentIdToImageMap = std::map<int, size_t>;
+  // Traverses the entire struct tree of the page recursively and extracts the
+  // alt text from struct tree elements corresponding to the marked content IDs
+  // present in |marked_content_id_image_map|.
+  void PopulateImageAltText(
+      const MarkedContentIdToImageMap& marked_content_id_image_map);
+  // Traverses a struct element and its sub-tree recursively and extracts the
+  // alt text from struct elements corresponding to the marked content IDs
+  // present in |marked_content_id_image_map|. Uses |visited_elements| to guard
+  // against malformed struct trees.
+  void PopulateImageAltTextForStructElement(
+      const MarkedContentIdToImageMap& marked_content_id_image_map,
+      FPDF_STRUCTELEMENT current_element,
+      std::set<FPDF_STRUCTELEMENT>* visited_elements);
   static uint32_t CountLinkHighlightOverlaps(
       const std::vector<Link>& links,
       const std::vector<Highlight>& highlights);
+  bool PopulateFormFieldProperties(FPDF_ANNOTATION annot,
+                                   FormField* form_field);
 
   PDFiumEngine* engine_;
   ScopedFPDFPage page_;

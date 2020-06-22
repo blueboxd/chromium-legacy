@@ -2117,7 +2117,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         <ph name="FILE_SIZE_OF_TOTAL">%1$s<ex>1.56 MB / 10MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>failed</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_JUST_NOW" desc="Text on a label describing that the associated download event happened just now.">
-        Just Now
+        Just now
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_SCHEDULED_LATER" desc="Text on a label describing that the associated download is scheduled to start later.">
         Scheduled for later
@@ -3002,14 +3002,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_STORAGE_MANAGEMENT_RESET_APP_DIALOG_TEXT" desc="Text of the reset app dialoag in the storage UI.">
         All Chrome’s app data will be deleted permanently. This includes all files, settings, accounts, databases, etc.
-      </message>
-
-      <!-- Client certificate selection failure strings. -->
-      <message name="IDS_CLIENT_CERT_UNSUPPORTED_TITLE" desc="Title of a dialog box for when the operating system does not support client SSL certificate selection">
-        Unable to select certificate.
-      </message>
-      <message name="IDS_CLIENT_CERT_UNSUPPORTED_MESSAGE" desc="The message in a dialog box for when the operating system does not support client SSL certificate selection">
-        Client side certificate selection is not supported by the operating system.
       </message>
 
       <!-- WebUsb Picker UI strings -->

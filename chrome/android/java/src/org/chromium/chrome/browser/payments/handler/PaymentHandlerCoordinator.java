@@ -97,14 +97,12 @@ public class PaymentHandlerCoordinator {
         bottomSheetController.addObserver(mediator);
         mWebContents.addObserver(mediator);
 
-        // Observer is designed to set here rather than in the constructor because
-        // PaymentHandlerMediator and PaymentHandlerToolbarCoordinator have mutual dependencies.
-        mToolbarCoordinator.setObserver(mediator);
+        mToolbarCoordinator.setCloseButtonOnClickCallback(mediator::onToolbarCloseButtonClicked);
         ThinWebView thinWebView = ThinWebViewFactory.create(activity, new ThinWebViewConstraints());
         assert webContentView.getParent() == null;
         thinWebView.attachWebContents(mWebContents, webContentView, null);
-        PaymentHandlerView view = new PaymentHandlerView(activity, mWebContents,
-                mToolbarCoordinator.getView(), thinWebView.getView(), mediator);
+        PaymentHandlerView view = new PaymentHandlerView(
+                activity, mWebContents, mToolbarCoordinator.getView(), thinWebView.getView());
         assert mToolbarCoordinator.getToolbarHeightPx() == view.getToolbarHeightPx();
         PropertyModelChangeProcessor changeProcessor =
                 PropertyModelChangeProcessor.create(model, view, PaymentHandlerViewBinder::bind);

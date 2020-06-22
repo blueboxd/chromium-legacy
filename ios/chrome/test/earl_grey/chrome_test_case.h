@@ -45,6 +45,10 @@ class EmbeddedTestServer;
 // called once per test.
 - (void)stopHTTPServer;
 
+// Returns YES if the test method name extracted from |selector| matches the
+// name of the currently running test method.
+- (BOOL)isRunningTest:(SEL)selector;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_TEST_CASE_H_

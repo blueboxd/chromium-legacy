@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.payments.handler.toolbar;
 
 import android.os.Handler;
-import android.view.View;
 
 import androidx.annotation.DrawableRes;
 
@@ -19,8 +18,7 @@ import org.chromium.ui.modelutil.PropertyModel;
  * PaymentHandlerToolbar mediator, which is responsible for receiving events from the view and
  * notifies the backend (the coordinator).
  */
-/* package */ class PaymentHandlerToolbarMediator
-        extends WebContentsObserver implements View.OnClickListener {
+/* package */ class PaymentHandlerToolbarMediator extends WebContentsObserver {
     /** The delay (four video frames - for 60Hz) after which the hide progress will be hidden. */
     private static final long HIDE_PROGRESS_BAR_DELAY_MS = (1000 / 60) * 4;
     /**
@@ -53,9 +51,6 @@ import org.chromium.ui.modelutil.PropertyModel;
          * @param securityLevel The security level.
          */
         String getSecurityIconContentDescription(@ConnectionSecurityLevel int securityLevel);
-
-        /** Show the PageInfo dialog for the PaymentHandler's WebContents. */
-        void showPageInfoDialog();
     }
 
     /**
@@ -136,10 +131,4 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void didChangeVisibleSecurityState() {
         setSecurityState(mDelegate.getSecurityLevel());
     }
-
-    // (PaymentHandlerToolbarView security icon's) OnClickListener:
-    @Override
-    public void onClick(View view) {
-        mDelegate.showPageInfoDialog();
-    };
 }

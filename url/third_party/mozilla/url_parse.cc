@@ -38,7 +38,7 @@
 
 #include <stdlib.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "url/url_parse_internal.h"
 #include "url/url_util.h"
 #include "url/url_util_internal.h"

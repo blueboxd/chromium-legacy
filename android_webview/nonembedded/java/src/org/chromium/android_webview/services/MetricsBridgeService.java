@@ -53,7 +53,7 @@ public final class MetricsBridgeService extends Service {
     // To avoid any potential synchronization issues as well as avoid blocking the caller thread
     // (e.g when the caller is a thread from the same process.), we post all read/write operations
     // to be run serially using a SequencedTaskRunner instead of using a lock.
-    private final TaskRunner mSequencedTaskRunner =
+    private static final TaskRunner sSequencedTaskRunner =
             PostTask.createSequencedTaskRunner(TaskTraits.BEST_EFFORT_MAY_BLOCK);
 
     // These values are persisted to logs. Entries should not be renumbered and
@@ -126,7 +126,7 @@ public final class MetricsBridgeService extends Service {
     @Override
     public void onCreate() {
         // Restore saved histograms from disk.
-        mSequencedTaskRunner.postTask(() -> {
+        sSequencedTaskRunner.postTask(() -> {
             File file = getMetricsLogFile();
             if (!file.exists()) return;
             try (FileInputStream in = new FileInputStream(file)) {
@@ -167,7 +167,7 @@ public final class MetricsBridgeService extends Service {
             }
             // If this is called within the same process, it will run on the caller thread, so we
             // will always punt this to thread pool.
-            mSequencedTaskRunner.postTask(() -> {
+            sSequencedTaskRunner.postTask(() -> {
                 // Make sure that we don't add records indefinitely in case of no embedded
                 // WebView connects to the service to retrieve and clear the records.
                 if (mRecordsList.size() >= MAX_HISTOGRAM_COUNT) {
@@ -203,7 +203,7 @@ public final class MetricsBridgeService extends Service {
                 list.add(logRetrieveMetricsTaskStatus(RetrieveMetricsTaskStatus.SUCCESS));
                 return list;
             });
-            mSequencedTaskRunner.postTask(retrieveFutureTask);
+            sSequencedTaskRunner.postTask(retrieveFutureTask);
             try {
                 return retrieveFutureTask.get();
             } catch (ExecutionException e) {
@@ -258,12 +258,12 @@ public final class MetricsBridgeService extends Service {
 
     /**
      * Add a FutureTask that can be used to block until all the tasks in the local
-     * {@code mSequencedTaskRunner} are finished for testing.
+     * {@code sSequencedTaskRunner} are finished for testing.
      */
     @VisibleForTesting
     public FutureTask addTaskToBlock() {
         FutureTask<Object> blockTask = new FutureTask<Object>(() -> {}, new Object());
-        mSequencedTaskRunner.postTask(blockTask);
+        sSequencedTaskRunner.postTask(blockTask);
         return blockTask;
     }
 }

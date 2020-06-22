@@ -238,11 +238,11 @@ class ProcessCpuTimeTaskObserver : public base::TaskObserver {
     // we pick up the change back by the posted task eventually.
     if (collection_in_progress_.load(std::memory_order_relaxed))
       return;
-    // PostTask() applies a barrier, so this will be applied before the thread
-    // pool task executes and sets |collection_in_progress_| back to false.
-    collection_in_progress_.store(true, std::memory_order_relaxed);
     task_counter_++;
     if (task_counter_ == reporting_interval_) {
+      // PostTask() applies a barrier, so this will be applied before the thread
+      // pool task executes and sets |collection_in_progress_| back to false.
+      collection_in_progress_.store(true, std::memory_order_relaxed);
       task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(

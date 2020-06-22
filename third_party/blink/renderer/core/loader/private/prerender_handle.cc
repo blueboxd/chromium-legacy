@@ -52,9 +52,8 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
   if (!document.GetFrame())
     return nullptr;
 
-  ExecutionContext* context = document.GetExecutionContext();
   Referrer referrer = SecurityPolicy::GenerateReferrer(
-      context->GetReferrerPolicy(), url, context->OutgoingReferrer());
+      document.GetReferrerPolicy(), url, document.OutgoingReferrer());
 
   mojom::blink::PrerenderAttributesPtr attributes =
       mojom::blink::PrerenderAttributes::New();
@@ -62,12 +61,12 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
   attributes->rel_types = prerender_rel_types;
   attributes->referrer = mojom::blink::Referrer::New(
       KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
-  attributes->initiator_origin = context->GetSecurityOrigin();
+  attributes->initiator_origin = document.GetSecurityOrigin();
   attributes->view_size =
       gfx::Size(document.GetFrame()->GetMainFrameViewportSize());
 
   mojo::Remote<mojom::blink::PrerenderProcessor> prerender_processor;
-  context->GetBrowserInterfaceBroker().GetInterface(
+  document.GetFrame()->Client()->GetBrowserInterfaceBroker().GetInterface(
       prerender_processor.BindNewPipeAndPassReceiver());
 
   mojo::PendingRemote<mojom::blink::PrerenderHandleClient>
@@ -76,32 +75,32 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
 
   HeapMojoRemote<mojom::blink::PrerenderHandle,
                  HeapMojoWrapperMode::kWithoutContextObserver>
-      remote_handle(context);
+      remote_handle(document.GetExecutionContext());
   prerender_processor->AddPrerender(
       std::move(attributes), std::move(prerender_handle_client),
       remote_handle.BindNewPipeAndPassReceiver(
-          context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+          document.GetTaskRunner(TaskType::kMiscPlatformAPI)));
 
-  return MakeGarbageCollected<PrerenderHandle>(PassKey(), context, client, url,
+  return MakeGarbageCollected<PrerenderHandle>(PassKey(), document, client, url,
                                                std::move(remote_handle),
                                                std::move(receiver));
 }
 
 PrerenderHandle::PrerenderHandle(
     PassKey pass_key,
-    ExecutionContext* context,
+    Document& document,
     PrerenderClient* client,
     const KURL& url,
     HeapMojoRemote<mojom::blink::PrerenderHandle,
                    HeapMojoWrapperMode::kWithoutContextObserver> remote_handle,
     mojo::PendingReceiver<mojom::blink::PrerenderHandleClient> receiver)
-    : ExecutionContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(document.GetExecutionContext()),
       url_(url),
       client_(client),
       remote_handle_(std::move(remote_handle)),
-      receiver_(this, context) {
+      receiver_(this, document.GetExecutionContext()) {
   receiver_.Bind(std::move(receiver),
-                 context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+                 document.GetTaskRunner(TaskType::kMiscPlatformAPI));
 }
 
 PrerenderHandle::~PrerenderHandle() = default;

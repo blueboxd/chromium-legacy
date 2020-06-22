@@ -17,6 +17,8 @@ import org.chromium.ui.modelutil.PropertyModel;
         if (PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX == propertyKey) {
             view.onContentVisibleHeightChanged(
                     model.get(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX));
+        } else if (PaymentHandlerProperties.BACK_PRESS_CALLBACK == propertyKey) {
+            view.setBackPressCallback(model.get(PaymentHandlerProperties.BACK_PRESS_CALLBACK));
         }
     }
 }

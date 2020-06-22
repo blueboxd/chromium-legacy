@@ -11,6 +11,7 @@ source_set("libavif") {
     "src/src/codec_dav1d.c",
     "src/src/colr.c",
     "src/src/mem.c",
+    "src/src/obu.c",
     "src/src/rawdata.c",
     "src/src/read.c",
     "src/src/reformat.c",

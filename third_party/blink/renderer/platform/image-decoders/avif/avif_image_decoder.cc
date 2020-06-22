@@ -130,12 +130,9 @@ bool IsColorSpaceSupportedByPCVR(const avifImage* image) {
   if (!image->alphaPlane)
     return true;
   // libyuv supports the alpha channel only with the I420 pixel format, which is
-  // 8-bit YUV 4:2:0 with kRec601_SkYUVColorSpace. libavif reports monochrome
-  // 4:0:0 as AVIF_PIXEL_FORMAT_YUV420 with null U and V planes, so we need to
-  // check for genuine YUV 4:2:0, not monochrome 4:0:0.
-  const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
+  // 8-bit YUV 4:2:0 with kRec601_SkYUVColorSpace.
   return image->depth == 8 && image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
-         !is_mono && *yuv_color_space == kRec601_SkYUVColorSpace &&
+         *yuv_color_space == kRec601_SkYUVColorSpace &&
          image->alphaRange == AVIF_RANGE_FULL;
 }
 
@@ -157,14 +154,12 @@ media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
       media::PIXEL_FORMAT_YUV444P12};
   switch (fmt) {
     case AVIF_PIXEL_FORMAT_YUV420:
+    case AVIF_PIXEL_FORMAT_YUV400:
       return kYUV420Formats[index];
     case AVIF_PIXEL_FORMAT_YUV422:
       return kYUV422Formats[index];
     case AVIF_PIXEL_FORMAT_YUV444:
       return kYUV444Formats[index];
-    case AVIF_PIXEL_FORMAT_YV12:
-      NOTIMPLEMENTED();
-      return media::PIXEL_FORMAT_UNKNOWN;
     case AVIF_PIXEL_FORMAT_NONE:
       NOTREACHED();
       return media::PIXEL_FORMAT_UNKNOWN;
@@ -282,7 +277,7 @@ AVIFImageDecoder::AVIFImageDecoder(AlphaOption alpha_option,
 AVIFImageDecoder::~AVIFImageDecoder() = default;
 
 bool AVIFImageDecoder::ImageIsHighBitDepth() {
-  return is_high_bit_depth_;
+  return bit_depth_ > 8;
 }
 
 void AVIFImageDecoder::OnSetData(SegmentReader* data) {
@@ -375,7 +370,7 @@ void AVIFImageDecoder::Decode(size_t index) {
     return;
   }
   // Frame bit depth must be equal to container bit depth.
-  if (image->depth != decoder_->containerDepth) {
+  if (image->depth != bit_depth_) {
     DVLOG(1) << "Frame bit depth must be equal to container bit depth";
     SetFailed();
     return;
@@ -434,50 +429,52 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
     return false;
   }
 
-  // containerWidth and containerHeight are read from either the tkhd (track
-  // header) box of a track or the ispe (image spatial extents) property of an
-  // image item, both of which are mandatory in the spec.
-  if (decoder_->containerWidth == 0 || decoder_->containerHeight == 0) {
+  // Image metadata is available in decoder_->image after avifDecoderParse()
+  // even though decoder_->imageIndex is invalid (-1).
+  DCHECK_EQ(decoder_->imageIndex, -1);
+  // This variable is named |container| to emphasize the fact that the current
+  // contents of decoder_->image come from the container, not any frame.
+  const auto* container = decoder_->image;
+
+  // The container width and container height are read from either the tkhd
+  // (track header) box of a track or the ispe (image spatial extents) property
+  // of an image item, both of which are mandatory in the spec.
+  if (container->width == 0 || container->height == 0) {
     DVLOG(1) << "Container width and height must be present";
     return false;
   }
 
-  // containerDepth is read from either the av1C box of a track or the av1C
+  // The container depth is read from either the av1C box of a track or the av1C
   // property of an image item, both of which are mandatory in the spec.
-  if (decoder_->containerDepth == 0) {
+  if (container->depth == 0) {
     DVLOG(1) << "Container depth must be present";
     return false;
   }
 
   DCHECK_GT(decoder_->imageCount, 0);
   decoded_frame_count_ = decoder_->imageCount;
-  is_high_bit_depth_ = decoder_->containerDepth > 8;
+  bit_depth_ = container->depth;
   decode_to_half_float_ =
-      is_high_bit_depth_ &&
+      ImageIsHighBitDepth() &&
       high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
 
   // SetEmbeddedColorProfile() must be called before IsSizeAvailable() becomes
   // true. So call SetEmbeddedColorProfile() before calling SetSize(). The color
-  // profile is either an ICC profile or the CICP color description and comes
-  // from the colr box in the container. It is available in decoder_->image
-  // after avifDecoderParse() even though decoder_->imageIndex is invalid (-1).
-  DCHECK_EQ(decoder_->imageIndex, -1);
-  const auto* image = decoder_->image;
+  // profile is either an ICC profile or the CICP color description.
 
   if (!IgnoresColorSpace()) {
     // The CICP color description is always present because we can always get it
     // from the AV1 sequence header for the frames. If an ICC profile is
     // present, use it instead of the CICP color description.
-    if (image->icc.size) {
+    if (container->icc.size) {
       std::unique_ptr<ColorProfile> profile =
-          ColorProfile::Create(image->icc.data, image->icc.size);
+          ColorProfile::Create(container->icc.data, container->icc.size);
       if (!profile) {
         DVLOG(1) << "Failed to parse image ICC profile";
         return false;
       }
       uint32_t data_color_space = profile->GetProfile()->data_color_space;
-      // TODO(wtc): Check for a monochrome (grayscale) image.
-      const bool is_mono = false;
+      const bool is_mono = container->yuvFormat == AVIF_PIXEL_FORMAT_YUV400;
       if (is_mono) {
         if (data_color_space != skcms_Signature_Gray &&
             data_color_space != skcms_Signature_RGB)
@@ -492,10 +489,10 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
         return false;
       }
       SetEmbeddedColorProfile(std::move(profile));
-    } else if (image->colorPrimaries != AVIF_COLOR_PRIMARIES_UNSPECIFIED ||
-               image->transferCharacteristics !=
+    } else if (container->colorPrimaries != AVIF_COLOR_PRIMARIES_UNSPECIFIED ||
+               container->transferCharacteristics !=
                    AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED) {
-      gfx::ColorSpace frame_cs = GetColorSpace(image);
+      gfx::ColorSpace frame_cs = GetColorSpace(container);
       sk_sp<SkColorSpace> sk_color_space =
           frame_cs.GetAsFullRangeRGB().ToSkColorSpace();
       skcms_ICCProfile profile;
@@ -504,7 +501,7 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
     }
   }
 
-  return SetSize(decoder_->containerWidth, decoder_->containerHeight);
+  return SetSize(container->width, container->height);
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {
@@ -530,7 +527,7 @@ void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs,
 
 bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
   const gfx::ColorSpace frame_cs = GetColorSpace(image);
-  const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
+  const bool is_mono = image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400;
   const bool premultiply_alpha = buffer->PremultiplyAlpha();
 
   // TODO(dalecurtis): We should decode to YUV when possible. Currently the

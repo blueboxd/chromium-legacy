@@ -62,8 +62,8 @@ void HTMLTablePartElement::CollectStyleForPresentationAttribute(
           WebFeature::kHTMLTableElementPresentationAttributeBackground);
       CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
           AtomicString(url), GetDocument().CompleteURL(url),
-          Referrer(GetExecutionContext()->OutgoingReferrer(),
-                   GetExecutionContext()->GetReferrerPolicy()),
+          Referrer(GetDocument().OutgoingReferrer(),
+                   GetDocument().GetReferrerPolicy()),
           OriginClean::kTrue, false /* is_ad_related */);
       style->SetProperty(
           CSSPropertyValue(GetCSSPropertyBackgroundImage(), *image_value));

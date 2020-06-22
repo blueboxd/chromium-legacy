@@ -99,12 +99,6 @@ const metrics::UserDemographicsProto::Gender kTestGender =
 
 #pragma mark - Helpers
 
-// Returns YES if the test method name extracted from |selector| matches the
-// name of the currently running test method.
-- (BOOL)isRunningTest:(SEL)selector {
-  return [[self curentTestMethodName] isEqual:NSStringFromSelector(selector)];
-}
-
 // Adds user demographics, which are ModelType::PRIORITY_PREFERENCES, to the
 // fake sync server. |rawBirthYear| is the true birth year, pre-noise, and the
 // gender corresponds to the options in UserDemographicsProto::Gender.
@@ -164,16 +158,6 @@ const metrics::UserDemographicsProto::Gender kTestGender =
   // The client ID is non-zero after metrics uploading permissions are updated.
   GREYAssertNotEqual(0U, [MetricsAppInterface UKMClientID],
                      @"Client ID should be non-zero.");
-}
-
-// Returns the method name, e.g. "testSomething" of the test that is currently
-// running. The name is extracted from the string for the test's name property,
-// e.g. "-[DemographicsTestCase testSomething]".
-- (NSString*)curentTestMethodName {
-  int testNameStart = [self.name rangeOfString:@"test"].location;
-  return [self.name
-      substringWithRange:NSMakeRange(testNameStart,
-                                     self.name.length - testNameStart - 1)];
 }
 
 // Adds dummy data,  stores it in the UKM service's UnsentLogStore, and verifies

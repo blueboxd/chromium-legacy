@@ -85,6 +85,10 @@
     <org.chromium.components.browser_ui.settings.IconPreference
         android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
         android:key="clipboard" />
+    <!-- Bluetooth -->
+    <org.chromium.components.browser_ui.settings.IconPreference
+        android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"
+        android:key="bluetooth" />
     <!-- Bluetooth Scanning -->
     <org.chromium.components.browser_ui.settings.IconPreference
         android:fragment="org.chromium.components.browser_ui.site_settings.SingleCategorySettings"

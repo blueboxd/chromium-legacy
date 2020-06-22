@@ -48,9 +48,9 @@
 #include <new>  // For placement new.
 
 #include "base/atomicops.h"
+#include "base/check_op.h"
 #include "base/debug/leak_annotations.h"
 #include "base/lazy_instance_helpers.h"
-#include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
 
 // LazyInstance uses its own struct initializer-list style static

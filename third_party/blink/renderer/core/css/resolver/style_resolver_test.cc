@@ -69,6 +69,8 @@ TEST_F(StyleResolverTest, AnimationBaseComputedStyle) {
     <style>
       html { font-size: 10px; }
       body { font-size: 20px; }
+      @keyframes fade { to { opacity: 0; }}
+      #div { animation: fade 1s; }
     </style>
     <div id="div">Test</div>
   )HTML");
@@ -127,7 +129,7 @@ TEST_F(StyleResolverTest, HasEmUnits) {
   EXPECT_TRUE(StyleForId("div")->HasEmUnits());
 }
 
-TEST_F(StyleResolverTest, BasePresentIfFontRelativeUnitsAbsent) {
+TEST_F(StyleResolverTest, BaseReusableIfFontRelativeUnitsAbsent) {
   GetDocument().documentElement()->setInnerHTML("<div id=div>Test</div>");
   UpdateAllLifecyclePhasesForTest();
   Element* div = GetDocument().getElementById("div");
@@ -144,6 +146,9 @@ TEST_F(StyleResolverTest, BasePresentIfFontRelativeUnitsAbsent) {
 
   ASSERT_TRUE(div->GetElementAnimations());
   EXPECT_TRUE(div->GetElementAnimations()->BaseComputedStyle());
+
+  StyleResolverState state(GetDocument(), *div);
+  EXPECT_TRUE(StyleResolver::CanReuseBaseComputedStyle(state));
 }
 
 TEST_F(StyleResolverTest, NoCrashWhenAnimatingWithoutCascade) {
@@ -258,8 +263,11 @@ TEST_F(StyleResolverTest, AnimationMaskedByImportant) {
   StyleForId("div");
 
   ASSERT_TRUE(div->GetElementAnimations());
-  EXPECT_FALSE(div->GetElementAnimations()->BaseComputedStyle());
-  EXPECT_FALSE(div->GetElementAnimations()->BaseImportantSet());
+  EXPECT_TRUE(div->GetElementAnimations()->BaseComputedStyle());
+  EXPECT_TRUE(div->GetElementAnimations()->BaseImportantSet());
+
+  StyleResolverState state(GetDocument(), *div);
+  EXPECT_FALSE(StyleResolver::CanReuseBaseComputedStyle(state));
 }
 
 TEST_F(StyleResolverTest, CachedExplicitInheritanceFlags) {
@@ -294,7 +302,8 @@ class StyleResolverFontRelativeUnitTest
     : public testing::WithParamInterface<const char*>,
       public StyleResolverTest {};
 
-TEST_P(StyleResolverFontRelativeUnitTest, NoBaseIfFontRelativeUnitPresent) {
+TEST_P(StyleResolverFontRelativeUnitTest,
+       BaseNotReusableIfFontRelativeUnitPresent) {
   GetDocument().documentElement()->setInnerHTML(
       String::Format("<div id=div style='width:1%s'>Test</div>", GetParam()));
   UpdateAllLifecyclePhasesForTest();
@@ -311,11 +320,14 @@ TEST_P(StyleResolverFontRelativeUnitTest, NoBaseIfFontRelativeUnitPresent) {
 
   EXPECT_TRUE(computed_style->HasFontRelativeUnits());
   ASSERT_TRUE(div->GetElementAnimations());
-  EXPECT_FALSE(div->GetElementAnimations()->BaseComputedStyle());
+  EXPECT_TRUE(div->GetElementAnimations()->BaseComputedStyle());
+
+  StyleResolverState state(GetDocument(), *div);
+  EXPECT_FALSE(StyleResolver::CanReuseBaseComputedStyle(state));
 }
 
 TEST_P(StyleResolverFontRelativeUnitTest,
-       BasePresentIfNoFontAffectingAnimation) {
+       BaseReusableIfNoFontAffectingAnimation) {
   GetDocument().documentElement()->setInnerHTML(
       String::Format("<div id=div style='width:1%s'>Test</div>", GetParam()));
   UpdateAllLifecyclePhasesForTest();
@@ -333,6 +345,9 @@ TEST_P(StyleResolverFontRelativeUnitTest,
   EXPECT_TRUE(computed_style->HasFontRelativeUnits());
   ASSERT_TRUE(div->GetElementAnimations());
   EXPECT_TRUE(div->GetElementAnimations()->BaseComputedStyle());
+
+  StyleResolverState state(GetDocument(), *div);
+  EXPECT_TRUE(StyleResolver::CanReuseBaseComputedStyle(state));
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

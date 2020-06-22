@@ -7,8 +7,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 
 namespace json_schema_compiler {
 namespace test_util {

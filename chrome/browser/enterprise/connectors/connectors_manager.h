@@ -19,6 +19,8 @@
 
 namespace base {
 template <typename T>
+struct LeakySingletonTraits;
+template <typename T>
 struct DefaultSingletonTraits;
 }
 
@@ -80,6 +82,7 @@ class ConnectorsManager {
   void ClearCacheForTesting();
 
  private:
+  friend struct base::LeakySingletonTraits<ConnectorsManager>;
   friend struct base::DefaultSingletonTraits<ConnectorsManager>;
 
   // Constructor and destructor are declared as private so callers use

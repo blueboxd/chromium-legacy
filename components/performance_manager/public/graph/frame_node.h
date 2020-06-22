@@ -90,10 +90,6 @@ class FrameNode : public Node {
   // be current at a time. This is a constant over the lifetime of the frame.
   virtual int GetFrameTreeNodeId() const = 0;
 
-  // Gets the devtools token associated with this frame. This is a constant over
-  // the lifetime of the frame.
-  virtual const base::UnguessableToken& GetDevToolsToken() const = 0;
-
   // Gets the unique token associated with this frame. This is a constant over
   // the lifetime of the frame and unique across all frames for all time.
   virtual const FrameToken& GetFrameToken() const = 0;

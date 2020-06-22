@@ -55,6 +55,17 @@ constexpr std::array<uint8_t, kAaguidLength> kDeviceAaguid = {
     {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04,
      0x05, 0x06, 0x07, 0x08}};
 
+constexpr uint8_t kSupportedPermissionsMask =
+    static_cast<uint8_t>(pin::Permissions::kMakeCredential) |
+    static_cast<uint8_t>(pin::Permissions::kGetAssertion) |
+    static_cast<uint8_t>(pin::Permissions::kCredentialManagement) |
+    static_cast<uint8_t>(pin::Permissions::kBioEnrollment);
+
+struct PinUvAuthTokenPermissions {
+  uint8_t permissions;
+  base::Optional<std::string> rp_id;
+};
+
 std::vector<uint8_t> ConstructResponse(CtapDeviceResponseCode response_code,
                                        base::span<const uint8_t> data) {
   std::vector<uint8_t> response{base::strict_cast<uint8_t>(response_code)};
@@ -68,6 +79,37 @@ bool PermissionsRequireRPID(uint8_t permissions) {
   return permissions &
              static_cast<uint8_t>(pin::Permissions::kMakeCredential) ||
          permissions & static_cast<uint8_t>(pin::Permissions::kGetAssertion);
+}
+
+CtapDeviceResponseCode ExtractPermissions(
+    const cbor::Value::MapValue& request_map,
+    PinUvAuthTokenPermissions& out_permissions) {
+  const auto permissions_it = request_map.find(
+      cbor::Value(static_cast<int>(pin::RequestKey::kPermissions)));
+  if (permissions_it == request_map.end() ||
+      !permissions_it->second.is_unsigned()) {
+    return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
+  }
+  out_permissions.permissions = permissions_it->second.GetUnsigned();
+  if (out_permissions.permissions == 0) {
+    return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
+  }
+
+  DCHECK((out_permissions.permissions & ~kSupportedPermissionsMask) == 0);
+
+  const auto permissions_rpid_it = request_map.find(
+      cbor::Value(static_cast<int>(pin::RequestKey::kPermissionsRPID)));
+  if (permissions_rpid_it == request_map.end() &&
+      PermissionsRequireRPID(out_permissions.permissions)) {
+    return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
+  }
+  if (permissions_rpid_it != request_map.end()) {
+    if (!permissions_rpid_it->second.is_string()) {
+      return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
+    }
+    out_permissions.rp_id = permissions_rpid_it->second.GetString();
+  }
+  return CtapDeviceResponseCode::kSuccess;
 }
 
 void ReturnCtap2Response(
@@ -430,11 +472,11 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
       options.user_verification_availability = AuthenticatorSupportedOptions::
           UserVerificationAvailability::kSupportedButNotConfigured;
     }
-    options.supports_uv_token = config.uv_token_support;
-    if (options.supports_uv_token) {
-      DCHECK(base::Contains(config.ctap2_versions, Ctap2Version::kCtap2_1));
-    }
   }
+
+  options.supports_pin_uv_auth_token = config.pin_uv_auth_token_support;
+  DCHECK(!options.supports_pin_uv_auth_token ||
+         base::Contains(config.ctap2_versions, Ctap2Version::kCtap2_1));
 
   if (config.resident_key_support) {
     options_updated = true;
@@ -699,7 +741,7 @@ VirtualCtap2Device::CheckUserVerification(
     if (pin_auth && (options.client_pin_availability ==
                          AuthenticatorSupportedOptions::ClientPinAvailability::
                              kSupportedAndPinSet ||
-                     options.supports_uv_token)) {
+                     options.supports_pin_uv_auth_token)) {
       DCHECK(pin_protocol && *pin_protocol == 1);
 
       // "Verify that the pinUvAuthToken has the {mc,ga} permission, if not,
@@ -1219,7 +1261,7 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
     std::vector<uint8_t>* response) {
   if (device_info_->options.client_pin_availability ==
           AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported &&
-      !config_.uv_token_support) {
+      !config_.pin_uv_auth_token_support) {
     return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
   }
 
@@ -1348,7 +1390,15 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
       break;
     }
 
-    case static_cast<int>(device::pin::Subcommand::kGetPINToken): {
+    case static_cast<int>(device::pin::Subcommand::kGetPINToken):
+    case static_cast<int>(
+        device::pin::Subcommand::kGetPinUvAuthTokenUsingPinWithPermissions): {
+      if (subcommand ==
+              static_cast<int>(device::pin::Subcommand::
+                                   kGetPinUvAuthTokenUsingPinWithPermissions) &&
+          !config_.pin_uv_auth_token_support) {
+        return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
+      }
       const auto encrypted_pin_hash =
           GetPINBytestring(request_map, pin::RequestKey::kPINHashEnc);
       const auto peer_key =
@@ -1359,11 +1409,29 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
         return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
       }
 
-      if (request_map.find(cbor::Value(static_cast<int>(
-              pin::RequestKey::kPermissions))) != request_map.end() ||
-          request_map.find(cbor::Value(static_cast<int>(
-              pin::RequestKey::kPermissionsRPID))) != request_map.end()) {
-        return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
+      PinUvAuthTokenPermissions permissions;
+      if (subcommand ==
+          static_cast<int>(device::pin::Subcommand::kGetPINToken)) {
+        if (request_map.find(cbor::Value(static_cast<int>(
+                pin::RequestKey::kPermissions))) != request_map.end() ||
+            request_map.find(cbor::Value(static_cast<int>(
+                pin::RequestKey::kPermissionsRPID))) != request_map.end()) {
+          return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
+        }
+        // Set default PinUvAuthToken permissions.
+        permissions.permissions =
+            static_cast<uint8_t>(pin::Permissions::kMakeCredential) |
+            static_cast<uint8_t>(pin::Permissions::kGetAssertion);
+      } else {
+        DCHECK_EQ(
+            subcommand,
+            static_cast<int>(device::pin::Subcommand::
+                                 kGetPinUvAuthTokenUsingPinWithPermissions));
+        CtapDeviceResponseCode response =
+            ExtractPermissions(request_map, permissions);
+        if (response != CtapDeviceResponseCode::kSuccess) {
+          return response;
+        }
       }
 
       uint8_t shared_key[SHA256_DIGEST_LENGTH];
@@ -1383,11 +1451,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
 
       mutable_state()->pin_retries = kMaxPinRetries;
 
-      // Set default PinUvAuthToken permissions.
-      mutable_state()->pin_uv_token_permissions =
-          static_cast<uint8_t>(pin::Permissions::kMakeCredential) |
-          static_cast<uint8_t>(pin::Permissions::kGetAssertion);
-      mutable_state()->pin_uv_token_rpid = base::nullopt;
+      mutable_state()->pin_uv_token_permissions = permissions.permissions;
+      mutable_state()->pin_uv_token_rpid = permissions.rp_id;
 
       response_map.emplace(
           static_cast<int>(pin::ResponseKey::kPINToken),
@@ -1402,29 +1467,11 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
         return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
       }
 
-      const auto permissions_it = request_map.find(
-          cbor::Value(static_cast<int>(pin::RequestKey::kPermissions)));
-      if (permissions_it == request_map.end() ||
-          !permissions_it->second.is_unsigned()) {
-        return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
-      }
-      uint8_t permissions = permissions_it->second.GetUnsigned();
-      if (permissions == 0) {
-        return CtapDeviceResponseCode::kCtap1ErrInvalidParameter;
-      }
-
-      const auto permissions_rpid_it = request_map.find(
-          cbor::Value(static_cast<int>(pin::RequestKey::kPermissionsRPID)));
-      base::Optional<std::string> permissions_rpid;
-      if (permissions_rpid_it == request_map.end() &&
-          PermissionsRequireRPID(permissions)) {
-        return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
-      }
-      if (permissions_rpid_it != request_map.end()) {
-        if (!permissions_rpid_it->second.is_string()) {
-          return CtapDeviceResponseCode::kCtap2ErrMissingParameter;
-        }
-        permissions_rpid = permissions_rpid_it->second.GetString();
+      PinUvAuthTokenPermissions permissions;
+      CtapDeviceResponseCode response =
+          ExtractPermissions(request_map, permissions);
+      if (response != CtapDeviceResponseCode::kSuccess) {
+        return response;
       }
 
       if (device_info_->options.user_verification_availability ==
@@ -1458,8 +1505,8 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
 
       mutable_state()->pin_retries = kMaxPinRetries;
       mutable_state()->uv_retries = kMaxUvRetries;
-      mutable_state()->pin_uv_token_permissions = permissions;
-      mutable_state()->pin_uv_token_rpid = permissions_rpid;
+      mutable_state()->pin_uv_token_permissions = permissions.permissions;
+      mutable_state()->pin_uv_token_rpid = permissions.rp_id;
 
       response_map.emplace(
           static_cast<int>(pin::ResponseKey::kPINToken),
@@ -1467,8 +1514,6 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
       break;
     }
 
-    // TODO(crbug.com/1087419): implement
-    // getPinUvAuthTokenUsingPinWithPermissions.
     default:
       return CtapDeviceResponseCode::kCtap1ErrInvalidCommand;
   }

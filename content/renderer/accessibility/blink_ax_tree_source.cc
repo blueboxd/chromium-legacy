@@ -1226,8 +1226,12 @@ void BlinkAXTreeSource::SerializeEditableTextAttributes(
   if (src.IsEditableRoot())
     dst->AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
 
-  if (src.IsControl() && !dst->HasState(ax::mojom::State::kRichlyEditable)) {
-    // Only for simple input controls -- rich editable areas use AXTreeData.
+  if (src.IsNativeTextControl()) {
+    // Selection offsets are only used for plain text controls, (input of a text
+    // field type, and textarea). Rich editable areas, such as contenteditables,
+    // use AXTreeData.
+    //
+    // TODO(nektar): Remove kTextSelStart and kTextSelEnd from the renderer.
     dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelStart,
                          src.SelectionStart());
     dst->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd,

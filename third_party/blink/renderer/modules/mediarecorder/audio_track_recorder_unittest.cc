@@ -16,9 +16,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
-#include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_component.h"
+#include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
@@ -105,9 +106,9 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
         opus_decoder_(nullptr),
         first_source_cache_pos_(0) {
     ResetDecoder(first_params_);
-    PrepareBlinkTrack();
+    PrepareTrack();
     audio_track_recorder_ = std::make_unique<AudioTrackRecorder>(
-        codec_, blink_track_,
+        codec_, media_stream_component_,
         WTF::BindRepeating(&AudioTrackRecorderTest::OnEncodedAudio,
                            WTF::Unretained(this)),
         ConvertToBaseOnceCallback(CrossThreadBindOnce([] {})),
@@ -117,7 +118,7 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
   ~AudioTrackRecorderTest() {
     opus_decoder_destroy(opus_decoder_);
     opus_decoder_ = nullptr;
-    blink_track_.Reset();
+    media_stream_component_ = nullptr;
     WebHeap::CollectAllGarbageForTesting();
     audio_track_recorder_.reset();
     // Let the message loop run to finish destroying the recorder properly.
@@ -204,9 +205,9 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
     DoOnEncodedAudio(params, std::move(encoded_data), timestamp);
   }
 
-  // ATR and WebMediaStreamTrack for fooling it.
+  // AudioTrackRecorder and MediaStreamComponent for fooling it.
   std::unique_ptr<AudioTrackRecorder> audio_track_recorder_;
-  WebMediaStreamTrack blink_track_;
+  Persistent<MediaStreamComponent> media_stream_component_;
 
   // The codec we'll use for compression the audio.
   const AudioTrackRecorder::CodecId codec_;
@@ -232,17 +233,18 @@ class AudioTrackRecorderTest : public testing::TestWithParam<ATRTestParams> {
   // Prepares a blink track of a given MediaStreamType and attaches the native
   // track, which can be used to capture audio data and pass it to the producer.
   // Adapted from media::WebRTCLocalAudioSourceProviderTest.
-  void PrepareBlinkTrack() {
-    WebMediaStreamSource audio_source;
-    audio_source.Initialize(WebString::FromUTF8("dummy_source_id"),
-                            WebMediaStreamSource::kTypeAudio,
-                            WebString::FromUTF8("dummy_source_name"),
-                            false /* remote */);
-    audio_source.SetPlatformSource(std::make_unique<MediaStreamAudioSource>(
-        scheduler::GetSingleThreadTaskRunnerForTesting(), true));
-    blink_track_.Initialize(WebString::FromUTF8("audio_track"), audio_source);
-    CHECK(MediaStreamAudioSource::From(audio_source)
-              ->ConnectToTrack(blink_track_));
+  void PrepareTrack() {
+    auto* source = MakeGarbageCollected<MediaStreamSource>(
+        String::FromUTF8("dummy_source_id"), MediaStreamSource::kTypeAudio,
+        String::FromUTF8("dummy_source_name"), false /* remote */);
+    auto audio_source = std::make_unique<MediaStreamAudioSource>(
+        scheduler::GetSingleThreadTaskRunnerForTesting(), true);
+    audio_source->SetOwner(source);
+    source->SetPlatformSource(std::move(audio_source));
+    media_stream_component_ = MakeGarbageCollected<MediaStreamComponent>(
+        String::FromUTF8("audio_track"), source);
+    CHECK(MediaStreamAudioSource::From(source)->ConnectToTrack(
+        media_stream_component_));
   }
 
   DISALLOW_COPY_AND_ASSIGN(AudioTrackRecorderTest);

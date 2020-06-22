@@ -263,6 +263,8 @@ All changes to this list should go through Blink's feature review process: http:
     padding-left
     padding-right
     padding-top
+    page
+    page-orientation
     paint-order
     perspective
     perspective-origin

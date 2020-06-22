@@ -2685,6 +2685,10 @@ static const GLES2Util::EnumToString enum_to_string_table[] = {
         "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM",
     },
     {
+        0x8AF8,
+        "GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM",
+    },
+    {
         0x8B30,
         "GL_FRAGMENT_SHADER",
     },
@@ -7784,6 +7788,8 @@ std::string GLES2Util::GetStringShaderType(uint32_t value) {
 
 std::string GLES2Util::GetStringSharedImageAccessMode(uint32_t value) {
   static const EnumToString string_table[] = {
+      {GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM,
+       "GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM"},
       {GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM,
        "GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM"},
       {GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM,

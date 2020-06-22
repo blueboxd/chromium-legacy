@@ -5,14 +5,44 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_base_layout_algorithm_test.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_test.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 
 namespace blink {
 namespace {
 
-using NGOutOfFlowLayoutPartTest = NGLayoutTest;
+class NGOutOfFlowLayoutPartTest
+    : public NGBaseLayoutAlgorithmTest,
+      private ScopedLayoutNGBlockFragmentationForTest {
+ protected:
+  NGOutOfFlowLayoutPartTest() : ScopedLayoutNGBlockFragmentationForTest(true) {}
+
+  scoped_refptr<const NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
+      Element* element) {
+    NGBlockNode container(ToLayoutBox(element->GetLayoutObject()));
+    NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+        WritingMode::kHorizontalTb, TextDirection::kLtr,
+        LogicalSize(LayoutUnit(1000), kIndefiniteSize));
+    return NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithm(container, space);
+  }
+
+  String DumpFragmentTree(Element* element) {
+    auto fragment = RunBlockLayoutAlgorithm(element);
+    return DumpFragmentTree(fragment.get());
+  }
+
+  String DumpFragmentTree(const blink::NGPhysicalBoxFragment* fragment) {
+    NGPhysicalFragment::DumpFlags flags =
+        NGPhysicalFragment::DumpHeaderText | NGPhysicalFragment::DumpSubtree |
+        NGPhysicalFragment::DumpIndentation | NGPhysicalFragment::DumpOffset |
+        NGPhysicalFragment::DumpSize;
+
+    return fragment->DumpFragmentTree(flags);
+  }
+};
 
 // Fixed blocks inside absolute blocks trigger otherwise unused while loop
 // inside NGOutOfFlowLayoutPart::Run.
@@ -71,6 +101,56 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
   EXPECT_EQ(fixed_1->OffsetTop(), LayoutUnit(99));
   // fixed2 top is positioned: #fixed2.top
   EXPECT_EQ(fixed_2->OffsetTop(), LayoutUnit(9));
+}
+
+// Tests that positioned nodes fragment correctly.
+// TODO(almaher): Reenable once the layout algorithm for fragmented positioned
+// items is in a more stable state.
+TEST_F(NGOutOfFlowLayoutPartTest, DISABLED_PositionedFragmentation) {
+  SetBodyInnerHTML(
+      R"HTML(
+      <style>
+        #multicol {
+          column-count: 2; height: 40px; column-fill:auto;
+        }
+        .rel {
+          position: relative;
+        }
+        .abs {
+          position: absolute;
+        }
+      </style>
+      <div id="container">
+        <div id="multicol">
+          <div style="width:100px; height:50px;"></div>
+          <div class="rel">
+            <div class="abs" style="width:5px; top: 10px; height:5px;">
+            </div>
+            <div class="rel">
+              <div class="abs" style="width:10px; top: 20px; height:10px;">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      )HTML");
+  String dump = DumpFragmentTree(GetElementById("container"));
+
+  // TODO(almaher): Positioned nodes are not currently placed in the correct
+  // fragment.
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x40
+    offset:0,0 size:1000x40
+      offset:0,0 size:499.5x40
+        offset:0,0 size:100x40
+      offset:500.5,0 size:499.5x40
+        offset:0,0 size:100x10
+        offset:0,10 size:499.5x0
+          offset:0,0 size:499.5x0
+      offset:0,20 size:10x10
+      offset:0,10 size:5x5
+)DUMP";
+  EXPECT_EQ(expectation, dump);
 }
 
 }  // namespace

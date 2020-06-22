@@ -473,10 +473,10 @@ Still reading?
   <issue id="WebViewApiAvailability" severity="ignore"/>
   <issue id="WrongCall" severity="ignore"/>
   <issue id="WrongConstant">
-    <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/bookmarks/BookmarkItemsAdapter.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/instantapps/InstantAppsHandler.java"/>
     <ignore regexp="chrome/android/java/src/org/chromium/chrome/browser/widget/prefeditor/EditorDialog.java"/>
+    <ignore regexp="components/browser_ui/client_certificate/android/java/src/org/chromium/components/browser_ui/client_certificate/SSLClientCertificateRequest.java"/>
     <ignore regexp="third_party/android_data_chart/java/src/org/chromium/third_party/android/datausagechart/ChartDataUsageView.java"/>
     <!-- 1: TODO(crbug.com/1085411): Fix -->
     <ignore regexp="media/base/android/java/src/org/chromium/media/MediaCodecEncoder.java"/>

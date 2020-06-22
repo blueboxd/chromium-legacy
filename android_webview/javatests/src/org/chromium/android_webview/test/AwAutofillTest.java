@@ -1908,7 +1908,6 @@ public class AwAutofillTest {
                 + "</form></body></html>";
         final String url = mWebServer.setResponse(FILE, data, null);
         loadUrlSync(url);
-        int cnt = 0;
         executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
         dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
         pollDatalistPopupShown();
@@ -1916,6 +1915,24 @@ public class AwAutofillTest {
                 mAutofillProvider.getDatalistPopupForTesting().getListView().getChildAt(1));
         // Verify the selection accepted by renderer.
         pollJavascriptResult("document.getElementById('text2').value;", "\"A2\"");
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testHideDatalistPopup() throws Throwable {
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'>"
+                + "<input list='datalist_id' name='count' id='text2'/><datalist id='datalist_id'>"
+                + "<option value='A1'>one</option><option value='A2'>two</option></datalist>"
+                + "</form></body></html>";
+        final String url = mWebServer.setResponse(FILE, data, null);
+        loadUrlSync(url);
+        executeJavaScriptAndWaitForResult("document.getElementById('text2').select();");
+        dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+        pollDatalistPopupShown();
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mAwContents.hideAutofillPopup(); });
+        assertNull(mAutofillProvider.getDatalistPopupForTesting());
     }
 
     private void pollJavascriptResult(String script, String expectedResult) throws Throwable {

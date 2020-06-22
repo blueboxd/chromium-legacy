@@ -10,6 +10,7 @@ modules_idl_files = [
 ]
 
 modules_dictionary_idl_files = [
-  "web_transport_close_info.idl",
+  "quic_transport_options.idl",
   "stream_abort_info.idl",
+  "web_transport_close_info.idl",
 ]

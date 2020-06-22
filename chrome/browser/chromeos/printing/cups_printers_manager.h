@@ -120,6 +120,10 @@ class CupsPrintersManager : public PrinterInstallationManager,
   // Passes retrieved printer status to the callbacks.
   virtual void FetchPrinterStatus(const std::string& printer_id,
                                   PrinterStatusCallback cb) = 0;
+
+  // Records the total number of detected network printers and the
+  // number of detected network printers that have not been saved.
+  virtual void RecordNearbyNetworkPrinterCounts() const = 0;
 };
 
 }  // namespace chromeos

@@ -746,7 +746,8 @@ void DownloadManagerService::CreateInterruptedDownloadForTest(
           download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
           download::DOWNLOAD_INTERRUPT_REASON_CRASH, false, false, false,
           base::Time(), false,
-          std::vector<download::DownloadItem::ReceivedSlice>(), nullptr));
+          std::vector<download::DownloadItem::ReceivedSlice>(),
+          base::nullopt /*download_schedule*/, nullptr));
 }
 
 void DownloadManagerService::InitializeForProfile(Profile* profile) {

@@ -35,7 +35,7 @@ id<NSDraggingSource> GetDraggingSource() {
 }
 
 void DragDownloadItem(const download::DownloadItem* download,
-                      gfx::Image* icon,
+                      const gfx::Image* icon,
                       gfx::NativeView native_view) {
   DCHECK_EQ(download::DownloadItem::COMPLETE, download->GetState());
   NSView* view = native_view.GetNativeNSView();

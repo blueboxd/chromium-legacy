@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/streams/writable_stream_default_writer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
+#include "third_party/blink/renderer/modules/webtransport/quic_transport_options.h"
 #include "third_party/blink/renderer/modules/webtransport/test_utils.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -181,9 +182,9 @@ class ScopedQuicTransport : public mojom::blink::QuicTransportConnector {
         mojom::blink::QuicTransportConnector::Name_,
         base::BindRepeating(&ScopedQuicTransport::BindConnector,
                             weak_ptr_factory_.GetWeakPtr()));
-    quic_transport_ = QuicTransport::Create(scope.GetScriptState(),
-                                            "quic-transport://example.com/",
-                                            ASSERT_NO_EXCEPTION);
+    quic_transport_ = QuicTransport::Create(
+        scope.GetScriptState(), "quic-transport://example.com/",
+        MakeGarbageCollected<QuicTransportOptions>(), ASSERT_NO_EXCEPTION);
 
     test::RunPendingTasks();
   }

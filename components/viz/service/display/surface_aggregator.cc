@@ -682,14 +682,23 @@ void SurfaceAggregator::EmitSurfaceContent(
     // We can't produce content outside of |quad_rect|, so clip the visible
     // rect if necessary.
     quad_visible_rect.Intersect(quad_rect);
-
-    auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     RenderPassId remapped_pass_id = RemapPassId(last_pass.id, surface_id);
-    quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
-                 remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
-                 gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
-                 /*force_anti_aliasing_off=*/false,
-                 /* backdrop_filter_quality*/ 1.0f);
+    if (quad_visible_rect.IsEmpty()) {
+      dest_pass_list_->erase(
+          std::remove_if(
+              dest_pass_list_->begin(), dest_pass_list_->end(),
+              [&remapped_pass_id](const std::unique_ptr<RenderPass>& pass) {
+                return pass->id == remapped_pass_id;
+              }),
+          dest_pass_list_->end());
+    } else {
+      auto* quad = dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
+      quad->SetNew(shared_quad_state, quad_rect, quad_visible_rect,
+                   remapped_pass_id, 0, gfx::RectF(), gfx::Size(),
+                   gfx::Vector2dF(), gfx::PointF(), tex_coord_rect,
+                   /*force_anti_aliasing_off=*/false,
+                   /* backdrop_filter_quality*/ 1.0f);
+    }
   }
 
   referenced_surfaces_.erase(surface_id);

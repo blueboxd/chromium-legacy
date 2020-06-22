@@ -46,7 +46,7 @@ ash/autoclick/
 ash/system/accessibility/autoclick*
 
 - A component extension to provide Accessibility tree information, in
-chrome/browser/resources/chromeos/accessibility/autoclick/
+chrome/browser/resources/chromeos/accessibility/accessibility_common/
 
 In addition, there are settings for automatic clicks in
 chrome/browser/resources/settings/a11y_page/manage_a11y_page.*
@@ -64,15 +64,15 @@ out/Release/browser_tests --gtest_filter=”Autoclick*”
 ### Debugging
 
 Developers can add log lines to any of the autoclick C++ files and see output
-in the console. To debug the Autoclick extension, the easiest way is from an
-external browser. Start Chrome OS on Linux with this command-line flag:
+in the console. To debug the Accessibility Common extension, the easiest way is
+from an external browser. Start Chrome OS on Linux with this command-line flag:
 
 ```
 out/Release/chrome --remote-debugging-port=9222
 ```
 
 Now open http://localhost:9222 in a separate instance of the browser, and debug
-the Autoclick extension background page from there.
+the Accessibility Common extension background page from there.
 
 ## How it works
 
@@ -132,16 +132,16 @@ may dwell anywhere on the screen to change the scroll location.
 
 
 When the scroll location is changed, the AutoclickController will request the
-bounds of the nearest scrollable view from the Autoclick component extension
-via the AccessibilityPrivate API. The Autoclick component extension has access
-to accessibility tree information, and using a HitTest is able to find the view
-at the scroll location, then walks up the tree to find the first view which can
-scroll, or stops at the nearest window or dialog bounds. This logic takes place
-in autoclick.js, onAutomationHitTestResult_. When the scrolling location is
-found, the bounds of the scrollable area are highlighted with a focus ring.
-In addition, the bounds are sent back through the AccessibilityPrivate API,
-routed to the AutoclickController, which passes it via the
-AutoclickMenuBubbleController to the AutoclickScrollBubbleController, which
+bounds of the nearest scrollable view from the Accessibility Common extension
+via the AccessibilityPrivate API. The Accessibility Common component extension
+has access to accessibility tree information, and using a HitTest is able to
+find the view at the scroll location, then walks up the tree to find the first
+view which can scroll, or stops at the nearest window or dialog bounds. This
+logic takes place in autoclick.js, onAutomationHitTestResult_. When the
+scrolling location is found, the bounds of the scrollable area are highlighted
+with a focus ring. In addition, the bounds are sent back through the
+AccessibilityPrivate API, routed to the AutoclickController, which passes it via
+the AutoclickMenuBubbleController to the AutoclickScrollBubbleController, which
 does layout accordingly.
 
 ### Bubble Menus: interface and positioning
@@ -175,7 +175,7 @@ UI.
 
 The scroll bubble starts out anchored to the automatic clicks bubble menu, but
 if the user selects a new scroll point it will move. When a scroll point is
-selected, if the scrollable region found by the Autoclick component extension
+selected, if the scrollable region found by the Accessibility Common extension
 is large enough, the scroll bubble will be anchored near the scroll point
 itself, similarly to the way the context menu is anchored near the cursor on
 a right click. When the scrollable region is small, the scroll bubble will be

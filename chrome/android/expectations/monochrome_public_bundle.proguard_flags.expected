@@ -258,6 +258,9 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
+-keepclassmembers,allowobfuscation class * {
+   @org.chromium.base.annotations.DoNotInline <methods>;
+}
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class org.chromium.** implements android.os.Parcelable {
@@ -811,7 +814,7 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @org.chromium.base.annotations.VerifiesOnNMR1 <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnO
@@ -821,7 +824,7 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @org.chromium.base.annotations.VerifiesOnO <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnOMR1
@@ -831,7 +834,7 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @org.chromium.base.annotations.VerifiesOnOMR1 <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnP
@@ -841,7 +844,7 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @org.chromium.base.annotations.VerifiesOnP <methods>;
 }
 -keep @interface org.chromium.base.annotations.VerifiesOnQ
@@ -851,6 +854,6 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @org.chromium.base.annotations.VerifiesOnQ <methods>;
 }

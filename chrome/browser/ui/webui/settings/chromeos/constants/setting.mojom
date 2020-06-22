@@ -16,7 +16,7 @@ enum Setting {
   kDisconnectWifiNetwork = 5,
   kPreferWifiNetwork = 6,
   kForgetWifiNetwork = 7,
-  kConfigureWifi = 8,
+  kWifiAddNetwork = 8,
   kWifiAutoConfigureIp = 9,
   kWifiDns = 10,
   kWifiProxy = 11,
@@ -32,6 +32,8 @@ enum Setting {
   kCellularAutoConnectToNetwork = 21,
   kInstantTetheringOnOff = 22,
   kDisconnectTetherNetwork = 23,
+  kWifiMetered = 24,
+  kCellularMetered = 25,
 
   // Bluetooth section.
   kBluetoothOnOff = 100,
@@ -108,6 +110,7 @@ enum Setting {
   kTouchscreenCalibration = 431,
   kNightLightColorTemperature = 432,
   kPowerIdleBehaviorWhileOnBattery = 433,
+  kDisplayOverscan = 434,
 
   // Personalization section.
   kOpenWallpaper = 500,

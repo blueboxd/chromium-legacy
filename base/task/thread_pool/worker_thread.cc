@@ -293,9 +293,8 @@ NOINLINE void WorkerThread::RunBackgroundDedicatedCOMWorker() {
 
 void WorkerThread::RunWorker() {
   DCHECK_EQ(self_, this);
-  TRACE_EVENT_INSTANT0("thread_pool", "WorkerThreadThread born",
-                       TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
+  TRACE_EVENT_INSTANT0("base", "WorkerThread born", TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_BEGIN0("base", "WorkerThread active");
 
   if (worker_thread_observer_)
     worker_thread_observer_->OnWorkerThreadMainEntry();
@@ -317,9 +316,9 @@ void WorkerThread::RunWorker() {
 
   // A WorkerThread starts out waiting for work.
   {
-    TRACE_EVENT_END0("thread_pool", "WorkerThreadThread active");
+    TRACE_EVENT_END0("base", "WorkerThread active");
     delegate_->WaitForWork(&wake_up_event_);
-    TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
+    TRACE_EVENT_BEGIN0("base", "WorkerThread active");
   }
 
   while (!ShouldExit()) {
@@ -339,10 +338,10 @@ void WorkerThread::RunWorker() {
       if (ShouldExit())
         break;
 
-      TRACE_EVENT_END0("thread_pool", "WorkerThreadThread active");
+      TRACE_EVENT_END0("base", "WorkerThread active");
       hang_watch_scope.reset();
       delegate_->WaitForWork(&wake_up_event_);
-      TRACE_EVENT_BEGIN0("thread_pool", "WorkerThreadThread active");
+      TRACE_EVENT_BEGIN0("base", "WorkerThread active");
       continue;
     }
 
@@ -370,9 +369,8 @@ void WorkerThread::RunWorker() {
   // and as such no more member accesses should be made after this point.
   self_ = nullptr;
 
-  TRACE_EVENT_END0("thread_pool", "WorkerThreadThread active");
-  TRACE_EVENT_INSTANT0("thread_pool", "WorkerThreadThread dead",
-                       TRACE_EVENT_SCOPE_THREAD);
+  TRACE_EVENT_END0("base", "WorkerThread active");
+  TRACE_EVENT_INSTANT0("base", "WorkerThread dead", TRACE_EVENT_SCOPE_THREAD);
 }
 
 }  // namespace internal

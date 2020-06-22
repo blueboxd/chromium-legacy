@@ -22,6 +22,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
@@ -318,11 +319,8 @@ class DownloadItemView : public views::View,
   // Whether we are dragging the download button.
   bool dragging_;
 
-  // Whether we are tracking a possible drag.
-  bool starting_drag_;
-
   // Position that a possible drag started at.
-  gfx::Point drag_start_point_;
+  base::Optional<gfx::Point> drag_start_point_;
 
   // For canceling an in progress icon request.
   base::CancelableTaskTracker cancelable_task_tracker_;

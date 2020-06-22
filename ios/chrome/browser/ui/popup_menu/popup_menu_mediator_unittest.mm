@@ -262,6 +262,12 @@ TEST_F(PopupMenuMediatorTest, TestToolsMenuItemsCount) {
           ->IsUserFeedbackEnabled()) {
     number_of_action_items++;
   }
+
+  // Text zoom is currently disabled on iPad. See crbug.com/1061119.
+  if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TABLET) {
+    number_of_action_items++;
+  }
+
   // Checks that Tools Menu has the right number of items in each section.
   CheckMediatorSetItems(@[
     // Stop/Reload, New Tab, New Incognito Tab

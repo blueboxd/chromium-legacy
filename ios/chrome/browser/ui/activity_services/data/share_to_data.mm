@@ -4,7 +4,7 @@
 
 #include "ios/chrome/browser/ui/activity_services/data/share_to_data.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/strings/sys_string_conversions.h"
 #import "net/base/mac/url_conversions.h"
 

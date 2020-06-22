@@ -200,7 +200,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalVideoTrack(
   DCHECK_EQ(component->Source()->GetType(), MediaStreamSource::kTypeVideo);
   component_ = component;
   local_track_video_sink_ = std::make_unique<blink::MediaStreamVideoWebRtcSink>(
-      component_.Get(), factory_, main_thread_);
+      component_, factory_, main_thread_);
   webrtc_track_ = local_track_video_sink_->webrtc_video_track();
   DCHECK(webrtc_track_);
   is_initialized_ = true;

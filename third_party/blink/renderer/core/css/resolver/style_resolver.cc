@@ -127,7 +127,8 @@ bool HasAnimationsOrTransitions(const StyleResolverState& state) {
           state.GetAnimatingElement()->HasAnimations());
 }
 
-bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style) {
+bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style,
+                                    bool base_is_usable) {
 #if DCHECK_IS_ON()
   // The invariant in the base computed style optimization is that as long as
   // |IsAnimationStyleChange| is true, the computed style that would be
@@ -137,7 +138,7 @@ bool ShouldComputeBaseComputedStyle(const ComputedStyle* base_computed_style) {
   // call ValidateBaseComputedStyle() to check that the optimization was sound.
   return true;
 #else
-  return !base_computed_style;
+  return !(base_computed_style && base_is_usable);
 #endif  // !DCHECK_IS_ON()
 }
 
@@ -779,7 +780,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport(
   return viewport_style;
 }
 
-static ElementAnimations* GetElementAnimations(StyleResolverState& state) {
+static ElementAnimations* GetElementAnimations(
+    const StyleResolverState& state) {
   if (!state.GetAnimatingElement())
     return nullptr;
   return state.GetAnimatingElement()->GetElementAnimations();
@@ -787,39 +789,10 @@ static ElementAnimations* GetElementAnimations(StyleResolverState& state) {
 
 static const ComputedStyle* CachedAnimationBaseComputedStyle(
     StyleResolverState& state) {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled())
+    return nullptr;
   ElementAnimations* element_animations = GetElementAnimations(state);
-  if (!element_animations)
-    return nullptr;
-
-  if (CSSAnimations::IsAnimatingCustomProperties(element_animations)) {
-    state.SetIsAnimatingCustomProperties(true);
-    // TODO(alancutter): Use the base computed style optimisation in the
-    // presence of custom property animations that don't affect pre-animated
-    // computed values.
-    return nullptr;
-  }
-
-  if (CSSAnimations::IsAnimatingRevert(element_animations)) {
-    state.SetIsAnimatingRevert(true);
-    return nullptr;
-  }
-
-  if (CSSAnimations::IsAnimatingFontAffectingProperties(element_animations)) {
-    state.SetHasFontAffectingAnimation();
-    if (element_animations->BaseComputedStyle() &&
-        element_animations->BaseComputedStyle()->HasFontRelativeUnits()) {
-      return nullptr;
-    }
-  }
-
-  if (CSSAnimations::IsAnimatingStandardProperties(
-          element_animations, element_animations->BaseImportantSet(),
-          KeyframeEffect::kDefaultPriority)) {
-    state.SetHasImportantOverrides();
-    return nullptr;
-  }
-
-  return element_animations->BaseComputedStyle();
+  return element_animations ? element_animations->BaseComputedStyle() : nullptr;
 }
 
 static void UpdateAnimationBaseComputedStyle(StyleResolverState& state,
@@ -827,30 +800,22 @@ static void UpdateAnimationBaseComputedStyle(StyleResolverState& state,
   if (!state.GetAnimatingElement())
     return;
 
+  state.GetAnimatingElement()->EnsureElementAnimations();
+
   ElementAnimations* element_animations =
       state.GetAnimatingElement()->GetElementAnimations();
-  if (element_animations) {
-    std::unique_ptr<CSSBitset> important_set;
-    if (!element_animations->BaseComputedStyle()) {
-      important_set = (cascade ? cascade->GetImportantSet() : nullptr);
-      if (CSSAnimations::IsAnimatingStandardProperties(
-              element_animations, important_set.get(),
-              KeyframeEffect::kDefaultPriority)) {
-        state.SetHasImportantOverrides();
-      }
-    }
+  if (!element_animations)
+    return;
 
-    if (!element_animations->IsAnimationStyleChange() ||
-        state.IsAnimatingCustomProperties() || state.IsAnimatingRevert() ||
-        state.HasImportantOverrides() ||
-        (state.HasFontAffectingAnimation() &&
-         state.Style()->HasFontRelativeUnits())) {
-      element_animations->ClearBaseComputedStyle();
-    } else {
-      element_animations->UpdateBaseComputedStyle(state.Style(),
-                                                  std::move(important_set));
-    }
+  if (element_animations->IsAnimationStyleChange() &&
+      element_animations->BaseComputedStyle()) {
+    return;
   }
+
+  std::unique_ptr<CSSBitset> important_set =
+      (cascade ? cascade->GetImportantSet() : nullptr);
+  element_animations->UpdateBaseComputedStyle(state.Style(),
+                                              std::move(important_set));
 }
 
 scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
@@ -967,11 +932,11 @@ void StyleResolver::ApplyBaseComputedStyle(
     RuleMatchingBehavior matching_behavior,
     bool can_cache_animation_base_computed_style) {
   const ComputedStyle* animation_base_computed_style =
-      can_cache_animation_base_computed_style
-          ? CachedAnimationBaseComputedStyle(state)
-          : nullptr;
-
-  if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
+      CachedAnimationBaseComputedStyle(state);
+  bool base_is_usable = can_cache_animation_base_computed_style &&
+                        CanReuseBaseComputedStyle(state);
+  if (ShouldComputeBaseComputedStyle(animation_base_computed_style,
+                                     base_is_usable)) {
     InitStyleAndApplyInheritance(*element, state);
 
     GetDocument().GetStyleEngine().EnsureUAStyleForElement(*element);
@@ -1045,12 +1010,11 @@ void StyleResolver::ApplyBaseComputedStyle(
     if (can_cache_animation_base_computed_style) {
       DCHECK(ValidateBaseComputedStyle(animation_base_computed_style,
                                        *state.Style()));
-      if (!animation_base_computed_style)
-        UpdateAnimationBaseComputedStyle(state, cascade);
     }
   }
 
-  if (animation_base_computed_style) {
+  if (base_is_usable) {
+    DCHECK(animation_base_computed_style);
     state.SetStyle(ComputedStyle::Clone(*animation_base_computed_style));
     if (!state.ParentStyle()) {
       state.SetParentStyle(InitialStyleForElement(GetDocument()));
@@ -1113,7 +1077,9 @@ bool StyleResolver::PseudoStyleForElementInternal(
   StyleCascade* cascade_ptr =
       RuntimeEnabledFeatures::CSSCascadeEnabled() ? &cascade : nullptr;
 
-  if (ShouldComputeBaseComputedStyle(animation_base_computed_style)) {
+  bool base_is_usable = CanReuseBaseComputedStyle(state);
+  if (ShouldComputeBaseComputedStyle(animation_base_computed_style,
+                                     base_is_usable)) {
     if (pseudo_style_request.AllowsInheritance(state.ParentStyle())) {
       scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
       style->InheritFrom(*state.ParentStyle());
@@ -1169,9 +1135,6 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
     DCHECK(ValidateBaseComputedStyle(animation_base_computed_style,
                                      *state.Style()));
-
-    if (!animation_base_computed_style)
-      UpdateAnimationBaseComputedStyle(state, &cascade);
   }
 
   if (animation_base_computed_style) {
@@ -1427,6 +1390,8 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
 
   if (state.AnimationUpdate().IsEmpty())
     return false;
+
+  UpdateAnimationBaseComputedStyle(state, cascade);
 
   const ActiveInterpolationsMap& standard_animations =
       state.AnimationUpdate().ActiveInterpolationsForStandardAnimations();
@@ -2149,6 +2114,50 @@ void StyleResolver::ApplyMatchedProperties(StyleResolverState& state,
 
   ApplyMatchedLowPriorityProperties(state, match_result, cache_success,
                                     apply_inherited_only, needs_apply_pass);
+}
+
+bool StyleResolver::CanReuseBaseComputedStyle(const StyleResolverState& state) {
+  ElementAnimations* element_animations = GetElementAnimations(state);
+  if (!element_animations || !element_animations->BaseComputedStyle())
+    return false;
+
+  if (!element_animations->IsAnimationStyleChange())
+    return false;
+
+  // Animating a custom property can have side effects on other properties
+  // via variable references. Disallow base computed style optimization in such
+  // cases.
+  if (CSSAnimations::IsAnimatingCustomProperties(element_animations))
+    return false;
+
+  // We need to build the cascade to know what to revert to.
+  if (CSSAnimations::IsAnimatingRevert(element_animations))
+    return false;
+
+  // When applying an animation or transition for a font affecting property,
+  // font-relative units (e.g. em, ex) in the base style must respond to the
+  // animation. We cannot use the base computed style optimization in such
+  // cases.
+  if (CSSAnimations::IsAnimatingFontAffectingProperties(element_animations)) {
+    if (element_animations->BaseComputedStyle() &&
+        element_animations->BaseComputedStyle()->HasFontRelativeUnits()) {
+      return false;
+    }
+  }
+
+  // Normally, we apply all active animation effects on top of the style created
+  // by regular CSS declarations. However, !important declarations have a
+  // higher priority than animation effects [1]. If we're currently animating
+  // (not transitioning) a property which was declared !important in the base
+  // style, we disable the base computed style optimization.
+  // [1] https://drafts.csswg.org/css-cascade-4/#cascade-origin
+  if (CSSAnimations::IsAnimatingStandardProperties(
+          element_animations, element_animations->BaseImportantSet(),
+          KeyframeEffect::kDefaultPriority)) {
+    return false;
+  }
+
+  return true;
 }
 
 scoped_refptr<ComputedStyle> StyleResolver::StyleForInterpolations(

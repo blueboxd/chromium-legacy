@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 #include "base/component_export.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "url/url_canon.h"
 
 namespace url {

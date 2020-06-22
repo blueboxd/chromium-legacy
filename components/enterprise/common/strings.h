@@ -11,6 +11,7 @@ namespace enterprise {
 // endpoints.
 extern const char kUrlParamConnector[];
 extern const char kUrlParamDeviceToken[];
+extern const char kUrlParamTag[];
 
 }  // namespace enterprise
 

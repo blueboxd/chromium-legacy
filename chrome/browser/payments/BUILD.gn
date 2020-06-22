@@ -19,6 +19,7 @@ source_set("browsertests") {
     "payment_handler_enable_delegations_browsertest.cc",
     "payment_handler_exploit_browsertest.cc",
     "payment_handler_just_in_time_installation_browsertest.cc",
+    "payment_request_app_store_billing_browsertest.cc",
     "payment_request_can_make_payment_browsertest.cc",
     "payment_request_can_make_payment_event_browsertest.cc",
     "payment_request_minimal_ui_browsertest.cc",

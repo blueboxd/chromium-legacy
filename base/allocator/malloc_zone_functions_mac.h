@@ -10,7 +10,6 @@
 
 #include "base/base_export.h"
 #include "base/immediate_crash.h"
-#include "base/logging.h"
 #include "third_party/apple_apsl/malloc.h"
 
 namespace base {

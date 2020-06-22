@@ -393,6 +393,10 @@ void Frame::CancelFormSubmission() {
   form_submit_navigation_task_.Cancel();
 }
 
+bool Frame::IsFormSubmissionPending() {
+  return form_submit_navigation_task_.IsActive();
+}
+
 void Frame::FocusPage(LocalFrame* originating_frame) {
   // We only allow focus to move to the |frame|'s page when the request comes
   // from a user gesture. (See https://bugs.webkit.org/show_bug.cgi?id=33389.)

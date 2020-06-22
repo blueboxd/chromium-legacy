@@ -310,8 +310,14 @@ void ScriptController::ExecuteJavaScriptURL(
   // If a navigation begins during the javascript: url's execution, ignore
   // the return value of the script. Otherwise, replacing the document with a
   // string result would cancel the navigation.
-  if (!had_navigation_before && GetFrame()->Loader().HasProvisionalNavigation())
+  // TODO(crbug.com/1085514): Consider making HasProvisionalNavigation return
+  // true when a form submission is pending instead of having a separate check
+  // for form submissions here.
+  if (!had_navigation_before &&
+      (GetFrame()->Loader().HasProvisionalNavigation() ||
+       GetFrame()->IsFormSubmissionPending())) {
     return;
+  }
   if (v8_result.IsEmpty() || !v8_result->IsString())
     return;
 

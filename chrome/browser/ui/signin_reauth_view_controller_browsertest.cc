@@ -121,7 +121,7 @@ class SigninReauthViewControllerBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    https_server()->ServeFilesFromSourceDirectory("chrome/test/data");
+    https_server()->AddDefaultHandlers(GetChromeTestDataDir());
     https_server()->RegisterRequestHandler(
         base::BindRepeating(&HandleReauthURL, base_url()));
     reauth_challenge_response_ =
@@ -228,14 +228,19 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kDismissedByUser);
 }
 
-// Tests the reauth result in case Gaia page failed to load.
+// Tests the error page being displayed in case Gaia page failed to load.
 IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
                        GaiaChallengeLoadFailed) {
   ShowReauthPrompt();
   ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
       browser(), kReauthDialogTimeout));
-  RedirectGaiaChallengeTo(https_server()->GetURL("/close-socket"));
-  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kLoadFailed);
+  const GURL target_url = https_server()->GetURL("/close-socket");
+  content::TestNavigationObserver target_content_observer(target_url);
+  target_content_observer.WatchExistingWebContents();
+  RedirectGaiaChallengeTo(target_url);
+  target_content_observer.Wait();
+  EXPECT_TRUE(browser()->signin_view_controller()->ShowsModalDialog());
+  EXPECT_FALSE(target_content_observer.last_navigation_succeeded());
 }
 
 // Tests clicking on the confirm button in the reauth dialog. Reauth completes

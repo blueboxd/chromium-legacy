@@ -307,6 +307,22 @@ TEST_F(CastMediaControllerTest, UpdateMediaStatus) {
   VerifyAndClearExpectations();
 }
 
+TEST_F(CastMediaControllerTest, UpdateMediaStatusWithDoubleDurations) {
+  mojom::MediaStatusPtr expected_status = CreateSampleMediaStatus();
+  expected_status->duration = base::TimeDelta::FromSecondsD(30.5);
+  expected_status->current_time = base::TimeDelta::FromSecondsD(12.9);
+
+  EXPECT_CALL(*status_observer_, OnMediaStatusUpdated(_))
+      .WillOnce([&](mojom::MediaStatusPtr status) {
+        EXPECT_DOUBLE_EQ(expected_status->duration.InSecondsF(),
+                         status->duration.InSecondsF());
+        EXPECT_DOUBLE_EQ(expected_status->current_time.InSecondsF(),
+                         status->current_time.InSecondsF());
+      });
+  SetMediaStatus(*expected_status);
+  VerifyAndClearExpectations();
+}
+
 TEST_F(CastMediaControllerTest, UpdateMediaImages) {
   mojom::MediaStatusPtr expected_status = CreateSampleMediaStatus();
   expected_status->images.emplace_back(

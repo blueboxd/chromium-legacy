@@ -38,6 +38,7 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/devtools_manager_delegate.h"
 #include "content/public/browser/generated_code_cache_settings.h"
 #include "content/public/browser/navigation_handle.h"
@@ -53,6 +54,7 @@
 #include "content/public/common/window_container_type.mojom.h"
 #include "mojo/public/cpp/bindings/binder_map.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "net/ssl/client_cert_identity.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -96,6 +98,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
+#include "components/browser_ui/client_certificate/android/ssl_client_certificate_request.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -445,6 +448,20 @@ void ContentBrowserClientImpl::PersistIsolatedOrigin(
   base::Value value(origin.Serialize());
   if (!base::Contains(list->GetList(), value))
     list->Append(std::move(value));
+}
+
+base::OnceClosure ContentBrowserClientImpl::SelectClientCertificate(
+    content::WebContents* web_contents,
+    net::SSLCertRequestInfo* cert_request_info,
+    net::ClientCertIdentityList client_certs,
+    std::unique_ptr<content::ClientCertificateDelegate> delegate) {
+#if defined(OS_ANDROID)
+  return browser_ui::ShowSSLClientCertificateSelector(
+      web_contents, cert_request_info, std::move(delegate));
+#else
+  delegate->ContinueWithCertificate(nullptr, nullptr);
+  return base::OnceClosure();
+#endif
 }
 
 bool ContentBrowserClientImpl::CanCreateWindow(

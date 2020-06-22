@@ -443,20 +443,4 @@ using chrome_test_util::SettingsDoneButton;
                    IDS_IOS_GOOGLE_SERVICES_SETTINGS_BETTER_SEARCH_AND_BROWSING_DETAIL];
 }
 
-// Returns YES if the test method name extracted from |selector| matches the
-// name of the currently running test method.
-- (BOOL)isRunningTest:(SEL)selector {
-  return [[self currentTestMethodName] isEqual:NSStringFromSelector(selector)];
-}
-
-// Returns the method name, e.g. "testSomething" of the test that is currently
-// running. The name is extracted from the string for the test's name property,
-// e.g. "-[GoogleServicesSettingsTestCase testSomething]".
-- (NSString*)currentTestMethodName {
-  int testNameStart = [self.name rangeOfString:@"test"].location;
-  return [self.name
-      substringWithRange:NSMakeRange(testNameStart,
-                                     self.name.length - testNameStart - 1)];
-}
-
 @end

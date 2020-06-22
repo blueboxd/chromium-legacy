@@ -53,8 +53,8 @@
   <message name="IDS_OS_SETTINGS_TAG_DISCONNECT_WIFI" desc="Text for search result item which, when clicked, navigates the user to network settings for currently-connected network.">
     Disconnect Wi-Fi network
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_WIFI_CONFIGURE" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi network settings, with a button to configure security preferences.">
-    Configure Wi-Fi
+  <message name="IDS_OS_SETTINGS_TAG_ADD_WIFI" desc="Text for search result item which, when clicked, navigates the user to Wi-Fi settings, with a button to add a new Wi-Fi network by manually typing the network's SSID and, if aplicable, password.">
+    Add Wi-Fi
   </message>
   <message name="IDS_OS_SETTINGS_TAG_CELLULAR" desc="Text for search result item which, when clicked, navigates the user to cellular network settings (e.g., LTE). Alternate phrase for: 'Mobile', 'LTE', 'Wireless'">
     Cellular
@@ -589,6 +589,9 @@
   </message>
   <message name="IDS_OS_SETTINGS_TAG_DISPLAY_REFRESH_RATE_ALT2" desc="Text for search result item which, when clicked, navigates the user to display settings, with a dropdown to select screen refresh rate. Alternate phrase for: 'Display refresh rate', 'Monitor refresh rate'">
     Screen refresh rate
+  </message>
+  <message name="IDS_OS_SETTINGS_TAG_DISPLAY_OVERSCAN" desc="Text for search result item which, when clicked, navigates the user to display settings, with an option to adjust monitor overscan.">
+    Overscan
   </message>
 
   <!-- Personalization section. -->

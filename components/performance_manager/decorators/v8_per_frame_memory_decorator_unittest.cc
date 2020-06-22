@@ -425,14 +425,12 @@ TEST_F(V8PerFrameMemoryDecoratorTest, PerFrameDataIsDistributed) {
   auto page = CreateNode<PageNodeImpl>();
 
   FrameToken frame1_id = FrameToken(base::UnguessableToken::Create());
-  auto frame1 =
-      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 1, 2,
-                                base::UnguessableToken::Create(), frame1_id);
+  auto frame1 = CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 1,
+                                          2, frame1_id);
 
   FrameToken frame2_id = FrameToken(base::UnguessableToken::Create());
-  auto frame2 =
-      CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 3, 4,
-                                base::UnguessableToken::Create(), frame2_id);
+  auto frame2 = CreateNode<FrameNodeImpl>(process.get(), page.get(), nullptr, 3,
+                                          4, frame2_id);
   {
     auto data = mojom::PerProcessV8MemoryUsageData::New();
     AddPerFrameIsolateMemoryUsage(frame1_id, 0, 1001u, data.get());

@@ -13,7 +13,6 @@
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"

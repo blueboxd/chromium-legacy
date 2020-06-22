@@ -393,14 +393,6 @@ class CORE_EXPORT NGPhysicalFragment
 
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
-  LayoutObject* layout_object_;
-  const PhysicalSize size_;
-
-  const unsigned type_ : 2;      // NGFragmentType
-  const unsigned sub_type_ : 3;  // NGBoxType, NGTextType, or NGLineBoxType
-  const unsigned style_variant_ : 2;  // NGStyleVariant
-  const unsigned is_hidden_for_paint_ : 1;
-
   // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_floating_descendants_for_paint_ : 1;
@@ -412,8 +404,6 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_propagated_descendants_ : 1;
-  // base (line box) or resolve (text) direction
-  unsigned base_or_resolved_direction_ : 1;  // TextDirection
   unsigned has_hanging_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalBoxFragment
@@ -423,8 +413,19 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
-  unsigned is_math_fraction_ : 1;
   unsigned is_first_for_node_ : 1;
+  unsigned has_oof_positioned_fragmentainer_descendants_ : 1;
+
+  LayoutObject* layout_object_;
+  const PhysicalSize size_;
+
+  const unsigned type_ : 2;           // NGFragmentType
+  const unsigned sub_type_ : 3;       // NGBoxType, NGTextType, or NGLineBoxType
+  const unsigned style_variant_ : 2;  // NGStyleVariant
+  const unsigned is_hidden_for_paint_ : 1;
+  unsigned is_math_fraction_ : 1;
+  // base (line box) or resolve (text) direction
+  unsigned base_or_resolved_direction_ : 1;  // TextDirection
 
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.

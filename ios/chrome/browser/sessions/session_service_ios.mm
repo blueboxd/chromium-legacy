@@ -52,24 +52,6 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
 // removal and mark it with a release at least one year after the introduction
 // of the alias.
 - (void)cr_registerCompatibilityAliases {
-  // TODO(crbug.com/661633): those aliases where introduced between M57 and
-  // M58, so remove them after M67 has shipped to stable.
-  [self setClass:[CRWSessionCertificatePolicyCacheStorage class]
-      forClassName:@"SessionCertificatePolicyManager"];
-  [self setClass:[CRWSessionStorage class] forClassName:@"SessionController"];
-  [self setClass:[CRWSessionStorage class]
-      forClassName:@"CRWSessionController"];
-  [self setClass:[CRWNavigationItemStorage class] forClassName:@"SessionEntry"];
-  [self setClass:[CRWNavigationItemStorage class]
-      forClassName:@"CRWSessionEntry"];
-  [self setClass:[SessionWindowIOS class] forClassName:@"SessionWindow"];
-
-  // TODO(crbug.com/661633): this alias was introduced between M58 and M59, so
-  // remove it after M68 has shipped to stable.
-  [self setClass:[CRWSessionStorage class]
-      forClassName:@"CRWNavigationManagerStorage"];
-  [self setClass:[CRWSessionCertificatePolicyCacheStorage class]
-      forClassName:@"CRWSessionCertificatePolicyManager"];
 }
 
 @end

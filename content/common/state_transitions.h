@@ -44,12 +44,12 @@ namespace content {
 //
 // void DCheckStateTransition(State old_state, State new_state) {
 // #if DCHECK_IS_ON()
-//   static const base::NoDestructor<StateTransitions<State>>
-//       transitions(
-//           StateTransitions<State>(
-//               {{kState1, {kState2, kState3}},
-//               {kState2, {kState3}},
-//               {kState3, {}}}));
+//   static const base::NoDestructor<StateTransitions<State>> transitions(
+//       StateTransitions<State>({
+//           {kState1, {kState2, kState3}},
+//           {kState2, {kState3}},
+//           {kState3, {}},
+//       }));
 //   DCHECK_STATE_TRANSITION(transitions, old_state, new_state);
 // #endif  // DCHECK_IS_ON()
 // }

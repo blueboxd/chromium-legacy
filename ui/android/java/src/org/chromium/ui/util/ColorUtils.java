@@ -24,11 +24,11 @@ public class ColorUtils {
 
     /**
      * @param context <b>Activity</b> context.
-     * @return Whether to use darkened colors under the current theme.
+     * @return Whether the activity is currently in night mode.
      */
-    public static boolean useDarkColors(Context context) {
+    public static boolean inNightMode(Context context) {
         int uiMode = context.getResources().getConfiguration().uiMode;
-        return (uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
+        return (uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES;
     }
 
     /**

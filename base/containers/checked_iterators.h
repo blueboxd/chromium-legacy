@@ -9,8 +9,8 @@
 #include <memory>
 #include <type_traits>
 
+#include "base/check_op.h"
 #include "base/containers/util.h"
-#include "base/logging.h"
 
 namespace base {
 

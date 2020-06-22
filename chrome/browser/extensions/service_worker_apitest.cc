@@ -1421,7 +1421,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesIframeSrc) {
   // typically means the document must have a secure origin AND all its ancestor
   // frames must have documents with secure origins.  However, extension pages
   // are considered secure, even if they have an ancestor document that is an
-  // insecure context (see GetSchemesBypassingSecureContextCheckWhitelist). So
+  // insecure context (see GetSchemesBypassingSecureContextCheckAllowlist). So
   // extension service workers must be able to control an extension page
   // embedded in an insecure context. To test this, set up an insecure
   // (non-localhost, non-https) URL for the web page. This page will create

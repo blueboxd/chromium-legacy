@@ -74,5 +74,7 @@ extern NSString* const kToolsMenuQRCodeSearch;
 extern NSString* const kToolsMenuCopiedImageSearch;
 // Text Zoom item accessibility identifier.
 extern NSString* const kToolsMenuTextZoom;
+// Text Enterprise info item accessibility identifier.
+extern NSString* const kTextMenuEnterpriseInfo;
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_CONSTANTS_H_

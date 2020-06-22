@@ -9,6 +9,7 @@
 
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
@@ -327,6 +328,25 @@ class CupsPrintersManagerImpl
       return;
     }
 
+    // For USB printers, return NO ERROR if the printer is connected or PRINTER
+    // UNREACHABLE if the printer is disconnected.
+    if (printer->IsUsbProtocol()) {
+      CupsPrinterStatus printer_status(printer_id);
+      if (FindDetectedPrinter(printer_id)) {
+        printer_status.AddStatusReason(
+            CupsPrinterStatus::CupsPrinterStatusReason::Reason::kNoError,
+            CupsPrinterStatus::CupsPrinterStatusReason::Severity::
+                kUnknownSeverity);
+      } else {
+        printer_status.AddStatusReason(
+            CupsPrinterStatus::CupsPrinterStatusReason::Reason::
+                kPrinterUnreachable,
+            CupsPrinterStatus::CupsPrinterStatusReason::Severity::kError);
+      }
+      std::move(cb).Run(std::move(printer_status));
+      return;
+    }
+
     base::Optional<UriComponents> parsed_uri = ParseUri(printer->uri());
     // Behavior for querying a non-IPP uri is undefined and disallowed.
     if (!parsed_uri || !IsIppUri(printer->uri())) {
@@ -347,6 +367,27 @@ class CupsPrintersManagerImpl
         base::BindOnce(&CupsPrintersManagerImpl::OnPrinterInfoFetched,
                        weak_ptr_factory_.GetWeakPtr(), printer_id,
                        std::move(cb)));
+  }
+
+  // Public API function.
+  void RecordNearbyNetworkPrinterCounts() const override {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+
+    size_t total_network_printers_count = zeroconf_detections_.size();
+    // Count detected network printers that have not been saved
+    size_t nearby_zeroconf_printers_count = 0;
+    for (const PrinterDetector::DetectedPrinter& detected :
+         zeroconf_detections_) {
+      if (!printers_.IsPrinterInClass(PrinterClass::kSaved,
+                                      detected.printer.id())) {
+        ++nearby_zeroconf_printers_count;
+      }
+    }
+
+    base::UmaHistogramCounts100("Printing.CUPS.TotalNetworkPrintersCount",
+                                total_network_printers_count);
+    base::UmaHistogramCounts100("Printing.CUPS.NearbyNetworkPrintersCount",
+                                nearby_zeroconf_printers_count);
   }
 
   // Callback for FetchPrinterStatus

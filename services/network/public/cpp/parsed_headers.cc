@@ -21,10 +21,8 @@ mojom::ParsedHeadersPtr PopulateParsedHeaders(
   if (!headers)
     return parsed_headers;
 
-  if (base::FeatureList::IsEnabled(features::kOutOfBlinkFrameAncestors)) {
-    AddContentSecurityPolicyFromHeaders(
-        *headers, url, &parsed_headers->content_security_policy);
-  }
+  AddContentSecurityPolicyFromHeaders(*headers, url,
+                                      &parsed_headers->content_security_policy);
 
   parsed_headers->cross_origin_embedder_policy =
       ParseCrossOriginEmbedderPolicy(*headers);

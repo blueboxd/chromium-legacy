@@ -1033,11 +1033,11 @@ bool WebLocalFrameImpl::IsViewSourceModeEnabled() const {
 void WebLocalFrameImpl::SetReferrerForRequest(WebURLRequest& request,
                                               const WebURL& referrer_url) {
   String referrer = referrer_url.IsEmpty()
-                        ? GetFrame()->DomWindow()->OutgoingReferrer()
+                        ? GetFrame()->GetDocument()->OutgoingReferrer()
                         : String(referrer_url.GetString());
   ResourceRequest& resource_request = request.ToMutableResourceRequest();
   resource_request.SetReferrerPolicy(
-      GetFrame()->DomWindow()->GetReferrerPolicy());
+      GetFrame()->GetDocument()->GetReferrerPolicy());
   resource_request.SetReferrerString(referrer);
 }
 

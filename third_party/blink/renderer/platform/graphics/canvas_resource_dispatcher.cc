@@ -169,7 +169,7 @@ void CanvasResourceDispatcher::DispatchFrameSync(
   sink_->SubmitCompositorFrameSync(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
-      std::move(frame), nullptr, 0, &resources);
+      std::move(frame), base::nullopt, 0, &resources);
   DidReceiveCompositorFrameAck(resources);
 }
 
@@ -190,7 +190,7 @@ void CanvasResourceDispatcher::DispatchFrame(
   sink_->SubmitCompositorFrame(
       parent_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .local_surface_id(),
-      std::move(frame), nullptr, 0);
+      std::move(frame), base::nullopt, 0);
 }
 
 bool CanvasResourceDispatcher::PrepareFrame(

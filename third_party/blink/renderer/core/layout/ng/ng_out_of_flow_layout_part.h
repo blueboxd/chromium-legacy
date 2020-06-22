@@ -23,6 +23,7 @@ class NGBlockNode;
 class NGBoxFragmentBuilder;
 class NGConstraintSpace;
 class NGLayoutResult;
+class NGPhysicalContainerFragment;
 struct NGLogicalOutOfFlowPositionedNode;
 
 // Helper class for positioning of out-of-flow blocks.
@@ -96,7 +97,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   bool SweepLegacyCandidates(HashSet<const LayoutObject*>* placed_objects);
 
   const ContainingBlockInfo& GetContainingBlockInfo(
-      const NGLogicalOutOfFlowPositionedNode&) const;
+      const NGLogicalOutOfFlowPositionedNode&,
+      const NGPhysicalContainerFragment* = nullptr);
 
   void ComputeInlineContainingBlocks(
       const Vector<NGLogicalOutOfFlowPositionedNode>&);
@@ -109,11 +111,18 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGLogicalOutOfFlowPositionedNode&,
       const LayoutBox* only_layout);
 
+  void LayoutFragmentainerDescendants(
+      Vector<NGLogicalOutOfFlowPositionedNode>* descendants);
+
+  scoped_refptr<const NGLayoutResult> LayoutFragmentainerDescendant(
+      const NGLogicalOutOfFlowPositionedNode&);
+
   scoped_refptr<const NGLayoutResult> Layout(NGBlockNode,
                                              const NGConstraintSpace&,
                                              const NGLogicalStaticPosition&,
                                              LogicalSize container_content_size,
                                              const ContainingBlockInfo&,
+                                             const TextDirection,
                                              const LayoutBox* only_layout);
 
   bool IsContainingBlockForCandidate(const NGLogicalOutOfFlowPositionedNode&);

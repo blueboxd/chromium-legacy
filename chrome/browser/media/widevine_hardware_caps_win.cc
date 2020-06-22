@@ -4,6 +4,9 @@
 
 #include "chrome/browser/media/widevine_hardware_caps_win.h"
 
+#include "base/check.h"
+#include "base/notreached.h"
+
 void GetWidevineHardwareCaps(
     base::flat_set<media::VideoCodec>* video_codecs,
     base::flat_set<media::EncryptionScheme>* encryption_schemes) {

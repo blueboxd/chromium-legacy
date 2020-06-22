@@ -69,12 +69,6 @@ class MockTtsControllerDelegate : public TtsControllerDelegate {
                                         double* pitch,
                                         double* volume) override {}
 
-  void SetTtsEngineDelegate(content::TtsEngineDelegate* delegate) override {}
-
-  content::TtsEngineDelegate* GetTtsEngineDelegate() override {
-    return nullptr;
-  }
-
  private:
   BrowserContext* last_browser_context_ = nullptr;
 };

@@ -7,14 +7,12 @@ package org.chromium.chrome.browser.payments.handler.toolbar;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.components.browser_ui.widget.FadingShadow;
 import org.chromium.components.browser_ui.widget.FadingShadowView;
 
@@ -28,17 +26,14 @@ import org.chromium.components.browser_ui.widget.FadingShadowView;
     /* package */ final TextView mTitleView;
     /* package */ final ProgressBar mProgressBar;
     /* package */ final ImageView mSecurityIconView;
-
-    private PaymentHandlerToolbarObserver mObserver;
+    /* package */ final View mCloseButton;
 
     /**
      * Construct the PaymentHandlerToolbarView.
      *
      * @param context The context where the bottom-sheet should be shown.
-     * @param securityIconOnClickListener The listener to clicking the security icon.
      */
-    /* package */ PaymentHandlerToolbarView(
-            Context context, OnClickListener securityIconOnClickListener) {
+    /* package */ PaymentHandlerToolbarView(Context context) {
         mToolbarHeightPx =
                 context.getResources().getDimensionPixelSize(R.dimen.sheet_tab_toolbar_height);
         mShadowHeightPx =
@@ -50,12 +45,7 @@ import org.chromium.components.browser_ui.widget.FadingShadowView;
         mTitleView = mToolbarView.findViewById(R.id.title);
         mProgressBar = mToolbarView.findViewById(R.id.progress_bar);
         mSecurityIconView = mToolbarView.findViewById(R.id.security_icon);
-        View closeButton = mToolbarView.findViewById(R.id.close);
-        closeButton.setOnClickListener(view -> {
-            assert mObserver != null;
-            mObserver.onToolbarCloseButtonClicked();
-        });
-        mSecurityIconView.setOnClickListener(securityIconOnClickListener);
+        mCloseButton = mToolbarView.findViewById(R.id.close);
 
         // These parts from sheet_tab_toolbar are not needed in this component.
         mToolbarView.findViewById(R.id.open_in_new_tab).setVisibility(View.GONE);
@@ -65,11 +55,6 @@ import org.chromium.components.browser_ui.widget.FadingShadowView;
         shadow.init(ApiCompatibilityUtils.getColor(
                             context.getResources(), R.color.toolbar_shadow_color),
                 FadingShadow.POSITION_TOP);
-    }
-
-    /** Set an observer for this class. */
-    /* package */ void setObserver(PaymentHandlerToolbarObserver observer) {
-        mObserver = observer;
     }
 
     /** @return The height of the toolbar in px. */

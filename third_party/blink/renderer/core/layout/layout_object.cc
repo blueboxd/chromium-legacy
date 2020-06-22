@@ -1217,23 +1217,9 @@ bool LayoutObject::IsFontFallbackValid() const {
          FirstLineStyle()->GetFont().IsFallbackValid();
 }
 
-namespace {
-
-bool CanUseReducedFontLoadingLayoutInvalidations(const LayoutObject& object) {
-  // TODO(xiaochengh): This is a workaround for crbug.com/1092431. Currently,
-  // there are some LayoutObjects for which we have to invalidate layout after
-  // font loading even though they don't use the font, and otherwise we cause a
-  // cc memory regression. Investigate and try to enlarge this list or remove
-  // this workaround completely.
-  return object.IsLayoutInline();
-}
-
-}  // namespace
-
 void LayoutObject::InvalidateSubtreeLayoutForFontUpdates() {
   if (!RuntimeEnabledFeatures::
           CSSReducedFontLoadingLayoutInvalidationsEnabled() ||
-      !CanUseReducedFontLoadingLayoutInvalidations(*this) ||
       !IsFontFallbackValid()) {
     SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
         layout_invalidation_reason::kFontsChanged);

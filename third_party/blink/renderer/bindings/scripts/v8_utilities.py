@@ -453,6 +453,8 @@ def high_entropy(definition_or_member):
             raise Exception(
                 '%s specified [HighEntropy], but does not include '
                 'either [Measure] or [MeasureAs]' % definition_or_member.name)
+        if extended_attributes['HighEntropy'] == 'Direct':
+            return 'Direct'
         return True
     return False
 

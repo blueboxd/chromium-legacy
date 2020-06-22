@@ -449,9 +449,10 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   bool IsMeter() const;
   virtual bool IsNativeImage() const;
   virtual bool IsNativeSpinButton() const;
-  // input or textarea.
+  // Returns true if this object is an input element of a text field type, such
+  // as type="text" or type="tel", or a textarea.
   virtual bool IsNativeTextControl() const;
-  // contenteditable or role=textbox.
+  // Returns true if this object is a contenteditable or has role=textbox.
   virtual bool IsNonNativeTextControl() const;
   virtual bool IsPasswordField() const;
   bool IsPasswordFieldAndShouldHideValue() const;

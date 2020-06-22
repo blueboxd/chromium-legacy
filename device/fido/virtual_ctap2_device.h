@@ -44,8 +44,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     bool pin_support = false;
     bool is_platform_authenticator = false;
     bool internal_uv_support = false;
-    // Ignored if |internal_uv_support| is false.
-    bool uv_token_support = false;
+    bool pin_uv_auth_token_support = false;
     bool resident_key_support = false;
     bool credential_management_support = false;
     bool bio_enrollment_support = false;

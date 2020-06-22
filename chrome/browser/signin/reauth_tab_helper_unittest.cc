@@ -101,14 +101,46 @@ TEST_P(ReauthTabHelperTest, MultipleNavigationReauthThroughExternalOrigin) {
   simulator2->Commit();
 }
 
-// Tests a failed navigation to the reauth URL.
+// Tests a failed navigation to the reauth URL, followed by a successful
+// navigation.
 TEST_P(ReauthTabHelperTest, NavigationToReauthURLFailed) {
   auto simulator = content::NavigationSimulator::CreateBrowserInitiated(
       reauth_url(), web_contents());
   simulator->Start();
-  EXPECT_CALL(*mock_callback(), Run(signin::ReauthResult::kLoadFailed));
   simulator->Fail(net::ERR_TIMED_OUT);
   simulator->CommitErrorPage();
+  EXPECT_TRUE(tab_helper()->has_last_committed_error_page());
+  // Check that the navigation still counts as within the same origin.
+  EXPECT_TRUE(tab_helper()->is_within_reauth_origin());
+
+  auto simulator2 = content::NavigationSimulator::CreateRendererInitiated(
+      reauth_url(), main_rfh());
+  simulator2->Start();
+  EXPECT_CALL(*mock_callback(), Run(signin::ReauthResult::kSuccess));
+  simulator2->Commit();
+  EXPECT_FALSE(tab_helper()->has_last_committed_error_page());
+}
+
+// Tests a failed navigation redirecting to an external origin, followed by a
+// successful navigation.
+TEST_P(ReauthTabHelperTest, NavigationToExternalOriginFailed) {
+  auto simulator = content::NavigationSimulator::CreateBrowserInitiated(
+      reauth_url(), web_contents());
+  simulator->Start();
+  simulator->Redirect(GURL("https://other-identity-provider.com/login"));
+  simulator->Fail(net::ERR_TIMED_OUT);
+  simulator->CommitErrorPage();
+  EXPECT_TRUE(tab_helper()->has_last_committed_error_page());
+  // Check that the navigation doesn't count as within the same origin.
+  EXPECT_FALSE(tab_helper()->is_within_reauth_origin());
+
+  auto simulator2 = content::NavigationSimulator::CreateRendererInitiated(
+      reauth_url(), main_rfh());
+  simulator2->Start();
+  EXPECT_CALL(*mock_callback(), Run(signin::ReauthResult::kSuccess));
+  simulator2->Commit();
+  EXPECT_FALSE(tab_helper()->has_last_committed_error_page());
+  EXPECT_FALSE(tab_helper()->is_within_reauth_origin());
 }
 
 // Tests the WebContents deletion.

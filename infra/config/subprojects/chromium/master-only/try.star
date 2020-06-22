@@ -274,6 +274,27 @@ try_.chromium_chromiumos_builder(
 )
 
 try_.chromium_chromiumos_builder(
+    name = 'chromeos-kevin-compile-rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/chromeos/CHROMEOS_LKGM',
+        ],
+    ),
+    main_list_view = 'try'
+)
+
+try_.chromium_chromiumos_builder(
+    name = 'chromeos-kevin-rel',
+    tryjob = try_.job(
+        location_regexp = [
+            '.+/[+]/build/chromeos/.+',
+            '.+/[+]/build/config/chromeos/.*',
+        ],
+    ),
+    main_list_view = 'try',
+)
+
+try_.chromium_chromiumos_builder(
     name = 'linux-chromeos-dbg',
 )
 
@@ -609,10 +630,10 @@ try_.chromium_mac_ios_builder(
 try_.chromium_mac_ios_builder(
     name = 'ios13-sdk-simulator',
     executable = 'recipe:chromium_trybot',
-    caches = [xcode_cache.x11e608c],
+    caches = [xcode_cache.x11n700h],
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11e608c'
+        'xcode_build_version': '11n700h'
     }
 )
 

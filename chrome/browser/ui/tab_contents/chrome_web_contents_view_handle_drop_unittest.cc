@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <set>
 #include <string>
 
 #include "base/bind.h"
@@ -25,6 +26,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/test/browser_task_environment.h"
@@ -81,24 +83,47 @@ class ChromeWebContentsViewDelegateHandleOnPerformDrop
 
     using FakeDelegate = safe_browsing::FakeDeepScanningDialogDelegate;
     using Verdict = safe_browsing::DlpDeepScanningVerdict;
-    auto callback = base::BindLambdaForTesting(
-        [this, scan_succeeds](const base::FilePath&) {
-          current_requests_count_++;
-          return scan_succeeds
-                     ? FakeDelegate::SuccessfulResponse()
-                     : FakeDelegate::DlpResponse(Verdict::SUCCESS, "block_rule",
-                                                 Verdict::TriggeredRule::BLOCK);
-        });
     auto is_encrypted_callback =
         base::BindRepeating([](const base::FilePath&) { return false; });
 
     safe_browsing::SetDMTokenForTesting(
         policy::DMToken::CreateValidTokenForTesting("dm_token"));
-    safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
-        base::BindRepeating(
-            &safe_browsing::FakeDeepScanningDialogDelegate::Create,
-            run_loop_->QuitClosure(), callback, is_encrypted_callback,
-            "dm_token"));
+    if (use_legacy_policies()) {
+      auto callback = base::BindLambdaForTesting(
+          [this, scan_succeeds](const base::FilePath&)
+              -> safe_browsing::DeepScanningClientResponse {
+            current_requests_count_++;
+            return scan_succeeds ? FakeDelegate::SuccessfulResponse()
+                                 : FakeDelegate::DlpResponse(
+                                       Verdict::SUCCESS, "block_rule",
+                                       Verdict::TriggeredRule::BLOCK);
+          });
+      safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
+          base::BindRepeating(
+              &safe_browsing::FakeDeepScanningDialogDelegate::Create,
+              run_loop_->QuitClosure(), callback, is_encrypted_callback,
+              "dm_token"));
+    } else {
+      auto callback = base::BindLambdaForTesting(
+          [this, scan_succeeds](const base::FilePath&)
+              -> enterprise_connectors::ContentAnalysisResponse {
+            std::set<std::string> dlp_tag = {"dlp"};
+            current_requests_count_++;
+            return scan_succeeds
+                       ? FakeDelegate::SuccessfulResponse(std::move(dlp_tag))
+                       : FakeDelegate::DlpResponse(
+                             enterprise_connectors::ContentAnalysisResponse::
+                                 Result::SUCCESS,
+                             "block_rule",
+                             enterprise_connectors::ContentAnalysisResponse::
+                                 Result::TriggeredRule::BLOCK);
+          });
+      safe_browsing::DeepScanningDialogDelegate::SetFactoryForTesting(
+          base::BindRepeating(&safe_browsing::FakeDeepScanningDialogDelegate::
+                                  CreateForConnectors,
+                              run_loop_->QuitClosure(), callback,
+                              is_encrypted_callback, "dm_token"));
+    }
     safe_browsing::DeepScanningDialogDelegate::DisableUIForTesting();
   }
 

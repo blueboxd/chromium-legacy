@@ -323,6 +323,12 @@ const std::vector<SearchConcept>& GetDisplayExternalSearchConcepts() {
        {IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION_ALT1,
         IDS_OS_SETTINGS_TAG_DISPLAY_RESOLUTION_ALT2,
         SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_DISPLAY_OVERSCAN,
+       mojom::kDisplaySubpagePath,
+       mojom::SearchResultIcon::kDisplay,
+       mojom::SearchResultDefaultRank::kMedium,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kDisplayOverscan}},
   });
   return *tags;
 }
@@ -940,6 +946,7 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       mojom::Setting::kAmbientColors,
       mojom::Setting::kTouchscreenCalibration,
       mojom::Setting::kNightLightColorTemperature,
+      mojom::Setting::kDisplayOverscan,
   };
   RegisterNestedSettingBulk(mojom::Subpage::kDisplay, kDisplaySettings,
                             generator);

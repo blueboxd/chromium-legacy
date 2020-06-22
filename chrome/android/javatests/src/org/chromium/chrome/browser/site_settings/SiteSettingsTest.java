@@ -442,7 +442,8 @@ public class SiteSettingsTest {
         final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        mPermissionRule.loadUrl(url + "#clear");
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
         Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
         mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals(
@@ -469,7 +470,8 @@ public class SiteSettingsTest {
         final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        mPermissionRule.loadUrl(url + "#clear");
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
         Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
         mPermissionRule.runJavaScriptCodeInCurrentTab("setCookie()");
         Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
@@ -483,7 +485,6 @@ public class SiteSettingsTest {
      * Blocks specific sites from setting cookies and ensures that no cookies can be set.
      */
     @Test
-    @DisabledTest(message = "crbug.com/1090274")
     @SmallTest
     @Feature({"Preferences"})
     // Todo(eokoyomon) figure out how to set and test third party cookie setting in this test
@@ -498,7 +499,8 @@ public class SiteSettingsTest {
         final String url = mPermissionRule.getURL("/chrome/test/data/android/cookie.html");
 
         // Load the page and clear any set cookies.
-        mPermissionRule.loadUrl(url + "#clear");
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
         Assert.assertEquals("\"\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Check cookies can be set for this website when there is no rule.
@@ -507,7 +509,8 @@ public class SiteSettingsTest {
                 "\"Foo=Bar\"", mPermissionRule.runJavaScriptCodeInCurrentTab("getCookie()"));
 
         // Set specific rule to block site and ensure it cannot set cookies.
-        mPermissionRule.loadUrl(url + "#clear");
+        mPermissionRule.loadUrl(url);
+        mPermissionRule.runJavaScriptCodeInCurrentTab("clearCookie()");
         settingsActivity =
                 SiteSettingsTestUtils.startSiteSettingsCategory(SiteSettingsCategory.Type.COOKIES);
         setBlockCookiesSiteException(settingsActivity, url, false);
@@ -787,7 +790,7 @@ public class SiteSettingsTest {
         NfcSystemLevelSetting.setNfcSettingForTesting(true);
 
         // If you add a category in the SiteSettings UI, please add a test for it below.
-        Assert.assertEquals(21, SiteSettingsCategory.Type.NUM_ENTRIES);
+        Assert.assertEquals(22, SiteSettingsCategory.Type.NUM_ENTRIES);
 
         String[] nullArray = new String[0];
         String[] binaryToggle = new String[] {"binary_toggle"};
@@ -795,7 +798,8 @@ public class SiteSettingsTest {
         String[] binaryToggleWithAllowed = new String[] {"binary_toggle", "allowed_group"};
         String[] binaryToggleWithOsWarningExtra =
                 new String[] {"binary_toggle", "os_permissions_warning_extra"};
-        String[] cookie = new String[] {"four_state_cookie_toggle", "add_exception"};
+        String[] cookie =
+                new String[] {"cookie_info_text", "four_state_cookie_toggle", "add_exception"};
         String[] protectedMedia = new String[] {"tri_state_toggle", "protected_content_learn_more"};
         String[] notifications_enabled;
         String[] notifications_disabled;
@@ -841,6 +845,7 @@ public class SiteSettingsTest {
         testCases.put(SiteSettingsCategory.Type.USE_STORAGE, new Pair<>(nullArray, nullArray));
         testCases.put(
                 SiteSettingsCategory.Type.VIRTUAL_REALITY, new Pair<>(binaryToggle, binaryToggle));
+        testCases.put(SiteSettingsCategory.Type.BLUETOOTH, new Pair<>(binaryToggle, binaryToggle));
         testCases.put(SiteSettingsCategory.Type.BLUETOOTH_SCANNING,
                 new Pair<>(binaryToggle, binaryToggle));
 
@@ -1120,6 +1125,36 @@ public class SiteSettingsTest {
     @SmallTest
     @Feature({"Preferences"})
     public void testBlockBluetoothScanning() {
+        doTestBluetoothScanningPermission(false);
+    }
+
+    /**
+     * Helper function to test allowing and blocking the Bluetooth chooser.
+     * @param enabled true to test enabling the Bluetooth chooser, false to test disabling the
+     *         feature.
+     */
+    private void doTestBluetoothGuardPermission(final boolean enabled) {
+        setGlobalToggleForCategory(SiteSettingsCategory.Type.BLUETOOTH, enabled);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(
+                    "Bluetooth scanning should be " + (enabled ? "enabled" : "disabled"),
+                    WebsitePreferenceBridge.isCategoryEnabled(
+                            getBrowserContextHandle(), ContentSettingsType.BLUETOOTH_GUARD),
+                    enabled);
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testAllowBluetoothGuard() {
+        doTestBluetoothScanningPermission(true);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testBlockBluetoothGuard() {
         doTestBluetoothScanningPermission(false);
     }
 

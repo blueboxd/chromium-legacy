@@ -76,6 +76,9 @@
 -keep,allowobfuscation class <1> {
     *** <2>(...);
 }
+-keepclassmembers,allowobfuscation class * {
+   @org.chromium.base.annotations.DoNotInline <methods>;
+}
 
 # Keep all CREATOR fields within Parcelable that are kept.
 -keepclassmembers class org.chromium.** implements android.os.Parcelable {

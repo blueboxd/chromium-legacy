@@ -15,6 +15,8 @@ namespace ash {
 // DisplayHighlightController manages which display should render display
 // identification highlights. Highlights are translucent blue rectangles on the
 // edges of a display.
+// TODO(1091497): Consider combining DisplayHighlightController and
+// DisplayAlignmentController.
 class ASH_EXPORT DisplayHighlightController
     : public WindowTreeHostManager::Observer,
       public SessionObserver {

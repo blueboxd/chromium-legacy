@@ -10,7 +10,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/environment.h"
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
@@ -36,7 +38,7 @@ namespace {
 LacrosManager* g_instance = nullptr;
 
 base::FilePath LacrosLogPath() {
-  return base::FilePath(lacros_util::kUserDataDir).Append("lacros.log");
+  return lacros_util::GetUserDataDir().Append("lacros.log");
 }
 
 // TODO(https://crbug.com/1091863): This logic is not robust against the
@@ -80,6 +82,17 @@ bool StartBackground(base::ProcessId pid, const base::FilePath& lacros_path) {
   }
 
   return already_running;
+}
+
+std::string GetXdgRuntimeDir() {
+  // If ash-chrome was given an environment variable, use it.
+  std::unique_ptr<base::Environment> env = base::Environment::Create();
+  std::string xdg_runtime_dir;
+  if (env->GetVar("XDG_RUNTIME_DIR", &xdg_runtime_dir))
+    return xdg_runtime_dir;
+
+  // Otherwise provide the default for Chrome OS devices.
+  return "/run/chrome";
 }
 
 }  // namespace
@@ -139,9 +152,10 @@ void LacrosManager::Start() {
   scoped_refptr<base::SequencedTaskRunner> task_runner =
       base::ThreadPool::CreateSequencedTaskRunner(
           {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  base::ProcessId pid =
+      lacros_process_.IsValid() ? lacros_process_.Pid() : base::kNullProcessId;
   task_runner->PostTaskAndReplyWithResult(
-      FROM_HERE,
-      base::BindOnce(&StartBackground, lacros_process_.Pid(), lacros_path_),
+      FROM_HERE, base::BindOnce(&StartBackground, pid, lacros_path_),
       base::BindOnce(&LacrosManager::StartForeground,
                      weak_factory_.GetWeakPtr()));
 }
@@ -154,7 +168,7 @@ void LacrosManager::StartForeground(bool already_running) {
 
   base::LaunchOptions options;
   options.environment["EGL_PLATFORM"] = "surfaceless";
-  options.environment["XDG_RUNTIME_DIR"] = "/run/chrome";
+  options.environment["XDG_RUNTIME_DIR"] = GetXdgRuntimeDir();
 
   std::string api_key;
   if (google_apis::HasAPIKeyConfigured())
@@ -169,14 +183,16 @@ void LacrosManager::StartForeground(bool already_running) {
 
   options.kill_on_parent_death = true;
 
-  std::vector<std::string> argv = {
-      chrome_path,
-      "--ozone-platform=wayland",
-      std::string("--user-data-dir=") + lacros_util::kUserDataDir,
-      "--enable-gpu-rasterization",
-      "--enable-oop-rasterization",
-      "--lang=en-US",
-      "--enable-crashpad"};
+  // Paths are UTF-8 safe on Chrome OS.
+  std::string user_data_dir = lacros_util::GetUserDataDir().AsUTF8Unsafe();
+
+  std::vector<std::string> argv = {chrome_path,
+                                   "--ozone-platform=wayland",
+                                   "--user-data-dir=" + user_data_dir,
+                                   "--enable-gpu-rasterization",
+                                   "--enable-oop-rasterization",
+                                   "--lang=en-US",
+                                   "--enable-crashpad"};
 
   // We assume that if there's a custom chrome path, that this is a developer
   // and they want to enable logging.

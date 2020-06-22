@@ -344,6 +344,13 @@ bool WebAXObject::IsModal() const {
   return private_->IsModal();
 }
 
+bool WebAXObject::IsNativeTextControl() const {
+  if (IsDetached())
+    return false;
+
+  return private_->IsNativeTextControl();
+}
+
 bool WebAXObject::IsOffScreen() const {
   if (IsDetached())
     return false;

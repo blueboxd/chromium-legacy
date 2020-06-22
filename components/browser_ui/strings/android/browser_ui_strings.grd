@@ -549,6 +549,14 @@
         Swipe down to close.
       </message>
 
+      <!-- Client certificate selection failure strings. -->
+      <message name="IDS_CLIENT_CERT_UNSUPPORTED_TITLE" desc="Title of a dialog box for when the operating system does not support client SSL certificate selection" formatter_data="android_java">
+        Unable to select certificate.
+      </message>
+      <message name="IDS_CLIENT_CERT_UNSUPPORTED_MESSAGE" desc="The message in a dialog box for when the operating system does not support client SSL certificate selection"  formatter_data="android_java">
+        Client side certificate selection is not supported by the operating system.
+      </message>
+
     </messages>
   </release>
 </grit>

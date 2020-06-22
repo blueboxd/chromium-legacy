@@ -60,7 +60,7 @@ FeaturePolicy=*
 FlexibleArrayBufferView
 GetterCallWith=ScriptState
 Global=*
-HighEntropy
+HighEntropy=|Direct
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*

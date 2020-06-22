@@ -66,8 +66,8 @@ void HTMLBodyElement::CollectStyleForPresentationAttribute(
     if (!url.IsEmpty()) {
       CSSImageValue* image_value = MakeGarbageCollected<CSSImageValue>(
           url, GetDocument().CompleteURL(url),
-          Referrer(GetExecutionContext()->OutgoingReferrer(),
-                   GetExecutionContext()->GetReferrerPolicy()),
+          Referrer(GetDocument().OutgoingReferrer(),
+                   GetDocument().GetReferrerPolicy()),
           OriginClean::kTrue, false /* is_ad_related */);
       image_value->SetInitiator(localName());
       style->SetProperty(

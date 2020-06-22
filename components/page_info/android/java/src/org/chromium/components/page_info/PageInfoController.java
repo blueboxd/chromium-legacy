@@ -217,7 +217,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
             }
         }
 
-        boolean useDarkText = ColorUtils.useDarkColors(mContext);
+        boolean useDarkText = !ColorUtils.inNightMode(mContext);
         OmniboxUrlEmphasizer.emphasizeUrl(mDisplayUrlBuilder, mContext.getResources(),
                 autocompleteSchemeClassifier, mSecurityLevel, mIsInternalPage, useDarkText,
                 /*emphasizeScheme=*/true);

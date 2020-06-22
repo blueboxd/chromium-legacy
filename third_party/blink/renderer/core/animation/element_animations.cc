@@ -129,7 +129,6 @@ void ElementAnimations::UpdateBaseComputedStyle(
     const ComputedStyle* computed_style,
     std::unique_ptr<CSSBitset> base_important_set) {
   DCHECK(computed_style);
-  DCHECK(IsAnimationStyleChange());
   base_computed_style_ = ComputedStyle::Clone(*computed_style);
   base_important_set_ = std::move(base_important_set);
 }

@@ -380,7 +380,7 @@ std::vector<device::CableDiscoveryData> GetTestCableExtension() {
 class AuthenticatorTestBase : public content::RenderViewHostTestHarness {
  protected:
   AuthenticatorTestBase() = default;
-  ~AuthenticatorTestBase() override {}
+  ~AuthenticatorTestBase() override = default;
 
   void SetUp() override {
     content::RenderViewHostTestHarness::SetUp();
@@ -440,9 +440,9 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
 
   mojo::Remote<blink::mojom::Authenticator> ConnectToAuthenticator(
       std::unique_ptr<base::OneShotTimer> timer) {
-    authenticator_impl_.reset(new AuthenticatorImpl(
+    authenticator_impl_ = std::make_unique<AuthenticatorImpl>(
         main_rfh(),
-        std::make_unique<AuthenticatorCommon>(main_rfh(), std::move(timer))));
+        std::make_unique<AuthenticatorCommon>(main_rfh(), std::move(timer)));
     mojo::Remote<blink::mojom::Authenticator> authenticator;
     authenticator_impl_->Bind(authenticator.BindNewPipeAndPassReceiver());
     return authenticator;
@@ -1782,7 +1782,7 @@ class TestAuthenticatorRequestDelegate
         attestation_consent_(attestation_consent),
         is_focused_(is_focused),
         is_uvpaa_(is_uvpaa) {}
-  ~TestAuthenticatorRequestDelegate() override {}
+  ~TestAuthenticatorRequestDelegate() override = default;
 
   void RegisterActionCallbacks(
       base::OnceClosure cancel_callback,
@@ -2659,7 +2659,7 @@ class MockAuthenticatorRequestDelegateObserver
   using InterestingFailureReasonCallback =
       base::OnceCallback<void(InterestingFailureReason)>;
 
-  MockAuthenticatorRequestDelegateObserver(
+  explicit MockAuthenticatorRequestDelegateObserver(
       InterestingFailureReasonCallback failure_reasons_callback =
           base::DoNothing())
       : TestAuthenticatorRequestDelegate(
@@ -2722,8 +2722,8 @@ class FakeAuthenticatorCommon : public AuthenticatorCommon {
 
 class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
  public:
-  AuthenticatorImplRequestDelegateTest() {}
-  ~AuthenticatorImplRequestDelegateTest() override {}
+  AuthenticatorImplRequestDelegateTest() = default;
+  ~AuthenticatorImplRequestDelegateTest() override = default;
 
   void TearDown() override {
     // The |RenderFrameHost| must outlive |AuthenticatorImpl|.
@@ -2734,9 +2734,9 @@ class AuthenticatorImplRequestDelegateTest : public AuthenticatorImplTest {
   mojo::Remote<blink::mojom::Authenticator> ConnectToFakeAuthenticator(
       std::unique_ptr<MockAuthenticatorRequestDelegateObserver> delegate,
       std::unique_ptr<base::OneShotTimer> timer) {
-    authenticator_impl_.reset(new AuthenticatorImpl(
+    authenticator_impl_ = std::make_unique<AuthenticatorImpl>(
         main_rfh(), std::make_unique<FakeAuthenticatorCommon>(
-                        main_rfh(), std::move(timer), std::move(delegate))));
+                        main_rfh(), std::move(timer), std::move(delegate)));
     mojo::Remote<blink::mojom::Authenticator> authenticator;
     authenticator_impl_->Bind(authenticator.BindNewPipeAndPassReceiver());
     return authenticator;
@@ -3646,8 +3646,11 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
     kUsePIN,
   };
 
-  void ConfigureVirtualDevice(int support_level) {
+  void ConfigureVirtualDevice(bool pin_uv_auth_token, int support_level) {
     device::VirtualCtap2Device::Config config;
+    config.pin_uv_auth_token_support = pin_uv_auth_token;
+    config.ctap2_versions = {device::Ctap2Version::kCtap2_0,
+                             device::Ctap2Version::kCtap2_1};
     switch (support_level) {
       case 0:
         // No support.
@@ -3727,69 +3730,76 @@ TEST_F(PINAuthenticatorImplTest, MakeCredential) {
   };
   // clang-format on
 
-  for (bool ui_support : {false, true}) {
-    SCOPED_TRACE(::testing::Message() << "ui_support=" << ui_support);
-    const Expectations& expected =
-        ui_support ? kExpectedWithUISupport : kExpectedWithoutUISupport;
-    test_client_.supports_pin = ui_support;
+  for (bool pin_uv_auth_token : {false, true}) {
+    SCOPED_TRACE(::testing::Message()
+                 << "pin_uv_auth_token=" << pin_uv_auth_token);
+    for (bool ui_support : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "ui_support=" << ui_support);
+      const Expectations& expected =
+          ui_support ? kExpectedWithUISupport : kExpectedWithoutUISupport;
+      test_client_.supports_pin = ui_support;
 
-    for (int support_level = 0; support_level <= 2; support_level++) {
-      SCOPED_TRACE(kPINSupportDescription[support_level]);
-      ConfigureVirtualDevice(support_level);
+      for (int support_level = 0; support_level <= 2; support_level++) {
+        SCOPED_TRACE(kPINSupportDescription[support_level]);
+        ConfigureVirtualDevice(pin_uv_auth_token, support_level);
 
-      for (int uv_level = 0; uv_level <= 2; uv_level++) {
-        SCOPED_TRACE(kUVDescription[uv_level]);
+        for (int uv_level = 0; uv_level <= 2; uv_level++) {
+          SCOPED_TRACE(kUVDescription[uv_level]);
 
-        switch (expected[support_level][uv_level]) {
-          case kNoPIN:
-          case kFailure:
-            // There shouldn't be any PIN prompts.
-            test_client_.expected.clear();
-            break;
+          switch (expected[support_level][uv_level]) {
+            case kNoPIN:
+            case kFailure:
+              // There shouldn't be any PIN prompts.
+              test_client_.expected.clear();
+              break;
 
-          case kSetPIN:
-            // A single PIN prompt to set a PIN is expected.
-            test_client_.expected = {{base::nullopt, kTestPIN}};
-            break;
+            case kSetPIN:
+              // A single PIN prompt to set a PIN is expected.
+              test_client_.expected = {{base::nullopt, kTestPIN}};
+              break;
 
-          case kUsePIN:
-            // A single PIN prompt to get the PIN is expected.
-            test_client_.expected = {{8, kTestPIN}};
-            break;
+            case kUsePIN:
+              // A single PIN prompt to get the PIN is expected.
+              test_client_.expected = {{8, kTestPIN}};
+              break;
 
-          default:
-            NOTREACHED();
-        }
+            default:
+              NOTREACHED();
+          }
 
-        mojo::Remote<blink::mojom::Authenticator> authenticator =
-            ConnectToAuthenticator();
-        TestMakeCredentialCallback callback_receiver;
-        authenticator->MakeCredential(
-            make_credential_options(kUVLevel[uv_level]),
-            callback_receiver.callback());
-        callback_receiver.WaitForCallback();
+          mojo::Remote<blink::mojom::Authenticator> authenticator =
+              ConnectToAuthenticator();
+          TestMakeCredentialCallback callback_receiver;
+          authenticator->MakeCredential(
+              make_credential_options(kUVLevel[uv_level]),
+              callback_receiver.callback());
+          callback_receiver.WaitForCallback();
 
-        switch (expected[support_level][uv_level]) {
-          case kFailure:
-            EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-                      callback_receiver.status());
-            break;
+          switch (expected[support_level][uv_level]) {
+            case kFailure:
+              EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                        callback_receiver.status());
+              break;
 
-          case kNoPIN:
-            EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_EQ("", virtual_device_factory_->mutable_state()->pin);
-            EXPECT_FALSE(HasUV(callback_receiver));
-            break;
+            case kNoPIN:
+              EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+                        callback_receiver.status());
+              EXPECT_EQ("", virtual_device_factory_->mutable_state()->pin);
+              EXPECT_FALSE(HasUV(callback_receiver));
+              break;
 
-          case kSetPIN:
-          case kUsePIN:
-            EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_EQ(kTestPIN, virtual_device_factory_->mutable_state()->pin);
-            EXPECT_TRUE(HasUV(callback_receiver));
-            break;
+            case kSetPIN:
+            case kUsePIN:
+              EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+                        callback_receiver.status());
+              EXPECT_EQ(kTestPIN,
+                        virtual_device_factory_->mutable_state()->pin);
+              EXPECT_TRUE(HasUV(callback_receiver));
+              break;
 
-          default:
-            NOTREACHED();
+            default:
+              NOTREACHED();
+          }
         }
       }
     }
@@ -3862,61 +3872,67 @@ TEST_F(PINAuthenticatorImplTest, GetAssertion) {
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectRegistration(
       dummy_options->allow_credentials[0].id(), kTestRelyingPartyId));
 
-  for (bool ui_support : {false, true}) {
-    SCOPED_TRACE(::testing::Message() << "ui_support=" << ui_support);
-    const Expectations& expected =
-        ui_support ? kExpectedWithUISupport : kExpectedWithoutUISupport;
-    test_client_.supports_pin = ui_support;
+  for (bool pin_uv_auth_token : {false, true}) {
+    for (bool ui_support : {false, true}) {
+      SCOPED_TRACE(::testing::Message() << "ui_support=" << ui_support);
+      const Expectations& expected =
+          ui_support ? kExpectedWithUISupport : kExpectedWithoutUISupport;
+      test_client_.supports_pin = ui_support;
 
-    for (int support_level = 0; support_level <= 2; support_level++) {
-      SCOPED_TRACE(kPINSupportDescription[support_level]);
-      ConfigureVirtualDevice(support_level);
+      for (int support_level = 0; support_level <= 2; support_level++) {
+        SCOPED_TRACE(kPINSupportDescription[support_level]);
+        ConfigureVirtualDevice(pin_uv_auth_token, support_level);
 
-      for (int uv_level = 0; uv_level <= 2; uv_level++) {
-        SCOPED_TRACE(kUVDescription[uv_level]);
+        for (int uv_level = 0; uv_level <= 2; uv_level++) {
+          SCOPED_TRACE(kUVDescription[uv_level]);
 
-        switch (expected[support_level][uv_level]) {
-          case kNoPIN:
-          case kFailure:
-            // No PIN prompts are expected.
-            test_client_.expected.clear();
-            break;
+          switch (expected[support_level][uv_level]) {
+            case kNoPIN:
+            case kFailure:
+              // No PIN prompts are expected.
+              test_client_.expected.clear();
+              break;
 
-          case kUsePIN:
-            // A single prompt to get the PIN is expected.
-            test_client_.expected = {{8, kTestPIN}};
-            break;
+            case kUsePIN:
+              // A single prompt to get the PIN is expected.
+              test_client_.expected = {{8, kTestPIN}};
+              break;
 
-          default:
-            NOTREACHED();
-        }
+            default:
+              NOTREACHED();
+          }
 
-        mojo::Remote<blink::mojom::Authenticator> authenticator =
-            ConnectToAuthenticator();
-        TestGetAssertionCallback callback_receiver;
-        authenticator->GetAssertion(get_credential_options(kUVLevel[uv_level]),
-                                    callback_receiver.callback());
-        callback_receiver.WaitForCallback();
+          mojo::Remote<blink::mojom::Authenticator> authenticator =
+              ConnectToAuthenticator();
+          TestGetAssertionCallback callback_receiver;
+          authenticator->GetAssertion(
+              get_credential_options(kUVLevel[uv_level]),
+              callback_receiver.callback());
+          callback_receiver.WaitForCallback();
 
-        switch (expected[support_level][uv_level]) {
-          case kFailure:
-            EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
-                      callback_receiver.status());
-            break;
+          switch (expected[support_level][uv_level]) {
+            case kFailure:
+              EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+                        callback_receiver.status());
+              break;
 
-          case kNoPIN:
-            EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_FALSE(HasUV(callback_receiver));
-            break;
+            case kNoPIN:
+              EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+                        callback_receiver.status());
+              EXPECT_FALSE(HasUV(callback_receiver));
+              break;
 
-          case kUsePIN:
-            EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
-            EXPECT_EQ(kTestPIN, virtual_device_factory_->mutable_state()->pin);
-            EXPECT_TRUE(HasUV(callback_receiver));
-            break;
+            case kUsePIN:
+              EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+                        callback_receiver.status());
+              EXPECT_EQ(kTestPIN,
+                        virtual_device_factory_->mutable_state()->pin);
+              EXPECT_TRUE(HasUV(callback_receiver));
+              break;
 
-          default:
-            NOTREACHED();
+            default:
+              NOTREACHED();
+          }
         }
       }
     }
@@ -4336,7 +4352,7 @@ class UVTokenAuthenticatorImplTest : public UVAuthenticatorImplTest {
     device::VirtualCtap2Device::Config config;
     config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
     config.internal_uv_support = true;
-    config.uv_token_support = true;
+    config.pin_uv_auth_token_support = true;
     virtual_device_factory_->SetCtap2Config(config);
     NavigateAndCommit(GURL(kTestOrigin1));
   }
@@ -4396,7 +4412,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvFails) {
   device::VirtualCtap2Device::Config config;
   config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
-  config.uv_token_support = true;
+  config.pin_uv_auth_token_support = true;
   config.user_verification_succeeds = false;
   config.pin_support = false;
   virtual_device_factory_->SetCtap2Config(config);
@@ -4431,7 +4447,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionFallBackToPin) {
   device::VirtualCtap2Device::Config config;
   config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
-  config.uv_token_support = true;
+  config.pin_uv_auth_token_support = true;
   config.user_verification_succeeds = false;
   config.pin_support = true;
   virtual_device_factory_->SetCtap2Config(config);
@@ -4469,7 +4485,7 @@ TEST_F(UVTokenAuthenticatorImplTest, GetAssertionUvBlockedFallBackToPin) {
   device::VirtualCtap2Device::Config config;
   config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
-  config.uv_token_support = true;
+  config.pin_uv_auth_token_support = true;
   config.user_verification_succeeds = false;
   config.pin_support = true;
 
@@ -4539,7 +4555,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvFails) {
   device::VirtualCtap2Device::Config config;
   config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
-  config.uv_token_support = true;
+  config.pin_uv_auth_token_support = true;
   config.user_verification_succeeds = false;
   config.pin_support = false;
   virtual_device_factory_->SetCtap2Config(config);
@@ -4575,7 +4591,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialFallBackToPin) {
   device::VirtualCtap2Device::Config config;
   config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
-  config.uv_token_support = true;
+  config.pin_uv_auth_token_support = true;
   config.user_verification_succeeds = false;
   config.pin_support = true;
   virtual_device_factory_->SetCtap2Config(config);
@@ -4614,7 +4630,7 @@ TEST_F(UVTokenAuthenticatorImplTest, MakeCredentialUvBlockedFallBackToPin) {
   device::VirtualCtap2Device::Config config;
   config.ctap2_versions = {device::Ctap2Version::kCtap2_1};
   config.internal_uv_support = true;
-  config.uv_token_support = true;
+  config.pin_uv_auth_token_support = true;
   config.user_verification_succeeds = false;
   config.pin_support = true;
 

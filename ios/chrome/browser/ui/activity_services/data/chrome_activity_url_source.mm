@@ -6,7 +6,7 @@
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #import "ios/chrome/browser/ui/activity_services/data/chrome_activity_item_thumbnail_generator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

@@ -4,7 +4,7 @@
 
 #include "tools/win/chromeexts/chrome_exts_command.h"
 
-#include "base/logging.h"
+#include "base/check.h"
 
 namespace tools {
 namespace win {

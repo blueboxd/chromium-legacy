@@ -31,12 +31,7 @@ namespace {
 class AncestorThrottleTest : public ContentBrowserTest,
                              public ::testing::WithParamInterface<bool> {
  public:
-  AncestorThrottleTest() {
-    if (GetParam()) {
-      feature_list_.InitAndEnableFeature(
-          network::features::kOutOfBlinkFrameAncestors);
-    }
-  }
+  AncestorThrottleTest() = default;
 
  protected:
   void SetUpOnMainThread() override {
@@ -49,7 +44,7 @@ class AncestorThrottleTest : public ContentBrowserTest,
 };
 
 // Tests that an iframe navigation with frame-anecestors 'none' is blocked.
-IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, FailedCSP) {
+IN_PROC_BROWSER_TEST_F(AncestorThrottleTest, FailedCSP) {
   GURL parent_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
   GURL iframe_url(
@@ -73,7 +68,7 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, FailedCSP) {
 
 // Tests that redirecting on a forbidden frame-ancestors will still commit if
 // the final response does not have a CSP policy that prevents the navigation.
-IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, RedirectCommitsIfNoCSP) {
+IN_PROC_BROWSER_TEST_F(AncestorThrottleTest, RedirectCommitsIfNoCSP) {
   GURL parent_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
   GURL iframe_url(
@@ -98,7 +93,7 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, RedirectCommitsIfNoCSP) {
 
 // Tests that redirecting on a forbidden frame-ancestors will not commit if
 // the final response does have a CSP policy that prevents the navigation.
-IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, RedirectFails) {
+IN_PROC_BROWSER_TEST_F(AncestorThrottleTest, RedirectFails) {
   GURL parent_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
   GURL iframe_url(embedded_test_server()->GetURL(
@@ -121,7 +116,7 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, RedirectFails) {
 }
 
 // Check that we don't process CSP for 204 responses.
-IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, Response204CSP) {
+IN_PROC_BROWSER_TEST_F(AncestorThrottleTest, Response204CSP) {
   GURL parent_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
   GURL iframe_url(embedded_test_server()->GetURL(
@@ -170,7 +165,7 @@ class AncestorThrottleSXGTest : public AncestorThrottleTest {
   SignedExchangeBrowserTestHelper sxg_test_helper_;
 };
 
-IN_PROC_BROWSER_TEST_P(AncestorThrottleSXGTest, SXGWithCSP) {
+IN_PROC_BROWSER_TEST_F(AncestorThrottleSXGTest, SXGWithCSP) {
   sxg_test_helper_.InstallMockCert(mock_cert_verifier_.mock_cert_verifier());
   sxg_test_helper_.InstallMockCertChainInterceptor();
 
@@ -187,9 +182,6 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleSXGTest, SXGWithCSP) {
   EXPECT_TRUE(
       iframe_node->current_frame_host()->GetLastCommittedOrigin().opaque());
 }
-
-INSTANTIATE_TEST_SUITE_P(All, AncestorThrottleTest, ::testing::Bool());
-INSTANTIATE_TEST_SUITE_P(All, AncestorThrottleSXGTest, ::testing::Bool());
 
 }  // namespace
 

@@ -1169,11 +1169,7 @@ void PDFiumPage::PopulateAnnotations() {
         break;
       }
       case FPDF_ANNOT_WIDGET: {
-        // TODO(crbug.com/1030242): Populate other types of form fields too.
-        if (FPDFAnnot_GetFormFieldType(engine_->form(), annot.get()) ==
-            FPDF_FORMFIELD_TEXTFIELD) {
-          PopulateTextField(annot.get());
-        }
+        PopulateFormField(annot.get());
         break;
       }
       default:
@@ -1234,23 +1230,48 @@ void PDFiumPage::PopulateTextField(FPDF_ANNOTATION annot) {
   DCHECK_EQ(FPDFAnnot_GetFormFieldType(form_handle, annot),
             FPDF_FORMFIELD_TEXTFIELD);
 
-  FS_RECTF rect;
-  if (!FPDFAnnot_GetRect(annot, &rect))
+  TextField text_field;
+  if (!PopulateFormFieldProperties(annot, &text_field))
     return;
 
-  TextField text_field;
-  // We use the bounding box of the text field as the bounding rect.
-  text_field.bounding_rect =
-      PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
-                   rect.bottom, PageOrientation::kOriginal);
   text_field.value = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDFAnnot_GetFormFieldValue, form_handle, annot),
       /*check_expected_size=*/true));
-  text_field.name = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+  text_fields_.push_back(std::move(text_field));
+}
+
+void PDFiumPage::PopulateFormField(FPDF_ANNOTATION annot) {
+  DCHECK_EQ(FPDFAnnot_GetSubtype(annot), FPDF_ANNOT_WIDGET);
+  int form_field_type = FPDFAnnot_GetFormFieldType(engine_->form(), annot);
+
+  // TODO(crbug.com/1030242): Populate other types of form fields too.
+  switch (form_field_type) {
+    case FPDF_FORMFIELD_TEXTFIELD: {
+      PopulateTextField(annot);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+bool PDFiumPage::PopulateFormFieldProperties(FPDF_ANNOTATION annot,
+                                             FormField* form_field) {
+  DCHECK(annot);
+  FS_RECTF rect;
+  if (!FPDFAnnot_GetRect(annot, &rect))
+    return false;
+
+  // We use the bounding box of the form field as the bounding rect.
+  form_field->bounding_rect =
+      PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
+                   rect.bottom, PageOrientation::kOriginal);
+  FPDF_FORMHANDLE form_handle = engine_->form();
+  form_field->name = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
       base::BindRepeating(&FPDFAnnot_GetFormFieldName, form_handle, annot),
       /*check_expected_size=*/true));
-  text_field.flags = FPDFAnnot_GetFormFieldFlags(form_handle, annot);
-  text_fields_.push_back(std::move(text_field));
+  form_field->flags = FPDFAnnot_GetFormFieldFlags(form_handle, annot);
+  return true;
 }
 
 bool PDFiumPage::GetUnderlyingTextRangeForRect(const pp::FloatRect& rect,
@@ -1381,6 +1402,12 @@ PDFiumPage::Highlight::Highlight() = default;
 PDFiumPage::Highlight::Highlight(const Highlight& that) = default;
 
 PDFiumPage::Highlight::~Highlight() = default;
+
+PDFiumPage::FormField::FormField() = default;
+
+PDFiumPage::FormField::FormField(const FormField& that) = default;
+
+PDFiumPage::FormField::~FormField() = default;
 
 PDFiumPage::TextField::TextField() = default;
 

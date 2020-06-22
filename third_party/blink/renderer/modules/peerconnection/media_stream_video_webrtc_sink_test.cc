@@ -49,7 +49,7 @@ class MediaStreamVideoWebRtcSinkTest : public ::testing::Test {
 TEST_F(MediaStreamVideoWebRtcSinkTest, NoiseReductionDefaultsToNotSet) {
   SetVideoTrack();
   blink::MediaStreamVideoWebRtcSink my_sink(
-      component_.Get(), &dependency_factory_,
+      component_, &dependency_factory_,
       blink::scheduler::GetSingleThreadTaskRunnerForTesting());
   EXPECT_TRUE(my_sink.webrtc_video_track());
   EXPECT_FALSE(my_sink.SourceNeedsDenoisingForTesting());

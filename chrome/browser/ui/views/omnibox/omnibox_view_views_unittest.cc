@@ -280,6 +280,7 @@ class OmniboxViewViewsTest : public OmniboxViewViewsTestBase {
   CommandUpdaterImpl command_updater_;
   TestLocationBarModel location_bar_model_;
   TestingOmniboxEditController omnibox_edit_controller_;
+  content::RenderViewHostTestEnabler rvh_test_enabler_;
 
   std::unique_ptr<views::Widget> widget_;
 
@@ -674,7 +675,6 @@ TEST_F(OmniboxViewViewsTest, PasteAndGoToUrlOrSearchCommand) {
 TEST_F(OmniboxViewViewsTest, SelectAllOnReactivateTabAfterDeleteAll) {
   omnibox_edit_controller()->set_omnibox_view(omnibox_view());
 
-  content::RenderViewHostTestEnabler rvh_test_enabler;
   auto web_contents1 =
       content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
 
@@ -1459,6 +1459,170 @@ TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
             fade_in->GetCurrentColor());
 }
 
+class OmniboxViewViewsHideOnInteractionTest : public OmniboxViewViewsTest {
+ public:
+  OmniboxViewViewsHideOnInteractionTest()
+      : OmniboxViewViewsTest(
+            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
+             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
+            {}) {}
+
+  OmniboxViewViewsHideOnInteractionTest(
+      const OmniboxViewViewsHideOnInteractionTest&) = delete;
+  OmniboxViewViewsHideOnInteractionTest& operator=(
+      const OmniboxViewViewsHideOnInteractionTest&) = delete;
+};
+
+// Tests the the "Always Show Full URLs" option works with the field trial
+// variation that hides the path when the user interacts with the page.
+TEST_F(OmniboxViewViewsHideOnInteractionTest, AlwaysShowFullURLs) {
+  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://www.example.test/foo"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  omnibox_view()->OnThemeChanged();
+
+  // Enable the "Always show full URLs" setting.
+  location_bar_model()->set_should_prevent_elision(true);
+  omnibox_view()->OnShouldPreventElisionChanged();
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  omnibox_view()->OnTabChanged(web_contents.get());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.test/foo"),
+            omnibox_view()->GetText());
+
+  // The path shouldn't be hidden when the Always Show Full URLs option is
+  // set.
+  EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+
+  // When the Always Show Full URLs pref is enabled, the omnibox view won't
+  // observe user interactions and fade out the path.
+  EXPECT_FALSE(omnibox_view()->web_contents());
+  OmniboxViewViews::PathFadeAnimation* fade_out =
+      omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
+  EXPECT_FALSE(fade_out);
+}
+
+// Tests the the "Always Show Full URLs" option works with the field trial
+// variation that reveals the path when the user interacts with the page.
+TEST_F(OmniboxViewViewsRevealOnHoverTest, AlwaysShowFullURLs) {
+  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://www.example.test/foo"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  omnibox_view()->OnThemeChanged();
+
+  // Enable the "Always show full URLs" setting.
+  location_bar_model()->set_should_prevent_elision(true);
+  omnibox_view()->OnShouldPreventElisionChanged();
+
+  // After a hover, there should be no animations running.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::PathFadeAnimation* fade_in =
+      omnibox_view()->GetPathFadeInAnimationForTesting();
+  EXPECT_FALSE(fade_in);
+  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::PathFadeAnimation* fade_out =
+      omnibox_view()->GetPathFadeOutAfterHoverAnimationForTesting();
+  EXPECT_FALSE(fade_out);
+}
+
+// This test fixture enables the reveal-on-hover path-hiding field trial, and
+// the hide-on-interaction variation when the parameter is true.
+class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
+    : public OmniboxViewViewsTest,
+      public ::testing::WithParamInterface<bool> {
+ public:
+  OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest()
+      : OmniboxViewViewsTest(
+            GetParam()
+                ? std::vector<base::Feature>(
+                      {omnibox::kOmniboxContextMenuShowFullUrls,
+                       omnibox::kHideSteadyStateUrlPathQueryAndRef,
+                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
+                       omnibox::
+                           kHideSteadyStateUrlPathQueryAndRefOnInteraction})
+                : std::vector<base::Feature>(
+                      {omnibox::kOmniboxContextMenuShowFullUrls,
+                       omnibox::kHideSteadyStateUrlPathQueryAndRef,
+                       omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
+            {}) {}
+
+  OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest(
+      const OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest&) =
+      delete;
+  OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest& operator=(
+      const OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest&) =
+      delete;
+
+ protected:
+  bool IsHideOnInteractionEnabled() { return GetParam(); }
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
+    OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
+    ::testing::Values(true, false));
+
+// Tests that unsetting the "Always show full URLs" option begins showing/hiding
+// the path appropriately when path-hiding field trials are enabled.
+TEST_P(OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest,
+       UnsetAlwaysShowFullURLs) {
+  location_bar_model()->set_url(GURL("https://example.test/foo"));
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("https://www.example.test/foo"));
+  omnibox_view()->model()->ResetDisplayTexts();
+  omnibox_view()->RevertAll();
+  omnibox_view()->OnThemeChanged();
+
+  // Enable the "Always show full URLs" setting.
+  location_bar_model()->set_should_prevent_elision(true);
+  omnibox_view()->OnShouldPreventElisionChanged();
+  std::unique_ptr<content::WebContents> web_contents =
+      content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
+  omnibox_view()->OnTabChanged(web_contents.get());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.example.test/foo"),
+            omnibox_view()->GetText());
+
+  // Now toggle the preference and check that the animations run as expected.
+  location_bar_model()->set_should_prevent_elision(false);
+  location_bar_model()->set_url_for_display(
+      base::ASCIIToUTF16("example.test/foo"));
+  omnibox_view()->OnShouldPreventElisionChanged();
+  // Note: this doesn't test that LocationBarModel correctly applies the
+  // preference; it simply tests that
+  // OmniboxViewViews::OnShouldPreventElisionChanged retrieves an updated
+  // display URL from LocationBarModel.
+  EXPECT_EQ(base::ASCIIToUTF16("example.test/foo"), omnibox_view()->GetText());
+  if (IsHideOnInteractionEnabled()) {
+    EXPECT_NE(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+    // Simulate a user interaction and check the fade-out animation.
+    omnibox_view()->DidGetUserInteraction(
+        blink::WebInputEvent::Type::kGestureScrollBegin);
+    OmniboxViewViews::PathFadeAnimation* fade_out =
+        omnibox_view()->GetPathFadeOutAfterInteractionAnimationForTesting();
+    ASSERT_TRUE(fade_out);
+    EXPECT_TRUE(fade_out->IsAnimating());
+  } else {
+    EXPECT_EQ(SK_ColorTRANSPARENT, omnibox_view()->path_color());
+  }
+  // Simulate a hover event and check the fade-in/fade-out animations. This
+  // should happen the same regardless of whether hide-on-interaction is
+  // enabled.
+  omnibox_view()->OnMouseMoved(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::PathFadeAnimation* fade_in =
+      omnibox_view()->GetPathFadeInAnimationForTesting();
+  ASSERT_TRUE(fade_in);
+  EXPECT_TRUE(fade_in->IsAnimating());
+  omnibox_view()->OnMouseExited(CreateMouseEvent(ui::ET_MOUSE_MOVED, {0, 0}));
+  OmniboxViewViews::PathFadeAnimation* fade_out =
+      omnibox_view()->GetPathFadeOutAfterHoverAnimationForTesting();
+  ASSERT_TRUE(fade_out);
+  EXPECT_TRUE(fade_out->IsAnimating());
+}
+
 // Tests that in the hide-on-interaction field trial, when the path changes
 // while being faded out, the animation is stopped.
 TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
@@ -1492,20 +1656,6 @@ TEST_F(OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest,
   omnibox_view()->RevertAll();
   EXPECT_FALSE(fade_out->IsAnimating());
 }
-
-class OmniboxViewViewsHideOnInteractionTest : public OmniboxViewViewsTest {
- public:
-  OmniboxViewViewsHideOnInteractionTest()
-      : OmniboxViewViewsTest(
-            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
-            {}) {}
-
-  OmniboxViewViewsHideOnInteractionTest(
-      const OmniboxViewViewsHideOnInteractionTest&) = delete;
-  OmniboxViewViewsHideOnInteractionTest& operator=(
-      const OmniboxViewViewsHideOnInteractionTest&) = delete;
-};
 
 // Tests that in the hide-on-interaction field trial, the path is shown on
 // cross-document main-frame navigations, but not on same-document navigations.
@@ -1585,7 +1735,6 @@ TEST_F(OmniboxViewViewsHideOnInteractionTest, SameDocNavigations) {
 // Tests that in the hide-on-interaction field trial, the path is not re-shown
 // on subframe navigations.
 TEST_F(OmniboxViewViewsHideOnInteractionTest, SubframeNavigations) {
-  content::RenderViewHostTestEnabler rvh_enabler;
   location_bar_model()->set_url(GURL("https://example.test/foo"));
   location_bar_model()->set_url_for_display(
       base::ASCIIToUTF16("example.test/foo"));

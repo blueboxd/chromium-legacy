@@ -14,7 +14,6 @@ import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TA
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.support.test.InstrumentationRegistry;
 import android.text.TextUtils;
@@ -581,12 +580,6 @@ public class ReturnToChromeTest {
 
         assertEquals(10, mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount());
         assertEquals(9, mActivityTestRule.getActivity().getCurrentTabModel().index());
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
-        if (Build.VERSION.SDK_INT == VERSION_CODES.P) {
-            // See crbug.com/1025241
-            mRenderTestRule.setPixelDiffThreshold(16);
-        }
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
         mRenderTestRule.render(mActivityTestRule.getActivity().findViewById(
                                        org.chromium.chrome.tab_ui.R.id.tab_list_view),

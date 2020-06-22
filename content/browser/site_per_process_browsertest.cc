@@ -7130,29 +7130,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // X-Frame-Options and CSP frame-ancestors behave differently. XFO commits
     // an error page, while CSP commits a "data:," URL.
     // TODO(https://crbug.com/870815): Use an error page for both.
-    if (test.use_error_page ||
-        base::FeatureList::IsEnabled(
-            network::features::kOutOfBlinkFrameAncestors)) {
-      EXPECT_FALSE(load_observer.last_navigation_succeeded());
-      EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
-                load_observer.last_net_error_code());
-      EXPECT_EQ(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
-                blocked_url);
-      EXPECT_EQ("Error", EvalJs(root->child_at(0), "document.title"));
-    } else {
-      EXPECT_TRUE(load_observer.last_navigation_succeeded());
-      EXPECT_EQ(net::OK, load_observer.last_net_error_code());
-      // Ensure that we don't use the blocked URL as the blocked frame's last
-      // committed URL (see https://crbug.com/622385).
-      EXPECT_EQ(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
-                GURL("data:,"));
-
-      // The blocked navigation should behave like an empty 200 response. Make
-      // sure that the frame's document.title is empty: this double-checks both
-      // that the blocked URL's contents wasn't loaded, and that the old page
-      // isn't active anymore (both of these pages have non-empty titles).
-      EXPECT_EQ("", EvalJs(root->child_at(0), "document.title"));
-    }
+    EXPECT_FALSE(load_observer.last_navigation_succeeded());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_RESPONSE,
+              load_observer.last_net_error_code());
+    EXPECT_EQ(root->child_at(0)->current_frame_host()->GetLastCommittedURL(),
+              blocked_url);
+    EXPECT_EQ("Error", EvalJs(root->child_at(0), "document.title"));
 
     // The blocked frame should still fire a load event in its parent's process.
     EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());

@@ -21,14 +21,6 @@ void WebTestTtsControllerDelegate::UpdateUtteranceDefaultsFromPrefs(
     double* pitch,
     double* volume) {}
 
-void WebTestTtsControllerDelegate::SetTtsEngineDelegate(
-    content::TtsEngineDelegate* delegate) {}
-
-content::TtsEngineDelegate*
-WebTestTtsControllerDelegate::GetTtsEngineDelegate() {
-  return nullptr;
-}
-
 WebTestTtsControllerDelegate::WebTestTtsControllerDelegate() {}
 
 WebTestTtsControllerDelegate::~WebTestTtsControllerDelegate() {}

@@ -5,10 +5,12 @@
 #ifndef CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_TTS_CONTROLLER_DELEGATE_H_
 
-#include "content/public/browser/tts_controller.h"
-#include "content/public/browser/tts_utterance.h"
+#include <vector>
 
 namespace content {
+
+class TtsUtterance;
+struct VoiceData;
 
 // Allows embedders to access the current state of text-to-speech.
 class TtsControllerDelegate {
@@ -24,15 +26,6 @@ class TtsControllerDelegate {
                                                 double* rate,
                                                 double* pitch,
                                                 double* volume) = 0;
-
-  // Set the delegate that processes TTS requests with user-installed
-  // extensions.
-  virtual void SetTtsEngineDelegate(TtsEngineDelegate* delegate) = 0;
-
-  // Get the delegate that processes TTS requests with user-installed
-  // extensions.
-  virtual TtsEngineDelegate* GetTtsEngineDelegate() = 0;
-
  protected:
   virtual ~TtsControllerDelegate() {}
 };

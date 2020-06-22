@@ -1220,11 +1220,11 @@ class MetaBuildWrapper(object):
               'chromevox_test_data/',
               'gen/ui/file_manager/file_manager/',
               'resources/chromeos/',
-              'resources/chromeos/accessibility/autoclick/',
+              'resources/chromeos/accessibility/accessibility_common/',
               'resources/chromeos/accessibility/chromevox/',
               'resources/chromeos/accessibility/select_to_speak/',
               'test_data/chrome/browser/resources/chromeos/accessibility/'
-              'autoclick/',
+              'accessibility_common/',
               'test_data/chrome/browser/resources/chromeos/accessibility/'
               'chromevox/',
               'test_data/chrome/browser/resources/chromeos/accessibility/'

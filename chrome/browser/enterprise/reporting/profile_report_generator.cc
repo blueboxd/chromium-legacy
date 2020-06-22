@@ -12,14 +12,15 @@
 #include "base/util/values/values_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/enterprise/reporting/extension_info.h"
-#include "chrome/browser/enterprise/reporting/policy_info.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
+#include "components/enterprise/browser/reporting/policy_info.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -119,7 +120,11 @@ void ProfileReportGenerator::GetExtensionPolicyInfo() {
 }
 
 void ProfileReportGenerator::GetPolicyFetchTimestampInfo() {
-  AppendMachineLevelUserCloudPolicyFetchTimestamp(report_.get());
+#if !defined(OS_CHROMEOS)
+  AppendMachineLevelUserCloudPolicyFetchTimestamp(
+      report_.get(), g_browser_process->browser_policy_connector()
+                         ->machine_level_user_cloud_policy_manager());
+#endif  // !defined(OS_CHROMEOS)
 }
 
 void ProfileReportGenerator::GetExtensionRequest() {

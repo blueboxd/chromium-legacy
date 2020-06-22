@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -83,6 +84,29 @@ void NGContainerFragmentBuilder::PropagateChildData(
           }));
       oof_positioned_candidates_.emplace_back(descendant.node, static_position,
                                               new_inline_container);
+    }
+  }
+
+  if (const NGPhysicalBoxFragment* fragment =
+          DynamicTo<NGPhysicalBoxFragment>(&child)) {
+    if (fragment->HasOutOfFlowPositionedFragmentainerDescendants()) {
+      const auto& out_of_flow_fragmentainer_descendants =
+          fragment->OutOfFlowPositionedFragmentainerDescendants();
+
+      for (const auto& descendant : out_of_flow_fragmentainer_descendants) {
+        const NGPhysicalContainerFragment* containing_block_fragment =
+            descendant.containing_block_fragment.get();
+        if (!containing_block_fragment)
+          containing_block_fragment = fragment;
+
+        NGLogicalStaticPosition static_position =
+            descendant.static_position.ConvertToLogical(
+                GetWritingMode(), Direction(), PhysicalSize());
+        oof_positioned_fragmentainer_descendants_.emplace_back(
+            descendant.node, static_position, descendant.inline_container,
+            /* needs_block_offset_adjustment */ false,
+            containing_block_fragment);
+      }
     }
   }
 
@@ -204,6 +228,11 @@ void NGContainerFragmentBuilder::AddOutOfFlowInlineChildCandidate(
                              NGLogicalStaticPosition::kBlockStart);
 }
 
+void NGContainerFragmentBuilder::AddOutOfFlowFragmentainerDescendant(
+    const NGLogicalOutOfFlowPositionedNode& descendant) {
+  oof_positioned_fragmentainer_descendants_.push_back(descendant);
+}
+
 void NGContainerFragmentBuilder::AddOutOfFlowDescendant(
     const NGLogicalOutOfFlowPositionedNode& descendant) {
   oof_positioned_descendants_.push_back(descendant);
@@ -234,6 +263,13 @@ void NGContainerFragmentBuilder::SwapOutOfFlowPositionedCandidates(
   }
 
   has_oof_candidate_that_needs_block_offset_adjustment_ = false;
+}
+
+void NGContainerFragmentBuilder::SwapOutOfFlowFragmentainerDescendants(
+    Vector<NGLogicalOutOfFlowPositionedNode>* descendants) {
+  DCHECK(descendants->IsEmpty());
+  DCHECK(!has_oof_candidate_that_needs_block_offset_adjustment_);
+  std::swap(oof_positioned_fragmentainer_descendants_, *descendants);
 }
 
 void NGContainerFragmentBuilder::

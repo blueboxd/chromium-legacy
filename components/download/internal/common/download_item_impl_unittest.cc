@@ -21,10 +21,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_destination_observer.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item_impl_delegate.h"
@@ -55,7 +57,6 @@ const base::FilePath::CharType kDummyIntermediatePath[] =
     FILE_PATH_LITERAL("/testpathx");
 
 namespace download {
-
 namespace {
 
 template <typename T>
@@ -100,6 +101,7 @@ class MockDelegate : public DownloadItemImplDelegate {
   MOCK_METHOD1(DownloadOpened, void(DownloadItemImpl*));
   MOCK_METHOD1(DownloadRemoved, void(DownloadItemImpl*));
   MOCK_CONST_METHOD0(IsOffTheRecord, bool());
+  MOCK_METHOD(bool, IsActiveNetworkMetered, (), (const override));
 
   void VerifyAndClearExpectations() {
     ::testing::Mock::VerifyAndClearExpectations(this);
@@ -112,6 +114,7 @@ class MockDelegate : public DownloadItemImplDelegate {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*this, ShouldOpenDownload_(_, _)).WillRepeatedly(Return(true));
     EXPECT_CALL(*this, IsOffTheRecord()).WillRepeatedly(Return(false));
+    EXPECT_CALL(*this, IsActiveNetworkMetered).WillRepeatedly(Return(false));
   }
 };
 
@@ -212,8 +215,6 @@ const uint8_t kHashOfTestData1[] = {
     0xef, 0x9c, 0x92, 0x33, 0x36, 0xe1, 0x06, 0x53, 0xfe, 0xc1, 0x95,
     0xf4, 0x93, 0x45, 0x8b, 0x3b, 0x21, 0x89, 0x0e, 0x1b, 0x97};
 
-}  // namespace
-
 class DownloadItemTest : public testing::Test {
  public:
   DownloadItemTest()
@@ -298,7 +299,18 @@ class DownloadItemTest : public testing::Test {
     EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
     EXPECT_TRUE(item->GetTargetFilePath().empty());
     DownloadItemImplDelegate::DownloadTargetCallback callback;
-    MockDownloadFile* download_file = CallDownloadItemStart(item, &callback);
+    MockDownloadFile* file = CallDownloadItemStart(item, &callback);
+    DoRenameAndRunTargetCallback(item, file, std::move(callback), danger_type,
+                                 base::nullopt);
+    return file;
+  }
+
+  void DoRenameAndRunTargetCallback(
+      DownloadItemImpl* item,
+      MockDownloadFile* download_file,
+      DownloadItemImplDelegate::DownloadTargetCallback callback,
+      DownloadDangerType danger_type,
+      base::Optional<DownloadSchedule> download_schedule) {
     base::FilePath target_path(kDummyTargetPath);
     base::FilePath intermediate_path(kDummyIntermediatePath);
     auto task_runner = base::ThreadTaskRunnerHandle::Get();
@@ -314,9 +326,8 @@ class DownloadItemTest : public testing::Test {
     std::move(callback).Run(
         target_path, DownloadItem::TARGET_DISPOSITION_OVERWRITE, danger_type,
         DownloadItem::MixedContentStatus::UNKNOWN, intermediate_path,
-        base::nullopt /*download_schedule*/, DOWNLOAD_INTERRUPT_REASON_NONE);
+        download_schedule, DOWNLOAD_INTERRUPT_REASON_NONE);
     task_environment_.RunUntilIdle();
-    return download_file;
   }
 
   void DoDestinationComplete(DownloadItemImpl* item,
@@ -2180,8 +2191,6 @@ TEST_F(DownloadItemTest, AnnotationWithEmptyURLInIncognito) {
   task_environment_.RunUntilIdle();
 }
 
-namespace {
-
 // The DownloadItemDestinationUpdateRaceTest fixture (defined below) is used to
 // test for race conditions between download destination events received via the
 // DownloadDestinationObserver interface, and the target determination logic.
@@ -2406,8 +2415,6 @@ INSTANTIATE_TEST_SUITE_P(Failure,
                          DownloadItemDestinationUpdateRaceTest,
                          ::testing::ValuesIn(GenerateFailingEventLists()));
 
-}  // namespace
-
 // Run through the DII workflow but the embedder cancels the download at target
 // determination.
 TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
@@ -2600,4 +2607,83 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   task_environment_.RunUntilIdle();
 }
 
+// --------------------------------------------------------------
+// Download later feature test.
+struct DownloadLaterTestParam {
+  // Input to build DownloadSchedule and config network type.
+  bool only_on_wifi;
+  base::Optional<base::Time> start_time;
+  bool is_active_network_metered;
+
+  // Output and expectation.
+  DownloadItem::DownloadState state;
+  bool allow_metered;
+};
+
+std::vector<DownloadLaterTestParam> DownloadLaterTestParams() {
+  std::vector<DownloadLaterTestParam> params;
+  // Required wifi, and currently on wifi, the download won't stop.
+  params.push_back(
+      {true, base::nullopt, false, DownloadItem::IN_PROGRESS, false});
+  // Don't require wifi, and currently not on wifi, the download won't stop.
+  params.push_back(
+      {false, base::nullopt, true, DownloadItem::IN_PROGRESS, true});
+  // Download later, will be interrupted.
+  auto future_time = base::Time::Now() + base::TimeDelta::FromDays(10);
+  params.push_back({false, future_time, true, DownloadItem::INTERRUPTED, true});
+  return params;
+}
+
+class DownloadLaterTest
+    : public DownloadItemTest,
+      public ::testing::WithParamInterface<DownloadLaterTestParam> {
+ public:
+  DownloadLaterTest() = default;
+  ~DownloadLaterTest() override = default;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         DownloadLaterTest,
+                         testing::ValuesIn(DownloadLaterTestParams()));
+
+TEST_P(DownloadLaterTest, TestAll) {
+  const auto& param = GetParam();
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kDownloadLater);
+
+  DownloadItemImpl* item = CreateDownloadItem();
+
+  // Setup network type and download schedule.
+  EXPECT_CALL(*mock_delegate(), IsActiveNetworkMetered)
+      .WillRepeatedly(Return(param.is_active_network_metered));
+  EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
+  EXPECT_TRUE(item->GetTargetFilePath().empty());
+  DownloadItemImplDelegate::DownloadTargetCallback callback;
+  MockDownloadFile* download_file = CallDownloadItemStart(item, &callback);
+
+  if (param.state == DownloadItem::INTERRUPTED) {
+    EXPECT_CALL(*download_file, Detach());
+  }
+
+  base::Optional<DownloadSchedule> download_schedule =
+      base::make_optional<DownloadSchedule>(param.only_on_wifi,
+                                            param.start_time);
+
+  DoRenameAndRunTargetCallback(item, download_file, std::move(callback),
+                               DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                               std::move(download_schedule));
+
+  // Verify final states.
+  ASSERT_EQ(param.allow_metered, item->AllowMetered());
+  ASSERT_EQ(param.state, item->GetState());
+  ASSERT_EQ(0, item->GetAutoResumeCount())
+      << "Download should not be auto resumed with DownloadSchedule.";
+  if (param.state == DownloadItem::INTERRUPTED) {
+    ASSERT_EQ(DOWNLOAD_INTERRUPT_REASON_CRASH, item->GetLastReason());
+  }
+
+  CleanupItem(item, download_file, param.state);
+}
+
+}  // namespace
 }  // namespace download

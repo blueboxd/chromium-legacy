@@ -77,22 +77,6 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
-     * Sets usage statistics checkbox.
-     * @param {boolean} checked Is the checkbox checked?
-     */
-    setUsageStats(checked) {
-      $('oobe-eula-md').usageStatsChecked = checked;
-    },
-
-    /**
-     * Sets TPM password.
-     * @param {text} password TPM password to be shown.
-     */
-    setTpmPassword(password) {
-      $('eula').setTpmPassword(password);
-    },
-
-    /**
      * Reloads content of the page (localized strings, options of the select
      * controls).
      * @param {!Object} data New dictionary with i18n values.

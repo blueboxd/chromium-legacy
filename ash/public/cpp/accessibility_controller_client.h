@@ -75,7 +75,7 @@ class ASH_PUBLIC_EXPORT AccessibilityControllerClient {
   // Select-to-Speak is speaking, cancel speaking and move to inactive state.
   virtual void RequestSelectToSpeakStateChange() = 0;
 
-  // Requests that the Automatic Clicks extension get the nearest scrollable
+  // Requests that the Accessibility Common extension get the nearest scrollable
   // bounds to the given point in screen coordinates.
   virtual void RequestAutoclickScrollableBoundsForPoint(
       gfx::Point& point_in_screen) = 0;

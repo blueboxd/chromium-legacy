@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: 161bfed35ab1cfe3cefc90e28972a1c4d9136bf2
+Revision: b300f76af9ba095c7e85e70169429a19e467f42f
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -36,3 +36,4 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
  - codereview.settings has been excluded.
+ - Fix EDO compile due to EDO mismath, revert after Chromium EDO roll.

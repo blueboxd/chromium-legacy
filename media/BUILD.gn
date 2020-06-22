@@ -182,10 +182,7 @@ test("media_unittests") {
   }
 
   if (is_fuchsia) {
-    deps += [
-      "//media/fuchsia/audio:unittests",
-      "//media/fuchsia/metrics:unittests",
-    ]
+    deps += [ "//media/fuchsia/audio:unittests" ]
   }
 
   if (enable_media_remoting) {

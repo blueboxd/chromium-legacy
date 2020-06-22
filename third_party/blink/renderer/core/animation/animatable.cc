@@ -65,6 +65,8 @@ Animation* Animatable::animate(
   if (!script_state->ContextIsValid())
     return nullptr;
   Element* element = GetAnimationTarget();
+  if (!element->GetExecutionContext())
+    return nullptr;
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes,
                              CoerceEffectOptions(options), exception_state);
@@ -98,6 +100,8 @@ Animation* Animatable::animate(ScriptState* script_state,
   if (!script_state->ContextIsValid())
     return nullptr;
   Element* element = GetAnimationTarget();
+  if (!element->GetExecutionContext())
+    return nullptr;
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes, exception_state);
   if (exception_state.HadException())

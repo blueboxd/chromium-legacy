@@ -56,6 +56,8 @@ jumbo_component("services") {
     "mojo_video_encode_accelerator_provider.h",
     "mojo_video_encode_accelerator_service.cc",
     "mojo_video_encode_accelerator_service.h",
+    "playback_events_recorder.cc",
+    "playback_events_recorder.h",
     "test_mojo_media_client.cc",
     "test_mojo_media_client.h",
     "video_decode_perf_history.cc",
@@ -109,10 +111,6 @@ jumbo_component("services") {
     ]
   }
 
-  if (is_fuchsia) {
-    deps += [ "//media/fuchsia/metrics" ]
-  }
-
   if (enable_media_drm_storage) {
     sources += [
       "mojo_media_drm_storage.cc",
@@ -155,6 +153,7 @@ source_set("unit_tests") {
     "mojo_audio_output_stream_provider_unittest.cc",
     "mojo_audio_output_stream_unittest.cc",
     "mojo_video_encode_accelerator_service_unittest.cc",
+    "playback_events_recorder_test.cc",
     "test_helpers.cc",
     "test_helpers.h",
     "video_decode_perf_history_unittest.cc",

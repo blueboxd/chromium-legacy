@@ -19,8 +19,15 @@ namespace blink {
 // as a positioned-node reaches its containing block, it gets placed, and
 // doesn't bubble further up the tree.
 //
+// However, when fragmentation comes into play, we no longer place a
+// positioned-node as soon as it reaches its containing block. Instead, we
+// continue to bubble the positioned node up until it reaches the
+// fragmentation context root. There, it will get placed and properly
+// fragmented.
+//
 // This needs its static position [1] to be placed correctly in its containing
-// block.
+// block. And in the case of fragmentation, this also needs the containing block
+// fragment to be placed correctly within the fragmentation context root.
 //
 // This is struct is allowed to be stored/persisted.
 //

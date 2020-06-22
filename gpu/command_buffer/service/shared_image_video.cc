@@ -145,9 +145,9 @@ class SharedImageRepresentationGLTextureVideo
   gles2::Texture* GetTexture() override { return texture_; }
 
   bool BeginAccess(GLenum mode) override {
-    // This representation should only be called for read.
-    DCHECK_EQ(mode,
-              static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
+    // This representation should only be called for read or overlay.
+    DCHECK(mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
+           mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM);
 
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
     video_backing->BeginGLReadAccess();
@@ -182,9 +182,9 @@ class SharedImageRepresentationGLTexturePassthroughVideo
   }
 
   bool BeginAccess(GLenum mode) override {
-    // This representation should only be called for read.
-    DCHECK_EQ(mode,
-              static_cast<GLenum>(GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM));
+    // This representation should only be called for read or overlay.
+    DCHECK(mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
+           mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM);
 
     auto* video_backing = static_cast<SharedImageVideo*>(backing());
     video_backing->BeginGLReadAccess();

@@ -1163,7 +1163,7 @@
     {
       // Named pages for pagination (the "page" CSS property).
       name: "NamedPages",
-      status: "experimental",
+      status: "stable",
     },
     {
       // Also enabled when blink::features::kNativeFileSystemAPI is overridden

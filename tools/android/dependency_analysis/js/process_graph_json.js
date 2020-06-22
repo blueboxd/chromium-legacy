@@ -3,14 +3,7 @@
 // found in the LICENSE file.
 
 import {Node, Edge, Graph} from './graph_model.js';
-
-/**
- * TODO(yjlong): Compute the "shortest disambiguated name" in Python and include
- * it in the JSON so we do not need to do this calculation.
- * @param {number} name The full package name to shorten.
- * @return {number} The shortened package name.
- */
-const shortName = name => name.substring(name.lastIndexOf('.') + 1);
+import {shortenPackageName} from './chrome_hooks.js';
 
 /**
  * A graph read from JSON.
@@ -28,7 +21,7 @@ const shortName = name => name.substring(name.lastIndexOf('.') + 1);
 function parseGraphFromJson(jsonGraph) {
   const graph = new Graph();
   for (const nodeData of jsonGraph.nodes) {
-    const node = new Node(nodeData.name, shortName(nodeData.name));
+    const node = new Node(nodeData.name, shortenPackageName(nodeData.name));
     graph.addNodeIfNew(node);
   }
   for (const edgeData of jsonGraph.edges) {

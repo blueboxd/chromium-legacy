@@ -348,12 +348,13 @@ AccessibilityManager::AccessibilityManager() {
   base::FilePath resources_path;
   if (!base::PathService::Get(chrome::DIR_RESOURCES, &resources_path))
     NOTREACHED();
-  autoclick_extension_loader_ =
+  accessibility_common_extension_loader_ =
       base::WrapUnique(new AccessibilityExtensionLoader(
-          extension_misc::kAutoclickExtensionId,
-          resources_path.Append(extension_misc::kAutoclickExtensionPath),
-          extension_misc::kAutoclickManifestFilename,
-          extension_misc::kAutoclickGuestManifestFilename,
+          extension_misc::kAccessibilityCommonExtensionId,
+          resources_path.Append(
+              extension_misc::kAccessibilityCommonExtensionPath),
+          extension_misc::kAccessibilityCommonManifestFilename,
+          extension_misc::kAccessibilityCommonGuestManifestFilename,
           base::BindRepeating(&AccessibilityManager::PostUnloadAutoclick,
                               weak_ptr_factory_.GetWeakPtr())));
   chromevox_loader_ = base::WrapUnique(new AccessibilityExtensionLoader(
@@ -704,7 +705,7 @@ void AccessibilityManager::OnAutoclickChanged() {
       ash::prefs::kAccessibilityAutoclickEnabled);
 
   if (enabled)
-    autoclick_extension_loader_->SetProfile(
+    accessibility_common_extension_loader_->SetProfile(
         profile_, base::Closure() /* done_callback */);
 
   if (autoclick_enabled_ == enabled)
@@ -712,13 +713,13 @@ void AccessibilityManager::OnAutoclickChanged() {
 
   autoclick_enabled_ = enabled;
   if (enabled) {
-    autoclick_extension_loader_->Load(
+    accessibility_common_extension_loader_->Load(
         profile_, base::BindRepeating(&AccessibilityManager::PostLoadAutoclick,
                                       weak_ptr_factory_.GetWeakPtr()));
     // TODO: Construct a delegate to connect Autoclick and its controller in
     // ash.
   } else {
-    autoclick_extension_loader_->Unload();
+    accessibility_common_extension_loader_->Unload();
   }
 }
 
@@ -737,7 +738,7 @@ void AccessibilityManager::RequestAutoclickScrollableBoundsForPoint(
               kEventName,
           std::move(event_args));
   event_router->DispatchEventWithLazyListener(
-      extension_misc::kAutoclickExtensionId, std::move(event));
+      extension_misc::kAccessibilityCommonExtensionId, std::move(event));
 }
 
 void AccessibilityManager::EnableVirtualKeyboard(bool enabled) {
@@ -1496,12 +1497,12 @@ void AccessibilityManager::PostUnloadSwitchAccess() {
 }
 
 void AccessibilityManager::PostLoadAutoclick() {
-  InitializeFocusRings(extension_misc::kAutoclickExtensionId);
+  InitializeFocusRings(extension_misc::kAccessibilityCommonExtensionId);
 }
 
 void AccessibilityManager::PostUnloadAutoclick() {
   // Clear the accessibility focus ring.
-  RemoveFocusRings(extension_misc::kAutoclickExtensionId);
+  RemoveFocusRings(extension_misc::kAccessibilityCommonExtensionId);
 }
 
 void AccessibilityManager::SetKeyboardListenerExtensionId(

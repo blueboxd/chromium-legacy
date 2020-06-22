@@ -474,14 +474,6 @@ ci.chromiumos_builder(
 )
 
 ci.chromiumos_builder(
-    name = 'chromeos-kevin-rel',
-    console_view_entry = ci.console_view_entry(
-        category = 'simple|release',
-        short_name = 'kvn',
-    ),
-)
-
-ci.chromiumos_builder(
     name = 'linux-chromeos-dbg',
     console_view_entry = ci.console_view_entry(
         category = 'default',

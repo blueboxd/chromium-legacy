@@ -21,7 +21,7 @@
 
 #include "third_party/blink/renderer/core/css/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/svg/color_distance.h"
 #include "third_party/blink/renderer/core/svg/svg_animate_element.h"
 
@@ -49,8 +49,8 @@ SVGPropertyBase* SVGColorProperty::CloneForAnimation(const String&) const {
 
 static inline Color FallbackColorForCurrentColor(SVGElement* target_element) {
   DCHECK(target_element);
-  if (LayoutObject* target_layout_object = target_element->GetLayoutObject())
-    return target_layout_object->ResolveColor(GetCSSPropertyColor());
+  if (const ComputedStyle* target_style = target_element->GetComputedStyle())
+    return target_style->VisitedDependentColor(GetCSSPropertyColor());
   return Color::kTransparent;
 }
 

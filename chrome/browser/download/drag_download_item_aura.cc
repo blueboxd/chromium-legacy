@@ -29,7 +29,7 @@
 #endif
 
 void DragDownloadItem(const download::DownloadItem* download,
-                      gfx::Image* icon,
+                      const gfx::Image* icon,
                       gfx::NativeView view) {
   DCHECK(download);
   DCHECK_EQ(download::DownloadItem::COMPLETE, download->GetState());

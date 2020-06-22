@@ -27,12 +27,14 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/enterprise/common/proto/connectors.pb.h"
+#include "components/enterprise/common/strings.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 
 namespace safe_browsing {
@@ -117,7 +119,7 @@ void BinaryUploadService::MaybeUploadForDeepScanning(
 
   if (!can_upload_enterprise_data_.has_value()) {
     // Get the URL first since |request| is about to move.
-    GURL url = request->url();
+    GURL url = request->GetUrlWithParams();
     IsAuthorized(
         std::move(url),
         base::BindOnce(&BinaryUploadService::MaybeUploadForDeepScanningCallback,
@@ -257,9 +259,9 @@ void BinaryUploadService::OnGetRequestData(Request* request,
   request->SerializeToString(&metadata);
   base::Base64Encode(metadata, &metadata);
 
-  GURL url = request->url().is_valid()
-                 ? request->url()
-                 : GetUploadUrl(IsAdvancedProtectionRequest(*request));
+  GURL url = request->GetUrlWithParams();
+  if (!url.is_valid())
+    url = GetUploadUrl(IsAdvancedProtectionRequest(*request));
   auto upload_request = MultipartUploadRequest::Create(
       url_loader_factory_, std::move(url), metadata, data.contents,
       traffic_annotation,
@@ -728,6 +730,40 @@ void BinaryUploadService::Request::SerializeToString(
     deep_scanning_request_.SerializeToString(destination);
   else
     content_analysis_request_.SerializeToString(destination);
+}
+
+GURL BinaryUploadService::Request::GetUrlWithParams() const {
+  if (use_legacy_proto_)
+    return url_;
+
+  GURL url(url_);
+
+  url = net::AppendQueryParameter(url, enterprise::kUrlParamDeviceToken,
+                                  device_token());
+
+  std::string connector;
+  switch (content_analysis_request_.analysis_connector()) {
+    case enterprise_connectors::FILE_ATTACHED:
+      connector = "OnFileAttached";
+      break;
+    case enterprise_connectors::FILE_DOWNLOADED:
+      connector = "OnFileDownloaded";
+      break;
+    case enterprise_connectors::BULK_DATA_ENTRY:
+      connector = "OnBulkDataEntry";
+      break;
+    case enterprise_connectors::ANALYSIS_CONNECTOR_UNSPECIFIED:
+      break;
+  }
+  if (!connector.empty()) {
+    url = net::AppendQueryParameter(url, enterprise::kUrlParamConnector,
+                                    connector);
+  }
+
+  for (const std::string& tag : content_analysis_request_.tags())
+    url = net::AppendQueryParameter(url, enterprise::kUrlParamTag, tag);
+
+  return url;
 }
 
 bool BinaryUploadService::IsActive(Request* request) {

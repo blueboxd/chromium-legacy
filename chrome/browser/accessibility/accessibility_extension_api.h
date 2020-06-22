@@ -109,8 +109,8 @@ class AccessibilityPrivateOnSelectToSpeakStateChangedFunction
                              ACCESSIBILITY_PRIVATE_ONSELECTTOSPEAKSTATECHANGED)
 };
 
-// API function that is called when the Autoclick extension finds scrollable
-// bounds.
+// API function that is called when the Accessibility Common extension finds
+// scrollable bounds.
 class AccessibilityPrivateOnScrollableBoundsForPointFoundFunction
     : public ExtensionFunction {
   ~AccessibilityPrivateOnScrollableBoundsForPointFoundFunction() override {}

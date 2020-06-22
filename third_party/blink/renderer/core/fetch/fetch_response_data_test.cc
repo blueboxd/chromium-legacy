@@ -267,8 +267,6 @@ TEST_F(FetchResponseDataTest, DefaultResponseTime) {
 
 TEST_F(FetchResponseDataTest, ContentSecurityPolicy) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      network::features::kOutOfBlinkFrameAncestors);
   FetchResponseData* internal_response = CreateInternalResponse();
   internal_response->HeaderList()->Append("content-security-policy",
                                           "frame-ancestors 'none'");

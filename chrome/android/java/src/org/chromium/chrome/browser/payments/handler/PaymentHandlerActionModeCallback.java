@@ -22,7 +22,7 @@ public class PaymentHandlerActionModeCallback implements ActionMode.Callback {
      * Create the PaymentHandler action mode callback.
      * @param webContents The WebContents from which the action mode is triggered.
      */
-    public PaymentHandlerActionModeCallback(WebContents webContents) {
+    /* package */ PaymentHandlerActionModeCallback(WebContents webContents) {
         mHelper =
                 SelectionPopupController.fromWebContents(webContents).getActionModeCallbackHelper();
         mHelper.setAllowedMenuItems(0); // No item is allowed by default for WebView.

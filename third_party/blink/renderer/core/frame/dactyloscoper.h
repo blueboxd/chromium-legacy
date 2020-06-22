@@ -24,6 +24,8 @@ class CORE_EXPORT Dactyloscoper {
 
   static void Record(ExecutionContext*, WebFeature);
 
+  static void RecordDirectSurface(ExecutionContext*, WebFeature, unsigned);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(Dactyloscoper);
 };

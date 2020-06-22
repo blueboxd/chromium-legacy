@@ -120,3 +120,4 @@ Modifications:
 - Remove use of LINKER_INITIALIZED in page_heap_allocator.h, to enable the
   compiler to optimize away a static constructor
 - Include <atomic> in malloc_extension.h due to std::atomic usage
+- Precompute the pointer mask for doubly linked free lists instead of computing it on each access.

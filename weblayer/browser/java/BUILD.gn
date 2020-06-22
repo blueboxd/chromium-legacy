@@ -149,6 +149,7 @@ android_library("java") {
     "//base:base_java",
     "//base:jni_java",
     "//components/autofill/android/provider:java",
+    "//components/browser_ui/client_certificate/android:java",
     "//components/browser_ui/http_auth/android:java",
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/notifications/android:java",

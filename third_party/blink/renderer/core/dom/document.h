@@ -317,10 +317,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   using TreeScope::getElementById;
 
-  // Gets the associated LocalDOMWindow even if this Document is associated with
-  // an HTMLImportsController.
+  // TODO(crbug.com/1029822) Former ExecutionContext overrides. Most of these
+  // should move to LocalDOMWindow.
   LocalDOMWindow* ExecutingWindow() const;
-
+  String OutgoingReferrer() const;
   network::mojom::ReferrerPolicy GetReferrerPolicy() const;
 
   // FeatureContext override
@@ -343,6 +343,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsSandboxed(network::mojom::blink::WebSandboxFlags mask) const;
   SecureContextMode GetSecureContextMode() const;
   void SetSecureContextModeForTesting(SecureContextMode);
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy);
   OriginTrialContext* GetOriginTrialContext() const;
 
   String addressSpaceForBindings(ScriptState*) const;

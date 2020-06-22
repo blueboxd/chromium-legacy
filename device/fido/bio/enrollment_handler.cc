@@ -9,6 +9,7 @@
 #include "components/device_event_log/device_event_log.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/pin.h"
 
 namespace device {
 
@@ -196,8 +197,10 @@ void BioEnrollmentHandler::OnHavePIN(std::string pin) {
   DCHECK_EQ(state_, State::kWaitingForPIN);
   state_ = State::kGettingPINToken;
   authenticator_->GetPINToken(
-      std::move(pin), base::BindOnce(&BioEnrollmentHandler::OnHavePINToken,
-                                     weak_factory_.GetWeakPtr()));
+      std::move(pin), {pin::Permissions::kBioEnrollment},
+      /*rp_id=*/base::nullopt,
+      base::BindOnce(&BioEnrollmentHandler::OnHavePINToken,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void BioEnrollmentHandler::OnHavePINToken(

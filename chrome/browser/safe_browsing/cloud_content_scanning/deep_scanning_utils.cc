@@ -10,6 +10,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 
 namespace safe_browsing {
 
@@ -238,6 +239,40 @@ std::string DeepScanAccessPointToString(DeepScanAccessPoint access_point) {
   }
   NOTREACHED();
   return "";
+}
+
+void RecordDeepScanMetrics(
+    DeepScanAccessPoint access_point,
+    base::TimeDelta duration,
+    int64_t total_bytes,
+    const BinaryUploadService::Result& result,
+    const enterprise_connectors::ContentAnalysisResponse& response) {
+  // Don't record UMA metrics for this result.
+  if (result == BinaryUploadService::Result::UNAUTHORIZED)
+    return;
+  bool dlp_verdict_success = true;
+  bool malware_verdict_success = true;
+  for (const auto& result : response.results()) {
+    if (result.tag() == "dlp" &&
+        result.status() !=
+            enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS) {
+      dlp_verdict_success = false;
+    }
+    if (result.tag() == "malware" &&
+        result.status() !=
+            enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS) {
+      malware_verdict_success = false;
+    }
+  }
+
+  bool success = dlp_verdict_success && malware_verdict_success;
+  std::string result_value = BinaryUploadServiceResultToString(result, success);
+
+  // Update |success| so non-SUCCESS results don't log the bytes/sec metric.
+  success &= (result == BinaryUploadService::Result::SUCCESS);
+
+  RecordDeepScanMetrics(access_point, duration, total_bytes, result_value,
+                        success);
 }
 
 void RecordDeepScanMetrics(DeepScanAccessPoint access_point,

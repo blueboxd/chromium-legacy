@@ -132,6 +132,12 @@ void ReportAnalysisConnectorWarningBypass(
 
 // Helper functions to record DeepScanning UMA metrics for the duration of the
 // request split by its result and bytes/sec for successful requests.
+void RecordDeepScanMetrics(
+    DeepScanAccessPoint access_point,
+    base::TimeDelta duration,
+    int64_t total_bytes,
+    const BinaryUploadService::Result& result,
+    const enterprise_connectors::ContentAnalysisResponse& response);
 void RecordDeepScanMetrics(DeepScanAccessPoint access_point,
                            base::TimeDelta duration,
                            int64_t total_bytes,

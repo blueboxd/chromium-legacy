@@ -24,6 +24,7 @@ namespace {
 // in other locations in the code base (e.g. content_features.h).
 const base::Feature* kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
+    &features::kWebBluetoothNewPermissionsBackend,
     &features::kWebNfc,
     &kServiceGroupImportance,
 };

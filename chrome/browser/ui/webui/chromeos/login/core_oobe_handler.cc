@@ -224,14 +224,6 @@ void CoreOobeHandler::RefocusCurrentPod() {
   CallJS("cr.ui.Oobe.refocusCurrentPod");
 }
 
-void CoreOobeHandler::SetUsageStats(bool checked) {
-  CallJS("cr.ui.Oobe.setUsageStats", checked);
-}
-
-void CoreOobeHandler::SetTpmPassword(const std::string& tpm_password) {
-  CallJS("cr.ui.Oobe.setTpmPassword", tpm_password);
-}
-
 void CoreOobeHandler::ClearErrors() {
   CallJS("cr.ui.Oobe.clearErrors");
 }

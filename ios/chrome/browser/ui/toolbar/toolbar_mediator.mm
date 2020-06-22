@@ -13,6 +13,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
+#import "ios/chrome/browser/overlays/public/overlay_presenter_observer_bridge.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_model_bridge_observer.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
@@ -33,6 +35,7 @@
 
 @interface ToolbarMediator () <BookmarkModelBridgeObserver,
                                CRWWebStateObserver,
+                               OverlayPresenterObserving,
                                PrefObserverDelegate,
                                WebStateListObserving>
 
@@ -41,6 +44,10 @@
 
 // Whether the associated toolbar is in dark mode.
 @property(nonatomic, assign) BOOL toolbarDarkMode;
+
+// Whether an overlay is currently presented over the web content area.
+@property(nonatomic, assign, getter=isWebContentAreaShowingOverlay)
+    BOOL webContentAreaShowingOverlay;
 
 @end
 
@@ -53,6 +60,7 @@
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
   // Registrar for pref changes notifications.
   std::unique_ptr<PrefChangeRegistrar> _prefChangeRegistrar;
+  std::unique_ptr<OverlayPresenterObserverBridge> _overlayObserver;
 }
 
 - (instancetype)init {
@@ -60,6 +68,7 @@
   if (self) {
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
     _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _overlayObserver = std::make_unique<OverlayPresenterObserverBridge>(self);
   }
   return self;
 }
@@ -77,6 +86,8 @@
 }
 
 - (void)disconnect {
+  self.webContentAreaOverlayPresenter = nullptr;
+
   if (_webStateList) {
     _webStateList->RemoveObserver(_webStateListObserver.get());
     _webStateListObserver.reset();
@@ -251,6 +262,24 @@
   [self.consumer setBookmarkEnabled:[self isEditBookmarksEnabled]];
 }
 
+- (void)setWebContentAreaOverlayPresenter:
+    (OverlayPresenter*)webContentAreaOverlayPresenter {
+  if (_webContentAreaOverlayPresenter)
+    _webContentAreaOverlayPresenter->RemoveObserver(_overlayObserver.get());
+
+  _webContentAreaOverlayPresenter = webContentAreaOverlayPresenter;
+
+  if (_webContentAreaOverlayPresenter)
+    _webContentAreaOverlayPresenter->AddObserver(_overlayObserver.get());
+}
+
+- (void)setWebContentAreaShowingOverlay:(BOOL)webContentAreaShowingOverlay {
+  if (_webContentAreaShowingOverlay == webContentAreaShowingOverlay)
+    return;
+  _webContentAreaShowingOverlay = webContentAreaShowingOverlay;
+  [self updateShareMenuForWebState:self.webState];
+}
+
 #pragma mark - Update helper methods
 
 // Updates the consumer to match the current WebState.
@@ -295,7 +324,10 @@
   const GURL& URL = webState->GetLastCommittedURL();
   BOOL shareMenuEnabled =
       URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
-  [self.consumer setShareMenuEnabled:shareMenuEnabled];
+  // Page sharing requires JavaScript execution, which is paused while overlays
+  // are displayed over the web content area.
+  [self.consumer setShareMenuEnabled:shareMenuEnabled &&
+                                     !self.webContentAreaShowingOverlay];
 }
 
 #pragma mark - Other private methods
@@ -339,6 +371,19 @@
 - (void)bookmarkNodeDeleted:(const bookmarks::BookmarkNode*)node
                  fromFolder:(const bookmarks::BookmarkNode*)folder {
   // No-op -- required by BookmarkModelBridgeObserver but not used.
+}
+
+#pragma mark - OverlayPresesenterObserving
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    willShowOverlayForRequest:(OverlayRequest*)request
+          initialPresentation:(BOOL)initialPresentation {
+  self.webContentAreaShowingOverlay = YES;
+}
+
+- (void)overlayPresenter:(OverlayPresenter*)presenter
+    didHideOverlayForRequest:(OverlayRequest*)request {
+  self.webContentAreaShowingOverlay = NO;
 }
 
 #pragma mark - PrefObserverDelegate

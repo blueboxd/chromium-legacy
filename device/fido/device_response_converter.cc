@@ -372,7 +372,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       if (!option_map_it->second.is_bool()) {
         return base::nullopt;
       }
-      options.supports_uv_token = option_map_it->second.GetBool();
+      options.supports_pin_uv_auth_token = option_map_it->second.GetBool();
     }
 
     option_map_it = option_map.find(CBOR(kDefaultCredProtectKey));

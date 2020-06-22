@@ -124,6 +124,15 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
 }
 
 void NGOutOfFlowLayoutPart::Run(const LayoutBox* only_layout) {
+  if (container_builder_->IsBlockFragmentationContextRoot()) {
+    Vector<NGLogicalOutOfFlowPositionedNode> fragmentainer_descendants;
+    container_builder_->SwapOutOfFlowFragmentainerDescendants(
+        &fragmentainer_descendants);
+
+    if (!fragmentainer_descendants.IsEmpty())
+      LayoutFragmentainerDescendants(&fragmentainer_descendants);
+  }
+
   Vector<NGLogicalOutOfFlowPositionedNode> candidates;
   const LayoutObject* current_container = container_builder_->GetLayoutObject();
   // If the container is display-locked, then we skip the layout of descendants,
@@ -269,11 +278,28 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
 
 const NGOutOfFlowLayoutPart::ContainingBlockInfo&
 NGOutOfFlowLayoutPart::GetContainingBlockInfo(
-    const NGLogicalOutOfFlowPositionedNode& candidate) const {
+    const NGLogicalOutOfFlowPositionedNode& candidate,
+    const NGPhysicalContainerFragment* containing_block_fragment) {
   if (candidate.inline_container) {
     const auto it = containing_blocks_map_.find(candidate.inline_container);
     DCHECK(it != containing_blocks_map_.end());
     return it->value;
+  }
+  if (containing_block_fragment) {
+    const LayoutObject* containing_block =
+        containing_block_fragment->GetLayoutObject();
+    DCHECK(containing_block);
+    auto it = containing_blocks_map_.find(containing_block);
+    if (it != containing_blocks_map_.end())
+      return it->value;
+
+    const ComputedStyle& style = containing_block->StyleRef();
+    ContainingBlockInfo containing_block_info = default_containing_block_;
+    containing_block_info.direction = style.Direction();
+
+    return containing_blocks_map_
+        .insert(containing_block, containing_block_info)
+        .stored_value->value;
   }
   return default_containing_block_;
 }
@@ -433,6 +459,10 @@ void NGOutOfFlowLayoutPart::LayoutCandidates(
                                      candidate.static_position);
       if (IsContainingBlockForCandidate(candidate) &&
           (!only_layout || layout_box == only_layout)) {
+        if (container_space_.HasBlockFragmentation()) {
+          container_builder_->AddOutOfFlowFragmentainerDescendant(candidate);
+          continue;
+        }
         scoped_refptr<const NGLayoutResult> result =
             LayoutCandidate(candidate, only_layout);
         container_builder_->AddChild(result->PhysicalFragment(),
@@ -521,7 +551,8 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   do {
     scoped_refptr<const NGLayoutResult> layout_result =
         Layout(node, candidate_constraint_space, candidate_static_position,
-               container_content_size, container_info, only_layout);
+               container_content_size, container_info,
+               default_containing_block_.direction, only_layout);
 
     if (!freeze_scrollbars.has_value()) {
       // Since out-of-flow positioning sets up a constraint space with fixed
@@ -545,14 +576,85 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::LayoutCandidate(
   } while (true);
 }
 
+void NGOutOfFlowLayoutPart::LayoutFragmentainerDescendants(
+    Vector<NGLogicalOutOfFlowPositionedNode>* descendants) {
+  while (descendants->size() > 0) {
+    for (auto& descendant : *descendants) {
+      scoped_refptr<const NGLayoutResult> result =
+          LayoutFragmentainerDescendant(descendant);
+
+      // TODO(almaher): Add children to the correct fragmentainer.
+      container_builder_->AddChild(result->PhysicalFragment(),
+                                   result->OutOfFlowPositionedOffset(),
+                                   descendant.inline_container);
+    }
+    // Sweep any descendants that might have been added.
+    // This happens when an absolute container has a fixed child.
+    descendants->Shrink(0);
+    container_builder_->SwapOutOfFlowFragmentainerDescendants(descendants);
+  }
+}
+
+scoped_refptr<const NGLayoutResult>
+NGOutOfFlowLayoutPart::LayoutFragmentainerDescendant(
+    const NGLogicalOutOfFlowPositionedNode& descendant) {
+  // TODO(almaher): Properly implement the layout algorithm for fragmented
+  // positioned elements.
+  NGBlockNode node = descendant.node;
+  const NGPhysicalContainerFragment* containing_block_fragment =
+      descendant.containing_block_fragment.get();
+
+  DCHECK(containing_block_fragment &&
+         containing_block_fragment->GetLayoutObject() ==
+             node.GetLayoutBox()->ContainingBlock());
+
+  const ContainingBlockInfo& container_info =
+      GetContainingBlockInfo(descendant, containing_block_fragment);
+  const TextDirection default_direction =
+      containing_block_fragment->Style().Direction();
+  const ComputedStyle& descendant_style = node.Style();
+  const WritingMode descendant_writing_mode = descendant_style.GetWritingMode();
+  const TextDirection descendant_direction = descendant_style.Direction();
+
+  LogicalSize container_content_size =
+      container_info.ContentSize(descendant_style.GetPosition());
+  PhysicalSize container_physical_content_size =
+      ToPhysicalSize(container_content_size, writing_mode_);
+
+  // Adjust the |static_position| (which is currently relative to the default
+  // container's border-box). ng_absolute_utils expects the static position to
+  // be relative to the container's padding-box.
+  NGLogicalStaticPosition static_position = descendant.static_position;
+  static_position.offset -= container_info.container_offset;
+
+  NGLogicalStaticPosition descendant_static_position =
+      static_position
+          .ConvertToPhysical(writing_mode_, default_direction,
+                             container_physical_content_size)
+          .ConvertToLogical(descendant_writing_mode, descendant_direction,
+                            container_physical_content_size);
+
+  // Need a constraint space to resolve offsets.
+  NGConstraintSpaceBuilder builder(writing_mode_, descendant_writing_mode,
+                                   /* is_new_fc */ true);
+  builder.SetTextDirection(descendant_direction);
+  builder.SetAvailableSize(container_content_size);
+  builder.SetPercentageResolutionSize(container_content_size);
+  NGConstraintSpace descendant_constraint_space = builder.ToConstraintSpace();
+
+  return Layout(node, descendant_constraint_space, descendant_static_position,
+                container_content_size, container_info, default_direction,
+                nullptr);
+}
+
 scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
     NGBlockNode node,
     const NGConstraintSpace& candidate_constraint_space,
     const NGLogicalStaticPosition& candidate_static_position,
     LogicalSize container_content_size,
     const ContainingBlockInfo& container_info,
+    const TextDirection default_direction,
     const LayoutBox* only_layout) {
-  const TextDirection default_direction = default_containing_block_.direction;
   const ComputedStyle& candidate_style = node.Style();
   const WritingMode candidate_writing_mode = candidate_style.GetWritingMode();
   const TextDirection candidate_direction = candidate_style.Direction();

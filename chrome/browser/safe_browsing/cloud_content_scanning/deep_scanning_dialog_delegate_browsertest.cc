@@ -16,6 +16,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_delegate.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_dialog_views.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_test_utils.h"
+#include "chrome/browser/safe_browsing/cloud_content_scanning/deep_scanning_utils.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
@@ -55,11 +56,26 @@ class FakeBinaryUploadService : public BinaryUploadService {
     prepared_text_response_ = response;
   }
 
+  void SetResponseForText(
+      BinaryUploadService::Result result,
+      const enterprise_connectors::ContentAnalysisResponse& response) {
+    prepared_text_result_ = result;
+    prepared_content_analysis_text_response_ = response;
+  }
+
   void SetResponseForFile(const std::string& path,
                           BinaryUploadService::Result result,
                           const DeepScanningClientResponse& response) {
     prepared_file_results_[path] = result;
     prepared_file_responses_[path] = response;
+  }
+
+  void SetResponseForFile(
+      const std::string& path,
+      BinaryUploadService::Result result,
+      const enterprise_connectors::ContentAnalysisResponse& response) {
+    prepared_file_results_[path] = result;
+    prepared_content_analysis_file_responses_[path] = response;
   }
 
   void SetShouldAutomaticallyAuthorize(bool authorize) {
@@ -68,7 +84,13 @@ class FakeBinaryUploadService : public BinaryUploadService {
 
   int requests_count() const { return requests_count_; }
 
+  void set_use_legacy_proto(bool use_legacy_proto) {
+    use_legacy_proto_ = use_legacy_proto;
+  }
+
  private:
+  bool use_legacy_proto() const { return use_legacy_proto_; }
+
   void UploadForDeepScanning(std::unique_ptr<Request> request) override {
     // The first uploaded request is the authentication one.
     if (++requests_count_ == 1) {
@@ -77,27 +99,48 @@ class FakeBinaryUploadService : public BinaryUploadService {
       if (should_automatically_authorize_)
         ReturnAuthorizedResponse();
     } else {
-      std::string file = request->deep_scanning_request().filename();
+      std::string file = request->filename();
       if (file.empty()) {
-        request->FinishLegacyRequest(prepared_text_result_,
-                                     prepared_text_response_);
+        if (use_legacy_proto()) {
+          request->FinishLegacyRequest(prepared_text_result_,
+                                       prepared_text_response_);
+        } else {
+          request->FinishConnectorRequest(
+              prepared_text_result_, prepared_content_analysis_text_response_);
+        }
       } else {
-        ASSERT_TRUE(prepared_file_results_.count(file));
-        ASSERT_TRUE(prepared_file_responses_.count(file));
-        request->FinishLegacyRequest(prepared_file_results_[file],
-                                     prepared_file_responses_[file]);
+        if (use_legacy_proto()) {
+          ASSERT_TRUE(prepared_file_results_.count(file));
+          ASSERT_TRUE(prepared_file_responses_.count(file));
+          request->FinishLegacyRequest(prepared_file_results_[file],
+                                       prepared_file_responses_[file]);
+        } else {
+          ASSERT_TRUE(prepared_file_results_.count(file));
+          ASSERT_TRUE(prepared_content_analysis_file_responses_.count(file));
+          request->FinishConnectorRequest(
+              prepared_file_results_[file],
+              prepared_content_analysis_file_responses_[file]);
+        }
       }
     }
   }
 
   BinaryUploadService::Result authorization_result_;
   std::unique_ptr<Request> authorization_request_;
+
   BinaryUploadService::Result prepared_text_result_;
   DeepScanningClientResponse prepared_text_response_;
+  enterprise_connectors::ContentAnalysisResponse
+      prepared_content_analysis_text_response_;
+
   std::map<std::string, BinaryUploadService::Result> prepared_file_results_;
   std::map<std::string, DeepScanningClientResponse> prepared_file_responses_;
+  std::map<std::string, enterprise_connectors::ContentAnalysisResponse>
+      prepared_content_analysis_file_responses_;
+
   int requests_count_ = 0;
   bool should_automatically_authorize_ = false;
+  bool use_legacy_proto_;
 };
 
 FakeBinaryUploadService* FakeBinaryUploadServiceStorage() {
@@ -177,7 +220,8 @@ class DeepScanningDialogDelegateBrowserTest
       public DeepScanningDialogViews::TestObserver {
  public:
   explicit DeepScanningDialogDelegateBrowserTest(bool use_legacy_policies)
-      : DeepScanningBrowserTestBase(use_legacy_policies) {
+      : DeepScanningBrowserTestBase(use_legacy_policies),
+        use_legacy_policies_and_protos_(use_legacy_policies) {
     DeepScanningDialogViews::SetObserverForTesting(this);
   }
 
@@ -200,6 +244,9 @@ class DeepScanningDialogDelegateBrowserTest
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
         browser()->profile())
         ->SetBinaryUploadServiceForTesting(FakeBinaryUploadServiceStorage());
+
+    FakeBinaryUploadServiceStorage()->set_use_legacy_proto(
+        use_legacy_policies_and_protos_);
   }
 
   void DestructorCalled(DeepScanningDialogViews* views) override {
@@ -213,9 +260,12 @@ class DeepScanningDialogDelegateBrowserTest
 
   policy::MockCloudPolicyClient* client() { return client_.get(); }
 
+  bool use_legacy_protos() const { return use_legacy_policies_and_protos_; }
+
  private:
   std::unique_ptr<policy::MockCloudPolicyClient> client_;
   base::ScopedTempDir temp_dir_;
+  bool use_legacy_policies_and_protos_;
 };
 
 class DeepScanningDialogDelegateSimpleBrowserTest
@@ -284,18 +334,6 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
   DeepScanningDialogDelegate::SetFactoryForTesting(
       base::BindRepeating(&MinimalFakeDeepScanningDialogDelegate::Create));
 
-  DeepScanningClientResponse ok_response;
-  ok_response.mutable_dlp_scan_verdict()->set_status(
-      DlpDeepScanningVerdict::SUCCESS);
-  ok_response.mutable_malware_scan_verdict()->set_verdict(
-      MalwareDeepScanningVerdict::CLEAN);
-
-  DeepScanningClientResponse bad_response;
-  bad_response.mutable_dlp_scan_verdict()->set_status(
-      DlpDeepScanningVerdict::SUCCESS);
-  bad_response.mutable_malware_scan_verdict()->set_verdict(
-      MalwareDeepScanningVerdict::MALWARE);
-
   FakeBinaryUploadServiceStorage()->SetAuthorized(true);
   FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
 
@@ -322,10 +360,45 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
       /*mimetypes*/ ExeMimeTypes(),
       /*size*/ std::string("bad file content").size());
 
-  FakeBinaryUploadServiceStorage()->SetResponseForFile(
-      "ok.doc", BinaryUploadService::Result::SUCCESS, ok_response);
-  FakeBinaryUploadServiceStorage()->SetResponseForFile(
-      "bad.exe", BinaryUploadService::Result::SUCCESS, bad_response);
+  if (use_legacy_protos()) {
+    DeepScanningClientResponse ok_response;
+    ok_response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
+    ok_response.mutable_malware_scan_verdict()->set_verdict(
+        MalwareDeepScanningVerdict::CLEAN);
+
+    DeepScanningClientResponse bad_response;
+    bad_response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
+    bad_response.mutable_malware_scan_verdict()->set_verdict(
+        MalwareDeepScanningVerdict::MALWARE);
+
+    FakeBinaryUploadServiceStorage()->SetResponseForFile(
+        "ok.doc", BinaryUploadService::Result::SUCCESS, ok_response);
+    FakeBinaryUploadServiceStorage()->SetResponseForFile(
+        "bad.exe", BinaryUploadService::Result::SUCCESS, bad_response);
+  } else {
+    enterprise_connectors::ContentAnalysisResponse ok_response;
+    auto* ok_result = ok_response.add_results();
+    ok_result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    ok_result->set_tag("malware");
+
+    enterprise_connectors::ContentAnalysisResponse bad_response;
+    auto* bad_result = bad_response.add_results();
+    bad_result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    bad_result->set_tag("malware");
+    auto* bad_rule = bad_result->add_triggered_rules();
+    bad_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                             Result::TriggeredRule::BLOCK);
+    bad_rule->set_rule_name("MALWARE");
+
+    FakeBinaryUploadServiceStorage()->SetResponseForFile(
+        "ok.doc", BinaryUploadService::Result::SUCCESS, ok_response);
+    FakeBinaryUploadServiceStorage()->SetResponseForFile(
+        "bad.exe", BinaryUploadService::Result::SUCCESS, bad_response);
+  }
 
   bool called = false;
   base::RunLoop run_loop;
@@ -362,53 +435,82 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
 
   FakeBinaryUploadServiceStorage()->SetAuthorized(true);
 
+  EventReportValidator validator(client());
+  ContentAnalysisScanResult dlp_verdict;
   // Prepare a complex DLP response to test that the verdict is reported
   // correctly in the sensitive data event.
-  DeepScanningClientResponse response;
-  DlpDeepScanningVerdict* verdict = response.mutable_dlp_scan_verdict();
-  verdict->set_status(DlpDeepScanningVerdict::SUCCESS);
+  if (use_legacy_protos()) {
+    DeepScanningClientResponse response;
+    DlpDeepScanningVerdict* verdict = response.mutable_dlp_scan_verdict();
+    verdict->set_status(DlpDeepScanningVerdict::SUCCESS);
 
-  DlpDeepScanningVerdict::TriggeredRule* rule1 = verdict->add_triggered_rules();
-  rule1->set_rule_id(1);
-  rule1->set_action(DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY);
-  rule1->set_rule_resource_name("resource name 1");
-  rule1->set_rule_severity("severity 1");
-  DlpDeepScanningVerdict::MatchedDetector* detector1 =
-      rule1->add_matched_detectors();
-  detector1->set_detector_id("id1");
-  detector1->set_detector_type("dlp1");
-  detector1->set_display_name("display name 1");
+    DlpDeepScanningVerdict::TriggeredRule* rule1 =
+        verdict->add_triggered_rules();
+    rule1->set_rule_id(1);
+    rule1->set_action(DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY);
+    rule1->set_rule_resource_name("resource name 1");
+    rule1->set_rule_severity("severity 1");
+    DlpDeepScanningVerdict::MatchedDetector* detector1 =
+        rule1->add_matched_detectors();
+    detector1->set_detector_id("id1");
+    detector1->set_detector_type("dlp1");
+    detector1->set_display_name("display name 1");
 
-  DlpDeepScanningVerdict::TriggeredRule* rule2 = verdict->add_triggered_rules();
-  rule2->set_rule_id(3);
-  rule2->set_action(DlpDeepScanningVerdict::TriggeredRule::BLOCK);
-  rule2->set_rule_resource_name("resource rule 2");
-  rule2->set_rule_severity("severity 2");
-  DlpDeepScanningVerdict::MatchedDetector* detector2_1 =
-      rule2->add_matched_detectors();
-  detector2_1->set_detector_id("id2.1");
-  detector2_1->set_detector_type("type2.1");
-  detector2_1->set_display_name("display name 2.1");
-  DlpDeepScanningVerdict::MatchedDetector* detector2_2 =
-      rule2->add_matched_detectors();
-  detector2_2->set_detector_id("id2.2");
-  detector2_2->set_detector_type("type2.2");
-  detector2_2->set_display_name("display name 2.2");
+    DlpDeepScanningVerdict::TriggeredRule* rule2 =
+        verdict->add_triggered_rules();
+    rule2->set_rule_id(3);
+    rule2->set_action(DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+    rule2->set_rule_resource_name("resource rule 2");
+    rule2->set_rule_severity("severity 2");
+    DlpDeepScanningVerdict::MatchedDetector* detector2_1 =
+        rule2->add_matched_detectors();
+    detector2_1->set_detector_id("id2.1");
+    detector2_1->set_detector_type("type2.1");
+    detector2_1->set_display_name("display name 2.1");
+    DlpDeepScanningVerdict::MatchedDetector* detector2_2 =
+        rule2->add_matched_detectors();
+    detector2_2->set_detector_id("id2.2");
+    detector2_2->set_detector_type("type2.2");
+    detector2_2->set_display_name("display name 2.2");
 
-  FakeBinaryUploadServiceStorage()->SetResponseForText(
-      BinaryUploadService::Result::SUCCESS, response);
+    FakeBinaryUploadServiceStorage()->SetResponseForText(
+        BinaryUploadService::Result::SUCCESS, response);
+
+    dlp_verdict = SensitiveDataVerdictToResult(response.dlp_scan_verdict());
+  } else {
+    enterprise_connectors::ContentAnalysisResponse response;
+    auto* result = response.add_results();
+    result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    result->set_tag("dlp");
+
+    auto* rule1 = result->add_triggered_rules();
+    rule1->set_action(enterprise_connectors::ContentAnalysisResponse::Result::
+                          TriggeredRule::REPORT_ONLY);
+    rule1->set_rule_id("1");
+    rule1->set_rule_name("resource rule 1");
+
+    auto* rule2 = result->add_triggered_rules();
+    rule2->set_action(enterprise_connectors::ContentAnalysisResponse::Result::
+                          TriggeredRule::BLOCK);
+    rule2->set_rule_id("3");
+    rule2->set_rule_name("resource rule 2");
+
+    FakeBinaryUploadServiceStorage()->SetResponseForText(
+        BinaryUploadService::Result::SUCCESS, response);
+    dlp_verdict = ContentAnalysisResultToResult(*result);
+  }
 
   // The DLP verdict means an event should be reported. The content size is
-  // equal to the length of the concatenated texts ("text1" and "text2") times 2
-  // since they are wide characters ((5 + 5) * 2 = 20).
-  EventReportValidator validator(client());
+  // equal to the length of the concatenated texts ("text1" and "text2") times
+  // 2 since they are wide characters ((5 + 5) * 2 = 20).
   validator.ExpectSensitiveDataEvent(
       /*url*/ "about:blank",
       /*filename*/ "Text data",
       // The hash should not be included for string requests.
       /*sha*/ "",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      /*dlp_verdict*/ SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
+      /*dlp_verdict*/ dlp_verdict,
       /*mimetype*/ TextMimeTypes(),
       /*size*/ 20);
 
@@ -790,17 +892,6 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
   FakeBinaryUploadServiceStorage()->SetAuthorized(true);
   FakeBinaryUploadServiceStorage()->SetShouldAutomaticallyAuthorize(true);
 
-  DeepScanningClientResponse response;
-  response.mutable_malware_scan_verdict()->set_verdict(
-      MalwareDeepScanningVerdict::MALWARE);
-  response.mutable_dlp_scan_verdict()->set_status(
-      DlpDeepScanningVerdict::SUCCESS);
-  response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
-      DlpDeepScanningVerdict::TriggeredRule::BLOCK);
-
-  FakeBinaryUploadServiceStorage()->SetResponseForFile(
-      "foo.doc", BinaryUploadService::Result::SUCCESS, response);
-
   // Create a file.
   DeepScanningDialogDelegate::Data data;
   data.do_dlp_scan = true;
@@ -813,6 +904,45 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
 
   // The file should be reported as malware and sensitive content.
   EventReportValidator validator(client());
+  ContentAnalysisScanResult dlp_verdict;
+  if (use_legacy_protos()) {
+    DeepScanningClientResponse response;
+    response.mutable_malware_scan_verdict()->set_verdict(
+        MalwareDeepScanningVerdict::MALWARE);
+    response.mutable_dlp_scan_verdict()->set_status(
+        DlpDeepScanningVerdict::SUCCESS);
+    response.mutable_dlp_scan_verdict()->add_triggered_rules()->set_action(
+        DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+
+    FakeBinaryUploadServiceStorage()->SetResponseForFile(
+        "foo.doc", BinaryUploadService::Result::SUCCESS, response);
+    dlp_verdict = SensitiveDataVerdictToResult(response.dlp_scan_verdict());
+  } else {
+    enterprise_connectors::ContentAnalysisResponse response;
+
+    auto* malware_result = response.add_results();
+    malware_result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    malware_result->set_tag("malware");
+    auto* malware_rule = malware_result->add_triggered_rules();
+    malware_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                                 Result::TriggeredRule::BLOCK);
+    malware_rule->set_rule_name("MALWARE");
+
+    auto* dlp_result = response.add_results();
+    dlp_result->set_status(
+        enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS);
+    dlp_result->set_tag("dlp");
+    auto* dlp_rule = dlp_result->add_triggered_rules();
+    dlp_rule->set_action(enterprise_connectors::ContentAnalysisResponse::
+                             Result::TriggeredRule::BLOCK);
+    dlp_rule->set_rule_id("0");
+    dlp_rule->set_rule_name("some_dlp_rule");
+
+    FakeBinaryUploadServiceStorage()->SetResponseForFile(
+        "foo.doc", BinaryUploadService::Result::SUCCESS, response);
+    dlp_verdict = ContentAnalysisResultToResult(*dlp_result);
+  }
   validator.ExpectDangerousDeepScanningResultAndSensitiveDataEvent(
       /*url*/ "about:blank",
       /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
@@ -822,7 +952,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
       /*threat_type*/ "DANGEROUS",
       /*trigger*/
       extensions::SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
-      /*dlp_verdict*/ SensitiveDataVerdictToResult(response.dlp_scan_verdict()),
+      /*dlp_verdict*/ dlp_verdict,
       /*mimetypes*/ DocMimeTypes(),
       /*size*/ std::string("foo content").size());
 

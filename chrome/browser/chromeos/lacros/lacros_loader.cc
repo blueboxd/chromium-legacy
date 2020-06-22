@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/task/task_traits.h"
@@ -34,7 +35,7 @@ bool CheckInstalledAndMaybeRemoveUserDirectory(
   // shuts down during the directory remove, some partially-removed directory
   // may be kept, and if the user flips the flag in the next time, that
   // partially-removed directory could be used. Fix this.
-  base::DeleteFileRecursively(base::FilePath(lacros_util::kUserDataDir));
+  base::DeleteFileRecursively(lacros_util::GetUserDataDir());
   return true;
 }
 

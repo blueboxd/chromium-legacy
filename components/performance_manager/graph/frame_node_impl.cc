@@ -26,7 +26,6 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
                              FrameNodeImpl* parent_frame_node,
                              int frame_tree_node_id,
                              int render_frame_id,
-                             const base::UnguessableToken& dev_tools_token,
                              const FrameToken& frame_token,
                              int32_t browsing_instance_id,
                              int32_t site_instance_id)
@@ -35,7 +34,6 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
       process_node_(process_node),
       frame_tree_node_id_(frame_tree_node_id),
       render_frame_id_(render_frame_id),
-      dev_tools_token_(dev_tools_token),
       frame_token_(frame_token),
       browsing_instance_id_(browsing_instance_id),
       site_instance_id_(site_instance_id),
@@ -136,10 +134,6 @@ int FrameNodeImpl::frame_tree_node_id() const {
 
 int FrameNodeImpl::render_frame_id() const {
   return render_frame_id_;
-}
-
-const base::UnguessableToken& FrameNodeImpl::dev_tools_token() const {
-  return dev_tools_token_;
 }
 
 const FrameToken& FrameNodeImpl::frame_token() const {
@@ -373,11 +367,6 @@ const ProcessNode* FrameNodeImpl::GetProcessNode() const {
 int FrameNodeImpl::GetFrameTreeNodeId() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return frame_tree_node_id();
-}
-
-const base::UnguessableToken& FrameNodeImpl::GetDevToolsToken() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return dev_tools_token();
 }
 
 const FrameToken& FrameNodeImpl::GetFrameToken() const {

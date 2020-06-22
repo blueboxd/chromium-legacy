@@ -51159,7 +51159,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="5" label="Disconnect Wi-Fi Network"/>
   <int value="6" label="Prefer Wi-Fi Network"/>
   <int value="7" label="Forget Wi-Fi Network"/>
-  <int value="8" label="Configure Wi-Fi"/>
+  <int value="8" label="Wi-Fi: Add Network"/>
   <int value="9" label="Wi-Fi: Automatically Configure IP Address"/>
   <int value="10" label="Wi-Fi: DNS"/>
   <int value="11" label="Wi-Fi: Proxy"/>
@@ -51175,6 +51175,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="21" label="Cellular: Automatically Connect To Network"/>
   <int value="22" label="Instant Tethering: On/Off"/>
   <int value="23" label="Disconnect Tether Network"/>
+  <int value="24" label="Wi-Fi: Metered Network"/>
+  <int value="25" label="Cellular: Metered Network"/>
   <int value="100" label="Bluetooth: On/Off"/>
   <int value="101" label="Bluetooth: Connect To Device"/>
   <int value="102" label="Bluetooth: Disconnect From Device"/>
@@ -51243,6 +51245,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="431" label="Touchscreen Calibration"/>
   <int value="432" label="Night Light Color Temperature"/>
   <int value="433" label="Power Idle Behavior While On Battery"/>
+  <int value="434" label="Display: Overscan"/>
   <int value="500" label="Open Wallpaper"/>
   <int value="501" label="Ambient Mode On/Off"/>
   <int value="502" label="Ambient Mode Source"/>
@@ -55650,10 +55653,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="11"
       label="Preview Allowed without server rule check (obsolete)."/>
   <int value="12" label="Committed Preview."/>
-  <int value="13" label="Received no-transform directive.">
-    Response header had Cache-Control:no-transform directive (developer
-    opt-out).
-  </int>
+  <int value="13" label="Received cache-control:no-transform directive."/>
   <int value="14"
       label="Network is not slow per session threshold (obsolete)."/>
   <int value="15" label="Device was reported as offline."/>

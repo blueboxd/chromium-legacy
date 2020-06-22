@@ -18,7 +18,6 @@
 
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/startup_context.h"
-#include "base/logging.h"
 #include "fuchsia/base/lifecycle_impl.h"
 #include "url/gurl.h"
 

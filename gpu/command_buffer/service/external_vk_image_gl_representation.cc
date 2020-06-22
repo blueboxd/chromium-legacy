@@ -77,8 +77,10 @@ bool ExternalVkImageGLRepresentationShared::BeginAccess(GLenum mode) {
   }
 
   DCHECK(mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
-         mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
-  const bool readonly = (mode == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+         mode == GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM ||
+         mode == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM);
+  const bool readonly =
+      (mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
 
   std::vector<SemaphoreHandle> handles;
   if (!backing_impl()->BeginAccess(readonly, &handles, true /* is_gl */))
@@ -111,9 +113,10 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
 
   DCHECK(current_access_mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM ||
          current_access_mode_ ==
-             GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
+             GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM ||
+         current_access_mode_ == GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM);
   const bool readonly =
-      (current_access_mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+      (current_access_mode_ != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
   current_access_mode_ = 0;
 
   SemaphoreHandle semaphore_handle;

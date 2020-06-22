@@ -36,18 +36,20 @@ class MockCompositorFrameSink : public viz::mojom::blink::CompositorFrameSink {
   // viz::mojom::blink::CompositorFrameSink implementation
   MOCK_METHOD1(SetNeedsBeginFrame, void(bool));
   MOCK_METHOD0(SetWantsAnimateOnlyBeginFrames, void(void));
-  void SubmitCompositorFrame(const viz::LocalSurfaceId&,
-                             viz::CompositorFrame frame,
-                             viz::mojom::blink::HitTestRegionListPtr,
-                             uint64_t) {
+  void SubmitCompositorFrame(
+      const viz::LocalSurfaceId&,
+      viz::CompositorFrame frame,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
+      uint64_t) override {
     SubmitCompositorFrame_(&frame);
   }
   MOCK_METHOD1(SubmitCompositorFrame_, void(viz::CompositorFrame*));
-  void SubmitCompositorFrameSync(const viz::LocalSurfaceId&,
-                                 viz::CompositorFrame frame,
-                                 viz::mojom::blink::HitTestRegionListPtr,
-                                 uint64_t,
-                                 SubmitCompositorFrameSyncCallback cb) {
+  void SubmitCompositorFrameSync(
+      const viz::LocalSurfaceId&,
+      viz::CompositorFrame frame,
+      base::Optional<viz::HitTestRegionList> hit_test_region_list,
+      uint64_t,
+      SubmitCompositorFrameSyncCallback cb) override {
     SubmitCompositorFrameSync_(&frame);
     std::move(cb).Run(WTF::Vector<viz::ReturnedResource>());
   }

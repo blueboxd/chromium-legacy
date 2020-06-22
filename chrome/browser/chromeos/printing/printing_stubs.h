@@ -31,6 +31,7 @@ class StubCupsPrintersManager : public CupsPrintersManager {
   void RecordSetupAbandoned(const Printer& printer) override {}
   void FetchPrinterStatus(const std::string& printer_id,
                           PrinterStatusCallback cb) override {}
+  void RecordNearbyNetworkPrinterCounts() const override {}
 };
 
 class StubPrinterConfigurer : public PrinterConfigurer {

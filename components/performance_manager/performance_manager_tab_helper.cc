@@ -166,7 +166,6 @@ void PerformanceManagerTabHelper::RenderFrameCreated(
           process_node, page_node_.get(), parent_frame_node,
           render_frame_host->GetFrameTreeNodeId(),
           render_frame_host->GetRoutingID(),
-          render_frame_host->GetDevToolsFrameToken(),
           FrameToken(render_frame_host->GetFrameToken()),
           site_instance->GetBrowsingInstanceId(), site_instance->GetId(),
           base::BindOnce(

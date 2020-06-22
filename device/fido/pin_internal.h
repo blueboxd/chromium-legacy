@@ -30,6 +30,8 @@ enum class Subcommand : uint8_t {
   kGetPINToken = 0x05,
   kGetUvToken = 0x06,
   kGetUvRetries = 0x07,
+  kSetMinPINLength = 0x08,
+  kGetPinUvAuthTokenUsingPinWithPermissions = 0x09,
 };
 
 // RequestKey enumerates the keys in the top-level CBOR map for all PIN
@@ -45,16 +47,6 @@ enum class RequestKey : int {
   kMinPINLengthRPIDs = 0x08,
   kPermissions = 0x09,
   kPermissionsRPID = 0x0A,
-};
-
-// Permission list flags. See
-// https://drafts.fidoalliance.org/fido-2/stable-links-to-latest/fido-client-to-authenticator-protocol.html#permissions
-enum class Permissions : uint8_t {
-  kMakeCredential = 0x01,
-  kGetAssertion = 0x02,
-  kCredentialManagement = 0x04,
-  kBioEnrollment = 0x08,
-  kPlatformConfiguration = 0x10,
 };
 
 // ResponseKey enumerates the keys in the top-level CBOR map for all PIN

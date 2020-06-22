@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/cookies_coordinator.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "ios/chrome/browser/main/browser.h"

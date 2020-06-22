@@ -35,6 +35,7 @@ class TestLocationBarModel : public LocationBarModel {
   base::string16 GetSecureAccessibilityText() const override;
   bool ShouldDisplayURL() const override;
   bool IsOfflinePage() const override;
+  bool ShouldPreventElision() const override;
 
   void set_formatted_full_url(const base::string16& url) {
     formatted_full_url_ = std::make_unique<base::string16>(url);
@@ -54,6 +55,9 @@ class TestLocationBarModel : public LocationBarModel {
   void set_secure_display_text(base::string16 secure_display_text) {
     secure_display_text_ = secure_display_text;
   }
+  void set_should_prevent_elision(bool should_prevent_elision) {
+    should_prevent_elision_ = should_prevent_elision;
+  }
 
  private:
   // If either of these is not explicitly set, the test class will return
@@ -67,6 +71,7 @@ class TestLocationBarModel : public LocationBarModel {
   bool should_display_url_ = false;
   bool offline_page_ = false;
   base::string16 secure_display_text_ = base::string16();
+  bool should_prevent_elision_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestLocationBarModel);
 };

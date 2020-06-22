@@ -9,7 +9,7 @@
 
 #include <string>
 #include <unordered_map>
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 
 namespace ipc_fuzzer {

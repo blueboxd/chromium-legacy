@@ -187,6 +187,7 @@ android_resources("java_resources") {
     "java/res/drawable-xxxhdpi/settings_usb.png",
     "java/res/drawable-xxxhdpi/web_asset.png",
     "java/res/drawable/ic_person_24dp.xml",
+    "java/res/drawable/settings_bluetooth.xml",
     "java/res/layout/add_site_dialog.xml",
     "java/res/layout/clear_data_dialog.xml",
     "java/res/layout/clear_storage.xml",

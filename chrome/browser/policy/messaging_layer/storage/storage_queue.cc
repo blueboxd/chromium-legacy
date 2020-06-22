@@ -346,12 +346,13 @@ Status StorageQueue::WriteHeaderAndBlock(
 
 class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
  public:
-  ReadContext(scoped_refptr<UploaderInterface> uploader,
+  ReadContext(std::unique_ptr<UploaderInterface> uploader,
               scoped_refptr<StorageQueue> storage_queue)
       : TaskRunnerContext<Status>(
-            base::BindOnce(&UploaderInterface::Completed, uploader),
+            base::BindOnce(&UploaderInterface::Completed,
+                           base::Unretained(uploader.get())),
             storage_queue->sequenced_task_runner_),
-        uploader_(uploader),
+        uploader_(std::move(uploader)),
         storage_queue_(storage_queue) {
     DCHECK(storage_queue_);
     DCHECK(uploader_.get());
@@ -509,7 +510,7 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
   uint64_t seq_number_ = 0;  // Sequencing number of the blob being read.
   uint32_t current_pos_;
   std::vector<scoped_refptr<SingleFile>>::iterator current_file_;
-  const scoped_refptr<UploaderInterface> uploader_;
+  const std::unique_ptr<UploaderInterface> uploader_;
   const scoped_refptr<StorageQueue> storage_queue_;
 
   SEQUENCE_CHECKER(read_sequence_checker_);
@@ -517,13 +518,14 @@ class StorageQueue::ReadContext : public TaskRunnerContext<Status> {
 
 void StorageQueue::PeriodicUpload() {
   // Note: new uploader created every time PeriodicUpload is called.
-  StatusOr<scoped_refptr<UploaderInterface>> uploader = start_upload_cb_.Run();
+  StatusOr<std::unique_ptr<UploaderInterface>> uploader =
+      start_upload_cb_.Run();
   if (!uploader.ok()) {
     LOG(ERROR) << "Failed to provide the Uploader, status="
                << uploader.status();
     return;
   }
-  Start<ReadContext>(uploader.ValueOrDie(), this);
+  Start<ReadContext>(std::move(uploader.ValueOrDie()), this);
 }
 
 class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
@@ -554,7 +556,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
     // Otherwise initiate Upload right after writing
     // finished and respond back when reading Upload is done.
     // Note: new uploader created synchronously before scheduling Upload.
-    Start<ReadContext>(uploader_, storage_queue_);
+    Start<ReadContext>(std::move(uploader_), storage_queue_);
   }
 
   void OnStart() override {
@@ -562,7 +564,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
 
     // Prepare uploader, if need to run it after Write.
     if (storage_queue_->options_.upload_period().is_zero()) {
-      StatusOr<scoped_refptr<UploaderInterface>> uploader =
+      StatusOr<std::unique_ptr<UploaderInterface>> uploader =
           storage_queue_->start_upload_cb_.Run();
       if (uploader.ok()) {
         uploader_ = std::move(uploader.ValueOrDie());
@@ -597,7 +599,7 @@ class StorageQueue::WriteContext : public TaskRunnerContext<Status> {
   std::unique_ptr<uint8_t[]> buffer_;
 
   // Upload provider (if any).
-  scoped_refptr<UploaderInterface> uploader_;
+  std::unique_ptr<UploaderInterface> uploader_;
 
   SEQUENCE_CHECKER(write_sequence_checker_);
 };

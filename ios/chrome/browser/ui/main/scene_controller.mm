@@ -339,32 +339,13 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
         // Handle URL opening from
         // |UIWindowSceneDelegate scene:openURLContexts:|.
         if (self.sceneState.URLContextsToOpen) {
+          // When multiwindow is supported we already pass the external URLs
+          // through the scene state, therefore we do not need to rely on
+          // startup parameters.
           [self openURLContexts:self.sceneState.URLContextsToOpen];
           self.sceneState.URLContextsToOpen = nil;
         }
       }
-
-      if (self.mainController.startupParameters) {
-        ApplicationModeForTabOpening mode =
-            self.mainController.startupParameters.launchInIncognito
-                ? ApplicationModeForTabOpening::INCOGNITO
-                : ApplicationModeForTabOpening::NORMAL;
-        [self
-            dismissModalsAndOpenSelectedTabInMode:mode
-                                withUrlLoadParams:UrlLoadParams::InNewTab(
-                                                      self.mainController
-                                                          .startupParameters
-                                                          .externalURL)
-                                   dismissOmnibox:
-                                       [self.mainController.startupParameters
-                                               postOpeningAction] !=
-                                       FOCUS_OMNIBOX
-                                       completion:^{
-                                         self.mainController.startupParameters =
-                                             nil;
-                                       }];
-      }
-
     } else {
       NSDictionary* launchOptions = self.mainController.launchOptions;
       URLOpenerParams* params =

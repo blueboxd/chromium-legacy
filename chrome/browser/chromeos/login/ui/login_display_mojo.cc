@@ -243,10 +243,6 @@ void LoginDisplayMojo::ShowWrongHWIDScreen() {
   NOTIMPLEMENTED();
 }
 
-void LoginDisplayMojo::ShowUpdateRequiredScreen() {
-  NOTIMPLEMENTED();
-}
-
 void LoginDisplayMojo::CancelUserAdding() {
   NOTIMPLEMENTED();
 }

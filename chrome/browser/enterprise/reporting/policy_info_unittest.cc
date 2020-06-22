@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/enterprise/reporting/policy_info.h"
+#include "components/enterprise/browser/reporting/policy_info.h"
 
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -36,6 +37,8 @@ constexpr char kExtensionId2[] = "abcdefghijklmnoabcdefghijklmnoac";
 using ::testing::_;
 using ::testing::Eq;
 
+// TODO(crbug.com/1096499): Get rid of chrome/browser dependencies and then
+// move this file to components/enterprise/browser.
 class PolicyInfoTest : public ::testing::Test {
  public:
   void SetUp() override {
@@ -171,7 +174,11 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
 
 TEST_F(PolicyInfoTest, MachineLevelUserCloudPolicyFetchTimestamp) {
   em::ChromeUserProfileInfo profile_info;
-  AppendMachineLevelUserCloudPolicyFetchTimestamp(&profile_info);
+#if !defined(OS_CHROMEOS)
+  AppendMachineLevelUserCloudPolicyFetchTimestamp(
+      &profile_info, g_browser_process->browser_policy_connector()
+                         ->machine_level_user_cloud_policy_manager());
+#endif  // !defined(OS_CHROMEOS)
   EXPECT_EQ(0, profile_info.policy_fetched_timestamps_size());
 }
 

@@ -82,6 +82,7 @@ void WebRtcLoggingAgentImpl::AddReceiver(
 void WebRtcLoggingAgentImpl::Start(
     mojo::PendingRemote<mojom::WebRtcLoggingClient> pending_client) {
   // We only support one client at a time. OK to drop any existing client.
+  client_.reset();
   client_.Bind(std::move(pending_client));
 
   WebRtcLogMessageDelegateImpl::GetInstance()->Start(base::BindRepeating(

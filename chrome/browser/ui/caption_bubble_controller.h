@@ -47,6 +47,12 @@ class CaptionBubbleController {
   // Called when the caption style changes.
   virtual void UpdateCaptionStyle(
       base::Optional<ui::CaptionStyle> caption_style) = 0;
+
+ private:
+  friend class CaptionControllerTest;
+
+  virtual bool IsWidgetVisibleForTesting() = 0;
+  virtual std::string GetBubbleLabelTextForTesting() = 0;
 };
 
 }  // namespace captions

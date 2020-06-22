@@ -1182,10 +1182,6 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_Document) {
       GetStyleEngine().StyleSheetsForStyleSheetList(GetDocument());
   EXPECT_EQ(2u, second_sheet_list.size());
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
-
-  GetStyleEngine().MarkAllTreeScopesDirty();
-  GetStyleEngine().StyleSheetsForStyleSheetList(GetDocument());
-  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
 TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
@@ -1213,10 +1209,6 @@ TEST_F(StyleEngineTest, StyleSheetsForStyleSheetList_ShadowRoot) {
       GetStyleEngine().StyleSheetsForStyleSheetList(shadow_root);
   EXPECT_EQ(2u, second_sheet_list.size());
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
-
-  GetStyleEngine().MarkAllTreeScopesDirty();
-  GetStyleEngine().StyleSheetsForStyleSheetList(shadow_root);
-  EXPECT_FALSE(GetStyleEngine().NeedsActiveStyleUpdate());
 }
 
 class StyleEngineClient : public frame_test_helpers::TestWebWidgetClient {

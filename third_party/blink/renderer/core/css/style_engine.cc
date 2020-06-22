@@ -176,18 +176,8 @@ const HeapVector<Member<StyleSheet>>& StyleEngine::StyleSheetsForStyleSheetList(
   DCHECK(Master());
   TreeScopeStyleSheetCollection& collection =
       EnsureStyleSheetCollectionFor(tree_scope);
-  if (Master()->IsActive()) {
-    if (all_tree_scopes_dirty_) {
-      // If all tree scopes are dirty, update all of active style. Otherwise, we
-      // would have to mark all tree scopes explicitly dirty for stylesheet list
-      // or repeatedly update the stylesheet list on styleSheets access. Note
-      // that this can only happen once if we kDidLayoutWithPendingSheets in
-      // Document::UpdateStyleAndLayoutTreeIgnoringPendingStyleSheets.
-      UpdateActiveStyle();
-    } else {
-      collection.UpdateStyleSheetList();
-    }
-  }
+  if (Master()->IsActive())
+    collection.UpdateStyleSheetList();
   return collection.StyleSheetsForStyleSheetList();
 }
 
@@ -451,11 +441,11 @@ void StyleEngine::WatchedSelectorsChanged() {
 }
 
 bool StyleEngine::ShouldUpdateDocumentStyleSheetCollection() const {
-  return all_tree_scopes_dirty_ || document_scope_dirty_;
+  return document_scope_dirty_;
 }
 
 bool StyleEngine::ShouldUpdateShadowTreeStyleSheetCollection() const {
-  return all_tree_scopes_dirty_ || !dirty_tree_scopes_.IsEmpty();
+  return !dirty_tree_scopes_.IsEmpty();
 }
 
 void StyleEngine::MediaQueryAffectingValueChanged(
@@ -525,9 +515,6 @@ void StyleEngine::UpdateActiveStyleSheetsInImport(
                                                        subcollector);
   GetDocumentStyleSheetCollection().SwapSheetsForSheetList(sheets_for_list);
 
-  // all_tree_scopes_dirty_ should only be set on main documents, never html
-  // imports.
-  DCHECK(!all_tree_scopes_dirty_);
   // Mark false for consistency. It is never checked for import documents.
   document_scope_dirty_ = false;
 }
@@ -580,14 +567,8 @@ void StyleEngine::UpdateActiveStyleSheets() {
 
   if (ShouldUpdateShadowTreeStyleSheetCollection()) {
     UnorderedTreeScopeSet tree_scopes_removed;
-
-    if (all_tree_scopes_dirty_) {
-      for (TreeScope* tree_scope : active_tree_scopes_)
-        UpdateActiveStyleSheetsInShadow(tree_scope, tree_scopes_removed);
-    } else {
-      for (TreeScope* tree_scope : dirty_tree_scopes_)
-        UpdateActiveStyleSheetsInShadow(tree_scope, tree_scopes_removed);
-    }
+    for (TreeScope* tree_scope : dirty_tree_scopes_)
+      UpdateActiveStyleSheetsInShadow(tree_scope, tree_scopes_removed);
     for (TreeScope* tree_scope : tree_scopes_removed)
       active_tree_scopes_.erase(tree_scope);
   }
@@ -596,7 +577,6 @@ void StyleEngine::UpdateActiveStyleSheets() {
 
   dirty_tree_scopes_.clear();
   document_scope_dirty_ = false;
-  all_tree_scopes_dirty_ = false;
   tree_scopes_removed_ = false;
   user_style_dirty_ = false;
 }

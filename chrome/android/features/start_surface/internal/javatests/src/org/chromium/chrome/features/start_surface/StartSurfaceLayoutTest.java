@@ -230,8 +230,6 @@ public class StartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_web_tabs");
     }
 
@@ -251,8 +249,6 @@ public class StartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs");
     }
 
@@ -268,8 +264,6 @@ public class StartSurfaceLayoutTest {
         prepareTabs(10, 0, "about:blank");
         assertEquals(9, cta.getTabModelSelector().getCurrentModel().index());
         enterGTSWithThumbnailRetry();
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         // Make sure the grid tab switcher is scrolled down to show the selected tab.
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "10_web_tabs-select_last");
     }
@@ -291,8 +285,6 @@ public class StartSurfaceLayoutTest {
 
         ChromeTabUtils.switchTabInCurrentTabModel(cta, 0);
         enterTabSwitcher(cta);
-        // See crbug.com/1063619
-        mRenderTestRule.setPixelDiffThreshold(2);
         mRenderTestRule.render(cta.findViewById(R.id.tab_list_view), "3_incognito_web_tabs");
     }
 

@@ -12,7 +12,7 @@
 #include <memory>
 #include <type_traits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/time/time.h"

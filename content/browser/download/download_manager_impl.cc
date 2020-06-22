@@ -194,7 +194,8 @@ class DownloadItemFactoryImpl : public download::DownloadItemFactory {
         last_modified, received_bytes, total_bytes, auto_resume_count, hash,
         state, danger_type, interrupt_reason, false /* paused */,
         false /* allow_metered */, opened, last_access_time, transient,
-        received_slices, nullptr /* download_entry */);
+        received_slices, base::nullopt /*download_schedule*/,
+        nullptr /* download_entry */);
   }
 
   download::DownloadItemImpl* CreateActiveItem(

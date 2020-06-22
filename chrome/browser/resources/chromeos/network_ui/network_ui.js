@@ -42,6 +42,43 @@ cr.define('network_ui', function() {
   };
 
   /**
+   * Handles the ONC file input change event.
+   * @param {!Event} event
+   */
+  const onImportOncChange = function(event) {
+    const file = event.target.files[0];
+    event.stopPropagation();
+    if (!file)
+      return;
+    const reader = new FileReader();
+    reader.onloadend = function(e) {
+      const content = reader.result;
+      if (!content) {
+        console.error('File not read' + file);
+        return;
+      }
+      cr.sendWithPromise('importONC', content).then(importONCResponse);
+    };
+    reader.readAsText(file);
+  };
+
+  /**
+   * Handles the chrome 'importONC' response.
+   * @param {Array} args
+   */
+  const importONCResponse = function(args) {
+    const result = args.shift();
+    const isError = args.shift();
+    $('onc-import-result').innerHTML = result;
+    if (isError) {
+      $('onc-import-result').classList.add('error');
+    } else {
+      $('onc-import-result').classList.remove('error');
+    }
+    $('import-onc').value = '';
+  };
+
+  /**
    * Requests the global policy dictionary and updates the page.
    */
   const requestGlobalPolicy = function() {
@@ -123,6 +160,8 @@ cr.define('network_ui', function() {
     select.addEventListener('network-item-selected', onNetworkItemSelected);
     $('cellular-activation-button').onclick = openCellularActivationUi;
     $('add-new-wifi-button').onclick = showAddNewWifi;
+    $('import-onc').value = '';
+    $('import-onc').addEventListener('change', onImportOncChange);
 
     document.addEventListener('custom-item-selected', function(event) {
       chrome.send('addNetwork', [event.detail.customData]);
@@ -142,7 +181,7 @@ cr.define('network_ui', function() {
     getShillDevicePropertiesResult: getShillDevicePropertiesResult,
     getShillEthernetEAPResult: getShillEthernetEAPResult,
     openCellularActivationUiResult: openCellularActivationUiResult,
-    onLoad: onLoad
+    onLoad: onLoad,
   };
 });
 

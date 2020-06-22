@@ -881,7 +881,9 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 
 ### With LayoutNGBlockFragmentation enabled:
 
+crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-001.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-003.html [ Pass ]
@@ -895,8 +897,9 @@ crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailin
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/trailing-child-margin-002.html [ Pass ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-002.html [ Failure ]
 crbug.com/1066380 virtual/layout_ng_block_frag/external/wpt/css/css-break/widows-orphans-004.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/change-out-of-flow-type-and-remove-inner-multicol-crash.html [ Crash Failure ]
 crbug.com/1058792 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/composited-under-clip-under-multicol.html [ Failure Crash ]
-crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Pass ]
+crbug.com/996655 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/going-out-of-flow-after-spanner.html [ Crash Failure Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-003.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-004.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-basic-007.xht [ Failure ]
@@ -930,6 +933,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/mult
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-fraction-003.xht [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-rule-stacking-001.xht [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-009.html [ Crash Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-010.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-002.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-003.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-multicol/multicol-span-all-children-height-004a.html [ Failure ]
@@ -986,6 +990,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-relpos-re
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/dynamic/bottom-aligned-abspos-change-column-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/change-second-row-height.html [ Failure ]
 crbug.com/1066617 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-after-spanner-before-content.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
@@ -1046,6 +1051,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-a
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line-at-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-on-line-rtl.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/abspos-auto-position-small-on-line-at-boundary.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/out-of-flow/nested-multicol.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/overflow-content.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/positioned-outside-of-columns.html [ Crash Failure ]
@@ -1072,7 +1078,9 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/span/trailing-margin
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/static-child-becomes-fixedpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/tall-content-in-inner-with-fixed-height.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fast/multicol/tall-float1.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/tall-line-in-short-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/three-inner-rows.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/transform-with-fixedpos.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/caret-range-anonymous-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/caret-range-anonymous-block-rtl.html [ Failure Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/vertical-lr/caret-range-outside-columns.html [ Timeout Failure ]
@@ -1102,7 +1110,7 @@ crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/auto-scrollbar-shrin
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/become-unfragmented-with-lines.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/become-unfragmented-with-unbreakable-blocks.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/change-fragmentainer-height-inline-float.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash ]
+crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/content-preceding-first-fragmentainer.html [ Crash Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/float-after-forced-break.html [ Failure ]
 crbug.com/1066625 virtual/layout_ng_block_frag/fragmentation/outline-crossing-columns.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/overflow-crossing-boundary.html [ Failure ]
@@ -1110,6 +1118,8 @@ crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/remove-unbreakable-block-in-line-float.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/scrolling-contents-scroll.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/unbreakable-tall-float-before-line.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/widows-change-width-abspos-percent-width.html [ Failure ]
+crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/widows-change-width-abspos-right-aligned.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/printing/fixed-positioned-child-repeats-even-when-html-and-body-are-zero-height.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/printing/fixed-positioned-child-shouldnt-print.html [ Crash Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/printing/frameset.html [ Failure ]
@@ -1859,8 +1869,6 @@ crbug.com/1075869 http/tests/devtools/elements/styles-1/color-swatch.js [ Pass F
 crbug.com/1075869 http/tests/devtools/elements/styles-3/spectrum.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/elements/styles-4/styles-invalid-color-values.js [ Pass Failure ]
 crbug.com/1075869 http/tests/devtools/extensions/extensions-timeline-api.js [ Pass Failure Timeout ]
-crbug.com/946975 http/tests/devtools/elements/styles-3/styles-cssom-important-property.js [ Pass Failure ]
-crbug.com/946975 http/tests/devtools/elements/styles-4/cssom-constructed.js [ Pass Failure ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
@@ -5469,9 +5477,6 @@ crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden
 crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
 crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 
-# Flaky
-crbug.com/894077 virtual/android/fullscreen/video-fixed-background.html [ Pass Failure ]
-
 crbug.com/898186 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
 
 # Sheriff 2018-09-10
@@ -6493,7 +6498,6 @@ crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/cale
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/date-picker-events.html [ Pass Failure Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-choose-default-value-after-set-value.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-key-operations.html [ Pass Crash Timeout ]
-crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-mouse-operations.html [ Pass Crash ]
 crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/calendar-picker/month-picker-touch-operations.html [ Pass Crash ]
 
 # Upcoming DevTools change
@@ -6739,6 +6743,10 @@ crbug.com/1097765 external/wpt/wasm/webapi/instantiateStreaming.any.serviceworke
 crbug.com/1097765 external/wpt/wasm/webapi/instantiateStreaming.any.sharedworker.html [ Failure Pass ]
 crbug.com/1097765 external/wpt/wasm/webapi/instantiateStreaming.any.worker.html [ Failure Pass ]
 
+# Disabled for enabling Wasm multi-value support
+crbug.com/1097717 external/wpt/wasm/jsapi/constructor/multi-value.any.html [ Failure Pass ]
+crbug.com/1097717 external/wpt/wasm/jsapi/constructor/multi-value.any.worker.html [ Failure Pass ]
+
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
@@ -6863,3 +6871,4 @@ crbug.com/1093445 http/tests/loading/pdf-commit-load-callbacks.html [ Pass Failu
 crbug.com/1093497 http/tests/history/client-redirect-after-push-state.html [ Pass Failure ]
 
 crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Pass Timeout ]
+crbug.com/1097810 [ Mac10.13 Debug ] external/wpt/editing/other/white-spaces-after-execCommand-delete.tentative.html [ Pass Timeout ]

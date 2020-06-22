@@ -83,8 +83,6 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     // Dummy Oobe functions not present with stripped login UI.
-    setUsageStats(checked) {},
-    setTpmPassword(password) {},
     refreshA11yInfo(data) {},
     reloadEulaContent(data) {},
 

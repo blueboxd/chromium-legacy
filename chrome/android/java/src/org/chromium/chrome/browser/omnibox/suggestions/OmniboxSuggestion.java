@@ -233,6 +233,7 @@ public class OmniboxSuggestion {
                 && ObjectsCompat.equals(
                         mDescriptionClassifications, suggestion.mDescriptionClassifications)
                 && mIsStarred == suggestion.mIsStarred && mIsDeletable == suggestion.mIsDeletable
+                && mRelevance == suggestion.mRelevance
                 && ObjectsCompat.equals(mAnswer, suggestion.mAnswer)
                 && TextUtils.equals(mPostContentType, suggestion.mPostContentType)
                 && Arrays.equals(mPostData, suggestion.mPostData) && mGroupId == suggestion.mGroupId

@@ -1725,6 +1725,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, testKeyEventUnhandled) {
   CloseDevToolsWindow();
 }
 
+// Tests that the keys that are forwarded from the browser update
+// when their shortcuts change
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, testForwardedKeysChanged) {
+  OpenDevToolsWindow("about:blank", true);
+  RunTestFunction(window_, "testForwardedKeysChanged");
+  CloseDevToolsWindow();
+}
+
 // Test that showing a certificate in devtools does not crash the process.
 // Disabled on windows as this opens a modal in its own thread, which leads to a
 // test timeout.

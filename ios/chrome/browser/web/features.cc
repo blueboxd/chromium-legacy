@@ -6,8 +6,8 @@
 
 namespace web {
 
-const base::Feature kWebPageTextAccessibility{
-    "WebPageTextAccessibility", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebPageTextAccessibility{"WebPageTextAccessibility",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMobileGoogleSRP{"MobileGoogleSRP",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

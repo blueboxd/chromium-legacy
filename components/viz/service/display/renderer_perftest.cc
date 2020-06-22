@@ -58,6 +58,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gl/gl_implementation.h"
 
 namespace viz {
 
@@ -296,6 +297,7 @@ class RendererPerfTest : public testing::Test {
       GpuServiceImpl* gpu_service);
 
   void SetUp() override {
+    enable_pixel_output_ = std::make_unique<gl::DisableNullDrawGLBindings>();
     renderer_settings_.use_skia_renderer =
         std::is_base_of<SkiaRenderer, RendererType>::value;
     if (renderer_settings_.use_skia_renderer)
@@ -685,6 +687,7 @@ class RendererPerfTest : public testing::Test {
   std::unique_ptr<ClientResourceProvider> child_resource_provider_;
   std::vector<TransferableResource> resource_list_;
   base::LapTimer timer_;
+  std::unique_ptr<gl::DisableNullDrawGLBindings> enable_pixel_output_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererPerfTest);
 };

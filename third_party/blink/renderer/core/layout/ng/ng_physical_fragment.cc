@@ -24,6 +24,9 @@ namespace {
 
 struct SameSizeAsNGPhysicalFragment
     : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
+  // |flags_for_free_maybe| is used to support an additional increase in size
+  // needed for DCHECK and 32-bit builds.
+  unsigned flags_for_free_maybe;
   void* layout_object;
   PhysicalSize size;
   unsigned flags;
@@ -214,13 +217,13 @@ void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
 NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
                                        NGFragmentType type,
                                        unsigned sub_type)
-    : layout_object_(builder->layout_object_),
+    : has_floating_descendants_for_paint_(false),
+      layout_object_(builder->layout_object_),
       size_(ToPhysicalSize(builder->size_, builder->GetWritingMode())),
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)builder->style_variant_),
       is_hidden_for_paint_(builder->is_hidden_for_paint_),
-      has_floating_descendants_for_paint_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false),
       is_painted_atomically_(false),
@@ -233,13 +236,13 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        PhysicalSize size,
                                        NGFragmentType type,
                                        unsigned sub_type)
-    : layout_object_(layout_object),
+    : has_floating_descendants_for_paint_(false),
+      layout_object_(layout_object),
       size_(size),
       type_(type),
       sub_type_(sub_type),
       style_variant_((unsigned)style_variant),
       is_hidden_for_paint_(false),
-      has_floating_descendants_for_paint_(false),
       is_fieldset_container_(false),
       is_legacy_layout_root_(false),
       is_painted_atomically_(false),

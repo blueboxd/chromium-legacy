@@ -24,7 +24,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone 6s",
       "os": "13.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -32,7 +32,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone 6s",
       "os": "12.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -40,7 +40,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone X",
       "os": "13.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -48,7 +48,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone 7",
       "os": "13.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -56,7 +56,7 @@
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
       "os": "13.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -64,14 +64,14 @@
       "include": "eg2_tests.json",
       "device type": "iPad Air 2",
       "os": "13.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
       "app": "crashpad_tests",
       "device type": "iPhone X",
       "os": "13.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -79,7 +79,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone X",
       "os": "12.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -87,7 +87,7 @@
       "include": "eg2_tests.json",
       "device type": "iPhone 7",
       "os": "12.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -95,7 +95,7 @@
       "include": "eg2_tests.json",
       "device type": "iPad (6th generation)",
       "os": "12.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
@@ -103,14 +103,14 @@
       "include": "eg2_tests.json",
       "device type": "iPad Air 2",
       "os": "12.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     },
     {
       "app": "crashpad_tests",
       "device type": "iPhone X",
       "os": "12.4",
-      "pool":"chromium.tests.template",
+      "pool":"chromium.tests",
       "host os": "Mac-10.15"
     }
   ]

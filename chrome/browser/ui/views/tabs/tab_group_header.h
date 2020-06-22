@@ -9,6 +9,7 @@
 #include "components/tab_groups/tab_group_id.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/view_targeter_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
 class TabStrip;
@@ -22,7 +23,9 @@ class View;
 // View for tab group headers in the tab strip, which are markers of group
 // boundaries. There is one header for each group, which is included in the tab
 // strip flow and positioned left of the leftmost tab in the group.
-class TabGroupHeader : public TabSlotView, public views::ContextMenuController {
+class TabGroupHeader : public TabSlotView,
+                       public views::ContextMenuController,
+                       public views::ViewTargeterDelegate {
  public:
   TabGroupHeader(TabStrip* tab_strip, const tab_groups::TabGroupId& group);
   ~TabGroupHeader() override;
@@ -44,6 +47,10 @@ class TabGroupHeader : public TabSlotView, public views::ContextMenuController {
   void ShowContextMenuForViewImpl(views::View* source,
                                   const gfx::Point& point,
                                   ui::MenuSourceType source_type) override;
+
+  // views::ViewTargeterDelegate:
+  bool DoesIntersectRect(const views::View* target,
+                         const gfx::Rect& rect) const override;
 
   // Updates our visual state according to the tab_groups::TabGroupVisualData
   // for our group.

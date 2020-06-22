@@ -479,7 +479,7 @@ def _CreateDynamicConfig(options):
     *** <2>(...);
 }""" % annotation_name)
       ret.append("""\
--keepclassmembers,allowobfuscation,allowoptimization class ** {
+-keepclassmembers,allowobfuscation class ** {
   @%s <methods>;
 }""" % annotation_name)
   return '\n'.join(ret)

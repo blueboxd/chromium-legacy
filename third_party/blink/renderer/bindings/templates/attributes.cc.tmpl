@@ -114,7 +114,8 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   }
   {% endif %}
 
-  {% if attribute.is_call_with_execution_context %}
+  {% if attribute.is_call_with_execution_context or
+        attribute.high_entropy == 'Direct' %}
   {% if attribute.is_static %}
   ExecutionContext* execution_context = ExecutionContext::ForCurrentRealm(info);
   {% else %}
@@ -137,6 +138,10 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cpp_value_original %}
   {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
+  {% endif %}
+
+  {% if attribute.high_entropy == 'Direct' %}
+  Dactyloscoper::RecordDirectSurface(execution_context, WebFeature::k{{attribute.measure_as('AttributeGetter')}}, {{attribute.cpp_value}});
   {% endif %}
 
   {% if attribute.use_output_parameter_for_result %}

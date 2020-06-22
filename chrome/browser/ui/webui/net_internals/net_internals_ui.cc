@@ -24,7 +24,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/net_internals_resources.h"
-#include "components/onc/onc_constants.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -41,17 +40,11 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
-#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system_logs/debug_log_writer.h"
 #include "chrome/browser/chromeos/system_logs/system_logs_writer.h"
-#include "chrome/browser/net/nss_context.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
-#include "chromeos/network/onc/onc_certificate_importer_impl.h"
-#include "chromeos/network/onc/onc_parsed_certificates.h"
-#include "chromeos/network/onc/onc_utils.h"
-#include "components/policy/core/browser/policy_conversions.h"
 #endif
 
 using content::BrowserThread;
@@ -115,20 +108,6 @@ class NetInternalsMessageHandler
   // If the renderer is displaying a log file, the message will be ignored.
   void SendJavascriptCommand(const std::string& command, base::Value arg);
 
-#if defined(OS_CHROMEOS)
-  // Callback to |GetNSSCertDatabaseForProfile| used to retrieve the database
-  // to which user's ONC defined certificates should be imported.
-  // It parses and imports |onc_blob|.
-  void ImportONCFileToNSSDB(const std::string& onc_blob,
-                            const std::string& passcode,
-                            net::NSSCertDatabase* nssdb);
-
-  // Called back by the CertificateImporter when a certificate import finished.
-  // |previous_error| contains earlier errors during this import.
-  void OnCertificatesImported(const std::string& previous_error,
-                              bool cert_import_success);
-#endif
-
   void OnExpectCTTestReportCallback(bool success);
 
   //--------------------------------
@@ -151,7 +130,6 @@ class NetInternalsMessageHandler
                                   bool should_compress,
                                   bool combined,
                                   const char* received_event);
-  void OnImportONCFile(const base::ListValue* list);
   void OnStoreDebugLogs(bool combined,
                         const char* received_event,
                         const base::ListValue* list);
@@ -223,10 +201,6 @@ void NetInternalsMessageHandler::RegisterMessages() {
       base::BindRepeating(&NetInternalsMessageHandler::OnFlushSocketPools,
                           base::Unretained(this)));
 #if defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback(
-      "importONCFile",
-      base::BindRepeating(&NetInternalsMessageHandler::OnImportONCFile,
-                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "storeDebugLogs",
       base::BindRepeating(&NetInternalsMessageHandler::OnStoreDebugLogs,
@@ -394,76 +368,6 @@ void NetInternalsMessageHandler::OnCloseIdleSockets(
 }
 
 #if defined(OS_CHROMEOS)
-void NetInternalsMessageHandler::ImportONCFileToNSSDB(
-    const std::string& onc_blob,
-    const std::string& passcode,
-    net::NSSCertDatabase* nssdb) {
-  const user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(
-          Profile::FromWebUI(web_ui()));
-
-  if (!user) {
-    std::string error = "User not found.";
-    SendJavascriptCommand("receivedONCFileParse", base::Value(error));
-    return;
-  }
-
-  std::string error;
-  onc::ONCSource onc_source = onc::ONC_SOURCE_USER_IMPORT;
-  base::ListValue network_configs;
-  base::DictionaryValue global_network_config;
-  base::ListValue certificates;
-  if (!chromeos::onc::ParseAndValidateOncForImport(onc_blob,
-                                                   onc_source,
-                                                   passcode,
-                                                   &network_configs,
-                                                   &global_network_config,
-                                                   &certificates)) {
-    error = "Errors occurred during the ONC parsing. ";
-  }
-
-  std::string network_error;
-  chromeos::onc::ImportNetworksForUser(user, network_configs, &network_error);
-  if (!network_error.empty())
-    error += network_error;
-
-  chromeos::onc::CertificateImporterImpl cert_importer(
-      content::GetIOThreadTaskRunner({}), nssdb);
-  auto certs =
-      std::make_unique<chromeos::onc::OncParsedCertificates>(certificates);
-  if (certs->has_error())
-    error += "Some certificates couldn't be parsed. ";
-  cert_importer.ImportAllCertificatesUserInitiated(
-      certs->server_or_authority_certificates(), certs->client_certificates(),
-      base::BindOnce(&NetInternalsMessageHandler::OnCertificatesImported,
-                     AsWeakPtr(), error /* previous_error */));
-}
-
-void NetInternalsMessageHandler::OnCertificatesImported(
-    const std::string& previous_error,
-    bool cert_import_success) {
-  std::string error = previous_error;
-  if (!cert_import_success)
-    error += "Some certificates couldn't be imported. ";
-
-  SendJavascriptCommand("receivedONCFileParse", base::Value(error));
-}
-
-void NetInternalsMessageHandler::OnImportONCFile(
-    const base::ListValue* list) {
-  std::string onc_blob;
-  std::string passcode;
-  if (list->GetSize() != 2 ||
-      !list->GetString(0, &onc_blob) ||
-      !list->GetString(1, &passcode)) {
-    NOTREACHED();
-  }
-
-  GetNSSCertDatabaseForProfile(
-      Profile::FromWebUI(web_ui()),
-      base::Bind(&NetInternalsMessageHandler::ImportONCFileToNSSDB, AsWeakPtr(),
-                 onc_blob, passcode));
-}
 
 void NetInternalsMessageHandler::OnStoreDebugLogs(bool combined,
                                                   const char* received_event,

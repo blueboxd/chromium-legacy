@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "url/gurl.h"
@@ -239,9 +240,16 @@ class DeepScanningDialogDelegate {
   // testing derived classes.
   void StringRequestCallback(BinaryUploadService::Result result,
                              DeepScanningClientResponse response);
+  void ConnectorStringRequestCallback(
+      BinaryUploadService::Result result,
+      enterprise_connectors::ContentAnalysisResponse response);
   void FileRequestCallback(base::FilePath path,
                            BinaryUploadService::Result result,
                            DeepScanningClientResponse response);
+  void ConnectorFileRequestCallback(
+      base::FilePath path,
+      BinaryUploadService::Result result,
+      enterprise_connectors::ContentAnalysisResponse response);
 
   base::WeakPtr<DeepScanningDialogDelegate> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -306,6 +314,12 @@ class DeepScanningDialogDelegate {
                                    BinaryUploadService::Result result,
                                    DeepScanningClientResponse response,
                                    std::string mime_type);
+  void CompleteConnectorFileRequestCallback(
+      size_t index,
+      base::FilePath path,
+      BinaryUploadService::Result result,
+      enterprise_connectors::ContentAnalysisResponse response,
+      std::string mime_type);
 
   // Updates |final_result_| following the precedence established by the
   // DeepScanningFinalResult enum.
@@ -328,9 +342,13 @@ class DeepScanningDialogDelegate {
   // Set to true if the full text got a DLP warning verdict.
   bool text_warning_ = false;
   DeepScanningClientResponse text_response_;
+  enterprise_connectors::ContentAnalysisResponse
+      content_analysis_text_response_;
 
   // Scanning responses of files that got DLP warning verdicts.
   std::map<size_t, DeepScanningClientResponse> file_warnings_;
+  std::map<size_t, enterprise_connectors::ContentAnalysisResponse>
+      content_analysis_file_warnings_;
 
   // Set to true once the scan of text has completed.  If the scan request has
   // no text requiring deep scanning, this is set to true immediately.

@@ -208,6 +208,11 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
   void Scroll(const ui::AXActionTarget* target,
               ax::mojom::Action scroll_action);
+
+  // Whether an event should mark its associated object dirty.
+  bool ShouldSerializeNodeForEvent(const blink::WebAXObject& obj,
+                                   const ui::AXEvent& event) const;
+
   // If we are calling this from a task, scheduling is allowed even if there is
   // a running task
   void ScheduleSendPendingAccessibilityEvents(

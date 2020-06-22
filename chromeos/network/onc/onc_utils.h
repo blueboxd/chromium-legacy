@@ -162,10 +162,11 @@ void ExpandStringPlaceholdersInNetworksForUser(
     const user_manager::User* user,
     base::ListValue* network_configs);
 
+// Returns the number of networks successfully imported.
 COMPONENT_EXPORT(CHROMEOS_NETWORK)
-void ImportNetworksForUser(const user_manager::User* user,
-                           const base::ListValue& network_configs,
-                           std::string* error);
+int ImportNetworksForUser(const user_manager::User* user,
+                          const base::ListValue& network_configs,
+                          std::string* error);
 
 // Looks up the policy for |guid| for the current active user and sets
 // |global_config| (if not NULL) and |onc_source| (if not NULL) accordingly. If

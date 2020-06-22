@@ -158,12 +158,6 @@ class CallOnReturn {
   DISALLOW_COPY_AND_ASSIGN(CallOnReturn);
 };
 
-policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
-  return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetMinimumVersionPolicyHandler();
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -1142,12 +1136,6 @@ void SigninScreenHandler::HandleAccountPickerReady() {
       !chromeos::IsMachineHWIDCorrect() &&
       !oobe_ui_) {
     delegate_->ShowWrongHWIDScreen();
-    return;
-  }
-
-  if (delegate_ && !oobe_ui_ && GetMinimumVersionPolicyHandler() &&
-      !GetMinimumVersionPolicyHandler()->RequirementsAreSatisfied()) {
-    delegate_->ShowUpdateRequiredScreen();
     return;
   }
 

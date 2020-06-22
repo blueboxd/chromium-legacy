@@ -14,9 +14,10 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/sequence_checker.h"
 
 namespace base {

@@ -2,9 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This is mostly a copy of the cros_healthd probe service interface which is
-// located in src/platform2/diagnostics/mojo/cros_healthd_probe.mojom.
-
 // cros_healthd daemon implements ProbeService interface, but since callers are
 // third-party Telemetry Extensions, we have PII filtering and data post
 // processing service in the middle that lives in Chrome.
@@ -15,8 +12,115 @@
 
 // This Mojo interface will go through security review before shipping.
 
+// This is a subset of the cros_healthd probe service interface which is
+// located in src/platform2/diagnostics/mojo/cros_healthd_probe.mojom.
+
 module chromeos.health.mojom;
 
 // Interface for getting device telemetry information.
 interface ProbeService {
+  // Returns telemetry information for the desired categories.
+  //
+  // The request:
+  // * |categories| - list of each of the categories that ProbeTelemetryInfo
+  //                  should return information for.
+  //
+  // The response:
+  // * |telemetry_info| - information for each of the requested categories. Only
+  //                      the fields corresponding to the requested categories
+  //                      will be non-null.
+  ProbeTelemetryInfo(array<ProbeCategoryEnum> categories)
+      => (TelemetryInfo telemetry_info);
+};
+
+// An enumeration of each category of information that cros_healthd can report.
+[Extensible]
+enum ProbeCategoryEnum {
+  kBattery,
+};
+
+// An enumeration of the different categories of errors that can occur when
+// probing telemetry information.
+[Extensible]
+enum ErrorType {
+  // An error reading a system file.
+  kFileReadError,
+  // An error parsing data into a consumable form.
+  kParseError,
+  // An error using a system utility.
+  kSystemUtilityError,
+};
+
+// Structure that contains error information for a telemetry probe.
+struct ProbeError {
+  // The type of error that occurred.
+  ErrorType type;
+  // A debug message with more information about the error. This string is not
+  // intended to be shown to the user.
+  string msg;
+};
+
+// Optional uint64 field. Since primitives numeric types cannot be optional,
+// wrap uint64 in a struct that can be nulled.
+struct UInt64Value {
+  // The value of the uint64.
+  uint64 value;
+};
+
+// Information related to the main battery.
+struct BatteryInfo {
+  // Cycle count.
+  int64 cycle_count;
+  // Current battery voltage (V)
+  double voltage_now;
+  // Manufacturer of the battery
+  string vendor;
+  // Serial number of the battery
+  string serial_number;
+  // Design capacity (Ah)
+  double charge_full_design;
+  // Full capacity (Ah)
+  double charge_full;
+  // Desired minimum output voltage (V)
+  double voltage_min_design;
+  // Model name.
+  string model_name;
+  // Current battery charge (Ah)
+  double charge_now;
+  // Current battery current (A)
+  double current_now;
+  // Technology of the battery
+  string technology;
+  // Status of the battery
+  string status;
+
+  // The fields below are optionally included if the main battery is a Smart
+  // Battery as defined in http://sbs-forum.org/specs/sbdat110.pdf.
+
+  // Manufacture date converted to yyyy-mm-dd format.
+  string? manufacture_date;
+  // Temperature in 0.1K. Included when the main battery is a Smart Battery.
+  UInt64Value? temperature;
+};
+
+// Battery probe result. Can either be populated with the BatteryInfo or an
+// error retrieving the information.
+union BatteryResult {
+  // Valid BatteryInfo. Null value if a battery is not present.
+  BatteryInfo? battery_info;
+  // The error that occurred attempting to retrieve the BatteryInfo.
+  ProbeError error;
+};
+
+// A collection of all the device's telemetry information that cros_healthd is
+// capable of reporting. Note that every field in TelemetryInfo is nullable, and
+// the response for a particular ProbeTelemetryInfo request will only contain
+// fields corresponding to the categories passed to the ProbeTelemetryInfo
+// request. All optional array members will be null if cros_healthd did not
+// attempt to fetch that information, and size zero if cros_healthd did attempt
+// to fetch that information, but was unable to.
+struct TelemetryInfo {
+  // Information about the device's main battery. Only present when kBattery was
+  // included in the categories input to ProbeTelemetryInfo.
+  BatteryResult? battery_result;
 };

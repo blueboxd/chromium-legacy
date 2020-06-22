@@ -64,6 +64,8 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   const char* GetClassName() const override;
 
+  std::string GetLabelTextForTesting();
+
  protected:
   // views::BubbleDialogDelegateView:
   void Init() override;

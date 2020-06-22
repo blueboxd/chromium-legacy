@@ -130,9 +130,8 @@ void TtsControllerImpl::StopInternal(const GURL& source_url) {
     return;
 
   if (current_utterance_ && !current_utterance_->GetEngineId().empty()) {
-    if (GetTtsControllerDelegate()->GetTtsEngineDelegate())
-      GetTtsControllerDelegate()->GetTtsEngineDelegate()->Stop(
-          current_utterance_.get());
+    if (engine_delegate_)
+      engine_delegate_->Stop(current_utterance_.get());
   } else {
     GetTtsPlatform()->ClearError();
     GetTtsPlatform()->StopSpeaking();
@@ -150,9 +149,8 @@ void TtsControllerImpl::Pause() {
 
   paused_ = true;
   if (current_utterance_ && !current_utterance_->GetEngineId().empty()) {
-    if (GetTtsControllerDelegate()->GetTtsEngineDelegate())
-      GetTtsControllerDelegate()->GetTtsEngineDelegate()->Pause(
-          current_utterance_.get());
+    if (engine_delegate_)
+      engine_delegate_->Pause(current_utterance_.get());
   } else if (current_utterance_) {
     GetTtsPlatform()->ClearError();
     GetTtsPlatform()->Pause();
@@ -164,9 +162,8 @@ void TtsControllerImpl::Resume() {
 
   paused_ = false;
   if (current_utterance_ && !current_utterance_->GetEngineId().empty()) {
-    if (GetTtsControllerDelegate()->GetTtsEngineDelegate())
-      GetTtsControllerDelegate()->GetTtsEngineDelegate()->Resume(
-          current_utterance_.get());
+    if (engine_delegate_)
+      engine_delegate_->Resume(current_utterance_.get());
   } else if (current_utterance_) {
     GetTtsPlatform()->ClearError();
     GetTtsPlatform()->Resume();
@@ -245,11 +242,8 @@ void TtsControllerImpl::GetVoices(BrowserContext* browser_context,
       tts_platform->GetVoices(out_voices);
   }
 
-  if (browser_context) {
-    TtsControllerDelegate* delegate = GetTtsControllerDelegate();
-    if (delegate && delegate->GetTtsEngineDelegate())
-      delegate->GetTtsEngineDelegate()->GetVoices(browser_context, out_voices);
-  }
+  if (browser_context && engine_delegate_)
+    engine_delegate_->GetVoices(browser_context, out_voices);
 }
 
 bool TtsControllerImpl::IsSpeaking() {
@@ -289,9 +283,8 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
       current_utterance_->GetEventDelegate() == delegate) {
     current_utterance_->SetEventDelegate(nullptr);
     if (!current_utterance_->GetEngineId().empty()) {
-      if (GetTtsControllerDelegate()->GetTtsEngineDelegate())
-        GetTtsControllerDelegate()->GetTtsEngineDelegate()->Stop(
-            current_utterance_.get());
+      if (engine_delegate_)
+        engine_delegate_->Stop(current_utterance_.get());
     } else {
       GetTtsPlatform()->ClearError();
       GetTtsPlatform()->StopSpeaking();
@@ -304,17 +297,11 @@ void TtsControllerImpl::RemoveUtteranceEventDelegate(
 }
 
 void TtsControllerImpl::SetTtsEngineDelegate(TtsEngineDelegate* delegate) {
-  if (!GetTtsControllerDelegate())
-    return;
-
-  GetTtsControllerDelegate()->SetTtsEngineDelegate(delegate);
+  engine_delegate_ = delegate;
 }
 
 TtsEngineDelegate* TtsControllerImpl::GetTtsEngineDelegate() {
-  if (!GetTtsControllerDelegate())
-    return nullptr;
-
-  return GetTtsControllerDelegate()->GetTtsEngineDelegate();
+  return engine_delegate_;
 }
 
 void TtsControllerImpl::OnBrowserContextDestroyed(
@@ -413,9 +400,8 @@ void TtsControllerImpl::SpeakNow(std::unique_ptr<TtsUtterance> utterance) {
     DCHECK(!voice.engine_id.empty());
     current_utterance_ = std::move(utterance);
     current_utterance_->SetEngineId(voice.engine_id);
-    if (GetTtsControllerDelegate()->GetTtsEngineDelegate())
-      GetTtsControllerDelegate()->GetTtsEngineDelegate()->Speak(
-          current_utterance_.get(), voice);
+    if (engine_delegate_)
+      engine_delegate_->Speak(current_utterance_.get(), voice);
     bool sends_end_event =
         voice.events.find(TTS_EVENT_END) != voice.events.end();
     if (!sends_end_event) {

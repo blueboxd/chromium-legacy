@@ -65,9 +65,8 @@ cr.define('inline.login', function() {
    * Initialize the UI.
    */
   function initialize() {
-    $('navigation-button').addEventListener('click', navigationButtonClicked);
+    $('navigation-button').addEventListener('click', navigateBackInWebview);
     cr.addWebUIListener('show-back-button', showBackButton);
-    cr.addWebUIListener('navigate-back-in-webview', navigateBackInWebview);
     cr.addWebUIListener('load-auth-extension', loadAuthExtension);
     cr.addWebUIListener('close-dialog', closeDialog);
 
@@ -154,10 +153,6 @@ cr.define('inline.login', function() {
     }
   }
 
-  function navigationButtonClicked() {
-    chrome.send('navigationButtonClicked');
-  }
-
   return {
     closeDialog: closeDialog,
     sendLSTFetchResults: sendLSTFetchResults,
@@ -166,7 +161,6 @@ cr.define('inline.login', function() {
     initialize: initialize,
     isAuthReady: isAuthReady,
     loadAuthExtension: loadAuthExtension,
-    navigationButtonClicked: navigationButtonClicked,
     showBackButton: showBackButton,
   };
 });

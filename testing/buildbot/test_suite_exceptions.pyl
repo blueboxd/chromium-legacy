@@ -173,8 +173,13 @@
         },
       },
       'V8 Blink Linux Debug': {
+        # This builder compiles Chromium in release mode, but V8 in debug.
+        # TODO(machenbach): Change name and out directory of this builder to
+        # something less confusing.
         'args': [
-          '--debug',
+          '-t',
+          'Debug',
+          '--release',
         ],
       },
       'V8 Blink Linux Future': {

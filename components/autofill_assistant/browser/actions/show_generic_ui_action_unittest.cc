@@ -55,11 +55,6 @@ class ShowGenericUiActionTest : public content::RenderViewHostTestHarness {
               std::move(end_action_callback).Run(ClientStatus(ACTION_APPLIED));
             }));
     ON_CALL(mock_action_delegate_, ClearGenericUi()).WillByDefault(Return());
-    ON_CALL(mock_action_delegate_, WriteUserModel(_))
-        .WillByDefault(
-            Invoke([this](base::OnceCallback<void(UserModel*)> write_callback) {
-              std::move(write_callback).Run(&user_model_);
-            }));
     ON_CALL(mock_action_delegate_, GetUserModel())
         .WillByDefault(Return(&user_model_));
     ON_CALL(mock_action_delegate_, GetPersonalDataManager)

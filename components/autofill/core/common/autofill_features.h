@@ -43,6 +43,7 @@ extern const base::Feature kAutofillOffNoServerData;
 extern const base::Feature kAutofillOverrideWithRaterConsensus;
 extern const base::Feature kAutofillPreferServerNamePredictions;
 extern const base::Feature kAutofillProfileClientValidation;
+extern const base::Feature kAutofillProfileImportFromUnifiedSection;
 extern const base::Feature kAutofillProfileServerValidation;
 extern const base::Feature kAutofillRejectCompanyBirthyear;
 extern const base::Feature kAutofillRejectCompanySocialTitle;

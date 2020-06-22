@@ -13,11 +13,12 @@
 
 #if defined(USE_X11)
 #include "chrome/browser/ui/views/javascript_app_modal_dialog_views_x11.h"
-#else
+#include "ui/base/ui_base_features.h"
+#endif
+
 #include "chrome/browser/ui/blocked_content/popunder_preventer.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/views/app_modal_dialog_view_views.h"
-#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
@@ -25,7 +26,6 @@
 
 namespace {
 
-#if !defined(USE_X11)
 class ChromeJavaScriptAppModalDialogViews
     : public javascript_dialogs::AppModalDialogViewViews {
  public:
@@ -40,16 +40,16 @@ class ChromeJavaScriptAppModalDialogViews
 
   DISALLOW_COPY_AND_ASSIGN(ChromeJavaScriptAppModalDialogViews);
 };
-#endif
 
 javascript_dialogs::AppModalDialogView* CreateNativeJavaScriptDialog(
     javascript_dialogs::AppModalDialogController* dialog) {
   javascript_dialogs::AppModalDialogViewViews* d = nullptr;
 #if defined(USE_X11)
-  d = new JavaScriptAppModalDialogViewsX11(dialog);
-#else
-  d = new ChromeJavaScriptAppModalDialogViews(dialog);
+  if (!features::IsUsingOzonePlatform())
+    d = new JavaScriptAppModalDialogViewsX11(dialog);
 #endif
+  if (!d)
+    d = new ChromeJavaScriptAppModalDialogViews(dialog);
   dialog->web_contents()->GetDelegate()->ActivateContents(
       dialog->web_contents());
   gfx::NativeWindow parent_window =

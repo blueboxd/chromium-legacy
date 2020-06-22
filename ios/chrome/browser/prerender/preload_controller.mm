@@ -359,7 +359,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
   DCHECK(![self isWebStatePrerendered:webState.get()]);
 
   webState->RemoveObserver(_webStateObserver.get());
-  breakpad::StopMonitoringURLsForWebState(webState.get());
+  breakpad::StopMonitoringURLsForPreloadWebState(webState.get());
   webState->SetDelegate(nullptr);
   _policyDeciderBridge.reset();
   HistoryTabHelper::FromWebState(webState.get())
@@ -553,7 +553,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 
   _webState->SetDelegate(_webStateDelegate.get());
   _webState->AddObserver(_webStateObserver.get());
-  breakpad::MonitorURLsForWebState(_webState.get());
+  breakpad::MonitorURLsForPreloadWebState(_webState.get());
   _webState->SetWebUsageEnabled(true);
 
   if (AccountConsistencyService* accountConsistencyService =
@@ -593,7 +593,7 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
                             PRERENDER_FINAL_STATUS_MAX);
 
   _webState->RemoveObserver(_webStateObserver.get());
-  breakpad::StopMonitoringURLsForWebState(_webState.get());
+  breakpad::StopMonitoringURLsForPreloadWebState(_webState.get());
   _webState->SetDelegate(nullptr);
   _webState.reset();
 

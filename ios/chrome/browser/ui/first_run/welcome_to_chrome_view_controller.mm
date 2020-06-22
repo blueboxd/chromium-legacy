@@ -45,8 +45,6 @@
 
 namespace {
 
-const CGFloat kFadeOutAnimationDuration = 0.16f;
-
 // Default value for metrics reporting state. "YES" corresponding to "opt-out"
 // state.
 const BOOL kDefaultStatsCheckboxValue = YES;
@@ -191,43 +189,25 @@ const BOOL kDefaultStatsCheckboxValue = YES;
                                           ->GetChromeIdentityService()
                                           ->HasIdentities();
 
-  if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
-    self.coordinator = [SigninCoordinator
-        firstRunCoordinatorWithBaseNavigationController:
-            self.navigationController
-                                                browser:_browser];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(markSigninAttempted:)
-               name:kUserSigninAttemptedNotification
-             object:self.coordinator];
-    __weak WelcomeToChromeViewController* weakSelf = self;
-    self.coordinator.signinCompletion =
-        ^(SigninCoordinatorResult signinResult,
-          SigninCompletionInfo* signinCompletionInfo) {
-          [weakSelf.coordinator stop];
-          weakSelf.coordinator = nil;
-          [weakSelf finishFirstRunWithSigninResult:signinResult
-                              signinCompletionInfo:signinCompletionInfo];
-        };
+  self.coordinator = [SigninCoordinator
+      firstRunCoordinatorWithBaseNavigationController:self.navigationController
+                                              browser:_browser];
+  [[NSNotificationCenter defaultCenter]
+      addObserver:self
+         selector:@selector(markSigninAttempted:)
+             name:kUserSigninAttemptedNotification
+           object:self.coordinator];
+  __weak WelcomeToChromeViewController* weakSelf = self;
+  self.coordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult,
+        SigninCompletionInfo* signinCompletionInfo) {
+        [weakSelf.coordinator stop];
+        weakSelf.coordinator = nil;
+        [weakSelf finishFirstRunWithSigninResult:signinResult
+                            signinCompletionInfo:signinCompletionInfo];
+      };
 
-    [self.coordinator start];
-  } else {
-    FirstRunChromeSigninViewController* signInController =
-        [[FirstRunChromeSigninViewController alloc]
-            initWithBrowser:_browser
-             firstRunConfig:self.firstRunConfig
-             signInIdentity:nil
-                  presenter:self.presenter
-                 dispatcher:self.dispatcher];
-
-    CATransition* transition = [CATransition animation];
-    transition.duration = kFadeOutAnimationDuration;
-    transition.type = kCATransitionFade;
-    [self.navigationController.view.layer addAnimation:transition
-                                                forKey:kCATransition];
-    [self.navigationController pushViewController:signInController animated:NO];
-  }
+  [self.coordinator start];
 }
 
 // Completes the first run operation depending on the |signinResult| state.

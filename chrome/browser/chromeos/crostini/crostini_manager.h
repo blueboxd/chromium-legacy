@@ -246,10 +246,6 @@ class CrostiniManager : public KeyedService,
   // finishes.
   void StartConcierge(BoolCallback callback);
 
-  // Stops the Concierge service. |callback| is called after the method call
-  // finishes.
-  void StopConcierge(BoolCallback callback);
-
   // Checks the arguments for creating a new Termina VM disk image. Creates a
   // disk image for a Termina VM via ConciergeClient::CreateDiskImage.
   // |callback| is called if the arguments are bad, or after the method call

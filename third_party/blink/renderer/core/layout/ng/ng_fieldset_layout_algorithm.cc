@@ -277,8 +277,16 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutLegend(
     }
 
     LayoutUnit legend_margin_box_block_size =
-        NGFragment(writing_mode_, physical_fragment).BlockSize() +
-        legend_margins.BlockSum();
+        legend_margins.block_start +
+        NGFragment(writing_mode_, physical_fragment).BlockSize();
+
+    LayoutUnit block_end_margin = legend_margins.block_end;
+    if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+      block_end_margin = AdjustedMarginAfterFinalChildFragment(
+          ConstraintSpace(), legend_margin_box_block_size, block_end_margin);
+    }
+    legend_margin_box_block_size += block_end_margin;
+
     LayoutUnit space_left = borders_.block_start - legend_margin_box_block_size;
 
     if (space_left > LayoutUnit()) {

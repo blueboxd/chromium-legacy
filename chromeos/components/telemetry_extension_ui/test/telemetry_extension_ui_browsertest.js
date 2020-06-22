@@ -38,10 +38,19 @@ TEST_F('TelemetryExtensionUIBrowserTest', 'HasChromeSchemeURL', () => {
   assertEquals(document.location.origin, HOST_ORIGIN);
 });
 
+
+var TelemetryExtensionUIUntrustedBrowserTest =
+  class extends TelemetryExtensionUIBrowserTest {
+    /** @override */
+    get isAsync() {
+      return true;
+    }
+  };
+
 // Tests that chrome://telemetry-extension embeds a
 // chrome-untrusted:// iframe
-TEST_F(
-    'TelemetryExtensionUIBrowserTest', 'HasChromeUntrustedIframe', () => {
+TEST_F('TelemetryExtensionUIUntrustedBrowserTest',
+  'HasChromeUntrustedIframe', () => {
       const iframe = document.querySelector('iframe');
       window.onmessage = (event) => {
         assertEquals(event.origin, UNTRUSTED_HOST_ORIGIN);
@@ -49,4 +58,16 @@ TEST_F(
         testDone();
       };
       iframe.contentWindow.postMessage('hello', UNTRUSTED_HOST_ORIGIN);
-    });
+});
+
+// Tests that chrome-untrusted:// can communicate with Worker.
+TEST_F('TelemetryExtensionUIUntrustedBrowserTest',
+  'HasChromeUntrustedWorker', () => {
+  const iframe = document.querySelector('iframe');
+  window.onmessage = (event) => {
+    assertEquals(event.origin, UNTRUSTED_HOST_ORIGIN);
+    assertEquals(event.data.message, 'WebWorker');
+    testDone();
+  };
+  iframe.contentWindow.postMessage('runWebWorker', UNTRUSTED_HOST_ORIGIN);
+});

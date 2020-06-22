@@ -12,10 +12,11 @@
 #include <type_traits>
 
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/containers/stack_container.h"
 #include "base/debug/alias.h"
-#include "base/logging.h"
 #include "base/memory/aligned_memory.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "cc/base/math_util.h"
 #include "cc/paint/node_id.h"

@@ -5,7 +5,7 @@
 #ifndef CC_BASE_COMPLETION_EVENT_H_
 #define CC_BASE_COMPLETION_EVENT_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"

@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_VECTOR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_VECTOR_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_common.h"
 

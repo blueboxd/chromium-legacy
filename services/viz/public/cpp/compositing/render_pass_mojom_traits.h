@@ -6,8 +6,9 @@
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_RENDER_PASS_MOJOM_TRAITS_H_
 
 #include <memory>
+#include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "services/viz/public/cpp/compositing/copy_output_request_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/quads_mojom_traits.h"

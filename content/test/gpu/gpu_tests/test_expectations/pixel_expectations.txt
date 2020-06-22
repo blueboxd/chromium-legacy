@@ -330,3 +330,6 @@ crbug.com/1086687 [ chromeos chromeos-board-kevin ] Pixel_PrecisionRoundedCorner
 
 # Produces blank images on gpu-fyi-try-chromeos-kevin, gpu-fyi-try-chromeos-amd64-generic.
 crbug.com/1086690 [ chromeos ] Pixel_WebGLSadCanvas [ Skip ]
+
+# Likely produces a Dawn validation errors that makes rendering skipped.
+crbug.com/1097735 [ use-skia-dawn ] Pixel_PaintWorkletTransform [ Failure ]

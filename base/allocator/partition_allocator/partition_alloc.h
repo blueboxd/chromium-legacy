@@ -564,7 +564,8 @@ BASE_EXPORT void PartitionAllocGlobalInit(OomFunction on_out_of_memory);
 BASE_EXPORT void PartitionAllocGlobalUninitForTesting();
 
 ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
-#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(__LP64__)
+#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(ARCH_CPU_64_BITS) && \
+    !defined(OS_NACL)
   return internal::PartitionAddressSpace::Contains(address);
 #else
   return false;
@@ -573,7 +574,8 @@ ALWAYS_INLINE bool IsManagedByPartitionAlloc(const void* address) {
 
 ALWAYS_INLINE bool IsManagedByPartitionAllocAndNotDirectMapped(
     const void* address) {
-#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(__LP64__)
+#if BUILDFLAG(USE_PARTITION_ALLOC) && defined(ARCH_CPU_64_BITS) && \
+    !defined(OS_NACL)
   return internal::PartitionAddressSpace::IsInNormalBucketPool(address);
 #else
   return false;

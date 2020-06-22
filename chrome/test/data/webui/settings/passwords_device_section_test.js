@@ -216,7 +216,7 @@ suite('PasswordsDeviceSection', function() {
     // dialog is now open.
     const [password] =
         passwordsDeviceSection.root.querySelectorAll('password-list-item');
-    password.$.passwordMenu.click();
+    password.$.moreActionsButton.click();
     passwordsDeviceSection.$.passwordsListHandler
         .$$('#menuMovePasswordToAccount')
         .click();

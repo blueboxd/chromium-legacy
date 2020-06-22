@@ -714,7 +714,9 @@ TEST_P(CrostiniAppTest, DisableCrostini) {
 
   // The uninstall flow removes all apps before setting the CrostiniEnabled pref
   // to false, so we need to do that explicitly too.
-  RegistryService()->ClearApplicationList(crostini::kCrostiniDefaultVmName, "");
+  RegistryService()->ClearApplicationList(
+      guest_os::GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA,
+      crostini::kCrostiniDefaultVmName, "");
   CrostiniTestHelper::DisableCrostini(testing_profile());
   EXPECT_EQ(0u, GetModelItemCount());
 }

@@ -133,4 +133,40 @@ IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceWithGaiaDisabledBrowserTest,
   ASSERT_TRUE(integration_service);
   EXPECT_FALSE(integration_service->is_enabled());
 }
+
+IN_PROC_BROWSER_TEST_F(DriveIntegrationServiceBrowserTest, GetMetadata) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  auto* drive_service =
+      DriveIntegrationServiceFactory::FindForProfile(browser()->profile());
+
+  base::FilePath mount_path = drive_service->GetMountPointPath();
+  base::FilePath file_path;
+  base::CreateTemporaryFileInDir(mount_path, &file_path);
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->GetMetadata(
+        base::FilePath("/foo/bar"),
+        base::BindLambdaForTesting(
+            [=](FileError error, drivefs::mojom::FileMetadataPtr metadata_ptr) {
+              EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
+              quit_closure.Run();
+            }));
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    drive_service->GetMetadata(
+        file_path,
+        base::BindLambdaForTesting(
+            [=](FileError error, drivefs::mojom::FileMetadataPtr metadata_ptr) {
+              EXPECT_EQ(FILE_ERROR_OK, error);
+              quit_closure.Run();
+            }));
+    run_loop.Run();
+  }
+}
 }  // namespace drive

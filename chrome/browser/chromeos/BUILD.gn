@@ -1992,6 +1992,8 @@ source_set("chromeos") {
     "policy/extension_install_event_log.h",
     "policy/extension_install_event_log_collector.cc",
     "policy/extension_install_event_log_collector.h",
+    "policy/extension_install_event_log_uploader.cc",
+    "policy/extension_install_event_log_uploader.h",
     "policy/extension_install_event_logger.cc",
     "policy/extension_install_event_logger.h",
     "policy/external_data_handlers/cloud_external_data_policy_handler.cc",

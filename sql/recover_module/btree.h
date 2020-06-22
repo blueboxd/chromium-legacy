@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/sequence_checker.h"
 
 namespace sql {

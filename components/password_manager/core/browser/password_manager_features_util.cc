@@ -292,9 +292,13 @@ void SetDefaultPasswordStore(PrefService* pref_service,
     // but is ultimately harmless - just do nothing here.
     return;
   }
+
   ScopedAccountStorageSettingsUpdate(pref_service,
                                      GaiaIdHash::FromGaiaId(gaia_id))
       .SetDefaultStore(default_store);
+
+  base::UmaHistogramEnumeration("PasswordManager.DefaultPasswordStoreSet",
+                                default_store);
 }
 
 void KeepAccountStorageSettingsOnlyForUsers(

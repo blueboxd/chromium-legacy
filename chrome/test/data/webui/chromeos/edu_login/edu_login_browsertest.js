@@ -154,3 +154,7 @@ TEST_F('EduLoginSigninTest', 'WebUICallbacks', function() {
 TEST_F('EduLoginSigninTest', 'AuthExtHostCallbacks', function() {
   this.runMochaTest(edu_login_signin_tests.TestNames.AuthExtHostCallbacks);
 });
+
+TEST_F('EduLoginSigninTest', 'GoBackInWebview', function() {
+  this.runMochaTest(edu_login_signin_tests.TestNames.GoBackInWebview);
+});

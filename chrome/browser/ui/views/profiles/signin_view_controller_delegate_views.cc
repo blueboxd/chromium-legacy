@@ -12,6 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/reauth_result.h"
+#include "chrome/browser/signin/reauth_util.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,6 +24,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -32,6 +34,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
+#include "url/gurl.h"
 
 namespace {
 
@@ -57,7 +60,7 @@ std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
     Browser* browser) {
   return CreateDialogWebView(
-      browser, chrome::kChromeUISyncConfirmationURL,
+      browser, GURL(chrome::kChromeUISyncConfirmationURL),
       GetSyncConfirmationDialogPreferredHeight(browser->profile()),
       kSyncConfirmationDialogWidth);
 }
@@ -65,15 +68,17 @@ SigninViewControllerDelegateViews::CreateSyncConfirmationWebView(
 // static
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateSigninErrorWebView(Browser* browser) {
-  return CreateDialogWebView(browser, chrome::kChromeUISigninErrorURL,
+  return CreateDialogWebView(browser, GURL(chrome::kChromeUISigninErrorURL),
                              kSigninErrorDialogHeight, base::nullopt);
 }
 
 // static
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
-    Browser* browser) {
-  return CreateDialogWebView(browser, chrome::kChromeUISigninReauthURL,
+    Browser* browser,
+    signin_metrics::ReauthAccessPoint access_point) {
+  return CreateDialogWebView(browser,
+                             signin::GetReauthConfirmationURL(access_point),
                              kReauthDialogHeight, kReauthDialogWidth);
 }
 
@@ -208,12 +213,12 @@ SigninViewControllerDelegateViews::~SigninViewControllerDelegateViews() =
 std::unique_ptr<views::WebView>
 SigninViewControllerDelegateViews::CreateDialogWebView(
     Browser* browser,
-    const std::string& url,
+    const GURL& url,
     int dialog_height,
     base::Optional<int> opt_width) {
   int dialog_width = opt_width.value_or(kModalDialogWidth);
   views::WebView* web_view = new views::WebView(browser->profile());
-  web_view->LoadInitialURL(GURL(url));
+  web_view->LoadInitialURL(url);
   // To record metrics using javascript, extensions are needed.
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       web_view->GetWebContents());
@@ -294,9 +299,10 @@ SigninViewControllerDelegate::CreateSigninErrorDelegate(Browser* browser) {
 SigninViewControllerDelegate*
 SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
     Browser* browser,
-    const CoreAccountId& account_id) {
+    const CoreAccountId& account_id,
+    signin_metrics::ReauthAccessPoint access_point) {
   return new SigninViewControllerDelegateViews(
       SigninViewControllerDelegateViews::CreateReauthConfirmationWebView(
-          browser),
+          browser, access_point),
       browser, ui::MODAL_TYPE_CHILD, false, true);
 }

@@ -248,16 +248,10 @@ void LayoutSVGText::UpdateLayout() {
   needs_reordering_ = false;
 
   const bool bounds_changed = old_boundaries != ObjectBoundingBox();
-
-  // Update the transform after laying out. Update if the bounds
-  // changed too, since the transform could depend on the bounding
-  // box.
-  if (bounds_changed) {
-    needs_transform_update_ = true;
+  if (bounds_changed)
     update_parent_boundaries = true;
-  }
 
-  if (UpdateTransformAfterLayout())
+  if (UpdateTransformAfterLayout(bounds_changed))
     update_parent_boundaries = true;
 
   ClearLayoutOverflow();

@@ -20,7 +20,7 @@ namespace internal {
 namespace {
 
 void DecommitPages(void* address, size_t size) {
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 #if defined(OS_MACOSX)
   SetSystemPagesAccess(address, size, PageReadWrite);
   memset(address, 0, size);

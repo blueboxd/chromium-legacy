@@ -1264,7 +1264,10 @@ IN_PROC_BROWSER_TEST_F(
 
   ASSERT_TRUE(
       UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
-  ASSERT_TRUE(BookmarksMatchVerifierChecker().Wait());
+  ASSERT_TRUE(bookmarks_helper::ServerBookmarksEqualityChecker(
+                  GetSyncService(kSingleProfileIndex), GetFakeServer(),
+                  {{title, page_url}}, /*cryptographer=*/nullptr)
+                  .Wait());
 
   // Stop Sync and update local entity to enter in unsynced state.
   DisableVerifier();

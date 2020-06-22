@@ -260,6 +260,21 @@ enum class LineLogicalSide {
   kUnder,
 };
 
+constexpr size_t kScrollbarGutterBits = 4;
+enum ScrollbarGutter {
+  kScrollbarGutterAuto = 0x0,
+  kScrollbarGutterStable = 0x1,
+  kScrollbarGutterAlways = 0x2,
+  kScrollbarGutterBoth = 0x4,
+  kScrollbarGutterForce = 0x8
+};
+inline ScrollbarGutter operator|(ScrollbarGutter a, ScrollbarGutter b) {
+  return ScrollbarGutter(int(a) | int(b));
+}
+inline ScrollbarGutter& operator|=(ScrollbarGutter& a, ScrollbarGutter b) {
+  return a = a | b;
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_STYLE_COMPUTED_STYLE_CONSTANTS_H_

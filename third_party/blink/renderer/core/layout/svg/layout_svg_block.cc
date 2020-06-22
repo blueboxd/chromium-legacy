@@ -28,13 +28,16 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 
 namespace blink {
 
 LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
-    : LayoutBlockFlow(element), needs_transform_update_(true) {}
+    : LayoutBlockFlow(element),
+      needs_transform_update_(true),
+      transform_uses_reference_box_(false) {}
 
 SVGElement* LayoutSVGBlock::GetElement() const {
   return To<SVGElement>(LayoutObject::GetNode());
@@ -51,7 +54,27 @@ void LayoutSVGBlock::UpdateFromStyle() {
   SetFloating(false);
 }
 
-bool LayoutSVGBlock::UpdateTransformAfterLayout() {
+bool LayoutSVGBlock::CheckForImplicitTransformChange(bool bbox_changed) const {
+  // If the transform is relative to the reference box, check relevant
+  // conditions to see if we need to recompute the transform.
+  switch (StyleRef().TransformBox()) {
+    case ETransformBox::kViewBox:
+      return SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(this);
+    case ETransformBox::kFillBox:
+      return bbox_changed;
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool LayoutSVGBlock::UpdateTransformAfterLayout(bool bounds_changed) {
+  // If our transform depends on the reference box, we need to check if it needs
+  // to be updated.
+  if (!needs_transform_update_ && transform_uses_reference_box_) {
+    needs_transform_update_ = CheckForImplicitTransformChange(bounds_changed);
+    if (needs_transform_update_)
+      SetNeedsPaintPropertyUpdate();
+  }
   if (!needs_transform_update_)
     return false;
   local_transform_ =
@@ -62,6 +85,9 @@ bool LayoutSVGBlock::UpdateTransformAfterLayout() {
 
 void LayoutSVGBlock::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
+  transform_uses_reference_box_ =
+      TransformHelper::DependsOnReferenceBox(StyleRef());
+
   // Since layout depends on the bounds of the filter, we need to force layout
   // when the filter changes.
   if (diff.FilterChanged())

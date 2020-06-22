@@ -47,6 +47,8 @@ source_set("crash_report_internal") {
   sources = [
     "crash_report_helper.h",
     "crash_report_helper.mm",
+    "crash_reporter_url_observer.h",
+    "crash_reporter_url_observer.mm",
     "crash_restore_helper.h",
     "crash_restore_helper.mm",
   ]
@@ -84,6 +86,7 @@ source_set("unit_tests") {
     "breakpad_helper_unittest.mm",
     "crash_loop_detection_util_unittest.mm",
     "crash_reporter_breadcrumb_observer_unittest.mm",
+    "crash_reporter_url_observer_unittest.mm",
     "crash_restore_helper_unittest.mm",
   ]
   deps = [
@@ -98,6 +101,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/sessions:session_service",
+    "//ios/chrome/browser/web_state_list:test_support",
+    "//ios/chrome/browser/web_state_list:web_state_list",
     "//ios/chrome/test/ocmock",
     "//ios/testing:block_swizzler",
     "//ios/web/public/test",

@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
+#include "chrome/browser/signin/reauth_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller.h"
@@ -202,17 +203,20 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest,
 
 // Tests that the confirm button is focused by default in the reauth dialog.
 IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, ReauthDefaultFocus) {
+  const auto kAccessPoint =
+      signin_metrics::ReauthAccessPoint::kAutofillDropdown;
+  content::TestNavigationObserver content_observer(
+      signin::GetReauthConfirmationURL(kAccessPoint));
+  content_observer.StartWatchingNewWebContents();
   CoreAccountId account_id = signin::SetUnconsentedPrimaryAccount(
                                  GetIdentityManager(), "alice@gmail.com")
                                  .account_id;
+
   signin::ReauthResult reauth_result;
-  content::TestNavigationObserver content_observer(
-      GURL("chrome://signin-reauth/"));
-  content_observer.StartWatchingNewWebContents();
   base::RunLoop run_loop;
   std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
       browser()->signin_view_controller()->ShowReauthPrompt(
-          account_id, signin_metrics::ReauthAccessPoint::kAutofillDropdown,
+          account_id, kAccessPoint,
           base::BindLambdaForTesting([&](signin::ReauthResult result) {
             reauth_result = result;
             run_loop.Quit();

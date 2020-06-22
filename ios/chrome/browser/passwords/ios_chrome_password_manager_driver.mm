@@ -33,7 +33,8 @@ void IOSChromePasswordManagerDriver::FillPasswordForm(
   [delegate_ fillPasswordForm:form_data completionHandler:nil];
 }
 
-void IOSChromePasswordManagerDriver::InformNoSavedCredentials() {
+void IOSChromePasswordManagerDriver::InformNoSavedCredentials(
+    bool should_show_popup_without_passwords) {
   [delegate_ onNoSavedCredentials];
 }
 

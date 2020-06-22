@@ -134,10 +134,6 @@ class ActionDelegate {
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>
           write_callback) = 0;
 
-  // Executes |write_callback| on the currently stored user_model.
-  virtual void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) = 0;
-
   using GetFullCardCallback =
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
                               const base::string16& cvc)>;

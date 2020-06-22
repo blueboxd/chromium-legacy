@@ -1251,5 +1251,12 @@
     // none
     "single-fold-vertical",
     "single-fold-horizontal",
+
+    // scrollbar-gutter
+    // auto
+    "stable",
+    // always
+    // both
+    "force",
   ],
 }

@@ -14,7 +14,7 @@ namespace base {
 
 namespace internal {
 
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 // Before PartitionAddressSpace::Init(), no allocation are allocated from a
 // reserved address space. So initially make reserved_base_address_ to
@@ -62,7 +62,7 @@ void PartitionAddressSpace::UninitForTesting() {
   internal::AddressPoolManager::GetInstance()->ResetForTesting();
 }
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
 

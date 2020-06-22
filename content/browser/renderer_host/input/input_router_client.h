@@ -45,9 +45,9 @@ class CONTENT_EXPORT InputRouterClient {
   // renderer.
   virtual void DidOverscroll(const ui::DidOverscrollParams& params) = 0;
 
-  // Called when the router has received a whitelisted touch action notification
+  // Called when the router has received an allowed touch action notification
   // from the renderer.
-  virtual void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) = 0;
+  virtual void OnSetCompositorAllowedTouchAction(cc::TouchAction) = 0;
 
   // Called when a GSB has started scrolling a viewport.
   virtual void DidStartScrollingViewport() = 0;

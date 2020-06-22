@@ -286,12 +286,12 @@ void InputRouterImpl::SetTouchActionFromMain(cc::TouchAction touch_action) {
   UpdateTouchAckTimeoutEnabled();
 }
 
-void InputRouterImpl::OnSetWhiteListedTouchAction(
+void InputRouterImpl::OnSetCompositorAllowedTouchAction(
     cc::TouchAction touch_action) {
-  TRACE_EVENT1("input", "InputRouterImpl::OnSetWhiteListedTouchAction",
+  TRACE_EVENT1("input", "InputRouterImpl::OnSetCompositorAllowedTouchAction",
                "action", cc::TouchActionToString(touch_action));
-  touch_action_filter_.OnSetWhiteListedTouchAction(touch_action);
-  client_->OnSetWhiteListedTouchAction(touch_action);
+  touch_action_filter_.OnSetCompositorAllowedTouchAction(touch_action);
+  client_->OnSetCompositorAllowedTouchAction(touch_action);
   if (touch_action == cc::TouchAction::kAuto)
     FlushDeferredGestureQueue();
   UpdateTouchAckTimeoutEnabled();
@@ -640,7 +640,7 @@ void InputRouterImpl::TouchEventHandled(
   // time the ACK is handled.
   if (touch_action) {
     if (source == blink::mojom::InputEventResultSource::kCompositorThread)
-      OnSetWhiteListedTouchAction(touch_action->touch_action);
+      OnSetCompositorAllowedTouchAction(touch_action->touch_action);
     else if (source == blink::mojom::InputEventResultSource::kMainThread)
       OnSetTouchAction(touch_action->touch_action);
     else
@@ -761,12 +761,12 @@ void InputRouterImpl::UpdateTouchAckTimeoutEnabled() {
   // to page functionality, so the timeout could do more harm than good.
   base::Optional<cc::TouchAction> allowed_touch_action =
       touch_action_filter_.allowed_touch_action();
-  cc::TouchAction white_listed_touch_action =
-      touch_action_filter_.white_listed_touch_action();
+  cc::TouchAction compositor_allowed_touch_action =
+      touch_action_filter_.compositor_allowed_touch_action();
   const bool touch_ack_timeout_disabled =
       (allowed_touch_action.has_value() &&
        allowed_touch_action.value() == cc::TouchAction::kNone) ||
-      (white_listed_touch_action == cc::TouchAction::kNone);
+      (compositor_allowed_touch_action == cc::TouchAction::kNone);
   touch_event_queue_.SetAckTimeoutEnabled(!touch_ack_timeout_disabled);
 }
 

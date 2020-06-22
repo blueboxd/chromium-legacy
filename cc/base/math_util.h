@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/base/base_export.h"

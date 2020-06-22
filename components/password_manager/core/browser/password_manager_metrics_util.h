@@ -355,6 +355,8 @@ enum class PasswordDropdownState {
 };
 
 // Type of the item the user selects in the password drop-down.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class PasswordDropdownSelectedOption {
   // User selected a credential to fill.
   kPassword = 0,
@@ -362,7 +364,13 @@ enum class PasswordDropdownSelectedOption {
   kShowAll = 1,
   // User selected to generate a password.
   kGenerate = 2,
-  kMaxValue = kGenerate
+  // User unlocked the account-store to fill a password.
+  kUnlockAccountStorePasswords = 3,
+  // User unlocked the account-store to generate a password.
+  kUnlockAccountStoreGeneration = 4,
+  // Previoulsy opted-in user decided to log-in again to access their passwords.
+  kResigninToUnlockAccountStore = 5,
+  kMaxValue = kResigninToUnlockAccountStore
 };
 
 // Used in UMA histograms, please do NOT reorder.
@@ -515,6 +523,9 @@ void LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
 
 // Log a frame of a submitted password form.
 void LogSubmittedFormFrame(SubmittedFormFrame frame);
+
+// Logs how many account-stored passwords are available right after unlock.
+void LogPasswordsCountFromAccountStoreAfterUnlock(int account_store_passwords);
 
 // Logs the result of a re-auth challenge in the password settings.
 void LogPasswordSettingsReauthResult(ReauthResult result);

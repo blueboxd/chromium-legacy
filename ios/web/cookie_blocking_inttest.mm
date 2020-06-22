@@ -51,6 +51,7 @@ NSString* const kSessionStorageErrorMessage =
 NSString* const kCacheNotAvailableErrorMessage = @"Can't find variable: caches";
 NSString* const kCacheErrorMessage = @"An attempt was made to break through "
                                      @"the security policy of the user agent.";
+NSString* const kIndexedDBErrorMessage = @"Can't find variable: indexedDB";
 }
 
 namespace web {
@@ -650,6 +651,90 @@ TEST_F(CookieBlockingTest, CacheStorageBlocked) {
     one_frame_succeeded = true;
   }
   EXPECT_TRUE(one_frame_succeeded);
+}
+
+// Tests that IndexedDB is accessible from JavaScript in the main frame
+// when the blocking mode is set to allow.
+TEST_F(CookieBlockingTest, IndexedDBAllowed) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kAllow,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Use arbitrary third party url for iframe.
+  GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
+  std::string url_spec = kPageUrl + net::EscapeQueryParamValue(
+                                        iframe_url.spec(), /*use_plus=*/true);
+  test::LoadUrl(web_state(), server_.GetURL(url_spec));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
+  }));
+
+  // Only test in the main frame because WebKit already disallows indexedDB in
+  // cross-origin iframes.
+  WebFrame* main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+  NSString* error_message;
+  EXPECT_TRUE(web::test::SetIndexedDB(main_frame, web_state(), @"x", @"value",
+                                      &error_message))
+      << FailureMessage(main_frame);
+  EXPECT_NSEQ(nil, error_message) << FailureMessage(main_frame);
+
+  error_message = nil;
+  NSString* result;
+  EXPECT_TRUE(web::test::GetIndexedDB(main_frame, web_state(), @"x", &result,
+                                      &error_message))
+      << FailureMessage(main_frame);
+  EXPECT_NSEQ(nil, error_message) << FailureMessage(main_frame);
+  EXPECT_NSEQ(@"value", result) << FailureMessage(main_frame);
+}
+
+// Tests that IndexedDB is blocked from JavaScript in the main frame
+// when the blocking mode is set to blocked.
+TEST_F(CookieBlockingTest, IndexedDBBlocked) {
+  __block bool success = false;
+  GetBrowserState()->SetCookieBlockingMode(CookieBlockingMode::kBlock,
+                                           base::BindOnce(^{
+                                             success = true;
+                                           }));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return success;
+  }));
+
+  // Use arbitrary third party url for iframe.
+  GURL iframe_url = third_party_server_.GetURL(kIFrameUrl);
+  std::string url_spec = kPageUrl + net::EscapeQueryParamValue(
+                                        iframe_url.spec(), /*use_plus=*/true);
+  test::LoadUrl(web_state(), server_.GetURL(url_spec));
+
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return web_state()->GetWebFramesManager()->GetAllWebFrames().size() == 2;
+  }));
+
+  // Only test in the main frame because WebKit already disallows indexedDB in
+  // cross-origin iframes.
+  WebFrame* main_frame = web_state()->GetWebFramesManager()->GetMainWebFrame();
+  NSString* error_message;
+  EXPECT_TRUE(web::test::SetIndexedDB(main_frame, web_state(), @"x", @"value",
+                                      &error_message))
+      << FailureMessage(main_frame);
+  EXPECT_NSEQ(kIndexedDBErrorMessage, error_message)
+      << FailureMessage(main_frame);
+
+  error_message = nil;
+  NSString* result;
+  EXPECT_TRUE(web::test::GetIndexedDB(main_frame, web_state(), @"x", &result,
+                                      &error_message))
+      << FailureMessage(main_frame);
+  EXPECT_NSEQ(kIndexedDBErrorMessage, error_message)
+      << FailureMessage(main_frame);
+  EXPECT_NSEQ(nil, result) << FailureMessage(main_frame);
 }
 
 // Tests that the cookies sent in HTTP headers are allowed.

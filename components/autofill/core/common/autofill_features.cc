@@ -131,6 +131,10 @@ const base::Feature kAutofillPreferServerNamePredictions{
 const base::Feature kAutofillProfileClientValidation{
     "AutofillProfileClientValidation", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kAutofillProfileImportFromUnifiedSection{
+    "AutofillProfileImportFromUnifiedSection",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether Autofill uses server-side validation to ensure that fields
 // with invalid data are not suggested.
 const base::Feature kAutofillProfileServerValidation{

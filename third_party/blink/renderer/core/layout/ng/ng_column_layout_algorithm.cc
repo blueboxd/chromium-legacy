@@ -378,6 +378,9 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutChildren() {
     // resuming.
     container_builder_.SetHasSeenAllChildren();
 
+    // TODO(mstensho): Truncate the child margin if it overflows the
+    // fragmentainer, by using AdjustedMarginAfterFinalChildFragment().
+
     intrinsic_block_size_ += margin_strut.Sum();
   }
 

@@ -187,6 +187,7 @@ TEST_F(GuestOsRegistryServiceTest, Observer) {
 TEST_F(GuestOsRegistryServiceTest, NoObserverForPvmDefault) {
   ApplicationList app_list = crostini::CrostiniTestHelper::BasicAppList(
       "app 1", "PvmDefault", "container");
+  app_list.set_vm_type(vm_tools::apps::ApplicationList_VmType_PLUGIN_VM);
   std::string app_id_1 = crostini::CrostiniTestHelper::GenerateAppId(
       "app 1", "PvmDefault", "container");
 
@@ -206,7 +207,9 @@ TEST_F(GuestOsRegistryServiceTest, NoObserverForPvmDefault) {
                                 testing::UnorderedElementsAre(app_id_1),
                                 testing::IsEmpty()))
       .Times(0);
-  service()->ClearApplicationList("PvmDefault", "");
+  service()->ClearApplicationList(
+      GuestOsRegistryService::VmType::ApplicationList_VmType_PLUGIN_VM,
+      "PvmDefault", "");
 }
 
 TEST_F(GuestOsRegistryServiceTest, ZeroAppsInstalledHistogram) {
@@ -353,7 +356,9 @@ TEST_F(GuestOsRegistryServiceTest, ClearApplicationList) {
                                          app_id_1, app_id_2, app_id_3, app_id_4,
                                          crostini::GetTerminalId()));
 
-  service()->ClearApplicationList("vm 2", "");
+  service()->ClearApplicationList(
+      GuestOsRegistryService::VmType::ApplicationList_VmType_TERMINA, "vm 2",
+      "");
 
   EXPECT_THAT(GetRegisteredAppIds(),
               testing::UnorderedElementsAre(app_id_1, app_id_2,

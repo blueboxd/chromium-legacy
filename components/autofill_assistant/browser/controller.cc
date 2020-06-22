@@ -1758,11 +1758,6 @@ void Controller::WriteUserData(
   }
 }
 
-void Controller::WriteUserModel(
-    base::OnceCallback<void(UserModel*)> write_callback) {
-  std::move(write_callback).Run(&user_model_);
-}
-
 ElementArea* Controller::touchable_element_area() {
   if (!touchable_element_area_) {
     touchable_element_area_ = std::make_unique<ElementArea>(this);

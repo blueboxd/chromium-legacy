@@ -228,7 +228,7 @@ class CONTENT_EXPORT InputRouterImpl
       GestureEventWithLatencyInfo& gesture_event,
       const FilterGestureEventResult& existing_result);
   void ProcessDeferredGestureEventQueue();
-  void OnSetWhiteListedTouchAction(cc::TouchAction touch_action);
+  void OnSetCompositorAllowedTouchAction(cc::TouchAction touch_action);
 
   InputRouterImplClient* client_;
   InputDispositionHandler* disposition_handler_;

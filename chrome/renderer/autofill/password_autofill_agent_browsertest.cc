@@ -1985,15 +1985,32 @@ TEST_F(PasswordAutofillAgentTest, ClickAndSelect) {
 
   CheckTextFieldsDOMState(kAliceUsername, true, kAlicePassword, true);
 }
+TEST_F(PasswordAutofillAgentTest,
+       NoPopupOnPasswordFieldWithoutSuggestionsByDefault) {
+  ClearUsernameAndPasswordFields();
+  UpdateRendererIDs();
+
+  // A call to InformNoSavedCredentials(should_show_popup_without_passwords) is
+  // what informs the agent whether it should show the popup even without
+  // suggestions. In this test, that call hasn't happened yet, so the popup
+  // should NOT show up without suggestions.
+
+  SimulateElementClick(kPasswordName);
+
+  EXPECT_CALL(fake_driver_, ShowPasswordSuggestions).Times(0);
+  base::RunLoop().RunUntilIdle();
+}
 
 // With butter, passwords fields should always trigger the popup so the user can
 // unlock account-stored suggestions from there.
 TEST_F(PasswordAutofillAgentTest, ShowPopupOnPasswordFieldWithoutSuggestions) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      password_manager::features::kEnablePasswordsAccountStorage);
   ClearUsernameAndPasswordFields();
   UpdateRendererIDs();
+
+  // InformNoSavedCredentials(should_show_popup_without_passwords) tells the
+  // agent to show the popup even without suggestions.
+  password_autofill_agent_->InformNoSavedCredentials(
+      /*should_show_popup_without_passwords=*/true);
 
   SimulateElementClick(kPasswordName);
 
@@ -2004,11 +2021,13 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnPasswordFieldWithoutSuggestions) {
 // Before butter, passwords fields should never trigger the popup on password
 // passwords fields without suggestions since it would not be helpful.
 TEST_F(PasswordAutofillAgentTest, NoPopupOnPasswordFieldWithoutSuggestions) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      password_manager::features::kEnablePasswordsAccountStorage);
   ClearUsernameAndPasswordFields();
   UpdateRendererIDs();
+
+  // InformNoSavedCredentials(should_show_popup_without_passwords) tells the
+  // agent NOT to show the popup without suggestions.
+  password_autofill_agent_->InformNoSavedCredentials(
+      /*should_show_popup_without_passwords=*/false);
 
   SimulateElementClick(kPasswordName);
 

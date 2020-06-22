@@ -239,6 +239,19 @@ bool AttemptSoftBreak(const NGConstraintSpace&,
                       NGBreakAppeal appeal_before,
                       NGBoxFragmentBuilder*);
 
+// Return the adjusted child margin to be applied at the end of a fragment.
+// Margins should collapse with the fragmentainer boundary. |bfc_block_offset|
+// is the BFC offset where the margin should be applied (i.e. after the
+// block-end border edge of the last child fragment).
+inline LayoutUnit AdjustedMarginAfterFinalChildFragment(
+    const NGConstraintSpace& space,
+    LayoutUnit bfc_block_offset,
+    LayoutUnit block_end_margin) {
+  LayoutUnit space_left =
+      FragmentainerSpaceAtBfcStart(space) - bfc_block_offset;
+  return std::min(block_end_margin, space_left.ClampNegativeToZero());
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_FRAGMENTATION_UTILS_H_

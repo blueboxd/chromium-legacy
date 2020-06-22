@@ -16,9 +16,9 @@
 #include <utility>
 
 #include "base/atomicops.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/synchronization/lock.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 

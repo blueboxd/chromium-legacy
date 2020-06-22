@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 
 namespace blink {
 
@@ -19,11 +20,16 @@ class CORE_EXPORT LayoutInsideListMarker final : public LayoutInline {
 
   const char* GetName() const override { return "LayoutInsideListMarker"; }
 
+  const ListMarker& Marker() const { return list_marker_; }
+  ListMarker& Marker() { return list_marker_; }
+
  private:
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectInsideListMarker ||
            LayoutInline::IsOfType(type);
   }
+
+  ListMarker list_marker_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutInsideListMarker,

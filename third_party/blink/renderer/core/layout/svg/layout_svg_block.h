@@ -65,12 +65,14 @@ class LayoutSVGBlock : public LayoutBlockFlow {
 
   AffineTransform local_transform_;
   bool needs_transform_update_ : 1;
+  bool transform_uses_reference_box_ : 1;
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVG || LayoutBlockFlow::IsOfType(type);
   }
 
-  bool UpdateTransformAfterLayout();
+  bool CheckForImplicitTransformChange(bool bbox_changed) const;
+  bool UpdateTransformAfterLayout(bool bounds_changed);
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
 
  private:

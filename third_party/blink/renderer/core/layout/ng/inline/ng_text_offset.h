@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_OFFSET_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_TEXT_OFFSET_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {

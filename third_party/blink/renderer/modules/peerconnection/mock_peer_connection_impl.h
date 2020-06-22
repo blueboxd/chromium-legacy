@@ -8,8 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"

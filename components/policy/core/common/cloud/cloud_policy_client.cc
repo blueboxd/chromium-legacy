@@ -180,6 +180,7 @@ void CloudPolicyClient::SetupRegistration(
   client_id_ = client_id;
   request_jobs_.clear();
   app_install_report_request_job_ = nullptr;
+  extension_install_report_request_job_ = nullptr;
   policy_fetch_request_job_.reset();
   responses_.clear();
   if (device_dm_token_callback_) {
@@ -594,16 +595,7 @@ void CloudPolicyClient::UploadRealtimeReport(base::Value report,
                                              StatusCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
-
-  std::unique_ptr<RealtimeReportingJobConfiguration> config =
-      std::make_unique<RealtimeReportingJobConfiguration>(
-          this, DMAuth::FromDMToken(dm_token_),
-          base::BindOnce(&CloudPolicyClient::OnRealtimeReportUploadCompleted,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-
-  config->AddReport(std::move(report));
-
-  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+  CreateNewRealtimeReportingJob(std::move(report), std::move(callback));
 }
 
 void CloudPolicyClient::UploadAppInstallReport(base::Value report,
@@ -611,17 +603,8 @@ void CloudPolicyClient::UploadAppInstallReport(base::Value report,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(is_registered());
   CancelAppInstallReportUpload();
-
-  std::unique_ptr<RealtimeReportingJobConfiguration> config =
-      std::make_unique<RealtimeReportingJobConfiguration>(
-          this, DMAuth::FromDMToken(dm_token_),
-          base::BindOnce(&CloudPolicyClient::OnRealtimeReportUploadCompleted,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-
-  config->AddReport(std::move(report));
-
-  request_jobs_.push_back(service_->CreateJob(std::move(config)));
-  app_install_report_request_job_ = request_jobs_.back().get();
+  app_install_report_request_job_ =
+      CreateNewRealtimeReportingJob(std::move(report), std::move(callback));
   DCHECK(app_install_report_request_job_);
 }
 
@@ -631,6 +614,24 @@ void CloudPolicyClient::CancelAppInstallReportUpload() {
   if (app_install_report_request_job_) {
     RemoveJob(app_install_report_request_job_);
     DCHECK_EQ(app_install_report_request_job_, nullptr);
+  }
+}
+
+void CloudPolicyClient::UploadExtensionInstallReport(base::Value report,
+                                                     StatusCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(is_registered());
+  CancelExtensionInstallReportUpload();
+  extension_install_report_request_job_ =
+      CreateNewRealtimeReportingJob(std::move(report), std::move(callback));
+  DCHECK(extension_install_report_request_job_);
+}
+
+void CloudPolicyClient::CancelExtensionInstallReportUpload() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (extension_install_report_request_job_) {
+    RemoveJob(extension_install_report_request_job_);
+    DCHECK_EQ(extension_install_report_request_job_, nullptr);
   }
 }
 
@@ -662,6 +663,20 @@ void CloudPolicyClient::FetchRemoteCommands(
   request->set_send_secure_commands(true);
 
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
+DeviceManagementService::Job* CloudPolicyClient::CreateNewRealtimeReportingJob(
+    base::Value report,
+    StatusCallback callback) {
+  std::unique_ptr<RealtimeReportingJobConfiguration> config =
+      std::make_unique<RealtimeReportingJobConfiguration>(
+          this, DMAuth::FromDMToken(dm_token_),
+          base::BindOnce(&CloudPolicyClient::OnRealtimeReportUploadCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  config->AddReport(std::move(report));
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+  return request_jobs_.back().get();
 }
 
 void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
@@ -1098,6 +1113,7 @@ void CloudPolicyClient::OnUnregisterCompleted(
     // Cancel all outstanding jobs.
     request_jobs_.clear();
     app_install_report_request_job_ = nullptr;
+    extension_install_report_request_job_ = nullptr;
     device_dm_token_.clear();
     NotifyRegistrationStateChanged();
   } else {
@@ -1180,6 +1196,8 @@ void CloudPolicyClient::OnDeviceAttributeUpdated(
 void CloudPolicyClient::RemoveJob(DeviceManagementService::Job* job) {
   if (app_install_report_request_job_ == job) {
     app_install_report_request_job_ = nullptr;
+  } else if (extension_install_report_request_job_ == job) {
+    extension_install_report_request_job_ = nullptr;
   }
   for (auto it = request_jobs_.begin(); it != request_jobs_.end(); ++it) {
     if (it->get() == job) {

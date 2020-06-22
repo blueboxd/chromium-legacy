@@ -105,7 +105,7 @@ for (redirect_url, file_path) in [
 
 
 _VULCANIZE_REDIRECT_ARGS = list(itertools.chain.from_iterable(map(
-    lambda m: ['--redirect', '"%s|%s"' % (m[0], m[1])], _URL_MAPPINGS)))
+    lambda m: ['--redirect', '%s|%s' % (m[0], m[1])], _URL_MAPPINGS)))
 
 
 def _undo_mapping(mappings, url):
@@ -191,7 +191,7 @@ def _generate_manifest_file(tmp_out_dir, in_path, manifest_out_path):
       replaced_sources = []
       for source in sources:
         replaced_sources.append(
-            source.replace('../' + os.path.basename(in_path) + "/", ""))
+            source.replace('../' + os.path.basename(in_path) + '/', ''))
       filename = sourcemap_file[:-len('.map')]
       manifest[os.path.basename(filename)] = replaced_sources
       output_filenames.append(filename)
@@ -271,7 +271,7 @@ def _bundle_v2(tmp_out_dir, in_path, out_path, manifest_out_path, args,
       [
        '--manifest-out', manifest_out_path,
        '--root', in_path,
-       '--redirect', '"chrome://%s/|%s"' % (args.host, in_path + '/'),
+       '--redirect', 'chrome://%s/|%s' % (args.host, in_path + '/'),
        '--out-dir', os.path.relpath(tmp_out_dir, _CWD).replace('\\', '/'),
        '--shell', args.html_in_files[0],
       ] + in_html_args)
@@ -349,7 +349,7 @@ def _optimize(in_folder, args):
     for index, js_out_file in enumerate(args.js_out_files):
       node.RunNode([node_modules.PathToUglify(),
                     os.path.join(tmp_out_dir, js_out_file),
-                    '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
+                    '--comments', '/Copyright|license|LICENSE|\<\/?if/',
                     '--output', os.path.join(out_path, js_out_file)])
   finally:
     shutil.rmtree(tmp_out_dir)

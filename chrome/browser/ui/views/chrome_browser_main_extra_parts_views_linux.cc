@@ -16,6 +16,7 @@
 #endif
 
 #if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/x/x11_types.h"            // nogncheck
 #if BUILDFLAG(USE_GTK)
 #include "ui/gtk/x/gtk_ui_delegate_x11.h"  // nogncheck
@@ -49,11 +50,15 @@ ChromeBrowserMainExtraPartsViewsLinux::
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
 #if defined(USE_X11) && BUILDFLAG(USE_GTK)
-  // In Aura/X11, Gtk-based LinuxUI implementation is used, so we instantiate
-  // and inject the GtkUiDelegate before ChromeBrowserMainExtraPartsViewsLinux,
-  // so it can properly initialize GtkUi on its |ToolkitInitialized| override.
-  gtk_ui_delegate_ = std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
-  ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+  if (!features::IsUsingOzonePlatform()) {
+    // In Aura/X11, Gtk-based LinuxUI implementation is used, so we instantiate
+    // and inject the GtkUiDelegate before
+    // ChromeBrowserMainExtraPartsViewsLinux, so it can properly initialize
+    // GtkUi on its |ToolkitInitialized| override.
+    gtk_ui_delegate_ =
+        std::make_unique<ui::GtkUiDelegateX11>(gfx::GetXDisplay());
+    ui::GtkUiDelegate::SetInstance(gtk_ui_delegate_.get());
+  }
 #endif
 
   ChromeBrowserMainExtraPartsViews::ToolkitInitialized();

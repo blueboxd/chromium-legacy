@@ -249,15 +249,6 @@ class SyncTest : public PlatformBrowserTest {
   // different behavior.
   virtual bool TestUsesSelfNotifications();
 
-  // Kicks off encryption for profile |index|.
-  bool EnableEncryption(int index);
-
-  // Checks if encryption is complete for profile |index|.
-  bool IsEncryptionComplete(int index);
-
-  // Waits until IsEncryptionComplete returns true or a timeout is reached.
-  bool AwaitEncryptionComplete(int index);
-
   // Blocks until all sync clients have completed their mutual sync cycles.
   // Returns true if a quiescent state was successfully reached.
   bool AwaitQuiescence();

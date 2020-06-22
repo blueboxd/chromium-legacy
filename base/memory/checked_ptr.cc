@@ -9,7 +9,7 @@
 namespace base {
 namespace internal {
 
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 BASE_EXPORT bool CheckedPtr2ImplPartitionAllocSupport::EnableForPtr(void* ptr) {
   // CheckedPtr2Impl works only when memory is allocated by PartitionAlloc and

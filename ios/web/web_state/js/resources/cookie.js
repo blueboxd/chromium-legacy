@@ -118,6 +118,14 @@ if (window.caches) {
   });
 }
 
+// Safari automatically disables indexedDB in cross-origin iframes. Leave the
+// default property there so users see a better error message.
+if (!isCrossOriginFrame()) {
+  if (!(delete window.indexedDB)) {
+    brokenOverrides.push('indexedDB');
+  }
+}
+
 if (brokenOverrides.length > 0) {
   __gCrWeb.message.invokeOnHost(
       {'command': 'cookie.error', 'brokenOverrides': brokenOverrides});

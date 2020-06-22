@@ -2031,7 +2031,8 @@
     "DefaultPassthroughCommandDecoder": [
         {
             "platforms": [
-                "linux"
+                "linux",
+                "mac"
             ],
             "experiments": [
                 {
@@ -7235,66 +7236,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "IsolatedCodeCache"
-                    ]
-                }
-            ]
-        }
-    ],
-    "V8WasmLiftoffMobile": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "ios"
-            ],
-            "experiments": [
-                {
-                    "name": "Tiering",
-                    "enable_features": [
-                        "WebAssemblyBaseline",
-                        "WebAssemblyTiering"
-                    ],
-                    "disable_features": [
-                        "WebAssemblyLazyCompilation"
-                    ]
-                },
-                {
-                    "name": "LazyLiftoff",
-                    "enable_features": [
-                        "WebAssemblyBaseline",
-                        "WebAssemblyLazyCompilation"
-                    ],
-                    "disable_features": [
-                        "WebAssemblyTiering"
-                    ]
-                },
-                {
-                    "name": "LazyTiering",
-                    "enable_features": [
-                        "WebAssemblyBaseline",
-                        "WebAssemblyLazyCompilation",
-                        "WebAssemblyTiering"
-                    ]
-                },
-                {
-                    "name": "Liftoff",
-                    "enable_features": [
-                        "WebAssemblyBaseline"
-                    ],
-                    "disable_features": [
-                        "WebAssemblyLazyCompilation",
-                        "WebAssemblyTiering"
-                    ]
-                },
-                {
-                    "name": "TurboFan",
-                    "enable_features": [
-                        "WebAssemblyTiering"
-                    ],
-                    "disable_features": [
-                        "WebAssemblyBaseline",
-                        "WebAssemblyLazyCompilation"
                     ]
                 }
             ]

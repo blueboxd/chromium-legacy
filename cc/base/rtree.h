@@ -13,7 +13,7 @@
 #include <map>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/numerics/clamped_math.h"
 #include "ui/gfx/geometry/rect.h"
 

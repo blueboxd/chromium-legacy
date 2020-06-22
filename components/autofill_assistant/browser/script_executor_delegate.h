@@ -78,8 +78,6 @@ class ScriptExecutorDelegate {
   virtual void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>
           write_callback) = 0;
-  virtual void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) = 0;
   virtual void SetProgress(int progress) = 0;
   virtual void SetProgressVisible(bool visible) = 0;
   virtual void SetUserActions(

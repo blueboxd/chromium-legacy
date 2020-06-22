@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"

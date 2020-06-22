@@ -13,9 +13,15 @@
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/window/dialog_delegate.h"
 
+class GURL;
+
 namespace content {
 class WebContents;
 class WebContentsDelegate;
+}
+
+namespace signin_metrics {
+enum class ReauthAccessPoint;
 }
 
 namespace views {
@@ -39,7 +45,8 @@ class SigninViewControllerDelegateViews
       Browser* browser);
 
   static std::unique_ptr<views::WebView> CreateReauthConfirmationWebView(
-      Browser* browser);
+      Browser* browser,
+      signin_metrics::ReauthAccessPoint);
 
   // views::DialogDelegateView:
   views::View* GetContentsView() override;
@@ -90,7 +97,7 @@ class SigninViewControllerDelegateViews
   // Creates a WebView for a dialog with the specified URL.
   static std::unique_ptr<views::WebView> CreateDialogWebView(
       Browser* browser,
-      const std::string& url,
+      const GURL& url,
       int dialog_height,
       base::Optional<int> dialog_width);
 

@@ -32,7 +32,7 @@ class InputHandlerProxyClient {
       const blink::WebGestureEvent& update_event,
       const blink::WebInputEventAttribution& attribution) = 0;
 
-  virtual void SetWhiteListedTouchAction(
+  virtual void SetAllowedTouchAction(
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
       InputHandlerProxy::EventDisposition event_disposition) = 0;

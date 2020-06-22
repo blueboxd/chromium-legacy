@@ -83,7 +83,7 @@ struct CheckedPtrNoOpImpl {
   static ALWAYS_INLINE void IncrementSwapCountForTest() {}
 };
 
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 constexpr int kValidAddressBits = 48;
 constexpr uintptr_t kAddressMask = (1ull << kValidAddressBits) - 1;
@@ -346,7 +346,7 @@ struct CheckedPtr2Impl {
   static constexpr uintptr_t kWrappedNullPtr = 0;
 };
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 template <typename T>
 struct DereferencedPointerType {
@@ -374,7 +374,7 @@ struct DereferencedPointerType<void> {};
 //    we aren't striving to maximize compatibility with raw pointers, merely
 //    adding support for cases encountered so far).
 template <typename T,
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
           typename Impl = internal::CheckedPtr2Impl<>>
 #else
           typename Impl = internal::CheckedPtrNoOpImpl>

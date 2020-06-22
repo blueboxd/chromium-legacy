@@ -777,16 +777,7 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
     //  - There was a self-collapsing child affected by clearance.
     //  - We are a new formatting context.
     // Additionally this fragment produces no end margin strut.
-    //
-    // If we are a quirky container, we ignore any quirky margins and
-    // just consider normal margins to extend our size.  Other UAs
-    // perform this calculation differently, e.g. by just ignoring the
-    // *last* quirky margin.
-    // TODO: revisit previous implementation to avoid changing behavior and
-    // https://html.spec.whatwg.org/C/#margin-collapsing-quirks
-    LayoutUnit margin_strut_sum = node_.IsQuirkyContainer()
-                                      ? end_margin_strut.QuirkyContainerSum()
-                                      : end_margin_strut.Sum();
+
     if (!container_builder_.BfcBlockOffset()) {
       // If we have collapsed through the block start and all children (if any),
       // now is the time to determine the BFC block offset, because finally we
@@ -801,6 +792,22 @@ scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::FinishLayout(
       }
       DCHECK(container_builder_.BfcBlockOffset());
     } else {
+      // If we are a quirky container, we ignore any quirky margins and just
+      // consider normal margins to extend our size.  Other UAs perform this
+      // calculation differently, e.g. by just ignoring the *last* quirky
+      // margin.
+      LayoutUnit margin_strut_sum = node_.IsQuirkyContainer()
+                                        ? end_margin_strut.QuirkyContainerSum()
+                                        : end_margin_strut.Sum();
+
+      if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+        LayoutUnit bfc_block_offset =
+            *container_builder_.BfcBlockOffset() +
+            previous_inflow_position->logical_block_offset;
+        margin_strut_sum = AdjustedMarginAfterFinalChildFragment(
+            ConstraintSpace(), bfc_block_offset, margin_strut_sum);
+      }
+
       // The trailing margin strut will be part of our intrinsic block size, but
       // only if there is something that separates the end margin strut from the
       // input margin strut (typically child content, block start

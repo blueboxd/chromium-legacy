@@ -10,12 +10,14 @@
 
 namespace blink {
 
+class LayoutListItem;
 class LayoutNGListItem;
 class LayoutText;
 
-// This class holds code shared among LayoutNG classes for list markers.
-// TODO(obrufau): support legacy markers too.
+// This class holds code shared among all classes for list markers, for both
+// legacy layout and LayoutNG.
 class CORE_EXPORT ListMarker {
+  friend class LayoutListItem;
   friend class LayoutNGListItem;
 
  public:
@@ -24,7 +26,10 @@ class CORE_EXPORT ListMarker {
   static const ListMarker* Get(const LayoutObject*);
   static ListMarker* Get(LayoutObject*);
 
-  LayoutNGListItem* ListItem(const LayoutObject&) const;
+  static LayoutObject* MarkerFromListItem(const LayoutObject*);
+
+  LayoutObject* ListItem(const LayoutObject&) const;
+  LayoutBlockFlow* ListItemBlockFlow(const LayoutObject&) const;
 
   String MarkerTextWithSuffix(const LayoutObject&) const;
   String MarkerTextWithoutSuffix(const LayoutObject&) const;
@@ -40,8 +45,6 @@ class CORE_EXPORT ListMarker {
       UpdateMarkerText(marker);
   }
   void UpdateMarkerContentIfNeeded(LayoutObject&);
-
-  void OrdinalValueChanged(LayoutObject&);
 
   LayoutObject* SymbolMarkerLayoutText(const LayoutObject&) const;
 
@@ -84,6 +87,9 @@ class CORE_EXPORT ListMarker {
   void UpdateMarkerText(LayoutObject&, LayoutText*);
 
   void ListStyleTypeChanged(LayoutObject&);
+  void OrdinalValueChanged(LayoutObject&);
+
+  int ListItemValue(const LayoutObject&) const;
 
   unsigned marker_text_type_ : 3;  // MarkerTextType
 };

@@ -43,6 +43,7 @@
 // Don't do anything. We're going to use the default store.
 #elif defined(USE_X11)
 #include "chrome/browser/password_manager/password_store_x.h"
+#include "ui/base/ui_base_features.h"
 #endif
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
@@ -154,7 +155,10 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #elif defined(USE_X11)
-  ps = new PasswordStoreX(std::move(login_db), profile->GetPrefs());
+  if (features::IsUsingOzonePlatform())
+    ps = new password_manager::PasswordStoreDefault(std::move(login_db));
+  else
+    ps = new PasswordStoreX(std::move(login_db), profile->GetPrefs());
 #elif defined(USE_OZONE)
   ps = new password_manager::PasswordStoreDefault(std::move(login_db));
 #else
@@ -202,11 +206,13 @@ PasswordStoreFactory::BuildServiceInstanceFor(
 void PasswordStoreFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(USE_X11)
-  // Notice that the preprocessor conditions above are exactly those that will
-  // result in using PasswordStoreX in BuildServiceInstanceFor().
-  registry->RegisterIntegerPref(
-      password_manager::prefs::kMigrationToLoginDBStep,
-      kMigrationToLoginDBNotAttempted);
+  if (!features::IsUsingOzonePlatform()) {
+    // Notice that the preprocessor conditions above are exactly those that will
+    // result in using PasswordStoreX in BuildServiceInstanceFor().
+    registry->RegisterIntegerPref(
+        password_manager::prefs::kMigrationToLoginDBStep,
+        kMigrationToLoginDBNotAttempted);
+  }
 #endif
 }
 

@@ -279,6 +279,7 @@ scroll-padding-block-end: auto
 scroll-padding-block-start: auto
 scroll-padding-inline-end: auto
 scroll-padding-inline-start: auto
+scrollbar-gutter: auto
 shape-image-threshold: 0
 shape-margin: 0px
 shape-outside: none

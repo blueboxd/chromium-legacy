@@ -9,8 +9,8 @@
 #include <map>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/synchronization/lock.h"

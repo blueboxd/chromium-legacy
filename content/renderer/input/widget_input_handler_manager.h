@@ -83,7 +83,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void GenerateScrollBeginAndSendToMainThread(
       const blink::WebGestureEvent& update_event,
       const blink::WebInputEventAttribution& attribution) override;
-  void SetWhiteListedTouchAction(
+  void SetAllowedTouchAction(
       cc::TouchAction touch_action,
       uint32_t unique_touch_event_id,
       blink::InputHandlerProxy::EventDisposition event_disposition) override;
@@ -231,7 +231,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner_;
 
-  base::Optional<cc::TouchAction> white_listed_touch_action_;
+  base::Optional<cc::TouchAction> allowed_touch_action_;
 
   // Callback used to respond to the WaitForInputProcessed Mojo message. This
   // callback is set from and must be invoked from the Mojo-bound thread (i.e.

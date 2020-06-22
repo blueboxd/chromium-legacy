@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/memory/ptr_util.h"
 #include "cc/base/region.h"
 #include "cc/base/synced_property.h"

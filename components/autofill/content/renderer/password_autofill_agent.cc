@@ -35,7 +35,6 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/signatures.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
@@ -382,14 +381,6 @@ void AnnotateFieldWithParsingResult(WebDocument doc,
 bool HasDocumentWithValidFrame(const WebInputElement& element) {
   WebFrame* frame = element.GetDocument().GetFrame();
   return frame && frame->View();
-}
-
-bool ShowPopupWithoutPasswords(const WebInputElement& password_element) {
-  if (!base::FeatureList::IsEnabled(
-          password_manager::features::kEnablePasswordsAccountStorage)) {
-    return false;
-  }
-  return !password_element.IsNull() && IsElementEditable(password_element);
 }
 
 // This method tries to fix `fields` with empty typed or filled properties by
@@ -875,7 +866,7 @@ bool PasswordAutofillAgent::ShowSuggestions(
 
   if (!password_info) {
     MaybeCheckSafeBrowsingReputation(element);
-    if (!ShowPopupWithoutPasswords(password_element))
+    if (!CanShowPopupWithoutPasswords(password_element))
       return false;
   }
 
@@ -1303,7 +1294,10 @@ void PasswordAutofillAgent::AnnotateFieldsWithParsingResult(
                                  "confirmation_password_element");
 }
 
-void PasswordAutofillAgent::InformNoSavedCredentials() {
+void PasswordAutofillAgent::InformNoSavedCredentials(
+    bool should_show_popup_without_passwords) {
+  should_show_popup_without_passwords_ = should_show_popup_without_passwords;
+
   autofilled_elements_cache_.clear();
 
   // Clear the actual field values.
@@ -1423,6 +1417,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   web_input_to_password_info_.clear();
   password_to_username_.clear();
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();
+  should_show_popup_without_passwords_ = false;
   browser_has_form_to_process_ = false;
   field_data_manager_.get()->ClearData();
   username_autofill_state_ = WebAutofillState::kNotFilled;
@@ -1877,6 +1872,12 @@ void PasswordAutofillAgent::SetLastUpdatedFormAndField(
   last_updated_field_renderer_id_ =
       input.IsNull() ? FieldRendererId()
                      : FieldRendererId(input.UniqueRendererFormControlId());
+}
+
+bool PasswordAutofillAgent::CanShowPopupWithoutPasswords(
+    const WebInputElement& password_element) const {
+  return should_show_popup_without_passwords_ && !password_element.IsNull() &&
+         IsElementEditable(password_element);
 }
 
 }  // namespace autofill

@@ -1174,13 +1174,6 @@ void CrostiniManager::OnStartConcierge(BoolCallback callback, bool success) {
   GetCiceroneClient()->WaitForServiceToBeAvailable(std::move(callback));
 }
 
-void CrostiniManager::StopConcierge(BoolCallback callback) {
-  VLOG(1) << "Stopping Concierge service";
-  chromeos::DBusThreadManager::Get()->GetDebugDaemonClient()->StopConcierge(
-      base::BindOnce(&CrostiniManager::OnStopConcierge,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-}
-
 void CrostiniManager::OnStopConcierge(BoolCallback callback, bool success) {
   if (!success) {
     LOG(ERROR) << "Failed to stop Concierge service";

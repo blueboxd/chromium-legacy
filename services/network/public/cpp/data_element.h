@@ -14,11 +14,11 @@
 #include <string>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/component_export.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"

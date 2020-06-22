@@ -9,7 +9,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "cc/base/list_container_helper.h"
 

@@ -1592,11 +1592,6 @@ ProfileSyncService::GetTypeStatusMapForDebugging() {
   return std::move(result);
 }
 
-bool ProfileSyncService::IsEncryptionPendingForTest() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return user_settings_->IsEncryptionPending();
-}
-
 void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (is_sync_managed) {

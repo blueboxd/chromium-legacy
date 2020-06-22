@@ -5,7 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_LATENCY_HINT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_AUDIO_LATENCY_HINT_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {

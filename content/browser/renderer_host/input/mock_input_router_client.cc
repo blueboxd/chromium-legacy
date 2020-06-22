@@ -22,7 +22,7 @@ MockInputRouterClient::MockInputRouterClient()
       in_flight_event_count_(0),
       filter_state_(blink::mojom::InputEventResultState::kNotConsumed),
       filter_input_event_called_(false),
-      white_listed_touch_action_(cc::TouchAction::kAuto) {}
+      compositor_allowed_touch_action_(cc::TouchAction::kAuto) {}
 
 MockInputRouterClient::~MockInputRouterClient() {}
 
@@ -48,9 +48,9 @@ void MockInputRouterClient::DidOverscroll(
   overscroll_ = params;
 }
 
-void MockInputRouterClient::OnSetWhiteListedTouchAction(
-    cc::TouchAction white_listed_touch_action) {
-  white_listed_touch_action_ = white_listed_touch_action;
+void MockInputRouterClient::OnSetCompositorAllowedTouchAction(
+    cc::TouchAction compositor_allowed_touch_action) {
+  compositor_allowed_touch_action_ = compositor_allowed_touch_action;
 }
 
 void MockInputRouterClient::DidStartScrollingViewport() {}
@@ -106,10 +106,11 @@ ui::DidOverscrollParams MockInputRouterClient::GetAndResetOverscroll() {
   return overscroll;
 }
 
-cc::TouchAction MockInputRouterClient::GetAndResetWhiteListedTouchAction() {
-  cc::TouchAction white_listed_touch_action = white_listed_touch_action_;
-  white_listed_touch_action_ = cc::TouchAction::kAuto;
-  return white_listed_touch_action;
+cc::TouchAction
+MockInputRouterClient::GetAndResetCompositorAllowedTouchAction() {
+  cc::TouchAction allowed = compositor_allowed_touch_action_;
+  compositor_allowed_touch_action_ = cc::TouchAction::kAuto;
+  return allowed;
 }
 
 bool MockInputRouterClient::NeedsBeginFrameForFlingProgress() {

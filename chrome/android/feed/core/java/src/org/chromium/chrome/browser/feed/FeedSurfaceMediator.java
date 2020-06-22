@@ -97,7 +97,8 @@ class FeedSurfaceMediator implements NewTabPageLayout.ScrollDelegate,
             @Nullable NativePageNavigationDelegate pageNavigationDelegate) {
         mCoordinator = coordinator;
         mSnapScrollHelper = snapScrollHelper;
-        mSigninManager = IdentityServicesProvider.get().getSigninManager();
+        mSigninManager = IdentityServicesProvider.get().getSigninManager(
+                Profile.getLastUsedRegularProfile());
         mPageNavigationDelegate = pageNavigationDelegate;
 
         mPrefChangeRegistrar = new PrefChangeRegistrar();

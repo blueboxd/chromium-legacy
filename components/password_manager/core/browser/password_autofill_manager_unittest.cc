@@ -94,6 +94,8 @@ constexpr char kDropdownSelectedHistogram[] =
     "PasswordManager.PasswordDropdownItemSelected";
 constexpr char kDropdownShownHistogram[] =
     "PasswordManager.PasswordDropdownShown";
+constexpr char kCredentialsCountFromAccountStoreAfterUnlockHistogram[] =
+    "PasswordManager.CredentialsCountFromAccountStoreAfterUnlock";
 const gfx::Image kTestFavicon = gfx::test::CreateImage(16, 16);
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
@@ -225,6 +227,14 @@ std::vector<autofill::Suggestion> CreateTestSuggestions(
         /*frontend_id=*/
         autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN);
   }
+  return suggestions;
+}
+
+std::vector<autofill::Suggestion> SetLoading(
+    std::vector<autofill::Suggestion> suggestions,
+    int index_of_loading_element) {
+  suggestions[index_of_loading_element].is_loading =
+      Suggestion::IsLoading(true);
   return suggestions;
 }
 
@@ -803,6 +813,7 @@ TEST_F(PasswordAutofillManagerTest,
 TEST_F(PasswordAutofillManagerTest, SuccessfullOptInMayShowEmptyState) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
+  base::HistogramTester histograms;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(true);
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
@@ -826,6 +837,8 @@ TEST_F(PasswordAutofillManagerTest, SuccessfullOptInMayShowEmptyState) {
 
   password_autofill_manager_->DeleteFillData();
   password_autofill_manager_->OnNoCredentialsFound();
+  histograms.ExpectBucketCount(
+      kCredentialsCountFromAccountStoreAfterUnlockHistogram, 0, 1);
 }
 
 // Test that the popup is updated once "opt in and fill" is clicked".
@@ -833,6 +846,7 @@ TEST_F(PasswordAutofillManagerTest,
        AddOnFillDataAfterOptInAndFillPopulatesPopup) {
   TestPasswordManagerClient client;
   NiceMock<MockAutofillClient> autofill_client;
+  base::HistogramTester histograms;
   InitializePasswordAutofillManager(&client, &autofill_client);
   client.SetAccountStorageOptIn(true);
   testing::Mock::VerifyAndClearExpectations(&autofill_client);
@@ -845,9 +859,11 @@ TEST_F(PasswordAutofillManagerTest,
   additional.username = base::ASCIIToUTF16("bar.foo@example.com");
   new_data.additional_logins.push_back(std::move(additional));
   EXPECT_CALL(autofill_client, GetPopupSuggestions())
-      .WillRepeatedly(Return(CreateTestSuggestions(
-          /*has_opt_in_and_fill=*/false, /*has_opt_in_and_generate*/ false,
-          /*has_re_signin=*/false)));
+      .WillRepeatedly(Return(SetLoading(
+          CreateTestSuggestions(
+              /*has_opt_in_and_fill=*/true, /*has_opt_in_and_generate*/ false,
+              /*has_re_signin=*/false),
+          /*index_of_loading_element=*/2)));  // Opt-in is at third position.
   EXPECT_CALL(autofill_client,
               HideAutofillPopup(autofill::PopupHidingReason::kStaleData));
   EXPECT_CALL(
@@ -860,6 +876,8 @@ TEST_F(PasswordAutofillManagerTest,
 
   password_autofill_manager_->DeleteFillData();
   password_autofill_manager_->OnAddPasswordFillData(new_data);
+  histograms.ExpectBucketCount(
+      kCredentialsCountFromAccountStoreAfterUnlockHistogram, 1, 1);
 }
 
 // Test that OnShowPasswordSuggestions correctly matches the given FormFieldData

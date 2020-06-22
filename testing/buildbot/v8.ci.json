@@ -2544,7 +2544,9 @@
       {
         "args": [
           "--num-retries=3",
-          "--debug"
+          "-t",
+          "Debug",
+          "--release"
         ],
         "isolate_name": "blink_web_tests",
         "merge": {

@@ -32,6 +32,7 @@ js_type_check("closure_compile") {
   deps = [
     ":trusted",
     ":untrusted",
+    ":untrusted_worker",
   ]
 }
 
@@ -42,6 +43,10 @@ js_library("trusted") {
 
 js_library("untrusted") {
   sources = [ "resources/untrusted.js" ]
+}
+
+js_library("untrusted_worker") {
+  sources = [ "resources/untrusted_worker.js" ]
 }
 
 js2gtest("browser_tests_js") {

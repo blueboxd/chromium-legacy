@@ -692,8 +692,8 @@ class LayerTreeHostImplTest : public testing::Test,
     host_impl_ = nullptr;
   }
 
-  void WhiteListedTouchActionTestHelper(float device_scale_factor,
-                                        float page_scale_factor) {
+  void AllowedTouchActionTestHelper(float device_scale_factor,
+                                    float page_scale_factor) {
     SetupViewportLayersInnerScrolls(gfx::Size(100, 100), gfx::Size(200, 200));
     DrawFrame();
 
@@ -15337,20 +15337,20 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, DrawAfterDroppingTileResources) {
   EXPECT_GT(layer->tilings()->num_tilings(), 0u);
 }
 
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, WhiteListedTouchActionTest1) {
-  WhiteListedTouchActionTestHelper(1.0f, 1.0f);
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, AllowedTouchActionTest1) {
+  AllowedTouchActionTestHelper(1.0f, 1.0f);
 }
 
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, WhiteListedTouchActionTest2) {
-  WhiteListedTouchActionTestHelper(1.0f, 0.789f);
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, AllowedTouchActionTest2) {
+  AllowedTouchActionTestHelper(1.0f, 0.789f);
 }
 
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, WhiteListedTouchActionTest3) {
-  WhiteListedTouchActionTestHelper(2.345f, 1.0f);
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, AllowedTouchActionTest3) {
+  AllowedTouchActionTestHelper(2.345f, 1.0f);
 }
 
-TEST_P(ScrollUnifiedLayerTreeHostImplTest, WhiteListedTouchActionTest4) {
-  WhiteListedTouchActionTestHelper(2.654f, 0.678f);
+TEST_P(ScrollUnifiedLayerTreeHostImplTest, AllowedTouchActionTest4) {
+  AllowedTouchActionTestHelper(2.654f, 0.678f);
 }
 
 // Test implementation of RenderFrameMetadataObserver which can optionally

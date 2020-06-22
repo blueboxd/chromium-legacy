@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/layout/list_marker.h"
 
 #include "third_party/blink/renderer/core/layout/layout_image_resource_style_image.h"
-#include "third_party/blink/renderer/core/layout/layout_list_marker.h"
+#include "third_party/blink/renderer/core/layout/layout_inside_list_marker.h"
+#include "third_party/blink/renderer/core/layout/layout_list_item.h"
 #include "third_party/blink/renderer/core/layout/layout_list_marker_image.h"
+#include "third_party/blink/renderer/core/layout/layout_outside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/list_marker_text.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_inside_list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
@@ -23,19 +25,58 @@ const int kCUAMarkerMarginEm = 1;
 
 ListMarker::ListMarker() : marker_text_type_(kNotText) {}
 
-const ListMarker* ListMarker::Get(const LayoutObject* object) {
-  if (!object)
-    return nullptr;
-  if (object->IsLayoutNGOutsideListMarker())
-    return &ToLayoutNGOutsideListMarker(object)->Marker();
-  if (object->IsLayoutNGInsideListMarker())
-    return &ToLayoutNGInsideListMarker(object)->Marker();
+const ListMarker* ListMarker::Get(const LayoutObject* marker) {
+  if (auto* outside_marker = ToLayoutOutsideListMarkerOrNull(marker))
+    return &outside_marker->Marker();
+  if (auto* inside_marker = ToLayoutInsideListMarkerOrNull(marker))
+    return &inside_marker->Marker();
+  if (auto* ng_outside_marker = ToLayoutNGOutsideListMarkerOrNull(marker))
+    return &ng_outside_marker->Marker();
+  if (auto* ng_inside_marker = ToLayoutNGInsideListMarkerOrNull(marker))
+    return &ng_inside_marker->Marker();
   return nullptr;
 }
 
-ListMarker* ListMarker::Get(LayoutObject* object) {
+ListMarker* ListMarker::Get(LayoutObject* marker) {
   return const_cast<ListMarker*>(
-      ListMarker::Get(static_cast<const LayoutObject*>(object)));
+      ListMarker::Get(static_cast<const LayoutObject*>(marker)));
+}
+
+LayoutObject* ListMarker::MarkerFromListItem(const LayoutObject* list_item) {
+  if (auto* legacy_list_item = ToLayoutListItemOrNull(list_item))
+    return legacy_list_item->Marker();
+  if (auto* ng_list_item = ToLayoutNGListItemOrNull(list_item))
+    return ng_list_item->Marker();
+  return nullptr;
+}
+
+LayoutObject* ListMarker::ListItem(const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
+  LayoutObject* list_item = marker.GetNode()->parentNode()->GetLayoutObject();
+  DCHECK(list_item);
+  DCHECK(list_item->IsListItemIncludingNG());
+  return list_item;
+}
+
+LayoutBlockFlow* ListMarker::ListItemBlockFlow(
+    const LayoutObject& marker) const {
+  DCHECK_EQ(Get(&marker), this);
+  LayoutObject* list_item = ListItem(marker);
+  if (auto* legacy_list_item = ToLayoutListItemOrNull(list_item))
+    return legacy_list_item;
+  if (auto* ng_list_item = ToLayoutNGListItemOrNull(list_item))
+    return ng_list_item;
+  NOTREACHED();
+  return nullptr;
+}
+
+int ListMarker::ListItemValue(const LayoutObject& list_item) const {
+  if (auto* legacy_list_item = ToLayoutListItemOrNull(list_item))
+    return legacy_list_item->Value();
+  if (auto* ng_list_item = ToLayoutNGListItemOrNull(list_item))
+    return ng_list_item->Value();
+  NOTREACHED();
+  return 0;
 }
 
 // If the value of ListStyleType changed, we need to the marker text has been
@@ -75,11 +116,6 @@ void ListMarker::UpdateMarkerText(LayoutObject& marker) {
   UpdateMarkerText(marker, ToLayoutText(marker.SlowFirstChild()));
 }
 
-LayoutNGListItem* ListMarker::ListItem(const LayoutObject& marker) const {
-  DCHECK_EQ(Get(&marker), this);
-  return ToLayoutNGListItem(marker.GetNode()->parentNode()->GetLayoutObject());
-}
-
 ListMarker::MarkerTextType ListMarker::MarkerText(
     const LayoutObject& marker,
     StringBuilder* text,
@@ -91,7 +127,7 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
     return kNotText;
   }
 
-  LayoutNGListItem* list_item = ListItem(marker);
+  LayoutObject* list_item = ListItem(marker);
   const ComputedStyle& style = list_item->StyleRef();
   switch (GetListStyleCategory(style.ListStyleType())) {
     case ListStyleCategory::kNone:
@@ -106,7 +142,7 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
         text->Append(' ');
       return kSymbolValue;
     case ListStyleCategory::kLanguage: {
-      int value = list_item->Value();
+      int value = ListItemValue(*list_item);
       text->Append(list_marker_text::GetText(style.ListStyleType(), value));
       if (format == kWithSuffix) {
         text->Append(list_marker_text::Suffix(style.ListStyleType(), value));
@@ -151,9 +187,9 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
   LayoutObject* child = marker.SlowFirstChild();
   DCHECK(!child || !child->NextSibling());
 
-  LayoutNGListItem* list_item = ListItem(marker);
+  const ComputedStyle& style = ListItem(marker)->StyleRef();
   if (IsMarkerImage(marker)) {
-    StyleImage* list_style_image = list_item->StyleRef().ListStyleImage();
+    StyleImage* list_style_image = style.ListStyleImage();
     if (child) {
       // If the url of `list-style-image` changed, create a new LayoutImage.
       if (!child->IsLayoutImage() ||
@@ -166,7 +202,8 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     if (!child) {
       LayoutListMarkerImage* image =
           LayoutListMarkerImage::CreateAnonymous(&marker.GetDocument());
-      image->SetIsLayoutNGObjectForListMarkerImage(true);
+      if (marker.IsLayoutNGListMarker())
+        image->SetIsLayoutNGObjectForListMarkerImage(true);
       scoped_refptr<ComputedStyle> image_style =
           ComputedStyle::CreateAnonymousStyleWithDisplay(marker.StyleRef(),
                                                          EDisplay::kInline);
@@ -181,7 +218,7 @@ void ListMarker::UpdateMarkerContentIfNeeded(LayoutObject& marker) {
     return;
   }
 
-  if (list_item->StyleRef().ListStyleType() == EListStyleType::kNone) {
+  if (style.ListStyleType() == EListStyleType::kNone) {
     marker_text_type_ = kNotText;
     return;
   }

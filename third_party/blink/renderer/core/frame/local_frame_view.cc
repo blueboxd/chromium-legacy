@@ -3246,47 +3246,6 @@ void LocalFrameView::ForceLayoutForPagination(
   AdjustViewSizeAndLayout();
 }
 
-IntRect LocalFrameView::ConvertFromLayoutObject(
-    const LayoutObject& layout_object,
-    const IntRect& layout_object_rect) const {
-  // Convert from page ("absolute") to LocalFrameView coordinates.
-  return PixelSnappedIntRect(
-      layout_object.LocalToAbsoluteRect(PhysicalRect(layout_object_rect)));
-}
-
-IntPoint LocalFrameView::ConvertFromLayoutObject(
-    const LayoutObject& layout_object,
-    const IntPoint& layout_object_point) const {
-  return RoundedIntPoint(ConvertFromLayoutObject(
-      layout_object, PhysicalOffset(layout_object_point)));
-}
-
-IntPoint LocalFrameView::ConvertToLayoutObject(
-    const LayoutObject& layout_object,
-    const IntPoint& frame_point) const {
-  return RoundedIntPoint(
-      ConvertToLayoutObject(layout_object, PhysicalOffset(frame_point)));
-}
-
-PhysicalOffset LocalFrameView::ConvertFromLayoutObject(
-    const LayoutObject& layout_object,
-    const PhysicalOffset& layout_object_offset) const {
-  return layout_object.LocalToAbsolutePoint(layout_object_offset);
-}
-
-PhysicalOffset LocalFrameView::ConvertToLayoutObject(
-    const LayoutObject& layout_object,
-    const PhysicalOffset& frame_offset) const {
-  return PhysicalOffset::FromFloatPointRound(
-      ConvertToLayoutObject(layout_object, FloatPoint(frame_offset)));
-}
-
-FloatPoint LocalFrameView::ConvertToLayoutObject(
-    const LayoutObject& layout_object,
-    const FloatPoint& frame_point) const {
-  return layout_object.AbsoluteToLocalFloatPoint(frame_point);
-}
-
 IntRect LocalFrameView::RootFrameToDocument(const IntRect& rect_in_root_frame) {
   IntPoint offset = RootFrameToDocument(rect_in_root_frame.Location());
   IntRect local_rect = rect_in_root_frame;
@@ -3377,7 +3336,7 @@ PhysicalRect LocalFrameView::FrameToDocument(
 
 IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
     const IntRect& local_rect) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
+  if (ParentFrameView()) {
     auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return local_rect;
@@ -3387,7 +3346,8 @@ IntRect LocalFrameView::ConvertToContainingEmbeddedContentView(
     rect.Move(
         (layout_object->BorderLeft() + layout_object->PaddingLeft()).ToInt(),
         (layout_object->BorderTop() + layout_object->PaddingTop()).ToInt());
-    return parent->ConvertFromLayoutObject(*layout_object, rect);
+    return PixelSnappedIntRect(
+        layout_object->LocalToAbsoluteRect(PhysicalRect(rect)));
   }
 
   return local_rect;
@@ -3405,7 +3365,7 @@ IntRect LocalFrameView::ConvertFromContainingEmbeddedContentView(
 
 PhysicalOffset LocalFrameView::ConvertToContainingEmbeddedContentView(
     const PhysicalOffset& local_offset) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
+  if (ParentFrameView()) {
     auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return local_offset;
@@ -3416,7 +3376,7 @@ PhysicalOffset LocalFrameView::ConvertToContainingEmbeddedContentView(
     point += PhysicalOffset(
         layout_object->BorderLeft() + layout_object->PaddingLeft(),
         layout_object->BorderTop() + layout_object->PaddingTop());
-    return parent->ConvertFromLayoutObject(*layout_object, point);
+    return layout_object->LocalToAbsolutePoint(point);
   }
 
   return local_offset;
@@ -3454,14 +3414,14 @@ FloatPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
 
 DoublePoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
     const DoublePoint& parent_point) const {
-  if (LocalFrameView* parent = ParentFrameView()) {
+  if (ParentFrameView()) {
     // Get our layoutObject in the parent view
     auto* layout_object = GetLayoutEmbeddedContent();
     if (!layout_object)
       return parent_point;
 
-    DoublePoint point = DoublePoint(parent->ConvertToLayoutObject(
-        *layout_object, FloatPoint(parent_point)));
+    DoublePoint point(
+        layout_object->AbsoluteToLocalFloatPoint(FloatPoint(parent_point)));
     // Subtract borders and padding
     point.Move(
         (-layout_object->BorderLeft() - layout_object->PaddingLeft())

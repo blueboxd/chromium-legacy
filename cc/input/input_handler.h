@@ -265,7 +265,7 @@ class CC_EXPORT InputHandler {
   // suppress scrolling by consuming touch events that started at
   // |viewport_point|, and whether |viewport_point| is on the currently
   // scrolling layer.
-  // |out_touch_action| is assigned the whitelisted touch action for the
+  // |out_touch_action| is assigned the allowed touch action for the
   // |viewport_point|. In the case there are no touch handlers or touch action
   // regions, |out_touch_action| is assigned TouchAction::kAuto since the
   // default touch action is auto.

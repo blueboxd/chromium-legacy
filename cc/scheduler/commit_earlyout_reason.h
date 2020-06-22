@@ -5,7 +5,7 @@
 #ifndef CC_SCHEDULER_COMMIT_EARLYOUT_REASON_H_
 #define CC_SCHEDULER_COMMIT_EARLYOUT_REASON_H_
 
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "cc/cc_export.h"
 
 namespace cc {

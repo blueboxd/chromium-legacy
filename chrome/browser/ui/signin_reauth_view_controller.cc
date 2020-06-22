@@ -56,6 +56,7 @@ SigninReauthViewController::SigninReauthViewController(
     base::OnceCallback<void(signin::ReauthResult)> reauth_callback)
     : browser_(browser),
       account_id_(account_id),
+      access_point_(access_point),
       reauth_callback_(std::move(reauth_callback)) {
   // Show the confirmation dialog unconditionally for now. We may decide to only
   // show it in some cases in the future.
@@ -195,7 +196,7 @@ void SigninReauthViewController::OnStateChanged() {
 void SigninReauthViewController::ShowReauthConfirmationDialog() {
   dialog_delegate_ =
       SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
-          browser_, account_id_);
+          browser_, account_id_, access_point_);
   dialog_delegate_observer_.Add(dialog_delegate_);
 }
 

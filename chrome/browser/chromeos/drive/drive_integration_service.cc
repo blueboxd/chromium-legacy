@@ -1055,6 +1055,26 @@ void DriveIntegrationService::OnGetQuickAccessItems(
   std::move(callback).Run(error, std::move(result));
 }
 
+void DriveIntegrationService::GetMetadata(
+    const base::FilePath& local_path,
+    drivefs::mojom::DriveFs::GetMetadataCallback callback) {
+  if (!IsMounted() || !GetDriveFsInterface()) {
+    std::move(callback).Run(drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr);
+    return;
+  }
+
+  base::FilePath drive_path;
+  if (!GetRelativeDrivePath(local_path, &drive_path)) {
+    std::move(callback).Run(drive::FILE_ERROR_NOT_FOUND, nullptr);
+    return;
+  }
+
+  GetDriveFsInterface()->GetMetadata(
+      drive_path,
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(callback), drive::FILE_ERROR_SERVICE_UNAVAILABLE, nullptr));
+}
+
 void DriveIntegrationService::RestartDrive() {
   MaybeRemountFileSystem(base::TimeDelta(), false);
 }

@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/logging.h"
 #include "cc/cc_export.h"
 
 namespace viz {

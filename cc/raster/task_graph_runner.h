@@ -13,7 +13,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "cc/cc_export.h"
 #include "cc/raster/task.h"

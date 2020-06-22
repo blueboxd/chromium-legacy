@@ -126,11 +126,6 @@ void FakeScriptExecutorDelegate::WriteUserData(
   std::move(write_callback).Run(payment_request_info_.get(), &field_change);
 }
 
-void FakeScriptExecutorDelegate::WriteUserModel(
-    base::OnceCallback<void(UserModel*)> write_callback) {
-  std::move(write_callback).Run(user_model_);
-}
-
 void FakeScriptExecutorDelegate::SetViewportMode(ViewportMode mode) {
   viewport_mode_ = mode;
 }

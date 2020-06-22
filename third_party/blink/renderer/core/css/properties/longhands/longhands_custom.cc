@@ -5208,6 +5208,80 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
   return list;
 }
 
+// https://www.w3.org/TR/css-overflow-4
+// auto | [ stable | always ] && both? && force?
+const CSSValue* ScrollbarGutter::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (!RuntimeEnabledFeatures::ScrollbarGutterEnabled())
+    return nullptr;
+
+  if (auto* value = css_parsing_utils::ConsumeIdent<CSSValueID::kAuto>(range))
+    return value;
+
+  CSSIdentifierValue* stable_or_always = nullptr;
+  CSSIdentifierValue* both = nullptr;
+  CSSIdentifierValue* force = nullptr;
+
+  while (!range.AtEnd()) {
+    if (!stable_or_always) {
+      if ((stable_or_always =
+               css_parsing_utils::ConsumeIdent<CSSValueID::kStable,
+                                               CSSValueID::kAlways>(range)))
+        continue;
+    }
+    CSSValueID id = range.Peek().Id();
+    if (id == CSSValueID::kBoth && !both)
+      both = css_parsing_utils::ConsumeIdent(range);
+    else if (id == CSSValueID::kForce && !force)
+      force = css_parsing_utils::ConsumeIdent(range);
+    else
+      return nullptr;
+  }
+  if (!stable_or_always)
+    return nullptr;
+  if (both || force) {
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    list->Append(*stable_or_always);
+    if (both)
+      list->Append(*both);
+    if (force)
+      list->Append(*force);
+    return list;
+  }
+  return stable_or_always;
+}
+
+const CSSValue* ScrollbarGutter::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  auto scrollbar_gutter = style.ScrollbarGutter();
+  if (scrollbar_gutter == kScrollbarGutterAuto)
+    return CSSIdentifierValue::Create(CSSValueID::kAuto);
+
+  DCHECK(scrollbar_gutter & (kScrollbarGutterStable | kScrollbarGutterAlways));
+
+  CSSValue* main_value = nullptr;
+  if (scrollbar_gutter & kScrollbarGutterStable)
+    main_value = CSSIdentifierValue::Create(CSSValueID::kStable);
+  else
+    main_value = CSSIdentifierValue::Create(CSSValueID::kAlways);
+
+  if (!(scrollbar_gutter & (kScrollbarGutterBoth | kScrollbarGutterForce)))
+    return main_value;
+
+  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  list->Append(*main_value);
+  if (scrollbar_gutter & kScrollbarGutterBoth)
+    list->Append(*CSSIdentifierValue::Create(kScrollbarGutterBoth));
+  if (scrollbar_gutter & kScrollbarGutterForce)
+    list->Append(*CSSIdentifierValue::Create(kScrollbarGutterForce));
+  return list;
+}
+
 const CSSValue* ScrollBehavior::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,

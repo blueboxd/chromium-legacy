@@ -172,7 +172,7 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyID::kScrollPaddingBlockEnd,
     CSSPropertyID::kScrollPaddingBlockStart,
     CSSPropertyID::kScrollPaddingInlineEnd,
-    CSSPropertyID::kScrollPaddingInlineStart,
+    CSSPropertyID::kScrollPaddingInlineStart, CSSPropertyID::kScrollbarGutter,
     CSSPropertyID::kShapeImageThreshold, CSSPropertyID::kShapeMargin,
     CSSPropertyID::kShapeOutside, CSSPropertyID::kShapeRendering,
     CSSPropertyID::kSpeak, CSSPropertyID::kStopColor,

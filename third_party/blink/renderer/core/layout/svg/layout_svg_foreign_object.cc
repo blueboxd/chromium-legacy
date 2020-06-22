@@ -119,7 +119,7 @@ void LayoutSVGForeignObject::UpdateLayout() {
   const bool bounds_changed = old_viewport != FrameRect();
 
   bool update_parent_boundaries = bounds_changed;
-  if (UpdateTransformAfterLayout())
+  if (UpdateTransformAfterLayout(bounds_changed))
     update_parent_boundaries = true;
 
   // Notify ancestor about our bounds changing.

@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <iosfwd>
 #include "base/i18n/rtl.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {

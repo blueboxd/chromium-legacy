@@ -17,6 +17,7 @@
 #include "ui/aura/test/ui_controls_factory_aura.h"
 #include "ui/base/test/ui_controls_aura.h"
 #if defined(USE_OZONE) && defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 #if defined(USE_X11)
@@ -52,13 +53,18 @@ class InteractiveUITestSuite : public ChromeTestSuite {
     com_initializer_.reset(new base::win::ScopedCOMInitializer());
     ui_controls::InstallUIControlsAura(
         aura::test::CreateUIControlsAura(nullptr));
-#elif defined(USE_OZONE) && defined(OS_LINUX)
-    ui::OzonePlatform::InitParams params;
-    params.single_process = true;
-    ui::OzonePlatform::InitializeForUI(params);
 #elif defined(OS_LINUX)
-    ui_controls::InstallUIControlsAura(
-        views::test::CreateUIControlsDesktopAura());
+#if defined(USE_OZONE)
+    if (features::IsUsingOzonePlatform()) {
+      ui::OzonePlatform::InitParams params;
+      params.single_process = true;
+      ui::OzonePlatform::InitializeForUI(params);
+    } else
+#endif
+    {
+      ui_controls::InstallUIControlsAura(
+          views::test::CreateUIControlsDesktopAura());
+    }
 #else
     ui_controls::EnableUIControls();
 #endif

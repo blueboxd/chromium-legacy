@@ -523,6 +523,10 @@ class ProfileMenuClickTest : public ProfileMenuClickTestBase,
   // This should be called in the test body.
   void RunTest() {
     ASSERT_NO_FATAL_FAILURE(OpenProfileMenu(browser()));
+    // These tests don't care about performing the actual menu actions, only
+    // about the histogram recorded.
+    ASSERT_TRUE(profile_menu_view());
+    profile_menu_view()->set_perform_menu_actions_for_testing(false);
     AdvanceFocus(/*count=*/GetParam() + 1);
     ASSERT_TRUE(GetFocusedItem());
     Click(GetFocusedItem());
@@ -771,15 +775,6 @@ PROFILE_MENU_CLICK_TEST(
       signin::ConsentLevel::kNotRequired));
 
   RunTest();
-
-  if (GetExpectedActionableItemAtIndex(GetParam()) ==
-      ProfileMenuViewBase::ActionableItem::kSigninAccountButton) {
-    // The sync confirmation dialog was opened after clicking the signin button
-    // in the profile menu. It needs to be manually dismissed to not cause any
-    // crashes during shutdown.
-    EXPECT_TRUE(login_ui_test_utils::ConfirmSyncConfirmationDialog(
-        browser(), base::TimeDelta::FromSeconds(30)));
-  }
 }
 
 // List of actionable items in the correct order as they appear in the menu.
@@ -838,6 +833,11 @@ IN_PROC_BROWSER_TEST_F(ProfileMenuClickKeyAcceleratorTest, FocusOtherProfile) {
 
   // Open the menu using the keyboard.
   ASSERT_NO_FATAL_FAILURE(OpenProfileMenu(browser(), /*use_mouse=*/false));
+
+  // This test doesn't care about performing the actual menu actions, only
+  // about the histogram recorded.
+  ASSERT_TRUE(profile_menu_view());
+  profile_menu_view()->set_perform_menu_actions_for_testing(false);
 
   // The first other profile menu should be focused when the menu is opened
   // via a key event.

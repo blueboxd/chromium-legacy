@@ -401,6 +401,10 @@
 #include "chrome/browser/media/feeds/media_feeds_service.h"
 #endif
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 namespace {
 
 #if defined(OS_ANDROID)
@@ -617,7 +621,8 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterStringPref(kLastKnownGoogleURL, std::string());
   registry->RegisterStringPref(kLastPromptedGoogleURL, std::string());
 #if defined(USE_X11)
-  registry->RegisterIntegerPref(kLocalProfileId, 0);
+  if (!features::IsUsingOzonePlatform())
+    registry->RegisterIntegerPref(kLocalProfileId, 0);
 #endif
 
   registry->RegisterBooleanPref(kInsecureExtensionUpdatesEnabled, false);
@@ -1246,7 +1251,8 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 7/2019.
 #if defined(USE_X11)
-  profile_prefs->ClearPref(kLocalProfileId);
+  if (!features::IsUsingOzonePlatform())
+    profile_prefs->ClearPref(kLocalProfileId);
 #endif
 
   // Added 8/2019

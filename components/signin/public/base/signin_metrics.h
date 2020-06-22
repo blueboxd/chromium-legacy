@@ -171,12 +171,15 @@ enum class AccessPoint : int {
 // could be initiated. Transactional reauth is used when the user already has
 // a valid refresh token but a system still wants to verify user's identity.
 enum class ReauthAccessPoint {
+  // The code expects kUnknown to be the first, so it should not be reordered.
+  kUnknown = 0,
+
   // Account password storage opt-in:
-  kAutofillDropdown = 0,
-  kPasswordSaveBubble = 1,
-  kPasswordSettings = 2,
-  kGeneratePasswordDropdown = 3,
-  kGeneratePasswordContextMenu = 4,
+  kAutofillDropdown = 1,
+  kPasswordSaveBubble = 2,
+  kPasswordSettings = 3,
+  kGeneratePasswordDropdown = 4,
+  kGeneratePasswordContextMenu = 5,
 
   kMaxValue = kGeneratePasswordContextMenu
 };

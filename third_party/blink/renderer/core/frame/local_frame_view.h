@@ -407,18 +407,6 @@ class CORE_EXPORT LocalFrameView final
   void InvokeFragmentAnchor();
   void DismissFragmentAnchor();
 
-  // Methods to convert points and rects between the coordinate space of the
-  // layoutObject, and this view.
-  IntRect ConvertFromLayoutObject(const LayoutObject&, const IntRect&) const;
-  IntPoint ConvertFromLayoutObject(const LayoutObject&, const IntPoint&) const;
-  IntPoint ConvertToLayoutObject(const LayoutObject&, const IntPoint&) const;
-  PhysicalOffset ConvertFromLayoutObject(const LayoutObject&,
-                                         const PhysicalOffset&) const;
-  PhysicalOffset ConvertToLayoutObject(const LayoutObject&,
-                                       const PhysicalOffset&) const;
-  FloatPoint ConvertToLayoutObject(const LayoutObject&,
-                                   const FloatPoint&) const;
-
   bool ShouldSetCursor() const;
 
   void SetCursor(const ui::Cursor&);

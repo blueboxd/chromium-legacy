@@ -135,7 +135,6 @@ class MockActionDelegate : public ActionDelegate {
   MOCK_METHOD1(
       WriteUserData,
       void(base::OnceCallback<void(UserData*, UserData::FieldChange*)>));
-  MOCK_METHOD1(WriteUserModel, void(base::OnceCallback<void(UserModel*)>));
 
   void GetFullCard(const autofill::CreditCard* credit_card,
                    ActionDelegate::GetFullCardCallback callback) override {

@@ -1184,7 +1184,7 @@ Handoff must also be enabled in the General section of Settings, and your device
         Cookies
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_DESCRIPTION" desc="Option description to allow cookies">
-        Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to rememeber items in your shopping cart.
+        Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart.
 
 Sites can use cookies to see your browsing activity across different sites, for example, to personalize ads.
       </message>
@@ -1192,10 +1192,10 @@ Sites can use cookies to see your browsing activity across different sites, for 
         Sites will work normally
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_ALLOW_COOKIES_TITLE" desc="Option title to allow cookies">
-        Allow Cookies
+        Allow All Cookies
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_DESCRIPTION" desc="Option description to block all cookies">
-        Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or to rememeber items in your shopping cart.
+        Sites can't use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart.
 
 Sites can't use cookies to see your browsing activity across different sites, for example, to personalize ads.
       </message>
@@ -1203,10 +1203,10 @@ Sites can't use cookies to see your browsing activity across different sites, fo
         Features on many sites may break
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_ALL_COOKIES_TITLE" desc="Option title to block all cookies">
-        Block All Cookies (Not recommended)
+        Block All Cookies (Not Recommended)
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_DESCRIPTION" desc="Option description to block third party cookies">
-        Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to rememeber items in your shopping cart.
+        Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart.
 
 Sites can't use cookies to see your browsing activity across different sites, for example, to personalize ads.
       </message>
@@ -1214,12 +1214,12 @@ Sites can't use cookies to see your browsing activity across different sites, fo
         Features on some sites may break
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_INCOGNITO_DESCRIPTION" desc="Option description to block third party cookies in incognito">
-        Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to rememeber items in your shopping cart.
+        Sites can use cookies to improve your browsing experience, for example, to keep you signed in or to remember items in your shopping cart.
 
 While in incognito, sites can't use cookies to see your browsing activity across different sites, for example, to personalize ads.
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_INCOGNITO_TITLE" desc="Option title to block third party cookies in incognito">
-        Block Third-Party Cookies in incognito
+        Block Third-Party Cookies in Incognito
       </message>
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_BLOCK_THIRD_PARTY_COOKIES_TITLE" desc="Option title to block third party cookies">
         Block Third-Party Cookies
@@ -1640,6 +1640,15 @@ While in incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_SEARCH_ENGINE_SETTING_CUSTOM_SECTION_HEADER" desc="The header for custom search engines section in Search Engine selection setting [iOS only]">
         Recently Visited
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_PASSWORDS_TITLE" desc="Title for the passwords element of safety check" meaning="Row title to access the passowrd check subpage if a probelm is found with user's saved passwords [CHAR_LIMIT=20]">
+        Passwords
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_SAFE_BROWSING_TITLE" desc="Title for the safe browsing element of safety check" meaning="Row title to display the user's safe browsing status [CHAR_LIMIT=20]">
+        Safe Browsing
+      </message>
+      <message name="IDS_IOS_SETTINGS_SAFETY_CHECK_UPDATES_TITLE" desc="Title for the updates element of safety check" meaning="Row title to display the user's Chrome update status, and access upates [CHAR_LIMIT=20]">
+        Updates
       </message>
       <message name="IDS_IOS_SETTINGS_SITE_COPY_BUTTON" desc="Button that the user can press to copy the site to clipboard. [Length: 12em]">
         Copy

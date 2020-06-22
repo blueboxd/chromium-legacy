@@ -493,7 +493,7 @@ suite('PasswordsSection', function() {
     const firstPassword = passwordList[0];
 
     // Click the remove button on the first password.
-    firstNode.$$('#passwordMenu').click();
+    firstNode.$.moreActionsButton.click();
     passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
 
     const id = await passwordManager.whenCalled('removeSavedPassword');
@@ -515,7 +515,7 @@ suite('PasswordsSection', function() {
         passwordManager, passwordList, []);
     flush();
 
-    getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+    getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     flush();
     assertTrue(
         passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').hidden);
@@ -531,7 +531,7 @@ suite('PasswordsSection', function() {
         passwordManager, passwordList, []);
     flush();
 
-    getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+    getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     flush();
     assertFalse(
         passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').hidden);
@@ -963,7 +963,7 @@ suite('PasswordsSection', function() {
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, [expectedItem], []);
 
-    getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+    getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     passwordsSection.$.passwordsListHandler.$$('#menuCopyPassword').click();
 
     return passwordManager.whenCalled('requestPlaintextPassword')
@@ -982,7 +982,7 @@ suite('PasswordsSection', function() {
 
     // Click the remove button on the first password and assert that an undo
     // toast is shown.
-    getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+    getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
     flush();
     assertTrue(toastManager.isToastOpen);
@@ -1278,14 +1278,14 @@ suite('PasswordsSection', function() {
           // No removal actually happens, so all passwords keep their position.
           const passwordListItems =
               passwordsSection.root.querySelectorAll('password-list-item');
-          passwordListItems[0].$$('#passwordMenu').click();
+          passwordListItems[0].$.moreActionsButton.click();
           passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
           flush();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromAccount'),
               getToastManager().$.content.textContent);
 
-          passwordListItems[1].$$('#passwordMenu').click();
+          passwordListItems[1].$.moreActionsButton.click();
           passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
           flush();
           assertEquals(
@@ -1314,7 +1314,7 @@ suite('PasswordsSection', function() {
           !passwordsSection.$.passwordsListHandler.$$('#passwordRemoveDialog'));
 
       // Clicking remove in the overflow menu shows the dialog.
-      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
       passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
       flush();
       const removeDialog =
@@ -1353,7 +1353,7 @@ suite('PasswordsSection', function() {
           !passwordsSection.$.passwordsListHandler.$$('#passwordRemoveDialog'));
 
       // Clicking remove in the overflow menu shows the dialog.
-      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
       passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
       flush();
       const removeDialog =

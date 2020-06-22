@@ -176,8 +176,9 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.IsAutoscrollInProgress();
   }
 
-  void OnSetWhiteListedTouchAction(cc::TouchAction touch_action) override {
-    input_router_client_.OnSetWhiteListedTouchAction(touch_action);
+  void OnSetCompositorAllowedTouchAction(
+      cc::TouchAction touch_action) override {
+    input_router_client_.OnSetCompositorAllowedTouchAction(touch_action);
   }
 
   bool GetAndResetFilterEventCalled() {
@@ -188,8 +189,8 @@ class MockInputRouterImplClient : public InputRouterImplClient {
     return input_router_client_.GetAndResetOverscroll();
   }
 
-  cc::TouchAction GetAndResetWhiteListedTouchAction() {
-    return input_router_client_.GetAndResetWhiteListedTouchAction();
+  cc::TouchAction GetAndResetCompositorAllowedTouchAction() {
+    return input_router_client_.GetAndResetCompositorAllowedTouchAction();
   }
 
   void set_input_router(InputRouter* input_router) {
@@ -479,7 +480,7 @@ class InputRouterImplTestBase : public testing::Test {
       blink::mojom::InputEventResultSource source,
       blink::mojom::InputEventResultState ack_state,
       base::Optional<cc::TouchAction> expected_touch_action,
-      base::Optional<cc::TouchAction> expected_white_listed_touch_action) {
+      base::Optional<cc::TouchAction> expected_allowed_touch_action) {
     input_router_->OnHasTouchEventHandlers(true);
     EXPECT_FALSE(input_router_->AllowedTouchAction().has_value());
     PressTouchPoint(1, 1);
@@ -487,8 +488,9 @@ class InputRouterImplTestBase : public testing::Test {
     input_router_->OnTouchEventAck(TouchEventWithLatencyInfo(touch_event_),
                                    source, ack_state);
     EXPECT_EQ(input_router_->AllowedTouchAction(), expected_touch_action);
-    EXPECT_EQ(input_router_->touch_action_filter_.white_listed_touch_action(),
-              expected_white_listed_touch_action.value());
+    EXPECT_EQ(
+        input_router_->touch_action_filter_.compositor_allowed_touch_action(),
+        expected_allowed_touch_action.value());
   }
 
   const float radius_x_ = 20.0f;
@@ -511,8 +513,8 @@ class InputRouterImplTest : public InputRouterImplTestBase {
     return input_router_->touch_action_filter_.allowed_touch_action_;
   }
 
-  cc::TouchAction WhiteListedTouchAction() {
-    return input_router_->touch_action_filter_.white_listed_touch_action_;
+  cc::TouchAction CompositorAllowedTouchAction() {
+    return input_router_->touch_action_filter_.compositor_allowed_touch_action_;
   }
 };
 
@@ -2143,9 +2145,10 @@ TEST_F(InputRouterImplTest, TouchActionInCallback) {
       nullptr, blink::mojom::TouchActionOptional::New(cc::TouchAction::kPan));
   ASSERT_EQ(1U, disposition_handler_->GetAndResetAckCount());
   base::Optional<cc::TouchAction> allowed_touch_action = AllowedTouchAction();
-  cc::TouchAction white_listed_touch_action = WhiteListedTouchAction();
+  cc::TouchAction compositor_allowed_touch_action =
+      CompositorAllowedTouchAction();
   EXPECT_FALSE(allowed_touch_action.has_value());
-  EXPECT_EQ(expected_touch_action.value(), white_listed_touch_action);
+  EXPECT_EQ(expected_touch_action.value(), compositor_allowed_touch_action);
 }
 
 // TODO(crbug.com/953547): enable this when the bug is fixed.

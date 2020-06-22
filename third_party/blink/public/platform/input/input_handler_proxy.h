@@ -254,13 +254,11 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
   void SetTickClockForTesting(const base::TickClock* tick_clock);
 
   // |is_touching_scrolling_layer| indicates if one of the points that has
-  // been touched hits a currently scrolling layer.
-  // |white_listed_touch_action| is the touch_action we are sure will be
-  // allowed for the given touch event.
-  EventDisposition HitTestTouchEvent(
-      const blink::WebTouchEvent& touch_event,
-      bool* is_touching_scrolling_layer,
-      cc::TouchAction* white_listed_touch_action);
+  // been touched hits a currently scrolling layer. |allowed_touch_action| is
+  // the touch_action we are sure will be allowed for the given touch event.
+  EventDisposition HitTestTouchEvent(const blink::WebTouchEvent& touch_event,
+                                     bool* is_touching_scrolling_layer,
+                                     cc::TouchAction* allowed_touch_action);
 
   EventDisposition RouteToTypeSpecificHandler(
       EventWithCallback* event_with_callback,

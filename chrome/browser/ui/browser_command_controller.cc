@@ -95,6 +95,7 @@
 #endif
 
 #if defined(USE_OZONE)
+#include "ui/base/ui_base_features.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -961,9 +962,11 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_WINDOW, true);
   bool use_system_title_bar = true;
 #if defined(USE_OZONE)
-  use_system_title_bar = ui::OzonePlatform::GetInstance()
-                             ->GetPlatformProperties()
-                             .use_system_title_bar;
+  if (features::IsUsingOzonePlatform()) {
+    use_system_title_bar = ui::OzonePlatform::GetInstance()
+                               ->GetPlatformProperties()
+                               .use_system_title_bar;
+  }
 #endif
   command_updater_.UpdateCommandEnabled(IDC_USE_SYSTEM_TITLE_BAR,
                                         use_system_title_bar);

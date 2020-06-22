@@ -200,7 +200,9 @@ void PluginVmApps::Uninstall(const std::string& app_id,
                              bool clear_site_data,
                              bool report_abuse) {
   guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
-      ->ClearApplicationList(plugin_vm::kPluginVmName, "");
+      ->ClearApplicationList(guest_os::GuestOsRegistryService::VmType::
+                                 ApplicationList_VmType_PLUGIN_VM,
+                             plugin_vm::kPluginVmName, "");
   plugin_vm::PluginVmManagerFactory::GetForProfile(profile_)
       ->UninstallPluginVm();
 }

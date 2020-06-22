@@ -193,7 +193,7 @@ class SyncProfileDelegate : public Profile::Delegate {
   explicit SyncProfileDelegate(
       const base::Callback<void(Profile*)>& on_profile_created_callback)
       : on_profile_created_callback_(on_profile_created_callback) {}
-  ~SyncProfileDelegate() override {}
+  ~SyncProfileDelegate() override = default;
 
   void OnProfileCreated(Profile* profile,
                         bool success,
@@ -213,23 +213,6 @@ class SyncProfileDelegate : public Profile::Delegate {
   base::Callback<void(Profile*)> on_profile_created_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncProfileDelegate);
-};
-
-bool IsEncryptionComplete(const ProfileSyncService* service) {
-  return service->GetUserSettings()->IsEncryptEverythingEnabled() &&
-         !service->IsEncryptionPendingForTest();
-}
-
-// Helper class to wait for encryption to complete.
-class EncryptionChecker : public SingleClientStatusChangeChecker {
- public:
-  explicit EncryptionChecker(ProfileSyncService* service)
-      : SingleClientStatusChangeChecker(service) {}
-
-  bool IsExitConditionSatisfied(std::ostream* os) override {
-    *os << "Waiting for encryption to complete";
-    return IsEncryptionComplete(service());
-  }
 };
 
 }  // namespace
@@ -1144,34 +1127,6 @@ void SyncTest::SetUpTestServerIfRequired() {
 bool SyncTest::TestUsesSelfNotifications() {
   // Default is True unless we are running against external servers.
   return !UsingExternalServers();
-}
-
-bool SyncTest::EnableEncryption(int index) {
-  ProfileSyncService* service = GetClient(index)->service();
-
-  if (::IsEncryptionComplete(service))
-    return true;
-
-  service->GetUserSettings()->EnableEncryptEverything();
-
-  // In order to kick off the encryption we have to reconfigure. Just grab the
-  // currently synced types and use them.
-  syncer::UserSelectableTypeSet selected_types =
-      service->GetUserSettings()->GetSelectedTypes();
-  bool sync_everything =
-      (selected_types == syncer::UserSelectableTypeSet::All());
-  service->GetUserSettings()->SetSelectedTypes(sync_everything, selected_types);
-
-  return AwaitEncryptionComplete(index);
-}
-
-bool SyncTest::IsEncryptionComplete(int index) {
-  return ::IsEncryptionComplete(GetClient(index)->service());
-}
-
-bool SyncTest::AwaitEncryptionComplete(int index) {
-  ProfileSyncService* service = GetClient(index)->service();
-  return EncryptionChecker(service).Wait();
 }
 
 bool SyncTest::AwaitQuiescence() {

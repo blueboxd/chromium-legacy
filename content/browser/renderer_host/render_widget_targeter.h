@@ -217,6 +217,9 @@ class RenderWidgetTargeter {
       base::WeakPtr<RenderWidgetHostViewBase> last_request_target,
       const gfx::PointF& last_target_location);
 
+  void OnInputTargetDisconnect(base::WeakPtr<RenderWidgetHostViewBase> target,
+                               const gfx::PointF& location);
+
   HitTestResultsMatch GetHitTestResultsMatchBucket(
       RenderWidgetHostViewBase* target,
       TargetingRequest* request) const;

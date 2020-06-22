@@ -44199,6 +44199,7 @@ Called by update_use_counter_css.py.-->
   <int value="668" label="start"/>
   <int value="669" label="end"/>
   <int value="670" label="time-range"/>
+  <int value="671" label="scrollbar-gutter"/>
 </enum>
 
 <enum name="MappedEditingCommands">
@@ -52408,6 +52409,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Password"/>
   <int value="1" label="Manage passwords"/>
   <int value="2" label="Generate password"/>
+  <int value="3" label="Unlock account-store to fill password"/>
+  <int value="4" label="Unlock account-store to generate password"/>
+  <int value="5" label="Re-Signin to unlock account-stored passwords"/>
 </enum>
 
 <enum name="PasswordDropdownState">
@@ -52527,6 +52531,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
   <int value="2" label="Skipped"/>
+</enum>
+
+<enum name="PasswordManager.Store">
+  <int value="0" label="Not set"/>
+  <int value="1" label="Profile store"/>
+  <int value="2" label="Account store"/>
 </enum>
 
 <enum name="PasswordManagerActionsTaken">

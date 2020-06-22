@@ -52,8 +52,6 @@ class FakeScriptExecutorDelegate : public ScriptExecutorDelegate {
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
-  void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) override;
   void SetViewportMode(ViewportMode mode) override;
   ViewportMode GetViewportMode() override;
   void SetPeekMode(ConfigureBottomSheetProto::PeekMode peek_mode) override;

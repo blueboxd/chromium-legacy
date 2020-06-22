@@ -114,7 +114,8 @@ class FormDataImporter {
   bool ImportAddressProfiles(const FormStructure& form);
 
   // Helper method for ImportAddressProfiles which only considers the fields for
-  // a specified |section|.
+  // a specified |section|. If |section| is the empty string, the import is
+  // performed on the union of all sections.
   bool ImportAddressProfileForSection(const FormStructure& form,
                                       const std::string& section,
                                       LogBuffer* import_log_buffer);

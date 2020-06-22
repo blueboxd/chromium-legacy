@@ -276,11 +276,11 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
   DispatchNonBlockingEventToMainThread(std::move(event), attribution);
 }
 
-void WidgetInputHandlerManager::SetWhiteListedTouchAction(
+void WidgetInputHandlerManager::SetAllowedTouchAction(
     cc::TouchAction touch_action,
     uint32_t unique_touch_event_id,
     blink::InputHandlerProxy::EventDisposition event_disposition) {
-  white_listed_touch_action_ = touch_action;
+  allowed_touch_action_ = touch_action;
 }
 
 void WidgetInputHandlerManager::ProcessTouchAction(
@@ -693,10 +693,10 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToMain(
       {latency_info}, ChromeLatencyInfo::STEP_HANDLED_INPUT_EVENT_MAIN_OR_IMPL);
 
   if (!touch_action.has_value()) {
-    TRACE_EVENT_INSTANT0("input", "Using white_listed_touch_action",
+    TRACE_EVENT_INSTANT0("input", "Using allowed_touch_action",
                          TRACE_EVENT_SCOPE_THREAD);
-    touch_action = white_listed_touch_action_;
-    white_listed_touch_action_.reset();
+    touch_action = allowed_touch_action_;
+    allowed_touch_action_.reset();
   }
   // This method is called from either the main thread or the compositor thread.
   bool is_compositor_thread = compositor_task_runner_ &&

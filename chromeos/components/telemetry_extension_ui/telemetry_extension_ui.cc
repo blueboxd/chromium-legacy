@@ -25,10 +25,16 @@ content::WebUIDataSource* CreateUntrustedTelemetryExtensionDataSource() {
                                     IDR_TELEMETRY_EXTENSION_UNTRUSTED_HTML);
   untrusted_source->AddResourcePath("untrusted.js",
                                     IDR_TELEMETRY_EXTENSION_UNTRUSTED_JS);
+  untrusted_source->AddResourcePath(
+      "untrusted_worker.js", IDR_TELEMETRY_EXTENSION_UNTRUSTED_WORKER_JS);
   untrusted_source->AddFrameAncestor(GURL(kChromeUITelemetryExtensionURL));
 
   // TODO(https://crbug.com/1085330): tighten CSP.
   untrusted_source->OverrideContentSecurityPolicyDefaultSrc(std::string());
+
+  // Allow chrome-untrusted:// to load Web Worker scripts.
+  untrusted_source->OverrideContentSecurityPolicyWorkerSrc(
+      "worker-src 'self';");
 
   return untrusted_source;
 }

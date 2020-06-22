@@ -871,6 +871,23 @@ class ComputedStyle : public ComputedStyleBase,
       SetScrollMarginBottom(v);
   }
 
+  // scrollbar-gutter
+  inline bool ScrollbarGutterIsAuto() const {
+    return ScrollbarGutter() == kScrollbarGutterAuto;
+  }
+  inline bool ScrollbarGutterIsStable() const {
+    return ScrollbarGutter() & kScrollbarGutterStable;
+  }
+  inline bool ScrollbarGutterIsAlways() const {
+    return ScrollbarGutter() & kScrollbarGutterAlways;
+  }
+  inline bool ScrollbarGutterIsBoth() const {
+    return ScrollbarGutter() & kScrollbarGutterBoth;
+  }
+  inline bool ScrollbarGutterIsForce() const {
+    return ScrollbarGutter() & kScrollbarGutterForce;
+  }
+
   // shape-image-threshold (aka -webkit-shape-image-threshold)
   void SetShapeImageThreshold(float shape_image_threshold) {
     float clamped_shape_image_threshold =

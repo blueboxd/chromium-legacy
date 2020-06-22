@@ -111,9 +111,11 @@ void ContentPasswordManagerDriver::FillPasswordForm(
       autofill::MaybeClearPasswordValues(form_data));
 }
 
-void ContentPasswordManagerDriver::InformNoSavedCredentials() {
+void ContentPasswordManagerDriver::InformNoSavedCredentials(
+    bool should_show_popup_without_passwords) {
   GetPasswordAutofillManager()->OnNoCredentialsFound();
-  GetPasswordAutofillAgent()->InformNoSavedCredentials();
+  GetPasswordAutofillAgent()->InformNoSavedCredentials(
+      should_show_popup_without_passwords);
 }
 
 void ContentPasswordManagerDriver::FormEligibleForGenerationFound(

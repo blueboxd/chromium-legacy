@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/desktop_browser_frame_aura_linux.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/platform_window/extensions/x11_extension.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,8 +79,9 @@ void BrowserDesktopWindowTreeHostLinux::Init(
 #if defined(USE_X11)
   // We have now created our backing X11 window. We now need to (possibly)
   // alert Unity that there's a menu bar attached to it.
-  global_menu_bar_x11_ =
-      std::make_unique<GlobalMenuBarX11>(browser_view_, this);
+  if (!features::IsUsingOzonePlatform())
+    global_menu_bar_x11_ =
+        std::make_unique<GlobalMenuBarX11>(browser_view_, this);
 #endif
 }
 

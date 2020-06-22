@@ -162,6 +162,10 @@ class DriveIntegrationService : public KeyedService,
   void GetQuickAccessItems(int max_number,
                            GetQuickAccessItemsCallback callback);
 
+  // Returns the metadata for Drive file at |local_path|.
+  void GetMetadata(const base::FilePath& local_path,
+                   drivefs::mojom::DriveFs::GetMetadataCallback callback);
+
   void RestartDrive();
 
   // Sets the arguments to be parsed by DriveFS on startup. Should only be

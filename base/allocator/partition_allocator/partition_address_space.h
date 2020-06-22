@@ -20,7 +20,13 @@ namespace base {
 namespace internal {
 
 // The feature is not applicable to 32-bit address space.
-#if defined(__LP64__)
+// ARCH_CPU_64_BITS implies 64-bit instruction set, but not necessarily 64-bit
+// address space. The only known case where address space is 32-bit is NaCl, so
+// eliminate it explicitly. static_assert below ensures that other won't slip
+// through.
+// TODO(tasak): define ADDRESS_SPACE_64_BITS as "defined(ARCH_CPU_64_BITS) &&
+// !defined(OS_NACL)" and use it.
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 static_assert(sizeof(size_t) >= 8, "Nee more than 32-bit address space");
 
@@ -124,7 +130,7 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
   return PartitionAddressSpace::GetNormalBucketPool();
 }
 
-#else  // defined(__LP64__)
+#else  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 ALWAYS_INLINE internal::pool_handle GetDirectMapPool() {
   NOTREACHED();
@@ -136,7 +142,7 @@ ALWAYS_INLINE internal::pool_handle GetNormalBucketPool() {
   return 0;
 }
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
 

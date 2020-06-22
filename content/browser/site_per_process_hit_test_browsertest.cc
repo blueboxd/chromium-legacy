@@ -3073,6 +3073,76 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   EXPECT_FALSE(child_frame_monitor.EventWasReceived());
 }
 
+// Verify that asynchronous hit test immediately handle
+// when target client disconnects.
+IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
+                       AsynchronousHitTestChildDisconnectClient) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_busy_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+
+  // Create listeners for mouse events.
+  RenderWidgetHostMouseEventMonitor main_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor child_frame_monitor(
+      child_node->current_frame_host()->GetRenderWidgetHost());
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B C\n"
+      "   +--Site B ------- proxies for A C\n"
+      "        +--Site C -- proxies for A B\n"
+      "Where A = http://127.0.0.1/\n"
+      "      B = http://baz.com/\n"
+      "      C = http://bar.com/",
+      DepictFrameTree(root));
+
+  RenderWidgetHostInputEventRouter* router =
+      web_contents()->GetInputEventRouter();
+
+  WaitForHitTestData(child_node->current_frame_host());
+
+  RenderWidgetHostViewBase* root_view = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // Target input event to child frame. It should get delivered to the main
+  // frame instead because the child frame main thread is non-responsive.
+  blink::WebMouseEvent child_event(
+      blink::WebInputEvent::Type::kMouseDown,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  child_event.button = blink::WebPointerProperties::Button::kLeft;
+  SetWebEventPositions(&child_event, gfx::Point(75, 75), root_view);
+  child_event.click_count = 1;
+  main_frame_monitor.ResetEventReceived();
+  child_frame_monitor.ResetEventReceived();
+
+  {
+    InputEventAckWaiter waiter(root_view->GetRenderWidgetHost(),
+                               child_event.GetType());
+    router->RouteMouseEvent(root_view, &child_event, ui::LatencyInfo());
+    // Raise error for call disconnect handler.
+    static_cast<RenderWidgetHostImpl*>(
+        root->current_frame_host()->GetRenderWidgetHost())
+        ->input_target_client()
+        .internal_state()
+        ->RaiseError();
+    waiter.Wait();
+  }
+
+  EXPECT_TRUE(main_frame_monitor.EventWasReceived());
+  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().x(),
+              kHitTestTolerance);
+  EXPECT_NEAR(75, main_frame_monitor.event().PositionInWidget().y(),
+              kHitTestTolerance);
+  EXPECT_FALSE(child_frame_monitor.EventWasReceived());
+}
+
 // Tooltips aren't used on Android, so no need to compile/run this test in that
 // case.
 #if !defined(OS_ANDROID)

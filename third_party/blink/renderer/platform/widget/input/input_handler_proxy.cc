@@ -1176,17 +1176,17 @@ void InputHandlerProxy::InputHandlerScrollEnd() {
 InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
     const WebTouchEvent& touch_event,
     bool* is_touching_scrolling_layer,
-    cc::TouchAction* white_listed_touch_action) {
+    cc::TouchAction* allowed_touch_action) {
   TRACE_EVENT1("input", "InputHandlerProxy::HitTestTouchEvent",
-               "Needs whitelisted TouchAction",
-               static_cast<bool>(white_listed_touch_action));
+               "Needs allowed TouchAction",
+               static_cast<bool>(allowed_touch_action));
   *is_touching_scrolling_layer = false;
   EventDisposition result = DROP_EVENT;
   for (size_t i = 0; i < touch_event.touches_length; ++i) {
     if (touch_event.touch_start_or_first_touch_move)
-      DCHECK(white_listed_touch_action);
+      DCHECK(allowed_touch_action);
     else
-      DCHECK(!white_listed_touch_action);
+      DCHECK(!allowed_touch_action);
 
     if (touch_event.GetType() == WebInputEvent::Type::kTouchStart &&
         touch_event.touches[i].state != WebTouchPoint::State::kStatePressed) {
@@ -1199,11 +1199,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
             gfx::Point(touch_event.touches[i].PositionInWidget().x(),
                        touch_event.touches[i].PositionInWidget().y()),
             &touch_action);
-    if (white_listed_touch_action && touch_action != cc::TouchAction::kAuto) {
+    if (allowed_touch_action && touch_action != cc::TouchAction::kAuto) {
       TRACE_EVENT_INSTANT1("input", "Adding TouchAction",
                            TRACE_EVENT_SCOPE_THREAD, "TouchAction",
                            cc::TouchActionToString(touch_action));
-      *white_listed_touch_action &= touch_action;
+      *allowed_touch_action &= touch_action;
     }
 
     if (event_listener_type !=
@@ -1216,13 +1216,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(
           cc::InputHandler::TouchStartOrMoveEventListenerType::
               HANDLER_ON_SCROLLING_LAYER;
 
-      // A non-passive touch start / move will always set the whitelisted touch
+      // A non-passive touch start / move will always set the allowed touch
       // action to TouchAction::kNone, and in that case we do not ack the event
       // from the compositor.
-      if (white_listed_touch_action &&
-          *white_listed_touch_action != cc::TouchAction::kNone) {
-        TRACE_EVENT_INSTANT0("input",
-                             "NonBlocking due to whitelisted touchaction",
+      if (allowed_touch_action &&
+          *allowed_touch_action != cc::TouchAction::kNone) {
+        TRACE_EVENT_INSTANT0("input", "NonBlocking due to allowed touchaction",
                              TRACE_EVENT_SCOPE_THREAD);
         result = DID_HANDLE_NON_BLOCKING;
       } else {
@@ -1294,9 +1293,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
   TRACE_EVENT0("input", "InputHandlerProxy::HandleTouchStart");
 
   bool is_touching_scrolling_layer;
-  cc::TouchAction white_listed_touch_action = cc::TouchAction::kAuto;
+  cc::TouchAction allowed_touch_action = cc::TouchAction::kAuto;
   EventDisposition result = HitTestTouchEvent(
-      touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
+      touch_event, &is_touching_scrolling_layer, &allowed_touch_action);
   TRACE_EVENT_INSTANT1("input", "HitTest", TRACE_EVENT_SCOPE_THREAD,
                        "disposition", result);
 
@@ -1321,20 +1320,19 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     // Due to tap suppression on the browser side, this will reset the
     // browser-side touch action (see comment in
     // TouchActionFilter::FilterGestureEvent for GestureScrollBegin). Ensure we
-    // send back a white_listed_touch_action that matches this non-blocking
-    // behavior rather than treating it as if it'll block.
+    // send back an allowed_touch_action that matches this non-blocking behavior
+    // rather than treating it as if it'll block.
     TRACE_EVENT_INSTANT0("input", "NonBlocking due to fling",
                          TRACE_EVENT_SCOPE_THREAD);
-    white_listed_touch_action = cc::TouchAction::kAuto;
+    allowed_touch_action = cc::TouchAction::kAuto;
     result = DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING;
   }
 
-  TRACE_EVENT_INSTANT2("input", "Whitelisted TouchAction",
-                       TRACE_EVENT_SCOPE_THREAD, "TouchAction",
-                       cc::TouchActionToString(white_listed_touch_action),
-                       "disposition", result);
-  client_->SetWhiteListedTouchAction(white_listed_touch_action,
-                                     touch_event.unique_touch_event_id, result);
+  TRACE_EVENT_INSTANT2(
+      "input", "Allowed TouchAction", TRACE_EVENT_SCOPE_THREAD, "TouchAction",
+      cc::TouchActionToString(allowed_touch_action), "disposition", result);
+  client_->SetAllowedTouchAction(allowed_touch_action,
+                                 touch_event.unique_touch_event_id, result);
 
   return result;
 }
@@ -1350,15 +1348,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchMove(
   if (!touch_result_.has_value() ||
       touch_event.touch_start_or_first_touch_move) {
     bool is_touching_scrolling_layer;
-    cc::TouchAction white_listed_touch_action = cc::TouchAction::kAuto;
+    cc::TouchAction allowed_touch_action = cc::TouchAction::kAuto;
     EventDisposition result = HitTestTouchEvent(
-        touch_event, &is_touching_scrolling_layer, &white_listed_touch_action);
-    TRACE_EVENT_INSTANT2("input", "Whitelisted TouchAction",
-                         TRACE_EVENT_SCOPE_THREAD, "TouchAction",
-                         cc::TouchActionToString(white_listed_touch_action),
-                         "disposition", result);
-    client_->SetWhiteListedTouchAction(
-        white_listed_touch_action, touch_event.unique_touch_event_id, result);
+        touch_event, &is_touching_scrolling_layer, &allowed_touch_action);
+    TRACE_EVENT_INSTANT2(
+        "input", "Allowed TouchAction", TRACE_EVENT_SCOPE_THREAD, "TouchAction",
+        cc::TouchActionToString(allowed_touch_action), "disposition", result);
+    client_->SetAllowedTouchAction(allowed_touch_action,
+                                   touch_event.unique_touch_event_id, result);
     return result;
   }
   return touch_result_.value();

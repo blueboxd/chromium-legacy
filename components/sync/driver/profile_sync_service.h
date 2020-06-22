@@ -238,9 +238,6 @@ class ProfileSyncService : public SyncService,
   // Used by tests to inspect the OAuth2 access tokens used by PSS.
   std::string GetAccessTokenForTest() const;
 
-  // Returns true if the syncer is waiting for new datatypes to be encrypted.
-  bool IsEncryptionPendingForTest() const;
-
   // Overrides the callback used to create network connections.
   // TODO(crbug.com/949504): Inject this in the ctor instead. As it is, it's
   // possible that the real callback was already used before the test had a

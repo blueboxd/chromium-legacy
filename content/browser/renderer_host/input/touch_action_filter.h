@@ -47,13 +47,13 @@ class CONTENT_EXPORT TouchActionFilter {
   void OnSetTouchAction(cc::TouchAction touch_action);
 
   // Called at the end of a touch action sequence in order to log when a
-  // whitelisted touch action is or is not equivalent to the allowed touch
-  // action.
+  // compositor allowed touch action is or is not equivalent to the allowed
+  // touch action.
   void ReportAndResetTouchAction();
 
-  // Called when a set-white-listed-touch-action message is received from the
-  // renderer for a touch start event that is currently in flight.
-  void OnSetWhiteListedTouchAction(cc::TouchAction white_listed_touch_action);
+  // Called when a set-compositor-allowed-touch-action message is received from
+  // the renderer for a touch start event that is currently in flight.
+  void OnSetCompositorAllowedTouchAction(cc::TouchAction);
 
   base::Optional<cc::TouchAction> allowed_touch_action() const {
     return allowed_touch_action_;
@@ -63,8 +63,8 @@ class CONTENT_EXPORT TouchActionFilter {
     return active_touch_action_;
   }
 
-  cc::TouchAction white_listed_touch_action() const {
-    return white_listed_touch_action_;
+  cc::TouchAction compositor_allowed_touch_action() const {
+    return compositor_allowed_touch_action_;
   }
 
   void SetForceEnableZoom(bool enabled) { force_enable_zoom_ = enabled; }
@@ -137,8 +137,8 @@ class CONTENT_EXPORT TouchActionFilter {
   // sequence due to fling.
   base::Optional<cc::TouchAction> active_touch_action_;
 
-  // Whitelisted touch action received from the compositor.
-  cc::TouchAction white_listed_touch_action_;
+  // Allowed touch action received from the compositor.
+  cc::TouchAction compositor_allowed_touch_action_;
 
   // Debugging only.
   std::string gesture_sequence_;

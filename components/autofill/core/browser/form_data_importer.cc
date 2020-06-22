@@ -466,6 +466,17 @@ bool FormDataImporter::ImportAddressProfiles(const FormStructure& form) {
       // And close the div of the section import log.
       import_log_buffer << CTag{"div"};
     }
+    // TODO(crbug.com/1097125): Remove feature test.
+    // Run the import on the union of the section if the import was not
+    // successful and if there is more than one section.
+    if (num_saved_profiles == 0 &&
+        base::FeatureList::IsEnabled(
+            features::kAutofillProfileImportFromUnifiedSection) &&
+        sections.size() > 1) {
+      // Try to import by combining all sections.
+      if (ImportAddressProfileForSection(form, "", &import_log_buffer))
+        num_saved_profiles++;
+    }
   }
   import_log_buffer << LogMessage::kImportAddressProfileFromFormNumberOfImports
                     << num_saved_profiles << CTag{};
@@ -509,7 +520,8 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // Go through each |form| field and attempt to constitute a valid profile.
   for (const auto& field : form) {
     // Reject fields that are not within the specified |section|.
-    if (field->section != section)
+    // If section is empty, use all fields.
+    if (field->section != section && !section.empty())
       continue;
 
     base::string16 value;

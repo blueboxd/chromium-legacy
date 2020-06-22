@@ -46,7 +46,6 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/logging.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"

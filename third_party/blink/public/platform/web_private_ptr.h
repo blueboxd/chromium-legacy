@@ -31,7 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRIVATE_PTR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_PRIVATE_PTR_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "third_party/blink/public/platform/web_common.h"
 
 #if INSIDE_BLINK

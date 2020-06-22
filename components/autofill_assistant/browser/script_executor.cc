@@ -253,11 +253,6 @@ void ScriptExecutor::WriteUserData(
   delegate_->WriteUserData(std::move(write_callback));
 }
 
-void ScriptExecutor::WriteUserModel(
-    base::OnceCallback<void(UserModel*)> write_callback) {
-  delegate_->WriteUserModel(std::move(write_callback));
-}
-
 void ScriptExecutor::OnGetUserData(
     base::OnceCallback<void(UserData*, const UserModel*)> callback,
     UserData* user_data,

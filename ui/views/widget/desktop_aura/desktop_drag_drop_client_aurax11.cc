@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -140,9 +139,6 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
     const gfx::Point& /*screen_location*/,
     int operation,
     ui::DragDropTypes::DragEventSource source) {
-  UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,
-                            ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-
   DCHECK(!g_current_drag_drop_client);
   g_current_drag_drop_client = this;
 
@@ -179,20 +175,11 @@ int DesktopDragDropClientAuraX11::StartDragAndDrop(
 
   if (alive) {
     auto resulting_operation = negotiated_operation();
-    if (resulting_operation == ui::DragDropTypes::DRAG_NONE) {
-      UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Cancel", source,
-                                ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Drop", source,
-                                ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-    }
     drag_widget_.reset();
     g_current_drag_drop_client = nullptr;
     CleanupDrag();
     return resulting_operation;
   }
-  UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Cancel", source,
-                            ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
   return ui::DragDropTypes::DRAG_NONE;
 }
 
@@ -341,13 +328,8 @@ int DesktopDragDropClientAuraX11::UpdateDrag(const gfx::Point& screen_point) {
   std::unique_ptr<ui::DropTargetEvent> drop_target_event;
   DragDropDelegate* delegate = nullptr;
   DragTranslate(screen_point, &data, &drop_target_event, &delegate);
-  int drag_operation =
-      delegate ? drag_operation = delegate->OnDragUpdated(*drop_target_event)
-               : ui::DragDropTypes::DRAG_NONE;
-  UMA_HISTOGRAM_BOOLEAN("Event.DragDrop.AcceptDragUpdate",
-                        drag_operation != ui::DragDropTypes::DRAG_NONE);
-
-  return drag_operation;
+  return delegate ? delegate->OnDragUpdated(*drop_target_event)
+                  : ui::DragDropTypes::DRAG_NONE;
 }
 
 void DesktopDragDropClientAuraX11::UpdateCursor(
@@ -413,10 +395,6 @@ int DesktopDragDropClientAuraX11::PerformDrop() {
                                  ->current_modifier_state());
       } else {
         drop_event.set_flags(ui::XGetMaskAsEventFlags());
-      }
-
-      if (!IsDragDropInProgress()) {
-        UMA_HISTOGRAM_COUNTS_1M("Event.DragDrop.ExternalOriginDrop", 1);
       }
 
       drag_operation = delegate->OnPerformDrop(drop_event, std::move(data));

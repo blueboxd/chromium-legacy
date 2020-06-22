@@ -58,6 +58,7 @@
 #import "ios/chrome/browser/ui/settings/language/language_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_coordinator.h"
+#import "ios/chrome/browser/ui/settings/safety_check/safety_check_coordinator.h"
 #import "ios/chrome/browser/ui/settings/search_engine_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller_constants.h"
 #import "ios/chrome/browser/ui/settings/sync/utils/sync_util.h"
@@ -143,6 +144,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeViewSource,
   ItemTypeTableCellCatalog,
   ItemTypeArticlesForYou,
+  ItemTypeSafetyCheck,
 };
 
 #if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
@@ -160,6 +162,7 @@ NSString* kDevViewSourceKey = @"DevViewSource";
     IdentityManagerObserverBridgeDelegate,
     PrefObserverDelegate,
     PrivacyCoordinatorDelegate,
+    SafetyCheckCoordinatorDelegate,
     SettingsControllerProtocol,
     SearchEngineObserving,
     SigninPresenter,
@@ -192,6 +195,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
 
   // Privacy coordinator.
   PrivacyCoordinator* _privacyCoordinator;
+
+  // Safety Check coordinator.
+  SafetyCheckCoordinator* _safetyCheckCoordinator;
 
   // Cached resized profile image.
   UIImage* _resizedImage;
@@ -402,6 +408,10 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [model addSectionWithIdentifier:SectionIdentifierAdvanced];
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
+  if (base::FeatureList::IsEnabled(kSafetyCheckIOS)) {
+    [model addItem:[self safetyCheckDetailItem]
+        toSectionWithIdentifier:SectionIdentifierAdvanced];
+  }
   [model addItem:[self privacyDetailItem]
       toSectionWithIdentifier:SectionIdentifierAdvanced];
   _articlesForYouItem = [self articlesForYouSwitchItem];
@@ -574,6 +584,16 @@ NSString* kDevViewSourceKey = @"DevViewSource";
                     iconImageName:kSettingsVoiceSearchImageName
           accessibilityIdentifier:kSettingsVoiceSearchCellId];
   return _voiceSearchDetailItem;
+}
+
+- (TableViewItem*)safetyCheckDetailItem {
+  NSString* safetyCheckTitle =
+      l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_SAFETY_CHECK);
+  return [self detailItemWithType:ItemTypeSafetyCheck
+                             text:safetyCheckTitle
+                       detailText:nil
+                    iconImageName:kSettingsPrivacyImageName
+          accessibilityIdentifier:nil];
 }
 
 - (TableViewItem*)privacyDetailItem {
@@ -823,6 +843,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
       controller = [[VoiceSearchTableViewController alloc]
           initWithPrefs:_browserState->GetPrefs()];
       break;
+    case ItemTypeSafetyCheck:
+      [self showSafetyCheck];
+      break;
     case ItemTypePrivacy:
       [self showPrivacy];
       break;
@@ -926,6 +949,16 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   _googleServicesSettingsCoordinator.dispatcher = self.dispatcher;
   _googleServicesSettingsCoordinator.delegate = self;
   [_googleServicesSettingsCoordinator start];
+}
+
+// Shows Safety Check Screen.
+- (void)showSafetyCheck {
+  DCHECK(!_safetyCheckCoordinator);
+  _safetyCheckCoordinator = [[SafetyCheckCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:_browser];
+  _safetyCheckCoordinator.delegate = self;
+  [_safetyCheckCoordinator start];
 }
 
 // Shows Privacy screen.
@@ -1098,6 +1131,9 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [_googleServicesSettingsCoordinator stop];
   _googleServicesSettingsCoordinator.delegate = nil;
   _googleServicesSettingsCoordinator = nil;
+
+  [_safetyCheckCoordinator stop];
+  _safetyCheckCoordinator = nil;
 
   [_privacyCoordinator stop];
   _privacyCoordinator = nil;
@@ -1279,6 +1315,15 @@ NSString* kDevViewSourceKey = @"DevViewSource";
   [_googleServicesSettingsCoordinator stop];
   _googleServicesSettingsCoordinator.delegate = nil;
   _googleServicesSettingsCoordinator = nil;
+}
+
+#pragma mark - SafetyCheckCoordinatorDelegate
+
+- (void)safetyCheckCoordinatorViewControllerWasRemoved:
+    (SafetyCheckCoordinator*)coordinator {
+  DCHECK_EQ(_safetyCheckCoordinator, coordinator);
+  [_safetyCheckCoordinator stop];
+  _safetyCheckCoordinator = nil;
 }
 
 #pragma mark - PrivacyCoordinatorDelegate

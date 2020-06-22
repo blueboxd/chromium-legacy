@@ -449,8 +449,8 @@ PaintLayerScrollableArea::ConvertFromScrollbarToContainingEmbeddedContentView(
 
   IntRect rect = scrollbar_rect;
   rect.Move(ScrollbarOffset(scrollbar));
-
-  return view->GetFrameView()->ConvertFromLayoutObject(*GetLayoutBox(), rect);
+  return PixelSnappedIntRect(
+      GetLayoutBox()->LocalToAbsoluteRect(PhysicalRect(rect)));
 }
 
 IntPoint
@@ -463,7 +463,8 @@ PaintLayerScrollableArea::ConvertFromScrollbarToContainingEmbeddedContentView(
 
   IntPoint point = scrollbar_point;
   point.Move(ScrollbarOffset(scrollbar));
-  return view->GetFrameView()->ConvertFromLayoutObject(*GetLayoutBox(), point);
+  return RoundedIntPoint(
+      GetLayoutBox()->LocalToAbsolutePoint(PhysicalOffset(point)));
 }
 
 IntPoint
@@ -474,9 +475,8 @@ PaintLayerScrollableArea::ConvertFromContainingEmbeddedContentViewToScrollbar(
   if (!view)
     return parent_point;
 
-  IntPoint point = view->GetFrameView()->ConvertToLayoutObject(*GetLayoutBox(),
-                                                               parent_point);
-
+  IntPoint point(RoundedIntPoint(
+      GetLayoutBox()->AbsoluteToLocalPoint(PhysicalOffset(parent_point))));
   point.Move(-ScrollbarOffset(scrollbar));
   return point;
 }

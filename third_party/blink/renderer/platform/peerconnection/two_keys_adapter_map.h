@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 

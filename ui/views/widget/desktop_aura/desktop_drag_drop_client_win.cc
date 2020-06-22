@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/metrics/histogram_macros.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/drag_source_win.h"
 #include "ui/base/dragdrop/drop_target_event.h"
@@ -63,8 +62,6 @@ int DesktopDragDropClientWin::StartDragAndDrop(
 
   DWORD effect;
 
-  UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,
-                            ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
   HRESULT result = ::DoDragDrop(
       ui::OSExchangeDataProviderWin::GetIDataObject(*data.get()),
       drag_source_.Get(),
@@ -83,17 +80,7 @@ int DesktopDragDropClientWin::StartDragAndDrop(
   if (result != DRAGDROP_S_DROP)
     effect = DROPEFFECT_NONE;
 
-  int drag_operation = ui::DragDropTypes::DropEffectToDragOperation(effect);
-
-  if (drag_operation == ui::DragDropTypes::DRAG_NONE) {
-    UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Cancel", source,
-                              ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Drop", source,
-                              ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-  }
-
-  return drag_operation;
+  return ui::DragDropTypes::DropEffectToDragOperation(effect);
 }
 
 void DesktopDragDropClientWin::DragCancel() {

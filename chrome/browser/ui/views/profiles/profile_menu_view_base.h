@@ -143,6 +143,11 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   views::Button* anchor_button() const { return anchor_button_; }
 
+  bool perform_menu_actions() const { return perform_menu_actions_; }
+  void set_perform_menu_actions_for_testing(bool perform_menu_actions) {
+    perform_menu_actions_ = perform_menu_actions;
+  }
+
  private:
   friend class ProfileMenuViewExtensionsTest;
 
@@ -198,6 +203,10 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // The first profile button that should be focused when the menu is opened
   // using a key accelerator.
   views::Button* first_profile_button_ = nullptr;
+
+  // May be disabled by tests that only watch to histogram records and don't
+  // care about actual actions.
+  bool perform_menu_actions_ = true;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

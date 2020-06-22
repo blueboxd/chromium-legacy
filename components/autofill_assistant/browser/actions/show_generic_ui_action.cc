@@ -53,8 +53,8 @@ void WriteProfilesToUserModel(
 
 void WriteLoginOptionsToUserModel(
     const ShowGenericUiProto::RequestLoginOptions& proto,
-    std::vector<WebsiteLoginManager::Login> logins,
-    UserModel* user_model) {
+    UserModel* user_model,
+    std::vector<WebsiteLoginManager::Login> logins) {
   DCHECK(user_model);
   ValueProto model_value;
   model_value.set_is_client_side_only(true);
@@ -149,14 +149,14 @@ void ShowGenericUiAction::OnViewInflationFinished(const ClientStatus& status) {
                      }) != login_options.end()) {
       delegate_->GetWebsiteLoginManager()->GetLoginsForUrl(
           delegate_->GetWebContents()->GetLastCommittedURL(),
-          base::BindOnce(&ShowGenericUiAction::OnGetLogins,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         proto_.show_generic_ui().request_login_options()));
+          base::BindOnce(&WriteLoginOptionsToUserModel,
+                         proto_.show_generic_ui().request_login_options(),
+                         delegate_->GetUserModel()));
     } else {
-      delegate_->WriteUserModel(base::BindOnce(
-          &WriteLoginOptionsToUserModel,
+      WriteLoginOptionsToUserModel(
           proto_.show_generic_ui().request_login_options(),
-          /* logins = */ std::vector<WebsiteLoginManager::Login>()));
+          delegate_->GetUserModel(),
+          /* logins = */ std::vector<WebsiteLoginManager::Login>());
     }
   }
   delegate_->GetPersonalDataManager()->AddObserver(this);
@@ -278,9 +278,9 @@ void ShowGenericUiAction::OnPersonalDataChanged() {
       profiles->emplace_back(
           std::make_unique<autofill::AutofillProfile>(*profile));
     }
-    delegate_->WriteUserModel(
-        base::BindOnce(&WriteProfilesToUserModel, std::move(profiles),
-                       proto_.show_generic_ui().request_profiles()));
+    WriteProfilesToUserModel(std::move(profiles),
+                             proto_.show_generic_ui().request_profiles(),
+                             delegate_->GetUserModel());
   }
 
   if (proto_.show_generic_ui().has_request_credit_cards()) {
@@ -291,17 +291,10 @@ void ShowGenericUiAction::OnPersonalDataChanged() {
       credit_cards->emplace_back(
           std::make_unique<autofill::CreditCard>(*credit_card));
     }
-    delegate_->WriteUserModel(
-        base::BindOnce(&WriteCreditCardsToUserModel, std::move(credit_cards),
-                       proto_.show_generic_ui().request_credit_cards()));
+    WriteCreditCardsToUserModel(std::move(credit_cards),
+                                proto_.show_generic_ui().request_credit_cards(),
+                                delegate_->GetUserModel());
   }
-}
-
-void ShowGenericUiAction::OnGetLogins(
-    const ShowGenericUiProto::RequestLoginOptions& proto,
-    std::vector<WebsiteLoginManager::Login> logins) {
-  delegate_->WriteUserModel(
-      base::BindOnce(&WriteLoginOptionsToUserModel, proto, logins));
 }
 
 }  // namespace autofill_assistant

@@ -153,8 +153,6 @@ class Controller : public ScriptExecutorDelegate,
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
-  void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) override;
   void OnScriptError(const std::string& error_message,
                      Metrics::DropOutReason reason);
 

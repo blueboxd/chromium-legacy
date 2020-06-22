@@ -78,6 +78,25 @@ bool GetCache(WebFrame* web_frame,
               NSString** result,
               NSString** error_message);
 
+// Stores a given |key|, |value| in IndexedDB on |web_frame| + |web_state|.
+// If |error_message| is provided, then if an error occurs, it will be filled
+// with the error message. Returns true on success and false on failure.
+bool SetIndexedDB(WebFrame* web_frame,
+                  WebState* web_state,
+                  NSString* key,
+                  NSString* value,
+                  NSString** error_message);
+
+// Reads the value for the given |key| from IndexedDB on |web_frame| +
+// |web_state| and places it in |result|. If |error_message| is provided, then
+// if an error occurs, it will be filled with the error message. Returns true on
+// success and false on failure.
+bool GetIndexedDB(WebFrame* web_frame,
+                  WebState* web_state,
+                  NSString* key,
+                  NSString** result,
+                  NSString** error_message);
+
 }  // namespace test
 }  // namespace web
 

@@ -101,9 +101,9 @@ function onError(error) {
       {command: 'cookieTest.result', result: false});
 }
 
-async function getCacheWrapper(key) {
+async function asyncGetWrapper(key, getter) {
   try {
-    const value = await getCache(key);
+    const value = await getter(key);
     __gCrWeb.message.invokeOnHost(
         {command: 'cookieTest.result', result: value})
   } catch (error) {
@@ -111,9 +111,9 @@ async function getCacheWrapper(key) {
   }
 }
 
-async function setCacheWrapper(key, value) {
+async function asyncSetWrapper(key, value, setter) {
   try {
-    await setCache(key, value);
+    await setter(key, value);
     __gCrWeb.message.invokeOnHost(
         {command: 'cookieTest.result', result: true})
   } catch (error) {
@@ -121,12 +121,79 @@ async function setCacheWrapper(key, value) {
   }
 }
 
+async function setCache(key, value) {
+  let cache = await caches.open('cache');
+  return cache.put(`/${key}`, new Response(value));
+}
+
+async function getCache(key) {
+  let cache = await caches.open('cache');
+  let result = await cache.match(new Request(`/${key}`));
+  return result && result.text();
+}
+
 __gCrWeb.cookieTest.setCache = function(key, value) {
-  setCacheWrapper(key, value);
+  asyncSetWrapper(key, value, setCache);
   return true;
 };
 
 __gCrWeb.cookieTest.getCache = function(key) {
-  getCacheWrapper(key);
+  asyncGetWrapper(key, getCache);
   return 'This is an async function.';
+};
+
+function setIndexedDB(key, value) {
+  return new Promise((resolve, reject) => {
+    let open = indexedDB.open('db', 1);
+    open.onupgradeneeded = () => {
+      open.result.createObjectStore('store', {keyPath: 'id'});
+    };
+    open.onsuccess = () => {
+      let db = open.result;
+      var tx = db.transaction('store', 'readwrite');
+      var store = tx.objectStore('store');
+      store.put({id: key, value: value});
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+    };
+    open.onerror = reject;
+  });
+}
+
+function getIndexedDB(key) {
+  return new Promise((resolve, reject) => {
+    let open = indexedDB.open('db');
+    open.onsuccess = () => {
+      let db = open.result;
+      var hasStore = open.result.objectStoreNames.contains('store');
+      if (!hasStore) {
+        db.close();
+        resolve();
+        return;
+      }
+      var tx = db.transaction('store', 'readwrite');
+      var store = tx.objectStore('store');
+
+      var getResult = store.get(key);
+      getResult.onsuccess = () =>
+          resolve(getResult.result && getResult.result.value);
+
+      tx.oncomplete = () => {
+        db.close();
+      };
+    };
+    open.onerror = reject;
+  });
+}
+
+__gCrWeb.cookieTest.getIndexedDB = function(key) {
+  asyncGetWrapper(key, getIndexedDB);
+  return 'This is an async function.';
+};
+
+__gCrWeb.cookieTest.setIndexedDB = function(key, value) {
+  asyncSetWrapper(key, value, setIndexedDB);
+  return true;
 };

@@ -124,8 +124,6 @@ class ScriptExecutor : public ActionDelegate,
       CollectUserDataOptions* collect_user_data_options) override;
   void WriteUserData(
       base::OnceCallback<void(UserData*, UserData::FieldChange*)>) override;
-  void WriteUserModel(
-      base::OnceCallback<void(UserModel*)> write_callback) override;
   void GetFullCard(const autofill::CreditCard* credit_card,
                    GetFullCardCallback callback) override;
   void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,

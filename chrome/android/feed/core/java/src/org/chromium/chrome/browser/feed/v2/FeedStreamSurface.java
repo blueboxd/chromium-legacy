@@ -21,6 +21,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.NativePageNavigationDelegate;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -108,8 +109,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         @Override
         public String getAccountName() {
             CoreAccountInfo primaryAccount =
-                    IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                            ConsentLevel.NOT_REQUIRED);
+                    IdentityServicesProvider.get()
+                            .getIdentityManager(Profile.getLastUsedRegularProfile())
+                            .getPrimaryAccountInfo(ConsentLevel.NOT_REQUIRED);
             return primaryAccount == null ? "" : primaryAccount.getEmail();
         }
 

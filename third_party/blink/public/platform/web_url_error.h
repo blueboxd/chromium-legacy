@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_ERROR_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_URL_ERROR_H_
 
-#include "base/logging.h"
 #include "base/optional.h"
 #include "net/dns/public/resolve_error_info.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"

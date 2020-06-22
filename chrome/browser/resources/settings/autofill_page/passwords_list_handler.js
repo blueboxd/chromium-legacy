@@ -26,6 +26,7 @@ import {loadTimeData} from '../i18n_setup.js';
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
+import {PasswordMoreActionsClickedEvent} from './password_list_item.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 import {PasswordRemoveDialogPasswordsRemovedEvent} from './password_remove_dialog.js';
 
@@ -100,7 +101,7 @@ Polymer({
   ],
 
   listeners: {
-    'password-menu-tap': 'onPasswordMenuTap_',
+    'password-more-actions-clicked': 'onPasswordMoreActionsClicked_',
     'password-remove-dialog-passwords-removed':
         'onPasswordRemoveDialogPasswordsRemoved_',
   },
@@ -121,11 +122,10 @@ Polymer({
 
   /**
    * Opens the password action menu.
-   * @param {!Event<!{target: !HTMLElement, listItem:
-   *     !PasswordListItemElement}>} event
+   * @param {PasswordMoreActionsClickedEvent} event
    * @private
    */
-  onPasswordMenuTap_(event) {
+  onPasswordMoreActionsClicked_(event) {
     const target = event.detail.target;
 
     this.activePassword = event.detail.listItem;

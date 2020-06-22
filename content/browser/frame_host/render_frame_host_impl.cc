@@ -2672,32 +2672,14 @@ void RenderFrameHostImpl::DidFailLoadWithError(const GURL& url,
 }
 
 void RenderFrameHostImpl::DidFocusFrame() {
-  // We don't handle this IPC signal for non-current frames. For frames in
-  // BackForwardCache, it is safe to ignore this IPC as there is a renderer side
-  // check (see Document::IsFocusedAllowed) which returns false.
-  if (!IsCurrent())
+  // We don't handle this IPC signal for non-active RenderFrameHost.
+  //
+  // For RenderFrameHost in BackForwardCache, it is safe to ignore this IPC as
+  // there is a renderer side check (see Document::IsFocusedAllowed) which
+  // returns false.
+  if (lifecycle_state_ != LifecycleState::kActive)
     return;
 
-  // TODO(https://crbug.com/1093943): Remove this once closed.
-  if (IsPendingDeletion()) {
-    // FrameTree::SetFocusedFrame() is going to be called soon. This function
-    // will access the RenderFrameProxyHost of this frame seen from the
-    // SiteInstance of every active frames. In theory, they must always exist.
-    // However this is not guaranteed if this frame is pending deletion.
-    //
-    // Next block checks whether or not a crash will happen and replace it by a
-    // DumpWithoutCrashing and a return.
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=1093943#c18
-    for (FrameTreeNode* node : frame_tree()->Nodes()) {
-      SiteInstance* instance = node->current_frame_host()->GetSiteInstance();
-      if (instance != site_instance_.get() &&
-          !frame_tree_node()->render_manager()->GetRenderFrameProxyHost(
-              instance)) {
-        base::debug::DumpWithoutCrashing();
-        return;
-      }
-    }
-  }
   // We need to handle receiving this IPC from a frame that is inside a portal
   // despite there being a renderer side check (see Document::IsFocusAllowed).
   // This is because the IPC to notify a page that it is inside a portal (see
@@ -3324,10 +3306,10 @@ void RenderFrameHostImpl::RunJavaScriptDialog(
     const base::string16& default_prompt,
     JavaScriptDialogType dialog_type,
     JavaScriptDialogCallback ipc_response_callback) {
-  // Don't show the dialog if it's triggered on a non-current RenderFrameHost.
+  // Don't show the dialog if it's triggered on a non-active RenderFrameHost.
   // This happens when the RenderFrameHost is pending deletion or in the
   // back-forward cache.
-  if (!IsCurrent()) {
+  if (lifecycle_state_ != LifecycleState::kActive) {
     std::move(ipc_response_callback).Run(true, base::string16());
     return;
   }
@@ -3775,8 +3757,8 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
     return;
 
   // We shouldn't update policy headers for non-current frames.
-  if (!IsCurrent())
-    return;
+  DCHECK(IsCurrent());
+
   // Rebuild |feature_policy_| for this frame.
   ResetFeaturePolicy();
   feature_policy_->SetHeaderPolicy(feature_policy_header);
@@ -4103,10 +4085,10 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
 
 void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
     blink::mojom::FindInPageResultAXParamsPtr params) {
-  // Only update FindInPageResult on current RenderFrameHost. Note that, it is
+  // Only update FindInPageResult on active RenderFrameHost. Note that, it is
   // safe to ignore this call for BackForwardCache, as we terminate the
   // FindInPage session once the page enters BackForwardCache.
-  if (!IsCurrent())
+  if (lifecycle_state_ != LifecycleState::kActive)
     return;
 
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
@@ -4122,10 +4104,10 @@ void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
 }
 
 void RenderFrameHostImpl::HandleAccessibilityFindInPageTermination() {
-  // Only update FindInPageTermination on current RenderFrameHost. Note that, it
+  // Only update FindInPageTermination on active RenderFrameHost. Note that, it
   // is safe to ignore this call for BackForwardCache, as we terminate the
   // FindInPage session once the page enters BackForwardCache.
-  if (!IsCurrent())
+  if (lifecycle_state_ != LifecycleState::kActive)
     return;
 
   ui::AXMode accessibility_mode = delegate_->GetAccessibilityMode();
@@ -4502,11 +4484,12 @@ void RenderFrameHostImpl::DidReceiveFirstUserActivation() {
 
 void RenderFrameHostImpl::UpdateUserActivationState(
     blink::mojom::UserActivationUpdateType update_type) {
-  // Don't update UserActivationState for non-current RenderFrameHost. In case
+  // Don't update UserActivationState for non-active RenderFrameHost. In case
   // of BackForwardCache, this is only called for tests and it is safe to ignore
   // such requests.
-  if (!IsCurrent())
+  if (lifecycle_state_ != LifecycleState::kActive)
     return;
+
   frame_tree_node_->UpdateUserActivationState(update_type);
 }
 

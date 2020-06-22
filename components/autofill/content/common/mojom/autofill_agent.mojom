@@ -90,7 +90,7 @@ interface PasswordAutofillAgent {
 
   // Lets the renderer know that there are no saved credentials for filling.
   // This is the "no results" equivalent of FillPasswordForm.
-  InformNoSavedCredentials();
+  InformNoSavedCredentials(bool should_show_popup_without_passwords);
 
   // Fills the given |credential| into the last focused text input.
   FillIntoFocusedField(bool is_password, mojo_base.mojom.String16 credential);

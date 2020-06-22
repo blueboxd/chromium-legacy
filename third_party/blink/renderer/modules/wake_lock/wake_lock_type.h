@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 

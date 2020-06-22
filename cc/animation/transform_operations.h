@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "cc/animation/animation_export.h"
 #include "cc/animation/transform_operation.h"
 #include "ui/gfx/transform.h"

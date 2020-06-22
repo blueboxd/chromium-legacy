@@ -21,6 +21,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/util/ranges/algorithm.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_driver.h"
@@ -305,6 +306,19 @@ std::vector<autofill::Suggestion> SetUnlockLoadingState(
   return new_suggestions;
 }
 
+void LogAccountStoredPasswordsCountInFillDataAfterUnlock(
+    const autofill::PasswordFormFillData& fill_data) {
+  int account_store_passwords_count =
+      util::ranges::count_if(fill_data.additional_logins,
+                             [](const autofill::PasswordAndMetadata& metadata) {
+                               return metadata.uses_account_store;
+                             });
+  if (fill_data.uses_account_store)
+    ++account_store_passwords_count;
+  metrics_util::LogPasswordsCountFromAccountStoreAfterUnlock(
+      account_store_passwords_count);
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -348,6 +362,7 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
 
 void PasswordAutofillManager::OnUnlockItemAccepted(
     autofill::PopupItemId unlock_item) {
+  using metrics_util::PasswordDropdownSelectedOption;
   DCHECK(
       unlock_item == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
       unlock_item ==
@@ -397,17 +412,25 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
              autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN) {
     password_client_->TriggerSignIn(
         signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
+    metrics_util::LogPasswordDropdownItemSelected(
+        PasswordDropdownSelectedOption::kResigninToUnlockAccountStore,
+        password_client_->IsIncognito());
   } else if (
       identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN ||
       identifier ==
           autofill::
               POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE) {
     OnUnlockItemAccepted(static_cast<autofill::PopupItemId>(identifier));
+    metrics_util::LogPasswordDropdownItemSelected(
+        identifier == autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN
+            ? PasswordDropdownSelectedOption::kUnlockAccountStorePasswords
+            : PasswordDropdownSelectedOption::kUnlockAccountStoreGeneration,
+        password_client_->IsIncognito());
   } else {
+    bool success = FillSuggestion(GetUsernameFromSuggestion(value), identifier);
     metrics_util::LogPasswordDropdownItemSelected(
         PasswordDropdownSelectedOption::kPassword,
         password_client_->IsIncognito());
-    bool success = FillSuggestion(GetUsernameFromSuggestion(value), identifier);
     DCHECK(success);
   }
 
@@ -464,6 +487,12 @@ void PasswordAutofillManager::OnAddPasswordFillData(
 
   if (!autofill_client_ || autofill_client_->GetPopupSuggestions().empty())
     return;
+  // Only log account-stored passwords if the unlock just happened.
+  if (HasLoadingSuggestion(
+          autofill_client_->GetPopupSuggestions(),
+          autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN)) {
+    LogAccountStoredPasswordsCountInFillDataAfterUnlock(fill_data);
+  }
   UpdatePopup(BuildSuggestions(base::string16(),
                                ForPasswordField(AreSuggestionForPasswordField(
                                    autofill_client_->GetPopupSuggestions())),
@@ -477,6 +506,8 @@ void PasswordAutofillManager::OnNoCredentialsFound() {
           autofill_client_->GetPopupSuggestions(),
           autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN))
     return;
+  metrics_util::LogPasswordsCountFromAccountStoreAfterUnlock(
+      /*account_store_passwords_count=*/0);
   UpdatePopup({CreateAccountStorageEmptyEntry()});
 }
 

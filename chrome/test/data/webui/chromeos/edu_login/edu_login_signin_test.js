@@ -21,6 +21,7 @@ edu_login_signin_tests.TestNames = {
   Init: 'Initial state',
   WebUICallbacks: 'WebUI callbacks test',
   AuthExtHostCallbacks: 'AuthExtHost callbacks test',
+  GoBackInWebview: 'Going back in the webview test',
 };
 
 const fakeLoginParams = {
@@ -80,14 +81,6 @@ suite(edu_login_signin_tests.suiteName, function() {
   });
 
   test(assert(edu_login_signin_tests.TestNames.WebUICallbacks), function() {
-    let goBackCalls = 0;
-    signinComponent.addEventListener('go-back', function() {
-      goBackCalls++;
-    });
-    webUIListenerCallback('navigate-back-in-webview');
-    expectEquals(1, goBackCalls);
-    assertEquals(1, testAuthenticator.resetStatesCalls);
-
     const fakeAuthExtensionData = {
       hl: 'hl',
       gaiaUrl: 'gaiaUrl',
@@ -127,4 +120,29 @@ suite(edu_login_signin_tests.suiteName, function() {
           assertDeepEquals(fakeLoginParams, result[1]);
         });
       });
+
+  test(assert(edu_login_signin_tests.TestNames.GoBackInWebview), function() {
+    const backButton =
+        signinComponent.$$('edu-login-button[button-type="back"]');
+    let backCalls = 0;
+    let backInWebviewCalls = 0;
+    signinComponent.addEventListener('go-back', () => backCalls++);
+    signinComponent.$.signinFrame.back = () => backInWebviewCalls++;
+
+    // If we cannot go back in the webview - we should go back to the previous
+    // screen.
+    signinComponent.$.signinFrame.canGoBack = () => false;
+    backButton.fire('go-back');
+    assertEquals(1, backCalls);
+    assertEquals(0, backInWebviewCalls);
+
+    backCalls = 0;
+    backInWebviewCalls = 0;
+
+    // Go back in the webview if possible.
+    signinComponent.$.signinFrame.canGoBack = () => true;
+    backButton.fire('go-back');
+    assertEquals(0, backCalls);
+    assertEquals(1, backInWebviewCalls);
+  });
 });

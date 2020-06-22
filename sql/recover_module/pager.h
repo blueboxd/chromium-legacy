@@ -8,7 +8,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/sequence_checker.h"
 
 struct sqlite3_file;

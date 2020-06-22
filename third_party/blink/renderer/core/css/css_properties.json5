@@ -3116,6 +3116,22 @@
       converter: "ConvertLengthOrAuto",
     },
     {
+      name: "scrollbar-gutter",
+      property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
+      inherited: true,
+      field_size: 4,
+      field_template: "primitive",
+      default_value: "kScrollbarGutterAuto",
+      name_for_methods: "ScrollbarGutter",
+      type_name: "unsigned",
+      converter: "ConvertScrollbarGutter",
+      keywords: [
+        "auto", "stable", "always"
+      ],
+      typedom_types: ["Keyword"],
+      runtime_flag: "ScrollbarGutter",
+    },
+    {
       name: "scroll-behavior",
       property_methods: ["CSSValueFromComputedStyleInternal"],
       field_group: "*",

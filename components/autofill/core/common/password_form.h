@@ -297,13 +297,16 @@ struct PasswordForm {
   bool is_new_password_reliable = false;
 
   // Serialized to prefs, so don't change numeric values!
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum class Store {
     // Default value.
     kNotSet = 0,
     // Credential came from the profile (i.e. local) storage.
     kProfileStore = 1,
     // Credential came from the Gaia-account-scoped storage.
-    kAccountStore = 2
+    kAccountStore = 2,
+    kMaxValue = kAccountStore
   };
   Store in_store = Store::kNotSet;
 

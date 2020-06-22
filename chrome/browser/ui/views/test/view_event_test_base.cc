@@ -95,7 +95,8 @@ ViewEventTestBase::ViewEventTestBase() {
   // tests.
   DCHECK(!display::Screen::GetScreen());
 #if defined(USE_X11)
-  views::test::TestDesktopScreenX11::GetInstance();
+  if (!features::IsUsingOzonePlatform())
+    views::test::TestDesktopScreenX11::GetInstance();
 #else
   screen_.reset(views::CreateDesktopScreen());
 #endif

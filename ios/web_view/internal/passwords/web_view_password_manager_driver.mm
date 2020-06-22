@@ -32,7 +32,8 @@ void WebViewPasswordManagerDriver::FillPasswordForm(
   [delegate_ fillPasswordForm:form_data];
 }
 
-void WebViewPasswordManagerDriver::InformNoSavedCredentials() {
+void WebViewPasswordManagerDriver::InformNoSavedCredentials(
+    bool should_show_popup_without_passwords) {
   [delegate_ informNoSavedCredentials];
 }
 

@@ -70,7 +70,9 @@ void CrostiniRemover::StopVmFinished(CrostiniResult result) {
   }
 
   guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile_)
-      ->ClearApplicationList(vm_name_, "");
+      ->ClearApplicationList(guest_os::GuestOsRegistryService::VmType::
+                                 ApplicationList_VmType_TERMINA,
+                             vm_name_, "");
   CrostiniMimeTypesServiceFactory::GetForProfile(profile_)->ClearMimeTypes(
       vm_name_, "");
   CrostiniManager::GetForProfile(profile_)->DestroyDiskImage(

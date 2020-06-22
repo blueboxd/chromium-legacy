@@ -21,7 +21,11 @@ namespace internal {
 using pool_handle = unsigned;
 
 // The feature is not applicable to 32-bit address space.
-#if defined(__LP64__)
+// ARCH_CPU_64_BITS implies 64-bit instruction set, but not necessarily 64-bit
+// address space. The only known case where address space is 32-bit is NaCl, so
+// eliminate it explicitly. static_assert below ensures that other won't slip
+// through.
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 static_assert(sizeof(size_t) >= 8, "Nee more than 32-bit address space");
 
@@ -88,7 +92,7 @@ class BASE_EXPORT AddressPoolManager {
   DISALLOW_COPY_AND_ASSIGN(AddressPoolManager);
 };
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
 }  // namespace base

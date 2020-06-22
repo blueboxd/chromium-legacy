@@ -7,7 +7,7 @@
 #ifndef CC_BASE_SWITCHES_H_
 #define CC_BASE_SWITCHES_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "cc/base/base_export.h"
 
 // Since cc is used from the render process, anything that goes here also needs

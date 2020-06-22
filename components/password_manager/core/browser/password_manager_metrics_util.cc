@@ -227,6 +227,13 @@ void LogSubmittedFormFrame(SubmittedFormFrame frame) {
                                 SubmittedFormFrame::SUBMITTED_FORM_FRAME_COUNT);
 }
 
+void LogPasswordsCountFromAccountStoreAfterUnlock(
+    int account_store_passwords_count) {
+  base::UmaHistogramCounts100(
+      "PasswordManager.CredentialsCountFromAccountStoreAfterUnlock",
+      account_store_passwords_count);
+}
+
 void LogPasswordSettingsReauthResult(ReauthResult result) {
   base::UmaHistogramEnumeration(
       "PasswordManager.ReauthToAccessPasswordInSettings", result);

@@ -633,6 +633,7 @@ void GuestOsRegistryService::MaybeRequestIcon(const std::string& app_id,
 }
 
 void GuestOsRegistryService::ClearApplicationList(
+    VmType vm_type,
     const std::string& vm_name,
     const std::string& container_name) {
   std::vector<std::string> removed_apps;
@@ -644,12 +645,16 @@ void GuestOsRegistryService::ClearApplicationList(
     for (const auto& item : apps->DictItems()) {
       if (item.first == crostini::GetTerminalId())
         continue;
-      if (item.second.FindKey(guest_os::prefs::kAppVmNameKey)->GetString() ==
-              vm_name &&
-          (container_name.empty() ||
-           item.second.FindKey(guest_os::prefs::kAppContainerNameKey)
-                   ->GetString() == container_name))
-        removed_apps.push_back(item.first);
+      Registration registration(&item.second, /*is_terminal_app=*/false);
+      if (vm_type != registration.VmType())
+        continue;
+      if (vm_name != registration.VmName())
+        continue;
+      if (!container_name.empty() &&
+          container_name != registration.ContainerName()) {
+        continue;
+      }
+      removed_apps.push_back(item.first);
     }
     for (const std::string& removed_app : removed_apps) {
       RemoveAppData(removed_app);
@@ -661,7 +666,7 @@ void GuestOsRegistryService::ClearApplicationList(
     return;
 
   // Do not notify observers for Plugin VM.
-  if (vm_name == plugin_vm::kPluginVmName)
+  if (vm_type == VmType::ApplicationList_VmType_PLUGIN_VM)
     return;
 
   std::vector<std::string> updated_apps;
@@ -780,7 +785,7 @@ void GuestOsRegistryService::UpdateApplicationList(
     return;
 
   // Do not notify observers for Plugin VM.
-  if (app_list.vm_name() == plugin_vm::kPluginVmName)
+  if (app_list.vm_type() == VmType::ApplicationList_VmType_PLUGIN_VM)
     return;
 
   for (Observer& obs : observers_)

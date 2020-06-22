@@ -16,6 +16,10 @@ namespace content {
 class WebContents;
 }
 
+namespace signin_metrics {
+enum class ReauthAccessPoint;
+}
+
 // Interface to the platform-specific managers of the Signin and Sync
 // confirmation tab-modal dialogs. This and its platform-specific
 // implementations are responsible for actually creating and owning the dialogs,
@@ -52,7 +56,8 @@ class SigninViewControllerDelegate {
   // delete itself when the window it's managing is closed.
   static SigninViewControllerDelegate* CreateReauthConfirmationDelegate(
       Browser* browser,
-      const CoreAccountId& account_id);
+      const CoreAccountId& account_id,
+      signin_metrics::ReauthAccessPoint access_point);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

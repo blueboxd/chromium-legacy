@@ -11,7 +11,7 @@
 namespace base {
 namespace internal {
 
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 TEST(AddressPoolManager, TooLargePool) {
   uintptr_t base_addr = 0x4200000;
@@ -133,7 +133,7 @@ TEST(AddressPoolManager, IrregularPattern) {
   EXPECT_EQ(a10, base_ptr + 6 * kSuperPageSize);
 }
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
 }  // namespace base

@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.feed.library.api.client.lifecycle.AppLifecycleListener;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 
@@ -95,7 +96,9 @@ public class FeedAppLifecycle
         }
 
         ApplicationStatus.registerStateListenerForAllActivities(this);
-        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .addSignInStateObserver(this);
     }
 
     /**
@@ -127,7 +130,9 @@ public class FeedAppLifecycle
      * Unregisters listeners and cleans up any native resources held by FeedAppLifecycle.
      */
     public void destroy() {
-        IdentityServicesProvider.get().getSigninManager().removeSignInStateObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .removeSignInStateObserver(this);
         ApplicationStatus.unregisterActivityStateListener(this);
         mLifecycleBridge.destroy();
         mLifecycleBridge = null;

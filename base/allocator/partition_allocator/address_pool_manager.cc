@@ -16,7 +16,7 @@
 namespace base {
 namespace internal {
 
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 constexpr size_t AddressPoolManager::Pool::kMaxBits;
 
@@ -175,7 +175,7 @@ ALWAYS_INLINE AddressPoolManager::Pool* AddressPoolManager::GetPool(
   return &pools_[handle - 1];
 }
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace internal
 }  // namespace base

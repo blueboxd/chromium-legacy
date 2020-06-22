@@ -103,6 +103,10 @@
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 #endif  // defined(OS_WIN)
 
+#if defined(USE_X11)
+#include "ui/base/ui_base_features.h"
+#endif
+
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
 
@@ -684,7 +688,11 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 #endif  // OS_CHROMEOS
 
 #if defined(TOOLKIT_VIEWS) && defined(USE_X11)
-  ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+  // TODO(https://crbug.com/1097696): make it available on ozone/linux.
+  if (!features::IsUsingOzonePlatform())
+    ui::TouchFactory::SetTouchDeviceListFromCommandLine();
+  else
+    NOTIMPLEMENTED_LOG_ONCE();
 #endif
 
 #if defined(OS_MACOSX)

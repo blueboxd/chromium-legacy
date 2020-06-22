@@ -66,8 +66,6 @@ Polymer({
   attached() {
     this.addWebUIListener(
         'load-auth-extension', data => this.loadAuthExtension_(data));
-    this.addWebUIListener(
-        'navigate-back-in-webview', () => this.navigateBackInWebview_());
     this.addWebUIListener('close-dialog', () => this.closeDialog_());
   },
 

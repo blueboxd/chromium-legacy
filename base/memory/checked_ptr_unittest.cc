@@ -607,7 +607,7 @@ TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-#if defined(__LP64__)
+#if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 namespace {
 
@@ -702,6 +702,6 @@ TEST(CheckedPtr2Impl, SafelyUnwrapDisabled) {
   ASSERT_EQ(CheckedPtr2ImplEnabled::SafelyUnwrapPtrInternal(addr), addr);
 }
 
-#endif  // defined(__LP64__)
+#endif  // defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
 }  // namespace

@@ -130,7 +130,8 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // mojom::PasswordAutofillAgent:
   void FillPasswordForm(const PasswordFormFillData& form_data) override;
-  void InformNoSavedCredentials() override;
+  void InformNoSavedCredentials(
+      bool should_show_popup_without_passwords) override;
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override;
   void SetLoggingState(bool active) override;
@@ -469,12 +470,17 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void SetLastUpdatedFormAndField(const blink::WebFormElement& form,
                                   const blink::WebFormControlElement& input);
 
+  bool CanShowPopupWithoutPasswords(
+      const blink::WebInputElement& password_element) const;
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.
   PasswordToLoginMap password_to_username_;
   // The chronologically last insertion into |web_input_to_password_info_|.
   WebInputToPasswordInfoMap::iterator last_supplied_password_info_iter_;
+
+  bool should_show_popup_without_passwords_ = false;
 
   // Map WebFormControlElement to the pair of:
   // 1) The most recent text that user typed or PasswordManager autofilled in

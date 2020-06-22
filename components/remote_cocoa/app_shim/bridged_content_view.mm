@@ -8,7 +8,6 @@
 #import "base/mac/foundation_util.h"
 #import "base/mac/mac_util.h"
 #import "base/mac/scoped_nsobject.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/remote_cocoa/app_shim/drag_drop_client.h"
@@ -664,11 +663,7 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
 
 - (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender {
   remote_cocoa::DragDropClient* client = [self dragDropClient];
-  const auto drag_operation =
-      client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
-  UMA_HISTOGRAM_BOOLEAN("Event.DragDrop.AcceptDragUpdate",
-                        drag_operation != ui::DragDropTypes::DRAG_NONE);
-  return drag_operation;
+  return client ? client->DragUpdate(sender) : ui::DragDropTypes::DRAG_NONE;
 }
 
 - (void)draggingExited:(id<NSDraggingInfo>)sender {

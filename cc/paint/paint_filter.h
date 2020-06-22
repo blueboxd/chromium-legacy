@@ -5,8 +5,8 @@
 #ifndef CC_PAINT_PAINT_FILTER_H_
 #define CC_PAINT_PAINT_FILTER_H_
 
+#include "base/check_op.h"
 #include "base/containers/stack_container.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "cc/paint/paint_export.h"

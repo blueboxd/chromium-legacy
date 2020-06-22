@@ -11,7 +11,6 @@
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -162,9 +161,6 @@ int DragDropController::StartDragAndDrop(
       provider->GetDragImage().size().IsEmpty())
     return 0;
 
-  UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Start", source,
-                            ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-
   current_drag_event_source_ = source;
   DragDropTracker* tracker =
       new DragDropTracker(root_window, drag_drop_window_delegate_.get());
@@ -217,14 +213,6 @@ int DragDropController::StartDragAndDrop(
     base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
     quit_closure_ = run_loop.QuitClosure();
     run_loop.Run();
-  }
-
-  if (drag_operation_ == 0) {
-    UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Cancel", source,
-                              ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
-  } else {
-    UMA_HISTOGRAM_ENUMERATION("Event.DragDrop.Drop", source,
-                              ui::DragDropTypes::DRAG_EVENT_SOURCE_COUNT);
   }
 
   if (!cancel_animation_.get() || !cancel_animation_->is_animating() ||

@@ -638,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AsyncEventTargetingIgnoresPortals) {
   WaitForHitTestData(portal_frame);
 
   viz::mojom::InputTargetClient* target_client =
-      main_frame->GetRenderWidgetHost()->input_target_client();
+      main_frame->GetRenderWidgetHost()->input_target_client().get();
   ASSERT_TRUE(target_client);
 
   gfx::PointF root_location =

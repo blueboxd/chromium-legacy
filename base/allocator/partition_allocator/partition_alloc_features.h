@@ -21,7 +21,8 @@ ALWAYS_INLINE bool IsPartitionAllocGigaCageEnabled() {
   // The feature is not applicable to 32 bit architectures (not enough address
   // space). It is also incompatible with PartitionAlloc as malloc(), as the
   // base::Feature code allocates, leading to reentrancy in PartitionAlloc.
-#if !defined(__LP64__) || BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
+#if !(defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)) || \
+    BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   return false;
 #else
   return FeatureList::IsEnabled(kPartitionAllocGigaCage);

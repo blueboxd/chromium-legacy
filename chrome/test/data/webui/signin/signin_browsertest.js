@@ -57,7 +57,9 @@ TEST_F('SigninSyncConfirmationTest', 'Dialog', function() {
 var SigninReauthTest = class extends SigninBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://signin-reauth/test_loader.html?module=signin/signin_reauth_test.js';
+    // See signin_metrics::ReauthAccessPoint for definition of the
+    // "access_point" parameter.
+    return 'chrome://signin-reauth/test_loader.html?module=signin/signin_reauth_test.js&access_point=2';
   }
 };
 

@@ -259,11 +259,6 @@ void FakeDebugDaemonClient::StartConcierge(ConciergeCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
-void FakeDebugDaemonClient::StopConcierge(ConciergeCallback callback) {
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), true));
-}
-
 void FakeDebugDaemonClient::StartPluginVmDispatcher(
     const std::string& /* owner_id */,
     const std::string& /* lang */,

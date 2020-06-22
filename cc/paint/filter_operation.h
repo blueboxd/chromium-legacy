@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_filter.h"
 #include "third_party/skia/include/core/SkColor.h"

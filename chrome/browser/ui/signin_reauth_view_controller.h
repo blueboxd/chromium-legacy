@@ -108,6 +108,7 @@ class SigninReauthViewController
 
   Browser* const browser_;
   const CoreAccountId account_id_;
+  const signin_metrics::ReauthAccessPoint access_point_;
   base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
 
   // Delegate displaying the dialog.

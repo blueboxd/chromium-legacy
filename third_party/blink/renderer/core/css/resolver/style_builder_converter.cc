@@ -2018,4 +2018,22 @@ RubyPosition StyleBuilderConverter::ConvertRubyPosition(
   return RubyPosition::kBefore;
 }
 
+ScrollbarGutter StyleBuilderConverter::ConvertScrollbarGutter(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  ScrollbarGutter flags = kScrollbarGutterAuto;
+
+  auto process = [&flags](const CSSValue& identifier) {
+    flags |= To<CSSIdentifierValue>(identifier).ConvertTo<ScrollbarGutter>();
+  };
+
+  if (auto* value_list = DynamicTo<CSSValueList>(value)) {
+    for (auto& entry : *value_list)
+      process(*entry);
+  } else {
+    process(value);
+  }
+  return flags;
+}
+
 }  // namespace blink

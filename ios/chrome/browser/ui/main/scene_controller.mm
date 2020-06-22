@@ -765,63 +765,17 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (SigninShouldPresentUserSigninUpgrade(
           self.mainController.mainBrowserState)) {
     Browser* browser = self.mainInterface.browser;
-    id<ApplicationCommands, BrowsingDataCommands> promoHandler =
-        static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
-            browser->GetCommandDispatcher());
-    UIViewController* promoController =
-        [[SigninPromoViewController alloc] initWithBrowser:browser
-                                                dispatcher:promoHandler];
-
-    if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
-      self.signinCoordinator = [SigninCoordinator
-          upgradeSigninPromoCoordinatorWithBaseViewController:
-              self.mainInterface.viewController
-                                                      browser:browser];
-      __weak SceneController* weakSelf = self;
-      self.signinCoordinator.signinCompletion =
-          ^(SigninCoordinatorResult signinResult, SigninCompletionInfo*) {
-            [weakSelf.signinCoordinator stop];
-            weakSelf.signinCoordinator = nil;
-          };
-    }
+    self.signinCoordinator = [SigninCoordinator
+        upgradeSigninPromoCoordinatorWithBaseViewController:self.mainInterface
+                                                                .viewController
+                                                    browser:browser];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
                                  (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
-                     if (base::FeatureList::IsEnabled(kNewSigninArchitecture)) {
-                       [self.signinCoordinator start];
-                     } else {
-                       [self showPromo:promoController];
-                     }
+                     [self startSigninCoordinatorWithCompletion:nil];
                    });
   }
-}
-
-- (void)showPromo:(UIViewController*)promo {
-  // Make sure we have a valid browser
-  DCHECK(self.currentInterface.browser);
-
-  OrientationLimitingNavigationController* navController =
-      [[OrientationLimitingNavigationController alloc]
-          initWithRootViewController:promo];
-
-  // Avoid presenting the promo if the current device orientation is not
-  // supported. The promo will be presented at a later moment, when the device
-  // orientation is supported.
-  UIInterfaceOrientation orientation =
-      [UIApplication sharedApplication].statusBarOrientation;
-  NSUInteger supportedOrientationsMask =
-      [navController supportedInterfaceOrientations];
-  if (!((1 << orientation) & supportedOrientationsMask))
-    return;
-
-  [navController setModalTransitionStyle:[promo modalTransitionStyle]];
-  [navController setNavigationBarHidden:YES];
-  [[navController view] setFrame:[[UIScreen mainScreen] bounds]];
-
-  [self.mainInterface.viewController presentViewController:navController
-                                                  animated:YES
-                                                completion:nil];
 }
 
 #pragma mark - ApplicationCommands

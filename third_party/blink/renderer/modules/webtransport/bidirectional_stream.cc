@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/logging.h"
 #include "third_party/blink/renderer/modules/webtransport/quic_transport.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"

@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"

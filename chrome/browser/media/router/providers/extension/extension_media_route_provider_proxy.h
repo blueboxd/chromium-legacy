@@ -49,14 +49,14 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
                    const url::Origin& origin,
                    int32_t tab_id,
                    base::TimeDelta timeout,
-                   bool incognito,
+                   bool off_the_record,
                    CreateRouteCallback callback) override;
   void JoinRoute(const std::string& media_source,
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  int32_t tab_id,
                  base::TimeDelta timeout,
-                 bool incognito,
+                 bool off_the_record,
                  JoinRouteCallback callback) override;
   void ConnectRouteByRouteId(const std::string& media_source,
                              const std::string& route_id,
@@ -64,7 +64,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
                              const url::Origin& origin,
                              int32_t tab_id,
                              base::TimeDelta timeout,
-                             bool incognito,
+                             bool off_the_record,
                              ConnectRouteByRouteIdCallback callback) override;
   void TerminateRoute(const std::string& route_id,
                       TerminateRouteCallback callback) override;
@@ -115,14 +115,14 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
                      const url::Origin& origin,
                      int32_t tab_id,
                      base::TimeDelta timeout,
-                     bool incognito,
+                     bool off_the_record,
                      CreateRouteCallback callback);
   void DoJoinRoute(const std::string& media_source,
                    const std::string& presentation_id,
                    const url::Origin& origin,
                    int32_t tab_id,
                    base::TimeDelta timeout,
-                   bool incognito,
+                   bool off_the_record,
                    JoinRouteCallback callback);
   void DoConnectRouteByRouteId(const std::string& media_source,
                                const std::string& route_id,
@@ -130,7 +130,7 @@ class ExtensionMediaRouteProviderProxy : public mojom::MediaRouteProvider {
                                const url::Origin& origin,
                                int32_t tab_id,
                                base::TimeDelta timeout,
-                               bool incognito,
+                               bool off_the_record,
                                ConnectRouteByRouteIdCallback callback);
   void DoTerminateRoute(const std::string& route_id,
                         TerminateRouteCallback callback);

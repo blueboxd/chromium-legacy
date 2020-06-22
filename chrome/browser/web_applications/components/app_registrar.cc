@@ -53,6 +53,12 @@ void AppRegistrar::NotifyWebAppManifestUpdated(const AppId& app_id,
     observer.OnWebAppManifestUpdated(app_id, old_name);
 }
 
+void AppRegistrar::NotifyWebAppsWillBeUpdatedFromSync(
+    const std::vector<const WebApp*>& new_apps_state) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppsWillBeUpdatedFromSync(new_apps_state);
+}
+
 void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnWebAppUninstalled(app_id);

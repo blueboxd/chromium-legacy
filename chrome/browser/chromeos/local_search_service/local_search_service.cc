@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/chromeos/local_search_service/index.h"
+#include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 
 namespace local_search_service {
 
@@ -16,9 +17,9 @@ LocalSearchService::~LocalSearchService() = default;
 
 Index* LocalSearchService::GetIndex(IndexId index_id) {
   auto it = indices_.find(index_id);
-  if (it == indices_.end())
-    it = indices_.emplace(index_id, std::make_unique<Index>()).first;
-
+  if (it == indices_.end()) {
+    it = indices_.emplace(index_id, std::make_unique<Index>(index_id)).first;
+  }
   DCHECK(it != indices_.end());
   DCHECK(it->second);
 

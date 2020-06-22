@@ -7,7 +7,6 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/test/base/test_browser_window.h"

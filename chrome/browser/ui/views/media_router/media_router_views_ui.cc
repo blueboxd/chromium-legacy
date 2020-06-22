@@ -376,7 +376,7 @@ bool MediaRouterViewsUI::CreateRoute(const MediaSink::Id& sink_id,
       base::BindOnce(&RunRouteResponseCallbacks,
                      std::move(params->presentation_callback),
                      std::move(params->route_result_callbacks)),
-      params->timeout, params->incognito);
+      params->timeout, params->off_the_record);
 
   if (cast_mode == MediaCastMode::LOCAL_FILE) {
     // The assignment is just for testing; the creation of the observer is not!
@@ -426,11 +426,12 @@ std::vector<MediaSinkWithCastModes> MediaRouterViewsUI::GetEnabledSinks()
                             "pseudo:", base::CompareCase::SENSITIVE);
   });
 
-  // Filter out cloud sinks if the window is incognito. Casting to cloud sinks
-  // from incognito is not currently supported by the Cloud MRP.  This is not
-  // the best place to do this, but the Media Router browser service and
-  // extension process are shared between normal and incognito, so incognito
-  // behaviors around sink availability have to be handled at the UI layer.
+  // Filter out cloud sinks if the window is off-the-record. Casting to cloud
+  // sinks from off-the-record is not currently supported by the Cloud MRP. This
+  // is not the best place to do this, but the Media Router browser service and
+  // extension process are shared between normal and off-the-record, so
+  // off-the-record behaviors around sink availability have to be handled at the
+  // UI layer.
   if (initiator_->GetBrowserContext()->IsOffTheRecord()) {
     base::EraseIf(enabled_sinks, [](const MediaSinkWithCastModes& sink) {
       return sink.sink.IsMaybeCloudSink();
@@ -701,7 +702,7 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetRouteParameters(
   }
 
   params.timeout = GetRouteRequestTimeout(cast_mode);
-  params.incognito = initiator_->GetBrowserContext()->IsOffTheRecord();
+  params.off_the_record = initiator_->GetBrowserContext()->IsOffTheRecord();
 
   return base::make_optional(std::move(params));
 }
@@ -950,7 +951,7 @@ base::Optional<RouteParameters> MediaRouterViewsUI::GetLocalFileRouteParameters(
 
   params.timeout = GetRouteRequestTimeout(MediaCastMode::LOCAL_FILE);
   CHECK(initiator_);
-  params.incognito = initiator_->GetBrowserContext()->IsOffTheRecord();
+  params.off_the_record = initiator_->GetBrowserContext()->IsOffTheRecord();
 
   return base::make_optional(std::move(params));
 }

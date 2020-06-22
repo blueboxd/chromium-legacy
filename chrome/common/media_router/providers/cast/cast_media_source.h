@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "chrome/common/media_router/media_source.h"
 #include "components/cast_channel/cast_message_util.h"

@@ -198,13 +198,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       ABI::Windows::Devices::Bluetooth::Advertisement::
           IBluetoothLEAdvertisementWatcher* watcher,
       ABI::Windows::Devices::Bluetooth::Advertisement::
-          IBluetoothLEAdvertisementReceivedEventArgs* args);
-
-  void OnAdvertisementWatcherStopped(
-      ABI::Windows::Devices::Bluetooth::Advertisement::
-          IBluetoothLEAdvertisementWatcher* watcher,
-      ABI::Windows::Devices::Bluetooth::Advertisement::
-          IBluetoothLEAdvertisementWatcherStoppedEventArgs* args);
+          IBluetoothLEAdvertisementReceivedEventArgs* received);
 
   void OnRegisterAdvertisement(BluetoothAdvertisement* advertisement,
                                const CreateAdvertisementCallback& callback);
@@ -218,7 +212,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   void TryRemovePoweredRadioEventHandlers();
 
-  void RemoveAdvertisementWatcherEventHandlers();
+  void RemoveAdvertisementReceivedHandler();
 
   bool is_initialized_ = false;
   bool radio_access_allowed_ = false;
@@ -243,8 +237,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
   std::vector<scoped_refptr<BluetoothAdvertisement>> pending_advertisements_;
 
-  base::Optional<EventRegistrationToken> advertisement_received_token_;
-  base::Optional<EventRegistrationToken> advertisement_watcher_stopped_token_;
+  EventRegistrationToken advertisement_received_token_;
   Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::Advertisement::
                              IBluetoothLEAdvertisementWatcher>
       ble_advertisement_watcher_;

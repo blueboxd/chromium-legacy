@@ -2258,6 +2258,8 @@ void CrostiniManager::AbortRestartCrostini(
     // This can happen if a user cancels the install flow at the exact right
     // moment, for example.
     LOG(ERROR) << "Aborting a restarter that already finished";
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback));
     return;
   }
   restarter_it->second->Abort(base::BindOnce(
@@ -2269,19 +2271,25 @@ void CrostiniManager::OnAbortRestartCrostini(
     CrostiniManager::RestartId restart_id,
     base::OnceClosure callback) {
   auto restarter_it = restarters_by_id_.find(restart_id);
-  const ContainerId key(restarter_it->second->container_id());
-  if (restarter_it != restarters_by_id_.end()) {
-    auto range = restarters_by_container_.equal_range(key);
-    for (auto it = range.first; it != range.second; ++it) {
-      if (it->second == restart_id) {
-        restarters_by_container_.erase(it);
-        break;
-      }
-    }
-    // This invalidates the iterator and potentially destroys the restarter,
-    // so those shouldn't be accessed after this.
-    restarters_by_id_.erase(restarter_it);
+  if (restarter_it == restarters_by_id_.end()) {
+    // This can happen if a user cancels the install flow at the exact right
+    // moment, for example.
+    LOG(ERROR) << "Aborting a restarter that already finished";
+    std::move(callback).Run();
+    return;
   }
+
+  const ContainerId key(restarter_it->second->container_id());
+  auto range = restarters_by_container_.equal_range(key);
+  for (auto it = range.first; it != range.second; ++it) {
+    if (it->second == restart_id) {
+      restarters_by_container_.erase(it);
+      break;
+    }
+  }
+  // This invalidates the iterator and potentially destroys the restarter,
+  // so those shouldn't be accessed after this.
+  restarters_by_id_.erase(restarter_it);
 
   // Kick off the "next" (in no order) pending Restart() if any.
   auto pending_it = restarters_by_container_.find(key);

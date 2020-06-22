@@ -72,6 +72,12 @@ class CORE_EXPORT InputMethodController final
   void SetCompositionFromExistingText(const Vector<ImeTextSpan>& ime_text_spans,
                                       unsigned composition_start,
                                       unsigned composition_end);
+  void AddImeTextSpansToExistingText(const Vector<ImeTextSpan>& ime_text_spans,
+                                     unsigned text_start,
+                                     unsigned text_end);
+  void ClearImeTextSpansByType(ImeTextSpan::Type type,
+                               unsigned text_start,
+                               unsigned text_end);
 
   // Deletes ongoing composing text if any, inserts specified text, and
   // changes the selection according to relativeCaretPosition, which is

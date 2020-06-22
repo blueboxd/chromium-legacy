@@ -9,7 +9,6 @@
 #include <bitset>
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
@@ -421,9 +420,9 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
     scoped_refptr<const SecurityOrigin> self_origin,
     scoped_refptr<const SecurityOrigin> src_origin,
     PolicyParserMessageBuffer& logger,
-    Document* document) {
+    FeaturePolicyParserDelegate* delegate) {
   return Parse(policy, self_origin, src_origin, logger,
-               GetDefaultFeatureNameMap(), document);
+               GetDefaultFeatureNameMap(), delegate);
 }
 
 // static

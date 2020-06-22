@@ -26,7 +26,6 @@ class CrostiniRemover : public base::RefCountedThreadSafe<CrostiniRemover> {
   void OnConciergeStarted(bool is_successful);
   void StopVmFinished(crostini::CrostiniResult result);
   void DestroyDiskImageFinished(bool success);
-  void StopConciergeFinished(bool is_successful);
 
   Profile* profile_;
   std::string vm_name_;

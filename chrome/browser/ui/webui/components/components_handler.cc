@@ -8,7 +8,8 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "base/values.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/update_client/crx_update_item.h"

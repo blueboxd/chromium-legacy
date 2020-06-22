@@ -38,6 +38,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/display/display.h"
@@ -265,6 +266,26 @@ bool AppBrowserController::HasTitlebarAppOriginText() const {
 bool AppBrowserController::HasTitlebarContentSettings() const {
   // Do not show content settings for System Apps.
   return !is_for_system_web_app();
+}
+
+std::vector<PageActionIconType> AppBrowserController::GetTitleBarPageActions()
+    const {
+  if (is_for_system_web_app()) {
+    return {PageActionIconType::kFind, PageActionIconType::kZoom};
+  }
+
+  std::vector<PageActionIconType> types_enabled;
+  types_enabled.push_back(PageActionIconType::kFind);
+  types_enabled.push_back(PageActionIconType::kManagePasswords);
+  types_enabled.push_back(PageActionIconType::kTranslate);
+  types_enabled.push_back(PageActionIconType::kZoom);
+  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI))
+    types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
+  types_enabled.push_back(PageActionIconType::kCookieControls);
+  types_enabled.push_back(PageActionIconType::kLocalCardMigration);
+  types_enabled.push_back(PageActionIconType::kSaveCard);
+
+  return types_enabled;
 }
 
 bool AppBrowserController::IsInstalled() const {

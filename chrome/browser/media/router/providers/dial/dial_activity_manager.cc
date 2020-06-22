@@ -68,7 +68,7 @@ std::unique_ptr<DialActivity> DialActivity::From(
     const std::string& presentation_id,
     const MediaSinkInternal& sink,
     const MediaSource::Id& source_id,
-    bool incognito) {
+    bool off_the_record) {
   MediaSource source(source_id);
   GURL url = source.url();
   if (!url.is_valid())
@@ -104,7 +104,7 @@ std::unique_ptr<DialActivity> DialActivity::From(
       sink_id, app_name,
       /* is_local */ true, /* for_display */ true);
   route.set_presentation_id(presentation_id);
-  route.set_incognito(incognito);
+  route.set_off_the_record(off_the_record);
   return std::make_unique<DialActivity>(launch_info, route);
 }
 

@@ -81,14 +81,11 @@ SurfacesInstance::SurfacesInstance()
       begin_frame_source_.get(), nullptr /* current_task_runner */,
       output_surface->capabilities().max_frames_pending);
   auto overlay_processor = std::make_unique<viz::OverlayProcessorStub>();
-  // Android WebView has no overlay processor, and does not need to share
-  // gpu_task_scheduler, so it is passed in as nullptr.
   display_ = std::make_unique<viz::Display>(
       nullptr /* shared_bitmap_manager */,
       output_surface_provider_.renderer_settings(), frame_sink_id_,
-      nullptr /* gpu_task_scheduler */, std::move(output_surface),
-      std::move(overlay_processor), std::move(scheduler),
-      nullptr /* current_task_runner */);
+      std::move(output_surface), std::move(overlay_processor),
+      std::move(scheduler), nullptr /* current_task_runner */);
   display_->Initialize(this, frame_sink_manager_->surface_manager(),
                        output_surface_provider_.enable_shared_image());
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),

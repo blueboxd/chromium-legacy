@@ -178,16 +178,10 @@ void DriveQuickAccessProvider::Start(const base::string16& query) {
         ReparentToDriveMount(result.path, drive_service_));
   }
 
-  // The |file_tasks_notifier_| pointer references a KeyedService, which has the
-  // same lifetime as |profile_|. The app list is destroyed before the profile,
-  // so the base::Unretained pointer below is safe.
-  task_runner_.get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &file_manager::file_tasks::FileTasksNotifier::QueryFileAvailability,
-          base::Unretained(file_tasks_notifier_), result_paths,
-          base::BindOnce(&DriveQuickAccessProvider::PublishResults,
-                         weak_ptr_factory_.GetWeakPtr(), result_paths)));
+  file_tasks_notifier_->QueryFileAvailability(
+      result_paths,
+      base::BindOnce(&DriveQuickAccessProvider::PublishResults,
+                     weak_ptr_factory_.GetWeakPtr(), result_paths));
 }
 
 void DriveQuickAccessProvider::PublishResults(

@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"

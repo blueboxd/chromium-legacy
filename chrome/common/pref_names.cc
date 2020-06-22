@@ -2301,6 +2301,16 @@ const char kSamlPasswordExpirationAdvanceWarningDays[] =
 const char kSamlLockScreenReauthenticationEnabled[] =
     "saml.lock_screen_reauthentication_enabled";
 
+// Integer pref used by the metrics::DailyEvent owned by
+// local_search_service::MetricsReporter.
+const char kLocalSearchServiceMetricsDailySample[] =
+    "local_search_service.metrics.daily_sample";
+
+// Integer prefs used to back event counts reported by
+// local_search_service::MetricsReporter.
+const char kLocalSearchServiceMetricsCrosSettingsCount[] =
+    "local_search_service.metrics.cros_settings_count";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

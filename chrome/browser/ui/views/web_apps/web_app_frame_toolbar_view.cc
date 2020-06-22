@@ -44,7 +44,6 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/vector_icons/vector_icons.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/pointer/touch_ui_controller.h"
 #include "ui/base/window_open_disposition.h"
@@ -625,15 +624,7 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
 
   // Insert the default page action icons.
   PageActionIconParams params;
-  params.types_enabled.push_back(PageActionIconType::kFind);
-  params.types_enabled.push_back(PageActionIconType::kManagePasswords);
-  params.types_enabled.push_back(PageActionIconType::kTranslate);
-  params.types_enabled.push_back(PageActionIconType::kZoom);
-  if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI))
-    params.types_enabled.push_back(PageActionIconType::kNativeFileSystemAccess);
-  params.types_enabled.push_back(PageActionIconType::kCookieControls);
-  params.types_enabled.push_back(PageActionIconType::kLocalCardMigration);
-  params.types_enabled.push_back(PageActionIconType::kSaveCard);
+  params.types_enabled = app_controller->GetTitleBarPageActions();
   params.icon_color = gfx::kPlaceholderColor;
   params.between_icon_spacing =
       HorizontalPaddingBetweenPageActionsAndAppMenuButtons();

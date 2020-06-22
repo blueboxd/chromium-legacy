@@ -57,6 +57,7 @@ enum ImeTextSpanType {
   kComposition,
   kSuggestion,
   kMisspellingSuggestion,
+  kAutocorrect,
 };
 
 // This enum represents the thickness of an underline segment of text,

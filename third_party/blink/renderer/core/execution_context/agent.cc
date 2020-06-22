@@ -10,6 +10,14 @@
 
 namespace blink {
 
+namespace {
+bool is_cross_origin_isolated = false;
+
+#if DCHECK_IS_ON()
+bool is_cross_origin_isolated_set = false;
+#endif
+}  // namespace
+
 Agent::Agent(v8::Isolate* isolate,
              const base::UnguessableToken& cluster_id,
              std::unique_ptr<v8::MicrotaskQueue> microtask_queue)
@@ -27,6 +35,20 @@ void Agent::AttachContext(ExecutionContext* context) {
 
 void Agent::DetachContext(ExecutionContext* context) {
   event_loop_->DetachScheduler(context->GetScheduler());
+}
+
+// static
+bool Agent::IsCrossOriginIsolated() {
+  return is_cross_origin_isolated;
+}
+
+// static
+void Agent::SetIsCrossOriginIsolated(bool value) {
+#if DCHECK_IS_ON()
+  DCHECK(!is_cross_origin_isolated_set);
+  is_cross_origin_isolated_set = true;
+#endif
+  is_cross_origin_isolated = value;
 }
 
 }  // namespace blink

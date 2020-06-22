@@ -24,8 +24,8 @@ TEST(DialActivityTest, From) {
   MediaSource::Id source_id =
       "cast-dial:YouTube?clientId=152127444812943594&dialPostData=foo";
 
-  auto activity =
-      DialActivity::From(presentation_id, sink, source_id, /*incognito*/ true);
+  auto activity = DialActivity::From(presentation_id, sink, source_id,
+                                     /*off_the_record*/ true);
   ASSERT_TRUE(activity);
 
   GURL expected_app_launch_url(sink.dial_data().app_url.spec() + "/YouTube");
@@ -41,7 +41,7 @@ TEST(DialActivityTest, From) {
   EXPECT_EQ(sink.sink().id(), route.media_sink_id());
   EXPECT_EQ("YouTube", route.description());
   EXPECT_TRUE(route.is_local());
-  EXPECT_TRUE(route.is_incognito());
+  EXPECT_TRUE(route.is_off_the_record());
   EXPECT_FALSE(route.is_local_presentation());
   EXPECT_EQ(RouteControllerType::kNone, route.controller_type());
 }
@@ -121,7 +121,7 @@ class DialActivityManagerTest : public testing::Test {
 
 TEST_F(DialActivityManagerTest, AddActivity) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
 
   EXPECT_TRUE(manager_.GetRoutes().empty());
@@ -135,7 +135,7 @@ TEST_F(DialActivityManagerTest, AddActivity) {
 
 TEST_F(DialActivityManagerTest, LaunchApp) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
   manager_.AddActivity(*activity);
 
@@ -146,7 +146,7 @@ TEST_F(DialActivityManagerTest, LaunchApp) {
 
 TEST_F(DialActivityManagerTest, LaunchAppLaunchParameter) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
   manager_.AddActivity(*activity);
 
@@ -157,7 +157,7 @@ TEST_F(DialActivityManagerTest, LaunchAppLaunchParameter) {
 
 TEST_F(DialActivityManagerTest, LaunchAppFails) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
   manager_.AddActivity(*activity);
 
@@ -179,7 +179,7 @@ TEST_F(DialActivityManagerTest, LaunchAppFails) {
 
 TEST_F(DialActivityManagerTest, StopApp) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
   manager_.AddActivity(*activity);
 
@@ -209,7 +209,7 @@ TEST_F(DialActivityManagerTest, StopApp) {
 
 TEST_F(DialActivityManagerTest, StopAppUseFallbackURL) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
   manager_.AddActivity(*activity);
 
@@ -232,7 +232,7 @@ TEST_F(DialActivityManagerTest, StopAppUseFallbackURL) {
 
 TEST_F(DialActivityManagerTest, StopAppFails) {
   auto activity = DialActivity::From(presentation_id_, sink_, source_id_,
-                                     /*incognito*/ false);
+                                     /*off_the_record*/ false);
   ASSERT_TRUE(activity);
   manager_.AddActivity(*activity);
 

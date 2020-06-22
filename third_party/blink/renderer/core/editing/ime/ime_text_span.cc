@@ -60,6 +60,8 @@ ImeTextSpan::Type ConvertUiTypeToType(ui::ImeTextSpan::Type type) {
       return ImeTextSpan::Type::kSuggestion;
     case ui::ImeTextSpan::Type::kMisspellingSuggestion:
       return ImeTextSpan::Type::kMisspellingSuggestion;
+    case ui::ImeTextSpan::Type::kAutocorrect:
+      return ImeTextSpan::Type::kAutocorrect;
   }
 
   NOTREACHED();

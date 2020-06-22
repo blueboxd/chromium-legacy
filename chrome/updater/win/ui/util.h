@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string16.h"
 
 namespace updater {

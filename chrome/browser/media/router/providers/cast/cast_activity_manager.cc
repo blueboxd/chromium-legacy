@@ -79,19 +79,19 @@ void CastActivityManager::LaunchSession(
     const std::string& presentation_id,
     const url::Origin& origin,
     int tab_id,
-    bool incognito,
+    bool off_the_record,
     mojom::MediaRouteProvider::CreateRouteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (cast_source.app_params().empty()) {
     LaunchSessionParsed(cast_source, sink, presentation_id, origin, tab_id,
-                        incognito, std::move(callback),
+                        off_the_record, std::move(callback),
                         data_decoder::DataDecoder::ValueOrError());
   } else {
     GetDataDecoder().ParseJson(
         cast_source.app_params(),
         base::BindOnce(&CastActivityManager::LaunchSessionParsed,
                        weak_ptr_factory_.GetWeakPtr(), cast_source, sink,
-                       presentation_id, origin, tab_id, incognito,
+                       presentation_id, origin, tab_id, off_the_record,
                        std::move(callback)));
   }
 }
@@ -102,7 +102,7 @@ void CastActivityManager::LaunchSessionParsed(
     const std::string& presentation_id,
     const url::Origin& origin,
     int tab_id,
-    bool incognito,
+    bool off_the_record,
     mojom::MediaRouteProvider::CreateRouteCallback callback,
     data_decoder::DataDecoder::ValueOrError result) {
   if (!cast_source.app_params().empty() && result.error) {
@@ -123,7 +123,7 @@ void CastActivityManager::LaunchSessionParsed(
                    /* is_local */ true, /* for_display */ true);
   route.set_presentation_id(presentation_id);
   route.set_local_presentation(true);
-  route.set_incognito(incognito);
+  route.set_off_the_record(off_the_record);
   if (cast_source.ContainsStreamingApp()) {
     route.set_controller_type(RouteControllerType::kMirroring);
   } else {
@@ -263,7 +263,7 @@ void CastActivityManager::JoinSession(
     const std::string& presentation_id,
     const url::Origin& origin,
     int tab_id,
-    bool incognito,
+    bool off_the_record,
     mojom::MediaRouteProvider::JoinRouteCallback callback) {
   DVLOG(2) << "JoinSession: source / presentation ID: "
            << cast_source.source_id() << ", " << presentation_id;
@@ -275,7 +275,7 @@ void CastActivityManager::JoinSession(
       auto sink = ConvertMirrorToCast(tab_id);
       if (sink) {
         LaunchSession(cast_source, *sink, presentation_id, origin, tab_id,
-                      incognito, std::move(callback));
+                      off_the_record, std::move(callback));
         return;
       }
     }
@@ -283,7 +283,7 @@ void CastActivityManager::JoinSession(
     activity = FindActivityForSessionJoin(cast_source, presentation_id);
   }
 
-  if (!activity || !activity->CanJoinSession(cast_source, incognito)) {
+  if (!activity || !activity->CanJoinSession(cast_source, off_the_record)) {
     DVLOG(2) << "No joinable activity";
     std::move(callback).Run(base::nullopt, nullptr,
                             std::string("No matching route"),
@@ -292,7 +292,7 @@ void CastActivityManager::JoinSession(
   }
   DVLOG(2) << "Found activity to join: " << activity->route().media_route_id();
 
-  // TODO(jrw): Check whether |activity| is from an incognito route, maybe
+  // TODO(jrw): Check whether |activity| is from an OffTheRecord route, maybe
   // report INCOGNITO_MISMATCH, or remove INCOGNITO_MISMATCH from
   // RouteRequestResult::ResultCode.  The check is currently performed inside
   // CanJoinSession(), and the behavior is consistent with the old

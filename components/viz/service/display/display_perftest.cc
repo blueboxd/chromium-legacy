@@ -70,15 +70,10 @@ class RemoveOverdrawQuadPerfTest : public testing::Test {
         FakeOutputSurface::Create3d();
 
     auto overlay_processor = std::make_unique<OverlayProcessorStub>();
-    // Normally display will need to take ownership of a
-    // gpu::GpuTaskschedulerhelper in order to keep it alive to share between
-    // the output surface and the overlay processor. In this case the overlay
-    // processor is a stub and the output surface is test only as well, so there
-    // is no need to pass in a real gpu::GpuTaskSchedulerHelper.
     auto display = std::make_unique<Display>(
         &bitmap_manager_, RendererSettings(), frame_sink_id,
-        nullptr /* gpu::GpuTaskSchedulerHelper */, std::move(output_surface),
-        std::move(overlay_processor), std::move(scheduler), task_runner_.get());
+        std::move(output_surface), std::move(overlay_processor),
+        std::move(scheduler), task_runner_.get());
     return display;
   }
 

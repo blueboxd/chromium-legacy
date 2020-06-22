@@ -12,9 +12,6 @@ namespace device {
 
 namespace {
 
-using ABI::Windows::Devices::Bluetooth::BluetoothError;
-using ABI::Windows::Devices::Bluetooth::BluetoothError_OtherError;
-using ABI::Windows::Devices::Bluetooth::IBluetoothSignalStrengthFilter;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     BluetoothLEAdvertisementReceivedEventArgs;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
@@ -30,35 +27,13 @@ using ABI::Windows::Devices::Bluetooth::Advertisement::
 using ABI::Windows::Devices::Bluetooth::Advertisement::BluetoothLEScanningMode;
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementFilter;
-using ABI::Windows::Foundation::ITypedEventHandler;
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEAdvertisementReceivedEventArgs;
+using ABI::Windows::Devices::Bluetooth::IBluetoothSignalStrengthFilter;
 using ABI::Windows::Foundation::TimeSpan;
+using ABI::Windows::Foundation::ITypedEventHandler;
+using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::Make;
-
-class FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt
-    : public Microsoft::WRL::RuntimeClass<
-          Microsoft::WRL::RuntimeClassFlags<
-              Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
-          ABI::Windows::Devices::Bluetooth::Advertisement::
-              IBluetoothLEAdvertisementWatcherStoppedEventArgs> {
- public:
-  FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt(BluetoothError error)
-      : error_(error) {}
-  FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt(
-      const FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt&) = delete;
-  FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt& operator=(
-      const FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt&) = delete;
-  ~FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt() override {}
-
-  // IBluetoothLEAdvertisementWatcherStoppedEventArgs:
-  IFACEMETHODIMP get_Error(
-      ABI::Windows::Devices::Bluetooth::BluetoothError* value) override {
-    *value = error_;
-    return S_OK;
-  }
-
- private:
-  BluetoothError error_;
-};
 
 }  // namespace
 
@@ -138,13 +113,13 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::add_Received(
     ITypedEventHandler<BluetoothLEAdvertisementWatcher*,
                        BluetoothLEAdvertisementReceivedEventArgs*>* handler,
     EventRegistrationToken* token) {
-  received_handler_ = handler;
+  handler_ = handler;
   return S_OK;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::remove_Received(
     EventRegistrationToken token) {
-  received_handler_.Reset();
+  handler_.Reset();
   return S_OK;
 }
 
@@ -153,35 +128,24 @@ HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::add_Stopped(
                        BluetoothLEAdvertisementWatcherStoppedEventArgs*>*
         handler,
     EventRegistrationToken* token) {
-  stopped_handler_ = handler;
-  return S_OK;
+  return E_NOTIMPL;
 }
 
 HRESULT FakeBluetoothLEAdvertisementWatcherWinrt::remove_Stopped(
     EventRegistrationToken token) {
-  stopped_handler_.Reset();
-  return S_OK;
+  return E_NOTIMPL;
 }
 
 void FakeBluetoothLEAdvertisementWatcherWinrt::SimulateLowEnergyDevice(
     const BluetoothTestBase::LowEnergyDeviceData& device_data) {
-  if (received_handler_) {
-    received_handler_->Invoke(
+  if (handler_) {
+    handler_->Invoke(
         this, Make<FakeBluetoothLEAdvertisementReceivedEventArgsWinrt>(
                   device_data.rssi, device_data.address,
                   Make<FakeBluetoothLEAdvertisementWinrt>(
                       device_data.name, device_data.flags,
                       device_data.advertised_uuids, device_data.tx_power,
                       device_data.service_data, device_data.manufacturer_data))
-                  .Get());
-  }
-}
-
-void FakeBluetoothLEAdvertisementWatcherWinrt::SimulateDiscoveryError() {
-  if (stopped_handler_) {
-    stopped_handler_->Invoke(
-        this, Make<FakeBluetoothLEAdvertisementWatcherStoppedEventArgsWinrt>(
-                  BluetoothError_OtherError)
                   .Get());
   }
 }

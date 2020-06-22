@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "url/gurl.h"
 
 class Profile;

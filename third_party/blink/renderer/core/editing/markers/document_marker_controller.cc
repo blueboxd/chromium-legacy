@@ -840,6 +840,25 @@ void DocumentMarkerController::RemoveSuggestionMarkerInRangeOnFinish(
   }
 }
 
+void DocumentMarkerController::RemoveSuggestionMarkerByType(
+    const EphemeralRangeInFlatTree& range,
+    const SuggestionMarker::SuggestionType& type) {
+  // MarkersIntersectingRange() might be expensive. In practice, we hope we will
+  // only check one node for the range.
+  const HeapVector<std::pair<Member<const Text>, Member<DocumentMarker>>>&
+      node_marker_pairs = MarkersIntersectingRange(
+          range, DocumentMarker::MarkerTypes::Suggestion());
+  for (const auto& node_marker_pair : node_marker_pairs) {
+    const Text& text = *node_marker_pair.first;
+    DocumentMarkerList* const list =
+        ListForType(markers_.at(&text), DocumentMarker::kSuggestion);
+    // RemoveMarkerByType() might be expensive. In practice, we have at most
+    // one suggestion marker needs to be removed.
+    To<SuggestionMarkerListImpl>(list)->RemoveMarkerByType(type);
+    InvalidatePaintForNode(text);
+  }
+}
+
 void DocumentMarkerController::RemoveSuggestionMarkerByTag(const Text& text,
                                                            int32_t marker_tag) {
   MarkerLists* markers = markers_.at(&text);

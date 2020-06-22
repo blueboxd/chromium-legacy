@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"

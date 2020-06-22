@@ -114,7 +114,7 @@ LayerTreePixelTest::CreateDisplaySkiaOutputSurfaceOnThread() {
       std::make_unique<viz::SkiaOutputSurfaceDependencyImpl>(
           viz::TestGpuServiceHolder::GetInstance()->gpu_service(),
           gpu::kNullSurfaceHandle),
-      nullptr, viz::RendererSettings());
+      viz::RendererSettings());
   return output_surface;
 }
 

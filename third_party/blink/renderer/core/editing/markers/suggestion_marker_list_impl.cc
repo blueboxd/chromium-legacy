@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_list_impl.h"
 
-#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_replacement_scope.h"
 #include "third_party/blink/renderer/core/editing/markers/unsorted_document_marker_list_editor.h"
 
@@ -199,6 +198,18 @@ void SuggestionMarkerListImpl::Trace(Visitor* visitor) const {
 bool SuggestionMarkerListImpl::RemoveMarkerByTag(int32_t tag) {
   for (auto* it = markers_.begin(); it != markers_.end(); it++) {
     if (To<SuggestionMarker>(it->Get())->Tag() == tag) {
+      markers_.erase(it);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool SuggestionMarkerListImpl::RemoveMarkerByType(
+    const SuggestionMarker::SuggestionType& type) {
+  for (auto* it = markers_.begin(); it != markers_.end(); it++) {
+    if (To<SuggestionMarker>(it->Get())->GetSuggestionType() == type) {
       markers_.erase(it);
       return true;
     }

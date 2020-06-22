@@ -116,6 +116,11 @@ void FakeOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {}
 #endif
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+FakeOutputSurface::GetGpuTaskSchedulerHelper() {
+  return nullptr;
+}
+
 gpu::MemoryTracker* FakeOutputSurface::GetMemoryTracker() {
   return nullptr;
 }

@@ -13,7 +13,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/discovery/discovery_network_list_wifi.h"

@@ -1498,6 +1498,10 @@ void RenderThreadImpl::WriteClangProfilingProfile(
 }
 #endif
 
+void RenderThreadImpl::SetIsCrossOriginIsolated(bool value) {
+  blink::SetIsCrossOriginIsolated(value);
+}
+
 bool RenderThreadImpl::GetRendererMemoryMetrics(
     RendererMemoryMetrics* memory_metrics) const {
   DCHECK(memory_metrics);

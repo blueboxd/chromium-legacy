@@ -60,7 +60,6 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      gpu::GpuTaskSchedulerHelper* gpu_task_scheduler,
       const RendererSettings& renderer_settings);
 
   // ContextProvider implementation.
@@ -92,6 +91,8 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
 
   virtual base::ScopedClosureRunner GetCacheBackBufferCb();
 
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> GetGpuTaskSchedulerHelper();
+
  protected:
   friend class base::RefCountedThreadSafe<VizProcessContextProvider>;
   VizProcessContextProvider();  // For testing only.
@@ -104,7 +105,6 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
-      gpu::GpuTaskSchedulerHelper* gpu_task_scheduler,
       const gpu::SharedMemoryLimits& mem_limits);
   void OnContextLost();
 
@@ -116,7 +116,7 @@ class VIZ_SERVICE_EXPORT VizProcessContextProvider
 
   // The |gpu_task_scheduler_helper_| has 1:1 relationship with the Display
   // compositor.
-  gpu::GpuTaskSchedulerHelper* gpu_task_scheduler_helper_;
+  scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler_helper_;
   std::unique_ptr<gpu::InProcessCommandBuffer> command_buffer_;
   std::unique_ptr<gpu::gles2::GLES2CmdHelper> gles2_helper_;
   std::unique_ptr<gpu::TransferBuffer> transfer_buffer_;

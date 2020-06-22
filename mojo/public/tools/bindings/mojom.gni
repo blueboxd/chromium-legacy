@@ -1806,7 +1806,7 @@ template("mojom") {
         js_extension = ".js"
       },
       {
-        name = "modules"
+        name = "es_modules"
         ts_extension = ".m.ts"
         js_extension = ".m.js"
       },
@@ -1846,6 +1846,10 @@ template("mojom") {
           "-g",
           "typescript",
         ]
+
+        if (dependency_type.name == "es_modules") {
+          args += [ "--ts_use_es_modules" ]
+        }
 
         # TODO(crbug.com/1007587): Support scramble_message_ids.
         # TODO(crbug.com/1007591): Support generate_fuzzing.

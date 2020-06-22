@@ -9,8 +9,9 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check_op.h"
 #include "base/guid.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
@@ -228,7 +229,7 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
 void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     MediaRouteProviderId provider_id,
-    bool is_incognito,
+    bool is_off_the_record,
     MediaRouteResponseCallback callback,
     bool is_join,
     const base::Optional<MediaRoute>& media_route,
@@ -244,12 +245,12 @@ void MediaRouterMojoImpl::RouteResponseReceived(
                                    ? *error_text
                                    : std::string("Unknown error.");
     result = RouteRequestResult::FromError(error, result_code);
-  } else if (media_route->is_incognito() != is_incognito) {
+  } else if (media_route->is_off_the_record() != is_off_the_record) {
     std::string error = base::StringPrintf(
-        "Mismatch in incognito status: request = %d, response = %d",
-        is_incognito, media_route->is_incognito());
+        "Mismatch in OffTheRecord status: request = %d, response = %d",
+        is_off_the_record, media_route->is_off_the_record());
     result = RouteRequestResult::FromError(
-        error, RouteRequestResult::INCOGNITO_MISMATCH);
+        error, RouteRequestResult::OFF_THE_RECORD_MISMATCH);
   } else {
     result = RouteRequestResult::FromSuccess(*media_route, presentation_id);
     OnRouteAdded(provider_id, *media_route);
@@ -272,7 +273,7 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
                                       content::WebContents* web_contents,
                                       MediaRouteResponseCallback callback,
                                       base::TimeDelta timeout,
-                                      bool incognito) {
+                                      bool off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   CHECK(callback);
   const MediaSink* sink = GetSinkById(sink_id);
@@ -301,7 +302,7 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
   const std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, provider_id, incognito, std::move(callback), false);
+      presentation_id, provider_id, off_the_record, std::move(callback), false);
 
   if (source.IsDesktopMirroringSource() &&
       // This check is because extension-based MRPs are responsible for showing
@@ -313,14 +314,14 @@ void MediaRouterMojoImpl::CreateRoute(const MediaSource::Id& source_id,
         base::BindOnce(&MediaRouterMojoImpl::CreateRouteWithSelectedDesktop,
                        weak_factory_.GetWeakPtr(), provider_id, sink_id,
                        presentation_id, origin, web_contents, timeout,
-                       incognito, std::move(mr_callback)));
+                       off_the_record, std::move(mr_callback)));
   } else {
     // Previously the tab ID was set to -1 for non-mirroring sessions, which
     // mostly works, but it breaks auto-joining.
     const int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
     media_route_providers_[provider_id]->CreateRoute(
-        source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
-        std::move(mr_callback));
+        source_id, sink_id, presentation_id, origin, tab_id, timeout,
+        off_the_record, std::move(mr_callback));
   }
 }
 
@@ -330,7 +331,7 @@ void MediaRouterMojoImpl::JoinRoute(const MediaSource::Id& source_id,
                                     content::WebContents* web_contents,
                                     MediaRouteResponseCallback callback,
                                     base::TimeDelta timeout,
-                                    bool incognito) {
+                                    bool off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForPresentation(presentation_id);
@@ -349,9 +350,9 @@ void MediaRouterMojoImpl::JoinRoute(const MediaSource::Id& source_id,
   int tab_id = sessions::SessionTabHelper::IdForTab(web_contents).id();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, *provider_id, incognito, std::move(callback), true);
+      presentation_id, *provider_id, off_the_record, std::move(callback), true);
   media_route_providers_[*provider_id]->JoinRoute(
-      source_id, presentation_id, origin, tab_id, timeout, incognito,
+      source_id, presentation_id, origin, tab_id, timeout, off_the_record,
       std::move(mr_callback));
 }
 
@@ -362,7 +363,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     content::WebContents* web_contents,
     MediaRouteResponseCallback callback,
     base::TimeDelta timeout,
-    bool incognito) {
+    bool off_the_record) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::Optional<MediaRouteProviderId> provider_id =
       GetProviderIdForRoute(route_id);
@@ -377,10 +378,10 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
   auto mr_callback = base::BindOnce(
       &MediaRouterMojoImpl::RouteResponseReceived, weak_factory_.GetWeakPtr(),
-      presentation_id, *provider_id, incognito, std::move(callback), true);
+      presentation_id, *provider_id, off_the_record, std::move(callback), true);
   media_route_providers_[*provider_id]->ConnectRouteByRouteId(
-      source_id, route_id, presentation_id, origin, tab_id, timeout, incognito,
-      std::move(mr_callback));
+      source_id, route_id, presentation_id, origin, tab_id, timeout,
+      off_the_record, std::move(mr_callback));
 }
 
 void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
@@ -1071,7 +1072,7 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
     const url::Origin& origin,
     content::WebContents* web_contents,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     mojom::MediaRouteProvider::CreateRouteCallback mr_callback,
     const std::string& err,
     content::DesktopMediaID media_id) {
@@ -1116,7 +1117,7 @@ void MediaRouterMojoImpl::CreateRouteWithSelectedDesktop(
 
   media_route_providers_[provider_id]->CreateRoute(
       MediaSource::ForDesktop(request.stream_id).id(), sink_id, presentation_id,
-      origin, -1, timeout, incognito,
+      origin, -1, timeout, off_the_record,
       base::BindOnce(
           [](mojom::MediaRouteProvider::CreateRouteCallback inner_callback,
              base::WeakPtr<MediaRouterMojoImpl> self,

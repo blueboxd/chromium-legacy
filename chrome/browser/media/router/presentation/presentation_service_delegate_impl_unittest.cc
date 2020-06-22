@@ -179,7 +179,7 @@ class PresentationServiceDelegateImplTest
     return *mock_local_manager_;
   }
 
-  void RunDefaultPresentationUrlCallbackTest(bool incognito) {
+  void RunDefaultPresentationUrlCallbackTest(bool off_the_record) {
     auto callback = base::BindRepeating(
         &PresentationServiceDelegateImplTest::OnDefaultPresentationStarted,
         base::Unretained(this));
@@ -203,7 +203,7 @@ class PresentationServiceDelegateImplTest
         frame_origin_);
     MediaRoute media_route("differentRouteId", source2_, "mediaSinkId", "",
                            true, true);
-    media_route.set_incognito(incognito);
+    media_route.set_off_the_record(off_the_record);
     result =
         RouteRequestResult::FromSuccess(media_route, "differentPresentationId");
     delegate_impl_->OnPresentationResponse(different_request,
@@ -213,7 +213,7 @@ class PresentationServiceDelegateImplTest
     // Should trigger callback since request matches.
     EXPECT_CALL(*this, OnDefaultPresentationStarted(_)).Times(1);
     MediaRoute media_route2("routeId", source1_, "mediaSinkId", "", true, true);
-    media_route2.set_incognito(incognito);
+    media_route2.set_off_the_record(off_the_record);
     result = RouteRequestResult::FromSuccess(media_route2, "presentationId");
     delegate_impl_->OnPresentationResponse(request, /** connection */ nullptr,
                                            *result);
@@ -264,29 +264,28 @@ class PresentationServiceDelegateImplTest
 class PresentationServiceDelegateImplIncognitoTest
     : public PresentationServiceDelegateImplTest {
  public:
-  PresentationServiceDelegateImplIncognitoTest()
-      : incognito_web_contents_(nullptr) {}
+  PresentationServiceDelegateImplIncognitoTest() = default;
 
  protected:
   content::WebContents* GetWebContents() override {
-    if (!incognito_web_contents_) {
+    if (!off_the_record_web_contents_) {
       Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
-      incognito_web_contents_ =
+      off_the_record_web_contents_ =
           content::WebContentsTester::CreateTestWebContents(incognito_profile,
                                                             nullptr);
     }
-    return incognito_web_contents_.get();
+    return off_the_record_web_contents_.get();
   }
 
   void TearDown() override {
-    // We must delete the incognito WC first, as that triggers observers which
-    // require RenderViewHost, etc., that in turn are deleted by
+    // We must delete the OffTheRecord WC first, as that triggers observers
+    // which require RenderViewHost, etc., that in turn are deleted by
     // RenderViewHostTestHarness::TearDown().
-    incognito_web_contents_.reset();
+    off_the_record_web_contents_.reset();
     PresentationServiceDelegateImplTest::TearDown();
   }
 
-  std::unique_ptr<content::WebContents> incognito_web_contents_;
+  std::unique_ptr<content::WebContents> off_the_record_web_contents_{nullptr};
 };
 
 TEST_F(PresentationServiceDelegateImplTest, AddScreenAvailabilityListener) {
@@ -787,12 +786,12 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   EXPECT_CALL(mock_local_manager, IsLocalPresentation(kPresentationId))
       .WillRepeatedly(Return(false));
 
-  // Setting the pref in incognito shouldn't set it for the non-incognito
+  // Setting the pref in OffTheRecord shouldn't set it for the regular
   // profile.
-  const base::ListValue* non_incognito_origins =
+  const base::ListValue* non_off_the_record_origins =
       profile()->GetPrefs()->GetList(prefs::kMediaRouterTabMirroringSources);
-  EXPECT_EQ(non_incognito_origins->Find(base::Value(origin)),
-            non_incognito_origins->end());
+  EXPECT_EQ(non_off_the_record_origins->Find(base::Value(origin)),
+            non_off_the_record_origins->end());
 
   // Auto-join requests should be rejected.
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
@@ -807,7 +806,7 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
           &MockCreatePresentationConnnectionCallbacks::OnCreateConnectionError,
           base::Unretained(&mock_create_connection_callbacks)));
 
-  // Remove the user preference for |origin| in incognito.
+  // Remove the user preference for |origin| in OffTheRecord.
   {
     ListPrefUpdate update(profile()->GetPrimaryOTRProfile()->GetPrefs(),
                           prefs::kMediaRouterTabMirroringSources);

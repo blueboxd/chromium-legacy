@@ -793,7 +793,6 @@ Document::Document(const DocumentInit& initializer,
       permission_service_(GetExecutionContext()),
       has_trust_tokens_answerer_(GetExecutionContext()),
       font_preload_manager_(*this) {
-  security_initializer.ApplyPendingDataToDocument(*this);
   GetOriginTrialContext()->BindExecutionContext(GetExecutionContext());
 
   if (dom_window_) {
@@ -973,24 +972,6 @@ Location* Document::location() const {
 
 bool Document::FeatureEnabled(OriginTrialFeature feature) const {
   return GetOriginTrialContext()->IsFeatureEnabled(feature);
-}
-
-void Document::CountFeaturePolicyUsage(mojom::WebFeature feature) {
-  UseCounter::Count(*this, feature);
-}
-
-bool Document::FeaturePolicyFeatureObserved(
-    mojom::blink::FeaturePolicyFeature feature) {
-  wtf_size_t feature_index = static_cast<wtf_size_t>(feature);
-  if (parsed_feature_policies_.size() == 0) {
-    parsed_feature_policies_.resize(
-        static_cast<wtf_size_t>(mojom::blink::FeaturePolicyFeature::kMaxValue) +
-        1);
-  } else if (parsed_feature_policies_[feature_index]) {
-    return true;
-  }
-  parsed_feature_policies_[feature_index] = true;
-  return false;
 }
 
 bool Document::DocumentPolicyFeatureObserved(

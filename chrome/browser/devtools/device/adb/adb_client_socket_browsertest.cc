@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "base/logging.h"
 #include "chrome/browser/devtools/device/adb/adb_device_provider.h"
 #include "chrome/browser/devtools/device/adb/mock_adb_server.h"
 #include "chrome/browser/devtools/device/devtools_android_bridge.h"

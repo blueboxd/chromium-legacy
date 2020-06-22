@@ -28,11 +28,10 @@ struct CodecParamToProfile {
 
 const std::vector<base::Feature> kEnabledFeaturesForVideoEncoderTest = {
 #if BUILDFLAG(USE_VAAPI)
+    // TODO(crbug.com/828482): remove once enabled by default.
+    media::kVaapiLowPowerEncoderGen9x,
     // TODO(crbug.com/811912): remove once enabled by default.
     kVaapiVP9Encoder,
-    // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
-    // default.
-    kVaapiH264AMDEncoder,
 #endif
 };
 

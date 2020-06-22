@@ -739,6 +739,8 @@ void FetchManager::Loader::PerformHTTPFetch(ExceptionState& exception_state) {
       } else if (RuntimeEnabledFeatures::OutOfBlinkCorsEnabled() &&
                  RuntimeEnabledFeatures::FetchUploadStreamingEnabled(
                      execution_context_)) {
+        UseCounter::Count(execution_context_,
+                          WebFeature::kFetchUploadStreaming);
         mojo::PendingRemote<network::mojom::blink::ChunkedDataPipeGetter>
             pending_remote;
         fetch_request_data_->Buffer()->DrainAsChunkedDataPipeGetter(

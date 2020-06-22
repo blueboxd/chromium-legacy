@@ -1864,12 +1864,14 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
 // Starts the sign-in coordinator with a default cleanup completion.
 - (void)startSigninCoordinatorWithCompletion:
     (signin_ui::CompletionCallback)completion {
+  self.mainController.appState.sceneShowingBlockingUI = self.sceneState;
   DCHECK(self.signinCoordinator);
   __weak SceneController* weakSelf = self;
   self.signinCoordinator.signinCompletion =
       ^(SigninCoordinatorResult result, SigninCompletionInfo*) {
         [weakSelf.signinCoordinator stop];
         weakSelf.signinCoordinator = nil;
+        weakSelf.mainController.appState.sceneShowingBlockingUI = nil;
 
         if (completion) {
           completion(result == SigninCoordinatorResultSuccess);

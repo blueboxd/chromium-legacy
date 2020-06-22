@@ -11,9 +11,9 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/containers/mru_cache.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "chrome/common/search/instant_types.h"
 

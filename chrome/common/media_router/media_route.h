@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <string>
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/common/media_router/media_source.h"
@@ -96,8 +95,10 @@ class MediaRoute {
   void set_for_display(bool for_display) { for_display_ = for_display; }
   bool for_display() const { return for_display_; }
 
-  void set_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
-  bool is_incognito() const { return is_incognito_; }
+  void set_off_the_record(bool is_off_the_record) {
+    is_off_the_record_ = is_off_the_record;
+  }
+  bool is_off_the_record() const { return is_off_the_record_; }
 
   void set_local_presentation(bool is_local_presentation) {
     is_local_presentation_ = is_local_presentation;
@@ -139,8 +140,8 @@ class MediaRoute {
   // |true| if the route can be displayed in the UI.
   bool for_display_ = false;
 
-  // |true| if the route was created by an incognito profile.
-  bool is_incognito_ = false;
+  // |true| if the route was created by an OffTheRecord profile.
+  bool is_off_the_record_ = false;
 
   // |true| if the presentation associated with this route is a local
   // presentation.

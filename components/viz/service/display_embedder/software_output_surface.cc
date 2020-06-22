@@ -150,6 +150,11 @@ void SoftwareOutputSurface::SetNeedsSwapSizeNotifications(
 }
 #endif
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+SoftwareOutputSurface::GetGpuTaskSchedulerHelper() {
+  return nullptr;
+}
+
 gpu::MemoryTracker* SoftwareOutputSurface::GetMemoryTracker() {
   return nullptr;
 }

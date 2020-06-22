@@ -16,6 +16,7 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
 #include "chrome/browser/web_applications/test/test_web_app_registry_controller.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
@@ -210,6 +211,13 @@ class WebAppSyncBridgeTest : public WebAppTest {
   }
 
   void InitSyncBridge() { controller().Init(); }
+
+  void InitSyncBridgeFromAppList(const AppsList& apps_list) {
+    Registry registry;
+    InsertAppsListIntoRegistry(&registry, apps_list);
+    database_factory().WriteRegistry(registry);
+    InitSyncBridge();
+  }
 
   void MergeSyncData(const AppsList& merged_apps) {
     syncer::EntityChangeList entity_data_list;
@@ -1068,6 +1076,63 @@ TEST_F(WebAppSyncBridgeTest, InstallAppsInSyncInstall) {
   InitSyncBridge();
 
   run_loop.Run();
+}
+
+// Tests that OnWebAppsWillBeUpdatedFromSync observer notification is called
+// properly.
+TEST_F(WebAppSyncBridgeTest, ApplySyncChanges_OnWebAppsWillBeUpdatedFromSync) {
+  AppsList initial_registry_apps = CreateAppsList("https://example.com/", 10);
+  for (std::unique_ptr<WebApp>& app : initial_registry_apps)
+    app->SetUserDisplayMode(DisplayMode::kBrowser);
+  InitSyncBridgeFromAppList(initial_registry_apps);
+
+  WebAppInstallObserver observer{&registrar()};
+  base::RunLoop run_loop;
+
+  observer.SetWebAppWillBeUpdatedFromSyncDelegate(base::BindLambdaForTesting(
+      [&](const std::vector<const WebApp*>& new_apps_state) {
+        EXPECT_EQ(5u, new_apps_state.size());
+
+        for (const WebApp* new_app_state : new_apps_state) {
+          const WebApp* old_app_state =
+              registrar().GetAppById(new_app_state->app_id());
+          EXPECT_NE(*old_app_state, *new_app_state);
+
+          EXPECT_EQ(old_app_state->user_display_mode(), DisplayMode::kBrowser);
+          EXPECT_EQ(new_app_state->user_display_mode(),
+                    DisplayMode::kStandalone);
+
+          // new and old states must be equal if diff fixed:
+          auto old_app_state_no_diff = std::make_unique<WebApp>(*old_app_state);
+          old_app_state_no_diff->SetUserDisplayMode(DisplayMode::kStandalone);
+          EXPECT_EQ(*old_app_state_no_diff, *new_app_state);
+
+          RemoveWebAppFromAppsList(&initial_registry_apps,
+                                   new_app_state->app_id());
+        }
+
+        run_loop.Quit();
+      }));
+
+  AppsList apps_server_state;
+
+  // Update first 5 apps: change user_display_mode field only.
+  for (int i = 0; i < 5; ++i) {
+    auto app_server_state = std::make_unique<WebApp>(*initial_registry_apps[i]);
+    app_server_state->SetUserDisplayMode(DisplayMode::kStandalone);
+    apps_server_state.push_back(std::move(app_server_state));
+  }
+
+  controller().ApplySyncChanges_UpdateApps(apps_server_state);
+
+  run_loop.Run();
+
+  // 5 other apps left unchanged:
+  EXPECT_EQ(5u, initial_registry_apps.size());
+  for (int i = 0; i < 5; ++i) {
+    EXPECT_EQ(DisplayMode::kBrowser,
+              initial_registry_apps[i]->user_display_mode());
+  }
 }
 
 }  // namespace web_app

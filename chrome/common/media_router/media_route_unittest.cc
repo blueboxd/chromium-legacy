@@ -47,10 +47,10 @@ TEST(MediaRouteTest, TestEquals) {
                     false);
   EXPECT_FALSE(route1 == route5);
 
-  // Same as route1 with different incognito.
+  // Same as route1 with different off_the_record.
   MediaRoute route6(kRouteId1, media_source, "sinkId", "Description", true,
                     false);
-  route6.set_incognito(true);
+  route6.set_off_the_record(true);
   EXPECT_FALSE(route1 == route6);
 }
 

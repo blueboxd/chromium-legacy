@@ -37,13 +37,13 @@ void ExtensionMediaRouteProviderProxy::CreateRoute(
     const url::Origin& origin,
     int32_t tab_id,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     CreateRouteCallback callback) {
   request_manager_->RunOrDefer(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::DoCreateRoute,
                      weak_factory_.GetWeakPtr(), media_source, sink_id,
                      original_presentation_id, origin, tab_id, timeout,
-                     incognito, std::move(callback)),
+                     off_the_record, std::move(callback)),
       MediaRouteProviderWakeReason::CREATE_ROUTE);
 }
 
@@ -53,12 +53,13 @@ void ExtensionMediaRouteProviderProxy::JoinRoute(
     const url::Origin& origin,
     int32_t tab_id,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     JoinRouteCallback callback) {
   request_manager_->RunOrDefer(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::DoJoinRoute,
                      weak_factory_.GetWeakPtr(), media_source, presentation_id,
-                     origin, tab_id, timeout, incognito, std::move(callback)),
+                     origin, tab_id, timeout, off_the_record,
+                     std::move(callback)),
       MediaRouteProviderWakeReason::JOIN_ROUTE);
 }
 
@@ -69,12 +70,12 @@ void ExtensionMediaRouteProviderProxy::ConnectRouteByRouteId(
     const url::Origin& origin,
     int32_t tab_id,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     ConnectRouteByRouteIdCallback callback) {
   request_manager_->RunOrDefer(
       base::BindOnce(&ExtensionMediaRouteProviderProxy::DoConnectRouteByRouteId,
                      weak_factory_.GetWeakPtr(), media_source, route_id,
-                     presentation_id, origin, tab_id, timeout, incognito,
+                     presentation_id, origin, tab_id, timeout, off_the_record,
                      std::move(callback)),
       MediaRouteProviderWakeReason::CONNECT_ROUTE_BY_ROUTE_ID);
 }
@@ -238,11 +239,11 @@ void ExtensionMediaRouteProviderProxy::DoCreateRoute(
     const url::Origin& origin,
     int32_t tab_id,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     CreateRouteCallback callback) {
-  media_route_provider_->CreateRoute(media_source, sink_id,
-                                     original_presentation_id, origin, tab_id,
-                                     timeout, incognito, std::move(callback));
+  media_route_provider_->CreateRoute(
+      media_source, sink_id, original_presentation_id, origin, tab_id, timeout,
+      off_the_record, std::move(callback));
 }
 
 void ExtensionMediaRouteProviderProxy::DoJoinRoute(
@@ -251,10 +252,10 @@ void ExtensionMediaRouteProviderProxy::DoJoinRoute(
     const url::Origin& origin,
     int32_t tab_id,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     JoinRouteCallback callback) {
   media_route_provider_->JoinRoute(media_source, presentation_id, origin,
-                                   tab_id, timeout, incognito,
+                                   tab_id, timeout, off_the_record,
                                    std::move(callback));
 }
 
@@ -265,11 +266,11 @@ void ExtensionMediaRouteProviderProxy::DoConnectRouteByRouteId(
     const url::Origin& origin,
     int32_t tab_id,
     base::TimeDelta timeout,
-    bool incognito,
+    bool off_the_record,
     ConnectRouteByRouteIdCallback callback) {
   media_route_provider_->ConnectRouteByRouteId(
       media_source, route_id, presentation_id, origin, tab_id, timeout,
-      incognito, std::move(callback));
+      off_the_record, std::move(callback));
 }
 
 void ExtensionMediaRouteProviderProxy::DoTerminateRoute(

@@ -356,6 +356,12 @@ void FakeSkiaOutputSurface::ScheduleGpuTaskForTesting(
   NOTIMPLEMENTED();
 }
 
+scoped_refptr<gpu::GpuTaskSchedulerHelper>
+FakeSkiaOutputSurface::GetGpuTaskSchedulerHelper() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 gpu::MemoryTracker* FakeSkiaOutputSurface::GetMemoryTracker() {
   NOTIMPLEMENTED();
   return nullptr;

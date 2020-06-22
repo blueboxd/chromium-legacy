@@ -13,14 +13,15 @@ namespace blink {
 class SuggestionMarkerProperties;
 
 // A subclass of StyleableMarker used to store information specific to
-// suggestion markers (used to represent Android SuggestionSpans). In addition
+// suggestion markers (used to represent Android SuggestionSpans or ChromeOS's
+// custom text spans). In addition
 // to the formatting information StyleableMarker holds, we also store a list of
 // suggested replacements for the marked region of text. In addition, each
 // SuggestionMarker is tagged with an integer so browser code can identify which
 // SuggestionMarker a suggestion replace operation pertains to.
 class CORE_EXPORT SuggestionMarker final : public StyleableMarker {
  public:
-  enum class SuggestionType { kMisspelling, kNotMisspelling };
+  enum class SuggestionType { kMisspelling, kNotMisspelling, kAutocorrect };
   enum class RemoveOnFinishComposing { kRemove, kDoNotRemove };
 
   SuggestionMarker(unsigned start_offset,
@@ -32,6 +33,7 @@ class CORE_EXPORT SuggestionMarker final : public StyleableMarker {
 
   // SuggestionMarker-specific
   int32_t Tag() const;
+  SuggestionType GetSuggestionType() const;
   const Vector<String>& Suggestions() const;
   bool IsMisspelling() const;
   bool NeedsRemovalOnFinishComposing() const;

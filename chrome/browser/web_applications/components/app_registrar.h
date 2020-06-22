@@ -30,6 +30,7 @@ namespace web_app {
 
 class AppRegistrarObserver;
 class WebAppRegistrar;
+class WebApp;
 
 enum class ExternalInstallSource;
 
@@ -170,6 +171,8 @@ class AppRegistrar {
   void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppManifestUpdated(const AppId& app_id,
                                    base::StringPiece old_name);
+  void NotifyWebAppsWillBeUpdatedFromSync(
+      const std::vector<const WebApp*>& new_apps_state);
   void NotifyWebAppUninstalled(const AppId& app_id);
   void NotifyWebAppLocallyInstalledStateChanged(const AppId& app_id,
                                                 bool is_locally_installed);

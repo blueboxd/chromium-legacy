@@ -74,13 +74,14 @@ SecurityContextInit::SecurityContextInit(scoped_refptr<SecurityOrigin> origin,
 // A helper class that allows the security context be initialized in the
 // process of constructing the document.
 SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
-    : csp_(initializer.GetContentSecurityPolicy()),
+    : execution_context_(initializer.GetExecutionContext()),
+      csp_(initializer.GetContentSecurityPolicy()),
       sandbox_flags_(initializer.GetSandboxFlags()),
       security_origin_(initializer.GetDocumentOrigin()) {
   // Derive possibly a new security origin that contains the agent cluster id.
-  if (auto* context = initializer.GetExecutionContext()) {
+  if (execution_context_) {
     security_origin_ = security_origin_->GetOriginForAgentCluster(
-        context->GetAgent()->cluster_id());
+        execution_context_->GetAgent()->cluster_id());
   }
 
   // The secure context state is based on the origin.
@@ -97,42 +98,20 @@ SecurityContextInit::SecurityContextInit(const DocumentInit& initializer)
   InitializeDocumentPolicy(initializer);
 }
 
+void SecurityContextInit::CountFeaturePolicyUsage(
+    mojom::blink::WebFeature feature) {
+  if (execution_context_)
+    execution_context_->CountFeaturePolicyUsage(feature);
+}
+
 bool SecurityContextInit::FeaturePolicyFeatureObserved(
     mojom::blink::FeaturePolicyFeature feature) {
-  if (parsed_feature_policies_.Contains(feature))
-    return true;
-  parsed_feature_policies_.insert(feature);
-  return false;
+  return execution_context_ &&
+         execution_context_->FeaturePolicyFeatureObserved(feature);
 }
 
 bool SecurityContextInit::FeatureEnabled(OriginTrialFeature feature) const {
   return origin_trials_->IsFeatureEnabled(feature);
-}
-
-void SecurityContextInit::ApplyPendingDataToDocument(Document& document) const {
-  for (auto feature : feature_count_)
-    UseCounter::Count(document, feature);
-  for (auto feature : parsed_feature_policies_)
-    document.GetExecutionContext()->FeaturePolicyFeatureObserved(feature);
-  for (const auto& message : feature_policy_parse_messages_) {
-    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity, message.level,
-        message.content));
-  }
-
-  if (!report_only_feature_policy_header_.empty())
-    UseCounter::Count(document, WebFeature::kFeaturePolicyReportOnlyHeader);
-
-  if (!document_policy_.feature_state.empty())
-    UseCounter::Count(document, WebFeature::kDocumentPolicyHeader);
-
-  if (!report_only_document_policy_.feature_state.empty())
-    UseCounter::Count(document, WebFeature::kDocumentPolicyReportOnlyHeader);
-
-  for (const auto& policy_entry : document_policy_.feature_state) {
-    UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Header",
-                              policy_entry.first);
-  }
 }
 
 void SecurityContextInit::InitializeDocumentPolicy(
@@ -145,6 +124,13 @@ void SecurityContextInit::InitializeDocumentPolicy(
   // Needs to filter out features that are not in origin trial after
   // we have origin trial information available.
   document_policy_ = FilterByOriginTrial(initializer.GetDocumentPolicy(), this);
+  if (!document_policy_.feature_state.empty()) {
+    UseCounter::Count(execution_context_, WebFeature::kDocumentPolicyHeader);
+    for (const auto& policy_entry : document_policy_.feature_state) {
+      UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.DocumentPolicy.Header",
+                                policy_entry.first);
+    }
+  }
 
   // Handle Report-Only-Document-Policy HTTP header.
   // Console messages generated from logger are discarded, because currently
@@ -160,6 +146,10 @@ void SecurityContextInit::InitializeDocumentPolicy(
   if (report_only_parsed_policy) {
     report_only_document_policy_ =
         FilterByOriginTrial(*report_only_parsed_policy, this);
+    if (!report_only_document_policy_.feature_state.empty()) {
+      UseCounter::Count(execution_context_,
+                        WebFeature::kDocumentPolicyReportOnlyHeader);
+    }
   }
 }
 
@@ -190,10 +180,26 @@ void SecurityContextInit::InitializeFeaturePolicy(
       initializer.ReportOnlyFeaturePolicyHeader(), security_origin_,
       report_only_feature_policy_logger, this);
 
-  feature_policy_parse_messages_.AppendVector(
-      feature_policy_logger.GetMessages());
-  feature_policy_parse_messages_.AppendVector(
-      report_only_feature_policy_logger.GetMessages());
+  if (!report_only_feature_policy_header_.empty()) {
+    UseCounter::Count(execution_context_,
+                      WebFeature::kFeaturePolicyReportOnlyHeader);
+  }
+
+  if (execution_context_) {
+    for (const auto& message : feature_policy_logger.GetMessages()) {
+      execution_context_->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kSecurity, message.level,
+              message.content));
+    }
+    for (const auto& message :
+         report_only_feature_policy_logger.GetMessages()) {
+      execution_context_->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::blink::ConsoleMessageSource::kSecurity, message.level,
+              message.content));
+    }
+  }
 
   if (sandbox_flags_ != network::mojom::blink::WebSandboxFlags::kNone &&
       RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
@@ -323,12 +329,15 @@ void SecurityContextInit::InitializeSecureContextMode(
   }
   bool is_secure = secure_context_mode_ == SecureContextMode::kSecureContext;
   if (GetSandboxFlags() != network::mojom::blink::WebSandboxFlags::kNone) {
-    feature_count_.insert(
+    UseCounter::Count(
+        execution_context_,
         is_secure ? WebFeature::kSecureContextCheckForSandboxedOriginPassed
                   : WebFeature::kSecureContextCheckForSandboxedOriginFailed);
   }
-  feature_count_.insert(is_secure ? WebFeature::kSecureContextCheckPassed
-                                  : WebFeature::kSecureContextCheckFailed);
+
+  UseCounter::Count(execution_context_,
+                    is_secure ? WebFeature::kSecureContextCheckPassed
+                              : WebFeature::kSecureContextCheckFailed);
 }
 
 void SecurityContextInit::InitializeOriginTrials(

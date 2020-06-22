@@ -12,7 +12,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/chromeos/local_search_service/search_metrics_reporter.h"
 #include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 
 namespace local_search_service {
@@ -24,7 +26,7 @@ class LinearMapSearch;
 // backends that provide actual data storage/indexing/search functions.
 class Index {
  public:
-  Index();
+  explicit Index(IndexId index_id);
   ~Index();
 
   Index(const Index&) = delete;
@@ -55,6 +57,9 @@ class Index {
 
   SearchParams GetSearchParamsForTesting();
  private:
+  base::Optional<IndexId> index_id_;
+  std::string histogram_prefix_;
+  std::unique_ptr<SearchMetricsReporter> reporter_;
   // TODO(jiameng): Currently linear map is the only backend supported. We will
   // add inverted index in the next CLs.
   std::unique_ptr<LinearMapSearch> linear_map_search_;

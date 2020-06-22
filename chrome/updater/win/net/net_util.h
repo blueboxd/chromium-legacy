@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/strings/string_piece_forward.h"
 #include "chrome/updater/win/util.h"
 

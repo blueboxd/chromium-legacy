@@ -154,8 +154,8 @@ unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
 }
 
 bool ExecutionContext::IsCrossOriginIsolated() const {
-  // TODO(yhirano): Implement this.
-  return false;
+  // TODO(yhirano): Take cross-origin isolated permission into account.
+  return Agent::IsCrossOriginIsolated();
 }
 
 void ExecutionContext::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,

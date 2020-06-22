@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "chrome/renderer/subresource_redirect/subresource_redirect_hints_agent.h"

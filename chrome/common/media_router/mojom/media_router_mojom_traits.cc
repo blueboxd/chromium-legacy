@@ -216,7 +216,7 @@ bool StructTraits<media_router::mojom::MediaRouteDataView,
 
   out->set_local(data.is_local());
   out->set_for_display(data.for_display());
-  out->set_incognito(data.is_incognito());
+  out->set_off_the_record(data.is_off_the_record());
   out->set_local_presentation(data.is_local_presentation());
 
   return true;

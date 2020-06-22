@@ -1560,7 +1560,7 @@ ResourceFetcher::DetermineRevalidationPolicyInternal(
   // Don't reuse resources with Cache-control: no-store.
   if (existing_resource.HasCacheControlNoStoreHeader()) {
     return {RevalidationPolicy::kReload,
-            "Reload due to cache-control: no-sotre."};
+            "Reload due to cache-control: no-store."};
   }
 
   // During the initial load, avoid loading the same resource multiple times for

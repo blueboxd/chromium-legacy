@@ -32,6 +32,10 @@ int32_t SuggestionMarker::Tag() const {
   return tag_;
 }
 
+SuggestionMarker::SuggestionType SuggestionMarker::GetSuggestionType() const {
+  return suggestion_type_;
+}
+
 DocumentMarker::MarkerType SuggestionMarker::GetType() const {
   return DocumentMarker::kSuggestion;
 }

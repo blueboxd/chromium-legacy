@@ -79,15 +79,9 @@ class MockHttpAuthObserver : public HttpAuthObserver {
   DISALLOW_COPY_AND_ASSIGN(MockHttpAuthObserver);
 };
 
-// Invokes the password store consumer with a single copy of |form|.
-ACTION_P(InvokeConsumer, form) {
-  std::vector<std::unique_ptr<PasswordForm>> result;
-  result.push_back(std::make_unique<PasswordForm>(form));
-  arg0->OnGetPasswordStoreResults(std::move(result));
-}
-
-ACTION(InvokeEmptyConsumerWithForms) {
-  arg0->OnGetPasswordStoreResults(std::vector<std::unique_ptr<PasswordForm>>());
+ACTION_P(InvokeEmptyConsumerWithForms, store) {
+  arg0->OnGetPasswordStoreResultsFrom(
+      store, std::vector<std::unique_ptr<PasswordForm>>());
 }
 }  // namespace
 
@@ -112,7 +106,8 @@ class HttpAuthManagerTest : public testing::Test {
       // so that not every test has to set this up individually. Individual
       // tests that do cover the account store can still override this.
       ON_CALL(*account_store_, GetLogins(_, _))
-          .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
+          .WillByDefault(
+              WithArg<1>(InvokeEmptyConsumerWithForms(account_store_.get())));
     }
 
     ON_CALL(client_, GetProfilePasswordStore())
@@ -176,7 +171,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthFilling) {
     ASSERT_TRUE(consumer);
     std::vector<std::unique_ptr<PasswordForm>> result;
     result.push_back(std::make_unique<PasswordForm>(stored_form));
-    consumer->OnGetPasswordStoreResults(std::move(result));
+    consumer->OnGetPasswordStoreResultsFrom(store_, std::move(result));
     testing::Mock::VerifyAndClearExpectations(&store_);
     httpauth_manager()->DetachObserver(&observer);
   }
@@ -196,7 +191,7 @@ TEST_F(HttpAuthManagerTest, HttpAuthSaving) {
 
     MockHttpAuthObserver observer;
     EXPECT_CALL(*store_, GetLogins(_, _))
-        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+        .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
 
     // Initiate creating a form manager.
     httpauth_manager()->SetObserverAndDeliverCredentials(&observer,
@@ -228,7 +223,7 @@ TEST_F(HttpAuthManagerTest, NavigationWithoutSubmission) {
 
   MockHttpAuthObserver observer;
   EXPECT_CALL(*store_, GetLogins(_, _))
-      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
+      .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
 
   // Initiate creating a form manager.
   httpauth_manager()->SetObserverAndDeliverCredentials(&observer,

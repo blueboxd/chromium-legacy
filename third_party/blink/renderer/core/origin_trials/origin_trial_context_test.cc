@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_meta_element.h"
@@ -406,10 +407,10 @@ TEST_F(OriginTrialContextTest, ParseHeaderValue_NotCommaSeparated) {
 }
 
 TEST_F(OriginTrialContextTest, FeaturePolicy) {
-  // Create a dummy document with an OriginTrialContext.
+  // Create a dummy window/document with an OriginTrialContext.
   auto dummy = std::make_unique<DummyPageHolder>();
-  Document* document = &dummy->GetDocument();
-  OriginTrialContext* context = document->GetOriginTrialContext();
+  LocalDOMWindow* window = dummy->GetFrame().DomWindow();
+  OriginTrialContext* context = window->GetOriginTrialContext();
 
   // Enable the sample origin trial API ("Frobulate").
   context->AddFeature(OriginTrialFeature::kOriginTrialsSampleAPI);
@@ -428,7 +429,7 @@ TEST_F(OriginTrialContextTest, FeaturePolicy) {
   PolicyParserMessageBuffer logger;
   ParsedFeaturePolicy result;
   result = FeaturePolicyParser::Parse("frobulate", security_origin, nullptr,
-                                      logger, feature_map, document);
+                                      logger, feature_map, window);
   EXPECT_TRUE(logger.GetMessages().IsEmpty());
   ASSERT_EQ(1u, result.size());
   EXPECT_EQ(mojom::blink::FeaturePolicyFeature::kFrobulate, result[0].feature);

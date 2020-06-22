@@ -122,8 +122,8 @@ struct MediaRoute {
   RouteControllerType controller_type;
   // Set to true if this route should be displayed for |media_sink_id| in UI.
   bool for_display;
-  // Set to true if this route was created by an incognito profile.
-  bool is_incognito;
+  // Set to true if this route was created by an OffTheRecord profile.
+  bool is_off_the_record;
   // Set to true if this route corresponds to a local presentation.
   bool is_local_presentation;
 };
@@ -208,7 +208,7 @@ enum RouteRequestResultCode {
   ROUTE_NOT_FOUND,
   SINK_NOT_FOUND,
   INVALID_ORIGIN,
-  INCOGNITO_MISMATCH,
+  OFF_THE_RECORD_MISMATCH,
   NO_SUPPORTED_PROVIDER,
   CANCELLED,
   ROUTE_ALREADY_EXISTS,
@@ -307,7 +307,8 @@ interface MediaRouteProvider {
   // If |timeout| is positive, it will be used in place of the default timeout
   // defined by Media Route Provider Manager.
   //
-  // If |incognito| is true, the request was made by an incognito profile.
+  // If |off_the_record| is true, the request was made by an OffTheRecord
+  // profile.
   //
   // If the operation was successful, |route| will be defined and |error_text|
   // will be null.  If the operation failed, |route| will be null and
@@ -323,7 +324,7 @@ interface MediaRouteProvider {
               url.mojom.Origin origin,
               int32 tab_id,
               mojo_base.mojom.TimeDelta timeout,
-              bool incognito) =>
+              bool off_the_record) =>
                   (MediaRoute? route,
                    RoutePresentationConnection? connection,
                    string? error_text,
@@ -338,8 +339,8 @@ interface MediaRouteProvider {
   // If |timeout| is positive, it will be used in place of the default timeout
   // defined by Media Route Provider Manager.
   //
-  // If the route request was created by an incognito profile,
-  // |incognito| must be true.
+  // If the route request was created by an OffTheRecord profile,
+  // |off_the_record| must be true.
   //
   // If the operation was successful, |route| will be defined and |error_text|
   // will be null.  If the operation failed, |route| will be null and
@@ -353,7 +354,7 @@ interface MediaRouteProvider {
             url.mojom.Origin origin,
             int32 tab_id,
             mojo_base.mojom.TimeDelta timeout,
-            bool incognito) =>
+            bool off_the_record) =>
                 (MediaRoute? route,
                  RoutePresentationConnection? connection,
                  string? error_text,
@@ -373,8 +374,8 @@ interface MediaRouteProvider {
   // defined by Media Route Provider Manager; see CreateRoute for additional
   // documentation.
   //
-  // If the route request was created by an incognito profile,
-  // |incognito| must be true.
+  // If the route request was created by an OffTheRecord profile,
+  // |off_the_record| must be true.
   //
   // If the operation was successful, |route| will be defined and
   // |error_text| will be null.  If the operation failed, |route| will be null
@@ -391,7 +392,7 @@ interface MediaRouteProvider {
       url.mojom.Origin origin,
       int32 tab_id,
       mojo_base.mojom.TimeDelta timeout,
-      bool incognito) =>
+      bool off_the_record) =>
           (MediaRoute? route,
            RoutePresentationConnection? connection,
            string? error_text,

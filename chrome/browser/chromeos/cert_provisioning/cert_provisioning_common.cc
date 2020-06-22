@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 
 #include "base/bind_helpers.h"
-#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"

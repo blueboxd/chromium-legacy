@@ -9,7 +9,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
-#include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
 #include "third_party/blink/renderer/core/feature_policy/policy_helper.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -66,15 +65,10 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
     return secure_context_mode_.value();
   }
 
-  void CountFeaturePolicyUsage(mojom::WebFeature feature) override {
-    feature_count_.insert(feature);
-  }
-
+  void CountFeaturePolicyUsage(mojom::blink::WebFeature feature) override;
   bool FeaturePolicyFeatureObserved(
       mojom::blink::FeaturePolicyFeature) override;
   bool FeatureEnabled(OriginTrialFeature feature) const override;
-
-  void ApplyPendingDataToDocument(Document&) const;
 
  private:
   void InitializeDocumentPolicy(const DocumentInit&);
@@ -82,6 +76,7 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void InitializeSecureContextMode(const DocumentInit&);
   void InitializeOriginTrials(const DocumentInit&);
 
+  ExecutionContext* execution_context_ = nullptr;
   ContentSecurityPolicy* csp_ = nullptr;
   network::mojom::blink::WebSandboxFlags sandbox_flags_ =
       network::mojom::blink::WebSandboxFlags::kNone;
@@ -89,15 +84,12 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   DocumentPolicy::ParsedDocumentPolicy document_policy_;
   DocumentPolicy::ParsedDocumentPolicy report_only_document_policy_;
   bool initialized_feature_policy_state_ = false;
-  Vector<PolicyParserMessageBuffer::Message> feature_policy_parse_messages_;
   ParsedFeaturePolicy feature_policy_header_;
   ParsedFeaturePolicy report_only_feature_policy_header_;
   LocalFrame* frame_for_opener_feature_state_ = nullptr;
   Frame* parent_frame_ = nullptr;
   ParsedFeaturePolicy container_policy_;
   OriginTrialContext* origin_trials_ = nullptr;
-  HashSet<mojom::blink::FeaturePolicyFeature> parsed_feature_policies_;
-  HashSet<mojom::WebFeature> feature_count_;
   base::Optional<SecureContextMode> secure_context_mode_;
 };
 

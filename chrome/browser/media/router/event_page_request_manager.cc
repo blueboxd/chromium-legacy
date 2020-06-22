@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/containers/circular_deque.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"

@@ -143,14 +143,14 @@ void CastActivityRecord::OnInternalMessage(
     const cast_channel::InternalMessage& message) {}
 
 bool CastActivityRecord::CanJoinSession(const CastMediaSource& cast_source,
-                                        bool incognito) const {
+                                        bool off_the_record) const {
   if (!cast_source.ContainsApp(app_id()))
     return false;
 
   if (base::Contains(connected_clients_, cast_source.client_id()))
     return false;
 
-  if (route().is_incognito() != incognito)
+  if (route().is_off_the_record() != off_the_record)
     return false;
 
   return true;

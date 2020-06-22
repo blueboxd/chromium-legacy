@@ -27843,6 +27843,7 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3323" label="HiddenBackfaceWithPossible3D"/>
   <int value="3324" label="HiddenBackfaceWithPreserve3D"/>
   <int value="3325" label="CSSAtRuleScrollTimeline"/>
+  <int value="3326" label="FetchUploadStreaming"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -38685,6 +38686,13 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 <enum name="LocalRendererSinkStates">
   <int value="0" label="SinkStarted"/>
   <int value="1" label="SinkNeverStarted"/>
+</enum>
+
+<enum name="LocalSearchServiceResponseStatus">
+  <int value="0" label="UnknownError"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="EmptyQuery"/>
+  <int value="3" label="EmptyIndex"/>
 </enum>
 
 <enum name="LocalSiteCharacteristicsDBInitStatus">

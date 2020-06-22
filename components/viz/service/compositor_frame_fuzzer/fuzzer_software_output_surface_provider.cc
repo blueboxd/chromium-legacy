@@ -86,19 +86,11 @@ FuzzerSoftwareOutputSurfaceProvider::FuzzerSoftwareOutputSurfaceProvider(
 FuzzerSoftwareOutputSurfaceProvider::~FuzzerSoftwareOutputSurfaceProvider() =
     default;
 
-std::unique_ptr<gpu::GpuTaskSchedulerHelper>
-FuzzerSoftwareOutputSurfaceProvider::CreateGpuTaskScheduler(
-    bool gpu_compositing,
-    const RendererSettings& renderer_settings) {
-  return nullptr;
-}
-
 std::unique_ptr<OutputSurface>
 FuzzerSoftwareOutputSurfaceProvider::CreateOutputSurface(
     gpu::SurfaceHandle surface_handle,
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
-    gpu::GpuTaskSchedulerHelper* gpu_task_scheduler,
     const RendererSettings& renderer_settings) {
   std::unique_ptr<SoftwareOutputDevice> software_output_device =
       png_dir_path_ ? std::make_unique<PNGSoftwareOutputDevice>(*png_dir_path_)

@@ -55,21 +55,21 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
                    content::WebContents* web_contents,
                    MediaRouteResponseCallback callback,
                    base::TimeDelta timeout,
-                   bool incognito) final;
+                   bool off_the_record) final;
   void JoinRoute(const MediaSource::Id& source_id,
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  content::WebContents* web_contents,
                  MediaRouteResponseCallback callback,
                  base::TimeDelta timeout,
-                 bool incognito) final;
+                 bool off_the_record) final;
   void ConnectRouteByRouteId(const MediaSource::Id& source,
                              const MediaRoute::Id& route_id,
                              const url::Origin& origin,
                              content::WebContents* web_contents,
                              MediaRouteResponseCallback callback,
                              base::TimeDelta timeout,
-                             bool incognito) final;
+                             bool off_the_record) final;
   void TerminateRoute(const MediaRoute::Id& route_id) final;
   void DetachRoute(const MediaRoute::Id& route_id) final;
   void SendRouteMessage(const MediaRoute::Id& route_id,
@@ -128,7 +128,7 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
       const url::Origin& origin,
       content::WebContents* web_contents,
       base::TimeDelta timeout,
-      bool incognito,
+      bool off_the_record,
       mojom::MediaRouteProvider::CreateRouteCallback mr_callback,
       const std::string& err,
       content::DesktopMediaID media_id);
@@ -372,7 +372,7 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   // into a local callback.
   void RouteResponseReceived(const std::string& presentation_id,
                              MediaRouteProviderId provider_id,
-                             bool is_incognito,
+                             bool is_off_the_record,
                              MediaRouteResponseCallback callback,
                              bool is_join,
                              const base::Optional<MediaRoute>& media_route,

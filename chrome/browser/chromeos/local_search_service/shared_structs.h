@@ -12,6 +12,8 @@
 
 namespace local_search_service {
 
+enum class IndexId { kCrosSettings = 0, kMaxValue = kCrosSettings };
+
 struct Content {
   // An identifier for the content in Data.
   std::string id;
@@ -79,6 +81,8 @@ struct Result {
 // Status of the search attempt.
 // These numbers are used for logging and should not be changed or reused. More
 // will be added later.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class ResponseStatus {
   kUnknownError = 0,
   // Search operation is successful. But there could be no matching item and
@@ -87,7 +91,8 @@ enum class ResponseStatus {
   // Query is empty.
   kEmptyQuery = 2,
   // Index is empty (i.e. no data).
-  kEmptyIndex = 3
+  kEmptyIndex = 3,
+  kMaxValue = kEmptyIndex
 };
 
 }  // namespace local_search_service

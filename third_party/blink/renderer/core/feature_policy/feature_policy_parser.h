@@ -18,7 +18,6 @@
 
 namespace blink {
 
-class Document;
 class ExecutionContext;
 class FeaturePolicyParserDelegate;
 
@@ -74,7 +73,7 @@ class CORE_EXPORT FeaturePolicyParser {
       scoped_refptr<const SecurityOrigin> self_origin,
       scoped_refptr<const SecurityOrigin> src_origin,
       PolicyParserMessageBuffer& logger,
-      Document* document = nullptr);
+      FeaturePolicyParserDelegate* delegate = nullptr);
 
   // Converts a feature policy string into a vector of allowlists (see comments
   // above), with an explicit FeatureNameMap. This algorithm is called by both

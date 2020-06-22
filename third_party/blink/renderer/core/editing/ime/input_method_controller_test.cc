@@ -186,6 +186,25 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
   EXPECT_EQ(5u, plain_text_range.End());
 }
 
+TEST_F(InputMethodControllerTest, AddImeTextSpansToExistingText) {
+  InsertHTMLElement("<div id='sample' contenteditable>hello world</div>",
+                    "sample");
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(
+      ImeTextSpan::Type::kAutocorrect, 0, 5, Color(255, 0, 0),
+      ImeTextSpanThickness::kThin, ImeTextSpanUnderlineStyle::kSolid, 0, 0));
+  Controller().AddImeTextSpansToExistingText(ime_text_spans, 0, 5);
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+  EXPECT_EQ(0u, GetDocument().Markers().Markers()[0]->StartOffset());
+  EXPECT_EQ(5u, GetDocument().Markers().Markers()[0]->EndOffset());
+  EXPECT_EQ(DocumentMarker::MarkerType::kSuggestion,
+            GetDocument().Markers().Markers()[0]->GetType());
+  EXPECT_EQ(SuggestionMarker::SuggestionType::kAutocorrect,
+            To<SuggestionMarker>(GetDocument().Markers().Markers()[0].Get())
+                ->GetSuggestionType());
+}
+
 TEST_F(InputMethodControllerTest, SetCompositionAfterEmoji) {
   // "trophy" = U+1F3C6 = 0xF0 0x9F 0x8F 0x86 (UTF8).
   Element* div = InsertHTMLElement(
@@ -2426,6 +2445,26 @@ TEST_F(InputMethodControllerTest, RemoveSuggestionMarkerInRangeOnFinish) {
   EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
   EXPECT_EQ(DocumentMarker::MarkerType::kComposition,
             GetDocument().Markers().Markers()[0]->GetType());
+}
+
+TEST_F(InputMethodControllerTest, ClearImeTextSpansByType) {
+  InsertHTMLElement(
+      "<div id='sample' contenteditable spellcheck='true'>hello</div>",
+      "sample");
+  ImeTextSpan::Type type = ImeTextSpan::Type::kAutocorrect;
+  unsigned start = 0;
+  unsigned end = 1;
+  Vector<ImeTextSpan> ime_text_spans;
+  ime_text_spans.push_back(ImeTextSpan(
+      type, start, end, Color::kTransparent, ImeTextSpanThickness::kNone,
+      ImeTextSpanUnderlineStyle::kNone, Color::kTransparent,
+      Color::kTransparent, Color ::kTransparent));
+
+  Controller().AddImeTextSpansToExistingText(ime_text_spans, start, end);
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  Controller().ClearImeTextSpansByType(type, start, end);
+  EXPECT_EQ(0u, GetDocument().Markers().Markers().size());
 }
 
 // For http://crbug.com/712761

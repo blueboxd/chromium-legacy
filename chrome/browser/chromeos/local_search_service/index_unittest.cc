@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
@@ -11,6 +12,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
+#include "chrome/browser/chromeos/local_search_service/shared_structs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace local_search_service {
@@ -87,14 +89,18 @@ void FindAndCheckResults(Index* index,
 }  // namespace
 
 class IndexTest : public testing::Test {
+  void SetUp() override {
+    index_ = std::make_unique<Index>(IndexId::kCrosSettings);
+  }
+
  protected:
-  Index index_;
+  std::unique_ptr<Index> index_;
 };
 
 TEST_F(IndexTest, SetSearchParams) {
   {
     // No params are specified so default values are used.
-    const SearchParams used_params = index_.GetSearchParamsForTesting();
+    const SearchParams used_params = index_->GetSearchParamsForTesting();
 
     CheckSearchParams(used_params, SearchParams());
   }
@@ -109,9 +115,9 @@ TEST_F(IndexTest, SetSearchParams) {
     search_params.use_prefix_only = !default_params.use_prefix_only;
     search_params.use_edit_distance = !default_params.use_edit_distance;
 
-    index_.SetSearchParams(search_params);
+    index_->SetSearchParams(search_params);
 
-    const SearchParams used_params = index_.GetSearchParamsForTesting();
+    const SearchParams used_params = index_->GetSearchParamsForTesting();
 
     CheckSearchParams(used_params, search_params);
   }
@@ -121,35 +127,35 @@ TEST_F(IndexTest, RelevanceThreshold) {
   const std::map<std::string, std::vector<ContentWithId>> data_to_register = {
       {"id1", {{"tag1", "Wi-Fi"}}}, {"id2", {{"tag2", "famous"}}}};
   std::vector<Data> data = CreateTestData(data_to_register);
-  index_.AddOrUpdate(data);
-  EXPECT_EQ(index_.GetSize(), 2u);
+  index_->AddOrUpdate(data);
+  EXPECT_EQ(index_->GetSize(), 2u);
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.0;
-    index_.SetSearchParams(search_params);
+    index_->SetSearchParams(search_params);
 
     const std::vector<ResultWithIds> expected_results = {{"id1", {"tag1"}},
                                                          {"id2", {"tag2"}}};
-    FindAndCheckResults(&index_, "wifi",
+    FindAndCheckResults(index_.get(), "wifi",
                         /*max_results=*/-1, ResponseStatus::kSuccess,
                         expected_results);
   }
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.3;
-    index_.SetSearchParams(search_params);
+    index_->SetSearchParams(search_params);
 
     const std::vector<ResultWithIds> expected_results = {{"id1", {"tag1"}}};
-    FindAndCheckResults(&index_, "wifi",
+    FindAndCheckResults(index_.get(), "wifi",
                         /*max_results=*/-1, ResponseStatus::kSuccess,
                         expected_results);
   }
   {
     SearchParams search_params;
     search_params.relevance_threshold = 0.9;
-    index_.SetSearchParams(search_params);
+    index_->SetSearchParams(search_params);
 
-    FindAndCheckResults(&index_, "wifi",
+    FindAndCheckResults(index_.get(), "wifi",
                         /*max_results=*/-1, ResponseStatus::kSuccess, {});
   }
 }
@@ -159,22 +165,22 @@ TEST_F(IndexTest, MaxResults) {
       {"id1", {{"tag1", "abcde"}, {"tag2", "Wi-Fi"}}},
       {"id2", {{"tag3", "wifi"}}}};
   std::vector<Data> data = CreateTestData(data_to_register);
-  index_.AddOrUpdate(data);
-  EXPECT_EQ(index_.GetSize(), 2u);
+  index_->AddOrUpdate(data);
+  EXPECT_EQ(index_->GetSize(), 2u);
   SearchParams search_params;
   search_params.relevance_threshold = 0.3;
-  index_.SetSearchParams(search_params);
+  index_->SetSearchParams(search_params);
 
   {
     const std::vector<ResultWithIds> expected_results = {{"id2", {"tag3"}},
                                                          {"id1", {"tag2"}}};
-    FindAndCheckResults(&index_, "wifi",
+    FindAndCheckResults(index_.get(), "wifi",
                         /*max_results=*/-1, ResponseStatus::kSuccess,
                         expected_results);
   }
   {
     const std::vector<ResultWithIds> expected_results = {{"id2", {"tag3"}}};
-    FindAndCheckResults(&index_, "wifi",
+    FindAndCheckResults(index_.get(), "wifi",
                         /*max_results=*/1, ResponseStatus::kSuccess,
                         expected_results);
   }
@@ -187,15 +193,15 @@ TEST_F(IndexTest, ResultFound) {
   std::vector<Data> data = CreateTestData(data_to_register);
   EXPECT_EQ(data.size(), 2u);
 
-  index_.AddOrUpdate(data);
-  EXPECT_EQ(index_.GetSize(), 2u);
+  index_->AddOrUpdate(data);
+  EXPECT_EQ(index_->GetSize(), 2u);
 
   // Find result with query "id1". It returns an exact match.
   const std::vector<ResultWithIds> expected_results = {{"id1", {"cid1"}}};
-  FindAndCheckResults(&index_, "id1",
+  FindAndCheckResults(index_.get(), "id1",
                       /*max_results=*/-1, ResponseStatus::kSuccess,
                       expected_results);
-  FindAndCheckResults(&index_, "abc",
+  FindAndCheckResults(index_.get(), "abc",
                       /*max_results=*/-1, ResponseStatus::kSuccess, {});
 }
 

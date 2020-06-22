@@ -101,7 +101,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorInterface {
       const RendererSettings& renderer_settings,
       gpu::SharedImageManager* shared_image_manager,
       gpu::MemoryTracker* memory_tracker,
-      gpu::GpuTaskSchedulerHelper* gpu_task_scheduler,
+      scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
       gpu::SharedImageInterface* shared_image_interface);
 
   virtual ~OverlayProcessorInterface() {}

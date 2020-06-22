@@ -536,7 +536,7 @@ function routeToMojo_(route) {
     'iconUrl': route.iconUrl,
     'isLocal': route.isLocal,
     'forDisplay': route.forDisplay,
-    'isIncognito': route.offTheRecord,
+    'isOffTheRecord': route.offTheRecord,
     'isLocalPresentation': route.isOffscreenPresentation,
     'controllerType': route.controllerType,
     'presentationId': route.presentationId,
@@ -1186,19 +1186,19 @@ MediaRouteProvider.prototype.stopObservingMediaSinks =
  * @param {!number} tabId ID of tab requesting presentation.
  * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
- * @param {!boolean} incognito If true, the route is being requested by
- *     an incognito profile.
+ * @param {!boolean} off_the_record If true, the route is being requested by
+ *     an off_the_record profile.
  * @return {!Promise.<!Object>} A Promise resolving to an object describing
  *     the newly created media route, or rejecting with an error message on
  *     failure.
  */
 MediaRouteProvider.prototype.createRoute =
     function(sourceUrn, sinkId, presentationId, origin, tabId,
-             timeout, incognito) {
+             timeout, off_the_record) {
   this.handlers_.onBeforeInvokeHandler();
   return this.handlers_.createRoute(
       sourceUrn, sinkId, presentationId, origin, tabId,
-      Math.floor(timeout.microseconds / 1000), incognito)
+      Math.floor(timeout.microseconds / 1000), off_the_record)
       .then(function(route) {
         return toSuccessRouteResponse_(route);
       },
@@ -1217,19 +1217,19 @@ MediaRouteProvider.prototype.createRoute =
  * @param {!number} tabId ID of tab requesting join.
  * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
- * @param {!boolean} incognito If true, the route is being requested by
- *     an incognito profile.
+ * @param {!boolean} off_the_record If true, the route is being requested by
+ *     an off_the_record profile.
  * @return {!Promise.<!Object>} A Promise resolving to an object describing
  *     the newly created media route, or rejecting with an error message on
  *     failure.
  */
 MediaRouteProvider.prototype.joinRoute =
     function(sourceUrn, presentationId, origin, tabId, timeout,
-             incognito) {
+             off_the_record) {
   this.handlers_.onBeforeInvokeHandler();
   return this.handlers_.joinRoute(
       sourceUrn, presentationId, origin, tabId,
-      Math.floor(timeout.microseconds / 1000), incognito)
+      Math.floor(timeout.microseconds / 1000), off_the_record)
       .then(function(route) {
         return toSuccessRouteResponse_(route);
       },
@@ -1249,19 +1249,19 @@ MediaRouteProvider.prototype.joinRoute =
  * @param {!number} tabId ID of tab requesting join.
  * @param {!mojo_base.mojom.TimeDelta} timeout If positive, the timeout
  *     duration for the request. Otherwise, the default duration will be used.
- * @param {!boolean} incognito If true, the route is being requested by
- *     an incognito profile.
+ * @param {!boolean} off_the_record If true, the route is being requested by
+ *     an off_the_record profile.
  * @return {!Promise.<!Object>} A Promise resolving to an object describing
  *     the newly created media route, or rejecting with an error message on
  *     failure.
  */
 MediaRouteProvider.prototype.connectRouteByRouteId =
     function(sourceUrn, routeId, presentationId, origin, tabId,
-             timeout, incognito) {
+             timeout, off_the_record) {
   this.handlers_.onBeforeInvokeHandler();
   return this.handlers_.connectRouteByRouteId(
       sourceUrn, routeId, presentationId, origin, tabId,
-      Math.floor(timeout.microseconds / 1000), incognito)
+      Math.floor(timeout.microseconds / 1000), off_the_record)
       .then(function(route) {
         return toSuccessRouteResponse_(route);
       },

@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "components/url_formatter/url_formatter.h"
@@ -86,6 +87,9 @@ class AppBrowserController : public TabStripModelObserver,
 
   // Whether to show content settings in the titlebar toolbar.
   virtual bool HasTitlebarContentSettings() const;
+
+  // Returns which PageActionIconTypes should appear in the titlebar toolbar.
+  virtual std::vector<PageActionIconType> GetTitleBarPageActions() const;
 
   // Whether to show the Back and Refresh buttons in the web app toolbar.
   virtual bool HasMinimalUiButtons() const = 0;

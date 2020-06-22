@@ -2660,6 +2660,7 @@ enum WebFeature {
   kHiddenBackfaceWithPossible3D = 3323,
   kHiddenBackfaceWithPreserve3D = 3324,
   kCSSAtRuleScrollTimeline = 3325,
+  kFetchUploadStreaming = 3326,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

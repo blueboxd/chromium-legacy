@@ -66,7 +66,7 @@ struct RouteParameters {
   base::TimeDelta timeout;
 
   // Whether the route is for an off-the-record profile.
-  bool incognito;
+  bool off_the_record;
 };
 
 }  // namespace media_router

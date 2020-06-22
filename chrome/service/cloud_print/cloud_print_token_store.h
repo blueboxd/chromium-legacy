@@ -6,7 +6,7 @@
 #define CHROME_SERVICE_CLOUD_PRINT_CLOUD_PRINT_TOKEN_STORE_H_
 
 #include <string>
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 

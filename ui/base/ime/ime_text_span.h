@@ -26,6 +26,8 @@ struct COMPONENT_EXPORT(UI_BASE_IME_TYPES) ImeTextSpan {
     // replacement, and will be ignored if added to an element with spell
     // checking disabled.
     kMisspellingSuggestion,
+    // Creates an autocorrect marker that isn't cleared by itself.
+    kAutocorrect,
   };
 
   enum class Thickness {

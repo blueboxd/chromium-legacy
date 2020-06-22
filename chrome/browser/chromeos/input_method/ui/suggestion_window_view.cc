@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/ui/assistive_delegate.h"
+#include "chrome/browser/chromeos/input_method/ui/border_factory.h"
 #include "chrome/browser/chromeos/input_method/ui/suggestion_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -32,31 +33,6 @@
 
 namespace ui {
 namespace ime {
-
-namespace {
-constexpr int kSuggestionWindowCornerRadius = 5;
-
-class SuggestionWindowBorder : public views::BubbleBorder {
- public:
-  SuggestionWindowBorder()
-      : views::BubbleBorder(views::BubbleBorder::NONE,
-                            views::BubbleBorder::SMALL_SHADOW,
-                            SK_ColorTRANSPARENT),
-        offset_(0) {
-    SetCornerRadius(kSuggestionWindowCornerRadius);
-    set_use_theme_background_color(true);
-  }
-  ~SuggestionWindowBorder() override {}
-
-  void set_offset(int offset) { offset_ = offset; }
-
- private:
-  int offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionWindowBorder);
-};
-
-}  // namespace
 
 const int kSettingLinkFontSize = 13;
 // TODO(crbug/1094843): Add localised string.
@@ -125,7 +101,7 @@ views::Widget* SuggestionWindowView::InitWidget() {
                                              wm::ANIMATE_NONE);
 
   GetBubbleFrameView()->SetBubbleBorder(
-      std::make_unique<SuggestionWindowBorder>());
+      GetBorderForWindow(WindowBorderType::Suggestion));
   GetBubbleFrameView()->OnThemeChanged();
   return widget;
 }

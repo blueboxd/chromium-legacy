@@ -16,10 +16,10 @@ namespace viz {
 OverlayProcessorAndroid::OverlayProcessorAndroid(
     gpu::SharedImageManager* shared_image_manager,
     gpu::MemoryTracker* memory_tracker,
-    gpu::GpuTaskSchedulerHelper* gpu_task_scheduler,
+    scoped_refptr<gpu::GpuTaskSchedulerHelper> gpu_task_scheduler,
     bool enable_overlay)
     : OverlayProcessorUsingStrategy(),
-      gpu_task_scheduler_(gpu_task_scheduler),
+      gpu_task_scheduler_(std::move(gpu_task_scheduler)),
       overlay_enabled_(enable_overlay) {
   if (!overlay_enabled_)
     return;

@@ -21,14 +21,15 @@ namespace {
 
 void DecommitPages(void* address, size_t size) {
 #if defined(__LP64__)
-  internal::AddressPoolManager::GetInstance()->Free(
-      internal::GetDirectMapPool(), address, size);
 #if defined(OS_MACOSX)
   SetSystemPagesAccess(address, size, PageReadWrite);
   memset(address, 0, size);
 #endif
   SetSystemPagesAccess(address, size, PageInaccessible);
   DecommitSystemPages(address, size);
+
+  internal::AddressPoolManager::GetInstance()->Free(
+      internal::GetDirectMapPool(), address, size);
 #else
   NOTREACHED();
 #endif

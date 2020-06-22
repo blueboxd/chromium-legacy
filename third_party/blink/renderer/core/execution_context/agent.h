@@ -50,6 +50,18 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
 
   const base::UnguessableToken& cluster_id() const { return cluster_id_; }
 
+  // Representing agent cluster's "cross-origin isolated" concept.
+  // TODO(yhirano): Have the spec URL.
+  // This property is renderer process global because we ensure that a
+  // renderer process host only cross-origin isolated agents or only
+  // non-cross-origin isolated agents, not both.
+  // This variable is initialized before any frame is created, and will not
+  // be modified after that. Hence this can be accessed from the main thread
+  // and worker/worklet threads.
+  static bool IsCrossOriginIsolated();
+  // Only called from blink::SetIsCrossOriginIsolated.
+  static void SetIsCrossOriginIsolated(bool value);
+
  private:
   scoped_refptr<scheduler::EventLoop> event_loop_;
   const base::UnguessableToken cluster_id_;

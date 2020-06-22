@@ -404,6 +404,19 @@ int ComputeAutocapitalizeFlags(const Element* element) {
   return flags;
 }
 
+SuggestionMarker::SuggestionType ConvertImeTextSpanType(
+    ImeTextSpan::Type type) {
+  switch (type) {
+    case ImeTextSpan::Type::kAutocorrect:
+      return SuggestionMarker::SuggestionType::kAutocorrect;
+    case ImeTextSpan::Type::kMisspellingSuggestion:
+      return SuggestionMarker::SuggestionType::kMisspelling;
+    case ImeTextSpan::Type::kComposition:
+    case ImeTextSpan::Type::kSuggestion:
+      return SuggestionMarker::SuggestionType::kNotMisspelling;
+  }
+}
+
 }  // anonymous namespace
 
 enum class InputMethodController::TypingContinuation { kContinue, kEnd };
@@ -450,6 +463,44 @@ void InputMethodController::Clear() {
   }
   GetDocument().Markers().RemoveMarkersOfTypes(
       DocumentMarker::MarkerTypes::Composition());
+}
+
+void InputMethodController::ClearImeTextSpansByType(ImeTextSpan::Type type,
+                                                    unsigned text_start,
+                                                    unsigned text_end) {
+  Element* target = GetDocument().FocusedElement();
+  if (!target)
+    return;
+
+  Element* editable = GetFrame()
+                          .Selection()
+                          .ComputeVisibleSelectionInDOMTreeDeprecated()
+                          .RootEditableElement();
+  if (!editable)
+    return;
+
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+
+  const EphemeralRange range =
+      PlainTextRange(text_start, text_end).CreateRange(*editable);
+  if (range.IsNull() ||
+      RootEditableElementOf(range.StartPosition()) != editable ||
+      RootEditableElementOf(range.EndPosition()) != editable) {
+    return;
+  }
+
+  switch (type) {
+    case ImeTextSpan::Type::kAutocorrect:
+    case ImeTextSpan::Type::kMisspellingSuggestion:
+    case ImeTextSpan::Type::kSuggestion:
+      GetDocument().Markers().RemoveSuggestionMarkerByType(
+          ToEphemeralRangeInFlatTree(range), ConvertImeTextSpanType(type));
+      break;
+    case ImeTextSpan::Type::kComposition:
+      GetDocument().Markers().RemoveMarkersInRange(
+          range, DocumentMarker::MarkerTypes::Composition());
+      break;
+  }
 }
 
 void InputMethodController::ContextDestroyed() {
@@ -667,12 +718,11 @@ void InputMethodController::AddImeTextSpans(
             ime_text_span.TextColor(), background_color);
         break;
       }
+      case ImeTextSpan::Type::kAutocorrect:
       case ImeTextSpan::Type::kSuggestion:
       case ImeTextSpan::Type::kMisspellingSuggestion:
         const SuggestionMarker::SuggestionType suggestion_type =
-            ime_text_span.GetType() == ImeTextSpan::Type::kMisspellingSuggestion
-                ? SuggestionMarker::SuggestionType::kMisspelling
-                : SuggestionMarker::SuggestionType::kNotMisspelling;
+            ConvertImeTextSpanType(ime_text_span.GetType());
 
         // If spell-checking is disabled for an element, we ignore suggestion
         // markers used to mark misspelled words, but allow other ones (e.g.,
@@ -1052,6 +1102,34 @@ void InputMethodController::SetCompositionFromExistingText(
   composition_range_->setEnd(range.EndPosition());
 
   DispatchCompositionUpdateEvent(GetFrame(), ComposingText());
+}
+
+void InputMethodController::AddImeTextSpansToExistingText(
+    const Vector<ImeTextSpan>& ime_text_spans,
+    unsigned text_start,
+    unsigned text_end) {
+  Element* target = GetDocument().FocusedElement();
+  if (!target)
+    return;
+
+  Element* editable = GetFrame()
+                          .Selection()
+                          .ComputeVisibleSelectionInDOMTreeDeprecated()
+                          .RootEditableElement();
+  if (!editable)
+    return;
+
+  DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
+
+  const EphemeralRange range =
+      PlainTextRange(text_start, text_end).CreateRange(*editable);
+  if (range.IsNull() ||
+      RootEditableElementOf(range.StartPosition()) != editable ||
+      RootEditableElementOf(range.EndPosition()) != editable) {
+    return;
+  }
+
+  AddImeTextSpans(ime_text_spans, editable, text_start);
 }
 
 EphemeralRange InputMethodController::CompositionEphemeralRange() const {

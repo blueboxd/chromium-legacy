@@ -49,6 +49,11 @@ void WebAppInstallObserver::SetWebAppProfileWillBeDeletedDelegate(
   app_profile_will_be_deleted_delegate_ = delegate;
 }
 
+void WebAppInstallObserver::SetWebAppWillBeUpdatedFromSyncDelegate(
+    WebAppWillBeUpdatedFromSyncDelegate delegate) {
+  app_will_be_updated_from_sync_delegate_ = delegate;
+}
+
 void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
   if (!listening_for_app_id_.empty() && app_id != listening_for_app_id_)
     return;
@@ -58,6 +63,12 @@ void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
 
   app_id_ = app_id;
   run_loop_.Quit();
+}
+
+void WebAppInstallObserver::OnWebAppsWillBeUpdatedFromSync(
+    const std::vector<const WebApp*>& new_apps_state) {
+  if (app_will_be_updated_from_sync_delegate_)
+    app_will_be_updated_from_sync_delegate_.Run(new_apps_state);
 }
 
 void WebAppInstallObserver::OnWebAppUninstalled(const AppId& app_id) {

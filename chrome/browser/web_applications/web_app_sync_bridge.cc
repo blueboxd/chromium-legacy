@@ -459,6 +459,19 @@ void WebAppSyncBridge::ApplySyncChangesToRegistrar(
   if (update_local_data->IsEmpty())
     return;
 
+  // Notify observers that web apps will be updated.
+  // Prepare a short living read-only "view" to support const correctness:
+  // observers must not modify the |new_apps_state|.
+  if (!update_local_data->apps_to_update.empty()) {
+    std::vector<const WebApp*> new_apps_state;
+    new_apps_state.reserve(update_local_data->apps_to_update.size());
+    for (const std::unique_ptr<WebApp>& new_web_app_state :
+         update_local_data->apps_to_update) {
+      new_apps_state.push_back(new_web_app_state.get());
+    }
+    registrar_->NotifyWebAppsWillBeUpdatedFromSync(new_apps_state);
+  }
+
   // Notify observers that web apps will be uninstalled. |apps_to_delete| are
   // still registered at this stage.
   for (const AppId& app_id : update_local_data->apps_to_delete)

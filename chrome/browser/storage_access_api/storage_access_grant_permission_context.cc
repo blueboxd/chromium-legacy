@@ -5,8 +5,8 @@
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/check_op.h"
-#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"

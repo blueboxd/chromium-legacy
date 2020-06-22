@@ -40,7 +40,7 @@ void CrostiniRemover::RemoveCrostini() {
   } else {
     // Crostini installation didn't install the component. Concierge should not
     // be running, nor should there be any VMs.
-    CrostiniRemover::StopConciergeFinished(true);
+    CrostiniRemover::DestroyDiskImageFinished(true);
   }
 }
 
@@ -84,14 +84,6 @@ void CrostiniRemover::DestroyDiskImageFinished(bool success) {
     std::move(callback_).Run(CrostiniResult::DESTROY_DISK_IMAGE_FAILED);
     return;
   }
-  // Only set kCrostiniEnabled to false once cleanup is completely finished.
-  CrostiniManager::GetForProfile(profile_)->StopConcierge(
-      base::BindOnce(&CrostiniRemover::StopConciergeFinished, this));
-}
-
-void CrostiniRemover::StopConciergeFinished(bool is_successful) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // The is_successful parameter is never set by debugd.
 
   // UninstallTerminaComponent returns false both if Termina wasn't installed
   // and if the uninstall failed, so we explicitly reset the relevant

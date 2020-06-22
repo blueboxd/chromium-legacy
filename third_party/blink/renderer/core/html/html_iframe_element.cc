@@ -341,7 +341,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy() const {
 
   // Start with the allow attribute
   ParsedFeaturePolicy container_policy = FeaturePolicyParser::ParseAttribute(
-      allow_, self_origin, src_origin, logger, &GetDocument());
+      allow_, self_origin, src_origin, logger, GetExecutionContext());
 
   // Next, process sandbox flags. These all only take effect if a corresponding
   // policy does *not* exist in the allow attribute's value.

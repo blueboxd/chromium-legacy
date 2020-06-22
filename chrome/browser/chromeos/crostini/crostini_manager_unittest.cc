@@ -1148,11 +1148,26 @@ TEST_F(CrostiniManagerRestartTest, AbortThenStopVm) {
   ExpectRestarterUmaCount(1);
 }
 
-TEST_F(CrostiniManagerRestartTest, DoubleAbortIsSafe) {
+TEST_F(CrostiniManagerRestartTest, AbortFinishedRestartIsSafe) {
   restart_id_ = crostini_manager()->RestartCrostini(
       container_id(),
       base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
                      base::Unretained(this), run_loop()->QuitClosure()),
+      this);
+  run_loop()->Run();
+
+  ExpectCrostiniRestartResult(CrostiniResult::SUCCESS);
+
+  base::RunLoop run_loop;
+  crostini_manager()->AbortRestartCrostini(restart_id_, run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+TEST_F(CrostiniManagerRestartTest, DoubleAbortIsSafe) {
+  restart_id_ = crostini_manager()->RestartCrostini(
+      container_id(),
+      base::BindOnce(&CrostiniManagerRestartTest::RestartCrostiniCallback,
+                     base::Unretained(this), base::DoNothing::Once()),
       this);
 
   // When abort is called multiple times, the callback set for each abort should

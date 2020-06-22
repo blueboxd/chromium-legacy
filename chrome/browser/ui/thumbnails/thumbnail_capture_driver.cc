@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/thumbnails/thumbnail_capture_driver.h"
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 // static
 constexpr base::TimeDelta ThumbnailCaptureDriver::kCooldownDelay;

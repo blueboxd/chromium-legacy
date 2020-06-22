@@ -33,9 +33,7 @@ MediaRoute::MediaRoute(const MediaRoute::Id& media_route_id,
       media_sink_id_(media_sink_id),
       description_(description),
       is_local_(is_local),
-      for_display_(for_display),
-      is_incognito_(false),
-      is_local_presentation_(false) {}
+      for_display_(for_display) {}
 
 MediaRoute::MediaRoute(const MediaRoute& other) = default;
 
@@ -51,7 +49,7 @@ bool MediaRoute::operator==(const MediaRoute& other) const {
          description_ == other.description_ && is_local_ == other.is_local_ &&
          controller_type_ == other.controller_type_ &&
          for_display_ == other.for_display_ &&
-         is_incognito_ == other.is_incognito_ &&
+         is_off_the_record_ == other.is_off_the_record_ &&
          is_local_presentation_ == other.is_local_presentation_;
 }
 

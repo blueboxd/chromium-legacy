@@ -397,8 +397,8 @@ struct StructTraits<media_router::mojom::MediaRouteDataView,
     return route.for_display();
   }
 
-  static bool is_incognito(const media_router::MediaRoute& route) {
-    return route.is_incognito();
+  static bool is_off_the_record(const media_router::MediaRoute& route) {
+    return route.is_off_the_record();
   }
 
   static bool is_local_presentation(const media_router::MediaRoute& route) {
@@ -426,8 +426,9 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
         return media_router::mojom::RouteRequestResultCode::SINK_NOT_FOUND;
       case media_router::RouteRequestResult::INVALID_ORIGIN:
         return media_router::mojom::RouteRequestResultCode::INVALID_ORIGIN;
-      case media_router::RouteRequestResult::INCOGNITO_MISMATCH:
-        return media_router::mojom::RouteRequestResultCode::INCOGNITO_MISMATCH;
+      case media_router::RouteRequestResult::OFF_THE_RECORD_MISMATCH:
+        return media_router::mojom::RouteRequestResultCode::
+            OFF_THE_RECORD_MISMATCH;
       case media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER:
         return media_router::mojom::RouteRequestResultCode::
             NO_SUPPORTED_PROVIDER;
@@ -467,8 +468,8 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
       case media_router::mojom::RouteRequestResultCode::INVALID_ORIGIN:
         *output = media_router::RouteRequestResult::INVALID_ORIGIN;
         return true;
-      case media_router::mojom::RouteRequestResultCode::INCOGNITO_MISMATCH:
-        *output = media_router::RouteRequestResult::INCOGNITO_MISMATCH;
+      case media_router::mojom::RouteRequestResultCode::OFF_THE_RECORD_MISMATCH:
+        *output = media_router::RouteRequestResult::OFF_THE_RECORD_MISMATCH;
         return true;
       case media_router::mojom::RouteRequestResultCode::NO_SUPPORTED_PROVIDER:
         *output = media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER;

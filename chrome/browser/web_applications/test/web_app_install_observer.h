@@ -16,6 +16,7 @@
 namespace web_app {
 
 class AppRegistrar;
+class WebApp;
 
 class WebAppInstallObserver final : public AppRegistrarObserver {
  public:
@@ -44,8 +45,15 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
   void SetWebAppProfileWillBeDeletedDelegate(
       WebAppProfileWillBeDeletedDelegate delegate);
 
+  using WebAppWillBeUpdatedFromSyncDelegate = base::RepeatingCallback<void(
+      const std::vector<const WebApp*>& new_apps_state)>;
+  void SetWebAppWillBeUpdatedFromSyncDelegate(
+      WebAppWillBeUpdatedFromSyncDelegate delegate);
+
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
+  void OnWebAppsWillBeUpdatedFromSync(
+      const std::vector<const WebApp*>& new_apps_state) override;
   void OnWebAppUninstalled(const AppId& app_id) override;
   void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
@@ -55,6 +63,7 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
   AppId listening_for_app_id_;
 
   WebAppInstalledDelegate app_installed_delegate_;
+  WebAppWillBeUpdatedFromSyncDelegate app_will_be_updated_from_sync_delegate_;
   WebAppUninstalledDelegate app_uninstalled_delegate_;
   WebAppProfileWillBeDeletedDelegate app_profile_will_be_deleted_delegate_;
 

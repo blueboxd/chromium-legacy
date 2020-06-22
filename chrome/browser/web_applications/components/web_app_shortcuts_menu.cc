@@ -4,7 +4,8 @@
 
 #include "chrome/browser/web_applications/components/web_app_shortcuts_menu.h"
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 namespace web_app {

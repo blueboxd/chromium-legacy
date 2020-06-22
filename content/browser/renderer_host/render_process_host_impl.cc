@@ -4946,6 +4946,7 @@ void RenderProcessHostImpl::OnProcessLaunched() {
   }
 
   // Pass bits of global renderer state to the renderer.
+  GetRendererInterface()->SetIsCrossOriginIsolated(cross_origin_isolated_);
   GetRendererInterface()->SetUserAgent(
       GetContentClient()->browser()->GetUserAgent());
   GetRendererInterface()->SetUserAgentMetadata(

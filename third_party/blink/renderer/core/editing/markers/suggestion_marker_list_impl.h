@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_SUGGESTION_MARKER_LIST_IMPL_H_
 
 #include "third_party/blink/renderer/core/editing/markers/document_marker_list.h"
+#include "third_party/blink/renderer/core/editing/markers/suggestion_marker.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -45,6 +46,7 @@ class CORE_EXPORT SuggestionMarkerListImpl final : public DocumentMarkerList {
 
   // SuggestionMarkerListImpl-specific
   bool RemoveMarkerByTag(int32_t tag);
+  bool RemoveMarkerByType(const SuggestionMarker::SuggestionType& type);
 
  private:
   bool ShiftMarkersForSuggestionReplacement(unsigned offset,

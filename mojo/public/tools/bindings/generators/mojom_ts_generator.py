@@ -4,10 +4,13 @@
 
 """Generates Typescript source files from a mojom.Module."""
 
+import argparse
 import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 from mojom.generate.template_expander import UseJinja
 import os
+
+GENERATOR_PREFIX = 'ts'
 
 _kind_to_typescript_type = {
   mojom.BOOL:                  "boolean",
@@ -75,17 +78,25 @@ class Generator(generator.Generator):
   def _GenerateESModulesBindings(self):
     return self._GetParameters(use_es_modules=True)
 
-  def GenerateFiles(self, args):
+  def GenerateFiles(self, unparsed_args):
     if self.variant:
       raise Exception("Variants not supported in JavaScript bindings.")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--ts_use_es_modules',
+                        action="store_true",
+                        help="Generate bindings that use ES Modules.")
+    args = parser.parse_args(unparsed_args)
 
     self.module.Stylize(TypescriptStylizer())
 
     self._SetUniqueAliasesForImports()
 
-    self.Write(self._GenerateBindings(), "%s-lite.ts" % self.module.path)
-    self.Write(self._GenerateESModulesBindings(),
-               "%s-lite.m.ts" % self.module.path)
+    if args.ts_use_es_modules == True:
+      self.Write(self._GenerateESModulesBindings(),
+                 "%s-lite.m.ts" % self.module.path)
+    else:
+      self.Write(self._GenerateBindings(), "%s-lite.ts" % self.module.path)
 
   # Function that sets unique alias names for all imported modules based on
   # their namespace. For example, for two imported modules with namespace

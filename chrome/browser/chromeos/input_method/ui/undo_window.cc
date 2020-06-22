@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/input_method/ui/undo_window.h"
 
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/chromeos/input_method/ui/border_factory.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -17,21 +18,6 @@ namespace ime {
 
 namespace {
 const char kUndoButtonText[] = "Undo";
-class UndoWindowBorder : public views::BubbleBorder {
- public:
-  UndoWindowBorder()
-      : views::BubbleBorder(views::BubbleBorder::NONE,
-                            views::BubbleBorder::SMALL_SHADOW,
-                            gfx::kPlaceholderColor) {
-    SetCornerRadius(views::LayoutProvider::Get()->GetCornerRadiusMetric(
-        views::EmphasisMetric::EMPHASIS_MEDIUM));
-    set_use_theme_background_color(true);
-  }
-  ~UndoWindowBorder() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(UndoWindowBorder);
-};
-
 }  // namespace
 
 UndoWindow::UndoWindow(gfx::NativeView parent, AssistiveDelegate* delegate)
@@ -68,7 +54,8 @@ views::Widget* UndoWindow::InitWidget() {
   wm::SetWindowVisibilityAnimationTransition(widget->GetNativeView(),
                                              wm::ANIMATE_NONE);
 
-  GetBubbleFrameView()->SetBubbleBorder(std::make_unique<UndoWindowBorder>());
+  GetBubbleFrameView()->SetBubbleBorder(
+      GetBorderForWindow(WindowBorderType::Undo));
   GetBubbleFrameView()->OnThemeChanged();
   return widget;
 }

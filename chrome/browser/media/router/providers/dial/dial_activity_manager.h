@@ -53,7 +53,7 @@ struct DialActivity {
   static std::unique_ptr<DialActivity> From(const std::string& presentation_id,
                                             const MediaSinkInternal& sink,
                                             const MediaSource::Id& source_id,
-                                            bool incognito);
+                                            bool off_the_record);
 
   DialActivity(const DialLaunchInfo& launch_info, const MediaRoute& route);
   ~DialActivity();

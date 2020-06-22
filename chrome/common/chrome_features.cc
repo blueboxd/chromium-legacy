@@ -192,6 +192,12 @@ const base::Feature kCryptohomeDistributedModel{
 const base::Feature kCryptohomeUserDataAuth{"CryptohomeUserDataAuth",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Kill switch for cryptohome UserDataAuth interface. UserDataAuth is a new
+// dbus interface that is fully protobuf and uses libbrillo for dbus instead
+// instead of the deprecated glib-dbus.
+const base::Feature kCryptohomeUserDataAuthKillswitch{
+    "CryptohomeUserDataAuthKillswitch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable support for "Plugin VMs" on Chrome OS.
 const base::Feature kPluginVm{"PluginVm", base::FEATURE_DISABLED_BY_DEFAULT};
 

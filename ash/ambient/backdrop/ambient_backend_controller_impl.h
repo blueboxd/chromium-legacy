@@ -31,6 +31,11 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(const AmbientSettings& settings,
                       UpdateSettingsCallback callback) override;
+  void FetchPersonalAlbums(int banner_width,
+                           int banner_height,
+                           int num_albums,
+                           const std::string& resume_token,
+                           OnPersonalAlbumsFetchedCallback callback) override;
   void SetPhotoRefreshInterval(base::TimeDelta interval) override;
 
  private:
@@ -63,6 +68,19 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
   void OnUpdateSettings(UpdateSettingsCallback callback,
                         std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
                         std::unique_ptr<std::string> response);
+
+  void FetchPersonalAlbumsInternal(int banner_width,
+                                   int banner_height,
+                                   int num_albums,
+                                   const std::string& resume_token,
+                                   OnPersonalAlbumsFetchedCallback callback,
+                                   const std::string& gaia_id,
+                                   const std::string& access_token);
+
+  void OnPersonalAlbumsFetched(
+      OnPersonalAlbumsFetchedCallback callback,
+      std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
+      std::unique_ptr<std::string> response);
 
   BackdropClientConfig backdrop_client_config_;
 

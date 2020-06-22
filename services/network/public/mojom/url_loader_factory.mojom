@@ -29,16 +29,23 @@ const uint32 kURLLoadOptionBlockThirdPartyCookies = 64;
 // service must set this.
 const uint32 kURLLoadOptionAsCorsPreflight = 128;
 
+// URLLoaderFactory is an interface for requesting URLs. It creates URLLoader
+// instances. One URLLoader instance can load one URL.
 interface URLLoaderFactory {
   // Creates a URLLoader and starts loading with the given |request|. |client|'s
-  // method will be called when certain events related to that loading
+  // methods will be called when certain events related to that loading
   // (e.g., response arrival) happen.
+  //
   // |routing_id| is the routing_id for subframe requests, and is the
   // frame_tree_node_id for frame requests.
   // TODO: once MojoLoading is only codepath and we have one factory per frame,
   // remove this.
-  // |request_id| is for compatibility with the existing Chrome IPC.
-  // A pair (routing_id, request_id) is assumed to be unique within one factory.
+  //
+  // |request_id| is an arbitrary id for the request. The (routing_id,
+  // request_id) pair must be unique over all calls to CreateLoaderAndStart()
+  // on this factory.
+  //
+  // |options| is a bitfield of the options defined above.
   CreateLoaderAndStart(pending_receiver<URLLoader> loader,
                        int32 routing_id,
                        int32 request_id,

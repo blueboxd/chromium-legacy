@@ -949,7 +949,13 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
       To<NGPhysicalBoxFragment>(previous_result_->PhysicalFragment());
   const NGFragmentItems* previous_items = previous_fragment.Items();
   DCHECK(previous_items);
+
+  // Find reusable lines. Fail if no items are reusable.
   previous_items->DirtyLinesFromNeedsLayout(inline_node.GetLayoutBlockFlow());
+  const NGFragmentItem* end_item = previous_items->EndOfReusableItems();
+  DCHECK(end_item);
+  if (!end_item || end_item == &previous_items->front())
+    return false;
 
   const auto& children = container_builder_.Children();
   const wtf_size_t children_before = children.size();
@@ -958,8 +964,7 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
   DCHECK_EQ(items_builder->GetWritingMode(), space.GetWritingMode());
   DCHECK_EQ(items_builder->Direction(), space.Direction());
   const auto result = items_builder->AddPreviousItems(
-      *previous_items, previous_fragment.Size(), &container_builder_,
-      /* stop_at_dirty */ true);
+      *previous_items, previous_fragment.Size(), &container_builder_, end_item);
 
   if (UNLIKELY(!result.succeeded)) {
     DCHECK_EQ(children.size(), children_before);

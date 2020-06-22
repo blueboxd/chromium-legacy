@@ -6,6 +6,8 @@
 
 namespace ash {
 
+// ArtSetting ------------------------------------------------------------------
+
 ArtSetting::ArtSetting() = default;
 
 ArtSetting::ArtSetting(const ArtSetting&) = default;
@@ -18,6 +20,8 @@ ArtSetting& ArtSetting::operator=(ArtSetting&&) = default;
 
 ArtSetting::~ArtSetting() = default;
 
+// AmbientSettings -------------------------------------------------------------
+
 AmbientSettings::AmbientSettings() = default;
 
 AmbientSettings::AmbientSettings(const AmbientSettings&) = default;
@@ -29,5 +33,25 @@ AmbientSettings& AmbientSettings::operator=(const AmbientSettings&) = default;
 AmbientSettings& AmbientSettings::operator=(AmbientSettings&&) = default;
 
 AmbientSettings::~AmbientSettings() = default;
+
+// PersonalAlbum ---------------------------------------------------------------
+
+PersonalAlbum::PersonalAlbum() = default;
+
+PersonalAlbum::PersonalAlbum(PersonalAlbum&&) = default;
+
+PersonalAlbum& PersonalAlbum::operator=(PersonalAlbum&&) = default;
+
+PersonalAlbum::~PersonalAlbum() = default;
+
+// PersonalAlbums --------------------------------------------------------------
+
+PersonalAlbums::PersonalAlbums() = default;
+
+PersonalAlbums::PersonalAlbums(PersonalAlbums&&) = default;
+
+PersonalAlbums& PersonalAlbums::operator=(PersonalAlbums&&) = default;
+
+PersonalAlbums::~PersonalAlbums() = default;
 
 }  // namespace ash

@@ -307,68 +307,6 @@ std::string ArcAppListPrefs::GetAppIdByPackageName(
   return std::string();
 }
 
-// Instances are owned by ArcAppListPrefs.
-// It performs decoding, resizing and encoding resized icon. Used to support
-// legacy mojom for icon requests.
-class ArcAppListPrefs::ResizeRequest : public ImageDecoder::ImageRequest {
- public:
-  ResizeRequest(const base::WeakPtr<ArcAppListPrefs>& host,
-                const std::string& app_id,
-                const ArcAppIconDescriptor& descriptor)
-      : host_(host), app_id_(app_id), descriptor_(descriptor) {}
-  ~ResizeRequest() override = default;
-
-  // ImageDecoder::ImageRequest:
-  void OnImageDecoded(const SkBitmap& bitmap) override {
-    // See host_ comments.
-    DCHECK(host_);
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&ResizeRequest::ResizeAndEncodeIconAsyncronously, bitmap,
-                       descriptor_.GetSizeInPixels()),
-        base::BindOnce(&ArcAppListPrefs::OnIconResized, host_, app_id_,
-                       descriptor_));
-    host_->DiscardResizeRequest(this);
-  }
-
-  // ImageDecoder::ImageRequest:
-  void OnDecodeImageFailed() override {
-    // See host_ comments.
-    DCHECK(host_);
-    host_->DiscardResizeRequest(this);
-  }
-
- private:
-  static std::vector<uint8_t> ResizeAndEncodeIconAsyncronously(
-      const SkBitmap& bitmap,
-      int dimension_in_pixels) {
-    DCHECK_EQ(bitmap.height(), bitmap.width());
-    // Matching dimensions are not sent to resizing.
-    DCHECK_NE(dimension_in_pixels, bitmap.width());
-    const SkBitmap resized_bitmap = skia::ImageOperations::Resize(
-        bitmap, skia::ImageOperations::RESIZE_BEST, dimension_in_pixels,
-        dimension_in_pixels);
-    std::vector<uint8_t> result;
-    if (!gfx::PNGCodec::EncodeBGRASkBitmap(
-            resized_bitmap, false /* discard_transparency*/, &result)) {
-      NOTREACHED() << "Failed to encode png";
-      return {};
-    }
-    return result;
-  }
-
-  // Owner of this class. |host_| does not contain nullptr for decode callbacks
-  // OnImageDecoded and OnDecodeImageFailed because once owner is deleted this
-  // class is automatically deleted as well and this cancels any decode
-  // operation. However, ResizeAndEncodeIconAsyncronously can be executed
-  // after deletion of this class and therefore |host_| may contain nullptr.
-  base::WeakPtr<ArcAppListPrefs> host_;
-  const std::string app_id_;
-  const ArcAppIconDescriptor descriptor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResizeRequest);
-};
-
 ArcAppListPrefs::ArcAppListPrefs(
     Profile* profile,
     arc::ConnectionHolder<arc::mojom::AppInstance, arc::mojom::AppHost>*
@@ -1647,24 +1585,6 @@ void ArcAppListPrefs::OnIcon(const std::string& app_id,
   }
 
   InstallIcon(app_id, descriptor, icon_png_data);
-}
-
-void ArcAppListPrefs::OnIconResized(const std::string& app_id,
-                                    const ArcAppIconDescriptor& descriptor,
-                                    const std::vector<uint8_t>& icon_png_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!icon_png_data.empty())
-    OnIcon(app_id, descriptor, icon_png_data);
-}
-
-void ArcAppListPrefs::DiscardResizeRequest(ResizeRequest* request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  auto it = std::find_if(resize_requests_.begin(), resize_requests_.end(),
-                         [request](const std::unique_ptr<ResizeRequest>& ptr) {
-                           return ptr.get() == request;
-                         });
-  DCHECK(it != resize_requests_.end());
-  resize_requests_.erase(it);
 }
 
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,

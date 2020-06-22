@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_public_export.h"
+#include "base/strings/string16.h"
 
 namespace ash {
 
@@ -38,8 +39,10 @@ struct ASH_PUBLIC_EXPORT ArtSetting {
   // Whether the setting is enabled in the Art gallery topic source.
   bool enabled = false;
 
+  // UTF-8 encoded.
   std::string title;
 
+  // UTF-8 encoded.
   std::string description;
 
   std::string preview_image_url;
@@ -60,6 +63,49 @@ struct ASH_PUBLIC_EXPORT AmbientSettings {
 
   // Only selected album.
   std::vector<std::string> selected_album_ids;
+};
+
+struct ASH_PUBLIC_EXPORT PersonalAlbum {
+  PersonalAlbum();
+  PersonalAlbum(const PersonalAlbum&) = delete;
+  PersonalAlbum(PersonalAlbum&&);
+  PersonalAlbum& operator=(const PersonalAlbum&) = delete;
+  PersonalAlbum& operator=(PersonalAlbum&&);
+  ~PersonalAlbum();
+
+  // ID of this album.
+  std::string album_id;
+
+  // Whether the album is selected in the Google Photos topic source.
+  bool selected = false;
+
+  // UTF-8 encoded.
+  std::string album_name;
+
+  // UTF-8 encoded.
+  std::string description;
+
+  // Preview image of this album.
+  std::string banner_image_url;
+
+  // Preview images if this is a live album.
+  std::vector<std::string> preview_image_urls;
+};
+
+struct ASH_PUBLIC_EXPORT PersonalAlbums {
+  PersonalAlbums();
+  PersonalAlbums(const PersonalAlbums&) = delete;
+  PersonalAlbums(PersonalAlbums&&);
+  PersonalAlbums& operator=(const PersonalAlbums&) = delete;
+  PersonalAlbums& operator=(PersonalAlbums&&);
+  ~PersonalAlbums();
+
+  std::vector<PersonalAlbum> albums;
+
+  // A token that the client application can use to retrieve the next batch of
+  // albums. If the token is not set in the response, it means that there are
+  // no more albums.
+  std::string resume_token;
 };
 
 }  // namespace ash

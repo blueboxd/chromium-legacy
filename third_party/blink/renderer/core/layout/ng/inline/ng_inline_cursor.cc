@@ -1434,9 +1434,22 @@ void NGInlineCursor::MoveTo(const LayoutObject& layout_object) {
     }
 
     const auto fragments = NGPaintFragment::InlineFragmentsFor(&layout_object);
-    if (!fragments.IsInLayoutNGInlineFormattingContext() || fragments.IsEmpty())
-      return MakeNull();
-    return MoveTo(fragments.front());
+    if (!fragments.IsEmpty()) {
+      // If |this| is IFC root, just move to the first fragment.
+      if (!root_paint_fragment_->Parent()) {
+        DCHECK(fragments.front().IsDescendantOfNotSelf(*root_paint_fragment_));
+        MoveTo(fragments.front());
+        return;
+      }
+      // If |this| is limited, find the first fragment in the range.
+      for (const auto* fragment : fragments) {
+        if (fragment->IsDescendantOfNotSelf(*root_paint_fragment_)) {
+          MoveTo(*fragment);
+          return;
+        }
+      }
+    }
+    return MakeNull();
   }
 
   // If this cursor is rootless, find the root of the inline formatting context.
@@ -1518,18 +1531,34 @@ void NGInlineCursor::MoveToNextForSameLayoutObject() {
   if (current_.paint_fragment_) {
     if (auto* paint_fragment =
             current_.paint_fragment_->NextForSameLayoutObject()) {
-      // |paint_fragment| can be in another fragment tree rooted by
-      // |root_paint_fragment_|, e.g. "multicol-span-all-restyle-002.html"
-      root_paint_fragment_ = paint_fragment->Root();
-      return MoveTo(*paint_fragment);
+      if (!root_paint_fragment_->Parent()) {
+        // |paint_fragment| can be in another fragment tree rooted by
+        // |root_paint_fragment_|, e.g. "multicol-span-all-restyle-002.html"
+        root_paint_fragment_ = paint_fragment->Root();
+        MoveTo(*paint_fragment);
+        return;
+      }
+      // If |this| is limited, make sure the result is in the range.
+      if (paint_fragment->IsDescendantOfNotSelf(*root_paint_fragment_)) {
+        MoveTo(*paint_fragment);
+        return;
+      }
     }
     return MakeNull();
   }
   if (current_.item_) {
     const wtf_size_t delta = current_.item_->DeltaToNextForSameLayoutObject();
-    if (delta == 0u)
-      return MakeNull();
-    return MoveToItem(current_.item_iter_ + delta);
+    if (delta) {
+      // Check the next item is in |items_| because |delta| can be beyond
+      // |end()| if |this| is limited.
+      const wtf_size_t delta_to_end = items_.end() - current_.item_iter_;
+      if (delta < delta_to_end) {
+        MoveToItem(current_.item_iter_ + delta);
+        return;
+      }
+      DCHECK(!fragment_items_->Equals(items_));
+    }
+    MakeNull();
   }
 }
 

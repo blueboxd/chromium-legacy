@@ -12,10 +12,12 @@
 #include "chromeos/components/web_applications/manifest_request_filter.h"
 #include "chromeos/grit/chromeos_help_app_resources.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
 
@@ -58,6 +60,15 @@ HelpAppUI::HelpAppUI(content::WebUI* web_ui,
 
   // Add ability to request chrome-untrusted: URLs.
   web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+
+  // Always grant the cookies permission. Denying cookies permission causes
+  // IndexDB and other types of storage to stop working. Given that this is an
+  // app that is part of Chrome OS, it makes sense to enable the cookies.
+  auto* permissions_allowlist = WebUIAllowlist::GetOrCreate(browser_context);
+  const url::Origin untrusted_origin =
+      url::Origin::Create(GURL(kChromeUIHelpAppUntrustedURL));
+  permissions_allowlist->RegisterAutoGrantedPermission(
+      untrusted_origin, ContentSettingsType::COOKIES);
 }
 
 HelpAppUI::~HelpAppUI() = default;

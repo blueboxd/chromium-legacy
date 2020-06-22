@@ -5,9 +5,9 @@
 """Deals with loading & saving .size and .sizediff files.
 
 The .size file is written in the following format. There are no section
-delimiters, instead the end of a section is usually determined by a row count on
-the first line of a section, followed by that number of rows. In other cases,
-the sections have a known size.
+delimiters, instead the end of a section is usually determined by a row count
+on the first line of a section, followed by that number of rows. In other
+cases, the sections have a known size.
 
 Header
 ------
@@ -116,8 +116,7 @@ import parallel
 
 
 # File format version for .size files.
-_SERIALIZATION_VERSION_SINGLE_CONTAINER = 'Size File Format v1'
-_SERIALIZATION_VERSION_MULTI_CONTAINER = 'Size File Format v1.1'
+_SERIALIZATION_VERSION = 'Size File Format v1'
 
 # Header for .sizediff files
 _SIZEDIFF_HEADER = '# Created by //tools/binary_size\nDIFF\n'
@@ -172,18 +171,18 @@ def CalculatePadding(raw_symbols):
 
   # Padding not really required, but it is useful to check for large padding and
   # log a warning.
-  seen_container_and_sections = set()
+  # TODO(huangs): Add support for multiple containers: Need to group by
+  #     container names and sections.
+  seen_sections = set()
   for i, symbol in enumerate(raw_symbols[1:]):
     prev_symbol = raw_symbols[i]
     if symbol.IsOverhead():
       # Overhead symbols are not actionable so should be padding-only.
       symbol.padding = symbol.size
-    if (prev_symbol.container.name != symbol.container.name
-        or prev_symbol.section_name != symbol.section_name):
-      container_and_section = (symbol.container.name, symbol.section_name)
-      assert container_and_section not in seen_container_and_sections, (
-          'Input symbols must be sorted by container, section, then address.')
-      seen_container_and_sections.add(container_and_section)
+    if prev_symbol.section_name != symbol.section_name:
+      assert symbol.section_name not in seen_sections, (
+          'Input symbols must be sorted by section, then address.')
+      seen_sections.add(symbol.section_name)
       continue
     if (symbol.address <= 0 or prev_symbol.address <= 0
         or not symbol.IsNative() or not prev_symbol.IsNative()):
@@ -249,34 +248,21 @@ def _SaveSizeInfoToFile(size_info,
   else:
     raw_symbols = size_info.raw_symbols
 
-  num_containers = len(size_info.containers)
-  has_multi_containers = (num_containers > 1)
-
   w = _Writer(file_obj)
 
-  # "Created by SuperSize" header
+  # Created by supersize header
   w.WriteLine('# Created by //tools/binary_size')
-  if has_multi_containers:
-    w.WriteLine(_SERIALIZATION_VERSION_MULTI_CONTAINER)
-  else:
-    w.WriteLine(_SERIALIZATION_VERSION_SINGLE_CONTAINER)
-
+  w.WriteLine(_SERIALIZATION_VERSION)
   # JSON header fields
   fields = {
       'has_components': True,
       'has_padding': include_padding,
   }
+  num_containers = len(size_info.containers)
+  has_multi_containers = (num_containers > 1)
 
   if has_multi_containers:
-    # Write using new format.
-    assert len(set(c.name for c in size_info.containers)) == num_containers, (
-        'Container names must be distinct.')
-    fields['build_config'] = size_info.build_config
-    fields['containers'] = [{
-        'name': c.name,
-        'metadata': c.metadata,
-        'section_sizes': c.section_sizes,
-    } for c in size_info.containers]
+    raise ValueError('Multiple container not yet supported.')
   else:
     # Write using old format.
     fields['metadata'] = size_info.metadata_legacy
@@ -304,18 +290,12 @@ def _SaveSizeInfoToFile(size_info,
     w.WriteLine(comp)
   w.LogSize('components')
 
-  # Symbol counts by container and section.
-  symbol_group_by_section = raw_symbols.GroupedByContainerAndSectionName()
+  # Symbol counts by section.
+  symbol_group_by_section = raw_symbols.GroupedBySectionName()
   if has_multi_containers:
-    container_name_to_index = {
-        c.name: i
-        for i, c in enumerate(size_info.containers)
-    }
-    w.WriteLine('\t'.join('<%d>%s' %
-                          (container_name_to_index[g.name[0]], g.name[1])
-                          for g in symbol_group_by_section))
+    raise ValueError('Multiple container not yet supported.')
   else:
-    w.WriteLine('\t'.join(g.name[1] for g in symbol_group_by_section))
+    w.WriteLine('\t'.join(g.name for g in symbol_group_by_section))
   w.WriteLine('\t'.join(str(len(g)) for g in symbol_group_by_section))
 
   def gen_delta(gen, prev_value=0):
@@ -404,35 +384,23 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   """
   # Split lines on '\n', since '\r' can appear in some lines!
   lines = io.TextIOWrapper(file_obj, newline='\n')
-  _ReadLine(lines)  # Line 0: "Created by SuperSize" header
+  _ReadLine(lines)  # Line 0: Created by supersize header
   actual_version = _ReadLine(lines)
-  if actual_version == _SERIALIZATION_VERSION_SINGLE_CONTAINER:
-    has_multi_containers = False
-  elif actual_version == _SERIALIZATION_VERSION_MULTI_CONTAINER:
-    has_multi_containers = True
-  else:
-    raise ValueError('Version mismatch. Need to write some upgrade code.')
-
+  assert actual_version == _SERIALIZATION_VERSION, (
+      'Version mismatch. Need to write some upgrade code.')
   # JSON header fields
   json_len = int(_ReadLine(lines))
   json_str = lines.read(json_len)
 
   fields = json.loads(json_str)
-  assert ('containers' in fields) == has_multi_containers
-  assert ('build_config' in fields) == has_multi_containers
-  assert ('containers' in fields) == has_multi_containers
-  assert ('metadata' not in fields) == has_multi_containers
-  assert ('section_sizes' not in fields) == has_multi_containers
+
+  has_multi_containers = False
 
   containers = []
   if has_multi_containers:  # New format.
-    build_config = fields['build_config']
-    for cfield in fields['containers']:
-      c = models.Container(name=cfield['name'],
-                           metadata=cfield['metadata'],
-                           section_sizes=cfield['section_sizes'])
-      containers.append(c)
-  else:  # Old format.
+    raise ValueError('Multiple container not yet supported.')
+  else:
+    # Parse old format, but separate data into build_config and metadata.
     build_config = {}
     metadata = fields.get('metadata')
     if metadata:
@@ -445,7 +413,6 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
         models.Container(name='',
                          metadata=metadata,
                          section_sizes=section_sizes))
-  models.Container.AssignShortNames(containers)
 
   has_components = fields.get('has_components', False)
   has_padding = fields.get('has_padding', False)
@@ -466,7 +433,7 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
     components = [_ReadLine(lines) for _ in range(num_components)]
 
   # Symbol counts by section.
-  container_and_section_names = _ReadValuesFromLine(lines, split='\t')
+  section_names = _ReadValuesFromLine(lines, split='\t')
   symbol_counts = [int(c) for c in _ReadValuesFromLine(lines, split='\t')]
 
   # Addresses, sizes, paddings, path indices, component indices
@@ -493,28 +460,23 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
   if has_padding:
     paddings = read_numeric(delta=False)
   else:
-    paddings = [None] * len(container_and_section_names)
+    paddings = [None] * len(section_names)
   path_indices = read_numeric(delta=True)
   if has_components:
     component_indices = read_numeric(delta=True)
   else:
-    component_indices = [None] * len(container_and_section_names)
+    component_indices = [None] * len(section_names)
 
   raw_symbols = [None] * sum(symbol_counts)
   symbol_idx = 0
-  for (cur_container_and_section_name, cur_symbol_count, cur_addresses,
-       cur_sizes, cur_paddings, cur_path_indices,
-       cur_component_indices) in zip(container_and_section_names, symbol_counts,
-                                     addresses, sizes, paddings, path_indices,
+  for (cur_section_name, cur_symbol_count, cur_addresses, cur_sizes,
+       cur_paddings, cur_path_indices,
+       cur_component_indices) in zip(section_names, symbol_counts, addresses,
+                                     sizes, paddings, path_indices,
                                      component_indices):
     if has_multi_containers:
-      # Extract '<cur_container_idx_str>cur_section_name'.
-      assert cur_container_and_section_name.startswith('<')
-      cur_container_idx_str, cur_section_name = (
-          cur_container_and_section_name[1:].split('>', 1))
-      cur_container = containers[int(cur_container_idx_str)]
+      raise ValueError('Multiple container not yet supported.')
     else:
-      cur_section_name = cur_container_and_section_name
       cur_container = containers[0]
     alias_counter = 0
     for i in range(cur_symbol_count):

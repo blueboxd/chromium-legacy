@@ -309,10 +309,7 @@ class IntegrationTest(unittest.TestCase):
       merged_data_desc = describe.DescribeDict(size_info.metadata_legacy)
       return itertools.chain(merged_data_desc, stats, sym_strs)
     else:
-      build_config = describe.DescribeDict(size_info.build_config)
-      metadata = itertools.chain.from_iterable(
-          describe.DescribeDict(c.metadata) for c in size_info.containers)
-      return itertools.chain(build_config, metadata, stats, sym_strs)
+      raise ValueError('Multiple container not yet supported.')
 
   @_CompareWithGolden()
   def test_Archive(self):

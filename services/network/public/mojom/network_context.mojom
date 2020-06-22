@@ -754,6 +754,8 @@ interface SSLPrivateKey {
 // Callback interface for NetworkContext when routing identifiers aren't
 // available. Otherwise generally callbacks from the network service go on
 // NetworkServiceClient.
+//
+// Implemented by the browser process.
 interface NetworkContextClient {
   // Called when we receive an authentication failure.
   // The |auth_challenge_responder| will respond to auth challenge with
@@ -846,6 +848,10 @@ interface NetworkContextClient {
 
 // Represents a distinct context for making network requests, with its own
 // storage (e.g. cookies and cache).
+//
+// NetworkContext is implemented by the network service. It is a trusted
+// interface that must not be sent to an untrusted process like a renderer
+// process. Only the browser process should have access to it.
 interface NetworkContext {
   // Sets a client for this network context.
   SetClient(pending_remote<NetworkContextClient> client);

@@ -159,10 +159,6 @@ specific_include_rules = {
     # TODO(crbug.com/1049894): Remove.
     "+services/network/network_service.h",
   ],
-  "service_worker_fetch_dispatcher\.cc": [
-    # TODO(crbug.com/1049894): Remove.
-    "+services/network/throttling/throttling_controller.h",
-  ],
   "signed_exchange_handler_unittest\.cc": [
     "+services/network/network_context.h",
   ],

@@ -14,12 +14,12 @@ namespace blink {
 
 NGFragmentItemsBuilder::NGFragmentItemsBuilder(
     WritingDirectionMode writing_direction)
-    : writing_direction_(writing_direction) {}
+    : node_(nullptr), writing_direction_(writing_direction) {}
 
 NGFragmentItemsBuilder::NGFragmentItemsBuilder(
     const NGInlineNode& node,
     WritingDirectionMode writing_direction)
-    : NGFragmentItemsBuilder(writing_direction) {
+    : node_(node), writing_direction_(writing_direction) {
   const NGInlineItemsData& items_data = node.ItemsData(false);
   text_content_ = items_data.text_content;
   const NGInlineItemsData& first_line = node.ItemsData(true);
@@ -141,12 +141,13 @@ NGFragmentItemsBuilder::AddPreviousItems(
     const NGFragmentItems& items,
     const PhysicalSize& container_size,
     NGBoxFragmentBuilder* container_builder,
-    bool stop_at_dirty) {
-  AddPreviousItemsResult result;
-  if (stop_at_dirty) {
+    const NGFragmentItem* end_item) {
+  if (end_item) {
+    DCHECK(node_);
     DCHECK(container_builder);
     DCHECK(text_content_);
   } else {
+    DCHECK(!container_builder);
     DCHECK(!text_content_);
     text_content_ = items.Text(false);
     first_line_text_content_ = items.Text(true);
@@ -166,9 +167,8 @@ NGFragmentItemsBuilder::AddPreviousItems(
   WritingModeConverter line_converter(
       {ToLineWritingMode(writing_mode), TextDirection::kLtr});
 
-  const NGFragmentItem* const end_item =
-      stop_at_dirty ? items.EndOfReusableItems() : nullptr;
-  const NGPhysicalLineBoxFragment* last_line_fragment = nullptr;
+  const NGInlineBreakToken* last_break_token = nullptr;
+  const NGInlineItemsData* items_data = nullptr;
   LayoutUnit used_block_size;
 
   for (NGInlineCursor cursor(items); cursor;) {
@@ -183,9 +183,27 @@ NGFragmentItemsBuilder::AddPreviousItems(
 
     if (item.Type() == NGFragmentItem::kLine) {
       DCHECK(item.LineBoxFragment());
-      if (stop_at_dirty) {
-        last_line_fragment = item.LineBoxFragment();
-        container_builder->AddChild(*last_line_fragment, item_offset);
+      if (end_item) {
+        // Check if this line has valid item_index and offset.
+        const NGPhysicalLineBoxFragment* line_fragment = item.LineBoxFragment();
+        const NGInlineBreakToken* break_token =
+            To<NGInlineBreakToken>(line_fragment->BreakToken());
+        DCHECK(!break_token->IsFinished());
+        const NGInlineItemsData* current_items_data;
+        if (UNLIKELY(break_token->UseFirstLineStyle()))
+          current_items_data = &node_.ItemsData(true);
+        else if (items_data)
+          current_items_data = items_data;
+        else
+          current_items_data = items_data = &node_.ItemsData(false);
+        if (UNLIKELY(!current_items_data->IsValidOffset(
+                break_token->ItemIndex(), break_token->TextOffset()))) {
+          NOTREACHED();
+          break;
+        }
+
+        last_break_token = break_token;
+        container_builder->AddChild(*line_fragment, item_offset);
         used_block_size +=
             item.Size().ConvertToLogical(writing_mode).block_size;
       }
@@ -209,23 +227,18 @@ NGFragmentItemsBuilder::AddPreviousItems(
     }
 
     DCHECK_NE(item.Type(), NGFragmentItem::kLine);
-    DCHECK(!stop_at_dirty);
+    DCHECK(!end_item);
     items_.emplace_back(item_offset,
                         std::move(const_cast<NGFragmentItem&>(item)));
     cursor.MoveToNext();
   }
-
-  if (stop_at_dirty && last_line_fragment) {
-    result.inline_break_token =
-        To<NGInlineBreakToken>(last_line_fragment->BreakToken());
-    DCHECK(result.inline_break_token);
-    DCHECK(!result.inline_break_token->IsFinished());
-    result.used_block_size = used_block_size;
-    result.succeeded = true;
-  }
-
   DCHECK_LE(items_.size(), estimated_size);
-  return result;
+
+  if (end_item && last_break_token) {
+    DCHECK(!last_break_token->IsFinished());
+    return AddPreviousItemsResult{last_break_token, used_block_size, true};
+  }
+  return AddPreviousItemsResult();
 }
 
 const NGFragmentItemsBuilder::ItemWithOffsetList& NGFragmentItemsBuilder::Items(

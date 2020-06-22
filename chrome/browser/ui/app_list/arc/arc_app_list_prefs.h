@@ -359,8 +359,6 @@ class ArcAppListPrefs : public KeyedService,
   friend class ChromeLauncherControllerTest;
   friend class ArcAppModelBuilderTest;
   friend class app_list::ArcAppShortcutsSearchProviderTest;
-  // To support deprecated mojom icon requests.
-  class ResizeRequest;
 
   // See the Create methods.
   ArcAppListPrefs(
@@ -517,16 +515,6 @@ class ArcAppListPrefs : public KeyedService,
   // Schedules deletion of app folder with icons on file thread.
   void ScheduleAppFolderDeletion(const std::string& app_id);
 
-  // TODO(b/112035954): Remove following block of 2 methods that supports icon
-  // using deprecated mojom. Once Android side change is propagated in builds we
-  // can safely remove this. Sends icon request view mojom using old protocol.
-  // In this protocol only icons of 48 pixels are supported. This requires
-  // resizing icon to the requested size.
-  void OnIconResized(const std::string& app_id,
-                     const ArcAppIconDescriptor& descriptor,
-                     const std::vector<uint8_t>& icon_png_data);
-  void DiscardResizeRequest(ResizeRequest* request);
-
   // Callback called once default apps are ready.
   void OnDefaultAppsReady();
 
@@ -590,9 +578,6 @@ class ArcAppListPrefs : public KeyedService,
 
   // TODO (b/70566216): Remove this once fixed.
   base::OnceClosure app_list_refreshed_callback_;
-
-  // Keeps all pending resize requests used to support legacy icons.
-  std::vector<std::unique_ptr<ResizeRequest>> resize_requests_;
 
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_{this};
 

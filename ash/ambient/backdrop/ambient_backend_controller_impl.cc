@@ -16,6 +16,7 @@
 #include "ash/shell.h"
 #include "base/base64.h"
 #include "base/guid.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "chromeos/assistant/internal/proto/google3/backdrop/backdrop.pb.h"
 #include "components/prefs/pref_service.h"
@@ -119,9 +120,9 @@ class BackdropURLLoader {
   ~BackdropURLLoader() = default;
 
   // Starts downloading the proto. |request_body| is a serialized proto and
-  // will be used as the upload body.
+  // will be used as the upload body if it is a POST request.
   void Start(std::unique_ptr<network::ResourceRequest> resource_request,
-             const std::string& request_body,
+             const base::Optional<std::string>& request_body,
              const net::NetworkTrafficAnnotationTag& traffic_annotation,
              network::SimpleURLLoader::BodyAsStringCallback callback) {
     // No ongoing downloading task.
@@ -130,7 +131,9 @@ class BackdropURLLoader {
     loader_factory_ = AmbientClient::Get()->GetURLLoaderFactory();
     simple_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
-    simple_loader_->AttachStringForUpload(request_body, kProtoMimeType);
+    if (request_body)
+      simple_loader_->AttachStringForUpload(*request_body, kProtoMimeType);
+
     // |base::Unretained| is safe because this instance outlives
     // |simple_loader_|.
     simple_loader_->DownloadToString(
@@ -194,6 +197,18 @@ void AmbientBackendControllerImpl::UpdateSettings(
   Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::StartToUpdateSettings,
       weak_factory_.GetWeakPtr(), settings, std::move(callback)));
+}
+
+void AmbientBackendControllerImpl::FetchPersonalAlbums(
+    int banner_width,
+    int banner_height,
+    int num_albums,
+    const std::string& resume_token,
+    OnPersonalAlbumsFetchedCallback callback) {
+  Shell::Get()->ambient_controller()->RequestAccessToken(
+      base::BindOnce(&AmbientBackendControllerImpl::FetchPersonalAlbumsInternal,
+                     weak_factory_.GetWeakPtr(), banner_width, banner_height,
+                     num_albums, resume_token, std::move(callback)));
 }
 
 void AmbientBackendControllerImpl::SetPhotoRefreshInterval(
@@ -320,6 +335,57 @@ void AmbientBackendControllerImpl::OnUpdateSettings(
   const bool success =
       BackdropClientConfig::ParseUpdateSettingsResponse(*response);
   std::move(callback).Run(success);
+}
+
+void AmbientBackendControllerImpl::FetchPersonalAlbumsInternal(
+    int banner_width,
+    int banner_height,
+    int num_albums,
+    const std::string& resume_token,
+    OnPersonalAlbumsFetchedCallback callback,
+    const std::string& gaia_id,
+    const std::string& access_token) {
+  if (gaia_id.empty() || access_token.empty()) {
+    LOG(ERROR) << "Failed to fetch access token";
+    // Returns a dummy instance to indicate the failure.
+    std::move(callback).Run(ash::PersonalAlbums());
+    return;
+  }
+
+  // Comment this to land the public first.
+  // TODO: Will uncomment when the internal code landed.
+  BackdropClientConfig::Request request;
+  //  BackdropClientConfig::Request request =
+  //      backdrop_client_config_.CreateFetchPersonalAlbumsRequest(
+  //          banner_width, banner_height, num_albums, resume_token, gaia_id,
+  //          access_token);
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      CreateResourceRequest(request);
+  auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();
+  auto* loader_ptr = backdrop_url_loader.get();
+  loader_ptr->Start(
+      std::move(resource_request), /*request_body=*/base::nullopt,
+      NO_TRAFFIC_ANNOTATION_YET,
+      base::BindOnce(&AmbientBackendControllerImpl::OnPersonalAlbumsFetched,
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(backdrop_url_loader)));
+}
+
+void AmbientBackendControllerImpl::OnPersonalAlbumsFetched(
+    OnPersonalAlbumsFetchedCallback callback,
+    std::unique_ptr<BackdropURLLoader> backdrop_url_loader,
+    std::unique_ptr<std::string> response) {
+  DCHECK(backdrop_url_loader);
+
+  // Parse the |PersonalAlbumsResponse| out from the response string.
+  // Note that the |personal_albums| can be a dummy instance if the parsing has
+  // failed.
+  // Comment this to land the public first.
+  // TODO: Will uncomment when the internal code landed.
+  ash::PersonalAlbums personal_albums;
+  //  ash::PersonalAlbums personal_albums =
+  //      BackdropClientConfig::ParsePersonalAlbumsResponse(*response);
+  std::move(callback).Run(personal_albums);
 }
 
 }  // namespace ash

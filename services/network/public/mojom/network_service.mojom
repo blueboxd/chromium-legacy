@@ -42,7 +42,8 @@ struct LoadInfo {
   uint64 upload_size;
 };
 
-// Network service interface to the browser.
+// Implemented by the browser process. The network service sends messages to
+// the browser process over this interface.
 interface NetworkServiceClient {
   // Called periodically to update the client about progress of the current
   // loads. To avoid flooding the client, it has to ack the update before it can
@@ -203,7 +204,11 @@ struct LoggingSettings {
   handle<platform> log_file_descriptor;
 };
 
-// Browser interface to the network service.
+// Implemented by the network service. The browser process sends messages to
+// the network service over this interface.
+//
+// This is a trusted interface that only the browser process should have access
+// to. It must not be sent to any untrusted process like a renderer process.
 interface NetworkService {
   // Sets client used by all |NetworkContext|s creating by |NetworkService|.
   // Pending requests may hang if the |client| pipe is closed before they

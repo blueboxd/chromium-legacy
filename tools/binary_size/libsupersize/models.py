@@ -102,8 +102,6 @@ PAK_SECTIONS = (
     SECTION_PAK_TRANSLATIONS,
 )
 
-CONTAINER_MULTIPLE = '*'
-
 SECTION_NAME_TO_SECTION = {
     SECTION_BSS: 'b',
     SECTION_BSS_REL_RO: 'b',
@@ -203,19 +201,16 @@ def ClassifySections(section_names):
 
 
 class Container(object):
-  """Info for a single SuperSize input file (e.g., APK file).
+  """Info for a a single input file for SuperSize, e.g., an APK file.
 
   Fields:
     name: Container name. Must be unique among containers, and can be ''.
-    short_name: Short container name for compact display. This, also needs to be
-        unique among containers in the same SizeInfo, and can be ''.
     metadata: A dict.
     section_sizes: A dict of section_name -> size.
     classified_sections: Cache for ClassifySections().
   """
   __slots__ = (
       'name',
-      'short_name',
       'metadata',
       'section_sizes',
       '_classified_sections',
@@ -225,30 +220,14 @@ class Container(object):
     # name == '' hints that only one container exists, and there's no need to
     # distinguish them. This can affect console output.
     self.name = name
-    self.short_name = None  # Assigned by AssignShortNames().
     self.metadata = metadata or {}
     self.section_sizes = section_sizes  # E.g. {SECTION_TEXT: 0}
     self._classified_sections = None
-
-  @staticmethod
-  def AssignShortNames(containers):
-    for i, c in enumerate(containers):
-      c.short_name = str(i) if c.name else ''
 
   def ClassifySections(self):
     if not self._classified_sections:
       self._classified_sections = ClassifySections(self.section_sizes.keys())
     return self._classified_sections
-
-  @staticmethod
-  def Empty():
-    """Returns a placeholder Container that should be read-only.
-
-    For simplicity, we're not enforcing read-only checks (frozenmap does not
-    exist, unfortunately). Creating a new instance instead of using a global
-    singleton for robustness.
-    """
-    return Container(name='(empty)', metadata={}, section_sizes={})
 
 
 class BaseSizeInfo(object):
@@ -282,7 +261,6 @@ class BaseSizeInfo(object):
     self._symbols = symbols
     self._native_symbols = None
     self._pak_symbols = None
-    Container.AssignShortNames(self.containers)
 
   @property
   def symbols(self):
@@ -317,9 +295,6 @@ class BaseSizeInfo(object):
   @property
   def metadata(self):
     return [c.metadata for c in self.containers]
-
-  def ContainerForName(self, name, default=None):
-    return next((c for c in containers if c.name == name), default)
 
 
 class SizeInfo(BaseSizeInfo):
@@ -386,10 +361,6 @@ class BaseSymbol(object):
   @property
   def container_name(self):
     return self.container.name if self.container else ''
-
-  @property
-  def container_short_name(self):
-    return self.container.short_name if self.container else ''
 
   @property
   def section(self):
@@ -545,17 +516,14 @@ class Symbol(BaseSymbol):
     self.component = ''
 
   def __repr__(self):
-    if self.container and self.container.name:
-      container_str = '<{}>'.format(self.container.name)
-    else:
-      container_str = ''
-    template = ('{}{}@{:x}(size_without_padding={},padding={},full_name={},'
+    # TODO(huangs): If container name is nonempty then display it.
+    template = ('{}@{:x}(size_without_padding={},padding={},full_name={},'
                 'object_path={},source_path={},flags={},num_aliases={},'
                 'component={})')
-    return template.format(container_str, self.section_name, self.address,
-                           self.size_without_padding, self.padding,
-                           self.full_name, self.object_path, self.source_path,
-                           self.FlagsString(), self.num_aliases, self.component)
+    return template.format(
+        self.section_name, self.address, self.size_without_padding,
+        self.padding, self.full_name, self.object_path, self.source_path,
+        self.FlagsString(), self.num_aliases, self.component)
 
   def SetName(self, full_name, template_name=None, name=None):
     # Note that _NormalizeNames() will clobber these values.
@@ -594,21 +562,14 @@ class DeltaSymbol(BaseSymbol):
     self.after_symbol = after_symbol
 
   def __repr__(self):
-    before_container_name = self.before_symbol.container_name
-    after_container_name = self.after_symbol.container_name
-    if before_container_name != after_container_name:
-      container_str = '<~{}>'.format(after_container_name)
-    elif after_container_name != '':
-      container_str = '<{}>'.format(after_container_name)
-    else:
-      container_str = ''
-    template = ('{}{}{}@{:x}(size_without_padding={},padding={},full_name={},'
+    # TODO(huangs): If container name is nonempty then display it.
+    template = ('{}{}@{:x}(size_without_padding={},padding={},full_name={},'
                 'object_path={},source_path={},flags={})')
-    return template.format(DIFF_PREFIX_BY_STATUS[self.diff_status],
-                           container_str, self.section_name, self.address,
-                           self.size_without_padding, self.padding,
-                           self.full_name, self.object_path, self.source_path,
-                           self.FlagsString())
+    return template.format(
+        DIFF_PREFIX_BY_STATUS[self.diff_status], self.section_name,
+        self.address, self.size_without_padding, self.padding,
+        self.full_name, self.object_path, self.source_path,
+        self.FlagsString())
 
   def IsDelta(self):
     return True
@@ -751,10 +712,10 @@ class SymbolGroup(BaseSymbol):
       'full_name',
       'template_name',
       'name',
+      'container_name',
       'section_name',
       'is_default_sorted',  # True for groups created by Sorted()
   )
-
 
   # template_name and full_name are useful when clustering symbol clones.
   def __init__(self,
@@ -774,6 +735,8 @@ class SymbolGroup(BaseSymbol):
     self.full_name = full_name if full_name is not None else name
     self.template_name = template_name if template_name is not None else name
     self.name = name or ''
+    # TODO(huangs): Add support for multiple containers.
+    self.container_name = ''
     self.section_name = section_name or SECTION_MULTIPLE
     self.is_default_sorted = is_default_sorted
 
@@ -819,20 +782,6 @@ class SymbolGroup(BaseSymbol):
 
   def index(self, item):
     return self._symbols.index(item)
-
-  @property
-  def container_name(self):
-    ret = set(s.container_name for s in self._symbols)
-    if ret:
-      return CONTAINER_MULTIPLE if len(ret) > 1 else (ret.pop() or '')
-    return ''
-
-  @property
-  def container_short_name(self):
-    ret = set(s.container_short_name for s in self._symbols)
-    if ret:
-      return CONTAINER_MULTIPLE if len(ret) > 1 else (ret.pop() or '')
-    return ''
 
   @property
   def address(self):
@@ -989,23 +938,13 @@ class SymbolGroup(BaseSymbol):
   def WherePssBiggerThan(self, min_pss):
     return self.Filter(lambda s: s.pss >= min_pss)
 
-  def WhereInSection(self, section, container=None):
+  def WhereInSection(self, section):
     """|section| can be section_name ('.bss'), or section chars ('bdr')."""
     if section.startswith('.'):
-      if container:
-        short_name = container.short_name
-        ret = self.Filter(lambda s: (s.container.short_name == short_name and s.
-                                     section_name == section))
-      else:
-        ret = self.Filter(lambda s: s.section_name == section)
+      ret = self.Filter(lambda s: s.section_name == section)
       ret.section_name = section
     else:
-      if container:
-        short_name = container.short_name
-        ret = self.Filter(lambda s: (s.container.short_name == short_name and s.
-                                     section in section))
-      else:
-        ret = self.Filter(lambda s: s.section in section)
+      ret = self.Filter(lambda s: s.section in section)
       if section in SECTION_TO_SECTION_NAME:
         ret.section_name = SECTION_TO_SECTION_NAME[section]
     return ret
@@ -1253,9 +1192,6 @@ class SymbolGroup(BaseSymbol):
     return self.GroupedBy(
         lambda s: (same_name_only and s.full_name, id(s.aliases or s)),
         min_count=min_count, group_factory=group_factory)
-
-  def GroupedByContainerAndSectionName(self):
-    return self.GroupedBy(lambda s: (s.container.name, s.section_name))
 
   def GroupedBySectionName(self):
     return self.GroupedBy(lambda s: s.section_name)

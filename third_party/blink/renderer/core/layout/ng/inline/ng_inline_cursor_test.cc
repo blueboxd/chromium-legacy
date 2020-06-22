@@ -628,6 +628,46 @@ TEST_P(NGInlineCursorTest, NextForSameLayoutObject) {
   EXPECT_THAT(list, ElementsAre("abc", "", "def", "", "ghi"));
 }
 
+// Test |NextForSameLayoutObject| with limit range set.
+TEST_P(NGInlineCursorTest, NextForSameLayoutObjectWithRange) {
+  // In this snippet, `<span>` wraps to 3 lines, and that there are 3 fragments
+  // for `<span>`.
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font-size: 10px;
+      width: 5ch;
+    }
+    span {
+      background: orange;
+    }
+    </style>
+    <div id="root">
+      <span id="span1">
+        1111
+        2222
+        3333
+      </span>
+    </div>
+  )HTML");
+  LayoutBlockFlow* root =
+      To<LayoutBlockFlow>(GetLayoutObjectByElementId("root"));
+  NGInlineCursor cursor(*root);
+  cursor.MoveToFirstLine();
+  cursor.MoveToNextLine();
+  NGInlineCursor line2 = cursor.CursorForDescendants();
+
+  // Now |line2| is limited to the 2nd line. There should be only one framgnet
+  // for `<span>` if we search using `line2`.
+  LayoutObject* span1 = GetLayoutObjectByElementId("span1");
+  wtf_size_t count = 0;
+  for (line2.MoveTo(*span1); line2; line2.MoveToNextForSameLayoutObject()) {
+    DCHECK_EQ(line2.Current().GetLayoutObject(), span1);
+    ++count;
+  }
+  EXPECT_EQ(count, 1u);
+}
+
 TEST_P(NGInlineCursorTest, Sibling) {
   // TDOO(yosin): Remove <style> once NGFragmentItem don't do culled inline.
   InsertStyleElement("a, b { background: gray; }");

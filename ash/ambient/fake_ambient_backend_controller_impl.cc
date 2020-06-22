@@ -60,6 +60,22 @@ void FakeAmbientBackendControllerImpl::UpdateSettings(
       FROM_HERE, base::BindOnce(std::move(callback), /*success=*/true));
 }
 
+void FakeAmbientBackendControllerImpl::FetchPersonalAlbums(
+    int banner_width,
+    int banner_height,
+    int num_albums,
+    const std::string& resume_token,
+    OnPersonalAlbumsFetchedCallback callback) {
+  PersonalAlbums albums;
+  PersonalAlbum album;
+  album.album_id = "0";
+  album.album_name = "test";
+  albums.albums.emplace_back(std::move(album));
+  // Pretend to respond asynchronously.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(albums)));
+}
+
 void FakeAmbientBackendControllerImpl::SetPhotoRefreshInterval(
     base::TimeDelta interval) {
   NOTIMPLEMENTED();

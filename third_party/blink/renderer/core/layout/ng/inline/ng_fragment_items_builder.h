@@ -86,7 +86,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
       const NGFragmentItems& items,
       const PhysicalSize& container_size,
       NGBoxFragmentBuilder* container_builder = nullptr,
-      bool stop_at_dirty = false);
+      const NGFragmentItem* end_item = nullptr);
 
   struct ItemWithOffset {
     DISALLOW_NEW();
@@ -132,6 +132,8 @@ class CORE_EXPORT NGFragmentItemsBuilder {
 
   // Keeps children of a line until the offset is determined. See |AddLine|.
   NGLogicalLineItems current_line_;
+
+  NGInlineNode node_;
 
   WritingDirectionMode writing_direction_;
 

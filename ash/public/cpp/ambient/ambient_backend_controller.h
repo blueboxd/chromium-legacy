@@ -80,6 +80,8 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   using GetSettingsCallback =
       base::OnceCallback<void(const base::Optional<AmbientSettings>& settings)>;
   using UpdateSettingsCallback = base::OnceCallback<void(bool success)>;
+  using OnPersonalAlbumsFetchedCallback =
+      base::OnceCallback<void(const PersonalAlbums&)>;
 
   static AmbientBackendController* Get();
 
@@ -103,6 +105,12 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   // Update ambient mode Settings to server.
   virtual void UpdateSettings(const AmbientSettings& settings,
                               UpdateSettingsCallback callback) = 0;
+
+  virtual void FetchPersonalAlbums(int banner_width,
+                                   int banner_height,
+                                   int num_albums,
+                                   const std::string& resume_token,
+                                   OnPersonalAlbumsFetchedCallback) = 0;
 
   // Set the photo refresh interval in ambient mode.
   virtual void SetPhotoRefreshInterval(base::TimeDelta interval) = 0;

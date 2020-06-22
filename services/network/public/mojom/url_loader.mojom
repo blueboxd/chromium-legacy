@@ -429,7 +429,13 @@ struct DataElement {
   mojo_base.mojom.Time expected_modification_time;
 };
 
+// URLLoader is an interface for performing a single request to a URL.
+//
 // Destroying a URLLoader will cancel the associated request.
+//
+// A URLLoader is normally created and started using
+// URLLoaderFactory::CreateLoaderAndStart(). The result of the load is
+// communicated to the URLLoaderClient provided to that function.
 interface URLLoader {
   // If a disconnection is initiated by the client side, it may send the
   // following disconnection reason, along with an application-defined string
@@ -480,6 +486,7 @@ interface URLLoader {
   ResumeReadingBodyFromNet();
 };
 
+// Receives messages from a single URLLoader.
 interface URLLoaderClient {
   // Called when the response head is received.
   OnReceiveResponse(URLResponseHead head);

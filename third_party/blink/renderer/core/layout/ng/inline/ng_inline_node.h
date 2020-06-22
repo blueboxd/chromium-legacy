@@ -27,7 +27,8 @@ struct NGInlineItemsData;
 // inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutBlockFlow*);
+  explicit NGInlineNode(LayoutBlockFlow*);
+  explicit NGInlineNode(std::nullptr_t) : NGLayoutInputNode(nullptr) {}
 
   LayoutBlockFlow* GetLayoutBlockFlow() const {
     return To<LayoutBlockFlow>(box_);

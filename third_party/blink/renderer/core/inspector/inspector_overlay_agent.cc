@@ -978,6 +978,8 @@ void InspectorOverlayAgent::LoadFrameForTool(int data_resource_id) {
 
   overlay_settings.GetGenericFontFamilySettings().UpdateStandard(
       settings.GetGenericFontFamilySettings().Standard());
+  overlay_settings.GetGenericFontFamilySettings().UpdateFixed(
+      settings.GetGenericFontFamilySettings().Fixed());
   overlay_settings.GetGenericFontFamilySettings().UpdateSerif(
       settings.GetGenericFontFamilySettings().Serif());
   overlay_settings.GetGenericFontFamilySettings().UpdateSansSerif(

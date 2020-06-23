@@ -765,8 +765,8 @@ GURL PluginVmInstaller::GetPluginVmImageDownloadUrl() {
 }
 
 int64_t PluginVmInstaller::RequiredFreeDiskSpace() {
-  return profile_->GetPrefs()->GetInt64(
-             prefs::kPluginVmRequiredFreeDiskSpaceGB) *
+  return static_cast<int64_t>(profile_->GetPrefs()->GetInteger(
+             prefs::kPluginVmRequiredFreeDiskSpaceGB)) *
          kBytesPerGigabyte;
 }
 

@@ -99,8 +99,9 @@ static_assert((kTopBit & kGenerationMask) > 0,
 // overridden by tests. The implementation is in the .cc file, because including
 // partition_alloc.h here could lead to cyclic includes.
 struct CheckedPtr2ImplPartitionAllocSupport {
+  // Checks if CheckedPtr2 support is enabled in PartitionAlloc for |ptr|.
   // TODO(bartekn): Check if this function gets inlined.
-  BASE_EXPORT static bool EnableForPtr(void* ptr);
+  BASE_EXPORT static bool EnabledForPtr(void* ptr);
 };
 
 template <typename PartitionAllocSupport = CheckedPtr2ImplPartitionAllocSupport>
@@ -125,7 +126,7 @@ struct CheckedPtr2Impl {
 
     // Return a not-wrapped |addr|, if it's either nullptr or if the protection
     // for this pointer is disabled.
-    if (!PartitionAllocSupport::EnableForPtr(ptr)) {
+    if (!PartitionAllocSupport::EnabledForPtr(ptr)) {
       return addr;
     }
 

@@ -203,12 +203,17 @@ public class OmahaBaseTest {
         private final boolean mConnectionTimesOut;
         private final boolean mIsOnTablet;
 
+        private String mUpdateVersion;
+        private String mInstalledVersion;
+
         public MockOmahaBase(OmahaDelegate delegate, @ServerResponse int serverResponse,
                 @ConnectionStatus int connectionStatus, DeviceType deviceType) {
             super(delegate);
             mSendValidResponse = serverResponse == ServerResponse.SUCCESS;
             mConnectionTimesOut = connectionStatus == ConnectionStatus.TIMES_OUT;
             mIsOnTablet = deviceType == DeviceType.TABLET;
+            mUpdateVersion = "1.2.3.4";
+            mInstalledVersion = "1.2.3.4";
         }
 
         /**
@@ -240,18 +245,31 @@ public class OmahaBaseTest {
             mSendInstallEvent = state;
         }
 
+        public void setUpdateVersion(String version) {
+            mUpdateVersion = version;
+        }
+
+        public void setInstalledVersion(String version) {
+            mInstalledVersion = version;
+        }
+
         @Override
         protected HttpURLConnection createConnection() {
             MockConnection connection = null;
             try {
                 URL url = new URL(mDelegate.getRequestGenerator().getServerUrl());
                 connection = new MockConnection(url, mIsOnTablet, mSendValidResponse,
-                        mSendInstallEvent, mConnectionTimesOut);
+                        mSendInstallEvent, mConnectionTimesOut, mUpdateVersion);
                 mMockConnections.addLast(connection);
             } catch (MalformedURLException e) {
                 Assert.fail("Caught a malformed URL exception: " + e);
             }
             return connection;
+        }
+
+        @Override
+        protected String getInstalledVersion() {
+            return mInstalledVersion;
         }
     }
 
@@ -565,6 +583,97 @@ public class OmahaBaseTest {
                 mDelegate.mTimestampsOnSaveState);
     }
 
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testCheckForUpdatesConnectionTimesOut() {
+        final long now = 10000L;
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+        mOmahaBase = createOmahaBase(
+                ServerResponse.FAILURE, ConnectionStatus.TIMES_OUT, DeviceType.HANDSET);
+
+        @OmahaBase.UpdateStatus
+        int status = mOmahaBase.checkForUpdates();
+        Assert.assertEquals(OmahaBase.UpdateStatus.OFFLINE, status);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testCheckForUpdatesUpdated() {
+        final long now = 10000L;
+        final String version = "89.0.12.5342";
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.setInstalledVersion(version);
+        mOmahaBase.setUpdateVersion(version);
+
+        @OmahaBase.UpdateStatus
+        int status = mOmahaBase.checkForUpdates();
+        Assert.assertEquals(OmahaBase.UpdateStatus.UPDATED, status);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testCheckForUpdatesOutdated() {
+        final long now = 10000L;
+        final String oldVersion = "89.0.12.5342";
+        final String newVersion = "89.0.13.1242";
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.setInstalledVersion(oldVersion);
+        mOmahaBase.setUpdateVersion(newVersion);
+
+        @OmahaBase.UpdateStatus
+        int status = mOmahaBase.checkForUpdates();
+        Assert.assertEquals(OmahaBase.UpdateStatus.OUTDATED, status);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testCheckForUpdatesFailedIncorrectNewVersion() {
+        final long now = 10000L;
+        final String oldVersion = "89.0.12.5342";
+        final String newVersion = "Unknown";
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.setInstalledVersion(oldVersion);
+        mOmahaBase.setUpdateVersion(newVersion);
+
+        @OmahaBase.UpdateStatus
+        int status = mOmahaBase.checkForUpdates();
+        Assert.assertEquals(OmahaBase.UpdateStatus.FAILED, status);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Omaha"})
+    public void testCheckForUpdatesFailedIncorrectOldVersion() {
+        final long now = 10000L;
+        final String oldVersion = "Unknown";
+        final String newVersion = "89.0.13.1242";
+
+        mDelegate = new MockOmahaDelegate(mContext, DeviceType.HANDSET, InstallSource.ORGANIC);
+        mDelegate.getScheduler().setCurrentTime(now);
+        mOmahaBase = createOmahaBase();
+        mOmahaBase.setInstalledVersion(oldVersion);
+        mOmahaBase.setUpdateVersion(newVersion);
+
+        @OmahaBase.UpdateStatus
+        int status = mOmahaBase.checkForUpdates();
+        Assert.assertEquals(OmahaBase.UpdateStatus.FAILED, status);
+    }
+
     private void checkTimestamps(
             long expectedRequestTimestamp, long expectedPostTimestamp, TimestampPair timestamps) {
         Assert.assertEquals(expectedRequestTimestamp, timestamps.timestampNextRequest);
@@ -580,13 +689,12 @@ public class OmahaBaseTest {
                 "https://market.android.com/details?id=com.google.android.apps.chrome";
         private static final String MARKET_URL = STRIPPED_MARKET_URL + "/";
 
-        private static final String UPDATE_VERSION = "1.2.3.4";
-
         // Parameters.
         private final boolean mConnectionTimesOut;
         private final ByteArrayInputStream mServerResponse;
         private final ByteArrayOutputStream mOutputStream;
         private final int mHTTPResponseCode;
+        private final String mUpdateVersion;
 
         // Result variables.
         private int mContentLength;
@@ -597,10 +705,11 @@ public class OmahaBaseTest {
         private String mRequestPropertyValue;
 
         MockConnection(URL url, boolean usingTablet, boolean sendValidResponse,
-                boolean sendInstallEvent, boolean connectionTimesOut) {
+                boolean sendInstallEvent, boolean connectionTimesOut, String updateVersion) {
             super(url);
             Assert.assertEquals(MockRequestGenerator.SERVER_URL, url.toString());
 
+            mUpdateVersion = updateVersion;
             String mockResponse = buildServerResponseString(usingTablet, sendInstallEvent);
             mOutputStream = new ByteArrayOutputStream();
             mServerResponse =
@@ -632,7 +741,7 @@ public class OmahaBaseTest {
             } else {
                 response += "<updatecheck status=\"ok\">";
                 response += "<urls><url codebase=\"" + MARKET_URL + "\"/></urls>";
-                response += "<manifest version=\"" + UPDATE_VERSION + "\">";
+                response += "<manifest version=\"" + mUpdateVersion + "\">";
                 response += "<packages>";
                 response += "<package hash=\"0\" name=\"dummy.apk\" required=\"true\" size=\"0\"/>";
                 response += "</packages>";

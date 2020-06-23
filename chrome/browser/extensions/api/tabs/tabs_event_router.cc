@@ -177,7 +177,7 @@ TabsEventRouter::~TabsEventRouter() {
 }
 
 bool TabsEventRouter::ShouldTrackBrowser(Browser* browser) {
-  return profile_->IsSameProfile(browser->profile()) &&
+  return profile_->IsSameOrParent(browser->profile()) &&
          ExtensionTabUtil::BrowserSupportsTabs(browser);
 }
 
@@ -571,7 +571,7 @@ void TabsEventRouter::DispatchEvent(
     std::unique_ptr<base::ListValue> args,
     EventRouter::UserGestureState user_gesture) {
   EventRouter* event_router = EventRouter::Get(profile);
-  if (!profile_->IsSameProfile(profile) || !event_router)
+  if (!profile_->IsSameOrParent(profile) || !event_router)
     return;
 
   auto event = std::make_unique<Event>(histogram_value, event_name,

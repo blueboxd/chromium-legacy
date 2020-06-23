@@ -72,6 +72,16 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
                   net::X509Certificate::PublicKeyType* key_type,
                   size_t* key_size_bits);
 
+// Obtains information about the public key in |spki|.
+// If |spki| is an RSA key, sets |key_size_bits| to the modulus
+// length, and |key_type| to type RSA and returns true.
+// If |spki| is any other key type, returns false and does not update any
+// of the output parameters.
+// All pointer arguments must not be null.
+bool GetPublicKeyBySpki(const std::string& spki,
+                        net::X509Certificate::PublicKeyType* key_type,
+                        size_t* key_size_bits);
+
 struct ClientCertificateRequest {
   ClientCertificateRequest();
   ClientCertificateRequest(const ClientCertificateRequest& other);

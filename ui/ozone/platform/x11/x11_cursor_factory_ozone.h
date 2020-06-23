@@ -14,9 +14,9 @@
 #include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/gfx/x/x11.h"
-#include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 
 namespace ui {
+class X11CursorOzone;
 
 // CursorFactoryOzone implementation for X11 cursors.
 class X11CursorFactoryOzone : public CursorFactory {
@@ -27,12 +27,10 @@ class X11CursorFactoryOzone : public CursorFactory {
   // CursorFactoryOzone:
   PlatformCursor GetDefaultCursor(mojom::CursorType type) override;
   PlatformCursor CreateImageCursor(const SkBitmap& bitmap,
-                                   const gfx::Point& hotspot,
-                                   float bitmap_dpi) override;
+                                   const gfx::Point& hotspot) override;
   PlatformCursor CreateAnimatedCursor(const std::vector<SkBitmap>& bitmaps,
                                       const gfx::Point& hotspot,
-                                      int frame_delay_ms,
-                                      float bitmap_dpi) override;
+                                      int frame_delay_ms) override;
   void RefImageCursor(PlatformCursor cursor) override;
   void UnrefImageCursor(PlatformCursor cursor) override;
 

@@ -642,10 +642,6 @@ TEST_F(SimpleIndexTest, EvictBySize) {
 }
 
 TEST_F(SimpleIndexCodeCacheTest, DisableEvictBySize) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache}, {});
-
   base::Time now(base::Time::Now());
   index()->SetMaxSize(50000);
   InsertIntoIndexFileReturn(hashes_.at<1>(), now - base::TimeDelta::FromDays(2),
@@ -673,40 +669,6 @@ TEST_F(SimpleIndexCodeCacheTest, DisableEvictBySize) {
   EXPECT_FALSE(index()->Has(hashes_.at<2>()));
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
   ASSERT_EQ(2u, last_doom_entry_hashes().size());
-}
-
-TEST_F(SimpleIndexCodeCacheTest, EnableEvictBySize) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {}, {SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache});
-
-  base::Time now(base::Time::Now());
-  index()->SetMaxSize(50000);
-  InsertIntoIndexFileReturn(hashes_.at<1>(), now - base::TimeDelta::FromDays(2),
-                            475u);
-  InsertIntoIndexFileReturn(hashes_.at<2>(), now - base::TimeDelta::FromDays(1),
-                            40000u);
-  ReturnIndexFile();
-  WaitForTimeChange();
-
-  index()->Insert(hashes_.at<3>());
-  // Confirm index is as expected: No eviction, everything there.
-  EXPECT_EQ(3, index()->GetEntryCount());
-  EXPECT_EQ(0, doom_entries_calls());
-  EXPECT_TRUE(index()->Has(hashes_.at<1>()));
-  EXPECT_TRUE(index()->Has(hashes_.at<2>()));
-  EXPECT_TRUE(index()->Has(hashes_.at<3>()));
-
-  // Trigger an eviction, and make sure the right things are tossed.
-  // This has size-weighting enabled, so it end sup kickicking out entry
-  // 2, which is biggest, and is enough, even though <1> is older.
-  index()->UpdateEntrySize(hashes_.at<3>(), 40000u);
-  EXPECT_EQ(1, doom_entries_calls());
-  EXPECT_EQ(2, index()->GetEntryCount());
-  EXPECT_TRUE(index()->Has(hashes_.at<1>()));
-  EXPECT_FALSE(index()->Has(hashes_.at<2>()));
-  EXPECT_TRUE(index()->Has(hashes_.at<3>()));
-  ASSERT_EQ(1u, last_doom_entry_hashes().size());
 }
 
 // Same as test above, but using much older entries to make sure that small

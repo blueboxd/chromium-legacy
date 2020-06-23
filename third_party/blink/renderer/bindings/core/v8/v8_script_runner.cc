@@ -118,7 +118,7 @@ v8::MaybeLocal<v8::Script> CompileScriptInternal(
     // Streaming compilation may involve use of code cache.
     // TODO(leszeks): Add compile timer to streaming compilation.
     DCHECK(streamer->IsFinished());
-    DCHECK(!streamer->StreamingSuppressed());
+    DCHECK(!streamer->IsStreamingSuppressed());
     return v8::ScriptCompiler::Compile(isolate->GetCurrentContext(),
                                        streamer->Source(), code, origin);
   }
@@ -310,7 +310,7 @@ v8::MaybeLocal<v8::Module> V8ScriptRunner::CompileModule(
   TRACE_EVENT_END1(kTraceEventCategoryGroup, "v8.compileModule", "data",
                    inspector_compile_script_event::Data(
                        file_name, start_position, cache_result, false,
-                       ScriptStreamer::kModuleScript));
+                       ScriptStreamer::NotStreamingReason::kModuleScript));
 
   return script;
 }

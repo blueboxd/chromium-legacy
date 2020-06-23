@@ -20860,6 +20860,7 @@ Called by update_document_policy_enum.py.-->
   <int value="721" label="EmojiSuggestionEnabled"/>
   <int value="722" label="AutoLaunchProtocolsFromOrigins"/>
   <int value="723" label="ManagedGuestSessionPrivacyWarningsEnabled"/>
+  <int value="724" label="PluginVmRequiredFreeDiskSpace"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -23615,6 +23616,7 @@ Called by update_extension_histograms.py.-->
   <int value="1481" label="AUTOTESTPRIVATE_DISABLESWITCHACCESSDIALOG"/>
   <int value="1482" label="ENTERPRISE_NETWORKINGATTRIBUTES_GETNETWORKDETAILS"/>
   <int value="1483" label="INPUTMETHODPRIVATE_SETAUTOCORRECTRANGE"/>
+  <int value="1484" label="PLATFORMKEYSINTERNAL_GETPUBLICKEYBYSPKI"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -68922,6 +68924,11 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Mainframe fetched using an explicit proxy"/>
   <int value="2" label="Subresource fetched using an auto-detected proxy"/>
   <int value="3" label="Mainframe fetched using an auto-detected proxy"/>
+</enum>
+
+<enum name="TypeOfVideoInFrame">
+  <int value="0" label="Frame do not have video"/>
+  <int value="1" label="Frame has video (either inline or fullscreen)"/>
 </enum>
 
 <enum name="UIEventType">

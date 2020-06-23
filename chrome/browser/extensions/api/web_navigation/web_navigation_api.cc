@@ -80,7 +80,7 @@ WebNavigationEventRouter::WebNavigationEventRouter(Profile* profile)
 WebNavigationEventRouter::~WebNavigationEventRouter() = default;
 
 bool WebNavigationEventRouter::ShouldTrackBrowser(Browser* browser) {
-  return profile_->IsSameProfile(browser->profile());
+  return profile_->IsSameOrParent(browser->profile());
 }
 
 void WebNavigationEventRouter::OnTabStripModelChanged(

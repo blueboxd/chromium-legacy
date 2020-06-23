@@ -434,6 +434,11 @@ void PerformanceManagerTabHelper::WebContentsDestroyed() {
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(
     content::RenderFrameHost* render_frame_host,
     const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
+  // This favicon change might have been initiated by a different frame some
+  // time ago and the main frame might have changed.
+  if (!render_frame_host->IsCurrent())
+    return;
+
   // TODO(siggi): This logic belongs in the policy layer rather than here.
   if (!first_time_favicon_set_) {
     first_time_favicon_set_ = true;

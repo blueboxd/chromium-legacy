@@ -136,7 +136,7 @@ bool ChromeExtensionsBrowserClient::IsSameContext(
     content::BrowserContext* second) {
   Profile* first_profile = Profile::FromBrowserContext(first);
   Profile* second_profile = Profile::FromBrowserContext(second);
-  return first_profile->IsSameProfile(second_profile);
+  return first_profile->IsSameOrParent(second_profile);
 }
 
 bool ChromeExtensionsBrowserClient::HasOffTheRecordContext(

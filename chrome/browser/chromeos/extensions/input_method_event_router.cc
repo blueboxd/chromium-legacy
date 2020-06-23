@@ -37,7 +37,7 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
     bool show_message) {
   // If an event is recieved from a different profile, e.g. while switching
   // between multiple profiles, ignore it.
-  if (!profile->IsSameProfile(Profile::FromBrowserContext(context_)))
+  if (!profile->IsSameOrParent(Profile::FromBrowserContext(context_)))
     return;
 
   extensions::EventRouter* router = extensions::EventRouter::Get(context_);

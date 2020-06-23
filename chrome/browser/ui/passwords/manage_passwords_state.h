@@ -84,6 +84,7 @@ class ManagePasswordsState {
 
   // Moves the object to |state| without resetting the internal data. Allowed:
   // * -> MANAGE_STATE
+  // * -> PASSWORD_UPDATED_*
   void TransitionToState(password_manager::ui::State state);
 
   // Updates the internal state applying |changes|.

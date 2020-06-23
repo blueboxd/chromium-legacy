@@ -50,8 +50,6 @@ class MockPendingScript : public PendingScript {
   MOCK_METHOD0(RemoveFromMemoryCache, void());
   MOCK_METHOD1(ExecuteScriptBlock, void(const KURL&));
 
-  void StartStreamingIfPossible() override {}
-
   bool IsReady() const override { return is_ready_; }
   void SetIsReady(bool is_ready) { is_ready_ = is_ready; }
 

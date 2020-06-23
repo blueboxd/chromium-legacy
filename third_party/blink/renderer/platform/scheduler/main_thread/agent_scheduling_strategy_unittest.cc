@@ -1,6 +1,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/agent_scheduling_strategy.h"
 
 #include <memory>
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
@@ -68,26 +69,357 @@ class PerAgentSchedulingBaseTest : public Test {
     feature_list_.InitWithFeaturesAndParameters(
         {{kPerAgentSchedulingExperiments, experiment_params}}, {});
     strategy_ = AgentSchedulingStrategy::Create();
-    queue_->SetFrameSchedulerForTest(&frame_);
+    timer_queue_->SetFrameSchedulerForTest(&subframe_);
+    non_timer_queue_->SetFrameSchedulerForTest(&subframe_);
   }
 
   void SetUp() override {
-    ASSERT_EQ(queue_->queue_class(), MainThreadTaskQueue::QueueClass::kTimer);
+    ASSERT_EQ(timer_queue_->queue_class(),
+              MainThreadTaskQueue::QueueClass::kTimer);
   }
 
  protected:
   ScopedFeatureList feature_list_;
   std::unique_ptr<AgentSchedulingStrategy> strategy_;
-  MockFrameScheduler frame_{FrameScheduler::FrameType::kMainFrame};
-  // Use |kWebScheduling| so that it ends up with |QueueClass::kTimer|
-  scoped_refptr<MainThreadTaskQueueForTest> queue_{
+  MockFrameScheduler main_frame_{FrameScheduler::FrameType::kMainFrame};
+  MockFrameScheduler subframe_{FrameScheduler::FrameType::kSubframe};
+  scoped_refptr<MainThreadTaskQueueForTest> timer_queue_{
       new MainThreadTaskQueueForTest(
           MainThreadTaskQueue::QueueType::kWebScheduling)};
+  scoped_refptr<MainThreadTaskQueueForTest> non_timer_queue_{
+      new MainThreadTaskQueueForTest(MainThreadTaskQueue::QueueType::kDefault)};
 };
 
-class PerAgentDefaultIsNoOpStrategyTest : public PerAgentSchedulingBaseTest {
+class PerAgentDisableTimersUntilFMPStrategyTest
+    : public PerAgentSchedulingBaseTest {
  public:
-  PerAgentDefaultIsNoOpStrategyTest() : PerAgentSchedulingBaseTest({}) {}
+  PerAgentDisableTimersUntilFMPStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "timer-queues"},
+                                    {"method", "disable"},
+                                    {"signal", "fmp"}}) {}
+};
+
+TEST_F(PerAgentDisableTimersUntilFMPStrategyTest, RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  // Only the first input event (since a main frame document was added) should
+  // cause a policy update. This is necessary as we may get several input event
+  // notifications, but we don't want them to re-calculate priorities as nothing
+  // will change.
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
+}
+
+TEST_F(PerAgentDisableTimersUntilFMPStrategyTest, DisablesTimerQueueUntilFMP) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_THAT(strategy_->QueueEnabledState(*timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+}
+
+class PerAgentBestEffortPriorityTimersUntilFMPStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentBestEffortPriorityTimersUntilFMPStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "timer-queues"},
+                                    {"method", "best-effort"},
+                                    {"signal", "fmp"}}) {}
+};
+
+TEST_F(PerAgentBestEffortPriorityTimersUntilFMPStrategyTest,
+       RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  // Only the first input event (since a main frame document was added) should
+  // cause a policy update. This is necessary as we may get several input event
+  // notifications, but we don't want them to re-calculate priorities as nothing
+  // will change.
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
+}
+
+TEST_F(PerAgentBestEffortPriorityTimersUntilFMPStrategyTest,
+       LowersTimerQueuePriorityUntilFMP) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueuePriority(*timer_queue_),
+              testing::Optional(TaskQueue::QueuePriority::kBestEffortPriority));
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+}
+
+class PerAgentDisableTimersUntilLoadStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentDisableTimersUntilLoadStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "timer-queues"},
+                                    {"method", "disable"},
+                                    {"signal", "onload"}}) {}
+};
+
+TEST_F(PerAgentDisableTimersUntilLoadStrategyTest, RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+}
+
+TEST_F(PerAgentDisableTimersUntilLoadStrategyTest, DisablesTimerQueue) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_THAT(strategy_->QueueEnabledState(*timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnMainFrameLoad(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+}
+
+class PerAgentBestEffortPriorityTimersUntilLoadStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentBestEffortPriorityTimersUntilLoadStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "timer-queues"},
+                                    {"method", "best-effort"},
+                                    {"signal", "onload"}}) {}
+};
+
+TEST_F(PerAgentBestEffortPriorityTimersUntilLoadStrategyTest,
+       RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+}
+
+TEST_F(PerAgentBestEffortPriorityTimersUntilLoadStrategyTest,
+       LowersTimerQueuePriority) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueuePriority(*timer_queue_),
+              testing::Optional(TaskQueue::QueuePriority::kBestEffortPriority));
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnMainFrameLoad(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+}
+
+class PerAgentDisableAllUntilFMPStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentDisableAllUntilFMPStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "all-queues"},
+                                    {"method", "disable"},
+                                    {"signal", "fmp"}}) {}
+};
+
+TEST_F(PerAgentDisableAllUntilFMPStrategyTest, RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  // Only the first input event (since a main frame document was added) should
+  // cause a policy update. This is necessary as we may get several input event
+  // notifications, but we don't want them to re-calculate priorities as nothing
+  // will change.
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
+}
+
+TEST_F(PerAgentDisableAllUntilFMPStrategyTest, DisablesTimerQueueUntilFMP) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_THAT(strategy_->QueueEnabledState(*timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueueEnabledState(*non_timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+}
+
+class PerAgentBestEffortPriorityAllUntilFMPStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentBestEffortPriorityAllUntilFMPStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "all-queues"},
+                                    {"method", "best-effort"},
+                                    {"signal", "fmp"}}) {}
+};
+
+TEST_F(PerAgentBestEffortPriorityAllUntilFMPStrategyTest,
+       RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+  // Only the first input event (since a main frame document was added) should
+  // cause a policy update. This is necessary as we may get several input event
+  // notifications, but we don't want them to re-calculate priorities as nothing
+  // will change.
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
+}
+
+TEST_F(PerAgentBestEffortPriorityAllUntilFMPStrategyTest,
+       LowersTimerQueuePriorityUntilFMP) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueuePriority(*timer_queue_),
+              testing::Optional(TaskQueue::QueuePriority::kBestEffortPriority));
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueuePriority(*non_timer_queue_),
+              testing::Optional(TaskQueue::QueuePriority::kBestEffortPriority));
+
+  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+}
+
+class PerAgentDisableAllUntilLoadStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentDisableAllUntilLoadStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "all-queues"},
+                                    {"method", "disable"},
+                                    {"signal", "onload"}}) {}
+};
+
+TEST_F(PerAgentDisableAllUntilLoadStrategyTest, RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+}
+
+TEST_F(PerAgentDisableAllUntilLoadStrategyTest, DisablesTimerQueue) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_THAT(strategy_->QueueEnabledState(*timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueueEnabledState(*non_timer_queue_),
+              testing::Optional(false));
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+
+  ignore_result(strategy_->OnMainFrameLoad(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+}
+
+class PerAgentBestEffortPriorityAllUntilLoadStrategyTest
+    : public PerAgentSchedulingBaseTest {
+ public:
+  PerAgentBestEffortPriorityAllUntilLoadStrategyTest()
+      : PerAgentSchedulingBaseTest({{"queues", "all-queues"},
+                                    {"method", "best-effort"},
+                                    {"signal", "onload"}}) {}
+};
+
+TEST_F(PerAgentBestEffortPriorityAllUntilLoadStrategyTest,
+       RequestsPolicyUpdate) {
+  EXPECT_EQ(strategy_->OnFrameAdded(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(main_frame_),
+            ShouldUpdatePolicy::kNo);
+  EXPECT_EQ(strategy_->OnMainFrameLoad(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnFrameRemoved(main_frame_), ShouldUpdatePolicy::kYes);
+  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(main_frame_),
+            ShouldUpdatePolicy::kYes);
+}
+
+TEST_F(PerAgentBestEffortPriorityAllUntilLoadStrategyTest,
+       LowersTimerQueuePriority) {
+  ignore_result(strategy_->OnFrameAdded(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueuePriority(*timer_queue_),
+              testing::Optional(TaskQueue::QueuePriority::kBestEffortPriority));
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_THAT(strategy_->QueuePriority(*non_timer_queue_),
+              testing::Optional(TaskQueue::QueuePriority::kBestEffortPriority));
+
+  ignore_result(strategy_->OnMainFrameLoad(main_frame_));
+
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*non_timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*non_timer_queue_).has_value());
+}
+
+class PerAgentDefaultIsNoOpStrategyTest : public Test {
+ public:
+  PerAgentDefaultIsNoOpStrategyTest() {
+    strategy_ = AgentSchedulingStrategy::Create();
+    timer_queue_->SetFrameSchedulerForTest(&frame_);
+  }
+
+ protected:
+  std::unique_ptr<AgentSchedulingStrategy> strategy_;
+  MockFrameScheduler frame_{FrameScheduler::FrameType::kMainFrame};
+  // Use |kWebScheduling| so that it ends up with |QueueClass::kTimer|
+  scoped_refptr<MainThreadTaskQueueForTest> timer_queue_{
+      new MainThreadTaskQueueForTest(
+          MainThreadTaskQueue::QueueType::kWebScheduling)};
 };
 
 TEST_F(PerAgentDefaultIsNoOpStrategyTest, DoesntRequestPolicyUpdate) {
@@ -101,96 +433,8 @@ TEST_F(PerAgentDefaultIsNoOpStrategyTest, DoesntRequestPolicyUpdate) {
 }
 
 TEST_F(PerAgentDefaultIsNoOpStrategyTest, DoesntModifyPolicyDecisions) {
-  EXPECT_FALSE(strategy_->QueueEnabledState(*queue_).has_value());
-  EXPECT_FALSE(strategy_->QueuePriority(*queue_).has_value());
-}
-
-class PerAgentNoOpStrategyTest : public PerAgentSchedulingBaseTest {
- public:
-  PerAgentNoOpStrategyTest()
-      : PerAgentSchedulingBaseTest({{"study", "no-op"}}) {}
-};
-
-TEST_F(PerAgentNoOpStrategyTest, DoesntRequestPolicyUpdate) {
-  EXPECT_EQ(strategy_->OnFrameAdded(frame_), ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(frame_),
-            ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnFrameRemoved(frame_), ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(frame_),
-            ShouldUpdatePolicy::kNo);
-  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
-}
-
-TEST_F(PerAgentNoOpStrategyTest, DoesntModifyPolicyDecisions) {
-  EXPECT_FALSE(strategy_->QueueEnabledState(*queue_).has_value());
-  EXPECT_FALSE(strategy_->QueuePriority(*queue_).has_value());
-}
-
-class PerAgentDisableTimersStrategyTest : public PerAgentSchedulingBaseTest {
- public:
-  PerAgentDisableTimersStrategyTest()
-      : PerAgentSchedulingBaseTest({{"study", "disable-timers"}}) {}
-};
-
-TEST_F(PerAgentDisableTimersStrategyTest, RequestsPolicyUpdate) {
-  EXPECT_EQ(strategy_->OnFrameAdded(frame_), ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(frame_),
-            ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnFrameRemoved(frame_), ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(frame_),
-            ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
-}
-
-TEST_F(PerAgentDisableTimersStrategyTest, DisablesTimerQueueUntilFMP) {
-  ignore_result(strategy_->OnFrameAdded(frame_));
-  MockFrameScheduler frame{FrameScheduler::FrameType::kSubframe};
-  queue_->SetFrameSchedulerForTest(&frame);
-
-  EXPECT_TRUE(strategy_->QueueEnabledState(*queue_).has_value());
-  EXPECT_FALSE(strategy_->QueueEnabledState(*queue_).value());
-  EXPECT_FALSE(strategy_->QueuePriority(*queue_).has_value());
-
-  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(frame_));
-
-  EXPECT_FALSE(strategy_->QueueEnabledState(*queue_).has_value());
-  EXPECT_FALSE(strategy_->QueuePriority(*queue_).has_value());
-}
-
-class PerAgentBestEffortPriorityTimersStrategyTest
-    : public PerAgentSchedulingBaseTest {
- public:
-  PerAgentBestEffortPriorityTimersStrategyTest()
-      : PerAgentSchedulingBaseTest({{"study", "deprioritize-timers"}}) {}
-};
-
-TEST_F(PerAgentBestEffortPriorityTimersStrategyTest, RequestsPolicyUpdate) {
-  EXPECT_EQ(strategy_->OnFrameAdded(frame_), ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnMainFrameFirstMeaningfulPaint(frame_),
-            ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnFrameRemoved(frame_), ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnDocumentChangedInMainFrame(frame_),
-            ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kYes);
-  EXPECT_EQ(strategy_->OnInputEvent(), ShouldUpdatePolicy::kNo);
-}
-
-TEST_F(PerAgentBestEffortPriorityTimersStrategyTest,
-       LowersTimerQueuePriorityUntilFMP) {
-  ignore_result(strategy_->OnFrameAdded(frame_));
-  MockFrameScheduler frame{FrameScheduler::FrameType::kSubframe};
-  queue_->SetFrameSchedulerForTest(&frame);
-
-  EXPECT_FALSE(strategy_->QueueEnabledState(*queue_).has_value());
-  EXPECT_TRUE(strategy_->QueuePriority(*queue_).has_value());
-  EXPECT_EQ(strategy_->QueuePriority(*queue_).value(),
-            TaskQueue::QueuePriority::kBestEffortPriority);
-
-  ignore_result(strategy_->OnMainFrameFirstMeaningfulPaint(frame_));
-
-  EXPECT_FALSE(strategy_->QueueEnabledState(*queue_).has_value());
-  EXPECT_FALSE(strategy_->QueuePriority(*queue_).has_value());
+  EXPECT_FALSE(strategy_->QueueEnabledState(*timer_queue_).has_value());
+  EXPECT_FALSE(strategy_->QueuePriority(*timer_queue_).has_value());
 }
 
 }  // namespace scheduler

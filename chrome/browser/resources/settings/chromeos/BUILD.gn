@@ -344,12 +344,9 @@ group("polymer3_elements") {
     ":os_icons_module",
     ":os_page_visibility_module",
     ":os_settings_icons_css_module",
-
-    # Shared with browser settings
     "..:modulize",
     "..:settings_shared_css_module",
     "..:settings_vars_css_module",
-    "../nearby_share_page:polymer3_elements",
     "../prefs:modulize",
     "../prefs:prefs_module",
     "../settings_page:settings_animated_pages_module",

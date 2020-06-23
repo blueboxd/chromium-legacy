@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
@@ -27,6 +29,7 @@ using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXCollectionInfoData = mojom::AccessibilityCollectionInfoData;
 using AXCollectionItemInfoData = mojom::AccessibilityCollectionItemInfoData;
 using AXEventData = mojom::AccessibilityEventData;
+using AXEventIntListProperty = mojom::AccessibilityEventIntListProperty;
 using AXEventIntProperty = mojom::AccessibilityEventIntProperty;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
@@ -113,6 +116,18 @@ void SetProperty(AXEventData* event, AXEventIntProperty prop, int32_t value) {
   prop_map.insert(std::make_pair(prop, value));
 }
 
+void SetProperty(AXEventData* event,
+                 AXEventIntListProperty prop,
+                 const std::vector<int>& value) {
+  if (!event->int_list_properties) {
+    event->int_list_properties =
+        base::flat_map<AXEventIntListProperty, std::vector<int>>();
+  }
+  auto& prop_map = event->int_list_properties.value();
+  base::EraseIf(prop_map, [prop](auto it) { return it.first == prop; });
+  prop_map.insert(std::make_pair(prop, value));
+}
+
 class MockAutomationEventRouter
     : public extensions::AutomationEventRouterInterface {
  public:
@@ -123,8 +138,10 @@ class MockAutomationEventRouter
 
   void DispatchAccessibilityEvents(
       const ExtensionMsg_AccessibilityEventBundleParams& events) override {
-    for (auto&& event : events.events)
+    for (auto&& event : events.events) {
       event_count_[event.event_type]++;
+      last_event_type_ = event.event_type;
+    }
 
     for (const auto& update : events.updates)
       tree_.Unserialize(update);
@@ -146,8 +163,13 @@ class MockAutomationEventRouter
       const ui::AXActionData& data,
       const base::Optional<gfx::Rect>& rect) override {}
 
+  ax::mojom::Event last_event_type() const { return last_event_type_; }
+
   std::map<ax::mojom::Event, int> event_count_;
   ui::AXTree tree_;
+
+ private:
+  ax::mojom::Event last_event_type_;
 };
 
 class AXTreeSourceArcTest : public testing::Test,
@@ -200,6 +222,10 @@ class AXTreeSourceArcTest : public testing::Test,
 
   int GetDispatchedEventCount(ax::mojom::Event type) {
     return router_->event_count_[type];
+  }
+
+  ax::mojom::Event last_dispatched_event_type() const {
+    return router_->last_event_type();
   }
 
   ui::AXTree* tree() { return router_->tree(); }
@@ -1710,6 +1736,37 @@ TEST_F(AXTreeSourceArcTest, StateDescriptionWithRange) {
   ASSERT_TRUE(
       data.GetStringAttribute(ax::mojom::StringAttribute::kValue, &value));
   EXPECT_EQ("state description", value);
+}
+
+TEST_F(AXTreeSourceArcTest, StateDescriptionChangedEvent) {
+  auto event = AXEventData::New();
+  event->source_id = 10;
+  event->task_id = 1;
+  event->event_type = AXEventType::WINDOW_STATE_CHANGED;
+
+  event->window_data = std::vector<mojom::AccessibilityWindowInfoDataPtr>();
+  event->window_data->push_back(AXWindowInfoData::New());
+  AXWindowInfoData* root_window = event->window_data->back().get();
+  root_window->window_id = 100;
+  root_window->root_node_id = 10;
+
+  event->node_data.push_back(AXNodeInfoData::New());
+  AXNodeInfoData* range_widget = event->node_data.back().get();
+  range_widget->range_info = AXRangeInfoData::New();
+  range_widget->id = 10;
+
+  std::vector<int> content_change_types = {
+      static_cast<int>(mojom::ContentChangeType::TEXT),
+      static_cast<int>(mojom::ContentChangeType::STATE_DESCRIPTION)};
+  SetProperty(event.get(), AXEventIntListProperty::CONTENT_CHANGE_TYPES,
+              content_change_types);
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(ax::mojom::Event::kValueChanged, last_dispatched_event_type());
+
+  event->event_type = AXEventType::WINDOW_CONTENT_CHANGED;
+  CallNotifyAccessibilityEvent(event.get());
+  EXPECT_EQ(ax::mojom::Event::kValueChanged, last_dispatched_event_type());
+  // TODO(sahok): add test when source_node is not a range widget.
 }
 
 }  // namespace arc

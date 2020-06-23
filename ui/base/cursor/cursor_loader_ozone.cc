@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "ui/base/cursor/cursor_factory.h"
+#include "ui/base/cursor/cursor_size.h"
 #include "ui/base/cursor/cursor_util.h"
+#include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace ui {
@@ -28,7 +30,7 @@ void CursorLoaderOzone::LoadImageCursor(mojom::CursorType id,
 
   GetImageCursorBitmap(resource_id, scale(), rotation(), &hotspot, &bitmap);
 
-  image_cursors_[id] = factory_->CreateImageCursor(bitmap, hotspot, scale());
+  image_cursors_[id] = factory_->CreateImageCursor(bitmap, hotspot);
 }
 
 void CursorLoaderOzone::LoadAnimatedCursor(mojom::CursorType id,
@@ -42,7 +44,7 @@ void CursorLoaderOzone::LoadAnimatedCursor(mojom::CursorType id,
       resource_id, scale(), rotation(), &hotspot, &bitmaps);
 
   image_cursors_[id] =
-      factory_->CreateAnimatedCursor(bitmaps, hotspot, frame_delay_ms, scale());
+      factory_->CreateAnimatedCursor(bitmaps, hotspot, frame_delay_ms);
 }
 
 void CursorLoaderOzone::UnloadAll() {
@@ -52,22 +54,46 @@ void CursorLoaderOzone::UnloadAll() {
 }
 
 void CursorLoaderOzone::SetPlatformCursor(gfx::NativeCursor* cursor) {
-  mojom::CursorType native_type = cursor->type();
-  PlatformCursor platform;
+  DCHECK(cursor);
 
-  if (image_cursors_.count(native_type)) {
-    // An image cursor is loaded for this type.
-    platform = image_cursors_[native_type];
-  } else if (native_type == mojom::CursorType::kCustom) {
-    // The platform cursor was already set via WebCursor::GetPlatformCursor.
-    platform = cursor->platform();
-  } else {
-    // Use default cursor of this type.
-    platform = factory_->GetDefaultCursor(native_type);
-  }
-
+  // The platform cursor was already set via WebCursor::GetPlatformCursor.
+  if (cursor->type() == mojom::CursorType::kCustom)
+    return;
   cursor->set_image_scale_factor(scale());
-  cursor->SetPlatformCursor(platform);
+  cursor->SetPlatformCursor(CursorFromType(cursor->type()));
+}
+
+PlatformCursor CursorLoaderOzone::CursorFromType(mojom::CursorType type) {
+  // An image cursor is loaded for this type.
+  if (image_cursors_.count(type))
+    return image_cursors_[type];
+
+  // Check if there's a default platform cursor available.
+  PlatformCursor platform = factory_->GetDefaultCursor(type);
+  if (!platform) {
+    // Loads the default Aura cursor bitmap for the cursor type. Falls back on
+    // pointer cursor if this fails.
+    platform = CreateFallbackCursor(type);
+    if (!platform && type != mojom::CursorType::kPointer) {
+      platform = CursorFromType(mojom::CursorType::kPointer);
+      factory_->RefImageCursor(platform);
+      image_cursors_[type] = platform;
+    }
+    DCHECK(platform) << "Failed to load a fallback bitmap for cursor " << type;
+  }
+  return platform;
+}
+
+// Gets default Aura cursor bitmap/hotspot and creates a PlatformCursor with it.
+PlatformCursor CursorLoaderOzone::CreateFallbackCursor(mojom::CursorType type) {
+  int resource_id;
+  gfx::Point point;
+  if (ui::GetCursorDataFor(ui::CursorSize::kNormal, type, scale(), &resource_id,
+                           &point)) {
+    LoadImageCursor(type, resource_id, point);
+    return image_cursors_[type];
+  }
+  return nullptr;
 }
 
 CursorLoader* CursorLoader::Create() {

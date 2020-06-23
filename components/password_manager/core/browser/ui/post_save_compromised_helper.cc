@@ -30,6 +30,8 @@ void PostSaveCompromisedHelper::AnalyzeLeakedCredentials(
     PasswordStore* store,
     PrefService* prefs,
     BubbleCallback callback) {
+  DCHECK(store);
+  DCHECK(prefs);
   callback_ = std::move(callback);
   prefs_ = prefs;
   store->GetAllCompromisedCredentials(this);

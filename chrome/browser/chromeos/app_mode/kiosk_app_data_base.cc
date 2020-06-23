@@ -73,7 +73,8 @@ void KioskAppDataBase::SaveToDictionary(DictionaryPrefUpdate& dict_update) {
   dict_update->SetString(icon_path_key, icon_path_.value());
 }
 
-bool KioskAppDataBase::LoadFromDictionary(const base::DictionaryValue& dict) {
+bool KioskAppDataBase::LoadFromDictionary(const base::DictionaryValue& dict,
+                                          bool lazy_icon_load) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string app_key =
       std::string(KioskAppDataBase::kKeyApps) + '.' + app_id_;
@@ -85,11 +86,19 @@ bool KioskAppDataBase::LoadFromDictionary(const base::DictionaryValue& dict) {
       !dict.GetString(icon_path_key, &icon_path_string)) {
     return false;
   }
-  icon_path_ = base::FilePath(icon_path_string);
 
+  icon_path_ = base::FilePath(icon_path_string);
+  if (!lazy_icon_load) {
+    DecodeIcon();
+  }
+
+  return true;
+}
+
+void KioskAppDataBase::DecodeIcon() {
+  DCHECK(!icon_path_.empty());
   kiosk_app_icon_loader_ = std::make_unique<KioskAppIconLoader>(this);
   kiosk_app_icon_loader_->Start(icon_path_);
-  return true;
 }
 
 void KioskAppDataBase::SaveIcon(const SkBitmap& icon,

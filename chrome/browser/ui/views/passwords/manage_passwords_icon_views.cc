@@ -88,6 +88,9 @@ base::string16 ManagePasswordsIconViews::GetTextForTooltipAndAccessibleName()
     case password_manager::ui::CHROME_SIGN_IN_PROMO_STATE:
     case password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE:
     case password_manager::ui::MANAGE_STATE:
+    case password_manager::ui::PASSWORD_UPDATED_SAFE_STATE:
+    case password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX:
+    case password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE:
       return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_TOOLTIP_MANAGE);
     case password_manager::ui::PENDING_PASSWORD_UPDATE_STATE:
     case password_manager::ui::PENDING_PASSWORD_STATE:

@@ -18,11 +18,17 @@ import 'chrome://resources/polymer/v3_0/iron-flex-layout/iron-flex-layout-classe
 import 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
+import {getImage} from 'chrome://resources/js/icon.m.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+import {WebUIListenerBehavior} from 'chrome://resources/js/web_ui_listener_behavior.m.js';
 import {IronA11yKeysBehavior} from 'chrome://resources/polymer/v3_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
+import {loadTimeData} from '../i18n_setup.js';
+import {OpenWindowProxyImpl} from '../open_window_proxy.js';
+import {ProfileInfo, ProfileInfoBrowserProxyImpl} from '../people_page/profile_info_browser_proxy.m.js';
+import {StoredAccount, SyncBrowserProxyImpl} from '../people_page/sync_browser_proxy.m.js';
 import {routes} from '../route.js';
 
 import {MergePasswordsStoreCopiesBehavior} from './merge_passwords_store_copies_behavior.js';
@@ -53,6 +59,7 @@ Polymer({
     I18nBehavior,
     IronA11yKeysBehavior,
     GlobalScrollTargetBehavior,
+    WebUIListenerBehavior,
   ],
 
   properties: {
@@ -107,6 +114,35 @@ Polymer({
     /** @private */
     listBlurred_: Boolean,
 
+    /**
+     * The currently selected profile icon as CSS image set.
+     * @private
+     */
+    profileIcon_: String,
+
+    /** @private */
+    accountEmail_: String,
+
+  },
+
+  /** @override */
+  attached() {
+    /** @type {!function(!ProfileInfo):void} */
+    const extractIconFromProfileInfo = profileInfo => {
+      this.profileIcon_ = getImage(profileInfo.iconUrl);
+    };
+    ProfileInfoBrowserProxyImpl.getInstance().getProfileInfo().then(
+        extractIconFromProfileInfo);
+    this.addWebUIListener('profile-info-changed', extractIconFromProfileInfo);
+
+    /** @type {!function(!Array<!StoredAccount>):void} */
+    const extractFirstStoredAccountEmail = accounts => {
+      this.accountEmail_ = accounts.length > 0 ? accounts[0].email : '';
+    };
+    SyncBrowserProxyImpl.getInstance().getStoredAccounts().then(
+        extractFirstStoredAccountEmail);
+    this.addWebUIListener(
+        'stored-accounts-updated', extractFirstStoredAccountEmail);
   },
 
   /**
@@ -178,4 +214,10 @@ Polymer({
       event.preventDefault();
     }
   },
+
+  onManageAccountPasswordsClicked_() {
+    OpenWindowProxyImpl.getInstance().openURL(
+        loadTimeData.getString('googlePasswordManagerUrl'));
+  },
+
 });

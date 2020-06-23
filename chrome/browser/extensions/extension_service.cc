@@ -1911,7 +1911,7 @@ void ExtensionService::Observe(int type,
           content::Source<content::RenderProcessHost>(source).ptr();
       Profile* host_profile =
           Profile::FromBrowserContext(process->GetBrowserContext());
-      if (!profile_->IsSameProfile(host_profile->GetOriginalProfile()))
+      if (!profile_->IsSameOrParent(host_profile->GetOriginalProfile()))
         break;
 
       ProcessMap* process_map = ProcessMap::Get(profile_);

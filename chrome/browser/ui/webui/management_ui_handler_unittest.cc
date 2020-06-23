@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/utf_string_conversions.h"
 
@@ -242,18 +243,28 @@ class ManagementUIHandlerTests : public TestingBaseClass {
                  std::make_unique<base::Value>(true), nullptr);
   }
   void SetPolicyValue(const char* policy_key,
-                      policy::PolicyMap& policies,
-                      int value) {
+                      int value,
+                      policy::PolicyMap& policies) {
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(value), nullptr);
   }
   void SetPolicyValue(const char* policy_key,
-                      policy::PolicyMap& policies,
-                      bool value) {
+                      bool value,
+                      policy::PolicyMap& policies) {
     policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
                  policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
                  std::make_unique<base::Value>(value), nullptr);
+  }
+  void SetConnectorPolicyValue(const char* policy_key,
+                               const std::string& value,
+                               policy::PolicyMap& policies) {
+    auto policy_value = base::JSONReader::Read(value);
+    EXPECT_TRUE(policy_value.has_value());
+    policies.Set(policy_key, policy::POLICY_LEVEL_MANDATORY,
+                 policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(std::move(policy_value.value())),
+                 nullptr);
   }
 
   base::string16 ExtractPathFromDict(const base::Value& data,
@@ -918,7 +929,7 @@ TEST_F(ManagementUIHandlerTests, CloudReportingPolicy) {
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string());
   EXPECT_CALL(policy_service_, GetPolicies(_))
       .WillRepeatedly(ReturnRef(chrome_policies));
-  SetPolicyValue(policy::key::kCloudReportingEnabled, chrome_policies, true);
+  SetPolicyValue(policy::key::kCloudReportingEnabled, true, chrome_policies);
 
   const std::set<std::string> expected_messages = {
       kManagementExtensionReportMachineName, kManagementExtensionReportUsername,
@@ -1020,10 +1031,15 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
 
   // When policies are set to uninteresting values, nothing to report.
-  SetPolicyValue(policy::key::kCheckContentCompliance, chrome_policies, 0);
-  SetPolicyValue(policy::key::kSendFilesForMalwareCheck, chrome_policies, 0);
-  SetPolicyValue(policy::key::kUnsafeEventsReportingEnabled, chrome_policies,
-                 false);
+  SetConnectorPolicyValue(policy::key::kOnFileAttachedEnterpriseConnector, "[]",
+                          chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnFileDownloadedEnterpriseConnector,
+                          "[]", chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnBulkDataEntryEnterpriseConnector,
+                          "[]", chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnSecurityEventEnterpriseConnector,
+                          "[]", chrome_policies);
+
   info = handler_.GetThreatProtectionInfo(profile_known_domain.get());
   info.GetAsDictionary(&threat_protection_info);
   EXPECT_TRUE(threat_protection_info->FindListKey("info")->GetList().empty());
@@ -1032,13 +1048,22 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
 
   // When policies are set to values that enable the feature, report it.
-  SetPolicyValue(policy::key::kCheckContentCompliance, chrome_policies, 1);
-  SetPolicyValue(policy::key::kSendFilesForMalwareCheck, chrome_policies, 2);
-  SetPolicyValue(policy::key::kUnsafeEventsReportingEnabled, chrome_policies,
-                 true);
+  SetConnectorPolicyValue(policy::key::kOnFileAttachedEnterpriseConnector,
+                          "[{\"service_provider\":\"google\"}]",
+                          chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnFileDownloadedEnterpriseConnector,
+                          "[{\"service_provider\":\"google\"}]",
+                          chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnBulkDataEntryEnterpriseConnector,
+                          "[{\"service_provider\":\"google\"}]",
+                          chrome_policies);
+  SetConnectorPolicyValue(policy::key::kOnSecurityEventEnterpriseConnector,
+                          "[{\"service_provider\":\"google\"}]",
+                          chrome_policies);
+
   info = handler_.GetThreatProtectionInfo(profile_no_domain.get());
   info.GetAsDictionary(&threat_protection_info);
-  EXPECT_EQ(3u, threat_protection_info->FindListKey("info")->GetList().size());
+  EXPECT_EQ(4u, threat_protection_info->FindListKey("info")->GetList().size());
   EXPECT_EQ(
       l10n_util::GetStringUTF16(IDS_MANAGEMENT_THREAT_PROTECTION_DESCRIPTION),
       base::UTF8ToUTF16(*threat_protection_info->FindStringKey("description")));
@@ -1046,20 +1071,26 @@ TEST_F(ManagementUIHandlerTests, ThreatReportingInfo) {
   base::Value expected_info(base::Value::Type::LIST);
   {
     base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementDataLossPreventionName);
-    value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
+    value.SetStringKey("title", kManagementOnFileAttachedEvent);
+    value.SetStringKey("permission", kManagementOnFileAttachedVisibleData);
     expected_info.Append(std::move(value));
   }
   {
     base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementMalwareScanningName);
-    value.SetStringKey("permission", kManagementMalwareScanningPermissions);
+    value.SetStringKey("title", kManagementOnFileDownloadedEvent);
+    value.SetStringKey("permission", kManagementOnFileDownloadedVisibleData);
     expected_info.Append(std::move(value));
   }
   {
     base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementEnterpriseReportingName);
-    value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
+    value.SetStringKey("title", kManagementOnBulkDataEntryEvent);
+    value.SetStringKey("permission", kManagementOnBulkDataEntryVisibleData);
+    expected_info.Append(std::move(value));
+  }
+  {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementEnterpriseReportingEvent);
+    value.SetStringKey("permission", kManagementEnterpriseReportingVisibleData);
     expected_info.Append(std::move(value));
   }
 

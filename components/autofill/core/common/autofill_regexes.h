@@ -12,10 +12,11 @@ namespace autofill {
 
 // Case-insensitive regular expression matching.
 // Returns true if |pattern| is found in |input|.
-// If |match| is not nullptr, the matched part is assigned to it.
+// The |group_to_be_captured| numbered group is captured into |match|.
 bool MatchesPattern(const base::string16& input,
                     const base::string16& pattern,
-                    base::string16* match = nullptr);
+                    base::string16* match = nullptr,
+                    int32_t group_to_be_captured = 0);
 
 }  // namespace autofill
 

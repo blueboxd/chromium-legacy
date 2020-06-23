@@ -52,6 +52,7 @@ using ::absl::test_internal::MovableOnlyInstance;
 using ::testing::ElementsAre;
 using ::testing::ElementsAreArray;
 using ::testing::IsEmpty;
+using ::testing::IsNull;
 using ::testing::Pair;
 
 template <typename T, typename U>
@@ -2403,6 +2404,109 @@ TEST(Btree, BitfieldArgument) {
   m.at(n);
   m[n];
 }
+
+TEST(Btree, SetRangeConstructorAndInsertSupportExplicitConversionComparable) {
+  const absl::string_view names[] = {"n1", "n2"};
+
+  absl::btree_set<std::string> name_set1{std::begin(names), std::end(names)};
+  EXPECT_THAT(name_set1, ElementsAreArray(names));
+
+  absl::btree_set<std::string> name_set2;
+  name_set2.insert(std::begin(names), std::end(names));
+  EXPECT_THAT(name_set2, ElementsAreArray(names));
+}
+
+// A type that is explicitly convertible from int and counts constructor calls.
+struct ConstructorCounted {
+  explicit ConstructorCounted(int i) : i(i) { ++constructor_calls; }
+  bool operator==(int other) const { return i == other; }
+
+  int i;
+  static int constructor_calls;
+};
+int ConstructorCounted::constructor_calls = 0;
+
+struct ConstructorCountedCompare {
+  bool operator()(int a, const ConstructorCounted &b) const { return a < b.i; }
+  bool operator()(const ConstructorCounted &a, int b) const { return a.i < b; }
+  bool operator()(const ConstructorCounted &a,
+                  const ConstructorCounted &b) const {
+    return a.i < b.i;
+  }
+  using is_transparent = void;
+};
+
+TEST(Btree,
+     SetRangeConstructorAndInsertExplicitConvComparableLimitConstruction) {
+  const int i[] = {0, 1, 1};
+  ConstructorCounted::constructor_calls = 0;
+
+  absl::btree_set<ConstructorCounted, ConstructorCountedCompare> set{
+      std::begin(i), std::end(i)};
+  EXPECT_THAT(set, ElementsAre(0, 1));
+  EXPECT_EQ(ConstructorCounted::constructor_calls, 2);
+
+  set.insert(std::begin(i), std::end(i));
+  EXPECT_THAT(set, ElementsAre(0, 1));
+  EXPECT_EQ(ConstructorCounted::constructor_calls, 2);
+}
+
+TEST(Btree,
+     SetRangeConstructorAndInsertSupportExplicitConversionNonComparable) {
+  const int i[] = {0, 1};
+
+  absl::btree_set<std::vector<void *>> s1{std::begin(i), std::end(i)};
+  EXPECT_THAT(s1, ElementsAre(IsEmpty(), ElementsAre(IsNull())));
+
+  absl::btree_set<std::vector<void *>> s2;
+  s2.insert(std::begin(i), std::end(i));
+  EXPECT_THAT(s2, ElementsAre(IsEmpty(), ElementsAre(IsNull())));
+}
+
+// GCC 4.9 has a bug in the std::pair constructors that prevents explicit
+// conversions between pair types.
+#if defined(__clang__) || !defined(__GNUC__) || __GNUC__ >= 5
+TEST(Btree, MapRangeConstructorAndInsertSupportExplicitConversionComparable) {
+  const std::pair<absl::string_view, int> names[] = {{"n1", 1}, {"n2", 2}};
+
+  absl::btree_map<std::string, int> name_map1{std::begin(names),
+                                              std::end(names)};
+  EXPECT_THAT(name_map1, ElementsAre(Pair("n1", 1), Pair("n2", 2)));
+
+  absl::btree_map<std::string, int> name_map2;
+  name_map2.insert(std::begin(names), std::end(names));
+  EXPECT_THAT(name_map2, ElementsAre(Pair("n1", 1), Pair("n2", 2)));
+}
+
+TEST(Btree,
+     MapRangeConstructorAndInsertExplicitConvComparableLimitConstruction) {
+  const std::pair<int, int> i[] = {{0, 1}, {1, 2}, {1, 3}};
+  ConstructorCounted::constructor_calls = 0;
+
+  absl::btree_map<ConstructorCounted, int, ConstructorCountedCompare> map{
+      std::begin(i), std::end(i)};
+  EXPECT_THAT(map, ElementsAre(Pair(0, 1), Pair(1, 2)));
+  EXPECT_EQ(ConstructorCounted::constructor_calls, 2);
+
+  map.insert(std::begin(i), std::end(i));
+  EXPECT_THAT(map, ElementsAre(Pair(0, 1), Pair(1, 2)));
+  EXPECT_EQ(ConstructorCounted::constructor_calls, 2);
+}
+
+TEST(Btree,
+     MapRangeConstructorAndInsertSupportExplicitConversionNonComparable) {
+  const std::pair<int, int> i[] = {{0, 1}, {1, 2}};
+
+  absl::btree_map<std::vector<void *>, int> m1{std::begin(i), std::end(i)};
+  EXPECT_THAT(m1,
+              ElementsAre(Pair(IsEmpty(), 1), Pair(ElementsAre(IsNull()), 2)));
+
+  absl::btree_map<std::vector<void *>, int> m2;
+  m2.insert(std::begin(i), std::end(i));
+  EXPECT_THAT(m2,
+              ElementsAre(Pair(IsEmpty(), 1), Pair(ElementsAre(IsNull()), 2)));
+}
+#endif
 
 }  // namespace
 }  // namespace container_internal

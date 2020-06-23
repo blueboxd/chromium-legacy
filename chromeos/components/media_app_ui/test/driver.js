@@ -205,9 +205,10 @@ class FakeFileSystemDirectoryHandle extends FakeFileSystemHandle {
   async getFile(name, options) {
     const fileHandle = this.files.find(f => f.name === name);
     if (!fileHandle && options.create === true) {
-      // Simulate creating a new file.
-      const newFileHandle = new FakeFileSystemFileHandle();
-      newFileHandle.name = name;
+      // Simulate creating a new file, assume it is an image. This is needed for
+      // renaming files to ensure it has the right mime type, the real
+      // implementation copies the mime type from the binary.
+      const newFileHandle = new FakeFileSystemFileHandle(name, 'image/png');
       this.files.push(newFileHandle);
       return Promise.resolve(newFileHandle);
     }
@@ -362,6 +363,17 @@ function createNamedError(name, msg) {
 }
 
 /**
+ * @param {!FileSystemDirectoryHandle} directory
+ * @param {!File} file
+ */
+async function loadFilesWithoutSendingToGuest(directory, file) {
+  const handle = await directory.getFile(file.name);
+  globalLaunchNumber++;
+  setCurrentDirectory(directory, {file, handle});
+  await processOtherFilesInDirectory(directory, file, globalLaunchNumber);
+}
+
+/**
  * Checks that the `currentFiles` array maintained by launch.js has the same
  * sequence of files as `expectedFiles`.
  * @param {!Array<!File>} expectedFiles
@@ -410,13 +422,13 @@ function assertMatchErrorStack(stackTrace, regexLines, opt_message) {
 
 /**
  * Returns the files loaded in the most recent call to `loadFiles()`.
- * @return {Promise<?ReceivedFileList>}
+ * @return {Promise<?Array<!ReceivedFile>>}
  */
 async function getLoadedFiles() {
   const response = /** @type {LastLoadedFilesResponse} */ (
       await guestMessagePipe.sendMessage('get-last-loaded-files'));
   if (response.fileList) {
-    return response.fileList.files;
+    return response.fileList;
   }
   return null;
 }
@@ -428,4 +440,53 @@ async function getLoadedFiles() {
  */
 function simulateLosingAccessToDirectory() {
   currentDirectoryHandle = null;
+}
+
+/**
+ * @param {!FakeFileSystemDirectoryHandle} directory
+ */
+function launchWithFocusFile(directory) {
+  const focusFile = {
+    handle: directory.files[0],
+    file: directory.files[0].getFileSync()
+  };
+  globalLaunchNumber++;
+  setCurrentDirectory(directory, focusFile);
+  return focusFile;
+}
+
+/**
+ * @param {!FakeFileSystemDirectoryHandle} directory
+ * @param {number} totalFiles
+ */
+async function assertSingleFileLaunch(directory, totalFiles) {
+  chai.assert.equal(1, currentFiles.length);
+
+  await sendFilesToGuest();
+
+  const loadedFiles = await getLoadedFiles();
+  // The untrusted context only loads the first file.
+  chai.assert.equal(1, loadedFiles.length);
+  // All files are in the `FileSystemDirectoryHandle`.
+  chai.assert.equal(totalFiles, directory.files.length);
+}
+
+/**
+ * Check files loaded in the trusted context `currentFiles` against the working
+ * directory and the untrusted context.
+ * @param {!FakeFileSystemDirectoryHandle} directory
+ * @param {!Array<string>} fileNames
+ * @param {?string} testCase
+ */
+async function assertFilesLoaded(directory, fileNames, testCase) {
+  chai.assert.equal(fileNames.length, directory.files.length);
+  chai.assert.equal(fileNames.length, currentFiles.length);
+
+  const loadedFiles = /** @type {!Array<!File>} */ (await getLoadedFiles());
+  chai.assert.equal(fileNames.length, loadedFiles.length);
+
+  // Check `currentFiles` in the trusted context matches up with files sent
+  // to guest.
+  assertFilenamesToBe(fileNames.join(), testCase);
+  assertFilesToBe(loadedFiles, testCase);
 }

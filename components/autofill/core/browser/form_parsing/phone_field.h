@@ -102,6 +102,13 @@ class PhoneField : public FormField {
                               const RegExLogging& logging,
                               const bool is_country_code_field);
 
+  // Returns true if |scanner| points to a <select> field that appears to be the
+  // phone country code by looking at its option contents.
+  // "Augmented" refers to the fact that we are looking for select options that
+  // contain not only a country code but also further text like "Germany (+49)".
+  static bool LikelyAugmentedPhoneCountryCode(AutofillScanner* scanner,
+                                              AutofillField** match);
+
   // FIELD_PHONE is always present; holds suffix if prefix is present.
   // The rest could be NULL.
   AutofillField* parsed_phone_fields_[FIELD_MAX];

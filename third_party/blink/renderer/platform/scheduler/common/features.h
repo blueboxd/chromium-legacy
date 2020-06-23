@@ -226,24 +226,57 @@ constexpr base::Feature kPerAgentSchedulingExperiments{
     "BlinkSchedulerPerAgentSchedulingExperiments",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-enum class PerAgentSchedulingStrategyExperiments {
-  kNoOpStrategy,
-  kDisableTimersStrategy,
-  kBestEffortPriorityTimersStrategy,
+// Queues the per-agent scheduling experiment should affect.
+enum class PerAgentAffectedQueues {
+  // Strategy only applies to non-main agent timer queues. These can be safely
+  // disabled/deprioritized without causing any known issues.
+  kTimerQueues,
+  // Strategy applies to all non-main agent queues. This may cause some task
+  // ordering issues.
+  kAllQueues,
 };
 
-constexpr base::FeatureParam<
-    PerAgentSchedulingStrategyExperiments>::Option kPerAgentOptions[] = {
-    {PerAgentSchedulingStrategyExperiments::kNoOpStrategy, "no-op"},
-    {PerAgentSchedulingStrategyExperiments::kDisableTimersStrategy,
-     "disable-timers"},
-    {PerAgentSchedulingStrategyExperiments::kBestEffortPriorityTimersStrategy,
-     "deprioritize-timers"}};
+constexpr base::FeatureParam<PerAgentAffectedQueues>::Option
+    kPerAgentQueuesOptions[] = {
+        {PerAgentAffectedQueues::kTimerQueues, "timer-queues"},
+        {PerAgentAffectedQueues::kAllQueues, "all-queues"}};
 
-constexpr base::FeatureParam<PerAgentSchedulingStrategyExperiments>
-    kPerAgentStrategy{&kPerAgentSchedulingExperiments, "study",
-                      PerAgentSchedulingStrategyExperiments::kNoOpStrategy,
-                      &kPerAgentOptions};
+constexpr base::FeatureParam<PerAgentAffectedQueues> kPerAgentQueues{
+    &kPerAgentSchedulingExperiments, "queues",
+    PerAgentAffectedQueues::kTimerQueues, &kPerAgentQueuesOptions};
+
+// Effect the per-agent scheduling strategy should have.
+enum class PerAgentSlowDownMethod {
+  // Affected queues will be disabled.
+  kDisable,
+  // Affected queues will have their priority reduced to |kBestEffortPriority|.
+  kBestEffort,
+};
+
+constexpr base::FeatureParam<PerAgentSlowDownMethod>::Option
+    kPerAgentMethodOptions[] = {
+        {PerAgentSlowDownMethod::kDisable, "disable"},
+        {PerAgentSlowDownMethod::kBestEffort, "best-effort"}};
+
+constexpr base::FeatureParam<PerAgentSlowDownMethod> kPerAgentMethod{
+    &kPerAgentSchedulingExperiments, "method", PerAgentSlowDownMethod::kDisable,
+    &kPerAgentMethodOptions};
+
+// Signal the per-agent scheduling strategy should wait for.
+enum class PerAgentSignal {
+  // Strategy will be active until all main frames reach First Meaningful Paint.
+  kFirstMeaningfulPaint,
+  // Strategy will be active until all main frames finish loading.
+  kOnLoad,
+};
+
+constexpr base::FeatureParam<PerAgentSignal>::Option kPerAgentSignalOptions[] =
+    {{PerAgentSignal::kFirstMeaningfulPaint, "fmp"},
+     {PerAgentSignal::kOnLoad, "onload"}};
+
+constexpr base::FeatureParam<PerAgentSignal> kPerAgentSignal{
+    &kPerAgentSchedulingExperiments, "signal",
+    PerAgentSignal::kFirstMeaningfulPaint, &kPerAgentSignalOptions};
 
 }  // namespace scheduler
 }  // namespace blink

@@ -121,15 +121,17 @@ static void JNI_GamepadList_SetGamepadData(
   std::vector<float> buttons;
   base::android::JavaFloatArrayToFloatVector(env, jbuttons, &buttons);
 
-  // Set Gamepad buttonslength to total number of axes on the gamepad
-  // device. Only return the first buttonsLengthCap if axeslength captured by
+  // Set Gamepad buttonslength to total number of buttons on the gamepad
+  // device. Only return the first buttonsLengthCap if buttonslength captured by
   // GamepadList is larger than buttonsLengthCap.
   pad.buttons_length = std::min(static_cast<int>(buttons.size()),
                                 static_cast<int>(Gamepad::kButtonsLengthCap));
 
   // Copy buttons state to the Gamepad buttons[].
   for (unsigned int j = 0; j < pad.buttons_length; j++) {
-    pad.buttons[j].pressed = buttons[j];
+    pad.buttons[j].pressed =
+        buttons[j] > GamepadButton::kDefaultButtonPressedThreshold;
+    pad.buttons[j].touched = buttons[j] > 0.0f;
     pad.buttons[j].value = buttons[j];
   }
 }

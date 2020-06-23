@@ -81,7 +81,12 @@ class SafeAcquisitionTracker {
     // Using at() is exception-safe here as |lock| was registered already.
     const CheckedLockImpl* allowed_predecessor =
         allowed_predecessor_map_.at(lock);
-    DCHECK_EQ(previous_lock, allowed_predecessor);
+    if (lock->is_universal_successor()) {
+      DCHECK(!previous_lock->is_universal_successor());
+      return;
+    } else {
+      DCHECK_EQ(previous_lock, allowed_predecessor);
+    }
   }
 
   // Asserts that |lock|'s registered predecessor is safe. Because
@@ -134,11 +139,17 @@ CheckedLockImpl::CheckedLockImpl() : CheckedLockImpl(nullptr) {}
 
 CheckedLockImpl::CheckedLockImpl(const CheckedLockImpl* predecessor)
     : is_universal_predecessor_(false) {
+  DCHECK(predecessor == nullptr || !predecessor->is_universal_successor_);
   g_safe_acquisition_tracker.Get().RegisterLock(this, predecessor);
 }
 
 CheckedLockImpl::CheckedLockImpl(UniversalPredecessor)
     : is_universal_predecessor_(true) {}
+
+CheckedLockImpl::CheckedLockImpl(UniversalSuccessor)
+    : is_universal_successor_(true) {
+  g_safe_acquisition_tracker.Get().RegisterLock(this, nullptr);
+}
 
 CheckedLockImpl::~CheckedLockImpl() {
   g_safe_acquisition_tracker.Get().UnregisterLock(this);

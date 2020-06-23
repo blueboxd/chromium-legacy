@@ -324,11 +324,6 @@ const char kMobileGoogleSRPDescription[] =
     "Request the Mobile version of Google SRP by default when the desktop mode "
     "is requested by default.";
 
-const char kNewSigninArchitectureName[] = "Enable new sign-in architecture";
-const char kNewSigninArchitectureDescription[] =
-    "When enabled uses the new sign-in architecture based on core Bling "
-    "design paradigms.";
-
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[] =
     "Omnibox Preserve Default Match Against Async Update";
 const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =

@@ -51,6 +51,7 @@ message CallbackProto {
     ShowGenericUiPopupProto show_generic_popup = 13;
     CreateNestedGenericUiProto create_nested_ui = 14;
     ClearViewContainerProto clear_view_container = 15;
+    ForEachProto for_each = 16;
   }
   // Optional model identifier pointing to a single boolean. If set, the
   // callback will only be invoked if the condition is true.
@@ -391,4 +392,19 @@ message CreateNestedGenericUiProto {
 message ClearViewContainerProto {
   // The view container to clear.
   optional string view_identifier = 1;
+}
+
+// Invokes |callbacks| for each item in the loop value. Automatically replaces
+// instances of "${i}" in model and view identifiers with the loop counter.
+message ForEachProto {
+  // The loop counter, usually "i", "j", etc. Callbacks may use this counter
+  // in view and model identifiers by using "${i}"" placeholders, e.g.,
+  // "profiles[${i}]" or "my_view_${i}".
+  optional string loop_counter = 1;
+
+  // The value list to loop over.
+  optional string loop_value_model_identifier = 2;
+
+  // The callbacks to invoke for every iteration of the loop.
+  repeated CallbackProto callbacks = 3;
 }

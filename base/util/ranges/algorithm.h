@@ -6,6 +6,7 @@
 #define BASE_UTIL_RANGES_ALGORITHM_H_
 
 #include <algorithm>
+#include <iterator>
 #include <utility>
 
 #include "base/util/ranges/functional.h"
@@ -39,6 +40,15 @@ constexpr auto ProjectedBinaryPredicate(Pred& pred,
   };
 }
 
+// This alias is used below to restrict iterator based APIs to types for which
+// `iterator_category` is defined. This is required in situations where
+// otherwise an undesired overload would be chosen, e.g. copy_if. In spirit this
+// is similar to C++20's std::input_or_output_iterator, a concept that each
+// iterator should satisfy.
+template <typename Iter>
+using iterator_category_t =
+    typename std::iterator_traits<Iter>::iterator_category;
+
 }  // namespace internal
 
 // [alg.nonmodifying] Non-modifying sequence operations
@@ -56,7 +66,10 @@ constexpr auto ProjectedBinaryPredicate(Pred& pred,
 // projection.
 //
 // Reference: https://wg21.link/alg.all.of#:~:text=ranges::all_of(I
-template <typename InputIterator, typename Pred, typename Proj = identity>
+template <typename InputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr bool all_of(InputIterator first,
                       InputIterator last,
                       Pred pred,
@@ -92,7 +105,10 @@ constexpr bool all_of(Range&& range, Pred pred, Proj proj = {}) {
 // projection.
 //
 // Reference: https://wg21.link/alg.any.of#:~:text=ranges::any_of(I
-template <typename InputIterator, typename Pred, typename Proj = identity>
+template <typename InputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr bool any_of(InputIterator first,
                       InputIterator last,
                       Pred pred,
@@ -128,7 +144,10 @@ constexpr bool any_of(Range&& range, Pred pred, Proj proj = {}) {
 // projection.
 //
 // Reference: https://wg21.link/alg.none.of#:~:text=ranges::none_of(I
-template <typename InputIterator, typename Pred, typename Proj = identity>
+template <typename InputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr bool none_of(InputIterator first,
                        InputIterator last,
                        Pred pred,
@@ -168,7 +187,10 @@ constexpr bool none_of(Range&& range, Pred pred, Proj proj = {}) {
 // Remarks: If `f` returns a result, the result is ignored.
 //
 // Reference: https://wg21.link/alg.foreach#:~:text=ranges::for_each(I
-template <typename InputIterator, typename Fun, typename Proj = identity>
+template <typename InputIterator,
+          typename Fun,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr auto for_each(InputIterator first,
                         InputIterator last,
                         Fun f,
@@ -212,7 +234,10 @@ constexpr auto for_each(Range&& range, Fun f, Proj proj = {}) {
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.find#:~:text=ranges::find(I
-template <typename InputIterator, typename T, typename Proj = identity>
+template <typename InputIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr auto find(InputIterator first,
                     InputIterator last,
                     const T& value,
@@ -248,7 +273,10 @@ constexpr auto find(Range&& range, const T& value, Proj proj = {}) {
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.find#:~:text=ranges::find_if(I
-template <typename InputIterator, typename Pred, typename Proj = identity>
+template <typename InputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr auto find_if(InputIterator first,
                        InputIterator last,
                        Pred pred,
@@ -281,7 +309,10 @@ constexpr auto find_if(Range&& range, Pred pred, Proj proj = {}) {
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.find#:~:text=ranges::find_if_not(I
-template <typename InputIterator, typename Pred, typename Proj = identity>
+template <typename InputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr auto find_if_not(InputIterator first,
                            InputIterator last,
                            Pred pred,
@@ -331,7 +362,9 @@ template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
 constexpr auto find_end(ForwardIterator1 first1,
                         ForwardIterator1 last1,
                         ForwardIterator2 first2,
@@ -396,7 +429,9 @@ template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
 constexpr auto find_first_of(ForwardIterator1 first1,
                              ForwardIterator1 last1,
                              ForwardIterator2 first2,
@@ -453,7 +488,8 @@ constexpr auto find_first_of(Range1&& range1,
 // https://wg21.link/alg.adjacent.find#:~:text=ranges::adjacent_find(I
 template <typename ForwardIterator,
           typename Pred = ranges::equal_to,
-          typename Proj = identity>
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
 constexpr auto adjacent_find(ForwardIterator first,
                              ForwardIterator last,
                              Pred pred = {},
@@ -494,7 +530,10 @@ constexpr auto adjacent_find(Range&& range, Pred pred = {}, Proj proj = {}) {
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.count#:~:text=ranges::count(I
-template <typename InputIterator, typename T, typename Proj = identity>
+template <typename InputIterator,
+          typename T,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr auto count(InputIterator first,
                      InputIterator last,
                      const T& value,
@@ -530,7 +569,10 @@ constexpr auto count(Range&& range, const T& value, Proj proj = {}) {
 // predicate and any projection.
 //
 // Reference: https://wg21.link/alg.count#:~:text=ranges::count_if(I
-template <typename InputIterator, typename Pred, typename Proj = identity>
+template <typename InputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>>
 constexpr auto count_if(InputIterator first,
                         InputIterator last,
                         Pred pred,
@@ -573,7 +615,9 @@ template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
 constexpr auto mismatch(ForwardIterator1 first1,
                         ForwardIterator1 last1,
                         ForwardIterator2 first2,
@@ -634,7 +678,9 @@ template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
 constexpr bool equal(ForwardIterator1 first1,
                      ForwardIterator1 last1,
                      ForwardIterator2 first2,
@@ -706,7 +752,9 @@ constexpr bool equal(Range1&& range1,
 template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
-          typename Proj = identity>
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
 constexpr bool is_permutation(ForwardIterator1 first1,
                               ForwardIterator1 last1,
                               ForwardIterator2 first2,
@@ -773,7 +821,9 @@ template <typename ForwardIterator1,
           typename ForwardIterator2,
           typename Pred = ranges::equal_to,
           typename Proj1 = identity,
-          typename Proj2 = identity>
+          typename Proj2 = identity,
+          typename = internal::iterator_category_t<ForwardIterator1>,
+          typename = internal::iterator_category_t<ForwardIterator2>>
 constexpr auto search(ForwardIterator1 first1,
                       ForwardIterator1 last1,
                       ForwardIterator2 first2,
@@ -831,7 +881,8 @@ template <typename ForwardIterator,
           typename Size,
           typename T,
           typename Pred = ranges::equal_to,
-          typename Proj = identity>
+          typename Proj = identity,
+          typename = internal::iterator_category_t<ForwardIterator>>
 constexpr auto search_n(ForwardIterator first,
                         ForwardIterator last,
                         Size count,
@@ -880,7 +931,176 @@ constexpr auto search_n(Range&& range,
 // [alg.copy] Copy
 // Reference: https://wg21.link/alg.copy
 
-// TODO(crbug.com/1071094): Implement.
+// Let N be `last - first`.
+//
+// Preconditions: `result` is not in the range `[first, last)`.
+//
+// Effects: Copies elements in the range `[first, last)` into the range
+// `[result, result + N)` starting from `first` and proceeding to `last`. For
+// each non-negative integer `n < N` , performs `*(result + n) = *(first + n)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto copy(InputIterator first,
+                    InputIterator last,
+                    OutputIterator result) {
+  return std::copy(first, last, result);
+}
+
+// Let N be `size(range)`.
+//
+// Preconditions: `result` is not in `range`.
+//
+// Effects: Copies elements in `range` into the range `[result, result + N)`
+// starting from `begin(range)` and proceeding to `end(range)`. For each
+// non-negative integer `n < N` , performs
+// *(result + n) = *(begin(range) + n)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy(R
+template <typename Range,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto copy(Range&& range, OutputIterator result) {
+  return ranges::copy(ranges::begin(range), ranges::end(range), result);
+}
+
+// Let `N` be `max(0, n)`.
+//
+// Mandates: The type `Size` is convertible to an integral type.
+//
+// Effects: For each non-negative integer `i < N`, performs
+// `*(result + i) = *(first + i)`.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_n
+template <typename InputIterator,
+          typename Size,
+          typename OutputIterator,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto copy_n(InputIterator first, Size n, OutputIterator result) {
+  return std::copy_n(first, n, result);
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`, and `N` be the number
+// of iterators `i` in the range `[first, last)` for which the condition `E(i)`
+// holds.
+//
+// Preconditions: The ranges `[first, last)` and
+// `[result, result + (last - first))` do not overlap.
+//
+// Effects: Copies all of the elements referred to by the iterator `i` in the
+// range `[first, last)` for which `E(i)` is true.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `last - first` applications of the corresponding
+// predicate and any projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_if(I
+template <typename InputIterator,
+          typename OutputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<InputIterator>,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto copy_if(InputIterator first,
+                       InputIterator last,
+                       OutputIterator result,
+                       Pred pred,
+                       Proj proj = {}) {
+  return std::copy_if(first, last, result,
+                      internal::ProjectedUnaryPredicate(pred, proj));
+}
+
+// Let `E(i)` be `bool(invoke(pred, invoke(proj, *i)))`, and `N` be the number
+// of iterators `i` in `range` for which the condition `E(i)` holds.
+//
+// Preconditions: `range`  and `[result, result + size(range))` do not overlap.
+//
+// Effects: Copies all of the elements referred to by the iterator `i` in
+// `range` for which `E(i)` is true.
+//
+// Returns: `result + N`
+//
+// Complexity: Exactly `size(range)` applications of the corresponding predicate
+// and any projection.
+//
+// Remarks: Stable.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_if(R
+template <typename Range,
+          typename OutputIterator,
+          typename Pred,
+          typename Proj = identity,
+          typename = internal::iterator_category_t<OutputIterator>>
+constexpr auto copy_if(Range&& range,
+                       OutputIterator result,
+                       Pred pred,
+                       Proj proj = {}) {
+  return ranges::copy_if(ranges::begin(range), ranges::end(range), result,
+                         std::move(pred), std::move(proj));
+}
+
+// Let `N` be `last - first`.
+//
+// Preconditions: `result` is not in the range `(first, last]`.
+//
+// Effects: Copies elements in the range `[first, last)` into the range
+// `[result - N, result)` starting from `last - 1` and proceeding to `first`.
+// For each positive integer `n ≤ N`, performs `*(result - n) = *(last - n)`.
+//
+// Returns: `result - N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(I
+template <typename BidirectionalIterator1,
+          typename BidirectionalIterator2,
+          typename = internal::iterator_category_t<BidirectionalIterator1>,
+          typename = internal::iterator_category_t<BidirectionalIterator2>>
+constexpr auto copy_backward(BidirectionalIterator1 first,
+                             BidirectionalIterator1 last,
+                             BidirectionalIterator2 result) {
+  return std::copy_backward(first, last, result);
+}
+
+// Let `N` be `size(range)`.
+//
+// Preconditions: `result` is not in the range `(begin(range), end(range)]`.
+//
+// Effects: Copies elements in `range` into the range `[result - N, result)`
+// starting from `end(range) - 1` and proceeding to `begin(range)`. For each
+// positive integer `n ≤ N`, performs `*(result - n) = *(end(range) - n)`.
+//
+// Returns: `result - N`
+//
+// Complexity: Exactly `N` assignments.
+//
+// Reference: https://wg21.link/alg.copy#:~:text=ranges::copy_backward(I
+template <typename Range,
+          typename BidirectionalIterator,
+          typename = internal::iterator_category_t<BidirectionalIterator>>
+constexpr auto copy_backward(Range&& range, BidirectionalIterator result) {
+  return ranges::copy_backward(ranges::begin(range), ranges::end(range),
+                               result);
+}
 
 // [alg.move] Move
 // Reference: https://wg21.link/alg.move
@@ -992,7 +1212,8 @@ constexpr auto search_n(Range&& range,
 template <typename ForwardIterator,
           typename T,
           typename Proj = identity,
-          typename Comp = ranges::less>
+          typename Comp = ranges::less,
+          typename = internal::iterator_category_t<ForwardIterator>>
 constexpr auto lower_bound(ForwardIterator first,
                            ForwardIterator last,
                            const T& value,

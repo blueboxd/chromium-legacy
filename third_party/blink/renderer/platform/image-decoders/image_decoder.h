@@ -143,7 +143,7 @@ class PLATFORM_EXPORT ImageDecoder {
   };
 
   // Enforces YUV decoding to be disallowed in the image decoder. The default
-  // value defers to the YUV decoding decision to the decoder.
+  // value defers the YUV decoding decision to the decoder.
   enum class OverrideAllowDecodeToYuv {
     kDefault,
     kDeny,
@@ -376,7 +376,7 @@ class PLATFORM_EXPORT ImageDecoder {
     frame_buffer_cache_[0].SetMemoryAllocator(allocator);
   }
 
-  bool CanDecodeToYUV() { return allow_decode_to_yuv_; }
+  bool CanDecodeToYUV() const { return allow_decode_to_yuv_; }
   // Should only be called if CanDecodeToYuv() returns true, in which case
   // the subclass of ImageDecoder must override this method.
   virtual void DecodeToYUV() { NOTREACHED(); }

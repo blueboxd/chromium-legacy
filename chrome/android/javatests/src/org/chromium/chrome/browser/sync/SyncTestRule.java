@@ -230,8 +230,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void signOut() throws InterruptedException {
         final Semaphore s = new Semaphore(0);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.get().getSigninManager().signOut(
-                    SignoutReason.SIGNOUT_TEST, s::release, false);
+            IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .signOut(SignoutReason.SIGNOUT_TEST, s::release, false);
         });
         Assert.assertTrue(s.tryAcquire(SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS));
         Assert.assertNull(SigninTestUtil.getCurrentAccount());
@@ -414,8 +415,9 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
 
     private void signinAndEnableSyncInternal(final Account account, boolean setFirstSetupComplete) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.get().getSigninManager().signIn(
-                    SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
+            IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .signIn(SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
                             if (setFirstSetupComplete) {

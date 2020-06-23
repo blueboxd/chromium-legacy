@@ -139,7 +139,7 @@ TEST_F(AffiliatedSessionServiceTest, OnUserProfileLoadedAffiliatedAndPrimary) {
 
   session_manager()->NotifyUserProfileLoaded(affiliated_account_id);
 
-  EXPECT_TRUE(affiliated_profile->IsSameProfile(logged_in_));
+  EXPECT_TRUE(affiliated_profile->IsSameOrParent(logged_in_));
 }
 
 TEST_F(AffiliatedSessionServiceTest, OnUserProfileLoadedAffiliated) {
@@ -177,7 +177,7 @@ TEST_F(AffiliatedSessionServiceTest,
   session_manager()->NotifyUserProfileLoaded(affiliated_account_id);
   affiliated_profile->MaybeSendDestroyedNotification();
 
-  EXPECT_TRUE(affiliated_profile->IsSameProfile(logged_out_));
+  EXPECT_TRUE(affiliated_profile->IsSameOrParent(logged_out_));
 }
 
 TEST_F(AffiliatedSessionServiceTest, OnProfileWillBeDestroyedAffiliated) {
@@ -231,10 +231,10 @@ TEST_F(AffiliatedSessionServiceTest, RemoveObserver) {
   EXPECT_FALSE(unlocked_);
 
   session_manager()->NotifyUserProfileLoaded(account_id);
-  EXPECT_FALSE(profile->IsSameProfile(logged_in_));
+  EXPECT_FALSE(profile->IsSameOrParent(logged_in_));
 
   profile->MaybeSendDestroyedNotification();
-  EXPECT_FALSE(profile->IsSameProfile(logged_out_));
+  EXPECT_FALSE(profile->IsSameOrParent(logged_out_));
 }
 
 }  // namespace policy

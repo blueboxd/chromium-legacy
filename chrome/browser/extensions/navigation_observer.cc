@@ -38,7 +38,7 @@ void NavigationObserver::Observe(int type,
 
   NavigationController* controller =
       content::Source<NavigationController>(source).ptr();
-  if (!profile_->IsSameProfile(
+  if (!profile_->IsSameOrParent(
           Profile::FromBrowserContext(controller->GetBrowserContext())))
     return;
 

@@ -279,12 +279,12 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterKioskAppsLoaded) {
                                  LoginShelfView::kAddUser}));
 
   std::vector<KioskAppMenuEntry> kiosk_apps(2);
-  login_shelf_view_->SetKioskApps(kiosk_apps, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
   EXPECT_TRUE(ShowsShelfButtons(
       {LoginShelfView::kShutdown, LoginShelfView::kBrowseAsGuest,
        LoginShelfView::kAddUser, LoginShelfView::kApps}));
 
-  login_shelf_view_->SetKioskApps({}, {});
+  login_shelf_view_->SetKioskApps({}, {}, {});
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown,
                                  LoginShelfView::kBrowseAsGuest,
                                  LoginShelfView::kAddUser}));
@@ -360,7 +360,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
   // or GAIA_SIGNIN.
   login_shelf_view_->SetLoginDialogState(OobeDialogState::GAIA_SIGNIN);
   std::vector<KioskAppMenuEntry> kiosk_apps(1);
-  login_shelf_view_->SetKioskApps(kiosk_apps, {});
+  login_shelf_view_->SetKioskApps(kiosk_apps, {}, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kApps}));
 
@@ -375,7 +375,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterDialogStateChange) {
                          LoginShelfView::kApps}));
 
   // Kiosk app button is hidden when no app exists.
-  login_shelf_view_->SetKioskApps({}, {});
+  login_shelf_view_->SetKioskApps({}, {}, {});
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kAddUser}));
 

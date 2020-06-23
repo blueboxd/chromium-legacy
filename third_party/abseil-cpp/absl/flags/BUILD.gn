@@ -120,8 +120,6 @@ absl_source_set("reflection") {
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/synchronization",
   ]
-  visibility = []
-  visibility += [ ":*" ]
 }
 
 absl_source_set("flag_internal") {

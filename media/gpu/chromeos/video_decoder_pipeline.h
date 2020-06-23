@@ -38,7 +38,7 @@ class DmabufVideoFramePool;
 // Note: All methods and callbacks should be called on the same sequence.
 class MEDIA_GPU_EXPORT DecoderInterface {
  public:
-  using InitCB = base::OnceCallback<void(::media::Status status)>;
+  using InitCB = base::OnceCallback<void(Status status)>;
   // TODO(crbug.com/998413): Replace VideoFrame to GpuMemoryBuffer-based
   // instance.
   using OutputCB = base::RepeatingCallback<void(scoped_refptr<VideoFrame>)>;
@@ -147,7 +147,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
   int GetMaxDecodeRequests() const override;
   bool NeedsBitstreamConversion() const override;
   bool CanReadWithoutStalling() const override;
-
   void Initialize(const VideoDecoderConfig& config,
                   bool low_delay,
                   CdmContext* cdm_context,
@@ -168,11 +167,6 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
       const gfx::Rect& visible_rect) override;
 
  private:
-  // Get a list of the available functions for creating VideoDeocoder except
-  // |current_func| one.
-  static base::queue<CreateVDFunc> GetCreateVDFunctions(
-      CreateVDFunc current_func);
-
   VideoDecoderPipeline(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
       std::unique_ptr<DmabufVideoFramePool> frame_pool,
@@ -189,11 +183,11 @@ class MEDIA_GPU_EXPORT VideoDecoderPipeline : public VideoDecoder,
 
   void CreateAndInitializeVD(base::queue<CreateVDFunc> create_vd_funcs,
                              VideoDecoderConfig config,
-                             ::media::Status parent_error);
+                             Status parent_error);
   void OnInitializeDone(base::queue<CreateVDFunc> create_vd_funcs,
                         VideoDecoderConfig config,
-                        ::media::Status parent_error,
-                        ::media::Status success);
+                        Status parent_error,
+                        Status success);
 
   void OnDecodeDone(bool eos_buffer, DecodeCB decode_cb, DecodeStatus status);
   void OnResetDone();

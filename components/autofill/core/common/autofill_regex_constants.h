@@ -47,6 +47,7 @@ extern const char kMiddleInitialRe[];
 extern const char kMiddleNameRe[];
 extern const char kLastNameRe[];
 extern const char kPhoneRe[];
+extern const char kAugmentedPhoneCountryCodeRe[];
 extern const char kCountryCodeRe[];
 extern const char kAreaCodeNotextRe[];
 extern const char kAreaCodeRe[];

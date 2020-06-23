@@ -32,6 +32,17 @@ const currentFiles = [];
 let entryIndex = -1;
 
 /**
+ * Keeps track of the current launch (i.e. call to `launchWithDirectory`) .
+ * Since file loading can be deferred i.e. we can load the first focused file
+ * and start using the app then load other files in `loadOtherRelatedFiles()` we
+ * need to make sure `loadOtherRelatedFiles` gets aborted if it is out of date
+ * i.e. in interleaved launches.
+ *
+ * @type {number}
+ */
+let globalLaunchNumber = -1;
+
+/**
  * Reference to the directory handle that contains the first file in the most
  * recent launch event.
  * @type {?FileSystemDirectoryHandle}
@@ -280,19 +291,30 @@ async function refreshFile(fd) {
  * @return {!Promise<undefined>}
  */
 async function sendFilesToGuest() {
-  return sendSnapshotToGuest([...currentFiles]);  // Shallow copy.
+  return sendSnapshotToGuest(
+      [...currentFiles], globalLaunchNumber);  // Shallow copy.
 }
 
 /**
  * Loads the provided file list into the guest without making any file writable.
+ * Note: code paths can defer loads i.e. `launchWithDirectory()` increment
+ * `globalLaunchNumber` to ensure their deferred load is still relevant when it
+ * finishes processing. Other code paths that call `sendSnapshotToGuest()` don't
+ * have to.
  * @param {!Array<!FileDescriptor>} snapshot
+ * @param {number} localLaunchNumber
+ * @param {boolean=} extraFiles
  * @return {!Promise<undefined>}
  */
-async function sendSnapshotToGuest(snapshot) {
+async function sendSnapshotToGuest(
+    snapshot, localLaunchNumber, extraFiles = false) {
   // On first launch, files are opened to determine navigation candidates. Don't
   // reopen in that case. Otherwise, attempt to reopen here. Some files may be
   // assigned null, e.g., if they have been moved to a different folder.
   await Promise.all(snapshot.map(refreshFile));
+  if (localLaunchNumber !== globalLaunchNumber) {
+    return;
+  }
 
   /** @type {!LoadFilesMessage} */
   const loadFilesMessage = {
@@ -312,7 +334,12 @@ async function sendSnapshotToGuest(snapshot) {
     fd.file = null;
   }
   await iframeReady;
-  await guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
+  if (extraFiles) {
+    await guestMessagePipe.sendMessage(
+        Message.LOAD_EXTRA_FILES, loadFilesMessage);
+  } else {
+    await guestMessagePipe.sendMessage(Message.LOAD_FILES, loadFilesMessage);
+  }
 }
 
 /**
@@ -422,19 +449,44 @@ function isFileRelated(focusFile, siblingFile) {
 }
 
 /**
- * Changes the working directory and initializes file iteration according to
- * the type of the opened file.
+ * Enum like return value of `processOtherFilesInDirectory()`.
+ * @enum {number}
+ */
+const ProcessOtherFilesResult = {
+  // Newer load in progress, can abort loading these files.
+  ABORT: -2,
+  // The focusFile is missing, treat this as a normal load.
+  FOCUS_FILE_MISSING: -1,
+  // The focusFile is present, load these files as extra files.
+  FOCUS_FILE_RELEVANT: 0,
+};
+
+/**
+ * Loads related files the working directory to initialize file iteration
+ * according to the type of the opened file. If `globalLaunchNumber` changes
+ * (i.e. another launch occurs), this will abort early and not change
+ * `currentFiles`.
  * @param {!FileSystemDirectoryHandle} directory
  * @param {?File} focusFile
+ * @param {number} localLaunchNumber
+ * @return {!Promise<!ProcessOtherFilesResult>}
  */
-async function setCurrentDirectory(directory, focusFile) {
+async function processOtherFilesInDirectory(
+    directory, focusFile, localLaunchNumber) {
   if (!focusFile || !focusFile.name) {
-    return;
+    return ProcessOtherFilesResult.ABORT;
   }
+
+  /** @type {!Array<!FileDescriptor>} */
+  const relatedFiles = [];
   // TODO(b/158149714): Clear out old tokens as well? Care needs to be taken to
   // ensure any file currently open with unsaved changes can still be saved.
-  currentFiles.length = 0;
   for await (const /** !FileSystemHandle */ handle of directory.getEntries()) {
+    if (localLaunchNumber !== globalLaunchNumber) {
+      // Abort, another more up to date launch in progress.
+      return ProcessOtherFilesResult.ABORT;
+    }
+
     if (!handle.isFile) {
       continue;
     }
@@ -450,17 +502,22 @@ async function setCurrentDirectory(directory, focusFile) {
 
     // Only allow traversal of related file types.
     if (entry && isFileRelated(focusFile, entry.file)) {
-      currentFiles.push({
+      relatedFiles.push({
         token: generateToken(entry.handle),
         file: entry.file,
         handle: entry.handle,
       });
     }
   }
+
+  if (localLaunchNumber !== globalLaunchNumber) {
+    return ProcessOtherFilesResult.ABORT;
+  }
+
   // Iteration order is not guaranteed using `directory.getEntries()`, so we
   // sort it afterwards by modification time to ensure a consistent and logical
   // order. More recent (i.e. higher timestamp) files should appear first.
-  currentFiles.sort((a, b) => {
+  relatedFiles.sort((a, b) => {
     // Sort null files last if they racily appear.
     if (!a.file && !b.file) {
       return 0;
@@ -471,9 +528,68 @@ async function setCurrentDirectory(directory, focusFile) {
     }
     return b.file.lastModified - a.file.lastModified;
   });
+
   const name = focusFile.name;
-  entryIndex = currentFiles.findIndex(i => !!i.file && i.file.name === name);
+  const focusIndex =
+      relatedFiles.findIndex(i => !!i.file && i.file.name === name);
+  entryIndex = 0;
+  if (focusIndex === -1) {
+    // The focus file is no longer there i.e. might have been deleted, should be
+    // missing form `currentFiles` as well.
+    currentFiles.push(...relatedFiles);
+    return ProcessOtherFilesResult.FOCUS_FILE_MISSING;
+  } else {
+    // Rotate the sorted files so focusIndex becomes index 0 such that we have
+    // [focus file, ...files larger, ...files smaller].
+    currentFiles.push(...relatedFiles.slice(focusIndex + 1));
+    currentFiles.push(...relatedFiles.slice(0, focusIndex));
+    return ProcessOtherFilesResult.FOCUS_FILE_RELEVANT;
+  }
+}
+
+/**
+ * Loads related files in the working directory and sends them to the guest. If
+ * the focus file (currentFiles[0]) is no longer relevant i.e. is has been
+ * deleted, we load files as usual.
+ * @param {!FileSystemDirectoryHandle} directory
+ * @param {?File} focusFile
+ * @param {?FileSystemFileHandle} focusHandle
+ * @param {number} localLaunchNumber
+ */
+async function loadOtherRelatedFiles(
+    directory, focusFile, focusHandle, localLaunchNumber) {
+  const processResult = await processOtherFilesInDirectory(
+      directory, focusFile, localLaunchNumber);
+  if (localLaunchNumber !== globalLaunchNumber ||
+      processResult === ProcessOtherFilesResult.ABORT) {
+    return;
+  }
+
+  const shallowCopy = [...currentFiles];
+  if (processResult === ProcessOtherFilesResult.FOCUS_FILE_RELEVANT) {
+    shallowCopy.shift();
+    await sendSnapshotToGuest(shallowCopy, localLaunchNumber, true);
+  } else {
+    // If the focus file is no longer relevant, load files as normal.
+    await sendSnapshotToGuest(shallowCopy, localLaunchNumber);
+  }
+}
+
+/**
+ * Sets state for the files opened in the current directory.
+ * @param {!FileSystemDirectoryHandle} directory
+ * @param {!{file: !File, handle: !FileSystemFileHandle}} focusFile
+ */
+function setCurrentDirectory(directory, focusFile) {
+  // Load currentFiles into the guest.
+  currentFiles.length = 0;
+  currentFiles.push({
+    token: generateToken(focusFile.handle),
+    file: focusFile.file,
+    handle: focusFile.handle,
+  });
   currentDirectoryHandle = directory;
+  entryIndex = 0;
 }
 
 /**
@@ -483,18 +599,25 @@ async function setCurrentDirectory(directory, focusFile) {
  * @param {!FileSystemHandle} handle
  */
 async function launchWithDirectory(directory, handle) {
+  const localLaunchNumber = ++globalLaunchNumber;
+
   let asFile;
   try {
     asFile = await getFileFromHandle(handle);
   } catch (/** @type {!DOMException} */ e) {
     console.warn(`${handle.name}: ${e.message}`);
-    sendSnapshotToGuest([{token: -1, file: null, handle, error: e.name}]);
+    sendSnapshotToGuest(
+        [{token: -1, file: null, handle, error: e.name}], localLaunchNumber);
     return;
   }
-  await setCurrentDirectory(directory, asFile.file);
-
   // Load currentFiles into the guest.
-  await sendFilesToGuest();
+  setCurrentDirectory(directory, asFile);
+  await sendSnapshotToGuest([...currentFiles], localLaunchNumber);
+  // The app is operable with the first file now.
+
+  // Process other files in directory.
+  await loadOtherRelatedFiles(
+      directory, asFile.file, asFile.handle, localLaunchNumber);
 }
 
 /**

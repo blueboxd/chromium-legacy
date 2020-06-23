@@ -137,6 +137,20 @@ content::EvalJsResult WaitForImageAlt(content::WebContents* web_ui,
       web_ui, base::ReplaceStringPlaceholders(kScript, {alt}, nullptr));
 }
 
+// Waits for the "shownav" attribute to show up in the MediaApp's current
+// handler. Also checks the panel isn't open indicating an edit is not in
+// progress. This prevents trying to traverse a directory before other files are
+// available / while editing.
+content::EvalJsResult WaitForNavigable(content::WebContents* web_ui) {
+  constexpr char kScript[] = R"(
+      (async () => {
+        await waitForNode(':not([panelopen])[shownav]');
+      })();
+  )";
+
+  return MediaAppUiBrowserTest::EvalJsInAppFrame(web_ui, kScript);
+}
+
 void TouchFileSync(const base::FilePath& path, const base::Time& time) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::TouchFile(path, time, time));
@@ -304,6 +318,11 @@ IN_PROC_BROWSER_TEST_P(MediaAppIntegrationWithFilesAppTest,
   content::WebContents* web_ui = PrepareActiveBrowserForTest();
 
   EXPECT_EQ("640x480", WaitForImageAlt(web_ui, kFileJpeg640x480));
+
+  // We load the first file when the app launches, other files in the working
+  // directory are loaded afterwards. Wait for the second load to occur
+  // indicated by being able to navigate.
+  WaitForNavigable(web_ui);
 
   // Navigate to the next file in the directory.
   EXPECT_EQ(true, ExecuteScript(web_ui, "advance(1)"));

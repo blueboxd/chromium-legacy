@@ -6,10 +6,12 @@
 
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -287,6 +289,80 @@ TEST(PhoneNumberTest, InternationalPhoneHomeCityAndNumber_DE) {
   // PHONE_HOME_CITY_AND_NUMBER should start with a 0.
   EXPECT_EQ(ASCIIToUTF16("01741234567"),
             phone_number.GetInfo(PHONE_HOME_CITY_AND_NUMBER, "en-US"));
+}
+
+// Tests whether the |PHONE_HOME_COUNTRY_CODE| is added to the set of matching
+// types.
+TEST(PhoneNumberTest, CountryCodeInMatchingTypes) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillEnableAugmentedPhoneCountryCode);
+
+  AutofillProfile profile;
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  // Set the phone number such that country_code == 1, city_code = 650,
+  // number = 2345678.
+  base::string16 phone(ASCIIToUTF16("1 [650] 234-5678"));
+  PhoneNumber phone_number(&profile);
+  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone, "US");
+
+  std::vector<const char*> test_cases = {"+1", "1", "(+1) United States",
+                                         "US (+1)"};
+
+  for (size_t i = 0; i < test_cases.size(); i++) {
+    SCOPED_TRACE(testing::Message() << "i(US) = " << i);
+
+    ServerFieldTypeSet matching_types;
+    phone_number.GetMatchingTypes(ASCIIToUTF16(test_cases[i]), "US",
+                                  &matching_types);
+
+    EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_COUNTRY_CODE));
+  }
+
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("DE"));
+  base::string16 de_phone(ASCIIToUTF16("+49 0151 6679586"));
+  PhoneNumber phone_number_de(&profile);
+  phone_number_de.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), de_phone,
+                          "DE");
+
+  test_cases = {"49", "+49", "(+49) DE", "(0049) DE", "0049"};
+  for (size_t i = 0; i < test_cases.size(); i++) {
+    SCOPED_TRACE(testing::Message() << "i(DE) = " << i);
+
+    ServerFieldTypeSet matching_types;
+    phone_number_de.GetMatchingTypes(ASCIIToUTF16(test_cases[i]), "DE",
+                                     &matching_types);
+
+    EXPECT_THAT(matching_types, testing::ElementsAre(PHONE_HOME_COUNTRY_CODE));
+  }
+}
+
+// Tests that the |PHONE_HOME_COUNTRY_CODE| should not be added to the set of
+// matching types.
+TEST(PhoneNumberTest, CountryCodeNotInMatchingTypes) {
+  base::test::ScopedFeatureList enabled;
+  enabled.InitAndEnableFeature(
+      features::kAutofillEnableAugmentedPhoneCountryCode);
+
+  AutofillProfile profile;
+  profile.SetRawInfo(ADDRESS_HOME_COUNTRY, ASCIIToUTF16("US"));
+  // Set phone number so country_code == 1, city_code = 650, number = 2345678.
+  base::string16 phone(ASCIIToUTF16("1 [650] 234-5678"));
+  PhoneNumber phone_number(&profile);
+  phone_number.SetInfo(AutofillType(PHONE_HOME_WHOLE_NUMBER), phone, "US");
+
+  std::vector<const char*> test_cases = {
+      "01", "+16502", "11", "211", "0001", "++1", "+1abc2", "001abc2", "01"};
+
+  for (size_t i = 0; i < test_cases.size(); i++) {
+    SCOPED_TRACE(testing::Message() << "i = " << i);
+
+    ServerFieldTypeSet matching_types;
+    phone_number.GetMatchingTypes(ASCIIToUTF16(test_cases[i]), "US",
+                                  &matching_types);
+
+    EXPECT_THAT(matching_types, testing::IsEmpty());
+  }
 }
 
 }  // namespace autofill

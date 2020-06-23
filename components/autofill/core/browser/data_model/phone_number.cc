@@ -13,9 +13,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
+#include "components/autofill/core/browser/data_model/data_model_utils.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
+#include "components/autofill/core/common/autofill_features.h"
 
 namespace autofill {
 namespace {
@@ -133,6 +135,18 @@ void PhoneNumber::GetMatchingTypes(const base::string16& text,
       if (normalized_number == whole_number)
         matching_types->insert(PHONE_HOME_WHOLE_NUMBER);
     }
+  }
+
+  // |PHONE_HOME_COUNTRY_CODE| is added to the set of the |matching_types| when
+  // the digits extracted from the |stripped_text| match the |country_code|.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAugmentedPhoneCountryCode)) {
+    base::string16 candidate =
+        data_util::FindPossiblePhoneCountryCode(stripped_text);
+    base::string16 country_code =
+        GetInfo(AutofillType(PHONE_HOME_COUNTRY_CODE), app_locale);
+    if (candidate.size() > 0 && candidate == country_code)
+      matching_types->insert(PHONE_HOME_COUNTRY_CODE);
   }
 }
 

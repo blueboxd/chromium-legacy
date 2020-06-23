@@ -398,7 +398,7 @@ void SetTimezoneFromUI(Profile* profile, const std::string& timezone_id) {
   }
 
   Profile* primary_profile = ProfileManager::GetPrimaryUserProfile();
-  if (primary_profile && profile->IsSameProfile(primary_profile)) {
+  if (primary_profile && profile->IsSameOrParent(primary_profile)) {
     profile->GetPrefs()->SetString(prefs::kUserTimezone, timezone_id);
     return;
   }

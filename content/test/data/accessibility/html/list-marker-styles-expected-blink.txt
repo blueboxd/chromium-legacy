@@ -60,3 +60,51 @@ rootWebArea
 ++++++++++++++inlineTextBox name='a. '
 ++++++++++staticText name='lower-alpha'
 ++++++++++++inlineTextBox name='lower-alpha'
+++++++list
+++++++++listItem listStyle=other
+++++++++++listMarker name='foo'
+++++++++++++staticText name='foo'
+++++++++++++++inlineTextBox name='foo'
+++++++++++staticText name=''foo''
+++++++++++++inlineTextBox name=''foo''
+++++++list
+++++++++listItem listStyle=circle
+++++++++++staticText name='content: none'
+++++++++++++inlineTextBox name='content: none'
+++++++list
+++++++++listItem listStyle=other
+++++++++++listMarker
+++++++++++++staticText name='bar'
+++++++++++++++inlineTextBox name='bar'
+++++++++++staticText name='content: 'bar''
+++++++++++++inlineTextBox name='content: 'bar''
+++++++list
+++++++++listItem listStyle=image
+++++++++++listMarker
+++++++++++++staticText name='baz'
+++++++++++++++inlineTextBox name='baz'
+++++++++++staticText name='content: 'baz''
+++++++++++++inlineTextBox name='content: 'baz''
+++++++list
+++++++++listItem listStyle=numeric
+++++++++++listMarker
+++++++++++++image
+++++++++++staticText name='content: url('bullet.png')'
+++++++++++++inlineTextBox name='content: url('bullet.png')'
+++++++list
+++++++++listItem listStyle=other
+++++++++++listMarker
+++++++++++++staticText name='0'
+++++++++++++++inlineTextBox name='0'
+++++++++++staticText name='content: counter(c)'
+++++++++++++inlineTextBox name='content: counter(c)'
+++++++list
+++++++++listItem
+++++++++++listMarker
+++++++++++++staticText name='foo'
+++++++++++++++inlineTextBox name='foo'
+++++++++++++image
+++++++++++++staticText name='0'
+++++++++++++++inlineTextBox name='0'
+++++++++++staticText name='content: 'foo' url('bullet.png') counter(c)'
+++++++++++++inlineTextBox name='content: 'foo' url('bullet.png') counter(c)'

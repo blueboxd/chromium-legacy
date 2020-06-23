@@ -10,17 +10,20 @@ import org.chromium.chrome.browser.safety_check.SafetyCheckBridge.SafetyCheckCom
 /**
  * Main class for all Safety check related logic.
  */
-public class SafetyCheck implements SafetyCheckCommonObserver {
+public class SafetyCheckController implements SafetyCheckCommonObserver {
     private SafetyCheckBridge mSafetyCheckBridge;
+    private SafetyCheckModel mModel;
 
-    public SafetyCheck() {
-        mSafetyCheckBridge = new SafetyCheckBridge(SafetyCheck.this);
+    public SafetyCheckController(SafetyCheckModel model) {
+        mSafetyCheckBridge = new SafetyCheckBridge(SafetyCheckController.this);
+        mModel = model;
     }
 
     /**
      * Triggers all safety check child checks.
      */
     public void performSafetyCheck() {
+        mModel.setCheckingState();
         mSafetyCheckBridge.checkSafeBrowsing();
         mSafetyCheckBridge.checkPasswords();
     }
@@ -33,7 +36,9 @@ public class SafetyCheck implements SafetyCheckCommonObserver {
      *               //components/safety_check/safety_check.h).
      */
     @Override
-    public void onSafeBrowsingCheckResult(@SafeBrowsingStatus int status) {}
+    public void onSafeBrowsingCheckResult(@SafeBrowsingStatus int status) {
+        mModel.updateSafeBrowsingStatus(status);
+    }
 
     /**
      * Gets invoked by the C++ code every time another credential is checked.
@@ -52,5 +57,17 @@ public class SafetyCheck implements SafetyCheckCommonObserver {
      *              //components/password_manager/core/browser/bulk_leak_check_service_interface.h).
      */
     @Override
-    public void onPasswordCheckStateChange(@BulkLeakCheckServiceState int state) {}
+    public void onPasswordCheckStateChange(@BulkLeakCheckServiceState int state) {
+        if (state == BulkLeakCheckServiceState.RUNNING) {
+            return;
+        }
+        mSafetyCheckBridge.stopObservingPasswordsCheck();
+        if (state == BulkLeakCheckServiceState.IDLE) {
+            boolean hasPasswords = mSafetyCheckBridge.savedPasswordsExist();
+            int numLeaked = mSafetyCheckBridge.getNumberOfPasswordLeaksFromLastCheck();
+            mModel.updatePasswordsStatusOnSucess(hasPasswords, numLeaked);
+        } else {
+            mModel.updatePasswordsStatusOnError(state);
+        }
+    }
 }

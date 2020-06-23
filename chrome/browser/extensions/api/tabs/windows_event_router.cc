@@ -180,14 +180,14 @@ WindowsEventRouter::~WindowsEventRouter() {
 }
 
 void WindowsEventRouter::OnAppWindowAdded(extensions::AppWindow* app_window) {
-  if (!profile_->IsSameProfile(
+  if (!profile_->IsSameOrParent(
           Profile::FromBrowserContext(app_window->browser_context())))
     return;
   AddAppWindow(app_window);
 }
 
 void WindowsEventRouter::OnAppWindowRemoved(extensions::AppWindow* app_window) {
-  if (!profile_->IsSameProfile(
+  if (!profile_->IsSameOrParent(
           Profile::FromBrowserContext(app_window->browser_context())))
     return;
 
@@ -206,7 +206,7 @@ void WindowsEventRouter::OnWindowControllerAdded(
     WindowController* window_controller) {
   if (!HasEventListener(windows::OnCreated::kEventName))
     return;
-  if (!profile_->IsSameProfile(window_controller->profile()))
+  if (!profile_->IsSameOrParent(window_controller->profile()))
     return;
   // Ignore any windows without an associated browser (e.g., AppWindows).
   if (!window_controller->GetBrowser())
@@ -228,7 +228,7 @@ void WindowsEventRouter::OnWindowControllerRemoved(
     WindowController* window_controller) {
   if (!HasEventListener(windows::OnRemoved::kEventName))
     return;
-  if (!profile_->IsSameProfile(window_controller->profile()))
+  if (!profile_->IsSameOrParent(window_controller->profile()))
     return;
   // Ignore any windows without an associated browser (e.g., AppWindows).
   if (!window_controller->GetBrowser())
@@ -263,7 +263,7 @@ void WindowsEventRouter::OnActiveWindowChanged(
   Profile* window_profile = nullptr;
   int window_id = extension_misc::kUnknownWindowId;
   if (window_controller &&
-      profile_->IsSameProfile(window_controller->profile())) {
+      profile_->IsSameOrParent(window_controller->profile())) {
     window_profile = window_controller->profile();
     window_id = window_controller->GetWindowId();
   }

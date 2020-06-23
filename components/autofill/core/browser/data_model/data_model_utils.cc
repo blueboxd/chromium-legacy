@@ -12,6 +12,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_regex_constants.h"
+#include "components/autofill/core/common/autofill_regexes.h"
 #include "third_party/icu/source/common/unicode/uloc.h"
 #include "third_party/icu/source/i18n/unicode/dtfmtsym.h"
 
@@ -139,6 +141,18 @@ bool SetExpirationYear(int value, int* expiration_year) {
   }
   *expiration_year = value;
   return true;
+}
+
+base::string16 FindPossiblePhoneCountryCode(const base::string16& text) {
+  base::string16 candidate;
+  if (text.find(base::ASCIIToUTF16("00")) != base::string16::npos ||
+      text.find('+') != base::string16::npos) {
+    if (MatchesPattern(text, base::ASCIIToUTF16(kAugmentedPhoneCountryCodeRe),
+                       &candidate, 1))
+      return candidate;
+  }
+
+  return base::string16();
 }
 
 }  // namespace data_util

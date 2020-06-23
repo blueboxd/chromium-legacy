@@ -120,6 +120,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
 
   void OnFirstContentfulPaint() override;
   void OnFirstMeaningfulPaint() override;
+  void OnLoad() override;
   bool IsWaitingForContentfulPaint() const;
   bool IsWaitingForMeaningfulPaint() const;
 
@@ -208,6 +209,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
   friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
+  friend class PerAgentSchedulingBaseTest;
   friend class ResourceLoadingTaskRunnerHandleImpl;
   friend class ::blink::MainThreadSchedulerTest;
 

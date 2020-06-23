@@ -126,7 +126,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   void SetPrefService(PrefService* pref_service);
 
   // |home_dir| is the path of the Device Account's home directory (root of the
-  // user's cryptohome).
+  // user's cryptohome). If |home_dir| is |base::FilePath::empty()|, then |this|
+  // |AccountManager| does not persist any data to disk.
   // |request_context| is a non-owning pointer.
   // |delay_network_call_runner| is basically a wrapper for
   // |chromeos::DelayNetworkCall|. Cannot use |chromeos::DelayNetworkCall| due
@@ -371,7 +372,13 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
 
   // A task runner for disk I/O.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  // Writes |AccountManager|'s state to disk. Will be |nullptr| if
+  // |AccountManager| is operating in-memory only.
   std::unique_ptr<base::ImportantFileWriter> writer_;
+
+  // Cryptohome root.
+  base::FilePath home_dir_;
 
   // A map from |AccountKey|s to |AccountInfo|.
   AccountMap accounts_;

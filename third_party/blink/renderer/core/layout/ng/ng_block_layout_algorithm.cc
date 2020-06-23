@@ -732,6 +732,15 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
     intrinsic_block_size_ +=
         std::max(intrinsic_block_size_,
                  Node().GetLayoutBox()->LogicalHeightForEmptyLine());
+    // Test [1][2] require baseline offset for empty editable.
+    // [1] css3/flexbox/baseline-for-empty-line.html
+    // [2] inline-block/contenteditable-baseline.html
+    const LayoutBlock* const layout_block =
+        To<LayoutBlock>(Node().GetLayoutBox());
+    if (auto baseline_offset = layout_block->BaselineForEmptyLine(
+            layout_block->IsHorizontalWritingMode() ? kHorizontalLine
+                                                    : kVerticalLine))
+      container_builder_.SetBaseline(*baseline_offset);
   }
 
   // Collapse annotation overflow and padding.

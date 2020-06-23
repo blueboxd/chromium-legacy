@@ -113,10 +113,21 @@ const char kManagementDataLossPreventionPermissions[] =
 const char kManagementMalwareScanningName[] = "managementMalwareScanningName";
 const char kManagementMalwareScanningPermissions[] =
     "managementMalwareScanningPermissions";
-const char kManagementEnterpriseReportingName[] =
-    "managementEnterpriseReportingName";
-const char kManagementEnterpriseReportingPermissions[] =
-    "managementEnterpriseReportingPermissions";
+const char kManagementEnterpriseReportingEvent[] =
+    "managementEnterpriseReportingEvent";
+const char kManagementEnterpriseReportingVisibleData[] =
+    "managementEnterpriseReportingVisibleData";
+
+const char kManagementOnFileAttachedEvent[] = "managementOnFileAttachedEvent";
+const char kManagementOnFileAttachedVisibleData[] =
+    "managementOnFileAttachedVisibleData";
+const char kManagementOnFileDownloadedEvent[] =
+    "managementOnFileDownloadedEvent";
+const char kManagementOnFileDownloadedVisibleData[] =
+    "managementOnFileDownloadedVisibleData";
+const char kManagementOnBulkDataEntryEvent[] = "managementOnBulkDataEntryEvent";
+const char kManagementOnBulkDataEntryVisibleData[] =
+    "managementOnBulkDataEntryVisibleData";
 
 const char kReportingTypeDevice[] = "device";
 const char kReportingTypeExtensions[] = "extensions";
@@ -682,41 +693,44 @@ base::Value ManagementUIHandler::GetThreatProtectionInfo(
   const policy::PolicyService* policy_service = GetPolicyService();
   const auto& chrome_policies = policy_service->GetPolicies(
       policy::PolicyNamespace(policy::POLICY_DOMAIN_CHROME, std::string()));
-  // CheckContentCompliance is a int-enum policy. The accepted values are
-  // defined in the enum CheckContentComplianceValues.
-  auto* check_content_compliance_value =
-      chrome_policies.GetValue(policy::key::kCheckContentCompliance);
-  if (check_content_compliance_value &&
-      check_content_compliance_value->GetInt() > safe_browsing::CHECK_NONE &&
-      check_content_compliance_value->GetInt() <=
-          safe_browsing::CHECK_CONTENT_COMPLIANCE_MAX) {
+
+  auto* on_file_attached =
+      chrome_policies.GetValue(policy::key::kOnFileAttachedEnterpriseConnector);
+  if (on_file_attached && on_file_attached->is_list() &&
+      !on_file_attached->GetList().empty()) {
     base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementDataLossPreventionName);
-    value.SetStringKey("permission", kManagementDataLossPreventionPermissions);
+    value.SetStringKey("title", kManagementOnFileAttachedEvent);
+    value.SetStringKey("permission", kManagementOnFileAttachedVisibleData);
     info.Append(std::move(value));
   }
 
-  // SendFilesForMalwareCheck is a int-enum policy. The accepted values are
-  // defined in the enum SendFilesForMalwareCheckValues.
-  auto* send_files_for_malware_check_value =
-      chrome_policies.GetValue(policy::key::kSendFilesForMalwareCheck);
-  if (send_files_for_malware_check_value &&
-      send_files_for_malware_check_value->GetInt() >
-          safe_browsing::DO_NOT_SCAN &&
-      send_files_for_malware_check_value->GetInt() <=
-          safe_browsing::SEND_FILES_FOR_MALWARE_CHECK_MAX) {
+  auto* on_file_downloaded = chrome_policies.GetValue(
+      policy::key::kOnFileDownloadedEnterpriseConnector);
+  if (on_file_downloaded && on_file_downloaded->is_list() &&
+      !on_file_downloaded->GetList().empty()) {
     base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementMalwareScanningName);
-    value.SetStringKey("permission", kManagementMalwareScanningPermissions);
+    value.SetStringKey("title", kManagementOnFileDownloadedEvent);
+    value.SetStringKey("permission", kManagementOnFileDownloadedVisibleData);
     info.Append(std::move(value));
   }
 
-  auto* unsafe_event_reporting_value =
-      chrome_policies.GetValue(policy::key::kUnsafeEventsReportingEnabled);
-  if (unsafe_event_reporting_value && unsafe_event_reporting_value->GetBool()) {
+  auto* on_bulk_data_entry = chrome_policies.GetValue(
+      policy::key::kOnBulkDataEntryEnterpriseConnector);
+  if (on_bulk_data_entry && on_bulk_data_entry->is_list() &&
+      !on_bulk_data_entry->GetList().empty()) {
     base::Value value(base::Value::Type::DICTIONARY);
-    value.SetStringKey("title", kManagementEnterpriseReportingName);
-    value.SetStringKey("permission", kManagementEnterpriseReportingPermissions);
+    value.SetStringKey("title", kManagementOnBulkDataEntryEvent);
+    value.SetStringKey("permission", kManagementOnBulkDataEntryVisibleData);
+    info.Append(std::move(value));
+  }
+
+  auto* on_security_event = chrome_policies.GetValue(
+      policy::key::kOnSecurityEventEnterpriseConnector);
+  if (on_security_event && on_security_event->is_list() &&
+      !on_security_event->GetList().empty()) {
+    base::Value value(base::Value::Type::DICTIONARY);
+    value.SetStringKey("title", kManagementEnterpriseReportingEvent);
+    value.SetStringKey("permission", kManagementEnterpriseReportingVisibleData);
     info.Append(std::move(value));
   }
 

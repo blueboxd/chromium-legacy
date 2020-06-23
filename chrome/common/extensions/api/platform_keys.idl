@@ -97,7 +97,7 @@ namespace platformKeys {
   // $(ref:platformKeys.subtleCrypto).
   // |privateKey|: Might be <code>null</code> if this extension does not have
   //   access to it.
-  callback GetKeyPairCallback = void (object publicKey, 
+  callback GetKeyPairCallback = void (object publicKey,
                                       optional object privateKey);
 
   callback VerificationCallback = void (VerificationResult result);
@@ -135,6 +135,28 @@ namespace platformKeys {
     [nocompile] static void getKeyPair(ArrayBuffer certificate,
                                        object parameters,
                                        GetKeyPairCallback callback);
+
+    // Passes the key pair identified by <code>publicKeySpkiDer</code> for
+    // usage with $(ref:platformKeys.subtleCrypto) to <code>callback</code>.
+    // |publicKeySpkiDer|: A DER-encoded X.509 SubjectPublicKeyInfo, obtained
+    // e.g. by calling WebCrypto's exportKey function with format="spki".
+    // |parameters|: Provides signature and hash algorithm parameters, in
+    // addition to those fixed by the key itself. The same parameters are
+    // accepted as by WebCrypto's <a
+    // href="http://www.w3.org/TR/WebCryptoAPI/#SubtleCrypto-method-importKey">importKey</a>
+    // function, e.g. <code>RsaHashedImportParams</code> for a RSASSA-PKCS1-v1_5
+    // key. For RSASSA-PKCS1-v1_5 keys, we need to also pass a "hash" parameter
+    // <code>{ "hash": { "name": string } }</code>. The "hash" parameter
+    // represents the name of the hashing algorithm to be used in the digest
+    // operation before a sign. It is possible to pass "none" as the hash name,
+    // in which case the sign function will apply PKCS#1 v1.5 padding and but
+    // not hash the given data.
+    // <p>Currently, this function only supports the "RSASSA-PKCS1-v1_5"
+    // algorithm with one of the hashing algorithms "none", "SHA-1", "SHA-256",
+    // "SHA-384", and "SHA-512".</p>
+    [nocompile] static void getKeyPairBySpki(ArrayBuffer publicKeySpkiDer,
+                                             object parameters,
+                                             GetKeyPairCallback callback);
 
     // An implementation of WebCrypto's
     // <a href="http://www.w3.org/TR/WebCryptoAPI/#subtlecrypto-interface">

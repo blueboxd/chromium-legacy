@@ -917,6 +917,14 @@ class MainThreadSchedulerImplTest : public testing::Test {
     return frame_task_queue_controller->GetTaskQueue(queue_traits);
   }
 
+  static scoped_refptr<TaskQueue> ForegroundOnlyTaskQueue(
+      FrameSchedulerImpl* scheduler) {
+    auto* frame_task_queue_controller =
+        scheduler->FrameTaskQueueControllerForTest();
+    auto queue_traits = FrameSchedulerImpl::ForegroundOnlyTaskQueueTraits();
+    return frame_task_queue_controller->GetTaskQueue(queue_traits);
+  }
+
   QueueingTimeEstimator* queueing_time_estimator() {
     return &scheduler_->queueing_time_estimator_;
   }
@@ -4005,9 +4013,10 @@ class DisableNonMainTimerQueuesUntilFMPTest
     : public MainThreadSchedulerImplTest {
  public:
   DisableNonMainTimerQueuesUntilFMPTest()
-      : MainThreadSchedulerImplTest(
-            {{kPerAgentSchedulingExperiments, {{"study", "disable-timers"}}}}) {
-  }
+      : MainThreadSchedulerImplTest({{kPerAgentSchedulingExperiments,
+                                      {{"queues", "timer-queues"},
+                                       {"method", "disable"},
+                                       {"signal", "fmp"}}}}) {}
 };
 
 TEST_F(DisableNonMainTimerQueuesUntilFMPTest, DisablesOnlyNonMainTimerQueue) {
@@ -4018,7 +4027,8 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest, DisablesOnlyNonMainTimerQueue) {
       CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
+  scoped_refptr<TaskQueue> timer_tq =
+      ThrottleableTaskQueue(frame_scheduler.get());
   ForceUpdatePolicyAndGetCurrentUseCase();
 
   EXPECT_FALSE(timer_tq->IsQueueEnabled());
@@ -4040,7 +4050,8 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
       CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
+  scoped_refptr<TaskQueue> timer_tq =
+      ThrottleableTaskQueue(frame_scheduler.get());
 
   FakeInputEvent mouse_move_event{WebInputEvent::Type::kMouseMove,
                                   blink::WebInputEvent::kLeftButtonDown};
@@ -4062,16 +4073,17 @@ TEST_F(DisableNonMainTimerQueuesUntilFMPTest,
   EXPECT_TRUE(timer_tq->IsQueueEnabled());
 }
 
-class BestEffortNonMainTimerQueuesUntilFMPTest
+class BestEffortNonMainQueuesUntilOnLoadTest
     : public MainThreadSchedulerImplTest {
  public:
-  BestEffortNonMainTimerQueuesUntilFMPTest()
+  BestEffortNonMainQueuesUntilOnLoadTest()
       : MainThreadSchedulerImplTest({{kPerAgentSchedulingExperiments,
-                                      {{"study", "deprioritize-timers"}}}}) {}
+                                      {{"queues", "all-queues"},
+                                       {"method", "best-effort"},
+                                       {"signal", "onload"}}}}) {}
 };
 
-TEST_F(BestEffortNonMainTimerQueuesUntilFMPTest,
-       DeprioritizesOnlyNonMainTimerQueue) {
+TEST_F(BestEffortNonMainQueuesUntilOnLoadTest, DeprioritizesAllNonMainQueues) {
   auto page_scheduler = CreatePageScheduler(nullptr, scheduler_.get());
 
   NiceMock<MockFrameDelegate> frame_delegate{};
@@ -4079,51 +4091,17 @@ TEST_F(BestEffortNonMainTimerQueuesUntilFMPTest,
       CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
                            FrameScheduler::FrameType::kSubframe);
 
-  TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
+  scoped_refptr<TaskQueue> non_timer_tq =
+      ForegroundOnlyTaskQueue(frame_scheduler.get());
   ForceUpdatePolicyAndGetCurrentUseCase();
-  EXPECT_EQ(timer_tq->kBestEffortPriority,
+  EXPECT_EQ(non_timer_tq->kBestEffortPriority,
             TaskQueue::QueuePriority::kBestEffortPriority);
 
-  ignore_result(
-      scheduler_->agent_scheduling_strategy().OnMainFrameFirstMeaningfulPaint(
-          *main_frame_scheduler_));
+  ignore_result(scheduler_->agent_scheduling_strategy().OnMainFrameLoad(
+      *main_frame_scheduler_));
   ForceUpdatePolicyAndGetCurrentUseCase();
 
-  EXPECT_EQ(timer_tq->GetQueuePriority(),
-            TaskQueue::QueuePriority::kNormalPriority);
-}
-
-TEST_F(BestEffortNonMainTimerQueuesUntilFMPTest,
-       ShouldNotifyAgentStrategyOnInput) {
-  auto page_scheduler = CreatePageScheduler(nullptr, scheduler_.get());
-
-  NiceMock<MockFrameDelegate> frame_delegate{};
-  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
-      CreateFrameScheduler(page_scheduler.get(), &frame_delegate, nullptr,
-                           FrameScheduler::FrameType::kSubframe);
-
-  TaskQueue* timer_tq = ThrottleableTaskQueue(frame_scheduler.get()).get();
-
-  FakeInputEvent mouse_move_event{WebInputEvent::Type::kMouseMove,
-                                  blink::WebInputEvent::kLeftButtonDown};
-  FakeInputEvent mouse_down_event{WebInputEvent::Type::kMouseDown,
-                                  blink::WebInputEvent::kLeftButtonDown};
-  InputEventState event_state{};
-
-  // Mouse move event should be ignored, meaning the queue should be
-  // deprioritized.
-  scheduler_->DidHandleInputEventOnCompositorThread(mouse_move_event,
-                                                    event_state);
-  ForceUpdatePolicyAndGetCurrentUseCase();
-  EXPECT_EQ(timer_tq->kBestEffortPriority,
-            TaskQueue::QueuePriority::kBestEffortPriority);
-
-  // Mouse down should cause MTSI to notify the agent scheduling strategy, which
-  // should reset the queue's priority.
-  scheduler_->DidHandleInputEventOnCompositorThread(mouse_down_event,
-                                                    event_state);
-  base::RunLoop().RunUntilIdle();  // Notification is posted to the main thread.
-  EXPECT_EQ(timer_tq->GetQueuePriority(),
+  EXPECT_EQ(non_timer_tq->GetQueuePriority(),
             TaskQueue::QueuePriority::kNormalPriority);
 }
 

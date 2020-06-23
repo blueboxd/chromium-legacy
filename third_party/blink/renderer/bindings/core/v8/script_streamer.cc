@@ -50,13 +50,12 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     DCHECK(!IsMainThread());
     CHECK(ready_to_run_.IsSet());
 
-    if (finished_) {
+    if (load_state_ != ScriptStreamer::LoadingState::kLoading) {
       return 0;
     }
 
     if (cancelled_.IsSet()) {
-      SendLoadingFinishedCallback(
-          &ResponseBodyLoaderClient::DidCancelLoadingBody);
+      SetFinished(ScriptStreamer::LoadingState::kCancelled);
       return 0;
     }
 
@@ -137,15 +136,13 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
           if (result != MOJO_RESULT_OK) {
             // If the producer handle was closed, then treat as EOF.
             CHECK_EQ(result, MOJO_RESULT_FAILED_PRECONDITION);
-            SendLoadingFinishedCallback(
-                &ResponseBodyLoaderClient::DidFinishLoadingBody);
+            SetFinished(ScriptStreamer::LoadingState::kLoaded);
             return 0;
           }
 
           // We were blocked, so check for cancelation again.
           if (cancelled_.IsSet()) {
-            SendLoadingFinishedCallback(
-                &ResponseBodyLoaderClient::DidCancelLoadingBody);
+            SetFinished(ScriptStreamer::LoadingState::kCancelled);
             return 0;
           }
 
@@ -155,14 +152,12 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
         case MOJO_RESULT_FAILED_PRECONDITION:
           // If the producer handle was closed, then treat as EOF.
-          SendLoadingFinishedCallback(
-              &ResponseBodyLoaderClient::DidFinishLoadingBody);
+          SetFinished(ScriptStreamer::LoadingState::kLoaded);
           return 0;
 
         default:
           // Some other error occurred.
-          SendLoadingFinishedCallback(
-              &ResponseBodyLoaderClient::DidFailLoadingBody);
+          SetFinished(ScriptStreamer::LoadingState::kFailed);
           return 0;
       }
     }
@@ -170,13 +165,13 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
 
   void DrainRemainingDataWithoutStreaming() {
     DCHECK(!IsMainThread());
-    if (!finished_) {
+    if (load_state_ == ScriptStreamer::LoadingState::kLoading) {
       // Keep reading data until we finish (returning 0). It won't be streaming
       // compiled any more, but it will continue being forwarded to the client.
       while (GetMoreData(nullptr) != 0) {
       }
     }
-    CHECK(finished_);
+    CHECK_NE(load_state_, ScriptStreamer::LoadingState::kLoading);
   }
 
   void Cancel() {
@@ -231,6 +226,8 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
     ready_to_run_.Set();
   }
 
+  ScriptStreamer::LoadingState LoadingState() const { return load_state_; }
+
  private:
   static void NotifyClientDidReceiveData(
       ResponseBodyLoaderClient* response_body_loader_client,
@@ -240,22 +237,15 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
         base::make_span(data.get(), data_size));
   }
 
-  void SendLoadingFinishedCallback(
-      void (ResponseBodyLoaderClient::*callback)()) {
-    DCHECK(!IsMainThread());
-    CHECK(!finished_);
-    PostCrossThreadTask(
-        *loading_task_runner_, FROM_HERE,
-        CrossThreadBindOnce(callback, response_body_loader_client_));
-    finished_ = true;
-  }
+  void SetFinished(ScriptStreamer::LoadingState state) { load_state_ = state; }
 
   // TODO(leszeks): Make this a DCHECK-only flag.
   base::AtomicFlag ready_to_run_;
   base::AtomicFlag cancelled_;
 
   // Only used by background thread
-  bool finished_ = false;
+  ScriptStreamer::LoadingState load_state_ =
+      ScriptStreamer::LoadingState::kLoading;
 
   // The initial data that was already on the Resource, rather than being read
   // directly from the data pipe.
@@ -294,24 +284,47 @@ bool ScriptStreamer::ConvertEncoding(
   return false;
 }
 
+bool ScriptStreamer::IsStreamingStarted() const {
+  DCHECK(IsMainThread());
+  return !!stream_;
+}
+
+bool ScriptStreamer::IsStreamingSuppressed() const {
+  DCHECK(IsMainThread());
+  return suppressed_reason_ != NotStreamingReason::kInvalid;
+}
+
+bool ScriptStreamer::IsLoaded() const {
+  DCHECK(IsMainThread());
+  return loading_state_ != LoadingState::kLoading;
+}
+
+bool ScriptStreamer::CanStartStreaming() const {
+  DCHECK(IsMainThread());
+  return !IsStreamingStarted() && !IsStreamingSuppressed();
+}
+
 bool ScriptStreamer::IsFinished() const {
   DCHECK(IsMainThread());
-  return loading_finished_ && (parsing_finished_ || streaming_suppressed_);
+  // We are finished when we know that we won't start streaming later (either
+  // because we are streaming already or streaming was suppressed).
+  return IsLoaded() && !CanStartStreaming();
 }
 
-bool ScriptStreamer::IsStreamingFinished() const {
+bool ScriptStreamer::IsClientDetached() const {
   DCHECK(IsMainThread());
-  return parsing_finished_ || streaming_suppressed_;
+  return !response_body_loader_client_;
 }
 
-void ScriptStreamer::StreamingCompleteOnBackgroundThread() {
+void ScriptStreamer::StreamingCompleteOnBackgroundThread(LoadingState state) {
   DCHECK(!IsMainThread());
 
   // notifyFinished might already be called, or it might be called in the
   // future (if the parsing finishes earlier because of a parse error).
-  PostCrossThreadTask(*loading_task_runner_, FROM_HERE,
-                      CrossThreadBindOnce(&ScriptStreamer::StreamingComplete,
-                                          WrapCrossThreadPersistent(this)));
+  PostCrossThreadTask(
+      *loading_task_runner_, FROM_HERE,
+      CrossThreadBindOnce(&ScriptStreamer::StreamingComplete,
+                          WrapCrossThreadPersistent(this), state));
 
   // The task might be the only remaining reference to the ScriptStreamer, and
   // there's no way to guarantee that this function has returned before the task
@@ -324,25 +337,21 @@ void ScriptStreamer::Cancel() {
   // still be ongoing. Tell SourceStream to try to cancel it whenever it gets
   // the control the next time. It can also be that V8 has already completed
   // its operations and streamingComplete will be called soon.
-  detached_ = true;
+  response_body_loader_client_.Release();
+  script_resource_.Release();
   if (stream_)
     stream_->Cancel();
+  CHECK(IsClientDetached());
 }
 
 void ScriptStreamer::SuppressStreaming(NotStreamingReason reason) {
   DCHECK(IsMainThread());
-  DCHECK(!loading_finished_);
-  DCHECK_NE(reason, NotStreamingReason::kInvalid);
-
-  // It can be that the parsing task has already finished (e.g., if there was
-  // a parse error).
-  streaming_suppressed_ = true;
+  CHECK_EQ(suppressed_reason_, NotStreamingReason::kInvalid);
+  CHECK_NE(reason, NotStreamingReason::kInvalid);
   suppressed_reason_ = reason;
 }
 
-namespace {
-
-void RunScriptStreamingTask(
+void ScriptStreamer::RunScriptStreamingTask(
     std::unique_ptr<v8::ScriptCompiler::ScriptStreamingTask> task,
     ScriptStreamer* streamer,
     SourceStream* stream) {
@@ -369,7 +378,13 @@ void RunScriptStreamingTask(
       "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
       "v8.parseOnBackgroundParsing");
 
-  streamer->StreamingCompleteOnBackgroundThread();
+  // Send a single callback back to the streamer signifying that the streaming
+  // is complete, and how it completed (success/fail/cancelled). The streamer
+  // will forward the state to the client on the main thread. We don't send the
+  // success/fail/cancelled client callback in separate tasks, as they can kill
+  // the (context-specific) task runner, which would make this StreamingComplete
+  // afterward fail to post.
+  streamer->StreamingCompleteOnBackgroundThread(stream->LoadingState());
 
   TRACE_EVENT_END0(
       "v8,devtools.timeline," TRACE_DISABLED_BY_DEFAULT("v8.compile"),
@@ -382,8 +397,6 @@ void RunScriptStreamingTask(
       "v8.parseOnBackground2");
 }
 
-}  // namespace
-
 bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
   if (base::FeatureList::IsEnabled(features::kSmallScriptStreaming)) {
     return resource_buffer_size >= kMaximumLengthOfBOM;
@@ -393,9 +406,9 @@ bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
   }
 }
 
-// Try to start streaming the script from the given datapipe, taking ownership
-// of the datapipe and weak ownership of the client. Returns true if streaming
-// succeeded and false otherwise.
+// Try to start a task streaming the script from the datapipe, with the task
+// taking ownership of the datapipe and weak ownership of the client. Returns
+// true if streaming succeeded and false otherwise.
 //
 // Streaming may fail to start because:
 //
@@ -405,26 +418,21 @@ bool ScriptStreamer::HasEnoughDataForStreaming(size_t resource_buffer_size) {
 //   * V8 failed to create a script streamer
 //
 // If this method returns true, the datapipe handle will be cleared and the
-// streamer becomes responsible for draining the datapipe and forwarding data
-// to the client. Otherwise, the caller should continue as if this were a no-op.
-bool ScriptStreamer::TryStartStreaming(
-    mojo::ScopedDataPipeConsumerHandle* data_pipe,
-    ResponseBodyLoaderClient* response_body_loader_client) {
+// streaming task becomes responsible for draining the datapipe and forwarding
+// data to the client. Otherwise, we should continue as if this were a no-op.
+bool ScriptStreamer::TryStartStreamingTask() {
   DCHECK(IsMainThread());
-  if (streaming_suppressed_)
-    return false;
-  if (stream_)
+  if (!CanStartStreaming())
     return false;
 
-  DCHECK(!have_enough_data_for_streaming_);
-
-  // Even if the first data chunk is small, the script can still be big
-  // enough - wait until the next data chunk comes before deciding whether
-  // to start the streaming.
-  DCHECK(script_resource_->ResourceBuffer());
-  if (!HasEnoughDataForStreaming(script_resource_->ResourceBuffer()->size()))
+  // Even if the first data chunk is small, the script can still be big enough -
+  // wait until the next data chunk comes before deciding whether to start the
+  // streaming.
+  if (!script_resource_->ResourceBuffer() ||
+      !HasEnoughDataForStreaming(script_resource_->ResourceBuffer()->size())) {
+    CHECK(!IsLoaded());
     return false;
-  have_enough_data_for_streaming_ = true;
+  }
 
   {
     // Check for BOM (byte order marks), because that might change our
@@ -449,7 +457,7 @@ bool ScriptStreamer::TryStartStreaming(
     // Also note that have at least s_smallScriptThreshold worth of
     // data, which is more than enough for detecting a BOM.
     if (!ConvertEncoding(decoder->Encoding().GetName(), &encoding_)) {
-      SuppressStreaming(kEncodingNotSupported);
+      SuppressStreaming(NotStreamingReason::kEncodingNotSupported);
       return false;
     }
   }
@@ -458,9 +466,9 @@ bool ScriptStreamer::TryStartStreaming(
     // The resource has a code cache entry, so it's unnecessary to stream
     // and parse the code.
     // TODO(leszeks): Can we even reach this code path with data pipes?
-    SuppressStreaming(ScriptStreamer::kHasCodeCache);
     stream_ = nullptr;
     source_.reset();
+    SuppressStreaming(ScriptStreamer::NotStreamingReason::kHasCodeCache);
     return false;
   }
 
@@ -480,9 +488,9 @@ bool ScriptStreamer::TryStartStreaming(
               compile_options_)));
   if (!script_streaming_task) {
     // V8 cannot stream the script.
-    SuppressStreaming(kV8CannotStream);
     stream_ = nullptr;
     source_.reset();
+    SuppressStreaming(NotStreamingReason::kV8CannotStream);
     return false;
   }
 
@@ -493,8 +501,11 @@ bool ScriptStreamer::TryStartStreaming(
                                          this->ScriptURLString()));
 
   stream_->TakeDataAndPipeOnMainThread(
-      script_resource_, this, std::move(*data_pipe),
-      response_body_loader_client, loading_task_runner_);
+      script_resource_, this, std::move(data_pipe_),
+      response_body_loader_client_.Get(), loading_task_runner_);
+
+  // This reset will also cancel the watcher.
+  watcher_.reset();
 
   // Script streaming tasks are high priority, as they can block the parser,
   // and they can (and probably will) block during their own execution as
@@ -510,117 +521,228 @@ bool ScriptStreamer::TryStartStreaming(
   return true;
 }
 
-void ScriptStreamer::NotifyFinished() {
-  DCHECK(IsMainThread());
-
-  // A special case: empty and small scripts. We didn't receive enough data to
-  // start the streaming before this notification. In that case, there won't
-  // be a "parsing complete" notification either, and we should not wait for
-  // it.
-  if (!have_enough_data_for_streaming_) {
-    SuppressStreaming(kScriptTooSmall);
-  }
-
-  loading_finished_ = true;
-
-  NotifyFinishedToClient();
-}
-
 ScriptStreamer::ScriptStreamer(
     ScriptResource* script_resource,
+    mojo::ScopedDataPipeConsumerHandle data_pipe,
+    ResponseBodyLoaderClient* response_body_loader_client,
     v8::ScriptCompiler::CompileOptions compile_options,
     scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner)
     : script_resource_(script_resource),
-      detached_(false),
-      stream_(nullptr),
-      loading_finished_(false),
-      parsing_finished_(false),
-      have_enough_data_for_streaming_(false),
-      streaming_suppressed_(false),
-      suppressed_reason_(kInvalid),
+      response_body_loader_client_(response_body_loader_client),
+      data_pipe_(std::move(data_pipe)),
       compile_options_(compile_options),
       script_url_string_(script_resource->Url().Copy().GetString()),
       script_resource_identifier_(script_resource->InspectorId()),
       // Unfortunately there's no dummy encoding value in the enum; let's use
       // one we don't stream.
       encoding_(v8::ScriptCompiler::StreamedSource::TWO_BYTE),
-      loading_task_runner_(std::move(loading_task_runner)) {}
+      loading_task_runner_(std::move(loading_task_runner)) {
+  watcher_ = std::make_unique<mojo::SimpleWatcher>(
+      FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL,
+      loading_task_runner_);
+
+  watcher_->Watch(data_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE,
+                  MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
+                  WTF::BindRepeating(&ScriptStreamer::OnDataPipeReadable,
+                                     WrapWeakPersistent(this)));
+
+  MojoResult ready_result;
+  mojo::HandleSignalsState ready_state;
+  MojoResult rv = watcher_->Arm(&ready_result, &ready_state);
+  if (rv == MOJO_RESULT_OK)
+    return;
+
+  DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
+  OnDataPipeReadable(ready_result, ready_state);
+}
+
+void ScriptStreamer::OnDataPipeReadable(MojoResult result,
+                                        const mojo::HandleSignalsState& state) {
+  if (IsClientDetached())
+    return;
+
+  switch (result) {
+    case MOJO_RESULT_OK:
+      // All good, so read the data that we were notified that we received.
+      break;
+
+    case MOJO_RESULT_CANCELLED:
+      // The consumer handle got closed, which means this script is done
+      // loading, and did so without streaming (otherwise the watcher wouldn't
+      // have been armed, and the handle ownership would have passed to the
+      // streaming task.
+      watcher_.reset();
+      LoadCompleteWithoutStreaming(LoadingState::kCancelled,
+                                   NotStreamingReason::kLoadingCancelled);
+      return;
+
+    case MOJO_RESULT_FAILED_PRECONDITION:
+      // This means the producer finished and we never started streaming. This
+      // must be because we suppressed streaming earlier, or never got enough
+      // data to start streaming.
+      CHECK(IsStreamingSuppressed() || !script_resource_->ResourceBuffer() ||
+            !HasEnoughDataForStreaming(
+                script_resource_->ResourceBuffer()->size()));
+      watcher_.reset();
+      // Pass kScriptTooSmall for the !IsStreamingSuppressed() case, it won't
+      // override an existing streaming reason.
+      LoadCompleteWithoutStreaming(LoadingState::kLoaded,
+                                   NotStreamingReason::kScriptTooSmall);
+      return;
+
+    case MOJO_RESULT_SHOULD_WAIT:
+      NOTREACHED();
+      return;
+
+    default:
+      // Some other error occurred.
+      watcher_.reset();
+      LoadCompleteWithoutStreaming(LoadingState::kFailed,
+                                   NotStreamingReason::kErrorOccurred);
+      return;
+  }
+  CHECK(state.readable());
+  CHECK(data_pipe_);
+
+  const void* data;
+  uint32_t data_size;
+  MojoReadDataFlags flags_to_pass = MOJO_READ_DATA_FLAG_NONE;
+  MojoResult begin_read_result =
+      data_pipe_->BeginReadData(&data, &data_size, flags_to_pass);
+  // There should be data, so this read should succeed.
+  CHECK_EQ(begin_read_result, MOJO_RESULT_OK);
+
+  response_body_loader_client_->DidReceiveData(
+      base::make_span(reinterpret_cast<const char*>(data), data_size));
+
+  MojoResult end_read_result = data_pipe_->EndReadData(data_size);
+
+  CHECK_EQ(end_read_result, MOJO_RESULT_OK);
+
+  if (TryStartStreamingTask()) {
+    return;
+  }
+
+  // TODO(leszeks): Depending on how small the chunks are, we may want to
+  // loop until a certain number of bytes are synchronously read rather than
+  // going back to the scheduler.
+  watcher_->ArmOrNotify();
+}
 
 ScriptStreamer::~ScriptStreamer() = default;
 
 void ScriptStreamer::Prefinalize() {
+  // Reset and cancel the watcher. This has to be called in the prefinalizer,
+  // rather than relying on the destructor, as accesses by the watcher of the
+  // script resource between prefinalization and destruction are invalid. See
+  // https://crbug.com/905975#c34 for more details.
+  watcher_.reset();
+
+  // Cancel any on-going streaming.
   Cancel();
-  prefinalizer_called_ = true;
 }
 
 void ScriptStreamer::Trace(Visitor* visitor) const {
   visitor->Trace(script_resource_);
+  visitor->Trace(response_body_loader_client_);
 }
 
-void ScriptStreamer::StreamingComplete() {
+void ScriptStreamer::StreamingComplete(LoadingState loading_state) {
   TRACE_EVENT_WITH_FLOW2(
       TRACE_DISABLED_BY_DEFAULT("v8.compile"), "v8.streamingCompile.complete",
       this, TRACE_EVENT_FLAG_FLOW_IN, "streaming_suppressed",
-      streaming_suppressed_, "data",
+      IsStreamingSuppressed(), "data",
       inspector_parse_script_event::Data(this->ScriptResourceIdentifier(),
                                          this->ScriptURLString()));
 
   // The background task is completed; do the necessary ramp-down in the main
   // thread.
   DCHECK(IsMainThread());
-  parsing_finished_ = true;
 
-  // It's possible that the corresponding Resource was deleted before V8
-  // finished streaming. In that case, the data or the notification is not
-  // needed. In addition, if the streaming is suppressed, the non-streaming
-  // code path will resume after the resource has loaded, before the
-  // background task finishes.
-  if (detached_ || streaming_suppressed_)
-    return;
+  AdvanceLoadingState(loading_state);
 
-  // We have now streamed the whole script to V8 and it has parsed the
-  // script. We're ready for the next step: compiling and executing the
-  // script.
-  NotifyFinishedToClient();
-}
-
-void ScriptStreamer::NotifyFinishedToClient() {
-  DCHECK(IsMainThread());
-  // Usually, the loading will be finished first, and V8 will still need some
-  // time to catch up. But the other way is possible too: if V8 detects a
-  // parse error, the V8 side can complete before loading has finished. Send
-  // the notification after both loading and V8 side operations have
+  // Sending a finished notification to the client also indicates that streaming
   // completed.
-  if (!IsFinished())
-    return;
-
-  script_resource_->StreamingFinished();
+  SendClientLoadFinishedCallback();
 }
 
-ScriptStreamer* ScriptStreamer::Create(
-    ScriptResource* resource,
-    scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-    NotStreamingReason* not_streaming_reason) {
-  DCHECK(IsMainThread());
-  *not_streaming_reason = kInvalid;
-  if (!resource->Url().ProtocolIsInHTTPFamily()) {
-    *not_streaming_reason = kNotHTTP;
-    return nullptr;
+void ScriptStreamer::LoadCompleteWithoutStreaming(
+    LoadingState state,
+    NotStreamingReason no_streaming_reason) {
+  // We might have previously suppressed streaming, in which case we want to
+  // keep the previous reason and not re-suppress.
+  if (!IsStreamingSuppressed()) {
+    SuppressStreaming(no_streaming_reason);
   }
-  if (resource->IsLoaded() && !resource->ResourceBuffer()) {
-    // This happens for already loaded resources, e.g. if resource
-    // validation fails. In that case, the loading subsystem will discard
-    // the resource buffer.
-    *not_streaming_reason = kNoResourceBuffer;
-    return nullptr;
-  }
-  // We cannot filter out short scripts, even if we wait for the HTTP headers
-  // to arrive: the Content-Length HTTP header is not sent for chunked
-  // downloads.
+  AdvanceLoadingState(state);
+  SendClientLoadFinishedCallback();
+}
 
-  return MakeGarbageCollected<ScriptStreamer>(
-      resource, v8::ScriptCompiler::kNoCompileOptions,
-      std::move(loading_task_runner));
+void ScriptStreamer::SendClientLoadFinishedCallback() {
+  // Don't do anything if we're detached, there's no client to send signals to.
+  if (IsClientDetached())
+    return;
+
+  CHECK(IsFinished());
+
+  switch (loading_state_) {
+    case LoadingState::kLoading:
+      CHECK(false);
+      break;
+    case LoadingState::kCancelled:
+      response_body_loader_client_->DidCancelLoadingBody();
+      break;
+    case LoadingState::kFailed:
+      response_body_loader_client_->DidFailLoadingBody();
+      break;
+    case LoadingState::kLoaded:
+      response_body_loader_client_->DidFinishLoadingBody();
+      break;
+  }
+
+  response_body_loader_client_.Release();
+}
+
+void ScriptStreamer::AdvanceLoadingState(LoadingState new_state) {
+  switch (loading_state_) {
+    case LoadingState::kLoading:
+      CHECK(new_state == LoadingState::kLoaded ||
+            new_state == LoadingState::kFailed ||
+            new_state == LoadingState::kCancelled);
+      break;
+    case LoadingState::kLoaded:
+    case LoadingState::kFailed:
+    case LoadingState::kCancelled:
+      CHECK(false);
+      break;
+  }
+
+  loading_state_ = new_state;
+  CheckState();
+}
+
+void ScriptStreamer::CheckState() const {
+  switch (loading_state_) {
+    case LoadingState::kLoading:
+      // If we are still loading, we either
+      //   1) Are still waiting for enough data to come in to start streaming,
+      //   2) Have already started streaming, or
+      //   3) Have suppressed streaming.
+      // TODO(leszeks): This check, with the current implementation, always
+      // returns true. We should either try to check something stronger, or get
+      // rid of it.
+      CHECK(CanStartStreaming() || IsStreamingStarted() ||
+            IsStreamingSuppressed());
+      break;
+    case LoadingState::kLoaded:
+    case LoadingState::kFailed:
+    case LoadingState::kCancelled:
+      // Otherwise, if we aren't still loading, we either
+      //   1) Have already started streaming, or
+      //   2) Have suppressed streaming.
+      CHECK(IsStreamingStarted() || IsStreamingSuppressed());
+      break;
+  }
 }
 
 }  // namespace blink

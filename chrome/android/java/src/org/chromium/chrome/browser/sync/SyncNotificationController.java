@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderFactory;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncher;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
@@ -222,8 +223,9 @@ public class SyncNotificationController implements ProfileSyncService.SyncStateC
      */
     private void maybeCreateKeyRetrievalNotification() {
         CoreAccountInfo primaryAccountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                        ConsentLevel.SYNC);
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SYNC);
         // Check/set |mTrustedVaultNotificationShownOrCreating| here to ensure notification is not
         // shown again immediately after cancelling (Sync state might be changed often) and there
         // is only one asynchronous createKeyRetrievalIntent() attempt at the time triggered by

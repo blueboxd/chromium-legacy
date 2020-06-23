@@ -3972,6 +3972,7 @@ bool Document::CheckCompletedInternal() {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kDocumentLoaded,
         {SchedulingPolicy::RecordMetricsForBackForwardCache()});
+    GetFrame()->GetFrameScheduler()->OnLoad();
 
     AnchorElementMetrics::NotifyOnLoad(*this);
 

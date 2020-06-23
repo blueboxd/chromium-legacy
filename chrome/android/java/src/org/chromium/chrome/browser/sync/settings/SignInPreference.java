@@ -18,6 +18,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.DisplayableProfileData;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.PersonalizedSigninPromoView;
@@ -93,7 +94,9 @@ public class SignInPreference
      */
     public void registerForUpdates() {
         mAccountManagerFacade.addObserver(this);
-        IdentityServicesProvider.get().getSigninManager().addSignInAllowedObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .addSignInAllowedObserver(this);
         mProfileDataCache.addObserver(this);
         FirstRunSignInProcessor.updateSigninManagerFirstRunCheckDone();
         AndroidSyncSettings.get().registerObserver(this);
@@ -112,7 +115,9 @@ public class SignInPreference
      */
     public void unregisterForUpdates() {
         mAccountManagerFacade.removeObserver(this);
-        IdentityServicesProvider.get().getSigninManager().removeSignInAllowedObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .removeSignInAllowedObserver(this);
         mProfileDataCache.removeObserver(this);
         AndroidSyncSettings.get().unregisterObserver(this);
         ProfileSyncService syncService = ProfileSyncService.get();
@@ -161,14 +166,17 @@ public class SignInPreference
 
     /** Updates the title, summary, and image based on the current sign-in state. */
     private void update() {
-        if (IdentityServicesProvider.get().getSigninManager().isSigninDisabledByPolicy()) {
+        if (IdentityServicesProvider.get()
+                        .getSigninManager(Profile.getLastUsedRegularProfile())
+                        .isSigninDisabledByPolicy()) {
             setupSigninDisabled();
             return;
         }
 
         CoreAccountInfo accountInfo =
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                        ConsentLevel.SYNC);
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SYNC);
         if (accountInfo != null) {
             setupSignedIn(accountInfo.getEmail());
             return;

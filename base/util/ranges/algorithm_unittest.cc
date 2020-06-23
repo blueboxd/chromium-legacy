@@ -311,6 +311,65 @@ TEST(RangesTest, SearchN) {
   EXPECT_EQ(ints + 6, ranges::search_n(ints, 3, 3, {}, &Int::value));
 }
 
+TEST(RangesTest, Copy) {
+  int input[] = {1, 2, 3, 4, 5};
+  int output[] = {6, 6, 6, 6, 6, 6, 6};
+  auto equals_six = [](int i) { return i == 6; };
+
+  EXPECT_EQ(output + 3, ranges::copy(input, input + 3, output));
+  EXPECT_TRUE(std::equal(input, input + 3, output, output + 3));
+  EXPECT_TRUE(std::all_of(output + 3, output + 7, equals_six));
+
+  EXPECT_EQ(output + 5, ranges::copy(input, output));
+  EXPECT_TRUE(std::equal(input, input + 5, output, output + 5));
+  EXPECT_TRUE(std::all_of(output + 5, output + 7, equals_six));
+}
+
+TEST(RangesTest, CopyN) {
+  int input[] = {1, 2, 3, 4, 5};
+  int output[] = {6, 6, 6, 6, 6, 6, 6};
+  auto equals_six = [](int i) { return i == 6; };
+
+  EXPECT_EQ(output + 4, ranges::copy_n(input, 4, output));
+  EXPECT_TRUE(std::equal(input, input + 4, output, output + 4));
+  EXPECT_TRUE(std::all_of(output + 4, output + 7, equals_six));
+}
+
+TEST(RangesTest, CopyIf) {
+  int input[] = {2, 4, 6, 8, 6};
+  int output[] = {0, 0, 0, 0, 0, 0};
+  auto equals_six = [](int i) { return i == 6; };
+  auto equals_zero = [](int i) { return i == 0; };
+
+  EXPECT_EQ(output + 1, ranges::copy_if(input, input + 4, output, equals_six));
+  EXPECT_TRUE(std::all_of(output, output + 1, equals_six));
+  EXPECT_TRUE(std::all_of(output + 1, output + 6, equals_zero));
+
+  Int ints_in[] = {{2}, {4}, {6}, {8}, {6}};
+  Int ints_out[] = {{0}, {0}, {0}, {0}, {0}, {0}};
+  EXPECT_EQ(ints_out + 2,
+            ranges::copy_if(ints_in, ints_out, equals_six, &Int::value));
+
+  EXPECT_TRUE(ranges::all_of(ints_out, ints_out + 2, equals_six, &Int::value));
+  EXPECT_TRUE(
+      ranges::all_of(ints_out + 2, ints_out + 6, equals_zero, &Int::value));
+}
+
+TEST(RangesTest, CopyBackward) {
+  int input[] = {2, 4, 6, 8, 6};
+  int output[] = {0, 0, 0, 0, 0, 0};
+
+  EXPECT_EQ(output + 1, ranges::copy_backward(input, input + 5, output + 6));
+  EXPECT_THAT(output, ElementsAre(0, 2, 4, 6, 8, 6));
+
+  Int ints_in[] = {{2}, {4}, {6}, {8}, {6}};
+  Int ints_out[] = {{0}, {0}, {0}, {0}, {0}, {0}};
+
+  EXPECT_EQ(ints_out, ranges::copy_backward(ints_in, ints_out + 5));
+  EXPECT_TRUE(std::equal(ints_in, ints_in + 5, ints_out, ints_out + 5,
+                         [](Int i, Int j) { return i.value == j.value; }));
+}
+
 TEST(RangesTest, LowerBound) {
   int array[] = {0, 0, 1, 1, 2, 2};
 

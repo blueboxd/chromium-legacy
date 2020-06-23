@@ -366,4 +366,75 @@ TEST_F(UserModelTest, ClientSideOnlyNotifications) {
   EXPECT_TRUE(GetValues().at("identifier").is_client_side_only());
 }
 
+TEST_F(UserModelTest, GetValueWithPlaceholders) {
+  ValueProto value;
+  value.mutable_strings()->add_values("a");
+  value.mutable_strings()->add_values("b");
+  value.mutable_strings()->add_values("c");
+  model_.SetValue("multi_value", value);
+  model_.SetValue("single_value_0", SimpleValue(std::string("d")));
+  model_.SetValue("single_value_1", SimpleValue(std::string("e")));
+  model_.SetValue("single_value_2", SimpleValue(std::string("f")));
+
+  EXPECT_EQ(model_.GetValue("multi_value[${i}]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("single_value_i"), base::nullopt);
+  model_.AddIdentifierPlaceholders({{"i", "0"}});
+  EXPECT_EQ(model_.GetValue("multi_value[${i}]"),
+            SimpleValue(std::string("a")));
+  EXPECT_EQ(model_.GetValue("single_value_${i}"),
+            SimpleValue(std::string("d")));
+
+  // Add placeholder.
+  model_.AddIdentifierPlaceholders({{"j", "1"}});
+  EXPECT_EQ(model_.GetValue("multi_value[${j}]"),
+            SimpleValue(std::string("b")));
+  EXPECT_EQ(model_.GetValue("single_value_${j}"),
+            SimpleValue(std::string("e")));
+  EXPECT_EQ(model_.GetValue("single_value_${j}[${i}]"),
+            SimpleValue(std::string("e")));
+
+  // Overwrite placeholder.
+  model_.AddIdentifierPlaceholders({{"i", "2"}});
+  EXPECT_EQ(model_.GetValue("multi_value[${i}]"),
+            SimpleValue(std::string("c")));
+  EXPECT_EQ(model_.GetValue("single_value_${i}"),
+            SimpleValue(std::string("f")));
+  EXPECT_EQ(model_.GetValue("single_value_${j}[${i}]"), base::nullopt);
+  // Remove placeholder (the value does not matter, it's just about the key).
+  model_.RemoveIdentifierPlaceholders({{"i", "123"}});
+  EXPECT_EQ(model_.GetValue("multi_value[${i}]"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("single_value_${i}"), base::nullopt);
+  EXPECT_EQ(model_.GetValue("single_value_${j}"),
+            SimpleValue(std::string("e")));
+}
+
+TEST_F(UserModelTest, SetValueWithPlaceholders) {
+  ValueProto value;
+  value.mutable_strings()->add_values("a");
+  value.mutable_strings()->add_values("b");
+  value.mutable_strings()->add_values("c");
+  model_.SetValue("value_${i}", value);
+  EXPECT_EQ(model_.GetValue("value_${i}"), base::nullopt);
+
+  model_.AddIdentifierPlaceholders({{"i", "0"}});
+  model_.SetValue("value_${i}", value);
+  EXPECT_EQ(model_.GetValue("value_0"), value);
+  EXPECT_EQ(model_.GetValue("value_${i}"), value);
+
+  model_.RemoveIdentifierPlaceholders({{"i", "0"}});
+  EXPECT_EQ(model_.GetValue("value_0"), value);
+  EXPECT_EQ(model_.GetValue("value_${i}"), base::nullopt);
+
+  model_.AddIdentifierPlaceholders({{"i", "0"}});
+  model_.AddIdentifierPlaceholders({{"j", "1"}});
+  model_.SetValue("value_${i}_${j}", value);
+  EXPECT_EQ(model_.GetValue("value_0_1"), value);
+  EXPECT_EQ(model_.GetValue("value_${i}_${j}"), value);
+
+  model_.RemoveIdentifierPlaceholders({{"j", "1"}});
+  EXPECT_EQ(model_.GetValue("value_${i}_${j}"), base::nullopt);
+  model_.SetValue("value_${i}", value);
+  EXPECT_EQ(model_.GetValue("value_${i}"), value);
+}
+
 }  // namespace autofill_assistant

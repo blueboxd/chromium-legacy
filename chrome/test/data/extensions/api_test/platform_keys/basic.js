@@ -234,6 +234,8 @@ function testStaticMethods() {
   assertTrue(!!chrome.platformKeys.selectClientCertificates,
              "No selectClientCertificates function.");
   assertTrue(!!chrome.platformKeys.getKeyPair, "No getKeyPair method.");
+  assertTrue(
+      !!chrome.platformKeys.getKeyPairBySpki, "No getKeyPairBySpki method.");
   assertTrue(!!chrome.platformKeys.subtleCrypto, "No subtleCrypto getter.");
   assertTrue(!!chrome.platformKeys.subtleCrypto(), "No subtleCrypto object.");
   assertTrue(!!chrome.platformKeys.subtleCrypto().sign, "No sign method.");
@@ -355,21 +357,31 @@ function testMatchResultRSA() {
       }));
 }
 
-function testGetKeyPairMissingAlgorithName() {
+function verifyMissingAlgorithmError(getKeyFunction, buffer, name) {
   var keyParams = {
     // This is missing the algorithm name.
     hash: {name: 'SHA-1'}
   };
   try {
-    chrome.platformKeys.getKeyPair(
-        data.client_1.buffer, keyParams, function(error) {
-          fail('getKeyPair call was expected to fail.');
-        });
-    fail('getKeyPair did not throw error');
+    getKeyFunction(buffer, keyParams, function(error) {
+      fail(`${name} call was expected to fail.`);
+    });
+    fail(`${name} did not throw error`);
   } catch (e) {
     assertEq('Algorithm: name: Missing or not a String', e.message);
     succeed();
   }
+}
+
+function testGetKeyPairMissingAlgorithmName() {
+  verifyMissingAlgorithmError(
+      chrome.platformKeys.getKeyPair, data.client_1.buffer, 'getKeyPair');
+}
+
+function testGetKeyPairBySpkiMissingAlgorithmName() {
+  verifyMissingAlgorithmError(
+      chrome.platformKeys.getKeyPairBySpki, data.client_1_spki.buffer,
+      'getKeyPairBySpki');
 }
 
 function testGetKeyPairRejectsRSAPSS() {
@@ -381,6 +393,37 @@ function testGetKeyPairRejectsRSAPSS() {
       data.client_1.buffer, keyParams,
       callbackFail(
           'The requested Algorithm is not permitted by the certificate.'));
+  chrome.platformKeys.getKeyPairBySpki(
+      data.client_1_spki.buffer, keyParams,
+      callbackFail('Algorithm not supported.'));
+}
+
+function verifyKeyPairValidity(publicKey, privateKey) {
+  var expectedAlgorithm = {
+    modulusLength: 2048,
+    name: 'RSASSA-PKCS1-v1_5',
+    publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+    hash: {name: 'SHA-1'}
+  };
+  assertEq(expectedAlgorithm, publicKey.algorithm);
+  assertEq(expectedAlgorithm, privateKey.algorithm);
+
+  checkPublicKeyFormat(publicKey);
+  checkPrivateKeyFormat(privateKey);
+
+  chrome.platformKeys.subtleCrypto()
+      .exportKey('spki', publicKey)
+      .then(
+          callbackPass(function(actualPublicKeySpki) {
+            assertTrue(
+                compareArrays(
+                    data.client_1_spki, new Uint8Array(actualPublicKeySpki)) ==
+                    0,
+                'Match did not contain correct public key');
+          }),
+          function(error) {
+            fail('Export failed: ' + error);
+          });
 }
 
 function testGetRsaKeyPairRejectEcdsa() {
@@ -410,26 +453,23 @@ function testGetRsaKeyPair() {
   chrome.platformKeys.getKeyPair(
       data.client_1.buffer, keyParams,
       callbackPass(function(publicKey, privateKey) {
-        var expectedAlgorithm = {
-          modulusLength: 2048,
-          name: "RSASSA-PKCS1-v1_5",
-          publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
-          hash: {name: 'SHA-1'}
-        };
-        assertEq(expectedAlgorithm, publicKey.algorithm);
-        assertEq(expectedAlgorithm, privateKey.algorithm);
+        verifyKeyPairValidity(publicKey, privateKey);
+      }));
+  chrome.platformKeys.getKeyPairBySpki(
+      data.client_1_spki.buffer, keyParams,
+      callbackPass(function(publicKey, privateKey) {
+        verifyKeyPairValidity(publicKey, privateKey);
+      }));
+}
 
-        checkPublicKeyFormat(publicKey);
-        checkPrivateKeyFormat(privateKey);
-
-        chrome.platformKeys.subtleCrypto()
-            .exportKey('spki', publicKey)
-            .then(callbackPass(function(actualPublicKeySpki) {
-              assertTrue(
-                  compareArrays(data.client_1_spki, actualPublicKeySpki) == 0,
-                  'Match did not contain correct public key');
-            }),
-                  function(error) { fail("Export failed: " + error); });
+function verifySignWithNoHash(privateKey, signParams) {
+  chrome.platformKeys.subtleCrypto()
+      .sign(signParams, privateKey, data.raw_data)
+      .then(callbackPass(function(signature) {
+        var actualSignature = new Uint8Array(signature);
+        assertTrue(
+            compareArrays(data.signature_nohash_pkcs, actualSignature) == 0,
+            'Incorrect signature');
       }));
 }
 
@@ -473,14 +513,23 @@ function testSignNoHash() {
   chrome.platformKeys.getKeyPair(
       data.client_1.buffer, keyParams,
       callbackPass(function(publicKey, privateKey) {
-        chrome.platformKeys.subtleCrypto()
-            .sign(signParams, privateKey, data.raw_data)
-            .then(callbackPass(function(signature) {
-              var actualSignature = new Uint8Array(signature);
-              assertTrue(compareArrays(data.signature_nohash_pkcs,
-                                       actualSignature) == 0,
-                         'Incorrect signature');
-            }));
+        verifySignWithNoHash(privateKey, signParams);
+      }));
+  chrome.platformKeys.getKeyPairBySpki(
+      data.client_1_spki.buffer, keyParams,
+      callbackPass(function(publicKey, privateKey) {
+        verifySignWithNoHash(privateKey, signParams);
+      }));
+}
+
+function verifySignWithSha1(privateKey, signParams, client_signature) {
+  chrome.platformKeys.subtleCrypto()
+      .sign(signParams, privateKey, data.raw_data)
+      .then(callbackPass(function(signature) {
+        var actualSignature = new Uint8Array(signature);
+        assertTrue(
+            compareArrays(client_signature, actualSignature) == 0,
+            'Incorrect signature');
       }));
 }
 
@@ -497,15 +546,14 @@ function testSignSha1Client1() {
   chrome.platformKeys.getKeyPair(
       data.client_1.buffer, keyParams,
       callbackPass(function(publicKey, privateKey) {
-        chrome.platformKeys.subtleCrypto()
-            .sign(signParams, privateKey, data.raw_data)
-            .then(callbackPass(function(signature) {
-              var actualSignature = new Uint8Array(signature);
-              assertTrue(
-                  compareArrays(
-                      data.signature_client1_sha1_pkcs, actualSignature) == 0,
-                  'Incorrect signature');
-            }));
+        verifySignWithSha1(
+            privateKey, signParams, data.signature_client1_sha1_pkcs);
+      }));
+  chrome.platformKeys.getKeyPairBySpki(
+      data.client_1_spki.buffer, keyParams,
+      callbackPass(function(publicKey, privateKey) {
+        verifySignWithSha1(
+            privateKey, signParams, data.signature_client1_sha1_pkcs);
       }));
 }
 
@@ -522,15 +570,8 @@ function testSignSha1Client2() {
   chrome.platformKeys.getKeyPair(
       data.client_2.buffer, keyParams,
       callbackPass(function(publicKey, privateKey) {
-        chrome.platformKeys.subtleCrypto()
-            .sign(signParams, privateKey, data.raw_data)
-            .then(callbackPass(function(signature) {
-              var actualSignature = new Uint8Array(signature);
-              assertTrue(
-                  compareArrays(
-                      data.signature_client2_sha1_pkcs, actualSignature) == 0,
-                  'Incorrect signature');
-            }));
+        verifySignWithSha1(
+            privateKey, signParams, data.signature_client2_sha1_pkcs);
       }));
 }
 
@@ -542,9 +583,22 @@ function testSignSha1Client2OnSystemTokenOnly() {
   }
 }
 
+function verifySignFail(privateKey, signParams) {
+  chrome.platformKeys.subtleCrypto()
+      .sign(signParams, privateKey, data.raw_data)
+      .then(function(signature) {
+        fail('sign was expected to fail.');
+      }, callbackPass(function(error) {
+              assertTrue(error instanceof Error);
+              assertEq(
+                  'The operation failed for an operation-specific reason',
+                  error.message);
+            }));
+}
+
 // TODO(pmarko,emaxx): Test this by verifying that no private key is returned,
 // once that's implemented, see crbug.com/799410.
-function testSignFails(cert) {
+function testSignFails(cert, spki) {
   var keyParams = {
     name: 'RSASSA-PKCS1-v1_5',
     hash: {name: 'SHA-1'}
@@ -554,20 +608,19 @@ function testSignFails(cert) {
   };
   chrome.platformKeys.getKeyPair(
       cert.buffer, keyParams, callbackPass(function(publicKey, privateKey) {
-        chrome.platformKeys.subtleCrypto()
-            .sign(signParams, privateKey, data.raw_data)
-            .then(function(signature) { fail('sign was expected to fail.'); },
-                  callbackPass(function(error) {
-                    assertTrue(error instanceof Error);
-                    assertEq(
-                        'The operation failed for an operation-specific reason',
-                        error.message);
-                  }));
+        verifySignFail(privateKey, signParams);
       }));
+
+  if (spki) {
+    chrome.platformKeys.getKeyPairBySpki(
+        spki.buffer, keyParams, callbackPass(function(publicKey, privateKey) {
+          verifySignFail(privateKey, signParams);
+        }));
+  }
 }
 
 function testSignClient1Fails() {
-  testSignFails(data.client_1);
+  testSignFails(data.client_1, data.client_1_spki);
 }
 
 function testSignClient2Fails() {
@@ -679,7 +732,8 @@ var testSuites = {
       testMatchResultCA1,
       testMatchResultECDSA,
       testMatchResultRSA,
-      testGetKeyPairMissingAlgorithName,
+      testGetKeyPairMissingAlgorithmName,
+      testGetKeyPairBySpkiMissingAlgorithmName,
       testGetKeyPairRejectsRSAPSS,
       testGetRsaKeyPairRejectEcdsa,
       testGetEcKeyPairRejectRsa,

@@ -4,13 +4,16 @@
 
 #include "third_party/blink/renderer/platform/image-decoders/avif/avif_image_decoder.h"
 
+#include <cstring>
 #include <memory>
 
+#include "base/bits.h"
 #include "base/containers/adapters.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/numerics/ranges.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
@@ -166,6 +169,14 @@ media::VideoPixelFormat AvifToVideoPixelFormat(avifPixelFormat fmt, int depth) {
   }
 }
 
+// |y_size| is the width or height of the Y plane. Returns the width or height
+// of the U and V planes. |chroma_shift| represents the subsampling of the
+// chroma (U and V) planes in the x (for width) or y (for height) direction.
+int UVSize(int y_size, int chroma_shift) {
+  DCHECK(chroma_shift == 0 || chroma_shift == 1);
+  return (y_size + chroma_shift) >> chroma_shift;
+}
+
 inline void WritePixel(float max_channel,
                        const gfx::Point3F& pixel,
                        float alpha,
@@ -286,6 +297,116 @@ void AVIFImageDecoder::OnSetData(SegmentReader* data) {
   // https://github.com/AOMediaCodec/libavif/issues/11.
   if (IsAllDataReceived() && !MaybeCreateDemuxer())
     SetFailed();
+}
+
+IntSize AVIFImageDecoder::DecodedYUVSize(int component) const {
+  DCHECK_GE(component, 0);
+  // TODO(crbug.com/910276): Change after alpha support.
+  DCHECK_LE(component, 2);
+  DCHECK(IsDecodedSizeAvailable());
+  if (component == SkYUVAIndex::kU_Index ||
+      component == SkYUVAIndex::kV_Index) {
+    return IntSize(UVSize(Size().Width(), chroma_shift_x_),
+                   UVSize(Size().Height(), chroma_shift_y_));
+  }
+  return Size();
+}
+
+size_t AVIFImageDecoder::DecodedYUVWidthBytes(int component) const {
+  DCHECK_GE(component, 0);
+  // TODO(crbug.com/910276): Change after alpha support.
+  DCHECK_LE(component, 2);
+  DCHECK(IsDecodedSizeAvailable());
+  // Try to return the same width bytes as used by the dav1d library. This will
+  // allow DecodeToYUV() to copy each plane with a single memcpy() call.
+  //
+  // The comments for Dav1dPicAllocator in dav1d/picture.h require the pixel
+  // width be padded to a multiple of 128 pixels.
+  int aligned_width = base::bits::Align(Size().Width(), 128);
+  if (component == SkYUVAIndex::kU_Index ||
+      component == SkYUVAIndex::kV_Index) {
+    aligned_width >>= chroma_shift_x_;
+  }
+  // When the stride is a multiple of 1024, dav1d_default_picture_alloc()
+  // slightly pads the stride to avoid a reduction in cache hit rate in most
+  // L1/L2 cache implementations. Match that trick here. (Note that this padding
+  // is not documented in dav1d/picture.h.)
+  if ((aligned_width & 1023) == 0)
+    aligned_width += 64;
+  return aligned_width;
+}
+
+SkYUVColorSpace AVIFImageDecoder::GetYUVColorSpace() const {
+  DCHECK(CanDecodeToYUV());
+  DCHECK(yuv_color_space_);
+  return *yuv_color_space_;
+}
+
+void AVIFImageDecoder::DecodeToYUV() {
+  DCHECK(image_planes_);
+  DCHECK(CanDecodeToYUV());
+  DCHECK(IsAllDataReceived());
+
+  if (Failed())
+    return;
+
+  DCHECK(decoder_);
+  DCHECK_EQ(decoded_frame_count_, 1u);  // Not animation.
+
+  // libavif cannot decode to an external buffer. So we need to copy from
+  // libavif's internal buffer to |image_planes_|.
+  // TODO(wtc): Enhance libavif to decode to an external buffer.
+  if (!DecodeImage(0)) {
+    SetFailed();
+    return;
+  }
+
+  const auto* image = decoder_->image;
+  // All frames must be the same size.
+  if (Size() != IntSize(image->width, image->height)) {
+    DVLOG(1) << "All frames must be the same size";
+    SetFailed();
+    return;
+  }
+  DCHECK_EQ(image->depth, 8u);
+  DCHECK(!image->alphaPlane);
+  static_assert(SkYUVAIndex::kY_Index == static_cast<int>(AVIF_CHAN_Y), "");
+  static_assert(SkYUVAIndex::kU_Index == static_cast<int>(AVIF_CHAN_U), "");
+  static_assert(SkYUVAIndex::kV_Index == static_cast<int>(AVIF_CHAN_V), "");
+  // Initialize |width| and |height| to the width and height of the luma plane.
+  uint32_t width = image->width;
+  uint32_t height = image->height;
+  // |height| comes from the AV1 sequence header or frame header, which encodes
+  // max_frame_height_minus_1 and frame_height_minus_1, respectively, as n-bit
+  // unsigned integers for some n.
+  DCHECK_GT(height, 0u);
+  for (int plane = 0; plane < 3; ++plane) {
+    const uint8_t* src = image->yuvPlanes[plane];
+    size_t src_row_bytes = base::strict_cast<size_t>(image->yuvRowBytes[plane]);
+    uint8_t* dst = static_cast<uint8_t*>(image_planes_->Plane(plane));
+    size_t dst_row_bytes = image_planes_->RowBytes(plane);
+    DCHECK_LE(width, src_row_bytes);
+    DCHECK_LE(width, dst_row_bytes);
+    if (src_row_bytes == dst_row_bytes) {
+      // If |src| and |dst| have the same stride, we can copy the plane with a
+      // single memcpy() call. For the last row we copy only |width| bytes to
+      // avoid reading past the end of the last row. For all other rows we copy
+      // |src_row_bytes| bytes.
+      memcpy(dst, src, (height - 1) * src_row_bytes + width);
+    } else {
+      for (uint32_t j = 0; j < height; ++j) {
+        memcpy(dst, src, width);
+        src += src_row_bytes;
+        dst += dst_row_bytes;
+      }
+    }
+    if (plane == 0) {
+      // Having processed the luma plane, change |width| and |height| to the
+      // width and height of the chroma planes.
+      width = UVSize(width, chroma_shift_x_);
+      height = UVSize(height, chroma_shift_y_);
+    }
+  }
 }
 
 int AVIFImageDecoder::RepetitionCount() const {
@@ -416,7 +537,7 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
     return false;
 
   // TODO(dalecurtis): This may create a second copy of the media data in
-  // memory, which is not great. Upstream should provide a read() based API:
+  // memory, which is not great. libavif should provide a read() based API:
   // https://github.com/AOMediaCodec/libavif/issues/11
   image_data_ = data_->GetAsSkData();
   if (!image_data_)
@@ -457,6 +578,12 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
   decode_to_half_float_ =
       ImageIsHighBitDepth() &&
       high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
+
+  const avifPixelFormat yuv_format = container->yuvFormat;
+  avifPixelFormatInfo format_info;
+  avifGetPixelFormatInfo(yuv_format, &format_info);
+  chroma_shift_x_ = format_info.chromaShiftX;
+  chroma_shift_y_ = format_info.chromaShiftY;
 
   // SetEmbeddedColorProfile() must be called before IsSizeAvailable() becomes
   // true. So call SetEmbeddedColorProfile() before calling SetSize(). The color
@@ -501,14 +628,26 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
     }
   }
 
+  // Determine whether the image can be decoded to YUV.
+  // * Bit depths higher than 8 are not supported.
+  // * TODO(crbug.com/915972): Only YUV 4:2:0 subsampling format is supported.
+  // * Alpha channel is not supported.
+  // * Multi-frame images (animations) are not supported. (The DecodeToYUV()
+  //   method does not have an 'index' parameter.)
+  // * If ColorTransform() returns a non-null pointer, the decoder has to do a
+  //   color space conversion, so we don't decode to YUV.
+  allow_decode_to_yuv_ =
+      !ImageIsHighBitDepth() && yuv_format == AVIF_PIXEL_FORMAT_YUV420 &&
+      !decoder_->alphaPresent && decoded_frame_count_ == 1 &&
+      (yuv_color_space_ = GetSkYUVColorSpace(container)) && !ColorTransform();
+
   return SetSize(container->width, container->height);
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {
   const auto ret = avifDecoderNthImage(decoder_.get(), index);
-  // We shouldn't be called more times than specified in
-  // DecodeFrameCount(); possibly this should truncate if the initial
-  // count is wrong?
+  // |index| should be less than what DecodeFrameCount() returns, so we should
+  // not get the AVIF_RESULT_NO_IMAGES_REMAINING error.
   DCHECK_NE(ret, AVIF_RESULT_NO_IMAGES_REMAINING);
   return ret == AVIF_RESULT_OK;
 }
@@ -530,8 +669,6 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
   const bool is_mono = image->yuvFormat == AVIF_PIXEL_FORMAT_YUV400;
   const bool premultiply_alpha = buffer->PremultiplyAlpha();
 
-  // TODO(dalecurtis): We should decode to YUV when possible. Currently the
-  // YUV path seems to only support still-image YUV8.
   if (decode_to_half_float_) {
     UpdateColorTransform(frame_cs, image->depth);
 

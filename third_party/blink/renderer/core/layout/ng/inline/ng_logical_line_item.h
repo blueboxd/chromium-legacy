@@ -241,8 +241,7 @@ class NGLogicalLineItems {
   void ReserveInitialCapacity(unsigned capacity) {
     children_.ReserveInitialCapacity(capacity);
   }
-  void clear() { children_.resize(0); }
-  void resize(wtf_size_t size) { children_.resize(size); }
+  void Shrink(wtf_size_t size) { children_.Shrink(size); }
 
   using iterator = Vector<NGLogicalLineItem, 16>::iterator;
   iterator begin() { return children_.begin(); }

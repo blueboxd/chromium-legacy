@@ -396,7 +396,7 @@ extensions::AppWindow* StateController::CreateAppWindowForLockScreenAction(
   // Thus, it should be safe to assume lock screen profile is set at this point.
   DCHECK(lock_screen_profile_creator_->lock_screen_profile());
 
-  if (!lock_screen_profile_creator_->lock_screen_profile()->IsSameProfile(
+  if (!lock_screen_profile_creator_->lock_screen_profile()->IsSameOrParent(
           Profile::FromBrowserContext(context))) {
     return nullptr;
   }

@@ -63,6 +63,11 @@ void WebKioskAppManager::GetApps(std::vector<App>* apps) const {
   }
 }
 
+void WebKioskAppManager::LoadIcons() {
+  for (auto& web_app : apps_)
+    web_app->LoadIcon();
+}
+
 const AccountId& WebKioskAppManager::GetAutoLaunchAccountId() const {
   return auto_launch_account_id_;
 }

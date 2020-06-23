@@ -7,6 +7,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 
 namespace ui {
 
@@ -17,8 +18,8 @@ TEST(X11CursorFactoryOzoneTest, InvisibleRefcount) {
   // invisible cursor in X11. The invisible cursor instance should have more
   // than a single reference since the factory should hold a reference and
   // CreateImageCursor should return an incremented refcount.
-  X11CursorOzone* invisible_cursor = static_cast<X11CursorOzone*>(
-      factory.CreateImageCursor(SkBitmap(), gfx::Point(), 1.0f));
+  auto* invisible_cursor = static_cast<X11CursorOzone*>(
+      factory.CreateImageCursor(SkBitmap(), gfx::Point()));
   ASSERT_FALSE(invisible_cursor->HasOneRef());
 
   // Release our refcount on the cursor

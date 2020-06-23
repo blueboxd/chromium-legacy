@@ -89,7 +89,7 @@ bool BrailleDisplayPrivateAPI::IsProfileActive() {
   // Since we are creating one instance per profile / user, we should be fine
   // comparing against the active user. That said - if we ever change that,
   // this code will need to be changed.
-  return profile_->IsSameProfile(ProfileManager::GetActiveUserProfile());
+  return profile_->IsSameOrParent(ProfileManager::GetActiveUserProfile());
 #else  // !defined(OS_CHROMEOS)
   return true;
 #endif

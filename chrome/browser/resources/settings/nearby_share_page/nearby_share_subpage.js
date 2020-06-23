@@ -2,6 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {PrefsBehavior} from '../prefs/prefs_behavior.m.js';
+// clang-format on
+
 /**
  * @fileoverview
  * 'settings-nearby-share-subpage' is the settings subpage for managing the

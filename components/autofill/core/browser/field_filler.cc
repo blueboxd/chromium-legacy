@@ -705,6 +705,36 @@ base::string16 RemoveWhitespace(const base::string16& value) {
   return stripped_value;
 }
 
+// Finds the best suitable option in the |field| that corresponds to the
+// |country_code|.
+// If the exact match is not found, extracts the digits (ignoring leading '00'
+// or '+') from each option and compares them with the |country_code|.
+void FillPhoneCountryCodeSelectControl(const base::string16& country_code,
+                                       FormFieldData* field,
+                                       std::string* failure_to_fill) {
+  if (country_code.empty())
+    return;
+
+  // Find the option that exactly matches the |country_code|.
+  if (SetSelectControlValue(country_code, field, /*best_match_index=*/nullptr,
+                            failure_to_fill))
+    return;
+
+  for (size_t i = 0; i < field->option_contents.size(); i++) {
+    base::string16 cc_candidate_in_value =
+        data_util::FindPossiblePhoneCountryCode(
+            RemoveWhitespace(field->option_values[i]));
+    base::string16 cc_candidate_in_content =
+        data_util::FindPossiblePhoneCountryCode(
+            RemoveWhitespace(field->option_contents[i]));
+    if (cc_candidate_in_value == country_code ||
+        cc_candidate_in_content == country_code) {
+      field->value = field->option_values[i];
+      return;
+    }
+  }
+}
+
 }  // namespace
 
 FieldFiller::FieldFiller(const std::string& app_locale,
@@ -748,7 +778,16 @@ bool FieldFiller::FillFormField(const AutofillField& field,
   }
 
   if (type.group() == PHONE_HOME) {
-    FillPhoneNumberField(field, value, field_data);
+    // If the |field_data| is a selection box and having the type
+    // |PHONE_HOME_COUNTRY_CODE|, call |FillPhoneCountryCodeSelectControl|.
+    if (base::FeatureList::IsEnabled(
+            features::kAutofillEnableAugmentedPhoneCountryCode) &&
+        field_data->form_control_type == "select-one" &&
+        type.GetStorableType() == PHONE_HOME_COUNTRY_CODE) {
+      FillPhoneCountryCodeSelectControl(value, field_data, failure_to_fill);
+    } else {
+      FillPhoneNumberField(field, value, field_data);
+    }
     return true;
   }
   if (field_data->form_control_type == "select-one") {

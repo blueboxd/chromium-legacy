@@ -25,7 +25,7 @@ namespace media {
 
 namespace {
 
-// Get a list of the available functions for creating VideoDeocoder.
+// Get a list of the available functions for creating VideoDecoder.
 base::queue<VideoDecoderPipeline::CreateVDFunc> GetCreateVDFunctions(
     VideoDecoderPipeline::CreateVDFunc cur_create_vd_func) {
   static constexpr VideoDecoderPipeline::CreateVDFunc kCreateVDFuncs[] = {

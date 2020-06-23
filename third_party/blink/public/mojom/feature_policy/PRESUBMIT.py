@@ -58,85 +58,129 @@ def _json5_load_from_file(file_path):
         return _json5_load(f.read())
 
 
-def _RunUmaHistogramChecks(input_api, output_api):  # pylint: disable=C0103
-    source_path = ''
-    for f in input_api.AffectedFiles():
-        if f.LocalPath().endswith('feature_policy_feature.mojom'):
-            source_path = f.LocalPath()
-            break
-    else:
+def uma_histogram_checks_factory(mojom_file, enum_name, update_script_file):
+    """
+    :param mojom_file: str mojom_file name
+    :param enum_name: str enum name used in both mojom file and enums.xml
+    :param update_script_file: str update_script_file name
+    """
+
+    def run_uma_histogram_checks(input_api, output_api):
+        source_path = ''
+        for f in input_api.AffectedFiles():
+            if f.LocalPath().endswith(mojom_file):
+                source_path = f.LocalPath()
+                break
+        else:
+            return []
+
+        start_marker = '^enum {} {{'.format(enum_name)
+        end_marker = '^};'
+        presubmit_error = _import_update_histogram_enum(
+            input_api).CheckPresubmitErrors(
+                histogram_enum_name=enum_name,
+                update_script_name=update_script_file,
+                source_enum_path=source_path,
+                start_marker=start_marker,
+                end_marker=end_marker,
+                strip_k_prefix=True)
+        if presubmit_error:
+            return [
+                output_api.PresubmitPromptWarning(presubmit_error,
+                                                  items=[source_path])
+            ]
         return []
 
-    start_marker = '^enum FeaturePolicyFeature {'
-    end_marker = '^};'
-    presubmit_error = _import_update_histogram_enum(
-        input_api).CheckPresubmitErrors(
-            histogram_enum_name='FeaturePolicyFeature',
-            update_script_name='update_feature_policy_enum.py',
-            source_enum_path=source_path,
-            start_marker=start_marker,
-            end_marker=end_marker,
-            strip_k_prefix=True)
-    if presubmit_error:
-        return [
+    return run_uma_histogram_checks
+
+
+def json5_config_checks_factory(mojom_source_path, json5_config_path,
+                                enum_name, ignore_enums):
+    """
+    :param mojom_source_path: str a src based path to mojom source file
+    :param json5_config_path: str a src based path to json5 config file
+    :param enum_name: str enum name used in mojom file
+    :param ignore_enums: Set[str] enum names that should be ignored in mojom file.
+                                  Enum names should not have 'k' prefixes here.
+    """
+
+    def run_json5_config_checks(input_api, output_api):
+        affected_paths = {f.LocalPath() for f in input_api.AffectedFiles()}
+        if mojom_source_path not in affected_paths and json5_config_path not in affected_paths:
+            return []
+
+        mojom_enums = set(
+            _import_update_histogram_enum(input_api).ReadHistogramValues(
+                mojom_source_path,
+                start_marker='^enum {} {{'.format(enum_name),
+                end_marker='^};',
+                strip_k_prefix=True).values()) - ignore_enums
+
+        json5_enums = {
+            feature['name']
+            for feature in _json5_load_from_file(
+                _import_path_util(input_api).GetInputFile(json5_config_path))
+            ['data']
+        }
+
+        json5_missing_enums = mojom_enums - json5_enums
+        mojom_missing_enums = json5_enums - mojom_enums
+
+        json5_messages = "{} are missing in json5 config.\n".format(
+            list(json5_missing_enums)) if json5_missing_enums else ""
+        mojom_messages = "{} are missing in mojom file.\n".format(
+            list(mojom_missing_enums)) if mojom_missing_enums else ""
+
+        return [] if json5_enums == mojom_source_path else [
             output_api.PresubmitPromptWarning(
-                presubmit_error, items=[source_path])
+                "{} and {} are out of sync: {}{}".format(
+                    json5_config_path, mojom_source_path, json5_messages,
+                    mojom_messages),
+                items=[mojom_source_path, json5_config_path])
         ]
-    return []
+
+    return run_json5_config_checks
 
 
-def _RunJson5ConfigChecks(input_api, output_api):  # pylint: disable=C0103
-    mojom_source_path = os.path.join('third_party', 'blink', 'public', 'mojom',
-                                     'feature_policy',
-                                     'feature_policy_feature.mojom')
-    json5_config_path = os.path.join('third_party', 'blink', 'renderer',
-                                     'core', 'feature_policy',
-                                     'feature_policy_features.json5')
-
-    affected_paths = {f.LocalPath() for f in input_api.AffectedFiles()}
-    if mojom_source_path not in affected_paths and json5_config_path not in affected_paths:
-        return []
-
-    mojom_enums = set(
-        _import_update_histogram_enum(input_api).ReadHistogramValues(
-            mojom_source_path,
-            start_marker='^enum FeaturePolicyFeature {',
-            end_marker='^};',
-            strip_k_prefix=True).values()) - {'NotFound'}
-
-    json5_enums = {
-        feature['name']
-        for feature in _json5_load_from_file(
-            _import_path_util(input_api).GetInputFile(json5_config_path))
-        ['data']
-    }
-
-    json5_missing_enums = mojom_enums - json5_enums
-    mojom_missing_enums = json5_enums - mojom_enums
-
-    json5_messages = "{} are missing in json5 config.\n".format(
-        list(json5_missing_enums)) if json5_missing_enums else ""
-    mojom_messages = "{} are missing in mojom file.\n".format(
-        list(mojom_missing_enums)) if mojom_missing_enums else ""
-
-    return [] if json5_enums == mojom_source_path else [
-        output_api.PresubmitPromptWarning(
-            "{} and {} are out of sync: {}{}".format(
-                json5_config_path, mojom_source_path, json5_messages,
-                mojom_messages),
-            items=[mojom_source_path, json5_config_path])
-    ]
+checks = [
+    uma_histogram_checks_factory(
+        mojom_file="feature_policy_feature.mojom",
+        enum_name="FeaturePolicyFeature",
+        update_script_file="update_feature_policy_enum.py"),
+    uma_histogram_checks_factory(
+        mojom_file="document_policy_feature.mojom",
+        enum_name="DocumentPolicyFeature",
+        update_script_file="update_document_policy_enum.py"),
+    json5_config_checks_factory(
+        mojom_source_path=os.path.join('third_party', 'blink', 'public',
+                                       'mojom', 'feature_policy',
+                                       'feature_policy_feature.mojom'),
+        json5_config_path=os.path.join('third_party', 'blink', 'renderer',
+                                       'core', 'feature_policy',
+                                       'feature_policy_features.json5'),
+        enum_name="FeaturePolicyFeature",
+        ignore_enums={'NotFound'}),
+    json5_config_checks_factory(
+        mojom_source_path=os.path.join('third_party', 'blink', 'public',
+                                       'mojom', 'feature_policy',
+                                       'document_policy_feature.mojom'),
+        json5_config_path=os.path.join('third_party', 'blink', 'renderer',
+                                       'core', 'feature_policy',
+                                       'document_policy_features.json5'),
+        enum_name="DocumentPolicyFeature",
+        ignore_enums={'Default'}),
+]
 
 
 def CheckChangeOnUpload(input_api, output_api):  # pylint: disable=C0103
-    results = []
-    results.extend(_RunUmaHistogramChecks(input_api, output_api))
-    results.extend(_RunJson5ConfigChecks(input_api, output_api))
-    return results
+    return [
+        message for check in checks
+        for message in check(input_api, output_api)
+    ]
 
 
 def CheckChangeOnCommit(input_api, output_api):  # pylint: disable=C0103
-    results = []
-    results.extend(_RunUmaHistogramChecks(input_api, output_api))
-    results.extend(_RunJson5ConfigChecks(input_api, output_api))
-    return results
+    return [
+        message for check in checks
+        for message in check(input_api, output_api)
+    ]

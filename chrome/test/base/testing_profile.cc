@@ -967,7 +967,7 @@ TestingProfile::GetStorageNotificationService() {
   return nullptr;
 }
 
-bool TestingProfile::IsSameProfile(Profile *profile) {
+bool TestingProfile::IsSameOrParent(Profile* profile) {
   if (this == profile)
     return true;
   return profile && profile->GetOriginalProfile() == this;

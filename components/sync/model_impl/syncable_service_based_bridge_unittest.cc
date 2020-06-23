@@ -13,6 +13,7 @@
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "components/sync/base/client_tag_hash.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
@@ -31,6 +32,7 @@ namespace {
 
 using testing::_;
 using testing::ElementsAre;
+using testing::Eq;
 using testing::Invoke;
 using testing::IsEmpty;
 using testing::NotNull;
@@ -96,14 +98,14 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
 
   ~SyncableServiceBasedBridgeTest() override {}
 
-  void InitializeBridge() {
+  void InitializeBridge(ModelType model_type = kModelType) {
     real_processor_ =
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            kModelType, /*dump_stack=*/base::DoNothing(),
+            model_type, /*dump_stack=*/base::DoNothing(),
             /*commit_only=*/false);
     mock_processor_.DelegateCallsByDefaultTo(real_processor_.get());
     bridge_ = std::make_unique<SyncableServiceBasedBridge>(
-        kModelType,
+        model_type,
         ModelTypeStoreTestUtil::FactoryForForwardingStore(store_.get()),
         mock_processor_.CreateForwardingProcessor(), &syncable_service_);
   }
@@ -587,6 +589,57 @@ TEST(SyncableServiceBasedBridgeLocalChangeProcessorTest,
   sync_change_processor->ProcessSyncChanges(FROM_HERE, change_list);
 
   EXPECT_EQ(1U, in_memory_store.count(kClientTagHash));
+}
+
+TEST_F(SyncableServiceBasedBridgeTest, ConflictShouldUseRemote) {
+  InitializeBridge();
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  remote_data.specifics = GetTestSpecifics();
+  ASSERT_FALSE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseRemote));
+}
+
+TEST_F(SyncableServiceBasedBridgeTest,
+       ConflictWithRemoteDeletionShouldUseLocal) {
+  InitializeBridge();
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  ASSERT_TRUE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseLocal));
+}
+
+// This ensures that for extensions, the conflict is resolved in favor of the
+// server, to prevent extensions from being reinstalled after uninstall.
+TEST_F(SyncableServiceBasedBridgeTest,
+       ConflictWithRemoteExtensionUninstallShouldUseRemote) {
+  InitializeBridge(EXTENSIONS);
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  ASSERT_TRUE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseRemote));
+}
+
+// Same as above but for APPS.
+TEST_F(SyncableServiceBasedBridgeTest,
+       ConflictWithRemoteAppUninstallShouldUseRemote) {
+  InitializeBridge(APPS);
+
+  EntityData remote_data;
+  remote_data.client_tag_hash = kClientTagHash;
+  ASSERT_TRUE(remote_data.is_deleted());
+
+  EXPECT_THAT(bridge_->ResolveConflict("storagekey1", remote_data),
+              Eq(ConflictResolution::kUseRemote));
 }
 
 }  // namespace

@@ -42,7 +42,8 @@ bool WebKioskAppData::LoadFromCache() {
   PrefService* local_state = g_browser_process->local_state();
   const base::Value* dict = local_state->GetDictionary(dictionary_name());
 
-  if (!LoadFromDictionary(base::Value::AsDictionaryValue(*dict)))
+  if (!LoadFromDictionary(base::Value::AsDictionaryValue(*dict),
+                          /* lazy_icon_load= */ true))
     return false;
 
   if (LoadLaunchUrlFromDictionary(*dict)) {
@@ -54,6 +55,18 @@ bool WebKioskAppData::LoadFromCache() {
   if (status_ == STATUS_INIT)
     SetStatus(STATUS_LOADING);
   return true;
+}
+
+void WebKioskAppData::LoadIcon() {
+  if (!icon_.isNull())
+    return;
+
+  // We already had some icon cached, it is time to decode it.
+  if (status_ != STATUS_INIT) {
+    DecodeIcon();
+    return;
+  }
+  NOTIMPLEMENTED();
 }
 
 void WebKioskAppData::UpdateFromWebAppInfo(

@@ -12,10 +12,11 @@ import './password_edit_dialog.js';
 import './password_move_to_account_dialog.js';
 import './password_remove_dialog.js';
 import './password_list_item.js';
-import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import './password_edit_dialog.js';
+import 'chrome://resources/cr_elements/shared_style_css.m.js';
+import 'chrome://resources/cr_elements/cr_toast/cr_toast.m.js';
+import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 
-import {getToastManager} from 'chrome://resources/cr_elements/cr_toast/cr_toast_manager.m.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
@@ -94,6 +95,14 @@ Polymer({
      */
     activeDialogAnchor_: {type: Object, value: null},
 
+
+    /**
+     * The message displayed in the toast following a password removal.
+     */
+    removalNotification_: {
+      type: String,
+      value: '',
+    }
   },
 
   behaviors: [
@@ -108,8 +117,8 @@ Polymer({
 
   /** @override */
   detached() {
-    if (getToastManager().isToastOpen) {
-      getToastManager().hide();
+    if (this.$.toast.open) {
+      this.$.toast.hide();
     }
   },
 
@@ -117,7 +126,7 @@ Polymer({
    * Closes the toast manager.
    */
   onSavedPasswordOrExceptionRemoved() {
-    getToastManager().hide();
+    this.$.toast.hide();
   },
 
   /**
@@ -171,7 +180,7 @@ Polymer({
         .requestPlaintextPassword(
             this.activePassword.entry.getAnyId(),
             chrome.passwordsPrivate.PlaintextReason.COPY)
-        .then(() => {
+        .then(_ => {
           this.activePassword = null;
         })
         .catch(error => {
@@ -217,17 +226,19 @@ Polymer({
    */
   displayRemovalNotification_(removedFromAccount, removedFromDevice) {
     assert(removedFromAccount || removedFromDevice);
-    let text = this.i18n('passwordDeleted');
+    this.removalNotification_ = this.i18n('passwordDeleted');
     if (this.shouldShowStorageDetails) {
       if (removedFromAccount && removedFromDevice) {
-        text = this.i18n('passwordDeletedFromAccountAndDevice');
+        this.removalNotification_ =
+            this.i18n('passwordDeletedFromAccountAndDevice');
       } else if (removedFromAccount) {
-        text = this.i18n('passwordDeletedFromAccount');
+        this.removalNotification_ = this.i18n('passwordDeletedFromAccount');
       } else {
-        text = this.i18n('passwordDeletedFromDevice');
+        this.removalNotification_ = this.i18n('passwordDeletedFromDevice');
       }
     }
-    getToastManager().show(text);
+    this.$.toast.show();
+    this.fire('iron-announce', {text: this.removalNotification_});
     this.fire('iron-announce', {text: this.i18n('undoDescription')});
   },
 

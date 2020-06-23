@@ -19,6 +19,7 @@ public class RequestFailureException extends Exception {
     public static final int ERROR_PARSE_URLS = 8;
     public static final int ERROR_PARSE_UPDATECHECK = 9;
     public static final int ERROR_PARSE_MANIFEST = 10;
+    public static final int ERROR_CONNECTIVITY = 11;
 
     public int errorCode = ERROR_UNDEFINED;
 

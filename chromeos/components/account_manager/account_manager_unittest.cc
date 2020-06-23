@@ -11,6 +11,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -61,8 +62,8 @@ class AccountManagerSpy : public AccountManager {
 
 class AccountManagerTest : public testing::Test {
  public:
-  AccountManagerTest() {}
-  ~AccountManagerTest() override {}
+  AccountManagerTest() = default;
+  ~AccountManagerTest() override = default;
 
  protected:
   void SetUp() override {
@@ -73,10 +74,16 @@ class AccountManagerTest : public testing::Test {
 
   // Gets the list of accounts stored in |account_manager_|.
   std::vector<AccountManager::Account> GetAccountsBlocking() {
+    return GetAccountsBlocking(account_manager_.get());
+  }
+
+  // Gets the list of accounts stored in |account_manager|.
+  std::vector<AccountManager::Account> GetAccountsBlocking(
+      AccountManager* const account_manager) {
     std::vector<AccountManager::Account> accounts;
 
     base::RunLoop run_loop;
-    account_manager_->GetAccounts(base::BindLambdaForTesting(
+    account_manager->GetAccounts(base::BindLambdaForTesting(
         [&accounts, &run_loop](
             const std::vector<AccountManager::Account>& stored_accounts) {
           accounts = stored_accounts;
@@ -113,10 +120,21 @@ class AccountManagerTest : public testing::Test {
   }
 
   // |account_manager| is a non-owning pointer.
+  // |initialization_callback| is called after initialization is complete.
   void InitializeAccountManager(AccountManager* account_manager,
                                 base::OnceClosure initialization_callback) {
+    InitializeAccountManager(account_manager, tmp_dir_.GetPath(),
+                             std::move(initialization_callback));
+  }
+
+  // |account_manager| is a non-owning pointer.
+  // |home_dir| is the cryptohome root.
+  // |initialization_callback| is called after initialization is complete.
+  void InitializeAccountManager(AccountManager* account_manager,
+                                const base::FilePath& home_dir,
+                                base::OnceClosure initialization_callback) {
     account_manager->Initialize(
-        tmp_dir_.GetPath(), test_url_loader_factory_.GetSafeWeakWrapper(),
+        home_dir, test_url_loader_factory_.GetSafeWeakWrapper(),
         immediate_callback_runner_, base::SequencedTaskRunnerHandle::Get(),
         std::move(initialization_callback));
     account_manager->SetPrefService(&pref_service_);
@@ -237,6 +255,7 @@ TEST_F(AccountManagerTest, TestUpsert) {
   EXPECT_EQ(kRawUserEmail, accounts[0].raw_email);
 }
 
+// Test that |AccountManager| saves its tokens to disk.
 TEST_F(AccountManagerTest, TestTokenPersistence) {
   account_manager_->UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
   task_environment_.RunUntilIdle();
@@ -248,6 +267,30 @@ TEST_F(AccountManagerTest, TestTokenPersistence) {
   EXPECT_EQ(kGaiaAccountKey_, accounts[0].key);
   EXPECT_EQ(kRawUserEmail, accounts[0].raw_email);
   EXPECT_EQ(kGaiaToken, account_manager_->accounts_[kGaiaAccountKey_].token);
+}
+
+// Test that |AccountManager| does not save its tokens to disk if an empty
+// cryptohome root path is provided during initialization.
+TEST_F(AccountManagerTest, TestTokenTransience) {
+  const base::FilePath home_dir;
+
+  {
+    // Create a scoped |AccountManager|.
+    AccountManager account_manager;
+    InitializeAccountManager(&account_manager, home_dir,
+                             /* initialization_callback= */ base::DoNothing());
+    account_manager.UpsertAccount(kGaiaAccountKey_, kRawUserEmail, kGaiaToken);
+    task_environment_.RunUntilIdle();
+  }
+
+  // Create another |AccountManager| at the same path.
+  AccountManager account_manager;
+  InitializeAccountManager(&account_manager, home_dir,
+                           /* initialization_callback= */ base::DoNothing());
+
+  std::vector<AccountManager::Account> accounts =
+      GetAccountsBlocking(&account_manager);
+  EXPECT_EQ(0UL, accounts.size());
 }
 
 TEST_F(AccountManagerTest, TestAccountEmailPersistence) {

@@ -121,6 +121,8 @@ ListMarker::MarkerTextType ListMarker::MarkerText(
     StringBuilder* text,
     MarkerTextFormat format) const {
   DCHECK_EQ(Get(&marker), this);
+  if (!marker.StyleRef().ContentBehavesAsNormal())
+    return kNotText;
   if (IsMarkerImage(marker)) {
     if (format == kWithSuffix)
       text->Append(' ');

@@ -58,23 +58,16 @@ class CORE_EXPORT ClassicPendingScript final : public PendingScript,
                        bool is_external);
   ~ClassicPendingScript() override;
 
-  // ScriptStreamer callbacks.
-  void SetStreamer(ScriptStreamer*);
-  void StreamingFinished();
-
   void Trace(Visitor*) const override;
 
   mojom::ScriptType GetScriptType() const override {
     return mojom::ScriptType::kClassic;
   }
 
-  void WatchForLoad(PendingScriptClient*) override;
-
   ClassicScript* GetSource(const KURL& document_url) const override;
   bool IsReady() const override;
   bool IsExternal() const override { return is_external_; }
   bool WasCanceled() const override;
-  void StartStreamingIfPossible() override;
   KURL UrlForTracing() const override;
   void DisposeInternal() override;
 

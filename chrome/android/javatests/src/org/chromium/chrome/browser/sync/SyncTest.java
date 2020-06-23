@@ -17,6 +17,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninHelper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
@@ -61,7 +62,9 @@ public class SyncTest {
         mSyncTestRule.setUpAccountAndSignInForTesting();
         CriteriaHelper.pollUiThread(
                 ()
-                        -> IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
+                        -> IdentityServicesProvider.get()
+                                   .getIdentityManager(Profile.getLastUsedRegularProfile())
+                                   .hasPrimaryAccount(),
                 "Timed out checking that hasPrimaryAccount() == true", SyncTestUtil.TIMEOUT_MS,
                 SyncTestUtil.INTERVAL_MS);
 
@@ -72,7 +75,9 @@ public class SyncTest {
         Assert.assertFalse(SyncTestUtil.isSyncRequested());
         CriteriaHelper.pollUiThread(
                 ()
-                        -> !IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount(),
+                        -> !IdentityServicesProvider.get()
+                                    .getIdentityManager(Profile.getLastUsedRegularProfile())
+                                    .hasPrimaryAccount(),
                 "Timed out checking that hasPrimaryAccount() == false", SyncTestUtil.TIMEOUT_MS,
                 SyncTestUtil.INTERVAL_MS);
     }

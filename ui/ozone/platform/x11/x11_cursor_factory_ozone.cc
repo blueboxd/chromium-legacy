@@ -5,11 +5,10 @@
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/cursor_lookup.h"
-#include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/ozone/platform/x11/x11_cursor_ozone.h"
 
 namespace ui {
 
@@ -21,17 +20,6 @@ X11CursorOzone* ToX11CursorOzone(PlatformCursor cursor) {
 
 PlatformCursor ToPlatformCursor(X11CursorOzone* cursor) {
   return static_cast<PlatformCursor>(cursor);
-}
-
-// Gets default aura cursor bitmap/hotspot and creates a X11CursorOzone with it.
-scoped_refptr<X11CursorOzone> CreateAuraX11Cursor(mojom::CursorType type) {
-  Cursor cursor(type);
-  cursor.set_image_scale_factor(1);
-  SkBitmap bitmap = GetCursorBitmap(cursor);
-  gfx::Point hotspot = GetCursorHotspot(cursor);
-  if (!bitmap.isNull())
-    return new X11CursorOzone(bitmap, hotspot);
-  return nullptr;
 }
 
 }  // namespace
@@ -47,8 +35,7 @@ PlatformCursor X11CursorFactoryOzone::GetDefaultCursor(mojom::CursorType type) {
 
 PlatformCursor X11CursorFactoryOzone::CreateImageCursor(
     const SkBitmap& bitmap,
-    const gfx::Point& hotspot,
-    float bitmap_dpi) {
+    const gfx::Point& hotspot) {
   // There is a problem with custom cursors that have no custom data. The
   // resulting SkBitmap is empty and X crashes when creating a zero size cursor
   // image. Return invisible cursor here instead.
@@ -70,8 +57,7 @@ PlatformCursor X11CursorFactoryOzone::CreateImageCursor(
 PlatformCursor X11CursorFactoryOzone::CreateAnimatedCursor(
     const std::vector<SkBitmap>& bitmaps,
     const gfx::Point& hotspot,
-    int frame_delay_ms,
-    float bitmap_dpi) {
+    int frame_delay_ms) {
   X11CursorOzone* cursor = new X11CursorOzone(bitmaps, hotspot, frame_delay_ms);
   cursor->AddRef();
   return ToPlatformCursor(cursor);
@@ -91,24 +77,11 @@ scoped_refptr<X11CursorOzone> X11CursorFactoryOzone::GetDefaultCursorInternal(
     return invisible_cursor_;
 
   if (!default_cursors_.count(type)) {
-    // First try to load a predefined X11 cursor.
+    // Try to load a predefined X11 cursor.
     ::Cursor xcursor = LoadCursorFromType(type);
-    if (xcursor != x11::None) {
-      auto cursor = base::MakeRefCounted<X11CursorOzone>(xcursor);
-      default_cursors_[type] = cursor;
-      return cursor;
-    }
-
-    // Loads the default aura cursor bitmap for cursor type. Falls back on
-    // pointer cursor then invisible cursor if this fails.
-    auto cursor = CreateAuraX11Cursor(type);
-    if (!cursor.get()) {
-      if (type != mojom::CursorType::kPointer) {
-        cursor = GetDefaultCursorInternal(mojom::CursorType::kPointer);
-      } else {
-        NOTREACHED() << "Failed to load default cursor bitmap";
-      }
-    }
+    if (xcursor == x11::None)
+      return nullptr;
+    auto cursor = base::MakeRefCounted<X11CursorOzone>(xcursor);
     default_cursors_[type] = cursor;
   }
 

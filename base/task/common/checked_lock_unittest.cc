@@ -307,7 +307,7 @@ TEST(CheckedLockTest, AcquireMultipleLocksAfterUniversalPredecessor)
 NO_THREAD_SAFETY_ANALYSIS {
   // Acquisition of a universal-predecessor lock does not affect acquisition
   // rules for locks beyond the one acquired directly after it.
-  CheckedLock universal_predecessor((UniversalPredecessor()));
+  CheckedLock universal_predecessor{UniversalPredecessor()};
   CheckedLock lock;
   CheckedLock lock2(&lock);
   CheckedLock lock3;
@@ -329,7 +329,7 @@ NO_THREAD_SAFETY_ANALYSIS {
 TEST(CheckedLockTest, AcquireUniversalPredecessorAfterLock)
 NO_THREAD_SAFETY_ANALYSIS {
   // A universal-predecessor lock may not be acquired after any other lock.
-  CheckedLock universal_predecessor((UniversalPredecessor()));
+  CheckedLock universal_predecessor{UniversalPredecessor()};
   CheckedLock lock;
 
   EXPECT_DCHECK_DEATH({
@@ -342,13 +342,77 @@ TEST(CheckedLockTest, AcquireUniversalPredecessorAfterUniversalPredecessor)
 NO_THREAD_SAFETY_ANALYSIS {
   // A universal-predecessor lock may not be acquired after any other lock, not
   // even another universal predecessor.
-  CheckedLock universal_predecessor((UniversalPredecessor()));
-  CheckedLock universal_predecessor2((UniversalPredecessor()));
+  CheckedLock universal_predecessor{UniversalPredecessor()};
+  CheckedLock universal_predecessor2{UniversalPredecessor()};
 
   EXPECT_DCHECK_DEATH({
     universal_predecessor.Acquire();
     universal_predecessor2.Acquire();
   });
+}
+
+TEST(CheckedLockTest, AcquireLockBeforeUniversalSuccessor) {
+  // Acquisition of a universal-successor lock should be allowed
+  // after any other acquisition.
+  CheckedLock universal_successor{UniversalSuccessor()};
+  CheckedLock lock;
+
+  lock.Acquire();
+  universal_successor.Acquire();
+  universal_successor.Release();
+  lock.Release();
+}
+
+TEST(CheckedLockTest, AcquireMultipleLocksBeforeAndAfterUniversalSuccessor)
+NO_THREAD_SAFETY_ANALYSIS {
+  // Acquisition of a universal-successor lock does not affect acquisition
+  // rules for locks beyond the one acquired directly after it.
+  CheckedLock lock;
+  CheckedLock universal_successor{UniversalSuccessor()};
+  CheckedLock lock2;
+
+  lock.Acquire();
+  universal_successor.Acquire();
+  universal_successor.Release();
+  lock.Release();
+
+  EXPECT_DCHECK_DEATH({
+    universal_successor.Acquire();
+    lock2.Acquire();
+  });
+}
+
+TEST(CheckedLockTest, AcquireUniversalSuccessorBeforeLock)
+NO_THREAD_SAFETY_ANALYSIS {
+  // A universal-successor lock may not be acquired before any other lock.
+  CheckedLock universal_successor{UniversalSuccessor()};
+  CheckedLock lock;
+
+  EXPECT_DCHECK_DEATH({
+    universal_successor.Acquire();
+    lock.Acquire();
+  });
+}
+
+TEST(CheckedLockTest, AcquireUniversalSuccessorAfterUniversalSuccessor)
+NO_THREAD_SAFETY_ANALYSIS {
+  // A universal-successor lock may not be acquired before any other lock, not
+  // even another universal successor.
+  CheckedLock universal_successor{UniversalSuccessor()};
+  CheckedLock universal_successor2{UniversalSuccessor()};
+
+  EXPECT_DCHECK_DEATH({
+    universal_successor.Acquire();
+    universal_successor2.Acquire();
+  });
+}
+
+TEST(CheckedLockTest, UniversalSuccessorAsPredecessor)
+NO_THREAD_SAFETY_ANALYSIS {
+  // A universal-successor lock cannot be declared as a predecessor to
+  // any other lock.
+  CheckedLock universal_successor{UniversalSuccessor()};
+  EXPECT_DCHECK_DEATH({ CheckedLock banned_successor(&universal_successor); });
 }
 
 TEST(CheckedLockTest, AssertNoLockHeldOnCurrentThread) {

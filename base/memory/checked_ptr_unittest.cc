@@ -167,6 +167,8 @@ TEST_F(CheckedPtrTest, NullCmpBool) {
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
+void FuncThatAcceptsBool(bool b) {}
+
 bool IsValidNoCast(CountingCheckedPtr<int> ptr) {
   return !!ptr;  // !! to avoid implicit cast
 }
@@ -185,6 +187,7 @@ TEST_F(CheckedPtrTest, BoolOpNotCast) {
     is_not_valid = true;
   std::ignore = IsValidNoCast(ptr);
   std::ignore = IsValidNoCast2(ptr);
+  FuncThatAcceptsBool(!ptr);
   // No need to unwrap pointer, just compare against 0.
   EXPECT_EQ(g_get_for_comparison_cnt, 0);
   EXPECT_EQ(g_get_for_extraction_cnt, 0);
@@ -195,14 +198,17 @@ bool IsValidWithCast(CountingCheckedPtr<int> ptr) {
   return ptr;
 }
 
-// This test is mostly for documentation purposes, demonstrating that a more
-// costly cast can be invoked if we aren't careful.
+// This test is mostly for documentation purposes. It demonstrates cases where
+// |operator T*| is called first and then the pointer is converted to bool,
+// as opposed to calling |operator bool| directly. The former may be more
+// costly, so the caller has to be careful not to trigger this path.
 TEST_F(CheckedPtrTest, CastNotBoolOp) {
   CountingCheckedPtr<int> ptr = nullptr;
   bool is_valid = ptr;
   is_valid = IsValidWithCast(ptr);
+  FuncThatAcceptsBool(ptr);
   EXPECT_EQ(g_get_for_comparison_cnt, 0);
-  EXPECT_EQ(g_get_for_extraction_cnt, 2);
+  EXPECT_EQ(g_get_for_extraction_cnt, 3);
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
@@ -613,7 +619,7 @@ namespace {
 
 struct CheckedPtr2ImplPartitionAllocSupportEnabled
     : base::internal::CheckedPtr2ImplPartitionAllocSupport {
-  static bool EnableForPtr(void* ptr) { return true; }
+  static bool EnabledForPtr(void* ptr) { return true; }
 };
 
 using CheckedPtr2ImplEnabled = base::internal::CheckedPtr2Impl<

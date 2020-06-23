@@ -110,8 +110,8 @@ class AppWindow : public ui::PlatformWindowDelegate {
 
     // Supply an empty cursor to override and hide the default system pointer.
     platform_window_->SetCursor(
-        ui::CursorFactory::GetInstance()->CreateImageCursor(SkBitmap(), {0, 0},
-                                                            0));
+        ui::CursorFactory::GetInstance()->CreateImageCursor(SkBitmap(),
+                                                            {0, 0}));
   }
   ~AppWindow() override {}
 

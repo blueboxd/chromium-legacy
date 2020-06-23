@@ -334,6 +334,7 @@ crbug.com/angleproject/2930 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textures/misc/texture-sub-image-cube-maps.html [ Failure ]
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
 crbug.com/angleproject/4569 [ win nvidia vulkan passthrough ] conformance/textures/misc/default-texture.html [ Failure ]
+crbug.com/1082826 [ win nvidia vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
 
 # Flaky since crbug.com/1017162
 crbug.com/1017162 [ win nvidia vulkan passthrough ] conformance/extensions/angle-instanced-arrays.html [ Failure ]

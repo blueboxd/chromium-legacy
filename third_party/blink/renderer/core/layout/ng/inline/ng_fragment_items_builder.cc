@@ -38,11 +38,13 @@ NGFragmentItemsBuilder::NGFragmentItemsBuilder(
 
 void NGFragmentItemsBuilder::SetCurrentLine(
     const NGPhysicalLineBoxFragment& line,
-    NGLogicalLineItems&& children) {
+    NGLogicalLineItems* current_line) {
 #if DCHECK_IS_ON()
   current_line_fragment_ = &line;
 #endif
-  current_line_ = std::move(children);
+  DCHECK(!current_line_);
+  DCHECK(current_line);
+  current_line_ = current_line;
 }
 
 void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
@@ -51,10 +53,11 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
 #if DCHECK_IS_ON()
   DCHECK_EQ(current_line_fragment_, &line);
 #endif
+  DCHECK(current_line_);
 
   // Reserve the capacity for (children + line box item).
   const wtf_size_t size_before = items_.size();
-  const wtf_size_t estimated_size = size_before + current_line_.size() + 1;
+  const wtf_size_t estimated_size = size_before + current_line_->size() + 1;
   const wtf_size_t old_capacity = items_.capacity();
   if (estimated_size > old_capacity)
     items_.ReserveCapacity(std::max(estimated_size, old_capacity * 2));
@@ -63,7 +66,7 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   const wtf_size_t line_start_index = items_.size();
   items_.emplace_back(offset, line);
 
-  AddItems(current_line_.begin(), current_line_.end());
+  AddItems(current_line_->begin(), current_line_->end());
 
   // All children are added. Create an item for the start of the line.
   NGFragmentItem& line_item = items_[line_start_index].item;
@@ -74,8 +77,11 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
   // Keep children's offsets relative to |line|. They will be adjusted later in
   // |ConvertToPhysical()|.
 
-  current_line_.clear();
+  // Clear the current line without releasing the buffer. It is likely to be
+  // reused again.
+  current_line_->Shrink(0);
 #if DCHECK_IS_ON()
+  current_line_ = nullptr;
   current_line_fragment_ = nullptr;
 #endif
 

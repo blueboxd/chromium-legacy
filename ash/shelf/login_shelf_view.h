@@ -79,8 +79,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // a menu item is selected.
   void SetKioskApps(
       const std::vector<KioskAppMenuEntry>& kiosk_apps,
-      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>&
-          launch_app);
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+      const base::RepeatingClosure& on_show_menu);
 
   // Sets the state of the login dialog.
   void SetLoginDialogState(OobeDialogState state);

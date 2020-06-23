@@ -6662,11 +6662,8 @@ crbug.com/1066579 http/tests/devtools/har-importer.js [ Pass Failure ]
 # The "timeout" was detected by the wpt-importer bot.
 crbug.com/1069714 [ Mac10.13 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Pass Failure Timeout ]
 
-# COOP access reporting. This needs to be implemented in chrome.
-crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/access-reporting/openee-accessed_openee-coop-ro.https.html [ Pass Timeout Failure ]
-crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/access-reporting/openee-accessed_openee-coop.https.html [ Pass Timeout Failure ]
-crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/access-reporting/opener-accessed_openee-coop-ro.https.html [ Pass Timeout Failure ]
-crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/access-reporting/opener-accessed_openee-coop.https.html [ Pass Timeout Failure ]
+# COOP access reporting. This needs to be implemented in chrome to pass.
+crbug.com/1090273 external/wpt/html/cross-origin-opener-policy/access-reporting/property.https.html [ Pass Timeout Failure ]
 
 # Sheriff 2020-04-17
 crbug.com/1071909 external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw.https.html [ Pass Timeout ]

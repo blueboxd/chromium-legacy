@@ -47,6 +47,10 @@ bool SetExpirationMonth(int value, int* expiration_month);
 // made to |*expiration_year|.
 bool SetExpirationYear(int value, int* expiration_year);
 
+// Finds possible country code in |text| by fetching the first sub-group when
+// matched with |kAugmentedPhoneCountryCodeRe| regex.
+base::string16 FindPossiblePhoneCountryCode(const base::string16& text);
+
 }  // namespace data_util
 
 }  // namespace autofill

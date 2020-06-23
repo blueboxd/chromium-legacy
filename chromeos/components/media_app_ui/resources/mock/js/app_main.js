@@ -16,17 +16,17 @@
  */
 let ModuleHandler;
 
-/** @type{ModuleHandler} */
+/** @type {ModuleHandler} */
 const createVideoChild = async (blobSrc) => {
   const video =
-      /** @type{HTMLVideoElement} */ (document.createElement('video'));
+      /** @type {HTMLVideoElement} */ (document.createElement('video'));
   video.src = blobSrc;
   return video;
 };
 
-/** @type{ModuleHandler} */
+/** @type {ModuleHandler} */
 const createImgChild = async (blobSrc, altText) => {
-  const img = /** @type{!HTMLImageElement} */ (document.createElement('img'));
+  const img = /** @type {!HTMLImageElement} */ (document.createElement('img'));
   img.src = blobSrc;
   img.alt = altText;
   try {
@@ -46,9 +46,15 @@ const createImgChild = async (blobSrc, altText) => {
 class BacklightApp extends HTMLElement {
   constructor() {
     super();
+    /** @type {?HTMLElement} */
+    this.currentHandler = /** @type {HTMLElement} */ (
+        document.createElement('backlight-media-handler'));
+    this.appendChild(this.currentHandler);
     this.currentMedia =
-        /** @type{!HTMLElement} */ (document.createElement('img'));
+        /** @type {!HTMLElement} */ (document.createElement('img'));
     this.appendChild(this.currentMedia);
+    /** @type {?mediaApp.AbstractFileList} */
+    this.files;
   }
 
   /** @override  */
@@ -68,12 +74,41 @@ class BacklightApp extends HTMLElement {
     // state) at a time.
     this.replaceChild(child, this.currentMedia);
     this.currentMedia = child;
+
+    // Loads a new handler each time a new media is loaded. Note: in actual
+    // implementation we cache our handler instances and early exit if we load
+    // the same media type.
+    const newHandler = /** @type {HTMLElement} */ (
+        document.createElement('backlight-media-handler'));
+    this.replaceChild(newHandler, this.currentHandler);
+    this.currentHandler = newHandler;
+
+    this.files = files;
+    files.addObserver((f) => this.onNewFiles(f));
   }
 
   /** @override */
   setDelegate(delegate) {}
+
+  /** @param {!mediaApp.AbstractFileList} files */
+  onNewFiles(files) {
+    if (files !== this.files) {
+      return;
+    }
+    if (!this.currentHandler) {
+      return;
+    }
+    // Toggle 'shownav' indicating the navigation buttons are available.
+    this.currentHandler.toggleAttribute('shownav', files.length > 1);
+  }
 }
+
 window.customElements.define('backlight-app', BacklightApp);
+
+// Element mimicking the image/video handler which is the parent of the
+// `navigation-overlay`.
+class BacklightMediaHandler extends HTMLElement {}
+window.customElements.define('backlight-media-handler', BacklightMediaHandler);
 
 class VideoContainer extends HTMLElement {}
 window.customElements.define('backlight-video-container', VideoContainer);

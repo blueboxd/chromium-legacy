@@ -33,6 +33,9 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderOzone : public CursorLoader {
   void SetPlatformCursor(gfx::NativeCursor* cursor) override;
 
  private:
+  PlatformCursor CursorFromType(mojom::CursorType type);
+  PlatformCursor CreateFallbackCursor(mojom::CursorType type);
+
   // Pointers are owned by ResourceBundle and must not be freed here.
   std::map<mojom::CursorType, PlatformCursor> image_cursors_;
   CursorFactory* factory_ = nullptr;

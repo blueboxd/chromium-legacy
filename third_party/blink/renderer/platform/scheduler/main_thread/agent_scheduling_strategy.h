@@ -48,6 +48,8 @@ class PLATFORM_EXPORT AgentSchedulingStrategy {
   virtual ShouldUpdatePolicy OnInputEvent() WARN_UNUSED_RESULT = 0;
   virtual ShouldUpdatePolicy OnDocumentChangedInMainFrame(
       const FrameSchedulerImpl& frame_scheduler) WARN_UNUSED_RESULT = 0;
+  virtual ShouldUpdatePolicy OnMainFrameLoad(
+      const FrameSchedulerImpl& frame_scheduler) WARN_UNUSED_RESULT = 0;
 
   // The following functions should be consulted when making scheduling
   // decisions. Will return |base::Optional| containing the desired value, or

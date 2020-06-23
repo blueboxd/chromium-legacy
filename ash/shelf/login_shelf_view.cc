@@ -306,10 +306,12 @@ class KioskAppsButton : public views::MenuButton,
   }
 
   // Replace the existing items list with a new list of kiosk app menu items.
-  void SetApps(const std::vector<KioskAppMenuEntry>& kiosk_apps,
-               const base::RepeatingCallback<void(const KioskAppMenuEntry&)>&
-                   launch_app) {
+  void SetApps(
+      const std::vector<KioskAppMenuEntry>& kiosk_apps,
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+      const base::RepeatingClosure& on_show_menu) {
     launch_app_callback_ = launch_app;
+    on_show_menu_ = on_show_menu;
     kiosk_apps_ = kiosk_apps;
     Clear();
     const gfx::Size kAppIconSize(16, 16);
@@ -319,6 +321,11 @@ class KioskAppsButton : public views::MenuButton,
           kAppIconSize);
       AddItemWithIcon(i, kiosk_apps_[i].name,
                       ui::ImageModel::FromImageSkia(icon));
+    }
+
+    // If the menu is being shown, update it.
+    if (menu_runner_ && menu_runner_->IsRunning()) {
+      DisplayMenu(this);
     }
   }
 
@@ -365,20 +372,23 @@ class KioskAppsButton : public views::MenuButton,
     SchedulePaint();
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(Button* source, const ui::Event& event) override {
-    if (!is_launch_enabled_)
-      return;
-    menu_runner_.reset(
-        new views::MenuRunner(this, views::MenuRunner::HAS_MNEMONICS));
-
+  void DisplayMenu(Button* source) {
     const gfx::Point point = source->GetMenuPosition();
     const gfx::Point origin(point.x() - source->width(),
                             point.y() - source->height());
+    menu_runner_.reset(
+        new views::MenuRunner(this, views::MenuRunner::HAS_MNEMONICS));
     menu_runner_->RunMenuAt(source->GetWidget()->GetTopLevelWidget(),
                             button_controller(), gfx::Rect(origin, gfx::Size()),
                             views::MenuAnchorPosition::kTopLeft,
                             ui::MENU_SOURCE_NONE);
+  }
+
+  // views::ButtonListener:
+  void ButtonPressed(Button* source, const ui::Event& event) override {
+    if (!is_launch_enabled_)
+      return;
+    DisplayMenu(source);
   }
 
   // ui::SimpleMenuModel:
@@ -392,14 +402,18 @@ class KioskAppsButton : public views::MenuButton,
     launch_app_callback_.Run(kiosk_apps_[command_id]);
   }
 
+  void OnMenuWillShow(SimpleMenuModel* source) override { on_show_menu_.Run(); }
+
   bool IsCommandIdChecked(int command_id) const override { return false; }
 
   bool IsCommandIdEnabled(int command_id) const override { return true; }
 
  private:
   base::RepeatingCallback<void(const KioskAppMenuEntry&)> launch_app_callback_;
+  base::RepeatingCallback<void()> on_show_menu_;
   std::unique_ptr<views::MenuRunner> menu_runner_;
   std::vector<KioskAppMenuEntry> kiosk_apps_;
+
   bool is_launch_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(KioskAppsButton);
@@ -595,8 +609,9 @@ void LoginShelfView::InstallTestUiUpdateDelegate(
 
 void LoginShelfView::SetKioskApps(
     const std::vector<KioskAppMenuEntry>& kiosk_apps,
-    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app) {
-  kiosk_apps_button_->SetApps(kiosk_apps, launch_app);
+    const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+    const base::RepeatingCallback<void()>& on_show_menu) {
+  kiosk_apps_button_->SetApps(kiosk_apps, launch_app, on_show_menu);
   UpdateUi();
 }
 

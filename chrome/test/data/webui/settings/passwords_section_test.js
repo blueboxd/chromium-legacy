@@ -8,7 +8,6 @@
 import {isChromeOS, webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {getToastManager} from 'chrome://settings/lazy_load.js';
 import {MultiStoreExceptionEntry, MultiStorePasswordUiEntry, PasswordManagerImpl, PasswordManagerProxy, ProfileInfoBrowserProxyImpl, Router, routes, SettingsPluralStringProxyImpl} from 'chrome://settings/settings.js';
 import {createExceptionEntry, createMultiStoreExceptionEntry, createMultiStorePasswordEntry, createPasswordEntry, makeCompromisedCredential, makePasswordCheckStatus, PasswordSectionElementFactory} from 'chrome://test/settings/passwords_and_autofill_fake_data.js';
 import {runCancelExportTest, runExportFlowErrorRetryTest, runExportFlowErrorTest, runExportFlowFastTest, runExportFlowSlowTest, runFireCloseEventAfterExportCompleteTest,runStartExportTest} from 'chrome://test/settings/passwords_export_test.js';
@@ -501,7 +500,8 @@ suite('PasswordsSection', function() {
     assertEquals(firstPassword.id, id);
     assertEquals(
         passwordsSection.i18n('passwordDeleted'),
-        getToastManager().$.content.textContent);
+        passwordsSection.$.passwordsListHandler.$.removalNotification
+            .textContent);
   });
 
   // Test verifies that 'Copy password' button is hidden for Federated
@@ -978,19 +978,19 @@ suite('PasswordsSection', function() {
         createPasswordEntry({url: 'goo.gl', username: 'bart'});
     const passwordsSection = elementFactory.createPasswordsSection(
         passwordManager, [passwordEntry], []);
-    const toastManager = getToastManager();
+    const toastManager = passwordsSection.$.passwordsListHandler.$.toast;
 
     // Click the remove button on the first password and assert that an undo
     // toast is shown.
     getFirstPasswordListItem(passwordsSection).$.moreActionsButton.click();
     passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
     flush();
-    assertTrue(toastManager.isToastOpen);
+    assertTrue(toastManager.open);
 
     // Remove the passwords section from the DOM and check that this closes
     // the undo toast.
     document.body.removeChild(passwordsSection);
-    assertFalse(toastManager.isToastOpen);
+    assertFalse(toastManager.open);
 
     done();
   });
@@ -1283,14 +1283,16 @@ suite('PasswordsSection', function() {
           flush();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromAccount'),
-              getToastManager().$.content.textContent);
+              passwordsSection.$.passwordsListHandler.$.removalNotification
+                  .textContent);
 
           passwordListItems[1].$.moreActionsButton.click();
           passwordsSection.$.passwordsListHandler.$.menuRemovePassword.click();
           flush();
           assertEquals(
               passwordsSection.i18n('passwordDeletedFromDevice'),
-              getToastManager().$.content.textContent);
+              passwordsSection.$.passwordsListHandler.$.removalNotification
+                  .textContent);
         });
 
     // Test verifies that if the user attempts to remove a password stored

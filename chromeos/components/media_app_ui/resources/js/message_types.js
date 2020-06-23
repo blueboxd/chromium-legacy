@@ -14,6 +14,7 @@
 const Message = {
   DELETE_FILE: 'delete-file',
   IFRAME_READY: 'iframe-ready',
+  LOAD_EXTRA_FILES: 'load-extra-files',
   LOAD_FILES: 'load-files',
   NAVIGATE: 'navigate',
   OPEN_FEEDBACK_DIALOG: 'open-feedback-dialog',

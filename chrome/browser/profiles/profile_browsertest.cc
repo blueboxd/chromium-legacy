@@ -819,8 +819,8 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestGetAllOffTheRecordProfiles) {
   EXPECT_TRUE(base::Contains(all_otrs, incognito_profile));
 }
 
-// Tests Profile::IsSameProfile
-IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameProfile) {
+// Tests Profile::IsSameOrParent
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameOrParent) {
   Profile::OTRProfileID otr_profile_id("profile::otr");
 
   Profile* regular_profile = browser()->profile();
@@ -828,12 +828,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameProfile) {
       regular_profile->GetOffTheRecordProfile(otr_profile_id);
   Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
 
-  EXPECT_TRUE(regular_profile->IsSameProfile(otr_profile));
-  EXPECT_TRUE(otr_profile->IsSameProfile(regular_profile));
+  EXPECT_TRUE(regular_profile->IsSameOrParent(otr_profile));
+  EXPECT_TRUE(otr_profile->IsSameOrParent(regular_profile));
 
-  EXPECT_TRUE(regular_profile->IsSameProfile(incognito_profile));
-  EXPECT_TRUE(incognito_profile->IsSameProfile(regular_profile));
+  EXPECT_TRUE(regular_profile->IsSameOrParent(incognito_profile));
+  EXPECT_TRUE(incognito_profile->IsSameOrParent(regular_profile));
 
-  EXPECT_FALSE(incognito_profile->IsSameProfile(otr_profile));
-  EXPECT_FALSE(otr_profile->IsSameProfile(incognito_profile));
+  EXPECT_FALSE(incognito_profile->IsSameOrParent(otr_profile));
+  EXPECT_FALSE(otr_profile->IsSameOrParent(incognito_profile));
 }

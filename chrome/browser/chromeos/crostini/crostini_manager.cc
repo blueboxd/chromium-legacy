@@ -2547,9 +2547,6 @@ void CrostiniManager::OnStartLxdProgress(
   CrostiniResult result = CrostiniResult::UNKNOWN_ERROR;
 
   switch (signal.status()) {
-    case vm_tools::cicerone::StartLxdProgressSignal::UNKNOWN:
-      result = CrostiniResult::UNKNOWN_ERROR;
-      break;
     case vm_tools::cicerone::StartLxdProgressSignal::STARTED:
       result = CrostiniResult::SUCCESS;
       break;
@@ -2561,7 +2558,6 @@ void CrostiniManager::OnStartLxdProgress(
       result = CrostiniResult::START_LXD_FAILED;
       break;
     default:
-      result = CrostiniResult::UNKNOWN_ERROR;
       break;
   }
 

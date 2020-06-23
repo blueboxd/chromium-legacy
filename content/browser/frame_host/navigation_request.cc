@@ -3702,11 +3702,19 @@ void NavigationRequest::OnWillProcessResponseProcessed(
   DCHECK(processing_navigation_throttle_);
   processing_navigation_throttle_ = false;
   if (result.action() == NavigationThrottle::PROCEED) {
+    base::WeakPtr<NavigationRequest> weak_self(weak_factory_.GetWeakPtr());
+
     // If the navigation is done processing the response, then it's ready to
     // commit. Inform observers that the navigation is now ready to commit,
     // unless it is not set to commit (204/205s/downloads).
     if (render_frame_host_)
       ReadyToCommitNavigation(false);
+
+    // The call above might block on showing a user dialog. The interaction of
+    // the user with this dialog might result in the WebContents owning this
+    // NavigationRequest to be destroyed. Return if this is the case.
+    if (!weak_self)
+      return;
   } else {
     SetState(CANCELING);
   }

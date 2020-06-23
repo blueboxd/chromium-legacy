@@ -1,22 +1,4 @@
 This is a testharness.js-based test.
-FAIL w => w.blur() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.close() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.closed assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.focus() assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.frames assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w[0] assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w[0] = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.length assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.location assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.location = "#" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w["test"] assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w["test"] = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.opener assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.opener = "" assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.postMessage("") assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.postMessage("", "") assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.self assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.top assert_not_equals: Report not received got disallowed value "timeout"
-FAIL w => w.window assert_not_equals: Report not received got disallowed value "timeout"
+FAIL Opener accesses openee (COOP-RO+COEP). Report to openee assert_not_equals: Report not received got disallowed value "timeout"
 Harness: the test ran to completion.
 

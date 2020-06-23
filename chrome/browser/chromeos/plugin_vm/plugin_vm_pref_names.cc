@@ -66,8 +66,8 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kPluginVmMicrophoneAllowed, false);
   registry->RegisterStringPref(kPluginVmUserId, std::string());
   registry->RegisterBooleanPref(kPluginVmDataCollectionAllowed, false);
-  registry->RegisterInt64Pref(kPluginVmRequiredFreeDiskSpaceGB,
-                              kDefaultRequiredFreeDiskSpaceGB);
+  registry->RegisterIntegerPref(kPluginVmRequiredFreeDiskSpaceGB,
+                                kDefaultRequiredFreeDiskSpaceGB);
 
   guest_os::prefs::RegisterEngagementProfilePrefs(registry,
                                                   kEngagementPrefsPrefix);

@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/pollable_thread_safe_flag.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 
 namespace blink {
 namespace scheduler {
@@ -47,7 +48,11 @@ class NoOpStrategy final : public AgentSchedulingStrategy {
     return ShouldUpdatePolicy::kNo;
   }
   ShouldUpdatePolicy OnDocumentChangedInMainFrame(
-      const FrameSchedulerImpl& frame_scheduler) override {
+      const FrameSchedulerImpl&) override {
+    VerifyValidSequence();
+    return ShouldUpdatePolicy::kNo;
+  }
+  ShouldUpdatePolicy OnMainFrameLoad(const FrameSchedulerImpl&) override {
     VerifyValidSequence();
     return ShouldUpdatePolicy::kNo;
   }
@@ -66,20 +71,26 @@ class NoOpStrategy final : public AgentSchedulingStrategy {
   bool ShouldNotifyOnInputEvent() const override { return false; }
 };
 
-// Base class for strategies that keep track of main frame FMP for scheduling
-// decisions.
-class TrackMainFrameFMP : public AgentSchedulingStrategy {
+// Strategy that keeps track of main frames reaching a certain signal for
+// scheduling decisions. Exact behavior will be determined by parameter values.
+class TrackMainFrameSignal final : public AgentSchedulingStrategy {
  public:
-  TrackMainFrameFMP() : waiting_for_input_(&waiting_for_input_lock_) {}
+  TrackMainFrameSignal(PerAgentAffectedQueues affected_queue_types,
+                       PerAgentSlowDownMethod method,
+                       PerAgentSignal signal)
+      : affected_queue_types_(affected_queue_types),
+        method_(method),
+        signal_(signal),
+        waiting_for_input_(&waiting_for_input_lock_) {}
 
   ShouldUpdatePolicy OnFrameAdded(
-      const FrameSchedulerImpl& frame_scheduler) final {
+      const FrameSchedulerImpl& frame_scheduler) override {
     VerifyValidSequence();
     return OnNewDocument(frame_scheduler);
   }
 
   ShouldUpdatePolicy OnFrameRemoved(
-      const FrameSchedulerImpl& frame_scheduler) final {
+      const FrameSchedulerImpl& frame_scheduler) override {
     VerifyValidSequence();
     if (frame_scheduler.GetFrameType() !=
         FrameScheduler::FrameType::kMainFrame) {
@@ -87,8 +98,8 @@ class TrackMainFrameFMP : public AgentSchedulingStrategy {
     }
 
     main_frames_.erase(&frame_scheduler);
-    main_frames_waiting_for_fmp_.erase(&frame_scheduler);
-    if (main_frames_waiting_for_fmp_.IsEmpty())
+    main_frames_waiting_for_signal_.erase(&frame_scheduler);
+    if (main_frames_waiting_for_signal_.IsEmpty())
       SetWaitingForInput(false);
 
     // TODO(talp): If the frame wasn't in the set to begin with (e.g.: because
@@ -99,42 +110,79 @@ class TrackMainFrameFMP : public AgentSchedulingStrategy {
   }
 
   ShouldUpdatePolicy OnMainFrameFirstMeaningfulPaint(
-      const FrameSchedulerImpl& frame_scheduler) final {
+      const FrameSchedulerImpl& frame_scheduler) override {
     VerifyValidSequence();
     DCHECK(frame_scheduler.GetFrameType() ==
            FrameScheduler::FrameType::kMainFrame);
 
-    main_frames_waiting_for_fmp_.erase(&frame_scheduler);
-    if (main_frames_waiting_for_fmp_.IsEmpty())
-      SetWaitingForInput(false);
-
-    // TODO(talp): If the frame wasn't in the set to begin with (e.g.: because
-    //  an input even cleared it), or if there are still other frames in the
-    //  set, then we may not have to trigger a policy update.
-    return ShouldUpdatePolicy::kYes;
+    return OnSignal(frame_scheduler, PerAgentSignal::kFirstMeaningfulPaint);
   }
 
-  ShouldUpdatePolicy OnInputEvent() final {
+  ShouldUpdatePolicy OnInputEvent() override {
     VerifyValidSequence();
-    if (main_frames_waiting_for_fmp_.IsEmpty())
+
+    // We only use input as a fail-safe for FMP, other signals are more
+    // reliable.
+    DCHECK_EQ(signal_, PerAgentSignal::kFirstMeaningfulPaint)
+        << "OnInputEvent should only be called for FMP-based strategies.";
+
+    if (main_frames_waiting_for_signal_.IsEmpty())
       return ShouldUpdatePolicy::kNo;
 
-    main_frames_waiting_for_fmp_.clear();
+    main_frames_waiting_for_signal_.clear();
     SetWaitingForInput(false);
     return ShouldUpdatePolicy::kYes;
   }
 
   ShouldUpdatePolicy OnDocumentChangedInMainFrame(
-      const FrameSchedulerImpl& frame_scheduler) final {
+      const FrameSchedulerImpl& frame_scheduler) override {
     VerifyValidSequence();
     return OnNewDocument(frame_scheduler);
   }
 
+  ShouldUpdatePolicy OnMainFrameLoad(
+      const FrameSchedulerImpl& frame_scheduler) override {
+    VerifyValidSequence();
+    DCHECK(frame_scheduler.GetFrameType() ==
+           FrameScheduler::FrameType::kMainFrame);
+
+    return OnSignal(frame_scheduler, PerAgentSignal::kOnLoad);
+  }
+
+  base::Optional<bool> QueueEnabledState(
+      const MainThreadTaskQueue& task_queue) const override {
+    VerifyValidSequence();
+
+    if (method_ != PerAgentSlowDownMethod::kDisable)
+      return base::nullopt;
+
+    if (!ShouldAffectQueue(task_queue))
+      return base::nullopt;
+
+    return false;
+  }
+
+  base::Optional<TaskQueue::QueuePriority> QueuePriority(
+      const MainThreadTaskQueue& task_queue) const override {
+    VerifyValidSequence();
+
+    if (method_ != PerAgentSlowDownMethod::kBestEffort)
+      return base::nullopt;
+
+    if (!ShouldAffectQueue(task_queue))
+      return base::nullopt;
+
+    return TaskQueue::QueuePriority::kBestEffortPriority;
+  }
+
   bool ShouldNotifyOnInputEvent() const override {
+    if (signal_ != PerAgentSignal::kFirstMeaningfulPaint)
+      return false;
+
     return waiting_for_input_.IsSet();
   }
 
- protected:
+ private:
   ShouldUpdatePolicy OnNewDocument(const FrameSchedulerImpl& frame_scheduler) {
     // For now we *always* return kYes here. It might be possible to optimize
     // this, but there are a number of tricky cases that need to be taken into
@@ -150,29 +198,54 @@ class TrackMainFrameFMP : public AgentSchedulingStrategy {
     }
 
     main_frames_.insert(&frame_scheduler);
-    main_frames_waiting_for_fmp_.insert(&frame_scheduler);
-    SetWaitingForInput(true);
+    main_frames_waiting_for_signal_.insert(&frame_scheduler);
+
+    if (signal_ == PerAgentSignal::kFirstMeaningfulPaint)
+      SetWaitingForInput(true);
 
     return ShouldUpdatePolicy::kYes;
   }
 
-  bool ShouldAffectQueue(const FrameSchedulerImpl& frame) const {
-    // Don't do anything if all main frames reached FMP.
-    if (main_frames_waiting_for_fmp_.IsEmpty())
+  bool ShouldAffectQueue(const MainThreadTaskQueue& task_queue) const {
+    if (affected_queue_types_ == PerAgentAffectedQueues::kTimerQueues &&
+        task_queue.queue_class() != MainThreadTaskQueue::QueueClass::kTimer) {
+      return false;
+    }
+
+    // Don't do anything if all main frames reached signal.
+    if (main_frames_waiting_for_signal_.IsEmpty())
       return false;
 
     // Otherwise, affect the queue only if it doesn't belong to any main agent.
-    base::UnguessableToken agent_cluster_id = frame.GetAgentClusterId();
-    return std::all_of(
-        main_frames_.begin(), main_frames_.end(),
-        [agent_cluster_id](const FrameSchedulerImpl* frame_scheduler) {
-          return frame_scheduler->GetAgentClusterId() != agent_cluster_id;
-        });
+    base::UnguessableToken agent_cluster_id =
+        task_queue.GetFrameScheduler()->GetAgentClusterId();
+    return std::all_of(main_frames_.begin(), main_frames_.end(),
+                       [agent_cluster_id](const FrameSchedulerImpl* frame) {
+                         return frame->GetAgentClusterId() != agent_cluster_id;
+                       });
   }
 
- private:
+  ShouldUpdatePolicy OnSignal(const FrameSchedulerImpl& frame_scheduler,
+                              PerAgentSignal signal) {
+    if (signal != signal_)
+      return ShouldUpdatePolicy::kNo;
+
+    main_frames_waiting_for_signal_.erase(&frame_scheduler);
+    if (main_frames_waiting_for_signal_.IsEmpty())
+      SetWaitingForInput(false);
+
+    // TODO(talp): If the frame wasn't in the set to begin with (e.g.: because
+    //  an input even cleared it), or if there are still other frames in the
+    //  set, then we may not have to trigger a policy update.
+    return ShouldUpdatePolicy::kYes;
+  }
+
+  const PerAgentAffectedQueues affected_queue_types_;
+  const PerAgentSlowDownMethod method_;
+  const PerAgentSignal signal_;
+
   WTF::HashSet<const FrameSchedulerImpl*> main_frames_;
-  WTF::HashSet<const FrameSchedulerImpl*> main_frames_waiting_for_fmp_;
+  WTF::HashSet<const FrameSchedulerImpl*> main_frames_waiting_for_signal_;
 
   base::Lock waiting_for_input_lock_;
   PollableThreadSafeFlag waiting_for_input_;
@@ -183,62 +256,6 @@ class TrackMainFrameFMP : public AgentSchedulingStrategy {
     }
   }
 };
-
-// Strategy that disables non-main agents' timer queues until all main frames
-// have reached FMP. Corresponds to the |kDisableTimersStrategy| feature.
-class DisableTimerQueuesUntilFMP final : public TrackMainFrameFMP {
- public:
-  DisableTimerQueuesUntilFMP() = default;
-
-  base::Optional<bool> QueueEnabledState(
-      const MainThreadTaskQueue& task_queue) const override {
-    VerifyValidSequence();
-
-    // For now we only disable timer queues.
-    if (task_queue.queue_class() != MainThreadTaskQueue::QueueClass::kTimer)
-      return base::nullopt;
-
-    if (!ShouldAffectQueue(*task_queue.GetFrameScheduler()))
-      return base::nullopt;
-
-    return false;
-  }
-
-  base::Optional<TaskQueue::QueuePriority> QueuePriority(
-      const MainThreadTaskQueue& task_queue) const override {
-    VerifyValidSequence();
-    return base::nullopt;
-  }
-};
-
-// Strategy that reduces non-main agents' timer queues' priority to
-// |kBestEffortPriority| until all main frames have reached FMP. Corresponds to
-// the |kBestEffortPriorityTimersStrategy| feature.
-class BestEffortPriorityTimersUntilFMP final : public TrackMainFrameFMP {
- public:
-  BestEffortPriorityTimersUntilFMP() = default;
-
-  base::Optional<bool> QueueEnabledState(
-      const MainThreadTaskQueue& task_queue) const override {
-    VerifyValidSequence();
-    return base::nullopt;
-  }
-
-  base::Optional<TaskQueue::QueuePriority> QueuePriority(
-      const MainThreadTaskQueue& task_queue) const override {
-    VerifyValidSequence();
-
-    // For now we only disable timer queues.
-    if (task_queue.queue_class() != MainThreadTaskQueue::QueueClass::kTimer)
-      return base::nullopt;
-
-    if (!ShouldAffectQueue(*task_queue.GetFrameScheduler()))
-      return base::nullopt;
-
-    return TaskQueue::QueuePriority::kBestEffortPriority;
-  }
-};
-
 }  // namespace
 
 AgentSchedulingStrategy::~AgentSchedulingStrategy() {
@@ -249,15 +266,8 @@ std::unique_ptr<AgentSchedulingStrategy> AgentSchedulingStrategy::Create() {
   if (!base::FeatureList::IsEnabled(kPerAgentSchedulingExperiments))
     return std::make_unique<NoOpStrategy>();
 
-  switch (kPerAgentStrategy.Get()) {
-    case PerAgentSchedulingStrategyExperiments::kNoOpStrategy:
-      return std::make_unique<NoOpStrategy>();
-    case PerAgentSchedulingStrategyExperiments::kDisableTimersStrategy:
-      return std::make_unique<DisableTimerQueuesUntilFMP>();
-    case PerAgentSchedulingStrategyExperiments::
-        kBestEffortPriorityTimersStrategy:
-      return std::make_unique<BestEffortPriorityTimersUntilFMP>();
-  }
+  return std::make_unique<TrackMainFrameSignal>(
+      kPerAgentQueues.Get(), kPerAgentMethod.Get(), kPerAgentSignal.Get());
 }
 
 void AgentSchedulingStrategy::VerifyValidSequence() const {

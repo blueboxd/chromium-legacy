@@ -2873,6 +2873,7 @@ source_set("unit_tests") {
     "apps/intent_helper/chromeos_apps_navigation_throttle_unittest.cc",
     "apps/metrics/intent_handling_metrics_unittest.cc",
     "arc/accessibility/arc_accessibility_helper_bridge_unittest.cc",
+    "arc/accessibility/arc_accessibility_util_unittest.cc",
     "arc/accessibility/ax_tree_source_arc_unittest.cc",
     "arc/app_shortcuts/arc_app_shortcuts_menu_builder_unittest.cc",
     "arc/app_shortcuts/arc_app_shortcuts_request_unittest.cc",

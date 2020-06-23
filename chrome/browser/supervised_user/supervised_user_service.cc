@@ -1012,7 +1012,7 @@ bool SupervisedUserService::IsEncryptEverythingAllowed() const {
 
 #if !defined(OS_ANDROID)
 void SupervisedUserService::OnBrowserSetLastActive(Browser* browser) {
-  bool profile_became_active = profile_->IsSameProfile(browser->profile());
+  bool profile_became_active = profile_->IsSameOrParent(browser->profile());
   if (!is_profile_active_ && profile_became_active)
     base::RecordAction(UserMetricsAction("ManagedUsers_OpenProfile"));
   else if (is_profile_active_ && !profile_became_active)

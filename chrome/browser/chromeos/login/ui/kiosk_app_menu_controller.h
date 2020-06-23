@@ -30,6 +30,7 @@ class KioskAppMenuController : public KioskAppManagerObserver {
 
  private:
   void LaunchApp(const ash::KioskAppMenuEntry& app);
+  void OnMenuWillShow();
 
   ScopedObserver<KioskAppManagerBase, KioskAppManagerObserver> kiosk_observer_{
       this};

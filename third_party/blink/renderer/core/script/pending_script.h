@@ -95,9 +95,6 @@ class CORE_EXPORT PendingScript : public GarbageCollected<PendingScript>,
   virtual bool IsExternal() const = 0;
   virtual bool WasCanceled() const = 0;
 
-  // Support for script streaming.
-  virtual void StartStreamingIfPossible() = 0;
-
   // Used only for tracing, and can return a null URL.
   // TODO(hiroshige): It's preferable to return the base URL consistently
   // https://html.spec.whatwg.org/C/#concept-script-base-url

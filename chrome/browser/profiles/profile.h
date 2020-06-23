@@ -313,11 +313,9 @@ class Profile : public content::BrowserContext {
   virtual scoped_refptr<network::SharedURLLoaderFactory>
   GetURLLoaderFactory() = 0;
 
-  // Return whether 2 profiles are the same. 2 profiles are the same if they
-  // represent the same profile. This can happen if there is pointer equality
-  // or if one profile is the OffTheRecord version of another profile (or vice
-  // versa).
-  virtual bool IsSameProfile(Profile* profile) = 0;
+  // Return whether two profiles are the same or one is the OffTheRecord version
+  // of the other.
+  virtual bool IsSameOrParent(Profile* profile) = 0;
 
   // Returns the time the profile was started. This is not the time the profile
   // was created, rather it is the time the user started chrome and logged into

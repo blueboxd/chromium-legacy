@@ -283,10 +283,6 @@ extern const char kMarkHttpAsDescription[];
 extern const char kMobileGoogleSRPName[];
 extern const char kMobileGoogleSRPDescription[];
 
-// Title and description for the flag to enable the new sign-in architecture.
-extern const char kNewSigninArchitectureName[];
-extern const char kNewSigninArchitectureDescription[];
-
 // Title and description for the flag to preserve the default match when an
 // async match updates.
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];

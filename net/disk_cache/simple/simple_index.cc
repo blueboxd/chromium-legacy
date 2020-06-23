@@ -58,11 +58,6 @@ static const int kEstimatedEntryOverhead = 512;
 
 namespace disk_cache {
 
-const base::Feature
-    SimpleIndex::kSimpleCacheDisableEvictionSizeHeuristicForCodeCache{
-        "SimpleCacheDisableEvictionSizeHeuristicForCodeCache",
-        base::FEATURE_DISABLED_BY_DEFAULT};
-
 EntryMetadata::EntryMetadata()
     : last_used_time_seconds_since_epoch_(0),
       entry_size_256b_chunks_(0),
@@ -422,11 +417,7 @@ void SimpleIndex::StartEvictionIfNeeded() {
       MEMORY_KB, "Eviction.MaxCacheSizeOnStart2", cache_type_,
       static_cast<base::HistogramBase::Sample>(max_size_ / kBytesInKb));
 
-  bool use_size_heuristic = true;
-  if (cache_type_ == net::GENERATED_BYTE_CODE_CACHE) {
-    use_size_heuristic = !base::FeatureList::IsEnabled(
-        kSimpleCacheDisableEvictionSizeHeuristicForCodeCache);
-  }
+  bool use_size_heuristic = (cache_type_ != net::GENERATED_BYTE_CODE_CACHE);
 
   // Flatten for sorting.
   std::vector<std::pair<uint64_t, const EntrySet::value_type*>> entries;

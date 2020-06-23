@@ -13,7 +13,7 @@ PASS Appending and removing children to mphantom
 FAIL Appending and removing children to mroot assert_true: expected true got false
 PASS Appending and removing children to mrow
 PASS Appending and removing children to ms
-FAIL Appending and removing children to mspace assert_approx_equals: block position (child 0) expected -683 +/- 1 but got -703
+PASS Appending and removing children to mspace
 FAIL Appending and removing children to msqrt assert_true: expected true got false
 PASS Appending and removing children to mstyle
 PASS Appending and removing children to msub

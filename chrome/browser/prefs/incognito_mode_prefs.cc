@@ -77,18 +77,15 @@ bool IncognitoModePrefs::ShouldLaunchIncognito(
 
 // static
 bool IncognitoModePrefs::CanOpenBrowser(Profile* profile) {
-  if (profile->IsGuestSession())
-    return true;
-
   switch (GetAvailability(profile->GetPrefs())) {
     case IncognitoModePrefs::ENABLED:
       return true;
 
     case IncognitoModePrefs::DISABLED:
-      return !profile->IsOffTheRecord();
+      return !profile->IsIncognitoProfile();
 
     case IncognitoModePrefs::FORCED:
-      return profile->IsOffTheRecord();
+      return profile->IsIncognitoProfile();
 
     default:
       NOTREACHED();

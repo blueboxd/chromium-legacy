@@ -74,8 +74,11 @@ void KioskAppMenuController::SendKioskApps() {
   }
 
   ash::KioskAppMenu::Get()->SetKioskApps(
-      output, base::BindRepeating(&KioskAppMenuController::LaunchApp,
-                                  weak_factory_.GetWeakPtr()));
+      output,
+      base::BindRepeating(&KioskAppMenuController::LaunchApp,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&KioskAppMenuController::OnMenuWillShow,
+                          weak_factory_.GetWeakPtr()));
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_KIOSK_APPS_LOADED,
       content::NotificationService::AllSources(),
@@ -120,6 +123,11 @@ void KioskAppMenuController::LaunchApp(const ash::KioskAppMenuEntry& app) {
       break;
   }
   NOTREACHED();
+}
+
+void KioskAppMenuController::OnMenuWillShow() {
+  // Web app based kiosk app will want to load their icons.
+  WebKioskAppManager::Get()->LoadIcons();
 }
 
 }  // namespace chromeos

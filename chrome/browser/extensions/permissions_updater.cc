@@ -651,7 +651,7 @@ void PermissionsUpdater::NotifyPermissionsUpdated(
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* host = i.GetCurrentValue();
-    if (profile->IsSameProfile(
+    if (profile->IsSameOrParent(
             Profile::FromBrowserContext(host->GetBrowserContext()))) {
       host->Send(new ExtensionMsg_UpdatePermissions(params));
     }
@@ -690,7 +690,7 @@ void PermissionsUpdater::NotifyDefaultPolicyHostRestrictionsUpdated(
            RenderProcessHost::AllHostsIterator());
        !host_iterator.IsAtEnd(); host_iterator.Advance()) {
     RenderProcessHost* host = host_iterator.GetCurrentValue();
-    if (profile->IsSameProfile(
+    if (profile->IsSameOrParent(
             Profile::FromBrowserContext(host->GetBrowserContext()))) {
       host->Send(new ExtensionMsg_UpdateDefaultPolicyHostRestrictions(params));
     }

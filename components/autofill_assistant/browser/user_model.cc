@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/user_model.h"
+#include "components/autofill_assistant/browser/field_formatter.h"
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -55,9 +57,17 @@ base::WeakPtr<UserModel> UserModel::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UserModel::SetValue(const std::string& identifier,
+void UserModel::SetValue(const std::string& input,
                          const ValueProto& value,
                          bool force_notification) {
+  // Replace all placeholders in the input.
+  auto formatted_identifier =
+      field_formatter::FormatString(input, identifier_placeholders_);
+  if (!formatted_identifier.has_value()) {
+    VLOG(2) << "Error setting value: placeholder not found for " << input;
+    return;
+  }
+  std::string identifier = *formatted_identifier;
   auto result = values_.emplace(identifier, value);
   if (!force_notification && !result.second && result.first->second == value &&
       value.is_client_side_only() ==
@@ -72,8 +82,14 @@ void UserModel::SetValue(const std::string& identifier,
   }
 }
 
-base::Optional<ValueProto> UserModel::GetValue(
-    const std::string& identifier) const {
+base::Optional<ValueProto> UserModel::GetValue(const std::string& input) const {
+  // Replace all placeholders in the input.
+  auto formatted_identifier =
+      field_formatter::FormatString(input, identifier_placeholders_);
+  if (!formatted_identifier.has_value()) {
+    return base::nullopt;
+  }
+  std::string identifier = *formatted_identifier;
   auto it = values_.find(identifier);
   if (it != values_.end()) {
     return it->second;
@@ -143,6 +159,20 @@ void UserModel::AddObserver(Observer* observer) {
 
 void UserModel::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void UserModel::AddIdentifierPlaceholders(
+    const std::map<std::string, std::string> placeholders) {
+  for (const auto& placeholder : placeholders) {
+    identifier_placeholders_[placeholder.first] = placeholder.second;
+  }
+}
+
+void UserModel::RemoveIdentifierPlaceholders(
+    const std::map<std::string, std::string> placeholders) {
+  for (const auto& placeholder : placeholders) {
+    identifier_placeholders_.erase(placeholder.first);
+  }
 }
 
 void UserModel::SetAutofillCreditCards(

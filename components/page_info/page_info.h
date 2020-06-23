@@ -217,6 +217,8 @@ class PageInfo : public content::WebContentsObserver {
  private:
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
                            NonFactoryDefaultAndRecentlyChangedPermissionsShown);
+  FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsEmptyByDefault);
+  FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsDontShowAsk);
   friend class PageInfoBubbleViewBrowserTest;
   // Populates this object's UI state with provided security context. This
   // function does not update visible UI-- that's part of Present*().

@@ -237,7 +237,7 @@ TEST_P(WaylandPointerTest, SetBitmapOnPointerFocus) {
 
   BitmapCursorFactoryOzone cursor_factory;
   PlatformCursor cursor =
-      cursor_factory.CreateImageCursor(dummy_cursor, gfx::Point(5, 8), 1.0f);
+      cursor_factory.CreateImageCursor(dummy_cursor, gfx::Point(5, 8));
   scoped_refptr<BitmapCursorOzone> bitmap =
       BitmapCursorFactoryOzone::GetBitmapCursor(cursor);
 

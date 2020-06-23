@@ -78,7 +78,7 @@ a:focus {
 }
 
 body.files-ng .dialog-container {
-  background-color: rgb(255, 255, 255);
+  background-color: var(--cros-default-bg-color);
 }
 
 /* List and grid are inside this container. */
@@ -3192,7 +3192,8 @@ body.files-ng .table-row-cell:first-child > * {
 }
 
 body.files-ng .table-row-cell .filename-label {
-  color: var(--google-grey-900);
+  color: var(--cros-default-text-color);
+
   padding-top: 0;
 }
 

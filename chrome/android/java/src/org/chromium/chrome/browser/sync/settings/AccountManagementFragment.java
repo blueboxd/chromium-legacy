@@ -137,7 +137,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     @Override
     public void onResume() {
         super.onResume();
-        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .addSignInStateObserver(this);
         mProfileDataCache.addObserver(this);
         List<String> accountNames = AccountUtils.toAccountNames(
                 AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts());
@@ -148,7 +150,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     @Override
     public void onPause() {
         super.onPause();
-        IdentityServicesProvider.get().getSigninManager().removeSignInStateObserver(this);
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .removeSignInStateObserver(this);
         mProfileDataCache.removeObserver(this);
     }
 
@@ -159,8 +163,9 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
         if (getPreferenceScreen() != null) getPreferenceScreen().removeAll();
 
         mSignedInAccountName = CoreAccountInfo.getEmailFrom(
-                IdentityServicesProvider.get().getIdentityManager().getPrimaryAccountInfo(
-                        ConsentLevel.SYNC));
+                IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .getPrimaryAccountInfo(ConsentLevel.SYNC));
         if (mSignedInAccountName == null) {
             // The AccountManagementFragment can only be shown when the user is signed in. If the
             // user is signed out, exit the fragment.
@@ -366,24 +371,30 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
     public void onSignOutClicked(boolean forceWipeUserData) {
         // In case the user reached this fragment without being signed in, we guard the sign out so
         // we do not hit a native crash.
-        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return;
-
+        if (!IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount()) {
+            return;
+        }
         final DialogFragment clearDataProgressDialog = new ClearDataProgressDialog();
-        IdentityServicesProvider.get().getSigninManager().signOut(
-                SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS, new SigninManager.SignOutCallback() {
-                    @Override
-                    public void preWipeData() {
-                        clearDataProgressDialog.show(
-                                getFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
-                    }
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .signOut(SignoutReason.USER_CLICKED_SIGNOUT_SETTINGS,
+                        new SigninManager.SignOutCallback() {
+                            @Override
+                            public void preWipeData() {
+                                clearDataProgressDialog.show(
+                                        getFragmentManager(), CLEAR_DATA_PROGRESS_DIALOG_TAG);
+                            }
 
-                    @Override
-                    public void signOutComplete() {
-                        if (clearDataProgressDialog.isAdded()) {
-                            clearDataProgressDialog.dismissAllowingStateLoss();
-                        }
-                    }
-                }, forceWipeUserData);
+                            @Override
+                            public void signOutComplete() {
+                                if (clearDataProgressDialog.isAdded()) {
+                                    clearDataProgressDialog.dismissAllowingStateLoss();
+                                }
+                            }
+                        },
+                        forceWipeUserData);
     }
 
     // SignInStateObserver implementation:

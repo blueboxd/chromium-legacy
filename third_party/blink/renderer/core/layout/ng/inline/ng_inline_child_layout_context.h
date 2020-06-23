@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_box_state.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
 
 namespace blink {
 
@@ -26,6 +27,10 @@ class NGInlineChildLayoutContext {
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
     items_builder_ = builder;
   }
+
+  // Returns an instance of |NGLogicalLineItems|. This is reused when laying out
+  // the next line.
+  NGLogicalLineItems* LogicalLineItems() { return &logical_line_items_; }
 
   // Returns the NGInlineLayoutStateStack in this context.
   bool HasBoxStates() const { return box_states_.has_value(); }
@@ -49,6 +54,8 @@ class NGInlineChildLayoutContext {
   // TODO(kojii): Probably better to own |NGInlineChildLayoutContext|. While we
   // transit, allocating separately is easier.
   NGFragmentItemsBuilder* items_builder_ = nullptr;
+
+  NGLogicalLineItems logical_line_items_;
 
   base::Optional<NGInlineLayoutStateStack> box_states_;
 

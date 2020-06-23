@@ -136,9 +136,16 @@ bool IsPermissionFactoryDefault(HostContentSettingsMap* content_settings,
       content_settings::ContentSettingsRegistry::GetInstance()
           ->Get(info.type)
           ->GetInitialDefaultSetting();
-  return (info.source == content_settings::SETTING_SOURCE_USER &&
-          factory_default_setting == info.default_setting &&
-          info.setting == CONTENT_SETTING_DEFAULT);
+
+  // Settings that are granted in regular mode get reduced to ASK in incognito
+  // mode. These settings should not be displayed either.
+  const bool is_incognito_default =
+      info.is_incognito && info.setting == CONTENT_SETTING_ASK &&
+      factory_default_setting == CONTENT_SETTING_ASK;
+
+  return info.source == content_settings::SETTING_SOURCE_USER &&
+         factory_default_setting == info.default_setting &&
+         (info.setting == CONTENT_SETTING_DEFAULT || is_incognito_default);
 }
 
 // Determines whether to show permission |type| in the Page Info UI. Only
@@ -173,7 +180,8 @@ bool ShouldShowPermission(const PageInfoUI::PermissionInfo& info,
 #if defined(OS_ANDROID)
   // Special geolocation DSE settings apply only on Android, so make sure it
   // gets checked there regardless of default setting on Desktop.
-  if (info.type == ContentSettingsType::GEOLOCATION)
+  // DSE settings don't apply to incognito mode.
+  if (info.type == ContentSettingsType::GEOLOCATION && !info.is_incognito)
     return true;
 
   // The Native File System write permission is desktop only at the moment.
@@ -425,6 +433,8 @@ PageInfo::~PageInfo() {
 void PageInfo::InitializeUiState(PageInfoUI* ui) {
   ui_ = ui;
   DCHECK(ui_);
+  // TabSpecificContentSetting needs to be created before page load.
+  DCHECK(GetTabSpecificContentSettings());
 
   ComputeUIInputs(site_url_);
   PresentSitePermissions();
@@ -909,8 +919,8 @@ void PageInfo::PresentSitePermissions() {
 
   PageInfoUI::PermissionInfo permission_info;
   HostContentSettingsMap* content_settings = GetContentSettings();
-  for (size_t i = 0; i < base::size(kPermissionType); ++i) {
-    permission_info.type = kPermissionType[i];
+  for (const ContentSettingsType type : kPermissionType) {
+    permission_info.type = type;
 
     content_settings::SettingInfo info;
 
@@ -937,7 +947,7 @@ void PageInfo::PresentSitePermissions() {
     } else {
       permission_info.default_setting =
           content_settings->GetDefaultContentSetting(permission_info.type,
-                                                     NULL);
+                                                     nullptr);
     }
 
     // For permissions that are still prompting the user and haven't been
@@ -1060,8 +1070,8 @@ HostContentSettingsMap* PageInfo::GetContentSettings() const {
 
 std::vector<ContentSettingsType> PageInfo::GetAllPermissionsForTesting() {
   std::vector<ContentSettingsType> permission_list;
-  for (size_t i = 0; i < base::size(kPermissionType); ++i)
-    permission_list.push_back(kPermissionType[i]);
+  for (const ContentSettingsType type : kPermissionType)
+    permission_list.push_back(type);
 
   return permission_list;
 }

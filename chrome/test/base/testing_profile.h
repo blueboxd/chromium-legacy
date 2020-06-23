@@ -347,7 +347,7 @@ class TestingProfile : public Profile {
   void set_last_session_exited_cleanly(bool value) {
     last_session_exited_cleanly_ = value;
   }
-  bool IsSameProfile(Profile* profile) override;
+  bool IsSameOrParent(Profile* profile) override;
   base::Time GetStartTime() const override;
   ProfileKey* GetProfileKey() const override;
   policy::SchemaRegistryService* GetPolicySchemaRegistryService() override;

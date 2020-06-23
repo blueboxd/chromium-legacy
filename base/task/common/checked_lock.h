@@ -31,17 +31,26 @@ namespace internal {
 // CheckedLock(const CheckedLock* predecessor)
 //     Constructor that specifies an allowed predecessor for that lock.
 //     DCHECKs
-//         On Construction if |predecessor| forms a predecessor lock cycle.
+//         On Construction if |predecessor| forms a predecessor lock cycle or
+//             is a universal successor.
 //         On Acquisition if the previous lock acquired on the thread is not
 //             either |predecessor| or a universal predecessor. Okay if there
 //             was no previous lock acquired.
 //
 // CheckedLock(UniversalPredecessor universal_predecessor)
 //     Constructor for a lock that will allow the acquisition of any lock after
-//     it, without needing to explicitly be named a predecessor. Can only be
-//     acquired if no locks are currently held by this thread.
-//     DCHECKs
+//     it, without needing to explicitly be named a predecessor (e.g. a root in
+//     a lock chain). Can only be acquired if no locks are currently held by
+//     this thread. DCHECKs
 //         On Acquisition if any CheckedLock is acquired on this thread.
+//
+// CheckedLock(UniversalSuccessor universal_successor)
+//     Constructor for a lock that will allow its acquisition after any other
+//     lock, without needing to explicitly name its predecessor (e.g. a leaf in
+//     a lock chain). Can not be acquired after another UniversalSuccessor lock.
+//     DCHECKs
+//         On Acquisition if there was a previously acquired lock on the thread
+//             and it was also a universal successor.
 //
 // void Acquire()
 //     Acquires the lock.
@@ -63,6 +72,8 @@ class LOCKABLE CheckedLock : public CheckedLockImpl {
       : CheckedLockImpl(predecessor) {}
   explicit CheckedLock(UniversalPredecessor universal_predecessor)
       : CheckedLockImpl(universal_predecessor) {}
+  explicit CheckedLock(UniversalSuccessor universal_successor)
+      : CheckedLockImpl(universal_successor) {}
 };
 #else   // DCHECK_IS_ON()
 class LOCKABLE CheckedLock : public Lock {
@@ -70,6 +81,7 @@ class LOCKABLE CheckedLock : public Lock {
   CheckedLock() = default;
   explicit CheckedLock(const CheckedLock*) {}
   explicit CheckedLock(UniversalPredecessor) {}
+  explicit CheckedLock(UniversalSuccessor) {}
   static void AssertNoLockHeldOnCurrentThread() {}
 
   std::unique_ptr<ConditionVariable> CreateConditionVariable() {

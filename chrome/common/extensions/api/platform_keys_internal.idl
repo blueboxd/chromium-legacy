@@ -59,5 +59,16 @@ namespace platformKeysInternal {
     static void getPublicKey(ArrayBuffer certificate,
                              DOMString algorithmName,
                              GetPublicKeyCallback callback);
+
+    // Takes as arguments a <code>publicKeySpkiDer</code> and
+    // <code>algorithmName</code>. Checks if <code>publicKeySpkiDer</code> is
+    // not empty and if the <code>algorithmName</code> specified is supported.
+    // If so, calls back <code>callback</code> with the key info and a WebCrypto
+    // <code>KeyAlgorithm</code> dictionary describing the key's algorithm. The
+    // <code>name</code> property will equal <code>algorithmName</code>.
+    // Otherwise, calls back with an error.
+    static void getPublicKeyBySpki(ArrayBuffer publicKeySpkiDer,
+                                   DOMString algorithmName,
+                                   GetPublicKeyCallback callback);
   };
 };

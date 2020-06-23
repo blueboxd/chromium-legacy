@@ -1346,7 +1346,7 @@ ProfileImpl::GetNativeFileSystemPermissionContext() {
   return NativeFileSystemPermissionContextFactory::GetForProfile(this);
 }
 
-bool ProfileImpl::IsSameProfile(Profile* profile) {
+bool ProfileImpl::IsSameOrParent(Profile* profile) {
   return profile && profile->GetOriginalProfile() == this;
 }
 

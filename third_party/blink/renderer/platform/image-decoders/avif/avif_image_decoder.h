@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/optional.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -34,6 +35,10 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   String FilenameExtension() const override { return "avif"; }
   bool ImageIsHighBitDepth() override;
   void OnSetData(SegmentReader* data) override;
+  IntSize DecodedYUVSize(int component) const override;
+  size_t DecodedYUVWidthBytes(int component) const override;
+  SkYUVColorSpace GetYUVColorSpace() const override;
+  void DecodeToYUV() override;
   int RepetitionCount() const override;
   base::TimeDelta FrameDurationAtIndex(size_t) const override;
 
@@ -69,7 +74,10 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
 
   uint8_t bit_depth_ = 0;
   bool decode_to_half_float_ = false;
+  uint8_t chroma_shift_x_ = 0;
+  uint8_t chroma_shift_y_ = 0;
   size_t decoded_frame_count_ = 0;
+  base::Optional<SkYUVColorSpace> yuv_color_space_;
   std::unique_ptr<avifDecoder, void (*)(avifDecoder*)> decoder_{nullptr,
                                                                 nullptr};
 

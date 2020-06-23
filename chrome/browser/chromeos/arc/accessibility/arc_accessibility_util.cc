@@ -5,14 +5,39 @@
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_info_data_wrapper.h"
 
+#include "base/optional.h"
 #include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
 namespace arc {
 
-ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
-                           AccessibilityInfoDataWrapper* source_node,
-                           AccessibilityInfoDataWrapper* focused_node) {
+using AXActionType = mojom::AccessibilityActionType;
+using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
+using AXIntListProperty = mojom::AccessibilityIntListProperty;
+using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
+using AXStringProperty = mojom::AccessibilityStringProperty;
+
+base::Optional<ax::mojom::Event> FromContentChangeTypesToAXEvent(
+    const std::vector<int32_t>& arc_content_change_types,
+    const AccessibilityInfoDataWrapper& source_node) {
+  if (!base::Contains(
+          arc_content_change_types,
+          static_cast<int32_t>(mojom::ContentChangeType::STATE_DESCRIPTION))) {
+    return base::nullopt;
+  }
+  const AXNodeInfoData* node_ptr = source_node.GetNode();
+  if (node_ptr && node_ptr->range_info) {
+    return ax::mojom::Event::kValueChanged;
+  } else {
+    return base::nullopt;
+  }
+}
+
+ax::mojom::Event ToAXEvent(
+    mojom::AccessibilityEventType arc_event_type,
+    const base::Optional<std::vector<int>>& arc_content_change_types,
+    AccessibilityInfoDataWrapper* source_node,
+    AccessibilityInfoDataWrapper* focused_node) {
   switch (arc_event_type) {
     case mojom::AccessibilityEventType::VIEW_FOCUSED:
     case mojom::AccessibilityEventType::VIEW_ACCESSIBILITY_FOCUSED:
@@ -25,13 +50,35 @@ ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
     case mojom::AccessibilityEventType::VIEW_TEXT_SELECTION_CHANGED:
       return ax::mojom::Event::kTextSelectionChanged;
     case mojom::AccessibilityEventType::WINDOW_STATE_CHANGED: {
+      if (arc_content_change_types.has_value()) {
+        DCHECK(source_node);  // Should be not null because it's dropped in
+                              // Android side.
+        const base::Optional<ax::mojom::Event> event_or_null =
+            FromContentChangeTypesToAXEvent(arc_content_change_types.value(),
+                                            *source_node);
+        if (event_or_null.has_value()) {
+          return event_or_null.value();
+        }
+      }
       if (focused_node)
         return ax::mojom::Event::kFocus;
       else
         return ax::mojom::Event::kLayoutComplete;
     }
     case mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED:
+      return ax::mojom::Event::kLayoutComplete;
     case mojom::AccessibilityEventType::WINDOW_CONTENT_CHANGED:
+      if (arc_content_change_types.has_value()) {
+        DCHECK(source_node);  // Should be not null because it's dropped in
+                              // Android side.
+        const base::Optional<ax::mojom::Event> event_or_null =
+            FromContentChangeTypesToAXEvent(arc_content_change_types.value(),
+                                            *source_node);
+        if (event_or_null.has_value()) {
+          return event_or_null.value();
+        }
+      }
+      return ax::mojom::Event::kLayoutComplete;
     case mojom::AccessibilityEventType::WINDOWS_CHANGED:
       return ax::mojom::Event::kLayoutComplete;
     case mojom::AccessibilityEventType::VIEW_HOVER_ENTER:

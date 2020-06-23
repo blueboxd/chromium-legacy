@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -40,6 +41,7 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/ui/password_check_referrer.h"
@@ -283,6 +285,10 @@ void ManagePasswordsUIController::OnCredentialLeak(
 
 void ManagePasswordsUIController::OnShowMoveToAccountBubble(
     std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.AccountStorage.MoveToAccountStoreFlowOffered",
+      password_manager::metrics_util::MoveToAccountStoreTrigger::
+          kSuccessfulLoginWithProfileStorePassword);
   passwords_data_.OnPasswordMovable(std::move(form_to_move));
   // TODO(crbug.com/1060128): Add smartness like OnPasswordSubmitted?
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
@@ -483,6 +489,20 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   }
   save_fallback_timer_.Stop();
   passwords_data_.form_manager()->Save();
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kCompromisedPasswordsReengagement)) {
+    post_save_compromised_helper_ =
+        std::make_unique<password_manager::PostSaveCompromisedHelper>(
+            passwords_data_.form_manager()->GetCompromisedCredentials(),
+            username);
+    post_save_compromised_helper_->AnalyzeLeakedCredentials(
+        passwords_data_.client()->GetProfilePasswordStore(),
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->GetPrefs(),
+        base::Bind(
+            &ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble,
+            weak_ptr_factory_.GetWeakPtr()));
+  }
   passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
   // The icon is to be updated after the bubble (either "Save password" or "Sign
   // in to Chrome") is closed.
@@ -790,6 +810,32 @@ void ManagePasswordsUIController::AuthenticateUserForAccountStoreOptInCallback(
   passwords_data_.set_auth_for_account_storage_opt_in_failed(true);
   if (passwords_data_.state() != password_manager::ui::PENDING_PASSWORD_STATE)
     return;
+  bubble_status_ = BubbleStatus::SHOULD_POP_UP;
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::OnTriggerPostSaveCompromisedBubble(
+    password_manager::PostSaveCompromisedHelper::BubbleType type,
+    size_t count_compromised_passwords_) {
+  using password_manager::PostSaveCompromisedHelper;
+  if (passwords_data_.state() != password_manager::ui::MANAGE_STATE)
+    return;
+  password_manager::ui::State state;
+  switch (type) {
+    case PostSaveCompromisedHelper::BubbleType::kNoBubble:
+      post_save_compromised_helper_.reset();
+      return;
+    case PostSaveCompromisedHelper::BubbleType::kPasswordUpdatedSafeState:
+      state = password_manager::ui::PASSWORD_UPDATED_SAFE_STATE;
+      break;
+    case PostSaveCompromisedHelper::BubbleType::kPasswordUpdatedWithMoreToFix:
+      state = password_manager::ui::PASSWORD_UPDATED_MORE_TO_FIX;
+      break;
+    case PostSaveCompromisedHelper::BubbleType::kUnsafeState:
+      state = password_manager::ui::PASSWORD_UPDATED_UNSAFE_STATE;
+      break;
+  }
+  passwords_data_.TransitionToState(state);
   bubble_status_ = BubbleStatus::SHOULD_POP_UP;
   UpdateBubbleAndIconVisibility();
 }

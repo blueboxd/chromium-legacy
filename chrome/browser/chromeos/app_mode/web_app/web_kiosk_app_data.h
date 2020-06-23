@@ -41,6 +41,9 @@ class WebKioskAppData : public KioskAppDataBase {
   // Loads the locally cached data. Returns true on success.
   bool LoadFromCache();
 
+  // Updates |icon_| from either |KioskAppDataBase::icon_url_| or |icon_url_|.
+  void LoadIcon();
+
   // KioskAppDataBase overrides:
   void OnIconLoadSuccess(const gfx::ImageSkia& icon) override;
   void OnIconLoadFailure() override;

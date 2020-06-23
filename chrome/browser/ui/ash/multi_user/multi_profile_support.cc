@@ -182,7 +182,7 @@ void MultiProfileSupport::AddUser(content::BrowserContext* context) {
 
   // Account all existing browser windows of this user accordingly.
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->IsSameProfile(profile))
+    if (browser->profile()->IsSameOrParent(profile))
       OnBrowserAdded(browser);
   }
 }

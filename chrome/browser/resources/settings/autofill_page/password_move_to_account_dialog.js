@@ -17,6 +17,18 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 
+/**
+ * This should be kept in sync with the enum in
+ * components/password_manager/core/browser/password_manager_metrics_util.h.
+ * These values are persisted to logs. Entries should not be renumbered and
+ * numeric values should never be reused.
+ * @enum {number}
+ */
+const MoveToAccountStoreTrigger = {
+  SUCCESSFUL_LOGIN_WITH_PROFILE_STORE_PASSWORD: 0,
+  EXPLICITLY_TRIGGERED_IN_SETTINGS: 1,
+  COUNT: 2,
+};
 
 Polymer({
   is: 'password-move-to-account-dialog',
@@ -35,6 +47,12 @@ Polymer({
 
   /** @override */
   attached() {
+    chrome.send('metricsHandler:recordInHistogram', [
+      'PasswordManager.AccountStorage.MoveToAccountStoreFlowOffered',
+      MoveToAccountStoreTrigger.EXPLICITLY_TRIGGERED_IN_SETTINGS,
+      MoveToAccountStoreTrigger.COUNT,
+    ]);
+
     this.$.dialog.showModal();
   },
 

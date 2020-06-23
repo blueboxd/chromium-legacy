@@ -406,15 +406,26 @@ TEST_F(MultiStorePasswordSaveManagerTest, UpdateInBothStores) {
 TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
   SetAccountStoreEnabled(/*is_enabled=*/true);
 
+  // Set different values for the fields that should be preserved per store
+  // (namely: date_created, date_synced, times_used, moving_blocked_for_list)
   PasswordForm saved_match_in_profile_store(saved_match_);
   saved_match_in_profile_store.username_value =
       parsed_submitted_form_.username_value;
   saved_match_in_profile_store.password_value =
       parsed_submitted_form_.password_value;
   saved_match_in_profile_store.in_store = PasswordForm::Store::kProfileStore;
+  saved_match_in_profile_store.date_created =
+      base::Time::Now() - base::TimeDelta::FromDays(10);
+  saved_match_in_profile_store.times_used = 10;
+  saved_match_in_profile_store.moving_blocked_for_list.push_back(
+      autofill::GaiaIdHash::FromGaiaId("email@gmail.com"));
 
   PasswordForm saved_match_in_account_store(saved_match_in_profile_store);
   saved_match_in_account_store.in_store = PasswordForm::Store::kAccountStore;
+  saved_match_in_account_store.date_created = base::Time::Now();
+  saved_match_in_account_store.date_synced = base::Time::Now();
+  saved_match_in_account_store.times_used = 5;
+  saved_match_in_account_store.moving_blocked_for_list.clear();
 
   SetNonFederatedAndNotifyFetchCompleted(
       {&saved_match_in_profile_store, &saved_match_in_account_store});
@@ -430,6 +441,7 @@ TEST_F(MultiStorePasswordSaveManagerTest, AutomaticSaveInBothStores) {
 
   // We still should update both credentials to update the |date_last_used| and
   // |times_used|. Note that |in_store| is irrelevant since it's not persisted.
+  // All other fields should be preserved.
   PasswordForm expected_profile_update_form(saved_match_in_profile_store);
   expected_profile_update_form.times_used++;
   expected_profile_update_form.date_last_used =

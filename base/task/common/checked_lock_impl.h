@@ -18,6 +18,7 @@ class ConditionVariable;
 namespace internal {
 
 struct UniversalPredecessor {};
+struct UniversalSuccessor {};
 
 // A regular lock with simple deadlock correctness checking.
 // This lock tracks all of the available locks to make sure that any locks are
@@ -28,6 +29,7 @@ class BASE_EXPORT CheckedLockImpl {
   CheckedLockImpl();
   explicit CheckedLockImpl(const CheckedLockImpl* predecessor);
   explicit CheckedLockImpl(UniversalPredecessor);
+  explicit CheckedLockImpl(UniversalSuccessor);
   ~CheckedLockImpl();
 
   static void AssertNoLockHeldOnCurrentThread();
@@ -40,10 +42,12 @@ class BASE_EXPORT CheckedLockImpl {
   std::unique_ptr<ConditionVariable> CreateConditionVariable();
 
   bool is_universal_predecessor() const { return is_universal_predecessor_; }
+  bool is_universal_successor() const { return is_universal_successor_; }
 
  private:
   Lock lock_;
-  const bool is_universal_predecessor_;
+  const bool is_universal_predecessor_ = false;
+  const bool is_universal_successor_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(CheckedLockImpl);
 };

@@ -64,12 +64,14 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           // lays out in visual order.
           TextDirection::kLtr,
           break_token),
+      line_box_(*context->LogicalLineItems()),
       box_states_(nullptr),
       context_(context),
       baseline_type_(container_builder_.Style().GetFontBaseline()),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space.GetWritingMode())) {
   DCHECK(context);
+  DCHECK(&line_box_);
   quirks_mode_ = inline_node.InLineHeightQuirksMode();
 }
 
@@ -195,7 +197,8 @@ void NGInlineLayoutAlgorithm::CreateLine(
     NGExclusionSpace* exclusion_space) {
   // Needs MutableResults to move ShapeResult out of the NGLineInfo.
   NGInlineItemResults* line_items = line_info->MutableResults();
-  line_box_.resize(0);
+  // Clear the current line without releasing the buffer.
+  line_box_.Shrink(0);
 
   // Apply justification before placing items, because it affects size/position
   // of items, which are needed to compute inline static positions.
@@ -1078,7 +1081,7 @@ scoped_refptr<const NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
         container_builder_.ToLineBoxFragment();
     items_builder->SetCurrentLine(
         To<NGPhysicalLineBoxFragment>(layout_result->PhysicalFragment()),
-        std::move(line_box_));
+        &line_box_);
     return layout_result;
   }
 

@@ -151,7 +151,7 @@ class ProfileImpl : public Profile {
   const policy::ProfilePolicyConnector* GetProfilePolicyConnector()
       const override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
-  bool IsSameProfile(Profile* profile) override;
+  bool IsSameOrParent(Profile* profile) override;
   base::Time GetStartTime() const override;
   ProfileKey* GetProfileKey() const override;
   base::FilePath last_selected_directory() override;

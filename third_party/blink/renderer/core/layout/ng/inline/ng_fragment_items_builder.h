@@ -57,10 +57,9 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // positions the line box. |SetCurrentLine| sets the children, and the next
   // |AddLine| adds them.
   //
-  // TODO(kojii): Moving |NGLogicalLineItems| is not cheap because it has inline
-  // capacity. Reconsider the ownership.
+  // The caller must keep |children| alive until |AddLine| completes.
   void SetCurrentLine(const NGPhysicalLineBoxFragment& line,
-                      NGLogicalLineItems&& children);
+                      NGLogicalLineItems* current_line);
   void AddLine(const NGPhysicalLineBoxFragment& line,
                const LogicalOffset& offset);
 
@@ -131,7 +130,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   String first_line_text_content_;
 
   // Keeps children of a line until the offset is determined. See |AddLine|.
-  NGLogicalLineItems current_line_;
+  NGLogicalLineItems* current_line_ = nullptr;
 
   NGInlineNode node_;
 

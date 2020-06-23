@@ -130,7 +130,7 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
   if (!approval)
     return;
 
-  CHECK(profile()->IsSameProfile(approval->profile));
+  CHECK(profile()->IsSameOrParent(approval->profile));
   if (client_) {
     client_->install_ui()->SetUseAppInstalledBubble(
         approval->use_app_installed_bubble);

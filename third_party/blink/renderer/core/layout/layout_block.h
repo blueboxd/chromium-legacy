@@ -402,6 +402,10 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   MinMaxSizes PreferredLogicalWidths() const override;
 
   virtual bool HasLineIfEmpty() const;
+  // Returns baseline offset if we can get |SimpleFontData| from primary font.
+  // Or returns no value if we can't get font data.
+  base::Optional<LayoutUnit> BaselineForEmptyLine(
+      LineDirectionMode line_direction) const;
 
  protected:
   virtual void AdjustInlineDirectionLineBounds(
@@ -477,6 +481,9 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
            hit_test_action == kHitTestChildBlockBackground;
   }
 
+  // Returns baseline offset of this block if is empty editable or having
+  // CSS property "--internal-empty-line-height"fabricated", otherwise
+  // returns |LayoutUnit(-1)|.
   LayoutUnit EmptyLineBaseline(LineDirectionMode line_direction) const;
 
  private:

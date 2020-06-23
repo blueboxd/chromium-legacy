@@ -515,7 +515,7 @@ OffTheRecordProfileImpl::GetNativeFileSystemPermissionContext() {
   return NativeFileSystemPermissionContextFactory::GetForProfile(this);
 }
 
-bool OffTheRecordProfileImpl::IsSameProfile(Profile* profile) {
+bool OffTheRecordProfileImpl::IsSameOrParent(Profile* profile) {
   return (profile == this) || (profile == profile_);
 }
 

@@ -376,6 +376,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   }
 
   void OnMainFramePaint(bool force_policy_update);
+  void OnMainFrameLoad(const FrameSchedulerImpl& frame_scheduler);
 
   void OnShutdownTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue);
 

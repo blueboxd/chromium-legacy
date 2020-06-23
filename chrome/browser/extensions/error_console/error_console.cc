@@ -266,7 +266,7 @@ void ErrorConsole::OnProfileWillBeDestroyed(Profile* profile) {
   profile_observer_.Remove(profile);
   // If incognito profile which we are associated with is destroyed, also
   // destroy all incognito errors.
-  if (profile->IsOffTheRecord() && profile_->IsSameProfile(profile))
+  if (profile->IsOffTheRecord() && profile_->IsSameOrParent(profile))
     errors_.RemoveErrors(ErrorMap::Filter::IncognitoErrors(), nullptr);
 }
 

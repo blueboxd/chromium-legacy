@@ -330,14 +330,14 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
   Profile* const signin_profile = ProfileHelper::GetSigninProfile();
 
   // Get[Active|Primary|LastUsed]Profile return the sign-in profile before login
-  // happens. IsSameProfile() is used to properly test against TestProfile whose
-  // OTR version uses a different temp path.
+  // happens. IsSameOrParent() is used to properly test against TestProfile
+  // whose OTR version uses a different temp path.
   EXPECT_TRUE(
-      ProfileManager::GetActiveUserProfile()->IsSameProfile(signin_profile));
+      ProfileManager::GetActiveUserProfile()->IsSameOrParent(signin_profile));
   EXPECT_TRUE(
-      ProfileManager::GetPrimaryUserProfile()->IsSameProfile(signin_profile));
+      ProfileManager::GetPrimaryUserProfile()->IsSameOrParent(signin_profile));
   EXPECT_TRUE(
-      ProfileManager::GetLastUsedProfile()->IsSameProfile(signin_profile));
+      ProfileManager::GetLastUsedProfile()->IsSameOrParent(signin_profile));
 
   // User signs in but user profile loading has not started.
   const std::string user_id = "test-user@example.com";
@@ -352,9 +352,9 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
   // ends up in an invalid state. Strange things as in http://crbug.com/728683
   // and http://crbug.com/718734 happens.
   EXPECT_TRUE(
-      ProfileManager::GetActiveUserProfile()->IsSameProfile(signin_profile));
+      ProfileManager::GetActiveUserProfile()->IsSameOrParent(signin_profile));
   EXPECT_TRUE(
-      ProfileManager::GetPrimaryUserProfile()->IsSameProfile(signin_profile));
+      ProfileManager::GetPrimaryUserProfile()->IsSameOrParent(signin_profile));
 
   // GetLastUsedProfile() after login but before a user profile is loaded is
   // fatal.
@@ -364,15 +364,15 @@ TEST_F(ProfileManagerTest, UserProfileLoading) {
   Profile* const user_profile =
       g_browser_process->profile_manager()->GetProfile(
           ProfileHelper::Get()->GetProfilePathByUserIdHash(user_id_hash));
-  ASSERT_FALSE(user_profile->IsSameProfile(signin_profile));
+  ASSERT_FALSE(user_profile->IsSameOrParent(signin_profile));
 
   // User profile is returned thereafter.
   EXPECT_TRUE(
-      ProfileManager::GetActiveUserProfile()->IsSameProfile(user_profile));
+      ProfileManager::GetActiveUserProfile()->IsSameOrParent(user_profile));
   EXPECT_TRUE(
-      ProfileManager::GetPrimaryUserProfile()->IsSameProfile(user_profile));
+      ProfileManager::GetPrimaryUserProfile()->IsSameOrParent(user_profile));
   EXPECT_TRUE(
-      ProfileManager::GetLastUsedProfile()->IsSameProfile(user_profile));
+      ProfileManager::GetLastUsedProfile()->IsSameOrParent(user_profile));
 }
 
 #endif  // defined(OS_CHROMEOS)
@@ -639,12 +639,12 @@ TEST_F(ProfileManagerGuestTest, GuestProfileIngonito) {
   Profile* active_profile = ProfileManager::GetActiveUserProfile();
   EXPECT_TRUE(active_profile->IsOffTheRecord());
 
-  EXPECT_TRUE(active_profile->IsSameProfile(primary_profile));
+  EXPECT_TRUE(active_profile->IsSameOrParent(primary_profile));
 
   Profile* last_used_profile = ProfileManager::GetLastUsedProfile();
   EXPECT_TRUE(last_used_profile->IsOffTheRecord());
 
-  EXPECT_TRUE(last_used_profile->IsSameProfile(active_profile));
+  EXPECT_TRUE(last_used_profile->IsSameOrParent(active_profile));
 }
 #endif
 

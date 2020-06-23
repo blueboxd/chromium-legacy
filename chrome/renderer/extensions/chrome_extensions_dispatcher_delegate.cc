@@ -158,7 +158,7 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("platformKeys",
                              IDR_PLATFORM_KEYS_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("platformKeys.getPublicKey",
+  source_map->RegisterSource("platformKeys.getPublicKeyUtil",
                              IDR_PLATFORM_KEYS_GET_PUBLIC_KEY_JS);
   source_map->RegisterSource("platformKeys.internalAPI",
                              IDR_PLATFORM_KEYS_INTERNAL_API_JS);

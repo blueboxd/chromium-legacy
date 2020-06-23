@@ -71,7 +71,7 @@ ExtensionViewHost::ExtensionViewHost(const Extension* extension,
   // off-the-record version of the other) in the case of a spanning-mode
   // extension creating a popup in an incognito window.
   DCHECK(!browser_ || Profile::FromBrowserContext(browser_context())
-                          ->IsSameProfile(browser_->profile()));
+                          ->IsSameOrParent(browser_->profile()));
 
   // Attach WebContents helpers. Extension tabs automatically get them attached
   // in TabHelpers::AttachTabHelpers, but popups don't.

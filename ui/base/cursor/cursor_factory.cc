@@ -37,8 +37,7 @@ PlatformCursor CursorFactory::GetDefaultCursor(mojom::CursorType type) {
 }
 
 PlatformCursor CursorFactory::CreateImageCursor(const SkBitmap& bitmap,
-                                                const gfx::Point& hotspot,
-                                                float bitmap_dpi) {
+                                                const gfx::Point& hotspot) {
   NOTIMPLEMENTED();
   return 0;
 }
@@ -46,8 +45,7 @@ PlatformCursor CursorFactory::CreateImageCursor(const SkBitmap& bitmap,
 PlatformCursor CursorFactory::CreateAnimatedCursor(
     const std::vector<SkBitmap>& bitmaps,
     const gfx::Point& hotspot,
-    int frame_delay_ms,
-    float bitmap_dpi) {
+    int frame_delay_ms) {
   NOTIMPLEMENTED();
   return 0;
 }

@@ -96,6 +96,7 @@ const struct NameValuePair {
 
 namespace platform_keys {
 
+const char kErrorInvalidSpki[] = "The SubjectPublicKeyInfo is not valid.";
 const char kErrorInvalidToken[] = "The token is not valid.";
 const char kErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
@@ -198,6 +199,44 @@ PlatformKeysInternalGetPublicKeyFunction::Run() {
   }
 
   return RespondNow(Error(kErrorAlgorithmNotPermittedByCertificate));
+}
+
+PlatformKeysInternalGetPublicKeyBySpkiFunction::
+    ~PlatformKeysInternalGetPublicKeyBySpkiFunction() = default;
+
+ExtensionFunction::ResponseAction
+PlatformKeysInternalGetPublicKeyBySpkiFunction::Run() {
+  std::unique_ptr<api_pki::GetPublicKeyBySpki::Params> params(
+      api_pki::GetPublicKeyBySpki::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const auto& public_key_spki_der = params->public_key_spki_der;
+  if (public_key_spki_der.empty())
+    return RespondNow(Error(platform_keys::kErrorInvalidSpki));
+
+  PublicKeyInfo key_info;
+  key_info.public_key_spki_der.assign(std::begin(public_key_spki_der),
+                                      std::end(public_key_spki_der));
+
+  if (!chromeos::platform_keys::GetPublicKeyBySpki(key_info.public_key_spki_der,
+                                                   &key_info.key_type,
+                                                   &key_info.key_size_bits) ||
+      key_info.key_type != net::X509Certificate::kPublicKeyTypeRSA) {
+    return RespondNow(Error(kErrorAlgorithmNotSupported));
+  }
+
+  // Currently, the only supported combination is:
+  //   A SPKI declaring rsaEncryption used with the RSASSA-PKCS1-v1.5 algorithm.
+  if (params->algorithm_name != kWebCryptoRSASSA_PKCS1_v1_5) {
+    return RespondNow(Error(kErrorAlgorithmNotSupported));
+  }
+
+  api_pki::GetPublicKeyBySpki::Results::Algorithm algorithm;
+  BuildWebCryptoRSAAlgorithmDictionary(key_info,
+                                       &algorithm.additional_properties);
+
+  return RespondNow(ArgumentList(api_pki::GetPublicKeyBySpki::Results::Create(
+      public_key_spki_der, algorithm)));
 }
 
 PlatformKeysInternalSelectClientCertificatesFunction::

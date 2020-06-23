@@ -81,8 +81,10 @@ constexpr const char* kDebugUserNames[] = {
 };
 
 constexpr const char* kDebugPublicAccountNames[] = {
-    "Seattle Public Library", "San Jose Public Library",
-    "Sunnyvale Public Library", "Mountain View Public Library",
+    "Seattle Public Library",
+    "San Jose Public Library",
+    "Sunnyvale Public Library",
+    "Mountain View Public Library",
 };
 
 constexpr const char* kDebugDetachableBases[] = {"Base A", "Base B", "Base C"};
@@ -431,14 +433,14 @@ class LockDebugView::DebugDataDispatcherTransformer
     menu_item.app_id = kDebugKioskAppId;
     menu_item.name = base::UTF8ToUTF16(kDebugKioskAppName);
     kiosk_apps_.push_back(std::move(menu_item));
-    shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {});
+    shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {}, {});
   }
 
   void RemoveKioskApp(ShelfWidget* shelf_widget) {
     if (kiosk_apps_.empty())
       return;
     kiosk_apps_.pop_back();
-    shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {});
+    shelf_widget->login_shelf_view()->SetKioskApps(kiosk_apps_, {}, {});
   }
 
   void AddSystemInfo(const std::string& os_version,

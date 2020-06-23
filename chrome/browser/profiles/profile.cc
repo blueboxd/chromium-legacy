@@ -455,7 +455,7 @@ PrefStore* Profile::CreateExtensionPrefStore(Profile* profile,
 
 bool ProfileCompare::operator()(Profile* a, Profile* b) const {
   DCHECK(a && b);
-  if (a->IsSameProfile(b))
+  if (a->IsSameOrParent(b))
     return false;
   return a->GetOriginalProfile() < b->GetOriginalProfile();
 }

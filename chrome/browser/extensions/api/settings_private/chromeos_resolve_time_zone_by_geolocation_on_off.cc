@@ -73,7 +73,7 @@ SetPrefResult GeneratedResolveTimezoneByGeolocationOnOff::SetPref(
   // cannot deactivate automatic timezone.
   if (chromeos::system::TimeZoneResolverManager::
           IsTimeZoneResolutionPolicyControlled() ||
-      !profile_->IsSameProfile(ProfileManager::GetPrimaryUserProfile())) {
+      !profile_->IsSameOrParent(ProfileManager::GetPrimaryUserProfile())) {
     return SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 

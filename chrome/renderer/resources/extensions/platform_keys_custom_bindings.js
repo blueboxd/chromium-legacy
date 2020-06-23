@@ -5,7 +5,9 @@
 // Custom binding for the platformKeys API.
 
 var SubtleCrypto = require('platformKeys.SubtleCrypto').SubtleCrypto;
-var getPublicKey = require('platformKeys.getPublicKey').getPublicKey;
+var publicKeyUtil = require('platformKeys.getPublicKeyUtil');
+var getPublicKey = publicKeyUtil.getPublicKey;
+var getPublicKeyBySpki = publicKeyUtil.getPublicKeyBySpki;
 var internalAPI = require('platformKeys.internalAPI');
 
 var keyModule = require('platformKeys.Key');
@@ -59,5 +61,19 @@ apiBridge.registerCustomHook(function(api) {
           callback(createPublicKey(publicKey, algorithm),
                    createPrivateKey(publicKey, algorithm));
         });
+      });
+
+  apiFunctions.setHandleRequest(
+      'getKeyPairBySpki', function(publicKeySpkiDer, params, callback) {
+        getPublicKeyBySpki(
+            publicKeySpkiDer, params, function(publicKey, algorithm) {
+              if (bindingUtil.hasLastError()) {
+                callback();
+                return;
+              }
+              callback(
+                  createPublicKey(publicKey, algorithm),
+                  createPrivateKey(publicKey, algorithm));
+            });
       });
 });

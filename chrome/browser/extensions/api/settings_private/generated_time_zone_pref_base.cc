@@ -51,7 +51,7 @@ void GeneratedTimeZonePrefBase::UpdateTimeZonePrefControlledBy(
     } else {
       out_pref->enforcement = settings_api::ENFORCEMENT_ENFORCED;
     }
-  } else if (!profile_->IsSameProfile(
+  } else if (!profile_->IsSameOrParent(
                  ProfileManager::GetPrimaryUserProfile())) {
     out_pref->controlled_by = settings_api::CONTROLLED_BY_PRIMARY_USER;
     out_pref->controlled_by_name = std::make_unique<std::string>(

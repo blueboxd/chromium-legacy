@@ -152,8 +152,10 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
         .iconImageName = @"accessory_no_checkmark";
   }
   self.selectedCookiesItem = [self.tableViewModel itemAtIndexPath:indexPath];
-  static_cast<TableViewInfoButtonItem*>(self.selectedCookiesItem)
-      .iconImageName = @"accessory_checkmark";
+  TableViewInfoButtonItem* selectedItem =
+      static_cast<TableViewInfoButtonItem*>(self.selectedCookiesItem);
+  selectedItem.iconImageName = @"accessory_checkmark";
+  selectedItem.tintColor = [UIColor colorNamed:kBlueColor];
 
   if (previousSelectedCookiesItem)
     [self reconfigureCellsForItems:@[

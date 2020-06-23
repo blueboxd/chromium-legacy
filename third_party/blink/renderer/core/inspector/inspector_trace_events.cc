@@ -395,43 +395,47 @@ const char* CompileOptionsString(v8::ScriptCompiler::CompileOptions options) {
 
 const char* NotStreamedReasonString(ScriptStreamer::NotStreamingReason reason) {
   switch (reason) {
-    case ScriptStreamer::kNotHTTP:
+    case ScriptStreamer::NotStreamingReason::kNotHTTP:
       return "not http/https protocol";
-    case ScriptStreamer::kRevalidate:
+    case ScriptStreamer::NotStreamingReason::kRevalidate:
       return "revalidation event";
-    case ScriptStreamer::kContextNotValid:
+    case ScriptStreamer::NotStreamingReason::kContextNotValid:
       return "script context not valid";
-    case ScriptStreamer::kEncodingNotSupported:
+    case ScriptStreamer::NotStreamingReason::kEncodingNotSupported:
       return "encoding not supported";
-    case ScriptStreamer::kThreadBusy:
+    case ScriptStreamer::NotStreamingReason::kThreadBusy:
       return "script streamer thread busy";
-    case ScriptStreamer::kV8CannotStream:
+    case ScriptStreamer::NotStreamingReason::kV8CannotStream:
       return "V8 cannot stream script";
-    case ScriptStreamer::kScriptTooSmall:
+    case ScriptStreamer::NotStreamingReason::kScriptTooSmall:
       return "script too small";
-    case ScriptStreamer::kNoResourceBuffer:
+    case ScriptStreamer::NotStreamingReason::kNoResourceBuffer:
       return "resource no longer alive";
-    case ScriptStreamer::kHasCodeCache:
+    case ScriptStreamer::NotStreamingReason::kHasCodeCache:
       return "script has code-cache available";
-    case ScriptStreamer::kStreamerNotReadyOnGetSource:
+    case ScriptStreamer::NotStreamingReason::kStreamerNotReadyOnGetSource:
       return "streamer not ready";
-    case ScriptStreamer::kInlineScript:
+    case ScriptStreamer::NotStreamingReason::kInlineScript:
       return "inline script";
-    case ScriptStreamer::kDidntTryToStartStreaming:
-      return "start streaming not called";
-    case ScriptStreamer::kErrorOccurred:
+    case ScriptStreamer::NotStreamingReason::kErrorOccurred:
       return "an error occurred";
-    case ScriptStreamer::kStreamingDisabled:
+    case ScriptStreamer::NotStreamingReason::kStreamingDisabled:
       return "already disabled streaming";
-    case ScriptStreamer::kSecondScriptResourceUse:
+    case ScriptStreamer::NotStreamingReason::kSecondScriptResourceUse:
       return "already used streamed data";
-    case ScriptStreamer::kWorkerTopLevelScript:
+    case ScriptStreamer::NotStreamingReason::kWorkerTopLevelScript:
       return "worker top-level scripts are not streamable";
-    case ScriptStreamer::kModuleScript:
+    case ScriptStreamer::NotStreamingReason::kModuleScript:
       return "module script";
-    case ScriptStreamer::kAlreadyLoaded:
-    case ScriptStreamer::kCount:
-    case ScriptStreamer::kInvalid:
+    case ScriptStreamer::NotStreamingReason::kNoDataPipe:
+      return "no data pipe received";
+    case ScriptStreamer::NotStreamingReason::kDisabledByFeatureList:
+      return "streaming disabled from the feature list";
+    case ScriptStreamer::NotStreamingReason::kLoadingCancelled:
+      return "loading was cancelled";
+    case ScriptStreamer::NotStreamingReason::kDidntTryToStartStreaming:
+    case ScriptStreamer::NotStreamingReason::kAlreadyLoaded:
+    case ScriptStreamer::NotStreamingReason::kInvalid:
       NOTREACHED();
   }
   NOTREACHED();

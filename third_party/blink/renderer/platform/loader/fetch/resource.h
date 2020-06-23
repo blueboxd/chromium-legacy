@@ -411,18 +411,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollected<Resource>,
            ResourceType,
            const ResourceLoaderOptions&);
 
-  // Returns true if the resource has finished any processing it wanted to do
-  // after loading. Should only be used to decide whether to call
-  // NotifyFinished.
-  //
-  // By default this is the same as being loaded (i.e. no processing), but it is
-  // used by ScriptResource to signal that streaming JavaScript compilation
-  // completed. Note that classes overloading this method should also overload
-  // NotifyFinished to not call Resource::NotifyFinished until this value
-  // becomes true.
-  // TODO(hiroshige): Remove this when ScriptResourceContent is introduced.
-  virtual bool IsFinishedInternal() const { return IsLoaded(); }
-
   virtual void NotifyDataReceived(const char* data, size_t size);
   virtual void NotifyFinished();
 

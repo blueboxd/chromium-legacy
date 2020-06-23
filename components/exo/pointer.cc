@@ -690,7 +690,7 @@ void Pointer::UpdateCursor() {
     // and use that here instead of the current bitmap API.
     // https://crbug.com/686600
     platform_cursor =
-        ui::CursorFactory::GetInstance()->CreateImageCursor(bitmap, hotspot, 0);
+        ui::CursorFactory::GetInstance()->CreateImageCursor(bitmap, hotspot);
 #elif defined(USE_X11)
     XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
     platform_cursor = ui::CreateReffedCustomXCursor(image);

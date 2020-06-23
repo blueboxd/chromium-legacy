@@ -178,11 +178,11 @@ bool VideoDecoderPipeline::CanReadWithoutStalling() const {
 }
 
 void VideoDecoderPipeline::Initialize(const VideoDecoderConfig& config,
-                                      bool low_delay,
+                                      bool /* low_delay */,
                                       CdmContext* cdm_context,
                                       InitCB init_cb,
                                       const OutputCB& output_cb,
-                                      const WaitingCB& waiting_cb) {
+                                      const WaitingCB& /* waiting_cb */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   VLOGF(2) << "config: " << config.AsHumanReadableString();
 
@@ -241,7 +241,7 @@ void VideoDecoderPipeline::InitializeTask(const VideoDecoderConfig& config,
 void VideoDecoderPipeline::CreateAndInitializeVD(
     base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs,
     VideoDecoderConfig config,
-    ::media::Status parent_error) {
+    Status parent_error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(init_cb_);
   DCHECK(!decoder_);
@@ -278,8 +278,8 @@ void VideoDecoderPipeline::CreateAndInitializeVD(
 void VideoDecoderPipeline::OnInitializeDone(
     base::queue<VideoDecoderPipeline::CreateVDFunc> create_vd_funcs,
     VideoDecoderConfig config,
-    ::media::Status parent_error,
-    ::media::Status status) {
+    Status parent_error,
+    Status status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DCHECK(init_cb_);
   DVLOGF(4) << "Initialization status = " << status.code();

@@ -408,6 +408,8 @@ enum class PasswordAccountStorageUserState {
 };
 
 // Metrics: PasswordManager.MoveToAccountStoreTrigger.
+// This must be kept in sync with the enum in password_move_to_account_dialog.js
+// (in chrome/browser/resources/settings/autofill_page).
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class MoveToAccountStoreTrigger {

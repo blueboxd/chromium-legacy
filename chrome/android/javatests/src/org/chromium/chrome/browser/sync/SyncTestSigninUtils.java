@@ -10,6 +10,7 @@ import org.junit.Assert;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.SyncFirstSetupCompleteSource;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
@@ -27,8 +28,9 @@ public final class SyncTestSigninUtils {
      */
     private static void signinTestAccount(final Account account) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            IdentityServicesProvider.get().getSigninManager().signIn(
-                    SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
+            IdentityServicesProvider.get()
+                    .getSigninManager(Profile.getLastUsedRegularProfile())
+                    .signIn(SigninAccessPoint.UNKNOWN, account, new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
                             ProfileSyncService.get().setFirstSetupComplete(

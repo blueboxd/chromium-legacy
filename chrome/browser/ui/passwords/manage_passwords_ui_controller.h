@@ -17,6 +17,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/ui/post_save_compromised_helper.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -33,6 +34,7 @@ enum class CredentialType;
 struct InteractionsStats;
 class PasswordFeatureManager;
 class PasswordFormManagerForUI;
+class PostSaveCompromisedHelper;
 }  // namespace password_manager
 
 class AccountChooserPrompt;
@@ -272,6 +274,10 @@ class ManagePasswordsUIController
       password_manager::PasswordManagerClient::ReauthSucceeded
           reauth_succeeded);
 
+  void OnTriggerPostSaveCompromisedBubble(
+      password_manager::PostSaveCompromisedHelper::BubbleType type,
+      size_t count_compromised_passwords_);
+
   // Timeout in seconds for the manual fallback for saving.
   static int save_fallback_timeout_in_seconds_;
 
@@ -280,6 +286,10 @@ class ManagePasswordsUIController
 
   // The controller for the blocking dialogs.
   std::unique_ptr<PasswordBaseDialogController> dialog_controller_;
+
+  // The helper to pop up a reminder about compromised passwords.
+  std::unique_ptr<password_manager::PostSaveCompromisedHelper>
+      post_save_compromised_helper_;
 
   BubbleStatus bubble_status_ = BubbleStatus::NOT_SHOWN;
 

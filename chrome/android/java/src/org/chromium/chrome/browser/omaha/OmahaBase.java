@@ -17,6 +17,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
+import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 
 import java.io.BufferedOutputStream;
@@ -70,6 +71,17 @@ public class OmahaBase {
             this.downloadUrl = downloadUrl;
             this.serverDate = serverDate;
         }
+    }
+
+    /** Represents the status of a manually-triggered update check. */
+    @IntDef({UpdateStatus.UPDATED, UpdateStatus.OUTDATED, UpdateStatus.OFFLINE,
+            UpdateStatus.FAILED})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface UpdateStatus {
+        int UPDATED = 0;
+        int OUTDATED = 1;
+        int OFFLINE = 2;
+        int FAILED = 3;
     }
 
     // Flags for retrieving the OmahaClient's state after it's written to disk.
@@ -135,6 +147,9 @@ public class OmahaBase {
     protected VersionConfig mVersionConfig;
     protected boolean mSendInstallEvent;
 
+    // Request failure error code.
+    private int mRequestErrorCode;
+
     /** See {@link #sIsDisabled}. */
     public static void setIsDisabledForTesting(boolean state) {
         sIsDisabled = state;
@@ -151,6 +166,40 @@ public class OmahaBase {
      */
     OmahaBase(OmahaDelegate delegate) {
         mDelegate = delegate;
+    }
+
+    /**
+     * Synchronously checks for updates.
+     * @return UpdateStatus enum value corresponding to the update state.
+     */
+    public @UpdateStatus int checkForUpdates() {
+        // Since this update check is synchronous and blocking on the network
+        // connection, it should not be run on the UI thread.
+        assert !ThreadUtils.runningOnUiThread();
+        // Create all the metadata needed for an Omaha request.
+        long currentTimestamp = getBackoffScheduler().getCurrentTime();
+        String installSource =
+                mDelegate.isInSystemImage() ? INSTALL_SOURCE_SYSTEM : INSTALL_SOURCE_ORGANIC;
+        RequestData currentRequest =
+                createRequestData(false, currentTimestamp, null, installSource);
+        String sessionID = mDelegate.generateUUID();
+        long timestampOfInstall = OmahaBase.getSharedPreferences().getLong(
+                OmahaBase.PREF_TIMESTAMP_OF_INSTALL, currentTimestamp);
+        // Send the request and parse the response.
+        VersionConfig versionConfig = generateAndPostRequest(
+                currentTimestamp, sessionID, currentRequest, timestampOfInstall);
+        if (versionConfig == null) {
+            return (mRequestErrorCode == RequestFailureException.ERROR_CONNECTIVITY)
+                    ? UpdateStatus.OFFLINE
+                    : UpdateStatus.FAILED;
+        }
+        // Compare the current version with the latest received from the server.
+        VersionNumber current = VersionNumber.fromString(getInstalledVersion());
+        VersionNumber latest = VersionNumber.fromString(versionConfig.latestVersion);
+        if (current == null || latest == null) {
+            return UpdateStatus.FAILED;
+        }
+        return current.isSmallerThan(latest) ? UpdateStatus.OUTDATED : UpdateStatus.UPDATED;
     }
 
     protected void run() {
@@ -220,6 +269,7 @@ public class OmahaBase {
             String sessionID = mDelegate.generateUUID();
             boolean sendingInstallRequest = mSendInstallEvent;
             boolean succeeded = generateAndPostRequest(currentTimestamp, sessionID);
+            onResponseReceived(succeeded);
 
             if (succeeded && sendingInstallRequest) {
                 // Only the first request ever generated should contain an install event.
@@ -229,6 +279,9 @@ public class OmahaBase {
                 // Create and immediately send another request for a ping and update check.
                 registerNewRequest(currentTimestamp);
                 succeeded &= generateAndPostRequest(currentTimestamp, sessionID);
+                // Previous line is executed only when succeeded is true, so the updated value
+                // reflects the status of the last call.
+                onResponseReceived(succeeded);
             }
 
             result = succeeded ? PostResult.SENT : PostResult.FAILED;
@@ -240,32 +293,42 @@ public class OmahaBase {
         return result;
     }
 
+    /**
+     * @return version currently installed on the device.
+     */
+    protected String getInstalledVersion() {
+        return VersionNumberGetter.getInstance().getCurrentlyUsedVersion(getContext());
+    }
+
     protected boolean generateAndPostRequest(long currentTimestamp, String sessionID) {
-        boolean succeeded = false;
+        return generateAndPostRequest(
+                       currentTimestamp, sessionID, mCurrentRequest, mTimestampOfInstall)
+                != null;
+    }
+
+    protected VersionConfig generateAndPostRequest(long currentTimestamp, String sessionID,
+            RequestData currentRequest, long timestampOfInstall) {
         try {
             // Generate the XML for the current request.
             long installAgeInDays = RequestGenerator.installAge(
-                    currentTimestamp, mTimestampOfInstall, mCurrentRequest.isSendInstallEvent());
-            String version =
-                    VersionNumberGetter.getInstance().getCurrentlyUsedVersion(getContext());
-            String xml = getRequestGenerator().generateXML(sessionID, version, installAgeInDays,
+                    currentTimestamp, timestampOfInstall, currentRequest.isSendInstallEvent());
+            String xml = getRequestGenerator().generateXML(sessionID, getInstalledVersion(),
+                    installAgeInDays,
                     mVersionConfig == null ? UNKNOWN_DATE : mVersionConfig.serverDate,
-                    mCurrentRequest);
+                    currentRequest);
 
             // Send the request to the server & wait for a response.
             String response = postRequest(currentTimestamp, xml);
 
             // Parse out the response.
             String appId = getRequestGenerator().getAppId();
-            boolean sentPingAndUpdate = !mSendInstallEvent;
-            ResponseParser parser = new ResponseParser(
-                    appId, mSendInstallEvent, sentPingAndUpdate, sentPingAndUpdate);
-            mVersionConfig = parser.parseResponse(response);
-            succeeded = true;
+            ResponseParser parser = new ResponseParser(appId, currentRequest.isSendInstallEvent());
+            return parser.parseResponse(response);
         } catch (RequestFailureException e) {
             Log.e(TAG, "Failed to contact server: ", e);
+            mRequestErrorCode = e.errorCode;
+            return null;
         }
-        return onResponseReceived(succeeded);
     }
 
     protected boolean onResponseReceived(boolean succeeded) {
@@ -309,6 +372,11 @@ public class OmahaBase {
     }
 
     private RequestData createRequestData(long currentTimestamp, String persistedID) {
+        return createRequestData(mSendInstallEvent, currentTimestamp, persistedID, mInstallSource);
+    }
+
+    private RequestData createRequestData(boolean sendInstallEvent, long currentTimestamp,
+            String persistedID, String installSource) {
         // If we're sending a persisted event, keep trying to send the same request ID.
         String requestID;
         if (persistedID == null || INVALID_REQUEST_ID.equals(persistedID)) {
@@ -316,7 +384,7 @@ public class OmahaBase {
         } else {
             requestID = persistedID;
         }
-        return new RequestData(mSendInstallEvent, currentTimestamp, requestID, mInstallSource);
+        return new RequestData(sendInstallEvent, currentTimestamp, requestID, installSource);
     }
 
     private boolean hasRequest() {
@@ -374,7 +442,8 @@ public class OmahaBase {
         } catch (MalformedURLException e) {
             throw new RequestFailureException("Caught a malformed URL exception.", e);
         } catch (IOException e) {
-            throw new RequestFailureException("Failed to open connection to URL", e);
+            throw new RequestFailureException("Failed to open connection to URL", e,
+                    RequestFailureException.ERROR_CONNECTIVITY);
         }
     }
 
@@ -500,7 +569,8 @@ public class OmahaBase {
             StreamUtil.closeQuietly(writer);
             checkServerResponseCode(urlConnection);
         } catch (IOException | SecurityException | ArrayIndexOutOfBoundsException e) {
-            throw new RequestFailureException("Failed to write request to server: ", e);
+            throw new RequestFailureException("Failed to write request to server: ", e,
+                    RequestFailureException.ERROR_CONNECTIVITY);
         }
 
         try {
@@ -517,7 +587,8 @@ public class OmahaBase {
                 StreamUtil.closeQuietly(in);
             }
         } catch (IOException e) {
-            throw new RequestFailureException("Failed when reading response from server: ", e);
+            throw new RequestFailureException("Failed when reading response from server: ", e,
+                    RequestFailureException.ERROR_CONNECTIVITY);
         }
     }
 

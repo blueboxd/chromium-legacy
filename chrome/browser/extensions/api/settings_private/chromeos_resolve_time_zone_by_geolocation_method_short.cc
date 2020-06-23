@@ -69,7 +69,7 @@ SetPrefResult GeneratedResolveTimezoneByGeolocationMethodShort::SetPref(
   // Check if preference is policy or primary-user controlled.
   if (chromeos::system::TimeZoneResolverManager::
           IsTimeZoneResolutionPolicyControlled() ||
-      !profile_->IsSameProfile(ProfileManager::GetPrimaryUserProfile())) {
+      !profile_->IsSameOrParent(ProfileManager::GetPrimaryUserProfile())) {
     return SetPrefResult::PREF_NOT_MODIFIABLE;
   }
 

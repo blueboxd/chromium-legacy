@@ -2265,6 +2265,15 @@ void MainThreadSchedulerImpl::OnMainFramePaint(bool force_policy_update) {
                          : UpdateType::kMayEarlyOutIfPolicyUnchanged);
 }
 
+void MainThreadSchedulerImpl::OnMainFrameLoad(
+    const FrameSchedulerImpl& frame_scheduler) {
+  helper_.CheckOnValidThread();
+  if (agent_scheduling_strategy_->OnMainFrameLoad(frame_scheduler) ==
+      AgentSchedulingStrategy::ShouldUpdatePolicy::kYes) {
+    ForceUpdatePolicy();
+  };
+}
+
 void MainThreadSchedulerImpl::ResetForNavigationLocked() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "MainThreadSchedulerImpl::ResetForNavigationLocked");

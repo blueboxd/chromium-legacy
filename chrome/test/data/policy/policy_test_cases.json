@@ -4914,10 +4914,21 @@
     "policy_pref_mapping_test": [
       {
         "policies": {
-
           "PluginVmDataCollectionAllowed": false
         },
         "prefs": { "plugin_vm.data_collection_allowed": {} }
+      }
+    ]
+  },
+
+  "PluginVmRequiredFreeDiskSpace": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "PluginVmRequiredFreeDiskSpace": 25
+        },
+        "prefs": { "plugin_vm.required_free_disk_space": {} }
       }
     ]
   },

@@ -18,8 +18,15 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/state_store.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/features/behavior_feature.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 #include "net/cert/x509_certificate.h"
 
 using content::BrowserThread;
@@ -31,6 +38,24 @@ namespace {
 const char kErrorKeyNotAllowedForSigning[] =
     "This key is not allowed for signing. Either it was used for signing "
     "before or it was not correctly generated.";
+
+#if defined(OS_CHROMEOS)
+
+// Verify the allowlisted kKeyPermissionsInLoginScreen feature behaviors.
+bool IsExtensionAllowlisted(const extensions::Extension* extension) {
+  // Can be nullptr if the extension is uninstalled before the SignTask is
+  // completed.
+  if (!extension)
+    return false;
+
+  const extensions::Feature* key_permissions_in_login_screen =
+      extensions::FeatureProvider::GetBehaviorFeature(
+          extensions::behavior_feature::kKeyPermissionsInLoginScreen);
+
+  return key_permissions_in_login_screen->IsAvailableToExtension(extension)
+      .is_available();
+}
+#endif  // defined(OS_CHROMEOS)
 
 // Converts |token_ids| (string-based token identifiers used in the
 // platformKeys API) to a vector of KeyPermissions::KeyLocation. Currently only
@@ -290,8 +315,15 @@ class ExtensionPlatformKeysService::SignTask : public Task {
         return;
       case Step::SIGN_OR_ABORT: {
         next_step_ = Step::DONE;
+        const extensions::Extension* extension =
+            extensions::ExtensionRegistry::Get(service_->browser_context_)
+                ->GetExtensionById(extension_id_,
+                                   extensions::ExtensionRegistry::ENABLED);
         bool sign_granted = extension_permissions_->CanUseKeyForSigning(
-            public_key_spki_der_, key_locations_);
+                                public_key_spki_der_, key_locations_) ||
+                            (service_->IsUsingSigninProfile() &&
+                             IsExtensionAllowlisted(extension));
+
         if (sign_granted) {
           Sign();
         } else {
@@ -765,6 +797,11 @@ void ExtensionPlatformKeysService::GenerateECKey(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(std::make_unique<GenerateECKeyTask>(
       token_id, named_curve, extension_id, callback, &key_permissions_, this));
+}
+
+bool ExtensionPlatformKeysService::IsUsingSigninProfile() {
+  return ProfileHelper::IsSigninProfile(
+      Profile::FromBrowserContext(browser_context_));
 }
 
 void ExtensionPlatformKeysService::SignDigest(

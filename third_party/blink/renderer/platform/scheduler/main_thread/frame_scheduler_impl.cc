@@ -894,6 +894,15 @@ void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   main_thread_scheduler_->OnMainFramePaint(force_policy_update);
 }
 
+void FrameSchedulerImpl::OnLoad() {
+  if (GetFrameType() == FrameScheduler::FrameType::kMainFrame) {
+    // TODO(talp): Once MTSI::UpdatePolicyLocked is refactored, this can notify
+    // the agent strategy directly and, if necessary, trigger the queue priority
+    // update.
+    main_thread_scheduler_->OnMainFrameLoad(*this);
+  }
+}
+
 bool FrameSchedulerImpl::IsWaitingForContentfulPaint() const {
   return waiting_for_contentful_paint_;
 }

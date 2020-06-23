@@ -69,8 +69,9 @@ blink::Worklist::PrivateSegmentHolder::private_push_segment
 content::(anonymous namespace)::AudioStreamMonitorTest::monitor_
 content::AudioStreamMonitor::clock_
 
-# Populated manually - always holds OilPan pointers.
+# Populated manually - always holds a pointer to an OilPan-allocated memory.
 blink::PersistentBase::raw_
+blink::SVGFilterBuilder::last_effect_
 
 # Populated manually - the rewriter has trouble appending |.get()| inside macros
 # that work with |XDisplay*|.
@@ -78,6 +79,7 @@ extensions::GlobalShortcutListenerX11::x_display_
 gl::GLVisualPickerGLX::display_
 media::(anonymous namespace)::UserInputMonitorLinuxCore::x_record_display_
 media::cast::test::LinuxOutputWindow::display_
+remoting::(anonymous namespace)::InputInjectorX11::Core::display_
 remoting::(anonymous namespace)::LocalHotkeyInputMonitorX11::Core::x_record_display_
 remoting::(anonymous namespace)::LocalMouseInputMonitorX11::Core::x_record_display_
 remoting::ClipboardX11::display_
@@ -134,14 +136,14 @@ blink::PaintController::IdAsHashKey::client
 ui::AXPlatformNodeAuraLinux::document_parent_
 ui::AXPlatformNodeAuraLinux::atk_object_
 
-# Populated manually - to temporarily avoid passing CheckedPtr as
-# an argument to TRACE_EVENT* family of macros.
+# Populated manually - problems related to passing to a templated && parameter,
+# which is later forwarded to something that doesn't vibe with CheckedPtr. The
+# rewriter has no visibility into where the parameter is forwarded to.
 ProfileDestroyer::profile_
-content::RenderProcessHostImpl::browser_context_
-
-# Populated manually - problems related to testing::StrictMock and
-# testing::NiceMock (needs more investigation / problem not full understood).
 (anonymous namespace)::BluetoothLowEnergyApiTest::mock_adapter_
+blink::trace_event::TraceValue::as_convertable
+content::RenderProcessHostImpl::browser_context_
+device::BluetoothDevice::adapter_
 
 # Populated manually - problems related to lambdas with no return type, where
 # the return value is CheckedPtr, but variable/parameter receiving the lambda
@@ -152,8 +154,7 @@ vr::OmniboxSuggestion::icon
 # Populated manually - these pointers are assigned invalid address (with top
 # bits sets), which CheckedPtr is unable to handle, leading to run-time crashes.
 (anonymous namespace)::TlsVectorEntry::data
-blink::(anonymous namespace)::ControlKey::name_
-blink::(anonymous namespace)::ControlKey::type_
 blink::(anonymous namespace)::ThreadMarker::creating_thread_
+blink::ControlKey::name_
 performance_manager::frame_priority::BoostingVoteAggregator::Edge::src_
 performance_manager::frame_priority::BoostingVoteAggregator::Edge::dst_

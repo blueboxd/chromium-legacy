@@ -1530,7 +1530,7 @@ if (!is_android) {
         if (!is_official_build) {
           deps += [
             "//chromeos/components/sample_system_web_app_ui:browser_tests_js",
-            "//chromeos/components/telemetry_extension_ui:browser_tests_js",
+            "//chromeos/components/telemetry_extension_ui/test:browser_tests_js",
           ]
         }
       }
@@ -2234,6 +2234,7 @@ if (!is_android) {
         "../browser/chromeos/login/proxy_auth_dialog_browsertest.cc",
         "../browser/chromeos/login/quick_unlock/pin_migration_browsertest.cc",
         "../browser/chromeos/login/reset_browsertest.cc",
+        "../browser/chromeos/login/saml/password_change_extension_browsertest.cc",
         "../browser/chromeos/login/saml/password_change_success_detection_browsertest.cc",
         "../browser/chromeos/login/saml/saml_browsertest.cc",
         "../browser/chromeos/login/saml/security_token_saml_browsertest.cc",
@@ -6231,6 +6232,7 @@ if (is_android) {
       "//base:base_java",
       "//base:jni_java",
       "//chrome/android:chrome_all_java",
+      "//chrome/browser/profiles/android:java",
       "//chrome/test/android:chrome_java_test_support",
       "//components/signin/public/android:java",
       "//components/sync:sync_java_test_support",

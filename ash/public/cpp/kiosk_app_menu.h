@@ -46,11 +46,12 @@ class ASH_PUBLIC_EXPORT KioskAppMenu {
   static KioskAppMenu* Get();
 
   // Update the kiosk app data. |launch_app| will be called if the user selects
-  // an item (app) from the menu.
+  // an item (app) from the menu. |on_show_menu| will be called when the menu
+  // will be displayed.
   virtual void SetKioskApps(
       const std::vector<KioskAppMenuEntry>& kiosk_apps,
-      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>&
-          launch_app) = 0;
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+      const base::RepeatingCallback<void()>& on_show_menu) = 0;
 
  protected:
   KioskAppMenu();

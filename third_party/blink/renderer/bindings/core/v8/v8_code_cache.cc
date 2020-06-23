@@ -278,7 +278,7 @@ void V8CodeCache::ProduceCache(v8::Isolate* isolate,
                        source_url, source_start_position, false,
                        "v8.compileModule",
                        produce_cache_data->GetProduceCacheOptions(),
-                       ScriptStreamer::kModuleScript);
+                       ScriptStreamer::NotStreamingReason::kModuleScript);
 }
 
 uint32_t V8CodeCache::TagForCodeCache(
@@ -360,7 +360,7 @@ scoped_refptr<CachedMetadata> V8CodeCache::GenerateFullCodeCache(
                   cached_data ? cached_data->length : 0),
               base::Optional<inspector_compile_script_event::V8CacheResult::
                                  ConsumeResult>()),
-          false, ScriptStreamer::kHasCodeCache));
+          false, ScriptStreamer::NotStreamingReason::kHasCodeCache));
 
   return cached_metadata;
 }

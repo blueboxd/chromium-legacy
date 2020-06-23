@@ -14,7 +14,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
@@ -312,9 +311,6 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // background we can write the index much more frequently, to insure fresh
   // index on next startup.
   bool app_on_background_ = false;
-
-  static const base::Feature
-      kSimpleCacheDisableEvictionSizeHeuristicForCodeCache;
 };
 
 }  // namespace disk_cache

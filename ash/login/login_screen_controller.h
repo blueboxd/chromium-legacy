@@ -135,8 +135,8 @@ class ASH_EXPORT LoginScreenController : public LoginScreen,
   // KioskAppMenu:
   void SetKioskApps(
       const std::vector<KioskAppMenuEntry>& kiosk_apps,
-      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app)
-      override;
+      const base::RepeatingCallback<void(const KioskAppMenuEntry&)>& launch_app,
+      const base::RepeatingClosure& on_show_menu) override;
 
   AuthenticationStage authentication_stage() const {
     return authentication_stage_;

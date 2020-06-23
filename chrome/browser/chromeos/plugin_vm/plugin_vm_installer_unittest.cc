@@ -77,7 +77,7 @@ const char kHash2[] =
 // File size set in test_download_service.
 const int kDownloadedPluginVmImageSizeInMb = 123456789u / (1024 * 1024);
 const int64_t kDefaultRequiredFreeDiskSpaceGB = 20LL;
-const int64_t kRequiredFreeDiskSpaceGB = 40LL;
+const int kRequiredFreeDiskSpaceGB = 40;
 const int64_t kBytesPerGigabyte = 1024 * 1024 * 1024;
 
 constexpr char kFailureReasonHistogram[] = "PluginVm.SetupFailureReason";
@@ -200,8 +200,8 @@ class PluginVmInstallerTestBase : public testing::Test {
     plugin_vm_image->SetKey("hash", base::Value(hash));
   }
 
-  void SetRequiredFreeDiskSpaceGBPref(int64_t required_free_disk_space) {
-    profile_->GetPrefs()->SetInt64(
+  void SetRequiredFreeDiskSpaceGBPref(int required_free_disk_space) {
+    profile_->GetPrefs()->SetInteger(
         plugin_vm::prefs::kPluginVmRequiredFreeDiskSpaceGB,
         required_free_disk_space);
   }

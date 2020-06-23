@@ -18,6 +18,7 @@ namespace features {
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kBiometricTouchToFill;
+extern const base::Feature kCompromisedPasswordsReengagement;
 extern const base::Feature kEditPasswordsInDesktopSettings;
 extern const base::Feature kDeleteCorruptedPasswords;
 extern const base::Feature kEnableOverwritingPlaceholderUsernames;

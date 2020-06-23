@@ -23,6 +23,7 @@ namespace arc {
 
 using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventData = mojom::AccessibilityEventData;
+using AXEventIntListProperty = mojom::AccessibilityEventIntListProperty;
 using AXEventIntProperty = mojom::AccessibilityEventIntProperty;
 using AXEventType = mojom::AccessibilityEventType;
 using AXIntProperty = mojom::AccessibilityIntProperty;
@@ -136,8 +137,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
                                       : nullptr;
   event_bundle.events.emplace_back();
   ui::AXEvent& event = event_bundle.events.back();
-  event.event_type = ToAXEvent(event_data->event_type,
-                               GetFromId(event_data->source_id), focused_node);
+  event.event_type = ToAXEvent(
+      event_data->event_type,
+      GetPropertyOrNull(
+          event_data->int_list_properties,
+          arc::mojom::AccessibilityEventIntListProperty::CONTENT_CHANGE_TYPES),
+      GetFromId(event_data->source_id), focused_node);
   event.id = event_data->source_id;
 
   if (HasProperty(event_data->int_properties,

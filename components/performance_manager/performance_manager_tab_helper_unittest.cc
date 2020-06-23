@@ -14,11 +14,15 @@
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/performance_manager_impl.h"
+#include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/navigation_simulator.h"
+#include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/web_contents_tester.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -30,6 +34,7 @@ const char kChild1Url[] = "https://child1.com/";
 const char kChild2Url[] = "https://child2.com/";
 const char kGrandchildUrl[] = "https://grandchild.com/";
 const char kNewGrandchildUrl[] = "https://newgrandchild.com/";
+const char kCousinFreddyUrl[] = "https://cousinfreddy.com/";
 
 class PerformanceManagerTabHelperTest : public PerformanceManagerTestHarness {
  public:
@@ -247,6 +252,92 @@ TEST_F(PerformanceManagerTabHelperTest, GetFrameNode) {
 
   auto* new_frame_node = tab_helper->GetFrameNode(new_frame);
   EXPECT_TRUE(new_frame_node);
+}
+
+namespace {
+
+class LenientMockPageNodeObserver : public PageNode::ObserverDefaultImpl {
+ public:
+  LenientMockPageNodeObserver() = default;
+  ~LenientMockPageNodeObserver() override = default;
+  LenientMockPageNodeObserver(const LenientMockPageNodeObserver& other) =
+      delete;
+  LenientMockPageNodeObserver& operator=(const LenientMockPageNodeObserver&) =
+      delete;
+
+  MOCK_METHOD1(OnFaviconUpdated, void(const PageNode*));
+};
+using MockPageNodeObserver = ::testing::StrictMock<LenientMockPageNodeObserver>;
+
+}  // namespace
+
+TEST_F(PerformanceManagerTabHelperTest,
+       NotificationsFromInactiveFrameTreeAreIgnored) {
+  SetContents(CreateTestWebContents());
+
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                             GURL(kParentUrl));
+  auto* first_nav_main_rfh = web_contents()->GetMainFrame();
+
+  content::LeaveInPendingDeletionState(first_nav_main_rfh);
+
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      web_contents(), GURL(kCousinFreddyUrl));
+  EXPECT_NE(web_contents()->GetMainFrame(), first_nav_main_rfh);
+
+  // Mock observer, this can only be used from the PM sequence.
+  MockPageNodeObserver observer;
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    PerformanceManager::CallOnGraph(
+        FROM_HERE, base::BindLambdaForTesting([&](Graph* graph) {
+          graph->AddPageNodeObserver(&observer);
+          std::move(quit_closure).Run();
+        }));
+    run_loop.Run();
+  }
+
+  auto* tab_helper =
+      PerformanceManagerTabHelper::FromWebContents(web_contents());
+  ASSERT_TRUE(tab_helper);
+
+  // The first favicon change is always ignored, call DidUpdateFaviconURL twice
+  // to ensure that the test doesn't pass simply because of that.
+  tab_helper->DidUpdateFaviconURL(first_nav_main_rfh, {});
+  tab_helper->DidUpdateFaviconURL(first_nav_main_rfh, {});
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    PerformanceManager::CallOnGraph(
+        FROM_HERE, base::BindLambdaForTesting([&]() {
+          // The observer shouldn't have been called at this point.
+          testing::Mock::VerifyAndClear(&observer);
+          std::move(quit_closure).Run();
+          // Set the expectation for the next check.
+          EXPECT_CALL(observer, OnFaviconUpdated(::testing::_));
+        }));
+    run_loop.Run();
+  }
+
+  // Sanity check to ensure that notification sent to the active main frame are
+  // forwarded. DidUpdateFaviconURL needs to be called twice as the first
+  // favicon change is always ignored.
+  tab_helper->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
+  tab_helper->DidUpdateFaviconURL(web_contents()->GetMainFrame(), {});
+
+  {
+    base::RunLoop run_loop;
+    auto quit_closure = run_loop.QuitClosure();
+    PerformanceManager::CallOnGraph(
+        FROM_HERE, base::BindLambdaForTesting([&](Graph* graph) {
+          testing::Mock::VerifyAndClear(&observer);
+          graph->RemovePageNodeObserver(&observer);
+          std::move(quit_closure).Run();
+        }));
+    run_loop.Run();
+  }
 }
 
 }  // namespace performance_manager

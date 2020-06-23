@@ -533,6 +533,9 @@
   <message name="IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS" desc="Shown in the passwords section of settings. Descriptive text to inform that passwords can be accessed online. Has a link.">
     View and manage saved passwords in your <ph name="BEGIN_LINK">&lt;a is="action-link" href="$1" target="_blank"&gt;</ph>Google Account<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_SETTINGS_PASSWORDS_MANAGE_PASSWORDS_PLAINTEXT" desc="Shown in the passwords section of settings. Descriptive text to inform that passwords can be accessed online.">
+    View and manage saved passwords in your Google Account
+  </message>
   <message name="IDS_SETTINGS_PASSWORDS_OPT_IN_ACCOUNT_STORAGE_BODY" desc="Description before a button in the passwords section of settings which triggers opt in to the account-scoped password storage.">
     You can also show passwords from your <ph name="BEGIN_LINK">&lt;a is="action-link" href="$1" target="_blank"&gt;</ph>Google Account<ph name="END_LINK">&lt;/a&gt;</ph> here
   </message>

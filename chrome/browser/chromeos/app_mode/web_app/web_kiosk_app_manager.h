@@ -38,6 +38,8 @@ class WebKioskAppManager : public KioskAppManagerBase {
   // KioskAppManagerBase:
   void GetApps(std::vector<App>* apps) const override;
 
+  void LoadIcons();
+
   // Returns auto launched account id. If there is none, account is invalid,
   // thus is_valid() returns empty AccountId.
   const AccountId& GetAutoLaunchAccountId() const;

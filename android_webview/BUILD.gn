@@ -754,10 +754,8 @@ repack("repack_100_percent") {
     "$root_gen_dir/content/app/resources/content_resources_100_percent.pak",
     "$root_gen_dir/third_party/blink/public/resources/blink_scaled_resources_100_percent.pak",
     "$root_gen_dir/ui/resources/ui_resources_100_percent.pak",
-    "$target_gen_dir/components_resources_100_percent.pak",
   ]
   deps = [
-    ":generate_components_scaled_resources",
     "//content/app/resources",
     "//third_party/blink/public:scaled_resources_100_percent",
     "//ui/resources",
@@ -767,6 +765,10 @@ repack("repack_100_percent") {
   if (enable_resource_whitelist_generation) {
     repack_whitelist = system_webview_pak_whitelist
     deps += [ ":system_webview_pak_whitelist" ]
+  }
+  if (webview_includes_weblayer) {
+    sources += [ "$target_gen_dir/components_resources_100_percent.pak" ]
+    deps += [ ":generate_components_scaled_resources" ]
   }
 }
 

@@ -39,7 +39,6 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
  ['LocalizedLink', 'localized_link_test.m.js'],
  // Disabled - very flaky (crbug.com/1097021)
  // ['BluetoothPage', 'bluetooth_page_tests.m.js'],
- ['NearbyShareSubPage', 'nearby_share_subpage_tests.m.js'],
 ].forEach(test => registerTest(...test));
 
 function registerTest(testName, module, caseName) {

@@ -22,6 +22,8 @@ const char kAllowDeprecatedAudioApi[] = "allow_deprecated_audio_api";
 const char kAllowSecondaryKioskAppEnabledOnLaunch[] =
     "allow_secondary_kiosk_app_enabled_on_launch";
 
+const char kKeyPermissionsInLoginScreen[] = "key_permissions_in_login_screen";
+
 }  // namespace behavior_feature
 
 }  // namespace extensions

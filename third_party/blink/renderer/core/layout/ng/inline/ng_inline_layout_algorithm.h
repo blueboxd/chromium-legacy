@@ -111,7 +111,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                 const NGExclusionSpace&,
                                 LayoutUnit line_height);
 
-  NGLogicalLineItems line_box_;
+  NGLogicalLineItems& line_box_;
   NGInlineLayoutStateStack* box_states_;
   NGInlineChildLayoutContext* context_;
 

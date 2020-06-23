@@ -75,8 +75,9 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
 
         updateSyncStateFromAndroid();
 
-        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(
-                new SigninManager.SignInStateObserver() {
+        IdentityServicesProvider.get()
+                .getSigninManager(Profile.getLastUsedRegularProfile())
+                .addSignInStateObserver(new SigninManager.SignInStateObserver() {
                     @Override
                     public void onSignedIn() {
                         mProfileSyncService.requestStart();

@@ -10,8 +10,7 @@ var normalizeAlgorithm =
 // Returns the normalized parameters of |importParams|.
 // Any unknown parameters will be ignored.
 function normalizeImportParams(importParams) {
-  if (!importParams.name ||
-      Object.prototype.toString.call(importParams.name) !== '[object String]') {
+  if (!importParams.name || typeof importParams.name !== 'string') {
     throw new Error('Algorithm: name: Missing or not a String');
   }
 
@@ -61,6 +60,7 @@ function combineAlgorithms(algorithm, importParams) {
 }
 
 function getPublicKey(cert, importParams, callback) {
+  // TODO(crbug.com/1096486): Check cert type is ArrayBuffer.
   importParams = normalizeImportParams(importParams);
   internalAPI.getPublicKey(
       cert, importParams.name, function(publicKey, algorithm) {
@@ -73,4 +73,21 @@ function getPublicKey(cert, importParams, callback) {
       });
 }
 
+function getPublicKeyBySpki(publicKeySpkiDer, importParams, callback) {
+  if (!(publicKeySpkiDer instanceof ArrayBuffer)){
+    throw $Error.self('publicKeySpkiDer: Not an ArrayBuffer');
+  }
+  importParams = normalizeImportParams(importParams);
+  internalAPI.getPublicKeyBySpki(
+      publicKeySpkiDer, importParams.name, function(publicKey, algorithm) {
+        if (bindingUtil.hasLastError()) {
+          callback();
+          return;
+        }
+        var combinedAlgorithm = combineAlgorithms(algorithm, importParams);
+        callback(publicKey, combinedAlgorithm);
+      });
+}
+
 exports.$set('getPublicKey', getPublicKey);
+exports.$set('getPublicKeyBySpki', getPublicKeyBySpki);

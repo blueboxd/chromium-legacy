@@ -856,6 +856,27 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFETY_CHECK_UNCHECKED" desc="A given element has not been checked.">
         Unchecked
       </message>
+      <message name="IDS_SAFETY_CHECK_CHECKING" desc="A given element is being checked.">
+        Checking
+      </message>
+      <message name="IDS_SAFETY_CHECK_ERROR" desc="A generic error state.">
+        An error occurred.
+      </message>
+      <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_DISABLED" desc="Text to display when Safe Browsing is disabled.">
+        Safe Browsing is off. Chrome recommends turning it on.
+      </message>
+      <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_STANDARD" desc="Text to display when Safe Browsing is set to standard protection.">
+        Standard Protection is on
+      </message>
+      <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_ENABLED_ENHANCED" desc="Text to display when Safe Browsing is set to enhanced protection.">
+        Enhanced Protection is on
+      </message>
+      <message name="IDS_SAFETY_CHECK_SAFE_BROWSING_DISABLED_BY_ADMIN" desc="Text to display when Safe Browsing is disabled by admin.">
+        <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Your administrator<ph name="END_LINK">&lt;/a&gt;</ph> has turned off Safe Browsing
+      </message>
+      <message name="IDS_SAFETY_CHECK_PASSWORDS_NO_PASSWORDS" desc="Text to display when no passwords are saved.">
+        No saved passwords. Chrome can check your passwords when you save them.
+      </message>
 
       <!-- Accessibility preferences -->
       <message name="IDS_PREFS_ACCESSIBILITY" desc="Title of Accessibility settings, which allows the user to change webpage font sizes. [CHAR-LIMIT=32]">

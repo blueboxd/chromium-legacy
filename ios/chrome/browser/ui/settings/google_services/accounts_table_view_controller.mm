@@ -234,30 +234,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
       toSectionWithIdentifier:SectionIdentifierAccounts];
 
   // Sign out section.
-  if (base::FeatureList::IsEnabled(kClearSyncedData)) {
-    [model addSectionWithIdentifier:SectionIdentifierSignOut];
-    // Adds a signout option if the account is not managed.
-    if (![self authService]->IsAuthenticatedIdentityManaged()) {
-      [model addItem:[self experimentalSignOutItem]
-          toSectionWithIdentifier:SectionIdentifierSignOut];
-    }
-    // Adds a signout and clear data option.
-    [model addItem:[self experimentalSignOutAndClearDataItem]
+  [model addSectionWithIdentifier:SectionIdentifierSignOut];
+  // Adds a signout option if the account is not managed.
+  if (![self authService]->IsAuthenticatedIdentityManaged()) {
+    [model addItem:[self experimentalSignOutItem]
         toSectionWithIdentifier:SectionIdentifierSignOut];
+  }
+  // Adds a signout and clear data option.
+  [model addItem:[self experimentalSignOutAndClearDataItem]
+      toSectionWithIdentifier:SectionIdentifierSignOut];
 
-    // Adds a footer with signout explanation depending on the type of
-    // account whether managed or non-managed.
-    if ([self authService]->IsAuthenticatedIdentityManaged()) {
-      [model setFooter:[self signOutManagedAccountFooterItem]
-          forSectionWithIdentifier:SectionIdentifierSignOut];
-    } else {
-      [model setFooter:[self signOutNonManagedAccountFooterItem]
-          forSectionWithIdentifier:SectionIdentifierSignOut];
-    }
+  // Adds a footer with signout explanation depending on the type of
+  // account whether managed or non-managed.
+  if ([self authService]->IsAuthenticatedIdentityManaged()) {
+    [model setFooter:[self signOutManagedAccountFooterItem]
+        forSectionWithIdentifier:SectionIdentifierSignOut];
   } else {
-    [model addSectionWithIdentifier:SectionIdentifierSignOut];
-    [model addItem:[self signOutItem]
-        toSectionWithIdentifier:SectionIdentifierSignOut];
+    [model setFooter:[self signOutNonManagedAccountFooterItem]
+        forSectionWithIdentifier:SectionIdentifierSignOut];
   }
 }
 
@@ -370,13 +364,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypeSignOut: {
-      if (base::FeatureList::IsEnabled(kClearSyncedData)) {
-        UIView* itemView =
-            [[tableView cellForRowAtIndexPath:indexPath] contentView];
-        [self showSignOutWithClearData:NO itemView:itemView];
-      } else {
-        [self showSignOut];
-      }
+      UIView* itemView =
+          [[tableView cellForRowAtIndexPath:indexPath] contentView];
+      [self showSignOutWithClearData:NO itemView:itemView];
       break;
     }
     case ItemTypeSignOutAndClearData: {
@@ -598,10 +588,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
               self.navigationController)
               popViewControllerOrCloseSettingsAnimated:YES];
         });
-    // Get UMA metrics on the usage of the new UI, which is only available for
-    // users in the experiement with non-managed accounts.
-    if (base::FeatureList::IsEnabled(kClearSyncedData) &&
-        ![self authService]->IsAuthenticatedIdentityManaged()) {
+    // Get UMA metrics on the usage of different options for signout available
+    // for users with non-managed accounts.
+    if (![self authService]->IsAuthenticatedIdentityManaged()) {
       UMA_HISTOGRAM_BOOLEAN("Signin.UserRequestedWipeDataOnSignout",
                             forceClearData);
     }

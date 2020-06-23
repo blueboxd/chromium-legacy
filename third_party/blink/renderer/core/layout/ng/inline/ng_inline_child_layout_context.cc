@@ -9,6 +9,7 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGInlineChildLayoutContext {
+  NGLogicalLineItems line_items_;
   base::Optional<NGInlineLayoutStateStack> box_states_;
   void* pointers[2];
   unsigned number;

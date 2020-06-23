@@ -1543,6 +1543,28 @@ std::string GetSubjectPublicKeyInfo(
   return spki_bytes.as_string();
 }
 
+// Extracts the public exponent out of an EVP_PKEY and verifies if it is equal
+// to 65537 (Fermat number with n=4). This values is enforced by
+// platform_keys::GetPublicKey() and platform_keys::GetPublicKeyBySpki().
+// The caller of this function needs to have an OpenSSLErrStackTracer or
+// otherwise clean up the error stack on failure.
+bool VerifyRSAPublicExponent(EVP_PKEY* pkey) {
+  RSA* rsa = EVP_PKEY_get0_RSA(pkey);
+  if (!rsa) {
+    LOG(WARNING) << "Could not get RSA from PKEY.";
+    return false;
+  }
+
+  const BIGNUM* public_exponent = nullptr;
+  RSA_get0_key(rsa, nullptr /* out_n */, &public_exponent, nullptr /* out_d */);
+  if (BN_get_word(public_exponent) != 65537L) {
+    LOG(ERROR) << "Rejecting RSA public exponent that is unequal 65537.";
+    return false;
+  }
+
+  return true;
+}
+
 bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
                   net::X509Certificate::PublicKeyType* key_type,
                   size_t* key_size_bits) {
@@ -1574,16 +1596,7 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
 
   switch (EVP_PKEY_type(pkey->type)) {
     case EVP_PKEY_RSA: {
-      RSA* rsa = EVP_PKEY_get0_RSA(pkey.get());
-      if (!rsa) {
-        LOG(WARNING) << "Could not get RSA from PKEY.";
-        return false;
-      }
-      const BIGNUM* public_exponent;
-      RSA_get0_key(rsa, nullptr /* out_n */, &public_exponent,
-                   nullptr /* out_d */);
-      if (BN_get_word(public_exponent) != 65537L) {
-        LOG(ERROR) << "Rejecting RSA public exponent that is unequal 65537.";
+      if (!VerifyRSAPublicExponent(pkey.get())) {
         return false;
       }
       break;
@@ -1606,6 +1619,39 @@ bool GetPublicKey(const scoped_refptr<net::X509Certificate>& certificate,
       LOG(WARNING) << "Only RSA and EC keys are supported.";
       return false;
     }
+  }
+
+  *key_type = key_type_tmp;
+  *key_size_bits = key_size_bits_tmp;
+  return true;
+}
+
+bool GetPublicKeyBySpki(const std::string& spki,
+                        net::X509Certificate::PublicKeyType* key_type,
+                        size_t* key_size_bits) {
+  net::X509Certificate::PublicKeyType key_type_tmp =
+      net::X509Certificate::kPublicKeyTypeUnknown;
+  size_t key_size_bits_tmp = 0;
+
+  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
+  CBS cbs;
+  CBS_init(&cbs, reinterpret_cast<const uint8_t*>(spki.data()), spki.size());
+  bssl::UniquePtr<EVP_PKEY> pkey(EVP_parse_public_key(&cbs));
+  if (!pkey) {
+    LOG(WARNING) << "Could not extract public key from SPKI.";
+    return false;
+  }
+  int type = EVP_PKEY_type(pkey->type);
+  if (type == EVP_PKEY_RSA) {
+    key_type_tmp = net::X509Certificate::kPublicKeyTypeRSA;
+  } else {
+    LOG(WARNING) << "Keys of other type than RSA are not supported.";
+    return false;
+  }
+  key_size_bits_tmp = base::saturated_cast<size_t>(EVP_PKEY_bits(pkey.get()));
+
+  if (!VerifyRSAPublicExponent(pkey.get())) {
+    return false;
   }
 
   *key_type = key_type_tmp;

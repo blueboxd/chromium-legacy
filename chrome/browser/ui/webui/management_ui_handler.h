@@ -59,8 +59,14 @@ extern const char kManagementDataLossPreventionName[];
 extern const char kManagementDataLossPreventionPermissions[];
 extern const char kManagementMalwareScanningName[];
 extern const char kManagementMalwareScanningPermissions[];
-extern const char kManagementEnterpriseReportingName[];
-extern const char kManagementEnterpriseReportingPermissions[];
+extern const char kManagementEnterpriseReportingEvent[];
+extern const char kManagementEnterpriseReportingVisibleData[];
+extern const char kManagementOnFileAttachedEvent[];
+extern const char kManagementOnFileAttachedVisibleData[];
+extern const char kManagementOnFileDownloadedEvent[];
+extern const char kManagementOnFileDownloadedVisibleData[];
+extern const char kManagementOnBulkDataEntryEvent[];
+extern const char kManagementOnBulkDataEntryVisibleData[];
 
 extern const char kPolicyKeyReportMachineIdData[];
 extern const char kPolicyKeyReportUserIdData[];

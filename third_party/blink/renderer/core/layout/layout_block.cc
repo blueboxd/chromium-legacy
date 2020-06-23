@@ -1708,9 +1708,15 @@ LayoutUnit LayoutBlock::EmptyLineBaseline(
     LineDirectionMode line_direction) const {
   if (!HasLineIfEmpty())
     return LayoutUnit(-1);
+  const auto baseline_offset = BaselineForEmptyLine(line_direction);
+  return baseline_offset ? *baseline_offset : LayoutUnit(-1);
+}
+
+base::Optional<LayoutUnit> LayoutBlock::BaselineForEmptyLine(
+    LineDirectionMode line_direction) const {
   const SimpleFontData* font_data = FirstLineStyle()->GetFont().PrimaryFont();
   if (!font_data)
-    return LayoutUnit(-1);
+    return base::nullopt;
   const auto& font_metrics = font_data->GetFontMetrics();
   const LayoutUnit line_height =
       LineHeight(true, line_direction, kPositionOfInteriorLineBoxes);

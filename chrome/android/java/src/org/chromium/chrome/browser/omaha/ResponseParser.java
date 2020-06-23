@@ -69,6 +69,10 @@ public class ResponseParser {
     private boolean mParsedPing;
     private boolean mParsedUpdatecheck;
 
+    public ResponseParser(String appId, boolean expectInstallEvent) {
+        this(appId, expectInstallEvent, !expectInstallEvent, !expectInstallEvent);
+    }
+
     public ResponseParser(String appId, boolean expectInstallEvent, boolean expectPing,
             boolean expectUpdatecheck) {
         this(false, appId, expectInstallEvent, expectPing, expectUpdatecheck);

@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -149,7 +150,11 @@ public class SyncSettingsUtils {
      * Return a short summary of the current sync status.
      */
     public static String getSyncStatusSummary(Context context) {
-        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return "";
+        if (!IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount()) {
+            return "";
+        }
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         Resources res = context.getResources();
@@ -209,7 +214,11 @@ public class SyncSettingsUtils {
      * Returns an icon that represents the current sync state.
      */
     public static @Nullable Drawable getSyncStatusIcon(Context context) {
-        if (!IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount()) return null;
+        if (!IdentityServicesProvider.get()
+                        .getIdentityManager(Profile.getLastUsedRegularProfile())
+                        .hasPrimaryAccount()) {
+            return null;
+        }
 
         ProfileSyncService profileSyncService = ProfileSyncService.get();
         if (profileSyncService == null || !AndroidSyncSettings.get().isSyncEnabled()) {
@@ -312,7 +321,9 @@ public class SyncSettingsUtils {
      * @param activity The activity to use for starting the intent.
      */
     public static void openGoogleMyAccount(Activity activity) {
-        assert IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount();
+        assert IdentityServicesProvider.get()
+                .getIdentityManager(Profile.getLastUsedRegularProfile())
+                .hasPrimaryAccount();
         RecordUserAction.record("SyncPreferences_ManageGoogleAccountClicked");
         openCustomTabWithURL(activity, MY_ACCOUNT_URL);
     }

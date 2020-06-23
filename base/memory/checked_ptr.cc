@@ -11,7 +11,8 @@ namespace internal {
 
 #if defined(ARCH_CPU_64_BITS) && !defined(OS_NACL)
 
-BASE_EXPORT bool CheckedPtr2ImplPartitionAllocSupport::EnableForPtr(void* ptr) {
+BASE_EXPORT bool CheckedPtr2ImplPartitionAllocSupport::EnabledForPtr(
+    void* ptr) {
   // CheckedPtr2Impl works only when memory is allocated by PartitionAlloc and
   // only only if the pointer points to the beginning of the allocated slot.
   //

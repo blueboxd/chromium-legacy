@@ -5,7 +5,9 @@
 #include "components/viz/service/display/display.h"
 
 #include <stddef.h>
+#include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
@@ -54,6 +56,14 @@
 namespace viz {
 
 namespace {
+
+enum class TypeOfVideoInFrame {
+  kNoVideo = 0,
+  kVideo = 1,
+
+  // This should be the last entry/largest value above.
+  kMaxValue = kVideo,
+};
 
 const DrawQuad::Material kNonSplittableMaterials[] = {
     // Exclude debug quads from quad splitting
@@ -625,6 +635,14 @@ bool Display::DrawAndSwap(base::TimeTicks expected_display_time) {
         current_surface_id_, expected_display_time, current_display_transform,
         target_damage_bounding_rect, ++swapped_trace_id_);
   }
+
+  // Records whether the aggregated frame contains video or not.
+  // TODO(vikassoni) : Extend this capability to record whether a video frame is
+  // inline or fullscreen.
+  UMA_HISTOGRAM_ENUMERATION("Compositing.SurfaceAggregator.FrameContainsVideo",
+                            frame.metadata.may_contain_video
+                                ? TypeOfVideoInFrame::kVideo
+                                : TypeOfVideoInFrame::kNoVideo);
 
   if (frame.metadata.delegated_ink_metadata) {
     TRACE_EVENT_INSTANT2(

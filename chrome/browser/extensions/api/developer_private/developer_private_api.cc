@@ -393,7 +393,8 @@ void DeveloperPrivateEventRouter::RemoveExtensionId(
 void DeveloperPrivateEventRouter::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
-  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  DCHECK(
+      profile_->IsSameOrParent(Profile::FromBrowserContext(browser_context)));
   BroadcastItemStateChanged(developer::EVENT_TYPE_LOADED, extension->id());
 }
 
@@ -401,7 +402,8 @@ void DeveloperPrivateEventRouter::OnExtensionUnloaded(
     content::BrowserContext* browser_context,
     const Extension* extension,
     UnloadedExtensionReason reason) {
-  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  DCHECK(
+      profile_->IsSameOrParent(Profile::FromBrowserContext(browser_context)));
   BroadcastItemStateChanged(developer::EVENT_TYPE_UNLOADED, extension->id());
 }
 
@@ -409,7 +411,8 @@ void DeveloperPrivateEventRouter::OnExtensionInstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     bool is_update) {
-  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  DCHECK(
+      profile_->IsSameOrParent(Profile::FromBrowserContext(browser_context)));
   BroadcastItemStateChanged(developer::EVENT_TYPE_INSTALLED, extension->id());
 }
 
@@ -417,7 +420,8 @@ void DeveloperPrivateEventRouter::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
     const Extension* extension,
     extensions::UninstallReason reason) {
-  DCHECK(profile_->IsSameProfile(Profile::FromBrowserContext(browser_context)));
+  DCHECK(
+      profile_->IsSameOrParent(Profile::FromBrowserContext(browser_context)));
   BroadcastItemStateChanged(developer::EVENT_TYPE_UNINSTALLED, extension->id());
 }
 

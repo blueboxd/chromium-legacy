@@ -37,16 +37,11 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
 
-namespace mojo {
-class SimpleWatcher;
-}
-
 namespace blink {
 
 class FetchParameters;
 class KURL;
 class ResourceFetcher;
-class ResponseBodyLoaderClient;
 class SingleCachedMetadataHandler;
 
 // ScriptResource is a resource representing a JavaScript script. It is only
@@ -60,19 +55,9 @@ class SingleCachedMetadataHandler;
 // See also:
 // https://docs.google.com/document/d/143GOPl_XVgLPFfO-31b_MdBcnjklLEX2OIg_6eN6fQ4
 class CORE_EXPORT ScriptResource final : public TextResource {
-  USING_PRE_FINALIZER(ScriptResource, Prefinalize);
-
  public:
-  // For scripts fetched with kAllowStreaming, the ScriptResource expects users
-  // to call StartStreaming to start streaming the loaded data, and
-  // SetClientIsWaitingForFinished when they actually want the data to be
-  // available for execute. Note that StartStreaming can fail, so the client of
-  // an unfinished resource has to call SetClientIsWaitingForFinished to
-  // guarantee that it receives a finished callback.
-  //
-  // Scripts fetched with kNoStreaming will (asynchronously) call
-  // SetClientIsWaitingForFinished on the resource, so the user does not have to
-  // call it again. This is effectively the "legacy" behaviour.
+  // The script resource will always try to start streaming if kAllowStreaming
+  // is passed in.
   enum StreamingAllowed { kNoStreaming, kAllowStreaming };
 
   static ScriptResource* Fetch(FetchParameters&,
@@ -86,7 +71,8 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   ScriptResource(const ResourceRequest&,
                  const ResourceLoaderOptions&,
-                 const TextResourceDecoderOptions&);
+                 const TextResourceDecoderOptions&,
+                 StreamingAllowed);
   ~ScriptResource() override;
 
   void ResponseBodyReceived(
@@ -99,34 +85,6 @@ class CORE_EXPORT ScriptResource final : public TextResource {
                     WebProcessMemoryDump*) const override;
 
   void SetSerializedCachedMetadata(mojo_base::BigBuffer data) override;
-
-  void StartStreaming(
-      scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner);
-
-  // State that a client of the script resource will no longer try to start
-  // streaming, and is now waiting for the resource to call the client's finish
-  // callback (regardless of whether the resource is finished loading or
-  // finished streaming). Specifically, it causes the kCanStartStreaming to
-  // kStreamingNotAllowed transition. Streaming cannot be started after this is
-  // called.
-  //
-  // If the resource is already streaming, this will be a no-op, and the client
-  // will still only get the finished notification when the streaming completes.
-  //
-  // This function should never be called synchronously (except by
-  // NotifyFinished) as it can trigger all clients' finished callbacks, which in
-  // turn can invoke JavaScript execution.
-  //
-  // TODO(leszeks): Eventually Fetch (with streaming allowed) will be the only
-  // way of starting streaming, and SetClientIsWaitingForFinished will not be
-  // part of the public interface.
-  void SetClientIsWaitingForFinished();
-
-  // Called (only) by ScriptStreamer when streaming completes.
-  //
-  // This function should never be called synchronously as it can trigger all
-  // clients' finished callbacks, which in turn can invoke JavaScript execution.
-  void StreamingFinished();
 
   const ParkableString& SourceText();
 
@@ -141,7 +99,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
   ScriptStreamer* TakeStreamer();
 
   ScriptStreamer::NotStreamingReason NoStreamerReason() const {
-    return not_streaming_reason_;
+    return no_streamer_reason_;
   }
 
   // Used in DCHECKs
@@ -160,43 +118,52 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   // ScriptResources are considered finished when either:
   //   1. Loading + streaming completes, or
-  //   2. Loading completes + streaming was never started + someone called
-  //      "SetClientIsWaitingForFinished" to block streaming from ever starting.
+  //   2. Loading completes + streaming is disabled.
   void NotifyFinished() override;
-  bool IsFinishedInternal() const override;
 
  private:
   // Valid state transitions:
   //
-  // kCanStartStreaming -> kStreaming -> kWaitingForStreamingToEnd
-  //                                                -> kFinishedNotificationSent
-  // kCanStartStreaming -> kStreamingNotAllowed -> kFinishedNotificationSent
+  //            kWaitingForDataPipe          DisableStreaming()
+  //                    |---------------------------.
+  //                    |                           |
+  //                    v                           v
+  //               kStreaming -----------------> kStreamingDisabled
+  //
   enum class StreamingState {
-    kCanStartStreaming,         // Streaming can be started.
-    kStreamingNotAllowed,       // Streaming can no longer be started.
-    kStreaming,                 // Both loading the resource and streaming.
-    kWaitingForStreamingToEnd,  // Resource loaded but streaming not complete.
-    kFinishedNotificationSent   // Everything complete and finish sent.
+    // Streaming is allowed on this resource, but we're waiting to receive a
+    // data pipe.
+    kWaitingForDataPipe,
+    // The script streamer is active, and has the data pipe.
+    kStreaming,
+
+    // Streaming was disabled, either manually or because we got a body with
+    // no data-pipe.
+    kStreamingDisabled,
   };
 
   class ScriptResourceFactory : public ResourceFactory {
    public:
-    ScriptResourceFactory()
+    explicit ScriptResourceFactory(StreamingAllowed streaming_allowed)
         : ResourceFactory(ResourceType::kScript,
-                          TextResourceDecoderOptions::kPlainTextContent) {}
+                          TextResourceDecoderOptions::kPlainTextContent),
+          streaming_allowed_(streaming_allowed) {}
 
     Resource* Create(
         const ResourceRequest& request,
         const ResourceLoaderOptions& options,
         const TextResourceDecoderOptions& decoder_options) const override {
-      return MakeGarbageCollected<ScriptResource>(request, options,
-                                                  decoder_options);
+      return MakeGarbageCollected<ScriptResource>(
+          request, options, decoder_options, streaming_allowed_);
     }
+
+   private:
+    StreamingAllowed streaming_allowed_;
   };
 
-  void Prefinalize();
-
   bool CanUseCacheValidator() const override;
+
+  void DisableStreaming(ScriptStreamer::NotStreamingReason no_streamer_reason);
 
   void AdvanceStreamingState(StreamingState new_state);
 
@@ -208,14 +175,10 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   ParkableString source_text_;
 
-  mojo::ScopedDataPipeConsumerHandle data_pipe_;
-  std::unique_ptr<mojo::SimpleWatcher> watcher_;
-  Member<ResponseBodyLoaderClient> response_body_loader_client_;
-
   Member<ScriptStreamer> streamer_;
-  ScriptStreamer::NotStreamingReason not_streaming_reason_ =
-      ScriptStreamer::kDidntTryToStartStreaming;
-  StreamingState streaming_state_ = StreamingState::kCanStartStreaming;
+  ScriptStreamer::NotStreamingReason no_streamer_reason_ =
+      ScriptStreamer::NotStreamingReason::kInvalid;
+  StreamingState streaming_state_ = StreamingState::kWaitingForDataPipe;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

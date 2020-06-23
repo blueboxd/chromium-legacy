@@ -333,7 +333,7 @@ bool BrowserList::IsOffTheRecordBrowserActive() {
 int BrowserList::GetOffTheRecordBrowsersActiveForProfile(Profile* profile) {
   BrowserList* list = BrowserList::GetInstance();
   return std::count_if(list->begin(), list->end(), [profile](Browser* browser) {
-    return browser->profile()->IsSameProfile(profile) &&
+    return browser->profile()->IsSameOrParent(profile) &&
            browser->profile()->IsOffTheRecord() && !browser->is_type_devtools();
   });
 }
@@ -351,7 +351,7 @@ size_t BrowserList::GetIncognitoBrowserCount() {
 bool BrowserList::IsOffTheRecordBrowserInUse(Profile* profile) {
   BrowserList* list = BrowserList::GetInstance();
   return std::any_of(list->begin(), list->end(), [profile](Browser* browser) {
-    return browser->profile()->IsSameProfile(profile) &&
+    return browser->profile()->IsSameOrParent(profile) &&
            browser->profile()->IsOffTheRecord();
   });
 }

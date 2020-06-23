@@ -64,7 +64,8 @@ namespace autofill {
 
 bool MatchesPattern(const base::string16& input,
                     const base::string16& pattern,
-                    base::string16* match) {
+                    base::string16* match,
+                    int32_t group_to_be_captured) {
   static base::NoDestructor<AutofillRegexes> g_autofill_regexes;
   static base::NoDestructor<base::Lock> g_lock;
   base::AutoLock lock(*g_lock);
@@ -78,7 +79,8 @@ bool MatchesPattern(const base::string16& input,
   DCHECK(U_SUCCESS(status));
 
   if (matched == TRUE && match) {
-    icu::UnicodeString match_unicode = matcher->group(0, status);
+    icu::UnicodeString match_unicode =
+        matcher->group(group_to_be_captured, status);
     DCHECK(U_SUCCESS(status));
     *match = base::i18n::UnicodeStringToString16(match_unicode);
   }

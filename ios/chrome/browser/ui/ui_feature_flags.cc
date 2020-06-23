@@ -35,13 +35,10 @@ const base::Feature kTestFeature{"TestFeature",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kClearSyncedData{"ClearSyncedData",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFirstResponderSendAction{
     "FirstResponderSendAction", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNewSigninArchitecture{"NewSigninArchitecture",
-                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kQRCodeGeneration{"QRCodeGeneration",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

@@ -119,6 +119,16 @@ async function createTestImageFile(
   return new File([blob], name, {type: 'image/png', lastModified});
 }
 
+/**
+ * @param {!Array<string>} filenames
+ * @return {!Array<!File>}
+ */
+async function createMultipleImageFiles(filenames) {
+  const filePromise = name => createTestImageFile(1, 1, `${name}.png`);
+  const files = await Promise.all(filenames.map(filePromise));
+  return files;
+}
+
 // Tests that chrome://media-app is allowed to frame
 // chrome-untrusted://media-app. The URL is set in the html. If that URL can't
 // load, test this fails like JS ERROR: "Refused to frame '...' because it
@@ -156,11 +166,117 @@ TEST_F('MediaAppUIBrowserTest', 'LaunchFile', async () => {
   testDone();
 });
 
-// Tests that a regular launch for multiple images succeeds, and the files get
+// Tests that we can launch the MediaApp with the selected (first) file,
+// interact with it by invoking IPC (deletion) that doesn't re-launch the
+// MediaApp i.e. doesn't call `launchWithDirectory`, then the rest of the files
+// in the current directory are loaded in.
+TEST_F('MediaAppUIBrowserTest', 'NonLaunchableIpcAfterFastLoad', async () => {
+  const files =
+      await createMultipleImageFiles(['file1', 'file2', 'file3', 'file4']);
+  const directory = await createMockTestDirectory(files);
+
+  // Emulate steps in `launchWithDirectory()` by launching with the first
+  // file.
+  const focusFile = launchWithFocusFile(directory);
+
+  await assertSingleFileLaunch(directory, files.length);
+
+  // Invoke Deletion IPC that doesn't relaunch the app.
+  const messageDelete = {deleteLastFile: true};
+  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  assertEquals(
+      'deleteOriginalFile resolved success', testResponse.testQueryResult);
+
+  // File removed from `FileSystemDirectoryHandle` internal state.
+  assertEquals(3, directory.files.length);
+  // Deletion results reloading the app with `currentFiles`, in this case
+  // nothing.
+  const lastLoadedFiles = await getLoadedFiles();
+  assertEquals(0, lastLoadedFiles.length);
+
+  // Load all other files in the `FileSystemDirectoryHandle`.
+  await loadOtherRelatedFiles(directory, focusFile.file, focusFile.handle, 0);
+
+  await assertFilesLoaded(
+      directory, ['file2.png', 'file3.png', 'file4.png'],
+      'fast files: check files after deletion');
+
+  testDone();
+});
+
+
+// Tests that we can launch the MediaApp with the selected (first) file,
+// interact with it by invoking IPC (rename) that re-launches the
+// MediaApp (calls `launchWithDirectory`), then the rest of the files
+// in the current directory are loaded in.
+TEST_F('MediaAppUIBrowserTest', 'ReLaunchableIpcAfterFastLoad', async () => {
+  const files =
+      await createMultipleImageFiles(['file1', 'file2', 'file3', 'file4']);
+  const directory = await createMockTestDirectory(files);
+
+  // Emulate steps in `launchWithDirectory()` by launching with the first
+  // file.
+  const focusFile = launchWithFocusFile(directory);
+
+  // `globalLaunchNumber` starts at -1, ensure first launch increments it.
+  assertEquals(0, globalLaunchNumber);
+
+  await assertSingleFileLaunch(directory, files.length);
+
+  // Invoke Rename IPC that relaunches the app, this calls
+  // `launchWithDirectory()` which increments globalLaunchNumber.
+  const messageRename = {renameLastFile: 'new_file_name.png'};
+  testResponse = await guestMessagePipe.sendMessage('test', messageRename);
+  assertEquals(
+      testResponse.testQueryResult, 'renameOriginalFile resolved success');
+
+  // Ensure rename relaunches the app incremented the `globalLaunchNumber`.
+  assertEquals(1, globalLaunchNumber);
+  // The renamed file (also the focused file) is at the end of the
+  // `FileSystemDirectoryHandle.files` since it was deleted and a new file
+  // with the same contents and a different name was created.
+  assertEquals(directory.files[3].name, 'new_file_name.png');
+
+  // The call to `launchWithDirectory()` from rename relaunching the app loads
+  // other files into `currentFiles`.
+  await assertFilesLoaded(
+      directory, ['new_file_name.png', 'file2.png', 'file3.png', 'file4.png'],
+      'fast files: check files after renaming');
+  const currentFilesAfterRenameLaunch = [...currentFiles];
+  const loadedFilesAfterRename = await getLoadedFiles();
+
+  // Try to load with previous launch number, has no effect as it is aborted
+  // early due to different launch numbers.
+  const previousLaunchNumber = 0;
+  await loadOtherRelatedFiles(
+      directory, focusFile.file, focusFile.handle, previousLaunchNumber);
+
+  // Ensure same files as before the call to `loadOtherRelatedFiles()` by for
+  // equality equality.
+  currentFilesAfterRenameLaunch.map(
+      (fd, index) => assertEquals(
+          fd, currentFiles[index],
+          `Equality check for file ${
+              JSON.stringify(fd)} in currentFiles filed`));
+
+  // Focus file stays index 0.
+  lastLoadedFiles = await getLoadedFiles();
+  assertEquals('new_file_name.png', lastLoadedFiles[0].name);
+  assertEquals(loadedFilesAfterRename[0].name, lastLoadedFiles[0].name);
+  // Focus file in the `FileSystemDirectoryHandle` is at index 3.
+  assertEquals(directory.files[3].name, lastLoadedFiles[0].name);
+
+  testDone();
+});
+
+// Tests that a regular
+//  launch for multiple images succeeds, and the files get
 // distinct token mappings.
-TEST_F('MediaAppUIBrowserTest', 'MultipleFileHaveTokens', async () => {
-  const directory = await launchWithFiles(
-      [await createTestImageFile(), await createTestImageFile()]);
+TEST_F('MediaAppUIBrowserTest', 'MultipleFilesHaveTokens', async () => {
+  const directory = await launchWithFiles([
+    await createTestImageFile(1, 1, 'file1.png'),
+    await createTestImageFile(1, 1, 'file2.png')
+  ]);
 
   assertEquals(currentFiles.length, 2);
   assertGE(currentFiles[0].token, 0);
@@ -175,8 +291,7 @@ TEST_F('MediaAppUIBrowserTest', 'MultipleFileHaveTokens', async () => {
 // Tests that a launch with multiple files selected in the files app loads only
 // the files selected.
 TEST_F('MediaAppUIBrowserTest', 'MultipleSelectionLaunch', async () => {
-  const filePromise = name => createTestImageFile(1, 1, `${name}.png`);
-  const directoryContents = await Promise.all([0, 1, 2, 3].map(filePromise));
+  const directoryContents = await createMultipleImageFiles([0, 1, 2, 3]);
   const selectedIndexes = [1, 3];
   const directory = await launchWithFiles(directoryContents, selectedIndexes);
 
@@ -706,26 +821,31 @@ TEST_F('MediaAppUIBrowserTest', 'RelatedFiles', async () => {
   const directory = await createMockTestDirectory(testFiles);
   const [mkv, jpg, txt, gif, webm, other, ext, html] = directory.getFilesSync();
   const imageAndVideoFiles = [mkv, jpg, gif, webm];
+  // These files all have a last modified time of 0 so the order they end up in
+  // is the order they are added i.e. `matroska.mkv, jaypeg.jpg, jiff.gif,
+  // world.webm`. When a file is loaded it becomes the "focus file" and files
+  // get rotated around like such that we get `currentFiles = [focus file,
+  // ...larger files, ...smaller files]`.
 
-  await setCurrentDirectory(directory, mkv);
+  await loadFilesWithoutSendingToGuest(directory, mkv);
   assertFilesToBe(imageAndVideoFiles, 'mkv');
 
-  await setCurrentDirectory(directory, jpg);
-  assertFilesToBe(imageAndVideoFiles, 'jpg');
+  await loadFilesWithoutSendingToGuest(directory, jpg);
+  assertFilenamesToBe('jaypeg.jpg,jiff.gif,world.webm,matroska.mkv', 'jpg');
 
-  await setCurrentDirectory(directory, gif);
-  assertFilesToBe(imageAndVideoFiles, 'gif');
+  await loadFilesWithoutSendingToGuest(directory, gif);
+  assertFilenamesToBe('jiff.gif,world.webm,matroska.mkv,jaypeg.jpg', 'gif');
 
-  await setCurrentDirectory(directory, webm);
-  assertFilesToBe(imageAndVideoFiles, 'webm');
+  await loadFilesWithoutSendingToGuest(directory, webm);
+  assertFilenamesToBe('world.webm,matroska.mkv,jaypeg.jpg,jiff.gif', 'webm');
 
-  await setCurrentDirectory(directory, txt);
+  await loadFilesWithoutSendingToGuest(directory, txt);
   assertFilesToBe([txt, other], 'txt');
 
-  await setCurrentDirectory(directory, html);
+  await loadFilesWithoutSendingToGuest(directory, html);
   assertFilesToBe([html], 'html');
 
-  await setCurrentDirectory(directory, ext);
+  await loadFilesWithoutSendingToGuest(directory, ext);
   assertFilesToBe([ext], 'ext');
 
   testDone();

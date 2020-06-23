@@ -804,9 +804,12 @@
       'caption': '''PluginVm''',
       'policies': [
         'PluginVmAllowed',
-        'PluginVmLicenseKey',
+        'PluginVmDataCollectionAllowed',
         'PluginVmImage',
+        'PluginVmLicenseKey',
+        'PluginVmRequiredFreeDiskSpace',
         'PluginVmUserId',
+        'UserPluginVmAllowed',
       ],
       'desc': '''Configure <ph name="PLUGIN_VM_NAME">PluginVm</ph> related policies.''',
     },
@@ -18283,6 +18286,29 @@
       If set to true, <ph name="PLUGIN_VM_NAME">PluginVm</ph> might collect <ph name="PLUGIN_VM_NAME">PluginVm</ph> usage data that is then combined and thoroughly analyzed to improve <ph name="PLUGIN_VM_NAME">PluginVm</ph> experience.''',
     },
     {
+      'name': 'PluginVmRequiredFreeDiskSpace',
+      'owners': ['okalitova@chromium.org', 'janagrill@chromium.org'],
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 0,
+        'maximum': 1000
+      },
+      'supported_on': ['chrome_os:85-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 20,
+      'id': 724,
+      'caption': '''Required free disk space for <ph name="PLUGIN_VM_NAME">PluginVm</ph>''',
+      'tags': [],
+      'desc': '''Free disk space (in GB) required to install <ph name="PLUGIN_VM_NAME">PluginVm</ph>.
+
+      If this policy is left unset, <ph name="PLUGIN_VM_NAME">PluginVm</ph> installation fails if free disk space available on the device is less than 20 GB (default value).
+      If this policy is set, <ph name="PLUGIN_VM_NAME">PluginVm</ph> installation fails if free disk space available on the device is less than required by policy.''',
+    },
+    {
       'name': 'ParentAccessCodeConfig',
       'owners': ['file://src/chrome/browser/chromeos/child_accounts/OWNERS'],
       'type': 'dict',
@@ -22320,8 +22346,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
       'policies': [
         'PluginVmAllowed',
         'PluginVmDataCollectionAllowed',
-        'PluginVmLicenseKey',
         'PluginVmImage',
+        'PluginVmLicenseKey',
+        'PluginVmRequiredFreeDiskSpace',
         'PluginVmUserId',
         'UserPluginVmAllowed',
       ],
@@ -22442,6 +22469,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 723,
+  'highest_id_currently_used': 724,
   'highest_atomic_group_id_currently_used': 38
 }

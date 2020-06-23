@@ -919,7 +919,7 @@ ExtensionFunction::ResponseAction TabsQueryFunction::Run() {
   Browser* current_browser =
       ChromeExtensionFunctionDetails(this).GetCurrentBrowser();
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (!profile->IsSameProfile(browser->profile()))
+    if (!profile->IsSameOrParent(browser->profile()))
       continue;
 
     if (!browser->window())

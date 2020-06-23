@@ -98,13 +98,11 @@ class V8ScriptRunnerTest : public testing::Test {
   ScriptResource* CreateEmptyResource() {
     ScriptResource* resource =
         ScriptResource::CreateForTest(NullURL(), UTF8Encoding());
-    resource->SetClientIsWaitingForFinished();
     return resource;
   }
 
   ScriptResource* CreateResource(const WTF::TextEncoding& encoding) {
     ScriptResource* resource = ScriptResource::CreateForTest(Url(), encoding);
-    resource->SetClientIsWaitingForFinished();
     String code = Code();
     ResourceResponse response(Url());
     response.SetHttpStatusCode(200);
@@ -172,8 +170,9 @@ TEST_F(V8ScriptRunnerTest, emptyResourceDoesNotHaveCacheHandler) {
 
 TEST_F(V8ScriptRunnerTest, codeOption) {
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
 
@@ -192,8 +191,9 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOptionWithoutDiscarding) {
   feature_list_.InitAndDisableFeature(
       blink::features::kDiscardCodeCacheAfterFirstUse);
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   // Set timestamp to simulate a warm run.
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
@@ -225,8 +225,9 @@ TEST_F(V8ScriptRunnerTest, consumeCodeOptionWithDiscarding) {
   feature_list_.InitAndEnableFeature(
       blink::features::kDiscardCodeCacheAfterFirstUse);
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   // Set timestamp to simulate a warm run.
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   SetCacheTimeStamp(cache_handler);
@@ -267,8 +268,9 @@ TEST_F(V8ScriptRunnerTest, produceAndConsumeCodeOptionWithoutDiscarding) {
   feature_list_.InitAndDisableFeature(
       blink::features::kDiscardCodeCacheAfterFirstUse);
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
 
   // Cold run - should set the timestamp.
@@ -303,8 +305,9 @@ TEST_F(V8ScriptRunnerTest, produceAndConsumeCodeOptionWithDiscarding) {
   feature_list_.InitAndEnableFeature(
       blink::features::kDiscardCodeCacheAfterFirstUse);
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
 
   // Cold run - should set the timestamp.
@@ -340,8 +343,9 @@ TEST_F(V8ScriptRunnerTest, cacheRequestedBeforeProduced) {
   feature_list_.InitAndEnableFeature(
       blink::features::kDiscardCodeCacheAfterFirstUse);
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   base::HistogramTester tester;
   HistogramCounter counter(tester);
@@ -355,8 +359,9 @@ TEST_F(V8ScriptRunnerTest, cacheDataTypeMismatch) {
   feature_list_.InitAndEnableFeature(
       blink::features::kDiscardCodeCacheAfterFirstUse);
   V8TestingScope scope;
-  ScriptSourceCode source_code(nullptr, CreateResource(UTF8Encoding()),
-                               ScriptStreamer::kScriptTooSmall);
+  ScriptSourceCode source_code(
+      nullptr, CreateResource(UTF8Encoding()),
+      ScriptStreamer::NotStreamingReason::kScriptTooSmall);
   SingleCachedMetadataHandler* cache_handler = source_code.CacheHandler();
   EXPECT_FALSE(
       cache_handler->GetCachedMetadata(TagForTimeStamp(cache_handler)));

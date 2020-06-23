@@ -27,7 +27,9 @@ let TestMessageRunTestCase;
 
 /**
  * Return type of `get-last-loaded-files` used to spy on the files sent to the
- * guest app using `loadFiles()`.
- * @typedef {{fileList: ?{files: !ReceivedFileList}}}
+ * guest app using `loadFiles()`. We pass `ReceivedFileList.files` since passing
+ * `ReceivedFileList` through different contexts prunes methods and fails due to
+ * observers.
+ * @typedef {{fileList: ?Array<ReceivedFile>}}
  */
 let LastLoadedFilesResponse;

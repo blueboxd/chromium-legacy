@@ -162,10 +162,6 @@ namespace {
 RenderWidget::CreateRenderWidgetFunction g_create_render_widget_for_frame =
     nullptr;
 
-using RoutingIDWidgetMap = std::map<int32_t, RenderWidget*>;
-base::LazyInstance<RoutingIDWidgetMap>::Leaky g_routing_id_widget_map =
-    LAZY_INSTANCE_INITIALIZER;
-
 const base::Feature kUnpremultiplyAndDitherLowBitDepthTiles = {
     "UnpremultiplyAndDitherLowBitDepthTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -429,29 +425,12 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(RenderThread::IsMainThread());
   DCHECK(compositor_deps_);
-
-  if (routing_id_ != MSG_ROUTING_NONE)
-    g_routing_id_widget_map.Get().emplace(routing_id_, this);
 }
 
 RenderWidget::~RenderWidget() {
   DCHECK(!webwidget_) << "Leaking our WebWidget!";
   DCHECK(closing_)
       << " RenderWidget must be destroyed via RenderWidget::Close()";
-
-  // TODO(ajwong): Add in check that routing_id_ has been removed from
-  // g_routing_id_widget_map once the shutdown semantics for RenderWidget
-  // and RenderViewImpl are rationalized. Currently, too many unit and
-  // browser tests delete a RenderWidget without correclty going through
-  // the shutdown. https://crbug.com/545684
-}
-
-// static
-RenderWidget* RenderWidget::FromRoutingID(int32_t routing_id) {
-  DCHECK(RenderThread::IsMainThread());
-  RoutingIDWidgetMap* widgets = g_routing_id_widget_map.Pointer();
-  auto it = widgets->find(routing_id);
-  return it == widgets->end() ? NULL : it->second;
 }
 
 void RenderWidget::InitForPopup(ShowCallback show_callback,
@@ -1651,7 +1630,6 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
   // Browser correspondence is no longer needed at this point.
   if (routing_id_ != MSG_ROUTING_NONE) {
     RenderThread::Get()->RemoveRoute(routing_id_);
-    g_routing_id_widget_map.Get().erase(routing_id_);
   }
 
   // The |input_event_queue_| is refcounted and will live while an event is

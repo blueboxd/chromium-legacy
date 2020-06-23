@@ -3646,20 +3646,24 @@ TEST_P(PasswordManagerTest, FormSubmittedOnIFrameMainFrameLoaded) {
 TEST_P(PasswordManagerTest, NoPromptAutofillAssistantManuallyCuratedScript) {
   manager()->SetAutofillAssistantMode(AutofillAssistantMode::kRunning);
 
-  PasswordForm form(MakeSimpleForm());
-  EXPECT_CALL(client_, IsSavingAndFillingEnabled(form.url))
+  EXPECT_CALL(client_, IsSavingAndFillingEnabled(_))
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*store_, GetLogins)
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms(store_.get())));
-  manager()->OnPasswordFormsParsed(&driver_, {form.form_data});
-  manager()->ShowManualFallbackForSaving(&driver_, form.form_data);
 
   // Check that a save prompt is not shown.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr).Times(0);
 
-  manager()->DidNavigateMainFrame(true /* form_may_be_submitted */);
-  manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
-                                     true /* did stop loading */);
+  // Simulate multiple submissions.
+  for (size_t i = 0; i < 2; i++) {
+    PasswordForm form(MakeSimpleForm());
+    manager()->OnPasswordFormsParsed(&driver_, {form.form_data});
+    manager()->ShowManualFallbackForSaving(&driver_, form.form_data);
+
+    manager()->DidNavigateMainFrame(true /* form_may_be_submitted */);
+    manager()->OnPasswordFormsRendered(&driver_, {} /* observed */,
+                                       true /* did stop loading */);
+  }
 }
 
 // Tests the following scenario:

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_ASH_AMBIENT_AMBIENT_CLIENT_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "ash/public/cpp/ambient/ambient_client.h"
 #include "base/memory/weak_ptr.h"
@@ -27,6 +28,8 @@ class AmbientClientImpl : public ash::AmbientClient {
   bool IsAmbientModeAllowedForActiveUser() override;
   void RequestAccessToken(GetAccessTokenCallback callback) override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
+  void RequestWakeLockProvider(
+      mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) override;
 
  private:
   void GetAccessToken(GetAccessTokenCallback callback,

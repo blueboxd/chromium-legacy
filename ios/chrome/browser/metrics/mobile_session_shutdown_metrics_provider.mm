@@ -155,6 +155,13 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   // Log metrics to improve categorization of crashes.
   LogApplicationBackgroundedTime(session_info.sessionEndTime);
 
+  if (shutdown_type != SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_NO_MEMORY_WARNING &&
+      shutdown_type !=
+          SHUTDOWN_IN_FOREGROUND_NO_CRASH_LOG_WITH_MEMORY_WARNING) {
+    // Log UTE metrics only if the crash was classified as a UTE.
+    return;
+  }
+
   if (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged) {
     LogBatteryCharge(session_info.deviceBatteryLevel);
   }

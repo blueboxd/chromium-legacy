@@ -114,6 +114,7 @@ class PLATFORM_EXPORT KURL {
 
   ~KURL();
 
+  KURL UrlStrippedForUseAsReferrer() const;
   String StrippedForUseAsReferrer() const;
   String StrippedForUseAsHref() const;
 

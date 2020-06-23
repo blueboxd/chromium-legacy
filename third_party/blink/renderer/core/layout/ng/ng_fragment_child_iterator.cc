@@ -131,28 +131,7 @@ void NGFragmentChildIterator::UpdateSelfFromFragment(
 
 bool NGFragmentChildIterator::AdvanceWithCursor() {
   DCHECK(current_.cursor_);
-  const NGFragmentItem* item = current_.cursor_->CurrentItem();
-  if (item->HasChildren()) {
-    // If we're advancing past a non-atomic inline, we also need to advance past
-    // any break tokens for fragments in there.
-    for (wtf_size_t remaining = item->DescendantsCount(); remaining;
-         remaining--) {
-      if (item->IsFloating()) {
-        SkipToBlockBreakToken();
-        if (child_break_token_idx_ < child_break_tokens_.size()) {
-          DCHECK_EQ(child_break_tokens_[child_break_token_idx_]
-                        ->InputNode()
-                        .GetLayoutBox(),
-                    item->GetLayoutObject());
-          child_break_token_idx_++;
-        }
-      }
-      current_.cursor_->MoveToNext();
-      item = current_.cursor_->CurrentItem();
-    }
-  } else {
-    current_.cursor_->MoveToNext();
-  }
+  current_.cursor_->MoveToNextSkippingChildren();
   UpdateSelfFromCursor();
   if (current_.cursor_->CurrentItem())
     return true;
@@ -177,25 +156,6 @@ void NGFragmentChildIterator::UpdateSelfFromCursor() {
     return;
   }
   current_.link_ = {item->BoxFragment(), item->OffsetInContainerBlock()};
-  if (!current_.link_.fragment || !current_.link_.fragment->IsFloating()) {
-    DCHECK(!current_.link_.fragment ||
-           current_.link_.fragment->GetLayoutObject()->IsInline());
-    return;
-  }
-  if (!parent_break_token_)
-    return;
-  // Floats may fragment, in which case there's a designated break token for
-  // them.
-  SkipToBlockBreakToken();
-  if (child_break_token_idx_ >= child_break_tokens_.size()) {
-    current_.block_break_token_ = nullptr;
-    return;
-  }
-  current_.block_break_token_ =
-      To<NGBlockBreakToken>(child_break_tokens_[child_break_token_idx_]);
-  DCHECK(!current_.link_.fragment->GetLayoutObject() ||
-         current_.block_break_token_->InputNode().GetLayoutBox() ==
-             current_.link_.fragment->GetLayoutObject());
 }
 
 void NGFragmentChildIterator::SkipToBoxFragment() {

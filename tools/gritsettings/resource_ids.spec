@@ -206,6 +206,10 @@
     "includes": [2000],
     "messages": [2010],
   },
+  "chrome/browser/media/kaleidoscope/internal/kaleidoscope_strings.grd": {
+    "META": {"sizes": {"messages": [50],}},  # Relies on src-internal.
+    "messages": [2015],
+  },
   "chrome/browser/resources/bluetooth_internals/resources.grd": {
     "includes": [2020],
   },

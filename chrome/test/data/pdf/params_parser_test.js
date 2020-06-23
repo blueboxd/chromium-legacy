@@ -140,10 +140,8 @@ const tests = [
         });
 
     // Checking #toolbar=0 to disable the toolbar.
-    let uiParams = paramsParser.getUiUrlParams(`${url}#toolbar=0`);
-    chrome.test.assertFalse(uiParams.toolbar);
-    uiParams = paramsParser.getUiUrlParams(`${url}#toolbar=1`);
-    chrome.test.assertTrue(uiParams.toolbar);
+    chrome.test.assertFalse(paramsParser.shouldShowToolbar(`${url}#toolbar=0`));
+    chrome.test.assertTrue(paramsParser.shouldShowToolbar(`${url}#toolbar=1`));
 
     chrome.test.succeed();
   }

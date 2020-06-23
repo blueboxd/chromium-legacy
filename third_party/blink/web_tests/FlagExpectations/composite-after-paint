@@ -48,9 +48,6 @@ crbug.com/957674 virtual/scalefactor200/external/wpt/largest-contentful-paint/in
 
 external/wpt/css/css-transforms/transform3d-backface-visibility-006.html [ Failure ]
 
-printing/fixed-positioned-headers-and-footers-absolute-covering-some-pages.html [ Failure ]
-printing/fixed-positioned-headers-and-footers-larger-than-page.html [ Failure ]
-
 transforms/3d/general/background-visibility-layers.html [ Failure ]
 
 # Raster invalidation doesn't work for huge layers.

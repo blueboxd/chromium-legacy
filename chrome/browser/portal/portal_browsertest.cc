@@ -2,17 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_test_utils.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
+#include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
 #include "chrome/browser/task_manager/providers/task.h"
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/task_manager/task_manager_tester.h"
@@ -24,6 +29,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/safe_browsing/core/db/test_database_manager.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -31,11 +39,13 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 using content::WebContents;
 
@@ -46,6 +56,11 @@ class PortalBrowserTest : public InProcessBrowserTest {
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(blink::features::kPortals);
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    InProcessBrowserTest::SetUpOnMainThread();
   }
 
  private:
@@ -365,4 +380,213 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, BrowserHistoryUpdatesOnActivation) {
   // as a navigation in the tab, so this should be considered a page visit.
   EXPECT_TRUE(
       base::Contains(ui_test_utils::HistoryEnumerator(profile).urls(), url2));
+}
+
+namespace {
+
+// Allows us to treat certain URLs as dangerous with Safe Browsing.
+class FakeSafeBrowsingDatabaseManager
+    : public safe_browsing::TestSafeBrowsingDatabaseManager {
+ public:
+  FakeSafeBrowsingDatabaseManager() = default;
+
+  void AddDangerousUrl(const GURL& dangerous_url) {
+    dangerous_urls_.insert(dangerous_url);
+  }
+
+  // safe_browsing::TestSafeBrowsingDatabaseManager:
+  bool CheckBrowseUrl(const GURL& url,
+                      const safe_browsing::SBThreatTypeSet& threat_types,
+                      Client* client) override {
+    if (!dangerous_urls_.contains(url))
+      return true;
+
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::IO},
+        base::BindOnce(&FakeSafeBrowsingDatabaseManager::CheckBrowseURLAsync,
+                       this, url, client));
+    return false;
+  }
+  bool IsSupported() const override { return true; }
+  bool ChecksAreAlwaysAsync() const override { return false; }
+  bool CheckExtensionIDs(const std::set<std::string>& extension_ids,
+                         Client* client) override {
+    return true;
+  }
+  bool CheckUrlForSubresourceFilter(const GURL& url, Client* client) override {
+    return true;
+  }
+  bool CanCheckResourceType(
+      blink::mojom::ResourceType resource_type) const override {
+    return true;
+  }
+  safe_browsing::ThreatSource GetThreatSource() const override {
+    // This choice is arbitrary. The blocking page expects this to not be
+    // |UNKNOWN|.
+    return safe_browsing::ThreatSource::LOCAL_PVER4;
+  }
+
+ private:
+  ~FakeSafeBrowsingDatabaseManager() override = default;
+
+  void CheckBrowseURLAsync(const GURL& url, Client* client) {
+    client->OnCheckBrowseUrlResult(url,
+                                   safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+                                   safe_browsing::ThreatMetadata());
+  }
+
+  base::flat_set<GURL> dangerous_urls_;
+};
+
+}  // namespace
+
+class PortalSafeBrowsingBrowserTest : public PortalBrowserTest {
+ public:
+  PortalSafeBrowsingBrowserTest()
+      : safe_browsing_factory_(
+            std::make_unique<safe_browsing::TestSafeBrowsingServiceFactory>()) {
+  }
+
+ protected:
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    fake_safe_browsing_database_manager_ =
+        base::MakeRefCounted<FakeSafeBrowsingDatabaseManager>();
+    safe_browsing_factory_->SetTestDatabaseManager(
+        fake_safe_browsing_database_manager_.get());
+    safe_browsing::SafeBrowsingService::RegisterFactory(
+        safe_browsing_factory_.get());
+    PortalBrowserTest::CreatedBrowserMainParts(browser_main_parts);
+  }
+
+  void TearDown() override {
+    PortalBrowserTest::TearDown();
+    safe_browsing::SafeBrowsingService::RegisterFactory(nullptr);
+  }
+
+  void AddDangerousUrl(const GURL& dangerous_url) {
+    fake_safe_browsing_database_manager_->AddDangerousUrl(dangerous_url);
+  }
+
+ private:
+  scoped_refptr<FakeSafeBrowsingDatabaseManager>
+      fake_safe_browsing_database_manager_;
+  std::unique_ptr<safe_browsing::TestSafeBrowsingServiceFactory>
+      safe_browsing_factory_;
+};
+
+// Tests that if a page embeds a portal whose contents are considered dangerous
+// by Safe Browsing, the embedder is also treated as dangerous in terms of how
+// we display the Safe Browsing interstitial.
+IN_PROC_BROWSER_TEST_F(PortalSafeBrowsingBrowserTest,
+                       EmbedderOfDangerousPortalConsideredDangerous) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL dangerous_url(
+      embedded_test_server()->GetURL("evil.com", "/title2.html"));
+  AddDangerousUrl(dangerous_url);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationObserver error_observer(contents,
+                                                 net::ERR_BLOCKED_BY_CLIENT);
+  ASSERT_TRUE(content::ExecJs(
+      contents,
+      content::JsReplace("let portal = document.createElement('portal');"
+                         "portal.src = $1;"
+                         "document.body.appendChild(portal);",
+                         dangerous_url)));
+  error_observer.WaitForNavigationFinished();
+  EXPECT_TRUE(chrome_browser_interstitials::IsShowingInterstitial(contents));
+}
+
+// Test that if a page embeds a portal which contains a dangerous subresource,
+// the embedder is also treated as dangerous in terms of how we display the Safe
+// Browsing interstitial.
+IN_PROC_BROWSER_TEST_F(PortalSafeBrowsingBrowserTest,
+                       PortalDangerousSubresource) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL portal_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL dangerous_url(
+      embedded_test_server()->GetURL("evil.com", "/title3.html"));
+  AddDangerousUrl(dangerous_url);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_EQ(true,
+            content::EvalJs(
+                contents, content::JsReplace(
+                              "new Promise((resolve) => {"
+                              "  let portal = document.createElement('portal');"
+                              "  portal.src = $1;"
+                              "  portal.onload = () => { resolve(true); };"
+                              "  document.body.appendChild(portal);"
+                              "});",
+                              portal_url)));
+  std::vector<WebContents*> inner_web_contents =
+      contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents.size());
+  WebContents* portal_contents = inner_web_contents[0];
+
+  content::TestNavigationObserver error_observer(contents,
+                                                 net::ERR_BLOCKED_BY_CLIENT);
+  ASSERT_TRUE(content::ExecJs(
+      portal_contents,
+      content::JsReplace("let iframe = document.createElement('iframe');"
+                         "iframe.src = $1;"
+                         "document.body.appendChild(iframe);",
+                         dangerous_url)));
+  error_observer.WaitForNavigationFinished();
+  EXPECT_TRUE(chrome_browser_interstitials::IsShowingInterstitial(contents));
+}
+
+IN_PROC_BROWSER_TEST_F(PortalSafeBrowsingBrowserTest, DangerousOrphanedPortal) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL portal_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
+  GURL dangerous_url(
+      embedded_test_server()->GetURL("evil.com", "/title3.html"));
+  AddDangerousUrl(dangerous_url);
+
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+
+  ASSERT_EQ(true,
+            content::EvalJs(
+                contents, content::JsReplace(
+                              "new Promise((resolve) => {"
+                              "  let portal = document.createElement('portal');"
+                              "  portal.src = $1;"
+                              "  portal.onload = () => { resolve(true); };"
+                              "  document.body.appendChild(portal);"
+                              "});",
+                              portal_url)));
+  std::vector<WebContents*> inner_web_contents =
+      contents->GetInnerWebContents();
+  ASSERT_EQ(1u, inner_web_contents.size());
+  WebContents* portal_contents = inner_web_contents[0];
+
+  // Block the activate callback so that the predecessor portal stays orphaned
+  // while it navigates to a dangerous URL.
+  ASSERT_TRUE(content::ExecJs(
+      portal_contents, "window.onportalactivate = e => { while(true) {} };"));
+
+  // Since the portal contents becomes the top level contents from the following
+  // activation, it's the contents where we show the interstitial.
+  content::TestNavigationObserver error_observer(portal_contents,
+                                                 net::ERR_BLOCKED_BY_CLIENT);
+  ASSERT_TRUE(content::ExecJs(
+      contents,
+      content::JsReplace("document.querySelector('portal').activate();"
+                         "window.location.href = $1;",
+                         dangerous_url)));
+  error_observer.WaitForNavigationFinished();
+  EXPECT_TRUE(
+      chrome_browser_interstitials::IsShowingInterstitial(portal_contents));
 }

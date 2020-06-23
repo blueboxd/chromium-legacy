@@ -820,6 +820,33 @@ void MapperHoripadSwitch(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperElecomWiredDirectInput(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[3];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[0];
+  mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[5]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
+      AxisPositiveAsButton(input.axes[4]);
+  mapped->buttons[BUTTON_INDEX_BACK_SELECT] = input.buttons[10];
+  mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
+  mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[8];
+  mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[9];
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
+  mapped->buttons_length = BUTTON_INDEX_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
+void MapperElecomWirelessDirectInput(const Gamepad& input, Gamepad* mapped) {
+  MapperElecomWiredDirectInput(input, mapped);
+
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[3];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[2];
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
@@ -906,6 +933,10 @@ constexpr struct MappingData {
     {GamepadId::kPrototypeVendorProduct9401, MapperStadiaControllerOldFirmware},
     // Snakebyte iDroid:con
     {GamepadId::kBroadcomProduct8502, MapperSnakebyteIDroidCon},
+    // Elecom JC-U4013SBK (DirectInput mode)
+    {GamepadId::kElecomProduct200f, MapperElecomWiredDirectInput},
+    // Elecom JC-U4113SBK (DirectInput mode)
+    {GamepadId::kElecomProduct2010, MapperElecomWirelessDirectInput},
 };
 
 }  // namespace

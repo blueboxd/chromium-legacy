@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/callback.h"
+#include "base/location.h"
 #include "base/macros.h"
 
 namespace base {
@@ -67,9 +68,11 @@ class BASE_EXPORT MemoryPressureListener {
   using SyncMemoryPressureCallback =
       RepeatingCallback<void(MemoryPressureLevel)>;
 
-  explicit MemoryPressureListener(
+  MemoryPressureListener(
+      const base::Location& creation_location,
       const MemoryPressureCallback& memory_pressure_callback);
   MemoryPressureListener(
+      const base::Location& creation_location,
       const MemoryPressureCallback& memory_pressure_callback,
       const SyncMemoryPressureCallback& sync_memory_pressure_callback);
 
@@ -94,6 +97,8 @@ class BASE_EXPORT MemoryPressureListener {
 
   MemoryPressureCallback callback_;
   SyncMemoryPressureCallback sync_memory_pressure_callback_;
+
+  const base::Location creation_location_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryPressureListener);
 };

@@ -19,7 +19,7 @@
     : CollectionViewItem <SuggestedContent>
 
 // Contains the Discover feed coming from Discover provider.
-@property(strong, nonatomic) UIViewController* discoverFeed;
+@property(nonatomic, weak) UIViewController* discoverFeed;
 
 @end
 

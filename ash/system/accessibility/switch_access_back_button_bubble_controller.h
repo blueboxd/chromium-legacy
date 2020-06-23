@@ -34,6 +34,7 @@ class ASH_EXPORT SwitchAccessBackButtonBubbleController
   void BubbleViewDestroyed() override;
 
  private:
+  friend class SwitchAccessBackButtonBubbleControllerTest;
   friend class SwitchAccessMenuBubbleControllerTest;
 
   gfx::Rect AdjustAnchorRect(const gfx::Rect& anchor);

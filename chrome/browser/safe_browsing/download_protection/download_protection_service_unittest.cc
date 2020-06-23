@@ -65,6 +65,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -3076,8 +3077,15 @@ TEST_P(DeepScanningDownloadTest, PasswordProtectedArchivesBlockedByPreference) {
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
           BinaryUploadServiceFactory::GetForProfile(profile()));
-  test_upload_service->SetResponse(BinaryUploadService::Result::FILE_ENCRYPTED,
-                                   DeepScanningClientResponse());
+  if (use_legacy_policies_) {
+    test_upload_service->SetResponse(
+        BinaryUploadService::Result::FILE_ENCRYPTED,
+        DeepScanningClientResponse());
+  } else {
+    test_upload_service->SetResponse(
+        BinaryUploadService::Result::FILE_ENCRYPTED,
+        enterprise_connectors::ContentAnalysisResponse());
+  }
 
   for (AllowPasswordProtectedFilesValues pref : {ALLOW_NONE, ALLOW_UPLOADS}) {
     SetSendFilesForMalwareCheckPref(
@@ -3138,8 +3146,15 @@ TEST_P(DeepScanningDownloadTest, LargeFileBlockedByPreference) {
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
           BinaryUploadServiceFactory::GetForProfile(profile()));
-  test_upload_service->SetResponse(BinaryUploadService::Result::FILE_TOO_LARGE,
-                                   DeepScanningClientResponse());
+  if (use_legacy_policies_) {
+    test_upload_service->SetResponse(
+        BinaryUploadService::Result::FILE_TOO_LARGE,
+        DeepScanningClientResponse());
+  } else {
+    test_upload_service->SetResponse(
+        BinaryUploadService::Result::FILE_TOO_LARGE,
+        enterprise_connectors::ContentAnalysisResponse());
+  }
 
   for (BlockLargeFileTransferValues pref :
        {BLOCK_LARGE_DOWNLOADS, BLOCK_LARGE_UPLOADS_AND_DOWNLOADS}) {
@@ -3197,9 +3212,15 @@ TEST_P(DeepScanningDownloadTest, UnsupportedFiletypeBlockedByPreference) {
   TestBinaryUploadService* test_upload_service =
       static_cast<TestBinaryUploadService*>(
           BinaryUploadServiceFactory::GetForProfile(profile()));
-  test_upload_service->SetResponse(
-      BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
-      DeepScanningClientResponse());
+  if (use_legacy_policies_) {
+    test_upload_service->SetResponse(
+        BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
+        DeepScanningClientResponse());
+  } else {
+    test_upload_service->SetResponse(
+        BinaryUploadService::Result::DLP_SCAN_UNSUPPORTED_FILE_TYPE,
+        enterprise_connectors::ContentAnalysisResponse());
+  }
 
   EXPECT_CALL(*sb_service_->mock_database_manager(),
               MatchDownloadWhitelistUrl(_))
@@ -3938,9 +3959,15 @@ TEST_P(DeepScanningDownloadTest, PolicyEnabled) {
 
   {
     PrepareResponse(ClientDownloadResponse::SAFE, net::HTTP_OK, net::OK);
-    test_upload_service->SetResponse(
-        BinaryUploadService::Result::UPLOAD_FAILURE,
-        DeepScanningClientResponse());
+    if (use_legacy_policies_) {
+      test_upload_service->SetResponse(
+          BinaryUploadService::Result::UPLOAD_FAILURE,
+          DeepScanningClientResponse());
+    } else {
+      test_upload_service->SetResponse(
+          BinaryUploadService::Result::UPLOAD_FAILURE,
+          enterprise_connectors::ContentAnalysisResponse());
+    }
 
     RunLoop run_loop;
     download_service_->CheckClientDownload(

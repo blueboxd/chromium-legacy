@@ -36,8 +36,8 @@ using blink::mojom::PermissionStatus;
 using SensitiveDirectoryResult =
     NativeFileSystemPermissionContext::SensitiveDirectoryResult;
 
-// This browser test implements end-to-end tests for the chooseFileSystemEntry
-// API.
+// This browser test implements end-to-end tests for the file picker
+// APIs.
 class FileSystemChooserBrowserTest : public ContentBrowserTest {
  public:
   void SetUp() override {
@@ -99,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, CancelDialog) {
   ui::SelectFileDialog::SetFactory(new CancellingSelectFileDialogFactory);
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result = EvalJs(shell(), "self.chooseFileSystemEntries()");
+  auto result = EvalJs(shell(), "self.showOpenFilePicker()");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 }
@@ -115,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries();"
+                   "  let [e] = await self.showOpenFilePicker();"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_FILE, dialog_params.type);
@@ -145,7 +145,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFileNonASCII) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries();"
+                   "  let [e] = await self.showOpenFilePicker();"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_FILE, dialog_params.type);
@@ -171,7 +171,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries();"
+                   "  let [e] = await self.showOpenFilePicker();"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_FALSE(IsFullscreen());
@@ -194,8 +194,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'save-file'});"
+                   "  let e = await self.showSaveFilePicker();"
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
@@ -227,8 +226,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'save-file'});"
+                   "  let e = await self.showSaveFilePicker();"
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
@@ -260,8 +258,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'save-file'})");
+  auto result = EvalJs(shell(), "self.showSaveFilePicker()");
   EXPECT_TRUE(result.error.find("not allowed") != std::string::npos)
       << result.error;
   EXPECT_EQ(ui::SelectFileDialog::SELECT_NONE, dialog_params.type);
@@ -279,8 +276,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenSaveFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'save-file'});"
+                   "  let e = await self.showSaveFilePicker();"
                    "  self.entry = e;"
                    "  return e.name; })()"));
   EXPECT_FALSE(IsFullscreen());
@@ -298,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {
                         test_file2.BaseName().AsUTF8Unsafe()),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
+                   "  let e = await self.showOpenFilePicker("
                    "      {multiple: true});"
                    "  return e.map(x => x.name); })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE, dialog_params.type);
@@ -318,7 +314,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
                         test_file2.BaseName().AsUTF8Unsafe()),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
+                   "  let e = await self.showOpenFilePicker("
                    "      {multiple: true});"
                    "  return e.map(x => x.name); })()"));
   EXPECT_FALSE(IsFullscreen());
@@ -334,8 +330,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory) {
   EXPECT_EQ(test_dir.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'open-directory'});"
+                   "  let e = await self.showDirectoryPicker();"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_EQ(ui::SelectFileDialog::SELECT_FOLDER, dialog_params.type);
@@ -352,8 +347,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, FullscreenOpenDirectory) {
   EXPECT_EQ(test_dir.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries("
-                   "      {type: 'open-directory'});"
+                   "  let e = await self.showDirectoryPicker();"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_FALSE(IsFullscreen());
@@ -391,8 +385,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
 
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'open-directory'})");
+  auto result = EvalJs(shell(), "self.showDirectoryPicker()");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 }
@@ -426,8 +419,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'save-file'})");
+  auto result = EvalJs(shell(), "self.showSaveFilePicker()");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
@@ -474,8 +466,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
 
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result =
-      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'save-file'})");
+  auto result = EvalJs(shell(), "self.showSaveFilePicker()");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
@@ -492,12 +483,12 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
       new CancellingSelectFileDialogFactory(&dialog_params));
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
-  auto result = EvalJs(shell(),
-                       "self.chooseFileSystemEntries({accepts: ["
-                       "  {description: 'no-extensions'},"
-                       "  {description: 'foo', extensions: ['txt', 'Js']},"
-                       "  {mimeTypes: ['image/jpeg']}"
-                       "]})");
+  auto result =
+      EvalJs(shell(),
+             "self.showOpenFilePicker({types: ["
+             "  {description: 'foo', accept: {'text/custom': ['txt', 'Js']}},"
+             "  {accept: {'image/jpeg': []}}"
+             "]})");
   EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
@@ -535,7 +526,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             EvalJs(shell(),
                    "(async () => {"
-                   "  let e = await self.chooseFileSystemEntries();"
+                   "  let [e] = await self.showOpenFilePicker();"
                    "  self.selected_entry = e;"
                    "  return e.name; })()"));
   EXPECT_TRUE(tester.IsDisabledForFrameWithReason(

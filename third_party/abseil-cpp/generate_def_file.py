@@ -56,13 +56,13 @@ def _GenerateDefFile(cpu):
 
     logging.info('[%s] Found %d object files.', cpu, len(obj_files))
 
-    absl_symbols = []
+    absl_symbols = set()
     for f in obj_files:
       stdout = subprocess.check_output(['llvm-nm-9', f], cwd=os.getcwd())
       for line in stdout.splitlines():
         match = re.match(ABSL_SYM_RE, line.decode('utf-8'))
         if match:
-          absl_symbols.append(match.group('symbol'))
+          absl_symbols.add(match.group('symbol'))
 
     logging.info('[%s] Found %d absl symbols.', cpu, len(absl_symbols))
 

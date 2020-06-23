@@ -69,6 +69,7 @@ class Globals {
         // asynchronously, so this instance will be fully constructed by the
         // time it is called.
         memory_pressure_listener_(
+            FROM_HERE,
             base::BindRepeating(&Globals::OnMemoryPressure,
                                 base::Unretained(this))) {}
 

@@ -2056,6 +2056,8 @@
           'isolated_scripts': 'ios13_sdk_simulator_tests'
         },
       },
+      # ios14-beta-sim compiles with xcode version n-1, but
+      # runs testers with xcode n during an xcode roll.
       'ios14-beta-simulator': {
         'additional_compile_targets': [
           'all',
@@ -2064,12 +2066,14 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e146',
+          'xcode_12a6159',
         ],
         'test_suites': {
-          'isolated_scripts': 'ios13_beta_simulator_tests'
+          'isolated_scripts': 'ios14_beta_simulator_tests'
         },
       },
+      # ios14-sdk-sim compiles with xcode version n, and runs
+      # testers with xcode n during an xcode roll.
       'ios14-sdk-simulator': {
         'additional_compile_targets': [
           'all',
@@ -2078,10 +2082,10 @@
           'mac_10.15',
           'mac_toolchain',
           'out_dir_arg',
-          'xcode_11e608c',
+          'xcode_12a6159',
         ],
         'test_suites': {
-          'isolated_scripts': 'ios13_sdk_simulator_tests'
+          'isolated_scripts': 'ios14_sdk_simulator_tests'
         },
       },
       'linux-annotator-rel': {

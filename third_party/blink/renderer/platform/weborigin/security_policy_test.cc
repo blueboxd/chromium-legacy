@@ -101,6 +101,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
   const char kBlobURL[] =
       "blob:http://a.test/b3aae9c8-7f90-440d-8d7c-43aa20d72fde";
   const char kFilesystemURL[] = "filesystem:http://a.test/path/t/file.html";
+  const char kInvalidURL[] = "not-a-valid-url";
 
   bool reduced_granularity =
       RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled();
@@ -226,7 +227,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin,
        kSecureURLA, kInsecureURLB, nullptr},
 
-      // blob and filesystem URL handling
+      // blob, filesystem, and invalid URL handling
       {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kBlobURL,
        nullptr},
       {network::mojom::ReferrerPolicy::kAlways, kBlobURL, kInsecureURLA,
@@ -234,6 +235,10 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kFilesystemURL,
        nullptr},
       {network::mojom::ReferrerPolicy::kAlways, kFilesystemURL, kInsecureURLA,
+       nullptr},
+      {network::mojom::ReferrerPolicy::kAlways, kInsecureURLA, kInvalidURL,
+       kInsecureURLA},
+      {network::mojom::ReferrerPolicy::kAlways, kInvalidURL, kInsecureURLA,
        nullptr},
   };
 
@@ -244,7 +249,8 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
     if (test.expected) {
       EXPECT_EQ(String::FromUTF8(test.expected), result.referrer)
           << "'" << test.referrer << "' to '" << test.destination
-          << "' should have been '" << test.expected << "': was '"
+          << "' with policy=" << static_cast<int>(test.policy)
+          << " should have been '" << test.expected << "': was '"
           << result.referrer.Utf8() << "'.";
     } else {
       EXPECT_TRUE(result.referrer.IsEmpty())
@@ -265,6 +271,42 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
     }
     EXPECT_EQ(expected_policy, result.referrer_policy);
   }
+}
+
+TEST(SecurityPolicyTest, GenerateReferrerTruncatesLongUrl) {
+  char buffer[4097];
+  std::fill_n(std::begin(buffer), 4097, 'a');
+
+  String base = "https://a.com/";
+  String string_with_4096 = base + String(buffer, 4096 - base.length());
+  ASSERT_EQ(string_with_4096.length(), 4096u);
+
+  network::mojom::ReferrerPolicy kAlways =
+      network::mojom::ReferrerPolicy::kAlways;
+  EXPECT_EQ(SecurityPolicy::GenerateReferrer(
+                kAlways, KURL("https://destination.example"), string_with_4096)
+                .referrer,
+            string_with_4096);
+
+  String string_with_4097 = base + String(buffer, 4097 - base.length());
+  ASSERT_EQ(string_with_4097.length(), 4097u);
+  EXPECT_EQ(SecurityPolicy::GenerateReferrer(
+                kAlways, KURL("https://destination.example"), string_with_4097)
+                .referrer,
+            "https://a.com/");
+
+  // Since refs get stripped from outgoing referrers prior to the "if the length
+  // is greater than 4096, strip the referrer to its origin" check, a
+  // referrer with length > 4096 due to its path should not get stripped to its
+  // outgoing origin.
+  String string_with_4097_because_of_long_ref =
+      base + "path#" + String(buffer, 4097 - 5 - base.length());
+  ASSERT_EQ(string_with_4097_because_of_long_ref.length(), 4097u);
+  EXPECT_EQ(SecurityPolicy::GenerateReferrer(
+                kAlways, KURL("https://destination.example"),
+                string_with_4097_because_of_long_ref)
+                .referrer,
+            "https://a.com/path");
 }
 
 TEST(SecurityPolicyTest, ReferrerPolicyFromHeaderValue) {

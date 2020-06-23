@@ -14,6 +14,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/browser_task_environment.h"
@@ -144,7 +145,7 @@ class TestStoreDMTokenDelegate {
 };
 
 TEST_F(BrowserDMTokenStorageLinuxTest, SaveDMToken) {
-  TestStoreDMTokenDelegate delegate;
+  TestStoreDMTokenDelegate callback_delegate;
   std::unique_ptr<base::ScopedPathOverride> path_override;
   base::ScopedTempDir fake_user_data_dir;
 
@@ -152,14 +153,18 @@ TEST_F(BrowserDMTokenStorageLinuxTest, SaveDMToken) {
   path_override.reset(new base::ScopedPathOverride(
       chrome::DIR_USER_DATA, fake_user_data_dir.GetPath()));
 
-  MockBrowserDMTokenStorageLinux storage;
-  storage.StoreDMToken(
-      kDMToken, base::BindOnce(&TestStoreDMTokenDelegate::OnDMTokenStored,
-                               base::Unretained(&delegate)));
+  MockBrowserDMTokenStorageLinux storage_delegate;
+  auto task = storage_delegate.SaveDMTokenTask(kDMToken,
+                                               storage_delegate.InitClientId());
+  auto reply = base::BindOnce(&TestStoreDMTokenDelegate::OnDMTokenStored,
+                              base::Unretained(&callback_delegate));
+  base::PostTaskAndReplyWithResult(
+      storage_delegate.SaveDMTokenTaskRunner().get(), FROM_HERE,
+      std::move(task), std::move(reply));
 
-  delegate.Wait();
-  ASSERT_TRUE(delegate.WasCalled());
-  ASSERT_TRUE(delegate.success());
+  callback_delegate.Wait();
+  ASSERT_TRUE(callback_delegate.WasCalled());
+  ASSERT_TRUE(callback_delegate.success());
 
   base::FilePath dir_user_data_path;
   ASSERT_TRUE(

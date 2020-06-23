@@ -180,7 +180,7 @@ public class PseudoTab {
      * @return The root ID
      */
     public int getRootId() {
-        if (mTab != null && mTab.get() != null) {
+        if (mTab != null && mTab.get() != null && mTab.get().isInitialized()) {
             return CriticalPersistedTabData.from(mTab.get()).getRootId();
         }
         assert mTabId != null;

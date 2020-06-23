@@ -158,6 +158,23 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
     gfx::ColorSpace color_space_;
   };
 
+  class VIZ_SERVICE_EXPORT ScopedOverlayLockGL {
+   public:
+    ScopedOverlayLockGL(DisplayResourceProvider* resource_provider,
+                        ResourceId resource_id);
+    ~ScopedOverlayLockGL();
+
+    ScopedOverlayLockGL(const ScopedOverlayLockGL&) = delete;
+    ScopedOverlayLockGL& operator=(const ScopedOverlayLockGL&) = delete;
+
+    GLuint texture_id() const { return texture_id_; }
+
+   private:
+    DisplayResourceProvider* const resource_provider_;
+    const ResourceId resource_id_;
+    GLuint texture_id_ = 0;
+  };
+
   class VIZ_SERVICE_EXPORT ScopedSamplerGL {
    public:
     ScopedSamplerGL(DisplayResourceProvider* resource_provider,
@@ -521,7 +538,7 @@ class VIZ_SERVICE_EXPORT DisplayResourceProvider
   // Returns null if we do not have a ContextProvider.
   gpu::gles2::GLES2Interface* ContextGL() const;
 
-  const ChildResource* LockForRead(ResourceId id);
+  const ChildResource* LockForRead(ResourceId id, bool overlay_only);
   void UnlockForRead(ResourceId id);
 
   void TryReleaseResource(ResourceId id, ChildResource* resource);

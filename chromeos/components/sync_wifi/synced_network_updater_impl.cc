@@ -221,7 +221,7 @@ void SyncedNetworkUpdaterImpl::HandleShillResult(const std::string& change_guid,
   if (!tracker_->GetPendingUpdate(change_guid, id)) {
     NET_LOG(EVENT)
         << "Update to network with change_guid " << change_guid
-        << "is no longer pending.  This is likely because the change was"
+        << " is no longer pending.  This is likely because the change was"
            " preempted by another update to the same network.";
     return;
   }

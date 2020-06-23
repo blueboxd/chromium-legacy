@@ -62,15 +62,17 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
       const base::Optional<gpu::GPUInfo>& optional_gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
-  void UpdateDx12VulkanInfo(
-      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDx12Info(uint32_t d3d12_feature_level);
+  void UpdateVulkanInfo(uint32_t vulkan_version);
   void UpdateDevicePerfInfo(const gpu::DevicePerfInfo& device_perf_info);
 
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
   void UpdateHDRStatus(bool hdr_enabled);
-  void UpdateDx12VulkanRequestStatus(bool request_continues);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
-  bool Dx12VulkanRequested() const;
+  void UpdateDx12RequestStatus(bool request_continues);
+  void UpdateVulkanRequestStatus(bool request_continues);
+  bool Dx12Requested() const;
+  bool VulkanRequested() const;
   void OnBrowserThreadsStarted();
   void TerminateInfoCollectionGpuProcess();
 #endif
@@ -195,7 +197,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   void NotifyGpuInfoUpdate();
 
   void RequestDxDiagNodeData();
-  void RequestGpuSupportedRuntimeVersion(bool delayed);
+  void RequestGpuSupportedDx12Version(bool delayed);
+  void RequestGpuSupportedVulkanVersion(bool delayed);
 
   void RecordCompositingMode();
 
@@ -207,9 +210,12 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
 #if defined(OS_WIN)
   bool gpu_info_dx_diag_requested_ = false;
   bool gpu_info_dx_diag_request_failed_ = false;
-  bool gpu_info_dx12_vulkan_valid_ = false;
-  bool gpu_info_dx12_vulkan_requested_ = false;
-  bool gpu_info_dx12_vulkan_request_failed_ = false;
+  bool gpu_info_dx12_valid_ = false;
+  bool gpu_info_dx12_requested_ = false;
+  bool gpu_info_dx12_request_failed_ = false;
+  bool gpu_info_vulkan_valid_ = false;
+  bool gpu_info_vulkan_requested_ = false;
+  bool gpu_info_vulkan_request_failed_ = false;
 #endif
 
   // What we would have gotten if we haven't fallen back to SwiftShader or

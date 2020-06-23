@@ -217,6 +217,8 @@ WebString ConvertToPublic(
       return "style-src";
     case CSPDirectiveName::WorkerSrc:
       return "worker-src";
+    case CSPDirectiveName::ConnectSrc:
+      return "connect-src";
     case CSPDirectiveName::Unknown:
       NOTREACHED();
       return "";

@@ -141,7 +141,6 @@ jumbo_source_set("internal") {
     "remote_commands/remote_commands_queue.h",
     "remote_commands/remote_commands_service.cc",
     "remote_commands/remote_commands_service.h",
-    "reporting/report_request_definition.h",
     "schema.cc",
     "schema.h",
     "schema_internal.h",

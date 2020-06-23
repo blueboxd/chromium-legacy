@@ -48,6 +48,8 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
   }
 
   void OnFetchCompleted(TileInfoRequestStatus status) override {
+    MarkFirstRunFinished();
+
     if (IsInstantFetchMode())
       return;
 
@@ -59,7 +61,6 @@ class TileServiceSchedulerImpl : public TileServiceScheduler {
       if (hours_past >= 0) {
         stats::RecordFirstFetchFlowDuration(hours_past);
       }
-      MarkFirstRunFinished();
     }
 
     if (status == TileInfoRequestStatus::kShouldSuspend) {

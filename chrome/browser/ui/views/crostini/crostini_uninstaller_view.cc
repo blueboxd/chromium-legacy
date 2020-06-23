@@ -50,15 +50,6 @@ void CrostiniUninstallerView::Show(Profile* profile) {
   g_crostini_uninstaller_view->GetWidget()->Show();
 }
 
-base::string16 CrostiniUninstallerView::GetWindowTitle() const {
-  const base::string16 device_type = ui::GetChromeOSDeviceName();
-  return l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_TITLE);
-}
-
-bool CrostiniUninstallerView::ShouldShowCloseButton() const {
-  return false;
-}
-
 bool CrostiniUninstallerView::Accept() {
   state_ = State::UNINSTALLING;
   SetButtons(ui::DIALOG_BUTTON_NONE);
@@ -101,6 +92,8 @@ CrostiniUninstallerView* CrostiniUninstallerView::GetActiveViewForTesting() {
 
 CrostiniUninstallerView::CrostiniUninstallerView(Profile* profile)
     : profile_(profile) {
+  SetShowCloseButton(false);
+  SetTitle(IDS_CROSTINI_UNINSTALLER_TITLE);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON));

@@ -391,7 +391,7 @@ static void NamedPropertySetter(
       name_in_utf8.c_str());
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
-  TestInterfaceEmpty* property_value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceEmpty* property_value{ V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
   if (!property_value && !IsUndefinedOrNull(v8_value)) {
     exception_state.ThrowTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
     return;
@@ -514,7 +514,7 @@ static void IndexedPropertySetter(
       "TestInterface2");
 
   TestInterface2* impl = V8TestInterface2::ToImpl(info.Holder());
-  TestInterfaceEmpty* property_value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceEmpty* property_value{ V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
   if (!property_value) {
     exception_state.ThrowTypeError("The provided value is not of type 'TestInterfaceEmpty'.");
     return;

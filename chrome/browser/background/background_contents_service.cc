@@ -391,7 +391,7 @@ void BackgroundContentsService::OnExtensionUnloaded(
     case UnloadedExtensionReason::DISABLE:                // Fall through.
     case UnloadedExtensionReason::TERMINATE:              // Fall through.
     case UnloadedExtensionReason::UNINSTALL:              // Fall through.
-    case UnloadedExtensionReason::BLACKLIST:              // Fall through.
+    case UnloadedExtensionReason::BLOCKLIST:              // Fall through.
     case UnloadedExtensionReason::LOCK_ALL:               // Fall through.
     case UnloadedExtensionReason::MIGRATED_TO_COMPONENT:  // Fall through.
     case UnloadedExtensionReason::PROFILE_SHUTDOWN:

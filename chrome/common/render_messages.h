@@ -45,19 +45,6 @@
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_LoadBlockedPlugins,
                     std::string /* identifier */)
 
-// JavaScript related messages -----------------------------------------------
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-// Message sent from the renderer to the browser to schedule to download the
-// page at a later time.
-IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DownloadPageLater)
-
-// Message sent from the renderer to the browser to indicate if download button
-// is being shown in error page.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage,
-                    bool /* showing download button */)
-#endif
-
 //-----------------------------------------------------------------------------
 // Misc messages
 // These are messages sent from the renderer to the browser process.

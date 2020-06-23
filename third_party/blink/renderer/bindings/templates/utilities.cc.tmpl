@@ -11,7 +11,7 @@
 {% else %}
 {% if item.declare_variable %}
 {% if item.assign_expression %}
-{{item.cpp_type}} {{item.cpp_name}} = {{item.assign_expression}};
+{{item.cpp_type}} {{item.cpp_name}}{ {{item.assign_expression}} };
 {% else %}
 {{item.cpp_type}} {{item.cpp_name}};
 {% endif %}

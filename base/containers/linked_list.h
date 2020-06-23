@@ -5,8 +5,6 @@
 #ifndef BASE_CONTAINERS_LINKED_LIST_H_
 #define BASE_CONTAINERS_LINKED_LIST_H_
 
-#include "base/macros.h"
-
 // Simple LinkedList type. (See the Q&A section to understand how this
 // differs from std::list).
 //
@@ -102,6 +100,9 @@ class LinkNode {
     }
   }
 
+  LinkNode(const LinkNode&) = delete;
+  LinkNode& operator=(const LinkNode&) = delete;
+
   // Insert |this| into the linked list, before |e|.
   void InsertBefore(LinkNode<T>* e) {
     this->next_ = e;
@@ -148,8 +149,6 @@ class LinkNode {
  private:
   LinkNode<T>* previous_;
   LinkNode<T>* next_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinkNode);
 };
 
 template <typename T>
@@ -159,6 +158,8 @@ class LinkedList {
   // list (root_.next() will point back to the start of the list,
   // and root_->previous() wraps around to the end of the list).
   LinkedList() : root_(&root_, &root_) {}
+  LinkedList(const LinkedList&) = delete;
+  LinkedList& operator=(const LinkedList&) = delete;
 
   // Appends |e| to the end of the linked list.
   void Append(LinkNode<T>* e) {
@@ -181,8 +182,6 @@ class LinkedList {
 
  private:
   LinkNode<T> root_;
-
-  DISALLOW_COPY_AND_ASSIGN(LinkedList);
 };
 
 }  // namespace base

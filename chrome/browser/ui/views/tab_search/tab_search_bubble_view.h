@@ -9,13 +9,13 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
 
-class Profile;
+class Browser;
 
 // TODO(tluk): Only show the bubble once web contents are available to prevent
 // akward resizing when web content finally loads in.
 class TabSearchBubbleView : public views::BubbleDialogDelegateView {
  public:
-  static void CreateTabSearchBubble(Profile* profile, views::View* anchor_view);
+  static void CreateTabSearchBubble(Browser* browser);
 
   ~TabSearchBubbleView() override = default;
 
@@ -25,7 +25,7 @@ class TabSearchBubbleView : public views::BubbleDialogDelegateView {
   void OnWebViewSizeChanged();
 
  private:
-  TabSearchBubbleView(Profile* profile, views::View* anchor_view);
+  TabSearchBubbleView(Browser* browser, views::View* anchor_view);
 
   views::WebView* web_view_;
 

@@ -87,7 +87,7 @@ void V8LongSequenceOrEvent::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<int32_t> cpp_value = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<int32_t> cpp_value{ NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetLongSequence(cpp_value);

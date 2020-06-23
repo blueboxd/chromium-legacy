@@ -935,6 +935,9 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1519862400);
   const base::Time time_2019_07_01 =
       base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1561939200);
+  // From Chrome Root Certificate Policy
+  const base::Time time_2020_09_01 =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1598918400);
 
   // Compute the maximally permissive interpretations, accounting for leap
   // years.
@@ -957,18 +960,24 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
     return true;
   }
 
-  // For certificates issued after the BR effective date of 1 July 2012: 60
-  // months.
+  // For certificates issued on-or-after the BR effective date of 1 July 2012:
+  // 60 months.
   if (start >= time_2012_07_01 && validity_duration > kSixtyMonths)
     return true;
 
-  // For certificates issued after 1 April 2015: 39 months.
+  // For certificates issued on-or-after 1 April 2015: 39 months.
   if (start >= time_2015_04_01 && validity_duration > kThirtyNineMonths)
     return true;
 
-  // For certificates issued after 1 March 2018: 825 days.
+  // For certificates issued on-or-after 1 March 2018: 825 days.
   if (start >= time_2018_03_01 &&
       validity_duration > base::TimeDelta::FromDays(825)) {
+    return true;
+  }
+
+  // For certificates issued on-or-after 1 September 2020: 398 days.
+  if (start >= time_2020_09_01 &&
+      validity_duration > base::TimeDelta::FromDays(398)) {
     return true;
   }
 

@@ -129,3 +129,10 @@ AnimationEffectReadOnly.prototype.getTiming = function() {};
 
 /** @return {!Array<!Object>} */
 AnimationEffectReadOnly.prototype.getKeyframes = function() {};
+
+/**
+ * @return {!IteratorIterable<!Array<string>>}
+ * @nosideeffects
+ * @see https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/keys
+ */
+URLSearchParams.prototype.keys = function() {};

@@ -60,21 +60,6 @@ bool CrostiniAnsibleSoftwareConfigView::Accept() {
   return true;
 }
 
-base::string16 CrostiniAnsibleSoftwareConfigView::GetWindowTitle() const {
-  switch (state_) {
-    case State::CONFIGURING:
-      return l10n_util::GetStringUTF16(
-          IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL);
-    case State::ERROR:
-      return l10n_util::GetStringUTF16(
-          IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_LABEL);
-    case State::ERROR_OFFLINE:
-      return l10n_util::GetStringFUTF16(
-          IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_OFFLINE_LABEL,
-          ui::GetChromeOSDeviceName());
-  }
-}
-
 base::string16 CrostiniAnsibleSoftwareConfigView::GetSubtextLabel() const {
   switch (state_) {
     case State::CONFIGURING:
@@ -142,27 +127,22 @@ CrostiniAnsibleSoftwareConfigView::CrostiniAnsibleSoftwareConfigView(
   set_margins(provider->GetDialogInsetsForContentType(
       views::DialogContentType::TEXT, views::DialogContentType::CONTROL));
 
-  subtext_label_ = new views::Label(
-      l10n_util::GetStringUTF16(IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_SUBTEXT));
-  subtext_label_->SetMultiLine(true);
-  subtext_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(subtext_label_);
+  auto subtext_label = std::make_unique<views::Label>();
+  subtext_label->SetMultiLine(true);
+  subtext_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  subtext_label_ = AddChildView(std::move(subtext_label));
 
   // Add infinite progress bar.
   // TODO(crbug.com/1000173): add progress reporting and display text above
   // progress bar indicating current process.
-  progress_bar_ = new views::ProgressBar();
-  progress_bar_->SetVisible(true);
+  auto progress_bar = std::make_unique<views::ProgressBar>();
   // Values outside the range [0,1] display an infinite loading animation.
-  progress_bar_->SetValue(-1);
-  AddChildView(progress_bar_);
+  progress_bar->SetValue(-1);
+  progress_bar_ = AddChildView(std::move(progress_bar));
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::CROSTINI_ANSIBLE_SOFTWARE_CONFIG);
-
-  // In the initial state (CONFIGURING), there are no buttons and hence no set
-  // labels.
-  SetButtons(ui::DIALOG_BUTTON_NONE);
+  OnStateChanged();
 }
 
 CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
@@ -170,7 +150,25 @@ CrostiniAnsibleSoftwareConfigView::~CrostiniAnsibleSoftwareConfigView() {
   g_crostini_ansible_software_configuration_view = nullptr;
 }
 
+// static
+base::string16 CrostiniAnsibleSoftwareConfigView::GetWindowTitleForState(
+    State state) {
+  switch (state) {
+    case State::CONFIGURING:
+      return l10n_util::GetStringUTF16(
+          IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_LABEL);
+    case State::ERROR:
+      return l10n_util::GetStringUTF16(
+          IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_LABEL);
+    case State::ERROR_OFFLINE:
+      return l10n_util::GetStringFUTF16(
+          IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_ERROR_OFFLINE_LABEL,
+          ui::GetChromeOSDeviceName());
+  }
+}
+
 void CrostiniAnsibleSoftwareConfigView::OnStateChanged() {
+  SetTitle(GetWindowTitleForState(state_));
   progress_bar_->SetVisible(state_ == State::CONFIGURING);
   subtext_label_->SetText(GetSubtextLabel());
   SetButtons(state_ == State::CONFIGURING
@@ -185,6 +183,6 @@ void CrostiniAnsibleSoftwareConfigView::OnStateChanged() {
                      : l10n_util::GetStringUTF16(
                            IDS_CROSTINI_ANSIBLE_SOFTWARE_CONFIG_RETRY_BUTTON));
   DialogModelChanged();
-  GetWidget()->UpdateWindowTitle();
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  if (GetWidget())
+    GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
 }

@@ -719,6 +719,13 @@ ProtocolVersion FidoDeviceAuthenticator::SupportedProtocol() const {
   return device_->supported_protocol();
 }
 
+bool FidoDeviceAuthenticator::SupportsHMACSecretExtension() const {
+  const base::Optional<AuthenticatorGetInfoResponse>& get_info_response =
+      device_->device_info();
+  return get_info_response && get_info_response->extensions &&
+         base::Contains(*get_info_response->extensions, kExtensionHmacSecret);
+}
+
 const base::Optional<AuthenticatorSupportedOptions>&
 FidoDeviceAuthenticator::Options() const {
   return options_;

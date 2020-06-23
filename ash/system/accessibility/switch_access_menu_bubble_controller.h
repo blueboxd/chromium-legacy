@@ -35,6 +35,7 @@ class ASH_EXPORT SwitchAccessMenuBubbleController
   void BubbleViewDestroyed() override;
 
  private:
+  friend class SwitchAccessBackButtonBubbleControllerTest;
   friend class SwitchAccessMenuBubbleControllerTest;
 
   void ShowBackButtonForMenu();

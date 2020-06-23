@@ -106,12 +106,12 @@ public class DOMUtils {
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
                 // Playback can't be reliably detected until current time moves forward.
-                Assert.assertFalse(DOMUtils.isMediaPaused(webContents, id));
-                Assert.assertThat(
+                Criteria.checkThat(DOMUtils.isMediaPaused(webContents, id), Matchers.is(false));
+                Criteria.checkThat(
                         DOMUtils.getCurrentTime(webContents, id), Matchers.greaterThan(0d));
             } catch (TimeoutException e) {
                 // Intentionally do nothing
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         }, MEDIA_TIMEOUT_MILLISECONDS, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
@@ -124,11 +124,11 @@ public class DOMUtils {
     public static void waitForMediaPauseBeforeEnd(final WebContents webContents, final String id) {
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertTrue(DOMUtils.isMediaPaused(webContents, id));
-                Assert.assertFalse(DOMUtils.isMediaEnded(webContents, id));
+                Criteria.checkThat(DOMUtils.isMediaPaused(webContents, id), Matchers.is(true));
+                Criteria.checkThat(DOMUtils.isMediaEnded(webContents, id), Matchers.is(false));
             } catch (TimeoutException e) {
                 // Intentionally do nothing
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
     }
@@ -462,10 +462,11 @@ public class DOMUtils {
             final WebContents webContents, final String nodeId) {
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertFalse(DOMUtils.getNodeBounds(webContents, nodeId).isEmpty());
+                Criteria.checkThat(
+                        DOMUtils.getNodeBounds(webContents, nodeId).isEmpty(), Matchers.is(false));
             } catch (TimeoutException e) {
                 // Intentionally do nothing
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
     }

@@ -961,7 +961,8 @@ UserSelectionScreen::UpdateAndReturnUserListForAsh() {
     user_info.can_remove = CanRemoveUser(user);
     user_info.fingerprint_state = GetInitialFingerprintState(user);
     user_info.show_pin_pad_for_password = false;
-    if (user_manager::known_user::GetIsManaged(user->GetAccountId()) &&
+    if (user_manager::known_user::GetIsEnterpriseManaged(
+            user->GetAccountId()) &&
         user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT) {
       user_info.user_enterprise_domain =
           gaia::ExtractDomainName(user->display_email());

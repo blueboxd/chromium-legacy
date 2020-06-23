@@ -72,8 +72,7 @@ TEST_F(MediaRemotingIntegrationTest, MediaSource_ConfigChange_WebM) {
   Stop();
 }
 
-// Flaky: http://crbug.com/1043812.
-TEST_F(MediaRemotingIntegrationTest, DISABLED_SeekWhilePlaying) {
+TEST_F(MediaRemotingIntegrationTest, SeekWhilePlaying) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-320x240.webm"));
 
   base::TimeDelta duration(pipeline_->GetMediaDuration());

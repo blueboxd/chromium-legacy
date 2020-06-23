@@ -21,7 +21,9 @@ import org.chromium.url.GURL;
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public class TabUiUnitTestUtils {
     public static TabImpl prepareTab() {
-        return mock(TabImpl.class);
+        TabImpl tab = mock(TabImpl.class);
+        doReturn(true).when(tab).isInitialized();
+        return tab;
     }
 
     public static TabImpl prepareTab(int tabId) {

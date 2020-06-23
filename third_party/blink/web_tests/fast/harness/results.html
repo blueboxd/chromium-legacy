@@ -1126,6 +1126,7 @@ const GUI = {
     for(let [iteration, result] of test.actual.split(' ').entries()){
       if(test.artifacts != null){
         let perIterationArtifact = Object();
+        let lastArtifact = Object();
         for(let [name, paths] of Object.entries(test.artifacts)){
           for(let path of paths){
             const is_retry_artifact_path = (path.startsWith('layout-test-results/retry_') ||
@@ -1136,8 +1137,14 @@ const GUI = {
                 perIterationArtifact[name] = [];
               }
               perIterationArtifact[name].push(path);
+            } else {
+              lastArtifact[name] = path;
             }
           }
+        }
+        for (let [name, artifact] of Object.entries(lastArtifact)) {
+          if (!perIterationArtifact.hasOwnProperty(name))
+              perIterationArtifact[name] = [artifact];
         }
         actual_results.push(GUI.translateArtifactsIntoResult(
             perIterationArtifact, result, test));

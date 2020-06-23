@@ -21,12 +21,31 @@ import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
-import {Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
+import {CloudOrigins, Destination, DestinationOrigin, PDF_DESTINATION_KEY, RecentDestination} from '../data/destination.js';
 import {PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from '../data/printer_status_cros.js';
 import {NativeLayer, NativeLayerImpl} from '../native_layer.js';
 import {getSelectDropdownBackground} from '../print_preview_utils.js';
 
 import {SelectBehavior} from './select_behavior.js';
+
+/** @const {!Map<!PrinterStatusReason, string>} */
+const ERROR_STRING_KEY_MAP = new Map([
+  [PrinterStatusReason.CONNECTING_TO_DEVICE, 'printerStatusConnectingToDevice'],
+  [PrinterStatusReason.DEVICE_ERROR, 'printerStatusDeviceError'],
+  [PrinterStatusReason.DOOR_OPEN, 'printerStatusDoorOpen'],
+  [PrinterStatusReason.LOW_ON_INK, 'printerStatusLowOnInk'],
+  [PrinterStatusReason.LOW_ON_PAPER, 'printerStatusLowOnPaper'],
+  [PrinterStatusReason.OUT_OF_INK, 'printerStatusOutOfInk'],
+  [PrinterStatusReason.OUT_OF_PAPER, 'printerStatusOutOfPaper'],
+  [PrinterStatusReason.OUTPUT_ALMOST_FULL, 'printerStatusOutputAlmostFull'],
+  [PrinterStatusReason.OUTPUT_FULL, 'printerStatusOutputFull'],
+  [PrinterStatusReason.PAPER_JAM, 'printerStatusPaperJam'],
+  [PrinterStatusReason.PAUSED, 'printerStatusPaused'],
+  [PrinterStatusReason.PRINTER_QUEUE_FULL, 'printerStatusPrinterQueueFull'],
+  [PrinterStatusReason.PRINTER_UNREACHABLE, 'printerStatusPrinterUnreachable'],
+  [PrinterStatusReason.STOPPED, 'printerStatusStopped'],
+  [PrinterStatusReason.TRAY_MISSING, 'printerStatusTrayMissing'],
+]);
 
 Polymer({
   is: 'print-preview-destination-select-cros',
@@ -41,7 +60,11 @@ Polymer({
     dark: Boolean,
 
     /** @type {!Destination} */
-    destination: Object,
+    destination: {
+      type: Object,
+      observer: 'updateStatusText_',
+    },
+
 
     disabled: Boolean,
 
@@ -65,11 +88,8 @@ Polymer({
       value: PDF_DESTINATION_KEY,
     },
 
-    /** @private {string} */
-    statusText_: {
-      type: String,
-      computed: 'computeStatusText_(destination)',
-    },
+    /** @private */
+    statusText_: String,
 
     /** @private {string} */
     backgroundImages_: {
@@ -98,7 +118,7 @@ Polymer({
      * destination.key. This map is needed to track which destinations have had
      * statuses requested while also giving quick look up of destination id to
      * the corresponding destination key.
-     * @type {!Map<string, string>}
+     * @private {!Map<string, string>}
      */
     statusRequestedMap_: Map,
   },
@@ -191,21 +211,6 @@ Polymer({
   },
 
   /**
-   * @return {string} The connection status text to display.
-   * @private
-   */
-  computeStatusText_() {
-    // |destination| can be either undefined, or null here.
-    if (!this.destination) {
-      return '';
-    }
-
-    return this.destination.shouldShowInvalidCertificateError ?
-        this.i18n('noLongerSupportedFragment') :
-        this.destination.connectionStatusText;
-  },
-
-  /**
    * @param {!Event} e
    * @private
    */
@@ -278,6 +283,12 @@ Polymer({
     // Set the new printer status reason then use notifyPath to trigger the
     // dropdown printer status icons to recalculate their badge color.
     this.notifyPath(`recentDestinationList.${indexFound}.printerStatusReason`);
+
+    // Update the status text if this printer status is for the
+    // currently selected printer.
+    if (this.destination && this.destination.key === destinationKey) {
+      this.updateStatusText_();
+    }
   },
 
   /**
@@ -316,5 +327,63 @@ Polymer({
     }
     return seenNoErrorReason ? PrinterStatusReason.NO_ERROR :
                                PrinterStatusReason.UNKNOWN_REASON;
+  },
+
+  /**
+   * Check the current destination for an error status then set |statusText_|
+   * appropriately. If no error status exists, unset |statusText_|.
+   * @private
+   */
+  updateStatusText_: function() {
+    // |destination| can be either undefined, or null here.
+    if (!this.destination) {
+      this.statusText_ = '';
+      return;
+    }
+
+    // Cloudprint destinations contain their own status text.
+    if (CloudOrigins.some(origin => origin === this.destination.origin)) {
+      this.statusText_ = this.destination.shouldShowInvalidCertificateError ?
+          this.i18n('noLongerSupportedFragment') :
+          this.destination.connectionStatusText;
+      return;
+    }
+
+    // Only when the flag is enabled do we need to fetch a local printer status
+    // error string.
+    if (!this.printerStatusFlagEnabled_) {
+      this.statusText_ = '';
+      return;
+    }
+
+    const printerStatusReason = this.destination.printerStatusReason;
+    if (!printerStatusReason ||
+        printerStatusReason === PrinterStatusReason.NO_ERROR ||
+        printerStatusReason === PrinterStatusReason.UNKNOWN_REASON) {
+      this.statusText_ = '';
+      return;
+    }
+
+    this.statusText_ = this.getErrorString_(printerStatusReason);
+  },
+
+  /**
+   * @param {!PrinterStatusReason} printerStatusReason
+   * @return {!string}
+   * @private
+   */
+  getErrorString_: function(printerStatusReason) {
+    const errorTextKey = ERROR_STRING_KEY_MAP.get(printerStatusReason);
+    return errorTextKey ?
+        this.i18n(errorTextKey, this.destination.displayName) :
+        '';
+  },
+
+  /**
+   * @return {!boolean}
+   * @private
+   */
+  shouldShowStatus_: function() {
+    return !!this.statusText_;
   },
 });

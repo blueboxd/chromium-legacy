@@ -149,22 +149,17 @@ base::Optional<bool> IsEnrollmentMandatoryByFile() {
 
 }  // namespace
 
-// static
-BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
-  if (storage_for_testing_)
-    return storage_for_testing_;
-
-  static base::NoDestructor<BrowserDMTokenStorageMac> storage;
-  return storage.get();
-}
-
 BrowserDMTokenStorageMac::BrowserDMTokenStorageMac()
     : task_runner_(base::ThreadPool::CreateTaskRunner({base::MayBlock()})) {}
 
 BrowserDMTokenStorageMac::~BrowserDMTokenStorageMac() {}
 
 std::string BrowserDMTokenStorageMac::InitClientId() {
-  return base::mac::GetPlatformSerialNumber();
+  if (client_id_.empty()) {
+    client_id_ = base::mac::GetPlatformSerialNumber();
+  }
+
+  return client_id_;
 }
 
 std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {
@@ -180,7 +175,7 @@ std::string BrowserDMTokenStorageMac::InitEnrollmentToken() {
 
 std::string BrowserDMTokenStorageMac::InitDMToken() {
   base::FilePath token_file_path;
-  if (!GetDmTokenFilePath(&token_file_path, RetrieveClientId(), false))
+  if (!GetDmTokenFilePath(&token_file_path, InitClientId(), false))
     return std::string();
 
   std::string token;

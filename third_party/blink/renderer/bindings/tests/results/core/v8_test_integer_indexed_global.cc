@@ -89,7 +89,7 @@ static void LengthAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestIntegerIndexedGlobal", "length");
 
   // Prepare the value to be set.
-  uint64_t cpp_value = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint64_t cpp_value{ NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 

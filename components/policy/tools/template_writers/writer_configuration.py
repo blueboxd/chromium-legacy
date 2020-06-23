@@ -126,6 +126,8 @@ def GetConfigurationForBuild(defines):
     raise Exception('Unknown build')
   if 'version' in defines:
     config['version'] = defines['version']
+  if 'major_version' in defines:
+    config['major_version'] = defines['major_version']
   config['win_supported_os'] = 'SUPPORTED_WIN7'
   config['win_supported_os_win7'] = 'SUPPORTED_WIN7_ONLY'
   if 'mac_bundle_id' in defines:

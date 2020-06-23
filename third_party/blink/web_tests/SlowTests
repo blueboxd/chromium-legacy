@@ -484,7 +484,6 @@ crbug.com/980804 fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html
 
 crbug.com/983642 virtual/gpu/fast/canvas/canvas-composite-alpha.html [ Slow ]
 crbug.com/983642 [ Mac Debug ] fast/canvas/canvas-composite-alpha.html [ Slow ]
-crbug.com/983642 virtual/gpu/fast/canvas/canvas-composite-text-alpha.html [ Slow ]
 crbug.com/983642 fast/canvas/canvas-composite-text-alpha.html [ Slow ]
 crbug.com/983642 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Slow ]
 crbug.com/983642 [ Mac ] fast/canvas/color-space/canvas-createImageBitmap-e_srgb.html [ Slow ]

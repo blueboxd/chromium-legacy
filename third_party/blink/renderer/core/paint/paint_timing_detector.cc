@@ -243,7 +243,9 @@ PaintTimingDetector::GetLargestContentfulPaintCalculator() {
 
 bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
     base::TimeTicks image_paint_time,
-    uint64_t image_paint_size) {
+    uint64_t image_paint_size,
+    base::TimeTicks removed_image_paint_time,
+    uint64_t removed_image_paint_size) {
   // The experimental version (where we look at largest seen so far, regardless
   // of node removal) cannot change when the regular version does not change.
   if (!HasLargestImagePaintChanged(image_paint_time, image_paint_size))
@@ -251,15 +253,22 @@ bool PaintTimingDetector::NotifyIfChangedLargestImagePaint(
 
   largest_image_paint_time_ = image_paint_time;
   largest_image_paint_size_ = image_paint_size;
-  if (experimental_largest_image_paint_size_ < image_paint_size) {
-    // We've found a new largest image.
+  // Compute experimental LCP by using the largest size (smallest paint time in
+  // case of tie).
+  if (removed_image_paint_size < image_paint_size) {
     experimental_largest_image_paint_time_ = image_paint_time;
     experimental_largest_image_paint_size_ = image_paint_size;
-  } else if (experimental_largest_image_paint_size_ == image_paint_size &&
-             experimental_largest_image_paint_time_.is_null()) {
-    // If the experimental largest image was loading when it was first set, we
-    // need to set the actual paint time.
-    experimental_largest_image_paint_time_ = image_paint_time;
+  } else if (removed_image_paint_size > image_paint_size) {
+    experimental_largest_image_paint_time_ = removed_image_paint_time;
+    experimental_largest_image_paint_size_ = removed_image_paint_size;
+  } else {
+    experimental_largest_image_paint_size_ = image_paint_size;
+    if (image_paint_time.is_null()) {
+      experimental_largest_image_paint_time_ = removed_image_paint_time;
+    } else {
+      experimental_largest_image_paint_time_ =
+          std::min(image_paint_time, removed_image_paint_time);
+    }
   }
   DidChangePerformanceTiming();
   return true;

@@ -85,6 +85,7 @@
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/animation/test/ink_drop_impl_test_api.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/view_model.h"
 #include "ui/views/widget/widget.h"
@@ -2163,6 +2164,9 @@ class InkDropSpy : public views::InkDrop {
   void HostSizeChanged(const gfx::Size& new_size) override {
     ink_drop_->HostSizeChanged(new_size);
   }
+  void HostTransformChanged(const gfx::Transform& new_transform) override {
+    ink_drop_->HostTransformChanged(new_transform);
+  }
   views::InkDropState GetTargetInkDropState() const override {
     return ink_drop_->GetTargetInkDropState();
   }
@@ -2234,6 +2238,8 @@ class ListMenuShelfItemDelegate : public ShelfItemDelegate {
 class ShelfViewInkDropTest : public ShelfViewTest {
  public:
   ShelfViewInkDropTest() = default;
+  ShelfViewInkDropTest(const ShelfViewInkDropTest&) = delete;
+  ShelfViewInkDropTest& operator=(const ShelfViewInkDropTest&) = delete;
   ~ShelfViewInkDropTest() override = default;
 
  protected:
@@ -2251,9 +2257,12 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   void InitBrowserButtonInkDrop() {
     browser_button_ = test_api_->GetButton(0);
 
+    auto ink_drop_impl = std::make_unique<views::InkDropImpl>(
+        browser_button_, browser_button_->size());
+    browser_button_ink_drop_impl_ = ink_drop_impl.get();
+
     auto browser_button_ink_drop =
-        std::make_unique<InkDropSpy>(std::make_unique<views::InkDropImpl>(
-            browser_button_, browser_button_->size()));
+        std::make_unique<InkDropSpy>(std::move(ink_drop_impl));
     browser_button_ink_drop_ = browser_button_ink_drop.get();
     views::test::InkDropHostViewTestApi(browser_button_)
         .SetInkDrop(std::move(browser_button_ink_drop));
@@ -2263,9 +2272,7 @@ class ShelfViewInkDropTest : public ShelfViewTest {
   InkDropSpy* home_button_ink_drop_ = nullptr;
   ShelfAppButton* browser_button_ = nullptr;
   InkDropSpy* browser_button_ink_drop_ = nullptr;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ShelfViewInkDropTest);
+  views::InkDropImpl* browser_button_ink_drop_impl_ = nullptr;
 };
 
 // Tests that changing visibility of the app list transitions home button's
@@ -2656,6 +2663,26 @@ TEST_F(ShelfViewInkDropTest, DismissingMenuWithDoubleClickDoesntShowInkDrop) {
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
   EXPECT_EQ(views::InkDropState::HIDDEN,
             browser_button_ink_drop_->GetTargetInkDropState());
+}
+
+// Tests that the shelf ink drop transforms when the host transforms. Regression
+// test for https://crbug.com/1097044.
+TEST_F(ShelfViewInkDropTest, ShelfButtonTransformed) {
+  InitBrowserButtonInkDrop();
+  ASSERT_TRUE(browser_button_ink_drop_impl_);
+  auto ink_drop_impl_test_api =
+      std::make_unique<views::test::InkDropImplTestApi>(
+          browser_button_ink_drop_impl_);
+
+  views::Button* button = browser_button_;
+  gfx::Transform transform;
+  transform.Translate(10, 0);
+  button->SetTransform(transform);
+  EXPECT_EQ(transform, ink_drop_impl_test_api->GetRootLayer()->transform());
+
+  button->SetTransform(gfx::Transform());
+  EXPECT_EQ(gfx::Transform(),
+            ink_drop_impl_test_api->GetRootLayer()->transform());
 }
 
 class ShelfViewFocusTest : public ShelfViewTest {

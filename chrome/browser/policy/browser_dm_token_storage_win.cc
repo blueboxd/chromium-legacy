@@ -215,15 +215,6 @@ BrowserDMTokenStorageWin::SaveDMTokenTaskRunner() {
   return com_sta_task_runner_;
 }
 
-// static
-BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
-  if (storage_for_testing_)
-    return storage_for_testing_;
-
-  static base::NoDestructor<BrowserDMTokenStorageWin> storage;
-  return storage.get();
-}
-
 BrowserDMTokenStorageWin::BrowserDMTokenStorageWin()
     : com_sta_task_runner_(
           base::ThreadPool::CreateCOMSTATaskRunner({base::MayBlock()})) {}

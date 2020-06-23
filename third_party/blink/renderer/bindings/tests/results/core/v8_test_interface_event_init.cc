@@ -52,7 +52,7 @@ void V8TestInterfaceEventInit::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value>
   if (string_member_value.IsEmpty() || string_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> string_member_cpp_value = string_member_value;
+    V8StringResource<> string_member_cpp_value{ string_member_value };
     if (!string_member_cpp_value.Prepare(exception_state))
       return;
     impl->setStringMember(string_member_cpp_value);

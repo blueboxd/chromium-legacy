@@ -84,7 +84,7 @@ void V8TestEnumOrDouble::ToImpl(
     return;
 
   if (v8_value->IsNumber()) {
-    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetDouble(cpp_value);
@@ -92,7 +92,7 @@ void V8TestEnumOrDouble::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     const char* const kValidValues[] = {

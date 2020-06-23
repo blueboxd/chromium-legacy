@@ -106,6 +106,7 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
                        &css_inline_size, &css_min_inline_size,
                        &css_max_inline_size, &css_percentage_inline_size);
 
+  MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kContent);
   MinMaxSizesResult min_max_size;
   if (is_collapsed) {
     NGConstraintSpaceBuilder builder(table_writing_mode,
@@ -116,11 +117,10 @@ NGTableTypes::CellInlineConstraint NGTableTypes::CreateCellInlineConstraint(
     NGConstraintSpace space = builder.ToConstraintSpace();
     // It'd be nice to avoid computing minmax if not needed, but the criteria
     // is not clear.
-    min_max_size = To<NGBlockNode>(node).ComputeMinMaxSizes(
-        table_writing_mode, MinMaxSizesInput(kIndefiniteSize), &space);
+    min_max_size = To<NGBlockNode>(node).ComputeMinMaxSizes(table_writing_mode,
+                                                            input, &space);
   } else {
-    min_max_size = node.ComputeMinMaxSizes(table_writing_mode,
-                                           MinMaxSizesInput(kIndefiniteSize));
+    min_max_size = node.ComputeMinMaxSizes(table_writing_mode, input);
   }
 
   // Compute min inline size.

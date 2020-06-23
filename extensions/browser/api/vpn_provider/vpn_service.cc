@@ -545,7 +545,7 @@ void VpnService::OnExtensionUnloaded(
         base::DoNothing(), base::BindOnce(DoNothingFailureCallback));
   }
   if (reason == extensions::UnloadedExtensionReason::DISABLE ||
-      reason == extensions::UnloadedExtensionReason::BLACKLIST) {
+      reason == extensions::UnloadedExtensionReason::BLOCKLIST) {
     DestroyConfigurationsForExtension(extension);
   }
 }

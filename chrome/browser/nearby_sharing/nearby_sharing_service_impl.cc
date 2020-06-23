@@ -4,11 +4,16 @@
 
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/nearby_sharing/fast_initiation_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "components/prefs/pref_service.h"
+#include "device/bluetooth/bluetooth_adapter_factory.h"
 
 NearbySharingServiceImpl::NearbySharingServiceImpl(
     PrefService* prefs,
@@ -35,22 +40,29 @@ NearbySharingServiceImpl::NearbySharingServiceImpl(
       prefs::kNearbySharingEnabledPrefName,
       base::BindRepeating(&NearbySharingServiceImpl::OnEnabledPrefChanged,
                           base::Unretained(this)));
+
+  GetBluetoothAdapter();
 }
 
-NearbySharingServiceImpl::~NearbySharingServiceImpl() = default;
+NearbySharingServiceImpl::~NearbySharingServiceImpl() {
+  if (bluetooth_adapter_)
+    bluetooth_adapter_->RemoveObserver(this);
+}
 
 void NearbySharingServiceImpl::RegisterSendSurface(
     TransferUpdateCallback* transferCallback,
     ShareTargetDiscoveredCallback* discoveryCallback,
     StatusCodesCallback status_codes_callback) {
-  std::move(status_codes_callback).Run(StatusCodes::kOk);
+  register_send_surface_callback_ = std::move(status_codes_callback);
+  StartFastInitiationAdvertising();
 }
 
 void NearbySharingServiceImpl::UnregisterSendSurface(
     TransferUpdateCallback* transferCallback,
     ShareTargetDiscoveredCallback* discoveryCallback,
     StatusCodesCallback status_codes_callback) {
-  std::move(status_codes_callback).Run(StatusCodes::kOk);
+  unregister_send_surface_callback_ = std::move(status_codes_callback);
+  StopFastInitiationAdvertising();
 }
 
 void NearbySharingServiceImpl::RegisterReceiveSurface(
@@ -133,4 +145,108 @@ void NearbySharingServiceImpl::OnEnabledPrefChanged() {
     // TODO(crbug/1085067): Stop discovery.
     nearby_connections_manager_->Shutdown();
   }
+}
+
+void NearbySharingServiceImpl::StartFastInitiationAdvertising() {
+  if (!IsBluetoothPresent() || !IsBluetoothPowered()) {
+    std::move(register_send_surface_callback_).Run(StatusCodes::kError);
+    return;
+  }
+
+  if (fast_initiation_manager_) {
+    // TODO(hansenmichael): Do not invoke
+    // |register_send_surface_callback_| until Nearby Connections
+    // scanning is kicked off.
+    std::move(register_send_surface_callback_).Run(StatusCodes::kOk);
+    return;
+  }
+
+  fast_initiation_manager_ =
+      FastInitiationManager::Factory::Create(bluetooth_adapter_);
+  fast_initiation_manager_->StartAdvertising(
+      base::BindOnce(
+          &NearbySharingServiceImpl::OnStartFastInitiationAdvertising,
+          weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(
+          &NearbySharingServiceImpl::OnStartFastInitiationAdvertisingError,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbySharingServiceImpl::StopFastInitiationAdvertising() {
+  if (!fast_initiation_manager_) {
+    if (unregister_send_surface_callback_)
+      std::move(unregister_send_surface_callback_).Run(StatusCodes::kOk);
+    return;
+  }
+
+  fast_initiation_manager_->StopAdvertising(
+      base::BindOnce(&NearbySharingServiceImpl::OnStopFastInitiationAdvertising,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NearbySharingServiceImpl::GetBluetoothAdapter() {
+  auto* adapter_factory = device::BluetoothAdapterFactory::Get();
+  if (!adapter_factory->IsBluetoothSupported())
+    return;
+
+  // Because this will be called from the constructor, GetAdapter() may call
+  // OnGetBluetoothAdapter() immediately which can cause problems during tests
+  // since the class is not fully constructed yet.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &device::BluetoothAdapterFactory::GetAdapter,
+          base::Unretained(adapter_factory),
+          base::BindOnce(&NearbySharingServiceImpl::OnGetBluetoothAdapter,
+                         weak_ptr_factory_.GetWeakPtr())));
+}
+
+void NearbySharingServiceImpl::OnGetBluetoothAdapter(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  bluetooth_adapter_ = adapter;
+  bluetooth_adapter_->AddObserver(this);
+}
+
+void NearbySharingServiceImpl::OnStartFastInitiationAdvertising() {
+  // TODO(hansenmichael): Do not invoke
+  // |register_send_surface_callback_| until Nearby Connections
+  // scanning is kicked off.
+  std::move(register_send_surface_callback_).Run(StatusCodes::kOk);
+}
+
+void NearbySharingServiceImpl::OnStartFastInitiationAdvertisingError() {
+  fast_initiation_manager_.reset();
+  std::move(register_send_surface_callback_).Run(StatusCodes::kError);
+}
+
+void NearbySharingServiceImpl::OnStopFastInitiationAdvertising() {
+  fast_initiation_manager_.reset();
+
+  // TODO(hansenmichael): Do not invoke
+  // |unregister_send_surface_callback_| until Nearby Connections
+  // scanning is stopped.
+  if (unregister_send_surface_callback_)
+    std::move(unregister_send_surface_callback_).Run(StatusCodes::kOk);
+}
+
+bool NearbySharingServiceImpl::IsBluetoothPresent() const {
+  return bluetooth_adapter_.get() && bluetooth_adapter_->IsPresent();
+}
+
+bool NearbySharingServiceImpl::IsBluetoothPowered() const {
+  return IsBluetoothPresent() && bluetooth_adapter_->IsPowered();
+}
+
+void NearbySharingServiceImpl::AdapterPresentChanged(
+    device::BluetoothAdapter* adapter,
+    bool present) {
+  if (!present)
+    StopFastInitiationAdvertising();
+}
+
+void NearbySharingServiceImpl::AdapterPoweredChanged(
+    device::BluetoothAdapter* adapter,
+    bool powered) {
+  if (!powered)
+    StopFastInitiationAdvertising();
 }

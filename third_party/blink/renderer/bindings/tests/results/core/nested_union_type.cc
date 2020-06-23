@@ -178,7 +178,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<int32_t> cpp_value = NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<int32_t> cpp_value{ NativeValueTraits<IDLSequence<IDLLong>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetLongSequence(cpp_value);
@@ -187,7 +187,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
   }
 
   if (v8_value->IsObject()) {
-    HeapVector<std::pair<String, ByteStringOrNodeList>> cpp_value = NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::NativeValue(isolate, v8_value, exception_state);
+    HeapVector<std::pair<String, ByteStringOrNodeList>> cpp_value{ NativeValueTraits<IDLRecord<IDLString, ByteStringOrNodeList>>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetStringByteStringOrNodeListRecord(cpp_value);
@@ -195,7 +195,7 @@ void V8NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNode
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

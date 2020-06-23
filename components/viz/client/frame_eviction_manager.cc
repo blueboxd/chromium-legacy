@@ -103,6 +103,7 @@ size_t FrameEvictionManager::GetMaxNumberOfSavedFrames() const {
 
 FrameEvictionManager::FrameEvictionManager()
     : memory_pressure_listener_(new base::MemoryPressureListener(
+          FROM_HERE,
           base::BindRepeating(&FrameEvictionManager::OnMemoryPressure,
                               base::Unretained(this)))) {
   max_number_of_saved_frames_ =

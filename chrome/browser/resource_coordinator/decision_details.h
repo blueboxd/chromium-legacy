@@ -30,8 +30,8 @@ enum class DecisionFailureReason : int32_t {
   LIFECYCLES_ENTERPRISE_POLICY_OPT_OUT,
   // A frame on the page opted itself out of the intervention via origin trial.
   ORIGIN_TRIAL_OPT_OUT,
-  // The origin was opted out of the intervention in the global blacklist.
-  GLOBAL_BLACKLIST,
+  // The origin was opted out of the intervention in the global disallowlist.
+  GLOBAL_DISALLOWLIST,
   // The local heuristic opted the origin out of the intervention due to its use
   // of audio while in the background.
   HEURISTIC_AUDIO,
@@ -100,8 +100,8 @@ enum class DecisionSuccessReason : int32_t {
   INVALID = -1,
   // A frame on the page opted itself in the intervention via origin trial.
   ORIGIN_TRIAL_OPT_IN,
-  // The origin was opted into the intervention via the global whitelist.
-  GLOBAL_WHITELIST,
+  // The origin was opted into the intervention via the global allowlist.
+  GLOBAL_ALLOWLIST,
   // The origin has been observed to be safe for the intervention using local
   // database observations.
   HEURISTIC_OBSERVED_TO_BE_SAFE,

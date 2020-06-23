@@ -995,8 +995,9 @@ void AuthenticatorCommon::GetAssertion(
   if (options->appid) {
     app_id_ = ProcessAppIdExtension(*options->appid, caller_origin_);
     if (!app_id_) {
-      std::move(callback).Run(blink::mojom::AuthenticatorStatus::INVALID_DOMAIN,
-                              nullptr);
+      InvokeCallbackAndCleanup(
+          std::move(callback),
+          blink::mojom::AuthenticatorStatus::INVALID_DOMAIN);
       return;
     }
   }

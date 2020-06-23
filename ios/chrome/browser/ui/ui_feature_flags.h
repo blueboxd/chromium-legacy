@@ -38,10 +38,6 @@ extern const base::Feature kContainedBVC;
 // features in tests works.
 extern const base::Feature kTestFeature;
 
-// Feature flag to display a new option that wipes synced data on a local
-// device when signing out from a non-managed account.
-extern const base::Feature kClearSyncedData;
-
 // Verify if the crash in https://crbug.com/816427 is fixed on iOS 12.
 extern const base::Feature kFirstResponderSendAction;
 

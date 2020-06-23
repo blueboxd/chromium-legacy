@@ -55,11 +55,6 @@ struct PaintTiming {
   // (Experimental) largest contentful paint including removed content.
   LargestContentfulPaintTiming experimental_largest_contentful_paint;
 
-  // (Experimental) Time when the frame is first eligible to be painted, i.e.
-  // is first not render-throttled. Will be null if frame is throttled,
-  // unless there has already been a |first_paint|.
-  mojo_base.mojom.TimeDelta? first_eligible_to_paint;
-
   // (Experimental) Time when first input or scroll is received, causing the
   // largest contentful paint algorithm to stop.
   mojo_base.mojom.TimeDelta? first_input_or_scroll_notified_timestamp;

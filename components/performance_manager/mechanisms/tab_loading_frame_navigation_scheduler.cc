@@ -276,12 +276,16 @@ void TabLoadingFrameNavigationScheduler::DidFinishNavigation(
 void TabLoadingFrameNavigationScheduler::StopThrottlingImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Release all of the throttles.
-  for (auto& entry : throttles_) {
+  // Release all of the throttles. Note that releasing a throttle will cause
+  // "DidFinishNavigation" to be invoked for the associated NavigationHandle,
+  // which would modify |throttles_|. We instead take the data structure before
+  // iterating.
+  auto throttles = std::move(throttles_);
+  DCHECK(throttles_.empty());
+  for (auto& entry : throttles) {
     auto* throttle = entry.second;
     throttle->Resume();
   }
-  throttles_.clear();
 
   // Tear down this object. This must be called last so as not to UAF ourselves.
   // Note that this is always called from static functions in this translation

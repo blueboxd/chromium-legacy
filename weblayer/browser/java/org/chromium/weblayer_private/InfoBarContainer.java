@@ -287,7 +287,7 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
     }
 
     public void destroy() {
-        destroyContainerView();
+        if (mInfoBarContainerView != null) destroyContainerView();
         if (mNativeInfoBarContainer != 0) {
             InfoBarContainerJni.get().destroy(mNativeInfoBarContainer, InfoBarContainer.this);
             mNativeInfoBarContainer = 0;

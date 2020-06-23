@@ -120,15 +120,6 @@ enum OverlaySupport {
   SOFTWARE,
 };
 
-// gpu::Dx12VulkanVersionInfo
-[EnableIf=is_win]
-struct Dx12VulkanVersionInfo {
-  bool supports_dx12;
-  bool supports_vulkan;
-  uint32 d3d12_feature_level;
-  uint32 vulkan_version;
-};
-
 // gpu::OverlayInfo
 [EnableIf=is_win]
 struct OverlayInfo {
@@ -171,7 +162,9 @@ struct GpuInfo {
   [EnableIf=is_win]
   DxDiagNode dx_diagnostics;
   [EnableIf=is_win]
-  Dx12VulkanVersionInfo dx12_vulkan_version_info;
+  uint32 d3d12_feature_level;
+  [EnableIf=is_win]
+  uint32 vulkan_version;
   [EnableIf=is_win]
   OverlayInfo overlay_info;
 

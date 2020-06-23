@@ -5,7 +5,8 @@
 #ifndef NET_DISK_CACHE_BLOCKFILE_STRESS_SUPPORT_H_
 #define NET_DISK_CACHE_BLOCKFILE_STRESS_SUPPORT_H_
 
-#include "base/logging.h"
+#include "base/check.h"
+#include "base/notreached.h"
 
 namespace disk_cache {
 

@@ -106,11 +106,6 @@ extern const char kLogBreadcrumbsDescription[];
 extern const char kBreakpadNoDelayInitialUploadName[];
 extern const char kBreakpadNoDelayInitialUploadDescription[];
 
-// Title and description for the flag to control if Chrome should wipe synced
-// data from a local device on sign-out from a non-managed account.
-extern const char kClearSyncedDataName[];
-extern const char kClearSyncedDataDescription[];
-
 // Title and description for the flag that controls the tab switcher position.
 extern const char kChangeTabSwitcherPositionName[];
 extern const char kChangeTabSwitcherPositionDescription[];

@@ -74,7 +74,7 @@ class MockExtensionInstallEventLoggerDelegate
   MockExtensionInstallEventLoggerDelegate() = default;
 
   MOCK_METHOD2(Add,
-               void(const std::set<extensions::ExtensionId>& extensions,
+               void(std::set<extensions::ExtensionId> extensions,
                     const em::ExtensionInstallReportLogEvent& event));
 };
 

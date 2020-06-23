@@ -87,6 +87,9 @@ const base::Feature kTabHoverCardImages{"TabHoverCardImages",
 const base::Feature kTabOutlinesInLowContrastThemes{
     "TabOutlinesInLowContrastThemes", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables searching tabs across multiple windows.
+const base::Feature kTabSearch{"TabSearch", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables showing text next to the 3-dot menu when an update is available.
 // See https://crbug.com/1001731
 const base::Feature kUseTextForUpdateButton{"UseTextForUpdateButton",

@@ -753,7 +753,7 @@ void PasswordStore::NotifyDeletionsHaveSynced(bool success) {
   // telling us that it won't commit them (because Sync was turned off
   // permanently). In either case, run the corresponding callbacks now (on the
   // main task runner).
-  DCHECK(!GetMetadataStore()->HasUnsyncedDeletions());
+  DCHECK(!success || !GetMetadataStore()->HasUnsyncedDeletions());
   if (!deletions_have_synced_callbacks_.empty()) {
     base::UmaHistogramBoolean(
         "PasswordManager.PasswordStoreDeletionsHaveSynced", success);

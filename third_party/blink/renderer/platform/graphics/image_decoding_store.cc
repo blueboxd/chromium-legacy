@@ -43,6 +43,7 @@ ImageDecodingStore::ImageDecodingStore()
     : heap_limit_in_bytes_(kDefaultMaxTotalSizeOfHeapEntries),
       heap_memory_usage_in_bytes_(0),
       memory_pressure_listener_(
+          FROM_HERE,
           base::BindRepeating(&ImageDecodingStore::OnMemoryPressure,
                               base::Unretained(this))) {}
 

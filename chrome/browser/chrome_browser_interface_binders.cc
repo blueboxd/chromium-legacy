@@ -110,6 +110,8 @@
 #include "chrome/browser/ui/webui/media/media_feeds_ui.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
+#include "chrome/browser/ui/webui/tab_search/tab_search.mojom.h"
+#include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/caption.mojom.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #endif
@@ -497,6 +499,9 @@ void PopulateChromeWebUIFrameBinders(
 
   RegisterWebUIControllerInterfaceBinder<media_feeds::mojom::MediaFeedsStore,
                                          MediaFeedsUI>(map);
+
+  RegisterWebUIControllerInterfaceBinder<tab_search::mojom::PageHandlerFactory,
+                                         TabSearchUI>(map);
 #endif
 
 #if defined(OS_CHROMEOS)

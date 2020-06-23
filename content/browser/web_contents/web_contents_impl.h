@@ -400,6 +400,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                               bool is_full_page) override;
   bool IsInnerWebContentsForGuest() override;
   bool IsPortal() override;
+  WebContentsImpl* GetPortalHostWebContents() override;
   RenderFrameHostImpl* GetOuterWebContentsFrame() override;
   WebContentsImpl* GetOuterWebContents() override;
   WebContentsImpl* GetOutermostWebContents() override;

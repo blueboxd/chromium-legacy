@@ -8,9 +8,12 @@
 #include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/metrics/visibility_metrics_logger.h"
 #include "android_webview/browser_jni_headers/AwBrowserProcess_jni.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
+#include "base/android/jni_string.h"
 #include "base/base_paths_posix.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
+#include "components/crash/core/common/crash_key.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -197,6 +200,14 @@ void AwBrowserProcess::OnAuthPrefsChanged() {
 void AwBrowserProcess::TriggerMinidumpUploading() {
   Java_AwBrowserProcess_triggerMinidumpUploading(
       base::android::AttachCurrentThread());
+}
+
+static void JNI_AwBrowserProcess_SetProcessNameCrashKey(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jstring>& processName) {
+  static ::crash_reporter::CrashKeyString<64> crash_key(
+      crash_keys::kAppProcessName);
+  crash_key.Set(ConvertJavaStringToUTF8(env, processName));
 }
 
 }  // namespace android_webview

@@ -78,7 +78,7 @@ void V8FloatOrBoolean::ToImpl(
   }
 
   if (v8_value->IsNumber()) {
-    float cpp_value = NativeValueTraits<IDLFloat>::NativeValue(isolate, v8_value, exception_state);
+    float cpp_value{ NativeValueTraits<IDLFloat>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetFloat(cpp_value);
@@ -86,7 +86,7 @@ void V8FloatOrBoolean::ToImpl(
   }
 
   {
-    float cpp_value = NativeValueTraits<IDLFloat>::NativeValue(isolate, v8_value, exception_state);
+    float cpp_value{ NativeValueTraits<IDLFloat>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetFloat(cpp_value);

@@ -226,7 +226,7 @@ void HTMLFrameOwnerElement::ClearContentFrame() {
 
   DCHECK_EQ(content_frame_->Owner(), this);
   content_frame_ = nullptr;
-  embedding_token_ = base::nullopt;
+  remote_frame_embedding_token_ = base::nullopt;
 
   for (ContainerNode* node = this; node; node = node->ParentOrShadowHostNode())
     node->DecrementConnectedSubframeCount();
@@ -597,9 +597,24 @@ void HTMLFrameOwnerElement::ParseAttribute(
 
 void HTMLFrameOwnerElement::SetEmbeddingToken(
     const base::UnguessableToken& embedding_token) {
-  DCHECK(content_frame_);
-  DCHECK(content_frame_->IsRemoteFrame());
-  embedding_token_ = embedding_token;
+  DCHECK(ContentFrame());
+  DCHECK(ContentFrame()->IsRemoteFrame());
+  remote_frame_embedding_token_ = embedding_token;
+}
+
+const base::Optional<base::UnguessableToken>&
+HTMLFrameOwnerElement::GetEmbeddingToken() const {
+  // TODO(crbug/1098283): Change so that |remote_frame_embedding_token_| is
+  // set by a local ContentFrame()'s SetEmbeddingToken() call rather than
+  // getting it here.
+  if (auto* frame = DynamicTo<LocalFrame>(ContentFrame())) {
+    DCHECK(!remote_frame_embedding_token_.has_value());
+    return frame->GetEmbeddingToken();
+  }
+  DCHECK((remote_frame_embedding_token_.has_value())
+             ? IsA<RemoteFrame>(ContentFrame())
+             : true);
+  return remote_frame_embedding_token_;
 }
 
 bool HTMLFrameOwnerElement::IsAdRelated() const {

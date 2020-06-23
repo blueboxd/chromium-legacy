@@ -695,6 +695,7 @@ mojom("mojo_bindings") {
     "media/webrtc_logging.mojom",
     "metrics.mojom",
     "navigation_corrector.mojom",
+    "net/net_error_page_support.mojom",
     "net_benchmarking.mojom",
     "network_diagnostics.mojom",
     "network_easter_egg.mojom",
@@ -723,6 +724,7 @@ mojom("mojo_bindings") {
   if (enable_offline_pages) {
     sources += [ "mhtml_page_notifier.mojom" ]
     deps += [ "//third_party/blink/public/mojom:mojom_mhtml_load_result" ]
+    enabled_features = [ "enable_offline_pages" ]
   }
 
   public_deps = [

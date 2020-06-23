@@ -220,9 +220,6 @@ class CONTENT_EXPORT RenderWidget
 
   RenderWidgetDelegate* delegate() const { return delegate_; }
 
-  // Returns the RenderWidget for the given routing ID.
-  static RenderWidget* FromRoutingID(int32_t routing_id);
-
   // Closes a RenderWidget that was created by |CreateForFrame|. Ownership is
   // passed into this object to asynchronously delete itself.
   void CloseForFrame(std::unique_ptr<RenderWidget> widget);

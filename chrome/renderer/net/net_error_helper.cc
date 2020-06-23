@@ -317,6 +317,15 @@ chrome::mojom::NetworkEasterEgg* NetErrorHelper::GetRemoteNetworkEasterEgg() {
   return remote_network_easter_egg_.get();
 }
 
+chrome::mojom::NetErrorPageSupport*
+NetErrorHelper::GetRemoteNetErrorPageSupport() {
+  if (!remote_net_error_page_support_) {
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &remote_net_error_page_support_);
+  }
+  return remote_net_error_page_support_.get();
+}
+
 LocalizedError::PageState NetErrorHelper::GenerateLocalizedErrorPage(
     const error_page::Error& error,
     bool is_failed_post,
@@ -470,18 +479,15 @@ void NetErrorHelper::DiagnoseError(const GURL& page_url) {
 }
 
 void NetErrorHelper::DownloadPageLater() {
-#if defined(OS_ANDROID)
-  render_frame()->Send(new ChromeViewHostMsg_DownloadPageLater(
-      render_frame()->GetRoutingID()));
-#endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  GetRemoteNetErrorPageSupport()->DownloadPageLater();
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }
 
 void NetErrorHelper::SetIsShowingDownloadButton(bool show) {
-#if defined(OS_ANDROID)
-  render_frame()->Send(
-      new ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage(
-          render_frame()->GetRoutingID(), show));
-#endif  // defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  GetRemoteNetErrorPageSupport()->SetIsShowingDownloadButtonInErrorPage(show);
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }
 
 void NetErrorHelper::OfflineContentAvailable(

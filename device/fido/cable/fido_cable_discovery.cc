@@ -115,12 +115,14 @@ enum class FidoCableDiscovery::CableV1DiscoveryEvent : int {
   kAdapterManuallyPowered = 4,
   kAdapterPoweredOff = 5,
   kScanningStarted = 6,
+  kStartScanningFailed = 12,
+  kScanningStoppedUnexpectedly = 13,
   kAdvertisementRegistered = 7,
   kFirstCableDeviceFound = 8,
   kFirstCableDeviceGATTConnected = 9,
   kFirstCableHandshakeSucceeded = 10,
   kFirstCableDeviceTimeout = 11,
-  kMaxValue = kFirstCableDeviceTimeout,
+  kMaxValue = kScanningStoppedUnexpectedly,
 };
 
 // FidoCableDiscovery::Result -------------------------------------------------
@@ -257,10 +259,6 @@ void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
 
   if (has_v1_discovery_data_) {
     RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kAdapterPresent);
-    if (adapter->IsPowered()) {
-      RecordCableV1DiscoveryEventOnce(
-          CableV1DiscoveryEvent::kAdapterAlreadyPowered);
-    }
   }
 
   DCHECK(!adapter_);
@@ -270,6 +268,10 @@ void FidoCableDiscovery::OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter) {
 
   adapter_->AddObserver(this);
   if (adapter_->IsPowered()) {
+    if (has_v1_discovery_data_) {
+      RecordCableV1DiscoveryEventOnce(
+          CableV1DiscoveryEvent::kAdapterAlreadyPowered);
+    }
     OnSetPowered();
   }
 
@@ -348,6 +350,22 @@ void FidoCableDiscovery::AdapterPoweredChanged(BluetoothAdapter* adapter,
 #endif  // defined(OS_WIN)
 }
 
+void FidoCableDiscovery::AdapterDiscoveringChanged(BluetoothAdapter* adapter,
+                                                   bool is_scanning) {
+  FIDO_LOG(DEBUG) << "AdapterDiscoveringChanged() is_scanning=" << is_scanning;
+
+  // Ignore updates while we're not scanning for caBLE devices ourselves. Other
+  // things in Chrome may start or stop scans at any time.
+  if (!discovery_session_) {
+    return;
+  }
+
+  if (has_v1_discovery_data_ && !is_scanning) {
+    RecordCableV1DiscoveryEventOnce(
+        CableV1DiscoveryEvent::kScanningStoppedUnexpectedly);
+  }
+}
+
 void FidoCableDiscovery::FidoCableDeviceConnected(FidoCableDevice* device,
                                                   bool success) {
   if (!success || !IsObservedV1Device(device->GetAddress())) {
@@ -399,6 +417,10 @@ void FidoCableDiscovery::OnStartDiscoverySession(
 
 void FidoCableDiscovery::OnStartDiscoverySessionError() {
   FIDO_LOG(ERROR) << "Failed to start caBLE discovery";
+  if (has_v1_discovery_data_) {
+    RecordCableV1DiscoveryEventOnce(
+        CableV1DiscoveryEvent::kStartScanningFailed);
+  }
 }
 
 void FidoCableDiscovery::StartAdvertisement() {

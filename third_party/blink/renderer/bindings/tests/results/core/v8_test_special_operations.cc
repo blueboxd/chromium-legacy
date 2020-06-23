@@ -105,7 +105,7 @@ static void NamedPropertySetter(
     v8::Local<v8::Value> v8_value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestSpecialOperations* impl = V8TestSpecialOperations::ToImpl(info.Holder());
-  Node* property_value = V8Node::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  Node* property_value{ V8Node::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
   if (!property_value && !IsUndefinedOrNull(v8_value)) {
     exception_state.ThrowTypeError("The provided value is not of type 'Node'.");
     return;

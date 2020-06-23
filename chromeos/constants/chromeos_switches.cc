@@ -520,6 +520,9 @@ const char kShowOobeDevOverlay[] = "show-oobe-dev-overlay";
 // Specifies directory for screenshots taken with OOBE UI Debugger.
 const char kOobeScreenshotDirectory[] = "oobe-screenshot-dir";
 
+// Specifies directory for the Telemetry System Web Extension.
+const char kTelemetryExtensionDirectory[] = "telemetry-extension-dir";
+
 // Enables testing for encryption migration UI.
 const char kTestEncryptionMigrationUI[] = "test-encryption-migration-ui";
 

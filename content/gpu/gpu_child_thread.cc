@@ -134,9 +134,9 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   associated_registry->AddInterface(base::BindRepeating(
       &GpuChildThread::CreateVizMainService, base::Unretained(this)));
 
-  memory_pressure_listener_ =
-      std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-          &GpuChildThread::OnMemoryPressure, base::Unretained(this)));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&GpuChildThread::OnMemoryPressure,
+                                     base::Unretained(this)));
 }
 
 void GpuChildThread::CreateVizMainService(

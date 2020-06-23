@@ -7,7 +7,7 @@
 
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/optional.h"
 #include "net/dns/dns_config_service.h"
 

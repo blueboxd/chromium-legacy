@@ -192,6 +192,10 @@ enum ProcessedActionStatusProto {
   // ProcessedActionStatusProto.AutofillErrorInfoProto contains more details.
   AUTOFILL_INCOMPLETE = 24;
 
+  // Evaluating a selector required considering too many candidates. Please
+  // generate more specific selectors. See SelectorProto::ProximityFilter.
+  TOO_MANY_CANDIDATES = 25;
+
   reserved 15, 23;
 }
 

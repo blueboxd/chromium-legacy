@@ -2,14 +2,47 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {Node, Edge} from './graph_model.js';
-import {parseGraphFromJson} from './process_graph_json.js';
+import {Node, D3GraphData} from './graph_model.js';
+import {parseGraphModelFromJson} from './process_graph_json.js';
 import {GraphStore} from './graph_store.js';
 
 // For ease of development, we currently serve all our JSON and other assets
 // through a simple Python server at localhost:8888. This should be changed
 // as we find other ways to serve the assets (user upload or hosted externally).
 const LOCALHOST = 'http://localhost:8888';
+
+// Colors for displayed nodes. These colors are temporary.
+const NODE_COLORS = {
+  FILTER: d3.color('red'),
+  INBOUND: d3.color('#000080'), // Dark blue.
+  OUTBOUND: d3.color('#666600'), // Dark yellow.
+  INBOUND_AND_OUTBOUND: d3.color('#006400'), // Dark green.
+};
+
+/**
+ * Computes the color to display for a given node.
+ * @param {!Node} node The node in question.
+ * @return {string} The color of the node.
+ */
+function getNodeColor(node) {
+  if (node.visualizationState.selectedByFilter) {
+    return NODE_COLORS.FILTER;
+  }
+  if (node.visualizationState.selectedByInbound &&
+    node.visualizationState.selectedByOutbound) {
+    return NODE_COLORS.INBOUND_AND_OUTBOUND.brighter(
+        Math.min(node.visualizationState.inboundDepth,
+            node.visualizationState.outboundDepth));
+  }
+  if (node.visualizationState.selectedByInbound) {
+    return NODE_COLORS.INBOUND.brighter(
+        node.visualizationState.inboundDepth);
+  }
+  if (node.visualizationState.selectedByOutbound) {
+    return NODE_COLORS.OUTBOUND.brighter(
+        node.visualizationState.outboundDepth);
+  }
+}
 
 /**
  * Adds a def for an arrowhead (triangle) marker to the SVG.
@@ -40,13 +73,13 @@ function addArrowMarkerDef(defs, id, length, width) {
  * Currently just binds to the only 'svg' object, as things get more complex
  * we can maybe change this to bind to a given DOM element if necessary.
  *
- * @param {Array<Node>} inputNodes An array of nodes to render.
- * @param {Array<Edge>} inputEdges An array of edges to render.
+ * @param {!D3GraphData} inputData The data to render.
  */
-function renderGraph(inputNodes, inputEdges) {
+function renderGraph(inputData) {
   // TODO(yjlong): Reorganize this function so that we can selectively rerender
   // (as opposed to removing all elements and rerendering on each call),
 
+  const {nodes: inputNodes, edges: inputEdges} = inputData;
   const svg = d3.select('svg');
   svg.selectAll('*').remove();
   const svgDefs = svg.append('defs');
@@ -91,6 +124,7 @@ function renderGraph(inputNodes, inputEdges) {
       .data(inputNodes)
       .join(enter => enter.append('circle'))
       .attr('r', 5)
+      .attr('fill', d => getNodeColor(d))
       .call(d3.drag()
           .on('drag', (d, i, nodes) => {
             reheatSimulation();
@@ -151,7 +185,7 @@ function renderGraph(inputNodes, inputEdges) {
 document.addEventListener('DOMContentLoaded', () => {
   d3.json(`${LOCALHOST}/json_graph.txt`).then(data => {
     const graphStore = GraphStore.instance;
-    const graph = parseGraphFromJson(data.package_graph);
+    const graphModel = parseGraphModelFromJson(data.package_graph);
     // TODO(yjlong): This is test data. Remove this when no longer needed.
     graphStore.addIncludedNode('org.chromium.base');
     graphStore.addIncludedNode('org.chromium.chrome.browser.gsa');
@@ -168,8 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
       methods: {
         submitFilter: function() {
           graphStore.addIncludedNode(this.filterInputText);
-          renderGraph(
-              graph.getNodesForD3(graphStore), graph.getEdgesForD3(graphStore));
+          renderGraph(graphModel.getDataForD3(graphStore));
         },
       },
     });
@@ -183,13 +216,39 @@ document.addEventListener('DOMContentLoaded', () => {
         removeFilter: function(e) {
           const filterText = e.target.textContent;
           graphStore.removeIncludedNode(filterText.trim());
-          renderGraph(
-              graph.getNodesForD3(graphStore), graph.getEdgesForD3(graphStore));
+          renderGraph(graphModel.getDataForD3(graphStore));
         },
       },
     });
 
-    renderGraph(
-        graph.getNodesForD3(graphStore), graph.getEdgesForD3(graphStore));
+    new Vue({
+      el: '#filter-inbound-group',
+      data: {
+        inboundNum: 0,
+        sharedState: graphStore.state,
+      },
+      methods: {
+        submitInbound: function() {
+          graphStore.setInboundDepth(this.inboundNum);
+          renderGraph(graphModel.getDataForD3(graphStore));
+        },
+      },
+    });
+
+    new Vue({
+      el: '#filter-outbound-group',
+      data: {
+        outboundNum: 0,
+        sharedState: graphStore.state,
+      },
+      methods: {
+        submitOutbound: function() {
+          graphStore.setOutboundDepth(this.outboundNum);
+          renderGraph(graphModel.getDataForD3(graphStore));
+        },
+      },
+    });
+
+    renderGraph(graphModel.getDataForD3(graphStore));
   });
 });

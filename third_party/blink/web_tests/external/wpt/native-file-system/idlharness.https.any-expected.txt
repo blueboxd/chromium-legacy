@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 59 tests; 55 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 59 tests; 58 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Window: original interface defined
@@ -54,9 +54,9 @@ PASS FileSystemWritableFileStream interface: existence and properties of interfa
 PASS FileSystemWritableFileStream interface: operation write(FileSystemWriteChunkType)
 PASS FileSystemWritableFileStream interface: operation seek(unsigned long long)
 PASS FileSystemWritableFileStream interface: operation truncate(unsigned long long)
-FAIL Window interface: operation showOpenFilePicker(optional OpenFilePickerOptions) assert_own_property: global object missing non-static operation expected property "showOpenFilePicker" missing
-FAIL Window interface: operation showSaveFilePicker(optional SaveFilePickerOptions) assert_own_property: global object missing non-static operation expected property "showSaveFilePicker" missing
-FAIL Window interface: operation showDirectoryPicker(optional DirectoryPickerOptions) assert_own_property: global object missing non-static operation expected property "showDirectoryPicker" missing
+PASS Window interface: operation showOpenFilePicker(optional OpenFilePickerOptions)
+PASS Window interface: operation showSaveFilePicker(optional SaveFilePickerOptions)
+PASS Window interface: operation showDirectoryPicker(optional DirectoryPickerOptions)
 PASS Window interface: operation getOriginPrivateDirectory()
 PASS WorkerGlobalScope interface: existence and properties of interface object
 Harness: the test ran to completion.

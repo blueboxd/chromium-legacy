@@ -346,7 +346,7 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUnloaded) {
   // Simulate extension unload.
   extension_registry_->RemoveEnabled(extension_->id());
   extension_registry_->TriggerOnUnloaded(
-      extension_.get(), extensions::UnloadedExtensionReason::BLACKLIST);
+      extension_.get(), extensions::UnloadedExtensionReason::BLOCKLIST);
   EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
 }
 

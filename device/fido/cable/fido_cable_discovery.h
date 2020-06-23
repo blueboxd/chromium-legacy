@@ -148,6 +148,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
   void AdapterPoweredChanged(BluetoothAdapter* adapter, bool powered) override;
+  void AdapterDiscoveringChanged(BluetoothAdapter* adapter,
+                                 bool discovering) override;
 
   // FidoCableDevice::Observer:
   void FidoCableDeviceConnected(FidoCableDevice* device, bool success) override;
@@ -157,10 +159,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   std::unique_ptr<BluetoothDiscoverySession> discovery_session_;
 
   std::vector<CableDiscoveryData> discovery_data_;
+
   // active_authenticator_eids_ contains authenticator EIDs for which a
   // handshake is currently running. Further advertisements for the same EIDs
   // will be ignored.
   std::set<CableEidArray> active_authenticator_eids_;
+
   // active_devices_ contains the BLE addresses of devices for which a handshake
   // is already running. Further advertisements from these devices will be
   // ignored. However, devices may rotate their BLE address at will so this is
@@ -184,6 +188,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // that the device-log isn't spammed.
   mutable base::flat_map<std::string, std::unique_ptr<ObservedDeviceData>>
       observed_devices_;
+
   // noted_obsolete_eids_ remembers QR-code EIDs that have been logged as
   // valid-but-expired in order to avoid spamming the device-log.
   mutable base::flat_set<CableEidArray> noted_obsolete_eids_;

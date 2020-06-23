@@ -286,6 +286,9 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
         DXGI_ALPHA_MODE_PREMULTIPLIED, &dcomp_surface_);
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSurface failed with error " << std::hex << hr;
+      // Disable direct composition because CreateSurface might fail again next
+      // time.
+      g_direct_composition_swap_chain_failed = true;
       return false;
     }
   } else if (!swap_chain_ && !enable_dc_layers_) {
@@ -331,6 +334,8 @@ bool DirectCompositionChildSurfaceWin::SetDrawRectangle(
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSwapChainForComposition failed with error "
                   << std::hex << hr;
+      // Disable direct composition because SwapChain creation might fail again
+      // next time.
       g_direct_composition_swap_chain_failed = true;
       return false;
     }

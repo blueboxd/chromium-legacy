@@ -77,8 +77,8 @@ const char kChallengeResponseKeys[] = "challenge_response_keys";
 const char kLastOnlineSignin[] = "last_online_singin";
 const char kOfflineSigninLimit[] = "offline_signin_limit";
 
-// Key of the boolean flag telling if user is managed.
-const char kIsManaged[] = "is_managed";
+// Key of the boolean flag telling if user is enterprise managed.
+const char kIsEnterpriseManaged[] = "is_enterprise_managed";
 
 // Key of the last input method user used which is suitable for login/lock
 // screen.
@@ -101,7 +101,7 @@ const char* kReservedKeys[] = {kCanonicalEmail,
                                kChallengeResponseKeys,
                                kLastOnlineSignin,
                                kOfflineSigninLimit,
-                               kIsManaged,
+                               kIsEnterpriseManaged,
                                kLastInputMethod};
 
 PrefService* GetLocalState() {
@@ -653,14 +653,15 @@ base::TimeDelta GetOfflineSigninLimit(const AccountId& account_id) {
   return *time_delta;
 }
 
-void SetIsManaged(const AccountId& account_id, bool is_managed) {
-  SetBooleanPref(account_id, kIsManaged, is_managed);
+void SetIsEnterpriseManaged(const AccountId& account_id,
+                            bool is_enterprise_managed) {
+  SetBooleanPref(account_id, kIsEnterpriseManaged, is_enterprise_managed);
 }
 
-bool GetIsManaged(const AccountId& account_id) {
-  bool is_managed;
-  if (GetBooleanPref(account_id, kIsManaged, &is_managed))
-    return is_managed;
+bool GetIsEnterpriseManaged(const AccountId& account_id) {
+  bool is_enterprise_managed;
+  if (GetBooleanPref(account_id, kIsEnterpriseManaged, &is_enterprise_managed))
+    return is_enterprise_managed;
   return false;
 }
 

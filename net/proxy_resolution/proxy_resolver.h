@@ -6,7 +6,6 @@
 #define NET_PROXY_RESOLUTION_PROXY_RESOLVER_H_
 
 #include "base/callback_forward.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"

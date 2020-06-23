@@ -122,7 +122,7 @@ class ExtensionAppsChromeOs : public ExtensionAppsBase,
       const message_center::Notification& notification,
       const NotificationCommon::Metadata* const metadata);
 
-  static bool IsBlacklisted(const std::string& app_id);
+  static bool IsBlocklisted(const std::string& app_id);
 
   void UpdateShowInFields(const std::string& app_id);
 

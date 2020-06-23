@@ -142,9 +142,7 @@ TEST_F(SafeBrowsingPrivateApiUnitTest, GetReferrerChain) {
   ASSERT_TRUE(referrer_chain);
 }
 
-// Flaky (crbug.com/1096975)
-TEST_F(SafeBrowsingPrivateApiUnitTest,
-       DISABLED_GetReferrerChainForNonSafeBrowsingUser) {
+TEST_F(SafeBrowsingPrivateApiUnitTest, GetReferrerChainForNonSafeBrowsingUser) {
   // Disable Safe Browsing.
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                false);

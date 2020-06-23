@@ -74,8 +74,10 @@ bool MenuItemMatchesAction(const base::Optional<ActionInfo::Type> action_type,
       (*action_type == ActionInfo::TYPE_BROWSER)) {
     return true;
   }
-
-  // TODO(devlin): Add support for ActionInfo::TYPE_ACTION here.
+  if (contexts.Contains(MenuItem::ACTION) &&
+      (*action_type == ActionInfo::TYPE_ACTION)) {
+    return true;
+  }
 
   return false;
 }

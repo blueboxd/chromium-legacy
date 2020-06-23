@@ -887,9 +887,7 @@ void PasswordManager::OnPasswordFormsRendered(
 
 void PasswordManager::OnLoginSuccessful() {
   if (autofill_assistant_mode_ == AutofillAssistantMode::kRunning) {
-    // Autofillassistan performs one login. Only one prompt should
-    // be suppressed.
-    SetAutofillAssistantMode(AutofillAssistantMode::kNotRunning);
+    // Suppress prompts while Autofill Assistant is running.
     return;
   }
 

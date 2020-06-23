@@ -230,5 +230,31 @@ TEST_F(TileServiceSchedulerTest, FirstKickoffNotOverride) {
   EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), base::Time());
 }
 
+TEST_F(TileServiceSchedulerTest, FirstRunFinishedAfterInstantFetchComplete) {
+  base::test::ScopedCommandLine scoped_command_line;
+  auto now = clock()->Now();
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), now);
+
+  // Set instant-fetch flag to true after first-kickoff flow was marked and
+  // scheduled, expecting the mark of first flow also being reset.
+  scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+      query_tiles::switches::kQueryTilesInstantBackgroundTask, "true");
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(0);
+  tile_service_scheduler()->OnFetchCompleted(TileInfoRequestStatus::kSuccess);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), base::Time());
+
+  // Set instant-fetch flag to false after 2 hours. Chrome restarts with no
+  // tiles, the scheduler should start a new first kickoff flow.
+  scoped_command_line.GetProcessCommandLine()->RemoveSwitch(
+      query_tiles::switches::kQueryTilesInstantBackgroundTask);
+  auto two_hours_later = now + base::TimeDelta::FromHours(2);
+  clock()->SetNow(two_hours_later);
+  EXPECT_CALL(*native_scheduler(), Schedule(_)).Times(1);
+  tile_service_scheduler()->OnTileManagerInitialized(TileGroupStatus::kNoTiles);
+  EXPECT_EQ(prefs()->GetTime(kFirstScheduleTimeKey), two_hours_later);
+}
+
 }  // namespace
 }  // namespace query_tiles

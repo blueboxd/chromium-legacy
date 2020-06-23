@@ -2,16 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/native-file-system/#api-choosefilesystementries
+// https://wicg.github.io/native-file-system/#native-filesystem
 // https://wicg.github.io/native-file-system/#api-getoriginprivatefilesystem
 [
     SecureContext,
     RuntimeEnabled=NativeFileSystem,
     ImplementedAs=GlobalNativeFileSystem
 ] partial interface Window {
-    [CallWith=ScriptState, Measure, RaisesException]
+    [CallWith=ScriptState, Measure, RaisesException, RuntimeEnabled=LegacyNativeFileSystem]
     Promise<(FileSystemHandle or sequence<FileSystemHandle>)>
         chooseFileSystemEntries(optional ChooseFileSystemEntriesOptions options = {});
+
+    [CallWith=ScriptState, RaisesException]
+    Promise<sequence<FileSystemFileHandle>> showOpenFilePicker(
+        optional OpenFilePickerOptions options = {});
+    [CallWith=ScriptState, RaisesException]
+    Promise<FileSystemFileHandle> showSaveFilePicker(
+        optional SaveFilePickerOptions options = {});
+    [CallWith=ScriptState, RaisesException]
+    Promise<FileSystemDirectoryHandle> showDirectoryPicker(
+        optional DirectoryPickerOptions options = {});
+
     [CallWith=ScriptState, RaisesException]
     Promise<FileSystemDirectoryHandle> getOriginPrivateDirectory();
 };

@@ -246,9 +246,9 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
         // Wait for the Content Shell to be initialized.
         CriteriaHelper.pollUiThread(() -> {
             Shell shell = getActivity().getActiveShell();
-            Assert.assertNotNull("Shell is null.", shell);
-            Assert.assertFalse("Shell is still loading.", shell.isLoading());
-            Assert.assertThat("Shell's URL is empty or null.",
+            Criteria.checkThat("Shell is null.", shell, Matchers.notNullValue());
+            Criteria.checkThat("Shell is still loading.", shell.isLoading(), Matchers.is(false));
+            Criteria.checkThat("Shell's URL is empty or null.",
                     shell.getWebContents().getLastCommittedUrl(),
                     Matchers.not(Matchers.isEmptyOrNullString()));
         }, WAIT_FOR_ACTIVE_SHELL_LOADING_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
@@ -317,13 +317,9 @@ public class ContentShellActivityTestRule extends ActivityTestRule<ContentShellA
      */
     public void assertWaitForPageScaleFactorMatch(float expectedScale) {
         final RenderCoordinatesImpl coord = getRenderCoordinates();
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(expectedScale, new Callable<Float>() {
-                    @Override
-                    public Float call() {
-                        return coord.getPageScaleFactor();
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(coord.getPageScaleFactor(), Matchers.is(expectedScale));
+        });
     }
 
     /**

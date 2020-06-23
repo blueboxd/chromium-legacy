@@ -417,7 +417,7 @@ const CapabilityWin& GetBestMatchedPhotoCapability(
 
 HRESULT CreateCaptureEngine(IMFCaptureEngine** engine) {
   ComPtr<IMFCaptureEngineClassFactory> capture_engine_class_factory;
-  HRESULT hr = CoCreateInstance(CLSID_MFCaptureEngineClassFactory, NULL,
+  HRESULT hr = CoCreateInstance(CLSID_MFCaptureEngineClassFactory, nullptr,
                                 CLSCTX_INPROC_SERVER,
                                 IID_PPV_ARGS(&capture_engine_class_factory));
   if (FAILED(hr))
@@ -863,7 +863,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
 
   DWORD dw_sink_stream_index = 0;
   hr = preview_sink->AddStream(best_match_video_capability.stream_index,
-                               sink_video_media_type.Get(), NULL,
+                               sink_video_media_type.Get(), nullptr,
                                &dw_sink_stream_index);
   if (FAILED(hr)) {
     OnError(VideoCaptureError::kWinMediaFoundationSinkAddStreamFailed,
@@ -991,9 +991,9 @@ void VideoCaptureDeviceMFWin::TakePhoto(TakePhotoCallback callback) {
   }
 
   DWORD dw_sink_stream_index = 0;
-  hr =
-      photo_sink->AddStream(selected_photo_capability_->stream_index,
-                            sink_media_type.Get(), NULL, &dw_sink_stream_index);
+  hr = photo_sink->AddStream(selected_photo_capability_->stream_index,
+                             sink_media_type.Get(), nullptr,
+                             &dw_sink_stream_index);
   if (FAILED(hr)) {
     LogError(FROM_HERE, hr);
     return;

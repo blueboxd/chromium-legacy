@@ -151,7 +151,8 @@ class ChromeContentRendererClient
       content::RenderFrame* render_frame) override;
 #if !defined(OS_ANDROID)
   std::unique_ptr<media::SpeechRecognitionClient> CreateSpeechRecognitionClient(
-      content::RenderFrame* render_frame) override;
+      content::RenderFrame* render_frame,
+      media::SpeechRecognitionClient::OnReadyCallback callback) override;
 #endif
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)

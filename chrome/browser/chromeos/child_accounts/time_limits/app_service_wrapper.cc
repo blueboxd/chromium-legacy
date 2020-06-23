@@ -234,7 +234,7 @@ void AppServiceWrapper::OnAppUpdate(const apps::AppUpdate& update) {
       break;
     case apps::mojom::Readiness::kDisabledByUser:
     case apps::mojom::Readiness::kDisabledByPolicy:
-    case apps::mojom::Readiness::kDisabledByBlacklist:
+    case apps::mojom::Readiness::kDisabledByBlocklist:
       for (auto& listener : listeners_)
         listener.OnAppBlocked(app_id);
       break;

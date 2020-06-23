@@ -15,9 +15,6 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
 
-// MIERSH
-// #include "chromeos/dbus/dbus_method_call_status.h"
-
 namespace chromeos {
 namespace cert_provisioning {
 
@@ -58,28 +55,45 @@ bool IsFinalState(CertProvisioningWorkerState state) {
 
 base::Optional<CertProfile> CertProfile::MakeFromValue(
     const base::Value& value) {
+  static_assert(kVersion == 3, "This function should be updated");
+
   const std::string* id = value.FindStringKey(kCertProfileIdKey);
   const std::string* policy_version =
       value.FindStringKey(kCertProfilePolicyVersionKey);
+  base::Optional<bool> is_va_enabled =
+      value.FindBoolKey(kCertProfileIsVaEnabledKey);
   if (!id || !policy_version) {
     return base::nullopt;
+  }
+  if (!is_va_enabled) {
+    is_va_enabled = true;
   }
 
   CertProfile result;
   result.profile_id = *id;
   result.policy_version = *policy_version;
+  result.is_va_enabled = *is_va_enabled;
 
   return result;
 }
 
 bool CertProfile::operator==(const CertProfile& other) const {
-  static_assert(kVersion == 2, "This function should be updated");
+  static_assert(kVersion == 3, "This function should be updated");
   return ((profile_id == other.profile_id) &&
-          (policy_version == other.policy_version));
+          (policy_version == other.policy_version) &&
+          (is_va_enabled == other.is_va_enabled));
 }
 
 bool CertProfile::operator!=(const CertProfile& other) const {
-  return (*this == other);
+  return !(*this == other);
+}
+
+bool CertProfileComparator::operator()(const CertProfile& a,
+                                       const CertProfile& b) const {
+  static_assert(CertProfile::kVersion == 3, "This function should be updated");
+  return ((a.profile_id < b.profile_id) ||
+          (a.policy_version < b.policy_version) ||
+          (a.is_va_enabled < b.is_va_enabled));
 }
 
 //==============================================================================

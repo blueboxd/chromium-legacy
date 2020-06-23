@@ -71,6 +71,7 @@ void ScheduleLoadForRestoredTabs(
 
 BackgroundTabLoadingPolicy::BackgroundTabLoadingPolicy()
     : memory_pressure_listener_(
+          FROM_HERE,
           base::BindRepeating(&BackgroundTabLoadingPolicy::OnMemoryPressure,
                               base::Unretained(this))),
       page_loader_(std::make_unique<mechanism::PageLoader>()) {

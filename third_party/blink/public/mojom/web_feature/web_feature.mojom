@@ -2666,6 +2666,9 @@ enum WebFeature {
   kDialogWithNonZeroScrollOffset = 3329,
   kDialogHeightLargerThanViewport = 3330,
   kOverlayPopup = 3331,
+  kContentVisibilityAuto = 3332,
+  kContentVisibilityHidden = 3333,
+  kContentVisibilityHiddenMatchable = 3334,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

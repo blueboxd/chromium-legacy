@@ -1289,80 +1289,149 @@
     },
 
     'fuchsia_gtests': {
-      'accessibility_unittests': {},
-      'angle_unittests': {},
+      'accessibility_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'angle_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'aura_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           # http://crbug.com/865172
           '--child-arg=--ozone-platform=headless',
         ],
       },
-      'base_unittests': {},
-      'base_util_unittests': {},
-      'blink_common_unittests': {},
-      'blink_heap_unittests': {},
-      'blink_platform_unittests': {},
+      'base_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'base_util_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'blink_common_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'blink_heap_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'blink_platform_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'blink_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.blink_unittests.filter',
         ],
       },
-      'boringssl_crypto_tests': {},
-      'boringssl_ssl_tests': {},
-      'cacheinvalidation_unittests': {},
-      'capture_unittests': {},
-      'cast_runner_browsertests': {},
-      'cast_runner_integration_tests': {},
-      'cast_runner_unittests': {},
+      'boringssl_crypto_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'boringssl_ssl_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cacheinvalidation_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'capture_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cast_runner_browsertests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cast_runner_integration_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cast_runner_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'cc_unittests': {
         'swarming': {
           'shards': 2,
         },
+        'mixins': ['fuchsia_runner_logs'],
       },
       'components_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.components_unittests.filter',
         ],
       },
       'compositor_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           # http://crbug.com/865172
           '--child-arg=--ozone-platform=headless',
         ],
       },
       'content_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.content_unittests.filter',
         ],
       },
-      'cr_fuchsia_base_unittests': {},
-      'cronet_tests': {},
-      'cronet_unittests': {},
-      'crypto_unittests': {},
-      'display_unittests': {},
-      'events_unittests': {},
-      'gfx_unittests': {},
-      'gin_unittests': {},
-      'google_apis_unittests': {},
+      'cr_fuchsia_base_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cronet_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'cronet_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'crypto_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'display_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'events_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'gfx_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'gin_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'google_apis_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'gpu_unittests': {},
       'headless_browsertests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter',
         ],
       },
-      'headless_unittests': {},
-      'http_service_tests': {},
-      'ipc_tests': {},
-      'latency_unittests': {},
-      'media_blink_unittests': {},
-      'media_unittests': {},
+      'headless_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'http_service_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'ipc_tests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'latency_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'media_blink_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'media_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'mojo_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.mojo_unittests.filter',
         ],
       },
-      'native_theme_unittests': {},
+      'native_theme_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'net_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'swarming': {
           'shards': 4,
         },
@@ -1370,44 +1439,67 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.net_unittests.filter',
         ],
       },
-      'perfetto_unittests': {},
-      'service_manager_unittests': {},
+      'perfetto_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'service_manager_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'services_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.services_unittests.filter',
         ],
       },
-      'shell_dialogs_unittests': {},
-      'skia_unittests': {},
+      'shell_dialogs_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
+      'skia_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'snapshot_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           # http://crbug.com/865172
           '--child-arg=--ozone-platform=headless',
         ],
       },
-      'sql_unittests': {},
+      'sql_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'storage_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter',
         ],
       },
       'ui_base_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
         ],
       },
-      'url_unittests': {},
+      'url_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'viz_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
         'args': [
           # http://crbug.com/865172
           '--child-arg=--ozone-platform=headless',
         ],
       },
-      'web_engine_browsertests': {},
+      'web_engine_browsertests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'web_engine_integration_tests': {},
-      'web_engine_unittests': {},
+      'web_engine_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
       'web_runner_integration_tests': {},
-      'wtf_unittests': {},
+      'wtf_unittests': {
+        'mixins': ['fuchsia_runner_logs'],
+      },
     },
 
     'gl_gtests_validating': {
@@ -5306,6 +5398,96 @@
       },
     },
 
+    # ios14-beta-sim runs sims only on 14.0+ since
+    # ios13-beta-sim already runs 13.x and 12.4
+    'ios14_beta_simulator_tests': {
+      'ios_common_tests': {
+        'variants': [
+          'SIM_IPHONE_X_14_0',
+        ],
+      },
+      'ios_eg2_tests': {
+        'variants': [
+          'SIM_IPHONE_X_14_0',
+          'SIM_IPHONE_7_14_0',
+          'SIM_IPAD_AIR_3RD_GEN_14_0',
+          'SIM_IPAD_6_GEN_14_0',
+        ]
+      },
+      'ios_eg2_cq_tests': {
+        'variants': [
+          'SIM_IPHONE_7_14_0',
+          'SIM_IPHONE_X_14_0',
+          'SIM_IPAD_PRO_14_0',
+          'SIM_IPAD_6_GEN_14_0',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          'SIM_IPHONE_6S_PLUS_14_0',
+          'SIM_IPHONE_X_14_0',
+          'SIM_IPAD_AIR_2_14_0',
+        ],
+      },
+    },
+
+    'ios14_sdk_simulator_tests': {
+      'ios_common_tests': {
+        'variants': [
+          # 14.0 Sims
+          'SIM_IPHONE_6S_14_0',
+          # 13.6 Sims
+          'SIM_IPHONE_6S_13_6',
+          # 12.4 Sims
+          'SIM_IPHONE_X_12_4',
+        ],
+      },
+      'ios_eg2_tests': {
+        'variants': [
+          # 14.0 Sims
+          'SIM_IPHONE_7_14_0',
+          'SIM_IPAD_AIR_2_14_0',
+          'SIM_IPHONE_X_14_0',
+          # 13.6 Sims
+          'SIM_IPHONE_7_13_6',
+          'SIM_IPAD_AIR_2_13_6',
+          'SIM_IPHONE_X_13_6',
+          # 12.4 Sims
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_AIR_3RD_GEN_12_4',
+          'SIM_IPAD_6_GEN_12_4',
+        ]
+      },
+      'ios_eg2_cq_tests': {
+        'variants': [
+          # 14.0 Sims
+          'SIM_IPHONE_X_14_0',
+          'SIM_IPAD_AIR_2_14_0',
+          # 13.6 Sims
+          'SIM_IPHONE_X_13_6',
+          'SIM_IPAD_AIR_2_13_6',
+          # 12.4 Sims
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_PRO_12_4',
+          'SIM_IPAD_6_GEN_12_4',
+        ]
+      },
+      'ios_screen_size_dependent_tests': {
+        'variants': [
+          # 14.0 Sims
+          'SIM_IPHONE_6S_PLUS_14_0',
+          'SIM_IPHONE_6S_14_0',
+          # 13.6 Sims
+          'SIM_IPHONE_6S_PLUS_13_6',
+          'SIM_IPHONE_6S_13_6',
+          # 12.4 Sims
+          'SIM_IPHONE_6S_PLUS_12_4',
+          'SIM_IPHONE_X_12_4',
+          'SIM_IPAD_AIR_2_12_4',
+        ],
+      },
+    },
+
     'ios_clang_tot_device_tests': {
       'ios_clang_tests': {
         'variants': [
@@ -5325,34 +5507,34 @@
     'ios_code_coverage_tests': {
       'ios_common_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPAD_AIR_2_13_4',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_4',
+          'SIM_IPHONE_6S_12_4',
+          'SIM_IPHONE_6S_13_4',
         ],
       },
       'ios_eg2_cq_tests': {
         'variants': [
+          'SIM_IPHONE_6S_12_4',
           'SIM_IPAD_AIR_2_12_4',
+          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_7_13_4',
           'SIM_IPAD_AIR_2_13_4',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_4',
         ],
       },
       'ios_eg2_tests': {
         'variants': [
           'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_X_12_4',
+          'SIM_IPHONE_7_13_4',
+          'SIM_IPAD_AIR_2_13_4',
           'SIM_IPHONE_X_13_4',
         ],
       },
       'ios_screen_size_dependent_tests': {
         'variants': [
-          'SIM_IPAD_AIR_2_12_4',
-          'SIM_IPAD_AIR_2_13_4',
-          'SIM_IPHONE_X_12_4',
-          'SIM_IPHONE_X_13_4',
+          'SIM_IPHONE_6S_PLUS_13_4',
+          'SIM_IPHONE_6S_13_4',
+          'SIM_IPHONE_SE_13_4',
+          'SIM_IPAD_AIR_2_13_4'
         ],
       },
     },

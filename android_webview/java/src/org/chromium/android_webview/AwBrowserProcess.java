@@ -35,6 +35,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
@@ -125,6 +126,7 @@ public final class AwBrowserProcess {
     public static void start() {
         try (ScopedSysTraceEvent e1 = ScopedSysTraceEvent.scoped("AwBrowserProcess.start")) {
             final Context appContext = ContextUtils.getApplicationContext();
+            AwBrowserProcessJni.get().setProcessNameCrashKey(ContextUtils.getProcessName());
             AwDataDirLock.lock(appContext);
             // We must post to the UI thread to cover the case that the user
             // has invoked Chromium startup by using the (thread-safe)
@@ -376,7 +378,7 @@ public final class AwBrowserProcess {
      * any recorded UMA metrics from nonembedded WebView services and transmit them back using
      * UMA APIs.
      */
-    public static void transmitRecordedMetrics() {
+    public static void collectNonembeddedMetrics() {
         final Context appContext = ContextUtils.getApplicationContext();
         if (AwMetricsServiceClient.isAppOptedOut(appContext)) {
             Log.d(TAG, "App opted out from metrics collection, not connecting to metrics service");
@@ -437,4 +439,9 @@ public final class AwBrowserProcess {
 
     // Do not instantiate this class.
     private AwBrowserProcess() {}
+
+    @NativeMethods
+    interface Natives {
+        void setProcessNameCrashKey(String processName);
+    }
 }

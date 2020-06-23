@@ -25,6 +25,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -245,7 +246,7 @@ public class CriteriaHelperTest {
         }, 0, DEFAULT_POLLING_INTERVAL);
     }
 
-    private String getStackTrace(AssertionError e) {
+    private String getStackTrace(Throwable e) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
         return sw.toString();
@@ -255,7 +256,9 @@ public class CriteriaHelperTest {
     @MediumTest
     public void testStack_Runnable_UiThread() {
         try {
-            CriteriaHelper.pollUiThread((Runnable) Assert::fail, 0, DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollUiThread(() -> {
+                throw new CriteriaNotSatisfiedException("test");
+            }, 0, DEFAULT_POLLING_INTERVAL);
         } catch (AssertionError e) {
             assertThat(getStackTrace(e),
                     containsString("CriteriaHelperTest.testStack_Runnable_UiThread("));
@@ -268,8 +271,9 @@ public class CriteriaHelperTest {
     @MediumTest
     public void testStack_Runnable_InstrumentationThread() {
         try {
-            CriteriaHelper.pollInstrumentationThread(
-                    (Runnable) Assert::fail, 0, DEFAULT_POLLING_INTERVAL);
+            CriteriaHelper.pollInstrumentationThread(() -> {
+                throw new CriteriaNotSatisfiedException("test");
+            }, 0, DEFAULT_POLLING_INTERVAL);
         } catch (AssertionError e) {
             assertThat(getStackTrace(e),
                     containsString("CriteriaHelperTest.testStack_Runnable_InstrumentationThread("));

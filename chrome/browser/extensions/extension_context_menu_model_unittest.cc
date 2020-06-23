@@ -85,8 +85,7 @@ MenuItem::Context MenuItemContextForActionType(ActionInfo::Type type) {
       context = MenuItem::PAGE_ACTION;
       break;
     case ActionInfo::TYPE_ACTION:
-      // TODO(devlin): Add support for the "action" type.
-      NOTREACHED();
+      context = MenuItem::ACTION;
       break;
   }
 
@@ -104,8 +103,7 @@ scoped_refptr<const Extension> BuildExtensionWithActionType(
       builder.SetAction(ExtensionBuilder::ActionType::PAGE_ACTION);
       break;
     case ActionInfo::TYPE_ACTION:
-      // TODO(devlin): Add support for the "action" type.
-      NOTREACHED();
+      builder.SetAction(ExtensionBuilder::ActionType::ACTION);
       break;
   }
 
@@ -1570,9 +1568,8 @@ TEST_P(ExtensionActionContextMenuModelTest,
 
   MenuManager* const manager = CreateMenuManager();
 
-  // TODO(devlin): Include ActionInfo::TYPE_ACTION here.
-  std::set<ActionInfo::Type> mismatched_types = {ActionInfo::TYPE_PAGE,
-                                                 ActionInfo::TYPE_BROWSER};
+  std::set<ActionInfo::Type> mismatched_types = {
+      ActionInfo::TYPE_PAGE, ActionInfo::TYPE_BROWSER, ActionInfo::TYPE_ACTION};
   mismatched_types.erase(GetParam());
 
   // Currently, there are no associated context menu items.
@@ -1707,10 +1704,10 @@ TEST_P(ExtensionActionContextMenuModelTest,
   }
 }
 
-// TODO(devlin): Include ActionInfo::TYPE_ACTION here.
 INSTANTIATE_TEST_SUITE_P(All,
                          ExtensionActionContextMenuModelTest,
                          testing::Values(ActionInfo::TYPE_PAGE,
-                                         ActionInfo::TYPE_BROWSER));
+                                         ActionInfo::TYPE_BROWSER,
+                                         ActionInfo::TYPE_ACTION));
 
 }  // namespace extensions

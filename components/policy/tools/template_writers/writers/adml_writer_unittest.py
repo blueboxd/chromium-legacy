@@ -210,6 +210,7 @@ class AdmlWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
         'caption': 'String policy caption',
         'label': 'String policy label',
         'desc': 'This is a test description.',
+        'supported_on': [{'platform': 'win'}, {'platform': 'chrome_os'}],
         'example_value': '01:23:45:67:89:ab',
     }
     self._InitWriterForAddingPolicies(self.writer, string_policy)

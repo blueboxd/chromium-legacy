@@ -14,15 +14,19 @@ interface InfoCollectionGpuService {
   [EnableIf=is_win]
   RequestDxDiagNodeInfo() => (gpu.mojom.DxDiagNode dx_diagnostics);
 
-  // Requests Vulkan and DX12 supports and device performance info on Windows.
-  // Returning whether Vulkan and DX12 are supported, and if yes, the
-  // supported version/feature level, together with a few metrics related
-  // to the device's performance for about:gpu and histogram recording
-  // purpose.
+  // Requests DX12 version and device performance info on Windows.
+  // Returning whether DX12 are supported, and if yes, the supported feature
+  // level, together with a few metrics related to the device's performance for
+  // about:gpu and histogram recording purpose.
   // TODO(crbug.com/1028263): histograms need to be recorded at browser process
   // for now.
   [EnableIf=is_win]
-  GetGpuSupportedRuntimeVersionAndDevicePerfInfo()
-      => (gpu.mojom.Dx12VulkanVersionInfo dx12_vulkan_version_info,
+  GetGpuSupportedDx12VersionAndDevicePerfInfo()
+      => (uint32 d3d12_feature_level,
           gpu.mojom.DevicePerfInfo device_perf_info);
+
+  // Requests Vulkan version
+  [EnableIf=is_win]
+  GetGpuSupportedVulkanVersionInfo()
+      => (uint32 vulkan_version);
 };

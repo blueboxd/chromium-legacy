@@ -120,6 +120,10 @@ bool InkDropImplTestApi::ShouldHighlight() const {
   return ink_drop_->ShouldHighlight();
 }
 
+ui::Layer* InkDropImplTestApi::GetRootLayer() const {
+  return ink_drop_->root_layer_.get();
+}
+
 std::vector<ui::LayerAnimator*> InkDropImplTestApi::GetLayerAnimators() {
   std::vector<ui::LayerAnimator*> animators;
 

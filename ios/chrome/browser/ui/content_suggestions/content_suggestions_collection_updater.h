@@ -84,6 +84,9 @@ addSuggestionsToModel:
 // items.
 - (BOOL)isContentSuggestionsSection:(NSInteger)section;
 
+// Returns whether |itemType| is a Discover ItemType.
+- (BOOL)isDiscoverItem:(NSInteger)itemType;
+
 // Dismisses the |item| from the model. Does not change the UI.
 - (void)dismissItem:(CollectionViewItem<SuggestedContent>*)item;
 

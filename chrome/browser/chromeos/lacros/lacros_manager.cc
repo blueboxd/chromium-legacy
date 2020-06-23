@@ -30,6 +30,10 @@
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/session_manager/core/session_manager.h"
 #include "google_apis/google_api_keys.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/platform/platform_channel.h"
+#include "mojo/public/cpp/system/invitation.h"
+#include "mojo/public/mojom/base/binder.mojom.h"
 
 namespace chromeos {
 namespace {
@@ -203,8 +207,6 @@ void LacrosManager::StartForeground(bool already_running) {
     argv.push_back("--log-file=" + LacrosLogPath().value());
   }
 
-  // TODO(hidehiko): Support Mojo connection.
-
   if (already_running) {
     // If Lacros is already running, then the new call to launch process spawns
     // a new window but does not create a lasting process.
@@ -212,11 +214,31 @@ void LacrosManager::StartForeground(bool already_running) {
     // than going through the start flow again.
     base::LaunchProcess(argv, options);
   } else {
+    // Set up Mojo channel.
+    base::CommandLine command_line(argv);
+    mojo::PlatformChannel channel;
+    channel.PrepareToPassRemoteEndpoint(&options, &command_line);
+
     base::RecordAction(base::UserMetricsAction("Lacros.Launch"));
     // If lacros_process_ already exists, because it does not call waitpid(2),
     // the process will never be collected.
     // TODO(hidehiko): Fix the case by collecting the processes.
-    lacros_process_ = base::LaunchProcess(argv, options);
+    lacros_process_ = base::LaunchProcess(command_line, options);
+
+    // TODO(hidehiko): Clean up the set-up procedure.
+    // Replacing the "already_running" case by Mojo call allows us to
+    // simplify the code.
+    if (lacros_process_.IsValid()) {
+      channel.RemoteProcessLaunchAttempted();
+      mojo::OutgoingInvitation invitation;
+      mojo::Remote<mojo_base::mojom::Binder> binder(
+          mojo::PendingRemote<mojo_base::mojom::Binder>(
+              invitation.AttachMessagePipe(0), /*version=*/0));
+      mojo::OutgoingInvitation::Send(std::move(invitation),
+                                     lacros_process_.Handle(),
+                                     channel.TakeLocalEndpoint());
+      binder->Bind(lacros_chrome_service_.BindNewPipeAndPassReceiver());
+    }
   }
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
 }

@@ -233,12 +233,6 @@ void PaintLayerPainter::AdjustForPaintProperties(
         painting_info.root_layer->GetLayoutObject().FirstFragment();
     const auto* source_transform =
         &first_root_fragment.LocalBorderBoxProperties().Transform();
-    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
-        IsMainFrameNotClippingContents(*painting_info.root_layer)) {
-      // Use PostScrollTranslation as the source transform to avoid clipping of
-      // the scrolling contents in CullRect::ApplyTransforms().
-      source_transform = &first_root_fragment.PostScrollTranslation();
-    }
     const auto& destination_transform =
         first_fragment.LocalBorderBoxProperties().Transform();
     if (source_transform == &destination_transform)
@@ -255,14 +249,18 @@ void PaintLayerPainter::AdjustForPaintProperties(
         // Convert old_cull_rect into the layer's transform space.
         old_cull_rect->MoveBy(RoundedIntPoint(first_fragment.PaintOffset()));
       }
-
-      // Don't clip to the view scrolling container when printing because we
-      // need to print the whole document.
-      bool clip_to_scroll_container =
-          !(context.Printing() &&
-            (paint_flags & kPaintLayerPaintingOverflowContents));
+      if (paint_flags & kPaintLayerPaintingOverflowContents) {
+        // Use PostScrollTranslation as the source transform to avoid clipping
+        // of the scrolling contents in CullRect::ApplyTransforms().
+        source_transform = &first_root_fragment.PostScrollTranslation();
+        // Map cull_rect into scrolling contents space (i.e. source_transform).
+        if (const auto* properties = first_root_fragment.PaintProperties()) {
+          if (const auto* scroll_translation = properties->ScrollTranslation())
+            cull_rect.Move(-scroll_translation->Translation2D());
+        }
+      }
       cull_rect.ApplyTransforms(*source_transform, destination_transform,
-                                old_cull_rect, clip_to_scroll_container);
+                                old_cull_rect);
       // Convert cull_rect from the layer's transform space to the layer's local
       // space.
       cull_rect.MoveBy(-RoundedIntPoint(first_fragment.PaintOffset()));

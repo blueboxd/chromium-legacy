@@ -644,7 +644,9 @@ void WebController::FindElement(const Selector& selector,
                                 bool strict_mode,
                                 ElementFinder::Callback callback) {
   auto finder = std::make_unique<ElementFinder>(
-      web_contents_, devtools_client_.get(), selector, strict_mode);
+      web_contents_, devtools_client_.get(), selector,
+      strict_mode ? ElementFinder::ResultType::kExactlyOneMatch
+                  : ElementFinder::ResultType::kAnyMatch);
   auto* ptr = finder.get();
   pending_workers_.emplace_back(std::move(finder));
   ptr->Start(base::BindOnce(&WebController::OnFindElementResult,

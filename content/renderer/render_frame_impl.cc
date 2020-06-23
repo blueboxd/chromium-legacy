@@ -3676,10 +3676,12 @@ RenderFrameImpl::CreateWorkerContentSettingsClient() {
 
 #if !defined(OS_ANDROID)
 std::unique_ptr<media::SpeechRecognitionClient>
-RenderFrameImpl::CreateSpeechRecognitionClient() {
+RenderFrameImpl::CreateSpeechRecognitionClient(
+    media::SpeechRecognitionClient::OnReadyCallback callback) {
   if (!frame_ || !frame_->View())
     return nullptr;
-  return GetContentClient()->renderer()->CreateSpeechRecognitionClient(this);
+  return GetContentClient()->renderer()->CreateSpeechRecognitionClient(
+      this, std::move(callback));
 }
 #endif
 
@@ -4117,18 +4119,8 @@ void RenderFrameImpl::DidCommitNavigation(
       return;
   }
 
-  // Frames local to their parent aren't considered to be embedded. The main
-  // frame gets an embedding token to allow generalization when it is embedded
-  // in another context (e.g. a WebView for the accessibility tree).
-  if (is_main_frame_ || frame_->Parent()->IsWebRemoteFrame()) {
-    // Provisional frames need a new token. Non-provisional frames need one if
-    // they don't already have one, e.g. a crashed subframe navigating to same
-    // site (https://crbug.com/634368).
-    if (is_provisional_frame ||
-        !GetWebFrame()->GetEmbeddingToken().has_value()) {
-      GetWebFrame()->SetEmbeddingToken(base::UnguessableToken::Create());
-    }
-  }
+  // Generate a new embedding token on each document change.
+  GetWebFrame()->SetEmbeddingToken(base::UnguessableToken::Create());
 
   // Navigations that change the document represent a new content source.  Keep
   // track of that on the widget to help the browser process detect when stale

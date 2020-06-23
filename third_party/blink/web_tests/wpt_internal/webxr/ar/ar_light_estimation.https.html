@@ -91,7 +91,11 @@ function verifyXRLightEstimateExists(t, resolve, count, session, frame, lightPro
       });
     } else {
       verifyXRLightEstimate(lightEstimate);
-      verifyReflectionCubeMap(session, lightProbe);
+
+      // Reflection cube maps may be enabled separately from the other lighting values.
+      if ('XRWebGLBinding' in window) {
+        verifyReflectionCubeMap(session, lightProbe);
+      }
 
       // If the light probe is providing valid results it should also have a
       // valid space.

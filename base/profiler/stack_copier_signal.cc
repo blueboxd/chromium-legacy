@@ -11,6 +11,7 @@
 
 #include <atomic>
 
+#include "base/notreached.h"
 #include "base/profiler/register_context.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/suspendable_thread_delegate.h"

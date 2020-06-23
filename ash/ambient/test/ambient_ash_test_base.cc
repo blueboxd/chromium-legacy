@@ -11,6 +11,7 @@
 #include "ash/ambient/ui/ambient_container_view.h"
 #include "ash/ambient/ui/photo_view.h"
 #include "ash/shell.h"
+#include "base/run_loop.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -25,7 +26,7 @@ void AmbientAshTestBase::SetUp() {
   scoped_feature_list_.InitAndEnableFeature(
       chromeos::features::kAmbientModeFeature);
   image_downloader_ = std::make_unique<TestImageDownloader>();
-  ambient_client_ = std::make_unique<TestAmbientClient>();
+  ambient_client_ = std::make_unique<TestAmbientClient>(&wake_lock_provider_);
 
   AshTestBase::SetUp();
 
@@ -65,6 +66,21 @@ const gfx::ImageSkia& AmbientAshTestBase::GetImageInPhotoView() {
   return container_view()
       ->photo_view_for_testing()
       ->GetCurrentImagesForTesting();
+}
+
+int AmbientAshTestBase::GetNumOfActiveWakeLocks(
+    device::mojom::WakeLockType type) {
+  base::RunLoop run_loop;
+  int result_count = 0;
+  wake_lock_provider_.GetActiveWakeLocksForTests(
+      type, base::BindOnce(
+                [](base::RunLoop* run_loop, int* result_count, int32_t count) {
+                  *result_count = count;
+                  run_loop->Quit();
+                },
+                &run_loop, &result_count));
+  run_loop.Run();
+  return result_count;
 }
 
 void AmbientAshTestBase::IssueAccessToken(const std::string& token,

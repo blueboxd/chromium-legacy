@@ -296,6 +296,9 @@ public class VariationsSeedLoader {
                         .bindService(getServerIntent(), this, Context.BIND_AUTO_CREATE)) {
                     Log.e(TAG, "Failed to bind to WebView service");
                 }
+                // Connect to nonembedded metrics Service at the same time we connect to variation
+                // service.
+                AwBrowserProcess.collectNonembeddedMetrics();
             } catch (NameNotFoundException e) {
                 Log.e(TAG, "WebView provider \"" + AwBrowserProcess.getWebViewPackageName() +
                         "\" not found!");

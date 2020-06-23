@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CERT_PROVISIONING_CERT_PROVISIONING_SCHEDULER_H_
 #define CHROME_BROWSER_CHROMEOS_CERT_PROVISIONING_CERT_PROVISIONING_SCHEDULER_H_
 
-#include <map>
-#include <set>
+#include <vector>
 
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -38,6 +39,8 @@ class CertProvisioningWorker;
 
 using WorkerMap =
     std::map<CertProfileId, std::unique_ptr<CertProvisioningWorker>>;
+
+using CertProfileSet = base::flat_set<CertProfile, CertProfileComparator>;
 
 struct FailedWorkerInfo {
   CertProvisioningWorkerState state = CertProvisioningWorkerState::kInitState;
@@ -75,14 +78,15 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
       delete;
   // Intended to be called when a user presses a button in certificate manager
   // UI. Retries provisioning of a specific certificate.
-  void UpdateOneCert(const std::string& cert_profile_id);
-  void UpdateCerts();
+  void UpdateOneCert(const CertProfileId& cert_profile_id);
+  void UpdateAllCerts();
   void OnProfileFinished(const CertProfile& profile,
                          CertProvisioningWorkerState state);
 
   const WorkerMap& GetWorkers() const;
-  const std::map<std::string, FailedWorkerInfo>& GetFailedCertProfileIds()
-      const;
+
+  const base::flat_map<CertProfileId, FailedWorkerInfo>&
+  GetFailedCertProfileIds() const;
 
  private:
   void ScheduleInitialUpdate();
@@ -98,16 +102,17 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   void OnCleanVaKeysIfIdleDone(base::Optional<bool> delete_result);
   void RegisterForPrefsChanges();
 
-  void UpdateOneCertImpl(const std::string& cert_profile_id);
+  void UpdateOneCertImpl(const CertProfileId& cert_profile_id);
+  void UpdateCertList(std::vector<CertProfile> profiles);
+  void UpdateCertListWithExistingCerts(
+      std::vector<CertProfile> profiles,
+      base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+          existing_certs_with_ids,
+      const std::string& error_message);
 
   void OnPrefsChange();
   void DailyUpdateCerts();
   void DeserializeWorkers();
-
-  void OnGetCertsWithIdsDone(
-      std::map<std::string, scoped_refptr<net::X509Certificate>>
-          existing_certs_with_ids,
-      const std::string& error_message);
 
   // Creates a new worker for |profile| if there is no at the moment.
   // Recreates a worker if existing one has a different version of the profile.
@@ -115,13 +120,15 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   void ProcessProfile(const CertProfile& profile);
 
   base::Optional<CertProfile> GetOneCertProfile(
-      const std::string& cert_profile_id);
+      const CertProfileId& cert_profile_id);
   std::vector<CertProfile> GetCertProfiles();
 
   void CreateCertProvisioningWorker(CertProfile profile);
   CertProvisioningWorker* FindWorker(CertProfileId profile_id);
 
-  bool CheckInternetConnection();
+  // Returns true if the process can be continued (if it's not required to
+  // wait).
+  bool MaybeWaitForInternetConnection();
   void WaitForInternetConnection();
   void OnNetworkChange(const NetworkState* network);
   // NetworkStateHandlerObserver
@@ -143,11 +150,14 @@ class CertProvisioningScheduler : public NetworkStateHandlerObserver {
   // retried until next |DailyUpdateCerts|. FailedWorkerInfo contains some extra
   // information about the failure. Profiles that failed with
   // kInconsistentDataError will not be stored into this collection.
-  std::map<std::string /*cert_profile_id*/, FailedWorkerInfo>
-      failed_cert_profiles_;
+  base::flat_map<CertProfileId, FailedWorkerInfo> failed_cert_profiles_;
   // Equals true if the last attempt to update certificates failed because there
   // was no internet connection.
   bool is_waiting_for_online_ = false;
+
+  // Contains profiles that should be updated after the current update batch
+  // run, because an update for them was triggered during the current run.
+  CertProfileSet queued_profiles_to_update_;
 
   std::unique_ptr<CertProvisioningCertsWithIdsGetter> certs_with_ids_getter_;
   std::unique_ptr<CertProvisioningCertDeleter> cert_deleter_;

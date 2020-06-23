@@ -331,9 +331,9 @@ void HistoryBackend::Init(
           syncer::TYPED_URLS, /*dump_stack=*/base::RepeatingClosure()));
   typed_url_sync_bridge_->Init();
 
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &HistoryBackend::OnMemoryPressure, base::Unretained(this))));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&HistoryBackend::OnMemoryPressure,
+                                     base::Unretained(this)));
 }
 
 void HistoryBackend::SetOnBackendDestroyTask(

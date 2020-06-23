@@ -49,7 +49,7 @@ void V8TestDictionary2::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_val
   if (default_empty_dictionary_value.IsEmpty() || default_empty_dictionary_value->IsUndefined()) {
     // Do nothing.
   } else {
-    TestDictionary* default_empty_dictionary_cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, default_empty_dictionary_value, exception_state);
+    TestDictionary* default_empty_dictionary_cpp_value{ NativeValueTraits<TestDictionary>::NativeValue(isolate, default_empty_dictionary_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setDefaultEmptyDictionary(default_empty_dictionary_cpp_value);

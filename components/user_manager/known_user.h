@@ -227,10 +227,10 @@ void USER_MANAGER_EXPORT SetOfflineSigninLimit(const AccountId& account_id,
 base::TimeDelta USER_MANAGER_EXPORT
 GetOfflineSigninLimit(const AccountId& account_id);
 
-void USER_MANAGER_EXPORT SetIsManaged(const AccountId& account_id,
-                                      bool is_managed);
+void USER_MANAGER_EXPORT SetIsEnterpriseManaged(const AccountId& account_id,
+                                                bool is_enterprise_managed);
 
-bool USER_MANAGER_EXPORT GetIsManaged(const AccountId& account_id);
+bool USER_MANAGER_EXPORT GetIsEnterpriseManaged(const AccountId& account_id);
 
 void USER_MANAGER_EXPORT
 SetUserLastInputMethod(const AccountId& account_id,

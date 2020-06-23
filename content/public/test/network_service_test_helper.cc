@@ -75,6 +75,7 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
   NetworkServiceTestImpl()
       : test_host_resolver_(new TestHostResolver()),
         memory_pressure_listener_(
+            FROM_HERE,
             base::DoNothing(),
             base::BindRepeating(&NetworkServiceTestHelper::
                                     NetworkServiceTestImpl::OnMemoryPressure,

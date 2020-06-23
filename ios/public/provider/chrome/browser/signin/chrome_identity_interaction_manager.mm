@@ -15,24 +15,6 @@
 @implementation ChromeIdentityInteractionManager
 @synthesize delegate = _delegate;
 
-- (BOOL)isCanceling {
-  return NO;
-}
-
-- (void)addAccountWithCompletion:(SigninCompletionCallback)completion {
-  NOTREACHED() << "Subclasses must override this";
-}
-
-- (void)reauthenticateUserWithID:(NSString*)userID
-                           email:(NSString*)userEmail
-                      completion:(SigninCompletionCallback)completion {
-  NOTREACHED() << "Subclasses must override this";
-}
-
-- (void)cancelAndDismissAnimated:(BOOL)animated {
-  NOTREACHED() << "Subclasses must override this";
-}
-
 - (void)addAccountWithPresentingViewController:(UIViewController*)viewController
                                     completion:
                                         (SigninCompletionCallback)completion {

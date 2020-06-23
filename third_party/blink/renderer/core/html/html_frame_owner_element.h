@@ -129,9 +129,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   void ParseAttribute(const AttributeModificationParams&) override;
 
   void SetEmbeddingToken(const base::UnguessableToken& token);
-  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const {
-    return embedding_token_;
-  }
+  const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
 
   bool IsAdRelated() const override;
 
@@ -204,7 +202,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   Member<Frame> content_frame_;
   Member<EmbeddedContentView> embedded_content_view_;
   FramePolicy frame_policy_;
-  base::Optional<base::UnguessableToken> embedding_token_;
+  base::Optional<base::UnguessableToken> remote_frame_embedding_token_;
 
   Member<LazyLoadFrameObserver> lazy_load_frame_observer_;
   bool should_lazy_load_children_;

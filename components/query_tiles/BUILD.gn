@@ -24,6 +24,7 @@ group("query_tiles") {
 
 source_set("public") {
   sources = [
+    "logger.h",
     "switches.cc",
     "switches.h",
     "tile.cc",

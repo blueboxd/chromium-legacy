@@ -49,10 +49,6 @@ struct Selector {
   // Convenience function to update the visible field in a fluent style.
   Selector& MustBeVisible();
 
-  // The output operator. The actual selectors are only available in debug
-  // builds.
-  friend std::ostream& operator<<(std::ostream& out, const Selector& selector);
-
   // Checks whether this selector is empty or invalid.
   bool empty() const;
 
@@ -101,6 +97,20 @@ struct Selector {
   // Autofill can recognise.
   base::Optional<std::string> ExtractSingleCssSelectorForAutofill() const;
 };
+
+// Debug output operator for selectors. The output is only useful in
+// debug builds.
+std::ostream& operator<<(std::ostream& out, const Selector& selector);
+
+// Debug output for selector protos. The output is only useful in
+// debug builds.
+std::ostream& operator<<(std::ostream& out, const SelectorProto& proto);
+
+// Debug output for selector filter protos. The output is only useful in
+// debug builds.
+std::ostream& operator<<(std::ostream& out,
+                         const SelectorProto::Filter& filter);
+
 }  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_SELECTOR_H_

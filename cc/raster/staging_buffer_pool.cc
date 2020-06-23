@@ -133,9 +133,9 @@ StagingBufferPool::StagingBufferPool(
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::StagingBufferPool", base::ThreadTaskRunnerHandle::Get());
 
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
-      base::BindRepeating(&StagingBufferPool::OnMemoryPressure,
-                          weak_ptr_factory_.GetWeakPtr())));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&StagingBufferPool::OnMemoryPressure,
+                                     weak_ptr_factory_.GetWeakPtr()));
 
   reduce_memory_usage_callback_ = base::BindRepeating(
       &StagingBufferPool::ReduceMemoryUsage, weak_ptr_factory_.GetWeakPtr());

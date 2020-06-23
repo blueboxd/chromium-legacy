@@ -94,8 +94,10 @@ class FirstWebContentsProfiler : public content::WebContentsObserver {
 FirstWebContentsProfiler::FirstWebContentsProfiler(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      memory_pressure_listener_(base::BindRepeating(
-          &startup_metric_utils::OnMemoryPressureBeforeFirstNonEmptyPaint)) {
+      memory_pressure_listener_(
+          FROM_HERE,
+          base::BindRepeating(&startup_metric_utils::
+                                  OnMemoryPressureBeforeFirstNonEmptyPaint)) {
   // FirstWebContentsProfiler is created before the main MessageLoop starts
   // running. At that time, any visible WebContents should have a pending
   // NavigationEntry, i.e. should have dispatched DidStartNavigation() but not

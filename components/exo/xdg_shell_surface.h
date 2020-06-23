@@ -11,7 +11,6 @@
 
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/wm/window_state_observer.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"

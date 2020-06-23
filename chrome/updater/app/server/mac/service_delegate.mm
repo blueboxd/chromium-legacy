@@ -17,6 +17,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/version.h"
+#import "chrome/updater/app/server/mac/app_server.h"
+#import "chrome/updater/app/server/mac/server.h"
 #import "chrome/updater/app/server/mac/service_protocol.h"
 #import "chrome/updater/app/server/mac/update_service_wrappers.h"
 #include "chrome/updater/mac/setup/setup.h"
@@ -38,41 +40,53 @@ const base::Version& GetSelfVersion() {
 - (instancetype)init NS_UNAVAILABLE;
 
 // Designated initializers.
-- (instancetype)initWithUpdateService:(updater::UpdateService*)service
-                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
-                                          callbackRunner
+- (instancetype)
+    initWithUpdateService:(updater::UpdateService*)service
+                appServer:(scoped_refptr<updater::AppServer>)appServer
+           callbackRunner:
+               (scoped_refptr<base::SequencedTaskRunner>)callbackRunner
     NS_DESIGNATED_INITIALIZER;
 
-- (instancetype)initWithUpdateService:(updater::UpdateService*)service
-             updaterConnectionOptions:(NSXPCConnectionOptions)options
-                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
-                                          callbackRunner;
+- (instancetype)
+       initWithUpdateService:(updater::UpdateService*)service
+                   appServer:(scoped_refptr<updater::AppServer>)appServer
+    updaterConnectionOptions:(NSXPCConnectionOptions)options
+              callbackRunner:
+                  (scoped_refptr<base::SequencedTaskRunner>)callbackRunner;
 
 @end
 
 @implementation CRUUpdateCheckXPCServiceImpl {
   updater::UpdateService* _service;
+  scoped_refptr<updater::AppServer> _appServer;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
   NSXPCConnectionOptions _updateCheckXPCConnectionOptions;
   base::scoped_nsobject<NSXPCConnection> _updateCheckXPCConnection;
   NSInteger _redialAttempts;
 }
 
-- (instancetype)initWithUpdateService:(updater::UpdateService*)service
-                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
-                                          callbackRunner {
+- (instancetype)
+    initWithUpdateService:(updater::UpdateService*)service
+                appServer:(scoped_refptr<updater::AppServer>)appServer
+           callbackRunner:
+               (scoped_refptr<base::SequencedTaskRunner>)callbackRunner {
   if (self = [super init]) {
     _service = service;
+    _appServer = appServer;
     _callbackRunner = callbackRunner;
   }
   return self;
 }
 
-- (instancetype)initWithUpdateService:(updater::UpdateService*)service
-             updaterConnectionOptions:(NSXPCConnectionOptions)options
-                       callbackRunner:(scoped_refptr<base::SequencedTaskRunner>)
-                                          callbackRunner {
-  [self initWithUpdateService:service callbackRunner:callbackRunner];
+- (instancetype)
+       initWithUpdateService:(updater::UpdateService*)service
+                   appServer:(scoped_refptr<updater::AppServer>)appServer
+    updaterConnectionOptions:(NSXPCConnectionOptions)options
+              callbackRunner:
+                  (scoped_refptr<base::SequencedTaskRunner>)callbackRunner {
+  [self initWithUpdateService:service
+                    appServer:appServer
+               callbackRunner:callbackRunner];
   _updateCheckXPCConnectionOptions = options;
   [self dialUpdateCheckXPCConnection];
   return self;
@@ -134,9 +148,12 @@ const base::Version& GetSelfVersion() {
     [updateState observeUpdateState:updateStateWrapper.get()];
   }));
 
-  _callbackRunner->PostTask(
-      FROM_HERE, base::BindOnce(&updater::UpdateService::UpdateAll, _service,
-                                std::move(sccb), std::move(cb)));
+  _appServer->TaskStarted();
+  _callbackRunner->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&updater::UpdateService::UpdateAll, _service,
+                     std::move(sccb), std::move(cb)),
+      base::BindOnce(&updater::AppServer::TaskCompleted, _appServer));
 }
 
 - (void)checkForUpdateWithAppID:(NSString* _Nonnull)appID
@@ -178,11 +195,13 @@ const base::Version& GetSelfVersion() {
     [updateState observeUpdateState:updateStateWrapper.get()];
   }));
 
-  _callbackRunner->PostTask(
+  _appServer->TaskStarted();
+  _callbackRunner->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&updater::UpdateService::Update, _service,
                      base::SysNSStringToUTF8(appID), [priority priority],
-                     std::move(sccb), std::move(cb)));
+                     std::move(sccb), std::move(cb)),
+      base::BindOnce(&updater::AppServer::TaskCompleted, _appServer));
 }
 
 - (void)registerForUpdatesWithAppId:(NSString* _Nullable)appId
@@ -207,9 +226,12 @@ const base::Version& GetSelfVersion() {
           reply(response.status_code);
       }));
 
-  _callbackRunner->PostTask(
-      FROM_HERE, base::BindOnce(&updater::UpdateService::RegisterApp, _service,
-                                request, std::move(cb)));
+  _appServer->TaskStarted();
+  _callbackRunner->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&updater::UpdateService::RegisterApp, _service, request,
+                     std::move(cb)),
+      base::BindOnce(&updater::AppServer::TaskCompleted, _appServer));
 }
 
 - (void)getUpdaterVersionWithReply:
@@ -363,13 +385,16 @@ const base::Version& GetSelfVersion() {
 
 @implementation CRUUpdateCheckXPCServiceDelegate {
   scoped_refptr<updater::UpdateService> _service;
+  scoped_refptr<updater::AppServer> _appServer;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
 }
 
-- (instancetype)initWithUpdateService:
-    (scoped_refptr<updater::UpdateService>)service {
+- (instancetype)
+    initWithUpdateService:(scoped_refptr<updater::UpdateService>)service
+                appServer:(scoped_refptr<updater::AppServer>)appServer {
   if (self = [super init]) {
     _service = service;
+    _appServer = appServer;
     _callbackRunner = base::SequencedTaskRunnerHandle::Get();
   }
   return self;
@@ -385,6 +410,7 @@ const base::Version& GetSelfVersion() {
   base::scoped_nsobject<CRUUpdateCheckXPCServiceImpl> object(
       [[CRUUpdateCheckXPCServiceImpl alloc]
           initWithUpdateService:_service.get()
+                      appServer:_appServer
                  callbackRunner:_callbackRunner.get()]);
   newConnection.exportedObject = object.get();
   [newConnection resume];
@@ -395,11 +421,13 @@ const base::Version& GetSelfVersion() {
 
 @implementation CRUAdministrationXPCServiceDelegate {
   scoped_refptr<updater::UpdateService> _service;
+  scoped_refptr<updater::AppServer> _appServer;
   scoped_refptr<base::SequencedTaskRunner> _callbackRunner;
 }
 
-- (instancetype)initWithUpdateService:
-    (scoped_refptr<updater::UpdateService>)service {
+- (instancetype)
+    initWithUpdateService:(scoped_refptr<updater::UpdateService>)service
+                appServer:(scoped_refptr<updater::AppServer>)appServer {
   if (self = [super init]) {
     _service = service;
     _callbackRunner = base::SequencedTaskRunnerHandle::Get();
@@ -422,6 +450,7 @@ const base::Version& GetSelfVersion() {
   base::scoped_nsobject<CRUUpdateCheckXPCServiceImpl> object(
       [[CRUUpdateCheckXPCServiceImpl alloc]
              initWithUpdateService:_service.get()
+                         appServer:_appServer
           updaterConnectionOptions:options
                     callbackRunner:_callbackRunner.get()]);
   newConnection.exportedObject = object.get();

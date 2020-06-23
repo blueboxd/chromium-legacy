@@ -320,6 +320,7 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
         auto_login_access_token_(true),
         login_ui_result_(true),
         scope_ui_result_(true),
+        scope_ui_async_(false),
         scope_ui_failure_(GaiaWebAuthFlow::WINDOW_CLOSED),
         login_ui_shown_(false),
         scope_ui_shown_(false) {}
@@ -341,6 +342,14 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   void push_mint_token_result(TestOAuth2MintTokenFlow::ResultType result_type) {
     push_mint_token_flow(
         std::make_unique<TestOAuth2MintTokenFlow>(result_type, this));
+  }
+
+  // Sets scope UI to not complete immediately. Call
+  // CompleteOAuthApprovalDialog() or CompleteRemoteConsentDialog() after
+  // |on_scope_ui_shown| is invoked to unblock execution.
+  void set_scope_ui_async(base::OnceClosure on_scope_ui_shown) {
+    scope_ui_async_ = true;
+    on_scope_ui_shown_ = std::move(on_scope_ui_shown);
   }
 
   void set_scope_ui_failure(GaiaWebAuthFlow::Failure failure) {
@@ -449,7 +458,13 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   void ShowOAuthApprovalDialog(const IssueAdviceInfo& issue_advice) override {
     scope_ui_shown_ = true;
+    if (!scope_ui_async_)
+      CompleteOAuthApprovalDialog();
+    else
+      std::move(on_scope_ui_shown_).Run();
+  }
 
+  void CompleteOAuthApprovalDialog() {
     if (scope_ui_result_) {
       OnGaiaFlowCompleted(kAccessToken, "3600");
     } else if (scope_ui_failure_ == GaiaWebAuthFlow::SERVICE_AUTH_ERROR) {
@@ -463,6 +478,13 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   void ShowRemoteConsentDialog(
       const RemoteConsentResolutionData& resolution_data) override {
     scope_ui_shown_ = true;
+    if (!scope_ui_async_)
+      CompleteRemoteConsentDialog();
+    else
+      std::move(on_scope_ui_shown_).Run();
+  }
+
+  void CompleteRemoteConsentDialog() {
     if (scope_ui_result_) {
       OnGaiaRemoteConsentFlowApproved("fake_consent_result",
                                       remote_consent_gaia_id_);
@@ -490,6 +512,8 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
   bool auto_login_access_token_;
   bool login_ui_result_;
   bool scope_ui_result_;
+  bool scope_ui_async_;
+  base::OnceClosure on_scope_ui_shown_;
   GaiaWebAuthFlow::Failure scope_ui_failure_;
   GoogleServiceAuthError scope_ui_service_error_;
   std::string scope_ui_oauth_error_;
@@ -872,6 +896,10 @@ class GetAuthTokenFunctionTest
     oauth_scopes_ = std::set<std::string>(oauth2_info.scopes.begin(),
                                           oauth2_info.scopes.end());
     return ext;
+  }
+
+  CoreAccountInfo GetPrimaryAccountInfo() {
+    return identity_test_env()->identity_manager()->GetPrimaryAccountInfo();
   }
 
   CoreAccountId GetPrimaryAccountId() {
@@ -2383,6 +2411,134 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
         kGetAuthTokenResultAfterConsentApprovedHistogramName,
         IdentityGetAuthTokenError::State::kNone, 1);
   }
+}
+
+// Tests two concurrent remote consent flows. Both of them should succeed.
+// The second flow starts while the first one is blocked on an interactive mint
+// token flow. This is a regression test for https://crbug.com/1091423.
+IN_PROC_BROWSER_TEST_F(
+    GetAuthTokenFunctionTest,
+    RemoteConsentMultipleActiveRequests_BlockedOnInteractive) {
+  SignIn("primary@example.com");
+  CoreAccountInfo account = GetPrimaryAccountInfo();
+  const extensions::Extension* extension = CreateExtension(CLIENT_ID | SCOPES);
+
+  scoped_refptr<FakeGetAuthTokenFunction> func1(new FakeGetAuthTokenFunction());
+  func1->set_extension(extension);
+  func1->push_mint_token_result(
+      TestOAuth2MintTokenFlow::REMOTE_CONSENT_SUCCESS);
+  func1->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  func1->set_remote_consent_gaia_id(account.gaia);
+  base::RunLoop scope_ui_shown_loop;
+  func1->set_scope_ui_async(scope_ui_shown_loop.QuitClosure());
+
+  scoped_refptr<FakeGetAuthTokenFunction> func2(new FakeGetAuthTokenFunction());
+  func2->set_extension(extension);
+  func2->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  func2->set_remote_consent_gaia_id(account.gaia);
+
+  AsyncFunctionRunner func1_runner;
+  func1_runner.RunFunctionAsync(func1.get(), "[{\"interactive\": true}]",
+                                browser()->profile());
+
+  AsyncFunctionRunner func2_runner;
+  func2_runner.RunFunctionAsync(func2.get(), "[{\"interactive\": true}]",
+                                browser()->profile());
+
+  // Allows func2 to put a task in the queue.
+  base::RunLoop().RunUntilIdle();
+
+  scope_ui_shown_loop.Run();
+  func1->CompleteRemoteConsentDialog();
+
+  std::unique_ptr<base::Value> value1(
+      func1_runner.WaitForSingleResult(func1.get()));
+  ASSERT_NE(value1, nullptr);
+  EXPECT_EQ(base::Value(kAccessToken), *value1);
+
+  std::unique_ptr<base::Value> value2(
+      func2_runner.WaitForSingleResult(func2.get()));
+  ASSERT_NE(value2, nullptr);
+  EXPECT_EQ(base::Value(kAccessToken), *value2);
+
+  // Only one consent ui should be shown.
+  int total_scope_ui_shown = func1->scope_ui_shown() + func2->scope_ui_shown();
+  EXPECT_EQ(1, total_scope_ui_shown);
+
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            GetCachedToken(account.account_id).status());
+
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      2);
+}
+
+// Tests two concurrent remote consent flows. Both of them should succeed.
+// The second flow starts while the first one is blocked on a non-interactive
+// mint token flow. This is a regression test for https://crbug.com/1091423.
+IN_PROC_BROWSER_TEST_F(
+    GetAuthTokenFunctionTest,
+    RemoteConsentMultipleActiveRequests_BlockedOnNoninteractive) {
+  SignIn("primary@example.com");
+  CoreAccountInfo account = GetPrimaryAccountInfo();
+  const extensions::Extension* extension = CreateExtension(CLIENT_ID | SCOPES);
+
+  scoped_refptr<FakeGetAuthTokenFunction> func1(new FakeGetAuthTokenFunction());
+  func1->set_extension(extension);
+  func1->push_mint_token_result(
+      TestOAuth2MintTokenFlow::REMOTE_CONSENT_SUCCESS);
+  func1->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  func1->set_remote_consent_gaia_id(account.gaia);
+  func1->set_auto_login_access_token(false);
+
+  scoped_refptr<FakeGetAuthTokenFunction> func2(new FakeGetAuthTokenFunction());
+  func2->set_extension(extension);
+  func2->push_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_SUCCESS);
+  func2->set_remote_consent_gaia_id(account.gaia);
+  base::RunLoop scope_ui_shown_loop;
+  func2->set_scope_ui_async(scope_ui_shown_loop.QuitClosure());
+
+  base::RunLoop access_token_run_loop;
+  on_access_token_requested_ = access_token_run_loop.QuitClosure();
+  AsyncFunctionRunner func1_runner;
+  func1_runner.RunFunctionAsync(func1.get(), "[{\"interactive\": true}]",
+                                browser()->profile());
+
+  AsyncFunctionRunner func2_runner;
+  func2_runner.RunFunctionAsync(func2.get(), "[{\"interactive\": true}]",
+                                browser()->profile());
+
+  // Allows func2 to put a task in the queue.
+  base::RunLoop().RunUntilIdle();
+
+  access_token_run_loop.Run();
+  // Let subsequent requests pass automatically.
+  func1->set_auto_login_access_token(true);
+  IssueLoginAccessTokenForAccount(account.account_id);
+
+  scope_ui_shown_loop.Run();
+  func2->CompleteRemoteConsentDialog();
+
+  std::unique_ptr<base::Value> value1(
+      func1_runner.WaitForSingleResult(func1.get()));
+  ASSERT_NE(value1, nullptr);
+  EXPECT_EQ(base::Value(kAccessToken), *value1);
+
+  std::unique_ptr<base::Value> value2(
+      func2_runner.WaitForSingleResult(func2.get()));
+  ASSERT_NE(value2, nullptr);
+  EXPECT_EQ(base::Value(kAccessToken), *value2);
+
+  // Only one consent ui should be shown.
+  int total_scope_ui_shown = func1->scope_ui_shown() + func2->scope_ui_shown();
+  EXPECT_EQ(1, total_scope_ui_shown);
+
+  EXPECT_EQ(IdentityTokenCacheValue::CACHE_STATUS_TOKEN,
+            GetCachedToken(account.account_id).status());
+
+  histogram_tester()->ExpectUniqueSample(
+      kGetAuthTokenResultHistogramName, IdentityGetAuthTokenError::State::kNone,
+      2);
 }
 
 // The signin flow is simply not used on ChromeOS.

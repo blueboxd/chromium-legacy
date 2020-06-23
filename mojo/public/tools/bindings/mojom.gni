@@ -15,6 +15,7 @@ import("//ui/webui/webui_features.gni")
 # flipped elsewhere though.
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
+import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/nacl/config.gni")
 import("//build/toolchain/kythe.gni")
 import("//components/nacl/features.gni")
@@ -61,8 +62,10 @@ declare_args() {
 # check |target_os| explicitly, as it's consistent across all toolchains.
 enable_scrambled_message_ids =
     enable_mojom_message_id_scrambling &&
-    (is_mac || is_win || (is_linux && !is_chromeos && !is_chromecast) ||
-     ((enable_nacl || is_nacl || is_nacl_nonsfi) && target_os != "chromeos"))
+    (is_mac || is_win || (is_linux && !is_chromeos && !is_chromecast &&
+                          !chromeos_is_browser_only) ||
+     ((enable_nacl || is_nacl || is_nacl_nonsfi) &&
+      (target_os != "chromeos" && !chromeos_is_browser_only)))
 
 _mojom_tools_root = "//mojo/public/tools"
 _mojom_library_root = "$_mojom_tools_root/mojom/mojom"
@@ -1105,33 +1108,7 @@ template("mojom") {
           }
           _typemap_config = typemap.config
           if (get_path_info(source, "abspath") == _typemap_config.mojom) {
-            enabled = false
-            if (!defined(_typemap_config.os_whitelist)) {
-              enabled = true
-            } else {
-              foreach(os, _typemap_config.os_whitelist) {
-                if (os == "android" && is_android) {
-                  enabled = true
-                } else if (os == "chromeos" && is_chromeos) {
-                  enabled = true
-                } else if (os == "fuchsia" && is_fuchsia) {
-                  enabled = true
-                } else if (os == "ios" && is_ios) {
-                  enabled = true
-                } else if (os == "linux" && is_linux) {
-                  enabled = true
-                } else if (os == "mac" && is_mac) {
-                  enabled = true
-                } else if (os == "posix" && is_posix) {
-                  enabled = true
-                } else if (os == "win" && is_win) {
-                  enabled = true
-                }
-              }
-            }
-            if (enabled) {
-              active_typemaps += [ typemap ]
-            }
+            active_typemaps += [ typemap ]
           }
         }
       }

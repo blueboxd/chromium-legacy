@@ -39,9 +39,34 @@ class BrowserDMTokenStorage {
   using StoreTask = base::OnceCallback<bool()>;
   using StoreCallback = base::OnceCallback<void(bool success)>;
 
-  // Returns the global singleton object. Must be called from the UI thread.
-  // This implementation is platform dependant.
+  // Delegate pattern for platform-dependant operations.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Gets the client ID and returns it.
+    virtual std::string InitClientId() = 0;
+    // Gets the enrollment token and returns it.
+    virtual std::string InitEnrollmentToken() = 0;
+    // Gets the DM token and returns it.
+    virtual std::string InitDMToken() = 0;
+    // Gets the boolean value that determines if error message will be
+    // displayed when enrollment fails.
+    virtual bool InitEnrollmentErrorOption() = 0;
+    // Function called by |SaveDMToken| that returns if the operation was a
+    // success.
+    virtual StoreTask SaveDMTokenTask(const std::string& token,
+                                      const std::string& client_id) = 0;
+    // Gets the specific task runner that should be used by |SaveDMToken|.
+    virtual scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() = 0;
+  };
+
+  // Returns the global singleton object. Must be called from the UI thread. The
+  // first caller must set the platform-specific delegate via SetDelegate().
   static BrowserDMTokenStorage* Get();
+  // Sets the delegate to use for platform-specific operations.
+  static void SetDelegate(std::unique_ptr<Delegate> delegate);
+
   // Returns a client ID unique to the machine.
   std::string RetrieveClientId();
   // Returns the serial number of the machine.
@@ -71,7 +96,7 @@ class BrowserDMTokenStorage {
   // fails.
   virtual bool ShouldDisplayErrorMessageOnFailure();
 
-  // Set the mock BrowserDMTokenStorage for testing. The caller owns the
+  // Set the BrowserDMTokenStorage instance for testing. The caller owns the
   // instance of the storage.
   static void SetForTesting(BrowserDMTokenStorage* storage) {
     storage_for_testing_ = storage;
@@ -79,6 +104,10 @@ class BrowserDMTokenStorage {
 
  protected:
   friend class base::NoDestructor<BrowserDMTokenStorage>;
+
+  // The platform-specific delegate. Must be set via
+  // BrowserDMTokenStorage::SetDelegate() before other methods can be called.
+  std::unique_ptr<Delegate> delegate_;
 
   // Get the global singleton instance by calling BrowserDMTokenStorage::Get().
   BrowserDMTokenStorage();
@@ -91,28 +120,10 @@ class BrowserDMTokenStorage {
   // is called the first time the BrowserDMTokenStorage is interacted with.
   void InitIfNeeded();
 
-  // Gets the client ID and returns it. This implementation is platform
-  // dependant.
-  virtual std::string InitClientId() = 0;
   // Gets the client ID and returns it. This implementation is shared by all
   // platforms.
   std::string InitSerialNumber();
-  // Gets the enrollment token and returns it. This implementation is platform
-  // dependant.
-  virtual std::string InitEnrollmentToken() = 0;
-  // Gets the DM token and returns it. This implementation is platform
-  // dependant.
-  virtual std::string InitDMToken() = 0;
-  // Gets the boolean value that determines if error message will be displayed
-  // when enrollment fails.
-  virtual bool InitEnrollmentErrorOption() = 0;
-  // Function called by |SaveDMToken| that returns if the operation was a
-  // success.  This implementation is platform dependent.
-  virtual StoreTask SaveDMTokenTask(const std::string& token,
-                                    const std::string& client_id) = 0;
-  // Can optionally be overridden by platform implementation if a specific task
-  // runner should be used by |SaveDMToken|.
-  virtual scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() = 0;
+
   // Saves the DM token.
   void SaveDMToken(const std::string& token);
 

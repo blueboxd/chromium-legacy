@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
+#include "components/enterprise/common/proto/connectors.pb.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 
 namespace download {
@@ -57,9 +58,14 @@ class DeepScanningRequest : public download::DownloadItem::Observer {
   void Start();
 
  private:
-  // Callback for when |binary_upload_service_| finishes uploading.
-  void OnScanComplete(BinaryUploadService::Result result,
-                      DeepScanningClientResponse response);
+  // Callbacks for when |binary_upload_service_| finishes uploading.
+  void OnLegacyScanComplete(BinaryUploadService::Result result,
+                            DeepScanningClientResponse response);
+  void OnConnectorScanComplete(
+      BinaryUploadService::Result result,
+      enterprise_connectors::ContentAnalysisResponse response);
+  template <typename T>
+  void OnScanComplete(BinaryUploadService::Result result, T response);
 
   // Finishes the request, providing the result through |callback_| and
   // notifying |download_service_|.

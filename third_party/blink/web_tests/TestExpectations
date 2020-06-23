@@ -230,19 +230,9 @@ crbug.com/1004547 external/wpt/intersection-observer/cross-origin-iframe.sub.htm
 crbug.com/1007229 external/wpt/intersection-observer/same-origin-grand-child-iframe.sub.html [ Pass Failure ]
 
 # abspos is not implemented yet for aspect-ratio
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-001.tentative.html [ Failure ]
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-002.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-003.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-005.tentative.html [ Failure ]
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-006.tentative.html [ Failure ]
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-007.tentative.html [ Failure ]
-
-# We currently don't implement min/max-content contributions correctly :(
-crbug.com/1093094 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-001.tentative.html [ Failure ]
-crbug.com/1093094 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-002.tentative.html [ Failure ]
-
-# No final CSSWG resolution yet. https://github.com/w3c/csswg-drafts/issues/5032
-crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/intrinsic-size-004.tentative.html [ Failure ]
 
 # It is not clear if this test is correct. https://github.com/w3c/csswg-drafts/issues/5151
 crbug.com/1045668 external/wpt/css/css-sizing/aspect-ratio/abspos-004.tentative.html [ Failure ]
@@ -414,9 +404,6 @@ crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descenda
 
 # Flaky test.
 crbug.com/1054894 http/tests/images/image-decode-in-frame.html [ Pass Timeout ]
-
-# Flaky test.
-crbug.com/1097332 external/wpt/measure-memory/detached.tentative.window.html [ Pass Failure ]
 
 # ====== Paint team owned tests to here ======
 
@@ -735,6 +722,14 @@ crbug.com/1066577 external/wpt/css/css-lists/li-value-reversed-003.html [ Failur
 crbug.com/993813 external/wpt/css/css-overflow/webkit-line-clamp-008.html [ Failure ]
 crbug.com/993813 [ Mac ] external/wpt/css/css-overflow/webkit-line-clamp-025.html [ Failure ]
 crbug.com/993813 external/wpt/css/css-overflow/webkit-line-clamp-029.html [ Failure ]
+
+# Lack of support for font-language-override
+crbug.com/481430 [ Linux ] external/wpt/css/css-fonts/font-language-override-01.html [ Failure ]
+crbug.com/481430 [ Mac ] external/wpt/css/css-fonts/font-language-override-01.html [ Failure ]
+crbug.com/481430 [ Win ] external/wpt/css/css-fonts/font-language-override-01.html [ Failure ]
+crbug.com/481430 [ Linux ] external/wpt/css/css-fonts/font-language-override-02.html [ Failure ]
+crbug.com/481430 [ Mac ] external/wpt/css/css-fonts/font-language-override-02.html [ Failure ]
+crbug.com/481430 [ Win ] external/wpt/css/css-fonts/font-language-override-02.html [ Failure ]
 
 # Comparing variable font rendering to static font rendering fails on systems that use FreeType for variable fonts
 crbug.com/1067242 [ Win7 ] external/wpt/css/css-text-decor/text-underline-position-from-font-variable.html [ Failure ]
@@ -2714,12 +2709,6 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/html/cross-origin-embedder-policy/req
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-embedder-policy/require-corp-about-blank.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.13 ] external/wpt/html/cross-origin-embedder-policy/require-corp-about-srcdoc.html [ Failure Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/cross-origin-embedder-policy/require-corp-about-srcdoc.html [ Failure Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/font-language-override-01.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/font-language-override-01.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-fonts/font-language-override-01.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/font-language-override-02.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/font-language-override-02.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-fonts/font-language-override-02.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/streams/idlharness.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/streams/idlharness.any.serviceworker.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/streams/idlharness.any.serviceworker.html [ Timeout ]
@@ -6870,3 +6859,5 @@ crbug.com/1098067 [ Fuchsia ] virtual/text-antialias/bidi-isolate-nextlinebreak-
 
 # Sheriff 2020-06-23
 crbug.com/1098136 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure ]
+crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
+crbug.com/1098371 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-neutral-keyframe.html [ Pass Crash Failure ]

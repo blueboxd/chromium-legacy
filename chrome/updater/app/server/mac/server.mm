@@ -7,11 +7,15 @@
 #import <Foundation/Foundation.h>
 #include <xpc/xpc.h>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
+#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/updater/app/app.h"
+#import "chrome/updater/app/server/mac/app_server.h"
 #include "chrome/updater/app/server/mac/service_delegate.h"
 #import "chrome/updater/configurator.h"
 #import "chrome/updater/mac/setup/info_plist.h"
@@ -21,24 +25,6 @@
 
 namespace updater {
 
-class AppServer : public App {
- public:
-  AppServer();
-
- private:
-  ~AppServer() override;
-  void Initialize() override;
-  void FirstTaskRun() override;
-
-  scoped_refptr<Configurator> config_;
-  base::scoped_nsobject<CRUUpdateCheckXPCServiceDelegate>
-      update_check_delegate_;
-  base::scoped_nsobject<NSXPCListener> update_check_listener_;
-  base::scoped_nsobject<CRUAdministrationXPCServiceDelegate>
-      administration_delegate_;
-  base::scoped_nsobject<NSXPCListener> administration_listener_;
-};
-
 AppServer::AppServer() = default;
 AppServer::~AppServer() = default;
 
@@ -46,12 +32,20 @@ void AppServer::Initialize() {
   config_ = base::MakeRefCounted<Configurator>(CreateGlobalPrefs());
 }
 
+void AppServer::Uninitialize() {
+  // These delegates need to have a reference to the AppServer. To break the
+  // circular reference, we need to reset them.
+  update_check_delegate_.reset();
+  administration_delegate_.reset();
+}
+
 void AppServer::FirstTaskRun() {
   @autoreleasepool {
     // Sets up a listener and delegate for the CRUUpdateChecking XPC connection
     update_check_delegate_.reset([[CRUUpdateCheckXPCServiceDelegate alloc]
         initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
-                                  config_)]);
+                                  config_)
+                    appServer:scoped_refptr<AppServer>(this)]);
 
     update_check_listener_.reset([[NSXPCListener alloc]
         initWithMachServiceName:GetGoogleUpdateServiceMachName().get()]);
@@ -65,7 +59,8 @@ void AppServer::FirstTaskRun() {
     CHECK(info_plist);
     administration_delegate_.reset([[CRUAdministrationXPCServiceDelegate alloc]
         initWithUpdateService:base::MakeRefCounted<UpdateServiceInProcess>(
-                                  config_)]);
+                                  config_)
+                    appServer:scoped_refptr<AppServer>(this)]);
 
     administration_listener_.reset([[NSXPCListener alloc]
         initWithMachServiceName:
@@ -74,6 +69,28 @@ void AppServer::FirstTaskRun() {
     administration_listener_.get().delegate = administration_delegate_.get();
 
     [administration_listener_ resume];
+  }
+}
+
+void AppServer::TaskStarted() {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, BindOnce(&AppServer::MarkTaskStarted, this));
+}
+
+void AppServer::MarkTaskStarted() {
+  tasks_running_++;
+}
+
+void AppServer::TaskCompleted() {
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&AppServer::AcknowledgeTaskCompletion, this),
+      base::TimeDelta::FromSeconds(10));
+}
+
+void AppServer::AcknowledgeTaskCompletion() {
+  if (--tasks_running_ < 1) {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&AppServer::Shutdown, this, 0));
   }
 }
 

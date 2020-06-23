@@ -449,8 +449,8 @@ void ExtensionAppsBase::Connect(
                   apps::mojom::Readiness::kDisabledByUser, &apps);
     ConvertVector(registry->terminated_extensions(),
                   apps::mojom::Readiness::kTerminated, &apps);
-    // blacklisted_extensions and blocked_extensions, corresponding to
-    // kDisabledByBlacklist and kDisabledByPolicy, are deliberately ignored.
+    // blocklisted_extensions and blocked_extensions, corresponding to
+    // kDisabledByBlocklist and kDisabledByPolicy, are deliberately ignored.
     //
     // If making changes to which sets are consulted, also change ShouldShow,
     // OnHideWebStoreIconPrefChanged.
@@ -734,8 +734,8 @@ void ExtensionAppsBase::OnExtensionUnloaded(
     case extensions::UnloadedExtensionReason::DISABLE:
       readiness = apps::mojom::Readiness::kDisabledByUser;
       break;
-    case extensions::UnloadedExtensionReason::BLACKLIST:
-      readiness = apps::mojom::Readiness::kDisabledByBlacklist;
+    case extensions::UnloadedExtensionReason::BLOCKLIST:
+      readiness = apps::mojom::Readiness::kDisabledByBlocklist;
       break;
     case extensions::UnloadedExtensionReason::TERMINATE:
       readiness = apps::mojom::Readiness::kTerminated;

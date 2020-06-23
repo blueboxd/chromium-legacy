@@ -85,7 +85,7 @@ void V8ByteStringOrNodeList::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = NativeValueTraits<IDLByteString>::NativeValue(isolate, v8_value, exception_state);
+    V8StringResource<> cpp_value{ NativeValueTraits<IDLByteString>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetByteString(cpp_value);

@@ -26,7 +26,6 @@
 
 #include "base/base64.h"
 #include "base/callback.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"

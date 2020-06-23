@@ -181,7 +181,7 @@ std::unique_ptr<media::DefaultRendererFactory> CreateDefaultRendererFactory(
       media_log, decoder_factory,
       base::BindRepeating(&content::RenderThreadImpl::GetGpuFactories,
                           base::Unretained(render_thread)),
-      render_frame->CreateSpeechRecognitionClient());
+      render_frame->CreateSpeechRecognitionClient(base::OnceClosure()));
 #endif
   return default_factory;
 }

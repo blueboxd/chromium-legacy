@@ -595,13 +595,13 @@ void ExtensionAppsChromeOs::MaybeAddWebPageNotifications(
 }
 
 // static
-bool ExtensionAppsChromeOs::IsBlacklisted(const std::string& app_id) {
-  // We blacklist (meaning we don't publish the app, in the App Service sense)
+bool ExtensionAppsChromeOs::IsBlocklisted(const std::string& app_id) {
+  // We blocklist (meaning we don't publish the app, in the App Service sense)
   // some apps that are already published by other app publishers.
   //
-  // This sense of "blacklist" is separate from the extension registry's
-  // kDisabledByBlacklist concept, which is when SafeBrowsing will send out a
-  // blacklist of malicious extensions to disable.
+  // This sense of "blocklist" is separate from the extension registry's
+  // kDisabledByBlocklist concept, which is when SafeBrowsing will send out a
+  // blocklist of malicious extensions to disable.
 
   // The Play Store is conceptually provided by the ARC++ publisher, but
   // because it (the Play Store icon) is also the UI for enabling Android apps,
@@ -683,7 +683,7 @@ void ExtensionAppsChromeOs::OnSystemFeaturesPrefChanged() {
 }
 
 bool ExtensionAppsChromeOs::Accepts(const extensions::Extension* extension) {
-  if (!extension->is_app() || IsBlacklisted(extension->id())) {
+  if (!extension->is_app() || IsBlocklisted(extension->id())) {
     return false;
   }
 

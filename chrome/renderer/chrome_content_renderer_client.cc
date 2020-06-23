@@ -1439,8 +1439,10 @@ ChromeContentRendererClient::CreateWorkerContentSettingsClient(
 #if !defined(OS_ANDROID)
 std::unique_ptr<media::SpeechRecognitionClient>
 ChromeContentRendererClient::CreateSpeechRecognitionClient(
-    content::RenderFrame* render_frame) {
-  return std::make_unique<ChromeSpeechRecognitionClient>(render_frame);
+    content::RenderFrame* render_frame,
+    media::SpeechRecognitionClient::OnReadyCallback callback) {
+  return std::make_unique<ChromeSpeechRecognitionClient>(render_frame,
+                                                         std::move(callback));
 }
 #endif
 

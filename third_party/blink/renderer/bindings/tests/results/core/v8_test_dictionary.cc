@@ -128,7 +128,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (any_in_record_member_value.IsEmpty() || any_in_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<std::pair<String, ScriptValue>> any_in_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, ScriptValue>>::NativeValue(isolate, any_in_record_member_value, exception_state);
+    HeapVector<std::pair<String, ScriptValue>> any_in_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLString, ScriptValue>>::NativeValue(isolate, any_in_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setAnyInRecordMember(any_in_record_member_cpp_value);
@@ -142,7 +142,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (any_member_value.IsEmpty() || any_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    ScriptValue any_member_cpp_value = ScriptValue(isolate, any_member_value);
+    ScriptValue any_member_cpp_value{ ScriptValue(isolate, any_member_value) };
     impl->setAnyMember(any_member_cpp_value);
   }
 
@@ -154,7 +154,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (applicable_to_type_long_member_value.IsEmpty() || applicable_to_type_long_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    int32_t applicable_to_type_long_member_cpp_value = NativeValueTraits<IDLLongClamp>::NativeValue(isolate, applicable_to_type_long_member_value, exception_state);
+    int32_t applicable_to_type_long_member_cpp_value{ NativeValueTraits<IDLLongClamp>::NativeValue(isolate, applicable_to_type_long_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setApplicableToTypeLongMember(applicable_to_type_long_member_cpp_value);
@@ -168,7 +168,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (applicable_to_type_string_member_value.IsEmpty() || applicable_to_type_string_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<kTreatNullAsEmptyString> applicable_to_type_string_member_cpp_value = applicable_to_type_string_member_value;
+    V8StringResource<kTreatNullAsEmptyString> applicable_to_type_string_member_cpp_value{ applicable_to_type_string_member_value };
     if (!applicable_to_type_string_member_cpp_value.Prepare(exception_state))
       return;
     impl->setApplicableToTypeStringMember(applicable_to_type_string_member_cpp_value);
@@ -182,7 +182,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (boolean_member_value.IsEmpty() || boolean_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    bool boolean_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, boolean_member_value, exception_state);
+    bool boolean_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, boolean_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setBooleanMember(boolean_member_cpp_value);
@@ -200,7 +200,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
       exception_state.ThrowTypeError("member callbackFunctionMember is not a function.");
       return;
     }
-    V8VoidCallbackFunction* callback_function_member_cpp_value = V8VoidCallbackFunction::Create(callback_function_member_value.As<v8::Function>());
+    V8VoidCallbackFunction* callback_function_member_cpp_value{ V8VoidCallbackFunction::Create(callback_function_member_value.As<v8::Function>()) };
     impl->setCallbackFunctionMember(callback_function_member_cpp_value);
   }
 
@@ -212,7 +212,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (create_value.IsEmpty() || create_value->IsUndefined()) {
     // Do nothing.
   } else {
-    bool create_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, create_value, exception_state);
+    bool create_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, create_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setCreateMember(create_cpp_value);
@@ -227,7 +227,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     // Do nothing.
   } else {
     Deprecation::CountDeprecation(CurrentExecutionContext(isolate), WebFeature::kCreateMember);
-    bool deprecated_create_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, deprecated_create_member_value, exception_state);
+    bool deprecated_create_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, deprecated_create_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setCreateMember(deprecated_create_member_cpp_value);
@@ -241,7 +241,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (dom_string_treat_null_as_empty_string_member_value.IsEmpty() || dom_string_treat_null_as_empty_string_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<kTreatNullAsEmptyString> dom_string_treat_null_as_empty_string_member_cpp_value = dom_string_treat_null_as_empty_string_member_value;
+    V8StringResource<kTreatNullAsEmptyString> dom_string_treat_null_as_empty_string_member_cpp_value{ dom_string_treat_null_as_empty_string_member_value };
     if (!dom_string_treat_null_as_empty_string_member_cpp_value.Prepare(exception_state))
       return;
     impl->setDomStringTreatNullAsEmptyStringMember(dom_string_treat_null_as_empty_string_member_cpp_value);
@@ -257,7 +257,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   } else if (double_or_null_member_value->IsNull()) {
     impl->setDoubleOrNullMemberToNull();
   } else {
-    double double_or_null_member_cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, double_or_null_member_value, exception_state);
+    double double_or_null_member_cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, double_or_null_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setDoubleOrNullMember(double_or_null_member_cpp_value);
@@ -286,7 +286,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (double_or_null_record_member_value.IsEmpty() || double_or_null_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<std::pair<String, base::Optional<double>>> double_or_null_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, IDLNullable<IDLDouble>>>::NativeValue(isolate, double_or_null_record_member_value, exception_state);
+    Vector<std::pair<String, base::Optional<double>>> double_or_null_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLString, IDLNullable<IDLDouble>>>::NativeValue(isolate, double_or_null_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setDoubleOrNullRecordMember(double_or_null_record_member_cpp_value);
@@ -300,7 +300,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (double_or_null_sequence_member_value.IsEmpty() || double_or_null_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<base::Optional<double>> double_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, double_or_null_sequence_member_value, exception_state);
+    Vector<base::Optional<double>> double_or_null_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, double_or_null_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setDoubleOrNullSequenceMember(double_or_null_sequence_member_cpp_value);
@@ -329,7 +329,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (double_or_string_sequence_member_value.IsEmpty() || double_or_string_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<DoubleOrString> double_or_string_sequence_member_cpp_value = NativeValueTraits<IDLSequence<DoubleOrString>>::NativeValue(isolate, double_or_string_sequence_member_value, exception_state);
+    HeapVector<DoubleOrString> double_or_string_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<DoubleOrString>>::NativeValue(isolate, double_or_string_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setDoubleOrStringSequenceMember(double_or_string_sequence_member_cpp_value);
@@ -345,7 +345,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   } else if (element_or_null_member_value->IsNull()) {
     impl->setElementOrNullMemberToNull();
   } else {
-    Element* element_or_null_member_cpp_value = V8Element::ToImplWithTypeCheck(isolate, element_or_null_member_value);
+    Element* element_or_null_member_cpp_value{ V8Element::ToImplWithTypeCheck(isolate, element_or_null_member_value) };
     if (!element_or_null_member_cpp_value) {
       exception_state.ThrowTypeError("member elementOrNullMember is not of type Element.");
       return;
@@ -361,7 +361,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (element_or_null_record_member_value.IsEmpty() || element_or_null_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<std::pair<String, Member<Element>>> element_or_null_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, IDLNullable<Element>>>::NativeValue(isolate, element_or_null_record_member_value, exception_state);
+    HeapVector<std::pair<String, Member<Element>>> element_or_null_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLString, IDLNullable<Element>>>::NativeValue(isolate, element_or_null_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setElementOrNullRecordMember(element_or_null_record_member_cpp_value);
@@ -375,7 +375,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (element_or_null_sequence_member_value.IsEmpty() || element_or_null_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<Element>> element_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLNullable<Element>>>::NativeValue(isolate, element_or_null_sequence_member_value, exception_state);
+    HeapVector<Member<Element>> element_or_null_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLNullable<Element>>>::NativeValue(isolate, element_or_null_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setElementOrNullSequenceMember(element_or_null_sequence_member_cpp_value);
@@ -389,7 +389,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (enum_member_value.IsEmpty() || enum_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> enum_member_cpp_value = enum_member_value;
+    V8StringResource<> enum_member_cpp_value{ enum_member_value };
     if (!enum_member_cpp_value.Prepare(exception_state))
       return;
     const char* const kValidValues[] = {
@@ -411,7 +411,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (enum_or_null_member_value.IsEmpty() || enum_or_null_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<kTreatNullAndUndefinedAsNullString> enum_or_null_member_cpp_value = enum_or_null_member_value;
+    V8StringResource<kTreatNullAndUndefinedAsNullString> enum_or_null_member_cpp_value{ enum_or_null_member_value };
     if (!enum_or_null_member_cpp_value.Prepare(exception_state))
       return;
     const char* const kValidValues[] = {
@@ -434,7 +434,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (enum_sequence_member_value.IsEmpty() || enum_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<String> enum_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, enum_sequence_member_value, exception_state);
+    Vector<String> enum_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, enum_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     const char* const kValidValues[] = {
@@ -456,7 +456,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (event_target_member_value.IsEmpty() || event_target_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    EventTarget* event_target_member_cpp_value = V8EventTarget::ToImplWithTypeCheck(isolate, event_target_member_value);
+    EventTarget* event_target_member_cpp_value{ V8EventTarget::ToImplWithTypeCheck(isolate, event_target_member_value) };
     if (!event_target_member_cpp_value) {
       exception_state.ThrowTypeError("member eventTargetMember is not of type EventTarget.");
       return;
@@ -472,7 +472,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (garbage_collected_record_member_value.IsEmpty() || garbage_collected_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<std::pair<String, Member<TestObject>>> garbage_collected_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLUSVString, TestObject>>::NativeValue(isolate, garbage_collected_record_member_value, exception_state);
+    HeapVector<std::pair<String, Member<TestObject>>> garbage_collected_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLUSVString, TestObject>>::NativeValue(isolate, garbage_collected_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setGarbageCollectedRecordMember(garbage_collected_record_member_cpp_value);
@@ -486,7 +486,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (internal_dictionary_sequence_member_value.IsEmpty() || internal_dictionary_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<InternalDictionary>> internal_dictionary_sequence_member_cpp_value = NativeValueTraits<IDLSequence<InternalDictionary>>::NativeValue(isolate, internal_dictionary_sequence_member_value, exception_state);
+    HeapVector<Member<InternalDictionary>> internal_dictionary_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<InternalDictionary>>::NativeValue(isolate, internal_dictionary_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setInternalDictionarySequenceMember(internal_dictionary_sequence_member_cpp_value);
@@ -500,7 +500,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (long_member_value.IsEmpty() || long_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    int32_t long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, long_member_value, exception_state);
+    int32_t long_member_cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, long_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setLongMember(long_member_cpp_value);
@@ -514,7 +514,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (member_with_hyphen_in_name_value.IsEmpty() || member_with_hyphen_in_name_value->IsUndefined()) {
     // Do nothing.
   } else {
-    bool member_with_hyphen_in_name_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, member_with_hyphen_in_name_value, exception_state);
+    bool member_with_hyphen_in_name_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, member_with_hyphen_in_name_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setMemberWithHyphenInName(member_with_hyphen_in_name_cpp_value);
@@ -528,7 +528,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (object_member_value.IsEmpty() || object_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    ScriptValue object_member_cpp_value = NativeValueTraits<IDLObject>::NativeValue(isolate, object_member_value, exception_state);
+    ScriptValue object_member_cpp_value{ NativeValueTraits<IDLObject>::NativeValue(isolate, object_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setObjectMember(object_member_cpp_value);
@@ -544,7 +544,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   } else if (object_or_null_member_value->IsNull()) {
     impl->setObjectOrNullMemberToNull();
   } else {
-    ScriptValue object_or_null_member_cpp_value = NativeValueTraits<IDLNullable<IDLObject>>::NativeValue(isolate, object_or_null_member_value, exception_state);
+    ScriptValue object_or_null_member_cpp_value{ NativeValueTraits<IDLNullable<IDLObject>>::NativeValue(isolate, object_or_null_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setObjectOrNullMember(object_or_null_member_cpp_value);
@@ -558,7 +558,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (object_or_null_sequence_member_value.IsEmpty() || object_or_null_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<ScriptValue> object_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLNullable<IDLObject>>>::NativeValue(isolate, object_or_null_sequence_member_value, exception_state);
+    HeapVector<ScriptValue> object_or_null_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLNullable<IDLObject>>>::NativeValue(isolate, object_or_null_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setObjectOrNullSequenceMember(object_or_null_sequence_member_cpp_value);
@@ -587,7 +587,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (public_value.IsEmpty() || public_value->IsUndefined()) {
     // Do nothing.
   } else {
-    bool public_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, public_value, exception_state);
+    bool public_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, public_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setIsPublic(public_cpp_value);
@@ -601,7 +601,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (record_member_value.IsEmpty() || record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<std::pair<String, int8_t>> record_member_cpp_value = NativeValueTraits<IDLRecord<IDLByteString, IDLByte>>::NativeValue(isolate, record_member_value, exception_state);
+    Vector<std::pair<String, int8_t>> record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLByteString, IDLByte>>::NativeValue(isolate, record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setRecordMember(record_member_cpp_value);
@@ -620,7 +620,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
       exception_state.ThrowTypeError("member requiredCallbackFunctionMember is not a function.");
       return;
     }
-    V8VoidCallbackFunction* required_callback_function_member_cpp_value = V8VoidCallbackFunction::Create(required_callback_function_member_value.As<v8::Function>());
+    V8VoidCallbackFunction* required_callback_function_member_cpp_value{ V8VoidCallbackFunction::Create(required_callback_function_member_value.As<v8::Function>()) };
     impl->setRequiredCallbackFunctionMember(required_callback_function_member_cpp_value);
   }
 
@@ -632,7 +632,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (restricted_double_member_value.IsEmpty() || restricted_double_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    double restricted_double_member_cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, restricted_double_member_value, exception_state);
+    double restricted_double_member_cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, restricted_double_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setRestrictedDoubleMember(restricted_double_member_cpp_value);
@@ -646,7 +646,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (string_member_value.IsEmpty() || string_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> string_member_cpp_value = string_member_value;
+    V8StringResource<> string_member_cpp_value{ string_member_value };
     if (!string_member_cpp_value.Prepare(exception_state))
       return;
     impl->setStringMember(string_member_cpp_value);
@@ -660,7 +660,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (string_or_null_member_value.IsEmpty() || string_or_null_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<kTreatNullAndUndefinedAsNullString> string_or_null_member_cpp_value = string_or_null_member_value;
+    V8StringResource<kTreatNullAndUndefinedAsNullString> string_or_null_member_cpp_value{ string_or_null_member_value };
     if (!string_or_null_member_cpp_value.Prepare(exception_state))
       return;
     impl->setStringOrNullMember(string_or_null_member_cpp_value);
@@ -674,7 +674,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (string_or_null_record_member_value.IsEmpty() || string_or_null_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<std::pair<String, String>> string_or_null_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, IDLStringOrNull>>::NativeValue(isolate, string_or_null_record_member_value, exception_state);
+    Vector<std::pair<String, String>> string_or_null_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLString, IDLStringOrNull>>::NativeValue(isolate, string_or_null_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setStringOrNullRecordMember(string_or_null_record_member_cpp_value);
@@ -688,7 +688,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (string_or_null_sequence_member_value.IsEmpty() || string_or_null_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<String> string_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, string_or_null_sequence_member_value, exception_state);
+    Vector<String> string_or_null_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLStringOrNull>>::NativeValue(isolate, string_or_null_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setStringOrNullSequenceMember(string_or_null_sequence_member_cpp_value);
@@ -702,7 +702,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (string_sequence_member_value.IsEmpty() || string_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<String> string_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, string_sequence_member_value, exception_state);
+    Vector<String> string_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, string_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setStringSequenceMember(string_sequence_member_cpp_value);
@@ -776,7 +776,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (test_interface_member_value.IsEmpty() || test_interface_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    TestInterfaceImplementation* test_interface_member_cpp_value = V8TestInterface::ToImplWithTypeCheck(isolate, test_interface_member_value);
+    TestInterfaceImplementation* test_interface_member_cpp_value{ V8TestInterface::ToImplWithTypeCheck(isolate, test_interface_member_value) };
     if (!test_interface_member_cpp_value) {
       exception_state.ThrowTypeError("member testInterfaceMember is not of type TestInterface.");
       return;
@@ -794,7 +794,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   } else if (test_interface_or_null_member_value->IsNull()) {
     impl->setTestInterfaceOrNullMemberToNull();
   } else {
-    TestInterfaceImplementation* test_interface_or_null_member_cpp_value = V8TestInterface::ToImplWithTypeCheck(isolate, test_interface_or_null_member_value);
+    TestInterfaceImplementation* test_interface_or_null_member_cpp_value{ V8TestInterface::ToImplWithTypeCheck(isolate, test_interface_or_null_member_value) };
     if (!test_interface_or_null_member_cpp_value) {
       exception_state.ThrowTypeError("member testInterfaceOrNullMember is not of type TestInterface.");
       return;
@@ -810,7 +810,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (test_interface_sequence_member_value.IsEmpty() || test_interface_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_cpp_value = NativeValueTraits<IDLSequence<TestInterfaceImplementation>>::NativeValue(isolate, test_interface_sequence_member_value, exception_state);
+    HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<TestInterfaceImplementation>>::NativeValue(isolate, test_interface_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setTestInterfaceSequenceMember(test_interface_sequence_member_cpp_value);
@@ -824,7 +824,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (test_object_sequence_member_value.IsEmpty() || test_object_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<Member<TestObject>> test_object_sequence_member_cpp_value = NativeValueTraits<IDLSequence<TestObject>>::NativeValue(isolate, test_object_sequence_member_value, exception_state);
+    HeapVector<Member<TestObject>> test_object_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<TestObject>>::NativeValue(isolate, test_object_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setTestObjectSequenceMember(test_object_sequence_member_cpp_value);
@@ -842,7 +842,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
       exception_state.ThrowTypeError("member treatNonNullObjMember is not a function.");
       return;
     }
-    V8TreatNonObjectAsNullVoidFunction* treat_non_null_obj_member_cpp_value = V8TreatNonObjectAsNullVoidFunction::Create(treat_non_null_obj_member_value.As<v8::Function>());
+    V8TreatNonObjectAsNullVoidFunction* treat_non_null_obj_member_cpp_value{ V8TreatNonObjectAsNullVoidFunction::Create(treat_non_null_obj_member_value.As<v8::Function>()) };
     impl->setTreatNonNullObjMember(treat_non_null_obj_member_cpp_value);
   }
 
@@ -854,7 +854,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (treat_null_as_string_sequence_member_value.IsEmpty() || treat_null_as_string_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    Vector<String> treat_null_as_string_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLStringTreatNullAsEmptyString>>::NativeValue(isolate, treat_null_as_string_sequence_member_value, exception_state);
+    Vector<String> treat_null_as_string_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLStringTreatNullAsEmptyString>>::NativeValue(isolate, treat_null_as_string_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setTreatNullAsStringSequenceMember(treat_null_as_string_sequence_member_cpp_value);
@@ -868,7 +868,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (uint8_array_member_value.IsEmpty() || uint8_array_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    NotShared<DOMUint8Array> uint8_array_member_cpp_value = ToNotShared<NotShared<DOMUint8Array>>(isolate, uint8_array_member_value, exception_state);
+    NotShared<DOMUint8Array> uint8_array_member_cpp_value{ ToNotShared<NotShared<DOMUint8Array>>(isolate, uint8_array_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     if (!uint8_array_member_cpp_value) {
@@ -886,7 +886,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (union_in_record_member_value.IsEmpty() || union_in_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLByteString, LongOrBoolean>>::NativeValue(isolate, union_in_record_member_value, exception_state);
+    HeapVector<std::pair<String, LongOrBoolean>> union_in_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLByteString, LongOrBoolean>>::NativeValue(isolate, union_in_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setUnionInRecordMember(union_in_record_member_cpp_value);
@@ -915,7 +915,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (union_or_null_record_member_value.IsEmpty() || union_or_null_record_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<std::pair<String, DoubleOrString>> union_or_null_record_member_cpp_value = NativeValueTraits<IDLRecord<IDLString, IDLNullable<DoubleOrString>>>::NativeValue(isolate, union_or_null_record_member_value, exception_state);
+    HeapVector<std::pair<String, DoubleOrString>> union_or_null_record_member_cpp_value{ NativeValueTraits<IDLRecord<IDLString, IDLNullable<DoubleOrString>>>::NativeValue(isolate, union_or_null_record_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setUnionOrNullRecordMember(union_or_null_record_member_cpp_value);
@@ -929,7 +929,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (union_or_null_sequence_member_value.IsEmpty() || union_or_null_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<DoubleOrString> union_or_null_sequence_member_cpp_value = NativeValueTraits<IDLSequence<IDLNullable<DoubleOrString>>>::NativeValue(isolate, union_or_null_sequence_member_value, exception_state);
+    HeapVector<DoubleOrString> union_or_null_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<IDLNullable<DoubleOrString>>>::NativeValue(isolate, union_or_null_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setUnionOrNullSequenceMember(union_or_null_sequence_member_cpp_value);
@@ -973,7 +973,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (unrestricted_double_member_value.IsEmpty() || unrestricted_double_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    double unrestricted_double_member_cpp_value = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, unrestricted_double_member_value, exception_state);
+    double unrestricted_double_member_cpp_value{ NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, unrestricted_double_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setUnrestrictedDoubleMember(unrestricted_double_member_cpp_value);
@@ -987,7 +987,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
   if (usv_string_or_null_member_value.IsEmpty() || usv_string_or_null_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<kTreatNullAndUndefinedAsNullString> usv_string_or_null_member_cpp_value = NativeValueTraits<IDLUSVStringOrNull>::NativeValue(isolate, usv_string_or_null_member_value, exception_state);
+    V8StringResource<kTreatNullAndUndefinedAsNullString> usv_string_or_null_member_cpp_value{ NativeValueTraits<IDLUSVStringOrNull>::NativeValue(isolate, usv_string_or_null_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setUsvStringOrNullMember(usv_string_or_null_member_cpp_value);
@@ -1002,7 +1002,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     if (runtime_member_value.IsEmpty() || runtime_member_value->IsUndefined()) {
       // Do nothing.
     } else {
-      bool runtime_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, runtime_member_value, exception_state);
+      bool runtime_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, runtime_member_value, exception_state) };
       if (exception_state.HadException())
         return;
       impl->setRuntimeMember(runtime_member_cpp_value);
@@ -1016,7 +1016,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     if (runtime_second_member_value.IsEmpty() || runtime_second_member_value->IsUndefined()) {
       // Do nothing.
     } else {
-      bool runtime_second_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, runtime_second_member_value, exception_state);
+      bool runtime_second_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, runtime_second_member_value, exception_state) };
       if (exception_state.HadException())
         return;
       impl->setRuntimeSecondMember(runtime_second_member_cpp_value);
@@ -1032,7 +1032,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     if (origin_trial_member_value.IsEmpty() || origin_trial_member_value->IsUndefined()) {
       // Do nothing.
     } else {
-      bool origin_trial_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, origin_trial_member_value, exception_state);
+      bool origin_trial_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, origin_trial_member_value, exception_state) };
       if (exception_state.HadException())
         return;
       impl->setOriginTrialMember(origin_trial_member_cpp_value);
@@ -1048,7 +1048,7 @@ void V8TestDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8_valu
     if (origin_trial_second_member_value.IsEmpty() || origin_trial_second_member_value->IsUndefined()) {
       // Do nothing.
     } else {
-      bool origin_trial_second_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, origin_trial_second_member_value, exception_state);
+      bool origin_trial_second_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, origin_trial_second_member_value, exception_state) };
       if (exception_state.HadException())
         return;
       impl->setOriginTrialSecondMember(origin_trial_second_member_cpp_value);

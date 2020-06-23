@@ -445,14 +445,22 @@ web::WebState* GetWebStateWithId(WebStateList* web_state_list,
   // with NSItemProvider.
   NSItemProvider* itemProvider = dragItem.itemProvider;
   if ([itemProvider canLoadObjectOfClass:[NSURL class]]) {
-    auto loadHandler =
-        ^(id<NSItemProviderReading> providedItem, NSError* error) {
-          dispatch_async(dispatch_get_main_queue(), ^{
-            NSURL* droppedURL = static_cast<NSURL*>(providedItem);
-            [self insertNewItemAtIndex:destinationIndex
-                               withURL:net::GURLWithNSURL(droppedURL)];
-          });
-        };
+    // The parameter type has changed with Xcode 12 SDK.
+    // TODO(crbug.com/1098318): Remove this once Xcode 11 support is dropped.
+#if defined(__IPHONE_14_0)
+    using providerType = __kindof id<NSItemProviderReading>;
+#else
+    using providerType = id<NSItemProviderReading>;
+#endif
+
+    auto loadHandler = ^(providerType providedItem, NSError* error) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        NSURL* droppedURL = static_cast<NSURL*>(providedItem);
+        [self insertNewItemAtIndex:destinationIndex
+                           withURL:net::GURLWithNSURL(droppedURL)];
+      });
+    };
+
     [itemProvider loadObjectOfClass:[NSURL class]
                   completionHandler:loadHandler];
     return;

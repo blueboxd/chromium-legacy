@@ -93,7 +93,7 @@ static void LengthAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestIntegerIndexed", "length");
 
   // Prepare the value to be set.
-  int16_t cpp_value = NativeValueTraits<IDLShort>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int16_t cpp_value{ NativeValueTraits<IDLShort>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 

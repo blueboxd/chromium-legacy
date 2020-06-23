@@ -2385,8 +2385,7 @@ bool LayoutBlockFlow::GeneratesLineBoxesForInlineChild(LayoutObject* inline_obj)
 }
 
 void LayoutBlockFlow::AddVisualOverflowFromInlineChildren() {
-  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
-  CHECK(!NeedsLayout());
+  DCHECK(!NeedsLayout());
   DCHECK(!PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
 
   if (const NGPaintFragment* paint_fragment = PaintFragment()) {

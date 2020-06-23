@@ -605,8 +605,9 @@ int ScrollbarController::GetScrollDeltaForPercentBasedScroll() const {
           : gfx::Vector2dF(kPercentDeltaForDirectionalScroll, 0);
 
   const gfx::Vector2dF pixel_delta =
-      layer_tree_host_impl_->ResolveScrollPercentageToPixels(*scroll_node,
-                                                             scroll_delta);
+      layer_tree_host_impl_->ResolveScrollGranularityToPixels(
+          *scroll_node, scroll_delta,
+          ui::ScrollGranularity::kScrollByPercentage);
 
   return scrollbar->orientation() == ScrollbarOrientation::VERTICAL
              ? pixel_delta.y()

@@ -53,6 +53,12 @@ ChromeIdentityService::CreateChromeIdentityInteractionManager(
   return nil;
 }
 
+ChromeIdentityInteractionManager*
+ChromeIdentityService::CreateChromeIdentityInteractionManager(
+    ChromeBrowserState* browser_state) const {
+  return CreateChromeIdentityInteractionManager(browser_state, nil);
+}
+
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) const {
   return false;
 }

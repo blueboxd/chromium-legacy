@@ -13,7 +13,7 @@
 @interface ContentSuggestionsDiscoverItem ()
 
 // Contains a reference to the last configured cell containing the feed.
-@property(strong, nonatomic) ContentSuggestionsDiscoverCell* lastConfiguredCell;
+@property(nonatomic, weak) ContentSuggestionsDiscoverCell* lastConfiguredCell;
 
 @end
 
@@ -46,7 +46,7 @@
 @interface ContentSuggestionsDiscoverCell ()
 
 // The Discover feed which acts as the cell's content.
-@property(strong, nonatomic) UIViewController* discoverFeed;
+@property(nonatomic, weak) UIViewController* discoverFeed;
 
 @end
 

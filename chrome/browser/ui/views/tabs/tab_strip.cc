@@ -2975,7 +2975,7 @@ void TabStrip::UpdateContrastRatioValues() {
 void TabStrip::ShiftTabRelative(Tab* tab, int offset) {
   DCHECK(offset == ShiftOffset::kLeft || offset == ShiftOffset::kRight);
   const int start_index = GetModelIndexOf(tab);
-  const int target_index = start_index + offset;
+  int target_index = start_index + offset;
 
   if (!IsValidModelIndex(start_index))
     return;
@@ -3001,13 +3001,27 @@ void TabStrip::ShiftTabRelative(Tab* tab, int offset) {
     if (tab->group().has_value()) {
       controller_->RemoveTabFromGroup(start_index);
       return;
-    } else if (target_group.has_value() &&
-               !controller_->IsGroupCollapsed(target_group.value())) {
-      controller_->AddTabToGroup(start_index, target_group.value());
-      return;
+    } else if (target_group.has_value()) {
+      // If the tab is at a group boundary and the group is collapsed, treat the
+      // collapsed group as a tab and find the next available slot for the tab
+      // to move to.
+      if (controller_->IsGroupCollapsed(target_group.value())) {
+        int candidate_index = target_index + offset;
+        while (IsValidModelIndex(candidate_index) &&
+               tab_at(candidate_index)->group() == target_group) {
+          candidate_index += offset;
+        }
+        if (IsValidModelIndex(candidate_index)) {
+          target_index = candidate_index - offset;
+        } else {
+          target_index = offset == ShiftOffset::kLeft ? 0 : GetModelCount() - 1;
+        }
+      } else {
+        controller_->AddTabToGroup(start_index, target_group.value());
+        return;
+      }
     }
   }
-
   controller_->MoveTab(start_index, target_index);
 }
 

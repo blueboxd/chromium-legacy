@@ -20,7 +20,7 @@ extern const char kHistogramName[];
 }
 
 using LookalikeTargetAllowlistChecker =
-    base::RepeatingCallback<bool(const GURL&)>;
+    base::RepeatingCallback<bool(const std::string&)>;
 
 // Common words are allow listed in target embedding (e.g. weather.jp.com should
 // not be considered a lookalike for weather.com). However, some of the common
@@ -129,9 +129,12 @@ struct DomainInfo {
   DomainInfo(const DomainInfo& other);
 };
 
-// Returns a DomainInfo instance computed from |url|. Will return empty fields
-// for non-unique hostnames (e.g. site.test), localhost or sites whose eTLD+1 is
-// empty.
+// Returns a DomainInfo instance computed from |hostname|. Will return empty
+// fields for non-unique hostnames (e.g. site.test), localhost or sites whose
+// eTLD+1 is empty.
+DomainInfo GetDomainInfo(const std::string& hostname);
+
+// Convenience function for returning GetDomainInfo(url.host()).
 DomainInfo GetDomainInfo(const GURL& url);
 
 // Returns true if the Levenshtein distance between |str1| and |str2| is at most
@@ -139,6 +142,13 @@ DomainInfo GetDomainInfo(const GURL& url);
 // distance computation.
 bool IsEditDistanceAtMostOne(const base::string16& str1,
                              const base::string16& str2);
+
+// Returns whether |navigated_domain| and |matched_domain| are likely to be edit
+// distance false positives, and thus the user should *not* be warned.
+//
+// Assumes |navigated_domain| and |matched_domain| are edit distance matches.
+bool IsLikelyEditDistanceFalsePositive(const DomainInfo& navigated_domain,
+                                       const DomainInfo& matched_domain);
 
 // Returns true if the domain given by |domain_info| is a top domain.
 bool IsTopDomain(const DomainInfo& domain_info);

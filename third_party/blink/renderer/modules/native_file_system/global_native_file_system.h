@@ -11,6 +11,9 @@
 namespace blink {
 
 class ChooseFileSystemEntriesOptions;
+class OpenFilePickerOptions;
+class SaveFilePickerOptions;
+class DirectoryPickerOptions;
 class ExceptionState;
 class LocalDOMWindow;
 class ScriptPromise;
@@ -26,6 +29,19 @@ class GlobalNativeFileSystem {
       LocalDOMWindow&,
       const ChooseFileSystemEntriesOptions*,
       ExceptionState&);
+
+  static ScriptPromise showOpenFilePicker(ScriptState*,
+                                          LocalDOMWindow&,
+                                          const OpenFilePickerOptions*,
+                                          ExceptionState&);
+  static ScriptPromise showSaveFilePicker(ScriptState*,
+                                          LocalDOMWindow&,
+                                          const SaveFilePickerOptions*,
+                                          ExceptionState&);
+  static ScriptPromise showDirectoryPicker(ScriptState*,
+                                           LocalDOMWindow&,
+                                           const DirectoryPickerOptions*,
+                                           ExceptionState&);
 
   static ScriptPromise getOriginPrivateDirectory(ScriptState*,
                                                  const LocalDOMWindow&,

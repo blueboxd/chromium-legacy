@@ -345,7 +345,7 @@ api::autotest_private::AppReadiness GetAppReadiness(
   switch (readiness) {
     case apps::mojom::Readiness::kReady:
       return api::autotest_private::AppReadiness::APP_READINESS_READY;
-    case apps::mojom::Readiness::kDisabledByBlacklist:
+    case apps::mojom::Readiness::kDisabledByBlocklist:
       return api::autotest_private::AppReadiness::
           APP_READINESS_DISABLEDBYBLACKLIST;
     case apps::mojom::Readiness::kDisabledByPolicy:

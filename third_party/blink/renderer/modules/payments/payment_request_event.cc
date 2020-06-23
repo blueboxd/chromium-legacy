@@ -188,14 +188,6 @@ ScriptPromise PaymentRequestEvent::openWindow(ScriptState* script_state,
 ScriptPromise PaymentRequestEvent::changePaymentMethod(
     ScriptState* script_state,
     const String& method_name,
-    ExceptionState& exception_state) {
-  return changePaymentMethod(script_state, method_name, ScriptValue(),
-                             exception_state);
-}
-
-ScriptPromise PaymentRequestEvent::changePaymentMethod(
-    ScriptState* script_state,
-    const String& method_name,
     const ScriptValue& method_details,
     ExceptionState& exception_state) {
   if (change_payment_request_details_resolver_) {
@@ -213,7 +205,8 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
   }
 
   auto method_data = payments::mojom::blink::PaymentHandlerMethodData::New();
-  if (!method_details.IsEmpty()) {
+  if (!method_details.IsNull()) {
+    DCHECK(!method_details.IsEmpty());
     PaymentsValidators::ValidateAndStringifyObject(
         script_state->GetIsolate(), "Method details", method_details,
         method_data->stringified_data, exception_state);

@@ -45,7 +45,7 @@ class TestNetErrorTabHelper : public NetErrorTabHelper {
   int mock_sent_count() const { return mock_sent_count_; }
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  using NetErrorTabHelper::OnDownloadPageLater;
+  using NetErrorTabHelper::DownloadPageLater;
 
   const GURL& download_page_later_url() const {
     return download_page_later_url_;
@@ -169,7 +169,7 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
                                             bool succeeded) {
     GURL url(url_string);
     LoadURL(url, succeeded);
-    tab_helper()->OnDownloadPageLater();
+    tab_helper()->DownloadPageLater();
     EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -370,7 +370,7 @@ TEST_F(NetErrorTabHelperTest, NoDiagnosticsForNonHttpSchemes) {
 TEST_F(NetErrorTabHelperTest, DownloadPageLater) {
   GURL url("http://somewhere:123/");
   LoadURL(url, false /*succeeded*/);
-  tab_helper()->OnDownloadPageLater();
+  tab_helper()->DownloadPageLater();
   EXPECT_EQ(url, tab_helper()->download_page_later_url());
   EXPECT_EQ(1, tab_helper()->times_download_page_later_invoked());
 }
@@ -378,7 +378,7 @@ TEST_F(NetErrorTabHelperTest, DownloadPageLater) {
 TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterOnNonErrorPage) {
   GURL url("http://somewhere:123/");
   LoadURL(url, true /*succeeded*/);
-  tab_helper()->OnDownloadPageLater();
+  tab_helper()->DownloadPageLater();
   EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
 }
 

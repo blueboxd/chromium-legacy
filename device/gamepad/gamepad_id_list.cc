@@ -142,6 +142,7 @@ constexpr struct GamepadInfo {
     // Elecom Co., Ltd
     {0x056e, 0x2003, kXInputTypeNone},
     {0x056e, 0x2004, kXInputTypeXbox360},
+    {0x056e, 0x200f, kXInputTypeNone},
     {0x056e, 0x2010, kXInputTypeNone},
     {0x056e, 0x2013, kXInputTypeXbox360},
     // Nintendo Co., Ltd

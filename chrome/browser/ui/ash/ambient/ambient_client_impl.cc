@@ -20,6 +20,7 @@
 #include "components/signin/public/identity_manager/scope_set.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/device_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -93,6 +94,11 @@ AmbientClientImpl::GetURLLoaderFactory() {
   DCHECK(profile);
 
   return profile->GetURLLoaderFactory();
+}
+
+void AmbientClientImpl::RequestWakeLockProvider(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
+  content::GetDeviceService().BindWakeLockProvider(std::move(receiver));
 }
 
 void AmbientClientImpl::GetAccessToken(

@@ -121,10 +121,10 @@ bool IsUrlAllowlistedBySafetyTipsComponent(
   return false;
 }
 
-bool IsTargetUrlAllowlistedBySafetyTipsComponent(
+bool IsTargetHostAllowlistedBySafetyTipsComponent(
     const chrome_browser_safety_tips::SafetyTipsConfig* proto,
-    const GURL& url) {
-  DCHECK(!url.host().empty());
+    const std::string& hostname) {
+  DCHECK(!hostname.empty());
   if (proto == nullptr) {
     return false;
   }
@@ -135,7 +135,7 @@ bool IsTargetUrlAllowlistedBySafetyTipsComponent(
     DCHECK(!host_pattern.regex().empty());
     const re2::RE2 regex(host_pattern.regex());
     DCHECK(regex.ok());
-    if (re2::RE2::FullMatch(url.host(), regex)) {
+    if (re2::RE2::FullMatch(hostname, regex)) {
       return true;
     }
   }

@@ -26,19 +26,30 @@ class StatusIndicatorProperties {
     static final PropertyModel.WritableBooleanPropertyKey COMPOSITED_VIEW_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
 
+    /** Color of the widget's background. */
     static final PropertyModel.WritableIntPropertyKey BACKGROUND_COLOR =
             new PropertyModel.WritableIntPropertyKey();
 
+    /** Alpha of the text, including the icon. */
     static final PropertyModel.WritableFloatPropertyKey TEXT_ALPHA =
             new PropertyModel.WritableFloatPropertyKey();
 
+    /** Color of the status text. */
     static final PropertyModel.WritableIntPropertyKey TEXT_COLOR =
             new PropertyModel.WritableIntPropertyKey();
 
+    /** Tint of the status icon. */
     static final PropertyModel.WritableIntPropertyKey ICON_TINT =
             new PropertyModel.WritableIntPropertyKey();
 
-    static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {STATUS_TEXT, STATUS_ICON, ANDROID_VIEW_VISIBILITY,
-                    COMPOSITED_VIEW_VISIBLE, BACKGROUND_COLOR, TEXT_ALPHA, TEXT_COLOR, ICON_TINT};
+    /**
+     * Current visible height of the Android view. This is used when there is a Java height
+     * animation running rather than a native one.
+     */
+    static final PropertyModel.WritableIntPropertyKey CURRENT_VISIBLE_HEIGHT =
+            new PropertyModel.WritableIntPropertyKey();
+
+    static final PropertyKey[] ALL_KEYS = new PropertyKey[] {STATUS_TEXT, STATUS_ICON,
+            ANDROID_VIEW_VISIBILITY, COMPOSITED_VIEW_VISIBLE, BACKGROUND_COLOR, TEXT_ALPHA,
+            TEXT_COLOR, ICON_TINT, CURRENT_VISIBLE_HEIGHT};
 }

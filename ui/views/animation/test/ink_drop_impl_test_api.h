@@ -95,6 +95,8 @@ class InkDropImplTestApi
   bool IsHighlightFadingInOrVisible() const;
   bool ShouldHighlight() const;
 
+  ui::Layer* GetRootLayer() const;
+
  protected:
   // MultiLayerAnimatorTestControllerDelegate:
   std::vector<ui::LayerAnimator*> GetLayerAnimators() override;

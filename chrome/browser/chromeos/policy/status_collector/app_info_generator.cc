@@ -25,7 +25,7 @@ em::AppInfo::Status ExtractStatus(const apps::mojom::Readiness readiness) {
       return em::AppInfo::Status::AppInfo_Status_STATUS_INSTALLED;
     case apps::mojom::Readiness::kUninstalledByUser:
       return em::AppInfo::Status::AppInfo_Status_STATUS_UNINSTALLED;
-    case apps::mojom::Readiness::kDisabledByBlacklist:
+    case apps::mojom::Readiness::kDisabledByBlocklist:
     case apps::mojom::Readiness::kDisabledByPolicy:
     case apps::mojom::Readiness::kDisabledByUser:
     case apps::mojom::Readiness::kTerminated:

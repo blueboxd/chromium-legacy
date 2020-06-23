@@ -10,6 +10,7 @@ import android.media.AudioManager;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,7 +33,6 @@ import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
 
 import java.util.ArrayList;
-import java.util.concurrent.Callable;
 
 /**
  * Tests for MediaSession.
@@ -92,12 +92,7 @@ public class MediaSessionTest {
 
         public void waitForFocusStateChange(int focusType) {
             CriteriaHelper.pollInstrumentationThread(
-                    Criteria.equals(focusType, new Callable<Integer>() {
-                        @Override
-                        public Integer call() {
-                            return getAudioFocusState();
-                        }
-                    }));
+                    () -> Criteria.checkThat(getAudioFocusState(), Matchers.is(focusType)));
         }
     }
 

@@ -200,10 +200,16 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // never used to look up the FrameTreeNode instance.
   virtual base::UnguessableToken GetDevToolsFrameToken() = 0;
 
-  // This token is present on any frames with remote parents to identify
-  // cross-process embedding relationships. It is also set on the main frame to
-  // allow generalization of the embedding relationship when the WebContents
-  // itself is embedded in another context such as the rest of the browser UI.
+  // This token is present on all frames. For frames with parents, it allows
+  // identification of embedding relationships between parent and child. For
+  // main frames, it also allows generalization of the embedding relationship
+  // when the WebContents itself is embedded in another context such as the rest
+  // of the browser UI. This will be nullopt prior to the RenderFrameHost
+  // committing a navigation. After the first navigation commits this
+  // will return the token for the last committed document.
+  //
+  // TODO(crbug/1098283): Remove the nullopt scenario by creating the token in
+  // CreateChildFrame() or similar.
   virtual base::Optional<base::UnguessableToken> GetEmbeddingToken() = 0;
 
   // Returns the assigned name of the frame, the name of the iframe tag

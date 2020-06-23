@@ -121,4 +121,26 @@ TEST_F(AmbientControllerTest, ShouldRefreshAccessTokenAfterFailure) {
   EXPECT_TRUE(IsAccessTokenRequestPending());
 }
 
+TEST_F(AmbientControllerTest, CheckAcquireAndReleaseWakeLock) {
+  // Simulates screen lock to show ambient mode, will result in acquiring a wake
+  // lock.
+  LockScreen();
+  // Run loop to ensure the request has reached the wake lock provider.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(ambient_controller()->IsShown());
+  EXPECT_EQ(1, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+
+  // Simulates user logs in to close ambient mode, will result in releasing the
+  // wake lock.
+  UnlockScreen();
+  // Run loop to ensure the request has reached the wake lock provider.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(ambient_controller()->IsShown());
+  EXPECT_EQ(0, GetNumOfActiveWakeLocks(
+                   device::mojom::WakeLockType::kPreventDisplaySleep));
+}
+
 }  // namespace ash

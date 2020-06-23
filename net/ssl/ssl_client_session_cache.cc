@@ -48,9 +48,9 @@ SSLClientSessionCache::SSLClientSessionCache(const Config& config)
       config_(config),
       cache_(config.max_entries),
       lookups_since_flush_(0) {
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &SSLClientSessionCache::OnMemoryPressure, base::Unretained(this))));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&SSLClientSessionCache::OnMemoryPressure,
+                                     base::Unretained(this)));
 }
 
 SSLClientSessionCache::~SSLClientSessionCache() {

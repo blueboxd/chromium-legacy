@@ -204,6 +204,8 @@ COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kShowOobeDevOverlay[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kOobeScreenshotDirectory[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const char kTelemetryExtensionDirectory[];
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kTestEncryptionMigrationUI[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kTestWallpaperServer[];
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const char kTetherStub[];

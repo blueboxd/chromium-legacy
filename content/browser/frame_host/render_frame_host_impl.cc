@@ -2796,16 +2796,17 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
 }
 
 void RenderFrameHostImpl::SetEmbeddingToken(
-    const base::Optional<base::UnguessableToken>& embedding_token) {
+    const base::UnguessableToken& embedding_token) {
   embedding_token_ = embedding_token;
 
-  // This token is used by a remote parent to uniquely identify it. As such the
-  // token is propagated to the remote parent if present. The token may also be
-  // present on the main frame for generalization when the main frame is
-  // embedded in another context (e.g. a WebView for the purpose of the
-  // accessibility tree). However, since the main frame is not embedded in the
-  // context of the frame tree it is not propagated to anything here.
-  if (!embedding_token_.has_value() || is_main_frame())
+  // We only need to propagate the token to the parent frame if it's
+  // remote. For local parents the propagation occurs within the renderer
+  // process. The token is also present on the main frame for generalization
+  // when the main frame in embedded in another context (e.g. browser UI).
+  // The main frame is not embedded in the context of the frame tree so it
+  // is not propagated here. See RenderFrameHost::GetEmbeddingToken for more
+  // details.
+  if (!IsCrossProcessSubframe())
     return;
 
   // Only non-null tokens are propagated to the parent document. The token is
@@ -7979,22 +7980,18 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
     return false;
   }
 
-  // A cross-document navigation requires an embedding token for all embedded
-  // documents (a child document of a remote parent) or the main frame.
-  // Embedding tokens should not exist for other cases.
-  //
-  // BFCache navigations do not require embedding tokens as the token is already
-  // set.
+  // A cross-document navigation requires an embedding token. Navigations
+  // served from the back-forward cache do not require new embedding tokens as
+  // the token is already set.
   bool is_served_from_bfcache =
       navigation_request && navigation_request->IsServedFromBackForwardCache();
-  bool needs_embedding_token = !is_same_document_navigation &&
-                               (is_main_frame() || IsCrossProcessSubframe());
   if (!is_served_from_bfcache) {
-    if (needs_embedding_token && !params->embedding_token.has_value()) {
+    if (!is_same_document_navigation && !params->embedding_token.has_value()) {
       bad_message::ReceivedBadMessage(process,
                                       bad_message::RFH_MISSING_EMBEDDING_TOKEN);
       return false;
-    } else if (!needs_embedding_token && params->embedding_token.has_value()) {
+    } else if (is_same_document_navigation &&
+               params->embedding_token.has_value()) {
       bad_message::ReceivedBadMessage(
           process, bad_message::RFH_UNEXPECTED_EMBEDDING_TOKEN);
       return false;

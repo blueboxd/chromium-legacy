@@ -81,6 +81,7 @@ class EnterpriseReportingPrivateUploadChromeDesktopReportTest
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
+  policy::FakeBrowserDMTokenStorage storage_;
 
   DISALLOW_COPY_AND_ASSIGN(
       EnterpriseReportingPrivateUploadChromeDesktopReportTest);

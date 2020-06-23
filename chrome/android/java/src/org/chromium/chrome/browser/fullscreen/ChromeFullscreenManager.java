@@ -64,10 +64,11 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     private static final long ACTIVITY_RETURN_SHOW_REQUEST_DELAY_MS = 100;
 
     /**
-     * Maximum duration for the control container slide-in animation. Note that this value matches
-     * the one in browser_controls_offset_manager.cc.
+     * Maximum duration for the control container slide-in animation and the duration for the
+     * browser controls height change animation. Note that this value matches the one in
+     * browser_controls_offset_manager.cc.
      */
-    private static final int MAX_CONTROLS_ANIMATION_DURATION_MS = 200;
+    private static final int CONTROLS_ANIMATION_DURATION_MS = 200;
 
     private final Activity mActivity;
     private final BrowserStateBrowserControlsVisibilityDelegate mBrowserVisibilityDelegate;
@@ -113,7 +114,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     @Nullable
     private Tab mTab;
 
-    /** The animator for slide-in animation on the Android controls. */
+    /** The animator for the Android browser controls. */
     private ValueAnimator mControlsAnimator;
 
     /**
@@ -237,7 +238,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
             public void onBrowserControlsOffsetChanged(Tab tab, int topControlsOffset,
                     int bottomControlsOffset, int contentOffset, int topControlsMinHeightOffset,
                     int bottomControlsMinHeightOffset) {
-                if (tab == getTab() && tab.isUserInteractable()) {
+                if (tab == getTab() && tab.isUserInteractable() && !tab.isNativePage()) {
                     onOffsetsChanged(topControlsOffset, bottomControlsOffset, contentOffset,
                             topControlsMinHeightOffset, bottomControlsMinHeightOffset);
                 }
@@ -374,8 +375,20 @@ public class ChromeFullscreenManager implements ActivityStateListener,
                 && mTopControlsMinHeight == topControlsMinHeight) {
             return;
         }
+
+        final int oldTopHeight = mTopControlContainerHeight;
+        final int oldTopMinHeight = mTopControlsMinHeight;
         mTopControlContainerHeight = topControlsHeight;
         mTopControlsMinHeight = topControlsMinHeight;
+
+        if (!canAnimateNativeBrowserControls()) {
+            if (shouldAnimateBrowserControlsHeightChanges()) {
+                runBrowserDrivenTopControlsHeightChangeAnimation(oldTopHeight, oldTopMinHeight);
+            } else {
+                showAndroidControls(false);
+            }
+        }
+
         for (BrowserControlsStateProvider.Observer obs : mControlsObservers) {
             obs.onTopControlsHeightChanged(mTopControlContainerHeight, mTopControlsMinHeight);
         }
@@ -596,15 +609,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         if (mHidingTokenHolder.hasTokens()) {
             return false;
         }
-
-        Tab tab = getTab();
-        if (tab != null) {
-            if (tab.isInitialized()) {
-                if (offsetOverridden()) return true;
-            } else {
-                assert false : "Accessing a destroyed tab, setTab should have been called";
-            }
-        }
+        if (offsetOverridden()) return true;
 
         boolean showControls = !BrowserControlsUtils.drawControlsAsTexture(this);
         ViewGroup contentView = getContentView();
@@ -884,7 +889,7 @@ public class ChromeFullscreenManager implements ActivityStateListener,
         // Set animation start value to current renderer controls offset.
         mControlsAnimator = ValueAnimator.ofInt(topControlOffset, 0);
         mControlsAnimator.setDuration(
-                (long) Math.abs(hiddenRatio * MAX_CONTROLS_ANIMATION_DURATION_MS));
+                (long) Math.abs(hiddenRatio * CONTROLS_ANIMATION_DURATION_MS));
         mControlsAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -902,6 +907,49 @@ public class ChromeFullscreenManager implements ActivityStateListener,
                     topControlHeight, getTopControlsMinHeight(), getBottomControlsMinHeight());
         });
         mControlsAnimator.start();
+    }
+
+    private void runBrowserDrivenTopControlsHeightChangeAnimation(
+            int oldTopControlsHeight, int oldTopControlsMinHeight) {
+        if (mControlsAnimator != null) return;
+        assert getContentOffset()
+                == oldTopControlsHeight
+            : "Height change animations are implemented for fully shown controls only!";
+
+        setOffsetOverridden(true);
+
+        final int newTopControlsHeight = getTopControlsHeight();
+        final int newTopControlsMinHeight = getTopControlsMinHeight();
+
+        mControlsAnimator = ValueAnimator.ofFloat(0.f, 1.f);
+        mControlsAnimator.addUpdateListener((animator) -> {
+            final float topControlsMinHeightOffset = oldTopControlsMinHeight
+                    + (float) animator.getAnimatedValue()
+                            * (newTopControlsMinHeight - oldTopControlsMinHeight);
+            final float topContentOffset = oldTopControlsHeight
+                    + (float) animator.getAnimatedValue()
+                            * (newTopControlsHeight - oldTopControlsHeight);
+            final float topControlsOffset = topContentOffset - newTopControlsHeight;
+
+            updateFullscreenManagerOffsets(false, (int) topControlsOffset, getBottomControlOffset(),
+                    (int) topContentOffset, (int) topControlsMinHeightOffset,
+                    getBottomControlsMinHeightOffset());
+        });
+        mControlsAnimator.setDuration(CONTROLS_ANIMATION_DURATION_MS);
+        mControlsAnimator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                updateFullscreenManagerOffsets(false, 0, 0, getTopControlsHeight(),
+                        getTopControlsMinHeight(), getBottomControlsMinHeight());
+                mControlsAnimator = null;
+            }
+        });
+        mControlsAnimator.start();
+    }
+
+    private boolean canAnimateNativeBrowserControls() {
+        final Tab tab = getTab();
+        return tab != null && tab.isUserInteractable() && !tab.isNativePage();
     }
 
     // VR-related methods to make this class test-friendly. These are overridden in unit tests.
@@ -956,5 +1004,15 @@ public class ChromeFullscreenManager implements ActivityStateListener,
     @VisibleForTesting
     TabModelSelectorTabObserver getTabControlsObserverForTesting() {
         return mTabControlsObserver;
+    }
+
+    @VisibleForTesting
+    ValueAnimator getControlsAnimatorForTesting() {
+        return mControlsAnimator;
+    }
+
+    @VisibleForTesting
+    int getControlsAnimationDurationMsForTesting() {
+        return CONTROLS_ANIMATION_DURATION_MS;
     }
 }

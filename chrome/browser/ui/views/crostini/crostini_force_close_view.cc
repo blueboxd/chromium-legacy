@@ -42,30 +42,15 @@ views::Widget* CrostiniForceCloseView::Show(
     gfx::NativeView closable_view,
     base::OnceClosure force_close_callback) {
   views::Widget* dialog_widget = views::DialogDelegate::CreateDialogWidget(
-      new CrostiniForceCloseView(app_name, std::move(force_close_callback)),
+      new CrostiniForceCloseView(base::UTF8ToUTF16(app_name),
+                                 std::move(force_close_callback)),
       closable_window, closable_view);
   dialog_widget->Show();
   return dialog_widget;
 }
 
-bool CrostiniForceCloseView::Accept() {
-  std::move(force_close_callback_).Run();
-  return true;
-}
-
 ui::ModalType CrostiniForceCloseView::GetModalType() const {
   return ui::ModalType::MODAL_TYPE_WINDOW;
-}
-
-bool CrostiniForceCloseView::ShouldShowCloseButton() const {
-  return false;
-}
-
-base::string16 CrostiniForceCloseView::GetWindowTitle() const {
-  return app_name_.empty()
-             ? l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_TITLE_UNKNOWN)
-             : l10n_util::GetStringFUTF16(IDS_CROSTINI_FORCE_CLOSE_TITLE_KNOWN,
-                                          app_name_);
 }
 
 gfx::Size CrostiniForceCloseView::CalculatePreferredSize() const {
@@ -76,13 +61,18 @@ gfx::Size CrostiniForceCloseView::CalculatePreferredSize() const {
 }
 
 CrostiniForceCloseView::CrostiniForceCloseView(
-    const std::string& app_name,
-    base::OnceClosure force_close_callback)
-    : app_name_(base::UTF8ToUTF16(app_name)),
-      force_close_callback_(std::move(force_close_callback)) {
+    const base::string16& app_name,
+    base::OnceClosure force_close_callback) {
+  SetShowCloseButton(false);
+  SetTitle(
+      app_name.empty()
+          ? l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_TITLE_UNKNOWN)
+          : l10n_util::GetStringFUTF16(IDS_CROSTINI_FORCE_CLOSE_TITLE_KNOWN,
+                                       app_name));
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_ACCEPT_BUTTON));
+  SetAcceptCallback(std::move(force_close_callback));
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -93,10 +83,10 @@ CrostiniForceCloseView::CrostiniForceCloseView(
       views::DialogContentType::TEXT, views::DialogContentType::TEXT));
 
   views::Label* message_label = new views::Label(
-      app_name_.empty()
+      app_name.empty()
           ? l10n_util::GetStringUTF16(IDS_CROSTINI_FORCE_CLOSE_BODY_UNKNOWN)
           : l10n_util::GetStringFUTF16(IDS_CROSTINI_FORCE_CLOSE_BODY_KNOWN,
-                                       app_name_));
+                                       app_name));
   message_label->SetMultiLine(true);
   message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(message_label);

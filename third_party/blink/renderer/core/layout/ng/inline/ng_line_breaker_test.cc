@@ -534,11 +534,12 @@ TEST_F(NGLineBreakerTest, MinMaxWithTrailingSpaces) {
     <div id=container>12345 6789 </div>
   )HTML");
 
-  auto sizes = node.ComputeMinMaxSizes(
-                       WritingMode::kHorizontalTb,
-                       MinMaxSizesInput(/* percentage_resolution_block_size */ (
-                           LayoutUnit())))
-                   .sizes;
+  auto sizes =
+      node.ComputeMinMaxSizes(
+              WritingMode::kHorizontalTb,
+              MinMaxSizesInput(/* percentage_resolution_block_size */
+                               LayoutUnit(), MinMaxSizesType::kContent))
+          .sizes;
   EXPECT_EQ(sizes.min_size, LayoutUnit(60));
   EXPECT_EQ(sizes.max_size, LayoutUnit(110));
 }
@@ -562,7 +563,8 @@ TEST_F(NGLineBreakerTest, TableCellWidthCalculationQuirkOutOfFlow) {
 
   node.ComputeMinMaxSizes(
       WritingMode::kHorizontalTb,
-      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit(),
+                       MinMaxSizesType::kContent));
   // Pass if |ComputeMinMaxSize| doesn't hit DCHECK failures.
 }
 
@@ -588,7 +590,8 @@ B AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
   node.ComputeMinMaxSizes(
       WritingMode::kHorizontalTb,
-      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit()));
+      MinMaxSizesInput(/* percentage_resolution_block_size */ LayoutUnit(),
+                       MinMaxSizesType::kContent));
   // This test passes if no CHECK failures.
 }
 

@@ -51,22 +51,6 @@ class FrameData {
     kMaxValue = kCross,
   };
 
-  // Origin status further broken down by whether the ad frame tree has a
-  // frame currently not render-throttled (i.e. is eligible to be painted).
-  // Note that since creative origin status is based on first contentful paint,
-  // only ad frame trees with unknown creative origin status can be without any
-  // frames that are eligible to be painted.
-  // Note: Logged to UMA, keep in sync with
-  // CrossOriginCreativeStatusWithThrottling in enums.xml.
-  // Add new entries to the end, and do not renumber.
-  enum class OriginStatusWithThrottling {
-    kUnknownAndUnthrottled = 0,
-    kUnknownAndThrottled = 1,
-    kSameAndUnthrottled = 2,
-    kCrossAndUnthrottled = 3,
-    kMaxValue = kCrossAndUnthrottled,
-  };
-
   // Whether or not the ad frame has a display: none styling.
   enum FrameVisibility {
     kNonVisible = 0,
@@ -192,10 +176,6 @@ class FrameData {
   // events for frames that have non-zero bytes.
   void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const;
 
-  // Returns the corresponding enum value to split the creative origin status
-  // by whether any frame in the ad frame tree is throttled.
-  OriginStatusWithThrottling GetCreativeOriginStatusWithThrottling() const;
-
   int peak_windowed_cpu_percent() const { return peak_windowed_cpu_percent_; }
 
   base::Optional<base::TimeTicks> peak_window_start_time() const {
@@ -210,10 +190,6 @@ class FrameData {
 
   OriginStatus creative_origin_status() const {
     return creative_origin_status_;
-  }
-
-  base::Optional<base::TimeDelta> first_eligible_to_paint() const {
-    return first_eligible_to_paint_;
   }
 
   size_t bytes() const { return bytes_; }
@@ -257,8 +233,6 @@ class FrameData {
   void set_creative_origin_status(OriginStatus creative_origin_status) {
     creative_origin_status_ = creative_origin_status;
   }
-
-  void SetFirstEligibleToPaint(base::Optional<base::TimeDelta> time_stamp);
 
   HeavyAdStatus heavy_ad_status() const { return heavy_ad_status_; }
 
@@ -350,12 +324,6 @@ class FrameData {
   gfx::Size frame_size_;
   url::Origin origin_;
   MediaStatus media_status_ = MediaStatus::kNotPlayed;
-
-  // Earliest time that any frame in the ad frame tree has reported
-  // as being eligible to paint, or null if all frames are currently
-  // render-throttled and there hasn't been a first paint. Note that this
-  // timestamp and the implied throttling status are best-effort.
-  base::Optional<base::TimeDelta> first_eligible_to_paint_;
 
   // Indicates whether or not this frame met the criteria for the heavy ad
   // intervention.

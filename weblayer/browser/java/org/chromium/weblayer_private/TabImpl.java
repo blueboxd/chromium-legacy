@@ -354,7 +354,13 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
     public void onDidLoseActive() {
         hideFindInPageUiAndNotifyClient();
         updateWebContentsVisibility();
-        mInfoBarContainer.onTabDidLoseActive();
+
+        // This method is called as part of the final phase of TabImpl destruction, at which
+        // point mInfoBarContainer has already been destroyed.
+        if (mInfoBarContainer != null) {
+            mInfoBarContainer.onTabDidLoseActive();
+        }
+
         TabImplJni.get().setBrowserControlsContainerViews(mNativeTab, 0, 0);
     }
 
@@ -770,6 +776,9 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
         mInterceptNavigationDelegateClient.destroy();
         mInterceptNavigationDelegate = null;
+
+        mInfoBarContainer.destroy();
+        mInfoBarContainer = null;
 
         mMediaStreamManager.destroy();
         mMediaStreamManager = null;

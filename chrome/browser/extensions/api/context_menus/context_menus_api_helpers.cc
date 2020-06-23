@@ -99,6 +99,10 @@ MenuItem::ContextList GetContexts(const std::vector<
         // Not available for <webview>.
         contexts.Add(extensions::MenuItem::PAGE_ACTION);
         break;
+      case extensions::api::context_menus::CONTEXT_TYPE_ACTION:
+        // Not available for <webview>.
+        contexts.Add(extensions::MenuItem::ACTION);
+        break;
       case extensions::api::context_menus::CONTEXT_TYPE_NONE:
         NOTREACHED();
     }

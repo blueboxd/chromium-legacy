@@ -5,6 +5,10 @@
 #include "chrome/browser/ui/views/tab_search/tab_search_bubble_view.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/common/webui_url_constants.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/fill_layout.h"
@@ -37,10 +41,11 @@ class TabSearchWebView : public views::WebView {
 
 }  // namespace
 
-void TabSearchBubbleView::CreateTabSearchBubble(Profile* profile,
-                                                views::View* anchor_view) {
-  auto delegate =
-      base::WrapUnique(new TabSearchBubbleView(profile, anchor_view));
+void TabSearchBubbleView::CreateTabSearchBubble(Browser* browser) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  DCHECK(browser_view);
+  auto delegate = base::WrapUnique(
+      new TabSearchBubbleView(browser, browser_view->toolbar()));
   BubbleDialogDelegateView::CreateBubble(delegate.release())->Show();
 }
 
@@ -56,17 +61,17 @@ void TabSearchBubbleView::OnWebViewSizeChanged() {
   SizeToContents();
 }
 
-TabSearchBubbleView::TabSearchBubbleView(Profile* profile,
+TabSearchBubbleView::TabSearchBubbleView(Browser* browser,
                                          views::View* anchor_view)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
-      web_view_(
-          AddChildView(std::make_unique<TabSearchWebView>(profile, this))) {
+      web_view_(AddChildView(
+          std::make_unique<TabSearchWebView>(browser->profile(), this))) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_margins(gfx::Insets());
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   web_view_->EnableSizingFromWebContents(kMinSize, kMaxSize);
-  web_view_->LoadInitialURL(GURL("chrome://about"));
+  web_view_->LoadInitialURL(GURL(chrome::kChromeUITabSearchURL));
 
   // TODO(crbug.com/1010589) WebContents are initially assumed to be visible by
   // default unless explicitly hidden. The WebContents need to be set to hidden

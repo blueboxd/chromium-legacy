@@ -328,12 +328,32 @@ public class PaymentDetailsUpdateServiceHelperTest {
         installAndInvokePaymentApp();
         startPaymentDetailsUpdateService();
         Bundle bundle = new Bundle();
-        bundle.putString(PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "data");
+        bundle.putString(
+                PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, "{\"key\": \"value\"}");
         mIPaymentDetailsUpdateService.changePaymentMethod(
                 bundle, new PaymentDetailsUpdateServiceCallback());
         verifyIsWaitingForPaymentDetailsUpdate(false);
         Assert.assertFalse(mMethodChangeListenerNotified);
         Assert.assertEquals(ErrorStrings.METHOD_NAME_REQUIRED, receivedErrorString());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testSuccessfulChangePaymentMethodWithMissingDetails() throws Throwable {
+        installAndInvokePaymentApp();
+        startPaymentDetailsUpdateService();
+        Bundle bundle = new Bundle();
+        bundle.putString(PaymentHandlerMethodData.EXTRA_METHOD_NAME, "method-name");
+        // Skip populating "PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS" to verify that it is
+        // not a mandatory field.
+        mIPaymentDetailsUpdateService.changePaymentMethod(
+                bundle, new PaymentDetailsUpdateServiceCallback());
+        verifyIsWaitingForPaymentDetailsUpdate(true);
+        Assert.assertTrue(mMethodChangeListenerNotified);
+        updateWithDefaultDetails();
+        verifyUpdatedDefaultDetails();
+        verifyIsWaitingForPaymentDetailsUpdate(false);
     }
 
     @Test

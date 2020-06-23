@@ -82,14 +82,16 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
-  void UpdateDx12VulkanInfo(
-      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDx12Info(uint32_t d3d12_feature_level);
+  void UpdateVulkanInfo(uint32_t vulkan_version);
   void UpdateDevicePerfInfo(const gpu::DevicePerfInfo& device_perf_info);
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
   void UpdateHDRStatus(bool hdr_enabled);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
-  void UpdateDx12VulkanRequestStatus(bool request_continues);
-  bool Dx12VulkanRequested() const;
+  void UpdateDx12RequestStatus(bool request_continues);
+  void UpdateVulkanRequestStatus(bool request_continues);
+  bool Dx12Requested() const;
+  bool VulkanRequested() const;
   // Called from BrowserMainLoop::BrowserThreadsStarted().
   void OnBrowserThreadsStarted();
   void TerminateInfoCollectionGpuProcess();

@@ -28,9 +28,10 @@ class MemoryPurgeManagerTest : public testing::Test {
         memory_purge_manager_(task_environment_.GetMainThreadTaskRunner()) {}
 
   void SetUp() override {
-    memory_pressure_listener_ =
-        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-            &MemoryPurgeManagerTest::OnMemoryPressure, base::Unretained(this)));
+    memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        FROM_HERE,
+        base::BindRepeating(&MemoryPurgeManagerTest::OnMemoryPressure,
+                            base::Unretained(this)));
     base::MemoryPressureListener::SetNotificationsSuppressed(false);
   }
 

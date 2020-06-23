@@ -86,7 +86,7 @@ void V8BooleanOrElementSequence::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      HeapVector<Member<Element>> cpp_value = NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      HeapVector<Member<Element>> cpp_value{ NativeValueTraits<IDLSequence<Element>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetElementSequence(cpp_value);

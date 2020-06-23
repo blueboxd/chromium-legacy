@@ -7,6 +7,22 @@
 
 import {GraphStore} from './graph_store.js';
 
+/** Some aspects of the node's state, to help with node visualization. */
+class NodeVisualizationState {
+  constructor() {
+    /** @public {boolean} */
+    this.selectedByFilter = false;
+    /** @public {boolean} */
+    this.selectedByInbound = false;
+    /** @public {boolean} */
+    this.selectedByOutbound = false;
+    /** @public {number} */
+    this.inboundDepth = 0;
+    /** @public {number} */
+    this.outboundDepth = 0;
+  }
+}
+
 /** A node in a directed graph. */
 class Node {
   /**
@@ -19,12 +35,22 @@ class Node {
     /** @public @const {string} */
     this.displayName = displayName;
 
+    // Sets a mutable state to help with visualizing the node.
+    this.visualizationState = new NodeVisualizationState();
+
     // This information (edges) already exists in Graph.edges. However, we
     // duplicate it here to make BFS traversal more efficient.
     /** @public {!Set<!Node>} */
     this.inbound = new Set();
     /** @public {!Set<!Node>} */
     this.outbound = new Set();
+  }
+
+  /**
+   * Resets the mutable visualization state back to its default.
+   */
+  resetVisualizationState() {
+    this.visualizationState = new NodeVisualizationState();
   }
 
   /**
@@ -64,6 +90,15 @@ class Edge {
 }
 
 /**
+ * The graph data for d3 to visualize.
+ *
+ * @typedef {Object} D3GraphData
+ * @property {!Array<!Node>} nodes The nodes to visualize.
+ * @property {!Array<!Edge>} edges The edges to visualize.
+ */
+let D3GraphData;
+
+/**
  * Generates and returns a unique edge ID from its source/target Node IDs.
  * @param {string} sourceId The ID of the source node.
  * @param {string} targetId The ID of the target node.
@@ -74,7 +109,7 @@ function getEdgeIdFromNodes(sourceId, targetId) {
 }
 
 /** A directed graph. */
-class Graph {
+class GraphModel {
   constructor() {
     /** @public {!Map<string, !Node>} */
     this.nodes = new Map();
@@ -102,6 +137,15 @@ class Graph {
   }
 
   /**
+   * Retrieves an Edge from the edge set, if it exists.
+   * @param {string} id The ID of the desired edge.
+   * @return {?Edge} The Edge if it exists, otherwise null.
+   */
+  getEdgeById(id) {
+    return this.edges.get(id) || null;
+  }
+
+  /**
    * Creates and adds an Edge to the edge set.
    * Also updates the inbound/outbound sets of the edge's nodes.
    * @param {!Node} sourceNode The node at the start of the edge.
@@ -118,39 +162,122 @@ class Graph {
   }
 
   /**
-   * Retrieves the list of nodes for visualization with d3.
-   * @param {GraphStore} filter The filter to apply to the data set.
-   * @return {Array<Node>} The nodes to visualize.
+   * Generates the lists of nodes and edges for visualization with d3.
+   *
+   * The filter has three params: includedNodes (set of nodes), inbound (num),
+   * and outbound (num). For nodes, we display `includedNodes` + the nodes
+   * reachable within `inbound` inbound edges from `includedNodes` + the nodes
+   * reachable within `outbound` outbound edges from `includedNodes`. For edges,
+   * we display edges between all nodes except for the outermost layer, where we
+   * only display the edges used to reach it from the second-outermost layer.
+   *
+   * @param {!GraphStore} filter The filter to apply to the data set.
+   * @return {!D3GraphData} The nodes and edges to visualize.
    */
-  getNodesForD3(filter) {
-    const resultNodes = [];
-    for (const node of this.nodes.values()) {
-      if (filter.includedNodeSet.has(node.id)) {
-        resultNodes.push(node);
-      }
-    }
-    return resultNodes;
-  }
+  getDataForD3(filter) {
+    // These will be updated throughout the function and returned at the end.
+    const /** !Set<!Node> */ resultNodeSet = new Set();
+    const /** !Set<!Edge> */ resultEdgeSet = new Set();
 
-  /**
-   * Retrieves the list of edges for visualization with d3.
-   * @param {GraphStore} filter The filter to apply to the data set.
-   * @return {Array<Edge>} The edges to visualize.
-   */
-  getEdgesForD3(filter) {
-    const resultEdges = [];
-    for (const edge of this.edges.values()) {
-      if (filter.includedNodeSet.has(edge.source.id) &&
-          filter.includedNodeSet.has(edge.target.id)) {
-        resultEdges.push(edge);
+    // Initialize the inbound and outbound BFS by setting the "seen" collection
+    // to the filter nodes. We maintain both a Set and array for efficiency.
+    const /** !Set<string> */ inboundSeenNodes = new Set(
+        filter.includedNodeSet);
+    const /** !Set<string> */ outboundSeenNodes = new Set(
+        filter.includedNodeSet);
+    const /** !Array<!Node> */ inboundNodeQueue = [];
+    const /** !Array<!Node> */ outboundNodeQueue = [];
+    for (const node of this.nodes.values()) {
+      node.resetVisualizationState();
+      if (filter.includedNodeSet.has(node.id)) {
+        node.visualizationState.selectedByFilter = true;
+        inboundNodeQueue.push(node);
+        outboundNodeQueue.push(node);
+        resultNodeSet.add(node);
       }
     }
-    return resultEdges;
+
+    /**
+     * Runs BFS and updates the result (resultNodeSet, resultEdgeSet).
+     * @param {boolean} inboundTraversal Whether inbound edges should be used to
+     *     traverse. If false, outbound edges are used.
+     * @param {!Set<string>} seenNodes The IDs of nodes already visited in the
+     *     BFS. Will be modified.
+     * @param {!Array<!Node>} nodeQueue The queue used in BFS. Will be modified.
+     * @param {number} maxDepth The depth of the traversal.
+     */
+    const updateResultBFS = (
+        inboundTraversal, seenNodes, nodeQueue, maxDepth) => {
+      while (nodeQueue.length > 0) {
+        // The performance on the repeated `shift()`s is not as bad as it might
+        // seem, since we only have ~500 nodes for the package graph.
+        const curNode = nodeQueue.shift();
+        const curDepth = inboundTraversal ?
+          curNode.visualizationState.inboundDepth :
+          curNode.visualizationState.outboundDepth;
+        if (curDepth < maxDepth) {
+          const otherNodes = inboundTraversal ?
+            curNode.inbound : curNode.outbound;
+          for (const otherNode of otherNodes) {
+            if (!seenNodes.has(otherNode.id)) {
+              if (inboundTraversal) {
+                otherNode.visualizationState.selectedByInbound = true;
+                otherNode.visualizationState.inboundDepth = curDepth + 1;
+              } else {
+                otherNode.visualizationState.selectedByOutbound = true;
+                otherNode.visualizationState.outboundDepth = curDepth + 1;
+              }
+              nodeQueue.push(otherNode);
+              seenNodes.add(otherNode.id);
+              resultNodeSet.add(otherNode);
+            }
+            const edgeTraversedId = inboundTraversal ?
+              getEdgeIdFromNodes(otherNode.id, curNode.id) :
+              getEdgeIdFromNodes(curNode.id, otherNode.id);
+            resultEdgeSet.add(this.getEdgeById(edgeTraversedId));
+          }
+        }
+      }
+    };
+
+    const inboundDepth = filter.state.inboundDepth;
+    const outboundDepth = filter.state.outboundDepth;
+
+    updateResultBFS(/* inboundTraversal */ true, inboundSeenNodes,
+        inboundNodeQueue, inboundDepth);
+    updateResultBFS(/* inboundTraversal */ false, outboundSeenNodes,
+        outboundNodeQueue, outboundDepth);
+
+    // Special case: If inbound and outbound are both 0, both BFS will be a
+    // no-op and the edges between filtered nodes will not be included. In this
+    // case, we include those edges manually.
+    if (inboundDepth === 0 && outboundDepth === 0) {
+      for (const filterNode of resultNodeSet) {
+        for (const otherNode of filterNode.inbound) {
+          if (resultNodeSet.has(otherNode)) {
+            resultEdgeSet.add(this.getEdgeById(
+                getEdgeIdFromNodes(otherNode.id, filterNode.id)));
+          }
+        }
+        for (const otherNode of filterNode.outbound) {
+          if (resultNodeSet.has(otherNode)) {
+            resultEdgeSet.add(this.getEdgeById(
+                getEdgeIdFromNodes(filterNode.id, otherNode.id)));
+          }
+        }
+      }
+    }
+
+    return {
+      nodes: [...resultNodeSet],
+      edges: [...resultEdgeSet],
+    };
   }
 }
 
 export {
   Node,
   Edge,
-  Graph,
+  GraphModel,
+  D3GraphData,
 };

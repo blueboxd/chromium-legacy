@@ -196,19 +196,24 @@ found in the LICENSE file.
     </div>
 
     <div>
-      <input id="input1" type="field" value="helloworld1" />
+      <label class="pairs" for="input1">Input1</label>
+      <input class="pairs" id="input1" type="field" value="helloworld1" />
     </div>
     <div>
-      <input id="input2" type="field" value="helloworld2" />
+      <label class="pairs" for="input2">Input2</label>
+      <input class="pairs" id="input2" type="field" value="helloworld2" />
     </div>
     <div>
-      <input id="input3" type="field" value="helloworld3" />
+      <label class="pairs" for="input3">Input3</label>
+      <input class="pairs" id="input3" type="field" value="helloworld3" />
     </div>
     <div>
-      <input id="input4" type="field" value="helloworld4" />
+      <label class="pairs" for="input4">Input4</label>
+      <input class="pairs" id="input4" type="field" value="helloworld4" />
     </div>
     <div>
-      <input id="input5" type="field" value="helloworld5" />
+      <label class="pairs" for="input5">Input5</label>
+      <input class="pairs" id="input5" type="field" value="helloworld5" />
     </div>
     <div>
       <input id="uppercase_input" type="field" value="HELLOWORLD6" />
@@ -325,5 +330,11 @@ found in the LICENSE file.
 
     <div>Section with text only</div>
     <div>Section with text and <button onclick="removeButton()">some button</button></div>
+
+    <table class="proximity">
+      <tr><td>One</td><td>Two</td><td>Three</td></tr>
+      <tr><td>Four</td><td><span id="at_center">Center</span></td><td>Five</td></tr>
+      <tr><td>Six</td><td>Seven</td><td>Eight</td></tr>
+    </table>
   </body>
 </html>

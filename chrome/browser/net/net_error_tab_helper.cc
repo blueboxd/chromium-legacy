@@ -99,31 +99,33 @@ void NetErrorTabHelper::DidFinishNavigation(
   }
 }
 
-bool NetErrorTabHelper::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  if (render_frame_host != web_contents()->GetMainFrame())
-    return false;
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(NetErrorTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DownloadPageLater,
-                        OnDownloadPageLater)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_SetIsShowingDownloadButtonInErrorPage,
-                        OnSetIsShowingDownloadButtonInErrorPage)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
+void NetErrorTabHelper::DownloadPageLater() {
+  // Makes sure that this is coming from an error page.
+  content::NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry || entry->GetPageType() != content::PAGE_TYPE_ERROR)
+    return;
 
-  return handled;
-#else
-  return false;
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  // Only download the page for HTTP/HTTPS URLs.
+  GURL url(entry->GetVirtualURL());
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return;
+
+  DownloadPageLaterHelper(url);
 }
+
+void NetErrorTabHelper::SetIsShowingDownloadButtonInErrorPage(
+    bool showing_download_button) {
+  is_showing_download_button_in_error_page_ = showing_download_button;
+}
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 NetErrorTabHelper::NetErrorTabHelper(WebContents* contents)
     : WebContentsObserver(contents),
       network_diagnostics_receivers_(contents, this),
       network_easter_egg_receivers_(contents, this),
+      net_error_page_support_(contents, this),
       is_error_page_(false),
       dns_error_active_(false),
       dns_error_page_committed_(false),
@@ -176,28 +178,6 @@ void NetErrorTabHelper::OnDnsProbeFinished(DnsProbeStatus result) {
   if (dns_error_page_committed_)
     SendInfo();
 }
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-void NetErrorTabHelper::OnDownloadPageLater() {
-  // Makes sure that this is coming from an error page.
-  content::NavigationEntry* entry =
-      web_contents()->GetController().GetLastCommittedEntry();
-  if (!entry || entry->GetPageType() != content::PAGE_TYPE_ERROR)
-    return;
-
-  // Only download the page for HTTP/HTTPS URLs.
-  GURL url(entry->GetVirtualURL());
-  if (!url.SchemeIsHTTPOrHTTPS())
-    return;
-
-  DownloadPageLaterHelper(url);
-}
-
-void NetErrorTabHelper::OnSetIsShowingDownloadButtonInErrorPage(
-    bool is_showing_download_button) {
-  is_showing_download_button_in_error_page_ = is_showing_download_button;
-}
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
 // static
 void NetErrorTabHelper::RegisterProfilePrefs(

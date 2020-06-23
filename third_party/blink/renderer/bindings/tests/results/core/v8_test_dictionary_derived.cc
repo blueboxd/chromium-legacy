@@ -56,7 +56,7 @@ void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Loca
   if (derived_string_member_value.IsEmpty() || derived_string_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> derived_string_member_cpp_value = derived_string_member_value;
+    V8StringResource<> derived_string_member_cpp_value{ derived_string_member_value };
     if (!derived_string_member_cpp_value.Prepare(exception_state))
       return;
     impl->setDerivedStringMember(derived_string_member_cpp_value);
@@ -70,7 +70,7 @@ void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Loca
   if (derived_string_member_with_default_value.IsEmpty() || derived_string_member_with_default_value->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> derived_string_member_with_default_cpp_value = derived_string_member_with_default_value;
+    V8StringResource<> derived_string_member_with_default_cpp_value{ derived_string_member_with_default_value };
     if (!derived_string_member_with_default_cpp_value.Prepare(exception_state))
       return;
     impl->setDerivedStringMemberWithDefault(derived_string_member_with_default_cpp_value);
@@ -85,7 +85,7 @@ void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Loca
     exception_state.ThrowTypeError("required member requiredLongMember is undefined.");
     return;
   } else {
-    int32_t required_long_member_cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, required_long_member_value, exception_state);
+    int32_t required_long_member_cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, required_long_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setRequiredLongMember(required_long_member_cpp_value);
@@ -99,7 +99,7 @@ void V8TestDictionaryDerivedImplementedAs::ToImpl(v8::Isolate* isolate, v8::Loca
   if (string_or_double_sequence_member_value.IsEmpty() || string_or_double_sequence_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<StringOrDouble> string_or_double_sequence_member_cpp_value = NativeValueTraits<IDLSequence<StringOrDouble>>::NativeValue(isolate, string_or_double_sequence_member_value, exception_state);
+    HeapVector<StringOrDouble> string_or_double_sequence_member_cpp_value{ NativeValueTraits<IDLSequence<StringOrDouble>>::NativeValue(isolate, string_or_double_sequence_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setStringOrDoubleSequenceMember(string_or_double_sequence_member_cpp_value);

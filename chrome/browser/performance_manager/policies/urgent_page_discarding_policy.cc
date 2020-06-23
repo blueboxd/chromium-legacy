@@ -131,6 +131,7 @@ void UrgentPageDiscardingPolicy::RegisterMemoryPressureListener() {
   DCHECK(!memory_pressure_listener_);
 
   memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE,
       base::BindRepeating(&UrgentPageDiscardingPolicy::OnMemoryPressure,
                           base::Unretained(this)));
 }

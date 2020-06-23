@@ -465,14 +465,6 @@ uint64_t PerformanceTiming::ExperimentalLargestTextPaintSize() const {
   return paint_timing_detector->ExperimentalLargestTextPaintSize();
 }
 
-uint64_t PerformanceTiming::FirstEligibleToPaint() const {
-  const PaintTiming* timing = GetPaintTiming();
-  if (!timing)
-    return 0;
-
-  return MonotonicTimeToIntegerMilliseconds(timing->FirstEligibleToPaint());
-}
-
 uint64_t PerformanceTiming::FirstInputOrScrollNotifiedTimestamp() const {
   PaintTimingDetector* paint_timing_detector = GetPaintTimingDetector();
   if (!paint_timing_detector)

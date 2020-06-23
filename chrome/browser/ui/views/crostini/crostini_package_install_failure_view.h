@@ -14,8 +14,6 @@ class CrostiniPackageInstallFailureView
   static void Show(const std::string& error_message);
 
   // BubbleDialogDelegateView overrides.
-  bool ShouldShowCloseButton() const override;
-  base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
 
  private:

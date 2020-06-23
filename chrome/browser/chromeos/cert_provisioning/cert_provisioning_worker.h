@@ -125,8 +125,14 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
   friend class CertProvisioningSerializer;
 
   void GenerateKey();
-  void OnGenerateKeyDone(base::TimeTicks start_time,
-                         const attestation::TpmChallengeKeyResult& result);
+
+  void GenerateRegularKey();
+  void OnGenerateRegularKeyDone(const std::string& public_key_spki_der,
+                                const std::string& error_message);
+
+  void GenerateKeyForVa();
+  void OnGenerateKeyForVaDone(base::TimeTicks start_time,
+                              const attestation::TpmChallengeKeyResult& result);
 
   void StartCsr();
   void OnStartCsrDone(policy::DeviceManagementStatus status,
@@ -136,6 +142,8 @@ class CertProvisioningWorkerImpl : public CertProvisioningWorker {
                       const std::string& va_challenge,
                       enterprise_management::HashingAlgorithm hashing_algorithm,
                       const std::string& data_to_sign);
+
+  void ProcessStartCsrResponse();
 
   void BuildVaChallengeResponse();
   void OnBuildVaChallengeResponseDone(

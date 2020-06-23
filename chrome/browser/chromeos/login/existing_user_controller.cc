@@ -1198,8 +1198,11 @@ void ExistingUserController::OnProfilePrepared(Profile* profile,
   chromeos::UserContext user_context =
       UserContext(*chromeos::ProfileHelper::Get()->GetUserByProfile(profile));
   auto* profile_connector = profile->GetProfilePolicyConnector();
-  user_manager::known_user::SetIsManaged(user_context.GetAccountId(),
-                                         profile_connector->IsManaged());
+  bool is_enterprise_managed =
+      profile_connector->IsManaged() &&
+      user_context.GetUserType() != user_manager::USER_TYPE_CHILD;
+  user_manager::known_user::SetIsEnterpriseManaged(user_context.GetAccountId(),
+                                                   is_enterprise_managed);
 
   // Inform |auth_status_consumer_| about successful login.
   // TODO(nkostylev): Pass UserContext back crbug.com/424550

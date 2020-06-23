@@ -119,6 +119,27 @@
             ]
         }
     ],
+    "AndroidDefaultBrowserPromo": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "max_promo_count": "1",
+                        "min_trigger_session_count": "3",
+                        "promo_interval": "86400",
+                        "skip_primer": "false"
+                    },
+                    "enable_features": [
+                        "AndroidDefaultBrowserPromo"
+                    ]
+                }
+            ]
+        }
+    ],
     "AndroidDynamicWideColorGamut": [
         {
             "platforms": [
@@ -4924,6 +4945,25 @@
                     "params": {
                         "send_unreported_metrics": "yes",
                         "storage": "MappedFile"
+                    },
+                    "enable_features": [
+                        "PersistentHistograms"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PersistentHistogramsLocalMemory": [
+        {
+            "platforms": [
+                "android_webview"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledOnLocalMemory",
+                    "params": {
+                        "send_unreported_metrics": "yes",
+                        "storage": "LocalMemory"
                     },
                     "enable_features": [
                         "PersistentHistograms"

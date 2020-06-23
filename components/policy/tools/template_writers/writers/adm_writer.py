@@ -188,7 +188,8 @@ class AdmWriter(gpo_editor_writer.GpoEditorWriter):
 
     if policy_desc is not None:
       policy_desc += '\n\n'
-      if not policy.get('deprecated', False):
+      if (not policy.get('deprecated', False) and
+          not self._IsRemovedPolicy(policy)):
         policy_desc += reference_link_text
       return policy_desc
     else:

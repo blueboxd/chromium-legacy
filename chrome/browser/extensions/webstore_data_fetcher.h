@@ -17,6 +17,7 @@ namespace network {
 class SimpleURLLoader;
 namespace mojom {
 class URLLoaderFactory;
+class URLResponseHead;
 }  // namespace mojom
 }  // namespace network
 
@@ -33,6 +34,8 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher> {
                       const std::string webstore_item_id);
   ~WebstoreDataFetcher();
 
+  static void SetLogResponseCodeForTesting(bool enabled);
+
   void Start(network::mojom::URLLoaderFactory* url_loader_factory);
 
   void set_max_auto_retries(int max_retries) {
@@ -41,6 +44,8 @@ class WebstoreDataFetcher : public base::SupportsWeakPtr<WebstoreDataFetcher> {
 
  private:
   void OnJsonParsed(data_decoder::DataDecoder::ValueOrError result);
+  void OnResponseStarted(const GURL& final_url,
+                         const network::mojom::URLResponseHead& response_head);
   void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
 
   WebstoreDataFetcherDelegate* delegate_;

@@ -386,10 +386,6 @@ mojom("interfaces") {
           cpp = "::gpu::CollectInfoResult"
         },
         {
-          mojom = "gpu.mojom.Dx12VulkanVersionInfo"
-          cpp = "::gpu::Dx12VulkanVersionInfo"
-        },
-        {
           mojom = "gpu.mojom.OverlayInfo"
           cpp = "::gpu::OverlayInfo"
         },

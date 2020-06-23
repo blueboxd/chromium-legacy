@@ -116,6 +116,8 @@
   # Internal grds that contain parts not available publicly and thus should
   # not be checked by translation script.
   "internal_grds": [
+    # Kaleidoscope strings are in src-internal.
+    "chrome/browser/media/kaleidoscope/internal/kaleidoscope_strings.grd",
     # Test grd that contains a part file that doesn't exist.
     "tools/translation/testdata/internal.grd",
   ],

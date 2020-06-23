@@ -24,8 +24,6 @@ class CrostiniRecoveryView : public views::BubbleDialogDelegateView {
                    crostini::LaunchCrostiniAppCallback callback);
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;
   bool Accept() override;
   bool Cancel() override;

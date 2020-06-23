@@ -1244,6 +1244,8 @@ static_library("browser") {
     "prerender/isolated/isolated_prerender_features.h",
     "prerender/isolated/isolated_prerender_from_string_url_loader.cc",
     "prerender/isolated/isolated_prerender_from_string_url_loader.h",
+    "prerender/isolated/isolated_prerender_network_context_client.cc",
+    "prerender/isolated/isolated_prerender_network_context_client.h",
     "prerender/isolated/isolated_prerender_params.cc",
     "prerender/isolated/isolated_prerender_params.h",
     "prerender/isolated/isolated_prerender_proxy_configurator.cc",
@@ -3891,6 +3893,7 @@ static_library("browser") {
       "//chromeos/components/cdm_factory_daemon:cdm_factory_daemon_browser",
       "//chromeos/components/quick_answers",
       "//chromeos/components/sync_wifi",
+      "//chromeos/lacros/mojom",
       "//chromeos/services/assistant/public/cpp",
       "//chromeos/services/cellular_setup",
       "//chromeos/services/device_sync/public/mojom",
@@ -3941,10 +3944,20 @@ static_library("browser") {
   }
 
   if (chromeos_is_browser_only) {
+    # Set empty assignment filter in this block, and restore back at the end
+    # of this block.
+    # TODO(crbug.com/1018739): Get rid of this workaround,
+    # when we drop the support.
+    set_sources_assignment_filter([])
     sources += [
       "metrics/lacros_metrics_provider.cc",
       "metrics/lacros_metrics_provider.h",
     ]
+    deps += [
+      "//chromeos/lacros/browser",
+      "//chromeos/lacros/mojom",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
   }
 
   if (is_win) {

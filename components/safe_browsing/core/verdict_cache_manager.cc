@@ -5,6 +5,7 @@
 #include "components/safe_browsing/core/verdict_cache_manager.h"
 
 #include "base/base64.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -544,6 +545,9 @@ void VerdictCacheManager::CacheRealTimeUrlVerdict(
         hostname, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
         std::string(), std::move(cache_dictionary));
   }
+  base::UmaHistogramCounts10000(
+      "SafeBrowsing.RT.CacheManager.RealTimeVerdictCount",
+      stored_verdict_count_real_time_url_check_);
 }
 
 RTLookupResponse::ThreatInfo::VerdictType
@@ -796,8 +800,8 @@ size_t VerdictCacheManager::GetRealTimeUrlCheckVerdictCountForURL(
     const GURL& url) {
   std::unique_ptr<base::DictionaryValue> cache_dictionary =
       base::DictionaryValue::From(content_settings_->GetWebsiteSetting(
-          url, GURL(), ContentSettingsType::PASSWORD_PROTECTION, std::string(),
-          nullptr));
+          url, GURL(), ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA,
+          std::string(), nullptr));
   if (!cache_dictionary || cache_dictionary->empty())
     return 0;
   base::Value* verdict_dictionary =

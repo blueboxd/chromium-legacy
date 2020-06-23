@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_discover_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_updater.h"
@@ -56,6 +57,10 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 // The overscroll actions controller managing accelerators over the toolbar.
 @property(nonatomic, strong)
     OverscrollActionsController* overscrollActionsController;
+
+// The DiscoverFeedVC that might be displayed by this VC.
+@property(nonatomic, weak) UIViewController* discoverFeedVC;
+
 @end
 
 @implementation ContentSuggestionsViewController
@@ -83,6 +88,9 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
 }
 
 - (void)dealloc {
+  [self.discoverFeedVC willMoveToParentViewController:nil];
+  [self.discoverFeedVC.view removeFromSuperview];
+  [self.discoverFeedVC removeFromParentViewController];
   [self.overscrollActionsController invalidate];
 }
 
@@ -365,6 +373,19 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
   CSCollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
+
+  if ([self.collectionUpdater
+          isDiscoverItem:[self.collectionViewModel
+                             itemTypeForIndexPath:indexPath]]) {
+    ContentSuggestionsDiscoverItem* discoverFeedItem =
+        static_cast<ContentSuggestionsDiscoverItem*>(item);
+    self.discoverFeedVC = discoverFeedItem.discoverFeed;
+    [self addChildViewController:self.discoverFeedVC];
+    UICollectionViewCell* cell = [super collectionView:collectionView
+                                cellForItemAtIndexPath:indexPath];
+    [self.discoverFeedVC didMoveToParentViewController:self];
+    return cell;
+  }
 
   if ([self.collectionUpdater isContentSuggestionsSection:indexPath.section] &&
       [self.collectionUpdater contentSuggestionTypeForItem:item] !=

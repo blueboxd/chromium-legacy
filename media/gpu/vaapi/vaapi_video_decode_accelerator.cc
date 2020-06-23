@@ -1185,6 +1185,13 @@ VaapiVideoDecodeAccelerator::DecideBufferAllocationMode() {
     return BufferAllocationMode::kNone;
   }
 
+  // For H.264 on older devices, another +1 is experimentally needed for
+  // high-to-high resolution changes.
+  // TODO(mcasas): Figure out why and why only H264, see crbug.com/912295 and
+  // http://crrev.com/c/1363807/9/media/gpu/h264_decoder.cc#1449.
+  if (profile_ >= H264PROFILE_MIN && profile_ <= H264PROFILE_MAX)
+    return BufferAllocationMode::kReduced;
+
   // If we're here, we have to use the Vpp unit and allocate buffers for
   // |decoder_|; usually we'd have to allocate the |decoder_|s
   // GetRequiredNumOfPictures() internally, we can allocate just |decoder_|s

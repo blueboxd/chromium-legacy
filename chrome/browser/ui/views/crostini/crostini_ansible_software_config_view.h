@@ -22,7 +22,6 @@ class CrostiniAnsibleSoftwareConfigView
  public:
   // views::DialogDelegateView:
   bool Accept() override;
-  base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
 
   // crostini::AnsibleManagementService::Observer:
@@ -41,6 +40,8 @@ class CrostiniAnsibleSoftwareConfigView
     ERROR,
     ERROR_OFFLINE,
   };
+
+  static base::string16 GetWindowTitleForState(State state);
 
   void OnStateChanged();
   base::string16 GetSubtextLabel() const;

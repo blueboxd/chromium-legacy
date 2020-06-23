@@ -683,9 +683,9 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
   if (!in_process_ && kind != GPU_PROCESS_KIND_INFO_COLLECTION &&
       base::FeatureList::IsEnabled(
           features::kForwardMemoryPressureEventsToGpuProcess)) {
-    memory_pressure_listener_ =
-        std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-            &GpuProcessHost::OnMemoryPressure, base::Unretained(this)));
+    memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        FROM_HERE, base::BindRepeating(&GpuProcessHost::OnMemoryPressure,
+                                       base::Unretained(this)));
   }
 #endif
 

@@ -21,6 +21,7 @@ import android.view.inputmethod.EditorInfo;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -35,6 +36,7 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -511,7 +513,8 @@ public class ImeTest {
 
         // When input connection is null, we still need to set flags to prevent InputMethodService
         // from entering fullscreen mode and from opening custom UI.
-        CriteriaHelper.pollUiThread(Criteria.equals(null, mRule::getInputConnection));
+        CriteriaHelper.pollUiThread(
+                () -> Criteria.checkThat(mRule.getInputConnection(), Matchers.nullValue()));
         Assert.assertTrue(
                 (mRule.getConnectionFactory().getOutAttrs().imeOptions
                         & (EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI))
@@ -666,12 +669,10 @@ public class ImeTest {
         // hide status of IME, so we will just check whether showIme() has been triggered.
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         final int newCount = showCount + 2;
-        CriteriaHelper.pollUiThread(Criteria.equals(newCount, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mRule.getInputMethodManagerWrapper().getShowSoftInputCounter(),
+                    Matchers.is(newCount));
+        });
     }
 
     private void reloadPage() throws Exception {
@@ -1228,33 +1229,27 @@ public class ImeTest {
         mRule.focusElement("textarea");
 
         // focusElement() calls showSoftInput().
-        CriteriaHelper.pollUiThread(Criteria.equals(showCount + 1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mRule.getInputMethodManagerWrapper().getShowSoftInputCounter(),
+                    Matchers.is(showCount + 1));
+        });
 
         // DPAD_CENTER should cause keyboard to appear on keyup.
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER));
 
         // Should not have called showSoftInput() on keydown.
-        CriteriaHelper.pollUiThread(Criteria.equals(showCount + 1, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mRule.getInputMethodManagerWrapper().getShowSoftInputCounter(),
+                    Matchers.is(showCount + 1));
+        });
 
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER));
 
         // Should have called showSoftInput() on keyup.
-        CriteriaHelper.pollUiThread(Criteria.equals(showCount + 2, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mRule.getInputMethodManagerWrapper().getShowSoftInputCounter(),
+                    Matchers.is(showCount + 2));
+        });
     }
 
     @Test
@@ -1289,13 +1284,17 @@ public class ImeTest {
 
         DOMUtils.longPressNode(mRule.getWebContents(), "input_text");
         CriteriaHelper.pollUiThread(() -> {
-            Assert.assertTrue(mRule.getSelectionPopupController().isPastePopupShowing());
-            Assert.assertTrue(mRule.getSelectionPopupController().isInsertionForTesting());
+            Criteria.checkThat(
+                    mRule.getSelectionPopupController().isPastePopupShowing(), Matchers.is(true));
+            Criteria.checkThat(
+                    mRule.getSelectionPopupController().isInsertionForTesting(), Matchers.is(true));
         });
 
         mRule.setComposingText("h", 1);
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                false, () -> mRule.getSelectionPopupController().isPastePopupShowing()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mRule.getSelectionPopupController().isPastePopupShowing(), Matchers.is(false));
+        });
         Assert.assertFalse(mRule.getSelectionPopupController().isInsertionForTesting());
     }
 
@@ -1621,9 +1620,10 @@ public class ImeTest {
         // necessarily have been committed yet.
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertEquals("hello world", DOMUtils.getNodeContents(webContents, "div"));
+                Criteria.checkThat(
+                        DOMUtils.getNodeContents(webContents, "div"), Matchers.is("hello world"));
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
 

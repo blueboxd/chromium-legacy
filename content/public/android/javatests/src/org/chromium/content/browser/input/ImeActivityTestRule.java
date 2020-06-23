@@ -27,6 +27,7 @@ import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer;
@@ -168,23 +169,25 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     void waitForEventLogState(String expectedLogs) {
         final String code = "getEventLogs()";
         final String sanitizedExpectedLogs = "\"" + expectedLogs + "\"";
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(sanitizedExpectedLogs, new Callable<String>() {
-                    @Override
-                    public String call() throws Exception {
-                        return JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                                getWebContents(), code);
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(
+                        JavaScriptUtils.executeJavaScriptAndWaitForResult(getWebContents(), code),
+                        Matchers.is(sanitizedExpectedLogs));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        });
     }
 
     void waitForFocusedElement(String id) {
-        CriteriaHelper.pollInstrumentationThread(Criteria.equals(id, new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                return DOMUtils.getFocusedNode(getWebContents());
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(DOMUtils.getFocusedNode(getWebContents()), Matchers.is(id));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
             }
-        }));
+        });
     }
 
     void assertTextsAroundCursor(CharSequence before, CharSequence selected, CharSequence after)
@@ -197,36 +200,27 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     void waitForKeyboardStates(int show, int hide, int restart, Integer[] textInputTypeHistory) {
         final String expected =
                 stringifyKeyboardStates(show, hide, restart, textInputTypeHistory, null, null);
-        CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<String>() {
-            @Override
-            public String call() {
-                return getKeyboardStates(false, false);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getKeyboardStates(false, false), Matchers.is(expected));
+        });
     }
 
     void waitForKeyboardStates(int show, int hide, int restart, Integer[] textInputTypeHistory,
             Integer[] textInputModeHistory) {
         final String expected = stringifyKeyboardStates(
                 show, hide, restart, textInputTypeHistory, textInputModeHistory, null);
-        CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<String>() {
-            @Override
-            public String call() {
-                return getKeyboardStates(true, false);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getKeyboardStates(true, false), Matchers.is(expected));
+        });
     }
 
     void waitForKeyboardInputActionStates(int show, int hide, int restart,
             Integer[] textInputTypeHistory, Integer[] textInputActionHistory) {
         final String expected = stringifyKeyboardStates(
                 show, hide, restart, textInputTypeHistory, null, textInputActionHistory);
-        CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<String>() {
-            @Override
-            public String call() {
-                return getKeyboardStates(false, true);
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(getKeyboardStates(false, true), Matchers.is(expected));
+        });
     }
 
     void resetAllStates() {
@@ -258,15 +252,13 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void waitForEditorAction(final int expectedAction) {
-        CriteriaHelper.pollUiThread(Criteria.equals(expectedAction, new Callable<Integer>() {
-            @Override
-            public Integer call() {
-                EditorInfo editorInfo = mConnectionFactory.getOutAttrs();
-                return editorInfo.actionId != 0
-                        ? editorInfo.actionId
-                        : editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION;
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            EditorInfo editorInfo = mConnectionFactory.getOutAttrs();
+            int actualAction = editorInfo.actionId != 0
+                    ? editorInfo.actionId
+                    : editorInfo.imeOptions & EditorInfo.IME_MASK_ACTION;
+            Criteria.checkThat(actualAction, Matchers.is(expectedAction));
+        });
     }
 
     void performEditorAction(final int action) {
@@ -300,26 +292,25 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     void assertWaitForKeyboardStatus(final boolean show) {
         CriteriaHelper.pollUiThread(() -> {
             if (show) {
-                Assert.assertNotNull(getInputConnection());
+                Criteria.checkThat(getInputConnection(), Matchers.notNullValue());
             }
-            Assert.assertEquals(show, mInputMethodManagerWrapper.isShowWithoutHideOutstanding());
+            Criteria.checkThat(
+                    mInputMethodManagerWrapper.isShowWithoutHideOutstanding(), Matchers.is(show));
         });
     }
 
     void assertWaitForSelectActionBarStatus(final boolean show) {
-        CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mSelectionPopupController.isSelectActionBarShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mSelectionPopupController.isSelectActionBarShowing(), Matchers.is(show));
+        });
     }
 
     void waitAndVerifyUpdateSelection(final int index, final int selectionStart,
             final int selectionEnd, final int compositionStart, final int compositionEnd) {
         final List<Pair<Range, Range>> states = mInputMethodManagerWrapper.getUpdateSelectionList();
         CriteriaHelper.pollUiThread(
-                () -> Assert.assertThat(states.size(), Matchers.greaterThan(index)));
+                () -> Criteria.checkThat(states.size(), Matchers.greaterThan(index)));
         Pair<Range, Range> selection = states.get(index);
         Assert.assertEquals("Mismatched selection start", selectionStart, selection.first.start());
         Assert.assertEquals("Mismatched selection end", selectionEnd, selection.first.end());
@@ -337,9 +328,9 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
             ClipboardManager clipboardManager =
                     (ClipboardManager) activity.getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = clipboardManager.getPrimaryClip();
-            Assert.assertNotNull(clip);
-            Assert.assertEquals(1, clip.getItemCount());
-            Assert.assertEquals(expectedContents, clip.getItemAt(0).getText());
+            Criteria.checkThat(clip, Matchers.notNullValue());
+            Criteria.checkThat(clip.getItemCount(), Matchers.is(1));
+            Criteria.checkThat(clip.getItemAt(0).getText(), Matchers.is(expectedContents));
         });
     }
 

@@ -16,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_runner_util.h"
 #include "base/test/scoped_path_override.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/test/browser_task_environment.h"
@@ -80,21 +81,25 @@ TEST_F(BrowserDMTokenStorageMacTest, SaveDMToken) {
   path_override.reset(new base::ScopedPathOverride(
       base::DIR_APP_DATA, fake_app_data_dir.GetPath()));
 
-  TestStoreDMTokenDelegate delegate;
-  BrowserDMTokenStorageMac storage;
-  storage.StoreDMToken(
-      kDMToken, base::BindOnce(&TestStoreDMTokenDelegate::OnDMTokenStored,
-                               base::Unretained(&delegate)));
+  TestStoreDMTokenDelegate callback_delegate;
+  BrowserDMTokenStorageMac storage_delegate;
+  auto task = storage_delegate.SaveDMTokenTask(kDMToken,
+                                               storage_delegate.InitClientId());
+  auto reply = base::BindOnce(&TestStoreDMTokenDelegate::OnDMTokenStored,
+                              base::Unretained(&callback_delegate));
+  base::PostTaskAndReplyWithResult(
+      storage_delegate.SaveDMTokenTaskRunner().get(), FROM_HERE,
+      std::move(task), std::move(reply));
 
-  delegate.Wait();
-  ASSERT_TRUE(delegate.success());
+  callback_delegate.Wait();
+  ASSERT_TRUE(callback_delegate.success());
 
   base::FilePath app_data_dir_path;
   ASSERT_TRUE(base::PathService::Get(base::DIR_APP_DATA, &app_data_dir_path));
   base::FilePath dm_token_dir_path = app_data_dir_path.Append(kDmTokenBaseDir);
 
   std::string filename;
-  base::Base64UrlEncode(base::SHA1HashString(storage.InitClientId()),
+  base::Base64UrlEncode(base::SHA1HashString(storage_delegate.InitClientId()),
                         base::Base64UrlEncodePolicy::OMIT_PADDING, &filename);
 
   base::FilePath dm_token_file_path = dm_token_dir_path.Append(filename);

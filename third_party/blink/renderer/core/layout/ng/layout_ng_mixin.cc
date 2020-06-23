@@ -92,7 +92,8 @@ MinMaxSizes LayoutNGMixin<Base>::ComputeIntrinsicLogicalWidths() const {
   NGConstraintSpace space = ConstraintSpaceForMinMaxSizes();
   MinMaxSizes sizes =
       node.ComputeMinMaxSizes(node.Style().GetWritingMode(),
-                              MinMaxSizesInput(available_logical_height),
+                              MinMaxSizesInput(available_logical_height,
+                                               MinMaxSizesType::kContent),
                               &space)
           .sizes;
 

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 254 tests; 251 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 258 tests; 254 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -119,6 +119,10 @@ PASS <canvas> contents ignored ("<canvas>abc")
 PASS <canvas><div id='target'> contents ok for element not being rendered ("<canvas><div id='target'>abc")
 PASS <img> alt text ignored ("<img alt='abc'>")
 PASS <img> contents ignored ("<img src='about:blank' class='poke'>")
+PASS <svg> text contents preserved ("<div><svg><text>abc</text></svg></div>")
+FAIL <svg><defs> text contents ignored ("<div><svg><defs><text>abc</text></defs></svg></div>") assert_equals: expected "" but got "abc"
+PASS <svg> non-rendered text ignored ("<div><svg><stop>abc</stop></svg></div>")
+PASS <foreignObject> contents preserved ("<svg><foreignObject><span id='target'>abc</span></foreignObject></svg>")
 PASS <select size='1'> contents of options preserved ("<select size='1'><option>abc</option><option>def")
 PASS <select size='2'> contents of options preserved ("<select size='2'><option>abc</option><option>def")
 PASS <select size='1'> contents of target option preserved ("<select size='1'><option id='target'>abc</option><option>def")

@@ -562,6 +562,7 @@ void ThreadWatcherList::WakeUpAll() {
 
 ThreadWatcherList::ThreadWatcherList()
     : memory_pressure_listener_(
+          FROM_HERE,
           base::BindRepeating(&ThreadWatcherList::OnMemoryPressure,
                               base::Unretained(this))) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());

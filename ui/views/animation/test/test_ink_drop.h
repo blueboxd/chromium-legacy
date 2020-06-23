@@ -21,7 +21,9 @@ class TestInkDrop : public InkDrop {
 
   bool is_hovered() const { return is_hovered_; }
 
+  // InkDrop:
   void HostSizeChanged(const gfx::Size& new_size) override;
+  void HostTransformChanged(const gfx::Transform& new_transform) override;
   InkDropState GetTargetInkDropState() const override;
   void AnimateToState(InkDropState ink_drop_state) override;
   void SetHoverHighlightFadeDuration(base::TimeDelta duration) override;

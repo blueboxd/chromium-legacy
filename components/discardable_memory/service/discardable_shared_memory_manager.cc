@@ -228,6 +228,7 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
       memory_limit_(default_memory_limit_),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
+          FROM_HERE,
           base::BindRepeating(&DiscardableSharedMemoryManager::OnMemoryPressure,
                               base::Unretained(this)))),
       // Current thread might not have a task runner in tests.

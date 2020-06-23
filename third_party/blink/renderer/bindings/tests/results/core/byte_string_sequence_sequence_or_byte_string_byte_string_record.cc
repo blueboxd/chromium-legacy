@@ -79,7 +79,7 @@ void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<Vector<String>> cpp_value = NativeValueTraits<IDLSequence<IDLSequence<IDLByteString>>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<Vector<String>> cpp_value{ NativeValueTraits<IDLSequence<IDLSequence<IDLByteString>>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetByteStringSequenceSequence(cpp_value);
@@ -88,7 +88,7 @@ void V8ByteStringSequenceSequenceOrByteStringByteStringRecord::ToImpl(
   }
 
   if (v8_value->IsObject()) {
-    Vector<std::pair<String, String>> cpp_value = NativeValueTraits<IDLRecord<IDLByteString, IDLByteString>>::NativeValue(isolate, v8_value, exception_state);
+    Vector<std::pair<String, String>> cpp_value{ NativeValueTraits<IDLRecord<IDLByteString, IDLByteString>>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetByteStringByteStringRecord(cpp_value);

@@ -2048,6 +2048,11 @@
       depends_on: ["WebXRARModule"],
       status: "experimental",
     },
+    {
+      name: "WebXRReflectionEstimation",
+      depends_on: ["WebXRARModule", "WebXRLightEstimation"],
+      status: "experimental",
+    },
     // Extends window placement functionality for multi-screen devices. Also
     // exposes requisite information about displays connected to the device.
     {

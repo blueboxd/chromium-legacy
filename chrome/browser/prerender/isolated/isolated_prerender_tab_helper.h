@@ -57,9 +57,11 @@ class IsolatedPrerenderTabHelper
     // Called when a prefetch for |url| is completed successfully.
     virtual void OnPrefetchCompletedSuccessfully(const GURL& url) {}
 
-    // Called when a prefetch for |url| is completed with an HTTP error code
-    // (non-2XX).
-    virtual void OnPrefetchCompletedWithError(const GURL& url, int code) {}
+    // Called when a prefetch for |url| is completed with an error code.
+    // Negative values for |error_code| are a net::Error and positive values are
+    // a HTTP error code.
+    virtual void OnPrefetchCompletedWithError(const GURL& url, int error_code) {
+    }
 
     // Called when a NoStatePrefetch finishes loading.
     virtual void OnNoStatePrefetchFinished() {}

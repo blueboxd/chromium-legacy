@@ -6,7 +6,12 @@
 #define CHROME_BROWSER_UI_VIEWS_CROSTINI_CROSTINI_FORCE_CLOSE_VIEW_H_
 
 #include "base/callback.h"
+#include "ui/base/ui_base_types.h"
+#include "ui/gfx/geometry/size.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+
+#include <string>
 
 namespace views {
 class Widget;
@@ -32,24 +37,14 @@ class CrostiniForceCloseView : public views::BubbleDialogDelegateView {
                              base::OnceClosure force_close_callback);
 
   // BubbleDialogDelegateView overrides.
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
-  bool ShouldShowCloseButton() const override;
-  base::string16 GetWindowTitle() const override;
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  CrostiniForceCloseView(const std::string& app_name,
+  CrostiniForceCloseView(const base::string16& app_name,
                          base::OnceClosure force_close_callback);
 
   ~CrostiniForceCloseView() override;
-
-  // Then name of this application which we will display to the user. If we
-  // don't know the app's name, this will be the empty string.
-  base::string16 app_name_;
-
-  // The callback to invoke if the user chooses to force close.
-  base::OnceClosure force_close_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniForceCloseView);
 };

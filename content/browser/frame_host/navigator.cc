@@ -258,12 +258,23 @@ void Navigator::DidNavigate(
     render_frame_host->ResetContentSecurityPolicies();
     frame_tree_node->ResetForNavigation();
 
-    // BFCache navigations should not update the embedding token.
-    if (!navigation_request->IsServedFromBackForwardCache()) {
+    // Back-forward cache navigations should not update the embedding token.
+    //
+    // |was_within_same_document| (controlled by the renderer) also needs
+    // to be considered: in some cases, the browser and renderer can disagree.
+    // While this is usually a bad message kill, there are some situations
+    // where this can legitimately happen. When a new frame is created (e.g.
+    // with <iframe src="...">), the initial about:blank document doesn't have
+    // a corresponding entry in the browser process. As a result, the browser
+    // process incorrectly determines that the navigation is cross-document
+    // when in reality it's same-document.
+    if (!navigation_request->IsServedFromBackForwardCache() &&
+        !was_within_same_document) {
+      DCHECK(params.embedding_token.has_value());
       // Save the new document's embedding token and propagate to any parent
-      // document that embeds it. A token is assigned to cross-process child
-      // frames and the main frame.
-      render_frame_host->SetEmbeddingToken(params.embedding_token);
+      // document that embeds it. A token exists for all navigations creating a
+      // new document.
+      render_frame_host->SetEmbeddingToken(params.embedding_token.value());
     }
   }
 

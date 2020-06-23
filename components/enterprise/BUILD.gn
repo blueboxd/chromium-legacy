@@ -6,6 +6,7 @@ static_library("enterprise") {
   sources = [
     "browser/reporting/policy_info.cc",
     "browser/reporting/policy_info.h",
+    "browser/reporting/report_request_definition.h",
   ]
 
   deps = [

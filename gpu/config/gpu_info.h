@@ -191,22 +191,6 @@ enum class OverlaySupport {
 
 GPU_EXPORT const char* OverlaySupportToString(OverlaySupport support);
 
-struct GPU_EXPORT Dx12VulkanVersionInfo {
-  bool IsEmpty() const { return !d3d12_feature_level && !vulkan_version; }
-
-  // True if the GPU driver supports DX12.
-  bool supports_dx12 = false;
-
-  // True if the GPU driver supports Vulkan.
-  bool supports_vulkan = false;
-
-  // The supported d3d feature level in the gpu driver;
-  uint32_t d3d12_feature_level = 0;
-
-  // The support Vulkan API version in the gpu driver;
-  uint32_t vulkan_version = 0;
-};
-
 struct GPU_EXPORT OverlayInfo {
   OverlayInfo& operator=(const OverlayInfo& other) = default;
   bool operator==(const OverlayInfo& other) const {
@@ -391,7 +375,11 @@ struct GPU_EXPORT GPUInfo {
   // The information returned by the DirectX Diagnostics Tool.
   DxDiagNode dx_diagnostics;
 
-  Dx12VulkanVersionInfo dx12_vulkan_version_info;
+  // The supported d3d feature level in the gpu driver;
+  uint32_t d3d12_feature_level = 0;
+
+  // The support Vulkan API version in the gpu driver;
+  uint32_t vulkan_version = 0;
 
   // The GPU hardware overlay info.
   OverlayInfo overlay_info;
@@ -458,9 +446,6 @@ struct GPU_EXPORT GPUInfo {
     // (according to the DevTools protocol) are being described.
     virtual void BeginAuxAttributes() = 0;
     virtual void EndAuxAttributes() = 0;
-
-    virtual void BeginDx12VulkanVersionInfo() = 0;
-    virtual void EndDx12VulkanVersionInfo() = 0;
 
     virtual void BeginOverlayInfo() = 0;
     virtual void EndOverlayInfo() = 0;

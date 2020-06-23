@@ -14,7 +14,7 @@ enum class UnloadedExtensionReason {
   UPDATE,                 // Extension is being updated to a newer version.
   UNINSTALL,              // Extension is being uninstalled.
   TERMINATE,              // Extension has terminated.
-  BLACKLIST,              // Extension has been blacklisted.
+  BLOCKLIST,              // Extension has been blocklisted.
   PROFILE_SHUTDOWN,       // Profile is being shut down.
   LOCK_ALL,               // All extensions for the profile are blocked.
   MIGRATED_TO_COMPONENT,  // Extension is being migrated to a component

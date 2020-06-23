@@ -277,6 +277,7 @@ CacheStorageHandle LegacyCacheStorageManager::OpenCacheStorage(
   // thread.
   if (!memory_pressure_listener_) {
     memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        FROM_HERE,
         base::BindRepeating(&LegacyCacheStorageManager::OnMemoryPressure,
                             base::Unretained(this)));
   }

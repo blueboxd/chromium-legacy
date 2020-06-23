@@ -132,12 +132,18 @@ class ChromeIdentityService {
                                            UIViewController* view_controller,
                                            BOOL animated);
 
-  // Returns a new ChromeIdentityInteractionManager with |delegate| as its
-  // delegate.
+  // Deprecated. Please use:
+  // CreateChromeIdentityInteractionManager(ChromeBrowserState*). Returns a new
+  // ChromeIdentityInteractionManager with |delegate| as its delegate.
   virtual ChromeIdentityInteractionManager*
   CreateChromeIdentityInteractionManager(
       ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
+
+  // Returns a new ChromeIdentityInteractionManager.
+  virtual ChromeIdentityInteractionManager*
+  CreateChromeIdentityInteractionManager(
+      ChromeBrowserState* browser_state) const;
 
   // Returns YES if |identity| is valid and if the service has it in its list of
   // identitites.

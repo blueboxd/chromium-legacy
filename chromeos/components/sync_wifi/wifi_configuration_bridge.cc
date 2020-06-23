@@ -413,7 +413,7 @@ void WifiConfigurationBridge::SaveNetworkToSync(
   Commit(std::move(batch));
   NET_LOG(EVENT) << "Saved network "
                  << NetworkId(NetworkStateFromNetworkIdentifier(id))
-                 << "to sync.";
+                 << " to sync.";
   metrics_recorder_->RecordTotalCount(entries_.size());
 }
 
@@ -463,7 +463,7 @@ void WifiConfigurationBridge::OnConfigurationRemoved(
     const std::string& service_path,
     const std::string& network_guid) {
   if (!pending_deletes_.contains(network_guid)) {
-    NET_LOG(EVENT) << "Configuraiton " << network_guid
+    NET_LOG(EVENT) << "Configuration " << network_guid
                    << " removed with no matching saved metadata.";
     return;
   }

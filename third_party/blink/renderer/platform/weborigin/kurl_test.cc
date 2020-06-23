@@ -38,6 +38,7 @@
 #include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/url_util.h"
@@ -850,27 +851,63 @@ TEST(KURLTest, ProtocolIs) {
   EXPECT_EQ(capital.Protocol(), "http");
 }
 
-TEST(KURLTest, strippedForUseAsReferrer) {
+TEST(KURLTest, urlStrippedForUseAsReferrer) {
   struct ReferrerCase {
-    const char* input;
-    const char* output;
+    const String input;
+    const String output;
   } referrer_cases[] = {
-      {"data:text/html;charset=utf-8,<html></html>", ""},
-      {"javascript:void(0);", ""},
-      {"about:config", ""},
+      {"data:text/html;charset=utf-8,<html></html>", String()},
+      {"javascript:void(0);", String()},
+      {"about:config", String()},
       {"https://www.google.com/", "https://www.google.com/"},
       {"http://me@news.google.com:8888/", "http://news.google.com:8888/"},
       {"http://:pass@news.google.com:8888/foo",
        "http://news.google.com:8888/foo"},
       {"http://me:pass@news.google.com:8888/", "http://news.google.com:8888/"},
       {"https://www.google.com/a?f#b", "https://www.google.com/a?f"},
-      {"file:///tmp/test.html", ""},
+      {"file:///tmp/test.html", String()},
       {"https://www.google.com/#", "https://www.google.com/"},
   };
 
-  for (size_t i = 0; i < base::size(referrer_cases); i++) {
-    const KURL kurl(referrer_cases[i].input);
-    EXPECT_EQ(referrer_cases[i].output, kurl.StrippedForUseAsReferrer().Utf8());
+  for (const ReferrerCase& referrer_case : referrer_cases) {
+    const KURL kurl(referrer_case.input);
+    EXPECT_EQ(KURL(referrer_case.output), kurl.UrlStrippedForUseAsReferrer());
+  }
+}
+
+TEST(KURLTest, urlStrippedForUseAsReferrerRespectsReferrerScheme) {
+  const KURL example_http_url = KURL("http://example.com/");
+  const KURL foobar_url = KURL("foobar://somepage/");
+  const String foobar_scheme = String::FromUTF8("foobar");
+
+  EXPECT_EQ("", foobar_url.StrippedForUseAsReferrer().Utf8());
+
+  SchemeRegistry::RegisterURLSchemeAsAllowedForReferrer(foobar_scheme);
+  EXPECT_EQ("foobar://somepage/", foobar_url.StrippedForUseAsReferrer());
+  SchemeRegistry::RemoveURLSchemeAsAllowedForReferrer(foobar_scheme);
+}
+
+TEST(KURLTest, strippedForUseAsReferrer) {
+  struct ReferrerCase {
+    const char* input;
+    const String output;
+  } referrer_cases[] = {
+      {"data:text/html;charset=utf-8,<html></html>", String()},
+      {"javascript:void(0);", String()},
+      {"about:config", String()},
+      {"https://www.google.com/", "https://www.google.com/"},
+      {"http://me@news.google.com:8888/", "http://news.google.com:8888/"},
+      {"http://:pass@news.google.com:8888/foo",
+       "http://news.google.com:8888/foo"},
+      {"http://me:pass@news.google.com:8888/", "http://news.google.com:8888/"},
+      {"https://www.google.com/a?f#b", "https://www.google.com/a?f"},
+      {"file:///tmp/test.html", String()},
+      {"https://www.google.com/#", "https://www.google.com/"},
+  };
+
+  for (const ReferrerCase& referrer_case : referrer_cases) {
+    const KURL kurl(referrer_case.input);
+    EXPECT_EQ(referrer_case.output, kurl.StrippedForUseAsReferrer());
   }
 }
 

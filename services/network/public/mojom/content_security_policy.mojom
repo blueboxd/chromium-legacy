@@ -86,7 +86,8 @@ enum CSPDirectiveName {
   ObjectSrc,
   ScriptSrc,
   StyleSrc,
-  WorkerSrc
+  WorkerSrc,
+  ConnectSrc
 };
 
 struct ContentSecurityPolicy {

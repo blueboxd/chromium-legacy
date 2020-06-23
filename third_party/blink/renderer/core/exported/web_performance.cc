@@ -224,10 +224,6 @@ uint64_t WebPerformance::ExperimentalLargestTextPaintSize() const {
   return private_->timing()->ExperimentalLargestTextPaintSize();
 }
 
-double WebPerformance::FirstEligibleToPaint() const {
-  return MillisecondsToSeconds(private_->timing()->FirstEligibleToPaint());
-}
-
 double WebPerformance::FirstInputOrScrollNotifiedTimestamp() const {
   return MillisecondsToSeconds(
       private_->timing()->FirstInputOrScrollNotifiedTimestamp());

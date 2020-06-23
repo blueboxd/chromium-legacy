@@ -91,6 +91,7 @@ std::string URLDataSource::GetContentSecurityPolicy(
       return "script-src chrome://resources 'self';";
     case network::mojom::CSPDirectiveName::FrameAncestors:
       return "frame-ancestors 'none';";
+    case network::mojom::CSPDirectiveName::ConnectSrc:
     case network::mojom::CSPDirectiveName::FormAction:
     case network::mojom::CSPDirectiveName::FrameSrc:
     case network::mojom::CSPDirectiveName::ImgSrc:

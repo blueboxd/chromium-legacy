@@ -141,8 +141,19 @@ class CORE_EXPORT PaintTimingDetector
   void NotifyInputEvent(WebInputEvent::Type);
   bool NeedToNotifyInputOrScroll() const;
   void NotifyScroll(mojom::blink::ScrollType);
+
   // The returned value indicates whether the candidates have changed.
-  bool NotifyIfChangedLargestImagePaint(base::TimeTicks, uint64_t size);
+  // To compute experimental LCP (including removals) for images we need to know
+  // the time and size of removed images in order to account for cases where the
+  // largest image is removed while it is still loading: in this case, we would
+  // first update the experimental LCP size to be the image size, so we need to
+  // be able to decrease the size. To do this, the simplest way to achieve the
+  // correct results is to store the largest image removed which did receive a
+  // paint time.
+  bool NotifyIfChangedLargestImagePaint(base::TimeTicks image_paint_time,
+                                        uint64_t image_size,
+                                        base::TimeTicks removed_image_time,
+                                        uint64_t removed_image_size);
   bool NotifyIfChangedLargestTextPaint(base::TimeTicks, uint64_t size);
 
   void DidChangePerformanceTiming();

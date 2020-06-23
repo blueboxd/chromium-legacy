@@ -49,6 +49,9 @@ class V8StringResource {
   STACK_ALLOCATED();
 
  public:
+  V8StringResource(const V8StringResource&) = delete;
+  V8StringResource& operator=(const V8StringResource&) = delete;
+
   V8StringResource() : mode_(kExternalize) {}
 
   V8StringResource(v8::Local<v8::Value> object)

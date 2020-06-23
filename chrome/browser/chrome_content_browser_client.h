@@ -674,6 +674,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   bool IsOriginTrialRequiredForAppCache(
       content::BrowserContext* browser_context) override;
+  void BindBrowserControlInterface(
+      mojo::GenericPendingReceiver receiver) override;
   bool ShouldInheritCrossOriginEmbedderPolicyImplicitly(
       const GURL& url) override;
   ukm::UkmService* GetUkmService() override;

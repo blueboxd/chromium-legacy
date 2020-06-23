@@ -9,6 +9,8 @@ if (is_android) {
 
 source_set("internal") {
   sources = [
+    "black_hole_log_sink.cc",
+    "black_hole_log_sink.h",
     "cached_image_loader.cc",
     "cached_image_loader.h",
     "image_loader.h",
@@ -16,6 +18,10 @@ source_set("internal") {
     "image_prefetcher.h",
     "init_aware_tile_service.cc",
     "init_aware_tile_service.h",
+    "log_sink.h",
+    "log_source.h",
+    "logger_impl.cc",
+    "logger_impl.h",
     "proto_conversion.cc",
     "proto_conversion.h",
     "stats.cc",

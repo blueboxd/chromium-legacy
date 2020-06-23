@@ -20,6 +20,7 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A utility class providing information regarding states of default browser.
@@ -43,6 +44,7 @@ public class DefaultBrowserPromoUtils {
     private static final int MAX_PROMO_COUNT = 1;
     private static final String SESSION_COUNT_PARAM = "min_trigger_session_count";
     private static final String PROMO_COUNT_PARAM = "max_promo_count";
+    private static final String PROMO_INTERVAL_PARAM = "promo_interval";
 
     private static final String CHROME_STABLE_PACKAGE_NAME = "com.android.chrome";
 
@@ -59,6 +61,7 @@ public class DefaultBrowserPromoUtils {
      *      3. Any chrome, including pre-stable, has been set as default.
      *      4. On Chrome stable while no default browser is set and multiple chrome channels
      *         are installed.
+     *      5. Less than the promo interval if re-promoing.
      *
      * @param activity The context.
      * @param dispatcher The {@link ActivityLifecycleDispatcher} of the current activity.
@@ -93,6 +96,18 @@ public class DefaultBrowserPromoUtils {
             return false;
         }
 
+        // Criteria 5
+        int lastPromoTime = SharedPreferencesManager.getInstance().readInt(
+                ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_LAST_PROMO_TIME, -1);
+        if (lastPromoTime != -1) {
+            int promoInterval = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.ANDROID_DEFAULT_BROWSER_PROMO, PROMO_INTERVAL_PARAM, 0);
+            if (TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()) - lastPromoTime
+                    < promoInterval) {
+                return false;
+            }
+        }
+
         ResolveInfo info = PackageManagerUtils.resolveDefaultWebBrowserActivity();
         int state = getCurrentDefaultBrowserState(info);
 
@@ -113,6 +128,9 @@ public class DefaultBrowserPromoUtils {
 
         SharedPreferencesManager.getInstance().incrementInt(
                 ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_PROMOED_COUNT);
+        SharedPreferencesManager.getInstance().writeInt(
+                ChromePreferenceKeys.DEFAULT_BROWSER_PROMO_LAST_PROMO_TIME,
+                (int) TimeUnit.MILLISECONDS.toMinutes(System.currentTimeMillis()));
         DefaultBrowserPromoManager.create(activity, dispatcher, windowAndroid).promo(state);
         return true;
     }

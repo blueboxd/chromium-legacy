@@ -18,22 +18,21 @@
 
 namespace policy {
 
-// Implementation of BrowserDMTokenStorage for Windows. The global singleton
-// instance can be retrieved by calling BrowserDMTokenStorage::Get().
-class BrowserDMTokenStorageWin : public BrowserDMTokenStorage {
+// Implementation of BrowserDMTokenStorage delegate for Windows.
+class BrowserDMTokenStorageWin : public BrowserDMTokenStorage::Delegate {
  public:
-  // Get the global singleton instance by calling BrowserDMTokenStorage::Get().
   BrowserDMTokenStorageWin();
   ~BrowserDMTokenStorageWin() override;
 
  private:
-  // override BrowserDMTokenStorage
+  // override BrowserDMTokenStorage::Delegate
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
   bool InitEnrollmentErrorOption() override;
-  StoreTask SaveDMTokenTask(const std::string& token,
-                            const std::string& client_id) override;
+  BrowserDMTokenStorage::StoreTask SaveDMTokenTask(
+      const std::string& token,
+      const std::string& client_id) override;
   scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> com_sta_task_runner_;

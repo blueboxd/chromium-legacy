@@ -442,8 +442,7 @@ void LayoutBlock::AddVisualOverflowFromChildren() {
   if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
-  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
-  CHECK(!NeedsLayout());
+  DCHECK(!NeedsLayout());
 
   if (ChildrenInline())
     To<LayoutBlockFlow>(this)->AddVisualOverflowFromInlineChildren();
@@ -462,8 +461,7 @@ void LayoutBlock::AddLayoutOverflowFromChildren() {
 }
 
 void LayoutBlock::ComputeVisualOverflow(bool) {
-  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
-  CHECK(!SelfNeedsLayout());
+  DCHECK(!SelfNeedsLayout());
 
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();

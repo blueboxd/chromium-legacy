@@ -60,14 +60,6 @@ bool CrostiniRecoveryView::Show(Profile* profile,
   return g_crostini_recovery_view->can_launch_apps_;
 }
 
-base::string16 CrostiniRecoveryView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_TITLE);
-}
-
-bool CrostiniRecoveryView::ShouldShowCloseButton() const {
-  return false;
-}
-
 bool CrostiniRecoveryView::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   // Buttons are disabled after Accept or Cancel have been clicked.
@@ -149,6 +141,8 @@ CrostiniRecoveryView::CrostiniRecoveryView(
   SetButtonLabel(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_CROSTINI_RECOVERY_TERMINAL_BUTTON));
+  SetShowCloseButton(false);
+  SetTitle(IDS_CROSTINI_RECOVERY_TITLE);
 
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

@@ -2116,3 +2116,6 @@ virtual/wbn-from-network/external/wpt/web-bundle/wbn-from-network/* [ Pass ]
 crbug.com/1082020 external/wpt/web-bundle/subresource-loading/* [ Skip ]
 virtual/subresource-web-bundles/external/wpt/web-bundle/subresource-loading/* [ Pass ]
 crbug.com/626703 [ Mac10.10 ] virtual/cache-storage-sequence/external/wpt/service-workers/service-worker/fetch-event-is-reload-iframe-navigation-manual.https.html [ Skip ]
+
+# No good way to automate this test yet
+external/wpt/native-file-system/showSaveFilePicker-manual.https.html [ Skip ]

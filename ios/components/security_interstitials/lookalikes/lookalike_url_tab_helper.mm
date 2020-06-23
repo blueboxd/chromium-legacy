@@ -75,7 +75,7 @@ LookalikeUrlTabHelper::ShouldAllowRequest(
   LookalikeUrlMatchType match_type;
   // Target allowlist is not currently used in ios.
   const LookalikeTargetAllowlistChecker in_target_allowlist =
-      base::BindRepeating(^(const GURL& url) {
+      base::BindRepeating(^(const std::string& hostname) {
         return false;
       });
   if (!GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,

@@ -46,7 +46,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/NavigationPopup.java",
   "java/src/org/chromium/chrome/browser/NearOomMonitor.java",
   "java/src/org/chromium/chrome/browser/PowerBroadcastReceiver.java",
-  "java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java",
   "java/src/org/chromium/chrome/browser/SearchGeolocationDisclosureTabHelper.java",
   "java/src/org/chromium/chrome/browser/ServiceTabLauncher.java",
   "java/src/org/chromium/chrome/browser/ShortcutHelper.java",

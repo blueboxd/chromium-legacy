@@ -10,12 +10,23 @@
 
 namespace autofill_assistant {
 
-namespace {
+// Comparison operations are in the autofill_assistant scope, even though
+// they're not shared outside of this module, for them to be visible to
+// std::make_tuple and std::lexicographical_compare.
 
 bool operator<(const SelectorProto::TextFilter& a,
                const SelectorProto::TextFilter& b) {
   return std::make_tuple(a.re2(), a.case_sensitive()) <
          std::make_tuple(b.re2(), b.case_sensitive());
+}
+
+// Used by operator<(RepeatedPtrField<Filter>, RepeatedPtrField<Filter>)
+bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b);
+
+bool operator<(
+    const google::protobuf::RepeatedPtrField<SelectorProto::Filter>& a,
+    const google::protobuf::RepeatedPtrField<SelectorProto::Filter>& b) {
+  return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
 }
 
 bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
@@ -39,91 +50,29 @@ bool operator<(const SelectorProto::Filter& a, const SelectorProto::Filter& b) {
       return a.pseudo_type() < b.pseudo_type();
 
     case SelectorProto::Filter::kPseudoElementContent:
-      if (a.pseudo_element_content().pseudo_type() <
-          b.pseudo_element_content().pseudo_type()) {
-        return true;
-      }
-      if (a.pseudo_element_content().pseudo_type() !=
-          b.pseudo_element_content().pseudo_type()) {
-        return false;
-      }
-      return a.pseudo_element_content().content() <
-             b.pseudo_element_content().content();
+      return std::make_tuple(a.pseudo_element_content().pseudo_type(),
+                             a.pseudo_element_content().content()) <
+             std::make_tuple(b.pseudo_element_content().pseudo_type(),
+                             b.pseudo_element_content().content());
 
     case SelectorProto::Filter::kBoundingBox:
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kPickOne:
     case SelectorProto::Filter::kLabelled:
       return false;
+
+    case SelectorProto::Filter::kClosest: {
+      return std::make_tuple(a.closest().target(), a.closest().in_alignment(),
+                             a.closest().relative_position()) <
+             std::make_tuple(b.closest().target(), b.closest().in_alignment(),
+                             b.closest().relative_position());
+    }
 
     case SelectorProto::Filter::FILTER_NOT_SET:
       return false;
   }
   return false;
 }
-
-#ifndef NDEBUG
-
-std::ostream& operator<<(std::ostream& out, PseudoType pseudo_type) {
-  return out << PseudoTypeName(pseudo_type);
-}
-
-std::ostream& operator<<(std::ostream& out,
-                         const SelectorProto::TextFilter& c) {
-  out << "/" << c.re2() << "/";
-  if (c.case_sensitive()) {
-    out << "i";
-  }
-  return out;
-}
-
-std::ostream& operator<<(std::ostream& out, const SelectorProto::Filter& f) {
-  switch (f.filter_case()) {
-    case SelectorProto::Filter::kEnterFrame:
-      out << "/";
-      return out;
-
-    case SelectorProto::Filter::kCssSelector:
-      out << f.css_selector();
-      return out;
-
-    case SelectorProto::Filter::kInnerText:
-      out << "innerText~=" << f.inner_text();
-      return out;
-
-    case SelectorProto::Filter::kValue:
-      out << "value~=" << f.value();
-      return out;
-
-    case SelectorProto::Filter::kPseudoType:
-      out << "::" << f.pseudo_type();
-      return out;
-
-    case SelectorProto::Filter::kPseudoElementContent:
-      out << "::" << f.pseudo_element_content().pseudo_type()
-          << "~=" << f.pseudo_element_content().content();
-      return out;
-
-    case SelectorProto::Filter::kBoundingBox:
-      out << "bounding_box";
-      return out;
-
-    case SelectorProto::Filter::kPickOne:
-      out << "pick_one";
-      return out;
-
-    case SelectorProto::Filter::kLabelled:
-      out << "labelled";
-      return out;
-
-    case SelectorProto::Filter::FILTER_NOT_SET:
-      // Either unset or set to an unsupported value. Let's assume the worse.
-      out << "INVALID";
-      return out;
-  }
-}
-#endif  // NDEBUG
-}  // namespace
 
 SelectorProto ToSelectorProto(const std::string& s) {
   return ToSelectorProto(std::vector<std::string>{s});
@@ -196,25 +145,7 @@ Selector& Selector::operator=(const Selector& other) = default;
 Selector& Selector::operator=(Selector&& other) = default;
 
 bool Selector::operator<(const Selector& other) const {
-  const auto& a = proto.filters();
-  const auto& b = other.proto.filters();
-  if (a.size() < b.size()) {
-    return true;
-  }
-  if (a.size() != b.size()) {
-    return false;
-  }
-  for (int i = 0; i < a.size(); i++) {
-    const SelectorProto::Filter& filter_a = a.Get(i);
-    const SelectorProto::Filter& filter_b = b.Get(i);
-    if (filter_a < filter_b) {
-      return true;
-    }
-    if (filter_b < filter_a) {
-      return false;
-    }
-  }
-  return false;
+  return proto.filters() < other.proto.filters();
 }
 
 bool Selector::operator==(const Selector& other) const {
@@ -287,6 +218,7 @@ base::Optional<std::string> Selector::ExtractSingleCssSelectorForAutofill()
       case SelectorProto::Filter::kPseudoType:
       case SelectorProto::Filter::kPseudoElementContent:
       case SelectorProto::Filter::kLabelled:
+      case SelectorProto::Filter::kClosest:
         VLOG(1) << __func__
                 << " Selector feature not supported by autofill: " << *this;
         return base::nullopt;
@@ -312,22 +244,121 @@ base::Optional<std::string> Selector::ExtractSingleCssSelectorForAutofill()
 }
 
 std::ostream& operator<<(std::ostream& out, const Selector& selector) {
-#ifdef NDEBUG
-  out << selector.proto.filters().size() << " filter(s).";
+  return out << selector.proto;
+}
+
+#ifndef NDEBUG
+namespace {
+
+// Debug output for pseudo types.
+std::ostream& operator<<(std::ostream& out, PseudoType pseudo_type) {
+  return out << PseudoTypeName(pseudo_type);
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const SelectorProto::TextFilter& c) {
+  out << "/" << c.re2() << "/";
+  if (c.case_sensitive()) {
+    out << "i";
+  }
   return out;
-#else
+}
+
+std::ostream& operator<<(
+    std::ostream& out,
+    const google::protobuf::RepeatedPtrField<SelectorProto::Filter>& filters) {
   out << "[";
-  bool first = true;
-  for (const SelectorProto::Filter& filter : selector.proto.filters()) {
-    if (first) {
-      first = false;
-    } else {
-      out << " ";
-    }
-    out << filter;
+  std::string separator = "";
+  for (const SelectorProto::Filter& filter : filters) {
+    out << separator << filter;
+    separator = " ";
   }
   out << "]";
   return out;
+}
+}  // namespace
+#endif  // NDEBUG
+
+std::ostream& operator<<(std::ostream& out, const SelectorProto& selector) {
+#ifdef NDEBUG
+  out << selector.filters().size() << " filter(s)";
+#else
+  out << selector.filters();
+#endif  // NDEBUG
+  return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const SelectorProto::Filter& f) {
+#ifdef NDEBUG
+  // DEBUG output not available.
+  return out << "filter case=" << f.filter_case();
+#else
+  switch (f.filter_case()) {
+    case SelectorProto::Filter::kEnterFrame:
+      out << "/";
+      return out;
+
+    case SelectorProto::Filter::kCssSelector:
+      out << f.css_selector();
+      return out;
+
+    case SelectorProto::Filter::kInnerText:
+      out << "innerText~=" << f.inner_text();
+      return out;
+
+    case SelectorProto::Filter::kValue:
+      out << "value~=" << f.value();
+      return out;
+
+    case SelectorProto::Filter::kPseudoType:
+      out << "::" << f.pseudo_type();
+      return out;
+
+    case SelectorProto::Filter::kPseudoElementContent:
+      out << "::" << f.pseudo_element_content().pseudo_type()
+          << "~=" << f.pseudo_element_content().content();
+      return out;
+
+    case SelectorProto::Filter::kBoundingBox:
+      out << "bounding_box";
+      return out;
+
+    case SelectorProto::Filter::kPickOne:
+      out << "pick_one";
+      return out;
+
+    case SelectorProto::Filter::kLabelled:
+      out << "labelled";
+      return out;
+
+    case SelectorProto::Filter::kClosest:
+      out << "closest to " << f.closest().target();
+      switch (f.closest().relative_position()) {
+        case SelectorProto::ProximityFilter::UNSPECIFIED_POSITION:
+          break;
+        case SelectorProto::ProximityFilter::ABOVE:
+          out << " above";
+          break;
+        case SelectorProto::ProximityFilter::BELOW:
+          out << " below";
+          break;
+        case SelectorProto::ProximityFilter::RIGHT:
+          out << " right";
+          break;
+        case SelectorProto::ProximityFilter::LEFT:
+          out << " left";
+          break;
+      }
+      if (f.closest().in_alignment()) {
+        out << " in alignment";
+      }
+      return out;
+
+    case SelectorProto::Filter::FILTER_NOT_SET:
+      // Either unset or set to an unsupported value. Let's assume the worse.
+      out << "INVALID";
+      return out;
+  }
 #endif  // NDEBUG
 }
 

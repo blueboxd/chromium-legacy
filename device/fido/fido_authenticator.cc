@@ -141,4 +141,8 @@ bool FidoAuthenticator::SupportsCredProtectExtension() const {
   return Options() && Options()->supports_cred_protect;
 }
 
+bool FidoAuthenticator::SupportsHMACSecretExtension() const {
+  return false;
+}
+
 }  // namespace device

@@ -621,6 +621,12 @@
 #include "chrome/browser/vr/chrome_xr_integration_client.h"
 #endif
 
+#if BUILDFLAG(LACROS)
+#include "chromeos/lacros/browser/lacros_chrome_service_impl.h"
+#include "chromeos/lacros/mojom/lacros.mojom.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#endif
+
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -5749,6 +5755,16 @@ bool ChromeContentBrowserClient::IsOriginTrialRequiredForAppCache(
   }
 
   return false;
+}
+
+void ChromeContentBrowserClient::BindBrowserControlInterface(
+    mojo::GenericPendingReceiver receiver) {
+#if BUILDFLAG(LACROS)
+  if (auto r = receiver.As<lacros::mojom::LacrosChromeService>()) {
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<chromeos::LacrosChromeServiceImpl>(), std::move(r));
+  }
+#endif
 }
 
 bool ChromeContentBrowserClient::

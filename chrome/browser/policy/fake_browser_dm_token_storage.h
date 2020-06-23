@@ -10,9 +10,9 @@
 
 namespace policy {
 
-// A fake BrowserDMTokenStorage implementation for testing. Test
-// cases can set CBCM related values instead of reading it
-// from operating system.
+// A fake BrowserDMTokenStorage implementation for testing. Test cases can set
+// CBCM related values on the underlying delegate instead of reading them from
+// the operating system.
 class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
  public:
   FakeBrowserDMTokenStorage();
@@ -29,22 +29,45 @@ class FakeBrowserDMTokenStorage : public BrowserDMTokenStorage {
   // Determines if SaveDMToken will be succeeded or not.
   void EnableStorage(bool storage_enabled);
 
-  // policy::BrowserDMTokenStorage:
-  std::string InitClientId() override;
-  std::string InitEnrollmentToken() override;
-  std::string InitDMToken() override;
-  bool InitEnrollmentErrorOption() override;
-  StoreTask SaveDMTokenTask(const std::string& token,
-                            const std::string& client_id) override;
-  scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
-
  private:
-  std::string client_id_;
-  std::string enrollment_token_;
-  std::string dm_token_;
-  bool enrollment_error_option_ = true;
+  FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageTest, SetDelegate);
 
-  bool storage_enabled_ = true;
+  // A fake BrowserDMTokenStorage::Delegate implementation for testing.
+  class MockDelegate : public BrowserDMTokenStorage::Delegate {
+   public:
+    MockDelegate();
+    MockDelegate(const std::string& client_id,
+                 const std::string& enrollment_token,
+                 const std::string& dm_token,
+                 bool enrollment_error_option);
+    ~MockDelegate() override;
+
+    void SetClientId(const std::string& client_id);
+    void SetEnrollmentToken(const std::string& enrollment_token);
+    void SetDMToken(const std::string& dm_token);
+    void SetEnrollmentErrorOption(bool option);
+    void EnableStorage(bool storage_enabled);
+
+    // policy::BrowserDMTokenStorage::Delegate
+    std::string InitClientId() override;
+    std::string InitEnrollmentToken() override;
+    std::string InitDMToken() override;
+    bool InitEnrollmentErrorOption() override;
+    BrowserDMTokenStorage::StoreTask SaveDMTokenTask(
+        const std::string& token,
+        const std::string& client_id) override;
+    scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
+
+   private:
+    std::string client_id_;
+    std::string enrollment_token_;
+    std::string dm_token_;
+    bool enrollment_error_option_ = true;
+
+    bool storage_enabled_ = true;
+
+    DISALLOW_COPY_AND_ASSIGN(MockDelegate);
+  };
 
   DISALLOW_COPY_AND_ASSIGN(FakeBrowserDMTokenStorage);
 };

@@ -113,9 +113,12 @@
         if (pathAndBase.startsWith('/fullscreen/')) {
             // Fullscreen tests all use the same automation script.
             src = automationPath + '/fullscreen/auto-click.js';
-        } else if (pathAndBase.startsWith('/native-file-system/')) {
-            // Native File System tests all use the same automation script.
+        } else if (pathAndBase.startsWith('/native-file-system/native_')) {
+            // native_ Native File System tests all use the same automation script.
             src = automationPath + '/native-file-system/auto-pick-folder.js';
+        } else if (pathAndBase.startsWith('/native-file-system/')) {
+            // Per-test automation scripts.
+            src = automationPath + pathAndBase + '-automation.sub.js';
         } else if (
             pathAndBase.startsWith('/css/') ||
             pathAndBase.startsWith('/pointerevents/') ||

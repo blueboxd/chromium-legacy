@@ -24,6 +24,7 @@ const char kKeyNameInvalidationTopic[] = "invalidation_topic";
 
 const char kKeyNameCertProfileId[] = "profile_id";
 const char kKeyNameCertProfileVersion[] = "policy_version";
+const char kKeyNameCertProfileVaEnabled[] = "va_enabled";
 
 template <typename T>
 bool ConvertToEnum(int value, T* dst) {
@@ -58,12 +59,25 @@ bool DeserializeStringValue(const base::Value& parent_value,
   return true;
 }
 
+bool DeserializeBoolValue(const base::Value& parent_value,
+                          const char* value_name,
+                          bool* dst) {
+  const base::Value* serialized_bool =
+      parent_value.FindKeyOfType(value_name, base::Value::Type::BOOLEAN);
+  if (!serialized_bool) {
+    return false;
+  }
+  *dst = serialized_bool->GetBool();
+  return true;
+}
+
 base::Value SerializeCertProfile(const CertProfile& profile) {
-  static_assert(CertProfile::kVersion == 2, "This function should be updated");
+  static_assert(CertProfile::kVersion == 3, "This function should be updated");
 
   base::Value result(base::Value::Type::DICTIONARY);
   result.SetStringKey(kKeyNameCertProfileId, profile.profile_id);
   result.SetStringKey(kKeyNameCertProfileVersion, profile.policy_version);
+  result.SetBoolKey(kKeyNameCertProfileVaEnabled, profile.is_va_enabled);
 
   return result;
 }
@@ -71,7 +85,7 @@ base::Value SerializeCertProfile(const CertProfile& profile) {
 bool DeserializeCertProfile(const base::Value& parent_value,
                             const char* value_name,
                             CertProfile* dst) {
-  static_assert(CertProfile::kVersion == 2, "This function should be updated");
+  static_assert(CertProfile::kVersion == 3, "This function should be updated");
 
   const base::Value* serialized_profile =
       parent_value.FindKeyOfType(value_name, base::Value::Type::DICTIONARY);
@@ -87,6 +101,9 @@ bool DeserializeCertProfile(const base::Value& parent_value,
   is_ok = is_ok && DeserializeStringValue(*serialized_profile,
                                           kKeyNameCertProfileVersion,
                                           &(dst->policy_version));
+  is_ok = is_ok && DeserializeBoolValue(*serialized_profile,
+                                        kKeyNameCertProfileVaEnabled,
+                                        &(dst->is_va_enabled));
   return is_ok;
 }
 

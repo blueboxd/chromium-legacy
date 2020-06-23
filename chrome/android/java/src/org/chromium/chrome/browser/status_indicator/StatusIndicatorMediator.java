@@ -36,7 +36,7 @@ class StatusIndicatorMediator
     private HashSet<StatusIndicatorCoordinator.StatusIndicatorObserver> mObservers =
             new HashSet<>();
     private Supplier<Integer> mStatusBarWithoutIndicatorColorSupplier;
-    private Runnable mOnCompositorShowAnimationEnd;
+    private Runnable mOnShowAnimationEnd;
     private Supplier<Boolean> mCanAnimateNativeBrowserControls;
     private Callback<Runnable> mInvalidateCompositorView;
     private Runnable mRequestLayout;
@@ -81,10 +81,6 @@ class StatusIndicatorMediator
     @Override
     public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
             int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-        // If we aren't animating the browser controls in cc, we shouldn't care about the offsets
-        // we get.
-        if (!mCanAnimateNativeBrowserControls.get()) return;
-
         onOffsetChanged(topControlsMinHeightOffset);
     }
 
@@ -149,7 +145,7 @@ class StatusIndicatorMediator
             mModel.set(StatusIndicatorProperties.TEXT_COLOR, textColor);
             mModel.set(StatusIndicatorProperties.ICON_TINT, iconTint);
             mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.INVISIBLE);
-            mOnCompositorShowAnimationEnd = () -> animateTextFadeIn();
+            mOnShowAnimationEnd = () -> animateTextFadeIn();
         };
 
         final int statusBarColor = mStatusBarWithoutIndicatorColorSupplier.get();
@@ -365,31 +361,35 @@ class StatusIndicatorMediator
             mBrowserControlsStateProvider.addObserver(this);
         }
 
-        // If the browser controls won't be animating, we can pretend that the animation ended.
-        if (!mCanAnimateNativeBrowserControls.get()) {
-            onOffsetChanged(mIndicatorHeight);
-        }
-
         notifyHeightChange(mIndicatorHeight);
     }
 
     private void onOffsetChanged(int topControlsMinHeightOffset) {
-        final boolean compositedVisible = topControlsMinHeightOffset > 0;
-        // Composited view should be visible if we have a positive top min-height offset, or current
-        // min-height.
-        mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, compositedVisible);
+        final boolean indicatorVisible = topControlsMinHeightOffset > 0;
+        // Composited view should be visible if we have a positive top min-height offset (or current
+        // min-height) and we're running the animations in native.
+        mModel.set(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE,
+                indicatorVisible && mCanAnimateNativeBrowserControls.get());
+
+        mModel.set(StatusIndicatorProperties.CURRENT_VISIBLE_HEIGHT, topControlsMinHeightOffset);
 
         final boolean isCompletelyShown = topControlsMinHeightOffset == mIndicatorHeight;
-        // Android view should only be visible when the indicator is fully shown.
+        // If we're running the animations in native, the Android view should only be visible when
+        // the indicator is fully shown. Otherwise, the Android view will be visible if it's within
+        // screen boundaries.
         mModel.set(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY,
-                mIsHiding ? View.GONE : (isCompletelyShown ? View.VISIBLE : View.INVISIBLE));
+                mIsHiding && (mCanAnimateNativeBrowserControls.get() || !indicatorVisible)
+                        ? View.GONE
+                        : (isCompletelyShown || !mCanAnimateNativeBrowserControls.get()
+                                        ? View.VISIBLE
+                                        : View.INVISIBLE));
 
-        if (mOnCompositorShowAnimationEnd != null && isCompletelyShown) {
-            mOnCompositorShowAnimationEnd.run();
-            mOnCompositorShowAnimationEnd = null;
+        if (mOnShowAnimationEnd != null && isCompletelyShown) {
+            mOnShowAnimationEnd.run();
+            mOnShowAnimationEnd = null;
         }
 
-        final boolean doneHiding = !compositedVisible && mIsHiding;
+        final boolean doneHiding = !indicatorVisible && mIsHiding;
         if (doneHiding) {
             mBrowserControlsStateProvider.removeObserver(this);
             mIsHiding = false;

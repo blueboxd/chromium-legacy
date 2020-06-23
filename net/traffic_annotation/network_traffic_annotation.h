@@ -5,7 +5,10 @@
 #ifndef NET_TRAFFIC_ANNOTATION_NETWORK_TRAFFIC_ANNOTATION_H_
 #define NET_TRAFFIC_ANNOTATION_NETWORK_TRAFFIC_ANNOTATION_H_
 
-#include "base/logging.h"
+#include <cstdint>
+
+#include "base/check.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 
 namespace {

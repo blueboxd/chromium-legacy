@@ -124,7 +124,7 @@ void PaymentHandlerHost::UpdateWith(
         data.emplace(prefix + " Method Name",
                      modifier->method_data->method_name);
         data.emplace(prefix + " Method Data",
-                     modifier->method_data->stringified_data);
+                     modifier->method_data->stringified_data.value_or("{}"));
         if (!modifier->total)
           continue;
         data.emplace(prefix + " Total Currency", modifier->total->currency);
@@ -187,8 +187,10 @@ void PaymentHandlerHost::ChangePaymentMethod(
     return;
   }
 
+  const std::string stringified_data =
+      method_data->stringified_data.value_or("{}");
   if (!delegate_->ChangePaymentMethod(method_data->method_name,
-                                      method_data->stringified_data)) {
+                                      stringified_data)) {
     RunCallbackWithError(errors::kInvalidState, std::move(callback));
     return;
   }
@@ -202,7 +204,7 @@ void PaymentHandlerHost::ChangePaymentMethod(
         "Change payment method",
         /*instance_id=*/payment_request_id_for_logs_,
         {{"Method Name", method_data->method_name},
-         {"Method Data", method_data->stringified_data}});
+         {"Method Data", stringified_data}});
   }
 
   change_payment_request_details_callback_ = std::move(callback);

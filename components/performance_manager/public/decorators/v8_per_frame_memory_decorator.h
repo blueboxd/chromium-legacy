@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_V8_PER_FRAME_MEMORY_DECORATOR_H_
 #define COMPONENTS_PERFORMANCE_MANAGER_PUBLIC_DECORATORS_V8_PER_FRAME_MEMORY_DECORATOR_H_
 
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "components/performance_manager/public/graph/graph.h"
+#include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/node_data_describer.h"
 #include "components/performance_manager/public/graph/process_node.h"
 #include "content/public/common/performance_manager/v8_per_frame_memory.mojom.h"
@@ -14,20 +16,51 @@
 namespace performance_manager {
 
 namespace internal {
-class ProxyHostReceiverBinder;
-}
 
-class V8PerFrameMemoryDecorator : public GraphOwned,
-                                  public ProcessNode::ObserverDefaultImpl,
-                                  public NodeDataDescriberDefaultImpl {
+// A callback that will bind a V8PerFrameMemoryReporter interface to
+// communicate with the given process. Exposed so that it can be overridden to
+// implement the interface with a test fake.
+using BindV8PerFrameMemoryReporterCallback = base::RepeatingCallback<void(
+    mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>,
+    RenderProcessHostProxy)>;
+
+// Sets a callback that will be used to bind the V8PerFrameMemoryReporter
+// interface. The callback is owned by the caller and must live until this
+// function is called again with nullptr.
+void SetBindV8PerFrameMemoryReporterCallbackForTesting(
+    BindV8PerFrameMemoryReporterCallback* callback);
+
+}  // namespace internal
+
+// A decorator that queries each renderer process for the amount of memory used
+// by V8 in each frame.
+//
+// To start sampling create a MeasurementRequest object that specifies how
+// often to request a memory measurement. Delete the object when you no longer
+// need measurements. Measurement involves some overhead so choose the lowest
+// sampling frequency your use case needs. The decorator will use the highest
+// sampling frequency that any caller requests, and stop measurements entirely
+// when no more MeasurementRequest objects exist.
+//
+// When measurements are available the decorator attaches them to FrameData and
+// ProcessData objects that can be retrieved with FrameData::ForFrameNode and
+// ProcessData::ForProcessNode. ProcessData objects can be cleaned up when
+// MeasurementRequest objects are deleted so callers must save the measurements
+// they are interested in before releasing their MeasurementRequest.
+//
+// MeasurementRequest, FrameData and ProcessData must all be accessed on the
+// graph sequence.
+class V8PerFrameMemoryDecorator
+    : public GraphOwned,
+      public GraphRegisteredImpl<V8PerFrameMemoryDecorator>,
+      public ProcessNode::ObserverDefaultImpl,
+      public NodeDataDescriberDefaultImpl {
  public:
+  class MeasurementRequest;
   class FrameData;
   class ProcessData;
 
-  // Creates a new decorator with the given time between requests per process,
-  // which bounds the number of requests over time.
-  explicit V8PerFrameMemoryDecorator(
-      base::TimeDelta min_time_between_requests_per_process);
+  V8PerFrameMemoryDecorator();
   ~V8PerFrameMemoryDecorator() override;
 
   V8PerFrameMemoryDecorator(const V8PerFrameMemoryDecorator&) = delete;
@@ -45,21 +78,53 @@ class V8PerFrameMemoryDecorator : public GraphOwned,
   base::Value DescribeFrameNodeData(const FrameNode* node) const override;
   base::Value DescribeProcessNodeData(const ProcessNode* node) const override;
 
-  base::TimeDelta min_time_between_requests_per_process() const {
-    return min_time_between_requests_per_process_;
-  }
+  // Returns the amount of time to wait between requests for each process.
+  // Returns a zero TimeDelta if no requests should be made.
+  base::TimeDelta GetMinTimeBetweenRequestsPerProcess() const;
 
  private:
-  friend class internal::ProxyHostReceiverBinder;
+  friend class MeasurementRequest;
 
-  // Testing seam.
-  virtual void BindReceiverWithProxyHost(
-      mojo::PendingReceiver<
-          performance_manager::mojom::V8PerFrameMemoryReporter>,
-      RenderProcessHostProxy proxy) const;
+  void AddMeasurementRequest(MeasurementRequest* request);
+  void RemoveMeasurementRequest(MeasurementRequest* request);
+  void UpdateProcessMeasurementSchedules() const;
 
-  const base::TimeDelta min_time_between_requests_per_process_;
   Graph* graph_ = nullptr;
+
+  // List of requests sorted by sample_frequency (lowest first).
+  std::vector<MeasurementRequest*> measurement_requests_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+};
+
+class V8PerFrameMemoryDecorator::MeasurementRequest {
+ public:
+  // Creates a MeasurementRequest but does not start the measurements. Call
+  // StartMeasurement to add it to the request list.
+  explicit MeasurementRequest(const base::TimeDelta& sample_frequency);
+
+  // Creates a MeasurementRequest and calls StartMeasurement. This will request
+  // measurements for all ProcessNode's in |graph| with frequency
+  // |sample_frequency|.
+  MeasurementRequest(const base::TimeDelta& sample_frequency, Graph* graph);
+  ~MeasurementRequest();
+
+  MeasurementRequest(const MeasurementRequest&) = delete;
+  MeasurementRequest& operator=(const MeasurementRequest&) = delete;
+
+  const base::TimeDelta& sample_frequency() const { return sample_frequency_; }
+
+  // Requests measurements for all ProcessNode's in |graph| with this object's
+  // sample frequency. This must only be called once for each
+  // MeasurementRequest.
+  void StartMeasurement(Graph* graph);
+
+ private:
+  friend class V8PerFrameMemoryDecorator;
+  void OnDecoratorUnregistered();
+
+  base::TimeDelta sample_frequency_;
+  V8PerFrameMemoryDecorator* decorator_ = nullptr;
 };
 
 class V8PerFrameMemoryDecorator::FrameData {
@@ -112,6 +177,20 @@ class V8PerFrameMemoryDecorator::ProcessData {
 
  private:
   uint64_t unassociated_v8_bytes_used_ = 0;
+};
+
+// Wrapper that can instantiate a V8PerFrameMemoryDecorator::MeasurementRequest
+// from any sequence.
+class V8PerFrameMemoryRequest {
+ public:
+  explicit V8PerFrameMemoryRequest(const base::TimeDelta& sample_frequency);
+  ~V8PerFrameMemoryRequest();
+
+  V8PerFrameMemoryRequest(const V8PerFrameMemoryRequest&) = delete;
+  V8PerFrameMemoryRequest& operator=(const V8PerFrameMemoryRequest&) = delete;
+
+ private:
+  std::unique_ptr<V8PerFrameMemoryDecorator::MeasurementRequest> request_;
 };
 
 }  // namespace performance_manager

@@ -20,8 +20,6 @@ class CrostiniUpdateComponentView : public views::BubbleDialogDelegateView {
   static void Show(Profile* profile);
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   gfx::Size CalculatePreferredSize() const override;
 
   static CrostiniUpdateComponentView* GetActiveViewForTesting();

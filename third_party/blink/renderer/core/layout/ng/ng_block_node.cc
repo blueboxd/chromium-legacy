@@ -262,11 +262,16 @@ void UpdateLegacyMultiColumnFlowThread(
   flow_thread->ClearNeedsLayout();
 }
 
-NGConstraintSpace CreateConstraintSpaceForMinMax(const NGBlockNode& node) {
+NGConstraintSpace CreateConstraintSpaceForMinMax(
+    const NGBlockNode& node,
+    const MinMaxSizesInput& input) {
   NGConstraintSpaceBuilder builder(node.Style().GetWritingMode(),
                                    node.Style().GetWritingMode(),
                                    node.CreatesNewFormattingContext());
   builder.SetTextDirection(node.Style().Direction());
+  builder.SetAvailableSize(LogicalSize());
+  builder.SetPercentageResolutionSize(
+      {LayoutUnit(), input.percentage_resolution_block_size});
   return builder.ToConstraintSpace();
 }
 
@@ -691,6 +696,10 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
 
   // If we're orthogonal, run layout to compute the sizes.
   if (is_orthogonal_flow_root) {
+    // If we have an aspect ratio, we may be able to avoid laying out the
+    // child as an optimization, if performance testing shows this to be
+    // important.
+
     MinMaxSizes sizes;
     // Some other areas of the code can query the intrinsic-sizes while outside
     // of the layout phase.
@@ -710,6 +719,24 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
     return {sizes, /* depends_on_percentage_block_size */ false};
   }
 
+  // Synthesize a zero space if not provided.
+  auto zero_constraint_space = CreateConstraintSpaceForMinMax(*this, input);
+  if (!constraint_space)
+    constraint_space = &zero_constraint_space;
+
+  if (Style().AspectRatio() && input.type == MinMaxSizesType::kContent) {
+    NGFragmentGeometry fragment_geometry =
+        CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);
+    NGBoxStrut border_padding =
+        fragment_geometry.border + fragment_geometry.padding;
+    LayoutUnit size_from_ar = ComputeInlineSizeFromAspectRatio(
+        *constraint_space, Style(), border_padding);
+    if (size_from_ar != kIndefiniteSize) {
+      return {{size_from_ar, size_from_ar},
+              Style().LogicalHeight().IsPercentOrCalc()};
+    }
+  }
+
   bool can_use_cached_intrinsic_inline_sizes =
       CanUseCachedIntrinsicInlineSizes(input, *this);
 
@@ -726,11 +753,6 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
         box_->IntrinsicLogicalWidthsDependsOnPercentageBlockSize();
     return {sizes, depends_on_percentage_block_size};
   }
-
-  // Synthesize a zero space if not provided.
-  auto zero_constraint_space = CreateConstraintSpaceForMinMax(*this);
-  if (!constraint_space)
-    constraint_space = &zero_constraint_space;
 
   NGFragmentGeometry fragment_geometry =
       CalculateInitialMinMaxFragmentGeometry(*constraint_space, *this);

@@ -112,63 +112,56 @@ Referrer SecurityPolicy::GenerateReferrer(
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
   DCHECK(!referrer.IsEmpty());
 
-  KURL referrer_url = KURL(NullURL(), referrer);
-  String scheme = referrer_url.Protocol();
-  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowedForReferrer(scheme))
+  KURL referrer_url = KURL(NullURL(), referrer).UrlStrippedForUseAsReferrer();
+
+  if (!referrer_url.IsValid())
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
 
   if (SecurityOrigin::ShouldUseInnerURL(url))
     return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
 
+  // 5. Let referrerOrigin be the result of stripping referrerSource for use as
+  // a referrer, with the origin-only flag set to true.
+  KURL referrer_origin = referrer_url;
+  referrer_origin.SetPath(String());
+  referrer_origin.SetQuery(String());
+
+  // 6. If the result of serializing referrerURL is a string whose length is
+  // greater than 4096, set referrerURL to referrerOrigin.
+  if (referrer_url.GetString().length() > 4096)
+    referrer_url = referrer_origin;
+
   switch (referrer_policy_no_default) {
     case network::mojom::ReferrerPolicy::kNever:
       return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
     case network::mojom::ReferrerPolicy::kAlways:
-      return Referrer(referrer, referrer_policy_no_default);
+      return Referrer(referrer_url, referrer_policy_no_default);
     case network::mojom::ReferrerPolicy::kOrigin: {
-      String origin = SecurityOrigin::Create(referrer_url)->ToString();
-      // A security origin is not a canonical URL as it lacks a path. Add /
-      // to turn it into a canonical URL we can use as referrer.
-      return Referrer(origin + "/", referrer_policy_no_default);
+      return Referrer(referrer_origin, referrer_policy_no_default);
     }
     case network::mojom::ReferrerPolicy::kOriginWhenCrossOrigin: {
-      scoped_refptr<const SecurityOrigin> referrer_origin =
-          SecurityOrigin::Create(referrer_url);
-      scoped_refptr<const SecurityOrigin> url_origin =
-          SecurityOrigin::Create(url);
-      if (!url_origin->IsSameOriginWith(referrer_origin.get())) {
-        String origin = referrer_origin->ToString();
-        return Referrer(origin + "/", referrer_policy_no_default);
+      if (!SecurityOrigin::AreSameOrigin(referrer_url, url)) {
+        return Referrer(referrer_origin, referrer_policy_no_default);
       }
       break;
     }
     case network::mojom::ReferrerPolicy::kSameOrigin: {
-      scoped_refptr<const SecurityOrigin> referrer_origin =
-          SecurityOrigin::Create(referrer_url);
-      scoped_refptr<const SecurityOrigin> url_origin =
-          SecurityOrigin::Create(url);
-      if (!url_origin->IsSameOriginWith(referrer_origin.get())) {
+      if (!SecurityOrigin::AreSameOrigin(referrer_url, url)) {
         return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
       }
-      return Referrer(referrer, referrer_policy_no_default);
+      return Referrer(referrer_url, referrer_policy_no_default);
     }
     case network::mojom::ReferrerPolicy::kStrictOrigin: {
-      String origin = SecurityOrigin::Create(referrer_url)->ToString();
       return Referrer(ShouldHideReferrer(url, referrer_url)
                           ? Referrer::NoReferrer()
-                          : origin + "/",
+                          : referrer_origin,
                       referrer_policy_no_default);
     }
     case network::mojom::ReferrerPolicy::kStrictOriginWhenCrossOrigin: {
-      scoped_refptr<const SecurityOrigin> referrer_origin =
-          SecurityOrigin::Create(referrer_url);
-      scoped_refptr<const SecurityOrigin> url_origin =
-          SecurityOrigin::Create(url);
-      if (!url_origin->IsSameOriginWith(referrer_origin.get())) {
-        String origin = referrer_origin->ToString();
+      if (!SecurityOrigin::AreSameOrigin(referrer_url, url)) {
         return Referrer(ShouldHideReferrer(url, referrer_url)
                             ? Referrer::NoReferrer()
-                            : origin + "/",
+                            : referrer_origin,
                         referrer_policy_no_default);
       }
       break;
@@ -180,9 +173,9 @@ Referrer SecurityPolicy::GenerateReferrer(
       break;
   }
 
-  return Referrer(
-      ShouldHideReferrer(url, referrer_url) ? Referrer::NoReferrer() : referrer,
-      referrer_policy_no_default);
+  return Referrer(ShouldHideReferrer(url, referrer_url) ? Referrer::NoReferrer()
+                                                        : referrer_url,
+                  referrer_policy_no_default);
 }
 
 void SecurityPolicy::AddOriginToTrustworthySafelist(

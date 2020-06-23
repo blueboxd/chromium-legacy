@@ -101,7 +101,8 @@ bool CreateMenuItem(const PropertyWithEnumT& create_properties,
   }
 
   if (contexts.Contains(MenuItem::BROWSER_ACTION) ||
-      contexts.Contains(MenuItem::PAGE_ACTION)) {
+      contexts.Contains(MenuItem::PAGE_ACTION) ||
+      contexts.Contains(MenuItem::ACTION)) {
     // Action items are not allowed for <webview>.
     if (!extension->is_extension() || is_webview) {
       *error = kActionNotAllowedError;

@@ -319,7 +319,6 @@ public class PortalsTest {
     @Test
     @MediumTest
     @Feature({"Portals"})
-    @DisabledTest // Disabled due to flakiness. See https://crbug.com/1024850
     public void testTouchTransferAfterTouchStartActivate() throws Exception {
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(
                 "/chrome/test/data/android/portals/touch-transfer.html?event=touchstart"));

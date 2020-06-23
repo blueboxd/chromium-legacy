@@ -13,7 +13,7 @@ contains the mojom interfaces for these APIs.
 ## APIs In this directory
 
 This directory contains the implementation of the new and still under
-development [Native File System API](https://github.com/WICG/native-file-system/blob/master/EXPLAINER.md).
+development [Native File System API](https://wicg.github.io/native-file-system/).
 
 It consists of the following parts:
 
@@ -21,17 +21,15 @@ It consists of the following parts:
    these interfaces mimic the old `Entry` interfaces, but expose a more modern
    promisified API.
 
- * `getSystemDirectory`: An entry point (exposed via `FileSystemDirectoryHandle`)
-   that today only gives access to the same sandboxed filesystem as what was
-   available through the old API. In the future this could get extended to add
-   support for other directories as well.
+ * ` getOriginPrivateDirectory`: An entry point that gives access to the same
+   sandboxed filesystem as what is available through the old API. 
 
- * `FileSystemWriter`: a more modern API with similar functionality to the
+ * `FileSystemWritableFileStream`: a more modern API with similar functionality to the
    old `FileWriter` API. The implementation of this actually does make use of
    a different mojom interface than the old API. But since the functionality is
    mostly the same, hopefully we will be able to migrate the old implementation
    to the new mojom API as well.
 
- * `chooseFileSystemEntries`: An entry point, currently on `window`, that lets
-   a website pop-up a file picker, prompting the user to select one or more
-   files or directories, to which the website than gets access.
+ * `showOpenFilePicker`, `showSaveFilePicker` and `showDirectorPicker`: Entry points
+   on `window`, that let a website pop-up a file or directory picker, prompting the 
+   user to select one or more files or directories, to which the website than gets access.

@@ -43,30 +43,51 @@ void InfoCollectionGpuServiceImpl::BindOnIO(
   receiver_.Bind(std::move(pending_receiver));
 }
 
-void InfoCollectionGpuServiceImpl::
-    GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
-        GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback) {
+void InfoCollectionGpuServiceImpl::GetGpuSupportedDx12VersionAndDevicePerfInfo(
+    GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback) {
   DCHECK(io_runner_->BelongsToCurrentThread());
 
   main_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&InfoCollectionGpuServiceImpl::
-                         GetGpuSupportedRuntimeVersionAndDevicePerfInfoOnMain,
+                         GetGpuSupportedDx12VersionAndDevicePerfInfoOnMain,
                      base::Unretained(this), std::move(callback)));
 }
 
 void InfoCollectionGpuServiceImpl::
-    GetGpuSupportedRuntimeVersionAndDevicePerfInfoOnMain(
-        GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback) {
+    GetGpuSupportedDx12VersionAndDevicePerfInfoOnMain(
+        GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback) {
   DCHECK(main_runner_->BelongsToCurrentThread());
 
-  gpu::Dx12VulkanVersionInfo dx12_vulkan_version_info;
-  gpu::RecordGpuSupportedRuntimeVersionHistograms(gpu_device_,
-                                                  &dx12_vulkan_version_info);
+  uint32_t d3d12_feature_level;
+  gpu::RecordGpuSupportedDx12VersionHistograms(gpu_device_,
+                                               &d3d12_feature_level);
 
-  io_runner_->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), dx12_vulkan_version_info,
-                                device_perf_info_));
+  io_runner_->PostTask(FROM_HERE,
+                       base::BindOnce(std::move(callback), d3d12_feature_level,
+                                      device_perf_info_));
+}
+
+void InfoCollectionGpuServiceImpl::GetGpuSupportedVulkanVersionInfo(
+    GetGpuSupportedVulkanVersionInfoCallback callback) {
+  DCHECK(io_runner_->BelongsToCurrentThread());
+
+  main_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &InfoCollectionGpuServiceImpl::GetGpuSupportedVulkanVersionInfoOnMain,
+          base::Unretained(this), std::move(callback)));
+}
+
+void InfoCollectionGpuServiceImpl::GetGpuSupportedVulkanVersionInfoOnMain(
+    GetGpuSupportedVulkanVersionInfoCallback callback) {
+  DCHECK(main_runner_->BelongsToCurrentThread());
+
+  uint32_t vulkan_version;
+  gpu::GetGpuSupportedVulkanVersion(gpu_device_, &vulkan_version);
+
+  io_runner_->PostTask(FROM_HERE,
+                       base::BindOnce(std::move(callback), vulkan_version));
 }
 
 void InfoCollectionGpuServiceImpl::RequestDxDiagNodeInfo(

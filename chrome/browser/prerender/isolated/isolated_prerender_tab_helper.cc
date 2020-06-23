@@ -17,6 +17,7 @@
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
+#include "chrome/browser/prerender/isolated/isolated_prerender_network_context_client.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
@@ -39,6 +40,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -508,6 +510,11 @@ void IsolatedPrerenderTabHelper::OnPrefetchComplete(
 
   if (page_->url_loader_->NetError() != net::OK) {
     OnPrefetchStatusUpdate(url, PrefetchStatus::kPrefetchFailedNetError);
+
+    for (auto& observer : observer_list_) {
+      observer.OnPrefetchCompletedWithError(url,
+                                            page_->url_loader_->NetError());
+    }
   }
 
   if (page_->url_loader_->NetError() == net::OK && body &&
@@ -926,9 +933,23 @@ void IsolatedPrerenderTabHelper::CreateIsolatedURLLoaderFactory() {
   isolated_prerender_service->proxy_configurator()->AddCustomProxyConfigClient(
       std::move(config_client));
 
+  // Explicitly disallow network service features which could cause a privacy
+  // leak.
+  context_params->enable_certificate_reporting = false;
+  context_params->enable_expect_ct_reporting = false;
+  context_params->enable_domain_reliability = false;
+
   content::GetNetworkService()->CreateNetworkContext(
       page_->isolated_network_context_.BindNewPipeAndPassReceiver(),
       std::move(context_params));
+
+  // Configure a context client to ensure Web Reports and other privacy leak
+  // surfaces won't be enabled.
+  mojo::PendingRemote<network::mojom::NetworkContextClient> client_remote;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<IsolatedPrerenderNetworkContextClient>(),
+      client_remote.InitWithNewPipeAndPassReceiver());
+  page_->isolated_network_context_->SetClient(std::move(client_remote));
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> isolated_factory_remote;
 

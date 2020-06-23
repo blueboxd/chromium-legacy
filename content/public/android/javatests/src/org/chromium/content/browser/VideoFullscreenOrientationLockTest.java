@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -23,6 +24,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.UiUtils;
@@ -30,7 +32,6 @@ import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -47,13 +48,14 @@ public class VideoFullscreenOrientationLockTest {
     private static final String VIDEO_ID = "video";
 
     private void waitForContentsFullscreenState(boolean fullscreenValue) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(fullscreenValue, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws TimeoutException {
-                        return DOMUtils.isFullscreen(mActivityTestRule.getWebContents());
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(DOMUtils.isFullscreen(mActivityTestRule.getWebContents()),
+                        Matchers.is(fullscreenValue));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        });
     }
 
     private boolean isScreenOrientationLocked() {
@@ -76,17 +78,17 @@ public class VideoFullscreenOrientationLockTest {
     private void waitUntilLockedToLandscape() {
         CriteriaHelper.pollInstrumentationThread(() -> {
             try {
-                Assert.assertTrue(isScreenOrientationLocked());
-                Assert.assertTrue(isScreenOrientationLandscape());
+                Criteria.checkThat(isScreenOrientationLocked(), Matchers.is(true));
+                Criteria.checkThat(isScreenOrientationLandscape(), Matchers.is(true));
             } catch (TimeoutException e) {
-                Assert.fail(e.toString());
+                throw new CriteriaNotSatisfiedException(e);
             }
         });
     }
 
     private void waitUntilUnlocked() {
         CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(false, this::isScreenOrientationLocked));
+                () -> Criteria.checkThat(isScreenOrientationLocked(), Matchers.is(false)));
     }
 
     // TODO(mlamouri): move these constants and bounds  methods to a dedicated helper file for

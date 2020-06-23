@@ -137,12 +137,6 @@ const char kBreakpadNoDelayInitialUploadDescription[] =
     "disabled, initial upload is delayed until deferred initialization. This "
     "does not affect recovery mode.";
 
-const char kClearSyncedDataName[] = "Clear Synced Data on Sign Out";
-const char kClearSyncedDataDescription[] =
-    "When enabled users signed in with a non-managed account will be "
-    "presented with the option to clear synced data from the local "
-    "device when signing out.";
-
 extern const char kChangeTabSwitcherPositionName[] =
     "Change tab switcher button position";
 extern const char kChangeTabSwitcherPositionDescription[] =

@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/paint/pre_paint_tree_walk.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
+#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
@@ -105,12 +106,16 @@ void DisplayLockContext::SetRequestedState(EContentVisibility state) {
       RequestUnlock();
       break;
     case EContentVisibility::kAuto:
+      UseCounter::Count(document_, WebFeature::kContentVisibilityAuto);
       RequestLock(static_cast<uint16_t>(DisplayLockActivationReason::kAny));
       break;
     case EContentVisibility::kHidden:
+      UseCounter::Count(document_, WebFeature::kContentVisibilityHidden);
       RequestLock(0u);
       break;
     case EContentVisibility::kHiddenMatchable:
+      UseCounter::Count(document_,
+                        WebFeature::kContentVisibilityHiddenMatchable);
       RequestLock(
           static_cast<uint16_t>(DisplayLockActivationReason::kAny) &
           ~static_cast<uint16_t>(DisplayLockActivationReason::kViewport));

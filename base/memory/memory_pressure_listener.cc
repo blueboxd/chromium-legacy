@@ -5,7 +5,7 @@
 #include "base/memory/memory_pressure_listener.h"
 
 #include "base/observer_list_threadsafe.h"
-#include "base/trace_event/base_tracing.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 
@@ -60,17 +60,20 @@ subtle::Atomic32 g_notifications_suppressed = 0;
 }  // namespace
 
 MemoryPressureListener::MemoryPressureListener(
+    const base::Location& creation_location,
     const MemoryPressureListener::MemoryPressureCallback& callback)
-    : callback_(callback) {
+    : callback_(callback), creation_location_(creation_location) {
   GetMemoryPressureObserver()->AddObserver(this, false);
 }
 
 MemoryPressureListener::MemoryPressureListener(
+    const base::Location& creation_location,
     const MemoryPressureListener::MemoryPressureCallback& callback,
     const MemoryPressureListener::SyncMemoryPressureCallback&
         sync_memory_pressure_callback)
     : callback_(callback),
-      sync_memory_pressure_callback_(sync_memory_pressure_callback) {
+      sync_memory_pressure_callback_(sync_memory_pressure_callback),
+      creation_location_(creation_location) {
   GetMemoryPressureObserver()->AddObserver(this, true);
 }
 
@@ -79,6 +82,9 @@ MemoryPressureListener::~MemoryPressureListener() {
 }
 
 void MemoryPressureListener::Notify(MemoryPressureLevel memory_pressure_level) {
+  TRACE_EVENT2("base", "MemoryPressureListener::Notify",
+               "listener_creation_info", creation_location_.ToString(), "level",
+               memory_pressure_level);
   callback_.Run(memory_pressure_level);
 }
 

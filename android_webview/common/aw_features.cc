@@ -13,11 +13,6 @@ namespace features {
 const base::Feature kWebViewBrotliSupport{"WebViewBrotliSupport",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Connect to MetricsBridgeService to retrieve and transmit UMA metrics
-// collected in nonembedded WebView processes.
-const base::Feature kWebViewCollectNonembeddedMetrics{
-    "WebViewCollectNonEmbeddedMetrics", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Use the SafeBrowsingApiHandler which uses the connectionless GMS APIs. This
 // Feature is checked and used in downstream internal code.
 const base::Feature kWebViewConnectionlessSafeBrowsing{

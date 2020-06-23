@@ -628,6 +628,12 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   }
 }
 
+void InkDropImpl::HostTransformChanged(const gfx::Transform& new_transform) {
+  // If the host has a transform applied, the root and its children layers
+  // should be affected too.
+  root_layer_->SetTransform(new_transform);
+}
+
 InkDropState InkDropImpl::GetTargetInkDropState() const {
   if (!ink_drop_ripple_)
     return InkDropState::HIDDEN;

@@ -30,6 +30,23 @@ class DevtoolsClient;
 // Worker class to find element(s) matching a selector.
 class ElementFinder : public WebControllerWorker {
  public:
+  enum ResultType {
+    // Result.object_id contains the object ID of the single node that matched.
+    // If there are no matches, status is ELEMENT_RESOLUTION_FAILED. If there
+    // are more than one matches, status is TOO_MANY_ELEMENTS.
+    kExactlyOneMatch = 0,
+
+    // Result.object_id contains the object ID of one of the nodes that matched.
+    // If there are no matches, status is ELEMENT_RESOLUTION_FAILED.
+    kAnyMatch,
+
+    // Result.object_id contains the object ID of an array containing all the
+    // nodes
+    // that matched. If there are no matches, status is
+    // ELEMENT_RESOLUTION_FAILED.
+    kMatchArray,
+  };
+
   struct Result {
     Result();
     ~Result();
@@ -51,10 +68,10 @@ class ElementFinder : public WebControllerWorker {
 
   // |web_contents| and |devtools_client| must be valid for the lifetime of the
   // instance.
-  ElementFinder(content::WebContents* web_contents_,
+  ElementFinder(content::WebContents* web_contents,
                 DevtoolsClient* devtools_client,
                 const Selector& selector,
-                bool strict);
+                ResultType result_type);
   ~ElementFinder() override;
 
   using Callback =
@@ -96,7 +113,7 @@ class ElementFinder : public WebControllerWorker {
                          const std::string& property);
 
     // Declares and initializes a variable containing a RegExp object that
-    // correspond to [filter] and returns the variable name.
+    // correspond to |filter| and returns the variable name.
     std::string AddRegexpInstance(const SelectorProto::TextFilter& filter);
 
     // Returns the name of a new unique variable.
@@ -120,14 +137,23 @@ class ElementFinder : public WebControllerWorker {
     }
   };
 
+  // Finds the element, starting at |frame| and calls |callback|.
+  //
+  // |document_object_id| might be empty, in which case we first look for the
+  // frame's document.
+  void StartInternal(Callback callback,
+                     content::RenderFrameHost* frame,
+                     const std::string& frame_id,
+                     const std::string& document_object_id);
+
   // Sends a result with the given status and no data.
   void SendResult(const ClientStatus& status);
 
   // Builds a result from the current state of the finder and returns it.
   void SendSuccessResult(const std::string& object_id);
 
-  // Report [object_id] as result in [result] and initialize the frame-related
-  // fields of [result] from the current state. Leaves the frame stack empty.
+  // Report |object_id| as result in |result| and initialize the frame-related
+  // fields of |result| from the current state. Leaves the frame stack empty.
   Result BuildResult(const std::string& object_id);
 
   // Figures out what to do next given the current state.
@@ -137,28 +163,52 @@ class ElementFinder : public WebControllerWorker {
   // DecrementResponseCountAndContinue().
   void ExecuteNextTask();
 
-  // Make sure there's exactly one match, set it [object_id_out] then return
+  // Make sure there's exactly one match, set it |object_id_out| then return
   // true.
   //
   // If there are too many or too few matches, this function sends an error and
   // returns false.
+  //
+  // If this returns true, continue processing. If this returns false, return
+  // from ExecuteNextTask(). ExecuteNextTask() will be called again once the
+  // required data is available.
   bool ConsumeOneMatchOrFail(std::string& object_id_out);
 
   // Make sure there's at least one match, take one and put it in
-  // [object_id_out], then return true.
+  // |object_id_out|, then return true.
   //
   // If there are no matches, send an error response and return false.
   // If there are not enough matches yet, fetch them in the background and
   // return false. This calls ExecuteNextTask() once matches have been fetched.
+  //
+  // If this returns true, continue processing. If this returns false, return
+  // from ExecuteNextTask(). ExecuteNextTask() will be called again once the
+  // required data is available.
   bool ConsumeAnyMatchOrFail(std::string& object_id_out);
 
   // Make sure there's at least one match and move them all into
-  // [matches_out].
+  // |matches_out|.
   //
   // If there are no matches, send an error response and return false.
   // If there are not enough matches yet, fetch them in the background and
   // return false. This calls ExecuteNextTask() once matches have been fetched.
+  //
+  // If this returns true, continue processing. If this returns false, return
+  // from ExecuteNextTask(). ExecuteNextTask() will be called again once the
+  // required data is available.
   bool ConsumeAllMatchesOrFail(std::vector<std::string>& matches_out);
+
+  // Make sure there's at least one match and move them all into a single array.
+  //
+  // If there are no matches, call SendResult() return false. If there are
+  // matches, but they're not in a single array, move the element into the array
+  // in the background and return false. ExecuteNextTask() is called again once
+  // the background tasks have executed.
+  bool ConsumeMatchArrayOrFail(std::string& array_object_id_out);
+
+  void OnConsumeMatchArray(
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
 
   // Gets a document element from the current frame and us it as root for the
   // rest of the tasks.
@@ -193,16 +243,27 @@ class ElementFinder : public WebControllerWorker {
   content::RenderFrameHost* FindCorrespondingRenderFrameHost(
       std::string frame_id);
 
-  // Get elements from [array_object_ids], and put the result into
-  // [element_matches_].
+  // Handle TaskType::PROXIMITY
+  void ApplyProximityFilter(int filter_index,
+                            const std::string& array_object_id);
+  void OnProximityFilterTarget(int filter_index,
+                               const std::string& array_object_id,
+                               const ClientStatus& status,
+                               std::unique_ptr<Result> result);
+  void OnProximityFilterJs(
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+
+  // Get elements from |array_object_ids|, and put the result into
+  // |element_matches_|.
   //
   // This calls ExecuteNextTask() once all the elements of all the arrays are in
-  // [element_matches_]. If [max_count] is -1, fetch until the end of the array,
-  // otherwise fetch [max_count] elements at most in each array.
+  // |element_matches_|. If |max_count| is -1, fetch until the end of the array,
+  // otherwise fetch |max_count| elements at most in each array.
   void ResolveMatchArrays(const std::vector<std::string>& array_object_ids,
                           int max_count);
 
-  // ResolveMatchArrayRecursive calls itself recursively, incrementing [index],
+  // ResolveMatchArrayRecursive calls itself recursively, incrementing |index|,
   // as long as there are elements. The chain of calls end with
   // DecrementResponseCountAndContinue() as there can be more than one such
   // chains executing at a time.
@@ -224,7 +285,7 @@ class ElementFinder : public WebControllerWorker {
   content::WebContents* const web_contents_;
   DevtoolsClient* const devtools_client_;
   const Selector selector_;
-  const bool strict_;
+  const ResultType result_type_;
   Callback callback_;
 
   // The index of the next filter to process, in selector_.proto.filters.
@@ -238,16 +299,19 @@ class ElementFinder : public WebControllerWorker {
   // specified.
   std::string current_frame_id_;
 
+  // Object ID of the root of |current_frame_|.
+  std::string current_frame_root_;
+
   // Object IDs of the current set matching elements. Cleared once it's used to
   // query or filter.
   //
-  // More matches can be found in [current_match_arrays_]. Use one of the
+  // More matches can be found in |current_match_arrays_|. Use one of the
   // Consume*Match() function to current matches.
   std::vector<std::string> current_matches_;
 
   // Object ID of arrays of at least 2 matching elements.
   //
-  // More matches can be found in [current_matches_]. Use one of the
+  // More matches can be found in |current_matches_|. Use one of the
   // Consume*Match() function to current matches.
   std::vector<std::string> current_match_arrays_;
 
@@ -266,6 +330,9 @@ class ElementFinder : public WebControllerWorker {
   size_t pending_response_count_ = 0;
 
   std::vector<Result> frame_stack_;
+
+  // Finder for the target of the current proximity filter.
+  std::unique_ptr<ElementFinder> proximity_target_filter_;
 
   base::WeakPtrFactory<ElementFinder> weak_ptr_factory_{this};
 };

@@ -46,9 +46,11 @@ GpuCommandBufferMemoryTracker::GpuCommandBufferMemoryTracker(
     : command_buffer_id_(command_buffer_id),
       client_tracing_id_(client_tracing_id),
       context_type_(context_type),
-      memory_pressure_listener_(base::BindRepeating(
-          &GpuCommandBufferMemoryTracker::LogMemoryStatsPressure,
-          base::Unretained(this))),
+      memory_pressure_listener_(
+          FROM_HERE,
+          base::BindRepeating(
+              &GpuCommandBufferMemoryTracker::LogMemoryStatsPressure,
+              base::Unretained(this))),
       observer_(observer) {
   // Set up |memory_stats_timer_| to call LogMemoryPeriodic periodically
   // via the provided |task_runner|.

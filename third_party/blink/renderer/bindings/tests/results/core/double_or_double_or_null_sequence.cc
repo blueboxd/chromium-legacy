@@ -79,7 +79,7 @@ void V8DoubleOrDoubleOrNullSequence::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<base::Optional<double>> cpp_value = NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<base::Optional<double>> cpp_value{ NativeValueTraits<IDLSequence<IDLNullable<IDLDouble>>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetDoubleOrNullSequence(cpp_value);
@@ -88,7 +88,7 @@ void V8DoubleOrDoubleOrNullSequence::ToImpl(
   }
 
   if (v8_value->IsNumber()) {
-    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetDouble(cpp_value);
@@ -96,7 +96,7 @@ void V8DoubleOrDoubleOrNullSequence::ToImpl(
   }
 
   {
-    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetDouble(cpp_value);

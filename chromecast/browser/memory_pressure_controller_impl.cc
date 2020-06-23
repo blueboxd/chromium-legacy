@@ -9,9 +9,10 @@
 namespace chromecast {
 
 MemoryPressureControllerImpl::MemoryPressureControllerImpl() {
-  memory_pressure_listener_.reset(new base::MemoryPressureListener(
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE,
       base::BindRepeating(&MemoryPressureControllerImpl::OnMemoryPressure,
-                          base::Unretained(this))));
+                          base::Unretained(this)));
 }
 
 MemoryPressureControllerImpl::~MemoryPressureControllerImpl() = default;

@@ -188,6 +188,10 @@ bool WinWebAuthnApiAuthenticator::SupportsCredProtectExtension() const {
   return win_api_->Version() >= WEBAUTHN_API_VERSION_2;
 }
 
+bool WinWebAuthnApiAuthenticator::SupportsHMACSecretExtension() const {
+  return true;
+}
+
 const base::Optional<AuthenticatorSupportedOptions>&
 WinWebAuthnApiAuthenticator::Options() const {
   // The request can potentially be fulfilled by any device that Windows

@@ -71,21 +71,15 @@ bool StoreDMTokenInUserDataDir(const std::string& token,
 
 }  // namespace
 
-// static
-BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
-  if (storage_for_testing_)
-    return storage_for_testing_;
-
-  static base::NoDestructor<BrowserDMTokenStorageLinux> storage;
-  return storage.get();
-}
-
 BrowserDMTokenStorageLinux::BrowserDMTokenStorageLinux()
     : task_runner_(base::ThreadPool::CreateTaskRunner({base::MayBlock()})) {}
 
 BrowserDMTokenStorageLinux::~BrowserDMTokenStorageLinux() {}
 
 std::string BrowserDMTokenStorageLinux::InitClientId() {
+  if (!client_id_.empty())
+    return client_id_;
+
   // The client ID is derived from /etc/machine-id
   // (https://www.freedesktop.org/software/systemd/man/machine-id.html). As per
   // guidelines, this ID must not be transmitted outside of the machine, which
@@ -107,7 +101,9 @@ std::string BrowserDMTokenStorageLinux::InitClientId() {
   base::Base64UrlEncode(base::SHA1HashString(std::string(machine_id_trimmed)),
                         base::Base64UrlEncodePolicy::OMIT_PADDING,
                         &machine_id_base64);
-  return machine_id_base64;
+
+  client_id_ = machine_id_base64;
+  return client_id_;
 }
 
 std::string BrowserDMTokenStorageLinux::InitEnrollmentToken() {
@@ -131,7 +127,7 @@ std::string BrowserDMTokenStorageLinux::InitEnrollmentToken() {
 
 std::string BrowserDMTokenStorageLinux::InitDMToken() {
   base::FilePath token_file_path;
-  if (!GetDmTokenFilePath(&token_file_path, RetrieveClientId(), false))
+  if (!GetDmTokenFilePath(&token_file_path, InitClientId(), false))
     return std::string();
 
   std::string token;

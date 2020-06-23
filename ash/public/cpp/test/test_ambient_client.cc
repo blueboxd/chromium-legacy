@@ -20,7 +20,9 @@ constexpr base::TimeDelta kDefaultTokenExpirationDelay =
 
 }  // namespace
 
-TestAmbientClient::TestAmbientClient() = default;
+TestAmbientClient::TestAmbientClient(
+    device::TestWakeLockProvider* wake_lock_provider)
+    : wake_lock_provider_(wake_lock_provider) {}
 
 TestAmbientClient::~TestAmbientClient() = default;
 
@@ -36,6 +38,11 @@ scoped_refptr<network::SharedURLLoaderFactory>
 TestAmbientClient::GetURLLoaderFactory() {
   // TODO: return fake URL loader facotry.
   return nullptr;
+}
+
+void TestAmbientClient::RequestWakeLockProvider(
+    mojo::PendingReceiver<device::mojom::WakeLockProvider> receiver) {
+  wake_lock_provider_->BindReceiver(std::move(receiver));
 }
 
 void TestAmbientClient::IssueAccessToken(const std::string& access_token,

@@ -66,6 +66,10 @@ class StatusIndicatorViewBinder {
             final ColorStateList tint =
                     ColorStateList.valueOf(model.get(StatusIndicatorProperties.ICON_TINT));
             text.setDrawableTintColor(tint);
+        } else if (StatusIndicatorProperties.CURRENT_VISIBLE_HEIGHT == propertyKey) {
+            final float yOffset = model.get(StatusIndicatorProperties.CURRENT_VISIBLE_HEIGHT)
+                    - view.javaViewRoot.getHeight();
+            view.javaViewRoot.setTranslationY(yOffset);
         } else {
             assert false : "Unhandled property detected in StatusIndicatorViewBinder!";
         }

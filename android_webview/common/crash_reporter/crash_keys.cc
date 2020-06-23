@@ -12,6 +12,7 @@ namespace crash_keys {
 
 const char kAppPackageName[] = "app-package-name";
 const char kAppPackageVersionCode[] = "app-package-version-code";
+const char kAppProcessName[] = "app-process-name";
 
 const char kAndroidSdkInt[] = "android-sdk-int";
 
@@ -24,6 +25,7 @@ extern const char kWeblayerWebViewCompatMode[] =
 const char* const kWebViewCrashKeyAllowList[] = {
     kAppPackageName,
     kAppPackageVersionCode,
+    kAppProcessName,
     kAndroidSdkInt,
     kSupportLibraryWebkitVersion,
 

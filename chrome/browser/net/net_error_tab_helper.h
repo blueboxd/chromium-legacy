@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/net/dns_probe_service.h"
+#include "chrome/common/net/net_error_page_support.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "chrome/common/network_easter_egg.mojom.h"
 #include "components/error_page/common/net_error_info.h"
@@ -34,6 +35,7 @@ namespace chrome_browser_net {
 class NetErrorTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<NetErrorTabHelper>,
+      public chrome::mojom::NetErrorPageSupport,
       public chrome::mojom::NetworkDiagnostics,
       public chrome::mojom::NetworkEasterEgg {
  public:
@@ -70,8 +72,13 @@ class NetErrorTabHelper
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
-  bool OnMessageReceived(const IPC::Message& message,
-                         content::RenderFrameHost* render_frame_host) override;
+
+  // chrome::mojom::NetErrorPageSupport:
+#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
+  void DownloadPageLater() override;
+  void SetIsShowingDownloadButtonInErrorPage(
+      bool showing_download_button) override;
+#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
  protected:
   // |contents| is the WebContents of the tab this NetErrorTabHelper is
@@ -89,11 +96,6 @@ class NetErrorTabHelper
   network_diagnostics_receivers_for_testing() {
     return network_diagnostics_receivers_;
   }
-
-#if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  void OnDownloadPageLater();
-  void OnSetIsShowingDownloadButtonInErrorPage(bool is_showing_download_button);
-#endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 
  private:
   friend class content::WebContentsUserData<NetErrorTabHelper>;
@@ -124,6 +126,8 @@ class NetErrorTabHelper
       network_diagnostics_receivers_;
   content::WebContentsFrameReceiverSet<chrome::mojom::NetworkEasterEgg>
       network_easter_egg_receivers_;
+  content::WebContentsFrameReceiverSet<chrome::mojom::NetErrorPageSupport>
+      net_error_page_support_;
 
   // True if the last provisional load that started was for an error page.
   bool is_error_page_;

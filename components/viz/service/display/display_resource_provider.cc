@@ -198,7 +198,7 @@ void DisplayResourceProvider::SendPromotionHints(
     if (it->second.marked_for_deletion)
       continue;
 
-    const ChildResource* resource = LockForRead(id);
+    const ChildResource* resource = LockForRead(id, false /* overlay_only */);
     // TODO(ericrk): We should never fail LockForRead, but we appear to be
     // doing so on Android in rare cases. Handle this gracefully until a better
     // solution can be found. https://crbug.com/811858
@@ -493,7 +493,7 @@ GLES2Interface* DisplayResourceProvider::ContextGL() const {
 }
 
 const DisplayResourceProvider::ChildResource*
-DisplayResourceProvider::LockForRead(ResourceId id) {
+DisplayResourceProvider::LockForRead(ResourceId id, bool overlay_only) {
   // TODO(ericrk): We should never fail TryGetResource, but we appear to be
   // doing so on Android in rare cases. Handle this gracefully until a better
   // solution can be found. https://crbug.com/811858
@@ -522,7 +522,9 @@ DisplayResourceProvider::LockForRead(ResourceId id) {
     if (mailbox.IsSharedImage() && enable_shared_images_ &&
         resource->lock_for_read_count == 0) {
       gl->BeginSharedImageAccessDirectCHROMIUM(
-          resource->gl_id, GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
+          resource->gl_id, overlay_only
+                               ? GL_SHARED_IMAGE_ACCESS_MODE_OVERLAY_CHROMIUM
+                               : GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
     }
   }
 
@@ -851,7 +853,8 @@ DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     DisplayResourceProvider* resource_provider,
     ResourceId resource_id)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const ChildResource* resource = resource_provider->LockForRead(resource_id);
+  const ChildResource* resource =
+      resource_provider->LockForRead(resource_id, false /* overlay_only */);
   // TODO(ericrk): We should never fail LockForRead, but we appear to be
   // doing so on Android in rare cases. Handle this gracefully until a better
   // solution can be found. https://crbug.com/811858
@@ -865,6 +868,22 @@ DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
 }
 
 DisplayResourceProvider::ScopedReadLockGL::~ScopedReadLockGL() {
+  resource_provider_->UnlockForRead(resource_id_);
+}
+
+DisplayResourceProvider::ScopedOverlayLockGL::ScopedOverlayLockGL(
+    DisplayResourceProvider* resource_provider,
+    ResourceId resource_id)
+    : resource_provider_(resource_provider), resource_id_(resource_id) {
+  const ChildResource* resource =
+      resource_provider->LockForRead(resource_id, true);
+  if (!resource)
+    return;
+
+  texture_id_ = resource->gl_id;
+}
+
+DisplayResourceProvider::ScopedOverlayLockGL::~ScopedOverlayLockGL() {
   resource_provider_->UnlockForRead(resource_id_);
 }
 
@@ -893,7 +912,8 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     SkAlphaType alpha_type,
     GrSurfaceOrigin origin)
     : resource_provider_(resource_provider), resource_id_(resource_id) {
-  const ChildResource* resource = resource_provider->LockForRead(resource_id);
+  const ChildResource* resource =
+      resource_provider->LockForRead(resource_id, false /* overlay_only */);
   DCHECK(resource);
 
   // Use cached SkImage if possible.

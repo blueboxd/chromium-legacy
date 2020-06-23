@@ -9,7 +9,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 #include "net/base/net_export.h"
 #include "net/third_party/quiche/src/quic/core/quic_tag.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"

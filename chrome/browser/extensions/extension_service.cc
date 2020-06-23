@@ -2210,7 +2210,7 @@ void ExtensionService::UpdateBlacklistedExtensions(
     registry_->AddBlacklisted(extension);
     extension_prefs_->SetExtensionBlacklistState(extension->id(),
                                                  BLACKLISTED_MALWARE);
-    UnloadExtension(*it, UnloadedExtensionReason::BLACKLIST);
+    UnloadExtension(*it, UnloadedExtensionReason::BLOCKLIST);
     UMA_HISTOGRAM_ENUMERATION("ExtensionBlacklist.BlacklistInstalled",
                               extension->location(), Manifest::NUM_LOCATIONS);
   }

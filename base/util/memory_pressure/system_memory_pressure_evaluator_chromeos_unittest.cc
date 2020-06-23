@@ -251,7 +251,7 @@ TEST(ChromeOSSystemMemoryPressureEvaluatorTest, CheckMemoryPressure) {
   std::vector<base::MemoryPressureListener::MemoryPressureLevel>
       pressure_events;
   auto listener = std::make_unique<base::MemoryPressureListener>(
-      base::BindRepeating(&OnMemoryPressure, &pressure_events));
+      FROM_HERE, base::BindRepeating(&OnMemoryPressure, &pressure_events));
 
   MultiSourceMemoryPressureMonitor monitor;
   monitor.ResetSystemEvaluatorForTesting();

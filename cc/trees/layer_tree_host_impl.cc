@@ -415,9 +415,9 @@ LayerTreeHostImpl::LayerTreeHostImpl(
 
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableLayerTreeHostMemoryPressure)) {
-    memory_pressure_listener_.reset(
-        new base::MemoryPressureListener(base::BindRepeating(
-            &LayerTreeHostImpl::OnMemoryPressure, base::Unretained(this))));
+    memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+        FROM_HERE, base::BindRepeating(&LayerTreeHostImpl::OnMemoryPressure,
+                                       base::Unretained(this)));
   }
 
   SetDebugState(settings.initial_debug_state);
@@ -3764,21 +3764,34 @@ void LayerTreeHostImpl::BindToClient(InputHandlerClient* client) {
   input_handler_client_ = client;
 }
 
-gfx::Vector2dF LayerTreeHostImpl::ResolveScrollPercentageToPixels(
+gfx::Vector2dF LayerTreeHostImpl::ResolveScrollGranularityToPixels(
     const ScrollNode& scroll_node,
-    const gfx::Vector2dF& scroll_delta) {
-  gfx::SizeF scroller_size = gfx::SizeF(scroll_node.container_bounds);
+    const gfx::Vector2dF& scroll_delta,
+    ui::ScrollGranularity granularity) {
+  gfx::Vector2dF pixel_delta = scroll_delta;
 
-  gfx::SizeF viewport_size =
-      InnerViewportScrollNode()
-          ? gfx::SizeF(InnerViewportScrollNode()->container_bounds)
-          : gfx::SizeF(active_tree()->GetDeviceViewport().size());
+  if (granularity == ui::ScrollGranularity::kScrollByPage) {
+    // Page should use a percentage of the scroller so change the parameters
+    // and let the percentage case below resolve it.
+    granularity = ui::ScrollGranularity::kScrollByPercentage;
+    pixel_delta.Scale(kMinFractionToStepWhenPaging);
+  }
 
-  // Convert from rootframe coordinates to screen coordinates (physical pixels).
-  scroller_size.Scale(active_tree()->page_scale_factor_for_scroll());
+  if (granularity == ui::ScrollGranularity::kScrollByPercentage) {
+    gfx::SizeF scroller_size = gfx::SizeF(scroll_node.container_bounds);
 
-  gfx::Vector2dF pixel_delta = ScrollUtils::ResolveScrollPercentageToPixels(
-      scroll_delta, scroller_size, viewport_size);
+    gfx::SizeF viewport_size =
+        InnerViewportScrollNode()
+            ? gfx::SizeF(InnerViewportScrollNode()->container_bounds)
+            : gfx::SizeF(active_tree()->GetDeviceViewport().size());
+
+    // Convert from rootframe coordinates to screen coordinates (physical
+    // pixels).
+    scroller_size.Scale(active_tree()->page_scale_factor_for_scroll());
+
+    pixel_delta = ScrollUtils::ResolveScrollPercentageToPixels(
+        scroll_delta, scroller_size, viewport_size);
+  }
 
   return pixel_delta;
 }
@@ -4812,10 +4825,9 @@ bool LayerTreeHostImpl::CanConsumeDelta(const ScrollState& scroll_state,
       return false;
     }
     delta_to_scroll = local_scroll_delta;
-  } else if (scroll_state.delta_granularity() ==
-             ui::ScrollGranularity::kScrollByPercentage) {
-    delta_to_scroll =
-        ResolveScrollPercentageToPixels(scroll_node, delta_to_scroll);
+  } else {
+    delta_to_scroll = ResolveScrollGranularityToPixels(
+        scroll_node, delta_to_scroll, scroll_state.delta_granularity());
   }
 
   if (ComputeScrollDelta(scroll_node, delta_to_scroll) != gfx::Vector2dF())
@@ -4874,15 +4886,19 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollUpdate(
 
   last_scroll_update_state_ = *scroll_state;
 
-  bool is_delta_percent_units = scroll_state->delta_granularity() ==
-                                ui::ScrollGranularity::kScrollByPercentage;
-  if (is_delta_percent_units) {
-    gfx::Vector2dF resolvedScrollDelta = ResolveScrollPercentageToPixels(
-        *CurrentlyScrollingNode(),
-        gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y()));
+  gfx::Vector2dF resolvedScrollDelta = ResolveScrollGranularityToPixels(
+      *CurrentlyScrollingNode(),
+      gfx::Vector2dF(scroll_state->delta_x(), scroll_state->delta_y()),
+      scroll_state->delta_granularity());
 
-    scroll_state->data()->delta_x = resolvedScrollDelta.x();
-    scroll_state->data()->delta_y = resolvedScrollDelta.y();
+  scroll_state->data()->delta_x = resolvedScrollDelta.x();
+  scroll_state->data()->delta_y = resolvedScrollDelta.y();
+  // The decision of whether or not we'll animate a scroll comes down to
+  // whether the granularity is specified in precise pixels or not. Thus we
+  // need to preserve a precise granularity if that's what was specified; all
+  // others are animated and so can be resolved to regular pixels.
+  if (scroll_state->delta_granularity() !=
+      ui::ScrollGranularity::kScrollByPrecisePixel) {
     scroll_state->data()->delta_granularity =
         ui::ScrollGranularity::kScrollByPixel;
   }

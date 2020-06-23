@@ -272,7 +272,7 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
                                   : style.Height();
   if (inline_size.IsAuto() || inline_size.IsPercentOrCalc() ||
       inline_size.IsFillAvailable() || inline_size.IsFitContent()) {
-    result = min_max_sizes_func();
+    result = min_max_sizes_func(MinMaxSizesType::kContent);
   } else {
     if (IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
       MinMaxSizes sizes;
@@ -281,7 +281,10 @@ MinMaxSizesResult ComputeMinAndMaxContentContributionInternal(
       result = {sizes, /* depends_on_percentage_block_size */ false};
     } else {
       auto IntrinsicBlockSizeFunc = [&]() -> LayoutUnit {
-        return min_max_sizes_func().sizes.max_size;
+        return min_max_sizes_func(inline_size.IsMinIntrinsic()
+                                      ? MinMaxSizesType::kIntrinsic
+                                      : MinMaxSizesType::kContent)
+            .sizes.max_size;
       };
       MinMaxSizes sizes;
       sizes = ResolveMainBlockLength(space, style, border_padding, inline_size,
@@ -328,7 +331,7 @@ MinMaxSizes ComputeMinAndMaxContentContributionForTest(
     WritingMode parent_writing_mode,
     const ComputedStyle& style,
     const MinMaxSizes& min_max_sizes) {
-  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+  auto MinMaxSizesFunc = [&](MinMaxSizesType) -> MinMaxSizesResult {
     return {min_max_sizes, false};
   };
   return ComputeMinAndMaxContentContributionInternal(parent_writing_mode, style,
@@ -376,17 +379,19 @@ MinMaxSizesResult ComputeMinAndMaxContentContribution(
     }
   }
 
-  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+  auto MinMaxSizesFunc = [&](MinMaxSizesType type) -> MinMaxSizesResult {
+    MinMaxSizesInput input_copy(input);
+    input_copy.type = type;
     // We need to set up a constraint space with correct fallback available
     // inline-size in case of orthogonal children.
     NGConstraintSpace indefinite_constraint_space;
     const NGConstraintSpace* child_constraint_space = nullptr;
     if (!IsParallelWritingMode(parent_writing_mode, child_writing_mode)) {
-      indefinite_constraint_space =
-          CreateIndefiniteConstraintSpaceForChild(parent_style, child);
+      indefinite_constraint_space = CreateIndefiniteConstraintSpaceForChild(
+          parent_style, input_copy, child);
       child_constraint_space = &indefinite_constraint_space;
     }
-    return child.ComputeMinMaxSizes(parent_writing_mode, input,
+    return child.ComputeMinMaxSizes(parent_writing_mode, input_copy,
                                     child_constraint_space);
   };
 
@@ -420,13 +425,12 @@ LayoutUnit ComputeInlineSizeForFragment(
 
   const ComputedStyle& style = node.Style();
   Length logical_width = style.LogicalWidth();
-  auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+  auto MinMaxSizesFunc = [&](MinMaxSizesType type) -> MinMaxSizesResult {
     if (override_min_max_sizes_for_test)
       return {*override_min_max_sizes_for_test, false};
 
-    return node.ComputeMinMaxSizes(
-        space.GetWritingMode(),
-        MinMaxSizesInput(space.PercentageResolutionBlockSize()), &space);
+    MinMaxSizesInput input(space.PercentageResolutionBlockSize(), type);
+    return node.ComputeMinMaxSizes(space.GetWritingMode(), input, &space);
   };
 
   Length min_length = style.LogicalMinWidth();
@@ -441,8 +445,9 @@ LayoutUnit ComputeInlineSizeForFragment(
     // if we need to apply the implied minimum size:
     // https://drafts.csswg.org/css-sizing-4/#aspect-ratio-minimum
     if (style.OverflowInlineDirection() == EOverflow::kVisible &&
-        min_length.IsAuto())
-      min_length = Length::MinContent();
+        min_length.IsAuto()) {
+      min_length = Length::MinIntrinsic();
+    }
   } else {
     if (logical_width.IsAuto() && space.IsShrinkToFit())
       logical_width = Length::FitContent();

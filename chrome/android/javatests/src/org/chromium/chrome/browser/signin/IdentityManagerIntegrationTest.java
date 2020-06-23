@@ -9,7 +9,6 @@ import androidx.test.filters.MediumTest;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,7 +20,7 @@ import org.chromium.components.signin.base.CoreAccountId;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.IdentityManager;
 import org.chromium.components.signin.identitymanager.IdentityMutator;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.Arrays;
@@ -34,9 +33,6 @@ import java.util.HashSet;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class IdentityManagerIntegrationTest {
-    @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
-
     private static final String TEST_ACCOUNT1 = "foo@gmail.com";
     private static final String TEST_ACCOUNT2 = "bar@gmail.com";
 
@@ -53,7 +49,7 @@ public class IdentityManagerIntegrationTest {
         mTestAccount1 = createCoreAccountInfoFromEmail(TEST_ACCOUNT1);
         mTestAccount2 = createCoreAccountInfoFromEmail(TEST_ACCOUNT2);
 
-        mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryAndInitBrowserProcess();
 
         // Make sure there is no account signed in yet.
         ChromeSigninController.get().setSignedInAccountName(null);

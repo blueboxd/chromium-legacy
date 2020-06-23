@@ -184,7 +184,7 @@ class PDFViewerElement extends PDFViewerBaseElement {
   getToolbarHeight() {
     assert(this.paramsParser);
     this.toolbarEnabled_ =
-        this.paramsParser.getUiUrlParams(this.originalUrl).toolbar;
+        this.paramsParser.shouldShowToolbar(this.originalUrl);
     return this.toolbarEnabled_ ? MATERIAL_TOOLBAR_HEIGHT : 0;
   }
 
@@ -763,7 +763,12 @@ class PDFViewerElement extends PDFViewerBaseElement {
     }
 
     chrome.fileSystem.chooseEntry(
-        {type: 'saveFile', suggestedName: fileName}, entry => {
+        {
+          type: 'saveFile',
+          accepts: [{extensions: ['pdf']}],
+          suggestedName: fileName
+        },
+        entry => {
           if (chrome.runtime.lastError) {
             if (chrome.runtime.lastError.message !== 'User cancelled') {
               console.log(

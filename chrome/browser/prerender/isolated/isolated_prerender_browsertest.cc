@@ -19,10 +19,13 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
+#include "chrome/browser/net/profile_network_context_service.h"
+#include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_proxy_configurator.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
@@ -36,11 +39,16 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ssl/certificate_reporting_test_utils.h"
+#include "chrome/browser/ssl/ssl_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
@@ -49,14 +57,21 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prerender/common/prerender_final_status.h"
+#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/security_interstitials/content/ssl_blocking_page.h"
+#include "components/security_interstitials/content/ssl_blocking_page_base.h"
+#include "components/security_interstitials/content/ssl_cert_reporter.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_observer.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/network_service_util.h"
+#include "content/public/common/page_type.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
 #include "content/public/test/browser_test_utils.h"
@@ -64,12 +79,26 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "net/cert/cert_database.h"
+#include "net/cert/cert_status_flags.h"
+#include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_util.h"
+#include "net/ssl/client_cert_identity_test_util.h"
+#include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_config.h"
+#include "net/ssl/ssl_info.h"
+#include "net/ssl/ssl_server_config.h"
+#include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/test_certificate_data.h"
+#include "net/test/test_data_directory.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
@@ -204,8 +233,8 @@ class TestTabHelperObserver : public IsolatedPrerenderTabHelper::Observer {
     std::move(on_successful_prefetch_closure_).Run();
   }
 
-  void OnPrefetchCompletedWithError(const GURL& url, int code) override {
-    std::pair<GURL, int> error_pair = {url, code};
+  void OnPrefetchCompletedWithError(const GURL& url, int error_code) override {
+    std::pair<GURL, int> error_pair = {url, error_code};
     auto it = expected_prefetch_errors_.find(error_pair);
     if (it != expected_prefetch_errors_.end()) {
       expected_prefetch_errors_.erase(it);
@@ -238,6 +267,44 @@ class TestTabHelperObserver : public IsolatedPrerenderTabHelper::Observer {
   base::OnceClosure on_nsp_finished_closure_;
 };
 
+// A stub ClientCertStore that returns a FakeClientCertIdentity.
+class ClientCertStoreStub : public net::ClientCertStore {
+ public:
+  explicit ClientCertStoreStub(net::ClientCertIdentityList list)
+      : list_(std::move(list)) {}
+
+  ~ClientCertStoreStub() override = default;
+
+  // net::ClientCertStore:
+  void GetClientCerts(const net::SSLCertRequestInfo& cert_request_info,
+                      ClientCertListCallback callback) override {
+    std::move(callback).Run(std::move(list_));
+  }
+
+ private:
+  net::ClientCertIdentityList list_;
+};
+
+std::unique_ptr<net::ClientCertStore> CreateCertStore() {
+  base::FilePath certs_dir = net::GetTestCertsDirectory();
+
+  net::ClientCertIdentityList cert_identity_list;
+
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+
+    std::unique_ptr<net::FakeClientCertIdentity> cert_identity =
+        net::FakeClientCertIdentity::CreateFromCertAndKeyFiles(
+            certs_dir, "client_1.pem", "client_1.pk8");
+    EXPECT_TRUE(cert_identity.get());
+    if (cert_identity)
+      cert_identity_list.push_back(std::move(cert_identity));
+  }
+
+  return std::unique_ptr<net::ClientCertStore>(
+      new ClientCertStoreStub(std::move(cert_identity_list)));
+}
+
 }  // namespace
 
 // Occasional flakes on Windows (https://crbug.com/1045971).
@@ -255,6 +322,7 @@ class IsolatedPrerenderBrowserTest
   IsolatedPrerenderBrowserTest() {
     origin_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
+    origin_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     origin_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     origin_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     origin_server_->RegisterRequestHandler(
@@ -264,6 +332,7 @@ class IsolatedPrerenderBrowserTest
 
     proxy_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
+    proxy_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     proxy_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     proxy_server_->RegisterRequestHandler(
         base::BindRepeating(&IsolatedPrerenderBrowserTest::HandleProxyRequest,
@@ -315,8 +384,10 @@ class IsolatedPrerenderBrowserTest
 
     host_resolver()->AddRule("a.test", "127.0.0.1");
     host_resolver()->AddRule("badprobe.a.test", "127.0.0.1");
-    host_resolver()->AddRule("proxy.com", "127.0.0.1");
+    host_resolver()->AddRule("proxy.a.test", "127.0.0.1");
     host_resolver()->AddRule("insecure.com", "127.0.0.1");
+    host_resolver()->AddRule("a.test", "127.0.0.1");
+    host_resolver()->AddRule("b.test", "127.0.0.1");
   }
 
   void SetUpCommandLine(base::CommandLine* cmd) override {
@@ -491,7 +562,9 @@ class IsolatedPrerenderBrowserTest
     return origin_server_requests_;
   }
 
-  GURL GetProxyURL() const { return proxy_server_->GetURL("proxy.com", "/"); }
+  GURL GetProxyURL() const {
+    return proxy_server_->GetURL("proxy.a.test", "/");
+  }
 
   GURL GetInsecureURL(const std::string& path) {
     return http_server_->GetURL("insecure.com", path);
@@ -583,6 +656,7 @@ class IsolatedPrerenderBrowserTest
 
     GURL request_origin("https://" + request_line[1]);
     EXPECT_TRUE("a.test" == request_origin.host() ||
+                "b.test" == request_origin.host() ||
                 "badprobe.a.test" == request_origin.host());
 
     bool found_chrome_proxy_header = false;
@@ -705,7 +779,7 @@ class IsolatedPrerenderBrowserTest
 
 IN_PROC_BROWSER_TEST_F(
     IsolatedPrerenderBrowserTest,
-    DISABLE_ON_WIN_MAC_CHROMEOS(ServiceWorkerRegistrationIsObserved)) {
+    DISABLE_ON_WIN_MAC_CHROMEOS(ServiceWorkerRegistrationIsNotEligible)) {
   SetDataSaverEnabled(true);
 
   // Load a page that registers a service worker.
@@ -725,6 +799,24 @@ IN_PROC_BROWSER_TEST_F(
             isolated_prerender_service->service_workers_observer()
                 ->IsServiceWorkerRegisteredForOrigin(
                     url::Origin::Create(GURL("https://unregistered.com"))));
+
+  GURL prefetch_url = GetOriginServerURL("/title2.html");
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {prefetch_url});
+  // No run loop is needed here since the service worker check is synchronous.
+
+  ui_test_utils::NavigateToURL(browser(), prefetch_url);
+
+  // Navigate again to trigger UKM recording.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // 6 = |PrefetchStatus::kPrefetchNotEligibleUserHasServiceWorker|.
+  EXPECT_EQ(base::Optional<int64_t>(6),
+            GetUKMMetric(prefetch_url,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
+                         ukm::builders::PrefetchProxy_AfterSRPClick::
+                             kSRPClickPrefetchStatusName));
 }
 
 IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
@@ -1233,6 +1325,246 @@ IN_PROC_BROWSER_TEST_F(
           eligible_link_2,
           ukm::builders::PrefetchProxy_AfterSRPClick::kEntryName,
           ukm::builders::PrefetchProxy_AfterSRPClick::kProbeLatencyMsName));
+}
+
+IN_PROC_BROWSER_TEST_F(IsolatedPrerenderBrowserTest,
+                       DISABLE_ON_WIN_MAC_CHROMEOS(ClientCertDenied)) {
+  // Make the browser use the ClientCertStoreStub instead of the regular one.
+  ProfileNetworkContextServiceFactory::GetForContext(browser()->profile())
+      ->set_client_cert_store_factory_for_testing(
+          base::BindRepeating(&CreateCertStore));
+
+  SetDataSaverEnabled(true);
+  WaitForUpdatedCustomProxyConfig();
+
+  // Setup a test server that requires a client cert.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::SSLServerConfig ssl_config;
+  ssl_config.client_cert_type =
+      net::SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES,
+                            ssl_config);
+  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_server.Start());
+
+  GURL client_cert_needed_page = https_server.GetURL("b.test", "/simple.html");
+
+  // Configure the normal profile to automatically satisfy the client cert
+  // request.
+  std::unique_ptr<base::DictionaryValue> setting =
+      std::make_unique<base::DictionaryValue>();
+  base::Value* filters = setting->SetKey("filters", base::ListValue());
+  filters->Append(base::DictionaryValue());
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->SetWebsiteSettingDefaultScope(
+          client_cert_needed_page, GURL(),
+          ContentSettingsType::AUTO_SELECT_CERTIFICATE, std::string(),
+          std::move(setting));
+
+  // Navigating to the page should work just fine in the normal profile.
+  ui_test_utils::NavigateToURL(browser(), client_cert_needed_page);
+  content::NavigationEntry* entry =
+      GetWebContents()->GetController().GetLastCommittedEntry();
+  EXPECT_EQ(entry->GetPageType(), content::PAGE_TYPE_NORMAL);
+
+  // Prefetching the page should fail.
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedPrefetchErrors(
+      {{client_cert_needed_page, net::ERR_SSL_CLIENT_AUTH_CERT_NEEDED}});
+
+  base::RunLoop run_loop;
+  tab_helper_observer.SetOnPrefetchErrorClosure(run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {client_cert_needed_page});
+
+  // This run loop will quit when the prefetch response have been
+  // successfully done and processed with the expected error.
+  run_loop.Run();
+}
+
+class SSLReportingIsolatedPrerenderBrowserTest
+    : public IsolatedPrerenderBrowserTest {
+ public:
+  SSLReportingIsolatedPrerenderBrowserTest() {
+    // Certificate reports are only sent from official builds, unless this has
+    // been called.
+    CertReportHelper::SetFakeOfficialBuildForTesting();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    IsolatedPrerenderBrowserTest::SetUpCommandLine(cmd);
+    cmd->RemoveSwitch("ignore-certificate-errors");
+
+    // CertReportHelper::ShouldReportCertificateError checks the value of this
+    // variation. Ensure reporting is enabled.
+    variations::testing::VariationParamsManager::AppendVariationParams(
+        "ReportCertificateErrors", "ShowAndPossiblySend",
+        {{"sendingThreshold", "1.0"}}, cmd);
+  }
+
+  security_interstitials::SecurityInterstitialPage* GetInterstitialPage(
+      content::WebContents* tab) {
+    security_interstitials::SecurityInterstitialTabHelper* helper =
+        security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
+            tab);
+    if (!helper)
+      return nullptr;
+    return helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(
+    SSLReportingIsolatedPrerenderBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoIntersitialSSLErrorReporting)) {
+  SetDataSaverEnabled(true);
+  WaitForUpdatedCustomProxyConfig();
+
+  // Setup a test server that requires a client cert.
+  net::EmbeddedTestServer https_expired_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_expired_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_expired_server.ServeFilesFromSourceDirectory("chrome/test/data");
+  ASSERT_TRUE(https_expired_server.Start());
+
+  GURL safe_page = GetOriginServerURL("/simple.html");
+
+  // Opt in to sending reports for invalid certificate chains.
+  certificate_reporting_test_utils::SetCertReportingOptIn(
+      browser(), certificate_reporting_test_utils::EXTENDED_REPORTING_OPT_IN);
+
+  ui_test_utils::NavigateToURL(browser(), safe_page);
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  GURL eligible_link = https_expired_server.GetURL("b.test", "/simple.html");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  // |ERR_ABORTED| is set by the IsolatedPrerenderNetworkContextClient.
+  tab_helper_observer.SetExpectedPrefetchErrors(
+      {{eligible_link, net::ERR_ABORTED}});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchErrorClosure(
+      prefetch_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {eligible_link});
+
+  // This run loop stops when the prefetches completes with its error.
+  prefetch_run_loop.Run();
+
+  // No interstitial should be shown and so no report will be made.
+  EXPECT_FALSE(GetInterstitialPage(GetWebContents()));
+}
+
+class DomainReliabilityIsolatedPrerenderBrowserTest
+    : public IsolatedPrerenderBrowserTest {
+ public:
+  DomainReliabilityIsolatedPrerenderBrowserTest() = default;
+
+  void SetUp() override {
+    ProfileNetworkContextService::SetDiscardDomainReliabilityUploadsForTesting(
+        false);
+    IsolatedPrerenderBrowserTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    IsolatedPrerenderBrowserTest::SetUpCommandLine(cmd);
+    cmd->AppendSwitch(switches::kEnableDomainReliability);
+  }
+
+  network::mojom::NetworkContext* GetNormalNetworkContext() {
+    return content::BrowserContext::GetDefaultStoragePartition(
+               browser()->profile())
+        ->GetNetworkContext();
+  }
+
+  void RequestMonitor(const net::test_server::HttpRequest& request) {
+    requests_.push_back(request);
+    if (request.GetURL().path() == "/domainreliabilty-upload" &&
+        on_got_reliability_report_) {
+      std::move(on_got_reliability_report_).Run();
+    }
+  }
+
+ protected:
+  base::OnceClosure on_got_reliability_report_;
+  std::vector<net::test_server::HttpRequest> requests_;
+};
+
+IN_PROC_BROWSER_TEST_F(
+    DomainReliabilityIsolatedPrerenderBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(NoDomainReliabilityUploads)) {
+  SetDataSaverEnabled(true);
+  WaitForUpdatedCustomProxyConfig();
+
+  net::EmbeddedTestServer https_report_server(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_report_server.RegisterRequestMonitor(base::BindRepeating(
+      &DomainReliabilityIsolatedPrerenderBrowserTest::RequestMonitor,
+      base::Unretained(this)));
+  net::test_server::RegisterDefaultHandlers(&https_report_server);
+  ASSERT_TRUE(https_report_server.Start());
+
+  IsolatedPrerenderTabHelper* tab_helper =
+      IsolatedPrerenderTabHelper::FromWebContents(GetWebContents());
+
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNormalNetworkContext()->AddDomainReliabilityContextForTesting(
+        https_report_server.GetURL("a.test", "/").GetOrigin(),
+        https_report_server.GetURL("a.test", "/domainreliabilty-upload"));
+  }
+
+  // Do a prefetch which will fail.
+
+  // This url will cause the server to close the socket, resulting in a net
+  // error.
+  GURL error_url = https_report_server.GetURL("a.test", "/close-socket");
+
+  TestTabHelperObserver tab_helper_observer(tab_helper);
+  tab_helper_observer.SetExpectedPrefetchErrors(
+      {{error_url, net::ERR_EMPTY_RESPONSE}});
+
+  base::RunLoop prefetch_run_loop;
+  tab_helper_observer.SetOnPrefetchErrorClosure(
+      prefetch_run_loop.QuitClosure());
+
+  GURL doc_url("https://www.google.com/search?q=test");
+  MakeNavigationPrediction(doc_url, {error_url});
+
+  // This run loop will quit when all the prefetch responses have errored.
+  prefetch_run_loop.Run();
+
+  base::RunLoop report_run_loop;
+  on_got_reliability_report_ = report_run_loop.QuitClosure();
+
+  // Now navigate to the same page and expect that there will be a single domain
+  // reliability report, i.e.: this navigation and not one from the prefetch.
+  ui_test_utils::NavigateToURL(browser(), error_url);
+
+  {
+    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    GetNormalNetworkContext()->ForceDomainReliabilityUploadsForTesting();
+  }
+
+  // This run loop will quit when the most recent navigation send its
+  // reliability report. By this time we expect that if the prefetch would have
+  // sent a report, it would have already done so.
+  report_run_loop.Run();
+
+  size_t found_reports = 0;
+  for (const net::test_server::HttpRequest& request : requests_) {
+    if (request.GetURL().path() == "/domainreliabilty-upload") {
+      found_reports++;
+    }
+  }
+  EXPECT_EQ(1U, found_reports);
 }
 
 class ProbingEnabledIsolatedPrerenderBrowserTest

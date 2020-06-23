@@ -25,10 +25,12 @@ ApplicationBreadcrumbsLogger::ApplicationBreadcrumbsLogger(
           base::BindRepeating(&ApplicationBreadcrumbsLogger::OnUserAction,
                               base::Unretained(this))),
       memory_pressure_listener_(std::make_unique<base::MemoryPressureListener>(
+          FROM_HERE,
           base::BindRepeating(&ApplicationBreadcrumbsLogger::OnMemoryPressure,
                               base::Unretained(this)))) {
   base::AddActionCallback(user_action_callback_);
   breakpad::MonitorBreadcrumbManager(breadcrumb_manager_);
+  breadcrumb_manager_->AddEvent("Startup");
 
   orientation_observer_ = [NSNotificationCenter.defaultCenter
       addObserverForName:UIDeviceOrientationDidChangeNotification

@@ -609,20 +609,14 @@ void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
 }
 
 void Combobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
-  // Menu border widths.
-  constexpr int kMenuBorderWidthLeft = 1;
   constexpr int kMenuBorderWidthTop = 1;
-  constexpr int kMenuBorderWidthRight = 1;
-
+  // Menu's requested position's width should be the same as local bounds so the
+  // border of the menu lines up with the border of the combobox. The y
+  // coordinate however should be shifted to the bottom with the border with not
+  // to overlap with the combobox border.
   gfx::Rect lb = GetLocalBounds();
   gfx::Point menu_position(lb.origin());
-
-  // Inset the menu's requested position so the border of the menu lines up
-  // with the border of the combobox.
-  menu_position.set_x(menu_position.x() + kMenuBorderWidthLeft);
   menu_position.set_y(menu_position.y() + kMenuBorderWidthTop);
-
-  lb.set_width(lb.width() - (kMenuBorderWidthLeft + kMenuBorderWidthRight));
 
   View::ConvertPointToScreen(this, &menu_position);
 

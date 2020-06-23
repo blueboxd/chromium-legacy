@@ -19,6 +19,7 @@ extern const char* const kWebViewCrashKeyAllowList[];
 // Application information.
 extern const char kAppPackageName[];
 extern const char kAppPackageVersionCode[];
+extern const char kAppProcessName[];
 
 extern const char kAndroidSdkInt[];
 

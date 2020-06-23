@@ -526,29 +526,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             @Override
             public void onControlsOffsetChanged(int topOffset, int topControlsMinHeightOffset,
                     int bottomOffset, int bottomControlsMinHeightOffset, boolean needsAnimate) {
-                // If the browser controls can't be animated, we shouldn't listen for the offset
-                // changes.
-                if (mCanAnimateNativeBrowserControls == null
-                        || !mCanAnimateNativeBrowserControls.get()) {
-                    return;
-                }
-
-                // Controls need to be offset to match the composited layer, which is
-                // anchored at the bottom of the controls container.
-                setControlContainerTopMargin(getToolbarExtraYOffset());
-            }
-
-            @Override
-            public void onTopControlsHeightChanged(
-                    int topControlsHeight, int topControlsMinHeight) {
-                // If the browser controls can be animated, we shouldn't set the extra offset here.
-                // Instead, that should happen when the animation starts (i.e. we get new offsets)
-                // to prevent the Android view from jumping before the animation starts.
-                if (mCanAnimateNativeBrowserControls == null
-                        || mCanAnimateNativeBrowserControls.get()) {
-                    return;
-                }
-
                 // Controls need to be offset to match the composited layer, which is
                 // anchored at the bottom of the controls container.
                 setControlContainerTopMargin(getToolbarExtraYOffset());

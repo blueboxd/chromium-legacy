@@ -30,6 +30,7 @@
 #include <algorithm>
 
 #include "third_party/blink/renderer/platform/weborigin/known_ports.h"
+#include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
@@ -126,19 +127,21 @@ bool IsValidProtocol(const String& protocol) {
   return true;
 }
 
-String KURL::StrippedForUseAsReferrer() const {
-  if (!ProtocolIsInHTTPFamily())
-    return String();
+KURL KURL::UrlStrippedForUseAsReferrer() const {
+  if (!SchemeRegistry::ShouldTreatURLSchemeAsAllowedForReferrer(Protocol()))
+    return KURL();
 
-  if (parsed_.username.is_nonempty() || parsed_.password.is_nonempty() ||
-      parsed_.ref.is_valid()) {
-    KURL referrer(*this);
-    referrer.SetUser(String());
-    referrer.SetPass(String());
-    referrer.RemoveFragmentIdentifier();
-    return referrer.GetString();
-  }
-  return GetString();
+  KURL referrer(*this);
+
+  referrer.SetUser(String());
+  referrer.SetPass(String());
+  referrer.RemoveFragmentIdentifier();
+
+  return referrer;
+}
+
+String KURL::StrippedForUseAsReferrer() const {
+  return UrlStrippedForUseAsReferrer().GetString();
 }
 
 String KURL::StrippedForUseAsHref() const {

@@ -5,7 +5,7 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"

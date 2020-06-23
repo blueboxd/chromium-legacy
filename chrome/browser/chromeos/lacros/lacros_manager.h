@@ -12,7 +12,9 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process.h"
+#include "chromeos/lacros/mojom/lacros.mojom.h"
 #include "components/session_manager/core/session_manager_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace component_updater {
 class CrOSComponentManager;
@@ -84,6 +86,10 @@ class LacrosManager : public session_manager::SessionManagerObserver {
   // when lacros-chrome is killed, so the underlying pid may be pointing at a
   // non-existent process, or a new, unrelated process with the same pid.
   base::Process lacros_process_;
+
+  // Proxy to LacrosChromeService mojo service in lacros-chrome.
+  // Available during lacros-chrome is running.
+  mojo::Remote<lacros::mojom::LacrosChromeService> lacros_chrome_service_;
 
   base::WeakPtrFactory<LacrosManager> weak_factory_{this};
 };

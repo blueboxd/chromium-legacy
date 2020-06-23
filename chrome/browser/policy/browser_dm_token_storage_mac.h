@@ -18,24 +18,25 @@
 
 namespace policy {
 
-// Implementation of BrowserDMTokenStorage for Mac OS. The global singleton
-// instance can be retrieved by calling BrowserDMTokenStorage::Get().
-class BrowserDMTokenStorageMac : public BrowserDMTokenStorage {
+// Implementation of BrowserDMTokenStorage delegate for Mac OS.
+class BrowserDMTokenStorageMac : public BrowserDMTokenStorage::Delegate {
  public:
-  // Get the global singleton instance by calling BrowserDMTokenStorage::Get().
   BrowserDMTokenStorageMac();
   ~BrowserDMTokenStorageMac() override;
 
  private:
-  // override BrowserDMTokenStorage
+  // override BrowserDMTokenStorage::Delegate
   std::string InitClientId() override;
   std::string InitEnrollmentToken() override;
   std::string InitDMToken() override;
   bool InitEnrollmentErrorOption() override;
-  StoreTask SaveDMTokenTask(const std::string& token,
-                            const std::string& client_id) override;
+  BrowserDMTokenStorage::StoreTask SaveDMTokenTask(
+      const std::string& token,
+      const std::string& client_id) override;
   scoped_refptr<base::TaskRunner> SaveDMTokenTaskRunner() override;
 
+  // Allows caching of the machine serial number.
+  std::string client_id_;
   scoped_refptr<base::TaskRunner> task_runner_;
 
   FRIEND_TEST_ALL_PREFIXES(BrowserDMTokenStorageMacTest, InitClientId);

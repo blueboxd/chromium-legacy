@@ -740,20 +740,19 @@ bool GpuInit::InitializeVulkan() {
     vulkan_implementation_ = nullptr;
     CHECK(!gpu_preferences_.disable_vulkan_fallback_to_gl_for_testing);
   }
-  // TODO(penghuang): Remove GPU.SupportsVulkan and GPU.VulkanVersion from
-  // //gpu/config/gpu_info_collector_win.cc when we are finch vulkan on
-  // Windows.
+
+  // Vulkan info is no longer collected in gpu/config/gpu_info_collector_win.cc
+  // Histogram GPU.SupportsVulkan and GPU.VulkanVersion were marked as expired.
+  // TODO(magchen): Add back these two histograms here and re-enable them in
+  // histograms.xml when we start Vulkan finch on Windows.
   if (!vulkan_use_swiftshader) {
     const bool supports_vulkan = !!vulkan_implementation_;
-    UMA_HISTOGRAM_BOOLEAN("GPU.SupportsVulkan", supports_vulkan);
     uint32_t vulkan_version = 0;
     if (supports_vulkan) {
       const auto& vulkan_info =
           vulkan_implementation_->GetVulkanInstance()->vulkan_info();
       vulkan_version = vulkan_info.used_api_version;
     }
-    UMA_HISTOGRAM_ENUMERATION("GPU.VulkanVersion",
-                              ConvertToHistogramVulkanVersion(vulkan_version));
   }
 
   if (!vulkan_implementation_)

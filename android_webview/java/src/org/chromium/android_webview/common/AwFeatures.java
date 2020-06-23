@@ -11,9 +11,6 @@ package org.chromium.android_webview.common;
  */
 public final class AwFeatures {
     // Alphabetical:
-    public static final String WEBVIEW_COLLECT_NONEMBEDDED_METRICS =
-            "WebViewCollectNonEmbeddedMetrics";
-
     public static final String WEBVIEW_CONNECTIONLESS_SAFE_BROWSING =
             "WebViewConnectionlessSafeBrowsing";
 

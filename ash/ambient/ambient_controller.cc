@@ -45,6 +45,9 @@ namespace {
 constexpr base::TimeDelta kAutoShowWaitTimeInterval =
     base::TimeDelta::FromSeconds(15);
 
+// Used by wake lock APIs.
+constexpr char kWakeLockReason[] = "AmbientMode";
+
 void CloseAssistantUi() {
   DCHECK(AssistantUiController::Get());
   AssistantUiController::Get()->CloseUi(
@@ -163,10 +166,14 @@ void AmbientController::OnAmbientUiVisibilityChanged(
       DCHECK(container_view_);
       // This will be no-op if the view is already visible.
       container_view_->SetVisible(true);
+
+      AcquireWakeLock();
       StartRefreshingImages();
       break;
     case AmbientUiVisibility::kHidden:
       container_view_->GetWidget()->Hide();
+
+      ReleaseWakeLock();
       StopRefreshingImages();
 
       // Creates the monitor and starts the auto-show timer upon hidden.
@@ -298,6 +305,29 @@ void AmbientController::UpdateUiMode(AmbientUiMode ui_mode) {
   ambient_ui_model_.SetUiMode(ui_mode);
 }
 
+void AmbientController::AcquireWakeLock() {
+  if (!wake_lock_) {
+    mojo::Remote<device::mojom::WakeLockProvider> provider;
+    AmbientClient::Get()->RequestWakeLockProvider(
+        provider.BindNewPipeAndPassReceiver());
+    provider->GetWakeLockWithoutContext(
+        device::mojom::WakeLockType::kPreventDisplaySleep,
+        device::mojom::WakeLockReason::kOther, kWakeLockReason,
+        wake_lock_.BindNewPipeAndPassReceiver());
+  }
+
+  DCHECK(wake_lock_);
+  wake_lock_->RequestWakeLock();
+  VLOG(1) << "Acquired wake lock";
+}
+
+void AmbientController::ReleaseWakeLock() {
+  DCHECK(wake_lock_);
+
+  wake_lock_->CancelWakeLock();
+  VLOG(1) << "Released wake lock";
+}
+
 void AmbientController::RequestAccessToken(
     AmbientAccessTokenController::AccessTokenCallback callback) {
   access_token_controller_.RequestAccessToken(std::move(callback));
@@ -327,6 +357,8 @@ void AmbientController::CleanUpOnClosed() {
   // Invalidates the view pointer.
   container_view_ = nullptr;
   inactivity_monitor_.reset();
+  // Should do nothing if the wake lock has already been released.
+  ReleaseWakeLock();
 }
 
 void AmbientController::StartRefreshingImages() {

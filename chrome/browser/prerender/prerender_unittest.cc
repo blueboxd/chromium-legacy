@@ -1576,15 +1576,8 @@ TEST_F(PrerenderTest, MAYBE_LinkManagerAddTwiceCancelTwice) {
 
 // TODO(gavinp): Update this test after abandon has an effect on Prerenders,
 // like shortening the timeouts.
-// Flaky on Android, crbug.com/1087876.
-#if defined(OS_ANDROID)
-#define MAYBE_LinkManagerAddTwiceAbandonTwiceUseTwice \
-  DISABLED_LinkManagerAddTwiceAbandonTwiceUseTwice
-#else
-#define MAYBE_LinkManagerAddTwiceAbandonTwiceUseTwice \
-  LinkManagerAddTwiceAbandonTwiceUseTwice
-#endif
-TEST_F(PrerenderTest, MAYBE_LinkManagerAddTwiceAbandonTwiceUseTwice) {
+// Flaky on Android and Linux, crbug.com/1087876 & crbug.com/1087736.
+TEST_F(PrerenderTest, DISABLED_LinkManagerAddTwiceAbandonTwiceUseTwice) {
   SetConcurrency(2);
   EXPECT_TRUE(IsEmptyPrerenderLinkManager());
   GURL url("http://www.myexample.com");

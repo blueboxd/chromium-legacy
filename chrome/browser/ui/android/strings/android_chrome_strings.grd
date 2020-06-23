@@ -3318,6 +3318,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_IPH_DOWNLOAD_HOME_ACCESSIBILITY_TEXT" desc="The in-product-help accessibility text to open download home after a restart.">
         Find your files and pages in Downloads from the More Options button
       </message>
+      <message name="IDS_IPH_DOWNLOAD_INDICATOR_TEXT" desc="The in-product-help message to open download home, which is shown alongside the offline indicator when the device goes offline.">
+        See your offline files
+      </message>
       <message name="IDS_IPH_DATA_SAVER_DETAIL_TEXT" desc="The in-product-help message to open lite mode.">
         See how much data you've saved
       </message>

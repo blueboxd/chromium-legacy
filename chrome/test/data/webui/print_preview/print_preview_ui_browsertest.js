@@ -1119,6 +1119,10 @@ TEST_F(
           printer_status_test_cros.TestNames.SendStatusRequestOnce);
     });
 
+TEST_F('PrintPreviewPrinterStatusTestCros', 'HiddenStatusText', function() {
+  this.runMochaTest(printer_status_test_cros.TestNames.HiddenStatusText);
+});
+
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationDropdownCrosTest = class extends PrintPreviewTest {
   /** @override */

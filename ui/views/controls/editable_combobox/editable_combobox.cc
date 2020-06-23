@@ -490,9 +490,7 @@ void EditableCombobox::HandleNewContent(const base::string16& new_content) {
 }
 
 void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
-  constexpr int kMenuBorderWidthLeft = 1;
   constexpr int kMenuBorderWidthTop = 1;
-  constexpr int kMenuBorderWidthRight = 1;
 
   if (dropdown_blocked_for_animation_)
     return;
@@ -516,13 +514,13 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
       this, GetWidget()->GetRootView());
 
   gfx::Rect local_bounds = textfield_->GetLocalBounds();
+
+  // Menu's requested position's width should be the same as local bounds so the
+  // border of the menu lines up with the border of the combobox. The y
+  // coordinate however should be shifted to the bottom with the border width
+  // not to overlap with the combobox border.
   gfx::Point menu_position(local_bounds.origin());
-  // Inset the menu's requested position so the border of the menu lines up
-  // with the border of the textfield.
-  menu_position.set_x(menu_position.x() + kMenuBorderWidthLeft);
   menu_position.set_y(menu_position.y() + kMenuBorderWidthTop);
-  local_bounds.set_width(local_bounds.width() -
-                         (kMenuBorderWidthLeft + kMenuBorderWidthRight));
   View::ConvertPointToScreen(this, &menu_position);
   gfx::Rect bounds(menu_position, local_bounds.size());
 

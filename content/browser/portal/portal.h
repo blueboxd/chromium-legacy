@@ -117,6 +117,8 @@ class CONTENT_EXPORT Portal : public blink::mojom::Portal,
 
   // Returns the Portal's WebContents.
   WebContentsImpl* GetPortalContents();
+  // Returns the WebContents that hosts this portal.
+  WebContentsImpl* GetPortalHostContents();
 
   RenderFrameHostImpl* owner_render_frame_host() {
     return owner_render_frame_host_;

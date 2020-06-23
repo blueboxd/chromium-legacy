@@ -54,7 +54,7 @@ import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.DOMUtils;
@@ -72,20 +72,17 @@ import org.chromium.ui.test.util.UiRestriction;
 public class WebappNavigationTest {
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     public MockCertVerifierRuleAndroid mCertVerifierRule =
-            new MockCertVerifierRuleAndroid(mNativeLibraryTestRule, 0 /* net::OK */);
+            new MockCertVerifierRuleAndroid(0 /* net::OK */);
 
     @Rule
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
                                           .around(mActivityTestRule)
-                                          .around(mNativeLibraryTestRule)
                                           .around(mCertVerifierRule);
 
     @Before
     public void setUp() {
-        mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
+        NativeLibraryTestUtils.loadNativeLibraryNoBrowserProcess();
 
         mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
         Uri mapToUri =

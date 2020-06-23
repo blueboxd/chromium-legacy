@@ -11921,6 +11921,9 @@ interface webkitURL
     method scrollTo
     method setInterval
     method setTimeout
+    method showDirectoryPicker
+    method showOpenFilePicker
+    method showSaveFilePicker
     method stop
     method webkitCancelAnimationFrame
     method webkitRequestAnimationFrame

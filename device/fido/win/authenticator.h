@@ -63,6 +63,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) WinWebAuthnApiAuthenticator
   // SupportsCredProtectExtension returns whether the native API supports the
   // credProtect CTAP extension.
   bool SupportsCredProtectExtension() const override;
+  bool SupportsHMACSecretExtension() const override;
   const base::Optional<AuthenticatorSupportedOptions>& Options() const override;
   base::Optional<FidoTransportProtocol> AuthenticatorTransport() const override;
   bool IsWinNativeApiAuthenticator() const override;

@@ -34,9 +34,6 @@ const base::Feature kContainedBVC{"ContainedBVC",
 const base::Feature kTestFeature{"TestFeature",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kClearSyncedData{"ClearSyncedData",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kFirstResponderSendAction{
     "FirstResponderSendAction", base::FEATURE_DISABLED_BY_DEFAULT};
 

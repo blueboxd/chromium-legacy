@@ -648,8 +648,11 @@ void GpuDataManagerImplPrivate::RequestDxdiagDx12VulkanGpuInfoIfNeeded(
     RequestDxDiagNodeData();
   }
 
-  if (request & kGpuInfoRequestDx12Vulkan)
-    RequestGpuSupportedRuntimeVersion(delayed);
+  if (request & kGpuInfoRequestDx12)
+    RequestGpuSupportedDx12Version(delayed);
+
+  if (request & kGpuInfoRequestVulkan)
+    RequestGpuSupportedVulkanVersion(delayed);
 }
 
 void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
@@ -692,8 +695,7 @@ void GpuDataManagerImplPrivate::RequestDxDiagNodeData() {
 #endif
 }
 
-void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
-    bool delayed) {
+void GpuDataManagerImplPrivate::RequestGpuSupportedDx12Version(bool delayed) {
 #if defined(OS_WIN)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   base::TimeDelta delta;
@@ -705,14 +707,14 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
   base::OnceClosure task = base::BindOnce(
       [](base::TimeDelta delta) {
         GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-        if (manager->Dx12VulkanRequested())
+        if (manager->Dx12Requested())
           return;
 
         base::CommandLine* command_line =
             base::CommandLine::ForCurrentProcess();
         if (command_line->HasSwitch(
                 switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
-          manager->UpdateDx12VulkanRequestStatus(false);
+          manager->UpdateDx12RequestStatus(false);
           return;
         }
 
@@ -725,31 +727,88 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
         const gpu::GPUInfo::GPUDevice gpu = manager->GetGPUInfo().gpu;
         if ((gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) ||
             (!delta.is_zero() && gpu.vendor_id == 0 && gpu.device_id == 0)) {
-          manager->UpdateDx12VulkanRequestStatus(false);
+          manager->UpdateDx12RequestStatus(false);
           return;
         }
 
         GpuProcessHost* host = GpuProcessHost::Get(
             GPU_PROCESS_KIND_INFO_COLLECTION, true /* force_create */);
         if (!host) {
-          manager->UpdateDx12VulkanRequestStatus(false);
+          manager->UpdateDx12RequestStatus(false);
           return;
         }
 
-        manager->UpdateDx12VulkanRequestStatus(true);
+        manager->UpdateDx12RequestStatus(true);
         host->info_collection_gpu_service()
-            ->GetGpuSupportedRuntimeVersionAndDevicePerfInfo(base::BindOnce(
-                [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_info,
-                   const gpu::DevicePerfInfo& device_perf_info) {
+            ->GetGpuSupportedDx12VersionAndDevicePerfInfo(
+                base::BindOnce([](uint32_t d3d12_feature_level,
+                                  const gpu::DevicePerfInfo& device_perf_info) {
                   GpuDataManagerImpl* manager =
                       GpuDataManagerImpl::GetInstance();
-                  manager->UpdateDx12VulkanInfo(dx12_vulkan_info);
-                  // UpdateDx12VulkanInfo() needs to be called before
+                  manager->UpdateDx12Info(d3d12_feature_level);
+                  // UpdateDx1Info() needs to be called before
                   // UpdateDevicePerfInfo() because only the latter calls
                   // NotifyGpuInfoUpdate().
                   manager->UpdateDevicePerfInfo(device_perf_info);
                   manager->TerminateInfoCollectionGpuProcess();
                 }));
+      },
+      delta);
+
+  GetIOThreadTaskRunner({})->PostDelayedTask(FROM_HERE, std::move(task), delta);
+#endif
+}
+
+void GpuDataManagerImplPrivate::RequestGpuSupportedVulkanVersion(bool delayed) {
+#if defined(OS_WIN)
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::TimeDelta delta;
+  if (delayed &&
+      !command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
+    delta = base::TimeDelta::FromSeconds(120);
+  }
+
+  base::OnceClosure task = base::BindOnce(
+      [](base::TimeDelta delta) {
+        GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+        if (manager->VulkanRequested())
+          return;
+
+        base::CommandLine* command_line =
+            base::CommandLine::ForCurrentProcess();
+        if (command_line->HasSwitch(
+                switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
+          manager->UpdateVulkanRequestStatus(false);
+          return;
+        }
+
+        // No info collection for software GL implementation (id == 0xffff) or
+        // abnormal situation (id == 0). There are a few crash reports on
+        // exit_or_terminate_process() during process teardown. The GPU ID
+        // should be available by the time this task starts to run. In the case
+        // of no delay, which is for testing only, don't check the GPU ID
+        // because the ID is not available yet.
+        const gpu::GPUInfo::GPUDevice gpu = manager->GetGPUInfo().gpu;
+        if ((gpu.vendor_id == 0xffff && gpu.device_id == 0xffff) ||
+            (!delta.is_zero() && gpu.vendor_id == 0 && gpu.device_id == 0)) {
+          manager->UpdateVulkanRequestStatus(false);
+          return;
+        }
+
+        GpuProcessHost* host = GpuProcessHost::Get(
+            GPU_PROCESS_KIND_INFO_COLLECTION, true /* force_create */);
+        if (!host) {
+          manager->UpdateVulkanRequestStatus(false);
+          return;
+        }
+
+        manager->UpdateVulkanRequestStatus(true);
+        host->info_collection_gpu_service()->GetGpuSupportedVulkanVersionInfo(
+            base::BindOnce([](uint32_t vulkan_version) {
+              GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
+              manager->UpdateVulkanInfo(vulkan_version);
+              manager->TerminateInfoCollectionGpuProcess();
+            }));
       },
       delta);
 
@@ -770,8 +829,9 @@ bool GpuDataManagerImplPrivate::IsDx12VulkanVersionAvailable() const {
   // This function returns the status of availability to the tests based on
   // whether gpu info has been requested or not.
 
-  return gpu_info_dx12_vulkan_valid_ || !gpu_info_dx12_vulkan_requested_ ||
-         gpu_info_dx12_vulkan_request_failed_;
+  return (gpu_info_dx12_valid_ && gpu_info_vulkan_valid_) ||
+         (!gpu_info_dx12_requested_ || !gpu_info_vulkan_requested_) ||
+         (gpu_info_dx12_request_failed_ || gpu_info_vulkan_request_failed_);
 #else
   return true;
 #endif
@@ -838,8 +898,8 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
   // the new GPU process again, and may overwrite the DX12, Vulkan, DxDiagNode
   // info we already collected. This is to make sure it doesn't happen.
   gpu::DxDiagNode dx_diagnostics = gpu_info_.dx_diagnostics;
-  gpu::Dx12VulkanVersionInfo dx12_vulkan_version_info =
-      gpu_info_.dx12_vulkan_version_info;
+  uint32_t d3d12_feature_level = gpu_info_.d3d12_feature_level;
+  uint32_t vulkan_version = gpu_info_.vulkan_version;
 #endif
   gpu_info_ = gpu_info;
   UMA_HISTOGRAM_CUSTOM_TIMES("GPU.GPUInitializationTime.V2",
@@ -850,8 +910,11 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(
   if (!dx_diagnostics.IsEmpty()) {
     gpu_info_.dx_diagnostics = dx_diagnostics;
   }
-  if (!dx12_vulkan_version_info.IsEmpty()) {
-    gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
+  if (d3d12_feature_level != 0) {
+    gpu_info_.d3d12_feature_level = d3d12_feature_level;
+  }
+  if (vulkan_version != 0) {
+    gpu_info_.vulkan_version = vulkan_version;
   }
 #endif  // OS_WIN
 
@@ -876,13 +939,18 @@ void GpuDataManagerImplPrivate::UpdateDxDiagNode(
   NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
-  gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
-  gpu_info_dx12_vulkan_valid_ = true;
-  // No need to call NotifyGpuInfoUpdate() because UpdateDx12VulkanInfo() is
+void GpuDataManagerImplPrivate::UpdateDx12Info(uint32_t d3d12_feature_level) {
+  gpu_info_.d3d12_feature_level = d3d12_feature_level;
+  gpu_info_dx12_valid_ = true;
+  // No need to call NotifyGpuInfoUpdate() because UpdateDx12Info() is
   // always called together with UpdateDevicePerfInfo, which calls
   // NotifyGpuInfoUpdate().
+}
+
+void GpuDataManagerImplPrivate::UpdateVulkanInfo(uint32_t vulkan_version) {
+  gpu_info_.vulkan_version = vulkan_version;
+  gpu_info_vulkan_valid_ = true;
+  NotifyGpuInfoUpdate();
 }
 
 void GpuDataManagerImplPrivate::UpdateDevicePerfInfo(
@@ -916,28 +984,46 @@ void GpuDataManagerImplPrivate::UpdateDxDiagNodeRequestStatus(
     NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::UpdateDx12VulkanRequestStatus(
+void GpuDataManagerImplPrivate::UpdateDx12RequestStatus(
     bool request_continues) {
-  gpu_info_dx12_vulkan_requested_ = true;
-  gpu_info_dx12_vulkan_request_failed_ = !request_continues;
+  gpu_info_dx12_requested_ = true;
+  gpu_info_dx12_request_failed_ = !request_continues;
 
-  if (gpu_info_dx12_vulkan_request_failed_) {
+  if (gpu_info_dx12_request_failed_) {
     gpu::DevicePerfInfo device_perf_info;
     gpu::CollectDevicePerfInfo(&device_perf_info, /*in_browser_process=*/true);
     UpdateDevicePerfInfo(device_perf_info);
   }
 }
 
-bool GpuDataManagerImplPrivate::Dx12VulkanRequested() const {
-  return gpu_info_dx12_vulkan_requested_;
+void GpuDataManagerImplPrivate::UpdateVulkanRequestStatus(
+    bool request_continues) {
+  gpu_info_vulkan_requested_ = true;
+  gpu_info_vulkan_request_failed_ = !request_continues;
+}
+
+bool GpuDataManagerImplPrivate::Dx12Requested() const {
+  return gpu_info_dx12_requested_;
+}
+
+bool GpuDataManagerImplPrivate::VulkanRequested() const {
+  return gpu_info_vulkan_requested_;
 }
 
 void GpuDataManagerImplPrivate::OnBrowserThreadsStarted() {
-  // Launch the info collection GPU process to collect DX12 and Vulkan support
-  // information. Not to affect Chrome startup, this is done in a delayed mode,
-  // i.e., 120 seconds after Chrome startup.
-  RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12Vulkan,
-                                         /*delayed=*/true);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kNoDelayForDX12VulkanInfoCollection)) {
+    // This is for the info collection test of the gpu integration tests.
+    RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12Vulkan,
+                                           /*delayed=*/false);
+  } else {
+    // Launch the info collection GPU process to collect DX12 support
+    // information for UMA at the start of the browser.
+    // Not to affect Chrome startup, this is done in a delayed mode,  i.e., 120
+    // seconds after Chrome startup.
+    RequestDxdiagDx12VulkanGpuInfoIfNeeded(kGpuInfoRequestDx12,
+                                           /*delayed=*/true);
+  }
   // Observer for display change.
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->AddObserver(owner_);
@@ -952,10 +1038,13 @@ void GpuDataManagerImplPrivate::TerminateInfoCollectionGpuProcess() {
   if (gpu_info_dx_diag_requested_ && !gpu_info_dx_diag_request_failed_ &&
       gpu_info_.dx_diagnostics.IsEmpty())
     return;
-  // gpu_info_dx12_vulkan_valid_ is always updated before device_perf_info
-  if (gpu_info_dx12_vulkan_requested_ &&
-      !gpu_info_dx12_vulkan_request_failed_ &&
+  // gpu_info_dx12_valid_ is always updated before device_perf_info
+  if (gpu_info_dx12_requested_ && !gpu_info_dx12_request_failed_ &&
       !gpu::GetDevicePerfInfo().has_value())
+    return;
+
+  if (gpu_info_vulkan_requested_ && !gpu_info_vulkan_request_failed_ &&
+      !gpu_info_vulkan_valid_)
     return;
 
   // GpuProcessHost::Get() calls GpuDataManagerImpl functions and causes a

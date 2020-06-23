@@ -15,8 +15,8 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/numerics/clamped_math.h"
 #include "base/optional.h"

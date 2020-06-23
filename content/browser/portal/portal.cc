@@ -53,9 +53,8 @@ Portal::Portal(RenderFrameHostImpl* owner_render_frame_host,
 }
 
 Portal::~Portal() {
-  WebContentsImpl* outer_contents_impl = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(owner_render_frame_host_));
-  devtools_instrumentation::PortalDetached(outer_contents_impl->GetMainFrame());
+  devtools_instrumentation::PortalDetached(
+      GetPortalHostContents()->GetMainFrame());
   Observe(nullptr);
 }
 
@@ -118,8 +117,7 @@ void Portal::DestroySelf() {
 }
 
 RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
-  WebContentsImpl* outer_contents_impl = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+  WebContentsImpl* outer_contents_impl = GetPortalHostContents();
 
   // Check if portal has already been attached.
   if (portal_contents_ && portal_contents_->GetOuterWebContents()) {
@@ -309,8 +307,7 @@ void TakeHistoryForActivation(WebContentsImpl* activated_contents,
 void Portal::Activate(blink::TransferableMessage data,
                       base::TimeTicks activation_time,
                       ActivateCallback callback) {
-  WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+  WebContentsImpl* outer_contents = GetPortalHostContents();
 
   if (outer_contents->portal()) {
     mojo::ReportBadMessage("Portal::Activate called on nested portal");
@@ -525,8 +522,7 @@ void Portal::LoadingStateChanged(WebContents* source,
 }
 
 void Portal::PortalWebContentsCreated(WebContents* portal_web_contents) {
-  WebContentsImpl* outer_contents = static_cast<WebContentsImpl*>(
-      WebContents::FromRenderFrameHost(owner_render_frame_host_));
+  WebContentsImpl* outer_contents = GetPortalHostContents();
   DCHECK(outer_contents->GetDelegate());
   outer_contents->GetDelegate()->PortalWebContentsCreated(portal_web_contents);
 }
@@ -537,13 +533,12 @@ void Portal::CloseContents(WebContents* web_contents) {
 }
 
 WebContents* Portal::GetResponsibleWebContents(WebContents* web_contents) {
-  return WebContents::FromRenderFrameHost(owner_render_frame_host_);
+  return GetPortalHostContents();
 }
 
 void Portal::NavigationStateChanged(WebContents* source,
                                     InvalidateTypes changed_flags) {
-  WebContents* outer_contents =
-      WebContents::FromRenderFrameHost(owner_render_frame_host_);
+  WebContents* outer_contents = GetPortalHostContents();
   // Can be null in tests.
   if (!outer_contents->GetDelegate())
     return;
@@ -567,6 +562,11 @@ base::UnguessableToken Portal::GetDevToolsFrameToken() const {
 
 WebContentsImpl* Portal::GetPortalContents() {
   return portal_contents_.get();
+}
+
+WebContentsImpl* Portal::GetPortalHostContents() {
+  return static_cast<WebContentsImpl*>(
+      WebContents::FromRenderFrameHost(owner_render_frame_host_));
 }
 
 Portal::WebContentsHolder::WebContentsHolder(Portal* portal)

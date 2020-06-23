@@ -514,6 +514,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
 
   const gfx::Size window_size = Shell::GetShellDefaultSize();
 
+  RenderViewHost* main_render_view_host = nullptr;
+
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
         browser_context, GURL(url::kAboutBlankURL), nullptr, window_size);
@@ -521,9 +523,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
 
     current_pid_ = base::kNullProcessId;
 
-    RenderViewHost* render_view_host =
-        main_window_->web_contents()->GetRenderViewHost();
-    default_prefs_ = render_view_host->GetWebkitPreferences();
+    main_render_view_host = main_window_->web_contents()->GetRenderViewHost();
+    default_prefs_ = main_render_view_host->GetWebkitPreferences();
   } else {
     // Set a different size first to reset the possibly inconsistent state
     // caused by the previous test using unfortunate synchronous resize mode.
@@ -536,9 +537,8 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
         gfx::ScaleToCeiledSize(window_size, 0.5f, 1));
     main_window_->ResizeWebContentForTests(window_size);
 
-    RenderViewHost* render_view_host =
-        main_window_->web_contents()->GetRenderViewHost();
-    render_view_host->UpdateWebkitPreferences(default_prefs_);
+    main_render_view_host = main_window_->web_contents()->GetRenderViewHost();
+    main_render_view_host->UpdateWebkitPreferences(default_prefs_);
 
     main_window_->web_contents()->WasShown();
   }
@@ -569,15 +569,13 @@ bool WebTestControlHost::PrepareForWebTest(const TestInfo& test_info) {
   // headless mode.
   main_window_->ActivateContents(main_window_->web_contents());
 
-  // Flush various interfaces to ensure a test run begins from a known
-  // state.
-  main_window_->web_contents()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->FlushForTesting();
-  GetWebTestRenderFrameRemote(
-      main_window_->web_contents()->GetRenderViewHost()->GetMainFrame())
-      .FlushForTesting();
+  // Round-trip through the InputHandler mojom interface to the compositor
+  // thread, in order to ensure that any input events (moving the mouse at the
+  // start of the test, focus coming from ActivateContents() above, etc) are
+  // handled and bounced if appropriate to the main thread, before we continue
+  // and start the test. This will ensure they are handled on the main thread
+  // before the test runs, which would otherwise race against them.
+  main_render_view_host->GetWidget()->FlushForTesting();
 
   if (is_devtools_js_test) {
     // This navigates the secondary (devtools inspector) window, and then

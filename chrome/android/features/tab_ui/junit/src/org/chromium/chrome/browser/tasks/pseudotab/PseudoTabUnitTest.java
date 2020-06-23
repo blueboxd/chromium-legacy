@@ -20,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.tab.MockTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
@@ -52,6 +53,7 @@ public class PseudoTabUnitTest {
     private static final int TAB1_ID = 456;
     private static final int TAB2_ID = 789;
     private static final int TAB3_ID = 123;
+    private static final int TAB4_ID = 159;
 
     @Mock
     TabModelFilter mTabModelFilter;
@@ -423,4 +425,14 @@ public class PseudoTabUnitTest {
         Assert.assertEquals(TAB2_ID, related.get(1).getId());
     }
 
+    @Test
+    public void testTabDestroyed() {
+        Tab tab = new MockTab(TAB4_ID, false);
+        PseudoTab pseudoTab = PseudoTab.fromTab(tab);
+        tab.destroy();
+        // Root ID was not set. Without the isInitialized() check,
+        // pseudoTab.getRootId() would crash here with
+        // UnsupportedOperationException
+        Assert.assertEquals(Tab.INVALID_TAB_ID, pseudoTab.getRootId());
+    }
 }

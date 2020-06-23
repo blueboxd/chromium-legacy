@@ -204,9 +204,9 @@ class WebLocalFrame : public WebFrame {
   virtual void SetEmbeddingToken(
       const base::UnguessableToken& embedding_token) = 0;
 
-  // Returns the embedding token for this frame or nullopt if it isn't embedded.
-  // This is the token that the remote parent of this frame uses to uniquely
-  // identify it.
+  // Returns the embedding token for this frame or nullopt if the frame hasn't
+  // committed a navigation. This token changes when a new document is committed
+  // in this WebLocalFrame.
   virtual const base::Optional<base::UnguessableToken>& GetEmbeddingToken() = 0;
 
   // Navigation Ping --------------------------------------------------------

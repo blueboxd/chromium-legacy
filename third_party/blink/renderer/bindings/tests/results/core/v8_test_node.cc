@@ -86,7 +86,7 @@ static void HrefAttributeSetter(
   TestNode* impl = V8TestNode::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -114,7 +114,7 @@ static void HrefThrowsAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestNode", "hrefThrows");
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -140,7 +140,7 @@ static void HrefCallWithAttributeSetter(
   TestNode* impl = V8TestNode::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -172,7 +172,7 @@ static void HrefByteStringAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestNode", "hrefByteString");
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = NativeValueTraits<IDLByteString>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  V8StringResource<> cpp_value{ NativeValueTraits<IDLByteString>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 

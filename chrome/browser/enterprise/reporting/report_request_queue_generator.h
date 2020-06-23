@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/browser/enterprise/reporting/profile_report_generator.h"
-#include "components/policy/core/common/reporting/report_request_definition.h"
+#include "components/enterprise/browser/reporting/report_request_definition.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 
 namespace enterprise_reporting {

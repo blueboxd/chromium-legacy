@@ -2830,8 +2830,9 @@ void WebMediaPlayerImpl::StartPipeline() {
     if (base::FeatureList::IsEnabled(kMemoryPressureBasedSourceBufferGC)) {
       // base::Unretained is safe because |this| owns memory_pressure_listener_.
       memory_pressure_listener_ =
-          std::make_unique<base::MemoryPressureListener>(base::Bind(
-              &WebMediaPlayerImpl::OnMemoryPressure, base::Unretained(this)));
+          std::make_unique<base::MemoryPressureListener>(
+              FROM_HERE, base::Bind(&WebMediaPlayerImpl::OnMemoryPressure,
+                                    base::Unretained(this)));
     }
   }
 

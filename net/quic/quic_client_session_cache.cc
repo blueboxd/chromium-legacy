@@ -46,9 +46,9 @@ QuicClientSessionCache::QuicClientSessionCache()
 
 QuicClientSessionCache::QuicClientSessionCache(size_t max_entries)
     : clock_(base::DefaultClock::GetInstance()), cache_(max_entries) {
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &QuicClientSessionCache::OnMemoryPressure, base::Unretained(this))));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&QuicClientSessionCache::OnMemoryPressure,
+                                     base::Unretained(this)));
 }
 
 QuicClientSessionCache::~QuicClientSessionCache() {

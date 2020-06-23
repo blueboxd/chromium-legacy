@@ -47,7 +47,7 @@ void V8TestPermissiveDictionary::ToImpl(v8::Isolate* isolate, v8::Local<v8::Valu
   if (boolean_member_value.IsEmpty() || boolean_member_value->IsUndefined()) {
     // Do nothing.
   } else {
-    bool boolean_member_cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(isolate, boolean_member_value, exception_state);
+    bool boolean_member_cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(isolate, boolean_member_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl->setBooleanMember(boolean_member_cpp_value);

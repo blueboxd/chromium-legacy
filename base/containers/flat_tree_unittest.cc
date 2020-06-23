@@ -35,7 +35,6 @@
 #include <string>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/template_util.h"
 #include "base/test/move_only_int.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -95,6 +94,8 @@ class Emplaceable {
     other.int_ = 0;
     other.double_ = 0.0;
   }
+  Emplaceable(const Emplaceable&) = delete;
+  Emplaceable& operator=(const Emplaceable&) = delete;
 
   Emplaceable& operator=(Emplaceable&& other) {
     int_ = other.int_;
@@ -115,8 +116,6 @@ class Emplaceable {
  private:
   int int_;
   double double_;
-
-  DISALLOW_COPY_AND_ASSIGN(Emplaceable);
 };
 
 struct TemplateConstructor {

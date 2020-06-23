@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_CONTAINERS_VECTOR_BUFFERS_H_
-#define BASE_CONTAINERS_VECTOR_BUFFERS_H_
+#ifndef BASE_CONTAINERS_VECTOR_BUFFER_H_
+#define BASE_CONTAINERS_VECTOR_BUFFER_H_
 
 #include <stdlib.h>
 #include <string.h>
@@ -13,7 +13,6 @@
 
 #include "base/check_op.h"
 #include "base/containers/util.h"
-#include "base/macros.h"
 #include "base/numerics/checked_math.h"
 
 namespace base {
@@ -56,6 +55,9 @@ class VectorBuffer {
     other.buffer_ = nullptr;
     other.capacity_ = 0;
   }
+
+  VectorBuffer(const VectorBuffer&) = delete;
+  VectorBuffer& operator=(const VectorBuffer&) = delete;
 
   ~VectorBuffer() { free(buffer_); }
 
@@ -178,11 +180,9 @@ class VectorBuffer {
 
   T* buffer_ = nullptr;
   size_t capacity_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(VectorBuffer);
 };
 
 }  // namespace internal
 }  // namespace base
 
-#endif  // BASE_CONTAINERS_VECTOR_BUFFERS_H_
+#endif  // BASE_CONTAINERS_VECTOR_BUFFER_H_

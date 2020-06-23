@@ -158,6 +158,7 @@ ThumbnailCache::ThumbnailCache(size_t default_cache_size,
       ui_resource_provider_(nullptr) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   memory_pressure_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE,
       base::Bind(&ThumbnailCache::OnMemoryPressure, base::Unretained(this)));
 }
 

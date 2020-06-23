@@ -206,7 +206,7 @@ The `App`, `Readiness` and `OptionalBool` types are:
     enum Readiness {
       kUnknown = 0,
       kReady,                // Installed and launchable.
-      kDisabledByBlacklist,  // Disabled by SafeBrowsing.
+      kDisabledByBlocklist,  // Disabled by SafeBrowsing.
       kDisabledByPolicy,     // Disabled by admin policy.
       kDisabledByUser,       // Disabled by explicit user action.
       kUninstalledByUser,

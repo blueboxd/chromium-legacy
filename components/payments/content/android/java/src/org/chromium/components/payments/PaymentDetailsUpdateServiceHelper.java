@@ -89,9 +89,8 @@ public class PaymentDetailsUpdateServiceHelper {
             return;
         }
 
-        @Nullable
         String stringifiedDetails = paymentHandlerMethodData.getString(
-                PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS);
+                PaymentHandlerMethodData.EXTRA_STRINGIFIED_DETAILS, /*defaultValue=*/"{}");
 
         if (isWaitingForPaymentDetailsUpdate() || mListener == null
                 || !mListener.changePaymentMethodFromInvokedApp(methodName, stringifiedDetails)) {

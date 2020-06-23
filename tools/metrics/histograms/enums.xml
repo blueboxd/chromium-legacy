@@ -13532,15 +13532,6 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="Main Frame Origin differs from Ad Creative"/>
 </enum>
 
-<enum name="CrossOriginCreativeStatusWithThrottling">
-  <int value="0" label="Ad Creative Origin Unknown and Ad Not Throttled"/>
-  <int value="1" label="Ad Creative Origin Unknown and Ad Throttled"/>
-  <int value="2"
-      label="Ad Creative Origin Same as Main Frame and Ad Not Throttled"/>
-  <int value="3"
-      label="Ad Creative Origin Differs from Main Frame and Ad Not Throttled"/>
-</enum>
-
 <enum name="CrossOriginProtectionDecision">
   <int value="0" label="kAllow"/>
   <int value="1" label="kBlock"/>
@@ -28069,6 +28060,9 @@ Called by update_use_counter_feature_enum.py.-->
   <int value="3329" label="DialogWithNonZeroScrollOffset"/>
   <int value="3330" label="DialogHeightLargerThanViewport"/>
   <int value="3331" label="OverlayPopup"/>
+  <int value="3332" label="ContentVisibilityAuto"/>
+  <int value="3333" label="ContentVisibilityHidden"/>
+  <int value="3334" label="ContentVisibilityHiddenMatchable"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -71769,6 +71763,8 @@ Full version information for the fingerprint enum values:
   <int value="9" label="GATT connection established"/>
   <int value="10" label="caBLE handshake completed"/>
   <int value="11" label="caBLE device timed out"/>
+  <int value="12" label="Scanning for BLE advertisements failed"/>
+  <int value="13" label="Scanning for BLE advertisements stopped unexpectedly"/>
 </enum>
 
 <enum name="WebAuthenticationCableV1Event">

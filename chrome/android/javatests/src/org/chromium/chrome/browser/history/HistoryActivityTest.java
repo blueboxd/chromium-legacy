@@ -566,11 +566,9 @@ public class HistoryActivityTest {
         final Account account =
                 mAccountManagerTestRule.addAccount(AccountManagerTestRule.TEST_ACCOUNT_EMAIL);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Profile profile = Profile.getLastUsedRegularProfile();
-            IdentityServicesProvider.get().getSigninManager(profile).onFirstRunCheckDone();
-            IdentityServicesProvider.get().getSigninManager(profile).addSignInStateObserver(
-                    mTestObserver);
-            IdentityServicesProvider.get().getSigninManager(profile).signIn(
+            IdentityServicesProvider.get().getSigninManager().onFirstRunCheckDone();
+            IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(mTestObserver);
+            IdentityServicesProvider.get().getSigninManager().signIn(
                     SigninAccessPoint.UNKNOWN, account, null);
         });
 
@@ -626,9 +624,8 @@ public class HistoryActivityTest {
         int currentCallCount = mTestObserver.onSigninStateChangedCallback.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> IdentityServicesProvider.get()
-                                   .getSigninManager(Profile.getLastUsedRegularProfile())
-                                   .signOut(SignoutReason.SIGNOUT_TEST));
+                        -> IdentityServicesProvider.get().getSigninManager().signOut(
+                                SignoutReason.SIGNOUT_TEST));
         mTestObserver.onSigninStateChangedCallback.waitForCallback(currentCallCount, 1);
         Assert.assertNull(mAccountManagerTestRule.getCurrentSignedInAccount());
 
@@ -636,7 +633,7 @@ public class HistoryActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> IdentityServicesProvider.get()
-                                   .getSigninManager(Profile.getLastUsedRegularProfile())
+                                   .getSigninManager()
                                    .removeSignInStateObserver(mTestObserver));
     }
 }

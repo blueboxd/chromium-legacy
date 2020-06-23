@@ -81,26 +81,6 @@ void PaintTiming::MarkFirstImagePaint() {
   RegisterNotifySwapTime(PaintEvent::kFirstImagePaint);
 }
 
-void PaintTiming::MarkFirstEligibleToPaint() {
-  if (!first_eligible_to_paint_.is_null())
-    return;
-
-  first_eligible_to_paint_ = clock_->NowTicks();
-  NotifyPaintTimingChanged();
-}
-
-// We deliberately use |first_paint_| here rather than |first_paint_swap_|,
-// because |first_paint_swap_| is set asynchronously and we need to be able to
-// rely on a synchronous check that SetFirstPaintSwap hasn't been scheduled or
-// run.
-void PaintTiming::MarkIneligibleToPaint() {
-  if (first_eligible_to_paint_.is_null() || !first_paint_.is_null())
-    return;
-
-  first_eligible_to_paint_ = base::TimeTicks();
-  NotifyPaintTimingChanged();
-}
-
 void PaintTiming::SetFirstMeaningfulPaintCandidate(base::TimeTicks timestamp) {
   if (!first_meaningful_paint_candidate_.is_null())
     return;

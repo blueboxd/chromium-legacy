@@ -101,7 +101,7 @@ void V8TestEnumOrTestEnumSequence::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<String> cpp_value{ NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       const char* const kValidValues[] = {
@@ -119,7 +119,7 @@ void V8TestEnumOrTestEnumSequence::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     const char* const kValidValues[] = {

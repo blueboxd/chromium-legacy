@@ -40,7 +40,7 @@ class ExtensionInstallEventLogger
    public:
     // Adds an identical log entry for every extension in |extensions|.
     virtual void Add(
-        const std::set<extensions::ExtensionId>& extensions,
+        std::set<extensions::ExtensionId> extensions,
         const enterprise_management::ExtensionInstallReportLogEvent& event) = 0;
 
    protected:

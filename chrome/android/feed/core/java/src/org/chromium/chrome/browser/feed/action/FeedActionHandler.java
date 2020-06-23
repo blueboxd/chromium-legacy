@@ -8,7 +8,6 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
@@ -39,7 +38,8 @@ public class FeedActionHandler implements ActionApi {
     private final Activity mActivity;
     private final Profile mProfile;
     private static final String TAG = "FeedActionHandler";
-    private static final String FEEDBACK_REPORT_TYPE = "USER_INITIATED_FEEDBACK_REPORT";
+    private static final String FEEDBACK_REPORT_TYPE =
+            "com.google.chrome.feed.USER_INITIATED_FEEDBACK_REPORT";
 
     // This must match the FeedSendFeedbackType enum in enums.xml.
     public @interface FeedFeedbackType {
@@ -151,11 +151,13 @@ public class FeedActionHandler implements ActionApi {
             feedContext.put(CARD_TITLE, title);
         }
 
+        // Identifies this feedback as coming from chrome android (as opposed to desktop).
+        // This string is not used for allow list matching on the server.
         String feedbackContext = "mobile_browser";
         // Reports for Chrome mobile must have a contextTag of the form
-        // com.chrome.canary.USER_INITIATED_FEEDBACK_REPORT, or they will be discarded.
-        String contextTag =
-                ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_REPORT_TYPE;
+        // com.chrome.feed.USER_INITIATED_FEEDBACK_REPORT, or they will be discarded
+        // for not matching an allow list rule.
+        String contextTag = FEEDBACK_REPORT_TYPE;
 
         HelpAndFeedback.getInstance().showFeedback(mActivity, mProfile, contentMetadata.getUrl(),
                 contextTag, feedContext, feedbackContext);

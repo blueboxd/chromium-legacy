@@ -17,6 +17,8 @@
 #include "ash/session/session_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -100,6 +102,13 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
   void set_backend_controller_for_testing(
       std::unique_ptr<AmbientBackendController> photo_client);
 
+  // Creates (if not created) and acquires |wake_lock_|. Called when ambient
+  // screen starts to show.
+  void AcquireWakeLock();
+
+  // Release |wake_lock_|. Called when ambient screen is hidden/closed.
+  void ReleaseWakeLock();
+
   AmbientPhotoController* get_ambient_photo_controller_for_testing() {
     return &ambient_photo_controller_;
   }
@@ -120,6 +129,9 @@ class ASH_EXPORT AmbientController : public AmbientUiModelObserver,
 
   // Monitors the device inactivity and controls the auto-show of ambient.
   std::unique_ptr<InactivityMonitor> inactivity_monitor_;
+
+  // Lazily initialized on the first call of |AcquireWakeLock|.
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   base::WeakPtrFactory<AmbientController> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AmbientController);

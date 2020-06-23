@@ -7592,7 +7592,9 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="ForegroundNumInputEvents">
     <summary>
-      The number of Input Events, recorded each time the page is backgrounded.
+      The number of Input Events, including click, tap, key press, cancellable
+      touchstart, or pointer down followed by apointer up. This metric gets
+      recorded each time the page is backgrounded.
     </summary>
     <aggregation>
       <history>
@@ -8096,7 +8098,8 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="InteractiveTiming.NumInputEvents">
     <summary>
-      The number of Input Events.
+      The number of Input Events, including click, tap, key press, cancellable
+      touchstart, or pointer down followed by a pointer up.
     </summary>
     <aggregation>
       <history>
@@ -11160,9 +11163,18 @@ be describing additional metrics about the same event.
     attempted, and information about the outcome of the attempt.
   </summary>
   <metric name="FailureGlobalBlacklist" enum="Boolean">
+    <obsolete>
+      Deprecated 06/2020. Replaced with FailureGlobalDisallowlist.
+    </obsolete>
     <summary>
       Boolean indicating that the tab was explicitly opted out of the
-      intervention via the global blacklist.
+      intervention via the global disallowlist.
+    </summary>
+  </metric>
+  <metric name="FailureGlobalDisallowlist" enum="Boolean">
+    <summary>
+      Boolean indicating that the tab was explicitly opted out of the
+      intervention via the global disallowlist.
     </summary>
   </metric>
   <metric name="FailureHeuristicAudio" enum="Boolean">
@@ -11357,10 +11369,19 @@ be describing additional metrics about the same event.
       success bits are present the outcome is positive.
     </summary>
   </metric>
-  <metric name="SuccessGlobalWhitelist" enum="Boolean">
+  <metric name="SuccessGlobalAllowlist" enum="Boolean">
     <summary>
       Boolean indicating that the tab was explicitly opted in to the
-      intervention via the global whitelist.
+      intervention via the global allowlist.
+    </summary>
+  </metric>
+  <metric name="SuccessGlobalWhitelist" enum="Boolean">
+    <obsolete>
+      Deprecated 06/2020. Replaced with SuccessGlobalAllowlist.
+    </obsolete>
+    <summary>
+      Boolean indicating that the tab was explicitly opted in to the
+      intervention via the global allowlist.
     </summary>
   </metric>
   <metric name="SuccessHeuristic" enum="Boolean">

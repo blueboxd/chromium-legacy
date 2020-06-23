@@ -192,6 +192,8 @@ class MockCastMessageHandler : public CastMessageHandler {
                     ResultCallback callback));
   MOCK_METHOD2(SendAppMessage,
                Result(int channel_id, const CastMessage& message));
+  MOCK_METHOD2(SendCastMessage,
+               Result(int channel_id, const CastMessage& message));
   MOCK_METHOD4(SendMediaRequest,
                base::Optional<int>(int channel_id,
                                    const base::Value& body,

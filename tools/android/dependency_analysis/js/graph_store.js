@@ -33,6 +33,8 @@ class GraphStore {
     // of what the state will look like.
     this.state = {
       includedNodes: [],
+      inboundDepth: 0,
+      outboundDepth: 0,
     };
   }
 
@@ -59,6 +61,14 @@ class GraphStore {
       // element and the deleted element, then pop.
       this.state.includedNodes.splice(deleteIndex, 1);
     }
+  }
+
+  setInboundDepth(depth) {
+    this.state.inboundDepth = depth;
+  }
+
+  setOutboundDepth(depth) {
+    this.state.outboundDepth = depth;
   }
 }
 

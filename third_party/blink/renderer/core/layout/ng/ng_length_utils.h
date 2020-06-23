@@ -91,8 +91,12 @@ inline LayoutUnit ResolveMinInlineLength(
     return border_padding.InlineSum();
 
   base::Optional<MinMaxSizes> min_max_sizes;
-  if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func().sizes;
+  if (length.IsIntrinsic()) {
+    min_max_sizes =
+        min_max_sizes_func(length.IsMinIntrinsic() ? MinMaxSizesType::kIntrinsic
+                                                   : MinMaxSizesType::kContent)
+            .sizes;
+  }
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -126,8 +130,12 @@ inline LayoutUnit ResolveMaxInlineLength(
     return LayoutUnit::Max();
 
   base::Optional<MinMaxSizes> min_max_sizes;
-  if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func().sizes;
+  if (length.IsIntrinsic()) {
+    min_max_sizes =
+        min_max_sizes_func(length.IsMinIntrinsic() ? MinMaxSizesType::kIntrinsic
+                                                   : MinMaxSizesType::kContent)
+            .sizes;
+  }
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);
@@ -157,8 +165,12 @@ inline LayoutUnit ResolveMainInlineLength(
     const MinMaxSizesFunc& min_max_sizes_func,
     const Length& length) {
   base::Optional<MinMaxSizes> min_max_sizes;
-  if (length.IsIntrinsic())
-    min_max_sizes = min_max_sizes_func().sizes;
+  if (length.IsIntrinsic()) {
+    min_max_sizes =
+        min_max_sizes_func(length.IsMinIntrinsic() ? MinMaxSizesType::kIntrinsic
+                                                   : MinMaxSizesType::kContent)
+            .sizes;
+  }
 
   return ResolveInlineLengthInternal(constraint_space, style, border_padding,
                                      min_max_sizes, length);

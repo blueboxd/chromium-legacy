@@ -2493,6 +2493,50 @@ TEST_F(DisplayLockContextRenderingTest, ContainStrictChild) {
   UpdateAllLifecyclePhasesForTest();
 }
 
+TEST_F(DisplayLockContextRenderingTest, UseCounter) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+      .auto { content-visibility: auto; }
+      .hidden { content-visibility: hidden; }
+      .matchable { content-visibility: hidden-matchable; }
+    </style>
+    <div id=e1></div>
+    <div id=e2></div>
+    <div id=e3></div>
+  )HTML");
+
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kContentVisibilityAuto));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kContentVisibilityHidden));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kContentVisibilityHiddenMatchable));
+
+  GetDocument().getElementById("e1")->classList().Add("auto");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kContentVisibilityAuto));
+  EXPECT_FALSE(
+      GetDocument().IsUseCounted(WebFeature::kContentVisibilityHidden));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kContentVisibilityHiddenMatchable));
+
+  GetDocument().getElementById("e2")->classList().Add("hidden");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kContentVisibilityAuto));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kContentVisibilityHidden));
+  EXPECT_FALSE(GetDocument().IsUseCounted(
+      WebFeature::kContentVisibilityHiddenMatchable));
+
+  GetDocument().getElementById("e3")->classList().Add("matchable");
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kContentVisibilityAuto));
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kContentVisibilityHidden));
+  EXPECT_TRUE(GetDocument().IsUseCounted(
+      WebFeature::kContentVisibilityHiddenMatchable));
+}
+
 TEST_F(DisplayLockContextRenderingTest, CompositingRootIsSkippedIfLocked) {
   SetHtmlInnerHTML(R"HTML(
     <style>

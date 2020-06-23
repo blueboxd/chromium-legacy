@@ -21,7 +21,6 @@ _typemap_imports = [
   "//components/typemaps.gni",
   "//content/browser/typemaps.gni",
   "//content/public/common/typemaps.gni",
-  "//fuchsia/mojom/test_typemaps.gni",
   "//media/capture/mojom/typemaps.gni",
   "//media/fuchsia/mojom/typemaps.gni",
   "//media/learning/mojo/public/cpp/typemaps.gni",

@@ -74,7 +74,7 @@ void V8StringOrTestDictionary::ToImpl(
     return;
 
   if (IsUndefinedOrNull(v8_value)) {
-    TestDictionary* cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state);
+    TestDictionary* cpp_value{ NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetTestDictionary(cpp_value);
@@ -82,7 +82,7 @@ void V8StringOrTestDictionary::ToImpl(
   }
 
   if (v8_value->IsObject()) {
-    TestDictionary* cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state);
+    TestDictionary* cpp_value{ NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetTestDictionary(cpp_value);
@@ -90,7 +90,7 @@ void V8StringOrTestDictionary::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

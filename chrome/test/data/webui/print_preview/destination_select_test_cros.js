@@ -19,6 +19,7 @@ printer_status_test_cros.suiteName = 'PrinterStatusTestCros';
 printer_status_test_cros.TestNames = {
   PrinterStatusUpdatesColor: 'printer status updates color',
   SendStatusRequestOnce: 'send status request once',
+  HiddenStatusText: 'hidden status text',
 };
 
 suite(printer_status_test_cros.suiteName, function() {
@@ -245,6 +246,31 @@ suite(printer_status_test_cros.suiteName, function() {
               3, nativeLayer.getCallCount('requestPrinterStatusUpdate'));
         });
       });
+
+  test(assert(printer_status_test_cros.TestNames.HiddenStatusText), function() {
+    return waitBeforeNextRender(destinationSelect).then(() => {
+      const destinationWithoutErrorStatus =
+          createDestination('ID1', 'One', DestinationOrigin.CROS);
+      // Destination with ID4 will return an error printer status that will
+      // trigger the error text being populated.
+      const destinationWithErrorStatus =
+          createDestination('ID4', 'Four', DestinationOrigin.CROS);
+
+      destinationSelect.recentDestinationList = [
+        destinationWithoutErrorStatus,
+        destinationWithErrorStatus,
+      ];
+
+      destinationSelect.destination = destinationWithoutErrorStatus;
+      assertTrue(destinationSelect.$$('.destination-additional-info').hidden);
+
+      destinationSelect.destination = destinationWithErrorStatus;
+      return nativeLayer.whenCalled('requestPrinterStatusUpdate').then(() => {
+        assertFalse(
+            destinationSelect.$$('.destination-additional-info').hidden);
+      });
+    });
+  });
 });
 
 window.destination_select_test_cros = {};

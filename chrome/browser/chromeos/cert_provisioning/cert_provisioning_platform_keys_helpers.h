@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_CERT_PROVISIONING_CERT_PROVISIONING_PLATFORM_KEYS_HELPERS_H_
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "net/cert/x509_certificate.h"
@@ -22,7 +24,8 @@ namespace cert_provisioning {
 // ========= CertProvisioningCertsWithIdsGetter ================================
 
 using GetCertsWithIdsCallback = base::OnceCallback<void(
-    std::map<std::string, scoped_refptr<net::X509Certificate>> certs_with_ids,
+    base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+        certs_with_ids,
     const std::string& error_message)>;
 
 // Helper class that retrieves list of all certificates in a given scope with
@@ -49,14 +52,15 @@ class CertProvisioningCertsWithIdsGetter {
       const std::string& error_message);
 
   void CollectOneResult(scoped_refptr<net::X509Certificate> cert,
-                        const std::string& cert_id,
+                        const CertProfileId& cert_id,
                         const std::string& error_message);
 
   CertScope cert_scope_ = CertScope::kDevice;
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
 
   size_t wait_counter_ = 0;
-  std::map<std::string, scoped_refptr<net::X509Certificate>> certs_with_ids_;
+  base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+      certs_with_ids_;
   GetCertsWithIdsCallback callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
@@ -81,12 +85,13 @@ class CertProvisioningCertDeleter {
 
   void DeleteCerts(CertScope cert_scope,
                    platform_keys::PlatformKeysService* platform_keys_service,
-                   const std::set<std::string>& cert_profile_ids_to_keep,
+                   base::flat_set<CertProfileId> cert_profile_ids_to_keep,
                    DeleteCertsCallback callback);
 
  private:
   void OnGetCertsWithIdsDone(
-      std::map<std::string, scoped_refptr<net::X509Certificate>> certs_with_ids,
+      base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+          certs_with_ids,
       const std::string& error_message);
 
   void OnRemoveCertificateDone(const std::string& error_message);
@@ -99,7 +104,7 @@ class CertProvisioningCertDeleter {
   platform_keys::PlatformKeysService* platform_keys_service_ = nullptr;
 
   size_t wait_counter_ = 0;
-  std::set<std::string> cert_profile_ids_to_keep_;
+  base::flat_set<CertProfileId> cert_profile_ids_to_keep_;
   DeleteCertsCallback callback_;
 
   std::unique_ptr<CertProvisioningCertsWithIdsGetter> cert_getter_;

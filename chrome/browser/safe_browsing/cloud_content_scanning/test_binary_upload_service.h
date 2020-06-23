@@ -19,6 +19,8 @@ class TestBinaryUploadService : public BinaryUploadService {
   ~TestBinaryUploadService() override = default;
 
   void MaybeUploadForDeepScanning(std::unique_ptr<Request> request) override;
+  void SetResponse(Result result,
+                   enterprise_connectors::ContentAnalysisResponse response);
   void SetResponse(Result result, DeepScanningClientResponse response);
 
   bool was_called() { return was_called_; }
@@ -27,6 +29,8 @@ class TestBinaryUploadService : public BinaryUploadService {
  private:
   Result saved_result_ = Result::UNKNOWN;
   DeepScanningClientResponse saved_response_ = DeepScanningClientResponse();
+  enterprise_connectors::ContentAnalysisResponse
+      saved_content_analysis_response_;
   bool was_called_ = false;
 };
 

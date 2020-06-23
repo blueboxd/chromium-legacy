@@ -113,6 +113,7 @@ if (is_win || is_mac) {
 
     if (is_mac) {
       sources += [
+        "app/server/mac/app_server.h",
         "app/server/mac/server.h",
         "app/server/mac/server.mm",
         "app/server/mac/service_delegate.h",

@@ -150,7 +150,8 @@ void CustomLayoutWorkTask::RunIntrinsicSizesTask(
   DCHECK_EQ(type_, CustomLayoutWorkTask::TaskType::kIntrinsicSizes);
   DCHECK(resolver_);
 
-  MinMaxSizesInput input(child_percentage_resolution_block_size_for_min_max);
+  MinMaxSizesInput input(child_percentage_resolution_block_size_for_min_max,
+                         MinMaxSizesType::kContent);
   MinMaxSizesResult result =
       ComputeMinAndMaxContentContribution(parent_style, child, input);
   resolver_->Resolve(MakeGarbageCollected<CustomIntrinsicSizes>(

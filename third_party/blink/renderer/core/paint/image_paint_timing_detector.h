@@ -85,6 +85,18 @@ class CORE_EXPORT ImageRecordsManager {
   inline void RemoveVisibleRecord(const RecordId& record_id) {
     base::WeakPtr<ImageRecord> record =
         visible_images_.find(record_id)->value->AsWeakPtr();
+    if (!record->paint_time.is_null()) {
+      DCHECK_GT(record->first_size, 0u);
+      if (record->first_size > largest_removed_image_size_) {
+        largest_removed_image_size_ = record->first_size;
+        largest_removed_image_paint_time_ = record->paint_time;
+      } else if (record->first_size == largest_removed_image_size_) {
+        // Ensure we use the lower timestamp in the case of a tie.
+        DCHECK(!largest_removed_image_paint_time_.is_null());
+        largest_removed_image_paint_time_ =
+            std::min(largest_removed_image_paint_time_, record->paint_time);
+      }
+    }
     size_ordered_set_.erase(record);
     visible_images_.erase(record_id);
     // Leave out |images_queued_for_paint_time_| intentionally because the null
@@ -142,6 +154,13 @@ class CORE_EXPORT ImageRecordsManager {
     return images_queued_for_paint_time_.back()->frame_index;
   }
 
+  uint64_t LargestRemovedImageSize() const {
+    return largest_removed_image_size_;
+  }
+  base::TimeTicks LargestRemovedImagePaintTime() const {
+    return largest_removed_image_paint_time_;
+  }
+
   void Trace(Visitor* visitor) const;
 
  private:
@@ -177,6 +196,11 @@ class CORE_EXPORT ImageRecordsManager {
   HashMap<RecordId, base::TimeTicks> image_finished_times_;
 
   Member<LocalFrameView> frame_view_;
+
+  // We store the size and paint time of the largest removed image in order to
+  // compute experimental LCP correctly.
+  uint64_t largest_removed_image_size_ = 0u;
+  base::TimeTicks largest_removed_image_paint_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageRecordsManager);
 };

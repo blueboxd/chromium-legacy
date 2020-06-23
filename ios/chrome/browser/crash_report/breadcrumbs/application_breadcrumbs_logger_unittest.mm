@@ -43,11 +43,14 @@ class ApplicationBreadcrumbsLoggerTest : public PlatformTest {
 // Tests that a recorded UserAction is logged by the
 // ApplicationBreadcrumbsLogger.
 TEST_F(ApplicationBreadcrumbsLoggerTest, UserAction) {
+  ASSERT_EQ(1U, breadcrumb_manager_.GetEvents(0).size());  // startup event
+
   base::RecordAction(base::UserMetricsAction(kUserAction1Name));
   base::RecordAction(base::UserMetricsAction(kUserAction2Name));
 
   std::list<std::string> events = breadcrumb_manager_.GetEvents(0);
-  ASSERT_EQ(2ul, events.size());
+  ASSERT_EQ(3ul, events.size());
+  events.pop_front();
   EXPECT_NE(std::string::npos, events.front().find(kUserAction1Name));
   events.pop_front();
   EXPECT_NE(std::string::npos, events.front().find(kUserAction2Name));
@@ -55,23 +58,29 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, UserAction) {
 
 // Tests that not_user_triggered User Action does not show up in breadcrumbs.
 TEST_F(ApplicationBreadcrumbsLoggerTest, LogNotUserTriggeredAction) {
+  ASSERT_EQ(1U, breadcrumb_manager_.GetEvents(0).size());  // startup event
+
   base::RecordAction(base::UserMetricsAction("ActiveTabChanged"));
 
-  EXPECT_EQ(0U, breadcrumb_manager_.GetEvents(0).size());
+  EXPECT_EQ(1U, breadcrumb_manager_.GetEvents(0).size());
 }
 
 // Tests that "InProductHelp" UserActions are not logged by
 // ApplicationBreadcrumbsLogger as they are very noisy.
 TEST_F(ApplicationBreadcrumbsLoggerTest, SkipInProductHelpUserActions) {
+  ASSERT_EQ(1U, breadcrumb_manager_.GetEvents(0).size());  // startup event
+
   base::RecordAction(base::UserMetricsAction(kInProductHelpUserActionName));
 
   std::list<std::string> events = breadcrumb_manager_.GetEvents(0);
-  ASSERT_EQ(0ul, events.size());
+  ASSERT_EQ(1ul, events.size());
 }
 
 // Tests that memory pressure events are logged by ApplicationBreadcrumbsLogger.
 // TODO(crbug.com/1046588): This test is flaky.
 TEST_F(ApplicationBreadcrumbsLoggerTest, DISABLED_MemoryPressure) {
+  ASSERT_EQ(1U, breadcrumb_manager_.GetEvents(0).size());  // startup event
+
   base::MemoryPressureListener::SimulatePressureNotification(
       MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE);
   base::MemoryPressureListener::SimulatePressureNotification(
@@ -89,13 +98,15 @@ TEST_F(ApplicationBreadcrumbsLoggerTest, DISABLED_MemoryPressure) {
 
 // Tests logging device orientation.
 TEST_F(ApplicationBreadcrumbsLoggerTest, Orientation) {
+  ASSERT_EQ(1U, breadcrumb_manager_.GetEvents(0).size());  // startup event
+
   [NSNotificationCenter.defaultCenter
       postNotificationName:UIDeviceOrientationDidChangeNotification
                     object:nil];
 
   std::list<std::string> events = breadcrumb_manager_.GetEvents(0);
-  ASSERT_EQ(1ul, events.size());
+  ASSERT_EQ(2ul, events.size());
 
-  EXPECT_NE(std::string::npos, events.front().find(kBreadcrumbOrientation))
-      << events.front();
+  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbOrientation))
+      << events.back();
 }

@@ -463,10 +463,6 @@ void MessagePumpForUI::KillNativeTimer() {
 bool MessagePumpForUI::ProcessNextWindowsMessage() {
   DCHECK_CALLED_ON_VALID_THREAD(bound_thread_);
 
-  // If there are sent messages in the queue then PeekMessage internally
-  // dispatches the message and returns false. We return true in this
-  // case to ensure that the message loop peeks again instead of calling
-  // MsgWaitForMultipleObjectsEx.
   bool more_work_is_plausible = false;
   {
     // Individually trace ::GetQueueStatus and ::PeekMessage because sampling
@@ -477,7 +473,22 @@ bool MessagePumpForUI::ProcessNextWindowsMessage() {
     // profiler's thread while the sampled thread is swapped out on this frame).
     TRACE_EVENT0("base",
                  "MessagePumpForUI::ProcessNextWindowsMessage GetQueueStatus");
-    DWORD queue_status = ::GetQueueStatus(QS_SENDMESSAGE);
+
+    // Experiment with querying all messages and not invoking PeekMessage at all
+    // if there's nothing there.
+    static const auto get_queue_status_flag =
+        FeatureList::IsEnabled(kPreventMessagePumpHangs) ? QS_ALLINPUT
+                                                         : QS_SENDMESSAGE;
+
+    const DWORD queue_status = ::GetQueueStatus(get_queue_status_flag);
+
+    if (get_queue_status_flag == QS_ALLINPUT && !queue_status)
+      return false;
+
+    // If there were sent messages in the queue then ::PeekMessage internally
+    // dispatches the message and returns false. We return true in this case to
+    // ensure that the message loop peeks again instead of calling
+    // MsgWaitForMultipleObjectsEx.
     if (HIWORD(queue_status) & QS_SENDMESSAGE)
       more_work_is_plausible = true;
   }
@@ -552,32 +563,45 @@ bool MessagePumpForUI::ProcessPumpReplacementMessage() {
   // that peeked replacement. Note that the re-post of kMsgHaveWork may be
   // asynchronous to this thread!!
 
-  // Bump the work id since ::PeekMessage may process internal events.
-  state_->delegate->BeforeDoInternalWork();
-
-  // The system headers don't define this; it's equivalent to PM_QS_INPUT |
-  // PM_QS_PAINT | PM_QS_POSTMESSAGE. i.e., anything but QS_SENDMESSAGE. Since
-  // we're looking to replace our kMsgHaveWork posted message, we can ignore
-  // sent messages (which never compete with posted messages in the initial
-  // PeekMessage call).
-  constexpr auto PM_QS_ALLEVENTS = QS_ALLEVENTS << 16;
-  static_assert(
-      PM_QS_ALLEVENTS == (PM_QS_INPUT | PM_QS_PAINT | PM_QS_POSTMESSAGE), "");
-  static_assert((PM_QS_ALLEVENTS & PM_QS_SENDMESSAGE) == 0, "");
-
   MSG msg;
   bool have_message = false;
   {
-    TRACE_EVENT0("base",
-                 "MessagePumpForUI::ProcessPumpReplacementMessage PeekMessage");
+    // The system headers don't define this; it's equivalent to PM_QS_INPUT |
+    // PM_QS_PAINT | PM_QS_POSTMESSAGE. i.e., anything but QS_SENDMESSAGE. Since
+    // we're looking to replace our kMsgHaveWork posted message, we can ignore
+    // sent messages (which never compete with posted messages in the initial
+    // PeekMessage call).
+    constexpr auto PM_QS_ALLEVENTS = QS_ALLEVENTS << 16;
+    static_assert(
+        PM_QS_ALLEVENTS == (PM_QS_INPUT | PM_QS_PAINT | PM_QS_POSTMESSAGE), "");
+    static_assert((PM_QS_ALLEVENTS & PM_QS_SENDMESSAGE) == 0, "");
 
     static const auto peek_replacement_message_modifier =
-        base::FeatureList::IsEnabled(kPreventMessagePumpHangs) ? PM_QS_ALLEVENTS
-                                                               : 0;
+        FeatureList::IsEnabled(kPreventMessagePumpHangs) ? PM_QS_ALLEVENTS : 0;
 
-    have_message =
-        ::PeekMessage(&msg, nullptr, 0, 0,
-                      PM_REMOVE | peek_replacement_message_modifier) != FALSE;
+    // Always check messages under the non-experimental arm but skip in the
+    // experimental arm if GetQueueStatus() doesn't think there are any.
+    bool check_messages = true;
+    {
+      if (peek_replacement_message_modifier == PM_QS_ALLEVENTS) {
+        TRACE_EVENT0(
+            "base",
+            "MessagePumpForUI::ProcessPumpReplacementMessage GetQueueStatus");
+        check_messages = ::GetQueueStatus(QS_ALLEVENTS);
+      }
+    }
+
+    if (check_messages) {
+      TRACE_EVENT0(
+          "base",
+          "MessagePumpForUI::ProcessPumpReplacementMessage PeekMessage");
+
+      // Bump the work id since ::PeekMessage may process internal events.
+      state_->delegate->BeforeDoInternalWork();
+      have_message =
+          ::PeekMessage(&msg, nullptr, 0, 0,
+                        PM_REMOVE | peek_replacement_message_modifier) != FALSE;
+    }
   }
 
   // Expect no message or a message different than kMsgHaveWork.

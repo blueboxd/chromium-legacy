@@ -36,6 +36,10 @@ const char kHistogramName[] = "NavigationSuggestion.Event";
 
 namespace {
 
+// Digits. Used for trimming domains in Edit Distance heuristic matches. Domains
+// that only differ by trailing digits (e.g. a1.tld and a2.tld) are ignored.
+const char kDigitChars[] = "0123456789";
+
 // Minimum length of target domains, including TLD, that we protect against
 // target embedding. For example, "vk.ru" is 5 characters-long and won't be
 // considered as a target.
@@ -164,24 +168,13 @@ std::string GetSimilarDomainFromTop500(
               .domain;
       DCHECK(!top_domain.empty());
 
-      // If the only difference between the navigated and top
-      // domains is the registry part, this is unlikely to be a spoofing
-      // attempt. Ignore this match and continue. E.g. If the navigated domain
-      // is google.com.tw and the top domain is google.com.tr, this won't
-      // produce a match.
-      const std::string top_domain_without_registry =
-          url_formatter::top_domains::HostnameWithoutRegistry(top_domain);
-      DCHECK(url_formatter::top_domains::IsEditDistanceCandidate(
-          top_domain_without_registry));
-      if (navigated_domain.domain_without_registry ==
-          top_domain_without_registry) {
+      if (IsLikelyEditDistanceFalsePositive(navigated_domain,
+                                            GetDomainInfo(top_domain))) {
         continue;
       }
 
       // Skip past domains that are allowed to be spoofed.
-      if (target_allowlisted.Run(GURL(std::string(url::kHttpsScheme) +
-                                      url::kStandardSchemeSeparator +
-                                      top_domain))) {
+      if (target_allowlisted.Run(top_domain)) {
         continue;
       }
 
@@ -209,20 +202,12 @@ std::string GetSimilarDomainFromEngagedSites(
           continue;
         }
 
-        // If the only difference between the navigated and engaged
-        // domain is the registry part, this is unlikely to be a spoofing
-        // attempt. Ignore this match and continue. E.g. If the navigated
-        // domain is google.com.tw and the top domain is google.com.tr, this
-        // won't produce a match.
-        if (navigated_domain.domain_without_registry ==
-            engaged_site.domain_without_registry) {
+        if (IsLikelyEditDistanceFalsePositive(navigated_domain, engaged_site)) {
           continue;
         }
 
         // Skip past domains that are allowed to be spoofed.
-        if (target_allowlisted.Run(GURL(std::string(url::kHttpsScheme) +
-                                        url::kStandardSchemeSeparator +
-                                        engaged_site.domain_and_registry))) {
+        if (target_allowlisted.Run(engaged_site.domain_and_registry)) {
           continue;
         }
 
@@ -255,18 +240,16 @@ bool ASubdomainIsAllowlisted(
     const std::string& embedded_target,
     const base::span<const std::string>& subdomain_labels_so_far,
     const LookalikeTargetAllowlistChecker& in_target_allowlist) {
-  const std::string https_scheme =
-      url::kHttpsScheme + std::string(url::kStandardSchemeSeparator);
-
-  if (in_target_allowlist.Run(GURL(https_scheme + embedded_target))) {
+  if (in_target_allowlist.Run(embedded_target)) {
     return true;
   }
+
   std::string potential_hostname = embedded_target;
   // Attach each token from the end to the embedded target to check if that
   // subdomain has been allowlisted.
   for (int i = subdomain_labels_so_far.size() - 1; i >= 0; i--) {
     potential_hostname = subdomain_labels_so_far[i] + "." + potential_hostname;
-    if (in_target_allowlist.Run(GURL(https_scheme + potential_hostname))) {
+    if (in_target_allowlist.Run(potential_hostname)) {
       return true;
     }
   }
@@ -462,14 +445,14 @@ DomainInfo::~DomainInfo() = default;
 
 DomainInfo::DomainInfo(const DomainInfo&) = default;
 
-DomainInfo GetDomainInfo(const GURL& url) {
-  if (net::IsLocalhost(url) || net::IsHostnameNonUnique(url.host())) {
+DomainInfo GetDomainInfo(const std::string& hostname) {
+  if (net::HostStringIsLocalhost(hostname) ||
+      net::IsHostnameNonUnique(hostname)) {
     return DomainInfo(std::string(), std::string(), std::string(),
                       url_formatter::IDNConversionResult(),
                       url_formatter::Skeletons());
   }
-  const std::string hostname = url.host();
-  const std::string domain_and_registry = GetETLDPlusOne(url.host());
+  const std::string domain_and_registry = GetETLDPlusOne(hostname);
   const std::string domain_without_registry =
       domain_and_registry.empty()
           ? std::string()
@@ -492,6 +475,10 @@ DomainInfo GetDomainInfo(const GURL& url) {
       url_formatter::GetSkeletons(idn_result.result);
   return DomainInfo(hostname, domain_and_registry, domain_without_registry,
                     idn_result, skeletons);
+}
+
+DomainInfo GetDomainInfo(const GURL& url) {
+  return GetDomainInfo(url.host());
 }
 
 std::string GetETLDPlusOne(const std::string& hostname) {
@@ -538,6 +525,60 @@ bool IsEditDistanceAtMostOne(const base::string16& str1,
     edit_count++;
   }
   return edit_count <= 1;
+}
+
+bool IsLikelyEditDistanceFalsePositive(const DomainInfo& navigated_domain,
+                                       const DomainInfo& matched_domain) {
+  DCHECK(url_formatter::top_domains::IsEditDistanceCandidate(
+      matched_domain.domain_and_registry));
+  DCHECK(url_formatter::top_domains::IsEditDistanceCandidate(
+      navigated_domain.domain_and_registry));
+  // If the only difference between the domains is the registry part, this is
+  // unlikely to be a spoofing attempt and we should ignore this match.  E.g.
+  // exclude matches like google.com.tw and google.com.tr.
+  if (navigated_domain.domain_without_registry ==
+      matched_domain.domain_without_registry) {
+    return true;
+  }
+
+  // If the domains only differ by a numeric suffix on their e2LD (e.g.
+  // site45.tld and site35.tld), then ignore the match.
+  auto nav_trimmed = base::TrimString(navigated_domain.domain_without_registry,
+                                      kDigitChars, base::TRIM_TRAILING);
+  auto matched_trimmed = base::TrimString(
+      matched_domain.domain_without_registry, kDigitChars, base::TRIM_TRAILING);
+  DCHECK_NE(navigated_domain.domain_without_registry,
+            matched_domain.domain_without_registry);
+  // We previously verified that the domains without registries weren't equal,
+  // so if they're equal now, the match must have come from numeric suffixes.
+  if (nav_trimmed == matched_trimmed) {
+    return true;
+  }
+
+  // Ignore domains that only differ by an insertion/substitution at the
+  // start, as these are usually different words, not lookalikes.
+  const auto nav_dom_len = navigated_domain.domain_and_registry.length();
+  const auto matched_dom_len = matched_domain.domain_and_registry.length();
+  const auto& nav_dom = navigated_domain.domain_and_registry;
+  const auto& matched_dom = matched_domain.domain_and_registry;
+  if (nav_dom_len == matched_dom_len) {
+    // e.g. hank vs tank
+    if (nav_dom.substr(1) == matched_dom.substr(1)) {
+      return true;
+    }
+  } else if (nav_dom_len < matched_dom_len) {
+    // e.g. oodle vs poodle
+    if (nav_dom == matched_dom.substr(1)) {
+      return true;
+    }
+  } else {  // navigated_dom_len > matched_dom_len
+    // e.g. poodle vs oodle
+    if (nav_dom.substr(1) == matched_dom) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool IsTopDomain(const DomainInfo& domain_info) {

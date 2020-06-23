@@ -227,6 +227,14 @@ StackSamplingConfiguration::GenerateConfiguration() {
   if (!IsProfilerSupportedForPlatformAndChannel())
     return PROFILE_DISABLED;
 
+#if defined(OS_MACOSX)
+  // TODO(https://crbug.com/1098119): Fix unwinding on OS X 10.16. The OS has
+  // moved all system libraries into the dyld shared cache and this seems to
+  // break the sampling profiler.
+  if (base::mac::IsOSLaterThan10_15_DontCallThis())
+    return PROFILE_DISABLED;
+#endif
+
 #if defined(OS_ANDROID)
   // Allow profiling if the Android Java/native unwinder module is available at
   // initialization time. Otherwise request that it be installed for use on the

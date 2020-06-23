@@ -36,9 +36,82 @@ namespace safe_browsing {
 
 namespace {
 
-void DeepScanningClientResponseToDownloadCheckResult(
-    const DeepScanningClientResponse& response,
+void ResponseToDownloadCheckResult(
+    const enterprise_connectors::ContentAnalysisResponse& response,
     DownloadCheckResult* download_result) {
+  bool malware_scan_failure = false;
+  bool dlp_scan_failure = false;
+  auto malware_action = enterprise_connectors::ContentAnalysisResponse::Result::
+      TriggeredRule::ACTION_UNSPECIFIED;
+  auto dlp_action = enterprise_connectors::ContentAnalysisResponse::Result::
+      TriggeredRule::ACTION_UNSPECIFIED;
+
+  for (const auto& result : response.results()) {
+    if (result.tag() == "malware") {
+      if (result.status() !=
+          enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS) {
+        malware_scan_failure = true;
+        continue;
+      }
+      for (const auto& rule : result.triggered_rules()) {
+        if (rule.action() > malware_action)
+          malware_action = rule.action();
+      }
+    }
+    if (result.tag() == "dlp") {
+      if (result.status() !=
+          enterprise_connectors::ContentAnalysisResponse::Result::SUCCESS) {
+        dlp_scan_failure = true;
+        continue;
+      }
+      for (const auto& rule : result.triggered_rules()) {
+        if (rule.action() > dlp_action)
+          dlp_action = rule.action();
+      }
+    }
+  }
+
+  switch (malware_action) {
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        BLOCK:
+      *download_result = DownloadCheckResult::DANGEROUS;
+      return;
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        WARN:
+      *download_result = DownloadCheckResult::POTENTIALLY_UNWANTED;
+      return;
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        REPORT_ONLY:
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        ACTION_UNSPECIFIED:
+      break;
+  }
+  switch (dlp_action) {
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        BLOCK:
+      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_BLOCK;
+      return;
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        WARN:
+      *download_result = DownloadCheckResult::SENSITIVE_CONTENT_WARNING;
+      return;
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        REPORT_ONLY:
+    case enterprise_connectors::ContentAnalysisResponse::Result::TriggeredRule::
+        ACTION_UNSPECIFIED:
+      break;
+  }
+
+  if (dlp_scan_failure || malware_scan_failure) {
+    *download_result = DownloadCheckResult::UNKNOWN;
+    return;
+  }
+
+  *download_result = DownloadCheckResult::DEEP_SCANNED_SAFE;
+}
+
+void ResponseToDownloadCheckResult(const DeepScanningClientResponse& response,
+                                   DownloadCheckResult* download_result) {
   if (response.has_malware_scan_verdict()) {
     if (response.malware_scan_verdict().verdict() ==
         MalwareDeepScanningVerdict::MALWARE) {
@@ -128,19 +201,17 @@ base::Optional<enterprise_connectors::AnalysisSettings>
 DeepScanningRequest::ShouldUploadBinary(download::DownloadItem* item) {
   bool dlp_scan = base::FeatureList::IsEnabled(kContentComplianceEnabled);
   bool malware_scan = base::FeatureList::IsEnabled(kMalwareScanEnabled);
-
-  // If neither DLP or malware scanning is enabled by features, don't perform
-  // scans.
-  if (!dlp_scan && !malware_scan)
-    return base::nullopt;
-
   auto* connectors_manager =
       enterprise_connectors::ConnectorsManager::GetInstance();
+  bool use_legacy_policies = !connectors_manager->IsConnectorEnabled(
+      enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED);
 
   // If the settings arent't obtained by the FILE_DOWNLOADED connector, check
   // the legacy DLP and Malware policies.
-  if (!connectors_manager->IsConnectorEnabled(
-          enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED)) {
+  if (use_legacy_policies) {
+    if (!dlp_scan && !malware_scan)
+      return base::nullopt;
+
     if (dlp_scan)
       dlp_scan = ShouldUploadForDlpScanByLegacyPolicy();
     if (malware_scan)
@@ -159,10 +230,12 @@ DeepScanningRequest::ShouldUploadBinary(download::DownloadItem* item) {
   if (!settings.has_value())
     return base::nullopt;
 
-  if (!dlp_scan)
-    settings.value().tags.erase("dlp");
-  if (!malware_scan)
-    settings.value().tags.erase("malware");
+  if (use_legacy_policies) {
+    if (!dlp_scan)
+      settings.value().tags.erase("dlp");
+    if (!malware_scan)
+      settings.value().tags.erase("malware");
+  }
 
   if (settings.value().tags.empty())
     return base::nullopt;
@@ -193,11 +266,19 @@ void DeepScanningRequest::Start() {
   // Indicate we're now scanning the file.
   callback_.Run(DownloadCheckResult::ASYNC_SCANNING);
 
-  auto request = std::make_unique<FileSourceRequest>(
-      analysis_settings_, item_->GetFullPath(),
-      item_->GetTargetFilePath().BaseName(),
-      base::BindOnce(&DeepScanningRequest::OnScanComplete,
-                     weak_ptr_factory_.GetWeakPtr()));
+  auto request =
+      base::FeatureList::IsEnabled(
+          enterprise_connectors::kEnterpriseConnectorsEnabled)
+          ? std::make_unique<FileSourceRequest>(
+                analysis_settings_, item_->GetFullPath(),
+                item_->GetTargetFilePath().BaseName(),
+                base::BindOnce(&DeepScanningRequest::OnConnectorScanComplete,
+                               weak_ptr_factory_.GetWeakPtr()))
+          : std::make_unique<FileSourceRequest>(
+                analysis_settings_, item_->GetFullPath(),
+                item_->GetTargetFilePath().BaseName(),
+                base::BindOnce(&DeepScanningRequest::OnLegacyScanComplete,
+                               weak_ptr_factory_.GetWeakPtr()));
   request->set_filename(item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
 
   std::string raw_digest_sha256 = item_->GetHash();
@@ -218,8 +299,13 @@ void DeepScanningRequest::Start() {
   if (binary_upload_service) {
     binary_upload_service->MaybeUploadForDeepScanning(std::move(request));
   } else {
-    OnScanComplete(BinaryUploadService::Result::UNKNOWN,
-                   DeepScanningClientResponse());
+    if (request->use_legacy_proto()) {
+      OnLegacyScanComplete(BinaryUploadService::Result::UNKNOWN,
+                           DeepScanningClientResponse());
+    } else {
+      OnConnectorScanComplete(BinaryUploadService::Result::UNKNOWN,
+                              enterprise_connectors::ContentAnalysisResponse());
+    }
   }
 }
 
@@ -267,8 +353,21 @@ void DeepScanningRequest::PrepareConnectorRequest(
   // TODO(crbug.com/1069069): Set CSD field.
 }
 
+void DeepScanningRequest::OnConnectorScanComplete(
+    BinaryUploadService::Result result,
+    enterprise_connectors::ContentAnalysisResponse response) {
+  OnScanComplete(result, std::move(response));
+}
+
+void DeepScanningRequest::OnLegacyScanComplete(
+    BinaryUploadService::Result result,
+    DeepScanningClientResponse response) {
+  OnScanComplete(result, std::move(response));
+}
+
+template <typename T>
 void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
-                                         DeepScanningClientResponse response) {
+                                         T response) {
   RecordDeepScanMetrics(
       /*access_point=*/DeepScanAccessPoint::DOWNLOAD,
       /*duration=*/base::TimeTicks::Now() - upload_start_time_,
@@ -289,7 +388,7 @@ void DeepScanningRequest::OnScanComplete(BinaryUploadService::Result result,
 
   DownloadCheckResult download_result = DownloadCheckResult::UNKNOWN;
   if (result == BinaryUploadService::Result::SUCCESS) {
-    DeepScanningClientResponseToDownloadCheckResult(response, &download_result);
+    ResponseToDownloadCheckResult(response, &download_result);
   } else if (trigger_ == DeepScanTrigger::TRIGGER_APP_PROMPT &&
              MaybeShowDeepScanFailureModalDialog(
                  base::BindOnce(&DeepScanningRequest::Start,

@@ -944,6 +944,10 @@ void MakeCredentialRequestHandler::SpecializeRequestForAuthenticator(
       authenticator->Options()->supports_android_client_data_ext) {
     request->android_client_data_ext = *options_.android_client_data_ext;
   }
+
+  if (request->hmac_secret && !authenticator->SupportsHMACSecretExtension()) {
+    request->hmac_secret = false;
+  }
 }
 
 }  // namespace device

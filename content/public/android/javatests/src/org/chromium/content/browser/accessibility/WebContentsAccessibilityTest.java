@@ -35,6 +35,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -85,8 +86,9 @@ public class WebContentsAccessibilityTest {
         wcax.setState(true);
         wcax.setAccessibilityEnabledForTesting();
 
-        CriteriaHelper.pollUiThread(
-                () -> Assert.assertNotNull(wcax.getAccessibilityNodeProvider()));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(wcax.getAccessibilityNodeProvider(), Matchers.notNullValue());
+        });
 
         return wcax.getAccessibilityNodeProvider();
     }
@@ -142,10 +144,10 @@ public class WebContentsAccessibilityTest {
      */
     private int waitForNodeMatching(
             AccessibilityNodeProvider provider, AccessibilityNodeInfoMatcher matcher) {
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertNotEquals(
-                                View.NO_ID, findNodeMatching(provider, View.NO_ID, matcher)));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    findNodeMatching(provider, View.NO_ID, matcher), Matchers.not(View.NO_ID));
+        });
 
         int virtualViewId = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> findNodeMatching(provider, View.NO_ID, matcher));
@@ -1009,8 +1011,8 @@ public class WebContentsAccessibilityTest {
             Bundle textNodeExtras = textNode.getExtras();
             RectF[] textNodeResults = (RectF[]) textNodeExtras.getParcelableArray(
                     EXTRA_DATA_TEXT_CHARACTER_LOCATION_KEY);
-            Assert.assertThat(textNodeResults, Matchers.arrayWithSize(4));
-            Assert.assertNotEquals(textNodeResults[0], textNodeResults[1]);
+            Criteria.checkThat(textNodeResults, Matchers.arrayWithSize(4));
+            Criteria.checkThat(textNodeResults[0], Matchers.not(textNodeResults[1]));
         });
 
         // The final result should be the separate bounding box of all four characters.

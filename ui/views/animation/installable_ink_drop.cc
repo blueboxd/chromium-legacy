@@ -107,6 +107,9 @@ void InstallableInkDrop::HostSizeChanged(const gfx::Size& new_size) {
   animator_.SetSize(layer_->size());
 }
 
+void InstallableInkDrop::HostTransformChanged(
+    const gfx::Transform& new_transform) {}
+
 InkDropState InstallableInkDrop::GetTargetInkDropState() const {
   return animator_.target_state();
 }

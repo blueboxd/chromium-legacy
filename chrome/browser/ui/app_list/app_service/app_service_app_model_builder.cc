@@ -20,7 +20,7 @@ bool ShouldShowInLauncher(const apps::AppUpdate& update) {
   switch (readiness) {
     case apps::mojom::Readiness::kReady:
     case apps::mojom::Readiness::kDisabledByUser:
-    case apps::mojom::Readiness::kDisabledByBlacklist:
+    case apps::mojom::Readiness::kDisabledByBlocklist:
     case apps::mojom::Readiness::kDisabledByPolicy:
     case apps::mojom::Readiness::kTerminated:
       return update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;

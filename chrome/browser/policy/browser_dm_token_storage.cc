@@ -24,7 +24,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace policy {
 
@@ -57,6 +56,25 @@ DMToken CreateEmptyToken() {
 
 // static
 BrowserDMTokenStorage* BrowserDMTokenStorage::storage_for_testing_ = nullptr;
+
+BrowserDMTokenStorage* BrowserDMTokenStorage::Get() {
+  if (storage_for_testing_)
+    return storage_for_testing_;
+
+  static base::NoDestructor<BrowserDMTokenStorage> storage;
+  return storage.get();
+}
+
+// static
+void BrowserDMTokenStorage::SetDelegate(std::unique_ptr<Delegate> delegate) {
+  auto* storage = BrowserDMTokenStorage::Get();
+
+  if (!delegate || storage->delegate_) {
+    return;
+  }
+
+  BrowserDMTokenStorage::Get()->delegate_ = std::move(delegate);
+}
 
 BrowserDMTokenStorage::BrowserDMTokenStorage()
     : is_initialized_(false), dm_token_(CreateEmptyToken()) {
@@ -148,6 +166,7 @@ bool BrowserDMTokenStorage::ShouldDisplayErrorMessageOnFailure() {
 
 void BrowserDMTokenStorage::InitIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(delegate_) << "DM storage delegate has not been set";
 
   if (is_initialized_)
     return;
@@ -155,15 +174,15 @@ void BrowserDMTokenStorage::InitIfNeeded() {
   is_initialized_ = true;
 
   // Only supported in official builds.
-  client_id_ = InitClientId();
+  client_id_ = delegate_->InitClientId();
   DVLOG(1) << "Client ID = " << client_id_;
   if (client_id_.empty())
     return;
 
-  enrollment_token_ = InitEnrollmentToken();
+  enrollment_token_ = delegate_->InitEnrollmentToken();
   DVLOG(1) << "Enrollment token = " << enrollment_token_;
 
-  std::string init_dm_token = InitDMToken();
+  std::string init_dm_token = delegate_->InitDMToken();
   if (init_dm_token.empty()) {
     dm_token_ = CreateEmptyToken();
     DVLOG(1) << "DM Token = empty";
@@ -175,15 +194,17 @@ void BrowserDMTokenStorage::InitIfNeeded() {
     DVLOG(1) << "DM Token = " << dm_token_.value();
   }
 
-  should_display_error_message_on_failure_ = InitEnrollmentErrorOption();
+  should_display_error_message_on_failure_ =
+      delegate_->InitEnrollmentErrorOption();
 }
 
 void BrowserDMTokenStorage::SaveDMToken(const std::string& token) {
-  auto task = SaveDMTokenTask(token, RetrieveClientId());
+  auto task = delegate_->SaveDMTokenTask(token, RetrieveClientId());
   auto reply = base::BindOnce(&BrowserDMTokenStorage::OnDMTokenStored,
                               weak_factory_.GetWeakPtr());
-  base::PostTaskAndReplyWithResult(SaveDMTokenTaskRunner().get(), FROM_HERE,
-                                   std::move(task), std::move(reply));
+  base::PostTaskAndReplyWithResult(delegate_->SaveDMTokenTaskRunner().get(),
+                                   FROM_HERE, std::move(task),
+                                   std::move(reply));
 }
 
 std::string BrowserDMTokenStorage::InitSerialNumber() {

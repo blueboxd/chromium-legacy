@@ -105,7 +105,8 @@ class MenuItem {
     FRAME = 256,
     LAUNCHER = 512,
     BROWSER_ACTION = 1024,
-    PAGE_ACTION = 2048
+    PAGE_ACTION = 2048,
+    ACTION = 4096,
   };
 
   // An item can be only one of these types.

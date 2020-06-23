@@ -262,6 +262,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
     if (FAILED(hr)) {
       DLOG(ERROR) << "Creating D3D11 video staging texture failed: " << std::hex
                   << hr;
+      DirectCompositionSurfaceWin::DisableOverlays();
       return nullptr;
     }
     DCHECK(staging_texture_);
@@ -314,6 +315,7 @@ Microsoft::WRL::ComPtr<ID3D11Texture2D> SwapChainPresenter::UploadVideoImages(
     if (FAILED(hr)) {
       DLOG(ERROR) << "Creating D3D11 video upload texture failed: " << std::hex
                   << hr;
+      DirectCompositionSurfaceWin::DisableOverlays();
       return nullptr;
     }
     DCHECK(copy_texture_);
@@ -602,6 +604,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
       DLOG(ERROR) << "CreateDecodeSwapChainForCompositionSurfaceHandle failed "
                      "with error 0x"
                   << std::hex << hr;
+      DirectCompositionSurfaceWin::DisableOverlays();
       return false;
     }
     DCHECK(decode_swap_chain_);
@@ -615,6 +618,7 @@ bool SwapChainPresenter::PresentToDecodeSwapChain(
     if (FAILED(hr)) {
       DLOG(ERROR) << "CreateSurfaceFromHandle failed with error 0x" << std::hex
                   << hr;
+      DirectCompositionSurfaceWin::DisableOverlays();
       return false;
     }
     DCHECK(decode_surface_);

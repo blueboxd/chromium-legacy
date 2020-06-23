@@ -67,8 +67,12 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         if (!per_frame_resources) {
 #if DCHECK_IS_ON()
           // Check that the frame token didn't already occur.
-          for (const auto& entry : frames)
+          for (const auto& entry : frames) {
+            // This frame was already added to the map by frames[frame] above.
+            if (frame == entry.first)
+              continue;
             DCHECK_NE(entry.first->GetFrameToken(), frame->GetFrameToken());
+          }
 #endif
           auto new_resources = mojom::PerFrameV8MemoryUsageData::New();
           new_resources->frame_token = frame->GetFrameToken();

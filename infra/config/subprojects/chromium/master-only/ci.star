@@ -1822,11 +1822,11 @@ ci.fyi_ios_builder(
         category = 'iOS|iOS14',
         short_name = 'sdk14',
     ),
-    caches = [xcode_cache.x11n700h],
+    caches = [xcode_cache.x12a6159],
     executable = 'recipe:chromium',
     os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11n700h'
+        'xcode_build_version': '12a6159'
     }
 )
 

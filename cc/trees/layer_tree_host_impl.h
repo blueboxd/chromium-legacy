@@ -748,11 +748,12 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   gfx::Vector2dF ComputeScrollDelta(const ScrollNode& scroll_node,
                                     const gfx::Vector2dF& delta);
 
-  // Resolves a pecent-based delta for the |scroll_node| dimensions. Output in
-  // physical pixels.
-  gfx::Vector2dF ResolveScrollPercentageToPixels(
+  // Resolves a delta in the given granularity for the |scroll_node| into
+  // physical pixels to scroll.
+  gfx::Vector2dF ResolveScrollGranularityToPixels(
       const ScrollNode& scroll_node,
-      const gfx::Vector2dF& scroll_delta);
+      const gfx::Vector2dF& scroll_delta,
+      ui::ScrollGranularity granularity);
 
   void ScheduleMicroBenchmark(std::unique_ptr<MicroBenchmarkImpl> benchmark);
 

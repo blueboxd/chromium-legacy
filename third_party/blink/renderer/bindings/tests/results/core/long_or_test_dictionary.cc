@@ -74,7 +74,7 @@ void V8LongOrTestDictionary::ToImpl(
     return;
 
   if (IsUndefinedOrNull(v8_value)) {
-    TestDictionary* cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state);
+    TestDictionary* cpp_value{ NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetTestDictionary(cpp_value);
@@ -82,7 +82,7 @@ void V8LongOrTestDictionary::ToImpl(
   }
 
   if (v8_value->IsObject()) {
-    TestDictionary* cpp_value = NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state);
+    TestDictionary* cpp_value{ NativeValueTraits<TestDictionary>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetTestDictionary(cpp_value);
@@ -90,7 +90,7 @@ void V8LongOrTestDictionary::ToImpl(
   }
 
   if (v8_value->IsNumber()) {
-    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetLong(cpp_value);
@@ -98,7 +98,7 @@ void V8LongOrTestDictionary::ToImpl(
   }
 
   {
-    int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state);
+    int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetLong(cpp_value);

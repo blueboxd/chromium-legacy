@@ -26,6 +26,9 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
+#include "chrome/browser/policy/browser_dm_token_storage_linux.h"
+#include "chrome/browser/policy/browser_dm_token_storage_mac.h"
+#include "chrome/browser/policy/browser_dm_token_storage_win.h"
 #include "chrome/browser/policy/chrome_browser_cloud_management_register_watcher.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/chrome_browser_cloud_management_helper.h"
@@ -218,7 +221,21 @@ class MachineLevelDeviceAccountInitializerHelper
 };
 
 ChromeBrowserCloudManagementController::ChromeBrowserCloudManagementController()
-    : gaia_url_loader_factory_(nullptr) {}
+    : gaia_url_loader_factory_(nullptr) {
+  std::unique_ptr<BrowserDMTokenStorage::Delegate> storage_delegate;
+
+#if defined(OS_WIN)
+  storage_delegate = std::make_unique<BrowserDMTokenStorageWin>();
+#elif defined(OS_MACOSX)
+  storage_delegate = std::make_unique<BrowserDMTokenStorageMac>();
+#elif defined(OS_LINUX)
+  storage_delegate = std::make_unique<BrowserDMTokenStorageLinux>();
+#else
+  NOT_REACHED();
+#endif
+
+  BrowserDMTokenStorage::SetDelegate(std::move(storage_delegate));
+}
 
 ChromeBrowserCloudManagementController::
     ~ChromeBrowserCloudManagementController() {

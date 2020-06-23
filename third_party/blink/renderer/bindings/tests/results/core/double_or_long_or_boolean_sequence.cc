@@ -81,7 +81,7 @@ void V8DoubleOrLongOrBooleanSequence::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      HeapVector<LongOrBoolean> cpp_value = NativeValueTraits<IDLSequence<LongOrBoolean>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      HeapVector<LongOrBoolean> cpp_value{ NativeValueTraits<IDLSequence<LongOrBoolean>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetLongOrBooleanSequence(cpp_value);
@@ -90,7 +90,7 @@ void V8DoubleOrLongOrBooleanSequence::ToImpl(
   }
 
   if (v8_value->IsNumber()) {
-    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetDouble(cpp_value);
@@ -98,7 +98,7 @@ void V8DoubleOrLongOrBooleanSequence::ToImpl(
   }
 
   {
-    double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetDouble(cpp_value);

@@ -6,6 +6,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "ui/gl/direct_composition_child_surface_win.h"
+#include "ui/gl/direct_composition_surface_win.h"
 #include "ui/gl/swap_chain_presenter.h"
 
 namespace gl {
@@ -63,6 +64,8 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
     // This can fail if the D3D device is "Microsoft Basic Display Adapter".
     if (FAILED(d3d11_device_.As(&video_device_))) {
       DLOG(ERROR) << "Failed to retrieve video device from D3D11 device";
+      DCHECK(false);
+      DirectCompositionSurfaceWin::DisableOverlays();
       return false;
     }
     DCHECK(video_device_);
@@ -100,6 +103,9 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessorEnumerator failed with error 0x"
                 << std::hex << hr;
+    // It might fail again next time. Disable overlay support so
+    // overlay processor will stop sending down overlay frames.
+    DirectCompositionSurfaceWin::DisableOverlays();
     return false;
   }
 
@@ -108,6 +114,9 @@ bool DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   if (FAILED(hr)) {
     DLOG(ERROR) << "CreateVideoProcessor failed with error 0x" << std::hex
                 << hr;
+    // It might fail again next time. Disable overlay support so
+    // overlay processor will stop sending down overlay frames.
+    DirectCompositionSurfaceWin::DisableOverlays();
     return false;
   }
 

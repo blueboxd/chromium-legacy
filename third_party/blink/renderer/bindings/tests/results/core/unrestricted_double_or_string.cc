@@ -73,7 +73,7 @@ void V8UnrestrictedDoubleOrString::ToImpl(
     return;
 
   if (v8_value->IsNumber()) {
-    double cpp_value = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8_value, exception_state);
+    double cpp_value{ NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(isolate, v8_value, exception_state) };
     if (exception_state.HadException())
       return;
     impl.SetUnrestrictedDouble(cpp_value);
@@ -81,7 +81,7 @@ void V8UnrestrictedDoubleOrString::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

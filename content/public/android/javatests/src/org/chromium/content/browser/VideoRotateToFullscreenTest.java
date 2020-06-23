@@ -9,6 +9,7 @@ import android.provider.Settings;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -23,6 +24,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.CriteriaNotSatisfiedException;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -30,7 +32,6 @@ import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.MediaSwitches;
 import org.chromium.ui.test.util.UiRestriction;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -47,23 +48,24 @@ public class VideoRotateToFullscreenTest {
     private static final String VIDEO_ID = "video";
 
     private void waitForContentsFullscreenState(boolean fullscreenValue) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(fullscreenValue, new Callable<Boolean>() {
-                    @Override
-                    public Boolean call() throws TimeoutException {
-                        return DOMUtils.isFullscreen(mRule.getWebContents());
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(DOMUtils.isFullscreen(mRule.getWebContents()),
+                        Matchers.is(fullscreenValue));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        });
     }
 
     private void waitForScreenOrientation(String orientationValue) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(orientationValue, new Callable<String>() {
-                    @Override
-                    public String call() throws TimeoutException {
-                        return screenOrientation();
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            try {
+                Criteria.checkThat(screenOrientation(), Matchers.is(orientationValue));
+            } catch (TimeoutException ex) {
+                throw new CriteriaNotSatisfiedException(ex);
+            }
+        });
     }
 
     private String screenOrientation() throws TimeoutException {

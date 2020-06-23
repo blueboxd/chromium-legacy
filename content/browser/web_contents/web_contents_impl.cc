@@ -73,6 +73,7 @@
 #include "content/browser/media/media_web_contents_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/plugin_content_origin_allowlist.h"
+#include "content/browser/portal/portal.h"
 #include "content/browser/renderer_host/frame_token_message_queue.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -5270,6 +5271,10 @@ void WebContentsImpl::DidFirstVisuallyNonEmptyPaint(
 
 bool WebContentsImpl::IsPortal() {
   return portal();
+}
+
+WebContentsImpl* WebContentsImpl::GetPortalHostWebContents() {
+  return portal() ? portal()->GetPortalHostContents() : nullptr;
 }
 
 void WebContentsImpl::NotifyBeforeFormRepostWarningShow() {

@@ -483,6 +483,10 @@ void WebRuntimeFeatures::EnableWebXRPlaneDetection(bool enable) {
   RuntimeEnabledFeatures::SetWebXRPlaneDetectionEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWebXRReflectionEstimation(bool enable) {
+  RuntimeEnabledFeatures::SetWebXRReflectionEstimationEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnablePresentationAPI(bool enable) {
   RuntimeEnabledFeatures::SetPresentationEnabled(enable);
 }

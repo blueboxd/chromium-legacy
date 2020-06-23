@@ -971,21 +971,30 @@ TEST_P(InputHandlerProxyTest, GestureScrollIgnored) {
 }
 
 TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
-  // We should send all events to the widget for this gesture.
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   VERIFY_AND_RESET_MOCKS();
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.SetType(WebInputEvent::Type::kGestureScrollBegin);
   gesture_.data.scroll_begin.delta_hint_units =
       ui::ScrollGranularity::kScrollByPage;
   EXPECT_CALL(
       mock_input_handler_,
-      RecordScrollBegin(_, cc::ScrollBeginThreadState::kScrollingOnMain))
+      RecordScrollBegin(_, cc::ScrollBeginThreadState::kScrollingOnCompositor))
       .Times(1);
   EXPECT_EQ(expected_disposition_,
             HandleInputEventWithLatencyInfo(input_handler_.get(), gesture_));
 
   VERIFY_AND_RESET_MOCKS();
+
+  if (!base::FeatureList::IsEnabled(features::kScrollUnification)) {
+    EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+        .WillOnce(testing::Return(false));
+  }
+  EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _))
+      .WillOnce(testing::Return(scroll_result_did_scroll_));
 
   gesture_.SetType(WebInputEvent::Type::kGestureScrollUpdate);
   gesture_.data.scroll_update.delta_y = 1;
@@ -996,6 +1005,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollByPage) {
 
   VERIFY_AND_RESET_MOCKS();
 
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(1);
   gesture_.SetType(WebInputEvent::Type::kGestureScrollEnd);
   gesture_.data.scroll_update.delta_y = 0;
   EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);

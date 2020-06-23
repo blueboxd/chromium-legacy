@@ -1453,8 +1453,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Sets the embedding token corresponding to the document in this
   // RenderFrameHost.
-  void SetEmbeddingToken(
-      const base::Optional<base::UnguessableToken>& embedding_token);
+  void SetEmbeddingToken(const base::UnguessableToken& embedding_token);
 
   // Return true if the process this RenderFrameHost is using has crashed and we
   // are replacing RenderFrameHosts for crashed frames rather than reusing them.

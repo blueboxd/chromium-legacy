@@ -114,7 +114,8 @@ class NGInlineNodeTest : public NGLayoutTest {
         .ComputeMinMaxSizes(
             node.Style().GetWritingMode(),
             MinMaxSizesInput(
-                /* percentage_resolution_block_size */ LayoutUnit()))
+                /* percentage_resolution_block_size */ LayoutUnit(),
+                MinMaxSizesType::kContent))
         .sizes;
   }
 

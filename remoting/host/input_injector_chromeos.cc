@@ -7,14 +7,15 @@
 #include <set>
 #include <utility>
 
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "remoting/host/chromeos/point_transformer.h"
 #include "remoting/host/clipboard.h"
 #include "remoting/proto/internal.pb.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -80,6 +81,7 @@ void SetCapsLockState(bool caps_lock) {
 class InputInjectorChromeos::Core {
  public:
   Core();
+  ~Core();
 
   // Mirrors the public InputInjectorChromeos interface.
   void InjectClipboardEvent(const ClipboardEvent& event);
@@ -91,6 +93,7 @@ class InputInjectorChromeos::Core {
  private:
   void SetLockStates(uint32_t states);
 
+  bool hide_cursor_on_disconnect_ = false;
   std::unique_ptr<ui::SystemInputInjector> delegate_;
   std::unique_ptr<Clipboard> clipboard_;
 
@@ -102,6 +105,16 @@ class InputInjectorChromeos::Core {
 };
 
 InputInjectorChromeos::Core::Core() = default;
+
+InputInjectorChromeos::Core::~Core() {
+  if (hide_cursor_on_disconnect_) {
+    aura::client::CursorClient* cursor_client =
+        aura::client::GetCursorClient(ash::Shell::GetPrimaryRootWindow());
+    if (cursor_client) {
+      cursor_client->HideCursor();
+    }
+  }
+}
 
 void InputInjectorChromeos::Core::InjectClipboardEvent(
     const ClipboardEvent& event) {
@@ -159,6 +172,17 @@ void InputInjectorChromeos::Core::Start(
   clipboard_ = Clipboard::Create();
   clipboard_->Start(std::move(client_clipboard));
   point_transformer_.reset(new PointTransformer());
+
+  // If the cursor was hidden before we start injecting input then we should try
+  // to restore its state when the remote user disconnects.  The main scenario
+  // where this is important is for devices in non-interactive Kiosk mode.
+  // Since no one is interacting with the screen in this mode, we will leave a
+  // visible cursor after disconnecting which can't be hidden w/o restarting.
+  aura::client::CursorClient* cursor_client =
+      aura::client::GetCursorClient(ash::Shell::GetPrimaryRootWindow());
+  if (cursor_client) {
+    hide_cursor_on_disconnect_ = !cursor_client->IsCursorVisible();
+  }
 }
 
 InputInjectorChromeos::InputInjectorChromeos(
@@ -210,7 +234,7 @@ std::unique_ptr<InputInjector> InputInjector::Create(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   // The Ozone input injector must be called on the UI task runner of the
   // browser process.
-  return base::WrapUnique(new InputInjectorChromeos(ui_task_runner));
+  return std::make_unique<InputInjectorChromeos>(ui_task_runner);
 }
 
 // static

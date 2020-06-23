@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -18,6 +19,7 @@ namespace policy {
 #if !defined(OS_CHROMEOS)
 // HasMachineLevelPolicies() is not implemented on ChromeOS.
 TEST(ChromeBrowserPolicyConnectorTest, HasMachineLevelPolicies) {
+  base::test::TaskEnvironment env;
   MockConfigurationPolicyProvider provider;
   BrowserPolicyConnectorBase::SetPolicyProviderForTesting(&provider);
 

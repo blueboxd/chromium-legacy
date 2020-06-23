@@ -141,9 +141,10 @@ MirroringActivityRecord::~MirroringActivityRecord() {
   }
 }
 
-// TODO(jrw): Detect and report errors.
 void MirroringActivityRecord::CreateMojoBindings(
     mojom::MediaRouter* media_router) {
+  DCHECK(mirroring_type_);
+
   // Get a reference to the mirroring service host.
   switch (*mirroring_type_) {
     case MirroringType::kDesktop: {

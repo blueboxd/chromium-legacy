@@ -253,10 +253,12 @@ void InstallStageTracker::NotifyObserversOfFailure(
     const ExtensionId& id,
     FailureReason reason,
     const InstallationData& data) {
-  for (auto& observer : observers_) {
+  for (auto& observer : observers_)
     observer.OnExtensionInstallationFailed(id, reason);
+  // Observer::OnExtensionInstallationFailed may change |observers_|, run the
+  // loop again to call the other methods for |observers_|.
+  for (auto& observer : observers_)
     observer.OnExtensionDataChangedForTesting(id, browser_context_, data);
-  }
 }
 
 }  //  namespace extensions

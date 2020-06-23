@@ -713,7 +713,7 @@ scoped_refptr<const NGLayoutResult> NGOutOfFlowLayoutPart::Layout(
 
   if (AbsoluteNeedsChildInlineSize(candidate_style) ||
       NeedMinMaxSize(candidate_style) || should_be_considered_as_replaced) {
-    MinMaxSizesInput input(kIndefiniteSize);
+    MinMaxSizesInput input(kIndefiniteSize, MinMaxSizesType::kContent);
     if (is_replaced) {
       input.percentage_resolution_block_size =
           container_content_size_in_candidate_writing_mode.block_size;

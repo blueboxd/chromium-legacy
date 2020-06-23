@@ -45,7 +45,8 @@ const char* const kTopLevelIpcRunTaskAllowedArgs[] = {"ipc_hash", nullptr};
 const char* const kLifecyclesTaskPostedAllowedArgs[] = {
     "task_queue_name", "time_since_disabled_ms", "ipc_hash", "location",
     nullptr};
-const char* const kMemoryPressureEventsAllowedArgs[] = {"level", nullptr};
+const char* const kMemoryPressureEventsAllowedArgs[] = {
+    "level", "listener_creation_info", nullptr};
 
 const AllowlistEntry kEventArgsAllowlist[] = {
     {"__metadata", "thread_name", nullptr},
@@ -55,6 +56,8 @@ const AllowlistEntry kEventArgsAllowlist[] = {
     {"__metadata", "chrome_library_module", nullptr},
     {"__metadata", "stackFrames", nullptr},
     {"__metadata", "typeNames", nullptr},
+    {"base", "MemoryPressureListener::Notify",
+     kMemoryPressureEventsAllowedArgs},
     {"base", "MessagePumpForUI::ProcessNextWindowsMessage PeekMessage",
      kPeekMessageAllowedArgs},
     {"base", "MultiSourceMemoryPressureMonitor::OnMemoryPressureLevelChanged",

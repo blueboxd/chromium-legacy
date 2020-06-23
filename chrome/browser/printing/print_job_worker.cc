@@ -291,7 +291,15 @@ void PrintJobWorker::GetSettingsWithUI(int document_page_count,
 }
 
 void PrintJobWorker::UseDefaultSettings(SettingsCallback callback) {
-  PrintingContext::Result result = printing_context_->UseDefaultSettings();
+  PrintingContext::Result result;
+  {
+#if defined(OS_WIN)
+    // Blocking is needed here because Windows printer drivers are oftentimes
+    // not thread-safe and have to be accessed on the UI thread.
+    base::ScopedAllowBlocking allow_blocking;
+#endif
+    result = printing_context_->UseDefaultSettings();
+  }
   GetSettingsDone(std::move(callback), result);
 }
 

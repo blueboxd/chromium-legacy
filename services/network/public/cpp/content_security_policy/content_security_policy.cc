@@ -41,6 +41,7 @@ static CSPDirectiveName CSPFallback(CSPDirectiveName directive) {
     case CSPDirectiveName::ScriptSrc:
     case CSPDirectiveName::StyleSrc:
     case CSPDirectiveName::WorkerSrc:
+    case CSPDirectiveName::ConnectSrc:
       return CSPDirectiveName::Unknown;
 
     case CSPDirectiveName::FrameSrc:
@@ -90,6 +91,7 @@ const char* ErrorMessage(CSPDirectiveName directive) {
     case CSPDirectiveName::ScriptSrc:
     case CSPDirectiveName::StyleSrc:
     case CSPDirectiveName::WorkerSrc:
+    case CSPDirectiveName::ConnectSrc:
       NOTREACHED();
       return nullptr;
   };
@@ -638,6 +640,8 @@ CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
     return CSPDirectiveName::StyleSrc;
   if (name == "worker-src")
     return CSPDirectiveName::WorkerSrc;
+  if (name == "connect-src")
+    return CSPDirectiveName::ConnectSrc;
   return CSPDirectiveName::Unknown;
 }
 
@@ -667,6 +671,8 @@ std::string ToString(CSPDirectiveName name) {
       return "style-src";
     case CSPDirectiveName::WorkerSrc:
       return "worker-src";
+    case CSPDirectiveName::ConnectSrc:
+      return "connect-src";
     case CSPDirectiveName::Unknown:
       return "";
   }

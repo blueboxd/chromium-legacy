@@ -6,6 +6,8 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "empty_logger.cc",
+    "empty_logger.h",
     "fake_server_response.cc",
     "fake_server_response.h",
     "fake_tile_service.cc",

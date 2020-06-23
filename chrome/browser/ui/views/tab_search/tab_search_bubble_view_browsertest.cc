@@ -6,24 +6,34 @@
 
 #include <string>
 
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/ui_features.h"
+#include "chrome/common/webui_url_constants.h"
 #include "content/public/test/browser_test.h"
 
 class TabSearchBubbleBrowserTest : public DialogBrowserTest {
  public:
-  TabSearchBubbleBrowserTest() = default;
+  TabSearchBubbleBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kTabSearch);
+  }
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    BrowserView* browser_view = static_cast<BrowserView*>(browser()->window());
-    TabSearchBubbleView::CreateTabSearchBubble(browser()->profile(),
-                                               browser_view->toolbar());
+    AppendTab(chrome::kChromeUISettingsURL);
+    AppendTab(chrome::kChromeUIHistoryURL);
+    AppendTab(chrome::kChromeUIBookmarksURL);
+    TabSearchBubbleView::CreateTabSearchBubble(browser());
+  }
+
+  void AppendTab(std::string url) {
+    chrome::AddTabAt(browser(), GURL(url), -1, true);
   }
 
  private:
+  base::test::ScopedFeatureList feature_list_;
   DISALLOW_COPY_AND_ASSIGN(TabSearchBubbleBrowserTest);
 };
 

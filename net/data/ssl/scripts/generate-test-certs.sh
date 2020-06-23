@@ -16,7 +16,7 @@ set -e -x
 # The current built-in verifier max lifetime is 39 months
 # The current OS verifier max lifetime is 825 days, which comes from
 #   iOS 13/macOS 10.15 - https://support.apple.com/en-us/HT210176
-# 731 is used here as just a short-hand for 2 years
+# 730 is used here as just a short-hand for 2 years
 CERT_LIFETIME=730
 
 rm -rf out
@@ -460,6 +460,44 @@ CA_NAME="req_ca_dn" \
     -in out/pre_june_2016.req \
     -out ../certificates/pre_june_2016.pem \
     -config ca.cnf
+
+# Issued after 2020-09-01, lifetime == 399 days (bad)
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/399_days_after_2020_09_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 200902000000Z \
+    -enddate   211006000000Z \
+    -in out/399_days_after_2020_09_01.req \
+    -out ../certificates/399_days_after_2020_09_01.pem \
+    -config ca.cnf
+# Issued after 2020-09-01, lifetime == 398 days (good)
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/398_days_after_2020_09_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 200902000000Z \
+    -enddate   211005000000Z \
+    -in out/398_days_after_2020_09_01.req \
+    -out ../certificates/398_days_after_2020_09_01.pem \
+    -config ca.cnf
+# Issued after 2020-09-01, lifetime == 825 days and one second (bad)
+openssl req -config ../scripts/ee.cnf \
+  -newkey rsa:2048 -text -out out/398_days_1_second_after_2020_09_01.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 200902000000Z \
+    -enddate   211005000001Z \
+    -in out/398_days_1_second_after_2020_09_01.req \
+    -out ../certificates/398_days_1_second_after_2020_09_01.pem \
+    -config ca.cnf
+
 
 # Issued after 1 June 2016 (Symantec CT Enforcement Date)
 openssl req -config ../scripts/ee.cnf \

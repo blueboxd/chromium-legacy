@@ -3,10 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_platform_keys_helpers.h"
+
 #include <memory>
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/containers/flat_set.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/cert_provisioning/cert_provisioning_common.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
@@ -74,7 +76,7 @@ void CertProvisioningCertsWithIdsGetter::OnGetCertificatesDone(
 
 void CertProvisioningCertsWithIdsGetter::CollectOneResult(
     scoped_refptr<net::X509Certificate> cert,
-    const std::string& cert_id,
+    const CertProfileId& cert_id,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(wait_counter_ > 0);
@@ -110,7 +112,7 @@ CertProvisioningCertDeleter::~CertProvisioningCertDeleter() = default;
 void CertProvisioningCertDeleter::DeleteCerts(
     CertScope cert_scope,
     platform_keys::PlatformKeysService* platform_keys_service,
-    const std::set<std::string>& cert_profile_ids_to_keep,
+    base::flat_set<CertProfileId> cert_profile_ids_to_keep,
     DeleteCertsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(platform_keys_service);
@@ -119,7 +121,7 @@ void CertProvisioningCertDeleter::DeleteCerts(
   cert_scope_ = cert_scope;
   platform_keys_service_ = platform_keys_service;
   callback_ = std::move(callback);
-  cert_profile_ids_to_keep_ = cert_profile_ids_to_keep;
+  cert_profile_ids_to_keep_ = std::move(cert_profile_ids_to_keep);
 
   cert_getter_ = std::make_unique<CertProvisioningCertsWithIdsGetter>();
   cert_getter_->GetCertsWithIds(
@@ -129,7 +131,8 @@ void CertProvisioningCertDeleter::DeleteCerts(
 }
 
 void CertProvisioningCertDeleter::OnGetCertsWithIdsDone(
-    std::map<std::string, scoped_refptr<net::X509Certificate>> certs_with_ids,
+    base::flat_map<CertProfileId, scoped_refptr<net::X509Certificate>>
+        certs_with_ids,
     const std::string& error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -146,7 +149,7 @@ void CertProvisioningCertDeleter::OnGetCertsWithIdsDone(
   wait_counter_ = certs_with_ids.size();
 
   for (const auto& kv : certs_with_ids) {
-    const std::string& cert_id = kv.first;
+    const CertProfileId& cert_id = kv.first;
     if (base::Contains(cert_profile_ids_to_keep_, cert_id)) {
       AccountOneResult();
       continue;

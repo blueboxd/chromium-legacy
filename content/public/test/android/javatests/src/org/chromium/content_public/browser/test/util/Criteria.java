@@ -4,7 +4,12 @@
 
 package org.chromium.content_public.browser.test.util;
 
+import android.text.TextUtils;
+
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.hamcrest.StringDescription;
 
 import java.util.concurrent.Callable;
 
@@ -56,25 +61,45 @@ public abstract class Criteria {
     }
 
     /**
-     * Constructs a Criteria that will determine the equality of two items.
-     *
-     * <p>
-     * <pre>
-     * Sample Usage:
-     * <code>
-     * public void waitForTabTitle(final Tab tab, String title) {
-     *     CriteriaHelper.pollUiThread(Criteria.equals(title, () -> tab.getTitle()));
-     * }
-     * </code>
-     * </pre>
-     *
-     * @param <T> The type of value whose equality will be tested.
-     * @param expectedValue The value that is expected to determine the success of the criteria.
-     * @param actualValueCallable A {@link Callable} that provides a way of getting the current
-     *                            actual value.
-     * @return A Criteria that will check the equality of the passed in data.
+     * Do not use. Use checkThat(...) instead. This will be removed as soon as all clients
+     * are migrated.
      */
     public static <T> Criteria equals(T expectedValue, Callable<T> actualValueCallable) {
         return new MatcherCriteria<>(actualValueCallable, Matchers.equalTo(expectedValue));
+    }
+
+    /**
+     * Validates that a expected condition has been met, and throws an
+     * {@link CriteriaNotSatisfiedException} if not.
+     *
+     * @param <T> The type of value whose being tested.
+     * @param actual The actual value being tested.
+     * @param matcher Determines if the current value matches the desired expectation.
+     */
+    public static <T> void checkThat(T actual, Matcher<T> matcher) {
+        checkThat("", actual, matcher);
+    }
+
+    /**
+     * Validates that a expected condition has been met, and throws an
+     * {@link CriteriaNotSatisfiedException} if not.
+     *
+     * @param <T> The type of value whose being tested.
+     * @param reason Additional reason description for the failure.
+     * @param actual The actual value being tested.
+     * @param matcher Determines if the current value matches the desired expectation.
+     */
+    public static <T> void checkThat(String reason, T actual, Matcher<T> matcher) {
+        if (matcher.matches(actual)) return;
+        Description description = new StringDescription();
+        if (!TextUtils.isEmpty(reason)) {
+            description.appendText(reason).appendText(System.lineSeparator());
+        }
+        description.appendText("Expected: ")
+                .appendDescriptionOf(matcher)
+                .appendText(System.lineSeparator())
+                .appendText("     but: ");
+        matcher.describeMismatch(actual, description);
+        throw new CriteriaNotSatisfiedException(description.toString());
     }
 }

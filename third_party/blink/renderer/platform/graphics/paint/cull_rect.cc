@@ -51,6 +51,15 @@ void CullRect::Move(const IntSize& offset) {
     rect_.Move(offset);
 }
 
+void CullRect::Move(const FloatSize& offset) {
+  if (IsInfinite())
+    return;
+
+  FloatRect float_rect(rect_);
+  float_rect.Move(offset);
+  rect_ = EnclosingIntRect(float_rect);
+}
+
 static void MapRect(const TransformPaintPropertyNode& transform,
                     IntRect& rect) {
   if (transform.IsIdentityOr2DTranslation()) {
@@ -63,15 +72,12 @@ static void MapRect(const TransformPaintPropertyNode& transform,
 }
 
 CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
-    const TransformPaintPropertyNode& transform,
-    bool clip_to_scroll_container) {
+    const TransformPaintPropertyNode& transform) {
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (const auto* scroll = transform.ScrollNode()) {
-      if (clip_to_scroll_container) {
-        rect_.Intersect(scroll->ContainerRect());
-        if (rect_.IsEmpty())
-          return kNotExpanded;
-      }
+      rect_.Intersect(scroll->ContainerRect());
+      if (rect_.IsEmpty())
+        return kNotExpanded;
 
       MapRect(transform, rect_);
 
@@ -103,8 +109,7 @@ CullRect::ApplyTransformResult CullRect::ApplyTransformInternal(
 
 void CullRect::ApplyTransforms(const TransformPaintPropertyNode& source,
                                const TransformPaintPropertyNode& destination,
-                               const base::Optional<CullRect>& old_cull_rect,
-                               bool clip_to_scroll_container) {
+                               const base::Optional<CullRect>& old_cull_rect) {
   DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   Vector<const TransformPaintPropertyNode*> scroll_translations;
@@ -130,7 +135,7 @@ void CullRect::ApplyTransforms(const TransformPaintPropertyNode& source,
           *last_transform, *scroll_translation->Parent(), rect_);
     }
     last_scroll_translation_result =
-        ApplyTransformInternal(*scroll_translation, clip_to_scroll_container);
+        ApplyTransformInternal(*scroll_translation);
     last_transform = scroll_translation;
   }
 

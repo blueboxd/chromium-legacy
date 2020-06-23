@@ -19,6 +19,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.weblayer.Browser;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.TestWebLayer;
 import org.chromium.weblayer.shell.InstrumentationActivity;
@@ -117,5 +118,23 @@ public class InfoBarTest {
                 activity.getWindow().getDecorView(), 0, infoBarContainerViewHeight);
         CriteriaHelper.pollUiThread(
                 () -> Assert.assertEquals(0, (int) infoBarContainerView.getTranslationY()));
+    }
+
+    @Test
+    @SmallTest
+    /**
+     * Tests that the infobar container view is removed as part of tab destruction.
+     *
+     */
+    public void testTabDestruction() throws Exception {
+        View infoBarContainerView = getInfoBarContainerView();
+        Assert.assertNotNull(infoBarContainerView.getParent());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Browser browser = mActivityTestRule.getActivity().getBrowser();
+            browser.destroyTab(getActiveTab());
+        });
+
+        Assert.assertEquals(infoBarContainerView.getParent(), null);
     }
 }

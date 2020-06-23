@@ -29,31 +29,6 @@ const char kTestGaiaID[] = "fooID";
 const char kTestEmail[] = "foo@gmail.com";
 }  // namespace
 
-// Fake implementation of ChromeIdentityInteractionManagerDelegate that calls
-// completion callback.
-@interface FakeChromeIdentityInteractionManagerDelegate
-    : NSObject <ChromeIdentityInteractionManagerDelegate>
-@end
-
-@implementation FakeChromeIdentityInteractionManagerDelegate
-- (void)interactionManager:(ChromeIdentityInteractionManager*)interactionManager
-     presentViewController:(UIViewController*)viewController
-                  animated:(BOOL)animated
-                completion:(ProceduralBlock)completion {
-  if (completion) {
-    completion();
-  }
-}
-
-- (void)interactionManager:(ChromeIdentityInteractionManager*)interactionManager
-    dismissViewControllerAnimated:(BOOL)animated
-                       completion:(ProceduralBlock)completion {
-  if (completion) {
-    completion();
-  }
-}
-@end
-
 class AddAccountSigninManagerTest : public PlatformTest {
  public:
   AddAccountSigninManagerTest()
@@ -61,16 +36,13 @@ class AddAccountSigninManagerTest : public PlatformTest {
         base_view_controller_([[UIViewController alloc] init]),
         identity_service_(
             ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()) {
-    identity_interaction_manager_delegate_ =
-        [[FakeChromeIdentityInteractionManagerDelegate alloc] init];
     identity_interaction_manager_ = GetIdentityInteractionManager();
   }
 
   FakeChromeIdentityInteractionManager* GetIdentityInteractionManager() {
     FakeChromeIdentityInteractionManager* identity_interaction_manager =
         ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
-            ->CreateFakeChromeIdentityInteractionManager(
-                browser_state_.get(), identity_interaction_manager_delegate_);
+            ->CreateFakeChromeIdentityInteractionManager(browser_state_.get());
     fake_identity_ = [FakeChromeIdentity
         identityWithEmail:[NSString stringWithUTF8String:kTestEmail]
                    gaiaID:[NSString stringWithUTF8String:kTestGaiaID]
@@ -122,8 +94,6 @@ class AddAccountSigninManagerTest : public PlatformTest {
 
   ios::FakeChromeIdentityService* identity_service_ = nullptr;
   FakeChromeIdentityInteractionManager* identity_interaction_manager_ = nil;
-  id<ChromeIdentityInteractionManagerDelegate>
-      identity_interaction_manager_delegate_ = nil;
   FakeChromeIdentity* fake_identity_ = nil;
 };
 

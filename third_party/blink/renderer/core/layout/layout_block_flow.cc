@@ -2389,8 +2389,7 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats() {
       !floating_objects_)
     return;
 
-  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
-  CHECK(!NeedsLayout());
+  DCHECK(!NeedsLayout());
 
   for (auto& floating_object : floating_objects_->Set()) {
     if (floating_object->IsDescendant()) {
@@ -2404,8 +2403,7 @@ void LayoutBlockFlow::AddVisualOverflowFromFloats() {
 
 void LayoutBlockFlow::AddVisualOverflowFromFloats(
     const NGPhysicalContainerFragment& fragment) {
-  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
-  CHECK(!NeedsLayout());
+  DCHECK(!NeedsLayout());
   DCHECK(!PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   DCHECK(fragment.HasFloatingDescendantsForPaint());
 
@@ -2454,8 +2452,7 @@ const NGFragmentItems* LayoutBlockFlow::FragmentItems() const {
 
 void LayoutBlockFlow::ComputeVisualOverflow(
     bool recompute_floats) {
-  // TODO(crbug.com/1086968): Change to DCHECK after diagnosing the bug.
-  CHECK(!SelfNeedsLayout());
+  DCHECK(!SelfNeedsLayout());
 
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();

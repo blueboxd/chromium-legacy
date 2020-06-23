@@ -996,15 +996,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
-  if (gesture_event.data.scroll_begin.delta_hint_units ==
-      ui::ScrollGranularity::kScrollByPage) {
-    // TODO(bokan): This will have to be implemented on the main thread for
-    // scroll unification.  Perhaps using a percent-based scroll?
-    // https://crbug.com/1082589.
-    scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons =
-        cc::MainThreadScrollingReason::kContinuingMainThreadScroll;
-  } else if (gesture_event.data.scroll_begin.target_viewport) {
+  if (gesture_event.data.scroll_begin.target_viewport) {
     scroll_status = input_handler_->RootScrollBegin(
         &scroll_state, GestureScrollInputType(gesture_event.SourceDevice()));
   } else {

@@ -73,4 +73,15 @@ std::unique_ptr<views::InkDrop> ShelfButton::CreateInkDrop() {
   return std::move(ink_drop);
 }
 
+void ShelfButton::OnLayerTransformed(const gfx::Transform& old_transform,
+                                     ui::PropertyChangeReason reason) {
+  views::Button::OnLayerTransformed(old_transform, reason);
+
+  // Notify the ink drop that we have transformed so it can adapt accordingly.
+  // TODO(crbug.com/1097044): This should probably be moved lower to ink drop or
+  // views code, but those may assume bounds changes.
+  if (HasInkDrop())
+    GetInkDrop()->HostTransformChanged(GetTransform());
+}
+
 }  // namespace ash

@@ -22,8 +22,8 @@ TEST(SafetyTipsConfigTest, TestUrlAllowlist) {
 TEST(SafetyTipsConfigTest, TestTargetUrlAllowlist) {
   SetSafetyTipAllowlistPatterns({}, {"exa.*\\.com"});
   auto* config = GetSafetyTipsRemoteConfigProto();
-  EXPECT_TRUE(IsTargetUrlAllowlistedBySafetyTipsComponent(
-      config, GURL("http://example.com")));
-  EXPECT_FALSE(IsTargetUrlAllowlistedBySafetyTipsComponent(
-      config, GURL("http://example.org")));
+  EXPECT_TRUE(
+      IsTargetHostAllowlistedBySafetyTipsComponent(config, "example.com"));
+  EXPECT_FALSE(
+      IsTargetHostAllowlistedBySafetyTipsComponent(config, "example.org"));
 }

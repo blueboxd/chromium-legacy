@@ -25,9 +25,9 @@ void MemoryPressureMetrics::OnPassedToGraph(Graph* graph) {
   if (base::GetSystemMemoryInfo(&mem_info))
     system_ram_mb_ = mem_info.total / 1024;
 
-  memory_pressure_listener_ =
-      std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-          &MemoryPressureMetrics::OnMemoryPressure, base::Unretained(this)));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&MemoryPressureMetrics::OnMemoryPressure,
+                                     base::Unretained(this)));
 }
 
 void MemoryPressureMetrics::OnTakenFromGraph(Graph* graph) {

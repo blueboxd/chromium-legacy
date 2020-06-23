@@ -67,15 +67,13 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
     ui::SelectFileDialog::SetFactory(
         new FakeSelectFileDialogFactory({test_file}));
     EXPECT_TRUE(NavigateToURL(shell(), test_url_));
-    EXPECT_EQ(
-        test_file.BaseName().AsUTF8Unsafe(),
-        EvalJs(
-            shell(),
-            "(async () => {"
-            "  let e = await self.chooseFileSystemEntries({type: 'open-file'});"
-            "  self.entry = e;"
-            "  self.writers = [];"
-            "  return e.name; })()"));
+    EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+              EvalJs(shell(),
+                     "(async () => {"
+                     "  let [e] = await self.showOpenFilePicker();"
+                     "  self.entry = e;"
+                     "  self.writers = [];"
+                     "  return e.name; })()"));
 
     const base::FilePath swap_file =
         base::FilePath(test_file).AddExtensionASCII(".crswap");
@@ -93,15 +91,13 @@ class NativeFileSystemFileWriterBrowserTest : public ContentBrowserTest {
     ui::SelectFileDialog::SetFactory(
         new FakeSelectFileDialogFactory({test_file}));
     EXPECT_TRUE(NavigateToURL(shell(), test_url_));
-    EXPECT_EQ(
-        test_file.BaseName().AsUTF8Unsafe(),
-        EvalJs(
-            shell(),
-            "(async () => {"
-            "  let e = await self.chooseFileSystemEntries({type: 'open-file'});"
-            "  self.entry = e;"
-            "  self.writers = [];"
-            "  return e.name; })()"));
+    EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+              EvalJs(shell(),
+                     "(async () => {"
+                     "  let [e] = await self.showOpenFilePicker();"
+                     "  self.entry = e;"
+                     "  self.writers = [];"
+                     "  return e.name; })()"));
 
     const base::FilePath swap_file =
         base::FilePath(test_file).AddExtensionASCII(".crswap");

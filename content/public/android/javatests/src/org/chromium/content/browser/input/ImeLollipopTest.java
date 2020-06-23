@@ -11,6 +11,7 @@ import android.view.inputmethod.InputConnection;
 
 import androidx.test.filters.MediumTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -20,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.content_public.browser.test.ContentJUnit4ClassRunner;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
@@ -94,11 +96,11 @@ public class ImeLollipopTest {
         CriteriaHelper.pollUiThread(() -> {
             CursorAnchorInfo info = mRule.getInputMethodManagerWrapper().getLastCursorAnchorInfo();
             if (info != null) {
-                Assert.assertNotNull(info.getComposingText());
+                Criteria.checkThat(info.getComposingText(), Matchers.notNullValue());
             }
 
             String actual = (info == null ? "" : info.getComposingText().toString());
-            Assert.assertEquals(expected, actual);
+            Criteria.checkThat(actual, Matchers.is(expected));
         });
     }
 }

@@ -32,8 +32,11 @@ enum GpuProcessKind {
 
 enum GpuInfoRequest {
   kGpuInfoRequestDxDiag = 1 << 0,
-  kGpuInfoRequestDx12Vulkan = 1 << 1,
-  kGpuInfoRequestAll = kGpuInfoRequestDxDiag | kGpuInfoRequestDx12Vulkan,
+  kGpuInfoRequestDx12 = 1 << 1,
+  kGpuInfoRequestVulkan = 1 << 2,
+  kGpuInfoRequestDx12Vulkan = kGpuInfoRequestVulkan | kGpuInfoRequestDx12,
+  kGpuInfoRequestAll =
+      kGpuInfoRequestDxDiag | kGpuInfoRequestDx12 | kGpuInfoRequestVulkan,
 };
 
 class GpuDataManagerObserver;

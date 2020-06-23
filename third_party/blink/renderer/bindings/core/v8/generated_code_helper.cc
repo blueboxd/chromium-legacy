@@ -132,7 +132,7 @@ void V8SetReflectedDOMStringAttribute(
   CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = info[0];
+  V8StringResource<> cpp_value{info[0]};
   if (!cpp_value.Prepare())
     return;
 
@@ -148,7 +148,7 @@ void V8SetReflectedNullableDOMStringAttribute(
   CEReactionsScope ce_reactions_scope;
 
   // Prepare the value to be set.
-  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value = info[0];
+  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value{info[0]};
   if (!cpp_value.Prepare())
     return;
 

@@ -580,6 +580,10 @@ addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
           sectionIdentifierForSection:section]);
 }
 
+- (BOOL)isDiscoverItem:(NSInteger)itemType {
+  return itemType == ItemTypeDiscover;
+}
+
 - (void)dismissItem:(CSCollectionViewItem*)item {
   [self.dataSource dismissSuggestion:item.suggestionIdentifier];
 }

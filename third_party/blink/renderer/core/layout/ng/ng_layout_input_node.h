@@ -27,6 +27,11 @@ class NGPaintFragment;
 struct MinMaxSizes;
 struct PhysicalSize;
 
+// min/max-content take the CSS aspect-ratio property into account.
+// In some cases that's undesirable; this enum lets you choose not
+// to do that using |kIntrinsic|.
+enum class MinMaxSizesType { kContent, kIntrinsic };
+
 // The input to the min/max inline size calculation algorithm for child nodes.
 // Child nodes within the same formatting context need to know which floats are
 // beside them.
@@ -41,11 +46,15 @@ struct MinMaxSizesInput {
   //
   // As we don't perform any tree walking, we need to pass the percentage
   // resolution block-size for min/max down the min/max size calculation.
-  explicit MinMaxSizesInput(LayoutUnit percentage_resolution_block_size)
-      : percentage_resolution_block_size(percentage_resolution_block_size) {}
+  MinMaxSizesInput(LayoutUnit percentage_resolution_block_size,
+                   MinMaxSizesType type)
+      : percentage_resolution_block_size(percentage_resolution_block_size),
+        type(type) {}
   LayoutUnit float_left_inline_size;
   LayoutUnit float_right_inline_size;
   LayoutUnit percentage_resolution_block_size;
+
+  MinMaxSizesType type;
 };
 
 // The output of the min/max inline size calculation algorithm. Contains the

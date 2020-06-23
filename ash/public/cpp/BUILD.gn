@@ -358,6 +358,7 @@ source_set("test_support") {
   deps = [
     ":cpp",
     "//base",
+    "//services/device/public/cpp:test_support",
     "//services/network/public/cpp:cpp",
     "//ui/aura",
     "//ui/aura:test_support",

@@ -34,8 +34,6 @@ class CrostiniUninstallerView : public views::BubbleDialogDelegateView {
   static void Show(Profile* profile);
 
   // views::DialogDelegateView:
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowCloseButton() const override;
   bool Accept() override;
   bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;

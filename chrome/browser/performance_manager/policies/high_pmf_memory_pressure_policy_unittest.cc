@@ -35,6 +35,7 @@ TEST_F(HighPMFMemoryPressurePolicyTest, EndToEnd) {
   bool memory_pressure_listener_called = false;
   util::MultiSourceMemoryPressureMonitor memory_pressure_monitor;
   base::MemoryPressureListener memory_pressure_listener(
+      FROM_HERE,
       base::BindLambdaForTesting(
           [&](base::MemoryPressureListener::MemoryPressureLevel level) {
             EXPECT_EQ(base::MemoryPressureListener::MemoryPressureLevel::

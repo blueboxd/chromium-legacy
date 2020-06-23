@@ -262,7 +262,7 @@ TEST_F(CertProvisioningSchedulerTest, Success) {
   // Check one more time that scheduler doesn't create new workers for
   // finished certificate profiles (the factory will fail on an attempt to
   // do so).
-  scheduler.UpdateCerts();
+  scheduler.UpdateAllCerts();
 
   FastForwardBy(base::TimeDelta::FromSeconds(100));
 }
@@ -331,7 +331,7 @@ TEST_F(CertProvisioningSchedulerTest, WorkerFailed) {
 
   // Check one more time that scheduler doesn't create new workers for failed
   // certificate profiles (the factory will fail on an attempt to do so).
-  scheduler.UpdateCerts();
+  scheduler.UpdateAllCerts();
 }
 
 TEST_F(CertProvisioningSchedulerTest, InitialAndDailyUpdates) {
@@ -497,7 +497,7 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
       .WillOnce(base::test::RunOnceCallback<3>(kCertProfileId0, ""));
 
   // Make scheduler check workers state.
-  scheduler.UpdateCerts();
+  scheduler.UpdateAllCerts();
 
   EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
   EXPECT_TRUE(
@@ -514,7 +514,7 @@ TEST_F(CertProvisioningSchedulerTest, MultipleWorkers) {
 
   // Check one more time that scheduler doesn't create new workers for failed
   // certificate profiles (the factory will fail on an attempt to do so).
-  scheduler.UpdateCerts();
+  scheduler.UpdateAllCerts();
   EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 }
 
@@ -685,7 +685,7 @@ TEST_F(CertProvisioningSchedulerTest, InconsistentDataErrorHandling) {
 
   // If another update happens, workers with matching policy versions should not
   // be deleted.
-  scheduler.UpdateCerts();
+  scheduler.UpdateAllCerts();
   EXPECT_EQ(scheduler.GetWorkers().size(), 1U);
 
   // On policy update if existing profile has changed its policy_version,
@@ -869,6 +869,103 @@ TEST_F(CertProvisioningSchedulerTest, DeleteVaKeysOnIdle) {
         .Times(0);
 
     FastForwardBy(base::TimeDelta::FromSeconds(1));
+  }
+}
+
+TEST_F(CertProvisioningSchedulerTest, UpdateOneCert) {
+  CertScope cert_scope = CertScope::kUser;
+
+  CertProvisioningScheduler scheduler(
+      cert_scope, GetProfile(), &pref_service_,
+      prefs::kRequiredClientCertificateForUser, &cloud_policy_client_,
+      network_state_test_helper_.network_state_handler(),
+      MakeFakeInvalidationFactory());
+
+  const char kCertProfileId[] = "cert_profile_id_1";
+  const char kCertProfileVersion[] = "cert_profile_version_1";
+  CertProfile cert_profile{kCertProfileId, kCertProfileVersion};
+
+  // From CertProvisioningScheduler::CleanVaKeysIfIdle.
+  EXPECT_CALL(fake_cryptohome_client_, OnTpmAttestationDeleteKeysByPrefix);
+
+  // There is no policies yet, |kCertProfileId| will not be found.
+  scheduler.UpdateOneCert(kCertProfileId);
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  ASSERT_TRUE(scheduler.GetWorkers().empty());
+
+  MockCertProvisioningWorker* worker =
+      mock_factory_.ExpectCreateReturnMock(cert_scope, cert_profile);
+  worker->SetExpectations(/*do_step_times=*/Exactly(1),
+                          /*is_waiting=*/false, cert_profile);
+
+  // Add 1 certificate profile to the policy ("cert_profile_id" is the same as
+  // above). That will trigger creation of a worker.
+  base::Value config = ParseJson(
+      R"([{"name": "Certificate Profile 1",
+           "cert_profile_id":"cert_profile_id_1",
+           "policy_version":"cert_profile_version_1",
+           "key_algorithm":"rsa",
+           "renewal_period_seconds": 365000}])");
+  pref_service_.Set(prefs::kRequiredClientCertificateForUser, config);
+
+  // If worker is waiting, it should be continued.
+  {
+    worker->SetExpectations(/*do_step_times=*/Exactly(1),
+                            /*is_waiting=*/true, cert_profile);
+
+    scheduler.UpdateOneCert(kCertProfileId);
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
+  }
+
+  // If worker is not waiting, it should not be continued.
+  {
+    worker->SetExpectations(/*do_step_times=*/Exactly(0),
+                            /*is_waiting=*/false, cert_profile);
+
+    scheduler.UpdateOneCert(kCertProfileId);
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
+  }
+
+  // If there is no intenet connection, the worker should not be continued
+  // until it is restored.
+  {
+    SetWifiNetworkState(shill::kStateIdle);
+
+    worker->SetExpectations(/*do_step_times=*/Exactly(0),
+                            /*is_waiting=*/true, cert_profile);
+
+    scheduler.UpdateOneCert(kCertProfileId);
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    ASSERT_EQ(scheduler.GetWorkers().size(), 1U);
+
+    worker->SetExpectations(/*do_step_times=*/Exactly(1),
+                            /*is_waiting=*/true, cert_profile);
+    SetWifiNetworkState(shill::kStateOnline);
+  }
+
+  // Emulate callback from the worker.
+  scheduler.OnProfileFinished(cert_profile,
+                              CertProvisioningWorkerState::kSucceeded);
+  FastForwardBy(base::TimeDelta::FromSeconds(1));
+  ASSERT_TRUE(scheduler.GetWorkers().empty());
+
+  certificate_helper_.AddCert();
+  EXPECT_CALL(
+      *platform_keys_service_,
+      GetAttributeForKey(
+          GetPlatformKeysTokenId(cert_scope),
+          certificate_helper_.GetPublicKeyForCert(),
+          platform_keys::KeyAttributeType::CertificateProvisioningId, _))
+      .Times(1)
+      .WillOnce(base::test::RunOnceCallback<3>(kCertProfileId, ""));
+
+  {
+    // If a certificate already exists, a new worker should not be created.
+    scheduler.UpdateOneCert(kCertProfileId);
+    FastForwardBy(base::TimeDelta::FromSeconds(1));
+    ASSERT_TRUE(scheduler.GetWorkers().empty());
   }
 }
 

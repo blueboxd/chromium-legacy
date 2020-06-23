@@ -171,8 +171,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SaveFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let e = await self.chooseFileSystemEntries("
-                            "      {type: 'save-file'});"
+                            "  let e = await self.showSaveFilePicker();"
                             "  self.entry = e;"
                             "  return e.name; })()"));
 
@@ -218,8 +217,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, OpenFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let e = await self.chooseFileSystemEntries("
-                            "      {type: 'open-file'});"
+                            "  let [e] = await self.showOpenFilePicker();"
                             "  self.entry = e;"
                             "  return e.name; })()"));
 
@@ -267,8 +265,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, FullscreenOpenFile) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let e = await self.chooseFileSystemEntries("
-                            "      {type: 'open-file'});"
+                            "  let [e] = await self.showOpenFilePicker();"
                             "  self.entry = e;"
                             "  return e.name; })()"));
 
@@ -352,8 +349,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest, SafeBrowsing) {
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let e = await self.chooseFileSystemEntries("
-                            "      {type: 'save-file'});"
+                            "  let e = await self.showSaveFilePicker();"
                             "  const w = await e.createWritable();"
                             "  await w.write('abc');"
                             "  await w.close();"
@@ -390,8 +386,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let e = await self.chooseFileSystemEntries("
-                            "      {type: 'open-file'});"
+                            "  let [e] = await self.showOpenFilePicker();"
                             "  self.entry = e;"
                             "  return e.name; })()"));
 
@@ -443,8 +438,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
   EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
             content::EvalJs(web_contents,
                             "(async () => {"
-                            "  let e = await self.chooseFileSystemEntries("
-                            "      {type: 'save-file'});"
+                            "  let e = await self.showSaveFilePicker();"
                             "  self.entry = e;"
                             "  return e.name; })()"));
 
@@ -530,8 +524,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
             content::EvalJs(
                 first_party_web_contents,
                 "(async () => {"
-                "  let e = await self.chooseFileSystemEntries("
-                "      {type: 'open-file'});"
+                "  let [e] = await self.showOpenFilePicker();"
                 "  self.entry = e;"
                 "  new BroadcastChannel('channel').postMessage({entry: e});"
                 "  return e.name; })()"));
@@ -665,8 +658,7 @@ IN_PROC_BROWSER_TEST_F(NativeFileSystemBrowserTest,
             content::EvalJs(
                 first_party_web_contents,
                 "(async () => {"
-                "  let e = await self.chooseFileSystemEntries("
-                "      {type: 'open-file'});"
+                "  let [e] = await self.showOpenFilePicker();"
                 "  self.entry = e;"
                 "  new BroadcastChannel('channel').postMessage({entry: e});"
                 "  return e.name; })()"));

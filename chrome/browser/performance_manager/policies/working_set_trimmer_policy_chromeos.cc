@@ -97,6 +97,7 @@ void WorkingSetTrimmerPolicyChromeOS::OnPassedToGraph(Graph* graph) {
     trim_on_memory_pressure_params_ =
         features::TrimOnMemoryPressureParams::GetParams();
     memory_pressure_listener_.emplace(
+        FROM_HERE,
         base::BindRepeating(&WorkingSetTrimmerPolicyChromeOS::OnMemoryPressure,
                             base::Unretained(this)));
   }

@@ -532,14 +532,22 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     device_info_->options = std::move(options);
   }
 
+  std::vector<std::string> extensions;
+
   if (config.cred_protect_support) {
-    device_info_->extensions.emplace(
-        {std::string(device::kExtensionCredProtect)});
+    extensions.emplace_back(device::kExtensionCredProtect);
+  }
+
+  if (config.hmac_secret_support) {
+    extensions.emplace_back(device::kExtensionHmacSecret);
   }
 
   if (config.support_android_client_data_extension) {
-    device_info_->extensions.emplace(
-        {std::string(device::kExtensionAndroidClientData)});
+    extensions.emplace_back(device::kExtensionAndroidClientData);
+  }
+
+  if (!extensions.empty()) {
+    device_info_->extensions.emplace(std::move(extensions));
   }
 
   if (config.max_credential_count_in_list > 0) {
@@ -893,6 +901,13 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
   base::Optional<cbor::Value> extensions;
   cbor::Value::MapValue extensions_map;
   if (request.hmac_secret) {
+    if (!config_.hmac_secret_support) {
+      // Should not have been sent. Authenticators will normally ignore unknown
+      // extensions but Chromium should not make this mistake.
+      DLOG(ERROR)
+          << "Rejecting makeCredential due to unexpected hmac_secret extension";
+      return base::nullopt;
+    }
     extensions_map.emplace(cbor::Value(kExtensionHmacSecret),
                            cbor::Value(true));
   }

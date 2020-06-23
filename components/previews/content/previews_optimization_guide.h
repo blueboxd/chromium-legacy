@@ -32,6 +32,9 @@ class PreviewsOptimizationGuide {
  public:
   explicit PreviewsOptimizationGuide(
       optimization_guide::OptimizationGuideDecider* optimization_guide_decider);
+  PreviewsOptimizationGuide(const PreviewsOptimizationGuide&) = delete;
+  PreviewsOptimizationGuide& operator=(const PreviewsOptimizationGuide&) =
+      delete;
   virtual ~PreviewsOptimizationGuide();
 
   // Returns whether a Preview should be shown for the current conditions.
@@ -67,8 +70,6 @@ class PreviewsOptimizationGuide {
   // The optimization types registered with |optimization_guide_decider_|.
   const base::flat_set<optimization_guide::proto::OptimizationType>
       registered_optimization_types_;
-
-  DISALLOW_COPY_AND_ASSIGN(PreviewsOptimizationGuide);
 };
 
 }  // namespace previews

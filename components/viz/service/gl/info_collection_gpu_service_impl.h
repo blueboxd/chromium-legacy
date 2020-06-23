@@ -35,8 +35,11 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
 
   void RequestDxDiagNodeInfo(RequestDxDiagNodeInfoCallback callback) override;
 
-  void GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
-      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback) override;
+  void GetGpuSupportedDx12VersionAndDevicePerfInfo(
+      GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback) override;
+
+  void GetGpuSupportedVulkanVersionInfo(
+      GetGpuSupportedVulkanVersionInfoCallback callback) override;
 
  private:
   void BindOnIO(
@@ -44,8 +47,11 @@ class VIZ_SERVICE_EXPORT InfoCollectionGpuServiceImpl
 
   void RequestDxDiagNodeInfoOnMain(RequestDxDiagNodeInfoCallback callback);
 
-  void GetGpuSupportedRuntimeVersionAndDevicePerfInfoOnMain(
-      GetGpuSupportedRuntimeVersionAndDevicePerfInfoCallback callback);
+  void GetGpuSupportedDx12VersionAndDevicePerfInfoOnMain(
+      GetGpuSupportedDx12VersionAndDevicePerfInfoCallback callback);
+
+  void GetGpuSupportedVulkanVersionInfoOnMain(
+      GetGpuSupportedVulkanVersionInfoCallback callback);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;

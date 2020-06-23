@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/pref_names.h"
@@ -387,6 +388,42 @@ IN_PROC_BROWSER_TEST_F(UserManagementDisclosureTest,
       ash::LoginScreenTestApi::IsManagedIconShown(managed_user.account_id));
   EXPECT_TRUE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
       managed_user.account_id));
+}
+
+class UserManagementDisclosureChildTest
+    : public MixinBasedInProcessBrowserTest {
+ public:
+  ~UserManagementDisclosureChildTest() override = default;
+
+ protected:
+  LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_, LoggedInUserMixin::LogInType::kChild,
+      embedded_test_server(), this, false /*should_launch_browser*/};
+};
+
+// Check if the user management disclosure is hidden on the lock screen after
+// having logged a child account into a session and having locked the screen.
+IN_PROC_BROWSER_TEST_F(UserManagementDisclosureChildTest,
+                       PRE_EnterpriseIconVisibleChildUser) {
+  logged_in_user_mixin_.LogInUser(false /*issue_any_scope_token*/,
+                                  true /*wait_for_active_session*/,
+                                  true /*request_policy_update*/);
+  ScreenLockerTester screen_locker_tester;
+  screen_locker_tester.Lock();
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedIconShown(
+      logged_in_user_mixin_.GetAccountId()));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+      logged_in_user_mixin_.GetAccountId()));
+}
+
+// Check if the user management disclosure is shown on the login screen for a
+// child account.
+IN_PROC_BROWSER_TEST_F(UserManagementDisclosureChildTest,
+                       EnterpriseIconVisibleChildUser) {
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedIconShown(
+      logged_in_user_mixin_.GetAccountId()));
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsManagedMessageInMenuShown(
+      logged_in_user_mixin_.GetAccountId()));
 }
 
 }  // namespace chromeos

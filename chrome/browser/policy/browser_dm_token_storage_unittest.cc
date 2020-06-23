@@ -171,4 +171,18 @@ TEST_F(BrowserDMTokenStorageTest, ShouldDisplayErrorMessageOnFailure) {
   EXPECT_FALSE(storage_.ShouldDisplayErrorMessageOnFailure());
 }
 
+TEST_F(BrowserDMTokenStorageTest, SetDelegate) {
+  // The initial delegate has already been set by the test fixture ctor. This
+  // next call should not modify the existing delegate.
+  BrowserDMTokenStorage::SetDelegate(
+      std::make_unique<FakeBrowserDMTokenStorage::MockDelegate>(
+          kClientId2, kEnrollmentToken2, kDMToken2, true));
+
+  // Make sure the initial delegate is the one reading the values.
+  EXPECT_EQ(storage_.RetrieveClientId(), kClientId1);
+  EXPECT_EQ(storage_.RetrieveEnrollmentToken(), kEnrollmentToken1);
+  EXPECT_EQ(storage_.RetrieveDMToken().value(), kDMToken1);
+  EXPECT_EQ(storage_.ShouldDisplayErrorMessageOnFailure(), false);
+}
+
 }  // namespace policy

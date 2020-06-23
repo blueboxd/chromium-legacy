@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"

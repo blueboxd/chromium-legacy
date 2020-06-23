@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/navigation_corrector.mojom.h"
+#include "chrome/common/net/net_error_page_support.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
 #include "chrome/common/network_easter_egg.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
@@ -27,6 +28,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 
 class GURL;
@@ -109,6 +111,7 @@ class NetErrorHelper
       const GURL& url) const;
   chrome::mojom::NetworkDiagnostics* GetRemoteNetworkDiagnostics();
   chrome::mojom::NetworkEasterEgg* GetRemoteNetworkEasterEgg();
+  chrome::mojom::NetErrorPageSupport* GetRemoteNetErrorPageSupport();
 
   // NetErrorHelperCore::Delegate implementation:
   error_page::LocalizedError::PageState GenerateLocalizedErrorPage(
@@ -188,6 +191,8 @@ class NetErrorHelper
       navigation_corrector_receivers_;
   mojo::AssociatedRemote<chrome::mojom::NetworkEasterEgg>
       remote_network_easter_egg_;
+  mojo::AssociatedRemote<chrome::mojom::NetErrorPageSupport>
+      remote_net_error_page_support_;
 
   // Weak factories for vending weak pointers to PageControllers. Weak
   // pointers are invalidated on each commit, to prevent getting messages from

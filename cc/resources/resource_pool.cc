@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "base/atomic_sequence_num.h"
@@ -101,9 +102,9 @@ ResourcePool::ResourcePool(
       clock_(base::DefaultTickClock::GetInstance()) {
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "cc::ResourcePool", task_runner_.get());
-  memory_pressure_listener_.reset(
-      new base::MemoryPressureListener(base::BindRepeating(
-          &ResourcePool::OnMemoryPressure, weak_ptr_factory_.GetWeakPtr())));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&ResourcePool::OnMemoryPressure,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 ResourcePool::~ResourcePool() {

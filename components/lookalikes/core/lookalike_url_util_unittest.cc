@@ -65,12 +65,64 @@ TEST(LookalikeUrlUtilTest, IsEditDistanceAtMostOne) {
     bool result =
         IsEditDistanceAtMostOne(base::WideToUTF16(test_case.domain),
                                 base::WideToUTF16(test_case.top_domain));
-    EXPECT_EQ(test_case.expected, result);
+    EXPECT_EQ(test_case.expected, result)
+        << "when comparing " << test_case.domain << " with "
+        << test_case.top_domain;
   }
 }
 
-bool IsGoogleScholar(const GURL& hostname) {
-  return hostname.host() == "scholar.google.com";
+TEST(LookalikeUrlUtilTest, EditDistanceExcludesCommonFalsePositives) {
+  const struct TestCase {
+    const char* domain;
+    const char* top_domain;
+    bool is_likely_false_positive;
+  } kTestCases[] = {
+      // Most edit distance instances are not likely false positives.
+      {"abcxd.com", "abcyd.com", false},   // Substitution
+      {"abcxd.com", "abcxxd.com", false},  // Deletion
+      {"abcxxd.com", "abcxd.com", false},  // Insertion
+
+      // But we permit cases where the only difference is in the tld.
+      {"abcde.com", "abcde.net", true},
+
+      // We also permit matches that are only due to a numeric suffix,
+      {"abcd1.com", "abcd2.com", true},    // Substitution
+      {"abcde.com", "abcde1.com", true},   // Numeric deletion
+      {"abcde1.com", "abcde.com", true},   // Numeric insertion
+      {"abcd11.com", "abcd21.com", true},  // Not-final-digit substitution
+      {"a.abcd1.com", "abcd2.com", true},  // Only relevant for eTLD+1.
+      // ...and that change must be due to the numeric suffix.
+      {"abcx1.com", "abcy1.com", false},   // Substitution before suffix
+      {"abcd1.com", "abcde1.com", false},  // Deletion before suffix
+      {"abcde1.com", "abcd1.com", false},  // Insertion before suffix
+      {"abcdx.com", "abcdy.com", false},   // Non-numeric substitution at end
+
+      // We also permit matches that are only due to a first-character change,
+      {"xabcd.com", "yabcd.com", true},     // Substitution
+      {"xabcde.com", "abcde.com", true},    // Insertion
+      {"abcde.com", "xabcde.com", true},    // Deletion
+      {"a.abcde.com", "xabcde.com", true},  // For eTLD+1
+      // ...so long as that change is only on the first character, not later.
+      {"abcde.com", "axbcde.com", false},   // Deletion
+      {"axbcde.com", "abcde.com", false},   // Insertion
+      {"axbcde.com", "aybcde.com", false},  // Substitution
+  };
+  for (const TestCase& test_case : kTestCases) {
+    auto navigated =
+        GetDomainInfo(GURL(std::string(url::kHttpsScheme) +
+                           url::kStandardSchemeSeparator + test_case.domain));
+    auto matched = GetDomainInfo(GURL(std::string(url::kHttpsScheme) +
+                                      url::kStandardSchemeSeparator +
+                                      test_case.top_domain));
+    bool result = IsLikelyEditDistanceFalsePositive(navigated, matched);
+    EXPECT_EQ(test_case.is_likely_false_positive, result)
+        << "when comparing " << test_case.domain << " with "
+        << test_case.top_domain;
+  }
+}
+
+bool IsGoogleScholar(const std::string& hostname) {
+  return hostname == "scholar.google.com";
 }
 
 struct TargetEmbeddingHeuristicTestCase {

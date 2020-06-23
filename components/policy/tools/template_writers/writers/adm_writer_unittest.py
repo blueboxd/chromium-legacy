@@ -39,6 +39,17 @@ MESSAGES = '''
       'desc': 'bleh',
       'text': 'This policy is deprecated. blah blah blah'
     },
+    'removed_policy_group_caption': {
+      'text': 'Removed policies', 'desc': 'bleh'
+    },
+    'removed_policy_group_desc': {
+      'desc': 'bleh',
+      'text': 'These policies are included here to make them easy to remove.'
+    },
+    'removed_policy_desc': {
+      'desc': 'bleh',
+      'text': 'This policy is removed. blah blah blah'
+    },
   }'''
 
 
@@ -1303,6 +1314,82 @@ chromium_recommended="Chromium - Recommended"
 DeprecatedPolicies_Category="Deprecated policies"
 Policy1_Policy="Caption of policy1."
 Policy1_Explain="This policy is deprecated. blah blah blah\\n\\n"
+Policy1_Part="Caption of policy1."
+''')
+    self.CompareOutputs(output, expected_output)
+
+  def testRemovedPolicy(self):
+    # Tests that a deprecated policy gets placed in the special
+    # 'RemovedPolicies' group.
+    policy_json = '''
+      {
+        'policy_definitions': [
+          {
+            'name': 'Policy1',
+            'type': 'string',
+            'deprecated': True,
+            'features': { 'can_be_recommended': True },
+            'supported_on': ['chrome.win:40-83'],
+            'caption': 'Caption of policy1.',
+            'desc': """Description of policy1."""
+          },
+        ],
+        'policy_atomic_group_definitions': [],
+        'placeholders': [],
+        'messages': %s
+      }''' % MESSAGES
+    output = self.GetOutput(policy_json, {'_chromium': '1',
+                                          'major_version': 84}, 'adm')
+    expected_output = self.ConstructOutput(['MACHINE', 'USER'], '''
+  CATEGORY !!chromium
+    KEYNAME "Software\\Policies\\Chromium"
+
+    CATEGORY !!RemovedPolicies_Category
+      POLICY !!Policy1_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WIN7
+        #endif
+        EXPLAIN !!Policy1_Explain
+
+        PART !!Policy1_Part  EDITTEXT
+          VALUENAME "Policy1"
+          MAXLEN 1000000
+        END PART
+      END POLICY
+
+    END CATEGORY
+
+  END CATEGORY
+
+  CATEGORY !!chromium_recommended
+    KEYNAME "Software\\Policies\\Chromium\\Recommended"
+
+    CATEGORY !!RemovedPolicies_Category
+      POLICY !!Policy1_Policy
+        #if version >= 4
+          SUPPORTED !!SUPPORTED_WIN7
+        #endif
+        EXPLAIN !!Policy1_Explain
+
+        PART !!Policy1_Part  EDITTEXT
+          VALUENAME "Policy1"
+          MAXLEN 1000000
+        END PART
+      END POLICY
+
+    END CATEGORY
+
+  END CATEGORY
+
+
+''', '''[Strings]
+SUPPORTED_WIN7="Microsoft Windows 7 or later"
+SUPPORTED_WIN7_ONLY="Microsoft Windows 7"
+chromium="Chromium"
+chromium_recommended="Chromium - Recommended"
+RemovedPolicies_Category="Removed policies"
+Policy1_Policy="Caption of policy1."
+Policy1_Explain="This policy is removed. blah blah blah\\n\\n"
 Policy1_Part="Caption of policy1."
 ''')
     self.CompareOutputs(output, expected_output)

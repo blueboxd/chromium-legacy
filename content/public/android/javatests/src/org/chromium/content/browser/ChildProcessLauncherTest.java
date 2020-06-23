@@ -486,8 +486,10 @@ public class ChildProcessLauncherTest {
 
     private static void waitForConnectionAllocatorState(
             final ChildConnectionAllocator connectionAllocator, final boolean emptyState) {
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals(!emptyState, connectionAllocator::anyConnectionAllocated));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(
+                    connectionAllocator.anyConnectionAllocated(), Matchers.not(emptyState));
+        });
     }
 
     private static void waitForConnectionState(
@@ -497,19 +499,19 @@ public class ChildProcessLauncherTest {
                         Matchers.equalTo(CONNECTION_BLOCK_UNTIL_SETUP)));
         CriteriaHelper.pollInstrumentationThread(() -> {
             if (connectionState == CONNECTION_BLOCK_UNTIL_CONNECTED) {
-                Assert.assertTrue(connection.isConnected());
+                Criteria.checkThat(connection.isConnected(), Matchers.is(true));
             } else {
-                Assert.assertEquals(CONNECTION_BLOCK_UNTIL_SETUP, connectionState);
-                Assert.assertNotEquals(0, getConnectionPid(connection));
+                Criteria.checkThat(connectionState, Matchers.is(CONNECTION_BLOCK_UNTIL_SETUP));
+                Criteria.checkThat(getConnectionPid(connection), Matchers.not(0));
             }
         });
     }
 
     private static void waitUntilLauncherSetup(final ChildProcessLauncher launcher) {
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> Assert.assertNotNull(
-                                "Failed wait for launcher to connect.", launcher.getConnection()));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("Failed wait for launcher to connect.", launcher.getConnection(),
+                    Matchers.notNullValue());
+        });
         waitForConnectionState(launcher.getConnection(), CONNECTION_BLOCK_UNTIL_SETUP);
     }
 

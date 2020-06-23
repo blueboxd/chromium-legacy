@@ -69,6 +69,7 @@
     ContentSuggestionsHeaderSynchronizer* headerCollectionInteractionHandler;
 @property(nonatomic, strong) ContentSuggestionsMetricsRecorder* metricsRecorder;
 @property(nonatomic, strong) NTPHomeMediator* NTPMediator;
+@property(nonatomic, strong) UIViewController* discoverFeedViewController;
 
 // Redefined as readwrite.
 @property(nonatomic, strong, readwrite)
@@ -156,7 +157,7 @@
       ReadingListModelFactory::GetForBrowserState(
           self.browser->GetBrowserState());
 
-  UIViewController* discoverFeed =
+  self.discoverFeedViewController =
       ios::GetChromeBrowserProvider()
           ->GetDiscoverFeedProvider()
           ->NewFeedViewController(static_cast<id<ApplicationCommands>>(
@@ -169,7 +170,7 @@
              mostVisitedSite:std::move(mostVisitedFactory)
             readingListModel:readingListModel
                  prefService:prefs
-                discoverFeed:discoverFeed];
+                discoverFeed:self.discoverFeedViewController];
   self.contentSuggestionsMediator.commandHandler = self.NTPMediator;
   self.contentSuggestionsMediator.headerProvider = self.headerController;
   self.contentSuggestionsMediator.contentArticlesExpanded =

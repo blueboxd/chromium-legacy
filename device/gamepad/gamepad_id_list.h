@@ -40,6 +40,8 @@ enum class GamepadId : uint32_t {
   kBroadcomProduct8502 = 0x0a5c8502,
   kDragonRiseProduct0006 = 0x00790006,
   kDragonRiseProduct0011 = 0x00790011,
+  kElecomProduct200f = 0x056e200f,
+  kElecomProduct2010 = 0x056e2010,
   kGoogleProduct2c40 = 0x18d12c40,
   kGoogleProduct9400 = 0x18d19400,
   kGreenAsiaProduct0003 = 0x0e8f0003,

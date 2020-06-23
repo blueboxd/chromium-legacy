@@ -258,6 +258,8 @@ source_set("unittests") {
       "mojo/media_router_mojo_impl_unittest.cc",
       "mojo/media_router_mojo_metrics_unittest.cc",
       "mojo/media_sink_service_status_unittest.cc",
+      "providers/cast/activity_record_test_base.cc",
+      "providers/cast/activity_record_test_base.h",
       "providers/cast/cast_activity_manager_unittest.cc",
       "providers/cast/cast_activity_record_unittest.cc",
       "providers/cast/cast_app_availability_tracker_unittest.cc",

@@ -543,6 +543,7 @@ BlobMemoryController::BlobMemoryController(
       populated_memory_items_(
           base::MRUCache<uint64_t, ShareableBlobDataItem*>::NO_AUTO_EVICT),
       memory_pressure_listener_(
+          FROM_HERE,
           base::BindRepeating(&BlobMemoryController::OnMemoryPressure,
                               base::Unretained(this))) {}
 

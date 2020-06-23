@@ -13,6 +13,7 @@
 #include "ash/public/cpp/test/test_image_downloader.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/scoped_feature_list.h"
+#include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "ui/views/widget/widget.h"
 
 namespace gfx {
@@ -48,6 +49,9 @@ class AmbientAshTestBase : public AshTestBase {
 
   const gfx::ImageSkia& GetImageInPhotoView();
 
+  // Returns the number of active wake locks of type |type|.
+  int GetNumOfActiveWakeLocks(device::mojom::WakeLockType type);
+
   // Simulate to issue an |access_token|.
   // If |with_error| is true, will return an empty access token.
   void IssueAccessToken(const std::string& access_token, bool with_error);
@@ -64,6 +68,8 @@ class AmbientAshTestBase : public AshTestBase {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<TestImageDownloader> image_downloader_;
+
+  device::TestWakeLockProvider wake_lock_provider_;
   std::unique_ptr<TestAmbientClient> ambient_client_;
   std::unique_ptr<views::Widget> widget_;
 };

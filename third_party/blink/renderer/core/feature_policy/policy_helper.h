@@ -10,8 +10,8 @@
 #include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
+#include "third_party/blink/renderer/platform/wtf/hash_counted_set.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -62,9 +62,10 @@ using FeatureNameMap = HashMap<String, mojom::blink::FeaturePolicyFeature>;
 
 // TODO(crbug.com/1069021): Use WTF::HashSet as DocumentPolicyFeatureSet
 // container will cause unknown timeout in release build only.
+// Use WTF::HashCountedSet as a temporary workaround.
 using DocumentPolicyFeatureSet =
-    LinkedHashSet<mojom::blink::DocumentPolicyFeature,
-                  IntHash<mojom::blink::DocumentPolicyFeature>>;
+    HashCountedSet<mojom::blink::DocumentPolicyFeature,
+                   IntHash<mojom::blink::DocumentPolicyFeature>>;
 
 class FeatureContext;
 

@@ -4,7 +4,7 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import org.junit.Assert;
+import org.hamcrest.Matchers;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.TimeoutTimer;
@@ -29,9 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * <code>
  * private void verifyMenuShown() {
  *     CriteriaHelper.pollUiThread(() -> {
- *         Assert.assertNotNull("App menu was null", getActivity().getAppMenuHandler());
- *         Assert.assertTrue("App menu was not shown",
- *                 getActivity().getAppMenuHandler().isAppMenuShowing());
+ *         Criteria.checkThat("App menu was null", getActivity().getAppMenuHandler(),
+ *                 Matchers.notNullValue());
+ *         Criteria.checkThat("App menu was not shown",
+ *                 getActivity().getAppMenuHandler().isAppMenuShowing(), Matchers.is(true));
  *     });
  * }
  * </code>
@@ -75,12 +76,16 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(
             Runnable criteria, long maxTimeoutMs, long checkIntervalMs) {
-        AssertionError assertionError;
+        Throwable throwable;
         try {
             criteria.run();
             return;
+        } catch (CriteriaNotSatisfiedException cnse) {
+            throwable = cnse;
         } catch (AssertionError ae) {
-            assertionError = ae;
+            // TODO(tedchoc): Remove support for this once all clients move over to
+            //                CriteriaNotSatisfiedException.
+            throwable = ae;
         }
         TimeoutTimer timer = new TimeoutTimer(maxTimeoutMs);
         while (!timer.isTimedOut()) {
@@ -93,11 +98,21 @@ public class CriteriaHelper {
             try {
                 criteria.run();
                 return;
+            } catch (CriteriaNotSatisfiedException cnse) {
+                throwable = cnse;
             } catch (AssertionError ae) {
-                assertionError = ae;
+                // TODO(tedchoc): Remove support for this once all clients move over to
+                //                CriteriaNotSatisfiedException.
+                throwable = ae;
             }
         }
-        throw assertionError;
+        if (throwable instanceof CriteriaNotSatisfiedException) {
+            throw new AssertionError(throwable);
+        } else if (throwable instanceof AssertionError) {
+            throw(AssertionError) throwable;
+        }
+        assert false : "Invalid throwable";
+        throw new RuntimeException(throwable);
     }
 
     /**
@@ -120,7 +135,7 @@ public class CriteriaHelper {
      */
     public static void pollInstrumentationThread(
             Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollInstrumentationThread(toAssertionRunnable(criteria), maxTimeoutMs, checkIntervalMs);
+        pollInstrumentationThread(toNotSatisfiedRunnable(criteria), maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -147,7 +162,7 @@ public class CriteriaHelper {
     public static void pollInstrumentationThread(final Callable<Boolean> criteria,
             String failureReason, long maxTimeoutMs, long checkIntervalMs) {
         pollInstrumentationThread(
-                toAssertionRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+                toNotSatisfiedRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -221,8 +236,12 @@ public class CriteriaHelper {
             });
             Throwable throwable = throwableRef.get();
             if (throwable != null) {
-                if (throwable instanceof AssertionError) {
-                    throw new AssertionError(throwable);
+                if (throwable instanceof CriteriaNotSatisfiedException) {
+                    throw new CriteriaNotSatisfiedException(throwable);
+                } else if (throwable instanceof AssertionError) {
+                    // TODO(tedchoc): Remove support for this once all clients move over to
+                    //                CriteriaNotSatisfiedException.
+                    throw new CriteriaNotSatisfiedException(throwable);
                 } else if (throwable instanceof RuntimeException) {
                     throw (RuntimeException) throwable;
                 } else {
@@ -248,7 +267,7 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(
             final Criteria criteria, long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThread(toAssertionRunnable(criteria), maxTimeoutMs, checkIntervalMs);
+        pollUiThread(toNotSatisfiedRunnable(criteria), maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -272,7 +291,8 @@ public class CriteriaHelper {
      */
     public static void pollUiThread(final Callable<Boolean> criteria, String failureReason,
             long maxTimeoutMs, long checkIntervalMs) {
-        pollUiThread(toAssertionRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
+        pollUiThread(
+                toNotSatisfiedRunnable(criteria, failureReason), maxTimeoutMs, checkIntervalMs);
     }
 
     /**
@@ -314,7 +334,8 @@ public class CriteriaHelper {
         pollUiThread(criteria, null);
     }
 
-    private static Runnable toAssertionRunnable(Callable<Boolean> criteria, String failureReason) {
+    private static Runnable toNotSatisfiedRunnable(
+            Callable<Boolean> criteria, String failureReason) {
         return () -> {
             boolean isSatisfied;
             try {
@@ -324,14 +345,14 @@ public class CriteriaHelper {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            Assert.assertTrue(failureReason, isSatisfied);
+            Criteria.checkThat(failureReason, isSatisfied, Matchers.is(true));
         };
     }
 
-    private static Runnable toAssertionRunnable(Criteria criteria) {
+    private static Runnable toNotSatisfiedRunnable(Criteria criteria) {
         return () -> {
             boolean satisfied = criteria.isSatisfied();
-            Assert.assertTrue(criteria.getFailureReason(), satisfied);
+            Criteria.checkThat(criteria.getFailureReason(), satisfied, Matchers.is(true));
         };
     }
 }

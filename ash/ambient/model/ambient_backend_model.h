@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
-#include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"

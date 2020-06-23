@@ -79,7 +79,7 @@ void V8StringOrStringSequence::ToImpl(
     if (exception_state.HadException())
       return;
     if (!script_iterator.IsNull()) {
-      Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, std::move(script_iterator), exception_state);
+      Vector<String> cpp_value{ NativeValueTraits<IDLSequence<IDLString>>::NativeValue(isolate, std::move(script_iterator), exception_state) };
       if (exception_state.HadException())
         return;
       impl.SetStringSequence(cpp_value);
@@ -88,7 +88,7 @@ void V8StringOrStringSequence::ToImpl(
   }
 
   {
-    V8StringResource<> cpp_value = v8_value;
+    V8StringResource<> cpp_value{ v8_value };
     if (!cpp_value.Prepare(exception_state))
       return;
     impl.SetString(cpp_value);

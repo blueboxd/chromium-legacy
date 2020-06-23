@@ -350,6 +350,11 @@ const char kChromeUITabStripHost[] = "tab-strip";
 const char kChromeUITabStripURL[] = "chrome://tab-strip";
 #endif
 
+#if !defined(OS_ANDROID)
+const char kChromeUITabSearchHost[] = "tab-search";
+const char kChromeUITabSearchURL[] = "chrome://tab-search/";
+#endif
+
 const char kChromeUIWebRtcLogsHost[] = "webrtc-logs";
 
 // Settings sub pages.

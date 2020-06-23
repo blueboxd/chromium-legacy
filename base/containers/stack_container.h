@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/macros.h"
 #include "build/build_config.h"
 
 namespace base {
@@ -147,6 +146,8 @@ class StackContainer {
     // before doing anything else.
     container_.reserve(stack_capacity);
   }
+  StackContainer(const StackContainer&) = delete;
+  StackContainer& operator=(const StackContainer&) = delete;
 
   // Getters for the actual container.
   //
@@ -175,9 +176,6 @@ class StackContainer {
   typename Allocator::Source stack_data_;
   Allocator allocator_;
   ContainerType container_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StackContainer);
 };
 
 // Range-based iteration support for StackContainer.

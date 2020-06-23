@@ -8,7 +8,6 @@
 #include <stddef.h>
 
 #include "base/check.h"
-#include "base/macros.h"
 
 namespace base {
 
@@ -25,6 +24,8 @@ template <typename T, size_t kSize>
 class RingBuffer {
  public:
   RingBuffer() : current_index_(0) {}
+  RingBuffer(const RingBuffer&) = delete;
+  RingBuffer& operator=(const RingBuffer&) = delete;
 
   size_t BufferSize() const { return kSize; }
 
@@ -124,8 +125,6 @@ class RingBuffer {
 
   T buffer_[kSize];
   size_t current_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(RingBuffer);
 };
 
 }  // namespace base

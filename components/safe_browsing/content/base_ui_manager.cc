@@ -190,6 +190,21 @@ void BaseUIManager::OnBlockingPageDone(
   }
 }
 
+namespace {
+// In the case of nested WebContents, returns the WebContents where it is
+// suitable to show an interstitial.
+content::WebContents* GetEmbeddingWebContentsForInterstitial(
+    content::WebContents* source_contents) {
+  content::WebContents* top_level_contents = source_contents;
+  // Note that |WebContents::GetResponsibleWebContents| is not suitable here
+  // since we want to stay within any GuestViews.
+  while (top_level_contents->IsPortal()) {
+    top_level_contents = top_level_contents->GetPortalHostWebContents();
+  }
+  return top_level_contents;
+}
+}  // namespace
+
 void BaseUIManager::DisplayBlockingPage(
     const UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -245,13 +260,26 @@ void BaseUIManager::DisplayBlockingPage(
   }
 
   AddToWhitelistUrlSet(GetMainFrameWhitelistUrlForResource(resource),
-                       resource.web_contents_getter.Run(),
-                       true /* A decision is now pending */,
+                       web_contents, true /* A decision is now pending */,
                        resource.threat_type);
-  GURL unsafe_url = (resource.IsMainPageLoadBlocked() ||
-                     !GetNavigationEntryForResource(resource))
-                        ? resource.url
-                        : GetNavigationEntryForResource(resource)->GetURL();
+
+  // |entry| can be null if we are on a brand new tab, and a resource is added
+  // via javascript without a navigation.
+  content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
+
+  // If unsafe content is loaded in a portal, we treat its embedder as
+  // dangerous.
+  content::WebContents* outermost_contents =
+      GetEmbeddingWebContentsForInterstitial(web_contents);
+
+  GURL unsafe_url = resource.url;
+  if (outermost_contents != web_contents) {
+    DCHECK(outermost_contents->GetController().GetLastCommittedEntry());
+    unsafe_url =
+        outermost_contents->GetController().GetLastCommittedEntry()->GetURL();
+  } else if (entry && !resource.IsMainPageLoadBlocked()) {
+    unsafe_url = entry->GetURL();
+  }
   AddUnsafeResource(unsafe_url, resource);
   // If the delayed warnings experiment is not enabled, with committed
   // interstitials we just cancel the load from here, the actual interstitial
@@ -273,28 +301,24 @@ void BaseUIManager::DisplayBlockingPage(
     DCHECK(!resource.is_delayed_warning);
   }
 
-  if ((!resource.IsMainPageLoadBlocked() || resource.is_delayed_warning) &&
-      !IsWhitelisted(resource)) {
+  if (!resource.IsMainPageLoadBlocked() || resource.is_delayed_warning ||
+      outermost_contents != web_contents) {
+    DCHECK(!IsWhitelisted(resource));
     // For subresource triggered interstitials, we trigger the error page
     // navigation from here since there will be no navigation to intercept
     // in the throttle.
-    content::WebContents* contents = resource.web_contents_getter.Run();
-    content::NavigationEntry* entry = GetNavigationEntryForResource(resource);
-    // entry can be null if we are on a brand new tab, and a resource is added
-    // via javascript without a navigation.
-    GURL blocked_url = entry ? entry->GetURL() : resource.url;
-
+    //
     // Blocking pages handle both user interaction, and generation of the
     // interstitial HTML. In the case of subresources, we need the HTML
     // content prior to (and in a different process than when) installing the
     // command handlers. For this reason we create a blocking page here just
     // to generate the HTML, and immediately delete it.
-    BaseBlockingPage* blocking_page =
-        CreateBlockingPageForSubresource(contents, blocked_url, resource);
-    contents->GetController().LoadPostCommitErrorPage(
-        contents->GetMainFrame(), blocked_url, blocking_page->GetHTMLContents(),
-        net::ERR_BLOCKED_BY_CLIENT);
-    delete blocking_page;
+    std::unique_ptr<BaseBlockingPage> blocking_page =
+        base::WrapUnique(CreateBlockingPageForSubresource(
+            outermost_contents, unsafe_url, resource));
+    outermost_contents->GetController().LoadPostCommitErrorPage(
+        outermost_contents->GetMainFrame(), unsafe_url,
+        blocking_page->GetHTMLContents(), net::ERR_BLOCKED_BY_CLIENT);
   }
 }
 

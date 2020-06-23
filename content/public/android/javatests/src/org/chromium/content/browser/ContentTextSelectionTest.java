@@ -14,6 +14,7 @@ import android.os.SystemClock;
 import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -414,9 +415,12 @@ public class ContentTextSelectionTest {
 
         DOMUtils.clickNode(mWebContents, "smart_selection");
 
-        CriteriaHelper.pollUiThread(Criteria.equals(
-                0, () -> mSelectionPopupController.getClassificationResult().startAdjust));
-        Assert.assertEquals("Amphitheatre", mSelectionPopupController.getSelectedText());
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mSelectionPopupController.getClassificationResult().startAdjust,
+                    Matchers.is(0));
+            Criteria.checkThat(
+                    mSelectionPopupController.getSelectedText(), Matchers.is("Amphitheatre"));
+        });
     }
 
     @Test
@@ -681,13 +685,9 @@ public class ContentTextSelectionTest {
         Assert.assertEquals(mSelectionPopupController.getSelectedText(), "SampleTextArea");
         hideSelectActionMode();
         waitForSelectActionBarVisible(false);
-        CriteriaHelper.pollInstrumentationThread(
-                Criteria.equals("SampleTextArea", new Callable<CharSequence>() {
-                    @Override
-                    public CharSequence call() {
-                        return getTextBeforeCursor(50, 0);
-                    }
-                }));
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat(getTextBeforeCursor(50, 0), Matchers.is("SampleTextArea"));
+        });
     }
 
     @Test
@@ -833,19 +833,17 @@ public class ContentTextSelectionTest {
             ClipboardManager clipboardManager =
                     (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
             ClipData clip = clipboardManager.getPrimaryClip();
-            Assert.assertNotNull(clip);
-            Assert.assertEquals(1, clip.getItemCount());
-            Assert.assertEquals(expectedContents, clip.getItemAt(0).getText());
+            Criteria.checkThat(clip, Matchers.notNullValue());
+            Criteria.checkThat(clip.getItemCount(), Matchers.is(1));
+            Criteria.checkThat(clip.getItemAt(0).getText(), Matchers.is(expectedContents));
         });
     }
 
     private void waitForSelectActionBarVisible(final boolean visible) {
-        CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mSelectionPopupController.isSelectActionBarShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mSelectionPopupController.isSelectActionBarShowing(), Matchers.is(visible));
+        });
     }
 
     private void setVisibileOnUiThread(final boolean show) {
@@ -907,20 +905,15 @@ public class ContentTextSelectionTest {
     }
 
     private void waitForPastePopupStatus(final boolean show) {
-        CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mSelectionPopupController.isPastePopupShowing();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(mSelectionPopupController.isPastePopupShowing(), Matchers.is(show));
+        });
     }
 
     private void waitForInsertion(final boolean show) {
-        CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return mSelectionPopupController.isInsertionForTesting();
-            }
-        }));
+        CriteriaHelper.pollUiThread(() -> {
+            Criteria.checkThat(
+                    mSelectionPopupController.isInsertionForTesting(), Matchers.is(show));
+        });
     }
 }

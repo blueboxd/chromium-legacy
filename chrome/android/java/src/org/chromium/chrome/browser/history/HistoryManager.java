@@ -88,7 +88,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private static Boolean sIsScrollToLoadDisabledForTests;
 
     private final Activity mActivity;
-    private final Profile mProfile;
+    private final boolean mIsIncognito;
     private final boolean mIsSeparateActivity;
     private final boolean mIsScrollToLoadDisabled;
     private final SelectableListLayout<HistoryItem> mSelectableListLayout;
@@ -120,10 +120,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
-        // TODO(crbug.com/1060940) : Pass profile here instead of boolean, since the call maybe 
-        // from a non-primary OTR profile.
-        mProfile = isIncognito ? Profile.getLastUsedRegularProfile().getPrimaryOTRProfile()
-                               : Profile.getLastUsedRegularProfile();
+        mIsIncognito = isIncognito;
         mIsScrollToLoadDisabled = ChromeAccessibilityUtil.get().isAccessibilityEnabled()
                 || ChromeAccessibilityUtil.isHardwareKeyboardAttached(
                         mActivity.getResources().getConfiguration());
@@ -198,7 +195,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             }});
 
         // 9. Listen to changes in sign in state.
-        IdentityServicesProvider.get().getSigninManager(mProfile).addSignInStateObserver(this);
+        IdentityServicesProvider.get().getSigninManager().addSignInStateObserver(this);
 
         // 10. Create PrefChangeRegistrar to receive notifications on preference changes.
         mPrefChangeRegistrar = new PrefChangeRegistrar();
@@ -295,7 +292,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mHistoryAdapter.onDestroyed();
         mLargeIconBridge.destroy();
         mLargeIconBridge = null;
-        IdentityServicesProvider.get().getSigninManager(mProfile).removeSignInStateObserver(this);
+        IdentityServicesProvider.get().getSigninManager().removeSignInStateObserver(this);
         mPrefChangeRegistrar.destroy();
     }
 
@@ -356,7 +353,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
      * @return Whether the HistoryManager is displaying history for the incognito profile.
      */
     public boolean isIncognito() {
-        return mProfile.isOffTheRecord();
+        return mIsIncognito;
     }
 
     @VisibleForTesting

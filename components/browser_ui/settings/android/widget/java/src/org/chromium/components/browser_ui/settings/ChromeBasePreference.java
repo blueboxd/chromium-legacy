@@ -51,7 +51,6 @@ public class ChromeBasePreference extends Preference {
     public ChromeBasePreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        setLayoutResource(R.layout.preference_compat);
         setSingleLineTitle(false);
 
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ChromeBasePreference);

@@ -128,10 +128,14 @@ void GpuDataManagerImpl::UpdateDxDiagNode(
   private_->UpdateDxDiagNode(dx_diagnostics);
 }
 
-void GpuDataManagerImpl::UpdateDx12VulkanInfo(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
+void GpuDataManagerImpl::UpdateDx12Info(uint32_t d3d12_feature_level) {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateDx12VulkanInfo(dx12_vulkan_version_info);
+  private_->UpdateDx12Info(d3d12_feature_level);
+}
+
+void GpuDataManagerImpl::UpdateVulkanInfo(uint32_t vulkan_version) {
+  base::AutoLock auto_lock(lock_);
+  private_->UpdateVulkanInfo(vulkan_version);
 }
 
 void GpuDataManagerImpl::UpdateDevicePerfInfo(
@@ -155,14 +159,24 @@ void GpuDataManagerImpl::UpdateDxDiagNodeRequestStatus(bool request_continues) {
   private_->UpdateDxDiagNodeRequestStatus(request_continues);
 }
 
-void GpuDataManagerImpl::UpdateDx12VulkanRequestStatus(bool request_continues) {
+void GpuDataManagerImpl::UpdateDx12RequestStatus(bool request_continues) {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateDx12VulkanRequestStatus(request_continues);
+  private_->UpdateDx12RequestStatus(request_continues);
 }
 
-bool GpuDataManagerImpl::Dx12VulkanRequested() const {
+void GpuDataManagerImpl::UpdateVulkanRequestStatus(bool request_continues) {
   base::AutoLock auto_lock(lock_);
-  return private_->Dx12VulkanRequested();
+  private_->UpdateVulkanRequestStatus(request_continues);
+}
+
+bool GpuDataManagerImpl::Dx12Requested() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->Dx12Requested();
+}
+
+bool GpuDataManagerImpl::VulkanRequested() const {
+  base::AutoLock auto_lock(lock_);
+  return private_->VulkanRequested();
 }
 
 void GpuDataManagerImpl::OnBrowserThreadsStarted() {

@@ -74,7 +74,7 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest, EmbeddingTokenOnMainFrame) {
 }
 
 IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
-                       EmbeddingTokensAddedToCrossSiteIFrames) {
+                       EmbeddingTokensAddedToCrossDocumentIFrames) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/cross_site_iframe_factory.html?a(b(a),c,a)")));
@@ -111,19 +111,21 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
   EXPECT_NE(child_0_token, child_1_token);
   EXPECT_NE(child_0_0_token, child_1_token);
 
-  // Child 2 (a) shouldn't have an embedding token as it is same site.
-  EXPECT_FALSE(top_frame_host()
-                   ->child_at(2)
-                   ->current_frame_host()
-                   ->GetEmbeddingToken()
-                   .has_value());
+  // Child 2 (a) should have an embedding token.
+  auto child_2_token =
+      top_frame_host()->child_at(2)->current_frame_host()->GetEmbeddingToken();
+  ASSERT_TRUE(child_2_token.has_value());
+  EXPECT_NE(base::UnguessableToken::Null(), child_2_token);
+  EXPECT_NE(top_token, child_2_token);
+  EXPECT_NE(child_0_token, child_2_token);
+  EXPECT_NE(child_0_0_token, child_2_token);
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
   // embedding tokens in parent HTMLOwnerElement and child LocalFrame.
 }
 
 IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
-                       EmbeddingTokensSwapOnCrossSiteNavigations) {
+                       EmbeddingTokenSwapsOnCrossDocumentNavigation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/cross_site_iframe_factory.html?a(b)")));
@@ -139,6 +141,18 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
   EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
   EXPECT_NE(top_token, child_0_token);
 
+  // Navigate child 0 (b) to same-site the token should swap.
+  NavigateIframeToURL(shell()->web_contents(), "child-0",
+                      embedded_test_server()
+                          ->GetURL("b.com", "/site_isolation/")
+                          .Resolve("blank.html"));
+  auto same_site_new_child_0_token =
+      top_frame_host()->child_at(0)->current_frame_host()->GetEmbeddingToken();
+  ASSERT_TRUE(same_site_new_child_0_token.has_value());
+  EXPECT_NE(base::UnguessableToken::Null(), same_site_new_child_0_token);
+  EXPECT_NE(top_token, same_site_new_child_0_token);
+  EXPECT_NE(child_0_token, same_site_new_child_0_token);
+
   // Navigate child 0 (b) to another site (cross-process) the token should swap.
   {
     RenderFrameDeletedObserver deleted_observer(target);
@@ -148,19 +162,21 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
                             .Resolve("blank.html"));
     deleted_observer.WaitUntilDeleted();
   }
-  auto new_child_0_token =
+  auto new_site_child_0_token =
       top_frame_host()->child_at(0)->current_frame_host()->GetEmbeddingToken();
-  ASSERT_TRUE(new_child_0_token.has_value());
-  EXPECT_NE(base::UnguessableToken::Null(), new_child_0_token);
-  EXPECT_NE(top_token, new_child_0_token);
-  EXPECT_NE(child_0_token, new_child_0_token);
+  ASSERT_TRUE(same_site_new_child_0_token.has_value());
+  EXPECT_NE(base::UnguessableToken::Null(), new_site_child_0_token);
+  EXPECT_NE(top_token, new_site_child_0_token);
+  EXPECT_NE(child_0_token, new_site_child_0_token);
+  EXPECT_NE(same_site_new_child_0_token, new_site_child_0_token);
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
   // embedding tokens in parent HTMLOwnerElement and child LocalFrame.
 }
 
-IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
-                       EmbeddingTokensDoNotSwapOnSameSiteNavigations) {
+IN_PROC_BROWSER_TEST_F(
+    EmbeddingTokenBrowserTest,
+    EmbeddingTokenNotChangedOnSubframeSameDocumentNavigation) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
                    "a.com", "/cross_site_iframe_factory.html?a(a)")));
@@ -168,6 +184,13 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
   ASSERT_EQ(1U, top_frame_host()->child_count());
   EXPECT_TRUE(top_frame_host()->GetEmbeddingToken().has_value());
   auto top_token = top_frame_host()->GetEmbeddingToken().value();
+
+  // Child 0 (a) should have an embedding token.
+  RenderFrameHost* target = top_frame_host()->child_at(0)->current_frame_host();
+  auto child_0_token = target->GetEmbeddingToken();
+  ASSERT_TRUE(child_0_token.has_value());
+  EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
+  EXPECT_NE(top_token, child_0_token);
 
   auto b_url = embedded_test_server()->GetURL("b.com", "/site_isolation/");
   // Navigate child 0 to another site (cross-process) a token should be created.
@@ -178,34 +201,28 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
     deleted_observer.WaitUntilDeleted();
   }
 
-  // Child 0 (b) should have an embedding token.
-  auto child_0_token =
-      top_frame_host()->child_at(0)->current_frame_host()->GetEmbeddingToken();
-  ASSERT_TRUE(child_0_token.has_value());
-  EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
-  EXPECT_NE(top_token, child_0_token);
-
-  // Navigate child 0 (b) to same origin the token should not swap.
-  NavigateIframeToURL(web_contents(), "child-0", b_url.Resolve("valid.html"));
+  // Child 0 (b) should have a new embedding token.
   auto new_child_0_token =
       top_frame_host()->child_at(0)->current_frame_host()->GetEmbeddingToken();
-  ASSERT_TRUE(new_child_0_token.has_value());
+  ASSERT_TRUE(child_0_token.has_value());
+  EXPECT_NE(base::UnguessableToken::Null(), new_child_0_token);
   EXPECT_NE(top_token, new_child_0_token);
+  EXPECT_NE(child_0_token, new_child_0_token);
 
-  // If we are creating a new RenderFrameHost even for same-site navigations
-  // then we would expect a different token.
-  if (CreateNewHostForSameSiteSubframe()) {
-    EXPECT_NE(child_0_token, new_child_0_token);
-  } else {
-    EXPECT_EQ(child_0_token, new_child_0_token);
-  }
+  // Navigate child 0 (b) to same document the token should not swap.
+  NavigateIframeToURL(web_contents(), "child-0",
+                      b_url.Resolve("blank.html#foo"));
+  auto same_document_new_child_0_token =
+      top_frame_host()->child_at(0)->current_frame_host()->GetEmbeddingToken();
+  ASSERT_TRUE(same_document_new_child_0_token.has_value());
+  EXPECT_EQ(new_child_0_token, same_document_new_child_0_token);
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
   // embedding tokens in parent HTMLOwnerElement and child LocalFrame.
 }
 
 IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
-                       EmbeddingTokenRemovedOnSubframeNavigationToSameOrigin) {
+                       EmbeddingTokenChangedOnSubframeNavigationToNewDocument) {
   auto a_url = embedded_test_server()->GetURL("a.com", "/");
   EXPECT_TRUE(NavigateToURL(
       shell(), a_url.Resolve("cross_site_iframe_factory.html?a(b)")));
@@ -221,55 +238,21 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
   EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
   EXPECT_NE(top_token, child_0_token);
 
-  // Navigate child 0 (b) to the same site as the main frame. This shouldn't
-  // create an embedding token as the child is now local.
+  // Navigate child 0 (b) to the same site as the main frame. This should create
+  // an embedding token.
   {
     RenderFrameDeletedObserver deleted_observer(target);
     NavigateIframeToURL(web_contents(), "child-0",
                         a_url.Resolve("site_isolation/").Resolve("blank.html"));
     deleted_observer.WaitUntilDeleted();
   }
-  ASSERT_FALSE(top_frame_host()
-                   ->child_at(0)
-                   ->current_frame_host()
-                   ->GetEmbeddingToken()
-                   .has_value());
 
-  // TODO(ckitagawa): Somehow assert that the parent and child have matching
-  // embedding tokens in parent HTMLOwnerElement and child LocalFrame.
-}
-
-IN_PROC_BROWSER_TEST_F(
-    EmbeddingTokenBrowserTest,
-    EmbeddingTokenAddedOnSubframeNavigationAwayFromSameOrigin) {
-  auto a_url = embedded_test_server()->GetURL("a.com", "/");
-  EXPECT_TRUE(NavigateToURL(
-      shell(), a_url.Resolve("cross_site_iframe_factory.html?a(a)")));
-
-  ASSERT_EQ(1U, top_frame_host()->child_count());
-  EXPECT_TRUE(top_frame_host()->GetEmbeddingToken().has_value());
-  auto top_token = top_frame_host()->GetEmbeddingToken().value();
-
-  // Child shouldn't have an embedding token.
-  RenderFrameHost* target = top_frame_host()->child_at(0)->current_frame_host();
-  auto child_0_token = target->GetEmbeddingToken();
-  EXPECT_FALSE(child_0_token.has_value());
-
-  // Navigate child 0 to a different site. This should now have an embedding
-  // token.
-  {
-    RenderFrameDeletedObserver deleted_observer(target);
-    NavigateIframeToURL(web_contents(), "child-0",
-                        embedded_test_server()
-                            ->GetURL("b.com", "/site_isolation/")
-                            .Resolve("blank.html"));
-    deleted_observer.WaitUntilDeleted();
-  }
   auto new_child_0_token =
       top_frame_host()->child_at(0)->current_frame_host()->GetEmbeddingToken();
   ASSERT_TRUE(new_child_0_token.has_value());
   EXPECT_NE(base::UnguessableToken::Null(), new_child_0_token);
   EXPECT_NE(top_token, new_child_0_token);
+  EXPECT_NE(child_0_token, new_child_0_token);
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
   // embedding tokens in parent HTMLOwnerElement and child LocalFrame.

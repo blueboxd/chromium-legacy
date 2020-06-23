@@ -437,7 +437,7 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
                             : physical_border_padding.HorizontalSum();
 
     base::Optional<MinMaxSizesResult> min_max_sizes;
-    auto MinMaxSizesFunc = [&]() -> MinMaxSizesResult {
+    auto MinMaxSizesFunc = [&](MinMaxSizesType type) -> MinMaxSizesResult {
       if (!min_max_sizes) {
         NGConstraintSpace child_space = BuildSpaceForIntrinsicBlockSize(child);
         if (child_style.OverflowBlockDirection() == EOverflow::kAuto) {
@@ -448,9 +448,9 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         // We want the child's intrinsic inline sizes in its writing mode, so
         // pass child's writing mode as the first parameter, which is nominally
         // |container_writing_mode|.
-        min_max_sizes = child.ComputeMinMaxSizes(
-            child_style.GetWritingMode(),
-            MinMaxSizesInput(ChildAvailableSize().block_size), &child_space);
+        MinMaxSizesInput input(ChildAvailableSize().block_size, type);
+        min_max_sizes = child.ComputeMinMaxSizes(child_style.GetWritingMode(),
+                                                 input, &child_space);
       }
       return *min_max_sizes;
     };
@@ -574,7 +574,8 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
           flex_base_border_box =
               child.GetLayoutBox()->PreferredLogicalWidths().max_size;
         } else {
-          flex_base_border_box = MinMaxSizesFunc().sizes.max_size;
+          flex_base_border_box =
+              MinMaxSizesFunc(MinMaxSizesType::kContent).sizes.max_size;
         }
       } else {
         // Parts C, D, and E for what are usually column flex containers.
@@ -621,14 +622,16 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
         MinMaxSizes table_preferred_widths =
             ComputeMinAndMaxContentContribution(
                 Style(), child,
-                MinMaxSizesInput(child_percentage_size_.block_size))
+                MinMaxSizesInput(child_percentage_size_.block_size,
+                                 MinMaxSizesType::kIntrinsic))
                 .sizes;
         min_max_sizes_in_main_axis_direction.min_size =
             table_preferred_widths.min_size;
       } else {
         LayoutUnit content_size_suggestion;
         if (MainAxisIsInlineAxis(child)) {
-          content_size_suggestion = MinMaxSizesFunc().sizes.min_size;
+          content_size_suggestion =
+              MinMaxSizesFunc(MinMaxSizesType::kContent).sizes.min_size;
         } else {
           LayoutUnit intrinsic_block_size;
           if (child.IsReplaced()) {

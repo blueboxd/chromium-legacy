@@ -39,7 +39,7 @@ class TextEncoderStream::Transformer final : public TransformStreamTransformer {
   ScriptPromise Transform(v8::Local<v8::Value> chunk,
                           TransformStreamDefaultController* controller,
                           ExceptionState& exception_state) override {
-    V8StringResource<> input_resource = chunk;
+    V8StringResource<> input_resource{chunk};
     if (!input_resource.Prepare(script_state_->GetIsolate(), exception_state))
       return ScriptPromise();
     const String input = input_resource;

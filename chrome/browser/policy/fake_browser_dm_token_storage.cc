@@ -11,9 +11,46 @@ namespace policy {
 
 FakeBrowserDMTokenStorage::FakeBrowserDMTokenStorage() {
   BrowserDMTokenStorage::SetForTesting(this);
+  delegate_ = std::make_unique<MockDelegate>();
 }
 
 FakeBrowserDMTokenStorage::FakeBrowserDMTokenStorage(
+    const std::string& client_id,
+    const std::string& enrollment_token,
+    const std::string& dm_token,
+    bool enrollment_error_option) {
+  BrowserDMTokenStorage::SetForTesting(this);
+  delegate_ = std::make_unique<MockDelegate>(client_id, enrollment_token,
+                                             dm_token, enrollment_error_option);
+}
+
+FakeBrowserDMTokenStorage::~FakeBrowserDMTokenStorage() = default;
+
+void FakeBrowserDMTokenStorage::SetClientId(const std::string& client_id) {
+  static_cast<MockDelegate*>(delegate_.get())->SetClientId(client_id);
+}
+
+void FakeBrowserDMTokenStorage::SetEnrollmentToken(
+    const std::string& enrollment_token) {
+  static_cast<MockDelegate*>(delegate_.get())
+      ->SetEnrollmentToken(enrollment_token);
+}
+
+void FakeBrowserDMTokenStorage::SetDMToken(const std::string& dm_token) {
+  static_cast<MockDelegate*>(delegate_.get())->SetDMToken(dm_token);
+}
+
+void FakeBrowserDMTokenStorage::SetEnrollmentErrorOption(bool option) {
+  static_cast<MockDelegate*>(delegate_.get())->SetEnrollmentErrorOption(option);
+}
+
+void FakeBrowserDMTokenStorage::EnableStorage(bool storage_enabled) {
+  static_cast<MockDelegate*>(delegate_.get())->EnableStorage(storage_enabled);
+}
+
+FakeBrowserDMTokenStorage::MockDelegate::MockDelegate() = default;
+
+FakeBrowserDMTokenStorage::MockDelegate::MockDelegate(
     const std::string& client_id,
     const std::string& enrollment_token,
     const std::string& dm_token,
@@ -23,46 +60,51 @@ FakeBrowserDMTokenStorage::FakeBrowserDMTokenStorage(
       dm_token_(dm_token),
       enrollment_error_option_(enrollment_error_option) {}
 
-FakeBrowserDMTokenStorage::~FakeBrowserDMTokenStorage() = default;
+FakeBrowserDMTokenStorage::MockDelegate::~MockDelegate() = default;
 
-void FakeBrowserDMTokenStorage::SetClientId(const std::string& client_id) {
+void FakeBrowserDMTokenStorage::MockDelegate::SetClientId(
+    const std::string& client_id) {
   client_id_ = client_id;
 }
 
-void FakeBrowserDMTokenStorage::SetEnrollmentToken(
+void FakeBrowserDMTokenStorage::MockDelegate::SetEnrollmentToken(
     const std::string& enrollment_token) {
   enrollment_token_ = enrollment_token;
 }
 
-void FakeBrowserDMTokenStorage::SetDMToken(const std::string& dm_token) {
+void FakeBrowserDMTokenStorage::MockDelegate::SetDMToken(
+    const std::string& dm_token) {
   dm_token_ = dm_token;
 }
 
-void FakeBrowserDMTokenStorage::SetEnrollmentErrorOption(bool option) {
+void FakeBrowserDMTokenStorage::MockDelegate::SetEnrollmentErrorOption(
+    bool option) {
   enrollment_error_option_ = option;
 }
 
-void FakeBrowserDMTokenStorage::EnableStorage(bool storage_enabled) {
+void FakeBrowserDMTokenStorage::MockDelegate::EnableStorage(
+    bool storage_enabled) {
   storage_enabled_ = storage_enabled;
 }
 
-std::string FakeBrowserDMTokenStorage::InitClientId() {
+std::string FakeBrowserDMTokenStorage::MockDelegate::InitClientId() {
   return client_id_;
 }
 
-std::string FakeBrowserDMTokenStorage::InitEnrollmentToken() {
+std::string FakeBrowserDMTokenStorage::MockDelegate::InitEnrollmentToken() {
   return enrollment_token_;
 }
 
-std::string FakeBrowserDMTokenStorage::InitDMToken() {
+std::string FakeBrowserDMTokenStorage::MockDelegate::InitDMToken() {
   return dm_token_;
 }
 
-bool FakeBrowserDMTokenStorage::InitEnrollmentErrorOption() {
+bool FakeBrowserDMTokenStorage::MockDelegate::InitEnrollmentErrorOption() {
   return enrollment_error_option_;
 }
 
-FakeBrowserDMTokenStorage::StoreTask FakeBrowserDMTokenStorage::SaveDMTokenTask(
+BrowserDMTokenStorage::StoreTask
+FakeBrowserDMTokenStorage::MockDelegate::SaveDMTokenTask(
     const std::string& token,
     const std::string& client_id) {
   return base::BindOnce([](bool enabled) -> bool { return enabled; },
@@ -70,7 +112,7 @@ FakeBrowserDMTokenStorage::StoreTask FakeBrowserDMTokenStorage::SaveDMTokenTask(
 }
 
 scoped_refptr<base::TaskRunner>
-FakeBrowserDMTokenStorage::SaveDMTokenTaskRunner() {
+FakeBrowserDMTokenStorage::MockDelegate::SaveDMTokenTaskRunner() {
   return base::ThreadTaskRunnerHandle::Get();
 }
 

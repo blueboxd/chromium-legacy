@@ -163,7 +163,7 @@ constexpr gfx::Size kUnifiedFeaturePodCollapsedSize(46, 46);
 constexpr gfx::Insets kUnifiedFeaturePodIconPadding(4);
 constexpr gfx::Insets kUnifiedFeaturePodHoverPadding(2);
 constexpr int kUnifiedFeaturePodVectorIconSize = 20;
-constexpr int kUnifiedFeaturePodLabelWidth = 80;
+constexpr int kUnifiedFeaturePodLabelWidth = 85;
 constexpr int kUnifiedFeaturePodSpacing = 6;
 constexpr int kUnifiedFeaturePodHoverCornerRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 24;

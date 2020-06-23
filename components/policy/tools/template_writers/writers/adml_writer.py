@@ -83,7 +83,8 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter,
     if policy_desc is not None and self.HasExpandedPolicyDescription(policy):
       policy_desc += '\n' + self.GetExpandedPolicyDescription(policy) + '\n'
 
-    if policy_desc is not None and example_value_text is not None:
+    if (policy_desc is not None and example_value_text is not None and
+        not self._IsRemovedPolicy(policy)):
       policy_explain = policy_desc + '\n\n' + example_value_text
     elif policy_desc is not None:
       policy_explain = policy_desc

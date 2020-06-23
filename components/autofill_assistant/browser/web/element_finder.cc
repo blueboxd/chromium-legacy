@@ -95,7 +95,7 @@ std::string ElementFinder::JsFilterBuilder::BuildFunction() const {
   return base::StrCat({
     R"(
     function(args) {
-      var elements = [this];
+      let elements = [this];
     )",
     base::JoinString(lines_, "\n"),
     R"(
@@ -149,7 +149,7 @@ bool ElementFinder::JsFilterBuilder::AddFilter(
           PseudoTypeName(filter.pseudo_element_content().pseudo_type());
 
       AddLine("elements = elements.filter((e) => {");
-      AddLine({"  var s = window.getComputedStyle(e, '", pseudo_type, "');"});
+      AddLine({"  const s = window.getComputedStyle(e, '", pseudo_type, "');"});
       AddLine("  if (!s || !s.content || !s.content.startsWith('\"')) {");
       AddLine("    return false;");
       AddLine("  }");
@@ -161,8 +161,8 @@ bool ElementFinder::JsFilterBuilder::AddFilter(
     case SelectorProto::Filter::kLabelled:
       AddLine(R"(elements = elements.flatMap((e) => {
   if (e.tagName != 'LABEL') return [];
-  var element = null;
-  var id = e.getAttribute('for');
+  let element = null;
+  const id = e.getAttribute('for');
   if (id) {
     element = document.getElementById(id)
   }
@@ -183,6 +183,7 @@ bool ElementFinder::JsFilterBuilder::AddFilter(
     case SelectorProto::Filter::kEnterFrame:
     case SelectorProto::Filter::kPseudoType:
     case SelectorProto::Filter::kPickOne:
+    case SelectorProto::Filter::kClosest:
     case SelectorProto::Filter::FILTER_NOT_SET:
       return false;
   }
@@ -192,7 +193,7 @@ std::string ElementFinder::JsFilterBuilder::AddRegexpInstance(
     const SelectorProto::TextFilter& filter) {
   std::string re_flags = filter.case_sensitive() ? "" : "i";
   std::string re_var = DeclareVariable();
-  AddLine({"var ", re_var, " = RegExp(", AddArgument(filter.re2()), ", '",
+  AddLine({"const ", re_var, " = RegExp(", AddArgument(filter.re2()), ", '",
            re_flags, "');"});
   return re_var;
 }
@@ -225,15 +226,23 @@ ElementFinder::Result::Result(const Result&) = default;
 ElementFinder::ElementFinder(content::WebContents* web_contents,
                              DevtoolsClient* devtools_client,
                              const Selector& selector,
-                             bool strict)
+                             ResultType result_type)
     : web_contents_(web_contents),
       devtools_client_(devtools_client),
       selector_(selector),
-      strict_(strict) {}
+      result_type_(result_type) {}
 
 ElementFinder::~ElementFinder() = default;
 
 void ElementFinder::Start(Callback callback) {
+  StartInternal(std::move(callback), web_contents_->GetMainFrame(),
+                /* frame_id= */ "", /* document_object_id= */ "");
+}
+
+void ElementFinder::StartInternal(Callback callback,
+                                  content::RenderFrameHost* frame,
+                                  const std::string& frame_id,
+                                  const std::string& document_object_id) {
   callback_ = std::move(callback);
 
   if (selector_.empty()) {
@@ -241,8 +250,15 @@ void ElementFinder::Start(Callback callback) {
     return;
   }
 
-  current_frame_ = web_contents_->GetMainFrame();
-  GetDocumentElement();
+  current_frame_ = frame;
+  current_frame_id_ = frame_id;
+  current_frame_root_ = document_object_id;
+  if (current_frame_root_.empty()) {
+    GetDocumentElement();
+  } else {
+    current_matches_.emplace_back(current_frame_root_);
+    ExecuteNextTask();
+  }
 }
 
 void ElementFinder::SendResult(const ClientStatus& status) {
@@ -276,9 +292,24 @@ void ElementFinder::ExecuteNextTask() {
 
   if (next_filter_index_ >= filters.size()) {
     std::string object_id;
-    if ((strict_ && !ConsumeOneMatchOrFail(object_id)) ||
-        (!strict_ && !ConsumeAnyMatchOrFail(object_id))) {
-      return;
+    switch (result_type_) {
+      case ResultType::kExactlyOneMatch:
+        if (!ConsumeOneMatchOrFail(object_id)) {
+          return;
+        }
+        break;
+
+      case ResultType::kAnyMatch:
+        if (!ConsumeAnyMatchOrFail(object_id)) {
+          return;
+        }
+        break;
+
+      case ResultType::kMatchArray:
+        if (!ConsumeMatchArrayOrFail(object_id)) {
+          return;
+        }
+        break;
     }
     SendSuccessResult(object_id);
     return;
@@ -343,8 +374,18 @@ void ElementFinder::ExecuteNextTask() {
       return;
     }
 
+    case SelectorProto::Filter::kClosest: {
+      std::string array_object_id;
+      if (!ConsumeMatchArrayOrFail(array_object_id))
+        return;
+
+      ApplyProximityFilter(next_filter_index_++, array_object_id);
+      return;
+    }
+
     case SelectorProto::Filter::FILTER_NOT_SET:
-      VLOG(1) << __func__ << " Unset or unknown filter in " << selector_;
+      VLOG(1) << __func__ << " Unset or unknown filter in " << filter << " in "
+              << selector_;
       SendResult(ClientStatus(INVALID_SELECTOR));
       return;
   }
@@ -417,6 +458,71 @@ bool ElementFinder::ConsumeAllMatchesOrFail(
   return false;
 }
 
+bool ElementFinder::ConsumeMatchArrayOrFail(std::string& array_object_id) {
+  if (current_matches_.empty() && current_match_arrays_.empty()) {
+    SendResult(ClientStatus(ELEMENT_RESOLUTION_FAILED));
+    return false;
+  }
+
+  if (current_matches_.empty() && current_match_arrays_.size() == 1) {
+    array_object_id = current_match_arrays_[0];
+    current_match_arrays_.clear();
+    return true;
+  }
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  std::string object_id;  // Will be "this" in Javascript.
+  std::string function;
+  if (current_match_arrays_.size() > 1) {
+    object_id = current_match_arrays_.back();
+    current_match_arrays_.pop_back();
+    // Merge both arrays into current_match_arrays_[0]
+    function = "function(dest) { dest.push(...this); }";
+    AddRuntimeCallArgumentObjectId(current_match_arrays_[0], &arguments);
+  } else if (!current_matches_.empty()) {
+    object_id = current_matches_.back();
+    current_matches_.pop_back();
+    if (current_match_arrays_.empty()) {
+      // Create an array containing a single element.
+      function = "function() { return [this]; }";
+    } else {
+      // Add an element to an existing array.
+      function = "function(dest) { dest.push(this); }";
+      AddRuntimeCallArgumentObjectId(current_match_arrays_[0], &arguments);
+    }
+  }
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(object_id)
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(function)
+          .Build(),
+      current_frame_id_,
+      base::BindOnce(&ElementFinder::OnConsumeMatchArray,
+                     weak_ptr_factory_.GetWeakPtr()));
+  return false;
+}
+
+void ElementFinder::OnConsumeMatchArray(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    VLOG(1) << __func__ << ": Failed to get element from array for "
+            << selector_;
+    SendResult(status);
+    return;
+  }
+  if (current_match_arrays_.empty()) {
+    std::string returned_object_id;
+    if (SafeGetObjectId(result->GetResult(), &returned_object_id)) {
+      current_match_arrays_.push_back(returned_object_id);
+    }
+  }
+  ExecuteNextTask();
+}
+
 void ElementFinder::GetDocumentElement() {
   devtools_client_->GetRuntime()->Evaluate(
       std::string(kGetDocumentElement), current_frame_id_,
@@ -441,6 +547,7 @@ void ElementFinder::OnGetDocumentElement(
     return;
   }
 
+  current_frame_root_ = object_id;
   // Use the node as root for the rest of the evaluation.
   current_matches_.emplace_back(object_id);
 
@@ -507,7 +614,8 @@ void ElementFinder::ResolvePseudoElement(
     const std::vector<std::string>& object_ids) {
   dom::PseudoType pseudo_type;
   if (!ConvertPseudoType(proto_pseudo_type, &pseudo_type)) {
-    VLOG(1) << __func__ << ": Unsupported pseudo-type in " << selector_;
+    VLOG(1) << __func__ << ": Unsupported pseudo-type "
+            << PseudoTypeName(proto_pseudo_type);
     SendResult(ClientStatus(INVALID_ACTION));
     return;
   }
@@ -587,12 +695,14 @@ void ElementFinder::OnDescribeNodeForFrame(
 
     frame_stack_.push_back(BuildResult(object_id));
 
-    current_frame_ = FindCorrespondingRenderFrameHost(node->GetFrameId());
-    if (!current_frame_) {
+    auto* frame = FindCorrespondingRenderFrameHost(node->GetFrameId());
+    if (!frame) {
       VLOG(1) << __func__ << " Failed to find corresponding owner frame.";
       SendResult(ClientStatus(FRAME_HOST_NOT_FOUND));
       return;
     }
+    current_frame_ = frame;
+    current_frame_root_.clear();
 
     if (node->HasContentDocument()) {
       // If the frame has a ContentDocument it's considered a local frame. In
@@ -640,8 +750,12 @@ void ElementFinder::OnResolveNode(
     return;
   }
 
+  std::string object_id = result->GetObject()->GetObjectId();
+  if (current_frame_root_.empty()) {
+    current_frame_root_ = object_id;
+  }
   // Use the node as root for the rest of the evaluation.
-  current_matches_.emplace_back(result->GetObject()->GetObjectId());
+  current_matches_.emplace_back(object_id);
   DecrementResponseCountAndContinue();
 }
 
@@ -654,6 +768,163 @@ content::RenderFrameHost* ElementFinder::FindCorrespondingRenderFrameHost(
   }
 
   return nullptr;
+}
+
+void ElementFinder::ApplyProximityFilter(int filter_index,
+                                         const std::string& array_object_id) {
+  Selector target_selector;
+  target_selector.proto.mutable_filters()->MergeFrom(
+      selector_.proto.filters(filter_index).closest().target());
+  proximity_target_filter_ =
+      std::make_unique<ElementFinder>(web_contents_, devtools_client_,
+                                      target_selector, ResultType::kMatchArray);
+  proximity_target_filter_->StartInternal(
+      base::BindOnce(&ElementFinder::OnProximityFilterTarget,
+                     weak_ptr_factory_.GetWeakPtr(), filter_index,
+                     array_object_id),
+      current_frame_, current_frame_id_, current_frame_root_);
+}
+
+void ElementFinder::OnProximityFilterTarget(int filter_index,
+                                            const std::string& array_object_id,
+                                            const ClientStatus& status,
+                                            std::unique_ptr<Result> result) {
+  if (!status.ok()) {
+    VLOG(1) << __func__
+            << " Could not find proximity filter target for resolving "
+            << selector_.proto.filters(filter_index);
+    SendResult(status);
+    return;
+  }
+  if (result->container_frame_host != current_frame_) {
+    VLOG(1) << __func__ << " Cannot compare elements on different frames.";
+    SendResult(ClientStatus(INVALID_SELECTOR));
+    return;
+  }
+
+  const auto& filter = selector_.proto.filters(filter_index).closest();
+
+  std::string function = R"(function(targets, maxPairs) {
+  const candidates = this;
+  const pairs = candidates.length * targets.length;
+  if (pairs > maxPairs) {
+    return pairs;
+  }
+  const candidateBoxes = candidates.map((e) => e.getBoundingClientRect());
+  let closest = null;
+  let shortestDistance = Number.POSITIVE_INFINITY;
+  for (target of targets) {
+    const targetBox = target.getBoundingClientRect();
+    for (let i = 0; i < candidates.length; i++) {
+      const box = candidateBoxes[i];
+)";
+
+  if (filter.in_alignment()) {
+    // Rejects candidates that are not on the same row or or the same column as
+    // the target.
+    function.append("if ((box.bottom <= targetBox.top || ");
+    function.append("     box.top >= targetBox.bottom) && ");
+    function.append("    (box.right <= targetBox.left || ");
+    function.append("     box.left >= targetBox.right)) continue;");
+  }
+  switch (filter.relative_position()) {
+    case SelectorProto::ProximityFilter::UNSPECIFIED_POSITION:
+      // No constraints.
+      break;
+
+    case SelectorProto::ProximityFilter::ABOVE:
+      // Candidate must be above target
+      function.append("if (box.bottom > targetBox.top) continue;");
+      break;
+
+    case SelectorProto::ProximityFilter::BELOW:
+      // Candidate must be below target
+      function.append("if (box.top < targetBox.bottom) continue;");
+      break;
+
+    case SelectorProto::ProximityFilter::LEFT:
+      // Candidate must be left of target
+      function.append("if (box.right > targetBox.left) continue;");
+      break;
+
+    case SelectorProto::ProximityFilter::RIGHT:
+      // Candidate must be right of target
+      function.append("if (box.left < targetBox.right) continue;");
+      break;
+  }
+
+  // The algorithm below computes distance to the closest border. If the
+  // distance is 0, then we have got our closest element and can stop there.
+  function.append(R"(
+      let w = 0;
+      if (targetBox.right < box.left) {
+        w = box.left - targetBox.right;
+      } else if (box.right < targetBox.left) {
+        w = targetBox.left - box.right;
+      }
+      let h = 0;
+      if (targetBox.bottom < box.top) {
+        h = box.top - targetBox.bottom;
+      } else if (box.bottom < targetBox.top) {
+        h = targetBox.top - box.bottom;
+      }
+      const dist = Math.sqrt(h * h + w * w);
+      if (dist == 0) return candidates[i];
+      if (dist < shortestDistance) {
+        closest = candidates[i];
+        shortestDistance = dist;
+      }
+    }
+  }
+  return closest;
+})");
+
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  AddRuntimeCallArgumentObjectId(result->object_id, &arguments);
+  AddRuntimeCallArgument(filter.max_pairs(), &arguments);
+
+  devtools_client_->GetRuntime()->CallFunctionOn(
+      runtime::CallFunctionOnParams::Builder()
+          .SetObjectId(array_object_id)
+          .SetArguments(std::move(arguments))
+          .SetFunctionDeclaration(function)
+          .Build(),
+      current_frame_id_,
+      base::BindOnce(&ElementFinder::OnProximityFilterJs,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ElementFinder::OnProximityFilterJs(
+    const DevtoolsClient::ReplyStatus& reply_status,
+    std::unique_ptr<runtime::CallFunctionOnResult> result) {
+  ClientStatus status =
+      CheckJavaScriptResult(reply_status, result.get(), __FILE__, __LINE__);
+  if (!status.ok()) {
+    VLOG(1) << __func__ << ": Failed to execute proximity filter " << status;
+    SendResult(status);
+    return;
+  }
+
+  std::string object_id;
+  if (SafeGetObjectId(result->GetResult(), &object_id)) {
+    // Function found a match.
+    current_matches_.push_back(object_id);
+    ExecuteNextTask();
+    return;
+  }
+
+  int pair_count = 0;
+  if (SafeGetIntValue(result->GetResult(), &pair_count)) {
+    // Function got too many pairs to check.
+    VLOG(1) << __func__ << ": Too many pairs to consider for proximity checks: "
+            << pair_count;
+    SendResult(ClientStatus(TOO_MANY_CANDIDATES));
+    return;
+  }
+
+  // Function found nothing, which is possible if the relative position
+  // constraints forced the algorithm to discard all candidates.
+  ExecuteNextTask();
 }
 
 void ElementFinder::ResolveMatchArrays(

@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/sequence_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector/upgrade_observer.h"
@@ -29,6 +30,7 @@ class TickClock;
 //   a) Detecting an upgrade and...
 //   b) When we think the user should be notified about the upgrade.
 // The latter happens much later, since we don't want to be too annoying.
+// This class is not thread safe -- all access must take place on the UI thread.
 //
 class UpgradeDetector {
  public:
@@ -61,45 +63,65 @@ class UpgradeDetector {
   virtual void Shutdown();
 
   // Returns the time at which an available upgrade was detected.
-  base::Time upgrade_detected_time() const { return upgrade_detected_time_; }
+  base::Time upgrade_detected_time() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return upgrade_detected_time_;
+  }
 
   // Whether the user should be notified about an upgrade.
-  bool notify_upgrade() const { return notify_upgrade_; }
+  bool notify_upgrade() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return notify_upgrade_;
+  }
 
   // Whether the upgrade recommendation is due to Chrome being outdated.
   bool is_outdated_install() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL;
   }
 
   // Whether the upgrade recommendation is due to Chrome being outdated AND
   // auto-update is turned off.
   bool is_outdated_install_no_au() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU;
   }
 
   // Returns true if the detector has found that a newer version of Chrome is
   // installed and a relaunch would complete the update.
   bool is_upgrade_available() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return upgrade_available_ == UPGRADE_AVAILABLE_REGULAR ||
            upgrade_available_ == UPGRADE_AVAILABLE_CRITICAL;
   }
 
   // Notify this object that the user has acknowledged the critical update so we
   // don't need to complain about it for now.
-  void acknowledge_critical_update() { critical_update_acknowledged_ = true; }
+  void acknowledge_critical_update() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    critical_update_acknowledged_ = true;
+  }
 
   // Whether the user has acknowledged the critical update.
   bool critical_update_acknowledged() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return critical_update_acknowledged_;
   }
 
 #if defined(OS_CHROMEOS)
-  bool is_factory_reset_required() const { return is_factory_reset_required_; }
+  bool is_factory_reset_required() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return is_factory_reset_required_;
+  }
 
-  bool is_rollback() const { return is_rollback_; }
+  bool is_rollback() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return is_rollback_;
+  }
 #endif  // defined(OS_CHROMEOS)
 
   UpgradeNotificationAnnoyanceLevel upgrade_notification_stage() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return upgrade_notification_stage_;
   }
 
@@ -146,9 +168,15 @@ class UpgradeDetector {
   static base::TimeDelta GetRelaunchNotificationPeriod();
   static bool IsRelaunchNotificationPolicyEnabled();
 
-  const base::Clock* clock() { return clock_; }
+  const base::Clock* clock() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return clock_;
+  }
 
-  const base::TickClock* tick_clock() { return tick_clock_; }
+  const base::TickClock* tick_clock() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return tick_clock_;
+  }
 
   // Notifies that update is recommended and triggers different actions based
   // on the update availability.
@@ -174,40 +202,54 @@ class UpgradeDetector {
   // idle state. Protected and virtual so that it could be overridden by tests.
   virtual void TriggerCriticalUpdate();
 
-  UpgradeAvailable upgrade_available() const { return upgrade_available_; }
+  UpgradeAvailable upgrade_available() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return upgrade_available_;
+  }
   void set_upgrade_available(UpgradeAvailable available) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     upgrade_available_ = available;
   }
 
   void set_upgrade_detected_time(base::Time upgrade_detected_time) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     upgrade_detected_time_ = upgrade_detected_time;
   }
 
   void set_best_effort_experiment_updates_available(bool available) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     best_effort_experiment_updates_available_ = available;
   }
 
   bool critical_experiment_updates_available() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return critical_experiment_updates_available_;
   }
   void set_critical_experiment_updates_available(bool available) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     critical_experiment_updates_available_ = available;
   }
 
   void set_critical_update_acknowledged(bool acknowledged) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     critical_update_acknowledged_ = acknowledged;
   }
 
   void set_upgrade_notification_stage(UpgradeNotificationAnnoyanceLevel stage) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     upgrade_notification_stage_ = stage;
   }
 
 #if defined(OS_CHROMEOS)
   void set_is_factory_reset_required(bool is_factory_reset_required) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     is_factory_reset_required_ = is_factory_reset_required;
   }
 
-  void set_is_rollback(bool is_rollback) { is_rollback_ = is_rollback; }
+  void set_is_rollback(bool is_rollback) {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    is_rollback_ = is_rollback;
+  }
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -271,6 +313,8 @@ class UpgradeDetector {
   // Whether we have waited long enough after detecting an upgrade (to see
   // is we should start nagging about upgrading).
   bool notify_upgrade_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   base::ObserverList<UpgradeObserver>::Unchecked observer_list_;
 

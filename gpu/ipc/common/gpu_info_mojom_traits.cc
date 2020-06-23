@@ -358,18 +358,6 @@ bool EnumTraits<gpu::mojom::OverlaySupport, gpu::OverlaySupport>::FromMojom(
   return true;
 }
 
-// static
-bool StructTraits<gpu::mojom::Dx12VulkanVersionInfoDataView,
-                  gpu::Dx12VulkanVersionInfo>::
-    Read(gpu::mojom::Dx12VulkanVersionInfoDataView data,
-         gpu::Dx12VulkanVersionInfo* out) {
-  out->supports_dx12 = data.supports_dx12();
-  out->supports_vulkan = data.supports_vulkan();
-  out->d3d12_feature_level = data.d3d12_feature_level();
-  out->vulkan_version = data.vulkan_version();
-  return true;
-}
-
 bool StructTraits<gpu::mojom::OverlayInfoDataView, gpu::OverlayInfo>::Read(
     gpu::mojom::OverlayInfoDataView data,
     gpu::OverlayInfo* out) {
@@ -405,6 +393,11 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
   out->oop_rasterization_supported = data.oop_rasterization_supported();
   out->subpixel_font_rendering = data.subpixel_font_rendering();
 
+#if defined(OS_WIN)
+  out->d3d12_feature_level = data.d3d12_feature_level();
+  out->vulkan_version = data.vulkan_version();
+#endif
+
   return data.ReadInitializationTime(&out->initialization_time) &&
          data.ReadGpu(&out->gpu) &&
          data.ReadSecondaryGpus(&out->secondary_gpus) &&
@@ -424,7 +417,6 @@ bool StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo>::Read(
 #if defined(OS_WIN)
          data.ReadOverlayInfo(&out->overlay_info) &&
          data.ReadDxDiagnostics(&out->dx_diagnostics) &&
-         data.ReadDx12VulkanVersionInfo(&out->dx12_vulkan_version_info) &&
 #endif
          data.ReadVideoDecodeAcceleratorCapabilities(
              &out->video_decode_accelerator_capabilities) &&

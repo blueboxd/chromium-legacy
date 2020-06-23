@@ -335,7 +335,7 @@ TEST_F(PaintPreviewRecorderRenderViewTest, TestCaptureLocalFrame) {
                      base::Unretained(&out_response)));
   content::RunAllTasksUntilIdle();
 
-  EXPECT_FALSE(out_response->embedding_token.has_value());
+  EXPECT_TRUE(out_response->embedding_token.has_value());
   EXPECT_EQ(out_response->content_id_to_embedding_token.size(), 0U);
 }
 

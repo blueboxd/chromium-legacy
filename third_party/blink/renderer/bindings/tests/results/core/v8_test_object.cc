@@ -138,7 +138,7 @@ static void StringifierAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -199,7 +199,7 @@ static void StringAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -227,7 +227,7 @@ static void ByteStringAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "byteStringAttribute");
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = NativeValueTraits<IDLByteString>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  V8StringResource<> cpp_value{ NativeValueTraits<IDLByteString>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -255,7 +255,7 @@ static void UsvStringAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "usvStringAttribute");
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = NativeValueTraits<IDLUSVString>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  V8StringResource<> cpp_value{ NativeValueTraits<IDLUSVString>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -283,7 +283,7 @@ static void DOMTimeStampAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "domTimeStampAttribute");
 
   // Prepare the value to be set.
-  uint64_t cpp_value = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint64_t cpp_value{ NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -311,7 +311,7 @@ static void BooleanAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "booleanAttribute");
 
   // Prepare the value to be set.
-  bool cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -339,7 +339,7 @@ static void ByteAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "byteAttribute");
 
   // Prepare the value to be set.
-  int8_t cpp_value = NativeValueTraits<IDLByte>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int8_t cpp_value{ NativeValueTraits<IDLByte>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -367,7 +367,7 @@ static void DoubleAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "doubleAttribute");
 
   // Prepare the value to be set.
-  double cpp_value = NativeValueTraits<IDLDouble>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  double cpp_value{ NativeValueTraits<IDLDouble>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -395,7 +395,7 @@ static void FloatAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "floatAttribute");
 
   // Prepare the value to be set.
-  float cpp_value = NativeValueTraits<IDLFloat>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  float cpp_value{ NativeValueTraits<IDLFloat>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -423,7 +423,7 @@ static void LongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "longAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -451,7 +451,7 @@ static void LongLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "longLongAttribute");
 
   // Prepare the value to be set.
-  int64_t cpp_value = NativeValueTraits<IDLLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int64_t cpp_value{ NativeValueTraits<IDLLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -479,7 +479,7 @@ static void OctetAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "octetAttribute");
 
   // Prepare the value to be set.
-  uint8_t cpp_value = NativeValueTraits<IDLOctet>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint8_t cpp_value{ NativeValueTraits<IDLOctet>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -507,7 +507,7 @@ static void ShortAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "shortAttribute");
 
   // Prepare the value to be set.
-  int16_t cpp_value = NativeValueTraits<IDLShort>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int16_t cpp_value{ NativeValueTraits<IDLShort>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -535,7 +535,7 @@ static void UnrestrictedDoubleAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unrestrictedDoubleAttribute");
 
   // Prepare the value to be set.
-  double cpp_value = NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  double cpp_value{ NativeValueTraits<IDLUnrestrictedDouble>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -563,7 +563,7 @@ static void UnrestrictedFloatAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unrestrictedFloatAttribute");
 
   // Prepare the value to be set.
-  float cpp_value = NativeValueTraits<IDLUnrestrictedFloat>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  float cpp_value{ NativeValueTraits<IDLUnrestrictedFloat>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -591,7 +591,7 @@ static void UnsignedLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unsignedLongAttribute");
 
   // Prepare the value to be set.
-  uint32_t cpp_value = NativeValueTraits<IDLUnsignedLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint32_t cpp_value{ NativeValueTraits<IDLUnsignedLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -619,7 +619,7 @@ static void UnsignedLongLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unsignedLongLongAttribute");
 
   // Prepare the value to be set.
-  uint64_t cpp_value = NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint64_t cpp_value{ NativeValueTraits<IDLUnsignedLongLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -647,7 +647,7 @@ static void UnsignedShortAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unsignedShortAttribute");
 
   // Prepare the value to be set.
-  uint16_t cpp_value = NativeValueTraits<IDLUnsignedShort>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint16_t cpp_value{ NativeValueTraits<IDLUnsignedShort>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -675,7 +675,7 @@ static void TestInterfaceEmptyAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyAttribute");
 
   // Prepare the value to be set.
-  TestInterfaceEmpty* cpp_value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceEmpty* cpp_value{ V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -707,7 +707,7 @@ static void TestObjectAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testObjectAttribute");
 
   // Prepare the value to be set.
-  TestObject* cpp_value = V8TestObject::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestObject* cpp_value{ V8TestObject::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -739,7 +739,7 @@ static void CSSAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "cssAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -767,7 +767,7 @@ static void ImeAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "imeAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -795,7 +795,7 @@ static void SVGAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "svgAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -823,7 +823,7 @@ static void XmlAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "xmlAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -857,7 +857,7 @@ static void AnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
+  ScriptValue cpp_value{ ScriptValue(info.GetIsolate(), v8_value) };
 
   impl->setAnyAttribute(cpp_value);
 }
@@ -895,7 +895,7 @@ static void PromiseAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptPromise cpp_value = ScriptPromise::Cast(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptPromise cpp_value{ ScriptPromise::Cast(ScriptState::Current(info.GetIsolate()), v8_value) };
 
   impl->setPromiseAttribute(cpp_value);
 }
@@ -921,7 +921,7 @@ static void WindowAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "windowAttribute");
 
   // Prepare the value to be set.
-  DOMWindow* cpp_value = ToDOMWindow(info.GetIsolate(), v8_value);
+  DOMWindow* cpp_value{ ToDOMWindow(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -953,7 +953,7 @@ static void DocumentAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "documentAttribute");
 
   // Prepare the value to be set.
-  Document* cpp_value = V8Document::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  Document* cpp_value{ V8Document::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -985,7 +985,7 @@ static void DocumentFragmentAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "documentFragmentAttribute");
 
   // Prepare the value to be set.
-  DocumentFragment* cpp_value = V8DocumentFragment::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  DocumentFragment* cpp_value{ V8DocumentFragment::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -1017,7 +1017,7 @@ static void DocumentTypeAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "documentTypeAttribute");
 
   // Prepare the value to be set.
-  DocumentType* cpp_value = V8DocumentType::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  DocumentType* cpp_value{ V8DocumentType::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -1049,7 +1049,7 @@ static void ElementAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "elementAttribute");
 
   // Prepare the value to be set.
-  Element* cpp_value = V8Element::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  Element* cpp_value{ V8Element::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -1081,7 +1081,7 @@ static void NodeAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "nodeAttribute");
 
   // Prepare the value to be set.
-  Node* cpp_value = V8Node::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  Node* cpp_value{ V8Node::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -1113,7 +1113,7 @@ static void ShadowRootAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "shadowRootAttribute");
 
   // Prepare the value to be set.
-  ShadowRoot* cpp_value = V8ShadowRoot::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  ShadowRoot* cpp_value{ V8ShadowRoot::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -1145,7 +1145,7 @@ static void ArrayBufferAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "arrayBufferAttribute");
 
   // Prepare the value to be set.
-  TestArrayBuffer* cpp_value = v8_value->IsArrayBuffer() ? V8ArrayBuffer::ToImpl(v8::Local<v8::ArrayBuffer>::Cast(v8_value)) : 0;
+  TestArrayBuffer* cpp_value{ v8_value->IsArrayBuffer() ? V8ArrayBuffer::ToImpl(v8::Local<v8::ArrayBuffer>::Cast(v8_value)) : 0 };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -1177,7 +1177,7 @@ static void Float32ArrayAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "float32ArrayAttribute");
 
   // Prepare the value to be set.
-  NotShared<DOMFloat32Array> cpp_value = ToNotShared<NotShared<DOMFloat32Array>>(info.GetIsolate(), v8_value, exception_state);
+  NotShared<DOMFloat32Array> cpp_value{ ToNotShared<NotShared<DOMFloat32Array>>(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1211,7 +1211,7 @@ static void Uint8ArrayAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "uint8ArrayAttribute");
 
   // Prepare the value to be set.
-  NotShared<DOMUint8Array> cpp_value = ToNotShared<NotShared<DOMUint8Array>>(info.GetIsolate(), v8_value, exception_state);
+  NotShared<DOMUint8Array> cpp_value{ ToNotShared<NotShared<DOMUint8Array>>(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1293,7 +1293,7 @@ static void StringFrozenArrayAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "stringFrozenArrayAttribute");
 
   // Prepare the value to be set.
-  Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  Vector<String> cpp_value{ NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1321,7 +1321,7 @@ static void TestInterfaceEmptyFrozenArrayAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceEmptyFrozenArrayAttribute");
 
   // Prepare the value to be set.
-  HeapVector<Member<TestInterfaceEmpty>> cpp_value = NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  HeapVector<Member<TestInterfaceEmpty>> cpp_value{ NativeValueTraits<IDLSequence<TestInterfaceEmpty>>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1358,7 +1358,7 @@ static void BooleanOrNullAttributeAttributeSetter(
   bool is_null = IsUndefinedOrNull(v8_value);
 
   // Prepare the value to be set.
-  base::Optional<bool> cpp_value = is_null ? base::nullopt : base::Optional<bool>(NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state));
+  base::Optional<bool> cpp_value{ is_null ? base::nullopt : base::Optional<bool>(NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state)) };
   if (exception_state.HadException())
     return;
 
@@ -1384,7 +1384,7 @@ static void StringOrNullAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value = v8_value;
+  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -1421,7 +1421,7 @@ static void LongOrNullAttributeAttributeSetter(
   bool is_null = IsUndefinedOrNull(v8_value);
 
   // Prepare the value to be set.
-  base::Optional<int32_t> cpp_value = is_null ? base::nullopt : base::Optional<int32_t>(NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state));
+  base::Optional<int32_t> cpp_value{ is_null ? base::nullopt : base::Optional<int32_t>(NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state)) };
   if (exception_state.HadException())
     return;
 
@@ -1449,7 +1449,7 @@ static void TestInterfaceOrNullAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceOrNullAttribute");
 
   // Prepare the value to be set.
-  TestInterfaceImplementation* cpp_value = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceImplementation* cpp_value{ V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value && !IsUndefinedOrNull(v8_value)) {
@@ -1481,7 +1481,7 @@ static void TestEnumAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testEnumAttribute");
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -1530,7 +1530,7 @@ static void TestEnumOrNullAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testEnumOrNullAttribute");
 
   // Prepare the value to be set.
-  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value = v8_value;
+  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -1572,7 +1572,7 @@ static void StaticStringAttributeAttributeSetter(
   ALLOW_UNUSED_LOCAL(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -1594,7 +1594,7 @@ static void StaticLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "staticLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1871,7 +1871,7 @@ static void ActivityLoggingAccessForAllWorldsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessForAllWorldsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1899,7 +1899,7 @@ static void ActivityLoggingGetterForAllWorldsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterForAllWorldsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1927,7 +1927,7 @@ static void ActivityLoggingSetterForAllWorldsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingSetterForAllWorldsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -1974,7 +1974,7 @@ static void CachedAttributeAnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
+  ScriptValue cpp_value{ ScriptValue(info.GetIsolate(), v8_value) };
 
   impl->setCachedAttributeAnyAttribute(cpp_value);
 
@@ -2028,7 +2028,7 @@ static void CachedArrayAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "cachedArrayAttribute");
 
   // Prepare the value to be set.
-  Vector<String> cpp_value = NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  Vector<String> cpp_value{ NativeValueTraits<IDLSequence<IDLString>>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2110,7 +2110,7 @@ static void CachedStringOrNoneAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value = v8_value;
+  V8StringResource<kTreatNullAndUndefinedAsNullString> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -2145,7 +2145,7 @@ static void CallWithExecutionContextAnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
+  ScriptValue cpp_value{ ScriptValue(info.GetIsolate(), v8_value) };
 
   ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 
@@ -2173,7 +2173,7 @@ static void CallWithScriptStateAnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
+  ScriptValue cpp_value{ ScriptValue(info.GetIsolate(), v8_value) };
 
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
 
@@ -2203,7 +2203,7 @@ static void CallWithExecutionContextAndScriptStateAndIsolateAnyAttributeAttribut
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
+  ScriptValue cpp_value{ ScriptValue(info.GetIsolate(), v8_value) };
 
   ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 
@@ -2242,7 +2242,7 @@ static void CustomGetterLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "customGetterLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2278,7 +2278,7 @@ static void DeprecatedLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "deprecatedLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2306,7 +2306,7 @@ static void EnforceRangeLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "enforceRangeLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLongEnforceRange>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLongEnforceRange>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2334,7 +2334,7 @@ static void ImplementedAsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "implementedAsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2354,7 +2354,7 @@ static void CustomGetterImplementedAsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "customGetterImplementedAsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2390,7 +2390,7 @@ static void MeasureAsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "measureAsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2418,7 +2418,7 @@ static void NotEnumerableLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "notEnumerableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2446,7 +2446,7 @@ static void OriginTrialEnabledLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "originTrialEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2512,7 +2512,7 @@ static void ActivityLoggingAccessPerWorldBindingsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2540,7 +2540,7 @@ static void ActivityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterFor
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2568,7 +2568,7 @@ static void ActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2596,7 +2596,7 @@ static void ActivityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2624,7 +2624,7 @@ static void ActivityLoggingGetterPerWorldBindingsLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2652,7 +2652,7 @@ static void ActivityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterFor
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2680,7 +2680,7 @@ static void ActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2708,7 +2708,7 @@ static void ActivityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -2971,7 +2971,7 @@ static void RaisesExceptionLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "raisesExceptionLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3006,7 +3006,7 @@ static void RaisesExceptionGetterLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "raisesExceptionGetterLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3034,7 +3034,7 @@ static void SetterRaisesExceptionLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "setterRaisesExceptionLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3069,7 +3069,7 @@ static void RaisesExceptionTestInterfaceEmptyAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "raisesExceptionTestInterfaceEmptyAttribute");
 
   // Prepare the value to be set.
-  TestInterfaceEmpty* cpp_value = V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceEmpty* cpp_value{ V8TestInterfaceEmpty::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -3127,7 +3127,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "cachedAttributeRaisesExceptionGetterAnyAttribute");
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
+  ScriptValue cpp_value{ ScriptValue(info.GetIsolate(), v8_value) };
 
   impl->setCachedAttributeRaisesExceptionGetterAnyAttribute(cpp_value, exception_state);
 
@@ -3162,7 +3162,7 @@ static void ReflectTestInterfaceAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectTestInterfaceAttribute");
 
   // Prepare the value to be set.
-  TestInterfaceImplementation* cpp_value = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceImplementation* cpp_value{ V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -3196,7 +3196,7 @@ static void ReflectReflectedNameAttributeTestAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectReflectedNameAttributeTestAttribute");
 
   // Prepare the value to be set.
-  TestInterfaceImplementation* cpp_value = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceImplementation* cpp_value{ V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -3230,7 +3230,7 @@ static void ReflectBooleanAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectBooleanAttribute");
 
   // Prepare the value to be set.
-  bool cpp_value = NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  bool cpp_value{ NativeValueTraits<IDLBoolean>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3260,7 +3260,7 @@ static void ReflectLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3290,7 +3290,7 @@ static void ReflectUnsignedShortAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectUnsignedShortAttribute");
 
   // Prepare the value to be set.
-  uint16_t cpp_value = NativeValueTraits<IDLUnsignedShort>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint16_t cpp_value{ NativeValueTraits<IDLUnsignedShort>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3320,7 +3320,7 @@ static void ReflectUnsignedLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "reflectUnsignedLongAttribute");
 
   // Prepare the value to be set.
-  uint32_t cpp_value = NativeValueTraits<IDLUnsignedLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  uint32_t cpp_value{ NativeValueTraits<IDLUnsignedLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3348,7 +3348,7 @@ static void IdAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3376,7 +3376,7 @@ static void NameAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3404,7 +3404,7 @@ static void ClassAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3432,7 +3432,7 @@ static void ReflectedIdAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3460,7 +3460,7 @@ static void ReflectedNameAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3488,7 +3488,7 @@ static void ReflectedClassAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3527,7 +3527,7 @@ static void LimitedToOnlyOneAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3570,7 +3570,7 @@ static void LimitedToOnlyAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3611,7 +3611,7 @@ static void LimitedToOnlyOtherAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3652,7 +3652,7 @@ static void LimitedWithMissingDefaultAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3695,7 +3695,7 @@ static void LimitedWithInvalidMissingDefaultAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3773,7 +3773,7 @@ static void RuntimeCallStatsCounterAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "RuntimeCallStatsCounterAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3870,7 +3870,7 @@ static void RuntimeEnabledLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "runtimeEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -3896,7 +3896,7 @@ static void SetterCallWithExecutionContextStringAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3924,7 +3924,7 @@ static void TreatNullAsEmptyStringStringAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<kTreatNullAsEmptyString> cpp_value = v8_value;
+  V8StringResource<kTreatNullAsEmptyString> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3952,7 +3952,7 @@ static void UrlStringAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -3980,7 +3980,7 @@ static void UrlStringAttributeAttributeSetter(
   V0CustomElementProcessingStack::CallbackDeliveryScope delivery_scope;
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -4008,7 +4008,7 @@ static void UnforgeableLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unforgeableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -4036,7 +4036,7 @@ static void MeasuredLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "measuredLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -4138,7 +4138,7 @@ static void UnscopableLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unscopableLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -4166,7 +4166,7 @@ static void UnscopableOriginTrialEnabledLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unscopableOriginTrialEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -4194,7 +4194,7 @@ static void UnscopableRuntimeEnabledLongAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "unscopableRuntimeEnabledLongAttribute");
 
   // Prepare the value to be set.
-  int32_t cpp_value = NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state);
+  int32_t cpp_value{ NativeValueTraits<IDLLong>::NativeValue(info.GetIsolate(), v8_value, exception_state) };
   if (exception_state.HadException())
     return;
 
@@ -4220,7 +4220,7 @@ static void HighEntropyAttributeWithMeasureAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -4254,7 +4254,7 @@ static void HighEntropyAttributeWithMeasureAsAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  V8StringResource<> cpp_value = v8_value;
+  V8StringResource<> cpp_value{ v8_value };
   if (!cpp_value.Prepare())
     return;
 
@@ -4304,7 +4304,7 @@ static void TestInterfaceAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "testInterfaceAttribute");
 
   // Prepare the value to be set.
-  TestInterfaceImplementation* cpp_value = V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value);
+  TestInterfaceImplementation* cpp_value{ V8TestInterface::ToImplWithTypeCheck(info.GetIsolate(), v8_value) };
 
   // Type check per: http://heycam.github.io/webidl/#es-interface
   if (!cpp_value) {
@@ -8944,7 +8944,7 @@ static void NamedPropertySetter(
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
 
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
-  V8StringResource<> property_value = v8_value;
+  V8StringResource<> property_value{ v8_value };
   if (!property_value.Prepare())
     return;
 
@@ -9051,7 +9051,7 @@ static void IndexedPropertySetter(
     v8::Local<v8::Value> v8_value,
     const v8::PropertyCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
-  V8StringResource<> property_value = v8_value;
+  V8StringResource<> property_value{ v8_value };
   if (!property_value.Prepare())
     return;
 

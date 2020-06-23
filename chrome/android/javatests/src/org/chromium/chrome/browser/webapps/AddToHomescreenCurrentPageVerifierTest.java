@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.browserservices.ui.controller.CurrentPageVeri
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.common.ContentSwitches;
 
 /**
@@ -36,15 +35,12 @@ import org.chromium.content_public.common.ContentSwitches;
 public final class AddToHomescreenCurrentPageVerifierTest {
     public final WebappActivityTestRule mActivityTestRule = new WebappActivityTestRule();
 
-    public final NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();
-
     public MockCertVerifierRuleAndroid mCertVerifierRule =
-            new MockCertVerifierRuleAndroid(mNativeLibraryTestRule, 0 /* net::OK */);
+            new MockCertVerifierRuleAndroid(0 /* net::OK */);
 
     @Rule
     public RuleChain mRuleChain = RuleChain.emptyRuleChain()
                                           .around(mActivityTestRule)
-                                          .around(mNativeLibraryTestRule)
                                           .around(mCertVerifierRule);
 
     @Before

@@ -112,18 +112,6 @@ void EnumerateImageDecodeAcceleratorSupportedProfile(
 }
 
 #if defined(OS_WIN)
-void EnumerateDx12VulkanVersionInfo(const gpu::Dx12VulkanVersionInfo& info,
-                                    gpu::GPUInfo::Enumerator* enumerator) {
-  enumerator->BeginDx12VulkanVersionInfo();
-  enumerator->AddBool("supportsDx12", info.supports_dx12);
-  enumerator->AddBool("supportsVulkan", info.supports_vulkan);
-  enumerator->AddString("dx12FeatureLevel",
-                        gpu::D3DFeatureLevelToString(info.d3d12_feature_level));
-  enumerator->AddString("vulkanVersion",
-                        gpu::VulkanVersionToString(info.vulkan_version));
-  enumerator->EndDx12VulkanVersionInfo();
-}
-
 void EnumerateOverlayInfo(const gpu::OverlayInfo& info,
                           gpu::GPUInfo::Enumerator* enumerator) {
   enumerator->BeginOverlayInfo();
@@ -281,7 +269,8 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
     DxDiagNode dx_diagnostics;
-    Dx12VulkanVersionInfo dx12_vulkan_version_info;
+    uint32_t d3d12_feature_level;
+    uint32_t vulkan_version;
     OverlayInfo overlay_info;
 #endif
 
@@ -347,7 +336,12 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   // TODO(kbr): add dx_diagnostics on Windows.
 #if defined(OS_WIN)
   EnumerateOverlayInfo(overlay_info, enumerator);
-  EnumerateDx12VulkanVersionInfo(dx12_vulkan_version_info, enumerator);
+  enumerator->AddBool("supportsDx12", d3d12_feature_level != 0);
+  enumerator->AddBool("supportsVulkan", vulkan_version != 0);
+  enumerator->AddString("dx12FeatureLevel",
+                        gpu::D3DFeatureLevelToString(d3d12_feature_level));
+  enumerator->AddString("vulkanVersion",
+                        gpu::VulkanVersionToString(vulkan_version));
 #endif
   enumerator->AddInt("videoDecodeAcceleratorFlags",
                      video_decode_accelerator_capabilities.flags);

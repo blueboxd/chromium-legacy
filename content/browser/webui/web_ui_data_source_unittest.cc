@@ -291,6 +291,8 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
                 network::mojom::CSPDirectiveName::ScriptSrc));
   EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
                     network::mojom::CSPDirectiveName::StyleSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::ConnectSrc));
 
   // Override each directive and test it updates the underlying URLDataSource.
   source()->OverrideContentSecurityPolicy(
@@ -336,6 +338,13 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
   EXPECT_EQ("style-src 'self' 'unsafe-inline';",
             url_data_source->GetContentSecurityPolicy(
                 network::mojom::CSPDirectiveName::StyleSrc));
+
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ConnectSrc,
+      "connect-src 'self' 'unsafe-inline';");
+  EXPECT_EQ("connect-src 'self' 'unsafe-inline';",
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ConnectSrc));
 }
 
 }  // namespace content

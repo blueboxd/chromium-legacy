@@ -387,9 +387,9 @@ void TabManager::OnTabDiscardDone() {
 void TabManager::RegisterMemoryPressureListener() {
   DCHECK(!memory_pressure_listener_);
   // Use sync memory pressure listener.
-  memory_pressure_listener_ =
-      std::make_unique<base::MemoryPressureListener>(base::BindRepeating(
-          &TabManager::OnMemoryPressure, weak_ptr_factory_.GetWeakPtr()));
+  memory_pressure_listener_ = std::make_unique<base::MemoryPressureListener>(
+      FROM_HERE, base::BindRepeating(&TabManager::OnMemoryPressure,
+                                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TabManager::UnregisterMemoryPressureListener() {

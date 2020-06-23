@@ -32,15 +32,6 @@ void CrostiniPackageInstallFailureView::Show(const std::string& error_message) {
       ->Show();
 }
 
-bool CrostiniPackageInstallFailureView::ShouldShowCloseButton() const {
-  return false;
-}
-
-base::string16 CrostiniPackageInstallFailureView::GetWindowTitle() const {
-  return l10n_util::GetStringUTF16(
-      IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_TITLE);
-}
-
 gfx::Size CrostiniPackageInstallFailureView::CalculatePreferredSize() const {
   const int dialog_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
@@ -50,6 +41,8 @@ gfx::Size CrostiniPackageInstallFailureView::CalculatePreferredSize() const {
 
 CrostiniPackageInstallFailureView::CrostiniPackageInstallFailureView(
     const std::string& error_message) {
+  SetShowCloseButton(false);
+  SetTitle(IDS_CROSTINI_PACKAGE_INSTALL_FAILURE_VIEW_TITLE);
   SetButtons(ui::DIALOG_BUTTON_OK);
   views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(

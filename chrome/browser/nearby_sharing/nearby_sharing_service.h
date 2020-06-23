@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_H_
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/nearby_sharing/share_target_discovered_callback.h"

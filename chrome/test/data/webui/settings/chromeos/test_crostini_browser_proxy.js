@@ -37,6 +37,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     this.crostiniMicSharingEnabled = false;
     this.crostiniIsRunning = true;
     this.methodCalls_ = {};
+    this.portOperationSuccess = true;
   }
 
   getNewPromiseFor(name) {
@@ -164,7 +165,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'addCrostiniPortForward', vmName, containerName, portNumber,
         protocolIndex, label);
-    return Promise.resolve(true);
+    return Promise.resolve(this.portOperationSuccess);
   }
 
   /** @override */
@@ -172,7 +173,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'removeCrostiniPortForward', vmName, containerName, portNumber,
         protocolIndex);
-    return Promise.resolve(true);
+    return Promise.resolve(this.portOperationSuccess);
   }
 
   /** @override */
@@ -181,7 +182,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'activateCrostiniPortForward', vmName, containerName, portNumber,
         protocolIndex);
-    return Promise.resolve(true);
+    return Promise.resolve(this.portOperationSuccess);
   }
 
   /** @override */
@@ -215,7 +216,7 @@ class TestCrostiniBrowserProxy extends TestBrowserProxy {
     this.methodCalled(
         'deactivateCrostiniPortForward', vmName, containerName, portNumber,
         protocolIndex);
-    return Promise.resolve(true);
+    return Promise.resolve(this.portOperationSuccess);
   }
 
   /** @override */

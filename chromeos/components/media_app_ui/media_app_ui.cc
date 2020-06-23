@@ -18,6 +18,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/webui/webui_allowlist.h"
 
 namespace chromeos {
@@ -60,7 +61,8 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
 
   // The guest is in an <iframe>. Add it to CSP.
   std::string csp = std::string("frame-src ") + kChromeUIMediaAppGuestURL + ";";
-  host_source->OverrideContentSecurityPolicyChildSrc(csp);
+  host_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ChildSrc, csp);
 
   // Register auto-granted permissions.
   auto* allowlist = WebUIAllowlist::GetOrCreate(browser_context);
@@ -72,7 +74,7 @@ MediaAppUI::MediaAppUI(content::WebUI* web_ui,
       host_origin, ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD);
 
   content::WebUIDataSource* untrusted_source =
-      CreateMediaAppUntrustedDataSource();
+      CreateMediaAppUntrustedDataSource(delegate_.get());
   content::WebUIDataSource::Add(browser_context, untrusted_source);
 
   // Add ability to request chrome-untrusted: URLs.

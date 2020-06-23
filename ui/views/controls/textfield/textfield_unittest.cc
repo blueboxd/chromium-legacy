@@ -74,6 +74,7 @@
 
 #if defined(OS_MACOSX)
 #include "ui/base/cocoa/secure_password_input.h"
+#include "ui/base/cocoa/text_services_context_menu.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -3633,56 +3634,23 @@ TEST_F(TextfieldTest, TextServicesContextMenuTextDirectionTest) {
       base::i18n::TextDirection::LEFT_TO_RIGHT);
   test_api_->UpdateContextMenu();
 
-  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
-      base::i18n::TextDirection::UNKNOWN_DIRECTION));
-  EXPECT_TRUE(test_api_->IsTextDirectionCheckedInContextMenu(
-      base::i18n::TextDirection::LEFT_TO_RIGHT));
-  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
-      base::i18n::TextDirection::RIGHT_TO_LEFT));
+  EXPECT_FALSE(textfield_->IsCommandIdChecked(
+      ui::TextServicesContextMenu::kWritingDirectionDefault));
+  EXPECT_TRUE(textfield_->IsCommandIdChecked(
+      ui::TextServicesContextMenu::kWritingDirectionLtr));
+  EXPECT_FALSE(textfield_->IsCommandIdChecked(
+      ui::TextServicesContextMenu::kWritingDirectionRtl));
 
   textfield_->ChangeTextDirectionAndLayoutAlignment(
       base::i18n::TextDirection::RIGHT_TO_LEFT);
   test_api_->UpdateContextMenu();
 
-  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
-      base::i18n::TextDirection::UNKNOWN_DIRECTION));
-  EXPECT_FALSE(test_api_->IsTextDirectionCheckedInContextMenu(
-      base::i18n::TextDirection::LEFT_TO_RIGHT));
-  EXPECT_TRUE(test_api_->IsTextDirectionCheckedInContextMenu(
-      base::i18n::TextDirection::RIGHT_TO_LEFT));
-}
-
-// Tests to see if the look up item is updated when the textfield's selected
-// text has changed.
-TEST_F(TextfieldTest, LookUpItemUpdate) {
-  InitTextfield();
-  EXPECT_TRUE(textfield_->context_menu_controller());
-
-  const base::string16 kTextOne = ASCIIToUTF16("crake");
-  textfield_->SetText(kTextOne);
-  textfield_->SelectAll(false);
-
-  ui::MenuModel* context_menu = GetContextMenuModel();
-  EXPECT_TRUE(context_menu);
-  EXPECT_GT(context_menu->GetItemCount(), 0);
-  EXPECT_EQ(context_menu->GetLabelAt(0),
-            l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, kTextOne));
-
-#if !defined(OS_MACOSX)
-  // Mac context menus don't behave this way: it's not possible to update the
-  // text while the menu is still "open", but also the selection can't change
-  // while the menu is open (because the user can't interact with the rest of
-  // the app).
-  const base::string16 kTextTwo = ASCIIToUTF16("rail");
-  textfield_->SetText(kTextTwo);
-  textfield_->SelectAll(false);
-
-  context_menu = GetContextMenuModel();
-  EXPECT_TRUE(context_menu);
-  EXPECT_GT(context_menu->GetItemCount(), 0);
-  EXPECT_EQ(context_menu->GetLabelAt(0),
-            l10n_util::GetStringFUTF16(IDS_CONTENT_CONTEXT_LOOK_UP, kTextTwo));
-#endif
+  EXPECT_FALSE(textfield_->IsCommandIdChecked(
+      ui::TextServicesContextMenu::kWritingDirectionDefault));
+  EXPECT_FALSE(textfield_->IsCommandIdChecked(
+      ui::TextServicesContextMenu::kWritingDirectionLtr));
+  EXPECT_TRUE(textfield_->IsCommandIdChecked(
+      ui::TextServicesContextMenu::kWritingDirectionRtl));
 }
 
 // Tests to see if the look up item is hidden for password fields.

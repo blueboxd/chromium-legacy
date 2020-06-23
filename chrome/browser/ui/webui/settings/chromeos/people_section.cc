@@ -47,6 +47,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -487,7 +488,8 @@ void AddFingerprintStrings(content::WebUIDataSource* html_source,
     // lottie animations, this update has to be performed manually. As the usage
     // increases, set this as the default so manual override is no longer
     // required.
-    html_source->OverrideContentSecurityPolicyWorkerSrc(
+    html_source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::WorkerSrc,
         "worker-src blob: 'self';");
     html_source->AddResourcePath("finger_print.json",
                                  IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION);

@@ -424,12 +424,6 @@ class OmniboxViewViews : public OmniboxView,
   //
   // These animations are used by different field trials as described below.
 
-  // When OmniboxFieldTrial::IsHidePathQueryRefEnabled() but not
-  // ShouldRevealPathQueryRefOnHover() or ShouldHidePathQueryRefOnInteraction(),
-  // only |delayed_path_fade_out_animation_| is used. It's created in
-  // OnThemeChanged() and starts running in EmphasizeUrlComponents(), fading the
-  // path out after a fixed delay.
-  std::unique_ptr<PathFadeAnimation> delayed_path_fade_out_animation_;
   // When ShouldRevealPathQueryRefOnHover() is enabled but not
   // ShouldHidePathQueryRefOnInteraction(), then the path is hidden in
   // EmphasizeUrlComponents() and |path_fade_in_animation_| and

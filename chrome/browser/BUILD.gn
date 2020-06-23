@@ -602,12 +602,16 @@ static_library("browser") {
     "lifetime/application_lifetime.h",
     "lifetime/browser_shutdown.cc",
     "lifetime/browser_shutdown.h",
+    "lite_video/lite_video_decider.cc",
+    "lite_video/lite_video_decider.h",
     "lite_video/lite_video_features.cc",
     "lite_video/lite_video_features.h",
     "lite_video/lite_video_hint.cc",
     "lite_video/lite_video_hint.h",
     "lite_video/lite_video_hint_cache.cc",
     "lite_video/lite_video_hint_cache.h",
+    "lite_video/lite_video_user_blocklist.cc",
+    "lite_video/lite_video_user_blocklist.h",
     "lookalikes/lookalike_url_blocking_page.cc",
     "lookalikes/lookalike_url_blocking_page.h",
     "lookalikes/lookalike_url_controller_client.cc",
@@ -1639,8 +1643,6 @@ static_library("browser") {
     "ssl/stateful_ssl_host_state_delegate_factory.h",
     "ssl/tls_deprecation_config.cc",
     "ssl/tls_deprecation_config.h",
-    "ssl/typed_navigation_timing_throttle.cc",
-    "ssl/typed_navigation_timing_throttle.h",
     "startup_data.cc",
     "startup_data.h",
     "status_icons/status_icon.cc",
@@ -1662,6 +1664,8 @@ static_library("browser") {
     "subresource_filter/subresource_filter_profile_context.h",
     "subresource_filter/subresource_filter_profile_context_factory.cc",
     "subresource_filter/subresource_filter_profile_context_factory.h",
+    "subresource_redirect/https_image_compression_infobar_decider.cc",
+    "subresource_redirect/https_image_compression_infobar_decider.h",
     "subresource_redirect/subresource_redirect_observer.cc",
     "subresource_redirect/subresource_redirect_observer.h",
     "sync/bookmark_sync_service_factory.cc",
@@ -1757,8 +1761,6 @@ static_library("browser") {
     "vr/ui_suppressed_element.h",
     "vr/vr_tab_helper.cc",
     "vr/vr_tab_helper.h",
-    "vr/webxr_permission_context.cc",
-    "vr/webxr_permission_context.h",
     "wake_lock/wake_lock_permission_context.cc",
     "wake_lock/wake_lock_permission_context.h",
     "web_data_service_factory.cc",
@@ -3265,6 +3267,11 @@ static_library("browser") {
       "metrics/tab_stats_tracker.h",
       "metrics/tab_stats_tracker_delegate.h",
       "nearby_sharing/attachment.h",
+      "nearby_sharing/client/nearby_share_api_call_flow.h",
+      "nearby_sharing/client/nearby_share_api_call_flow_impl.cc",
+      "nearby_sharing/client/nearby_share_api_call_flow_impl.h",
+      "nearby_sharing/client/nearby_share_request_error.cc",
+      "nearby_sharing/client/nearby_share_request_error.h",
       "nearby_sharing/fast_initiation_manager.cc",
       "nearby_sharing/fast_initiation_manager.h",
       "nearby_sharing/file_attachment.cc",
@@ -3682,6 +3689,7 @@ static_library("browser") {
       "//base/util/timer",
       "//chrome/app/vector_icons",
       "//chrome/browser/nearby_sharing/logging",
+      "//chrome/browser/nearby_sharing/proto",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:intervention_policy_database_proto",
@@ -4059,6 +4067,8 @@ static_library("browser") {
       "win/conflicts/module_inspector.h",
       "win/conflicts/third_party_metrics_recorder.cc",
       "win/conflicts/third_party_metrics_recorder.h",
+      "win/icon_reader_service.cc",
+      "win/icon_reader_service.h",
       "win/jumplist.cc",
       "win/jumplist.h",
       "win/jumplist_factory.cc",
@@ -4301,13 +4311,15 @@ static_library("browser") {
       deps += [ "//ui/gfx/x" ]
     }
     deps += [ "//services/service_manager/zygote" ]
+  }
 
+  if (is_chromeos) {
     if (use_allocator == "tcmalloc") {
       deps += [ "//chrome/common/performance_manager/mojom" ]
 
       sources += [
-        "performance_manager/policies/dynamic_tcmalloc_policy_linux.cc",
-        "performance_manager/policies/dynamic_tcmalloc_policy_linux.h",
+        "performance_manager/policies/dynamic_tcmalloc_policy_chromeos.cc",
+        "performance_manager/policies/dynamic_tcmalloc_policy_chromeos.h",
       ]
     }
   }

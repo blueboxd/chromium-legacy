@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "third_party/skia/include/core/SkStream.h"
 
 namespace gfx {

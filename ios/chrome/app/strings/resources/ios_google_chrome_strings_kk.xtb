@@ -9,6 +9,7 @@
 <translation id="2199719347983604670">Chrome Sync деректері</translation>
 <translation id="2347208864470321755">Бұл функция қосылған кезде, Chrome басқа тілдерде жазылған беттерді Google Translate арқылы аударуды ұсынады. <ph name="BEGIN_LINK" />Толығырақ<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Кескіндерді сақтау үшін "Параметрлер" түймесін түртіп, Chrome қолданбасына суреттеріңізді пайдалануға рұқсат беріңіз</translation>
+<translation id="2574249610672786438">Chrome браузерін кез келген жерде пайдаланғанда, қойындыларды көру үшін барлық құрылғыларда есептік жазбаға кіріңіз.</translation>
 <translation id="2576431527583832481">Chrome жақсара түсті! Жаңа нұсқасын қолданып көріңіз.</translation>
 <translation id="257708665678654955">Google Chrome келесіде осы сайттағы <ph name="LANGUAGE_NAME" /> беттерін аударуды ұсынуын қалайсыз ба?</translation>
 <translation id="2919738076569633423">Chrome браузерін пайдалану арқылы <ph name="BEGIN_LINK_TOS" />Қызмет көрсету шарттарына<ph name="END_LINK_TOS" /> келісесіз.</translation>
@@ -19,6 +20,7 @@
 <translation id="3196546062792660320">Chrome браузері есептік жазбаларыңызды вебке алып келу арқылы уақыт үнемдейді. "Параметрлер" бөлімінде есептік жазбаларды енгізуге немесе өшіруге болады.</translation>
 <translation id="3282568296779691940">Chrome жүйесіне кіру</translation>
 <translation id="3345341804167540816">Chrome қолданбасын барлық жерде қолдану</translation>
+<translation id="3522659714780527202">Chrome браузерін пайдаланатын кез келген жерден қойындыларды көру үшін синхрондауды қосыңыз.</translation>
 <translation id="384394811301901750">Google Chrome дәл қазір камераны пайдалана алмайды</translation>
 <translation id="3980220367029651214"><ph name="USER_EMAIL1" /> синхрондау есептік жазбасын <ph name="USER_EMAIL2" /> жазбасына ауыстырудасыз. Қолданыстағы Chrome деректерін <ph name="DOMAIN" /> басқарады. Мұның нәтижесінде деректер құрылғыдан жойылады, бірақ <ph name="USER_EMAIL1" /> жазбасында сақталады.</translation>
 <translation id="3988789688219830639">Google Chrome сурет пен бейнелерге кіре алмайды. "iOS параметрлері &gt; Құпиялылық &gt; Фотосуреттер" арқылы рұқсат беру қажет.</translation>
@@ -45,6 +47,7 @@
 <translation id="7400722733683201933">Google Chrome туралы ақпарат</translation>
 <translation id="756809126120519699">Chrome деректері өшірілді</translation>
 <translation id="7626032353295482388">Chrome жүйесіне қош келдіңіз</translation>
+<translation id="7662994914830945754">Chrome браузерін кез келген жерде пайдаланғанда, қойындыларды көру үшін есептік жазбаға кіріп, синхрондауды қосыңыз.</translation>
 <translation id="7698568245838009292">Chrome камераны пайдаланғысы келеді</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC. Барлық құқықтары қорғалған.</translation>
 <translation id="840168496893712993">Кейбір қондырмалар Chrome қызметін бұзады. Оларды жойып көріңіз.</translation>

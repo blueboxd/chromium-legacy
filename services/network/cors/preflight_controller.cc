@@ -200,12 +200,14 @@ class PreflightController::PreflightLoader final {
                   WithTrustedHeaderClient with_trusted_header_client,
                   bool tainted,
                   const net::NetworkTrafficAnnotationTag& annotation_tag,
-                  int32_t process_id)
+                  int32_t process_id,
+                  const net::NetworkIsolationKey& network_isolation_key)
       : controller_(controller),
         completion_callback_(std::move(completion_callback)),
         original_request_(request),
         tainted_(tainted),
-        process_id_(process_id) {
+        process_id_(process_id),
+        network_isolation_key_(network_isolation_key) {
     auto* network_service_client = MaybeGetNetworkServiceClientForDevTools();
     if (network_service_client)
       devtools_request_id_ = base::UnguessableToken::Create();
@@ -295,13 +297,8 @@ class PreflightController::PreflightLoader final {
 
     if (!(original_request_.load_flags & net::LOAD_DISABLE_CACHE) &&
         !detected_error_status) {
-      const net::NetworkIsolationKey& network_isolation_key =
-          original_request_.trusted_params.has_value()
-              ? original_request_.trusted_params->isolation_info
-                    .network_isolation_key()
-              : net::NetworkIsolationKey();
       controller_->AppendToCache(*original_request_.request_initiator,
-                                 original_request_.url, network_isolation_key,
+                                 original_request_.url, network_isolation_key_,
                                  std::move(result));
     }
 
@@ -363,6 +360,7 @@ class PreflightController::PreflightLoader final {
   const bool tainted_;
   const int32_t process_id_;
   base::Optional<base::UnguessableToken> devtools_request_id_;
+  const net::NetworkIsolationKey network_isolation_key_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightLoader);
 };
@@ -403,13 +401,16 @@ void PreflightController::PerformPreflightCheck(
     bool tainted,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
     mojom::URLLoaderFactory* loader_factory,
-    int32_t process_id) {
+    int32_t process_id,
+    const net::IsolationInfo& isolation_info) {
   DCHECK(request.request_initiator);
 
   const net::NetworkIsolationKey& network_isolation_key =
-      request.trusted_params.has_value()
-          ? request.trusted_params->isolation_info.network_isolation_key()
-          : net::NetworkIsolationKey();
+      !isolation_info.IsEmpty()
+          ? isolation_info.network_isolation_key()
+          : request.trusted_params.has_value()
+                ? request.trusted_params->isolation_info.network_isolation_key()
+                : net::NetworkIsolationKey();
   if (!RetrieveCacheFlags(request.load_flags) && !request.is_external_request &&
       cache_.CheckIfRequestCanSkipPreflight(
           request.request_initiator.value(), request.url, network_isolation_key,
@@ -421,7 +422,7 @@ void PreflightController::PerformPreflightCheck(
 
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
       this, std::move(callback), request, with_trusted_header_client, tainted,
-      annotation_tag, process_id));
+      annotation_tag, process_id, network_isolation_key));
   (*emplaced_pair.first)->Request(loader_factory);
 }
 

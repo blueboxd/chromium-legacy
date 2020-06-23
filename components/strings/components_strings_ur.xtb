@@ -60,6 +60,7 @@
 <translation id="1227224963052638717">نامعلوم پالیسی۔</translation>
 <translation id="1228893227497259893">‏غلط entity شناخت کار</translation>
 <translation id="1232569758102978740">بلا عنوان</translation>
+<translation id="1236081509407217141">‏VR کو اجازت دیں؟</translation>
 <translation id="1240347957665416060">آپ کے آلے کا نام</translation>
 <translation id="1250759482327835220">‏اگلی بار زیادہ تیزی سے ادائیگی کرنے کیلئے، اپنے کارڈ، نام اور بلنگ پتہ کو اپنے Google اکاؤنٹ میں محفوظ کریں۔</translation>
 <translation id="1253921432148366685"><ph name="TYPE_1" />، <ph name="TYPE_2" /> (مطابقت پذیر کردہ)</translation>
@@ -148,6 +149,7 @@
 <translation id="1549470594296187301">‏اس خصوصیت کا استعمال کرنے کیلئے JavaScript کا فعال ہونا لازمی ہے۔</translation>
 <translation id="155039086686388498">Engineering-D</translation>
 <translation id="1555130319947370107">نیلا</translation>
+<translation id="1559447966090556585">اطلاعات حاصل کریں؟</translation>
 <translation id="1559528461873125649">ایسی کوئی فائل یا ڈائرکٹری نہیں ہے</translation>
 <translation id="1559572115229829303">‏&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> سے ایک نجی کنکشن تشکیل نہیں دیا جا سکتا ہے کیونکہ آپ کے آلے کی تاریخ اور وقت (<ph name="DATE_AND_TIME" />) غلط ہیں۔&lt;‎/p&gt;
 
@@ -246,6 +248,7 @@
 <translation id="194030505837763158"><ph name="LINK" /> پر جائیں</translation>
 <translation id="1945968466830820669">‏آپ اپنی تنظیم کے اکاؤنٹ تک رسائی سے محروم ہو سکتے ہیں یا شناخت کی چوری ہو سکتی ہے۔ Chromium آپ کو ابھی اپنا پاس ورڈ تبدیل کرنے کی تجویز کرتا ہے۔</translation>
 <translation id="1947454675006758438">اوپر دائیں طرف سٹیپل</translation>
+<translation id="1959001866257244765">‏<ph name="BEGIN_WHITEPAPER_LINK" />آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs، سسٹم کی محدود معلومات اور صفحے کا کچھ مواد<ph name="END_WHITEPAPER_LINK" /> Google کو بھیج کر ہر کسی کے لیے ویب پر موجود سیکیورٹی کو بہتر کرنے میں ہماری مدد کریں۔ <ph name="BEGIN_PRIVACY_PAGE_LINK" />رازداری کی پالیسی<ph name="END_PRIVACY_PAGE_LINK" /></translation>
 <translation id="1962204205936693436"><ph name="DOMAIN" /> بک مارکس</translation>
 <translation id="1973335181906896915">ترتیب وار سازی کی خرابی</translation>
 <translation id="1974060860693918893">جدید ترین</translation>
@@ -443,6 +446,7 @@
 <translation id="2799223571221894425">دوبارہ شروع کریں</translation>
 <translation id="2803306138276472711">‏Google سیف براؤزنگ کو حال ہی میں <ph name="SITE" /> پر <ph name="BEGIN_LINK" />میلویئر کا پتہ چلا<ph name="END_LINK" />۔ جو ویب سائٹس عام طور پر محفوظ ہوتی ہیں وہ کبھی کبھی میلویئر سے متاثر ہو جاتی ہیں۔</translation>
 <translation id="2807052079800581569">‏تصویر کی Y پوزیشن</translation>
+<translation id="2824514415781424867">مقام کا اشتراک کریں؟</translation>
 <translation id="2824775600643448204">پتہ اور تلاش بار</translation>
 <translation id="2826760142808435982">کنکشن کو <ph name="CIPHER" /> کا استعمال کر کے مرموز کیا گیا ہے اور اس کی توثیق کی گئی ہے اور یہ کلید کے تبادلہ کے طریقہ کار کے بطور <ph name="KX" /> کا استعمال کرتا ہے۔</translation>
 <translation id="2835170189407361413">فارم صاف کریں</translation>
@@ -951,6 +955,7 @@
 <translation id="4958444002117714549">فہرست پھیلائیں</translation>
 <translation id="4973922308112707173">اوپر دُہرا سوراخ</translation>
 <translation id="4974590756084640048">وارننگز کو دوبارہ فعال کریں</translation>
+<translation id="4984088539114770594">مائیکروفون کا استعمال کریں؟</translation>
 <translation id="4984339528288761049">Prc5 ‎(Envelope‎)‎</translation>
 <translation id="4989163558385430922">سبھی دیکھیں</translation>
 <translation id="4989542687859782284">غیر دستیاب</translation>
@@ -1256,7 +1261,6 @@
 <translation id="6240447795304464094">‏Google pay کا لوگو</translation>
 <translation id="6241121617266208201">تجاویز چھپائیں</translation>
 <translation id="624499991300733384">پرنٹ کمپوزیٹر سروس</translation>
-<translation id="6251924700383757765">رازداری کی پالیسی</translation>
 <translation id="6254436959401408446">اس صفحہ کو کھولنے کیلئے کافی میموری نہیں ہے</translation>
 <translation id="625755898061068298">آپ نے اس سائٹ کیلئے سیکیورٹی وارننگز کو غیر فعال کرنے کا انتخاب کیا ہے۔</translation>
 <translation id="6259156558325130047">دوبارہ ترتیب کو &amp;واپس لائیں</translation>
@@ -1337,6 +1341,7 @@
 <translation id="6569060085658103619">آپ ایک ایکسٹینشن صفحہ دیکھ رہے ہیں</translation>
 <translation id="6573200754375280815">دائیں طرف دُہرا سوراخ</translation>
 <translation id="6578796323535178455">C2 ‎(Envelope‎)‎</translation>
+<translation id="6579630537141957243">‏MIDI آلہ منسلک کریں؟</translation>
 <translation id="6579990219486187401">ہلکا گلابی</translation>
 <translation id="6583674473685352014">B6 ‎(Envelope‎)‎</translation>
 <translation id="6587923378399804057">آپ کا کاپی کردہ لنک</translation>
@@ -1368,6 +1373,7 @@
 <translation id="671076103358959139">اندراج کا ٹوکن:</translation>
 <translation id="6711464428925977395">پراکسی سرور میں کچھ غلط ہے یا پتہ درست نہیں ہے۔</translation>
 <translation id="6716672519412350405">‏<ph name="URL" /> آپ کے اطراف کا 3D نقشہ تخلیق اور کیمرے کی پوزیشن ٹریک کرنا چاہتا ہے</translation>
+<translation id="6718612893943028815">کیمرا استعمال کریں؟</translation>
 <translation id="6738516213925468394">آپ کے ڈیٹا کی آپ کے <ph name="BEGIN_LINK" />مطابقت پذیر پاس فریز<ph name="END_LINK" /> کے ساتھ <ph name="TIME" /> کو مرموز کاری کی گئی تھی۔ مطابقت پذیری شروع کرنے کیلئے اسے درج کریں۔</translation>
 <translation id="674375294223700098">سرور سرٹیفکیٹ میں نامعلوم خرابی۔</translation>
 <translation id="6744009308914054259">کنکشن کا انتظار کرنے کے دوران، آف لائن مضامین پڑھنے کے لیے آپ ڈاؤن لوڈز ملاحظہ کر سکتے ہیں۔</translation>
@@ -1384,6 +1390,7 @@
 <translation id="6810899417690483278">‏حسب ضرورت ID</translation>
 <translation id="6825578344716086703">‏آپ نے <ph name="DOMAIN" /> تک پہنچنے کی کوشش کی، لیکن سرور نے ایک کمزور دستخط الگورتھم (جیسے SHA-1) استعمال کرتے ہوئے دستخط کردہ سرٹیفیکیٹ پیش کیا۔ اس کا مطلب یہ ہے کہ شاید سرور کی پیش کردہ سیکیورٹی اسناد میں جعل سازی کی گئی ہے اور ممکن ہے کہ سرور آپ کا متوقع سرور نہ ہو (ممکن ہے آپ کسی حملہ آور کے ساتھ مواصلت کر رہے ہوں)۔</translation>
 <translation id="6826370046007623921">ڈیٹا کے نقصان سے بچاؤ</translation>
+<translation id="6826993739343257035">‏AR کو اجازت دیں؟</translation>
 <translation id="6831043979455480757">ترجمہ کریں</translation>
 <translation id="6839929833149231406">علاقہ</translation>
 <translation id="6846340164947227603">ورچوئل کارڈ نمبر استعمال کریں...</translation>
@@ -1452,7 +1459,7 @@
 <translation id="7138472120740807366">ڈیلیوری کا طریقہ</translation>
 <translation id="7139724024395191329">امارات</translation>
 <translation id="714064300541049402">‏سائیڈ 2 تصویر X شفٹ</translation>
-<translation id="7147693119324090759">بہرصورت جمع کروائیں</translation>
+<translation id="7147693119324090759">بہرصورت جمع کرائیں</translation>
 <translation id="7152423860607593928">Number-14 ‎(Envelope‎)‎</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}other{<ph name="PAYMENT_METHOD_PREVIEW" /> اور <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> مزید}}</translation>
 <translation id="7153618581592392745">ارغوانی</translation>
@@ -1543,6 +1550,7 @@
 <translation id="7485870689360869515">کوئی ڈیٹا نہیں ملا۔</translation>
 <translation id="7488762544858401571">ترمیم کردہ</translation>
 <translation id="7495290002932347110">‏کسی سائٹ یا ایپ میں ڈیٹا کی خلاف ورزی کے باعث آپ کا پاس ورڈ بے نقاب ہوا ہے۔ Chrome آپ کے محفوظ کردہ پاس ورڈز کو چیک کرنے اور <ph name="ORIGIN" /> پر آپ کے پاس ورڈ کو ابھی تبدیل کرنے کی تجویز کرتا ہے۔</translation>
+<translation id="7495528107193238112">یہ مواد مسدود ہے۔ مسئلہ کو حل کرنے کے لیے سائٹ کے مالک سے رابطہ کریں۔</translation>
 <translation id="7498234416455752244">ترمیم جاری رکھیں</translation>
 <translation id="7503664977220660814">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chromium <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> اور دیگر ایسی سائٹس کے لیے اپنے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے جہاں آپ اس پاس ورڈ کا استعمال کرتے ہیں۔</translation>
 <translation id="7508255263130623398">‏واپس کردہ پالیسی آلہ id خالی ہے یا موجودہ آلہ id سے مماثل نہیں ہے</translation>
@@ -1582,6 +1590,7 @@
 <translation id="762844065391966283">ایک وقت میں ایک</translation>
 <translation id="7633909222644580952">کارکردگی کا ڈیٹا اور کریش رپورٹس</translation>
 <translation id="7637571805876720304">‏Chromium سے کریڈٹ کارڈ ہٹائیں؟</translation>
+<translation id="7637586430889951925">{COUNT,plural, =0{کوئی نہیں}=1{آپ کے اکاؤنٹ میں 1 پاس ورڈ (<ph name="DOMAIN_LIST" /> کے ليے)}other{آپ کے اکاؤنٹ میں # پاس ورڈز (<ph name="DOMAIN_LIST" /> کے ليے)}}</translation>
 <translation id="7638605456503525968">سیریل پورٹس</translation>
 <translation id="7639968568612851608">گہرا خاکستری</translation>
 <translation id="7647206758853451655">پرنٹ کا معیار</translation>
@@ -1636,13 +1645,13 @@
 <translation id="7806344367022510803">‏Chrome میں سرچ انجن کی ترتیبات تبدیل کریں</translation>
 <translation id="7812922009395017822">Mir</translation>
 <translation id="7813600968533626083">‏Chrome سے فارم کی تجویز ہٹائیں؟</translation>
+<translation id="781440967107097262">کلپ بورڈ کا اشتراک کریں؟</translation>
 <translation id="7815407501681723534">'<ph name="SEARCH_STRING" />' کیلئے <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> ملے۔</translation>
 <translation id="782886543891417279">‏آپ جو Wi-Fi استعمال کر رہے ہیں <ph name="WIFI_NAME" /> وہ آپ سے اپنا لاگ ان صفحہ ملاحظہ کرنے کا تقاضہ کر سکتا ہے۔</translation>
 <translation id="7836231406687464395">Postfix ‎(Envelope‎)‎</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{کوئی نہیں}=1{1 ایپ (<ph name="EXAMPLE_APP_1" />)}=2{2 ایپس (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# ایپس (<ph name="EXAMPLE_APP_1" />، <ph name="EXAMPLE_APP_2" />، <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">تاہم، آپ غیر مرئی نہیں ہیں۔ پوشیدگی اختیار کرنا آپ کے آجر، آپ کے انٹرنیٹ سروس فراہم کنندہ یا آپ جو ویب سائٹس ملاحظہ کرتے ہیں ان سے آپ کی براؤزنگ کو نہیں چھپاتا ہے۔</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">‏<ph name="BEGIN_WHITEPAPER_LINK" />آپ کے ملاحظہ کئے جانے والے چند صفحات کے URLs، سسٹم کی محدود معلومات اور صفحے کا کچھ مواد<ph name="END_WHITEPAPER_LINK" /> Google کو بھیج کر ہر کسی کے لیے ویب پر موجود سیکیورٹی کو بہتر کرنے میں ہماری مدد کریں۔ <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">سائٹ چھوڑیں؟</translation>
 <translation id="7865448901209910068">عمدہ رفتار</translation>
 <translation id="7874263914261512992">‏آپ نے ابھی ایک پُرفریب سائٹ پر اپنا پاس ورڈ درج کیا ہے۔ Chrome <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" /> اور دیگر ایسی سائٹس کے لیے اپنے محفوظ کردہ پاس ورڈز کو ابھی چیک کرنے کی تجویز کرتا ہے جہاں آپ اس پاس ورڈ کا استعمال کرتے ہیں۔</translation>
@@ -1778,6 +1787,7 @@
 <translation id="8428213095426709021">ترتیبات</translation>
 <translation id="8433057134996913067">یہ آپ کو بیشتر ویب سائٹس سے سائن آؤٹ کر دے گا۔</translation>
 <translation id="8437238597147034694">منتقلی کو &amp;کالعدم کریں</translation>
+<translation id="8438786541497918448">کیمرا اور مائیکروفون استعمال کریں؟</translation>
 <translation id="8457125768502047971">غیر معین</translation>
 <translation id="8461694314515752532">اپنے ذاتی مطابقت پذیر پاس فریز کے ساتھ مطابقت پذیر کردہ ڈیٹا کی مرموزکاری کریں</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 کریڈٹ کارڈ}other{# کریڈٹ کارڈز}}</translation>
@@ -1845,7 +1855,7 @@
 <translation id="8805819170075074995">‏فہرست کا اندراج "<ph name="LANGUAGE_ID" />": اندراج کو نظر انداز کیا گیا کیونکہ یہ SpellcheckLanguage پالیسی میں بھی شامل ہے۔</translation>
 <translation id="8807160976559152894">ہر صفحہ کے بعد تراشیں</translation>
 <translation id="8820817407110198400">بُک مارکس</translation>
-<translation id="8831512686168463822">یہ فارم ایک غیر محفوظ کنکشن سے زیادہ میں جمع کیا جارہا ہے جو اس سائٹ پر بھیجے جانے پر آپ کی معلومات (مثلاً، پاس ورڈز، پیغامات یا کریڈٹ کارڈز) کو ظاہر کر سکتی ہے۔</translation>
+<translation id="8831512686168463822">یہ فارم ایک غیر محفوظ کنکشن پر جمع کیا جا رہا ہے جو اس سائٹ پر بھیجے جانے پر آپ کی معلومات (مثلاً، پاس ورڈز، پیغامات یا کریڈٹ کارڈز) کو ظاہر کر سکتا ہے۔</translation>
 <translation id="883848425547221593">دیگر بُک مارکس</translation>
 <translation id="884264119367021077">ترسیل کا پتہ</translation>
 <translation id="884923133447025588">کوئی منسوخی کا میکانزم نہیں ملا۔</translation>

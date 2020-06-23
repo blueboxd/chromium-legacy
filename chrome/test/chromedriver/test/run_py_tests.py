@@ -1198,6 +1198,84 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self.assertAlmostEqual(50, events[3]['x'], delta=1)
     self.assertAlmostEqual(50, events[3]['y'], delta=1)
 
+  def testActionsCtrlCommandKeys(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))
+    self._driver.ExecuteScript('''
+        document.write('<input type="text" id="text1" value="Hello World" />');
+        document.write('<br/>')
+        document.write('<input type="text" id="text2">');
+        var text1 = document.getElementById("text1");
+        text1.addEventListener("click", function() {
+          var text1 = document.getElementById("text1");
+          text1.value="new text";
+        });
+        ''')
+    time.sleep(1)
+
+    elem1 = self._driver.FindElement('css selector', '#text1')
+    elem2 = self._driver.FindElement('css selector', '#text2')
+    self.assertEquals("Hello World", elem1.GetProperty('value'))
+
+    time.sleep(1)
+
+    platform = util.GetPlatformName()
+    modifier_key = u'\uE009'
+    if platform == 'mac':
+      modifier_key = u'\uE03D'
+
+    # This is a sequence of actions, first move the mouse to input field
+    # "elem1", then press ctrl/cmd key and 'a' key to select all the text in
+    # "elem1", and then press 'x' to cut the text and move the mouse to input
+    # field "elem2" and press 'v' to paste the text, and at the end, we check
+    # the texts in both input fields to see if the text are cut and pasted
+    # correctly from "elem1" to "elem2".
+    actions = ({'actions': [{
+        'type': 'key',
+        'id': 'key',
+        'actions': [
+            {'type': 'pause'},
+            {'type': 'pause'},
+            {'type': 'pause'},
+            {'type': 'keyDown', 'value': modifier_key},
+            {'type': 'keyDown', 'value': 'a'},
+            {'type': 'keyUp', 'value': 'a'},
+            {'type': 'keyDown', 'value': 'x'},
+            {'type': 'keyUp', 'value': 'x'},
+            {'type': 'keyUp', 'value': modifier_key},
+            {'type': 'pause'},
+            {'type': 'pause'},
+            {'type': 'pause'},
+            {'type': 'keyDown', 'value': modifier_key},
+            {'type': 'keyDown', 'value': 'v'},
+            {'type': 'keyUp', 'value': 'v'},
+            {'type': 'keyUp', 'value': modifier_key}
+        ]}, {
+        'type':'pointer',
+        'actions':[{'type': 'pointerMove', 'x': 0, 'y': 0, 'origin': elem1},
+                   {'type': 'pointerDown', 'button': 0},
+                   {'type': 'pointerUp', 'button': 0},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pointerMove', 'x': 0, 'y': 0, 'origin': elem2},
+                   {'type': 'pointerDown', 'button': 0},
+                   {'type': 'pointerUp', 'button': 0},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pause'},
+                   {'type': 'pause'}],
+        'parameters': {'pointerType': 'mouse'},
+        'id': 'pointer1'}
+        ]})
+    self._driver.PerformActions(actions)
+    time.sleep(1)
+    self.assertEquals("", elem1.GetProperty('value'))
+    self.assertEquals("new text", elem2.GetProperty('value'))
+    time.sleep(1)
+
   def testPageLoadStrategyIsNormalByDefault(self):
     self.assertEquals('normal',
                       self._driver.capabilities['pageLoadStrategy'])

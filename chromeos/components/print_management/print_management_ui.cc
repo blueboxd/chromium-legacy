@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
 
@@ -60,6 +61,8 @@ void AddPrintManagementStrings(content::WebUIDataSource* html_source) {
        IDS_PRINT_MANAGEMENT_NO_PRINT_JOBS_IN_PROGRESS_MESSAGE},
       {"clearAllPrintJobPolicyIndicatorToolTip",
        IDS_PRINT_MANAGEMENT_CLEAR_ALL_POLICY_PRINT_JOB_INDICATOR_MESSAGE},
+      {"cancelPrintJobButtonLabel",
+       IDS_PRINT_MANAGEMENT_CANCEL_PRINT_JOB_BUTTON_LABEL},
   };
 
   for (const auto& str : kLocalizedStrings) {
@@ -76,7 +79,8 @@ PrintManagementUI::PrintManagementUI(
       bind_pending_receiver_callback_(std::move(callback)) {
   auto html_source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUIPrintManagementHost));
-  html_source->OverrideContentSecurityPolicyScriptSrc(
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
 
   html_source->AddResourcePath("print_management.js", IDR_PRINT_MANAGEMENT_JS);
@@ -93,6 +97,10 @@ PrintManagementUI::PrintManagementUI(
                                IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_HTML);
   html_source->AddResourcePath("print_job_entry.js",
                                IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_JS);
+  html_source->AddResourcePath("print_management_fonts_css.html",
+                               IDR_PRINT_MANAGEMENT_FONTS_CSS_HTML);
+  html_source->AddResourcePath("print_management_fonts_css.js",
+                               IDR_PRINT_MANAGEMENT_FONTS_CSS_JS);
   html_source->AddResourcePath("print_management_shared_css.html",
                                IDR_PRINT_MANAGEMENT_SHARED_CSS_HTML);
   html_source->AddResourcePath("print_management_shared_css.js",

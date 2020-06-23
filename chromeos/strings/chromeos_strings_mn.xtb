@@ -3,6 +3,7 @@
 <translationbundle lang="mn">
 <translation id="1018656279737460067">Цуцлагдсан байна</translation>
 <translation id="1195447618553298278">Үл танигдах алдаа гаргасан байна</translation>
+<translation id="1413240736185167732">Амжилтгүй болсон - Шүүж чадсангүй</translation>
 <translation id="1468664791493211953">Саналууд</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> энэ төхөөрөмжийг удирддаг бөгөөд таны үйл ажиллагааг хянах боломжтой байж болзошгүй.</translation>
 <translation id="150962533380566081">PUK буруу байна.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Энэ төхөөрөмжийг байгууллагаас удирддаг</translation>
 <translation id="1905710495812624430">Оролдлогын тоо дээд хэмжээнээс хэтэрсэн.</translation>
 <translation id="1930797645656624981">Chrome OS-н оруулах аргын үйлчилгээ</translation>
+<translation id="1947737735496445907">Хэвлэсэн</translation>
 <translation id="1979103255016296513">Нууц үг солих хугацаа хэтэрсэн</translation>
 <translation id="2049639323467105390">Энэ төхөөрөмжийг <ph name="DOMAIN" /> удирдан ажиллаж байна .</translation>
 <translation id="2338501278241028356">Ойролцоох төхөөрөмж хайхын тулд Bluetooth-г асаана уу</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Програм</translation>
 <translation id="2872961005593481000">Унтраах</translation>
 <translation id="3008341117444806826">ДАХИН ШИНЭЧЛЭХ</translation>
+<translation id="3091839911843451378">Амжилтгүй болсон - Зогссон</translation>
+<translation id="3268178239013324452">Амжилтгүй болсон - Таг нээлттэй</translation>
 <translation id="3369013195428705271">Та хэвлэлийн бүх түүхийг арилгахдаа итгэлтэй байна уу? Таны хийж буй хэвлэлийн ажлуудыг арилгахгүй.</translation>
+<translation id="3456078764689556234"><ph name="TOTAL_PAGES" />-с <ph name="PRINTED_PAGES" /> хуудсыг хэвлэсэн.</translation>
 <translation id="3515615323037921860">Хэвлэх ажлууд</translation>
+<translation id="3527036260304016759">Амжилтгүй болсон - Үл мэдэгдэх алдаа</translation>
 <translation id="3749289110408117711">Файлын нэр</translation>
 <translation id="38114475217616659">Бүх түүхийг арилгах</translation>
 <translation id="3820172043799983114">ПИН буруу байна.</translation>
 <translation id="3838338534323494292">Шинэ нууц үг</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="TOTAL_PAGE_NUMBER" />-с <ph name="PRINTED_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> энэ төхөөрөмжийг удирддаг бөгөөд хэрэглэгчийн зочилсон вэб хуудас, нууц үг болон имэйл зэрэг бүх үйл ажиллагаанд хандах эрхтэй.</translation>
+<translation id="4003384961948020559">Амжилтгүй болсон - Гаралт дүүрсэн</translation>
 <translation id="4034824040120875894">Хэвлэгч</translation>
 <translation id="4227825898293920515">Нууц үгний хугацаа <ph name="TIME" />-н дотор дуусна</translation>
+<translation id="428217921675623177">90 хоногоос дээш хугацаагаар хадгалсан хэвлэлийн ажлуудыг хасах болно</translation>
 <translation id="4429881212383817840">Kerberos тасалбарын хугацаа удахгүй дуусна</translation>
 <translation id="445059817448385655">Хуучин нууц үг</translation>
 <translation id="467510802200863975">Нууц үг таарахгүй байна</translation>
@@ -37,24 +46,31 @@
 Асуух зүйл байвал микрофоныг товшиж үзнэ үү.</translation>
 <translation id="5222676887888702881">Гарах</translation>
 <translation id="5317780077021120954">Хадгалах</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Одоо шинийг сонгоно уу</translation>
 <translation id="5457599981699367932">Зочны хувиар хайлт хийх</translation>
 <translation id="54609108002486618">Удирдсан</translation>
 <translation id="5832805196449965646">Хүн нэм</translation>
 <translation id="5895138241574237353">Дахин асаах</translation>
+<translation id="6048107060512778456">Амжилтгүй болсон - Цаас гацсан</translation>
 <translation id="6058625436358447366">Дуусгахын тулд хуучин болон шинэ нууц үгээ оруулна уу</translation>
 <translation id="6106186594183574873">Дуусгахын тулд хуучин нууц үгээ оруулна уу</translation>
 <translation id="6146993107019042706">Дуусгахын тулд шинэ нууц үгээ оруулна уу</translation>
 <translation id="6517239166834772319">Судлах</translation>
+<translation id="6564646048574748301">Амжилтгүй болсон - Хэвлэгчид холбогдох боломжгүй</translation>
 <translation id="6643016212128521049">Цэвэрлэх</translation>
 <translation id="7162487448488904999">Gallery</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Болих</translation>
 <translation id="7690294790491645610">Шинэ нууц үг баталгаажуулна уу</translation>
 <translation id="7805768142964895445">Байр байдал</translation>
 <translation id="808894953321890993">Нууц үгийг солих</translation>
 <translation id="8208861521865154048">Нэмэлтүүд</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> энэ хэрэглэгчийг удирддаг. Энэ нь алсаас тохиргоог удирдаж, хэрэглэгчийн үйл ажиллагааг хянаж болзошгүй.</translation>
+<translation id="871560550817059752">Амжилтгүй болсон - Бэх дууссан</translation>
 <translation id="8747900814994928677">Өөрчлөлтийг баталгаажуулах</translation>
+<translation id="8919837981463578619">Амжилтгүй болсон - Тавиур алга байна</translation>
+<translation id="8928727111548978589">Амжилтгүй болсон - Цаас дууссан</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> оролдлого үлдлээ</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />-н тасалбарыг дахин шинэчлэх</translation>
 <translation id="9111102763498581341">Нээх</translation>

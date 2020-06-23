@@ -68,6 +68,10 @@ Polymer({
     },
   },
 
+  observers: [
+    'onPortStateChanged_(portState_)',
+  ],
+
   /** @override */
   attached: function() {
     this.$.dialog.showModal();
@@ -130,6 +134,7 @@ Polymer({
    */
   onSelectProtocol_: function(e) {
     this.inputProtocolIndex_ = e.target.selectedIndex;
+    this.portState_ = this.computePortState_();
   },
 
   /** @private */
@@ -146,7 +151,6 @@ Polymer({
     }
     const portNumber = +this.$.portNumberInput.value;
     const portLabel = this.$.portLabelInput.value;
-    this.invalidPort_ = false;
     settings.CrostiniBrowserProxyImpl.getInstance()
         .addCrostiniPortForward(
             DEFAULT_CROSTINI_VM, DEFAULT_CROSTINI_CONTAINER, portNumber,
@@ -158,4 +162,20 @@ Polymer({
         });
     this.resetInputs_();
   },
+
+  /** @private */
+  onBlur_: function() {
+    this.portState_ = this.computePortState_();
+  },
+
+  /** @private */
+  onPortStateChanged_: function() {
+    if (this.portState_ == PortState.VALID) {
+      this.$.portNumberInput.invalid = false;
+      this.$.continue.disabled = false;
+      return;
+    }
+    this.$.portNumberInput.invalid = true;
+    this.$.continue.disabled = true;
+  }
 });

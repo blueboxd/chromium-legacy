@@ -70,6 +70,9 @@ class OverlayImage final : public gl::GLImage {
 
   base::ScopedFD TakeEndFence() {
     DCHECK(!begin_read_fence_.is_valid());
+
+    previous_end_read_fence_ =
+        base::ScopedFD(HANDLE_EINTR(dup(end_read_fence_.get())));
     return std::move(end_read_fence_);
   }
 
@@ -78,7 +81,7 @@ class OverlayImage final : public gl::GLImage {
   GetAHardwareBuffer() override {
     return std::make_unique<ScopedHardwareBufferFenceSyncImpl>(
         this, base::android::ScopedHardwareBufferHandle::Create(handle_.get()),
-        std::move(begin_read_fence_));
+        std::move(begin_read_fence_), std::move(previous_end_read_fence_));
   }
 
  protected:
@@ -91,14 +94,20 @@ class OverlayImage final : public gl::GLImage {
     ScopedHardwareBufferFenceSyncImpl(
         scoped_refptr<OverlayImage> image,
         base::android::ScopedHardwareBufferHandle handle,
-        base::ScopedFD fence_fd)
-        : ScopedHardwareBufferFenceSync(std::move(handle), std::move(fence_fd)),
+        base::ScopedFD fence_fd,
+        base::ScopedFD available_fence_fd)
+        : ScopedHardwareBufferFenceSync(std::move(handle),
+                                        std::move(fence_fd),
+                                        std::move(available_fence_fd),
+                                        false /* is_video */),
           image_(std::move(image)) {}
     ~ScopedHardwareBufferFenceSyncImpl() override = default;
 
     void SetReadFence(base::ScopedFD fence_fd, bool has_context) override {
       DCHECK(!image_->begin_read_fence_.is_valid());
       DCHECK(!image_->end_read_fence_.is_valid());
+      DCHECK(!image_->previous_end_read_fence_.is_valid());
+
       image_->end_read_fence_ = std::move(fence_fd);
     }
 
@@ -115,6 +124,10 @@ class OverlayImage final : public gl::GLImage {
   // completion. The image content should not be modified before passing this
   // fence.
   base::ScopedFD end_read_fence_;
+
+  // The fence for overlay controller from the last frame where this buffer was
+  // presented.
+  base::ScopedFD previous_end_read_fence_;
 };
 
 }  // namespace
@@ -583,8 +596,9 @@ bool SharedImageBackingAHB::ProduceLegacyMailbox(
   DCHECK(!is_writing_);
   DCHECK_EQ(size_t{0}, active_readers_.size());
   DCHECK(hardware_buffer_handle_.is_valid());
-  legacy_texture_ = GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D,
-                                 color_space(), size(), ClearedRect());
+  legacy_texture_ =
+      GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D, color_space(),
+                   size(), estimated_size(), ClearedRect());
   if (!legacy_texture_)
     return false;
   // Make sure our |legacy_texture_| has the right initial cleared rect.
@@ -611,8 +625,9 @@ SharedImageBackingAHB::ProduceGLTexture(SharedImageManager* manager,
   // doesn't supports it. As per the egl documentation -
   // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_EGL_image_external.txt
   // if GL_OES_EGL_image is supported then <target> may also be TEXTURE_2D.
-  auto* texture = GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D,
-                               color_space(), size(), ClearedRect());
+  auto* texture =
+      GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D, color_space(),
+                   size(), estimated_size(), ClearedRect());
   if (!texture)
     return nullptr;
 
@@ -644,8 +659,9 @@ SharedImageBackingAHB::ProduceSkia(
   }
   DCHECK(context_state->GrContextIsGL());
   DCHECK(hardware_buffer_handle_.is_valid());
-  auto* texture = GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D,
-                               color_space(), size(), ClearedRect());
+  auto* texture =
+      GenGLTexture(hardware_buffer_handle_.get(), GL_TEXTURE_2D, color_space(),
+                   size(), estimated_size(), ClearedRect());
   if (!texture)
     return nullptr;
   auto gl_representation =

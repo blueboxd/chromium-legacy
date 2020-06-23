@@ -319,7 +319,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
     [self initializeUI];
     return;
   }
-  if ([self isInSafeMode])
+  if ([self isInSafeMode] || !_applicationInBackground)
     return;
 
   _applicationInBackground = NO;

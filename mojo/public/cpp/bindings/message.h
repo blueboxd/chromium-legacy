@@ -14,10 +14,10 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/span.h"
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"

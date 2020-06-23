@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">प्रतिलिपि गरियो</translation>
 <translation id="2822354292072154809">तपाईं साँच्चिकै <ph name="CHOSEN_OBJECT_NAME" /> का साइटसम्बन्धी सम्पूर्ण अनुमतिहरू रिसेट गर्न चाहनुहुन्छ?</translation>
 <translation id="2870560284913253234">साइट</translation>
+<translation id="2874939134665556319">अघिल्लो ट्र्याक</translation>
 <translation id="2910701580606108292">साइटहरूलाई संरक्षित सामग्री प्ले गर्ने अनुमति दिनुअघि सोध्नुहोस्</translation>
 <translation id="2913331724188855103">साइटहरूलाई कुकी डेटा सुरक्षित गर्ने र पढ्ने अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
 <translation id="2968755619301702150">प्रमाणपत्र दर्शक</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">पृष्ठभूमिमा सिंक गर्ने सुविधा</translation>
 <translation id="3822502789641063741">साइटको भण्डारणलई खाली गर्ने हो?</translation>
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
+<translation id="3859306556332390985">अगाडि खोज्नुहोस्</translation>
 <translation id="3955193568934677022">साइटहरूलाई सुरक्षित सामग्री प्ले गर्न अनुमति दिनुहोस् (सिफारिस गरिएको)</translation>
 <translation id="3987993985790029246">लिंक प्रतिलिपि गर्नुहोस्</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">कुनै खास साइटमा कुकीहरूलाई अनुमति दिनुहोस्।</translation>
+<translation id="4046123991198612571">अर्को ट्र्याक</translation>
 <translation id="4165986682804962316">साइट सेटिङहरू</translation>
 <translation id="4226663524361240545">सूचनाहरूले गर्दा यन्त्र कम्पन गर्न सक्छ</translation>
 <translation id="4242533952199664413">सेटिङहरू खोल्नुहोस्</translation>
 <translation id="4259722352634471385">नेभिगेशन रोकियो: <ph name="URL" /></translation>
 <translation id="4278390842282768270">अनुमति प्राप्त</translation>
+<translation id="429312253194641664">कुनै साइटले मिडियो प्ले गरिरहेको छ</translation>
 <translation id="4433925000917964731">Google ले प्रदान गरेको मूल पृष्ठको लाइट संस्करण</translation>
 <translation id="4434045419905280838">पपअप तथा रिडिरेक्टहरू</translation>
 <translation id="445467742685312942">साइटहरूलाई संरक्षित सामग्री प्ले गर्ने अनुमति दिनुहोस्</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">तल सार्नुहोस्</translation>
 <translation id="6766622839693428701">बन्द गर्न तलतिर स्वाइप गर्नुहोस्।</translation>
 <translation id="6782111308708962316">तेस्रो पक्षीय वेबसाइटहरूलाई कुकी सम्बन्धी डेटा सुरक्षित गर्न र पढ्न नदिनुहोस्</translation>
+<translation id="6790428901817661496">प्ले गर्नुहोस्</translation>
 <translation id="6818926723028410516">वस्तुहरू छनाैट गर्नुहोस्</translation>
 <translation id="6864395892908308021">यस यन्त्रले NFC पढ्न सक्दैन</translation>
 <translation id="6910211073230771657">मेटाइएको</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">कुनै साइटले तपाईंको क्यामेरा र माइक्रोफोन प्रयोग गर्दै छ</translation>
 <translation id="8380167699614421159">यो साइटले हस्तक्षेपकारी वा भ्रामक विज्ञापनहरू देखाउँछ</translation>
 <translation id="8394832520002899662">साइटमा फर्कन ट्याप गर्नुहोस्</translation>
+<translation id="8441146129660941386">पछाडि खोज्नुहोस्</translation>
 <translation id="8447861592752582886">यन्त्र सम्बन्धी अनुमतिलाई उल्टाउनुहोस्</translation>
 <translation id="8463851957836045671">साइट द्रूत छ</translation>
 <translation id="851751545965956758">साइटहरूलाई यन्त्रमा जडान गर्नबाट रोक लगाउनुहोस्</translation>

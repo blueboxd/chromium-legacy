@@ -33,6 +33,7 @@
 <translation id="1323735185997015385">حذف</translation>
 <translation id="132683371494960526">برای تغییر پوشه والد دو ضربه سریع بزنید.</translation>
 <translation id="1340643665687018190">بستن منو</translation>
+<translation id="1345319103680304157">هیچ گذرواژه‌ای لو نرفته است</translation>
 <translation id="1358214951266274152">رفتن به پیوندی که کپی کردید</translation>
 <translation id="1360432990279830238">از سیستم خارج و همگام‌سازی خاموش شود؟</translation>
 <translation id="1375321115329958930">رمزهای ورود ذخیره شده</translation>
@@ -93,7 +94,6 @@
 <translation id="2073572773299281212">آخرین فعالیت: <ph name="DAYS" /> روز قبل</translation>
 <translation id="2074131957428911366">هرزمان خواستید می‌توانید مواردی را که می‌خواهید همگام‌سازی شود در <ph name="BEGIN_LINK" />تنظیمات<ph name="END_LINK" /> انتخاب کنید.</translation>
 <translation id="2079545284768500474">لغو</translation>
-<translation id="2081417079511601293">کوکی‌های شخص ثالث در «حالت ناشناس» می‌شود</translation>
 <translation id="209018056901015185">درخواست سایت دسک‌تاپ</translation>
 <translation id="2103075008456228677">‏باز کردن history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> مورد منتقل شدند</translation>
@@ -177,6 +177,9 @@
 <translation id="298306318844797842">افزودن روش پرداخت…</translation>
 <translation id="2989805286512600854">باز کردن در برگهٔ جدید</translation>
 <translation id="3037605927509011580">اوه، نه!</translation>
+<translation id="3089107351814154346">سایت‌ها می‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند.
+
+در حالت ناشناس، سایت‌ها نمی‌توانند از کوکی‌ها برای دیدن فعالیت مرور شما در سایت‌های مختلف و برای مثال شخصی‌سازی آگهی‌ها استفاده کنند.</translation>
 <translation id="3112556859945124369">علامت‌گذاری...</translation>
 <translation id="3131206671572504478">مسدود کردن همه</translation>
 <translation id="3153862085237805241">ذخیره کردن کارت</translation>
@@ -191,6 +194,9 @@
 <translation id="3244271242291266297">ماه</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />، ‏<ph name="ADDITIONAL_INFO" />، ‏<ph name="INDEX" /> از <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">برگه‌های باز</translation>
+<translation id="3273647133355801546">سایت‌ها می‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند.
+
+سایت‌ها می‌توانند از کوکی‌های شما برای دیدن فعالیت مرور شما در سایت‌های مختلف و استفاده از آن برای اهدافی مثل شخصی‌سازی آگهی‌ها استفاده کنند.</translation>
 <translation id="3277021493514034324">نشانی سایت کپی شد</translation>
 <translation id="3290875554372353449">انتخاب حساب</translation>
 <translation id="3311748811247479259">خاموش</translation>
@@ -235,6 +241,7 @@
 <translation id="3789841737615482174">نصب</translation>
 <translation id="3803696231112616155">پیشنهاد ترجمه این سایت</translation>
 <translation id="385051799172605136">بازگشت</translation>
+<translation id="3892144330757387737">سابقه را اینجا خواهید دید</translation>
 <translation id="3897092660631435901">منو</translation>
 <translation id="3915450441834151894">اطلاعات سایت</translation>
 <translation id="3922310737605261887">جستجوی نوشتار کپی‌شده</translation>
@@ -257,6 +264,7 @@
 <translation id="4112644173421521737">جستجو</translation>
 <translation id="4121993058175073134">برای ارسال داده‌های صادراتی شبکه، لطفاً حساب ایمیل‌تان را در برنامه تنظیمات پیکربندی کنید.</translation>
 <translation id="4124987746317609294">محدوده زمانی</translation>
+<translation id="4152011295694446843">نشانک‌ها را اینجا خواهید دید</translation>
 <translation id="4172051516777682613">همیشه نشان داده شود</translation>
 <translation id="418156467088430727">مشاهده نسخه آفلاین در برگه جدید</translation>
 <translation id="4181841719683918333">زبان‌ها</translation>
@@ -278,6 +286,7 @@
 <translation id="4469418912670346607">ادامه راه‌اندازی</translation>
 <translation id="4476574785019001431">تنظیمات</translation>
 <translation id="4496373720959965247">برگه اضافه کنید و بین صفحه‌ها جابه‌جا شوید</translation>
+<translation id="4502566650163919158">اکنون بررسی شود</translation>
 <translation id="4508750114462689118">بستن تبلیغ ورود به سیستم</translation>
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">دوباره برای ورود به سیستم تلاش کنید.</translation>
@@ -309,6 +318,7 @@
 <translation id="4840495572919996524">‏نشانک‌ها، سابقه، گذرواژه‌ها و سایر موارد، دیگر با حساب Google شما همگام‌سازی نمی‌شود.</translation>
 <translation id="4854345657858711387">تنظیم گذرنویسه</translation>
 <translation id="4860895144060829044">تماس</translation>
+<translation id="4872323082491632254">بررسی گذرواژه‌ها</translation>
 <translation id="4881695831933465202">باز کردن</translation>
 <translation id="4901778704868714008">ذخیره...</translation>
 <translation id="4904877109095351937">علامت‌گذاری به‌عنوان خوانده‌شده</translation>
@@ -341,6 +351,7 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5317780077021120954">ذخیره</translation>
 <translation id="5327248766486351172">نام</translation>
+<translation id="5339316356165661760">روشن کردن همگام‌سازی</translation>
 <translation id="5352285283572729470">این تنظیم مدیریت‌شده است</translation>
 <translation id="5388358297987318779">بازکردن تصویر</translation>
 <translation id="5407969256130905701">صرف‌نظر کردن از تغییرات</translation>
@@ -370,6 +381,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="5728700505257787410">متأسفیم، مشکلی در ورود به حساب شما وجود داشت.</translation>
 <translation id="5737974891429562743">جزئیات ورود به سیستم قدیمی است. برای شروع همگام‌سازی، به‌روزرسانی کنید.</translation>
 <translation id="5738887413654608789">با این کار می‌توانید صفحه‌های وب مرتبط را براساس محیط اطرافتان کاوش کنید.</translation>
+<translation id="5758631781033351321">فهرست مطالعه را اینجا خواهید دید</translation>
 <translation id="5782227691023083829">در حال ترجمه...</translation>
 <translation id="5803566855766646066">مطمئنید می‌خواهید از این کارت جدید صرف‌نظر کنید؟</translation>
 <translation id="5816228676161003208">این کار به شما اجازه می‌دهد با استفاده از صدایتان سریع‌تر جستجو کنید.</translation>
@@ -400,6 +412,9 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="605721222689873409">سال</translation>
 <translation id="6066301408025741299">برای لغو ضربه بزنید.</translation>
+<translation id="6096382830554887001">سایت‌ها می‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند.
+
+سایت‌ها نمی‌توانند از کوکی‌ها برای دیدن فعالیت مرور شما در سایت‌های مختلف و برای مثال شخصی‌سازی آگهی‌ها استفاده کنند.</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
 <translation id="6119050551270742952">صفحه وب کنونی در حالت ناشناس است</translation>
 <translation id="6122191549521593678">آنلاین</translation>
@@ -431,6 +446,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6380866119319257197">اگر عبارت عبورتان را فراموش کردید یا می‌خواهید این تنظیم را تغییر دهید، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">نام روی کارت</translation>
 <translation id="6406506848690869874">همگام‌سازی</translation>
+<translation id="6410883413783534063">برای بازدید هم‌زمان از صفحه‌های مختلف، چند برگه باز کنید</translation>
 <translation id="6417838470969808600">نشانک، سابقه و تنظیمات دیگری از <ph name="USER_EMAIL1" /> دارید.</translation>
 <translation id="641799622251403418">ورود به سیستم به‌عنوان <ph name="EMAIL" />.
 
@@ -473,6 +489,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6856384753476268833">توسط سازمانتان مدیریت می‌شود.</translation>
 <translation id="6858855187367714033">اسکن‌شده</translation>
 <translation id="6859944681507688231">‏برای اسکن کردن کد QR یا کارت اعتباری، دوربین را در تنظیمات فعال کنید.</translation>
+<translation id="6869389390665537774">‏می‌توانید صفحه‌هایی را که از آن‌‎ها بازدید کرده‌اید ببینید یا آن‌ها را از سابقه پاک کنید</translation>
 <translation id="6873263987691478642">نمای تقسیم</translation>
 <translation id="6888009575607455378">مطمئن هستید می‌خواهید از تغییراتتان صرف‌نظر کنید؟</translation>
 <translation id="6896758677409633944">کپی</translation>
@@ -499,6 +516,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7133798577887235672">نام کامل</translation>
 <translation id="7136892417564438900">دوربین غیرقابل‌ دسترسی است</translation>
 <translation id="7159472599653637159">درخواست سایت ویژه دستگاه همراه</translation>
+<translation id="7172852049901402487">ایمن نگه‌داشتن گذرواژه‌ها دربرابر مشکلات امنیتی</translation>
 <translation id="7173114856073700355">باز کردن تنظیمات</translation>
 <translation id="7189598951263744875">در حال اشتراک‌گذاری...</translation>
 <translation id="7192050974311852563">شروع گزارش‌گیری</translation>
@@ -507,6 +525,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7272437679830969316">نمی‌توانیم هویتتان را به تأیید برسانیم. گذرواژه کپی نشد.</translation>
 <translation id="7291368939935408496">درحال آماده‌سازی گذرواژه‌ها…</translation>
 <translation id="7293171162284876153">‏برای شروع همگام‌سازی، «همگام‌سازی داده‌های Chrome» را روشن کنید.</translation>
+<translation id="7313347584264171202">برگه‌های ناشناس را اینجا خواهید دید</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> درصد بارگیری شد</translation>
 <translation id="7346909386216857016">بله متوجه شدم.</translation>
 <translation id="734758817008927353">گزینه‌های ذخیره کارت</translation>
@@ -564,6 +583,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8019783059653722575">این کار به شما اجازه می‌دهد عکس‌ها را ذخیره و بارگذاری کنید.</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8023878949384262191">بخش را بزرگ می‌کند.</translation>
+<translation id="804427445359061970">برگه‌های مربوط به دستگاه‌های دیگر را اینجا خواهید دید</translation>
 <translation id="8059533439631660104">بخش را کوچک می‌کند.</translation>
 <translation id="806745655614357130">داده‌های من مجزا باشد</translation>
 <translation id="8073670137947914548">بارگیری به پایان رسید</translation>
@@ -577,6 +597,9 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8206354486702514201">این تنظیم توسط سرپرست شما اجباری شده است.</translation>
 <translation id="8225985093977202398">تصاویر و فایل‌های قرار گرفته در حافظه پنهان</translation>
 <translation id="8261506727792406068">حذف</translation>
+<translation id="8262263934052349464">سایت‌ها نمی‌توانند از کوکی‌ها برای بهبود تجربه مرورتان استفاده کنند، مثلاً برای اینکه شما را درحالت واردشده به سیستم نگه دارند یا موارد موجود در سبد خریدتان را به‌خاطر بسپارند.
+
+سایت‌ها نمی‌توانند از کوکی‌ها برای دیدن فعالیت مرور شما در سایت‌های مختلف و برای مثال شخصی‌سازی آگهی‌ها استفاده کنند.</translation>
 <translation id="8281781826761538115">پیش‌فرض - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">جستجوی جدید</translation>
 <translation id="8323906514956095947">برای دیدن گزینه‌های بیشتر برگه، لمس کنید و نگه دارید</translation>
@@ -588,6 +611,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8458397775385147834">۱ مورد حذف شد</translation>
 <translation id="8459333855531264009">امن نیست</translation>
+<translation id="8484911814435057959">گذرواژه‌ها لو رفته‌اند</translation>
 <translation id="8487667956631253959">فعال</translation>
 <translation id="8487700953926739672">امکان دسترسی به صورت آفلاین</translation>
 <translation id="8490978609246021741">ذخیره تغییرات</translation>
@@ -612,6 +636,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8725066075913043281">سعی مجدد</translation>
 <translation id="8730621377337864115">تمام</translation>
 <translation id="8741995161408053644">‏ممکن است حساب Google شما اشکال سابقه مرور دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد.</translation>
+<translation id="8750037785291841318">برگه‌ها را اینجا خواهید دید</translation>
 <translation id="8756969031206844760">گذرواژه به‌روزرسانی شود؟</translation>
 <translation id="8775144690796719618">نشانی وب نامعتبر</translation>
 <translation id="8803639129939845298">ایمن</translation>

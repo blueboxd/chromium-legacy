@@ -10,8 +10,8 @@
 
 #include <limits>
 
+#include "base/check_op.h"
 #include "base/component_export.h"
-#include "base/logging.h"
 #include "base/pickle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_param_traits.h"

@@ -60,6 +60,7 @@ TranslateClientImpl::TranslateClientImpl(content::WebContents* web_contents)
           TranslateRankerFactory::GetForBrowserContext(
               web_contents->GetBrowserContext()),
           /*language_model=*/nullptr)) {
+  observer_.Add(&translate_driver_);
   translate_driver_.set_translate_manager(translate_manager_.get());
 }
 
@@ -134,6 +135,22 @@ bool TranslateClientImpl::IsTranslatableURL(const GURL& url) {
 void TranslateClientImpl::ShowReportLanguageDetectionErrorUI(
     const GURL& report_url) {
   NOTREACHED();
+}
+
+void TranslateClientImpl::OnLanguageDetermined(
+    const translate::LanguageDetectionDetails& details) {
+  if (manual_translate_on_ready_) {
+    GetTranslateManager()->InitiateManualTranslation();
+    manual_translate_on_ready_ = false;
+  }
+}
+
+void TranslateClientImpl::ManualTranslateWhenReady() {
+  if (GetLanguageState().original_language().empty()) {
+    manual_translate_on_ready_ = true;
+  } else {
+    GetTranslateManager()->InitiateManualTranslation();
+  }
 }
 
 void TranslateClientImpl::WebContentsDestroyed() {

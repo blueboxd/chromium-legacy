@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1479909375538722835">منوی دسترس‌پذیری شناور</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">روشن</translation>
 <translation id="1516740043221086139">«مزاحم نشوید» روشن است.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{نشان دادن تنظیمات اعلان. اعلان‌های یک برنامه خاموش است}one{نشان دادن تنظیمات اعلان. اعلان‌های # برنامه خاموش است}other{نشان دادن تنظیمات اعلان. اعلان‌های # برنامه خاموش است}}</translation>
 <translation id="1525508553941733066">رد کردن</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">دستیار (درحال بار کردن…)</translation>
 <translation id="1838895407229022812">«نور شب» خاموش است</translation>
 <translation id="1850504506766569011">‏Wi-Fi خاموش است.</translation>
-<translation id="1859889070386344428">خاموش</translation>
 <translation id="1864454756846565995">‏دستگاه USB-C (درگاه عقب)</translation>
 <translation id="1882897271359938046">بازتاب به <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">باز کردن قفل با اثر انگشت</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">برای تغییر طرح‌بندی صفحه‌کلید، <ph name="KEYBOARD_SHORTCUT" /> را فشار دهید.</translation>
 <translation id="2501920221385095727">کلیدهای چسبان</translation>
 <translation id="2509468283778169019">‏CAPS LOCK روشن است</translation>
-<translation id="2519465031217098801">روشن</translation>
 <translation id="2542089167727451762">روی تصویر نمایه ضربه بزنید</translation>
 <translation id="255671100581129685">‏«دستیار Google» در جلسه عمومی در دسترس نیست.</translation>
 <translation id="256712445991462162">ذره‌بین متصل</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">جاگذاری</translation>
 <translation id="394485226368336402">تنظیمات صوتی</translation>
 <translation id="3962859241508114581">آهنگ قبلی</translation>
-<translation id="3965097803111112935">خاموش</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
 <translation id="3977512764614765090">شارژ باتری <ph name="PERCENTAGE" />٪ است و باتری درحال شارژ است.</translation>
 <translation id="3995138139523574647">‏دستگاه USB-C (درگاه عقب سمت راست)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">برجسته کردن هشتک نوشتار</translation>
 <translation id="5222676887888702881">خروج از سیستم</translation>
 <translation id="523505283826916779">تنظیمات دسترس‌پذیری</translation>
-<translation id="5250225880026334010">خاموش</translation>
 <translation id="5260676007519551770">میز ۴</translation>
 <translation id="5283198616748585639">افزودن ۱ دقیقه</translation>
 <translation id="528468243742722775">پایان</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">دستگاه بلوتوث «<ph name="DEVICE_NAME" />» برای مرتبط‌سازی به مجوز نیاز دارد. لطفاً این کلیدواژه را در آن دستگاه وارد کنید: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">گذرواژه</translation>
 <translation id="6665545700722362599">به وب‌سایت‌ها، برنامه‌ها و افزونه‌ها برای استفاده از سرویس‌ها، میکروفون و دوربین یا سایر ویژگی‌های دستگاه مجوز بدهید</translation>
-<translation id="6669268301501499730">روشن</translation>
 <translation id="6670153871843998651">میز ۳</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">دریافت اطلاعاتی که با انتخابتان مرتبط است</translation>

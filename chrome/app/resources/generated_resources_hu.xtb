@@ -2492,7 +2492,6 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4077919383365622693">A(z) <ph name="SITE" /> által tárolt összes adat és cookie törlődik.</translation>
 <translation id="4079140982534148664">Továbbfejlesztett helyesírás-ellenőrzés használata</translation>
 <translation id="4081242589061676262">Nem sikerült a fájl átküldése.</translation>
-<translation id="4083648855651348665">Adja meg Google-fiókja jelszavát, hogy ezen az eszközön is hozzáférhessen a fiókjában tárolt jelszavakhoz.</translation>
 <translation id="4084682180776658562">Könyvjelző</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> bezárása</translation>
 <translation id="4085270836953633510">Kérdezzen rá, ha valamelyik webhely hozzá szeretne férni a soros portokhoz</translation>
@@ -2797,6 +2796,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="4508765956121923607">F&amp;orrás megtekintése</translation>
 <translation id="4510479820467554003">Szülői fiókok listája</translation>
 <translation id="4510614391273086606">A Linux-fájlok és -alkalmazások visszaállnak a biztonsági mentés végrehajtásakor fennálló állapotra.</translation>
+<translation id="4513946894732546136">Visszajelzés</translation>
 <translation id="451407183922382411">A(z) <ph name="COMPANY_NAME" /> segítségével</translation>
 <translation id="4514610446763173167">Váltás a videó lejátszása és szüneteltetése között</translation>
 <translation id="451515744433878153">Eltávolítás</translation>
@@ -3896,7 +3896,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="5935656526031444304">A Biztonságos Böngészés kezelése</translation>
 <translation id="5938002010494270685">Rendelkezésre áll egy biztonsági frissítés</translation>
 <translation id="5939518447894949180">Visszaállítás</translation>
-<translation id="594108735267876762"><ph name="COUNT" /> napon belül frissítse az eszközt</translation>
 <translation id="5941153596444580863">Személy hozzáadása…</translation>
 <translation id="5941343993301164315">Kérjük, jelentkezzen be ide: <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Kicsinyítés</translation>
@@ -4245,7 +4244,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6390799748543157332">Az ebben az ablakban megtekintett oldalak a vendégmódban megnyitott ablakok bezárását követően nem fognak megjelenni a böngészési előzmények között, és nem hagynak egyéb nyomokat, például cookie-kat a számítógépen. Azonban az Ön által letöltött fájlokat a rendszer megőrzi.</translation>
 <translation id="6393156038355142111">Erős jelszó ajánlása</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Rendszer-információk<ph name="END_LINK1" /> és <ph name="BEGIN_LINK2" />mutatószámok<ph name="END_LINK2" /> küldése</translation>
-<translation id="6396179879191282798">Az eszköz frissítésére rendelkezésre álló utolsó nap</translation>
 <translation id="6396988158856674517">A mozgásérzékelők használatának letiltása a webhelyek számára</translation>
 <translation id="6398715114293939307">A Google Play Áruház eltávolítása</translation>
 <translation id="6398765197997659313">Kilépés a teljes képernyős módból</translation>
@@ -4611,7 +4609,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="6880587130513028875">A képek le vannak tiltva ezen az oldalon.</translation>
 <translation id="6882836635272038266">Normál védelem azon webhelyekkel, letöltésekkel és bővítményekkel szemben, amelyekről ismert, hogy veszélyesek.</translation>
 <translation id="6883319974225028188">Hoppá! A rendszer nem tudta menteni az eszközkonfigurációt.</translation>
-<translation id="6885064901301703683">Tárolás egy helyen, használat bárhol</translation>
 <translation id="6885771755599377173">Rendszer-információk előnézete</translation>
 <translation id="6886476658664859389">NFC-s biztonsági hardverkulcs</translation>
 <translation id="6886871292305414135">Link megnyitása új &amp;lapon</translation>
@@ -5048,6 +5045,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7427798576651127129">Hívás a következőtől: <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">Nem találhatók HID-eszközök</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Összes meg&amp;nyitása új ablakban}=1{Meg&amp;nyitás új ablakban}other{Összes (#) meg&amp;nyitása új ablakban}}</translation>
+<translation id="7433957986129316853">Megtartom</translation>
 <translation id="7434509671034404296">Fejlesztőknek</translation>
 <translation id="7434635829372401939">Beállítások szinkronizálása</translation>
 <translation id="7434757724413878233">Egér gyorsítása</translation>
@@ -5939,7 +5937,6 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="8545575359873600875">Sajnáljuk, de jelszavát nem sikerült ellenőrizni. Előfordulhat, hogy a felügyelt felhasználó kezelője nemrégiben módosította a jelszót. Ha így van, akkor az új jelszó a legközelebbi bejelentkezéskor lép érvénybe. Próbálkozzon régi jelszavával.</translation>
 <translation id="8546186510985480118">Az eszköz kevés szabad tárhellyel rendelkezik</translation>
 <translation id="8546306075665861288">Képek gyorsítótára</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">Webproxy automatikus észlelési URL-je:</translation>
 <translation id="8546930481464505581">Az érintősáv személyre szabása</translation>
 <translation id="8547013269961688403">Teljes képernyős nagyító engedélyezése</translation>
@@ -6527,6 +6524,7 @@ A kulcsfájlt tartsa biztonságos helyen. Szüksége lesz rá ahhoz, hogy új ve
 <translation id="983511809958454316">Ez a funkció nem támogatott VR-módban</translation>
 <translation id="984275831282074731">Fizetési módok</translation>
 <translation id="98515147261107953">Fekvő</translation>
+<translation id="987264212798334818">Általános</translation>
 <translation id="987897973846887088">Nincs rendelkezésre álló kép</translation>
 <translation id="988978206646512040">Üres összetett jelszó nem engedélyezett</translation>
 <translation id="992032470292211616">A bővítmények, alkalmazások és témák károsíthatják eszközét. Biztosan folytatja?</translation>

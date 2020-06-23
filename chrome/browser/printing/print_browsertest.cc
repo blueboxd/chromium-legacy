@@ -870,7 +870,8 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, PDFPluginNotKeyboardFocusable) {
     const button = document.getElementsByTagName('print-preview-app')[0]
                        .$['previewArea']
                        .$$('iframe')
-                       .contentDocument.querySelector('#zoom-toolbar')
+                       .contentDocument.querySelector('pdf-viewer-pp')
+                       .shadowRoot.querySelector('#zoom-toolbar')
                        .$['zoom-out-button'];
     button.addEventListener('focus', (e) => {
       window.domAutomationController.send(e.target.id);

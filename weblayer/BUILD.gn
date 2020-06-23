@@ -585,6 +585,7 @@ if (is_android) {
       ":weblayer_lib_base",
       "//base",
       "//components/infobars/core",
+      "//components/translate/core/browser",
       "//content/public/browser",
       "//content/test:test_support",
       "//testing/gtest",

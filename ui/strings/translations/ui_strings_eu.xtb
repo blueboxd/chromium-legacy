@@ -153,10 +153,12 @@
 <translation id="6040143037577758943">Itxi</translation>
 <translation id="6119846243427417423">aktibatu</translation>
 <translation id="6129953537138746214">Zuriunea</translation>
+<translation id="6134259848159370930">Bilatu gailuan, aplikazioetan, ezarpenetan eta sarean</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/seg</translation>
 <translation id="6156262341071374681">Erakutsi aplikazio guztiak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
+<translation id="6166852626429024716">Bilatu gailuan, aplikazioetan, ezarpenetan, sarean…</translation>
 <translation id="6264365405983206840">Hautatu &amp;guztiak</translation>
 <translation id="6351032674660237738">APLIKAZIOEN IRADOKIZUNAK</translation>
 <translation id="6364916375976753737">Joan ezkerrera</translation>
@@ -231,6 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> fitxategia (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">Biltegia beti dago ikusgai</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
+<translation id="8685326675965865247">Bilatu gailuan, aplikazioetan, ezarpenetan eta sarean. Aplikazio batetik bestera pasatzeko, erabili gezi-teklak.</translation>
 <translation id="8725488761726303204">eta beste <ph name="NUMBER" /></translation>
 <translation id="8730621377337864115">Eginda</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>

@@ -245,12 +245,21 @@ TEST_F(StructTraitsTest, PresentationFeedback) {
   uint32_t flags =
       PresentationFeedback::kVSync | PresentationFeedback::kZeroCopy;
   PresentationFeedback input{timestamp, interval, flags};
+  input.available_timestamp =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(20);
+  input.ready_timestamp =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(21);
+  input.latch_timestamp =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(22);
   PresentationFeedback output;
   mojo::test::SerializeAndDeserialize<gfx::mojom::PresentationFeedback>(
       &input, &output);
   EXPECT_EQ(timestamp, output.timestamp);
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(flags, output.flags);
+  EXPECT_EQ(input.available_timestamp, output.available_timestamp);
+  EXPECT_EQ(input.ready_timestamp, output.ready_timestamp);
+  EXPECT_EQ(input.latch_timestamp, output.latch_timestamp);
 }
 
 TEST_F(StructTraitsTest, RRectF) {

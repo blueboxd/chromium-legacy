@@ -20,6 +20,7 @@ struct FrameTimingDetails;
 }
 
 namespace cc {
+class DroppedFrameCounter;
 class UkmManager;
 struct BeginMainFrameMetrics;
 
@@ -85,6 +86,10 @@ class CC_EXPORT CompositorFrameReportingController {
 
   std::unique_ptr<CompositorFrameReporter>* reporters() { return reporters_; }
 
+  void SetDroppedFrameCounter(DroppedFrameCounter* counter) {
+    dropped_frame_counter_ = counter;
+  }
+
  protected:
   struct SubmittedCompositorFrame {
     uint32_t frame_token;
@@ -131,6 +136,8 @@ class CC_EXPORT CompositorFrameReportingController {
   base::circular_deque<SubmittedCompositorFrame> submitted_compositor_frames_;
 
   const base::TickClock* tick_clock_ = base::DefaultTickClock::GetInstance();
+
+  DroppedFrameCounter* dropped_frame_counter_ = nullptr;
 };
 }  // namespace cc
 

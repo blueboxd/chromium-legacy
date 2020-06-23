@@ -17,7 +17,7 @@
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/ax_tree_update.h"
-#include "ui/accessibility/platform/test_ax_node_wrapper.h"
+#include "ui/accessibility/test_ax_node_helper.h"
 #include "ui/accessibility/test_ax_tree_manager.h"
 
 namespace ui {
@@ -68,8 +68,8 @@ class TestAXRangeScreenRectDelegate : public AXRangeRectDelegate {
     if (!node)
       return gfx::Rect();
 
-    TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_manager_->GetTree(), node);
+    TestAXNodeHelper* wrapper =
+        TestAXNodeHelper::GetOrCreate(tree_manager_->GetTree(), node);
     return wrapper->GetInnerTextRangeBoundsRect(
         start_offset, end_offset, AXCoordinateSystem::kScreenDIPs,
         AXClippingBehavior::kClipped, offscreen_result);
@@ -85,8 +85,8 @@ class TestAXRangeScreenRectDelegate : public AXRangeRectDelegate {
     if (!node)
       return gfx::Rect();
 
-    TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_manager_->GetTree(), node);
+    TestAXNodeHelper* wrapper =
+        TestAXNodeHelper::GetOrCreate(tree_manager_->GetTree(), node);
     return wrapper->GetBoundsRect(AXCoordinateSystem::kScreenDIPs,
                                   AXClippingBehavior::kClipped,
                                   offscreen_result);

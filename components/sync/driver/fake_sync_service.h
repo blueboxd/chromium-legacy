@@ -48,7 +48,6 @@ class FakeSyncService : public SyncService {
   GoogleServiceAuthError GetAuthError() const override;
   base::Time GetAuthErrorTime() const override;
   bool RequiresClientUpgrade() const override;
-  UserShare* GetUserShare() const override;
   void DataTypePreconditionChanged(syncer::ModelType type) override;
   SyncTokenStatus GetSyncTokenStatusForDebugging() const override;
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
@@ -79,7 +78,6 @@ class FakeSyncService : public SyncService {
 
  private:
   GURL sync_service_url_;
-  std::unique_ptr<UserShare> user_share_;
 };
 
 }  // namespace syncer

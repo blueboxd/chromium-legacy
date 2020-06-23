@@ -761,6 +761,16 @@ bool UserSessionManager::RespectLocalePreference(
       prefs->GetString(prefs::kApplicationLocaleBackup);
 
   pref_locale = pref_app_locale;
+
+  // In Demo Mode, each sessions uses a new empty User Profile, so we need to
+  // rely on the local state set in the browser process.
+  if (chromeos::DemoSession::IsDeviceInDemoMode() && pref_app_locale.empty()) {
+    const std::string local_state_locale =
+        g_browser_process->local_state()->GetString(
+            language::prefs::kApplicationLocale);
+    pref_locale = local_state_locale;
+  }
+
   if (pref_locale.empty())
     pref_locale = pref_bkup_locale;
 

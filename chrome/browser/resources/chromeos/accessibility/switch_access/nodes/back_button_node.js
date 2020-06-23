@@ -16,6 +16,9 @@ class BackButtonNode extends SAChildNode {
      * @private {!SARootNode}
      */
     this.group_ = group;
+
+    /** @private {function(chrome.automation.AutomationEvent)} */
+    this.locationChangedHandler_ = () => FocusRingManager.setFocusedNode(this);
   }
 
   // ================= Getters and setters =================
@@ -28,6 +31,11 @@ class BackButtonNode extends SAChildNode {
   /** @override */
   get automationNode() {
     return BackButtonNode.automationNode_;
+  }
+
+  /** @return {!SARootNode} */
+  get group() {
+    return this.group_;
   }
 
   /** @override */
@@ -74,6 +82,12 @@ class BackButtonNode extends SAChildNode {
         chrome.accessibilityPrivate.SwitchAccessBubble.BACK_BUTTON,
         true /* show */, this.group_.location);
     BackButtonNode.findAutomationNode_();
+
+    if (this.group_.automationNode) {
+      this.group_.automationNode.addEventListener(
+          chrome.automation.EventType.LOCATION_CHANGED,
+          this.locationChangedHandler_, false /* is_capture */);
+    }
   }
 
   /** @override */
@@ -82,6 +96,12 @@ class BackButtonNode extends SAChildNode {
     chrome.accessibilityPrivate.updateSwitchAccessBubble(
         chrome.accessibilityPrivate.SwitchAccessBubble.BACK_BUTTON,
         false /* show */);
+
+    if (this.group_.automationNode) {
+      this.group_.automationNode.removeEventListener(
+          chrome.automation.EventType.LOCATION_CHANGED,
+          this.locationChangedHandler_, false /* is_capture */);
+    }
   }
 
   /** @override */

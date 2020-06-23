@@ -293,6 +293,22 @@ class ShelfAppButton::AppStatusIndicatorView
 // static
 const char ShelfAppButton::kViewClassName[] = "ash/ShelfAppButton";
 
+// static
+bool ShelfAppButton::ShouldHandleEventFromContextMenu(
+    const ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_END:
+    case ui::ET_GESTURE_TAP_CANCEL:
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      return true;
+    default:
+      return false;
+  }
+}
+
 ShelfAppButton::ShelfAppButton(ShelfView* shelf_view,
                                ShelfButtonDelegate* shelf_button_delegate)
     : ShelfButton(shelf_view->shelf(), shelf_button_delegate),
@@ -427,6 +443,12 @@ void ShelfAppButton::ClearState(State state) {
     if (state & STATE_DRAGGING)
       ScaleAppIcon(false);
   }
+}
+
+void ShelfAppButton::ClearDragStateOnGestureEnd() {
+  drag_timer_.Stop();
+  ClearState(STATE_HOVERED);
+  ClearState(STATE_DRAGGING);
 }
 
 gfx::Rect ShelfAppButton::GetIconBounds() const {
@@ -738,7 +760,6 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP:
       FALLTHROUGH;  // Ensure tapped items are not enlarged for drag.
     case ui::ET_GESTURE_END:
-      drag_timer_.Stop();
       // If the button is being dragged, or there is an active context menu,
       // for this ShelfAppButton, don't deactivate the ink drop.
       if (!(state_ & STATE_DRAGGING) &&
@@ -747,8 +768,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
            views::InkDropState::ACTIVATED)) {
         GetInkDrop()->AnimateToState(views::InkDropState::DEACTIVATED);
       }
-      ClearState(STATE_HOVERED);
-      ClearState(STATE_DRAGGING);
+      ClearDragStateOnGestureEnd();
       break;
     case ui::ET_GESTURE_SCROLL_BEGIN:
       if (state_ & STATE_DRAGGING) {

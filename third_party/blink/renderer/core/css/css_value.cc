@@ -102,6 +102,7 @@ CSSValue* CSSValue::Create(const Length& value, float zoom) {
       return CSSPrimitiveValue::CreateFromLength(value, zoom);
     case Length::kDeviceWidth:
     case Length::kDeviceHeight:
+    case Length::kMinIntrinsic:
     case Length::kNone:
       NOTREACHED();
       break;

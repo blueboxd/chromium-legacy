@@ -27,10 +27,7 @@ constexpr double kLargeAdSizeToViewportSizeThreshold = 0.1;
 // 2) <body> or <html> has style="overflow:hidden", and among its container
 // ancestors (including itself), the 2nd to the top (where the top should always
 // be the <body>) has absolute position.
-bool IsOverlayAdCandidate(Element* element) {
-  if (!element->IsAdRelated())
-    return false;
-
+bool IsOverlayCandidate(Element* element) {
   const ComputedStyle* style = nullptr;
   LayoutView* layout_view = element->GetDocument().GetLayoutView();
   LayoutObject* object = element->GetLayoutObject();
@@ -62,7 +59,7 @@ bool IsOverlayAdCandidate(Element* element) {
 void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   DCHECK(main_frame);
   DCHECK(main_frame->IsMainFrame());
-  if (done_detection_)
+  if (popup_ad_detected_)
     return;
 
   DCHECK(main_frame->GetDocument());
@@ -130,17 +127,22 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
 
   bool is_new_element = (element_id != candidate_id_);
 
+  // The popup candidate has just been dismissed.
   if (is_new_element && candidate_id_ != kInvalidDOMNodeId) {
     // If the main frame scrolling offset hasn't changed since the candidate's
     // appearance, we consider it to be a overlay interstitial; otherwise, we
     // skip that candidate because it could be a parallax/scroller ad.
     if (main_frame->GetMainFrameScrollOffset().Y() ==
         candidate_start_main_frame_scroll_offset_) {
-      OnPopupAdDetected(main_frame);
-      return;
+      OnPopupDetected(main_frame, candidate_is_ad_);
     }
+
+    if (popup_ad_detected_)
+      return;
+
     last_unqualified_element_id_ = candidate_id_;
     candidate_id_ = kInvalidDOMNodeId;
+    candidate_is_ad_ = false;
   }
 
   if (!is_new_element)
@@ -159,16 +161,22 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
        main_frame_size.Area() * kLargeAdSizeToViewportSizeThreshold);
 
   bool has_gesture = LocalFrame::HasTransientUserActivation(main_frame);
+  bool is_ad = element->IsAdRelated();
 
-  if (!has_gesture && is_large && IsOverlayAdCandidate(element)) {
+  if (!has_gesture && is_large && (!popup_detected_ || is_ad) &&
+      IsOverlayCandidate(element)) {
     // If main page is not scrollable, immediately determinine the overlay
     // to be a popup. There's is no need to check any state at the dismissal
     // time.
     if (!main_frame->GetDocument()->GetLayoutView()->HasScrollableOverflowY()) {
-      OnPopupAdDetected(main_frame);
-      return;
+      OnPopupDetected(main_frame, is_ad);
     }
+
+    if (popup_ad_detected_)
+      return;
+
     candidate_id_ = element_id;
+    candidate_is_ad_ = is_ad;
     candidate_start_main_frame_scroll_offset_ =
         main_frame->GetMainFrameScrollOffset().Y();
   } else {
@@ -176,9 +184,18 @@ void OverlayInterstitialAdDetector::MaybeFireDetection(LocalFrame* main_frame) {
   }
 }
 
-void OverlayInterstitialAdDetector::OnPopupAdDetected(LocalFrame* main_frame) {
-  UseCounter::Count(main_frame->GetDocument(), WebFeature::kOverlayPopupAd);
-  done_detection_ = true;
+void OverlayInterstitialAdDetector::OnPopupDetected(LocalFrame* main_frame,
+                                                    bool is_ad) {
+  if (!popup_detected_) {
+    UseCounter::Count(main_frame->GetDocument(), WebFeature::kOverlayPopup);
+    popup_detected_ = true;
+  }
+
+  if (is_ad) {
+    DCHECK(!popup_ad_detected_);
+    UseCounter::Count(main_frame->GetDocument(), WebFeature::kOverlayPopupAd);
+    popup_ad_detected_ = true;
+  }
 }
 
 }  // namespace blink

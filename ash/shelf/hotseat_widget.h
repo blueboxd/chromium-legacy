@@ -104,6 +104,9 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // coordinates.
   int CalculateHotseatYInScreen(HotseatState hotseat_target_state) const;
 
+  // Calculates the hotseat target bounds's size for the given target state.
+  gfx::Size CalculateTargetBoundsSize(HotseatState hotseat_target_state) const;
+
   // ShelfComponent:
   void CalculateTargetBounds() override;
   gfx::Rect GetTargetBounds() const override;
@@ -189,11 +192,8 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // May update the hotseat widget's target in account of app scaling.
   void MaybeAdjustTargetBoundsForAppScaling(HotseatState hotseat_target_state);
 
-  // Calculates the target hotseat density if hotseat's size becomes
-  // |available_size| and the hotseat's state is |hotseat_target_state|.
-  HotseatDensity CalculateTargetHotseatDensity(
-      const gfx::Size& available_size,
-      HotseatState hotseat_target_state) const;
+  // Calculates the target hotseat density.
+  HotseatDensity CalculateTargetHotseatDensity() const;
 
   // Animates the hotseat to the target opacity/bounds.
   void LayoutHotseatByAnimation(double target_opacity,
@@ -215,6 +215,10 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   base::Optional<LayoutInputs> layout_inputs_;
 
   gfx::Rect target_bounds_;
+
+  // The size that |target_bounds_| would have in kShownHomeLauncher state.
+  // Used to calculate hotseat density state.
+  gfx::Size target_size_for_shown_state_;
 
   HotseatState state_ = HotseatState::kNone;
 

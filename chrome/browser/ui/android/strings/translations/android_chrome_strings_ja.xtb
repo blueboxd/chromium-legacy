@@ -24,7 +24,6 @@
 <translation id="116280672541001035">使用量</translation>
 <translation id="1171770572613082465">人気のウェブサイトを表示するには、[上位のサイト] ボタンをタップします</translation>
 <translation id="1173894706177603556">名前を変更</translation>
-<translation id="1178581264944972037">一時停止</translation>
 <translation id="1197267115302279827">ブックマークを移動</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1204037785786432551">リンクをダウンロード</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome ではデバイスをスキャンするために現在地情報にアクセスする必要があります。現在地情報へのアクセスは<ph name="BEGIN_LINK" />このデバイスでオフになっています<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">カメラ</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{選択された 1 件のアイテムを削除します}other{選択された # 件のアイテムを削除します}}</translation>
+<translation id="1641113438599504367">セーフ ブラウジング</translation>
 <translation id="164269334534774161">このページの <ph name="CREATION_TIME" /> のオフライン コピーを表示しています</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1670399744444387456">基本設定</translation>
@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">詳しく見る</translation>
 <translation id="1749561566933687563">ブックマークの同期</translation>
 <translation id="17513872634828108">開いているタブ</translation>
+<translation id="1754404134430936718">テキストをコピーしました</translation>
 <translation id="1779089405699405702">画像デコーダー</translation>
 <translation id="1782483593938241562">終了日: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">インストール先</translation>
@@ -223,10 +224,10 @@
 <translation id="2810645512293415242">簡易版ページを使用してデータの保存と読み込みを高速化します。</translation>
 <translation id="281504910091592009"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />での保存パスワードの表示と管理</translation>
 <translation id="2818669890320396765">お使いのどのデバイスでも同じブックマークを使用するには、ログインして同期を有効にします</translation>
+<translation id="2827278682606527653">フィードカード メニューが画面の下半分に開いています</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2860954141821109167">このデバイスで通話アプリが有効になっていることを確認してください</translation>
 <translation id="2870560284913253234">サイト</translation>
-<translation id="2874939134665556319">前のトラック</translation>
 <translation id="2876369937070532032">セキュリティ上のリスクがある場合に、アクセスした一部のページの URL が Google に送信されます</translation>
 <translation id="2888126860611144412">Chrome について</translation>
 <translation id="2891154217021530873">ページの読み込みを停止</translation>
@@ -268,6 +269,7 @@
 <translation id="3181954750937456830">セーフ ブラウジング（危険なサイトからユーザーとデバイスを保護します）</translation>
 <translation id="3205824638308738187">あと少しで完了です</translation>
 <translation id="3207960819495026254">ブックマークしました</translation>
+<translation id="3208584281581115441">今すぐ確認</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> を削除しました</translation>
 <translation id="321773570071367578">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="3232754137068452469">ウェブアプリ</translation>
@@ -344,8 +346,8 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="381841723434055211">電話番号</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> 件のダウンロードを削除しました</translation>
-<translation id="3859306556332390985">前方にシーク再生</translation>
 <translation id="388596076286380598">オフラインの場合や接続が不安定な場合でも、お気に入りのサイトの記事や動画などのコンテンツを閲覧できます。</translation>
+<translation id="3892148308691398805">テキストをコピー</translation>
 <translation id="3894427358181296146">フォルダの追加</translation>
 <translation id="3895926599014793903">強制的にズームを有効にする</translation>
 <translation id="3912508018559818924">ウェブで最適なデータを探しています。</translation>
@@ -366,8 +368,6 @@
 <translation id="3997476611815694295">重要度の低いストレージ</translation>
 <translation id="4000212216660919741">オフライン ホーム</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
-<translation id="403687620286099920">QR コードを開くにはタップしてください</translation>
-<translation id="4046123991198612571">次のトラック</translation>
 <translation id="4056223980640387499">セピア</translation>
 <translation id="4060598801229743805">画面の上部にあるオプション</translation>
 <translation id="4062305924942672200">法的情報</translation>
@@ -387,10 +387,10 @@
 <translation id="4209895695669353772">ユーザーに合わせた Google からのおすすめコンテンツを表示するには、同期を有効にします</translation>
 <translation id="423219824432660969"><ph name="TIME" />時点の Google パスワードで同期データを暗号化する</translation>
 <translation id="4242533952199664413">設定を開く</translation>
+<translation id="4248098802131000011">データ侵害などのセキュリティの問題からパスワードを保護します</translation>
 <translation id="4250229828105606438">スクリーンショット</translation>
 <translation id="4256782883801055595">オープンソース ライセンス</translation>
 <translation id="4269820728363426813">リンクアドレスをコピー</translation>
-<translation id="429312253194641664">サイトでメディアが再生されています</translation>
 <translation id="4298388696830689168">リンク済みのサイト</translation>
 <translation id="4307992518367153382">基本設定</translation>
 <translation id="4314815835985389558">同期の管理</translation>
@@ -412,6 +412,7 @@
 <translation id="4479972344484327217">Chrome 用の <ph name="MODULE" /> をインストールしています…</translation>
 <translation id="4487967297491345095">Chrome のすべてのアプリデータを完全に削除します。削除されるデータには、すべてのファイル、設定、アカウント、データベースなどが含まれます。</translation>
 <translation id="4493497663118223949">ライトモードはオンです</translation>
+<translation id="4508528996305412043">フィードカード メニューが開いています</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# 日前}other{# 日前}}</translation>
 <translation id="451872707440238414">ブックマークを検索</translation>
 <translation id="4521489764227272523">選択したデータが Chrome から削除され、同期デバイスからも削除されました。
@@ -563,7 +564,6 @@
 <translation id="5659593005791499971">メール</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> で予定を作成</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きします</translation>
-<translation id="5681394891799747640">QR コードをダウンロードできません</translation>
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="5686790454216892815">ファイル名が長すぎます</translation>
 <translation id="5694049548840660018">ホームに簡単アクセス</translation>
@@ -605,6 +605,7 @@
 <translation id="5958275228015807058">[ダウンロード] で自分のファイルやページを探すことができます</translation>
 <translation id="5962718611393537961">タップして折りたたむ</translation>
 <translation id="5964805880140440652">このページを別のデバイスと共有するには、Chrome 設定で同期をオンにしてください</translation>
+<translation id="5979084224081478209">パスワードを確認</translation>
 <translation id="6000066717592683814">Google のままにする</translation>
 <translation id="6005538289190791541">推奨パスワード</translation>
 <translation id="6036057147555329831">その他の ICU</translation>
@@ -646,7 +647,7 @@
 <translation id="6341580099087024258">ファイルの保存場所を確認する</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 他 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 件}}</translation>
 <translation id="6364438453358674297">履歴から候補を削除しますか？</translation>
-<translation id="6366047038980456022"><ph name="APP_NAME" /> の最先端技術を活用すれば作業をすばやく安全に行うことができます。日課にも、クリエイティブな作業にも、オンラインの検索にもご活用ください。</translation>
+<translation id="6366047038980456022"><ph name="APP_NAME" /> の最先端技術で作業をすばやく安全にします。オンラインでの日課、クリエイティブな作業、探索もお任せください。</translation>
 <translation id="6369229450655021117">ここからウェブを検索したり、友だちと共有したり、開いたページを表示したりできます</translation>
 <translation id="6378173571450987352">詳細: データ使用量の順</translation>
 <translation id="6379829913050047669">Chrome で <ph name="APP_NAME" /> を開きます。続行すると、<ph name="BEGIN_LINK1" />Google 利用規約<ph name="END_LINK1" />と <ph name="BEGIN_LINK2" />Google Chrome および Chrome OS 追加利用規約<ph name="END_LINK2" />に同意したことになります。</translation>
@@ -706,7 +707,6 @@
 <translation id="671481426037969117"><ph name="FQDN" /> のタイマーが切れました。タイマーはまた明日開始されます。</translation>
 <translation id="6738867403308150051">ダウンロードしています…</translation>
 <translation id="6767294960381293877">タブを共有するデバイスのリストが画面の下半分に表示されました。</translation>
-<translation id="6790428901817661496">再生</translation>
 <translation id="6811034713472274749">ページを表示できます</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">翻訳</translation>
@@ -763,7 +763,6 @@
 <translation id="7328017930301109123">ライトモードを使用すると、Chrome でページの読み込みが高速化され、データ使用量も最大 60 パーセント抑えることができます。</translation>
 <translation id="7333031090786104871">前のサイトを追加中です</translation>
 <translation id="7340958967809483333">Discover のオプション</translation>
-<translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7352939065658542140">動画</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
 <translation id="7359002509206457351">お支払い方法へのアクセス</translation>
@@ -802,7 +801,6 @@
 <translation id="7605594153474022051">同期が機能していません</translation>
 <translation id="7606077192958116810">ライトモードはオンです。[設定] で管理できます。</translation>
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています</translation>
-<translation id="7614971007231847352">QR コードをダウンロードしました</translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />ヘルプ<ph name="END_LINK1" />または<ph name="BEGIN_LINK2" />再スキャン<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
@@ -883,6 +881,7 @@
 <translation id="8200772114523450471">再開</translation>
 <translation id="8209050860603202033">画像を開く</translation>
 <translation id="8218622182176210845">アカウントを管理</translation>
+<translation id="8223642481677794647">フィードカード メニュー</translation>
 <translation id="8224471946457685718">Wi-Fi 接続時に記事をダウンロード</translation>
 <translation id="8232956427053453090">データを保持</translation>
 <translation id="8233540874193135768">QR コードをスキャンするには、カメラ付きのデバイスを使用してください。</translation>
@@ -907,7 +906,6 @@
 <translation id="8427875596167638501">[プレビュー] タブが半分開いています</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
-<translation id="8441146129660941386">後方にシーク再生</translation>
 <translation id="8443209985646068659">Chrome を更新できません</translation>
 <translation id="8445448999790540984">パスワードをエクスポートできません</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
@@ -1007,4 +1005,5 @@
 <translation id="981121421437150478">オフライン</translation>
 <translation id="983192555821071799">すべてのタブを閉じる</translation>
 <translation id="987264212798334818">全般</translation>
+<translation id="996149300115483134">フィードカード メニューは閉じています</translation>
 </translationbundle>

@@ -102,6 +102,8 @@ constexpr char kDisableReason[] =
 constexpr char kBlacklisted[] = "Extensions.ForceInstalledAndBlackListed";
 constexpr char kExtensionManifestInvalid[] =
     "Extensions.ForceInstalledFailureManifestInvalidErrorDetail";
+constexpr char kManifestNoUpdatesInfo[] =
+    "Extensions.ForceInstalledFailureNoUpdatesInfo";
 }  // namespace
 
 namespace extensions {
@@ -469,11 +471,15 @@ TEST_F(ForceInstalledMetricsTest,
 // fails to install with error CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
 TEST_F(ForceInstalledMetricsTest, ExtensionsUpdateCheckStatusReporting) {
   SetupForceList();
+
   install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId1, "ok");
+  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId1, "");
   install_stage_tracker_->ReportFailure(
       kExtensionId1, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
+
   install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId2,
                                                           "noupdate");
+  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId2, "");
   install_stage_tracker_->ReportFailure(
       kExtensionId2, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
   // ForceInstalledMetrics shuts down timer because all extension are either
@@ -486,6 +492,35 @@ TEST_F(ForceInstalledMetricsTest, ExtensionsUpdateCheckStatusReporting) {
   histogram_tester_.ExpectBucketCount(
       kManifestUpdateCheckStatus,
       InstallStageTracker::UpdateCheckStatus::kNoUpdate, 1);
+}
+
+// Reporting info when the force installed extension fails to install with error
+// CRX_FETCH_URL_EMPTY due to no updates from the server.
+TEST_F(ForceInstalledMetricsTest, ExtensionsNoUpdatesInfoReporting) {
+  SetupForceList();
+
+  install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId1,
+                                                          "noupdate");
+  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId1,
+                                                       "disabled by client");
+  install_stage_tracker_->ReportFailure(
+      kExtensionId1, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
+
+  install_stage_tracker_->ReportManifestUpdateCheckStatus(kExtensionId2,
+                                                          "noupdate");
+  install_stage_tracker_->ReportInfoOnNoUpdatesFailure(kExtensionId2, "");
+  install_stage_tracker_->ReportFailure(
+      kExtensionId2, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
+
+  // ForceInstalledMetrics shuts down timer because all extension are either
+  // loaded or failed.
+  EXPECT_FALSE(fake_timer_->IsRunning());
+  histogram_tester_.ExpectTotalCount(kManifestNoUpdatesInfo, 2);
+  histogram_tester_.ExpectBucketCount(
+      kManifestNoUpdatesInfo, InstallStageTracker::NoUpdatesInfo::kEmpty, 1);
+  histogram_tester_.ExpectBucketCount(
+      kManifestNoUpdatesInfo,
+      InstallStageTracker::NoUpdatesInfo::kDisabledByClient, 1);
 }
 
 // Regression test to check if the metrics are collected properly for the

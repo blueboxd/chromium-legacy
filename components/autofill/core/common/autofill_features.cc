@@ -54,7 +54,7 @@ const base::Feature kAutofillCreditCardAssist{
 
 // Controls whether we download server credit cards to the ephemeral
 // account-based storage when sync the transport is enabled.
-const base::Feature kAutofillEnableAccountWalletStorage{
+const base::Feature kAutofillEnableAccountWalletStorage {
   "AutofillEnableAccountWalletStorage",
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_IOS)
       // Wallet transport is only currently available on Win/Mac/Linux.
@@ -105,6 +105,11 @@ const base::Feature kAutofillExtractAllDatalists{
 // counter, effectively reducing the threshold for some forms.
 const base::Feature kAutofillFixFillableFieldTypes{
     "AutofillFixFillableFieldTypes", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// When enabled, Autofill keeps the initial field values in the |FormStructure|
+// cache for all field types.
+const base::Feature kAutofillKeepInitialFormValuesInCache{
+    "AutofillKeepCachedFormValues", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, autofill suggestions are displayed in the keyboard accessory
 // instead of the regular popup.

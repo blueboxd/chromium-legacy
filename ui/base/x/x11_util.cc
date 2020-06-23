@@ -65,6 +65,7 @@
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_error_tracker.h"
+#include "ui/gfx/x/xproto.h"
 #include "ui/gfx/x/xproto_util.h"
 
 #if defined(OS_FREEBSD)
@@ -382,6 +383,76 @@ void DeleteProperty(x11::Window window, x11::Atom name) {
       .window = static_cast<x11::Window>(window),
       .property = name,
   });
+}
+
+bool GetWmNormalHints(x11::Window window, SizeHints* hints) {
+  std::vector<uint32_t> hints32;
+  if (!GetArrayProperty(window, gfx::GetAtom("WM_NORMAL_HINTS"), &hints32))
+    return false;
+  if (hints32.size() != sizeof(SizeHints) / 4)
+    return false;
+  memcpy(hints, hints32.data(), sizeof(*hints));
+  return true;
+}
+
+void SetWmNormalHints(x11::Window window, const SizeHints& hints) {
+  std::vector<uint32_t> hints32(sizeof(SizeHints) / 4);
+  memcpy(hints32.data(), &hints, sizeof(SizeHints));
+  ui::SetArrayProperty(window, gfx::GetAtom("WM_NORMAL_HINTS"),
+                       gfx::GetAtom("WM_SIZE_HINTS"), hints32);
+}
+
+bool GetWmHints(x11::Window window, WmHints* hints) {
+  std::vector<uint32_t> hints32;
+  if (!GetArrayProperty(window, gfx::GetAtom("WM_HINTS"), &hints32))
+    return false;
+  if (hints32.size() != sizeof(WmHints) / 4)
+    return false;
+  memcpy(hints, hints32.data(), sizeof(*hints));
+  return true;
+}
+
+void SetWmHints(x11::Window window, const WmHints& hints) {
+  std::vector<uint32_t> hints32(sizeof(WmHints) / 4);
+  memcpy(hints32.data(), &hints, sizeof(WmHints));
+  ui::SetArrayProperty(window, gfx::GetAtom("WM_HINTS"),
+                       gfx::GetAtom("WM_HINTS"), hints32);
+}
+
+void WithdrawWindow(x11::Window window) {
+  auto* connection = x11::Connection::Get();
+  connection->UnmapWindow({window});
+
+  auto root = connection->default_root();
+  x11::UnmapNotifyEvent event{.event = root, .window = window};
+  auto event_bytes = x11::Write(event);
+  event_bytes.resize(32);
+
+  auto mask =
+      x11::EventMask::SubstructureNotify | x11::EventMask::SubstructureRedirect;
+  x11::SendEventRequest request{false, root, mask};
+  std::copy(event_bytes.begin(), event_bytes.end(), request.event.begin());
+  connection->SendEvent(request);
+}
+
+void RaiseWindow(x11::Window window) {
+  x11::Connection::Get()->ConfigureWindow(
+      {.window = window, .stack_mode = x11::StackMode::Above});
+}
+
+void LowerWindow(x11::Window window) {
+  x11::Connection::Get()->ConfigureWindow(
+      {.window = window, .stack_mode = x11::StackMode::Below});
+}
+
+void DefineCursor(x11::Window window, x11::Cursor cursor) {
+  // TODO(https://crbug.com/1066670): Sync() should be removed.  It's added for
+  // now because Xlib's XDefineCursor() sync'ed and removing it perturbs the
+  // timing on BookmarkBarViewTest8.DNDBackToOriginatingMenu on
+  // linux-chromeos-rel, causing it to flake.
+  x11::Connection::Get()
+      ->ChangeWindowAttributes({.window = window, .cursor = cursor})
+      .Sync();
 }
 
 bool IsXInput2Available() {
@@ -877,7 +948,7 @@ void SetStringProperty(x11::Window window,
   SetArrayProperty(window, property, type, str);
 }
 
-void SetWindowClassHint(XDisplay* display,
+void SetWindowClassHint(x11::Connection* connection,
                         x11::Window window,
                         const std::string& res_name,
                         const std::string& res_class) {
@@ -887,12 +958,11 @@ void SetWindowClassHint(XDisplay* display,
   // not const references.
   class_hints.res_name = const_cast<char*>(res_name.c_str());
   class_hints.res_class = const_cast<char*>(res_class.c_str());
-  XSetClassHint(display, static_cast<uint32_t>(window), &class_hints);
+  XSetClassHint(connection->display(), static_cast<uint32_t>(window),
+                &class_hints);
 }
 
-void SetWindowRole(XDisplay* display,
-                   x11::Window window,
-                   const std::string& role) {
+void SetWindowRole(x11::Window window, const std::string& role) {
   x11::Atom prop = gfx::GetAtom("WM_WINDOW_ROLE");
   if (role.empty())
     DeleteProperty(window, prop);
@@ -910,7 +980,7 @@ void SetWMSpecState(x11::Window window,
        static_cast<uint32_t>(state1), static_cast<uint32_t>(state2), 1, 0});
 }
 
-void DoWMMoveResize(XDisplay* display,
+void DoWMMoveResize(x11::Connection* connection,
                     x11::Window root_window,
                     x11::Window window,
                     const gfx::Point& location_px,
@@ -919,7 +989,7 @@ void DoWMMoveResize(XDisplay* display,
   // need to dump it because what we're about to do is tell the window manager
   // that it's now responsible for moving the window around; it immediately
   // grabs when it receives the event below.
-  XUngrabPointer(display, x11::CurrentTime);
+  connection->UngrabPointer({x11::Time::CurrentTime});
 
   SendClientMessage(window, root_window, gfx::GetAtom("_NET_WM_MOVERESIZE"),
                     {location_px.x(), location_px.y(), direction, 0, 0});
@@ -1381,28 +1451,20 @@ XVisualManager* XVisualManager::GetInstance() {
   return base::Singleton<XVisualManager>::get();
 }
 
-XVisualManager::XVisualManager()
-    : display_(gfx::GetXDisplay()),
-      default_visual_id_(0),
-      system_visual_id_(0),
-      transparent_visual_id_(0),
-      using_software_rendering_(false),
-      have_gpu_argb_visual_(false) {
+XVisualManager::XVisualManager() : connection_(x11::Connection::Get()) {
   base::AutoLock lock(lock_);
-  int visuals_len = 0;
-  XVisualInfo visual_template;
-  visual_template.screen = DefaultScreen(display_);
-  gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
-      display_, VisualScreenMask, &visual_template, &visuals_len));
-  for (int i = 0; i < visuals_len; ++i)
-    visuals_[visual_list[i].visualid] =
-        std::make_unique<XVisualData>(visual_list[i]);
+
+  for (const auto& depth : connection_->default_screen().allowed_depths) {
+    for (const auto& visual : depth.visuals) {
+      visuals_[visual.visual_id] =
+          std::make_unique<XVisualData>(depth.depth, &visual);
+    }
+  }
 
   // Choose the opaque visual.
-  default_visual_id_ =
-      XVisualIDFromVisual(DefaultVisual(display_, DefaultScreen(display_)));
+  default_visual_id_ = connection_->default_screen().root_visual;
   system_visual_id_ = default_visual_id_;
-  DCHECK(system_visual_id_);
+  DCHECK_NE(system_visual_id_, x11::VisualId{});
   DCHECK(visuals_.find(system_visual_id_) != visuals_.end());
 
   // Choose the transparent visual.
@@ -1410,61 +1472,60 @@ XVisualManager::XVisualManager()
     // Why support only 8888 ARGB? Because it's all that GTK+ supports. In
     // gdkvisual-x11.cc, they look for this specific visual and use it for
     // all their alpha channel using needs.
-    const XVisualInfo& info = pair.second->visual_info;
-    if (info.depth == 32 && info.visual->red_mask == 0xff0000 &&
-        info.visual->green_mask == 0x00ff00 &&
-        info.visual->blue_mask == 0x0000ff) {
-      transparent_visual_id_ = info.visualid;
+    const auto& data = *pair.second;
+    if (data.depth == 32 && data.info->red_mask == 0xff0000 &&
+        data.info->green_mask == 0x00ff00 && data.info->blue_mask == 0x0000ff) {
+      transparent_visual_id_ = pair.first;
       break;
     }
   }
-  if (transparent_visual_id_)
+  if (transparent_visual_id_ != x11::VisualId{})
     DCHECK(visuals_.find(transparent_visual_id_) != visuals_.end());
 }
 
 XVisualManager::~XVisualManager() = default;
 
 void XVisualManager::ChooseVisualForWindow(bool want_argb_visual,
-                                           Visual** visual,
-                                           int* depth,
-                                           Colormap* colormap,
+                                           x11::VisualId* visual_id,
+                                           uint8_t* depth,
                                            bool* visual_has_alpha) {
   base::AutoLock lock(lock_);
   bool use_argb = want_argb_visual && IsCompositingManagerPresent() &&
                   (using_software_rendering_ || have_gpu_argb_visual_);
-  VisualID visual_id = use_argb && transparent_visual_id_
-                           ? transparent_visual_id_
-                           : system_visual_id_;
+  x11::VisualId visual = use_argb && transparent_visual_id_ != x11::VisualId{}
+                             ? transparent_visual_id_
+                             : system_visual_id_;
 
-  bool success =
-      GetVisualInfoImpl(visual_id, visual, depth, colormap, visual_has_alpha);
+  if (visual_id)
+    *visual_id = visual;
+  bool success = GetVisualInfoImpl(visual, depth, visual_has_alpha);
   DCHECK(success);
 }
 
-bool XVisualManager::GetVisualInfo(VisualID visual_id,
-                                   Visual** visual,
-                                   int* depth,
-                                   Colormap* colormap,
+bool XVisualManager::GetVisualInfo(x11::VisualId visual_id,
+                                   uint8_t* depth,
                                    bool* visual_has_alpha) {
   base::AutoLock lock(lock_);
-  return GetVisualInfoImpl(visual_id, visual, depth, colormap,
-                           visual_has_alpha);
+  return GetVisualInfoImpl(visual_id, depth, visual_has_alpha);
 }
 
 bool XVisualManager::OnGPUInfoChanged(bool software_rendering,
-                                      VisualID system_visual_id,
-                                      VisualID transparent_visual_id) {
+                                      x11::VisualId system_visual_id,
+                                      x11::VisualId transparent_visual_id) {
   base::AutoLock lock(lock_);
   // TODO(thomasanderson): Cache these visual IDs as a property of the root
   // window so that newly created browser processes can get them immediately.
-  if ((system_visual_id && !visuals_.count(system_visual_id)) ||
-      (transparent_visual_id && !visuals_.count(transparent_visual_id)))
+  if ((system_visual_id != x11::VisualId{} &&
+       !visuals_.count(system_visual_id)) ||
+      (transparent_visual_id != x11::VisualId{} &&
+       !visuals_.count(transparent_visual_id)))
     return false;
   using_software_rendering_ = software_rendering;
-  have_gpu_argb_visual_ = have_gpu_argb_visual_ || transparent_visual_id;
-  if (system_visual_id)
+  have_gpu_argb_visual_ =
+      have_gpu_argb_visual_ || transparent_visual_id != x11::VisualId{};
+  if (system_visual_id != x11::VisualId{})
     system_visual_id_ = system_visual_id;
-  if (transparent_visual_id)
+  if (transparent_visual_id != x11::VisualId{})
     transparent_visual_id_ = transparent_visual_id;
   return true;
 }
@@ -1475,55 +1536,33 @@ bool XVisualManager::ArgbVisualAvailable() const {
          (using_software_rendering_ || have_gpu_argb_visual_);
 }
 
-bool XVisualManager::GetVisualInfoImpl(VisualID visual_id,
-                                       Visual** visual,
-                                       int* depth,
-                                       Colormap* colormap,
+bool XVisualManager::GetVisualInfoImpl(x11::VisualId visual_id,
+                                       uint8_t* depth,
                                        bool* visual_has_alpha) {
   auto it = visuals_.find(visual_id);
   if (it == visuals_.end())
     return false;
-  XVisualData& visual_data = *it->second;
-  const XVisualInfo& visual_info = visual_data.visual_info;
+  XVisualData& data = *it->second;
+  const x11::VisualType& info = *data.info;
 
-  bool is_default_visual = visual_id == default_visual_id_;
-
-  if (visual)
-    *visual = visual_info.visual;
   if (depth)
-    *depth = visual_info.depth;
-  if (colormap)
-    *colormap = is_default_visual
-                    ? static_cast<int>(x11::WindowClass::CopyFromParent)
-                    : visual_data.GetColormap();
+    *depth = data.depth;
   if (visual_has_alpha) {
     auto popcount = [](auto x) {
       return std::bitset<8 * sizeof(decltype(x))>(x).count();
     };
-    *visual_has_alpha = popcount(visual_info.red_mask) +
-                            popcount(visual_info.green_mask) +
-                            popcount(visual_info.blue_mask) <
-                        static_cast<std::size_t>(visual_info.depth);
+    *visual_has_alpha = popcount(info.red_mask) + popcount(info.green_mask) +
+                            popcount(info.blue_mask) <
+                        static_cast<std::size_t>(data.depth);
   }
   return true;
 }
 
-XVisualManager::XVisualData::XVisualData(XVisualInfo visual_info)
-    : visual_info(visual_info),
-      colormap_(static_cast<int>(x11::WindowClass::CopyFromParent)) {}
+XVisualManager::XVisualData::XVisualData(uint8_t depth,
+                                         const x11::VisualType* info)
+    : depth(depth), info(info) {}
 
-// Do not XFreeColormap as this would uninstall the colormap even for
-// non-Chromium clients.
 XVisualManager::XVisualData::~XVisualData() = default;
-
-Colormap XVisualManager::XVisualData::GetColormap() {
-  if (colormap_ == static_cast<int>(x11::WindowClass::CopyFromParent)) {
-    colormap_ = XCreateColormap(gfx::GetXDisplay(),
-                                static_cast<uint32_t>(GetX11RootWindow()),
-                                visual_info.visual, AllocNone);
-  }
-  return colormap_;
-}
 
 // ----------------------------------------------------------------------------
 // End of x11_util_internal.h

@@ -18,6 +18,22 @@ namespace ui {
 class COMPONENT_EXPORT(UI_BASE) TextServicesContextMenu
     : public SimpleMenuModel::Delegate {
  public:
+  enum MenuCommands {
+    // These must not overlap with the command IDs used by other menus that
+    // incorporate text services.
+    // TODO(ellyjones): This is an ugly global dependency, especially on
+    // //ui/views. What can we do about this? Can we get rid of the global
+    // implicit namespace of command IDs?
+    kSpeechMenu = 100,
+    kSpeechStartSpeaking,
+    kSpeechStopSpeaking,
+
+    kWritingDirectionMenu,
+    kWritingDirectionDefault,
+    kWritingDirectionLtr,
+    kWritingDirectionRtl,
+  };
+
   class COMPONENT_EXPORT(UI_BASE) Delegate {
    public:
     // Returns the selected text.

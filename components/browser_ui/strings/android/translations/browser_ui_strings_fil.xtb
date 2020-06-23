@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Kinopya</translation>
 <translation id="2822354292072154809">Sigurado ka bang gusto mong i-reset ang lahat ng pahintulot sa site para sa <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2874939134665556319">Nakaraang track</translation>
 <translation id="2910701580606108292">Magtanong bago payagan ang mga site na mag-play ng pinoprotektahang content</translation>
 <translation id="2913331724188855103">Payagan ang mga site na mag-save at magbasa ng data ng cookie (inirerekomenda)</translation>
 <translation id="2968755619301702150">Viewer ng certificate</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Pag-sync sa background</translation>
 <translation id="3822502789641063741">I-clear ang storage ng site?</translation>
 <translation id="385051799172605136">Bumalik</translation>
+<translation id="3859306556332390985">Maghanap nang pasulong</translation>
 <translation id="3955193568934677022">Pahintulutan ang mga site na mag-play ng pinoprotektahang content (inirerekomenda)</translation>
 <translation id="3987993985790029246">Kopyahin ang link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Pamagat</translation>
 <translation id="4008040567710660924">Payagan ang cookies para sa isang partikular na site.</translation>
+<translation id="4046123991198612571">Susunod na track</translation>
 <translation id="4165986682804962316">Mga setting ng site</translation>
 <translation id="4226663524361240545">Maaaring mag-vibrate ang device dahil sa mga notification</translation>
 <translation id="4242533952199664413">Buksan ang mga setting</translation>
 <translation id="4259722352634471385">Naka-block ang navigation: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Pinapayagan</translation>
+<translation id="429312253194641664">May site na nagpe-play ng media</translation>
 <translation id="4433925000917964731">Hatid ng Google ang lite na page</translation>
 <translation id="4434045419905280838">Mga pop-up at pag-redirect</translation>
 <translation id="445467742685312942">Pahintulutan ang mga site na mag-play ng pinoprotektahang content</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Ibaba</translation>
 <translation id="6766622839693428701">Mag-swipe pababa para isara.</translation>
 <translation id="6782111308708962316">Pigilan ang mga third-party na website na mag-save at magbasa ng data ng cookie</translation>
+<translation id="6790428901817661496">I-play</translation>
 <translation id="6818926723028410516">Pumili ng mga item</translation>
 <translation id="6864395892908308021">Hindi nababasa ng device na ito ang NFC</translation>
 <translation id="6910211073230771657">Na-delete</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Ginagamit ng isang site ang iyong camera at mikropono</translation>
 <translation id="8380167699614421159">Nagpapakita ang site na ito ng mga nakakasagabal o nakakapanlinlang na ad</translation>
 <translation id="8394832520002899662">Mag-tap para bumalik sa site</translation>
+<translation id="8441146129660941386">Maghanap nang pabalik</translation>
 <translation id="8447861592752582886">Bawiin ang pahintulot ng device</translation>
 <translation id="8463851957836045671">Mabilis ang site</translation>
 <translation id="851751545965956758">I-block ang mga site sa pagkonekta sa mga device</translation>

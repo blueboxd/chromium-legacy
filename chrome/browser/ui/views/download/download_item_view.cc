@@ -73,6 +73,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/slide_animation.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -80,6 +81,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/range/range.h"
+#include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/text_utils.h"
 #include "ui/native_theme/native_theme.h"
@@ -212,84 +214,6 @@ void StyleFilename(views::StyledLabel& label, size_t pos, size_t len) {
   style.text_style = GetFilenameStyle(label);
   label.ClearStyleRanges();
   label.AddStyleRange(gfx::Range(pos, pos + len), style);
-}
-
-// Get the opacity based on |animation_progress|, with values in [0.0, 1.0].
-// Range of return value is [0, 255].
-int GetOpacity(double animation_progress) {
-  DCHECK(animation_progress >= 0 && animation_progress <= 1);
-
-  // How many times to cycle the complete animation. This should be an odd
-  // number so that the animation ends faded out.
-  static const int kCompleteAnimationCycles = 5;
-  double temp =
-      ((animation_progress * kCompleteAnimationCycles) + 0.5) * base::kPiDouble;
-  temp = sin(temp) / 2 + 0.5;
-  return static_cast<int>(255.0 * temp);
-}
-
-// Paint the common download animation progress foreground and background,
-// clipping the foreground to 'percent' full. If percent is -1, then we don't
-// know the total size, so we just draw a rotating segment until we're done.
-// |progress_time| is only used for these unknown size downloads.
-void PaintDownloadProgress(gfx::Canvas* canvas,
-                           const ui::ThemeProvider& theme_provider,
-                           const base::TimeDelta& progress_time,
-                           int percent_done) {
-  // Draw background (light blue circle).
-  cc::PaintFlags bg_flags;
-  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
-  SkColor indicator_color =
-      theme_provider.GetColor(ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
-  bg_flags.setColor(SkColorSetA(indicator_color, 0x33));
-  bg_flags.setAntiAlias(true);
-  const SkScalar kCenterPoint = kProgressIndicatorSize / 2.f;
-  SkPath bg;
-  bg.addCircle(kCenterPoint, kCenterPoint, kCenterPoint);
-  canvas->DrawPath(bg, bg_flags);
-
-  // Calculate progress.
-  SkScalar sweep_angle = 0.f;
-  // Start at 12 o'clock.
-  SkScalar start_pos = SkIntToScalar(270);
-  if (percent_done < 0) {
-    // For unknown size downloads, draw a 50 degree sweep that moves at
-    // 0.08 degrees per millisecond.
-    sweep_angle = 50.f;
-    start_pos += static_cast<SkScalar>(progress_time.InMilliseconds() * 0.08);
-  } else if (percent_done > 0) {
-    sweep_angle = static_cast<SkScalar>(360 * percent_done / 100.0);
-  }
-
-  // Draw progress.
-  SkPath progress;
-  progress.addArc(
-      SkRect::MakeLTRB(0, 0, kProgressIndicatorSize, kProgressIndicatorSize),
-      start_pos, sweep_angle);
-  cc::PaintFlags progress_flags;
-  progress_flags.setColor(indicator_color);
-  progress_flags.setStyle(cc::PaintFlags::kStroke_Style);
-  progress_flags.setStrokeWidth(1.7f);
-  progress_flags.setAntiAlias(true);
-  canvas->DrawPath(progress, progress_flags);
-}
-
-void PaintDownloadComplete(gfx::Canvas* canvas,
-                           const ui::ThemeProvider& theme_provider,
-                           double animation_progress) {
-  // Start at full opacity, then loop back and forth five times before ending
-  // at zero opacity.
-  canvas->SaveLayerAlpha(GetOpacity(animation_progress));
-  PaintDownloadProgress(canvas, theme_provider, base::TimeDelta(), 100);
-  canvas->Restore();
-}
-
-void PaintDownloadInterrupted(gfx::Canvas* canvas,
-                              const ui::ThemeProvider& theme_provider,
-                              double animation_progress) {
-  // Start at zero opacity, then loop back and forth five times before ending
-  // at full opacity.
-  PaintDownloadComplete(canvas, theme_provider, 1.0 - animation_progress);
 }
 
 }  // namespace
@@ -796,12 +720,12 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
 
   // Paint download progress.
   DownloadItem::DownloadState state = model_->GetState();
-  canvas->Save();
   int progress_x = base::i18n::IsRTL()
                        ? width() - kStartPadding - kProgressIndicatorSize
                        : kStartPadding;
   int progress_y = (height() - kProgressIndicatorSize) / 2;
-  canvas->Translate(gfx::Vector2d(progress_x, progress_y));
+  const gfx::RectF progress_bounds(
+      progress_x, progress_y, kProgressIndicatorSize, kProgressIndicatorSize);
 
   const gfx::ImageSkia* current_icon = nullptr;
   IconManager* im = g_browser_process->icon_manager();
@@ -815,21 +739,24 @@ void DownloadItemView::DrawIcon(gfx::Canvas* canvas) {
     base::TimeDelta progress_time = previous_progress_elapsed_;
     if (!model_->IsPaused())
       progress_time += base::TimeTicks::Now() - progress_start_time_;
-    PaintDownloadProgress(canvas, *GetThemeProvider(), progress_time,
+    PaintDownloadProgress(canvas, progress_bounds, progress_time,
                           model_->PercentComplete());
   } else if (complete_animation_.get() && complete_animation_->is_animating()) {
-    if (state == DownloadItem::INTERRUPTED) {
-      PaintDownloadInterrupted(canvas, *GetThemeProvider(),
-                               complete_animation_->GetCurrentValue());
-    } else {
-      DCHECK_EQ(DownloadItem::COMPLETE, state);
-      PaintDownloadComplete(canvas, *GetThemeProvider(),
-                            complete_animation_->GetCurrentValue());
-    }
+    DCHECK_EQ(NORMAL_MODE, mode_);
+    // Loop back and forth five times.
+    double start = 0, end = 5;
+    if (model_->GetState() == download::DownloadItem::INTERRUPTED)
+      std::swap(start, end);
+    const double value = gfx::Tween::DoubleValueBetween(
+        complete_animation_->GetCurrentValue(), start, end);
+    const double opacity = std::sin((value + 0.5) * base::kPiDouble) / 2 + 0.5;
+    canvas->SaveLayerAlpha(
+        static_cast<uint8_t>(gfx::Tween::IntValueBetween(opacity, 0, 255)));
+    PaintDownloadProgress(canvas, progress_bounds, base::TimeDelta(), 100);
+    canvas->Restore();
   } else if (use_new_warnings) {
     current_icon = &icon_;
   }
-  canvas->Restore();
 
   if (!current_icon)
     return;
@@ -1515,6 +1442,43 @@ void DownloadItemView::OnExtractIconComplete(IconLoader::IconSize icon_size,
     }
     shelf_->SchedulePaint();
   }
+}
+
+void DownloadItemView::PaintDownloadProgress(
+    gfx::Canvas* canvas,
+    const gfx::RectF& bounds,
+    const base::TimeDelta& indeterminate_progress_time,
+    int percent_done) const {
+  const SkColor color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_TAB_THROBBER_SPINNING);
+
+  // Draw background.
+  cc::PaintFlags bg_flags;
+  bg_flags.setColor(SkColorSetA(color, 0x33));
+  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
+  bg_flags.setAntiAlias(true);
+  canvas->DrawCircle(bounds.CenterPoint(), bounds.width() / 2, bg_flags);
+
+  // Calculate progress.
+  SkScalar start_pos = SkIntToScalar(270);  // 12 o'clock
+  SkScalar sweep_angle = SkDoubleToScalar(360 * percent_done / 100.0);
+  if (percent_done < 0) {
+    // Download size unknown.  Draw a 50 degree sweep that moves at 80 degrees
+    // per second.
+    start_pos +=
+        SkDoubleToScalar(indeterminate_progress_time.InSecondsF() * 80);
+    sweep_angle = SkIntToScalar(50);
+  }
+
+  // Draw progress.
+  SkPath progress;
+  progress.addArc(gfx::RectFToSkRect(bounds), start_pos, sweep_angle);
+  cc::PaintFlags progress_flags;
+  progress_flags.setColor(color);
+  progress_flags.setStyle(cc::PaintFlags::kStroke_Style);
+  progress_flags.setStrokeWidth(1.7f);
+  progress_flags.setAntiAlias(true);
+  canvas->DrawPath(progress, progress_flags);
 }
 
 void DownloadItemView::AnimateStateTransition(State from,

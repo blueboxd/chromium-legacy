@@ -5,7 +5,7 @@
 #ifndef UI_GFX_GEOMETRY_MATRIX3_F_H_
 #define UI_GFX_GEOMETRY_MATRIX3_F_H_
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "ui/gfx/geometry/vector3d_f.h"
 
 namespace gfx {

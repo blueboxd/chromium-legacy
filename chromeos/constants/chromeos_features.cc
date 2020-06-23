@@ -257,6 +257,13 @@ const base::Feature kLacrosSupport{"LacrosSupport",
 const base::Feature kLoginDisplayPasswordButton{
     "LoginDisplayPasswordButton", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether to enable the requirement of a minimum chrome version on the
+// device through the policy MinimumChromeVersionEnforced. If the requirement is
+// not met and the warning time in the policy has expired, the user is
+// restricted from using the session.
+const base::Feature kMinimumChromeVersion{"MinimumChromeVersion",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // ChromeOS Media App. https://crbug.com/996088.
 const base::Feature kMediaApp{"MediaApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -312,6 +319,10 @@ const base::Feature kQuickAnswersDogfood{"QuickAnswersDogfood",
 // Controls whether to enable quick answers text annotator.
 const base::Feature kQuickAnswersTextAnnotator{
     "QuickAnswersTextAnnotator", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether to enable quick answers setting sub toggle.
+const base::Feature kQuickAnswersSubToggle{"QuickAnswersSubToggle",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 // ChromeOS Files App mounts RAR archives via rar2fs instead of avfs.
 // https://crbug.com/996549
@@ -467,6 +478,10 @@ bool IsLoginDisplayPasswordButtonEnabled() {
   return base::FeatureList::IsEnabled(kLoginDisplayPasswordButton);
 }
 
+bool IsMinimumChromeVersionEnabled() {
+  return base::FeatureList::IsEnabled(kMinimumChromeVersion);
+}
+
 bool IsOobeScreensPriorityEnabled() {
   return base::FeatureList::IsEnabled(kOobeScreensPriority);
 }
@@ -488,7 +503,8 @@ bool IsQuickAnswersRichUiEnabled() {
 }
 
 bool IsQuickAnswersSettingToggleEnabled() {
-  return IsQuickAnswersEnabled() && IsQuickAnswersRichUiEnabled();
+  return IsQuickAnswersEnabled() && IsQuickAnswersRichUiEnabled() &&
+         base::FeatureList::IsEnabled(kQuickAnswersSubToggle);
 }
 
 bool IsQuickAnswersTextAnnotatorEnabled() {

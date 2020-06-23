@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "components/autofill/core/common/password_generation_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 
 using autofill::password_generation::PasswordGenerationType;
 
@@ -57,9 +58,21 @@ void LogGeneralUIDismissalReason(UIDismissalReason reason) {
                                 NUM_UI_RESPONSES);
 }
 
-void LogSaveUIDismissalReason(UIDismissalReason reason) {
+void LogSaveUIDismissalReason(
+    UIDismissalReason reason,
+    base::Optional<PasswordAccountStorageUserState> user_state) {
   base::UmaHistogramEnumeration("PasswordManager.SaveUIDismissalReason", reason,
                                 NUM_UI_RESPONSES);
+
+  if (user_state.has_value()) {
+    DCHECK(base::FeatureList::IsEnabled(
+        password_manager::features::kEnablePasswordsAccountStorage));
+    std::string suffix =
+        GetPasswordAccountStorageUserStateHistogramSuffix(user_state.value());
+    base::UmaHistogramEnumeration(
+        "PasswordManager.SaveUIDismissalReason." + suffix, reason,
+        NUM_UI_RESPONSES);
+  }
 }
 
 void LogSaveUIDismissalReasonAfterUnblacklisting(UIDismissalReason reason) {

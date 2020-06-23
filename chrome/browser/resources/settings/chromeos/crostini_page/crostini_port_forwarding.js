@@ -223,10 +223,12 @@ Polymer({
           .activateCrostiniPortForward(
               DEFAULT_CROSTINI_VM, DEFAULT_CROSTINI_CONTAINER, portNumber,
               protocolType)
-          .then(
-              result => {
-                  // TODO(crbug.com/848127): Error handling for result
-              });
+          .then(result => {
+            if (!result) {
+              this.$.errorToast.show();
+            }
+            // TODO(crbug.com/848127): Elaborate on error handling for result
+          });
     } else {
       settings.CrostiniBrowserProxyImpl.getInstance()
           .deactivateCrostiniPortForward(

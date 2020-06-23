@@ -1249,7 +1249,6 @@
 <translation id="6240447795304464094">Google Pay का लोगो</translation>
 <translation id="6241121617266208201">सुझाव छिपाएं</translation>
 <translation id="624499991300733384">प्रिंट कंपोज़िटर सेवा</translation>
-<translation id="6251924700383757765">निजता नीति</translation>
 <translation id="6254436959401408446">यह पेज खोलने के लिए ज़रूरी जगह नहीं है</translation>
 <translation id="625755898061068298">आपने इस साइट के लिए सुरक्षा चेतावनियों को बंद करने का विकल्प चुना है.</translation>
 <translation id="6259156558325130047">&amp;पुन: क्रमित करना फिर से करें</translation>
@@ -1536,6 +1535,7 @@
 <translation id="7485870689360869515">कोई डेटा नहीं मिला</translation>
 <translation id="7488762544858401571">बदलाव किया गया</translation>
 <translation id="7495290002932347110">किसी साइट या ऐप्लिकेशन पर हुए डेटा ब्रीच में आपका पासवर्ड उजागर हो गया है. Chrome का सुझाव है कि आप अपने सेव किए हुए पासवर्ड की जांच करें और <ph name="ORIGIN" /> पर अभी अपना पासवर्ड बदलें.</translation>
+<translation id="7495528107193238112">इस कॉन्टेंट को ब्लॉक कर दिया गया है. समस्या को ठीक करने के लिए, साइट के मालिक से संपर्क करें.</translation>
 <translation id="7498234416455752244">बदलाव करना जारी रखें</translation>
 <translation id="7503664977220660814">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. क्रोमियम, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> और उन साइटों पर तुरंत जाकर, सेव किए गए पासवर्ड की जांच करने का सुझाव देता है जिन पर आपने इस पासवर्ड का इस्तेमाल किया है.</translation>
 <translation id="7508255263130623398">वापस लौटाया हुआ नीति डिवाइस आईडी खाली है या उसका मिलान वर्तमान डिवाइस आईडी से नहीं होता है</translation>
@@ -1635,7 +1635,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{कोई नहीं}=1{एक ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />)}=2{दो ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">हालांकि, गुप्त मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. गुप्त मोड में आप जो भी ब्राउजिंग करते हैं उसे, आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकतीं हैं.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />आप जिन पेजों पर जाते हैं उनमें से कुछ के यूआरएल, सिस्टम की थोड़ी जानकारी, और पेज का कुछ कॉन्टेंट<ph name="END_WHITEPAPER_LINK" /> Google को भेजकर, वेब पर सभी के लिए सुरक्षा को बेहतर बनाने में मदद करें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">साइट छोड़ें?</translation>
 <translation id="7865448901209910068">सबसे अच्छी रफ़्तार</translation>
 <translation id="7874263914261512992">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> और उन साइटों पर तुरंत जाकर, सेव किए गए पासवर्ड की जांच करने का सुझाव देता है जिन पर आपने इस पासवर्ड का इस्तेमाल किया है.</translation>

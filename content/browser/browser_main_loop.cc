@@ -452,7 +452,8 @@ class GpuDataManagerVisualProxy : public GpuDataManagerObserver {
     if (!ui::XVisualManager::GetInstance()->OnGPUInfoChanged(
             gpu_info.software_rendering ||
                 !gpu_data_manager_->GpuAccessAllowed(nullptr),
-            gpu_extra_info.system_visual, gpu_extra_info.rgba_visual)) {
+            static_cast<x11::VisualId>(gpu_extra_info.system_visual),
+            static_cast<x11::VisualId>(gpu_extra_info.rgba_visual))) {
       // The GPU process sent back bad visuals, which should never happen.
       auto* gpu_process_host =
           GpuProcessHost::Get(GPU_PROCESS_KIND_SANDBOXED, false);

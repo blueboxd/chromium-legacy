@@ -13,9 +13,9 @@ import tempfile
 from gpu_tests import gpu_integration_test
 from gpu_tests import path_util
 from gpu_tests import color_profile_manager
-from gpu_tests.skia_gold import skia_gold_properties
-from gpu_tests.skia_gold import skia_gold_session
-from gpu_tests.skia_gold import skia_gold_session_manager
+from gpu_tests.skia_gold import gpu_skia_gold_properties
+from gpu_tests.skia_gold import gpu_skia_gold_session
+from gpu_tests.skia_gold import gpu_skia_gold_session_manager
 
 from py_utils import cloud_storage
 
@@ -87,15 +87,16 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
   @classmethod
   def GetSkiaGoldProperties(cls):
     if not cls._skia_gold_properties:
-      cls._skia_gold_properties = skia_gold_properties.SkiaGoldProperties(
-          cls.GetParsedCommandLineOptions())
+      cls._skia_gold_properties =\
+          gpu_skia_gold_properties.GpuSkiaGoldProperties(
+              cls.GetParsedCommandLineOptions())
     return cls._skia_gold_properties
 
   @classmethod
   def GetSkiaGoldSessionManager(cls):
     if not cls._skia_gold_session_manager:
       cls._skia_gold_session_manager =\
-          skia_gold_session_manager.SkiaGoldSessionManager(
+          gpu_skia_gold_session_manager.GpuSkiaGoldSessionManager(
               cls._skia_gold_temp_dir, cls.GetSkiaGoldProperties())
     return cls._skia_gold_session_manager
 
@@ -419,7 +420,7 @@ class SkiaGoldIntegrationTestBase(gpu_integration_test.GpuIntegrationTest):
     if not status:
       return
 
-    status_codes = skia_gold_session.SkiaGoldSession.StatusCodes
+    status_codes = gpu_skia_gold_session.GpuSkiaGoldSession.StatusCodes
     if status == status_codes.AUTH_FAILURE:
       logging.error('Gold authentication failed with output %s', error)
     elif status == status_codes.INIT_FAILURE:

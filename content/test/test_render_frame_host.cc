@@ -104,6 +104,23 @@ void TestRenderFrameHost::AddMessageToConsole(
   RenderFrameHostImpl::AddMessageToConsole(level, message);
 }
 
+void TestRenderFrameHost::ReportHeavyAdIssue(
+    blink::mojom::HeavyAdResolutionStatus resolution,
+    blink::mojom::HeavyAdReason reason) {
+  switch (reason) {
+    case blink::mojom::HeavyAdReason::kNetworkTotalLimit:
+      heavy_ad_issue_network_count_++;
+      break;
+    case blink::mojom::HeavyAdReason::kCpuTotalLimit:
+      heavy_ad_issue_cpu_total_count_++;
+      break;
+    case blink::mojom::HeavyAdReason::kCpuPeakLimit:
+      heavy_ad_issue_cpu_peak_count_++;
+      break;
+  }
+  RenderFrameHostImpl::ReportHeavyAdIssue(resolution, reason);
+}
+
 void TestRenderFrameHost::AddUniqueMessageToConsole(
     blink::mojom::ConsoleMessageLevel level,
     const std::string& message) {
@@ -246,6 +263,21 @@ void TestRenderFrameHost::SimulateUserActivation() {
 
 const std::vector<std::string>& TestRenderFrameHost::GetConsoleMessages() {
   return console_messages_;
+}
+
+int TestRenderFrameHost::GetHeavyAdIssueCount(
+    RenderFrameHostTester::HeavyAdIssueType type) {
+  switch (type) {
+    case RenderFrameHostTester::HeavyAdIssueType::kNetworkTotal:
+      return heavy_ad_issue_network_count_;
+    case RenderFrameHostTester::HeavyAdIssueType::kCpuTotal:
+      return heavy_ad_issue_cpu_total_count_;
+    case RenderFrameHostTester::HeavyAdIssueType::kCpuPeak:
+      return heavy_ad_issue_cpu_peak_count_;
+    case RenderFrameHostTester::HeavyAdIssueType::kAll:
+      return heavy_ad_issue_network_count_ + heavy_ad_issue_cpu_total_count_ +
+             heavy_ad_issue_cpu_peak_count_;
+  }
 }
 
 void TestRenderFrameHost::SendNavigate(int nav_entry_id,

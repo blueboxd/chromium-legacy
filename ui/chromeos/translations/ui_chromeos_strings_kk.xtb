@@ -541,7 +541,7 @@
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
 <translation id="7014174261166285193">Орнату сәтсіз аяқталды.</translation>
 <translation id="7040138676081995583">Ашу әдісі…</translation>
-<translation id="7059566040011178088">Қалды: <ph name="REMAINING_TIME" /> уақытқа жетпейді.</translation>
+<translation id="7059566040011178088">Ең азы <ph name="REMAINING_TIME" /> қалды.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> элемент таңдалды</translation>
 <translation id="7106346894903675391">Қосымша жад сатып алу…</translation>
 <translation id="7126604456862387217">"&lt;b&gt;<ph name="SEARCH_STRING" />&lt;/b&gt;" – &lt;em&gt;Drive ішінен іздеу&lt;/em&gt;</translation>

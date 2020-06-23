@@ -187,6 +187,7 @@ if (is_chromeos) {
 
   js_library("destination_dropdown_cros") {
     deps = [
+      ":printer_status_icon_cros",
       "..:print_preview_utils",
       "//third_party/polymer/v3_0/components-chromium/iron-dropdown:iron-dropdown",
       "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",

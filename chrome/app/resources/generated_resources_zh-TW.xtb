@@ -2488,7 +2488,6 @@
 <translation id="4077919383365622693"><ph name="SITE" /> 儲存的所有資料和 Cookie 都將遭到清除。</translation>
 <translation id="4079140982534148664">使用進階拼字檢查功能</translation>
 <translation id="4081242589061676262">無法投放檔案。</translation>
-<translation id="4083648855651348665">如要繼續，請輸入你的 Google 帳戶密碼，以便在這部裝置上使用 Google 帳戶中的密碼。</translation>
 <translation id="4084682180776658562">書籤</translation>
 <translation id="4084835346725913160">關閉 <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">當網站要存取序列埠時，必須先詢問你</translation>
@@ -2793,6 +2792,7 @@
 <translation id="4508765956121923607">檢視原始碼(&amp;O)</translation>
 <translation id="4510479820467554003">家長帳戶清單</translation>
 <translation id="4510614391273086606">系統正在將 Linux 檔案和應用程式還原到當初所備份的狀態。</translation>
+<translation id="4513946894732546136">意見回饋</translation>
 <translation id="451407183922382411">技術提供：<ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">在播放和暫停影片之間切換</translation>
 <translation id="451515744433878153">移除</translation>
@@ -3889,7 +3889,6 @@
 <translation id="5935656526031444304">管理安全瀏覽功能</translation>
 <translation id="5938002010494270685">可進行安全性更新</translation>
 <translation id="5939518447894949180">重設</translation>
-<translation id="594108735267876762">請在 <ph name="COUNT" /> 天內更新裝置</translation>
 <translation id="5941153596444580863">新增使用者...</translation>
 <translation id="5941343993301164315">請登入 <ph name="TOKEN_NAME" />。</translation>
 <translation id="5941711191222866238">縮到最小</translation>
@@ -4238,7 +4237,6 @@
 <translation id="6390799748543157332">你在這個視窗瀏覽的網頁不會顯示在瀏覽器記錄中，而且在你關閉所有開啟的訪客視窗後，電腦也不會留下 Cookie 等其他記錄。不過，系統將會保留你下載的所有檔案。</translation>
 <translation id="6393156038355142111">建議高強度密碼</translation>
 <translation id="6395423953133416962">傳送<ph name="BEGIN_LINK1" />系統資訊<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />指標<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">今天是裝置更新期限的最後一天</translation>
 <translation id="6396988158856674517">禁止網站使用動作感應器</translation>
 <translation id="6398715114293939307">移除 Google Play 商店</translation>
 <translation id="6398765197997659313">退出全螢幕模式</translation>
@@ -4604,7 +4602,6 @@
 <translation id="6880587130513028875">系統已封鎖此網頁的圖片。</translation>
 <translation id="6882836635272038266">針對已知不安全的網站、下載內容和擴充功能提供標準防護機制。</translation>
 <translation id="6883319974225028188">糟糕！  系統無法儲存裝置設定。</translation>
-<translation id="6885064901301703683">只要儲存一次，即可在所有裝置上使用</translation>
 <translation id="6885771755599377173">預覽系統資訊</translation>
 <translation id="6886476658664859389">NFC 安全金鑰</translation>
 <translation id="6886871292305414135">在新分頁中開啟連結(&amp;T)</translation>
@@ -5039,6 +5036,7 @@
 <translation id="7427798576651127129">用「<ph name="DEVICE_NAME" />」撥打電話</translation>
 <translation id="7431719494109538750">找不到 HID 裝置</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{在新視窗中開啟所有書籤(&amp;N)}=1{在新視窗中開啟(&amp;N)}other{在新視窗中開啟全部 # 個書籤(&amp;N)}}</translation>
+<translation id="7433957986129316853">保留</translation>
 <translation id="7434509671034404296">開發人員選項</translation>
 <translation id="7434635829372401939">同步處理你的設定</translation>
 <translation id="7434757724413878233">滑鼠加速</translation>
@@ -5929,7 +5927,6 @@
 <translation id="8545575359873600875">很抱歉，系統無法驗證你的密碼。這位受監管使用者的管理員最近可能變更了密碼。如果是這樣的話，你下次登入時就必須使用新密碼。現在請嘗試使用你的舊密碼。</translation>
 <translation id="8546186510985480118">裝置空間即將用盡</translation>
 <translation id="8546306075665861288">圖片快取</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">網路 Proxy 自動探索網址：</translation>
 <translation id="8546930481464505581">自訂 Touch Bar</translation>
 <translation id="8547013269961688403">啟用全螢幕放大鏡</translation>
@@ -6517,6 +6514,7 @@
 <translation id="983511809958454316">無法在 VR 狀態下使用這項功能</translation>
 <translation id="984275831282074731">付款方式</translation>
 <translation id="98515147261107953">橫向</translation>
+<translation id="987264212798334818">一般</translation>
 <translation id="987897973846887088">沒有可用的圖片</translation>
 <translation id="988978206646512040">通關密語欄位不得留空</translation>
 <translation id="992032470292211616">擴充功能、應用程式和主題可能會損害你的裝置，你確定要繼續嗎？</translation>

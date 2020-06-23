@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Kopjuar</translation>
 <translation id="2822354292072154809">Je i sigurt që dëshiron t'i rivendosësh të gjitha lejet e sajtit për <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Sajti</translation>
+<translation id="2874939134665556319">Kënga e mëparshme</translation>
 <translation id="2910701580606108292">Pyet përpara se sajtet të lejohen të luajnë përmbajtje të mbrojtura</translation>
 <translation id="2913331724188855103">Lejo faqet të ruajnë dhe lexojnë të dhënat e kukive (rekomandohet)</translation>
 <translation id="2968755619301702150">Shikuesi i certifikatave</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Sinkronizimi në sfond</translation>
 <translation id="3822502789641063741">Të pastrohet hapësira ruajtëse e sajtit?</translation>
 <translation id="385051799172605136">Prapa</translation>
+<translation id="3859306556332390985">Kërko përpara</translation>
 <translation id="3955193568934677022">Lejo që sajtet të luajnë përmbajtje të mbrojtur (rekomandohet)</translation>
 <translation id="3987993985790029246">Kopjo lidhjen</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Titulli</translation>
 <translation id="4008040567710660924">Lejo kukit për një sajt specifik.</translation>
+<translation id="4046123991198612571">Kënga tjetër</translation>
 <translation id="4165986682804962316">Cilësimet e sajtit</translation>
 <translation id="4226663524361240545">Njoftimet mund të bëjnë që pajisja të dridhet</translation>
 <translation id="4242533952199664413">Hap cilësimet</translation>
 <translation id="4259722352634471385">Lundrimi është bllokuar: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Të lejuara</translation>
+<translation id="429312253194641664">Një sajt po luan media</translation>
 <translation id="4433925000917964731">Faqja e lehtë ofrohet nga Google.</translation>
 <translation id="4434045419905280838">Dritaret kërcyese dhe ridrejtimet</translation>
 <translation id="445467742685312942">Lejo sajtet të luajnë përmbajtje të mbrojtura</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Lëviz poshtë</translation>
 <translation id="6766622839693428701">Rrëshqit shpejt poshtë për ta mbyllur.</translation>
 <translation id="6782111308708962316">Parandalo sajtet e uebit të palëve të treta që të ruajnë dhe lexojnë të dhënat e kukive</translation>
+<translation id="6790428901817661496">Luaj</translation>
 <translation id="6818926723028410516">Zgjidh artikujt</translation>
 <translation id="6864395892908308021">Kjo pajisje nuk mund të lexojë NFC-në</translation>
 <translation id="6910211073230771657">Fshirë</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Një sajt po përdor kamerën dhe mikrofonin tënd</translation>
 <translation id="8380167699614421159">Ky sajt shfaq reklama ndërhyrëse ose mashtruese</translation>
 <translation id="8394832520002899662">Trokit për t'u kthyer në sajt</translation>
+<translation id="8441146129660941386">Kërko prapa</translation>
 <translation id="8447861592752582886">Revoko lejen e pajisjes</translation>
 <translation id="8463851957836045671">Sajti është i shpejtë</translation>
 <translation id="851751545965956758">Blloko lidhjen e sajteve me pajisjet</translation>

@@ -260,4 +260,165 @@ TEST_F(PrefetchManagerTest, MultipleMainFrameUrlMultiplePrefetch) {
   fake_delegate_->WaitForPrefetchFinished(main_frame_url2);
 }
 
+TEST_F(PrefetchManagerTest, Stop) {
+  net::test_server::EmbeddedTestServer test_server;
+
+  // Set up prefetches (limit + 1 for URL1, and 1 for URL2)
+  size_t limit = PrefetchManager::kMaxInflightJobs;
+
+  GURL main_frame_url("https://abc.invalid");
+  std::vector<std::string> paths;
+  std::vector<PrefetchRequest> requests;
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+
+  GURL main_frame_url2("https://def.invalid");
+  std::string path2;
+  std::unique_ptr<net::test_server::ControllableHttpResponse> response2;
+
+  // The ControllableHttpResponses must be made before the test server
+  // is started.
+  for (size_t i = 0; i < limit; i++) {
+    std::string path = base::StringPrintf("/script%" PRIuS ".js", i);
+    paths.push_back(path);
+    responses.push_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &test_server, path));
+  }
+
+  path2 = base::StringPrintf("/script%" PRIuS ".js", limit);
+  response2 = std::make_unique<net::test_server::ControllableHttpResponse>(
+      &test_server, path2);
+
+  // Verify we don't see a request after Stop().
+  test_server.RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        EXPECT_NE(request.relative_url, "/should_be_cancelled");
+      }));
+
+  // Start the server.
+  auto test_server_handle = test_server.StartAndReturnHandle();
+  ASSERT_TRUE(test_server_handle);
+
+  // The request URLs can only be constructed after the server is started.
+  for (size_t i = 0; i < limit; i++) {
+    GURL url = test_server.GetURL(paths[i]);
+    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url));
+  }
+  // This request should never be seen.
+  requests.emplace_back(test_server.GetURL("/should_be_cancelled"),
+                        CreateNetworkIsolationKey(main_frame_url));
+
+  // The request from the second navigation.
+  PrefetchRequest request2(test_server.GetURL(path2),
+                           CreateNetworkIsolationKey(main_frame_url2));
+
+  // Start URL1, URL2.
+  prefetch_manager_->Start(main_frame_url, requests);
+  prefetch_manager_->Start(main_frame_url2, {request2});
+
+  // Wait for |limit| requests from URL1.
+  for (auto& response : responses)
+    response->WaitForRequest();
+
+  // Call stop on URL1.
+  prefetch_manager_->Stop(main_frame_url);
+
+  // Let URL1 requests finish. This finishes URL1 without
+  // the limit + 1 request being sent.
+  for (auto& response : responses) {
+    response->Send("hi");
+    response->Done();
+  }
+  fake_delegate_->WaitForPrefetchFinished(main_frame_url);
+
+  // The request for URL2 should be requested.
+  response2->WaitForRequest();
+  response2->Send("hi");
+  response2->Done();
+
+  fake_delegate_->WaitForPrefetchFinished(main_frame_url2);
+}
+
+TEST_F(PrefetchManagerTest, StopAndStart) {
+  net::test_server::EmbeddedTestServer test_server;
+
+  // Set up prefetches (limit + 1).
+  size_t limit = PrefetchManager::kMaxInflightJobs;
+
+  GURL main_frame_url("https://abc.invalid");
+  std::vector<std::string> paths;
+  std::vector<PrefetchRequest> requests;
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses;
+  std::vector<std::unique_ptr<net::test_server::ControllableHttpResponse>>
+      responses2;
+
+  // The ControllableHttpResponses must be made before the test server
+  // is started.
+  for (size_t i = 0; i < limit; i++) {
+    std::string path = base::StringPrintf("/script%" PRIuS ".js", i);
+    paths.push_back(path);
+    responses.push_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &test_server, path));
+    responses2.push_back(
+        std::make_unique<net::test_server::ControllableHttpResponse>(
+            &test_server, path));
+  }
+
+  // Verify we don't see a request after Stop().
+  test_server.RegisterRequestMonitor(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request) {
+        EXPECT_NE(request.relative_url, "/should_be_cancelled");
+      }));
+
+  // Start the server.
+  auto test_server_handle = test_server.StartAndReturnHandle();
+  ASSERT_TRUE(test_server_handle);
+
+  // The request URLs can only be constructed after the server is started.
+  for (size_t i = 0; i < limit; i++) {
+    GURL url = test_server.GetURL(paths[i]);
+    requests.emplace_back(url, CreateNetworkIsolationKey(main_frame_url));
+  }
+  // This request should never be seen.
+  requests.emplace_back(test_server.GetURL("/should_be_cancelled"),
+                        CreateNetworkIsolationKey(main_frame_url));
+
+  // Start.
+  prefetch_manager_->Start(main_frame_url, requests);
+
+  // Wait for |limit| requests from URL1.
+  for (auto& response : responses) {
+    response->WaitForRequest();
+  }
+
+  // Call stop.
+  prefetch_manager_->Stop(main_frame_url);
+
+  // Call start again. These requests will be coalesced
+  // with the stopped info, and will just be dropped.
+  prefetch_manager_->Start(main_frame_url, requests);
+
+  // Let the inflight requests finish. This finishes the
+  // info without the limit + 1 request or requests
+  // added after Stop() being sent.
+  for (auto& response : responses) {
+    response->Send("hi");
+    response->Done();
+  }
+  fake_delegate_->WaitForPrefetchFinished(main_frame_url);
+
+  // Restart requests. These requests will work as normal.
+  prefetch_manager_->Start(main_frame_url, requests);
+  for (auto& response : responses2) {
+    response->WaitForRequest();
+    response->Send("hi");
+    response->Done();
+  }
+
+  fake_delegate_->WaitForPrefetchFinished(main_frame_url);
+}
+
 }  // namespace predictors

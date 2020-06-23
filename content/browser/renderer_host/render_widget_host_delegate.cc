@@ -162,4 +162,8 @@ bool RenderWidgetHostDelegate::IsPortal() {
   return false;
 }
 
+FrameTree* RenderWidgetHostDelegate::GetFrameTree() {
+  return nullptr;
+}
+
 }  // namespace content

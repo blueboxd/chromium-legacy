@@ -1,9 +1,12 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toast/cr_toast.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="crostini_browser_proxy.html">
 <link rel="import" href="crostini_port_forwarding_add_port_dialog.html">
 <link rel="import" href="../../controls/settings_toggle_button.html">
@@ -15,8 +18,24 @@
 <dom-module id="settings-crostini-port-forwarding">
   <template>
     <style include="settings-shared">
+      :root {
+        --cr-toggle-margin-inline-start: 16px;
+        --cr-toggle-width: 34px;
+      }
+
+      cr-toggle {
+        margin-inline-start: var(--cr-toggle-margin-inline-start);
+        width: var(--cr-toggle-width);
+      }
+
       .column-title {
         color: var(--google-grey-500);
+      }
+
+      .label-column {
+        flex: 1;
+        flex-grow: 3;
+        word-break: break-all;
       }
 
       .no-ports-text {
@@ -29,9 +48,20 @@
         padding-top: 10px;
       }
 
+      #errorIcon {
+        --iron-icon-fill-color: white;
+        display: inline-block;
+        margin-inline-end: 8px;
+      }
+
       #protocolText {
         color: var(--google-grey-500);
-        font-size: 10px;
+        margin-inline-start:  8px;
+      }
+
+      #portForwardingListPortLabel {
+        margin-inline-end: calc(var(--cr-toggle-margin-inline-start) +
+                                var(--cr-toggle-width));
       }
     </style>
     <div class="settings-box first"
@@ -64,7 +94,7 @@
             $i18n{crostiniPortForwardingListPortNumber}
           </div>
           <div id="portForwardingListPortLabel"
-              class="start column-title"
+              class="column-title label-column"
               aria-hidden="true">
             $i18n{crostiniPortForwardingListLabel}
           </div>
@@ -89,12 +119,11 @@
               </span>
             </div>
             <div id="crostiniPortLabel[[index]]"
-                class="start"
+                class="label-column"
                 aria-hidden="true">
               [[item.label]]
             </div>
             <cr-toggle
-                class="hr"
                 id="toggleActivationButton[[index]]"
                 checked="[[item.is_active]]"
                 data-port-number$="[[item.port_number]]"
@@ -151,6 +180,12 @@
         </cr-action-menu>
       </template>
     </cr-lazy-render>
+    <cr-toast id="errorToast" duration="3000" role="alert">
+      <div class="error-message" id="errorMessage">
+        <iron-icon id="errorIcon" icon="cr:error-outline"></iron-icon>
+        $i18n{crostiniPortForwardingActivatePortError}
+      </div>
+    </cr-toast>
   </template>
   <script src="crostini_port_forwarding.js"></script>
 </dom-module>

@@ -43,7 +43,8 @@ void SavePasswordInfoBarDelegate::Create(
 }
 
 SavePasswordInfoBarDelegate::~SavePasswordInfoBarDelegate() {
-  password_manager::metrics_util::LogSaveUIDismissalReason(infobar_response_);
+  password_manager::metrics_util::LogSaveUIDismissalReason(
+      infobar_response_, /*user_state=*/base::nullopt);
   if (form_to_save_->WasUnblacklisted()) {
     password_manager::metrics_util::LogSaveUIDismissalReasonAfterUnblacklisting(
         infobar_response_);

@@ -1318,7 +1318,7 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
       std::string partition_name;
       bool in_memory;
       GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-          browser_context_, site_url, true, &storage_domain, &partition_name,
+          browser_context_, site_url, &storage_domain, &partition_name,
           &in_memory);
     }
     pending_url_loader_factory =

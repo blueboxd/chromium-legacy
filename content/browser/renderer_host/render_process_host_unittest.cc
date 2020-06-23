@@ -775,7 +775,6 @@ class StoragePartitionContentBrowserClient : public ContentBrowserClient {
  private:
   void GetStoragePartitionConfigForSite(BrowserContext* browser_context,
                                         const GURL& site,
-                                        bool can_be_default,
                                         std::string* partition_domain,
                                         std::string* partition_name,
                                         bool* in_memory) override {

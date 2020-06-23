@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">ડાબું</translation>
 <translation id="1479909375538722835">ફ્લોટિંગ ઍક્સેસિબિલિટી મેનૂ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">ચાલુ</translation>
 <translation id="1516740043221086139">ખલેલ પાડશો નહીં ચાલુ છે.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{નોટિફિકેશનની સેટિંગ બતાવો. ઍપ માટે નોટિફિકેશન બંધ છે}one{નોટિફિકેશનની સેટિંગ બતાવો. # ઍપ માટે નોટિફિકેશન બંધ છે}other{નોટિફિકેશનની સેટિંગ બતાવો. # ઍપ માટે નોટિફિકેશન બંધ છે}}</translation>
 <translation id="1525508553941733066">છોડી દો</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">સહાયક (લોડ થઈ રહ્યું છે…)</translation>
 <translation id="1838895407229022812">રાત્રિ પ્રકાશ બંધ છે.</translation>
 <translation id="1850504506766569011">વાઇ-ફાઇ બંધ છે.</translation>
-<translation id="1859889070386344428">બંધ</translation>
 <translation id="1864454756846565995">USB-C ઉપકરણ (પાછળનું પોર્ટ)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> પર પ્રતિબિંબિત થઈ રહ્યું છે</translation>
 <translation id="1885785240814121742">ફિંગરપ્રિન્ટથી અનલૉક કરો</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">કીબોર્ડ લેઆઉટ સ્વિચ કરવા માટે <ph name="KEYBOARD_SHORTCUT" />ને દબાવો.</translation>
 <translation id="2501920221385095727">સ્ટિકી કી</translation>
 <translation id="2509468283778169019">CAPS LOCK ચાલુ છે</translation>
-<translation id="2519465031217098801">ચાલુ</translation>
 <translation id="2542089167727451762">તમારા પ્રોફાઇલ ફોટા પર ટૅપ કરો</translation>
 <translation id="255671100581129685">જાહેર સત્રમાં Google આસિસ્ટંટ ઉપલબ્ધ હોતું નથી.</translation>
 <translation id="256712445991462162">ડૉક કરેલું મૅગ્નિફાયર</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">પેસ્ટ કરો</translation>
 <translation id="394485226368336402">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3962859241508114581">પાછલું ટ્રૅક</translation>
-<translation id="3965097803111112935">બંધ</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
 <translation id="3977512764614765090">બૅટરી <ph name="PERCENTAGE" />% પર છે અને ચાર્જ થઈ રહી છે.</translation>
 <translation id="3995138139523574647">USB-C ડિવાઇસ (જમણી બાજુનું પાછળનું પોર્ટ)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">ટેક્સ્ટ કૅરેટને હાઇલાઇટ કરો</translation>
 <translation id="5222676887888702881">સાઇન આઉટ</translation>
 <translation id="523505283826916779">ઍક્સેસિબિલિટી સેટિંગ્સ</translation>
-<translation id="5250225880026334010">બંધ</translation>
 <translation id="5260676007519551770">ડેસ્ક 4</translation>
 <translation id="5283198616748585639">1 મિનિટ ઉમેરો</translation>
 <translation id="528468243742722775">સમાપ્ત</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">Bluetooth ડિવાઇસ "<ph name="DEVICE_NAME" />" ને જોડી બનાવવા માટે પરવાનગી જોઈએ છે. કૃપા કરીને તે ડિવાઇસ પર આ પાસકીને દાખલ કરો: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6665545700722362599">સ્થાન સેવાઓ, ડિવાઇસના માઇક્રોફોન, કૅમેરા અથવા અન્ય સુવિધાઓનો ઉપયોગ કરવા માટે વેબસાઇટ, ઍપ અને એક્સ્ટેન્શનને પરવાનગી આપો</translation>
-<translation id="6669268301501499730">ચાલુ</translation>
 <translation id="6670153871843998651">ડેસ્ક 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">તમારી પસંદગી સંબંધિત માહિતી મેળવો</translation>

@@ -178,6 +178,7 @@ class PDFiumPage {
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageLinkTest, TestLinkGeneration);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageHighlightTest, TestPopulateHighlights);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageTextFieldTest, TestPopulateTextFields);
+  FRIEND_TEST_ALL_PREFIXES(PDFiumPageChoiceFieldTest, TestPopulateChoiceFields);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountPartialOverlaps);
   FRIEND_TEST_ALL_PREFIXES(PDFiumPageOverlappingTest, CountCompleteOverlaps);
 
@@ -257,6 +258,25 @@ class PDFiumPage {
     std::string value;
   };
 
+  // Represents a choice field option.
+  struct ChoiceFieldOption {
+    ChoiceFieldOption();
+    ChoiceFieldOption(const ChoiceFieldOption& other);
+    ~ChoiceFieldOption();
+
+    std::string name;
+    bool is_selected;
+  };
+
+  // Represents a choice field within the page.
+  struct ChoiceField : FormField {
+    ChoiceField();
+    ChoiceField(const ChoiceField& other);
+    ~ChoiceField();
+
+    std::vector<ChoiceFieldOption> options;
+  };
+
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
   int GetLink(int char_index, LinkTarget* target);
@@ -274,7 +294,9 @@ class PDFiumPage {
   void PopulateHighlight(FPDF_ANNOTATION annot);
   // Populate |text_fields_| with |annot|.
   void PopulateTextField(FPDF_ANNOTATION annot);
-  // Populate form fields like text field on the page.
+  // Populate |choice_fields_| with |annot|.
+  void PopulateChoiceField(FPDF_ANNOTATION annot);
+  // Populate form fields like text field and choice field on the page.
   void PopulateFormField(FPDF_ANNOTATION annot);
   // Returns link type and fills target associated with a destination. Returns
   // NONSELECTABLE_AREA if detection failed.
@@ -331,6 +353,7 @@ class PDFiumPage {
   bool calculated_annotations_ = false;
   std::vector<Highlight> highlights_;
   std::vector<TextField> text_fields_;
+  std::vector<ChoiceField> choice_fields_;
   bool logged_overlapping_annotations_ = false;
   bool calculated_page_object_text_run_breaks_ = false;
   // The set of character indices on which text runs need to be broken for page

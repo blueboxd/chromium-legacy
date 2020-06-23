@@ -110,8 +110,9 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
 // accessed from the unit test file. It is not exposed in the header file,
 // however, because it is not intended for consumption outside of the metrics
 // implementation.
-int GetFieldTypeGroupMetric(ServerFieldType field_type,
-                            AutofillMetrics::FieldTypeQualityMetric metric) {
+int GetFieldTypeGroupPredictionQualityMetric(
+    ServerFieldType field_type,
+    AutofillMetrics::FieldTypeQualityMetric metric) {
   DCHECK_LT(metric, AutofillMetrics::NUM_FIELD_TYPE_QUALITY_METRICS);
 
   FieldTypeGroupForMetrics group = GROUP_AMBIGUOUS;
@@ -225,6 +226,26 @@ int GetFieldTypeGroupMetric(ServerFieldType field_type,
   static_assert(NUM_FIELD_TYPE_GROUPS_FOR_METRICS <= UINT8_MAX,
                 "number of field type groups must fit into 8 bits");
   return (group << 8) | metric;
+}
+
+// This function encodes the integer value of a |ServerFieldType| and the
+// metric value of an |AutofilledFieldUserEdtingStatus| into a 16 bit integer.
+// The lower four bits are used to encode the editing status and the higher
+// 12 bits are used to encode the field type.
+int GetFieldTypeUserEditStatusMetric(
+    ServerFieldType server_type,
+    AutofillMetrics::AutofilledFieldUserEditingStatusMetric metric) {
+  static_assert(ServerFieldType::MAX_VALID_FIELD_TYPE <= (UINT16_MAX >> 4),
+                "Autofill::ServerTypes value needs more than 12 bits.");
+
+  static_assert(
+      static_cast<int>(
+          AutofillMetrics::AutofilledFieldUserEditingStatusMetric::kMaxValue) <=
+          (UINT16_MAX >> 12),
+      "AutofillMetrics::AutofilledFieldUserEditingStatusMetric value needs "
+      "more than 4 bits");
+
+  return (server_type << 4) | static_cast<int>(metric);
 }
 
 namespace {
@@ -355,9 +376,9 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
     DVLOG(2) << "TRUE POSITIVE";
     base::UmaHistogramSparse(aggregate_histogram,
                              AutofillMetrics::TRUE_POSITIVE);
-    base::UmaHistogramSparse(
-        type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE));
+    base::UmaHistogramSparse(type_specific_histogram,
+                             GetFieldTypeGroupPredictionQualityMetric(
+                                 actual_type, AutofillMetrics::TRUE_POSITIVE));
     if (log_rationalization_metrics) {
       bool duplicated_filling = DuplicatedFilling(form, field);
       base::UmaHistogramSparse(
@@ -378,8 +399,8 @@ void LogPredictionQualityMetricsForFieldsOnlyFilledWhenFocused(
   if (predicted_type != UNKNOWN_TYPE)
     base::UmaHistogramSparse(
         type_specific_histogram,
-        GetFieldTypeGroupMetric(predicted_type,
-                                AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
+        GetFieldTypeGroupPredictionQualityMetric(
+            predicted_type, AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
   if (log_rationalization_metrics) {
     // Logging RATIONALIZATION_OK despite of type mismatch here because autofill
     // would have got it wrong with or without rationalization. Rationalization
@@ -418,9 +439,9 @@ void LogPredictionQualityMetricsForCommonFields(
     // predict that type with which the field was filled.
     base::UmaHistogramSparse(aggregate_histogram,
                              AutofillMetrics::TRUE_POSITIVE);
-    base::UmaHistogramSparse(
-        type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type, AutofillMetrics::TRUE_POSITIVE));
+    base::UmaHistogramSparse(type_specific_histogram,
+                             GetFieldTypeGroupPredictionQualityMetric(
+                                 actual_type, AutofillMetrics::TRUE_POSITIVE));
     return;
   }
 
@@ -435,8 +456,9 @@ void LogPredictionQualityMetricsForCommonFields(
                   : (is_ambiguous ? AutofillMetrics::FALSE_POSITIVE_AMBIGUOUS
                                   : AutofillMetrics::FALSE_POSITIVE_UNKNOWN));
     base::UmaHistogramSparse(aggregate_histogram, metric);
-    base::UmaHistogramSparse(type_specific_histogram,
-                             GetFieldTypeGroupMetric(predicted_type, metric));
+    base::UmaHistogramSparse(
+        type_specific_histogram,
+        GetFieldTypeGroupPredictionQualityMetric(predicted_type, metric));
     return;
   }
 
@@ -449,8 +471,8 @@ void LogPredictionQualityMetricsForCommonFields(
                              AutofillMetrics::FALSE_NEGATIVE_UNKNOWN);
     base::UmaHistogramSparse(
         type_specific_histogram,
-        GetFieldTypeGroupMetric(actual_type,
-                                AutofillMetrics::FALSE_NEGATIVE_UNKNOWN));
+        GetFieldTypeGroupPredictionQualityMetric(
+            actual_type, AutofillMetrics::FALSE_NEGATIVE_UNKNOWN));
     return;
   }
 
@@ -465,12 +487,12 @@ void LogPredictionQualityMetricsForCommonFields(
                            AutofillMetrics::FALSE_NEGATIVE_MISMATCH);
   base::UmaHistogramSparse(
       type_specific_histogram,
-      GetFieldTypeGroupMetric(actual_type,
-                              AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
+      GetFieldTypeGroupPredictionQualityMetric(
+          actual_type, AutofillMetrics::FALSE_NEGATIVE_MISMATCH));
   base::UmaHistogramSparse(
       type_specific_histogram,
-      GetFieldTypeGroupMetric(predicted_type,
-                              AutofillMetrics::FALSE_POSITIVE_MISMATCH));
+      GetFieldTypeGroupPredictionQualityMetric(
+          predicted_type, AutofillMetrics::FALSE_POSITIVE_MISMATCH));
 }
 
 // Logs field type prediction quality metrics.  The primary histogram name is
@@ -1383,6 +1405,37 @@ void AutofillMetrics::LogOverallPredictionQualityMetrics(
       true /*log_rationalization_metrics*/);
 }
 
+void AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
+    FormInteractionsUkmLogger* form_interactions_ukm_logger,
+    const FormStructure& form,
+    const AutofillField& field) {
+  const std::string aggregate_histogram =
+      "Autofill.EditedAutofilledFieldAtSubmission.Aggregate";
+  const std::string type_specific_histogram =
+      "Autofill.EditedAutofilledFieldAtSubmission.ByFieldType";
+
+  AutofilledFieldUserEditingStatusMetric editing_metric =
+      field.previously_autofilled()
+          ? AutofilledFieldUserEditingStatusMetric::AUTOFILLED_FIELD_WAS_EDITED
+          : AutofilledFieldUserEditingStatusMetric::
+                AUTOFILLED_FIELD_WAS_NOT_EDITED;
+
+  // Record the aggregated UMA statistics.
+  base::UmaHistogramEnumeration(aggregate_histogram, editing_metric);
+
+  // Record the type specific UMA statistics.
+  base::UmaHistogramSparse(type_specific_histogram,
+                           GetFieldTypeUserEditStatusMetric(
+                               field.Type().GetStorableType(), editing_metric));
+
+  // If the field was edited, record the event to UKM.
+  if (editing_metric ==
+      AutofilledFieldUserEditingStatusMetric::AUTOFILLED_FIELD_WAS_EDITED) {
+    form_interactions_ukm_logger->LogEditedAutofilledFieldAtSubmission(form,
+                                                                       field);
+  }
+}
+
 // static
 void AutofillMetrics::LogServerQueryMetric(ServerQueryMetric metric) {
   DCHECK_LT(metric, NUM_SERVER_QUERY_METRICS);
@@ -2082,6 +2135,19 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
           MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
       .SetFormSignature(HashFormSignature(form.form_signature()))
       .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
+      .Record(ukm_recorder_);
+}
+
+void AutofillMetrics::FormInteractionsUkmLogger::
+    LogEditedAutofilledFieldAtSubmission(const FormStructure& form,
+                                         const AutofillField& field) {
+  if (!CanLog())
+    return;
+
+  ukm::builders::Autofill_EditedAutofilledFieldAtSubmission(source_id_)
+      .SetFieldSignature(HashFieldSignature(field.GetFieldSignature()))
+      .SetFormSignature(HashFormSignature(form.form_signature()))
+      .SetOverallType(static_cast<int64_t>(field.Type().GetStorableType()))
       .Record(ukm_recorder_);
 }
 

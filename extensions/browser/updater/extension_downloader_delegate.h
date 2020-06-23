@@ -147,8 +147,9 @@ class ExtensionDownloaderDelegate {
     base::Time day_start;
   };
 
-  // Contains the error codes when Force installed extension fail to install
-  // with error CRX_FETCH_FAILED, MANIFEST_FETCH_FAILED or MANIFEST_INVALID.
+  // Additional information in case of force installed extension install failure
+  // due to CRX_FETCH_FAILED, MANIFEST_FETCH_FAILED, MANIFEST_INVALID,
+  // CRX_FETCH_URL_EMPTY.
   struct FailureData {
     FailureData();
     FailureData(const FailureData& other);
@@ -157,6 +158,7 @@ class ExtensionDownloaderDelegate {
                 const base::Optional<int> response,
                 const int fetch_attempts);
     explicit FailureData(ManifestInvalidError manifest_invalid_error);
+    explicit FailureData(const std::string& additional_info);
     ~FailureData();
 
     // Network error code in case of CRX_FETCH_FAILED or MANIFEST_FETCH_FAILED.
@@ -170,6 +172,10 @@ class ExtensionDownloaderDelegate {
     // errors occurred while parsing the update manifest and the errors in the
     // internal details of the parsed manifest.
     const base::Optional<ManifestInvalidError> manifest_invalid_error;
+    // Info field in the update manifest returned by the server. Currently it is
+    // only set when no update is available and install fails with the error
+    // CRX_FETCH_URL_EMPTY.
+    const base::Optional<std::string> additional_info;
   };
 
   // A callback that is called to indicate if ExtensionDownloader should ignore

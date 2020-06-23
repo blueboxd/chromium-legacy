@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.WindowInsets;
 
 import androidx.annotation.NonNull;
 
@@ -67,6 +69,7 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
         // montior those changes to update the positioning of the list.
         mAnchorViewLayoutListener = new OnGlobalLayoutListener() {
             private int mOffsetInWindow;
+            private WindowInsets mWindowInsets;
 
             @Override
             public void onGlobalLayout() {
@@ -78,7 +81,17 @@ class OmniboxSuggestionsDropdownDelegate implements View.OnAttachStateChangeList
                     if (parent == null || !(parent instanceof View)) break;
                     currentView = (View) parent;
                 }
-                if (mOffsetInWindow == offsetInWindow) return;
+
+                boolean insetsHaveChanged = false;
+                WindowInsets currentInsets = null;
+                // TODO(ender): Replace with VERSION_CODE_R once we switch to SDK 30.
+                if (Build.VERSION.SDK_INT >= 30) {
+                    currentInsets = mAnchorView.getRootWindowInsets();
+                    insetsHaveChanged = !currentInsets.equals(mWindowInsets);
+                }
+
+                if (mOffsetInWindow == offsetInWindow && !insetsHaveChanged) return;
+                mWindowInsets = currentInsets;
                 mOffsetInWindow = offsetInWindow;
                 mSuggestionsDropdown.requestLayout();
             }

@@ -38,6 +38,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/client_view.h"
 #include "ui/views/window/dialog_delegate.h"
+#include "ui/views/window/vector_icons/vector_icons.h"
 
 namespace views {
 
@@ -98,6 +99,15 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
 #endif
   close_ = AddChildView(std::move(close));
 
+  auto minimize = CreateMinimizeButton(this);
+  minimize->SetVisible(false);
+#if defined(OS_WIN)
+  minimize->SetTooltipText(base::string16());
+  minimize->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
+#endif
+  minimize_ = AddChildView(std::move(minimize));
+
   auto progress_indicator = std::make_unique<ProgressBar>(
       kProgressIndicatorHeight, /*allow_round_corner=*/false);
   progress_indicator->SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -129,6 +139,21 @@ std::unique_ptr<Button> BubbleFrameView::CreateCloseButton(
   InstallCircleHighlightPathGenerator(close_button.get());
 
   return close_button;
+}
+
+// static
+std::unique_ptr<Button> BubbleFrameView::CreateMinimizeButton(
+    ButtonListener* listener) {
+  auto minimize_button = CreateVectorImageButtonWithNativeTheme(
+      listener, kWindowControlMinimizeIcon);
+  minimize_button->SetTooltipText(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
+  minimize_button->SizeToPreferredSize();
+  minimize_button->SetFocusForPlatform();
+
+  InstallCircleHighlightPathGenerator(minimize_button.get());
+
+  return minimize_button;
 }
 
 gfx::Rect BubbleFrameView::GetBoundsForClientView() const {
@@ -190,6 +215,8 @@ int BubbleFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTTRANSPARENT;
   if (close_->GetVisible() && close_->GetMirroredBounds().Contains(point))
     return HTCLOSE;
+  if (minimize_->GetVisible() && minimize_->GetMirroredBounds().Contains(point))
+    return HTMINBUTTON;
 
   // Convert to RRectF to accurately represent the rounded corners of the
   // dialog and allow events to pass through the shadows.
@@ -249,6 +276,7 @@ void BubbleFrameView::GetWindowMask(const gfx::Size& size,
 
 void BubbleFrameView::ResetWindowControls() {
   close_->SetVisible(GetWidget()->widget_delegate()->ShouldShowCloseButton());
+  minimize_->SetVisible(GetWidget()->widget_delegate()->CanMinimize());
 }
 
 void BubbleFrameView::UpdateWindowIcon() {
@@ -354,18 +382,23 @@ void BubbleFrameView::Layout() {
   if (bounds.IsEmpty())
     return;
 
+  // The buttons are positioned somewhat closer to the edge of the bubble.
+  const int close_margin =
+      LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
+  const int button_y = contents_bounds.y() + close_margin;
+  int button_right = contents_bounds.right() - close_margin;
   int title_label_right = bounds.right();
-  if (close_->GetVisible()) {
-    // The close button is positioned somewhat closer to the edge of the bubble.
-    const int close_margin =
-        LayoutProvider::Get()->GetDistanceMetric(DISTANCE_CLOSE_BUTTON_MARGIN);
-    close_->SetPosition(
-        gfx::Point(contents_bounds.right() - close_margin - close_->width(),
-                   contents_bounds.y() + close_margin));
-    // Only reserve space if the close button extends over the header.
-    if (close_->bounds().bottom() > header_bottom) {
+  for (Button* button : {close_, minimize_}) {
+    if (!button->GetVisible())
+      continue;
+    button->SetPosition(gfx::Point(button_right - button->width(), button_y));
+    button_right -= button->width();
+    button_right -= LayoutProvider::Get()->GetDistanceMetric(
+        DISTANCE_RELATED_BUTTON_HORIZONTAL);
+    // Only reserve space if the button extends over the header.
+    if (button->bounds().bottom() > header_bottom) {
       title_label_right =
-          std::min(title_label_right, close_->x() - close_margin);
+          std::min(title_label_right, button->x() - close_margin);
     }
   }
 
@@ -464,6 +497,8 @@ void BubbleFrameView::ButtonPressed(Button* sender, const ui::Event& event) {
 
   if (sender == close_) {
     GetWidget()->CloseWithReason(Widget::ClosedReason::kCloseButtonClicked);
+  } else if (sender == minimize_) {
+    GetWidget()->Minimize();
   }
 }
 

@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Penentukuran telah selesai</translation>
 <translation id="252373100621549798">Paparan Tidak Diketahui</translation>
 <translation id="2545651323591713692">Tunda</translation>
+<translation id="2570734079541893434">Urus tetapan</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{dalam 1j}other{dalam #j}}</translation>
 <translation id="2583543531130364912">Tentukur skrin sentuh anda</translation>
 <translation id="2666092431469916601">Atas</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Dialihkan kepada Halaman <ph name="PAGE_NUMBER" />, baris <ph name="ROW_NUMBER" />, lajur <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Jangan sekat</translation>
 <translation id="7907591526440419938">Buka Fail</translation>
+<translation id="7952747673138230804">OS Chrome menunjukkan cadangan kandungan baharu untuk diterokai. Menghantar statistik untuk meningkatkan kualiti hanya jika anda telah memilih untuk berkongsi data penggunaan. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Perintah</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Lebih daripada 1 pemberitahuan belum dibaca}other{Lebih daripada # pemberitahuan belum dibaca}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dalam 1m}other{dalam #m}}</translation>

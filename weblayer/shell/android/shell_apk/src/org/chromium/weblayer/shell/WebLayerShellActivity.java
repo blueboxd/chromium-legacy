@@ -177,6 +177,9 @@ public class WebLayerShellActivity extends FragmentActivity {
             popup.getMenuInflater().inflate(R.menu.app_menu, popup.getMenu());
             MenuItem bottomMenuItem = popup.getMenu().findItem(R.id.toggle_bottom_view_id);
             bottomMenuItem.setChecked(mBottomView != null);
+            popup.getMenu()
+                    .findItem(R.id.translate_menu_id)
+                    .setVisible(mBrowser.getActiveTab().canTranslate());
             popup.setOnMenuItemClickListener(item -> {
                 if (item.getItemId() == R.id.reload_menu_id) {
                     mBrowser.getActiveTab().getNavigationController().reload();
@@ -215,6 +218,11 @@ public class WebLayerShellActivity extends FragmentActivity {
                     Intent intent = SiteSettingsActivity.createIntentForCategoryList(
                             this, NON_INCOGNITO_PROFILE_NAME);
                     IntentUtils.safeStartActivity(this, intent);
+                    return true;
+                }
+
+                if (item.getItemId() == R.id.translate_menu_id) {
+                    mBrowser.getActiveTab().showTranslateUi();
                     return true;
                 }
 

@@ -13,13 +13,15 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 DownloadInternalsUI::DownloadInternalsUI(content::WebUI* web_ui)
     : content::WebUIController(web_ui) {
   // chrome://download-internals source.
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadInternalsHost);
-  html_source->OverrideContentSecurityPolicyScriptSrc(
+  html_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
   // Required resources.

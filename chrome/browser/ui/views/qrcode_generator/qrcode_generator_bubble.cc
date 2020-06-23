@@ -50,6 +50,8 @@ namespace {
 // Rendered QR Code size, pixels.
 constexpr int kQRImageSizePx = 200;
 constexpr int kPaddingTooltipDownloadButtonPx = 10;
+// Padding around the QR code. Ensures we can scan when using dark themes.
+constexpr int kQRPaddingPx = 40;
 
 // Calculates preview image dimensions.
 constexpr gfx::Size GetQRImageSize() {
@@ -146,7 +148,8 @@ void QRCodeGeneratorBubble::OnCodeGeneratorResponse(
 void QRCodeGeneratorBubble::UpdateQRImage(gfx::ImageSkia qr_image) {
   qr_code_image_->SetImage(qr_image);
   qr_code_image_->SetImageSize(GetQRImageSize());
-  qr_code_image_->SetBackground(nullptr);
+  qr_code_image_->SetPreferredSize(GetQRImageSize() +
+                                   gfx::Size(kQRPaddingPx, kQRPaddingPx));
 }
 
 void QRCodeGeneratorBubble::DisplayPlaceholderImage() {
@@ -197,14 +200,18 @@ void QRCodeGeneratorBubble::Init() {
       1.0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
   using Alignment = views::ImageView::Alignment;
   auto qr_code_image = std::make_unique<views::ImageView>();
+  const int border_radius =
+      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH);
   qr_code_image->SetBorder(views::CreateRoundedRectBorder(
-      /*thickness=*/10,
-      views::LayoutProvider::Get()->GetCornerRadiusMetric(views::EMPHASIS_HIGH),
-      gfx::kGoogleGrey200));
+      /*thickness=*/2, border_radius, gfx::kGoogleGrey200));
   qr_code_image->SetHorizontalAlignment(Alignment::kCenter);
   qr_code_image->SetVerticalAlignment(Alignment::kCenter);
   qr_code_image->SetImageSize(GetQRImageSize());
-  qr_code_image->SetPreferredSize(GetQRImageSize());
+  qr_code_image->SetPreferredSize(GetQRImageSize() +
+                                  gfx::Size(kQRPaddingPx, kQRPaddingPx));
+  qr_code_image->SetBackground(
+      views::CreateRoundedRectBackground(SK_ColorWHITE, border_radius));
+
   layout->StartRow(views::GridLayout::kFixedSize, kQRImageColumnSetId);
   qr_code_image_ = layout->AddView(std::move(qr_code_image));
   DisplayPlaceholderImage();

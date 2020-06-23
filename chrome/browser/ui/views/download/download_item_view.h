@@ -256,6 +256,14 @@ class DownloadItemView : public views::View,
 
   void OnExtractIconComplete(IconLoader::IconSize icon_size, gfx::Image icon);
 
+  // Paint the common download animation progress foreground and background. If
+  // |percent_done| < 0, the total size is indeterminate.
+  // |indeterminate_progress_time| is only used in that case.
+  void PaintDownloadProgress(gfx::Canvas* canvas,
+                             const gfx::RectF& bounds,
+                             const base::TimeDelta& indeterminate_progress_time,
+                             int percent_done) const;
+
   // Show/Hide/Reset |animation| based on the state transition specified by
   // |from| and |to|.
   void AnimateStateTransition(State from,

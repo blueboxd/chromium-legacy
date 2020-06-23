@@ -188,17 +188,9 @@ LayoutRubyBase* LayoutRubyRun::CreateRubyBase() const {
   scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                      EDisplay::kBlock);
-  UpdateAnonymousChildStyle(layout_object, *new_style);
+  new_style->SetTextAlign(ETextAlign::kCenter);  // FIXME: use WEBKIT_CENTER?
   layout_object->SetStyle(std::move(new_style));
   return layout_object;
-}
-
-void LayoutRubyRun::UpdateAnonymousChildStyle(
-    const LayoutObject* child,
-    ComputedStyle& child_style) const {
-  DCHECK(child->IsRubyBase()) << child;
-  child_style.SetDisplay(EDisplay::kBlock);
-  child_style.SetTextAlign(ETextAlign::kInternalSpaceAround);
 }
 
 LayoutRubyRun* LayoutRubyRun::StaticCreateRubyRun(

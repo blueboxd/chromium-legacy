@@ -708,6 +708,13 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
   [[[tabOpener stub] andReturnValue:@YES]
       shouldOpenNTPTabOnActivationOfBrowser:browser.get()];
 
+  // Simulate background before going to foreground.
+  [[getStartupInformationMock() expect] expireFirstUserActionRecorder];
+  swizzleMetricsMediatorDisableReporting();
+  [getAppStateWithMock() applicationDidEnterBackground:application
+                                          memoryHelper:memoryHelper
+                               incognitoContentVisible:YES];
+
   void (^swizzleBlock)() = ^{
   };
 
@@ -725,6 +732,7 @@ TEST_F(AppStateTest, applicationWillEnterForeground) {
   // Tests.
   EXPECT_OCMOCK_VERIFY(metricsMediator);
   EXPECT_OCMOCK_VERIFY(memoryHelper);
+  EXPECT_OCMOCK_VERIFY(getStartupInformationMock());
   FakeUserFeedbackProvider* user_feedback_provider =
       static_cast<FakeUserFeedbackProvider*>(
           ios::GetChromeBrowserProvider()->GetUserFeedbackProvider());

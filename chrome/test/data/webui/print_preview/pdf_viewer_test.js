@@ -32,10 +32,13 @@ suite(pdf_viewer_test.suiteName, function() {
     const loaded = eventToPromise('load', plugin);
     document.body.appendChild(plugin);
     await loaded;
-    const viewerDocument = plugin.contentDocument;
+    const viewer = plugin.contentDocument.querySelector('pdf-viewer-pp');
+    assertTrue(!!viewer);
+    assertTrue(plugin.contentDocument.documentElement.hasAttribute(
+        'is-print-preview'));
 
     const verifyElement = id => {
-      const element = viewerDocument.querySelector(`viewer-${id}`);
+      const element = viewer.shadowRoot.querySelector(`viewer-${id}`);
       assertTrue(!!element);
       assertEquals(id, element.id);
     };
@@ -43,12 +46,12 @@ suite(pdf_viewer_test.suiteName, function() {
     ['zoom-toolbar', 'error-screen', 'page-indicator'].forEach(
         id => verifyElement(id));
     // Should also have the sizer and content divs
-    assertTrue(!!viewerDocument.querySelector('#sizer'));
-    assertTrue(!!viewerDocument.querySelector('#content'));
+    assertTrue(!!viewer.shadowRoot.querySelector('#sizer'));
+    assertTrue(!!viewer.shadowRoot.querySelector('#content'));
 
     // These elements don't exist in Print Preview's viewer.
     ['viewer-pdf-toolbar', 'viewer-form-warning'].forEach(
-        name => assertFalse(!!viewerDocument.querySelector(name)));
+        name => assertFalse(!!viewer.shadowRoot.querySelector(name)));
   });
 
   test(assert(pdf_viewer_test.TestNames.PageIndicator), function() {

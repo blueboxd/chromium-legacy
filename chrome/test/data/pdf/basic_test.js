@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {getFilenameFromURL, shouldIgnoreKeyEvents} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_utils.js';
+import {getFilenameFromURL} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer.js';
+import {shouldIgnoreKeyEvents} from 'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/pdf_viewer_utils.js';
 import {$} from 'chrome://resources/js/util.m.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
@@ -12,6 +13,7 @@ const tests = [
    * verifies that Polymer is working correctly.
    */
   function testHasElements() {
+    const viewer = document.body.querySelector('pdf-viewer');
     const elementNames = [
       'viewer-pdf-toolbar',
       'viewer-zoom-toolbar',
@@ -19,7 +21,7 @@ const tests = [
       'viewer-error-screen',
     ];
     for (let i = 0; i < elementNames.length; i++) {
-      const elements = document.body.querySelectorAll(elementNames[i]);
+      const elements = viewer.shadowRoot.querySelectorAll(elementNames[i]);
       chrome.test.assertEq(1, elements.length);
       chrome.test.assertTrue(elements[0].shadowRoot !== null);
     }
@@ -30,7 +32,8 @@ const tests = [
    * Test that the plugin element exists and is navigated to the correct URL.
    */
   function testPluginElement() {
-    const plugin = document.getElementById('plugin');
+    const viewer = document.body.querySelector('pdf-viewer');
+    const plugin = viewer.shadowRoot.querySelector('#plugin');
     chrome.test.assertEq('embed', plugin.localName);
 
     chrome.test.assertTrue(
@@ -44,7 +47,8 @@ const tests = [
    */
   function testIgnoreKeyEvents() {
     // Test that the traversal through the shadow DOM works correctly.
-    const toolbar = document.getElementById('toolbar');
+    const viewer = document.body.querySelector('pdf-viewer');
+    const toolbar = viewer.shadowRoot.querySelector('#toolbar');
     toolbar.$.pageselector.pageSelector.inputElement.focus();
     chrome.test.assertTrue(shouldIgnoreKeyEvents(toolbar));
 
@@ -53,7 +57,7 @@ const tests = [
     chrome.test.assertFalse(shouldIgnoreKeyEvents(toolbar));
 
     chrome.test.assertFalse(
-        shouldIgnoreKeyEvents(document.getElementById('plugin')));
+        shouldIgnoreKeyEvents(viewer.shadowRoot.querySelector('#plugin')));
 
     chrome.test.succeed();
   },
@@ -63,10 +67,11 @@ const tests = [
    * pressing escape.
    */
   function testOpenCloseBookmarks() {
-    const toolbar = $('toolbar');
+    const viewer = document.body.querySelector('pdf-viewer');
+    const toolbar = viewer.shadowRoot.querySelector('#toolbar');
     toolbar.show();
     const dropdown = toolbar.$.bookmarks;
-    const plugin = $('plugin');
+    const plugin = viewer.shadowRoot.querySelector('#plugin');
     const ESC_KEY = 27;
 
     // Clicking on the plugin should close the bookmarks menu.
@@ -75,19 +80,20 @@ const tests = [
     chrome.test.assertTrue(dropdown.dropdownOpen);
     // Generate pointer event manually, as MockInteractions doesn't include
     // this.
-    plugin.dispatchEvent(new PointerEvent('pointerdown', {bubbles: true}));
+    plugin.dispatchEvent(
+        new PointerEvent('pointerdown', {bubbles: true, composed: true}));
     chrome.test.assertFalse(
         dropdown.dropdownOpen, 'Clicking plugin closes dropdown');
 
     dropdown.$.button.click();
     chrome.test.assertTrue(dropdown.dropdownOpen);
-    pressAndReleaseKeyOn(document, ESC_KEY);
+    pressAndReleaseKeyOn(document, ESC_KEY, '', 'Escape');
     chrome.test.assertFalse(
         dropdown.dropdownOpen, 'Escape key closes dropdown');
     chrome.test.assertTrue(
         toolbar.opened, 'First escape key does not close toolbar');
 
-    pressAndReleaseKeyOn(document, ESC_KEY);
+    pressAndReleaseKeyOn(document, ESC_KEY, '', 'Escape');
     chrome.test.assertFalse(toolbar.opened, 'Second escape key closes toolbar');
 
     chrome.test.succeed();

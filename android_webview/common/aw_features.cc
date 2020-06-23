@@ -41,6 +41,10 @@ const base::Feature kWebViewExtraHeadersSameOriginOnly{
 const base::Feature kWebViewSniffMimeType{"WebViewSniffMimeType",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// A Feature used for WebView variations tests. Not used in production.
+const base::Feature kWebViewTestFeature{"WebViewTestFeature",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable raster in wide color gamut for apps that use webview in a wide color
 // gamut activity.
 const base::Feature kWebViewWideColorGamutSupport{

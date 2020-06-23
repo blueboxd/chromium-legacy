@@ -270,7 +270,13 @@ TEST_F(ScrollAnimatorSimTest, TestRootFrameBothViewportsUserScrollCallBack) {
 
 // Test that the callback of user scroll will be executed when the animation
 // finishes at ScrollAnimator::TickAnimation for div user scroll.
-TEST_F(ScrollAnimatorSimTest, TestDivUserScrollCallBack) {
+#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+// Flaky under sanitizers, see http://crbug.com/1092550
+#define MAYBE_TestDivUserScrollCallBack DISABLED_TestDivUserScrollCallBack
+#else
+#define MAYBE_TestDivUserScrollCallBack TestDivUserScrollCallBack
+#endif
+TEST_F(ScrollAnimatorSimTest, MAYBE_TestDivUserScrollCallBack) {
   GetDocument().GetSettings()->SetScrollAnimatorEnabled(true);
   WebView().MainFrameWidget()->Resize(WebSize(800, 500));
   SimRequest request("https://example.com/test.html", "text/html");

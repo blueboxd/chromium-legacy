@@ -760,7 +760,7 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._use_webview_provider = args.use_webview_provider
 
   def _initializeSkiaGoldAttributes(self, args):
-    self._skia_gold_properties = gold_utils.SkiaGoldProperties(args)
+    self._skia_gold_properties = gold_utils.AndroidSkiaGoldProperties(args)
 
   @property
   def additional_apks(self):

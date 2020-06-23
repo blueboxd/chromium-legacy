@@ -149,6 +149,7 @@ group("closure_compile_module") {
     "controls:closure_compile_module",
     "downloads_page:closure_compile_module",
     "languages_page:closure_compile_module",
+    "nearby_share_page:closure_compile_module",
     "on_startup_page:closure_compile_module",
     "people_page:closure_compile_module",
     "prefs:closure_compile_module",

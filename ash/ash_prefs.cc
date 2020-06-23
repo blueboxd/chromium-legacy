@@ -13,6 +13,7 @@
 #include "ash/display/privacy_screen_controller.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/login/login_screen_controller.h"
+#include "ash/login/ui/login_expanded_public_account_view.h"
 #include "ash/magnifier/docked_magnifier_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -83,6 +84,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   DetachableBaseHandler::RegisterPrefs(registry);
   PowerPrefs::RegisterLocalStatePrefs(registry);
   DisplayPrefs::RegisterLocalStatePrefs(registry);
+  LoginExpandedPublicAccountView::RegisterLocalStatePrefs(registry);
   TopShortcutsView::RegisterLocalStatePrefs(registry);
 }
 

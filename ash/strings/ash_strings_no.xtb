@@ -52,7 +52,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1479909375538722835">Flytende tilgjengelighetsmeny</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">På</translation>
 <translation id="1516740043221086139">Ikke forstyrr er på.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Vis innstillinger for varsler. Varsler er slått av for en app}other{Vis innstillinger for varsler. Varsler er slått av for # apper}}</translation>
 <translation id="1525508553941733066">AVVIS</translation>
@@ -79,7 +78,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1836215606488044471">Assistent (laster inn …)</translation>
 <translation id="1838895407229022812">Nattlys er av.</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
-<translation id="1859889070386344428">Av</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Lås opp med fingeravtrykk</translation>
@@ -138,7 +136,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="2484513351006226581">Trykk på <ph name="KEYBOARD_SHORTCUT" /> for å bytte tastaturoppsett.</translation>
 <translation id="2501920221385095727">Trege taster</translation>
 <translation id="2509468283778169019">Caps Lock er på</translation>
-<translation id="2519465031217098801">På</translation>
 <translation id="2542089167727451762">Trykk på profilbildet ditt</translation>
 <translation id="255671100581129685">Google-assistenten er ikke tilgjengelig i offentlige økter.</translation>
 <translation id="256712445991462162">den dokkede lupen</translation>
@@ -261,7 +258,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3943857333388298514">Lim inn</translation>
 <translation id="394485226368336402">Lydinnstillinger</translation>
 <translation id="3962859241508114581">Forrige spor</translation>
-<translation id="3965097803111112935">Av</translation>
 <translation id="397105322502079400">Beregner …</translation>
 <translation id="3977512764614765090">Batteriet er <ph name="PERCENTAGE" /> % fullt og lades.</translation>
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
@@ -354,7 +350,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5207949376430453814">Fremhev tekstinnsettingspunktet</translation>
 <translation id="5222676887888702881">Logg av</translation>
 <translation id="523505283826916779">Tilgjengelighetsinnstillinger</translation>
-<translation id="5250225880026334010">Av</translation>
 <translation id="5260676007519551770">Skrivebord 4</translation>
 <translation id="5283198616748585639">Legg til 1 min</translation>
 <translation id="528468243742722775">Avslutt</translation>
@@ -473,7 +468,6 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6650933572246256093">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Skriv inn denne tilgangskoden på den aktuelle enheten: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Passord</translation>
 <translation id="6665545700722362599">gi nettsteder, apper og utvidelser tillatelse til å bruke posisjonstjenester, enhetens mikrofon, kamera eller andre funksjoner</translation>
-<translation id="6669268301501499730">På</translation>
 <translation id="6670153871843998651">Skrivebord 3</translation>
 <translation id="6691659475504239918">Søk + Shift + H</translation>
 <translation id="6692996468359469499">Få informasjon tilknyttet det du har merket</translation>

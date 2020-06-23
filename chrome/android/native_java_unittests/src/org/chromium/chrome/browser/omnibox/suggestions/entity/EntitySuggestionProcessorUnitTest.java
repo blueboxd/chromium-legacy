@@ -129,7 +129,7 @@ public class EntitySuggestionProcessorUnitTest {
 
     ImageFetcher.Params createParams(String url) {
         int size = ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_entity_icon_size);
+                R.dimen.omnibox_suggestion_decoration_image_size);
         return ImageFetcher.Params.create(
                 url, ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME, size, size);
     }

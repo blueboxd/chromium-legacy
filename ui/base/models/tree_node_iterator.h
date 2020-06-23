@@ -6,8 +6,8 @@
 #define UI_BASE_MODELS_TREE_NODE_ITERATOR_H_
 
 #include "base/callback.h"
+#include "base/check.h"
 #include "base/containers/stack.h"
-#include "base/logging.h"
 #include "base/macros.h"
 
 namespace ui {

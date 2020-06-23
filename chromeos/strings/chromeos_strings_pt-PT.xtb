@@ -35,6 +35,7 @@
 <translation id="4003384961948020559">Falha – Saída cheia</translation>
 <translation id="4034824040120875894">Impressora</translation>
 <translation id="4227825898293920515">A palavra-passe expira daqui a <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Nenhuma tarefa de impressão em curso.</translation>
 <translation id="428217921675623177">As tarefas de impressão com mais de 90 dias serão removidas.</translation>
 <translation id="4429881212383817840">A permissão Kerberos expira em breve</translation>
 <translation id="445059817448385655">Palavra-passe antiga</translation>
@@ -61,6 +62,7 @@ Experimente tocar no microfone para me perguntar o que quiser.</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Esta definição é gerida pelo seu administrador.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7690294790491645610">Confirmar a nova palavra-passe</translation>
 <translation id="7805768142964895445">Estado</translation>

@@ -14291,14 +14291,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobileSingleScreenScreenshot">
-  <owner>jmentasti@google.com</owner>
-  <owner>seblalancette@chromium.org</owner>
-  <description>
-    The user took a screenshot of a single chrome window. iOS Only.
-  </description>
-</action>
-
 <action name="MobileStackViewCloseTab">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

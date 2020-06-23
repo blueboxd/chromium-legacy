@@ -19,8 +19,7 @@ import sys
 import threading
 import uuid
 
-from symbolizer import RunSymbolizer
-from symbolizer import SymbolizerFilter
+from symbolizer import BuildIdsPaths, RunSymbolizer, SymbolizerFilter
 
 FAR = common.GetHostToolPathFromPlatform('far')
 
@@ -35,15 +34,6 @@ def _AttachKernelLogReader(target):
   return target.RunCommandPiped(['dlog', '-f'], stdin=open(os.devnull, 'r'),
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT)
-
-
-def _BuildIdsPaths(package_paths):
-  """Generate build ids paths for symbolizer processes."""
-  build_ids_paths = map(
-      lambda package_path: os.path.join(
-          os.path.dirname(package_path), 'ids.txt'),
-      package_paths)
-  return build_ids_paths
 
 
 class SystemLogReader(object):
@@ -77,7 +67,7 @@ class SystemLogReader(object):
     self._system_log = open(system_log_file,'w', buffering=1)
     self._symbolizer_proc = RunSymbolizer(self._listener_proc.stdout,
                                           self._system_log,
-                                          _BuildIdsPaths(package_paths))
+                                          BuildIdsPaths(package_paths))
 
 
 class MergedInputStream(object):
@@ -239,7 +229,7 @@ def RunPackage(output_dir, target, package_paths, package_name,
 
       # Run the log data through the symbolizer process.
       output_stream = SymbolizerFilter(output_stream,
-                                       _BuildIdsPaths(package_paths))
+                                       BuildIdsPaths(package_paths))
 
       for next_line in output_stream:
         print(next_line.rstrip())

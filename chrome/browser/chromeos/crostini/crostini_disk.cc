@@ -13,6 +13,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
 #include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
@@ -51,6 +52,11 @@ void GetDiskInfo(OnceDiskInfoCallback callback,
                  Profile* profile,
                  std::string vm_name,
                  bool full_info) {
+  if (!CrostiniFeatures::Get()->IsEnabled(profile)) {
+    std::move(callback).Run(nullptr);
+    VLOG(1) << "Crostini not enabled. Nothing to do.";
+    return;
+  }
   if (full_info) {
     base::ThreadPool::PostTaskAndReplyWithResult(
         FROM_HERE, {base::MayBlock()},
@@ -65,9 +71,20 @@ void GetDiskInfo(OnceDiskInfoCallback callback,
     // error conditions in |OnCrostiniSufficientlyRunning|.
     constexpr int64_t kFakeAvailableDiskBytes =
         kDiskHeadroomBytes + kRecommendedDiskSizeBytes;
-    CrostiniManager::GetForProfile(profile)->EnsureConciergeRunning(
-        base::BindOnce(&OnCrostiniSufficientlyRunning, std::move(callback),
-                       profile, std::move(vm_name), kFakeAvailableDiskBytes));
+
+    CrostiniManager::GetForProfile(profile)->StartConcierge(base::BindOnce(
+        [](OnceDiskInfoCallback callback, Profile* profile, std::string vm_name,
+           bool success) {
+          if (!success) {
+            LOG(ERROR) << "Failed to start concierge";
+            std::move(callback).Run(nullptr);
+            return;
+          }
+          OnCrostiniSufficientlyRunning(
+              std::move(callback), profile, std::move(vm_name),
+              kFakeAvailableDiskBytes, CrostiniResult::SUCCESS);
+        },
+        std::move(callback), profile, std::move(vm_name)));
   }
 }
 
@@ -94,8 +111,7 @@ void OnCrostiniSufficientlyRunning(OnceDiskInfoCallback callback,
                                    int64_t free_space,
                                    CrostiniResult result) {
   if (result != CrostiniResult::SUCCESS) {
-    LOG(ERROR) << "Failed to start concierge or start VM: error "
-               << static_cast<int>(result);
+    LOG(ERROR) << "Start VM: error " << static_cast<int>(result);
     std::move(callback).Run(nullptr);
   } else {
     vm_tools::concierge::ListVmDisksRequest request;

@@ -3,6 +3,7 @@
 <translationbundle lang="tr">
 <translation id="1018656279737460067">İptal Edildi</translation>
 <translation id="1195447618553298278">Bilinmeyen hata.</translation>
+<translation id="1413240736185167732">İşlem başarısız - Filtre başarısız</translation>
 <translation id="1468664791493211953">Teklifler</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı yönetiyor ve etkinliklerinizi izleyebilir.</translation>
 <translation id="150962533380566081">Geçersiz PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Bu cihaz kuruluş tarafından yönetiliyor</translation>
 <translation id="1905710495812624430">İzin verilen maksimum deneme sayısı aşıldı.</translation>
 <translation id="1930797645656624981">Chrome OS Giriş Yöntemi Hizmeti</translation>
+<translation id="1947737735496445907">Yazdırıldı</translation>
 <translation id="1979103255016296513">Şifre değişikliği zamanı geçti</translation>
 <translation id="2049639323467105390">Bu cihaz <ph name="DOMAIN" /> tarafından yönetiliyor.</translation>
 <translation id="2338501278241028356">Yakındaki cihazları keşfetmek için Bluetooth'u aç</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Uygulamalar</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="3008341117444806826">YENİLE</translation>
+<translation id="3091839911843451378">İşlem başarısız - Durdu</translation>
+<translation id="3268178239013324452">İşlem başarısız - Kapak açık</translation>
 <translation id="3369013195428705271">Tüm yazdırma geçmişini temizlemek istediğinizden emin misiniz? Devam eden yazdırma işleriniz silinmez.</translation>
+<translation id="3456078764689556234">Yazdırılan sayfa: <ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Yazdırma İşleri</translation>
+<translation id="3527036260304016759">İşlem başarısız - Bilinmeyen hata</translation>
 <translation id="3749289110408117711">Dosya adı</translation>
 <translation id="38114475217616659">Tüm geçmişi temizle</translation>
 <translation id="3820172043799983114">Geçersiz PIN.</translation>
 <translation id="3838338534323494292">Yeni şifre</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> bu cihazı yönetiyor ve ziyaret edilen web siteleri, şifreler ve e-postalar dahil olmak üzere tüm kullanıcı etkinliklerine erişimi var.</translation>
+<translation id="4003384961948020559">İşlem başarısız - Çıkış dolu</translation>
 <translation id="4034824040120875894">Yazıcı</translation>
 <translation id="4227825898293920515">Şifrenin süresi <ph name="TIME" /> içinde doluyor</translation>
+<translation id="428217921675623177">90 günden eski yazdırma işleri silinir</translation>
 <translation id="4429881212383817840">Kerberos biletinin süresi yakında doluyor</translation>
 <translation id="445059817448385655">Eski şifre</translation>
 <translation id="467510802200863975">Şifreler eşleşmiyor</translation>
@@ -37,24 +46,31 @@
 Bana bir şey sormak için mikrofona dokunmayı deneyin.</translation>
 <translation id="5222676887888702881">Çıkış</translation>
 <translation id="5317780077021120954">Kaydet</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Yeni bir tane seçin</translation>
 <translation id="5457599981699367932">Misafir olarak Göz At</translation>
 <translation id="54609108002486618">Yönetilen</translation>
 <translation id="5832805196449965646">Kişi Ekle</translation>
 <translation id="5895138241574237353">Yeniden başlat</translation>
+<translation id="6048107060512778456">İşlem başarısız - Kağıt sıkışması</translation>
 <translation id="6058625436358447366">Bitirmek için eski ve yeni şifrenizi girin</translation>
 <translation id="6106186594183574873">Bitirmek için eski şifrenizi girin</translation>
 <translation id="6146993107019042706">Bitirmek için yeni şifrenizi girin</translation>
 <translation id="6517239166834772319">Keşfet</translation>
+<translation id="6564646048574748301">İşlem başarısız - Yazıcıya ulaşılamıyor</translation>
 <translation id="6643016212128521049">Temizle</translation>
 <translation id="7162487448488904999">Galeri</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">İptal</translation>
 <translation id="7690294790491645610">Yeni şifreyi doğrula</translation>
 <translation id="7805768142964895445">Durum</translation>
 <translation id="808894953321890993">Şifreyi değiştir</translation>
 <translation id="8208861521865154048">Avantajlar</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" />, bu kullanıcıyı yönetiyor. Ayarları uzaktan yönetebilir ve kullanıcı etkinliğini izleyebilir.</translation>
+<translation id="871560550817059752">İşlem başarısız - Mürekkep yok</translation>
 <translation id="8747900814994928677">Değişikliği onaylayın</translation>
+<translation id="8919837981463578619">İşlem başarısız - Tepsi yok</translation>
+<translation id="8928727111548978589">İşlem başarısız - Kağıt yok</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> deneme hakkınız kaldı</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> için bileti yenileyin</translation>
 <translation id="9111102763498581341">Kilidi Aç</translation>

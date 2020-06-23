@@ -3,6 +3,7 @@
 <translationbundle lang="uk">
 <translation id="1018656279737460067">Скасовано</translation>
 <translation id="1195447618553298278">Невідома помилка.</translation>
+<translation id="1413240736185167732">Не надруковано – помилка фільтра</translation>
 <translation id="1468664791493211953">Пропозиції</translation>
 <translation id="1482734542997480527">Сайт <ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і може відстежувати ваші дії.</translation>
 <translation id="150962533380566081">Недійсний PUK-код.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Цим пристроєм керує адміністратор підприємства</translation>
 <translation id="1905710495812624430">Перевищено максимальну кількість дозволених спроб.</translation>
 <translation id="1930797645656624981">Сервіс методів введення в ОС Chrome</translation>
+<translation id="1947737735496445907">Надруковано</translation>
 <translation id="1979103255016296513">Час для зміни пароля минув</translation>
 <translation id="2049639323467105390">Цим пристроєм керує домен <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Щоб знайти пристрої поблизу, увімкніть Bluetooth</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2872961005593481000">Завершити роботу</translation>
 <translation id="3008341117444806826">ОНОВИТИ</translation>
+<translation id="3091839911843451378">Не надруковано – друк зупинено</translation>
+<translation id="3268178239013324452">Не надруковано – відкрито кришку принтера</translation>
 <translation id="3369013195428705271">Видалити всю історію друку? Поточні завдання друку збережуться.</translation>
+<translation id="3456078764689556234">Надруковано сторінку <ph name="PRINTED_PAGES" /> з <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Завдання друку</translation>
+<translation id="3527036260304016759">Не надруковано – невідома помилка</translation>
 <translation id="3749289110408117711">Ім’я файлу</translation>
 <translation id="38114475217616659">Очистити всю історію</translation>
 <translation id="3820172043799983114">Недійсний PIN-код.</translation>
 <translation id="3838338534323494292">Новий пароль</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> з <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> керує цим пристроєм і має доступ до всіх дій користувача, зокрема відвіданих сторінок, паролів і електронних листів.</translation>
+<translation id="4003384961948020559">Не надруковано – вихідний лоток заповнений</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Термін дії пароля закінчиться через <ph name="TIME" /></translation>
+<translation id="428217921675623177">Завдання друку, старіші за 90 днів, буде видалено</translation>
 <translation id="4429881212383817840">Термін дії квитка Kerberos незабаром минає</translation>
 <translation id="445059817448385655">Старий пароль</translation>
 <translation id="467510802200863975">Паролі не збігаються</translation>
@@ -37,24 +46,31 @@
 Торкніться значка мікрофона, щоб поставити запитання.</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="5317780077021120954">Зберегти</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Виберіть новий зараз</translation>
 <translation id="5457599981699367932">Переглядати в режимі гостя</translation>
 <translation id="54609108002486618">Керований</translation>
 <translation id="5832805196449965646">Додати користувача</translation>
 <translation id="5895138241574237353">Перезапустити</translation>
+<translation id="6048107060512778456">Не надруковано – зам'яло папір</translation>
 <translation id="6058625436358447366">Щоб завершити, введіть старий і новий паролі</translation>
 <translation id="6106186594183574873">Щоб завершити, введіть старий пароль</translation>
 <translation id="6146993107019042706">Щоб завершити, введіть новий пароль</translation>
 <translation id="6517239166834772319">Огляд</translation>
+<translation id="6564646048574748301">Не надруковано – принтер недоступний</translation>
 <translation id="6643016212128521049">Очистити</translation>
 <translation id="7162487448488904999">Галерея</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="7690294790491645610">Підтвердьте новий пароль</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="808894953321890993">Змінити пароль</translation>
 <translation id="8208861521865154048">Бонуси</translation>
 <translation id="8701136875688985581">Домен <ph name="ENROLLMENT_DOMAIN" /> керує цим користувачем. Він може віддалено змінювати налаштування й відстежувати дії користувача.</translation>
+<translation id="871560550817059752">Не надруковано – закінчилося чорнило</translation>
 <translation id="8747900814994928677">Підтвердити зміни</translation>
+<translation id="8919837981463578619">Не надруковано – немає лотка</translation>
+<translation id="8928727111548978589">Не надруковано – закінчився папір</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Залишилося спроб: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Оновити квиток для користувача <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Розблокувати</translation>

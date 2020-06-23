@@ -187,6 +187,21 @@ const base::Feature kCorbAllowlistAlsoAppliesToOorCors = {
 const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
     "AllowlistForCorbAndCors";
 
+// Controls whether a |request_initiator| that mismatches
+// |request_initiator_site_lock| leads to 1) failing the HTTP request and 2)
+// calling mojo::ReportBadMessage (on desktop platforms, where NetworkService
+// is hosted outside of the Browser process, this leads to DumpWithoutCrashing
+// and does *not* lead to a renderer kill).
+//
+// See also https://crbug.com/920634
+const base::Feature kRequestInitiatorSiteLockEnfocement = {
+    "RequestInitiatorSiteLockEnfocement",
+#if defined(OS_ANDROID)
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+    base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
+
 // The preflight parser should reject Access-Control-Allow-* headers which do
 // not conform to ABNF. But if the strict check is applied directly, some
 // existing sites might fail to load. The feature flag controls whether a strict

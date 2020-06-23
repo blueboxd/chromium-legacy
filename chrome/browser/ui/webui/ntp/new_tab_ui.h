@@ -62,10 +62,8 @@ class NewTabUI : public content::WebUIController {
         content::URLDataSource::GotDataCallback callback) override;
     std::string GetMimeType(const std::string&) override;
     bool ShouldReplaceExistingSource() override;
-    std::string GetContentSecurityPolicyScriptSrc() override;
-    std::string GetContentSecurityPolicyStyleSrc() override;
-    std::string GetContentSecurityPolicyImgSrc() override;
-    std::string GetContentSecurityPolicyChildSrc() override;
+    std::string GetContentSecurityPolicy(
+        network::mojom::CSPDirectiveName directive) override;
 
    private:
     // Pointer back to the original profile.

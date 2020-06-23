@@ -884,18 +884,15 @@ void StyleEngine::InvalidateStyleAndLayoutForFontUpdates() {
   TRACE_EVENT0("blink", "StyleEngine::InvalidateStyleAndLayoutForFontUpdates");
 
   fonts_need_update_ = false;
-  Element* root = GetDocument().documentElement();
-  if (!root)
-    return;
 
-  {
+  if (Element* root = GetDocument().documentElement()) {
     TRACE_EVENT0("blink", "Node::MarkSubtreeNeedsStyleRecalcForFontUpdates");
     root->MarkSubtreeNeedsStyleRecalcForFontUpdates();
   }
 
-  if (LayoutObject* root_object = root->GetLayoutObject()) {
+  if (LayoutView* layout_view = GetDocument().GetLayoutView()) {
     TRACE_EVENT0("blink", "LayoutObject::InvalidateSubtreeForFontUpdates");
-    root_object->InvalidateSubtreeLayoutForFontUpdates();
+    layout_view->InvalidateSubtreeLayoutForFontUpdates();
   }
 }
 

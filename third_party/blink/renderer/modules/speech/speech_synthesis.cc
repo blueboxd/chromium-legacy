@@ -340,8 +340,13 @@ void SpeechSynthesis::InitializeMojomSynthesis() {
   // mojom_synthesis_ before each use.
   ExecutionContext* context = GetExecutionContext();
 
-  if (!context)
+  if (!context) {
+    // Mimic the LocalDOMWindow::GetTaskRunner code that uses the current
+    // task runner when frames are detached.
+    ignore_result(mojom_synthesis_.BindNewPipeAndPassReceiver(
+        Thread::Current()->GetTaskRunner()));
     return;
+  }
 
   auto receiver = mojom_synthesis_.BindNewPipeAndPassReceiver(
       context->GetTaskRunner(TaskType::kMiscPlatformAPI));

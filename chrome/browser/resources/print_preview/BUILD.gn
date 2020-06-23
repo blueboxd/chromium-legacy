@@ -44,7 +44,7 @@ if (optimize_webui) {
     ]
 
     deps = [
-      "../pdf/elements:web_components",
+      "../pdf:web_components",
       "ui:web_components",
     ]
     defines = chrome_grit_defines

@@ -28,9 +28,6 @@ import {getSelectDropdownBackground} from '../print_preview_utils.js';
 
 import {SelectBehavior} from './select_behavior.js';
 
-export const GREEN_PRINTER_STATUS = 'var(--google-green-700)';
-export const RED_PRINTER_STATUS = 'var(--google-red-600)';
-
 Polymer({
   is: 'print-preview-destination-select-cros',
 
@@ -263,24 +260,24 @@ Polymer({
       return;
     }
 
-    // Regex to escape the forward slashes in destination keys.
-    // TODO(gavinwill): Change from circle styles to real icons.
-    const circle =
-        this.$$('#dropdown').$$(`#${destinationKey.replace(/\//g, '\\/')}`);
-    if (!circle) {
+    const indexFound = this.recentDestinationList.findIndex(destination => {
+      return destination.id === printerStatus.printerId &&
+          destination.origin === DestinationOrigin.CROS;
+    });
+    if (indexFound === -1) {
       return;
     }
 
     const statusReason = this.getStatusReasonFromPrinterStatus_(printerStatus);
-    if (statusReason === PrinterStatusReason.NO_ERROR) {
-      circle.firstChild.style.backgroundColor = GREEN_PRINTER_STATUS;
+    if (!statusReason) {
       return;
     }
 
-    if (statusReason !== PrinterStatusReason.UNKNOWN_REASON) {
-      circle.firstChild.style.backgroundColor = RED_PRINTER_STATUS;
-      return;
-    }
+
+    this.recentDestinationList[indexFound].printerStatusReason = statusReason;
+    // Set the new printer status reason then use notifyPath to trigger the
+    // dropdown printer status icons to recalculate their badge color.
+    this.notifyPath(`recentDestinationList.${indexFound}.printerStatusReason`);
   },
 
   /**

@@ -91,6 +91,10 @@ ASH_PUBLIC_EXPORT extern const char kShownPaletteWelcomeBubble[];
 ASH_PUBLIC_EXPORT extern const char kEnableStylusTools[];
 ASH_PUBLIC_EXPORT extern const char kLaunchPaletteOnEjectEvent[];
 
+// Managed-guest session privacy warning.
+ASH_PUBLIC_EXPORT extern const char
+    kManagedGuestSessionPrivacyWarningsEnabled[];
+
 // Lock screen notification settings.
 ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenMode[];
 ASH_PUBLIC_EXPORT extern const char kMessageCenterLockScreenModeShow[];

@@ -141,6 +141,9 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   uint64_t ExperimentalLargestImagePaintSize() const;
   uint64_t ExperimentalLargestTextPaint() const;
   uint64_t ExperimentalLargestTextPaintSize() const;
+  // The time at which the frame is first eligible for painting due to not
+  // being throttled. A zero value indicates throttling.
+  uint64_t FirstEligibleToPaint() const;
   // The time at which we are notified of the first input or scroll event which
   // causes the largest contentful paint algorithm to stop.
   uint64_t FirstInputOrScrollNotifiedTimestamp() const;

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen.h"
 #include "ash/public/cpp/notification_utils.h"
 #include "base/barrier_closure.h"
@@ -1146,8 +1147,13 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
             ->browser_policy_connector_chromeos()
             ->GetDeviceLocalAccountPolicyService()
             ->GetBrokerForUser(user_id);
-    if (ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker))
+    bool privacy_warnings_enabled =
+        g_browser_process->local_state()->GetBoolean(
+            ash::prefs::kManagedGuestSessionPrivacyWarningsEnabled);
+    if (ChromeUserManager::Get()->IsFullManagementDisclosureNeeded(broker) &&
+        privacy_warnings_enabled) {
       ShowAutoLaunchManagedGuestSessionNotification();
+    }
   }
   if (is_enterprise_managed) {
     enterprise_user_session_metrics::RecordSignInEvent(

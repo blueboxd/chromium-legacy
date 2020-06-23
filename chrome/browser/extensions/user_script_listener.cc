@@ -16,7 +16,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/shared_user_script_master.h"
+#include "extensions/browser/shared_user_script_manager.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/url_pattern.h"
@@ -203,11 +203,11 @@ void UserScriptListener::Observe(int type,
       DCHECK(!extension_registry_observer_.IsObserving(registry));
       extension_registry_observer_.Add(registry);
 
-      SharedUserScriptMaster* user_script_master =
-          ExtensionSystem::Get(profile)->shared_user_script_master();
-      // Note: |user_script_master| can be null in some tests.
-      if (user_script_master) {
-        UserScriptLoader* loader = user_script_master->script_loader();
+      SharedUserScriptManager* user_script_manager =
+          ExtensionSystem::Get(profile)->shared_user_script_manager();
+      // Note: |user_script_manager| can be null in some tests.
+      if (user_script_manager) {
+        UserScriptLoader* loader = user_script_manager->script_loader();
         DCHECK(!user_script_loader_observer_.IsObserving(loader));
         user_script_loader_observer_.Add(loader);
       }

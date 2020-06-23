@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/android/callback_android.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "weblayer/browser/tab_impl.h"
 
@@ -46,6 +47,12 @@ static void JNI_TestWebLayerImpl_WaitForBrowserControlsMetadataState(
       tab->web_contents());
   CheckMetadata(std::move(observer), top_height, bottom_height,
                 ScopedJavaGlobalRef<jobject>(runnable));
+}
+
+static void JNI_TestWebLayerImpl_SetIgnoreMissingKeyForTranslateManager(
+    JNIEnv* env,
+    jboolean ignore) {
+  translate::TranslateManager::SetIgnoreMissingKeyForTesting(ignore);
 }
 
 }  // namespace weblayer

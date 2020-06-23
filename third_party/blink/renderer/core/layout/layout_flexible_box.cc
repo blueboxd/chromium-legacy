@@ -656,7 +656,7 @@ LayoutUnit LayoutFlexibleBox::ComputeMainAxisExtentForChild(
   // our logical width is auto, we can just use our cached value. So let's do
   // that here. (Compare code in LayoutBlock::computePreferredLogicalWidths)
   if (child.StyleRef().LogicalWidth().IsAuto() && !HasAspectRatio(child)) {
-    if (size.IsMinContent())
+    if (size.IsMinContent() || size.IsMinIntrinsic())
       return child.PreferredLogicalWidths().min_size - border_and_padding;
     if (size.IsMaxContent())
       return child.PreferredLogicalWidths().max_size - border_and_padding;

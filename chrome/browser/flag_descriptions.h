@@ -655,6 +655,9 @@ extern const char kGlobalMediaControlsForCastDescription[];
 extern const char kGlobalMediaControlsPictureInPictureName[];
 extern const char kGlobalMediaControlsPictureInPictureDescription[];
 
+extern const char kGlobalMediaControlsSeamlessTransferName[];
+extern const char kGlobalMediaControlsSeamlessTransferDescription[];
+
 extern const char kGpuRasterizationName[];
 extern const char kGpuRasterizationDescription[];
 
@@ -865,9 +868,6 @@ extern const char kOmniboxUIHideSteadyStateUrlSchemeDescription[];
 
 extern const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsName[];
 extern const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[];
-
-extern const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefName[];
-extern const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[];
 
 extern const char kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverName[];
 extern const char

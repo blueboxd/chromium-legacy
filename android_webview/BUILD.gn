@@ -288,15 +288,21 @@ if (android_64bit_target_cpu) {
 }
 
 # The shared library used by standalone WebView.
-shared_library("libwebviewchromium") {
-  deps = [
-    "//android_webview/lib",
-    "//android_webview/lib:webview_entry_point",
-    "//android_webview/nonembedded",
-    "//third_party/blink/public:blink",
-  ]
-  configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
-  configs += [ "//build/config/android:hide_all_but_jni" ]
+template("libwebviewchromium_tmpl") {
+  shared_library(target_name) {
+    forward_variables_from(invoker, "*")
+    deps = [
+      "//android_webview/lib",
+      "//android_webview/lib:webview_entry_point",
+      "//android_webview/nonembedded",
+      "//third_party/blink/public:blink",
+    ]
+    configs -= [ "//build/config/android:hide_all_but_jni_onload" ]
+    configs += [ "//build/config/android:hide_all_but_jni" ]
+  }
+}
+
+libwebviewchromium_tmpl("libwebviewchromium") {
 }
 
 # This template is used to define WebView's alternate-ABI libraries, which are
@@ -402,13 +408,13 @@ generate_jni("browser_jni_headers") {
     "java/src/org/chromium/android_webview/AwRenderProcess.java",
     "java/src/org/chromium/android_webview/AwSettings.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
-    "java/src/org/chromium/android_webview/AwVariationsSeedBridge.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
     "java/src/org/chromium/android_webview/AwWebResourceInterceptResponse.java",
     "java/src/org/chromium/android_webview/AwWebResourceResponse.java",
     "java/src/org/chromium/android_webview/InputStreamUtil.java",
     "java/src/org/chromium/android_webview/JsReplyProxy.java",
     "java/src/org/chromium/android_webview/PopupTouchHandleDrawable.java",
+    "java/src/org/chromium/android_webview/VariationsSeedLoader.java",
     "java/src/org/chromium/android_webview/WebMessageListenerHolder.java",
     "java/src/org/chromium/android_webview/WebMessageListenerInfo.java",
     "java/src/org/chromium/android_webview/gfx/AwDrawFnImpl.java",
@@ -470,7 +476,6 @@ android_library("browser_java") {
     "java/src/org/chromium/android_webview/AwSupportLibIsomorphic.java",
     "java/src/org/chromium/android_webview/AwThreadUtils.java",
     "java/src/org/chromium/android_webview/AwTracingController.java",
-    "java/src/org/chromium/android_webview/AwVariationsSeedBridge.java",
     "java/src/org/chromium/android_webview/AwViewAndroidDelegate.java",
     "java/src/org/chromium/android_webview/AwViewMethods.java",
     "java/src/org/chromium/android_webview/AwWebContentsDelegate.java",
@@ -680,10 +685,12 @@ android_library("android_webview_product_config_java") {
 }
 
 if (enable_resource_whitelist_generation) {
+  libwebviewchromium_tmpl("system_webview_pak_whitelist_inputs") {
+    ldflags = [ "--collect-inputs-only" ]
+  }
   generate_resource_whitelist("system_webview_pak_whitelist") {
-    deps = [ ":libwebviewchromium" ]
-    inputs =
-        [ "$root_out_dir/lib.unstripped/libwebviewchromium$shlib_extension" ]
+    deps = [ ":system_webview_pak_whitelist_inputs" ]
+    inputs = [ "$root_out_dir/lib.unstripped/libsystem_webview_pak_whitelist_inputs$shlib_extension" ]
     output = system_webview_pak_whitelist
   }
 }

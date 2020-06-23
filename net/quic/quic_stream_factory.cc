@@ -2011,8 +2011,6 @@ void QuicStreamFactory::InitializeCachedStateInCryptoConfig(
     quic::QuicConnectionId* connection_id) {
   quic::QuicCryptoClientConfig::CachedState* cached =
       crypto_config_handle.GetConfig()->LookupOrCreate(server_id);
-  if (cached->has_server_designated_connection_id())
-    *connection_id = cached->GetNextServerDesignatedConnectionId();
 
   if (!cached->IsEmpty()) {
     return;

@@ -20,8 +20,8 @@ html:not(body) {
   {{var_name | to_var_name}}: {{css_color_from_rgb_var(var_name, color.a)}};
 {%  endfor %}
 }
+{%- if dark_colors %}
 
-{% if dark_colors -%}
 @media (prefers-color-scheme: dark) {
 {#-
 The :not(body) adds extra selector specificity so that these colors 'win'

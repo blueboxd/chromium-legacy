@@ -369,15 +369,21 @@ base::Optional<LayoutUnit> ComputeAbsoluteDialogYPosition(
     return base::nullopt;
   }
 
-  auto* scrollable_area = dialog.GetDocument().View()->LayoutViewport();
+  auto& document = dialog.GetDocument();
+  auto* scrollable_area = document.View()->LayoutViewport();
   LayoutUnit top =
       LayoutUnit((dialog.Style()->GetPosition() == EPosition::kFixed)
                      ? 0
                      : scrollable_area->ScrollOffsetInt().Height());
 
-  int visible_height = dialog.GetDocument().View()->Height();
+  if (top)
+    UseCounter::Count(document, WebFeature::kDialogWithNonZeroScrollOffset);
+
+  int visible_height = document.View()->Height();
   if (height < visible_height)
     top += (visible_height - height) / 2;
+  else if (height > visible_height)
+    UseCounter::Count(document, WebFeature::kDialogHeightLargerThanViewport);
   dialog_node->SetCentered(top);
   return top;
 }

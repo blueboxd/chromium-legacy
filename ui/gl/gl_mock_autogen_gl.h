@@ -995,6 +995,7 @@ MOCK_METHOD4(
     void(GLenum identifier, GLuint name, GLsizei length, const char* label));
 MOCK_METHOD3(ObjectPtrLabel,
              void(void* ptr, GLsizei length, const char* label));
+MOCK_METHOD2(PatchParameteri, void(GLenum pname, GLint value));
 MOCK_METHOD6(PathCommandsNV,
              void(GLuint path,
                   GLsizei numCommands,

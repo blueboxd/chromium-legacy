@@ -14,7 +14,7 @@ import "third_party/blink/public/mojom/fetch/fetch_api_request.mojom";
 enum InspectorIssueCode {
   kSameSiteCookieIssue,
   kMixedContentIssue,
-  kBlockedByResponseIssue
+  kBlockedByResponseIssue,
 };
 
 // Information about a cookie that is affected by an issue.
@@ -37,6 +37,17 @@ struct BlockedByResponseIssueDetails {
   AffectedRequest request;
   AffectedFrame? frame;
   network.mojom.BlockedByResponseReason reason;
+};
+
+enum HeavyAdResolutionStatus {
+  kHeavyAdBlocked,
+  kHeavyAdWarning,
+};
+
+enum HeavyAdReason {
+  kNetworkTotalLimit,
+  kCpuTotalLimit,
+  kCpuPeakLimit,
 };
 
 enum MixedContentResolutionStatus {

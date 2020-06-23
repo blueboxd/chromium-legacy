@@ -44,6 +44,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Creates a close button used in the corner of the dialog.
   static std::unique_ptr<Button> CreateCloseButton(ButtonListener* listener);
 
+  // Creates a minimize button used in the corner of the dialog.
+  static std::unique_ptr<Button> CreateMinimizeButton(ButtonListener* listener);
+
   // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(
@@ -176,7 +179,10 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, RemoveFootnoteView);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithIcon);
   FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, LayoutWithProgressIndicator);
-  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest, IgnorePossiblyUnintendedClicks);
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest,
+                           IgnorePossiblyUnintendedClicksClose);
+  FRIEND_TEST_ALL_PREFIXES(BubbleFrameViewTest,
+                           IgnorePossiblyUnintendedClicksMinimize);
   FRIEND_TEST_ALL_PREFIXES(BubbleDelegateTest, CloseReasons);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CloseMethods);
   FRIEND_TEST_ALL_PREFIXES(BubbleDialogDelegateViewTest, CreateDelegate);
@@ -242,6 +248,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
 
   // The optional close button (the X).
   Button* close_ = nullptr;
+
+  // The optional minimize button.
+  Button* minimize_ = nullptr;
 
   // The optional progress bar. Used to indicate bubble pending state. By
   // default it is invisible.

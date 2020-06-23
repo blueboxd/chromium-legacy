@@ -1247,7 +1247,6 @@
 <translation id="6240447795304464094">Google Pay loqosu</translation>
 <translation id="6241121617266208201">Təklifləri gizlədin</translation>
 <translation id="624499991300733384">Çap məhsullarının tərtibi xidməti</translation>
-<translation id="6251924700383757765">Məxfilik siyasəti</translation>
 <translation id="6254436959401408446">Bu səhifəni açmaq üçün kifayət qədər yaddaş yoxdur</translation>
 <translation id="625755898061068298">Bu sayt üçün təhlükəsizlik xəbərdarlığını deaktiv etməyi seçmişik.</translation>
 <translation id="6259156558325130047">&amp;Təkrar sıralamanı yenidən edin</translation>
@@ -1534,6 +1533,7 @@
 <translation id="7485870689360869515">Heç bir data tapılmadı.</translation>
 <translation id="7488762544858401571">Redaktə olundu</translation>
 <translation id="7495290002932347110">Sayt və ya tətbiqdə data pozulması parolunuzun açıqlanmasına səbəb oldu. Chrome <ph name="ORIGIN" /> ünvanında yadda saxlanılan parolları yoxlamağı və parolunuzu dəyişməyi tövsiyə edir.</translation>
+<translation id="7495528107193238112">Bu məzmun bloklanıb. Problemi düzəltmək üçün sayt sahibi ilə əlaqə saxlayın.</translation>
 <translation id="7498234416455752244">Düzəlişə davam edin</translation>
 <translation id="7503664977220660814">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> saytlarında və bu paroldan istifadə etdiyiniz digər saytlarda saxlanılmış parollarınızı indi yoxlamağı tövsiyə edir.</translation>
 <translation id="7508255263130623398">Qaytarılmış qaydalar cihaz İD'si boşdur və ya cari cihaz İD'si ilə üst-üstə düşmür</translation>
@@ -1633,7 +1633,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Heç bir tətbiq}=1{1 tətbiq (<ph name="EXAMPLE_APP_1" />)}=2{2 tətbiq (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# tətbiq (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Siz görünməz olmursunuz. Gizli rejim brauzeri şirkətinizdən, internet xidməti provayderi və ya daxil olduğunuz veb saytdan gizlətmir.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />Daxil olduğunuz bəzi səhifələrin keçidlərini, məhdud sistem məlumatlarını və bəzi səhifə məzmununu<ph name="END_WHITEPAPER_LINK" /> Google'a göndərməklə vebdə hər kəs üçün təhlükəsizliyi artırmağa yardım edin. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Saytdan çıxılsın?</translation>
 <translation id="7865448901209910068">Ən yüksək sürət</translation>
 <translation id="7874263914261512992">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> saytlarında və bu paroldan istifadə etdiyiniz digər saytlarda saxlanılmış parollarınızı indi yoxlamağı tövsiyə edir.</translation>

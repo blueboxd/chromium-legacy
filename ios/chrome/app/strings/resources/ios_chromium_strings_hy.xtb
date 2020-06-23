@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Այս պահին Chromium-ը չի կարող օգտագործել ձեր ֆոտոխցիկը</translation>
 <translation id="2195025571279539885">Ուզո՞ւմ եք, որ Chromium-ն այսուհետ առաջարկի թարգմանել այս կայքի <ph name="LANGUAGE_NAME" /> էջերը:</translation>
 <translation id="2590893390871230428">Համաժամացնել Chromium-ի տվյալները</translation>
+<translation id="2650312721222849884">Chromium-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար միացրեք համաժամացումը։</translation>
 <translation id="2730884209570016437">Chromium-ը չի կարող օգտագործել ձեր ֆոտոխցիկը, քանի որ այն օգտագործվում է մեկ այլ հավելվածի կողմից</translation>
 <translation id="2915596697727466327">Chromium-ն օգտագործում է Face ID տեխնոլոգիան՝ ձեր գաղտնաբառերի անվտանգությունն ապահովելու համար։</translation>
 <translation id="3256316712990552818">Պատճենվել է Chromium-ում</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Միացրեք Chromium-ի սկաները</translation>
 <translation id="4787850887676698916">Ձեր մյուս սարքերում Chromium-ով բացված ներդիրները կտեսնեք այստեղ:</translation>
 <translation id="4999538639245140991">Դուք դուրս եք գալիս <ph name="SIGNOUT_MANAGED_DOMAIN" /> տիրույթի ադմինիստրատորի կողմից կառավարվող հաշվից: Նկատի առեք, որ Chromium-ի տվյալները սարքից կհեռացվեն, սակայն կմնան ձեր Google հաշվում:</translation>
+<translation id="5521125884468363740">Chromium-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար մտեք հաշիվ և միացրեք համաժամացումը։</translation>
 <translation id="5573014823074921752">Խորհուրդ Chromium-ից: Հպեք և պահեք գործիքագոտու «Ցուցադրել ներդիրները» կոճակը՝ այլ ընտրանքներ տեսնելու համար: Գործիքագոտին սովորաբար գտնվում է էկրանի վերևի կամ ներքևի հատվածում:</translation>
 <translation id="5777187867430702742">Chromium-ի էջ</translation>
 <translation id="5862307444128926510">Բարի գալուստ Chromium</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Խորհուրդ Chromium-ից: Որոշ կոճակներ (օրինակ՝ Հետ, Առաջ և Որոնել) այժմ ձեր էկրանի ներքևի հատվածում են:</translation>
 <translation id="786327964234957808">Դուք փոխարկում եք համաժամացվող հաշիվները՝ անցնելով <ph name="USER_EMAIL1" /> հաշվից <ph name="USER_EMAIL2" /> հաշվին: Chromium-ի ձեր առկա տվյալները կառավարվում են <ph name="DOMAIN" /> տիրույթի կողմից: Այս սարքում պահված տվյալները կջնջվեն, սակայն կպահպանվեն ձեր <ph name="USER_EMAIL1" /> հաշվում:</translation>
 <translation id="7890287942691234100">Ինչպես օգտագործել Chromium-ի սկաները</translation>
+<translation id="8013573822802650211">Chromium-ն օգտագործելիս ձեր բոլոր ներդիրները տեսնելու համար մտեք հաշիվ բոլոր սարքերում։</translation>
 <translation id="8073677936375100957">Հեռացնե՞լ Chromium-ի տվյալները այս սարքից</translation>
 <translation id="8175055321229419309">Խորհուրդ․ <ph name="BEGIN_LINK" />տեղափոխեք Chrome-ը Dock վահանակ<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Ավելի հարմարեցրեք Google-ի օգտագործումը Chromium-ում՝ ձեր տեղադրության տվյալների հիման վրա:</translation>

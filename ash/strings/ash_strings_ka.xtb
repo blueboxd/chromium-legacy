@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">მარცხენა</translation>
 <translation id="1479909375538722835">მარტივი წვდომის მოლივლივე მენიუ</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">ჩართული</translation>
 <translation id="1516740043221086139">„არ შემაწუხოთ“ ჩართულია.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{შეტყობინების პარამეტრების ჩვენება. შეტყობინებები გამორთულია აპისთვის}other{შეტყობინების პარამეტრების ჩვენება. შეტყობინებები გამორთულია # აპისთვის}}</translation>
 <translation id="1525508553941733066">დახურვა</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">ასისტენტი (იტვირთება...)</translation>
 <translation id="1838895407229022812">ღამის განათება გამორთულია.</translation>
 <translation id="1850504506766569011">Wi-Fi გამორთულია.</translation>
-<translation id="1859889070386344428">გამორთული</translation>
 <translation id="1864454756846565995">USB-C მოწყობილობა (უკანა პორტი)</translation>
 <translation id="1882897271359938046">გამოსახვა <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">თითის ანაბეჭდით განბლოკვა</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">კლავიატურის განლაგების გადასართველად გამოიყენეთ კლავიშთა კომბინაცია: <ph name="KEYBOARD_SHORTCUT" />.</translation>
 <translation id="2501920221385095727">კლავიშების ფიქსაცია</translation>
 <translation id="2509468283778169019">CAPS LOCK ჩართულია</translation>
-<translation id="2519465031217098801">ჩართული</translation>
 <translation id="2542089167727451762">შეეხეთ თქვენს პროფილის სურათს</translation>
 <translation id="255671100581129685">Google ასისტენტი მიუწვდომელია საჯარო სესიაში.</translation>
 <translation id="256712445991462162">ჩამაგრებული ლუპა</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">ჩასმა</translation>
 <translation id="394485226368336402">აუდიოს პარამეტრები</translation>
 <translation id="3962859241508114581">წინა ჩანაწერი</translation>
-<translation id="3965097803111112935">გამორთული</translation>
 <translation id="397105322502079400">ანგარიშობს…</translation>
 <translation id="3977512764614765090">ბატარეის დონეა <ph name="PERCENTAGE" />% და იტენება.</translation>
 <translation id="3995138139523574647">USB-C მოწყობილობა (მარჯვენა უკანა პორტი)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">ტექსტის კურსორის გამოყოფა</translation>
 <translation id="5222676887888702881">გამოსვლა</translation>
 <translation id="523505283826916779">მარტივი წვდომის პარამეტრები</translation>
-<translation id="5250225880026334010">გამორთული</translation>
 <translation id="5260676007519551770">დესკტოპი 4</translation>
 <translation id="5283198616748585639">1 წუთის დამატება</translation>
 <translation id="528468243742722775">დასასრული</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">Bluetooth მოწყობილობა „<ph name="DEVICE_NAME" />“ მოითხოვს დაწყვილების ნებართვას. შეიყვანეთ ეს საიდუმლო ფრაზა მოწყობილობაში: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">პაროლი</translation>
 <translation id="6665545700722362599">ვებსაიტებისთვის, აპებისთვის და გაფართოებებისთვის მდებარეობის სერვისების, მოწყობილობის მიკროფონის, კამერისა თუ სხვა ფუნქციების გამოყენების დაშვება</translation>
-<translation id="6669268301501499730">ჩართული</translation>
 <translation id="6670153871843998651">დესკტოპი 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">მიიღეთ თქვენს არჩევანთან დაკავშირებული ინფორმაცია</translation>

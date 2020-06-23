@@ -154,4 +154,29 @@ void LayoutRubyBase::MoveBlockChildren(LayoutRubyBase* to_base,
   }
 }
 
+ETextAlign LayoutRubyBase::TextAlignmentForLine(
+    bool /* endsWithSoftBreak */) const {
+  return ETextAlign::kJustify;
+}
+
+void LayoutRubyBase::AdjustInlineDirectionLineBounds(
+    unsigned expansion_opportunity_count,
+    LayoutUnit& logical_left,
+    LayoutUnit& logical_width) const {
+  int max_preferred_logical_width = PreferredLogicalWidths().max_size.ToInt();
+  if (max_preferred_logical_width >= logical_width)
+    return;
+
+  unsigned max_count = static_cast<unsigned>(LayoutUnit::Max().Floor());
+  if (expansion_opportunity_count > max_count)
+    expansion_opportunity_count = max_count;
+
+  // Inset the ruby base by half the inter-ideograph expansion amount.
+  LayoutUnit inset = (logical_width - max_preferred_logical_width) /
+                     (expansion_opportunity_count + 1);
+
+  logical_left += inset / 2;
+  logical_width -= inset;
+}
+
 }  // namespace blink

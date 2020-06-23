@@ -63,7 +63,6 @@ bool ShouldAlignCaretRight(ETextAlign text_align, TextDirection direction) {
     case ETextAlign::kWebkitCenter:
       return false;
     case ETextAlign::kJustify:
-    case ETextAlign::kInternalSpaceAround:
     case ETextAlign::kStart:
       return IsRtl(direction);
     case ETextAlign::kEnd:

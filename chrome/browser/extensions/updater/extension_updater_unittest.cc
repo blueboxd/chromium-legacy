@@ -1479,7 +1479,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch =
         std::make_unique<ExtensionDownloader::ExtensionFetch>(
             id, test_url, hash, version.GetString(), requests);
-    updater.downloader_->FetchUpdatedExtension(std::move(fetch));
+    updater.downloader_->FetchUpdatedExtension(std::move(fetch), base::nullopt);
 
     if (pending) {
       const bool kIsFromSync = true;
@@ -1760,7 +1760,7 @@ class ExtensionUpdaterTest : public testing::Test {
     std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch =
         std::make_unique<ExtensionDownloader::ExtensionFetch>(
             id, test_url, hash, version.GetString(), requests);
-    updater.downloader_->FetchUpdatedExtension(std::move(fetch));
+    updater.downloader_->FetchUpdatedExtension(std::move(fetch), base::nullopt);
 
     EXPECT_EQ(
         kExpectedLoadFlags,
@@ -1982,8 +1982,10 @@ class ExtensionUpdaterTest : public testing::Test {
     std::unique_ptr<ExtensionDownloader::ExtensionFetch> fetch2 =
         std::make_unique<ExtensionDownloader::ExtensionFetch>(
             id2, url2, hash2, version2, requests);
-    updater.downloader_->FetchUpdatedExtension(std::move(fetch1));
-    updater.downloader_->FetchUpdatedExtension(std::move(fetch2));
+    updater.downloader_->FetchUpdatedExtension(std::move(fetch1),
+                                               base::Optional<std::string>());
+    updater.downloader_->FetchUpdatedExtension(std::move(fetch2),
+                                               base::Optional<std::string>());
 
     // Make the first fetch complete.
     EXPECT_TRUE(updater.downloader_->extension_loader_);

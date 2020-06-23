@@ -66,7 +66,8 @@
 # #include <xcb/xcb.h>
 # #include <xcb/xcbext.h>
 #
-# #include "base/logging.h"
+# #include "base/notreached.h"
+# #include "base/check_op.h"
 # #include "ui/gfx/x/xproto_internal.h"
 #
 # namespace x11 {
@@ -231,6 +232,7 @@ READ_SPECIAL = set([
 
 WRITE_SPECIAL = set([
     ('xcb', 'ClientMessage'),
+    ('xcb', 'UnmapNotify'),
 ])
 
 
@@ -858,6 +860,7 @@ class GenXproto(FileWriter):
                     for opcode, opname in sorted(items):
                         self.undef(opname)
                         self.write('%s = %s,' % (opname, opcode))
+            self.write('bool send_event{};')
             self.declare_fields(event.fields)
         self.write()
 
@@ -1493,6 +1496,7 @@ class GenReadEvent(FileWriter):
             if len(event.opcodes) > 1:
                 self.write('{0} = static_cast<decltype({0})>({1});'.format(
                     'event_->opcode', opcode))
+            self.write('event_->send_event = send_event;')
             self.write('event->event_ = event_;')
             self.write('return;')
         self.write()
@@ -1514,6 +1518,7 @@ class GenReadEvent(FileWriter):
             self.write(cast % ('ev', 'xcb_generic_event_t'))
             self.write(cast % ('ge', 'xcb_ge_generic_event_t'))
             self.write('auto evtype = ev->response_type & ~kSendEventMask;')
+            self.write('bool send_event = ev->response_type & kSendEventMask;')
             self.write()
             for name, event, proto in self.events:
                 self.gen_event(name, event, proto)

@@ -1248,7 +1248,6 @@
 <translation id="6240447795304464094">Лого на Google Pay</translation>
 <translation id="6241121617266208201">Скриване на предложенията</translation>
 <translation id="624499991300733384">Услуга за създаване на PDF файлове</translation>
-<translation id="6251924700383757765">Декларация за поверителност</translation>
 <translation id="6254436959401408446">Няма достатъчно памет за отваряне на тази страница</translation>
 <translation id="625755898061068298">Деактивирахте предупрежденията относно сигурността на този сайт.</translation>
 <translation id="6259156558325130047">&amp;Възстановяване на пренареждането</translation>
@@ -1635,7 +1634,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Няма}=1{1 приложение (<ph name="EXAMPLE_APP_1" />)}=2{2 приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# приложения (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Сърфирането ви обаче не е невидимо. При преминаване в режим „инкогнито“ то не се скрива от работодателя ви и от доставчика ви на интернет услуги, нито от уебсайтовете, които посещавате.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="7858256690562840157">Помогнете за всеобщото подобряване на сигурността в мрежата, като изпращате до Google <ph name="BEGIN_WHITEPAPER_LINK" />URL адресите на някои от страниците, които посещавате, ограничена системна информация и част от съдържанието на страниците<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Искате ли да напуснете сайта?</translation>
 <translation id="7865448901209910068">Най-добра скорост</translation>
 <translation id="7874263914261512992">Току-що въведохте паролата си в измамнически сайт. Chrome препоръчва да проверите запазените си пароли за <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и други сайтове, на които понастоящем използвате тази парола.</translation>

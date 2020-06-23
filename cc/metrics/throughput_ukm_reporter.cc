@@ -71,7 +71,6 @@ void ThroughputUkmReporter::ComputeUniversalThroughput(
   last_main_percent_ = metrics->main_throughput().DroppedFramePercent();
   last_aggregated_percent_ =
       metrics->aggregated_throughput().DroppedFramePercent();
-  current_universal_throughput_ = 100 - last_aggregated_percent_.value();
 }
 
 bool ThroughputUkmReporter::HasThroughputData() const {

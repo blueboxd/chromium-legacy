@@ -3,6 +3,7 @@
 <translationbundle lang="fr-CA">
 <translation id="1018656279737460067">Annulé</translation>
 <translation id="1195447618553298278">Erreur inconnue.</translation>
+<translation id="1413240736185167732">Échec : problème de filtre</translation>
 <translation id="1468664791493211953">Offres</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> gère cet appareil et pourrait surveiller votre activité sur celui-ci.</translation>
 <translation id="150962533380566081">Clé PUK non valide.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Cet appareil est géré par une entreprise</translation>
 <translation id="1905710495812624430">Nombre maximal autorisé de tentatives atteint.</translation>
 <translation id="1930797645656624981">Service de méthode d'entrée Chrome OS</translation>
+<translation id="1947737735496445907">Imprimée</translation>
 <translation id="1979103255016296513">Le mot de passe est expiré; vous devez le changer</translation>
 <translation id="2049639323467105390">Cet appareil est géré par <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Activer le Bluetooth pour découvrir les appareils à proximité</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Applications</translation>
 <translation id="2872961005593481000">Arrêter</translation>
 <translation id="3008341117444806826">ACTUALISER</translation>
+<translation id="3091839911843451378">Échec : l'imprimante est arrêtée</translation>
+<translation id="3268178239013324452">Échec : la porte de l'imprimante est ouverte</translation>
 <translation id="3369013195428705271">Voulez-vous vraiment effacer tout l'historique d'impression? Vos tâches d'impression courantes ne seront pas effacées.</translation>
+<translation id="3456078764689556234">Page imprimée <ph name="PRINTED_PAGES" /> sur <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Tâches d'impression</translation>
+<translation id="3527036260304016759">Échec : erreur inconnue</translation>
 <translation id="3749289110408117711">Nom du fichier</translation>
 <translation id="38114475217616659">Effacer tout l'historique</translation>
 <translation id="3820172043799983114">NIP erroné.</translation>
 <translation id="3838338534323494292">Nouveau mot de passe</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sur <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> gère cet appareil et a accès à toutes les activités, y compris les pages Web que vous visitez, vos mots de passe et vos courriels.</translation>
+<translation id="4003384961948020559">Échec : le bac de sortie est plein</translation>
 <translation id="4034824040120875894">Imprimante</translation>
 <translation id="4227825898293920515">Le mot de passe expire dans <ph name="TIME" /></translation>
+<translation id="428217921675623177">Les tâches d'impression de plus de 90 jours seront supprimées</translation>
 <translation id="4429881212383817840">Le ticket Kerberos expire bientôt</translation>
 <translation id="445059817448385655">Ancien mot de passe</translation>
 <translation id="467510802200863975">Les mots de passe ne correspondent pas</translation>
@@ -37,24 +46,31 @@
 Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Choisissez-en un nouveau maintenant</translation>
 <translation id="5457599981699367932">Naviguer en tant qu'invité</translation>
 <translation id="54609108002486618">Géré</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
+<translation id="6048107060512778456">Échec : bourrage de papier</translation>
 <translation id="6058625436358447366">Pour terminer cette opération, entrez votre ancien mot de passe et le nouveau</translation>
 <translation id="6106186594183574873">Pour terminer cette opération, entrez votre ancien mot de passe</translation>
 <translation id="6146993107019042706">Pour terminer cette opération, entrez votre nouveau mot de passe</translation>
 <translation id="6517239166834772319">Explorer</translation>
+<translation id="6564646048574748301">Échec : impossible de communiquer avec l'imprimante</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="7162487448488904999">Galerie</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" /> sur <ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7690294790491645610">Confirmez le nouveau mot de passe</translation>
 <translation id="7805768142964895445">État</translation>
 <translation id="808894953321890993">Changer le mot de passe</translation>
 <translation id="8208861521865154048">Avantages</translation>
 <translation id="8701136875688985581">Le domaine <ph name="ENROLLMENT_DOMAIN" /> gère cet utilisateur. Il peut gérer les paramètres et faire le suivi de l'activité de l'utilisateur à distance.</translation>
+<translation id="871560550817059752">Échec : plus d'encre</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
+<translation id="8919837981463578619">Échec : bac manquant</translation>
+<translation id="8928727111548978589">Échec : plus de papier</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Nombre de tentatives restantes : <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Actualiser le ticket pour <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Déverrouiller</translation>

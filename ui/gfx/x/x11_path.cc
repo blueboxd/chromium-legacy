@@ -12,8 +12,9 @@
 
 namespace gfx {
 
-Region CreateRegionFromSkRegion(const SkRegion& region) {
-  Region result = XCreateRegion();
+std::unique_ptr<std::vector<x11::Rectangle>> CreateRegionFromSkRegion(
+    const SkRegion& region) {
+  auto result = std::make_unique<std::vector<x11::Rectangle>>();
 
   for (SkRegion::Iterator i(region); !i.done(); i.next()) {
     XRectangle rect;
@@ -21,23 +22,23 @@ Region CreateRegionFromSkRegion(const SkRegion& region) {
     rect.y = i.rect().y();
     rect.width = i.rect().width();
     rect.height = i.rect().height();
-    XUnionRectWithRegion(&rect, result, result);
+    result->push_back({
+        .x = i.rect().x(),
+        .y = i.rect().y(),
+        .width = i.rect().width(),
+        .height = i.rect().height(),
+    });
   }
 
   return result;
 }
 
-Region CreateRegionFromSkPath(const SkPath& path) {
-  int point_count = path.getPoints(nullptr, 0);
-  std::unique_ptr<SkPoint[]> points(new SkPoint[point_count]);
-  path.getPoints(points.get(), point_count);
-  std::unique_ptr<XPoint[]> x11_points(new XPoint[point_count]);
-  for (int i = 0; i < point_count; ++i) {
-    x11_points[i].x = SkScalarRoundToInt(points[i].fX);
-    x11_points[i].y = SkScalarRoundToInt(points[i].fY);
-  }
-
-  return XPolygonRegion(x11_points.get(), point_count, EvenOddRule);
+std::unique_ptr<std::vector<x11::Rectangle>> CreateRegionFromSkPath(
+    const SkPath& path) {
+  SkRegion clip{path.getBounds().roundOut()};
+  SkRegion region;
+  region.setPath(path, clip);
+  return CreateRegionFromSkRegion(region);
 }
 
 }  // namespace gfx

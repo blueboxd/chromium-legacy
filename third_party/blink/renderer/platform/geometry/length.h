@@ -57,6 +57,7 @@ class PLATFORM_EXPORT Length {
     kFixed,
     kMinContent,
     kMaxContent,
+    kMinIntrinsic,
     kFillAvailable,
     kFitContent,
     kCalculated,
@@ -145,6 +146,7 @@ class PLATFORM_EXPORT Length {
   static Length FillAvailable() { return Length(kFillAvailable); }
   static Length MinContent() { return Length(kMinContent); }
   static Length MaxContent() { return Length(kMaxContent); }
+  static Length MinIntrinsic() { return Length(kMinIntrinsic); }
   static Length ExtendToZoom() { return Length(kExtendToZoom); }
   static Length DeviceWidth() { return Length(kDeviceWidth); }
   static Length DeviceHeight() { return Length(kDeviceHeight); }
@@ -231,7 +233,8 @@ class PLATFORM_EXPORT Length {
   bool IsIntrinsicOrAuto() const { return GetType() == kAuto || IsIntrinsic(); }
   bool IsIntrinsic() const {
     return GetType() == kMinContent || GetType() == kMaxContent ||
-           GetType() == kFillAvailable || GetType() == kFitContent;
+           GetType() == kMinIntrinsic || GetType() == kFillAvailable ||
+           GetType() == kFitContent;
   }
   bool IsSpecified() const {
     return GetType() == kFixed || GetType() == kPercent ||
@@ -242,6 +245,7 @@ class PLATFORM_EXPORT Length {
   bool IsCalculatedEqual(const Length&) const;
   bool IsMinContent() const { return GetType() == kMinContent; }
   bool IsMaxContent() const { return GetType() == kMaxContent; }
+  bool IsMinIntrinsic() const { return GetType() == kMinIntrinsic; }
   bool IsFillAvailable() const { return GetType() == kFillAvailable; }
   bool IsFitContent() const { return GetType() == kFitContent; }
   bool IsPercent() const { return GetType() == kPercent; }

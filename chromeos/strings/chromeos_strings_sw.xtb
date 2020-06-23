@@ -3,6 +3,7 @@
 <translationbundle lang="sw">
 <translation id="1018656279737460067">Imeghairiwa</translation>
 <translation id="1195447618553298278">Hitilafu isiyojulikana.</translation>
+<translation id="1413240736185167732">Haijakamilika - Kichujio kimeshindwa kufanya kazi</translation>
 <translation id="1468664791493211953">Ofa</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> anadhibiti kifaa hiki na anaweza kufuatilia shughuli zako.</translation>
 <translation id="150962533380566081">PUK si sahihi.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Kifaa hiki kinadhibitiwa kibiashara</translation>
 <translation id="1905710495812624430">Idadi ya juu ya majaribio yanayoruhusiwa.</translation>
 <translation id="1930797645656624981">Huduma ya Mbinu ya Kuingiza Data kwenye Mfumo wa Uendeshaji wa Chrome</translation>
+<translation id="1947737735496445907">Imechapishwa</translation>
 <translation id="1979103255016296513">Muda wa kubadilisha nenosiri umeisha</translation>
 <translation id="2049639323467105390">Kifaa hiki kinadhibitiwa na <ph name="DOMAIN" /> .</translation>
 <translation id="2338501278241028356">Washa Bluetooth ili ugundue vifaa vilivyo karibu</translation>
@@ -18,15 +20,23 @@
 <translation id="2805756323405976993">Programu</translation>
 <translation id="2872961005593481000">Zima</translation>
 <translation id="3008341117444806826">ONYESHA UPYA</translation>
+<translation id="3091839911843451378">Haijakamilika - Imesimamisha</translation>
+<translation id="3268178239013324452">Haijakamilika - Kifuniko kimefunguka</translation>
 <translation id="3369013195428705271">Una uhakika kuwa ungependa kufuta historia yote ya kuchapisha? Kazi unazoendelea kuchapisha hazitafutwa.</translation>
+<translation id="3456078764689556234">Imechapisha ukurasa wa <ph name="PRINTED_PAGES" /> kati ya <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Kazi za Kuchapisha</translation>
+<translation id="3527036260304016759">Haijakamilika - Hitilafu isiyojulikana</translation>
 <translation id="3749289110408117711">Jina la faili</translation>
 <translation id="38114475217616659">Futa historia yote</translation>
 <translation id="3820172043799983114">PIN si sahihi</translation>
 <translation id="3838338534323494292">Nenosiri jipya</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> kati ya <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> hudhibiti kifaa hiki na ina idhini ya kufikia shughuli zote za mtumiaji, zikiwemo kurasa za wavuti alizotembelea, manenosiri na anwani za barua pepe.</translation>
+<translation id="4003384961948020559">Haijakamilika - Sehemu ya kutoa karatasi imejaa</translation>
 <translation id="4034824040120875894">Printa</translation>
 <translation id="4227825898293920515">Muda wa kutumia nenosiri utaisha baada ya <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Hakuna kazi za kuchapisha zinazoendelea</translation>
+<translation id="428217921675623177">Kazi za kuchapisha ambazo zimehifadhiwa kwa zaidi ya siku 90 zitaondolewa</translation>
 <translation id="4429881212383817840">Muda wa kutumia tiketi ya Kerberos unakaribia kuisha</translation>
 <translation id="445059817448385655">Nenosiri la awali</translation>
 <translation id="467510802200863975">Manenosiri hayalingani</translation>
@@ -36,24 +46,32 @@
 <translation id="5212543919916444558">Sijapata swali lolote kwenye skrini yako. Jaribu kugonga maikrofoni ili uniulize chochote.</translation>
 <translation id="5222676887888702881">Ondoka</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Chagua nenosiri jipya sasa</translation>
 <translation id="5457599981699367932">Vinjari kama Mgeni</translation>
 <translation id="54609108002486618">Imedhibitiwa</translation>
 <translation id="5832805196449965646">Ongeza Mtumiaji Mwingine</translation>
 <translation id="5895138241574237353">Zzima na uwashe</translation>
+<translation id="6048107060512778456">Haijakamilika - Karatasi imekwama</translation>
 <translation id="6058625436358447366">Ili ukamilishe, weka nenosiri lako la awali na lile jipya</translation>
 <translation id="6106186594183574873">Ili ukamilishe, weka nenosiri lako la awali</translation>
 <translation id="6146993107019042706">Ili ukamilishe, weka nenosiri jipya</translation>
 <translation id="6517239166834772319">Gundua</translation>
+<translation id="6564646048574748301">Haijakamilika - Printa haiwezi kufikiwa</translation>
 <translation id="6643016212128521049">Futa</translation>
 <translation id="7162487448488904999">Matunzio</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Kitendo hiki kinadhibitiwa na msimamizi wako</translation>
 <translation id="7658239707568436148">Ghairi</translation>
 <translation id="7690294790491645610">Thibitisha nenosiri jipya</translation>
 <translation id="7805768142964895445">Hali</translation>
 <translation id="808894953321890993">Badilisha nenosiri</translation>
 <translation id="8208861521865154048">Manufaa</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> inasimamia mtumiaji huyu. Huenda itadhibiti mipangilio kwa mbali na kufuatilia shughuli za mtumiaji.</translation>
+<translation id="871560550817059752">Haijakamilika - Wino umeisha</translation>
 <translation id="8747900814994928677">Thibitisha mabadiliko</translation>
+<translation id="8919837981463578619">Haijakamilika - Trei haipo</translation>
+<translation id="8928727111548978589">Haijakamilika - Karatasi zimeisha</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> umebakisha mara <ph name="ATTEMPTS_LEFT" /> za kujaribu</translation>
 <translation id="910415269708673980">Onyesha upya tiketi ya <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Fungua</translation>

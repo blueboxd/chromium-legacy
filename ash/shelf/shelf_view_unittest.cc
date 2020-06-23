@@ -1489,6 +1489,7 @@ TEST_F(ShelfViewTest, InProgressItemDragPreventsContextMenuShow) {
 
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
   EXPECT_TRUE(item_delegate->HasPendingContextMenuCallback());
 
   // Drag the app icon while context menu callback is pending..
@@ -1496,7 +1497,9 @@ TEST_F(ShelfViewTest, InProgressItemDragPreventsContextMenuShow) {
   generator->MoveTouchBy(0, -10);
 
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_TRUE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
   // Return the context menu model.
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
@@ -1506,12 +1509,16 @@ TEST_F(ShelfViewTest, InProgressItemDragPreventsContextMenuShow) {
 
   // The context menu show is expected to be canceled by the item drag.
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_TRUE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
   // Drag state should be cleared when the drag ends.
   generator->ReleaseTouch();
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
   // Another long press starts context menu request.
   generator->set_current_screen_location(location);
@@ -1548,7 +1555,10 @@ TEST_F(ShelfViewTest, CompletedItemDragPreventsContextMenuShow) {
   generator->Dispatch(&long_press);
 
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
   EXPECT_TRUE(item_delegate->HasPendingContextMenuCallback());
 
   // Drag the app icon while context menu callback is pending.
@@ -1556,12 +1566,16 @@ TEST_F(ShelfViewTest, CompletedItemDragPreventsContextMenuShow) {
   generator->MoveTouchBy(0, -10);
 
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_TRUE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
   // Drag state should be cleared when the drag ends.
   generator->ReleaseTouch();
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
   // Return the context menu model.
   auto menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
@@ -1573,7 +1587,9 @@ TEST_F(ShelfViewTest, CompletedItemDragPreventsContextMenuShow) {
   // should not be shown even though there is no in-progress drag when the
   // context menu model is received.
   EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
   EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
 
   // Another long press starts context menu request.
   generator->set_current_screen_location(location);
@@ -1596,19 +1612,58 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAlwaysShownShelf) {
   const int last_index = model_->items().size() - 1;
   ASSERT_TRUE(last_index >= 0);
 
+  ShelfAppButton* button = GetButtonByID(first_app_id);
+  ASSERT_TRUE(button);
+
+  auto item_delegate_owned =
+      std::make_unique<AsyncContextMenuShelfItemDelegate>();
+  AsyncContextMenuShelfItemDelegate* item_delegate = item_delegate_owned.get();
+  model_->SetShelfItemDelegate(first_app_id, std::move(item_delegate_owned));
+
   const gfx::Point start = GetButtonCenter(first_app_id);
   // Drag the app long enough to ensure the drag can be triggered.
   const gfx::Point end(start.x() + 100, start.y());
   generator->set_current_screen_location(start);
+  generator->PressTouch();
+  ASSERT_TRUE(button->FireDragTimerForTest());
+  button->FireRippleActivationTimerForTest();
 
-  // Add |STATE_DRAGGING| state to emulate the gesture drag after context menu
-  // is shown.
-  GetButtonByID(first_app_id)->AddState(ShelfAppButton::STATE_DRAGGING);
+  // Generate long press, which should start context menu request.
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+  ui::GestureEvent long_press(start.x(), start.y(), 0, ui::EventTimeForNow(),
+                              event_details);
+  generator->Dispatch(&long_press);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  EXPECT_TRUE(item_delegate->HasPendingContextMenuCallback());
+
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
+  menu_model->AddItem(203, base::ASCIIToUTF16("item"));
+  ASSERT_TRUE(
+      item_delegate->RunPendingContextMenuCallback(std::move(menu_model)));
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(button, shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
   generator->GestureScrollSequence(start, end,
                                    base::TimeDelta::FromMilliseconds(100), 3);
+  generator->ReleaseTouch();
 
   // |first_add_id| has been moved to the end of the items in the shelf.
   EXPECT_EQ(first_app_id, model_->items()[last_index].id);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+  EXPECT_FALSE(item_delegate->HasPendingContextMenuCallback());
 }
 
 // Tests that shelf items in AUTO_HIDE_SHOWN shelf can be dragged through
@@ -1629,19 +1684,202 @@ TEST_F(ShelfViewTest, DragAppAfterContextMenuIsShownInAutoHideShelf) {
   shelf->shelf_widget()->GetFocusCycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
+  ShelfAppButton* button = GetButtonByID(first_app_id);
+  ASSERT_TRUE(button);
+
+  auto item_delegate_owned =
+      std::make_unique<AsyncContextMenuShelfItemDelegate>();
+  AsyncContextMenuShelfItemDelegate* item_delegate = item_delegate_owned.get();
+  model_->SetShelfItemDelegate(first_app_id, std::move(item_delegate_owned));
+
   const gfx::Point start = GetButtonCenter(first_app_id);
   // Drag the app long enough to ensure the drag can be triggered.
   const gfx::Point end = gfx::Point(start.x() + 100, start.y());
   generator->set_current_screen_location(start);
+  generator->PressTouch();
+  ASSERT_TRUE(button->FireDragTimerForTest());
+  button->FireRippleActivationTimerForTest();
 
-  // Add |STATE_DRAGGING| state to emulate the gesture drag after context menu
-  // is shown.
-  GetButtonByID(first_app_id)->AddState(ShelfAppButton::STATE_DRAGGING);
+  // Generate long press, which should start context menu request.
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+  ui::GestureEvent long_press(start.x(), start.y(), 0, ui::EventTimeForNow(),
+                              event_details);
+  generator->Dispatch(&long_press);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  EXPECT_TRUE(item_delegate->HasPendingContextMenuCallback());
+
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
+  menu_model->AddItem(203, base::ASCIIToUTF16("item"));
+  ASSERT_TRUE(
+      item_delegate->RunPendingContextMenuCallback(std::move(menu_model)));
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(button, shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
   generator->GestureScrollSequence(start, end,
                                    base::TimeDelta::FromMilliseconds(100), 3);
+  generator->ReleaseTouch();
 
   // |first_add_id| has been moved to the end of the items in the shelf.
   EXPECT_EQ(first_app_id, model_->items()[last_index].id);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+  EXPECT_FALSE(item_delegate->HasPendingContextMenuCallback());
+}
+
+// Tests that the app button returns to normal state after context menu is
+// hidden and touch is released, even if another touch point is added while the
+// context menu is shown.
+TEST_F(ShelfViewTest, DragStateIsClearedIfAnotherTouchIsAddedWithContextMenu) {
+  ASSERT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const ShelfID app_id = AddAppShortcut();
+
+  ShelfAppButton* button = GetButtonByID(app_id);
+  ASSERT_TRUE(button);
+
+  auto item_delegate_owned =
+      std::make_unique<AsyncContextMenuShelfItemDelegate>();
+  AsyncContextMenuShelfItemDelegate* item_delegate = item_delegate_owned.get();
+  model_->SetShelfItemDelegate(app_id, std::move(item_delegate_owned));
+
+  const gfx::Point location = GetButtonCenter(app_id);
+  generator->set_current_screen_location(location);
+  generator->PressTouch();
+  ASSERT_TRUE(button->FireDragTimerForTest());
+  button->FireRippleActivationTimerForTest();
+
+  // Generate long press, which should start context menu request.
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+  ui::GestureEvent long_press(location.x(), location.y(), 0,
+                              ui::EventTimeForNow(), event_details);
+  generator->Dispatch(&long_press);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  EXPECT_TRUE(item_delegate->HasPendingContextMenuCallback());
+
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
+  menu_model->AddItem(203, base::ASCIIToUTF16("item"));
+  ASSERT_TRUE(
+      item_delegate->RunPendingContextMenuCallback(std::move(menu_model)));
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(button, shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  // Add and release touch.
+  generator->PressTouchId(2, gfx::Point(10, 10));
+  generator->ReleaseTouchId(2);
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(button, shelf_view_->GetShelfItemViewWithContextMenu());
+
+  // Another tap to hide the context menu.
+  generator->PressTouchId(2, gfx::Point(10, 10));
+  generator->ReleaseTouchId(2);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  // Releasing the original touch should not show another menu.
+  generator->ReleaseTouch();
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+  EXPECT_FALSE(item_delegate->HasPendingContextMenuCallback());
+}
+
+// Tests that app button context menu remains shown if touch moves slightly
+// outside the button bounds while the menu is shown (not enough to initiate
+// drag gesture).
+TEST_F(ShelfViewTest,
+       AppContextMenuRemainsShowingAfterTouchSlightlyMovesOutsideTheButton) {
+  ASSERT_EQ(SHELF_VISIBLE, GetPrimaryShelf()->GetVisibilityState());
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  const ShelfID app_id = AddAppShortcut();
+
+  ShelfAppButton* button = GetButtonByID(app_id);
+  ASSERT_TRUE(button);
+
+  auto item_delegate_owned =
+      std::make_unique<AsyncContextMenuShelfItemDelegate>();
+  AsyncContextMenuShelfItemDelegate* item_delegate = item_delegate_owned.get();
+  model_->SetShelfItemDelegate(app_id, std::move(item_delegate_owned));
+
+  // Start near the button edge.
+  const gfx::Point location =
+      button->GetBoundsInScreen().bottom_right() + gfx::Vector2d(-1, -1);
+  generator->set_current_screen_location(location);
+  generator->PressTouch();
+  ASSERT_TRUE(button->FireDragTimerForTest());
+  button->FireRippleActivationTimerForTest();
+
+  // Generate long press, which should start context menu request.
+  ui::GestureEventDetails event_details(ui::ET_GESTURE_LONG_PRESS);
+  ui::GestureEvent long_press(location.x(), location.y(), 0,
+                              ui::EventTimeForNow(), event_details);
+  generator->Dispatch(&long_press);
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  EXPECT_TRUE(item_delegate->HasPendingContextMenuCallback());
+
+  auto menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
+  menu_model->AddItem(203, base::ASCIIToUTF16("item"));
+  ASSERT_TRUE(
+      item_delegate->RunPendingContextMenuCallback(std::move(menu_model)));
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_EQ(button, shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  // Move touch outside the button bounds using small distance - not enough to
+  // start a drag operation that would hide the context menu.
+  generator->MoveTouch(button->GetBoundsInScreen().bottom_right() +
+                       gfx::Vector2d(1, -1));
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_EQ(button, shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_TRUE(button->state() & ShelfAppButton::STATE_DRAGGING);
+
+  // Release touch - button drag state should be cleared, and the context menu
+  // remain visible.
+  generator->ReleaseTouch();
+
+  EXPECT_TRUE(shelf_view_->IsShowingMenu());
+  EXPECT_TRUE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+  EXPECT_FALSE(item_delegate->HasPendingContextMenuCallback());
+
+  // Tap to close the context menu.
+  generator->GestureTapAt(gfx::Point(10, 10));
+
+  EXPECT_FALSE(shelf_view_->IsShowingMenu());
+  EXPECT_FALSE(shelf_view_->GetShelfItemViewWithContextMenu());
+  EXPECT_FALSE(shelf_view_->drag_view());
+  EXPECT_FALSE(button->state() & ShelfAppButton::STATE_DRAGGING);
+  EXPECT_FALSE(item_delegate->HasPendingContextMenuCallback());
 }
 
 // Tests that the home button does shows a context menu on right click.

@@ -83,7 +83,7 @@ class LocalNtpSource : public content::URLDataSource,
   bool ShouldAddContentSecurityPolicy() override;
 
   // The Content Security Policy for the Local NTP.
-  std::string GetContentSecurityPolicy();
+  std::string GetContentSecurityPolicyForNTP();
 
   // Overridden from NtpBackgroundServiceObserver:
   void OnCollectionInfoAvailable() override;

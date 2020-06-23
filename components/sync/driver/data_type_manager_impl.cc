@@ -892,6 +892,22 @@ ModelTypeSet DataTypeManagerImpl::GetActiveDataTypes() const {
   return GetEnabledTypes();
 }
 
+ModelTypeSet DataTypeManagerImpl::GetPurgedDataTypes() const {
+  ModelTypeSet purged_types;
+
+  for (const auto& kv : *controllers_) {
+    ModelType type = kv.first;
+    const DataTypeController* controller = kv.second.get();
+    // TODO(crbug.com/897628): NOT_RUNNING doesn't necessarily mean the sync
+    // metadata was cleared, if KEEP_METADATA was used when stopping.
+    if (controller->state() == DataTypeController::NOT_RUNNING) {
+      purged_types.Put(type);
+    }
+  }
+
+  return purged_types;
+}
+
 bool DataTypeManagerImpl::IsNigoriEnabled() const {
   return downloaded_types_.Has(NIGORI);
 }

@@ -77,7 +77,8 @@ enum class CrostiniResult {
   LOAD_COMPONENT_UPDATE_IN_PROGRESS = 48,
   NEVER_FINISHED = 49,
   CONTAINER_SETUP_FAILED = 50,
-  kMaxValue = CONTAINER_SETUP_FAILED,
+  START_LXD_FAILED = 51,
+  kMaxValue = START_LXD_FAILED,
   // When adding a new value, check you've followed the steps in the comment at
   // the top of this enum.
 };

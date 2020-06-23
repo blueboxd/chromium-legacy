@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Chromium tidak dapat menggunakan kamera anda sekarang</translation>
 <translation id="2195025571279539885">Adakah anda mahu Chromium menawarkan halaman <ph name="LANGUAGE_NAME" /> dari tapak ini diterjemahkan pada masa akan datang?</translation>
 <translation id="2590893390871230428">Segerakkan Data Chromium Anda</translation>
+<translation id="2650312721222849884">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chromium, hidupkan penyegerakan</translation>
 <translation id="2730884209570016437">Chromium tidak dapat menggunakan kamera anda kerana kamera sedang digunakan oleh aplikasi lain</translation>
 <translation id="2915596697727466327">Chromium menggunakan ID Wajah untuk memastikan akses yang dibenarkan kepada kata laluan anda.</translation>
 <translation id="3256316712990552818">Disalin ke Chromium</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Hidupkan pengimbas Chromium</translation>
 <translation id="4787850887676698916">Tab yang telah dibuka dalam Chromium pada peranti anda yang lain akan dipaparkan di sini.</translation>
 <translation id="4999538639245140991">Oleh sebab anda log keluar daripada akaun yang diurus oleh <ph name="SIGNOUT_MANAGED_DOMAIN" />, data Chromium anda akan dipadamkan daripada peranti ini. Data anda akan kekal dalam Akaun Google anda.</translation>
+<translation id="5521125884468363740">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chromium, log masuk dan hidupkan penyegerakan</translation>
 <translation id="5573014823074921752">Petua Chromium. Untuk melihat lebih banyak pilihan tab, sentuh &amp; tahan butang Tunjukkan Tab dalam bar alat, yang terletak di bahagian bawah atau atas skrin anda.</translation>
 <translation id="5777187867430702742">Halaman Chromium</translation>
 <translation id="5862307444128926510">Selamat datang ke Chromium</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Petua Chromium. Sesetengah butang kini terletak di bahagian bawah skrin anda, seperti Kembali, Ke Hadapan dan Carian.</translation>
 <translation id="786327964234957808">Anda sedang menukar akaun penyegerakan daripada <ph name="USER_EMAIL1" /> kepada <ph name="USER_EMAIL2" />. Data Chromium sedia ada diurus oleh <ph name="DOMAIN" />. Tindakan ini akan memadamkan data anda daripada peranti ini, tetapi data itu akan kekal disimpan dalam <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Mula menggunakan pengimbas Chromium</translation>
+<translation id="8013573822802650211">Untuk melihat tab anda daripada mana-mana tempat anda menggunakan Chromium, log masuk ke semua peranti anda</translation>
 <translation id="8073677936375100957">Kosongkan data Chromium anda daripada peranti ini?</translation>
 <translation id="8175055321229419309">Petua: <ph name="BEGIN_LINK" />Alihkan Chromium ke dok anda<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Dapatkan pengalaman yang lebih baik di Chromium berdasarkan lokasi anda.</translation>

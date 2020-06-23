@@ -24,7 +24,6 @@
 <translation id="116280672541001035">Notað</translation>
 <translation id="1171770572613082465">Sjáðu vinsæl vefsvæði með því að ýta á hnappinn „Vinsælast“</translation>
 <translation id="1173894706177603556">Endurnefna</translation>
-<translation id="1178581264944972037">Gera hlé</translation>
 <translation id="1197267115302279827">Færa bókamerki</translation>
 <translation id="1201402288615127009">Áfram</translation>
 <translation id="1204037785786432551">Hlaða niður tengli</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome þarf að hafa aðgang að staðsetningu til að geta leitað að tækjum. Aðgangur að staðsetningu er <ph name="BEGIN_LINK" />óvirkur fyrir þetta tæki<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Myndavél</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjarlægja 1 valið atriði}one{Fjarlægja # valið atriði}other{Fjarlægja # valin atriði}}</translation>
+<translation id="1641113438599504367">Örugg vefnotkun</translation>
 <translation id="164269334534774161">Þú ert að skoða ónettengt afrit af þessari síðu frá <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Ferill</translation>
 <translation id="1670399744444387456">Grunnatriði</translation>
@@ -228,7 +228,6 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="2842985007712546952">Yfirmappa</translation>
 <translation id="2860954141821109167">Gakktu úr skugga um að símaforritið sé virkt í þessu tæki</translation>
 <translation id="2870560284913253234">Vefsvæði</translation>
-<translation id="2874939134665556319">Fyrra lag</translation>
 <translation id="2876369937070532032">Sendir vefslóð sumra síðna sem þú skoðar til Google, þegar öryggi þitt er í hættu</translation>
 <translation id="2888126860611144412">Um Chrome</translation>
 <translation id="2891154217021530873">Stöðva hleðslu síðu</translation>
@@ -270,6 +269,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3181954750937456830">Örugg vefnotkun (verndar þig og tækið þitt fyrir hættulegum vefsvæðum)</translation>
 <translation id="3205824638308738187">Næstum því lokið!</translation>
 <translation id="3207960819495026254">Í bókamerkjum</translation>
+<translation id="3208584281581115441">Athuga núna</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> eytt</translation>
 <translation id="321773570071367578">Ef þú hefur gleymt aðgangsorðinu eða þig langar að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla samstillingu<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Vefforrit</translation>
@@ -346,7 +346,6 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3810973564298564668">Stjórna</translation>
 <translation id="381841723434055211">Símanúmer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> niðurhölum eytt</translation>
-<translation id="3859306556332390985">Leita áfram</translation>
 <translation id="388596076286380598">Fáðu greinar, myndskeið og annað efni frá vefsvæðum sem þú kannt að meta, jafnvel án nettengingar eða þegar tengingin er léleg.</translation>
 <translation id="3892148308691398805">Afrita texta</translation>
 <translation id="3894427358181296146">Bæta möppu við</translation>
@@ -369,8 +368,6 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="3997476611815694295">Geymsla fyrir lítilvæg atriði</translation>
 <translation id="4000212216660919741">Ónettengt</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# klst.}one{# klst.}other{# klst.}}</translation>
-<translation id="403687620286099920">Ýttu til að opna QR-kóða.</translation>
-<translation id="4046123991198612571">Næsta lag</translation>
 <translation id="4056223980640387499">Brúnn blær</translation>
 <translation id="4060598801229743805">Valkosti er að finna ofarlega á skjánum</translation>
 <translation id="4062305924942672200">Lagalegar upplýsingar</translation>
@@ -390,10 +387,10 @@ Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða f
 <translation id="4209895695669353772">Kveiktu á samstillingu til að fá sérsniðið efni sem Google stingur upp á</translation>
 <translation id="423219824432660969">Dulkóða samstillt gögn með Google aðgangsorði frá og með <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Opna stillingar</translation>
+<translation id="4248098802131000011">Tryggðu öryggi aðgangsorðanna gagnvart öryggisbrotum og öðrum öryggisvandamálum</translation>
 <translation id="4250229828105606438">Skjámynd</translation>
 <translation id="4256782883801055595">Leyfi opins kóða</translation>
 <translation id="4269820728363426813">Afrita slóð tengils</translation>
-<translation id="429312253194641664">Vefsvæði er að spila efni</translation>
 <translation id="4298388696830689168">Tengd vefsvæði</translation>
 <translation id="4307992518367153382">Grunnatriði</translation>
 <translation id="4314815835985389558">Stjórna samstillingu</translation>
@@ -567,7 +564,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5659593005791499971">Netfang</translation>
 <translation id="5665379678064389456">Búa til viðburð í <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Hunsa beiðni vefsvæðis um að koma í veg fyrir aðdrátt</translation>
-<translation id="5681394891799747640">Ekki er hægt að sækja QR-kóða</translation>
 <translation id="5684874026226664614">Úbbs. Þessa síðu er ekki hægt að þýða.</translation>
 <translation id="5686790454216892815">Skráarheiti of langt</translation>
 <translation id="5694049548840660018">Þú kemst alltaf aftur heim</translation>
@@ -609,6 +605,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5958275228015807058">Þú finnur skrár og síður í Niðurhali</translation>
 <translation id="5962718611393537961">Ýttu til að draga saman</translation>
 <translation id="5964805880140440652">Til að deila þessari síðu í öðru tæki skaltu kveikja á samstillingu í stillingum Chrome</translation>
+<translation id="5979084224081478209">Yfirfara aðgangsorð</translation>
 <translation id="6000066717592683814">Nota Google áfram</translation>
 <translation id="6005538289190791541">Útbúið aðgangsorð</translation>
 <translation id="6036057147555329831">Auka ICU</translation>
@@ -710,7 +707,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="671481426037969117">Tímamælir <ph name="FQDN" /> rann út. Hann byrjar aftur á morgun.</translation>
 <translation id="6738867403308150051">Sækir…</translation>
 <translation id="6767294960381293877">Tækjalisti fyrir deilingu flipa opinn á hálfum skjánum.</translation>
-<translation id="6790428901817661496">Spila</translation>
 <translation id="6811034713472274749">Hægt er að skoða síðuna</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Þýða</translation>
@@ -767,7 +763,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7328017930301109123">Í léttútgáfu hleður Chrome síðum hraðar og notar allt að 60 prósentum minna gagnamagn.</translation>
 <translation id="7333031090786104871">Er enn að bæta fyrra vefsvæði við</translation>
 <translation id="7340958967809483333">Valkostir fyrir Tillögur</translation>
-<translation id="7352651011704765696">Eitthvað fór úrskeiðis</translation>
 <translation id="7352939065658542140">MYNDSKEIÐ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deila 1 völdu atriði}one{Deila # völdu atriði}other{Deila # völdum atriðum}}</translation>
 <translation id="7359002509206457351">Fá aðgang að greiðslumátum</translation>
@@ -806,7 +801,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7605594153474022051">Samstilling virkar ekki</translation>
 <translation id="7606077192958116810">Kveikt er á léttútgáfu. Þú getur haft umsjón með henni í stillingunum.</translation>
 <translation id="7612619742409846846">Innskráð(ur) á Google sem</translation>
-<translation id="7614971007231847352">QR-kóði sóttur</translation>
 <translation id="7619072057915878432">Niðurhal á <ph name="FILE_NAME" /> mistókst vegna villu í netkerfi.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Fáðu aðstoð<ph name="END_LINK1" /> eða <ph name="BEGIN_LINK2" />leitaðu aftur<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Velkomin(n) í Chrome</translation>
@@ -912,7 +906,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="8427875596167638501">Forskoðunarflipinn er hálfopinn</translation>
 <translation id="8428213095426709021">Stillingar</translation>
 <translation id="8438566539970814960">Bæta leit og vafra</translation>
-<translation id="8441146129660941386">Spóla til baka</translation>
 <translation id="8443209985646068659">Ekki er hægt að uppfæra</translation>
 <translation id="8445448999790540984">Ekki er hægt að flytja út aðgangsorð</translation>
 <translation id="8461694314515752532">Dulkóða samstillt gögn með eigin aðgangsorði samstillingar</translation>

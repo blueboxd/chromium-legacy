@@ -70,6 +70,7 @@ android_library("weblayer_private_java_tests") {
     "src/org/chromium/weblayer/test/NetworkChangeNotifierTest.java",
     "src/org/chromium/weblayer/test/PopupTest.java",
     "src/org/chromium/weblayer/test/ResourceLoadingTest.java",
+    "src/org/chromium/weblayer/test/TranslateTest.java",
   ]
   deps = [
     ":weblayer_java_private_test_support",

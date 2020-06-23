@@ -28,6 +28,7 @@ class LookalikeUrlBlockingPage
 
   LookalikeUrlBlockingPage(
       content::WebContents* web_contents,
+      const GURL& safe_url,
       const GURL& request_url,
       ukm::SourceId source_id,
       LookalikeUrlMatchType match_type,
@@ -65,6 +66,9 @@ class LookalikeUrlBlockingPage
   // Record UKM iff we haven't already reported for this page.
   void ReportUkmIfNeeded(LookalikeUrlBlockingPageUserAction action);
 
+  // The URL suggested to the user as the safe URL. Can be empty, in which case
+  // the default action on the interstitial takes the user to the new tab page.
+  const GURL safe_url_;
   ukm::SourceId source_id_;
   LookalikeUrlMatchType match_type_;
 

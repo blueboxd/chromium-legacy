@@ -1,5 +1,5 @@
 <!doctype html>
-<html dir="$i18n{textdirection}" lang="$i18n{language}">
+<html is-print-preview dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf-8">
 
@@ -7,16 +7,11 @@
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
-
-<div id="sizer"></div>
-<viewer-zoom-toolbar id="zoom-toolbar" hidden></viewer-zoom-toolbar>
-
-<viewer-page-indicator id="page-indicator"></viewer-page-indicator>
-
-<viewer-error-screen id="error-screen"></viewer-error-screen>
-
-<div id="content"></div>
-
+<pdf-viewer-pp id="viewer"></pdf-viewer-pp>
 </body>
-<script type="module" src="main_pp.js"></script>
+<script type="module" src="main.js"></script>
+<!-- The line below refers to pdf_viewer_pp.js, which is served under the path
+     pdf_viewer.js so that the PDF viewer and Print Preview viewer can use the
+     same main.js source. main.js imports pdf_viewer.js. -->
+<script type="module" src="pdf_viewer.js"></script>
 </html>

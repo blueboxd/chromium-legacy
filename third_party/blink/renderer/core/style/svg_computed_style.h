@@ -248,17 +248,14 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   void SetFloodColor(const StyleColor& style_color) {
     if (FloodColor() != style_color) {
       StyleMiscData* mutable_misc = misc.Access();
-      mutable_misc->flood_color = style_color.Resolve(Color());
-      mutable_misc->flood_color_is_current_color = style_color.IsCurrentColor();
+      mutable_misc->flood_color = style_color;
     }
   }
 
   void SetLightingColor(const StyleColor& style_color) {
     if (LightingColor() != style_color) {
       StyleMiscData* mutable_misc = misc.Access();
-      mutable_misc->lighting_color = style_color.Resolve(Color());
-      mutable_misc->lighting_color_is_current_color =
-          style_color.IsCurrentColor();
+      mutable_misc->lighting_color = style_color;
     }
   }
 
@@ -325,15 +322,8 @@ class SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   float StopOpacity() const { return stops->opacity; }
   const StyleColor& StopColor() const { return stops->color; }
   float FloodOpacity() const { return misc->flood_opacity; }
-  StyleColor FloodColor() const {
-    return misc->flood_color_is_current_color ? StyleColor::CurrentColor()
-                                              : StyleColor(misc->flood_color);
-  }
-  StyleColor LightingColor() const {
-    return misc->lighting_color_is_current_color
-               ? StyleColor::CurrentColor()
-               : StyleColor(misc->lighting_color);
-  }
+  StyleColor FloodColor() const { return misc->flood_color; }
+  StyleColor LightingColor() const { return misc->lighting_color; }
   const Length& BaselineShiftValue() const {
     return misc->baseline_shift_value;
   }

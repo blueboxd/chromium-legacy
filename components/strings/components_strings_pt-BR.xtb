@@ -1241,7 +1241,6 @@ Se não fizer isso, a permissão será bloqueada pelas configurações de privac
 <translation id="6240447795304464094">Logotipo do Google Pay</translation>
 <translation id="6241121617266208201">Ocultar sugestões</translation>
 <translation id="624499991300733384">Serviço de criação de impressão</translation>
-<translation id="6251924700383757765">Política de Privacidade</translation>
 <translation id="6254436959401408446">Não há memória suficiente para abrir essa página</translation>
 <translation id="625755898061068298">Você optou por desativar os avisos de segurança para esse site.</translation>
 <translation id="6259156558325130047">&amp;Refazer reordenar</translation>
@@ -1528,6 +1527,7 @@ Mais detalhes:
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
 <translation id="7488762544858401571">Editado</translation>
 <translation id="7495290002932347110">Sua senha foi exposta em violação de dados em um site ou app acessado por você. Por recomendação do Chrome, verifique suas senhas salvas e mude-as imediatamente em <ph name="ORIGIN" />.</translation>
+<translation id="7495528107193238112">Este conteúdo está bloqueado. Entre em contato com o proprietário do site para corrigir o problema.</translation>
 <translation id="7498234416455752244">Continuar editando</translation>
 <translation id="7503664977220660814">Você acabou de digitar sua senha em um site suspeito. O Chromium recomenda que você verifique agora suas senhas salvas para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que você usa essa senha.</translation>
 <translation id="7508255263130623398">O código do dispositivo da política retornado está em branco ou não corresponde ao código do dispositivo atual</translation>
@@ -1627,7 +1627,6 @@ Mais detalhes:
 <translation id="7844689747373518809">{COUNT,plural, =0{Nenhum}=1{1 app (<ph name="EXAMPLE_APP_1" />)}=2{2 apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}other{# apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">O modo invisível NÃO oculta seus dados de navegação. Seu empregador, seu provedor de Internet e os websites visitados continuam tendo acesso a essas informações.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">Ajude a melhorar a segurança na Web para todos, enviando ao Google <ph name="BEGIN_WHITEPAPER_LINK" />URLs de algumas das páginas que você acessou, informações limitadas do sistema e parte do conteúdo da página<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Sair do site?</translation>
 <translation id="7865448901209910068">Melhor velocidade</translation>
 <translation id="7874263914261512992">Você acabou de digitar sua senha em um site suspeito. O Chrome recomenda que você verifique agora suas senhas salvas para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sites em que você usa essa senha.</translation>

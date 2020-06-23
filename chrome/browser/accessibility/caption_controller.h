@@ -62,9 +62,6 @@ class CaptionController : public BrowserListObserver, public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Off the record profiles will default to having the feature disabled.
-  static void InitOffTheRecordPrefs(Profile* off_the_record_profile);
-
   void Init();
 
   // Routes a transcription to the CaptionBubbleController that belongs to the

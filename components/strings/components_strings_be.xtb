@@ -1251,7 +1251,6 @@
 <translation id="6240447795304464094">Лагатып Google Pay</translation>
 <translation id="6241121617266208201">Схаваць прапановы</translation>
 <translation id="624499991300733384">Сэрвіс стварэння заданняў для друку</translation>
-<translation id="6251924700383757765">Палітыка прыватнасці</translation>
 <translation id="6254436959401408446">Недастаткова памяці, каб адкрыць гэту старонку</translation>
 <translation id="625755898061068298">Вы вырашылі выключыць папярэджанні сістэмы бяспекі на гэтым сайце.</translation>
 <translation id="6259156558325130047">&amp;Паўтарыць змяненне парадку</translation>
@@ -1539,6 +1538,7 @@
 <translation id="7485870689360869515">Даныя не знойдзены.</translation>
 <translation id="7488762544858401571">Зменены дакумент</translation>
 <translation id="7495290002932347110">У выніку ўцечкі даных на сайце або ў праграме ваш пароль быў раскрыты. Chrome рэкамендуе праверыць захаваныя паролі і неадкладна змяніць пароль на сайце <ph name="ORIGIN" />.</translation>
+<translation id="7495528107193238112">Гэта змесціва заблакіравана. Каб вырашыць праблему, звярніцеся да ўладальніка сайта.</translation>
 <translation id="7498234416455752244">Рэдагаваць далей</translation>
 <translation id="7503664977220660814">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chromium рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>
 <translation id="7508255263130623398">Атрыманы з палітыкі ідэнтыфікатар прылады пусты або не супадае з бягучым ідэнтыфікатарам прылады</translation>
@@ -1638,7 +1638,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Няма}=1{1 праграма (<ph name="EXAMPLE_APP_1" />)}=2{2 праграмы (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# праграма (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}few{# праграмы (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}many{# праграм (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# праграмы (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Але памятайце, што вы не становіцеся нябачнымі. Праца ў рэжыме інкогніта не дазволіць вам схаваць свае дзеянні ў інтэрнэце ад працадаўцы, інтэрнэт-правайдара і наведаных вэб-сайтаў.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="7858256690562840157">Дапамагаць павысіць бяспеку ў інтэрнэце для ўсіх карыстальнікаў, адпраўляючы <ph name="BEGIN_WHITEPAPER_LINK" />URL-адрасы некаторых наведаных вамі старонак, пэўную сістэмную інфармацыю і змесціва старонак<ph name="END_WHITEPAPER_LINK" /> у Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Закрыць сайт?</translation>
 <translation id="7865448901209910068">Найлепшая хуткасць</translation>
 <translation id="7874263914261512992">Вы толькі што ўвялі свой пароль на сайце, вядомым падманнымі паводзінамі. Chrome рэкамендуе праверыць захаваныя паролі на сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і на іншых сайтах, дзе выкарыстоўваецца гэты пароль.</translation>

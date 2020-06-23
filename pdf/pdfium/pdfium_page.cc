@@ -1240,12 +1240,45 @@ void PDFiumPage::PopulateTextField(FPDF_ANNOTATION annot) {
   text_fields_.push_back(std::move(text_field));
 }
 
+void PDFiumPage::PopulateChoiceField(FPDF_ANNOTATION annot) {
+  DCHECK(annot);
+  FPDF_FORMHANDLE form_handle = engine_->form();
+  int form_field_type = FPDFAnnot_GetFormFieldType(form_handle, annot);
+  DCHECK(form_field_type == FPDF_FORMFIELD_LISTBOX ||
+         form_field_type == FPDF_FORMFIELD_COMBOBOX);
+
+  ChoiceField choice_field;
+  if (!PopulateFormFieldProperties(annot, &choice_field))
+    return;
+
+  int options_count = FPDFAnnot_GetOptionCount(form_handle, annot);
+  if (options_count < 0)
+    return;
+
+  choice_field.options.resize(options_count);
+  for (int i = 0; i < options_count; ++i) {
+    choice_field.options[i].name =
+        base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+            base::BindRepeating(&FPDFAnnot_GetOptionLabel, form_handle, annot,
+                                i),
+            /*check_expected_size=*/true));
+    choice_field.options[i].is_selected =
+        FPDFAnnot_IsOptionSelected(form_handle, annot, i);
+  }
+  choice_fields_.push_back(std::move(choice_field));
+}
+
 void PDFiumPage::PopulateFormField(FPDF_ANNOTATION annot) {
   DCHECK_EQ(FPDFAnnot_GetSubtype(annot), FPDF_ANNOT_WIDGET);
   int form_field_type = FPDFAnnot_GetFormFieldType(engine_->form(), annot);
 
   // TODO(crbug.com/1030242): Populate other types of form fields too.
   switch (form_field_type) {
+    case FPDF_FORMFIELD_COMBOBOX:
+    case FPDF_FORMFIELD_LISTBOX: {
+      PopulateChoiceField(annot);
+      break;
+    }
     case FPDF_FORMFIELD_TEXTFIELD: {
       PopulateTextField(annot);
       break;
@@ -1414,6 +1447,19 @@ PDFiumPage::TextField::TextField() = default;
 PDFiumPage::TextField::TextField(const TextField& that) = default;
 
 PDFiumPage::TextField::~TextField() = default;
+
+PDFiumPage::ChoiceFieldOption::ChoiceFieldOption() = default;
+
+PDFiumPage::ChoiceFieldOption::ChoiceFieldOption(
+    const ChoiceFieldOption& that) = default;
+
+PDFiumPage::ChoiceFieldOption::~ChoiceFieldOption() = default;
+
+PDFiumPage::ChoiceField::ChoiceField() = default;
+
+PDFiumPage::ChoiceField::ChoiceField(const ChoiceField& that) = default;
+
+PDFiumPage::ChoiceField::~ChoiceField() = default;
 
 // static
 uint32_t PDFiumPage::CountLinkHighlightOverlaps(

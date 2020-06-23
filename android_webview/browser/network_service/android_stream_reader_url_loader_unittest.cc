@@ -175,7 +175,8 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
     return new AndroidStreamReaderURLLoader(
         request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
-        std::make_unique<TestResponseDelegate>(std::move(input_stream)));
+        std::make_unique<TestResponseDelegate>(std::move(input_stream)),
+        base::nullopt);
   }
 
   // helper method for creating loaders given a stream and MIME type
@@ -188,7 +189,8 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
         request, client->CreateRemote(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::make_unique<TestResponseDelegate>(std::move(input_stream),
-                                               custom_mime_type));
+                                               custom_mime_type),
+        base::nullopt);
   }
 
   // helper method for creating loaders given a stream and response header
@@ -205,7 +207,8 @@ class AndroidStreamReaderURLLoaderTest : public ::testing::Test {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS),
         std::make_unique<TestResponseDelegate>(
             std::move(input_stream), custom_status, custom_header_name,
-            custom_header_value));
+            custom_header_value),
+        base::nullopt);
   }
 
   // Extracts the body data that is present in the consumer pipe

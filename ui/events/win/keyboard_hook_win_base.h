@@ -9,8 +9,8 @@
 
 #include <windows.h>
 
+#include "base/check.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"

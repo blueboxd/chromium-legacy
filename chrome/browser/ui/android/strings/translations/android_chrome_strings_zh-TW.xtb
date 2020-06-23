@@ -24,7 +24,6 @@
 <translation id="116280672541001035">使用量</translation>
 <translation id="1171770572613082465">輕觸 [熱門網站] 按鈕，即可查看熱門網站</translation>
 <translation id="1173894706177603556">重新命名</translation>
-<translation id="1178581264944972037">暫停</translation>
 <translation id="1197267115302279827">移動書籤</translation>
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1204037785786432551">下載連結</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome 需要位置資訊存取權才能掃描裝置。<ph name="BEGIN_LINK" />這個裝置的位置資訊存取權已關閉<ph name="END_LINK" />。</translation>
 <translation id="1620510694547887537">攝影機</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{移除 1 個選取的項目}other{移除 # 個選取的項目}}</translation>
+<translation id="1641113438599504367">安全瀏覽</translation>
 <translation id="164269334534774161">您目前瀏覽的是這個網頁的離線複本 (建立時間：<ph name="CREATION_TIME" />)</translation>
 <translation id="1644574205037202324">歷史記錄</translation>
 <translation id="1670399744444387456">基本</translation>
@@ -226,7 +226,6 @@
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2860954141821109167">請確認此裝置已啟用手機應用程式</translation>
 <translation id="2870560284913253234">網站</translation>
-<translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2876369937070532032">當網站具有安全性風險時，Chrome 會將你造訪的部分網頁網址傳送給 Google</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
 <translation id="2891154217021530873">停止載入網頁</translation>
@@ -268,6 +267,7 @@
 <translation id="3181954750937456830">安全瀏覽 (保護你和你的裝置不受危險網站攻擊)</translation>
 <translation id="3205824638308738187">即將大功告成！</translation>
 <translation id="3207960819495026254">已加入書籤</translation>
+<translation id="3208584281581115441">立即檢查</translation>
 <translation id="3211426585530211793">已刪除「<ph name="ITEM_TITLE" />」</translation>
 <translation id="321773570071367578">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">網頁應用程式</translation>
@@ -344,7 +344,6 @@
 <translation id="3810973564298564668">管理</translation>
 <translation id="381841723434055211">電話號碼</translation>
 <translation id="3819178904835489326">已刪除 <ph name="NUMBER_OF_DOWNLOADS" /> 個下載項目</translation>
-<translation id="3859306556332390985">快轉到特定的播放時間點</translation>
 <translation id="388596076286380598">即使處於離線狀態或網路訊號不良，你也可以查看喜愛網站上的文章、影片和其他內容。</translation>
 <translation id="3894427358181296146">新增資料夾</translation>
 <translation id="3895926599014793903">強制啟用縮放功能</translation>
@@ -366,8 +365,6 @@
 <translation id="3997476611815694295">不重要網站的儲存資料量</translation>
 <translation id="4000212216660919741">離線首頁</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 小時}other{# 小時}}</translation>
-<translation id="403687620286099920">輕觸即可開啟 QR 圖碼</translation>
-<translation id="4046123991198612571">下一首曲目</translation>
 <translation id="4056223980640387499">深褐色調</translation>
 <translation id="4060598801229743805">選項位於畫面頂端</translation>
 <translation id="4062305924942672200">法律資訊</translation>
@@ -387,10 +384,10 @@
 <translation id="4209895695669353772">如要取得個人化的 Google 推薦內容，請開啟同步處理功能</translation>
 <translation id="423219824432660969">使用你在 <ph name="TIME" />設定的 Google 密碼，加密保護同步資料</translation>
 <translation id="4242533952199664413">開啟設定</translation>
+<translation id="4248098802131000011">確保密碼安全，避免發生資料侵害或其他安全性問題</translation>
 <translation id="4250229828105606438">螢幕截圖</translation>
 <translation id="4256782883801055595">開放原始碼授權</translation>
 <translation id="4269820728363426813">複製連結網址</translation>
-<translation id="429312253194641664">一個網站正在播放媒體內容</translation>
 <translation id="4298388696830689168">連結的網站</translation>
 <translation id="4307992518367153382">基本選項</translation>
 <translation id="4314815835985389558">管理同步功能資料</translation>
@@ -563,7 +560,6 @@
 <translation id="5659593005791499971">電子郵件</translation>
 <translation id="5665379678064389456">在「<ph name="APP_NAME" />」中建立活動</translation>
 <translation id="5668404140385795438">覆寫網站禁止放大的要求</translation>
-<translation id="5681394891799747640">無法下載 QR 圖碼</translation>
 <translation id="5684874026226664614">糟糕！系統無法翻譯這個網頁的內容。</translation>
 <translation id="5686790454216892815">檔案名稱過長</translation>
 <translation id="5694049548840660018">輕鬆返回首頁</translation>
@@ -605,6 +601,7 @@
 <translation id="5958275228015807058">前往「下載」主畫面尋找你的檔案和網頁</translation>
 <translation id="5962718611393537961">輕觸即可收合</translation>
 <translation id="5964805880140440652">如要將這個頁面分享至另一部裝置，你必須在 Chrome 設定中開啟同步功能</translation>
+<translation id="5979084224081478209">檢查密碼</translation>
 <translation id="6000066717592683814">繼續使用 Google</translation>
 <translation id="6005538289190791541">建議的密碼</translation>
 <translation id="6036057147555329831">其他 ICU</translation>
@@ -706,7 +703,6 @@
 <translation id="671481426037969117">「<ph name="FQDN" />」計時器已結束計時，將於明天重新開始。</translation>
 <translation id="6738867403308150051">下載中…</translation>
 <translation id="6767294960381293877">要共用分頁的裝置清單已開啟，顯示在畫面下半部。</translation>
-<translation id="6790428901817661496">播放</translation>
 <translation id="6811034713472274749">你可以瀏覽這個網頁了</translation>
 <translation id="6820686453637990663">信用卡驗證碼</translation>
 <translation id="6831043979455480757">翻譯</translation>
@@ -763,7 +759,6 @@
 <translation id="7328017930301109123">使用精簡模式時，Chrome 可加快網頁載入速度，並可節省多達百分之 60 的數據用量。</translation>
 <translation id="7333031090786104871">仍在新增先前的網站</translation>
 <translation id="7340958967809483333">探索的選項</translation>
-<translation id="7352651011704765696">發生錯誤</translation>
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個選取的項目}other{分享 # 個選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方式</translation>
@@ -802,7 +797,6 @@
 <translation id="7605594153474022051">同步處理功能無法正常運作</translation>
 <translation id="7606077192958116810">精簡模式已開啟。你可「 設定」中管理這個模式。</translation>
 <translation id="7612619742409846846">已使用下列帳戶登入 Google：</translation>
-<translation id="7614971007231847352">已下載 QR 圖碼</translation>
 <translation id="7619072057915878432">無法連上網路，因此無法下載 <ph name="FILE_NAME" />。</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />查看說明<ph name="END_LINK1" />或<ph name="BEGIN_LINK2" />重新掃描<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
@@ -907,7 +901,6 @@
 <translation id="8427875596167638501">已在畫面下半部顯示預覽分頁</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">改善搜尋和瀏覽體驗</translation>
-<translation id="8441146129660941386">倒轉到特定的播放時間點</translation>
 <translation id="8443209985646068659">無法更新 Chrome</translation>
 <translation id="8445448999790540984">無法匯出密碼</translation>
 <translation id="8461694314515752532">使用你自己的同步通關密語，加密保護同步資料</translation>

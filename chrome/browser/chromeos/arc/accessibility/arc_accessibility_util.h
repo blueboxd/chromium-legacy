@@ -25,13 +25,6 @@ base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
 
 std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type);
 
-bool IsImportantInAndroid(mojom::AccessibilityNodeInfoData* node);
-
-bool HasImportantProperty(mojom::AccessibilityNodeInfoData* node);
-
-bool HasStandardAction(mojom::AccessibilityNodeInfoData* node,
-                       mojom::AccessibilityActionType action);
-
 template <class DataType, class PropType>
 bool GetBooleanProperty(DataType* node, PropType prop) {
   if (!node->boolean_properties)

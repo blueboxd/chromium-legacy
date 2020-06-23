@@ -1118,6 +1118,13 @@ const char kGlobalMediaControlsPictureInPictureDescription[] =
     "Requires "
     "#global-media-controls to also be enabled.";
 
+const char kGlobalMediaControlsSeamlessTransferName[] =
+    "Global Media Controls Seamless Transfer";
+const char kGlobalMediaControlsSeamlessTransferDescription[] =
+    "Enables selection of audio output device to play media through in "
+    "the Global Media Controls UI. Requires #global-media-controls to "
+    "also be enabled.";
+
 const char kGpuRasterizationName[] = "GPU rasterization";
 const char kGpuRasterizationDescription[] = "Use GPU to rasterize web content.";
 
@@ -1483,27 +1490,18 @@ const char kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription[] =
     "In the omnibox, hide trivial subdomains from steady state displayed URLs. "
     "Hidden portions are restored during editing.";
 
-const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefName[] =
-    "Omnibox UI Hide Steady-State URL Path, Query, and Ref";
-const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription[] =
-    "In the omnibox, hide the path, query and ref from steady state displayed "
-    "URLs. Hidden portions are restored during editing.";
-
 const char kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverName[] =
     "Omnibox UI Reveal Steady-State URL Path, Query, and Ref On Hover";
 const char kOmniboxUIRevealSteadyStateUrlPathQueryAndRefOnHoverDescription[] =
     "In the omnibox, reveal the path, query and ref from steady state "
-    "displayed URLs on hover. Only has an effect when "
-    "omnibox-ui-hide-steady-state-url-path-query-and-ref is enabled.";
+    "displayed URLs on hover.";
 
 const char kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionName[] =
     "Omnibox UI Hide Steady-State URL Path, Query, and Ref On Interaction";
 const char
     kOmniboxUIHideSteadyStateUrlPathQueryAndRefOnInteractionDescription[] =
         "In the omnibox, hide the path, query and ref from steady state "
-        "displayed URLs when the user interacts with the page. Only has an "
-        "effect when "
-        "omnibox-ui-hide-steady-state-url-path-query-and-ref is enabled.";
+        "displayed URLs when the user interacts with the page.";
 
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";

@@ -12,6 +12,7 @@ does not have a POSIX-like shell (e.g. Windows).
 
 import argparse
 import os
+import shlex
 import subprocess
 import sys
 
@@ -59,6 +60,23 @@ def UpdateTOC(tocfile, toc):
     open(tocfile, 'w').write(toc)
 
 
+def CollectInputs(out, args):
+  for x in args:
+    if x.startswith('@'):
+      with open(x[1:]) as rsp:
+        CollectInputs(out, shlex.split(rsp.read()))
+    elif not x.startswith('-') and (x.endswith('.o') or x.endswith('.a')):
+      out.write(x)
+      out.write('\n')
+
+
+def InterceptFlag(flag, command):
+  ret = flag in command
+  if ret:
+    command.remove(flag)
+  return ret
+
+
 def main():
   parser = argparse.ArgumentParser(description=__doc__)
   parser.add_argument('--readelf',
@@ -96,21 +114,10 @@ def main():
   fast_env = dict(os.environ)
   fast_env['LC_ALL'] = 'C'
 
-  # Extract the --link-only argument, which goes for a ride through ldflags into
-  # the command, but is meant to be intercepted by this wrapper script (not
-  # passed to the linker). https://crbug.com/954311 tracks finding a better way
-  # to plumb this argument.
-  link_only = '--link-only' in args.command
-  if link_only:
-    args.command.remove('--link-only')
-
-  # First, run the actual link.
-  command = wrapper_utils.CommandToRun(args.command)
-  result = wrapper_utils.RunLinkWithOptionalMapFile(command, env=fast_env,
-                                                    map_file=args.map_file)
-
-  if result != 0:
-    return result
+  # Extract flags passed through ldflags but meant for this script.
+  # https://crbug.com/954311 tracks finding a better way to plumb these.
+  link_only = InterceptFlag('--link-only', args.command)
+  collect_inputs_only = InterceptFlag('--collect-inputs-only', args.command)
 
   # If only linking, we are likely generating a partitioned .so that will be
   # split apart later. In that case:
@@ -125,12 +132,28 @@ def main():
   # tools would need to be updated to handle and/or not complain about
   # partitioned libraries. Instead, to keep Ninja happy, simply create dummy
   # files for the TOC and stripped lib.
-  if link_only:
-    with open(args.output, 'w'):
-      pass
-    with open(args.tocfile, 'w'):
-      pass
+  if link_only or collect_inputs_only:
+    open(args.output, 'w').close()
+    open(args.tocfile, 'w').close()
+
+  # Instead of linking, records all inputs to a file. This is used by
+  # enable_resource_whitelist_generation in order to avoid needing to
+  # link (which is slow) to build the resources whitelist.
+  if collect_inputs_only:
+    with open(args.sofile, 'w') as f:
+      CollectInputs(f, args.command)
+    if args.map_file:
+      open(args.map_file, 'w').close()
     return 0
+
+  # First, run the actual link.
+  command = wrapper_utils.CommandToRun(args.command)
+  result = wrapper_utils.RunLinkWithOptionalMapFile(command,
+                                                    env=fast_env,
+                                                    map_file=args.map_file)
+
+  if result != 0 or link_only:
+    return result
 
   # Next, generate the contents of the TOC file.
   result, toc = CollectTOC(args)

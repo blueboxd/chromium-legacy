@@ -60,7 +60,9 @@ class InterceptedRequest : public network::mojom::URLLoader,
       mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
-      bool intercept_only);
+      bool intercept_only,
+      base::Optional<AwProxyingURLLoaderFactory::SecurityOptions>
+          security_options);
   ~InterceptedRequest() override;
 
   void Restart();
@@ -136,6 +138,8 @@ class InterceptedRequest : public network::mojom::URLLoader,
   // When true, the loader will not not proceed unless the
   // shouldInterceptRequest callback provided a non-null response.
   bool intercept_only_ = false;
+
+  base::Optional<AwProxyingURLLoaderFactory::SecurityOptions> security_options_;
 
   // If the |target_loader_| called OnComplete with an error this stores it.
   // That way the destructor can send it to OnReceivedError if safe browsing
@@ -270,12 +274,15 @@ InterceptedRequest::InterceptedRequest(
     mojo::PendingReceiver<network::mojom::URLLoader> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory,
-    bool intercept_only)
+    bool intercept_only,
+    base::Optional<AwProxyingURLLoaderFactory::SecurityOptions>
+        security_options)
     : process_id_(process_id),
       request_id_(request_id),
       routing_id_(routing_id),
       options_(options),
       intercept_only_(intercept_only),
+      security_options_(security_options),
       request_(request),
       traffic_annotation_(traffic_annotation),
       proxied_loader_receiver_(this, std::move(loader_receiver)),
@@ -420,7 +427,8 @@ void InterceptedRequest::ContinueAfterIntercept() {
         request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
         traffic_annotation_,
         std::make_unique<ProtocolResponseDelegate>(request_.url,
-                                                   weak_factory_.GetWeakPtr()));
+                                                   weak_factory_.GetWeakPtr()),
+        security_options_);
     loader->Start();
     return;
   }
@@ -439,7 +447,8 @@ void InterceptedRequest::ContinueAfterInterceptWithOverride(
       request_, proxied_client_receiver_.BindNewPipeAndPassRemote(),
       traffic_annotation_,
       std::make_unique<InterceptResponseDelegate>(std::move(response),
-                                                  weak_factory_.GetWeakPtr()));
+                                                  weak_factory_.GetWeakPtr()),
+      base::nullopt);
   loader->Start();
 }
 
@@ -725,8 +734,11 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     int process_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
     mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
-    bool intercept_only)
-    : process_id_(process_id), intercept_only_(intercept_only) {
+    bool intercept_only,
+    base::Optional<SecurityOptions> security_options)
+    : process_id_(process_id),
+      intercept_only_(intercept_only),
+      security_options_(security_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!(intercept_only_ && target_factory_remote));
   if (target_factory_remote) {
@@ -747,13 +759,14 @@ AwProxyingURLLoaderFactory::~AwProxyingURLLoaderFactory() {}
 void AwProxyingURLLoaderFactory::CreateProxy(
     int process_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        target_factory_remote) {
+    mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_remote,
+    base::Optional<SecurityOptions> security_options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // will manage its own lifetime
   new AwProxyingURLLoaderFactory(process_id, std::move(loader_receiver),
-                                 std::move(target_factory_remote), false);
+                                 std::move(target_factory_remote), false,
+                                 security_options);
 }
 
 void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
@@ -768,9 +781,10 @@ void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
   // webview), blocking, callbacks etc..
 
   mojo::PendingRemote<network::mojom::URLLoaderFactory> target_factory_clone;
-  if (target_factory_)
+  if (target_factory_) {
     target_factory_->Clone(
         target_factory_clone.InitWithNewPipeAndPassReceiver());
+  }
 
   bool global_cookie_policy =
       AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
@@ -796,7 +810,7 @@ void AwProxyingURLLoaderFactory::CreateLoaderAndStart(
   InterceptedRequest* req = new InterceptedRequest(
       process_id_, request_id, routing_id, options, request, traffic_annotation,
       std::move(loader), std::move(client), std::move(target_factory_clone),
-      intercept_only_);
+      intercept_only_, security_options_);
   req->Restart();
 }
 

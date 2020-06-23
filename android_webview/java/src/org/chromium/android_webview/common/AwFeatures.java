@@ -20,5 +20,7 @@ public final class AwFeatures {
     public static final String WEBVIEW_EXTRA_HEADERS_SAME_ORIGIN_ONLY =
             "WebViewExtraHeadersSameOriginOnly";
 
+    public static final String WEBVIEW_TEST_FEATURE = "WebViewTestFeature";
+
     private AwFeatures() {}
 }

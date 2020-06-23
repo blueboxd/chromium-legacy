@@ -541,6 +541,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
     @Override
     public boolean dismissTransientUi() {
+        StrictModeWorkaround.apply();
         BrowserViewController viewController = getViewController();
         if (viewController != null && viewController.dismissTabModalOverlay()) return true;
 
@@ -560,11 +561,13 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
     @Override
     public String getGuid() {
+        StrictModeWorkaround.apply();
         return TabImplJni.get().getGuid(mNativeTab);
     }
 
     @Override
     public boolean setData(Map data) {
+        StrictModeWorkaround.apply();
         String[] flattenedMap = new String[data.size() * 2];
         int i = 0;
         for (Map.Entry<String, String> entry : ((Map<String, String>) data).entrySet()) {
@@ -576,6 +579,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
 
     @Override
     public Map getData() {
+        StrictModeWorkaround.apply();
         String[] data = TabImplJni.get().getData(mNativeTab);
         Map<String, String> map = new HashMap<>();
         for (int i = 0; i < data.length; i += 2) {
@@ -591,6 +595,18 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
                 (ValueCallback<Pair<Bitmap, Integer>>) ObjectWrapper.unwrap(
                         valueCallback, ValueCallback.class);
         TabImplJni.get().captureScreenShot(mNativeTab, scale, unwrappedCallback);
+    }
+
+    @Override
+    public boolean canTranslate() {
+        StrictModeWorkaround.apply();
+        return TabImplJni.get().canTranslate(mNativeTab);
+    }
+
+    @Override
+    public void showTranslateUi() {
+        StrictModeWorkaround.apply();
+        TabImplJni.get().showTranslateUi(mNativeTab);
     }
 
     @CalledByNative
@@ -887,5 +903,7 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         String registerWebMessageCallback(long nativeTabImpl, String jsObjectName,
                 String[] allowedOrigins, IWebMessageCallbackClient client);
         void unregisterWebMessageCallback(long nativeTabImpl, String jsObjectName);
+        boolean canTranslate(long nativeTabImpl);
+        void showTranslateUi(long nativeTabImpl);
     }
 }

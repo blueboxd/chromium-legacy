@@ -95,6 +95,13 @@ class DataTypeManager {
   // completes the set will be updated.
   virtual ModelTypeSet GetActiveDataTypes() const = 0;
 
+  // Returns the datatypes that are stopped that are known to have cleared their
+  // local sync metadata.
+  // TODO(crbug.com/897628): This function currently returns all stopped
+  // datatypes, which doesn't necessarily mean the sync metadata was cleared, if
+  // KEEP_DATA was used when stopping (or if the datatype was never started).
+  virtual ModelTypeSet GetPurgedDataTypes() const = 0;
+
   // Whether or not we are syncing encryption keys.
   virtual bool IsNigoriEnabled() const = 0;
 

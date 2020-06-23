@@ -52,7 +52,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1467432559032391204">Doleva</translation>
 <translation id="1479909375538722835">Plovoucí nabídka usnadnění přístupu</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Zapnuto</translation>
 <translation id="1516740043221086139">Režim Nerušit je zapnutý.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Zobrazit nastavení oznámení. U jedné aplikace jsou oznámení vypnutá}few{Zobrazit nastavení oznámení. U # aplikací jsou oznámení vypnutá}many{Zobrazit nastavení oznámení. U # aplikace jsou oznámení vypnutá}other{Zobrazit nastavení oznámení. U # aplikací jsou oznámení vypnutá}}</translation>
 <translation id="1525508553941733066">ZAVŘÍT</translation>
@@ -79,7 +78,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="1836215606488044471">Asistent (načítání...)</translation>
 <translation id="1838895407229022812">Noční režim je vypnutý.</translation>
 <translation id="1850504506766569011">Připojení Wi-Fi je vypnuto.</translation>
-<translation id="1859889070386344428">Vypnuto</translation>
 <translation id="1864454756846565995">Zařízení USB Type-C (zadní port)</translation>
 <translation id="1882897271359938046">Zrcadlení na displej <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odemknutí otiskem prstu</translation>
@@ -138,7 +136,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="2484513351006226581">Rozložení klávesnice změníte stisknutím kláves <ph name="KEYBOARD_SHORTCUT" /></translation>
 <translation id="2501920221385095727">Jedním prstem</translation>
 <translation id="2509468283778169019">CAPS LOCK je zapnutý</translation>
-<translation id="2519465031217098801">Zapnuto</translation>
 <translation id="2542089167727451762">Klepněte na profilovou fotku</translation>
 <translation id="255671100581129685">Asistent Google není ve veřejné relaci k dispozici.</translation>
 <translation id="256712445991462162">zabudovaná lupa</translation>
@@ -261,7 +258,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="3943857333388298514">Vložit</translation>
 <translation id="394485226368336402">Nastavení zvuku</translation>
 <translation id="3962859241508114581">Předchozí skladba</translation>
-<translation id="3965097803111112935">Vypnuto</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
 <translation id="3977512764614765090">Baterie je nabitá na <ph name="PERCENTAGE" /> % a nabíjí se.</translation>
 <translation id="3995138139523574647">Zařízení USB Type-C (pravý zadní port)</translation>
@@ -354,7 +350,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="5207949376430453814">Zvýraznit textový kurzor</translation>
 <translation id="5222676887888702881">Odhlásit se</translation>
 <translation id="523505283826916779">Nastavení usnadnění přístupu</translation>
-<translation id="5250225880026334010">Vypnuto</translation>
 <translation id="5260676007519551770">Plocha 4</translation>
 <translation id="5283198616748585639">Přidat 1 min</translation>
 <translation id="528468243742722775">Konec</translation>
@@ -473,7 +468,6 @@ Pro začátek můžete vyzkoušet třeba tohle.</translation>
 <translation id="6650933572246256093">Zařízení Bluetooth „<ph name="DEVICE_NAME" />“ žádá o povolení ke spárování. V zařízení prosím zadejte následující přístupový klíč: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Heslo</translation>
 <translation id="6665545700722362599">Udělit webům, aplikacím a rozšířením oprávnění používat služby určování polohy, mikrofon či fotoaparát zařízení nebo další funkce</translation>
-<translation id="6669268301501499730">Zapnuto</translation>
 <translation id="6670153871843998651">Plocha 3</translation>
 <translation id="6691659475504239918">Hledat+Shift+H</translation>
 <translation id="6692996468359469499">Získejte informace týkající se vybraného obsahu</translation>

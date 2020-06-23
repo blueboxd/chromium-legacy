@@ -114,19 +114,18 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void OnGetAdapter(scoped_refptr<BluetoothAdapter> adapter);
   void OnSetPowered();
 
-  void SetDiscoverySession(
-      std::unique_ptr<BluetoothDiscoverySession> discovery_session);
-
   BluetoothAdapter* adapter() { return adapter_.get(); }
 
-  // Attempt to stop all on-going advertisements in best-effort basis.
-  // Once all the callbacks for Unregister() function is received, invoke
-  // |callback|.
   void StopAdvertisements(base::OnceClosure callback);
   void OnAdvertisementsStopped(base::OnceClosure callback);
+
+  void StopBluetoothDiscoverySession();
+
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
+
   void ConductEncryptionHandshake(FidoCableHandshakeHandler* handshake_handler,
                                   CableDiscoveryData::Version cable_version);
+
   void ValidateAuthenticatorHandshakeMessage(
       CableDiscoveryData::Version cable_version,
       FidoCableHandshakeHandler* handshake_handler,

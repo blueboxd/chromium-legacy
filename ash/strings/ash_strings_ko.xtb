@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1479909375538722835">플로팅 접근성 메뉴</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />(HDMI/DP)</translation>
-<translation id="1508507608940204251">사용</translation>
 <translation id="1516740043221086139">방해 금지 모드가 사용 설정되어 있습니다.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{알림 설정을 표시합니다. 앱 1개의 알림이 사용 중지되어 있습니다.}other{알림 설정을 표시합니다. 앱 #개의 알림이 사용 중지되어 있습니다.}}</translation>
 <translation id="1525508553941733066">닫기</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">어시스턴트(로드 중...)</translation>
 <translation id="1838895407229022812">야간 조명이 꺼졌습니다.</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
-<translation id="1859889070386344428">사용 안함</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
 <translation id="1885785240814121742">지문으로 잠금 해제</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">키보드 레이아웃을 전환하려면 <ph name="KEYBOARD_SHORTCUT" />을(를) 누르세요.</translation>
 <translation id="2501920221385095727">고정키</translation>
 <translation id="2509468283778169019">CAPS LOCK이 켜져 있습니다.</translation>
-<translation id="2519465031217098801">사용</translation>
 <translation id="2542089167727451762">프로필 이미지 탭</translation>
 <translation id="255671100581129685">공개 세션에서는 Google 어시스턴트를 사용할 수 없습니다.</translation>
 <translation id="256712445991462162">고정 돋보기</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">붙여넣기</translation>
 <translation id="394485226368336402">오디오 설정</translation>
 <translation id="3962859241508114581">이전 트랙</translation>
-<translation id="3965097803111112935">사용 안함</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3977512764614765090">배터리가 <ph name="PERCENTAGE" />%이며 현재 충전 중입니다.</translation>
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">텍스트 캐럿 강조표시</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="523505283826916779">접근성 설정</translation>
-<translation id="5250225880026334010">사용 안함</translation>
 <translation id="5260676007519551770">데스크 4</translation>
 <translation id="5283198616748585639">1분 추가</translation>
 <translation id="528468243742722775">종료</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다. 해당 기기에서 다음 패스키를 입력하세요. <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">비밀번호</translation>
 <translation id="6665545700722362599">웹사이트, 앱, 확장 프로그램에 위치 서비스, 기기의 마이크, 카메라 또는 기타 기능을 사용할 권한 부여</translation>
-<translation id="6669268301501499730">사용</translation>
 <translation id="6670153871843998651">데스크 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">선택 항목과 관련된 정보 얻기</translation>

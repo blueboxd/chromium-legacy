@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Chromium 目前無法使用您的相機</translation>
 <translation id="2195025571279539885">您希望 Chromium 將來翻譯此網站的<ph name="LANGUAGE_NAME" />頁面嗎？</translation>
 <translation id="2590893390871230428">同步處理 Chromium 資料</translation>
+<translation id="2650312721222849884">如要在任何使用 Chromium 的裝置上查看分頁，請開啟同步處理功能</translation>
 <translation id="2730884209570016437">由於另一個應用程式正在使用相機，因此 Chromium 暫時無法使用</translation>
 <translation id="2915596697727466327">Chromium 透過 Face ID 確保只有獲授權人士才可存取您的密碼。</translation>
 <translation id="3256316712990552818">已複製至 Chromium</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">開啟 Chromium 掃瞄器</translation>
 <translation id="4787850887676698916">您在其他裝置上開啟的 Chromium 分頁會在這裡顯示。</translation>
 <translation id="4999538639245140991">由於您即將登出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帳戶，系統將刪除您在此裝置上的 Chromium 資料，但這些資料仍會保留在您的 Google 帳戶中。</translation>
+<translation id="5521125884468363740">如要在任何使用 Chromium 的裝置上查看分頁，請登入並開啟同步功能</translation>
 <translation id="5573014823074921752">Chromium 提示。如果要多啲標籤選項，請㩒住螢幕底部或者頂部工具列入面中嘅 [顯示分頁] 掣。</translation>
 <translation id="5777187867430702742">Chromium 頁面</translation>
 <translation id="5862307444128926510">歡迎使用 Chromium</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Chromium 提示。而家，有啲掣會喺螢幕底部，例如 [上一頁]、[下一頁] 同埋 [搜尋]。</translation>
 <translation id="786327964234957808">您正在將同步處理帳戶從 <ph name="USER_EMAIL1" /> 切換到 <ph name="USER_EMAIL2" />。您現有的 Chromium 資料由 <ph name="DOMAIN" /> 管理。這會刪除此裝置上的資料，但這些資料仍會保留在 <ph name="USER_EMAIL1" /> 中。</translation>
 <translation id="7890287942691234100">開始使用 Chromium 掃瞄器</translation>
+<translation id="8013573822802650211">如要在任何使用 Chromium 的裝置上查看分頁，請在所有裝置上登入</translation>
 <translation id="8073677936375100957">要清除此裝置上的 Chromium 資料嗎？</translation>
 <translation id="8175055321229419309">提示：<ph name="BEGIN_LINK" />請將 Chromium 移至工具列<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">讓 Google 在 Chromium 中根據您的位置帶來更貼心的體驗。</translation>

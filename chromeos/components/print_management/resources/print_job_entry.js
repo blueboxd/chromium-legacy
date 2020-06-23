@@ -12,10 +12,12 @@ import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import './icons.js';
+import './print_management_fonts_css.js';
 import './print_management_shared_css.js';
 import './printing_manager.mojom-lite.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {getMetadataProvider} from './mojo_interface_provider.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {FocusRowBehavior} from 'chrome://resources/js/cr/ui/focus_row_behavior.m.js';
@@ -148,6 +150,7 @@ Polymer({
 
   behaviors: [
     FocusRowBehavior,
+    I18nBehavior,
   ],
 
   /**
@@ -324,8 +327,8 @@ Polymer({
    * @private
    */
   getJobEntryAriaLabel_() {
-    if (!this.jobEntry || !this.jobEntry.numberOfPages != undefined ||
-        !this.printerName_ != undefined || !this.jobTitle_ != undefined ||
+    if (!this.jobEntry || this.jobEntry.numberOfPages === undefined ||
+        this.printerName_ === undefined || this.jobTitle_ === undefined ||
         !this.creationTime_) {
       return '';
     }

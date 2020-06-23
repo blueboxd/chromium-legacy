@@ -41,6 +41,13 @@ message SignedData {
   optional int32 extra_data_bytes = 3;
 }
 
+// Request from device to server to check user account type for enrollment.
+message CheckUserAccountRequest {
+  // Email address of a user.
+  // The user may not exist in GAIA.
+  optional string user_email = 1;
+}
+
 // Request from device to server to register a device, user or browser.
 message DeviceRegisterRequest {
   reserved 5, 10;
@@ -195,6 +202,28 @@ message DeviceRegisterRequest {
 message DeviceRegisterIdentification {
   // The attested device ID for devices using Zero-Touch (see go/zt-sn).
   optional string attested_device_id = 1;
+}
+
+// Response from server to device
+message CheckUserAccountResponse {
+  // Enum listing the possible user account status.
+  enum UserAccountType {
+    UNKNOWN_USER_ACCOUNT_TYPE = 0;
+
+    // There is no GAIA user exist mapping to the specific user email.
+    NOT_EXIST = 1;
+
+    // The GAIA user mapping to the specific user email is not a dasher user.
+    CONSUMER = 2;
+    // The GAIA user is a dasher user. See http://go/is-dasher-user
+    DASHER = 3;
+  }
+
+  // The domain abstracted from the specific email has been verified by dasher.
+  optional bool domain_verified = 1;
+
+  // The account type mapping from the specific user email.
+  optional UserAccountType user_account_type = 2;
 }
 
 // Response from server to device register request.
@@ -3316,7 +3345,16 @@ message DeviceManagementRequest {
   // A report on the status of extension install process.
   optional ExtensionInstallReportRequest extension_install_report_request = 35;
 
-  // Next id: 36.
+  // Request to check user account for smart enrollment.
+  optional CheckUserAccountRequest check_user_account_request = 36;
+
+  // This message is temporarily commented out due to build errors, to be
+  // resolved in crrev.com/c/2245131.
+  // Request from device to check the state stored in PSM. Currently, it is used
+  // for ZT/LP device initial enrollment state check.
+  // optional PrivateSetMembershipRequest private_set_membership_request = 37;
+
+  // Next id: 38.
 }
 
 // Response from server to device.
@@ -3446,7 +3484,15 @@ message DeviceManagementResponse {
   optional ClientCertificateProvisioningResponse
       client_certificate_provisioning_response = 33;
 
-  // Next id: 34.
+  // Response to a checking user account type for smart enrollment.
+  optional CheckUserAccountResponse check_user_account_response = 34;
+
+  // This message is temporarily commented out due to build errors, to be
+  // resolved in crrev.com/c/2245131.
+  // Response to a client private set membership request.
+  // optional PrivateSetMembershipResponse private_set_membership_response = 35;
+
+  // Next id: 36.
 }
 
 // Device State Information stored in the server is retrieval at

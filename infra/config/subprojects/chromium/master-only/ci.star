@@ -1769,6 +1769,8 @@ ci.fyi_ios_builder(
     properties = {
         'xcode_build_version': '11e146',
     },
+    schedule = '0 0,12 * * *',
+    triggered_by = [],
 )
 
 ci.fyi_ios_builder(
@@ -1789,7 +1791,36 @@ ci.fyi_ios_builder(
     name = 'ios13-sdk-simulator',
     console_view_entry = ci.console_view_entry(
         category = 'iOS|iOS13',
-        short_name = 'sim',
+        short_name = 'sdk13',
+    ),
+    caches = [xcode_cache.x11n700h],
+    executable = 'recipe:chromium',
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11n700h'
+    },
+    schedule = '0 6,18 * * *',
+    triggered_by = [],
+)
+
+ci.fyi_ios_builder(
+    name = 'ios14-beta-simulator',
+    console_view_entry = ci.console_view_entry(
+        category = 'iOS|iOS14',
+        short_name = 'ios14',
+    ),
+    executable = 'recipe:chromium',
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11e146',
+    },
+)
+
+ci.fyi_ios_builder(
+    name = 'ios14-sdk-simulator',
+    console_view_entry = ci.console_view_entry(
+        category = 'iOS|iOS14',
+        short_name = 'sdk14',
     ),
     caches = [xcode_cache.x11n700h],
     executable = 'recipe:chromium',

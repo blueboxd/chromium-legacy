@@ -39,6 +39,7 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
     private final int mDesiredFaviconWidthPx;
+    private final int mDecorationImageSizePx;
     private int mSuggestionSizePx;
     private @BaseSuggestionViewProperties.Density int mDensity =
             BaseSuggestionViewProperties.Density.COMFORTABLE;
@@ -52,6 +53,8 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
         mSuggestionHost = host;
         mDesiredFaviconWidthPx = mContext.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_favicon_size);
+        mDecorationImageSizePx = context.getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_decoration_image_size);
         mSuggestionSizePx = mContext.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_comfortable_height);
     }
@@ -61,6 +64,13 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
      */
     protected int getDesiredFaviconSize() {
         return mDesiredFaviconWidthPx;
+    }
+
+    /**
+     * @return The size of suggestion decoration images in pixels.
+     */
+    protected int getDecorationImageSize() {
+        return mDecorationImageSizePx;
     }
 
     @Override

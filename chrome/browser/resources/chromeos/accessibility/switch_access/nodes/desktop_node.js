@@ -75,6 +75,7 @@ class DesktopNode extends RootNodeWrapper {
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
 
     if (interestingChildren.length < 1) {
+      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.MALFORMED_DESKTOP,
           'Desktop node must have at least 1 interesting child.');

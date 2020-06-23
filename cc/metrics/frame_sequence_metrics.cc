@@ -340,6 +340,11 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   ThroughputUkmReporter* const ukm_reporter = metrics->ukm_reporter();
 
   if (is_animation) {
+    TRACE_EVENT_INSTANT2("cc,benchmark", "PercentDroppedFrames.AllAnimations",
+                         TRACE_EVENT_SCOPE_THREAD, "frames_expected",
+                         data.frames_expected, "frames_produced",
+                         data.frames_produced);
+
     UMA_HISTOGRAM_PERCENTAGE(
         "Graphics.Smoothness.PercentDroppedFrames.AllAnimations", percent);
     if (ukm_reporter) {
@@ -349,6 +354,10 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   }
 
   if (is_interaction) {
+    TRACE_EVENT_INSTANT2("cc,benchmark", "PercentDroppedFrames.AllInteractions",
+                         TRACE_EVENT_SCOPE_THREAD, "frames_expected",
+                         data.frames_expected, "frames_produced",
+                         data.frames_produced);
     UMA_HISTOGRAM_PERCENTAGE(
         "Graphics.Smoothness.PercentDroppedFrames.AllInteractions", percent);
     if (ukm_reporter) {
@@ -358,6 +367,10 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
   }
 
   if (is_animation || is_interaction) {
+    TRACE_EVENT_INSTANT2("cc,benchmark", "PercentDroppedFrames.AllSequences",
+                         TRACE_EVENT_SCOPE_THREAD, "frames_expected",
+                         data.frames_expected, "frames_produced",
+                         data.frames_produced);
     UMA_HISTOGRAM_PERCENTAGE(
         "Graphics.Smoothness.PercentDroppedFrames.AllSequences", percent);
     if (ukm_reporter) {

@@ -20,4 +20,7 @@ const base::Feature kSyncUseScryptForNewCustomPassphrases{
 const base::Feature kSyncSupportTrustedVaultPassphrase{
     "SyncSupportTrustedVaultPassphrase", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kSyncTriggerFullKeystoreMigration{
+    "SyncTriggerFullKeystoreMigration", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace switches

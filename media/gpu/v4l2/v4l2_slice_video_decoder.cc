@@ -434,7 +434,7 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue(bool stop_input_queue) {
     output_queue_->Streamoff();
 
   if (backend_)
-    backend_->OnStreamStopped();
+    backend_->OnStreamStopped(stop_input_queue);
 
   return true;
 }

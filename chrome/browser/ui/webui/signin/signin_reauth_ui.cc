@@ -22,6 +22,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "google_apis/gaia/core_account_id.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -96,7 +97,8 @@ SigninReauthUI::SigninReauthUI(content::WebUI* web_ui)
   source->AddString("accountImageUrl", GetAccountImageURL(profile));
 
   // Resources for testing.
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);

@@ -22,20 +22,6 @@ using storage::QuotaClient;
 
 namespace content {
 namespace {
-void ReportOrigins(QuotaClient::GetOriginsCallback callback,
-                   bool restrict_on_host,
-                   const std::string host,
-                   const std::vector<StorageUsageInfo>& usage_info) {
-  std::set<url::Origin> origins;
-  for (const StorageUsageInfo& info : usage_info) {
-    if (restrict_on_host && info.origin.host() != host) {
-      continue;
-    }
-    origins.insert(info.origin);
-  }
-  std::move(callback).Run(origins);
-}
-
 void ReportToQuotaStatus(QuotaClient::DeletionCallback callback, bool status) {
   std::move(callback).Run(status ? blink::mojom::QuotaStatusCode::kOk
                                  : blink::mojom::QuotaStatusCode::kUnknown);
@@ -46,7 +32,6 @@ void FindUsageForOrigin(QuotaClient::GetUsageCallback callback,
                         int64_t usage) {
   std::move(callback).Run(usage);
 }
-
 }  // namespace
 
 ServiceWorkerQuotaClient::ServiceWorkerQuotaClient(
@@ -68,16 +53,14 @@ void ServiceWorkerQuotaClient::GetOriginUsage(const url::Origin& origin,
 void ServiceWorkerQuotaClient::GetOriginsForType(StorageType type,
                                                  GetOriginsCallback callback) {
   DCHECK_EQ(type, StorageType::kTemporary);
-  context_->GetAllOriginsInfo(
-      base::BindOnce(&ReportOrigins, std::move(callback), false, ""));
+  context_->GetInstalledRegistrationOrigins(base::nullopt, std::move(callback));
 }
 
 void ServiceWorkerQuotaClient::GetOriginsForHost(StorageType type,
                                                  const std::string& host,
                                                  GetOriginsCallback callback) {
   DCHECK_EQ(type, StorageType::kTemporary);
-  context_->GetAllOriginsInfo(
-      base::BindOnce(&ReportOrigins, std::move(callback), true, host));
+  context_->GetInstalledRegistrationOrigins(host, std::move(callback));
 }
 
 void ServiceWorkerQuotaClient::DeleteOriginData(const url::Origin& origin,

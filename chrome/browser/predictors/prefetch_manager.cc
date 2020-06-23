@@ -66,26 +66,40 @@ PrefetchStats::PrefetchStats(const GURL& url)
     : url(url), start_time(base::TimeTicks::Now()) {}
 PrefetchStats::~PrefetchStats() = default;
 
-PrefetchInfo::PrefetchInfo(const GURL& url, size_t count)
-    : url(url),
-      queued_count(count),
-      stats(std::make_unique<PrefetchStats>(url)) {
+PrefetchInfo::PrefetchInfo(const GURL& url, PrefetchManager& manager)
+    : url(url), stats(std::make_unique<PrefetchStats>(url)), manager(&manager) {
   DCHECK(url.is_valid());
   DCHECK(url.SchemeIsHTTPOrHTTPS());
 }
 
 PrefetchInfo::~PrefetchInfo() = default;
 
-PrefetchJob::PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo* info)
+void PrefetchInfo::OnJobCreated() {
+  job_count++;
+}
+
+void PrefetchInfo::OnJobDestroyed() {
+  job_count--;
+  if (is_done()) {
+    // Destroys |this|.
+    manager->AllPrefetchJobsForUrlFinished(*this);
+  }
+}
+
+PrefetchJob::PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo& info)
     : url(prefetch_request.url),
       network_isolation_key(std::move(prefetch_request.network_isolation_key)),
-      info(info) {
+      info(info.weak_factory.GetWeakPtr()) {
   DCHECK(url.is_valid());
   DCHECK(url.SchemeIsHTTPOrHTTPS());
   DCHECK(network_isolation_key.IsFullyPopulated());
+  info.OnJobCreated();
 }
 
-PrefetchJob::~PrefetchJob() = default;
+PrefetchJob::~PrefetchJob() {
+  if (info)
+    info->OnJobDestroyed();
+}
 
 PrefetchManager::PrefetchManager(base::WeakPtr<Delegate> delegate,
                                  Profile* profile)
@@ -103,37 +117,40 @@ void PrefetchManager::Start(const GURL& url,
 
   PrefetchInfo* info;
   if (prefetch_info_.find(url) == prefetch_info_.end()) {
-    auto iterator_and_whether_inserted = prefetch_info_.emplace(
-        url, std::make_unique<PrefetchInfo>(url, requests.size()));
+    auto iterator_and_whether_inserted =
+        prefetch_info_.emplace(url, std::make_unique<PrefetchInfo>(url, *this));
     info = iterator_and_whether_inserted.first->second.get();
   } else {
     info = prefetch_info_.find(url)->second.get();
-    info->queued_count += requests.size();
   }
 
   for (auto& request : requests) {
-    PrefetchJobId job_id =
-        jobs_.Add(std::make_unique<PrefetchJob>(std::move(request), info));
-    queued_jobs_.push_back(job_id);
+    queued_jobs_.emplace_back(
+        std::make_unique<PrefetchJob>(std::move(request), *info));
   }
 
   TryToLaunchPrefetchJobs();
 }
 
-size_t PrefetchManager::inflight_jobs_count() const {
-  DCHECK_GE(jobs_.size(), queued_jobs_.size());
-  return jobs_.size() - queued_jobs_.size();
+void PrefetchManager::Stop(const GURL& url) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto it = prefetch_info_.find(url);
+  if (it == prefetch_info_.end())
+    return;
+  it->second->was_canceled = true;
 }
 
-void PrefetchManager::PrefetchUrl(PrefetchInfo& info,
-                                  const GURL& prefetch_url,
-                                  PrefetchJobId job_id,
+void PrefetchManager::PrefetchUrl(std::unique_ptr<PrefetchJob> job,
                                   network::SharedURLLoaderFactory& factory) {
+  DCHECK(job);
+  DCHECK(job->info);
+
+  PrefetchInfo& info = *job->info;
   url::Origin top_frame_origin = url::Origin::Create(info.url);
 
   network::ResourceRequest request;
   request.method = "GET";
-  request.url = prefetch_url;
+  request.url = job->url;
   request.site_for_cookies = net::SiteForCookies::FromUrl(info.url);
   request.request_initiator = top_frame_origin;
   request.referrer = info.url;
@@ -176,7 +193,7 @@ void PrefetchManager::PrefetchUrl(PrefetchInfo& info,
       network::mojom::kURLLoadOptionNone, request, std::move(url_loader_client),
       net::MutableNetworkTrafficAnnotationTag(kPrefetchTrafficAnnotation));
 
-  ++info.inflight_count;
+  ++inflight_jobs_count_;
 
   // The idea of prefetching is for the network service to put the response in
   // the http cache. So from the prefetching layer, nothing needs to be done
@@ -184,29 +201,13 @@ void PrefetchManager::PrefetchUrl(PrefetchInfo& info,
   network::EmptyURLLoaderClient::DrainURLRequest(
       std::move(client_receiver), std::move(loader),
       base::BindOnce(&PrefetchManager::OnPrefetchFinished,
-                     weak_factory_.GetWeakPtr(), job_id));
+                     weak_factory_.GetWeakPtr(), std::move(job)));
 }
 
-PrefetchInfo* PrefetchManager::GetJobInfo(PrefetchJobId job_id) {
+void PrefetchManager::OnPrefetchFinished(std::unique_ptr<PrefetchJob> job) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  PrefetchJob* job = jobs_.Lookup(job_id);
-  DCHECK(job);
-  return job->info;
-}
-
-void PrefetchManager::OnPrefetchFinished(PrefetchJobId job_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  // Get the info before destroying the job.
-  PrefetchInfo* info = GetJobInfo(job_id);
-  jobs_.Remove(job_id);
-
-  // Clean up the job and start more if needed.
-  DCHECK_GT(info->inflight_count, 0u);
-  --info->inflight_count;
-  if (info->is_done())
-    AllPrefetchJobsForUrlFinished(info);
+  --inflight_jobs_count_;
   TryToLaunchPrefetchJobs();
 }
 
@@ -221,32 +222,26 @@ void PrefetchManager::TryToLaunchPrefetchJobs() {
   scoped_refptr<network::SharedURLLoaderFactory> factory =
       storage_partition->GetURLLoaderFactoryForBrowserProcess();
 
-  while (!queued_jobs_.empty() && inflight_jobs_count() < kMaxInflightJobs) {
-    auto job_id = queued_jobs_.front();
+  while (!queued_jobs_.empty() && inflight_jobs_count_ < kMaxInflightJobs) {
+    std::unique_ptr<PrefetchJob> job = std::move(queued_jobs_.front());
     queued_jobs_.pop_front();
-    PrefetchJob* job = jobs_.Lookup(job_id);
-    DCHECK(job);
-    PrefetchInfo* info = job->info;
+    base::WeakPtr<PrefetchInfo> info = job->info;
+    // |this| owns all infos.
+    DCHECK(info);
 
-    if (job->url.is_valid() && factory)
-      PrefetchUrl(*info, job->url, job_id, *factory);
-
-    DCHECK_LE(1u, info->queued_count);
-    --info->queued_count;
-    if (info->is_done())
-      AllPrefetchJobsForUrlFinished(info);
+    if (job->url.is_valid() && factory && !info->was_canceled)
+      PrefetchUrl(std::move(job), *factory);
   }
 }
 
-void PrefetchManager::AllPrefetchJobsForUrlFinished(PrefetchInfo* info) {
-  DCHECK(info);
-  DCHECK(info->is_done());
-  auto it = prefetch_info_.find(info->url);
+void PrefetchManager::AllPrefetchJobsForUrlFinished(PrefetchInfo& info) {
+  DCHECK(info.is_done());
+  auto it = prefetch_info_.find(info.url);
   DCHECK(it != prefetch_info_.end());
-  DCHECK(info == it->second.get());
+  DCHECK(&info == it->second.get());
 
   if (delegate_)
-    delegate_->PrefetchFinished(std::move(info->stats));
+    delegate_->PrefetchFinished(std::move(info.stats));
   prefetch_info_.erase(it);
 }
 

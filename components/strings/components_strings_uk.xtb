@@ -1250,7 +1250,6 @@
 <translation id="6240447795304464094">Логотип Google Pay</translation>
 <translation id="6241121617266208201">Сховати пропозиції</translation>
 <translation id="624499991300733384">Сервіс компонування друку</translation>
-<translation id="6251924700383757765">Політика конфіденційності</translation>
 <translation id="6254436959401408446">Недостатньо пам’яті, щоб відкрити цю сторінку</translation>
 <translation id="625755898061068298">Ви вимкнули показ застережень про небезпеку для цього сайту.</translation>
 <translation id="6259156558325130047">&amp;Повторити перевпорядкування</translation>
@@ -1537,6 +1536,7 @@
 <translation id="7485870689360869515">Даних не знайдено.</translation>
 <translation id="7488762544858401571">Відредагований файл</translation>
 <translation id="7495290002932347110">Ваш пароль розкрито через порушення безпеки даних на сайті чи в додатку, якими ви користуєтеся. Chrome радить перевірити збережені паролі, а також негайно змінити пароль на сайті <ph name="ORIGIN" />.</translation>
+<translation id="7495528107193238112">Підключення заблоковано. Щоб вирішити проблему, зв'яжіться з власником сайту.</translation>
 <translation id="7498234416455752244">Продовжити редагування</translation>
 <translation id="7503664977220660814">Щойно ви ввели пароль на оманливому сайті. Chromium радить перевірити збережені паролі для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> та інших сайтів, де використовується цей пароль.</translation>
 <translation id="7508255263130623398">Отриманий ідентифікатор правил пристрою порожній або не збігається з поточним ідентифікатором пристрою</translation>
@@ -1636,7 +1636,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Немає}=1{1 додаток (<ph name="EXAMPLE_APP_1" />)}=2{2 додатки (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# додаток (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}few{# додатки (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}many{# додатків (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}other{# додатка (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="7858256690562840157">Допоможіть посилити безпеку в Інтернеті для всіх користувачів, надсилаючи в Google <ph name="BEGIN_WHITEPAPER_LINK" />URL-адреси та вміст деяких відвіданих сторінок, а також обмежену системну інформацію<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Залишити сайт?</translation>
 <translation id="7865448901209910068">Оптимальна швидкість</translation>
 <translation id="7874263914261512992">Щойно ви ввели пароль на оманливому сайті. Chrome радить перевірити збережені паролі для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> та інших сайтів, де використовується цей пароль.</translation>

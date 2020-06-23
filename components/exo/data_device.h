@@ -48,17 +48,15 @@ class DataDevice : public WMHelper::DragDropObserver,
   // be null if the data will be transferred only in the client.  |origin| is
   // the surface which starts the drag and drop operation. |icon| is the
   // nullable image which is rendered at the next to cursor while drag
-  // operation. |serial| is the unique number comes from input events which
-  // triggers the drag and drop operation.
+  // operation.
   void StartDrag(DataSource* source,
                  Surface* origin,
                  Surface* icon,
                  ui::DragDropTypes::DragEventSource event_source);
 
   // Sets selection data to the clipboard.
-  // |source| represents data comes from the client. |serial| is the unique
-  // number comes from input events which triggers the drag and drop operation.
-  void SetSelection(DataSource* source, uint32_t serial);
+  // |source| represents data comes from the client.
+  void SetSelection(DataSource* source);
 
   // Overridden from WMHelper::DragDropObserver:
   void OnDragEntered(const ui::DropTargetEvent& event) override;

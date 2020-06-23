@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">کپی شد</translation>
 <translation id="2822354292072154809">مطمئن‌اید می‌خواهید همه مجوزهای سایت مربوط به <ph name="CHOSEN_OBJECT_NAME" /> را بازنشانی کنید؟</translation>
 <translation id="2870560284913253234">سایت</translation>
+<translation id="2874939134665556319">آهنگ قبلی</translation>
 <translation id="2910701580606108292">قبل از اجازه دادن به سایت‌ها برای پخش محتوای محافظت‌شده سؤال شود</translation>
 <translation id="2913331724188855103">سایت‌ها مجاز به ذخیره و خواندن داده‌های کوکی باشند (توصیه می‌شود)</translation>
 <translation id="2968755619301702150">بیننده گواهی</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">همگام‌سازی پس‌زمینه</translation>
 <translation id="3822502789641063741">فضای ذخیره سایت پاک شود؟</translation>
 <translation id="385051799172605136">بازگشت</translation>
+<translation id="3859306556332390985">جستجو به جلو</translation>
 <translation id="3955193568934677022">به سایت‌ها اجازه داده شود محتوای محافظت‌شده پخش کنند (توصیه می‌شود)</translation>
 <translation id="3987993985790029246">کپی پیوند</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> از ؟</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4008040567710660924">کوکی‌ها را برای سایت خاصی مجاز کنید.</translation>
+<translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4165986682804962316">تنظیمات سایت</translation>
 <translation id="4226663524361240545">اعلان‌ها ممکن است دستگاه را بلرزانند</translation>
 <translation id="4242533952199664413">باز کردن تنظیمات</translation>
 <translation id="4259722352634471385">پیمایش مسدود شده است: <ph name="URL" /></translation>
 <translation id="4278390842282768270">مجاز است</translation>
+<translation id="429312253194641664">سایتی درحال پخش رسانه است</translation>
 <translation id="4433925000917964731">‏صفحه ساده‌شده را Google ارائه کرده است</translation>
 <translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="445467742685312942">به سایت‌ها اجازه داده شود محتوای محافظت‌شده پخش کنند</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">انتقال به پایین</translation>
 <translation id="6766622839693428701">برای بستن، تند به پایین بکشید.</translation>
 <translation id="6782111308708962316">جلوگیری از ذخیره کردن و خواندن داده‌های کوکی توسط وب‌سایت‌های شخص ثالث</translation>
+<translation id="6790428901817661496">پخش</translation>
 <translation id="6818926723028410516">انتخاب موارد</translation>
 <translation id="6864395892908308021">‏این دستگاه نمی‌تواند NFC را بخواند</translation>
 <translation id="6910211073230771657">حذف شد</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">سایتی درحال استفاده از دوربین و میکروفونتان است</translation>
 <translation id="8380167699614421159">این سایتْ آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهد</translation>
 <translation id="8394832520002899662">برای برگشتن به سایت ضربه بزنید</translation>
+<translation id="8441146129660941386">جستجو به عقب</translation>
 <translation id="8447861592752582886">لغو مجوز دستگاه</translation>
 <translation id="8463851957836045671">سایت سریع است</translation>
 <translation id="851751545965956758">مسدود کردن سایت‌ها برای اتصال به دستگاه‌ها</translation>

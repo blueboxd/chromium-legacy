@@ -39,7 +39,8 @@ ASH_EXPORT void CrossFadeAnimationAnimateNewLayerOnly(
     aura::Window* window,
     const gfx::Rect& target_bounds,
     base::TimeDelta duration,
-    gfx::Tween::Type tween_type);
+    gfx::Tween::Type tween_type,
+    const std::string& histogram_name);
 
 ASH_EXPORT bool AnimateOnChildWindowVisibilityChanged(aura::Window* window,
                                                       bool visible);

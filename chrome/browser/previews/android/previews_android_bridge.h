@@ -12,8 +12,17 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 
+namespace content {
+class WebContents;
+}
+
 class PreviewsAndroidBridge {
  public:
+  // Creates InfoBar that shows https images are optimized in the
+  // |web_contents|.
+  static void CreateHttpsImageCompressionInfoBar(
+      content::WebContents* web_contents);
+
   PreviewsAndroidBridge(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj);
   virtual ~PreviewsAndroidBridge();

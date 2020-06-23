@@ -6,6 +6,7 @@
 
 #include "chrome/common/buildflags.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
 #include "ui/resources/grit/webui_resources_map.h"
@@ -15,7 +16,8 @@ namespace webui {
 namespace {
 
 void SetupPolymer3Defaults(content::WebUIDataSource* source) {
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
   source->UseStringsJs();
   source->EnableReplaceI18nInJS();

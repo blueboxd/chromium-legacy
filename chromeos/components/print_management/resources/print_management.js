@@ -15,6 +15,7 @@ import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 import 'chrome://resources/mojo/url/mojom/url.mojom-lite.js';
 import './print_job_clear_history_dialog.js';
 import './print_job_entry.js';
+import './print_management_fonts_css.js';
 import './print_management_shared_css.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';

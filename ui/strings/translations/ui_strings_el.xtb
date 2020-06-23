@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Η βαθμονόμηση ολοκληρώθηκε</translation>
 <translation id="252373100621549798">Άγνωστη οθόνη</translation>
 <translation id="2545651323591713692">Αναβολή</translation>
+<translation id="2570734079541893434">Διαχείριση ρυθμίσεων</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{σε 1 ω.}other{σε # ω.}}</translation>
 <translation id="2583543531130364912">Βαθμονόμηση οθόνης αφής</translation>
 <translation id="2666092431469916601">Κορυφή</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Μετάβαση στη σελίδα <ph name="PAGE_NUMBER" />, σειρά <ph name="ROW_NUMBER" />, στήλη <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Να μην γίνει αποκλεισμός</translation>
 <translation id="7907591526440419938">Άνοιγμα αρχείου</translation>
+<translation id="7952747673138230804">Το Chrome OS εμφανίζει προτάσεις για νέο περιεχόμενο για εξερεύνηση. Στέλνει στατιστικά στοιχεία για τη βελτίωση της ποιότητας, μόνο σε περίπτωση που έχετε επιλέξει να κοινοποιείτε δεδομένα χρήσης. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Πλήκτρο Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Περισσότερες από 1 μη αναγνωσμένες ειδοποιήσεις}other{Περισσότερες από # μη αναγνωσμένες ειδοποιήσεις}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{σε 1 λ.}other{σε # λ.}}</translation>

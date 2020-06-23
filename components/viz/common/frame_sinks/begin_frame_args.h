@@ -131,7 +131,7 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
 
   // Returns how much time the display should reserve for draw and swap if the
   // BeginFrame interval is |interval|.
-  static base::TimeDelta DefaultEstimatedDisplayDrawTime(
+  static constexpr base::TimeDelta DefaultEstimatedDisplayDrawTime(
       base::TimeDelta interval) {
     return interval * kDefaultEstimatedDisplayDrawTimeRatio;
   }

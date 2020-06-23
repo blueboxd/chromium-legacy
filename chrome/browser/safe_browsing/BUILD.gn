@@ -266,14 +266,13 @@ static_library("safe_browsing") {
       }
     } else if (safe_browsing_mode == 2) {
       sources += [
-        "android/safe_browsing_bridge.cc",
         "android/services_delegate_android.cc",
         "android/services_delegate_android.h",
         "telemetry/android/android_telemetry_service.cc",
         "telemetry/android/android_telemetry_service.h",
       ]
       deps += [
-        "//chrome/android:jni_headers",
+        "//chrome/browser/safe_browsing/android",
         "//components/safe_browsing:buildflags",
         "//components/safe_browsing/android:safe_browsing_mobile",
       ]

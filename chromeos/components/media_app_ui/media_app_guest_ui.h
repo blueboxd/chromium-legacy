@@ -9,10 +9,13 @@ namespace content {
 class WebUIDataSource;
 }
 
+class MediaAppUIDelegate;
+
 namespace chromeos {
 
 // The data source for chrome-untrusted://media-app.
-content::WebUIDataSource* CreateMediaAppUntrustedDataSource();
+content::WebUIDataSource* CreateMediaAppUntrustedDataSource(
+    MediaAppUIDelegate* delegate);
 
 }  // namespace chromeos
 

@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">کیلیبریشن مکمل ہوگیا</translation>
 <translation id="252373100621549798">نامعلوم ڈسپلے</translation>
 <translation id="2545651323591713692">اسنوز کریں</translation>
+<translation id="2570734079541893434">ترتیبات کا نظم کریں</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 گھنٹے میں}other{# گھنٹے میں}}</translation>
 <translation id="2583543531130364912">اپنی ٹچ اسکرین کو کیلیبریٹ کریں</translation>
 <translation id="2666092431469916601">سرفہرست</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">صفحہ <ph name="PAGE_NUMBER" />، قطار <ph name="ROW_NUMBER" />، کالم <ph name="COLUMN_NUMBER" /> میں منتقل کر دیا گیا۔</translation>
 <translation id="7879499977785298635">مسدود نہ کریں</translation>
 <translation id="7907591526440419938">فائل کھولیں</translation>
+<translation id="7952747673138230804">‏Chrome OS نئے مواد کے لیے دریافت کرنے کی خاطر تجاویز دکھاتا ہے۔ یہ کوالٹی کو بہتر بنانے کے لیے اعداد و شمار صرف تب بھیجتا ہے جب آپ نے استعمال کے ڈیٹا کا اشتراک کرنے کو منتخب کیا ہو۔ <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">کمانڈ</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{1 سے زیادہ بغیر پڑھی ہوئی اطلاع}other{# سے زیادہ بغیر پڑھی ہوئی اطلاعات}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 منٹ میں}other{# منٹ میں}}</translation>

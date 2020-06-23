@@ -22,6 +22,7 @@ MediaKeySessions
 MediaKeys
 NavigationStart
 Nodes
+ProcessTime
 RTCPeerConnections
 RecalcStyleCount
 RecalcStyleDuration

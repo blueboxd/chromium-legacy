@@ -259,7 +259,7 @@ StoragePartition* BrowserContext::GetStoragePartition(
 
   if (site_instance) {
     GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-        browser_context, site_instance->GetSiteURL(), true, &partition_domain,
+        browser_context, site_instance->GetSiteURL(), &partition_domain,
         &partition_name, &in_memory);
   }
 
@@ -276,8 +276,7 @@ StoragePartition* BrowserContext::GetStoragePartitionForSite(
   bool in_memory;
 
   GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-      browser_context, site, true, &partition_domain, &partition_name,
-      &in_memory);
+      browser_context, site, &partition_domain, &partition_name, &in_memory);
 
   return GetStoragePartitionFromConfig(browser_context, partition_domain,
                                        partition_name, in_memory, can_create);

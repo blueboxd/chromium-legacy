@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import remote_cmd
+import runner_logs
 import shutil
 import subprocess
 import sys
@@ -211,16 +212,17 @@ class Target(object):
   def _AssertIsStarted(self):
     assert self.IsStarted()
 
-  def _WaitUntilReady(self, ssh_diagnostic_log_file=open(os.devnull, 'w')):
+  def _WaitUntilReady(self):
     logging.info('Connecting to Fuchsia using SSH.')
 
     host, port = self._GetEndpoint()
     end_time = time.time() + _ATTACH_RETRY_SECONDS
+    ssh_diagnostic_log = runner_logs.FileStreamFor('ssh_diagnostic_log')
     while time.time() < end_time:
       runner = remote_cmd.CommandRunner(self._GetSshConfigPath(), host, port)
       ssh_proc = runner.RunCommandPiped(['true'],
                                         ssh_args=['-v'],
-                                        stdout=ssh_diagnostic_log_file,
+                                        stdout=ssh_diagnostic_log,
                                         stderr=subprocess.STDOUT)
       if ssh_proc.wait() == 0:
         logging.info('Connected!')
@@ -229,7 +231,6 @@ class Target(object):
       time.sleep(_ATTACH_RETRY_INTERVAL)
 
     logging.error('Timeout limit reached.')
-    ssh_diagnostic_log_file.flush()
 
     raise FuchsiaTargetException('Couldn\'t connect using SSH.')
 

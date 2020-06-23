@@ -140,9 +140,21 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
         return ((TabImpl) tab).canBrowserControlsScrollForTesting();
     }
 
+    @Override
+    public void setIgnoreMissingKeyForTranslateManager(boolean ignore) {
+        TestWebLayerImplJni.get().setIgnoreMissingKeyForTranslateManager(ignore);
+    }
+
+    @Override
+    public void forceNetworkConnectivityState(boolean networkAvailable) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { NetworkChangeNotifier.forceConnectivityState(true); });
+    }
+
     @NativeMethods
     interface Natives {
         void waitForBrowserControlsMetadataState(
                 long tabImpl, int top, int bottom, Runnable runnable);
+        void setIgnoreMissingKeyForTranslateManager(boolean ignore);
     }
 }

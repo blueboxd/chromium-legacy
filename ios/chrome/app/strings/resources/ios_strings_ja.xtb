@@ -33,6 +33,7 @@
 <translation id="1323735185997015385">削除</translation>
 <translation id="132683371494960526">ダブルタップして親フォルダを変更。</translation>
 <translation id="1340643665687018190">メニューを閉じる</translation>
+<translation id="1345319103680304157">漏洩した可能性のあるパスワードはありません</translation>
 <translation id="1358214951266274152">コピーしたリンクに移動</translation>
 <translation id="1360432990279830238">ログアウトして同期をオフにしますか？</translation>
 <translation id="1375321115329958930">保存したパスワード</translation>
@@ -93,7 +94,6 @@
 <translation id="2073572773299281212">最終同期: <ph name="DAYS" /> 日前</translation>
 <translation id="2074131957428911366">同期する項目はいつでも [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で選択できます。</translation>
 <translation id="2079545284768500474">元に戻す</translation>
-<translation id="2081417079511601293">シークレット モードでサードパーティの Cookie をブロック</translation>
 <translation id="209018056901015185">PC版サイトをリクエスト</translation>
 <translation id="2103075008456228677">history.google.com を開く</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" />件の項目を移動しました</translation>
@@ -177,6 +177,9 @@
 <translation id="298306318844797842">お支払い方法を追加...</translation>
 <translation id="2989805286512600854">新しいタブで開く</translation>
 <translation id="3037605927509011580">エラー</translation>
+<translation id="3089107351814154346">サイトは、Cookie を使用してブラウジングの利便性を改善することができます。ログイン状態を維持することや、ショッピング カートの中身を保存することなどが可能になります。
+
+シークレット モードのとき、サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。</translation>
 <translation id="3112556859945124369">マーク...</translation>
 <translation id="3131206671572504478">すべてブロック</translation>
 <translation id="3153862085237805241">カードを保存</translation>
@@ -191,6 +194,9 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />、<ph name="ADDITIONAL_INFO" />、<ph name="INDEX" /> / <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">開いているタブ</translation>
+<translation id="3273647133355801546">サイトは、Cookie を使用してブラウジングの利便性を改善することができます。ログイン状態を維持することや、ショッピング カートの中身を保存することなどが可能になります。
+
+サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認することができます。広告のカスタマイズなどが可能になります。</translation>
 <translation id="3277021493514034324">サイトのアドレスがコピーされました</translation>
 <translation id="3290875554372353449">アカウントの選択</translation>
 <translation id="3311748811247479259">オフ</translation>
@@ -235,6 +241,7 @@
 <translation id="3789841737615482174">インストール</translation>
 <translation id="3803696231112616155">このサイトを翻訳するか尋ねる</translation>
 <translation id="385051799172605136">戻る</translation>
+<translation id="3892144330757387737">履歴はここに表示されます</translation>
 <translation id="3897092660631435901">メニュー</translation>
 <translation id="3915450441834151894">サイト情報</translation>
 <translation id="3922310737605261887">コピーしたテキストを検索</translation>
@@ -257,6 +264,7 @@
 <translation id="4112644173421521737">検索</translation>
 <translation id="4121993058175073134">エクスポート データのみを送信するには、設定アプリでメール アカウントを設定してください。</translation>
 <translation id="4124987746317609294">期間</translation>
+<translation id="4152011295694446843">ブックマークはここに表示されます</translation>
 <translation id="4172051516777682613">常に表示</translation>
 <translation id="418156467088430727">オフライン版を新しいタブで表示</translation>
 <translation id="4181841719683918333">言語</translation>
@@ -278,6 +286,7 @@
 <translation id="4469418912670346607">設定を続行</translation>
 <translation id="4476574785019001431">設定</translation>
 <translation id="4496373720959965247">タブを追加してページを切り替えることができます</translation>
+<translation id="4502566650163919158">今すぐ確認</translation>
 <translation id="4508750114462689118">ログイン プロモーションを閉じる</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
@@ -309,6 +318,7 @@
 <translation id="4840495572919996524">ブックマーク、履歴、パスワードなどの設定は Google アカウントと同期されなくなります。</translation>
 <translation id="4854345657858711387">パスコードの設定</translation>
 <translation id="4860895144060829044">通話</translation>
+<translation id="4872323082491632254">パスワードを確認</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4901778704868714008">保存...</translation>
 <translation id="4904877109095351937">既読にする</translation>
@@ -341,6 +351,7 @@
 <translation id="5300589172476337783">表示</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="5327248766486351172">名前</translation>
+<translation id="5339316356165661760">同期をオンにする</translation>
 <translation id="5352285283572729470">この設定は管理されています</translation>
 <translation id="5388358297987318779">画像を開く</translation>
 <translation id="5407969256130905701">変更を破棄</translation>
@@ -370,6 +381,7 @@
 <translation id="5728700505257787410">アカウントへのログイン中に問題が発生しました。</translation>
 <translation id="5737974891429562743">アカウントのログイン情報が古くなっています。同期を開始するには更新してください。</translation>
 <translation id="5738887413654608789">この機能を使用すると、周囲で発信されているデータを受信して関連のあるウェブページを表示することができます。</translation>
+<translation id="5758631781033351321">リーディング リストはここに表示されます</translation>
 <translation id="5782227691023083829">翻訳しています...</translation>
 <translation id="5803566855766646066">この新しいカードを破棄してもよろしいですか？</translation>
 <translation id="5816228676161003208">音声を使ってより速く検索できます。</translation>
@@ -400,6 +412,9 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
+<translation id="6096382830554887001">サイトは、Cookie を使用してブラウジングの利便性を改善することができます。ログイン状態を維持することや、ショッピング カートの中身を保存することなどが可能になります。
+
+サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。</translation>
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6119050551270742952">現在シークレット モードです</translation>
 <translation id="6122191549521593678">オンライン</translation>
@@ -431,6 +446,7 @@
 <translation id="6380866119319257197">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
 <translation id="6389470377220713856">カード名義人（半角英文字）</translation>
 <translation id="6406506848690869874">同期</translation>
+<translation id="6410883413783534063">タブを開くと、さまざまなページに同時にアクセスできます</translation>
 <translation id="6417838470969808600"><ph name="USER_EMAIL1" /> のブックマーク、履歴、パスワードとその他の設定を使用できます。</translation>
 <translation id="641799622251403418"><ph name="EMAIL" /> としてログインしています。
 
@@ -473,6 +489,7 @@
 <translation id="6856384753476268833">組織によって管理されています。</translation>
 <translation id="6858855187367714033">スキャンされました</translation>
 <translation id="6859944681507688231">QR コードまたはクレジット カードをスキャンするには、設定でカメラを有効にしてください。</translation>
+<translation id="6869389390665537774">アクセスしたページを確認したり履歴から消去したりできます</translation>
 <translation id="6873263987691478642">分割表示</translation>
 <translation id="6888009575607455378">変更を破棄してもよろしいですか？</translation>
 <translation id="6896758677409633944">コピー</translation>
@@ -499,6 +516,7 @@
 <translation id="7133798577887235672">氏名</translation>
 <translation id="7136892417564438900">カメラを使用できません</translation>
 <translation id="7159472599653637159">モバイルサイトをリクエスト</translation>
+<translation id="7172852049901402487">セキュリティの問題からパスワードを保護します</translation>
 <translation id="7173114856073700355">設定を開く</translation>
 <translation id="7189598951263744875">共有...</translation>
 <translation id="7192050974311852563">ログ記録を開始</translation>
@@ -507,6 +525,7 @@
 <translation id="7272437679830969316">ユーザー認証に失敗しました。パスワードはコピーされませんでした。</translation>
 <translation id="7291368939935408496">パスワードの準備中...</translation>
 <translation id="7293171162284876153">同期を開始するには、[Chrome データを同期] をオンにしてください。</translation>
+<translation id="7313347584264171202">シークレット タブはここに表示されます</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" />%ダウンロード</translation>
 <translation id="7346909386216857016">OK</translation>
 <translation id="734758817008927353">カードの保存オプション</translation>
@@ -564,6 +583,7 @@
 <translation id="8019783059653722575">写真を保存してアップロードできます。</translation>
 <translation id="802154636333426148">ダウンロード エラー</translation>
 <translation id="8023878949384262191">セクションを展開します。</translation>
+<translation id="804427445359061970">他のデバイスで開いたタブはここに表示されます</translation>
 <translation id="8059533439631660104">セクションを折りたたみます。</translation>
 <translation id="806745655614357130">データを別に保持する</translation>
 <translation id="8073670137947914548">ダウンロードが完了しました</translation>
@@ -577,6 +597,9 @@
 <translation id="8206354486702514201">この設定は管理者によって制御されています。</translation>
 <translation id="8225985093977202398">キャッシュされた画像とファイル</translation>
 <translation id="8261506727792406068">削除</translation>
+<translation id="8262263934052349464">サイトは、Cookie を使用してブラウジングの利便性を改善することができません。ログイン状態を維持することや、ショッピング カートの中身を保存することなどができなくなります。
+
+サイトは、Cookie を使用して別のサイトでのあなたの閲覧アクティビティを確認できず、広告のカスタマイズなどが行えなくなります。</translation>
 <translation id="8281781826761538115">デフォルト - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">新しく検索</translation>
 <translation id="8323906514956095947">長押しすると、タブのオプションがさらに表示されます</translation>
@@ -588,6 +611,7 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8458397775385147834">1件の項目を削除しました</translation>
 <translation id="8459333855531264009">この通信は保護されていません</translation>
+<translation id="8484911814435057959">パスワードが漏洩した可能性があります</translation>
 <translation id="8487667956631253959">オン</translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8490978609246021741">変更を保存</translation>
@@ -612,6 +636,7 @@
 <translation id="8725066075913043281">やり直し</translation>
 <translation id="8730621377337864115">完了</translation>
 <translation id="8741995161408053644">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
+<translation id="8750037785291841318">タブはここに表示されます</translation>
 <translation id="8756969031206844760">パスワードを更新しますか？</translation>
 <translation id="8775144690796719618">無効なURL</translation>
 <translation id="8803639129939845298">この通信は保護されています</translation>

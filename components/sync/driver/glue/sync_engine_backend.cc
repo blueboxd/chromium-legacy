@@ -402,18 +402,6 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
     return;
   }
 
-  // Note: experiments are currently handled via SBH::AddExperimentalTypes,
-  // which is called at the end of every sync cycle.
-  // TODO(zea): eventually add an experiment handler and initialize it here.
-
-  const UserShare* user_share = sync_manager_->GetUserShare();
-  if (!user_share) {  // Null in some tests.
-    DVLOG(1) << "Skipping initialization of DeviceInfo";
-    host_.Call(FROM_HERE,
-               &SyncEngineImpl::HandleInitializationFailureOnFrontendLoop);
-    return;
-  }
-
   if (!sync_manager_->InitialSyncEndedTypes().HasAll(ControlTypes())) {
     LOG(ERROR) << "Failed to download control types";
     host_.Call(FROM_HERE,
@@ -421,7 +409,6 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
     return;
   }
 
-  DCHECK_EQ(user_share->directory->cache_guid(), sync_manager_->cache_guid());
   host_.Call(
       FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
       registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,

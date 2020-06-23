@@ -35,6 +35,12 @@ static CSPDirectiveName CSPFallback(CSPDirectiveName directive) {
     case CSPDirectiveName::FormAction:
     case CSPDirectiveName::NavigateTo:
     case CSPDirectiveName::FrameAncestors:
+    case CSPDirectiveName::ImgSrc:
+    case CSPDirectiveName::MediaSrc:
+    case CSPDirectiveName::ObjectSrc:
+    case CSPDirectiveName::ScriptSrc:
+    case CSPDirectiveName::StyleSrc:
+    case CSPDirectiveName::WorkerSrc:
       return CSPDirectiveName::Unknown;
 
     case CSPDirectiveName::FrameSrc:
@@ -78,6 +84,12 @@ const char* ErrorMessage(CSPDirectiveName directive) {
     case CSPDirectiveName::ChildSrc:
     case CSPDirectiveName::DefaultSrc:
     case CSPDirectiveName::Unknown:
+    case CSPDirectiveName::ImgSrc:
+    case CSPDirectiveName::MediaSrc:
+    case CSPDirectiveName::ObjectSrc:
+    case CSPDirectiveName::ScriptSrc:
+    case CSPDirectiveName::StyleSrc:
+    case CSPDirectiveName::WorkerSrc:
       NOTREACHED();
       return nullptr;
   };
@@ -614,6 +626,18 @@ CSPDirectiveName ToCSPDirectiveName(const std::string& name) {
     return CSPDirectiveName::NavigateTo;
   if (name == "frame-ancestors")
     return CSPDirectiveName::FrameAncestors;
+  if (name == "img-src")
+    return CSPDirectiveName::ImgSrc;
+  if (name == "media-src")
+    return CSPDirectiveName::MediaSrc;
+  if (name == "object-src")
+    return CSPDirectiveName::ObjectSrc;
+  if (name == "script-src")
+    return CSPDirectiveName::ScriptSrc;
+  if (name == "style-src")
+    return CSPDirectiveName::StyleSrc;
+  if (name == "worker-src")
+    return CSPDirectiveName::WorkerSrc;
   return CSPDirectiveName::Unknown;
 }
 
@@ -631,6 +655,18 @@ std::string ToString(CSPDirectiveName name) {
       return "navigate-to";
     case CSPDirectiveName::FrameAncestors:
       return "frame-ancestors";
+    case CSPDirectiveName::ImgSrc:
+      return "img-src";
+    case CSPDirectiveName::MediaSrc:
+      return "media-src";
+    case CSPDirectiveName::ObjectSrc:
+      return "object-src";
+    case CSPDirectiveName::ScriptSrc:
+      return "script-src";
+    case CSPDirectiveName::StyleSrc:
+      return "style-src";
+    case CSPDirectiveName::WorkerSrc:
+      return "worker-src";
     case CSPDirectiveName::Unknown:
       return "";
   }

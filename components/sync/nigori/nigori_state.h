@@ -49,7 +49,7 @@ struct NigoriState {
   // Makes a deep copy of |this|.
   NigoriState Clone() const;
 
-  bool NeedsKeystoreKeyRotation() const;
+  bool NeedsKeystoreReencryption() const;
 
   std::unique_ptr<CryptographerImpl> cryptographer;
 

@@ -137,6 +137,7 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
 
     BeginFrameArgs GenerateBeginFrameArgs(uint64_t source_id,
                                           base::TimeTicks frame_time,
+                                          base::TimeTicks deadline,
                                           base::TimeTicks next_frame_time,
                                           base::TimeDelta vsync_interval);
 
@@ -282,10 +283,10 @@ class VIZ_COMMON_EXPORT BackToBackBeginFrameSource
   void OnTimerTick() override;
 
  private:
+  BeginFrameArgsGenerator begin_frame_args_generator_;
   std::unique_ptr<DelayBasedTimeSource> time_source_;
   base::flat_set<BeginFrameObserver*> observers_;
   base::flat_set<BeginFrameObserver*> pending_begin_frame_observers_;
-  uint64_t next_sequence_number_;
   base::WeakPtrFactory<BackToBackBeginFrameSource> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BackToBackBeginFrameSource);
@@ -315,6 +316,11 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   // DelayBasedTimeSourceClient implementation.
   void OnTimerTick() override;
 
+  // TODO(sunnyps): Apply deadline adjustment by default after fixing tests.
+  void set_apply_display_deadline_adjustment_for_testing(bool apply) {
+    apply_display_deadline_adjustment_ = apply;
+  }
+
  private:
   // The created BeginFrameArgs' sequence_number is calculated based on what
   // interval |frame_time| is in. For example, if |last_frame_time_| is 100,
@@ -331,6 +337,7 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   BeginFrameArgs last_begin_frame_args_;
 
   BeginFrameArgsGenerator begin_frame_args_generator_;
+  bool apply_display_deadline_adjustment_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);
 };

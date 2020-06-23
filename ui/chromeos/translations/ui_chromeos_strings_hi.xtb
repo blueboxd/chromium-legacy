@@ -354,7 +354,7 @@
 <translation id="5061708541166515394">कंट्रास्ट</translation>
 <translation id="5068919226082848014">पिज़्ज़ा</translation>
 <translation id="5081517858322016911"><ph name="TOTAL_FILE_SIZE" /> फ़ाइलें मिटा दी जाएंगी</translation>
-<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> आइटम <ph name="FOLDER_NAME" /> में जा रहे हैं</translation>
+<translation id="508423945471810158"><ph name="NUMBER_OF_ITEMS" /> आइटम <ph name="FOLDER_NAME" /> में ट्रांसफ़र हो रहे हैं</translation>
 <translation id="509429900233858213">कोई गड़बड़ी हुई.</translation>
 <translation id="5098629044894065541">हिब्रू</translation>
 <translation id="5123433949759960244">बास्केटबॉल</translation>
@@ -458,7 +458,7 @@
 <translation id="6054173164583630569">फ़्रेंच कीबोर्ड</translation>
 <translation id="6074825444536523002">Google फ़ॉर्म</translation>
 <translation id="6096979789310008754">खोज के लिए इस्तेमाल किए गए टेक्स्ट मिटा दिए गए हैं. सभी फ़ील्ड और फ़ोल्डर दिखाए जा रहे हैं.</translation>
-<translation id="610101264611565198"><ph name="FILE_NAME" />, <ph name="FOLDER_NAME" /> में जा रही है</translation>
+<translation id="610101264611565198"><ph name="FILE_NAME" />, <ph name="FOLDER_NAME" /> में ट्रांसफ़र हो रही है</translation>
 <translation id="6111770213269631447">लिप्यंतरण (namaskar → নমস্কার)</translation>
 <translation id="6129953537138746214">Space</translation>
 <translation id="6133173853026656527"><ph name="FILE_NAME" /> को ले जाया जा रहा है...</translation>
@@ -653,7 +653,7 @@
 <translation id="8193175696669055101">डिवाइस मॉडल</translation>
 <translation id="8208580316430297579">आर्टवर्क</translation>
 <translation id="8223479393428528563">इन फ़ाइलों को ऑफ़लाइन देखने को सेव करने के लिए, फिर से ऑनलाइन होकर, फ़ाइलों पर राइट-क्‍लिक करें और <ph name="OFFLINE_CHECKBOX_NAME" /> विकल्‍प चुनें.</translation>
-<translation id="8231972167769262174"><ph name="REMAINING_TIME" /> के बारे में</translation>
+<translation id="8231972167769262174">करीब <ph name="REMAINING_TIME" /></translation>
 <translation id="8249296373107784235">रद्द करें</translation>
 <translation id="8261506727792406068">मिटाएं</translation>
 <translation id="8269755669432358899">फ़ाइल के लिए सुझाव पैनल को छोटा करें</translation>

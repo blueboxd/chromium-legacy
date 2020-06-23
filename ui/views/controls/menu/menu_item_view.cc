@@ -735,14 +735,17 @@ void MenuItemView::UpdateMenuPartSizes() {
       icon_area_width_;
   int padding = 0;
   if (config.always_use_icon_to_label_padding) {
-    padding = config.item_horizontal_padding;
+    padding = LayoutProvider::Get()->GetDistanceMetric(
+        DISTANCE_RELATED_LABEL_HORIZONTAL);
   } else if (!config.icons_in_label) {
     padding = (has_icons_ || HasChecksOrRadioButtons())
-                  ? config.item_horizontal_padding
+                  ? LayoutProvider::Get()->GetDistanceMetric(
+                        DISTANCE_RELATED_LABEL_HORIZONTAL)
                   : 0;
   }
   if (use_touchable_layout)
-    padding = config.touchable_item_horizontal_padding;
+    padding = LayoutProvider::Get()->GetDistanceMetric(
+        DISTANCE_RELATED_LABEL_HORIZONTAL);
 
   label_start_ += padding;
 

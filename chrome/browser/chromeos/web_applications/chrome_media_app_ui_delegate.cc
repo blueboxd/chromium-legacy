@@ -4,9 +4,11 @@
 
 #include "chrome/browser/chromeos/web_applications/chrome_media_app_ui_delegate.h"
 
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "url/gurl.h"
 
 ChromeMediaAppUIDelegate::ChromeMediaAppUIDelegate(content::WebUI* web_ui)
@@ -30,4 +32,9 @@ base::Optional<std::string> ChromeMediaAppUIDelegate::OpenFeedbackDialog() {
   // TODO(crbug/1048368): Showing the feedback dialog can fail, communicate this
   // back to the client with an error string. For now assume dialog opened.
   return base::nullopt;
+}
+
+void ChromeMediaAppUIDelegate::PopulateLoadTimeData(
+    content::WebUIDataSource* source) {
+  source->AddString("appLocale", g_browser_process->GetApplicationLocale());
 }

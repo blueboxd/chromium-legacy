@@ -46,7 +46,7 @@ class ContextProvider;
 namespace cc {
 
 class DebugRectHistory;
-class FrameRateCounter;
+class DroppedFrameCounter;
 class HeadsUpDisplayLayerImpl;
 class ImageDecodeCache;
 class LayerTreeDebugState;
@@ -127,8 +127,7 @@ class CC_EXPORT LayerTreeImpl {
   TileManager* tile_manager() const;
   ImageDecodeCache* image_decode_cache() const;
   ImageAnimationController* image_animation_controller() const;
-  FrameRateCounter* frame_rate_counter() const;
-  base::Optional<int> current_universal_throughput();
+  DroppedFrameCounter* dropped_frame_counter() const;
   MemoryHistory* memory_history() const;
   DebugRectHistory* debug_rect_history() const;
   bool IsActiveTree() const;

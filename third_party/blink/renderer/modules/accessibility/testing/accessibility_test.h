@@ -33,6 +33,8 @@ class AccessibilityTest : public RenderingTest {
 
   AXObjectCacheImpl& GetAXObjectCache() const;
 
+  AXObject* GetAXObject(LayoutObject* layout_object) const;
+
   AXObject* GetAXObject(const Node& node) const;
 
   AXObject* GetAXRootObject() const;

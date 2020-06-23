@@ -21,6 +21,7 @@
 #include "components/prefs/pref_service.h"
 #include "net/base/escape.h"
 #include "net/base/mime_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/zlib/google/compression_utils.h"
 #include "ui/webui/webui_allowlist.h"
 
@@ -151,10 +152,13 @@ const ui::TemplateReplacements* TerminalSource::GetReplacements() {
   return &replacements_;
 }
 
-std::string TerminalSource::GetContentSecurityPolicyImgSrc() {
-  return "img-src * data:;";
-}
+std::string TerminalSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::ImgSrc) {
+    return "img-src * data:;";
+  } else if (directive == network::mojom::CSPDirectiveName::StyleSrc) {
+    return "style-src * 'unsafe-inline'; font-src *;";
+  }
 
-std::string TerminalSource::GetContentSecurityPolicyStyleSrc() {
-  return "style-src * 'unsafe-inline'; font-src *;";
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }

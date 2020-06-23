@@ -135,7 +135,6 @@
 #include "chrome/browser/ssl/chrome_security_blocking_page_factory.h"
 #include "chrome/browser/ssl/ssl_client_auth_metrics.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
-#include "chrome/browser/ssl/typed_navigation_timing_throttle.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/sync_file_system/local/sync_file_system_backend.h"
 #include "chrome/browser/tab_contents/tab_util.h"
@@ -1436,7 +1435,6 @@ bool ChromeContentBrowserClient::IsValidStoragePartitionId(
 void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
     content::BrowserContext* browser_context,
     const GURL& site,
-    bool can_be_default,
     std::string* partition_domain,
     std::string* partition_name,
     bool* in_memory) {
@@ -1447,40 +1445,23 @@ void ChromeContentBrowserClient::GetStoragePartitionConfigForSite(
   *in_memory = false;
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  bool success = extensions::WebViewGuest::GetGuestPartitionConfigForSite(
-      site, partition_domain, partition_name, in_memory);
+  if (extensions::WebViewGuest::GetGuestPartitionConfigForSite(
+          site, partition_domain, partition_name, in_memory)) {
+    return;
+  }
 
-  if (!success && site.SchemeIs(extensions::kExtensionScheme)) {
-    // If |can_be_default| is false, the caller is stating that the |site|
-    // should be parsed as if it had isolated storage. In particular it is
-    // important to NOT check ExtensionService for the is_storage_isolated()
-    // attribute because this code path is run during Extension uninstall
-    // to do cleanup after the Extension has already been unloaded from the
-    // ExtensionService.
-    bool is_isolated = !can_be_default;
-    if (can_be_default) {
-      if (extensions::util::SiteHasIsolatedStorage(site, browser_context))
-        is_isolated = true;
-    }
-
-    if (is_isolated) {
-      CHECK(site.has_host());
-      // For extensions with isolated storage, the the host of the |site| is
-      // the |partition_domain|. The |in_memory| and |partition_name| are only
-      // used in guest schemes so they are cleared here.
-      *partition_domain = site.host();
-      *in_memory = false;
-      partition_name->clear();
-    }
-    success = true;
+  if (site.SchemeIs(extensions::kExtensionScheme) &&
+      extensions::util::SiteHasIsolatedStorage(site, browser_context)) {
+    CHECK(site.has_host());
+    // For extensions with isolated storage, the the host of the |site| is
+    // the |partition_domain|. The |in_memory| and |partition_name| are only
+    // used in guest schemes so they are cleared here.
+    *partition_domain = site.host();
+    *in_memory = false;
+    partition_name->clear();
+    return;
   }
 #endif
-
-  // Assert that if |can_be_default| is false, the code above must have found a
-  // non-default partition.  If this fails, the caller has a serious logic
-  // error about which StoragePartition they expect to be in and it is not
-  // safe to continue.
-  CHECK(can_be_default || !partition_domain->empty());
 }
 
 content::WebContentsViewDelegate*
@@ -3740,6 +3721,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kPdfConversion:
     case service_manager::SandboxType::kSharingService:
     case service_manager::SandboxType::kVideoCapture:
+    case service_manager::SandboxType::kIconReader:
       // Should never reach here.
       CHECK(0);
       return base::string16();
@@ -4033,10 +4015,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       base::BindOnce(&HandleSSLErrorWrapper), base::BindOnce(&IsInHostedApp)));
 
   throttles.push_back(std::make_unique<LoginNavigationThrottle>(handle));
-
-  MaybeAddThrottle(
-      TypedNavigationTimingThrottle::MaybeCreateThrottleFor(handle),
-      &throttles);
 
 #if !defined(OS_ANDROID)
   MaybeAddThrottle(DevToolsWindow::MaybeCreateNavigationThrottle(handle),

@@ -81,14 +81,15 @@ class AwBrowserProcess {
 
   void OnLoseForeground();
 
+  // Must be destroyed after |local_state_|.
+  std::unique_ptr<AwBrowserPolicyConnector> browser_policy_connector_;
+
   // If non-null, this object holds a pref store that will be taken by
   // AwBrowserProcess to create the |local_state_|.
   // The AwFeatureListCreator is owned by AwMainDelegate.
   AwFeatureListCreator* aw_feature_list_creator_;
 
   std::unique_ptr<PrefService> local_state_;
-
-  std::unique_ptr<AwBrowserPolicyConnector> browser_policy_connector_;
 
   // Accessed on both UI and IO threads.
   scoped_refptr<AwSafeBrowsingUIManager> safe_browsing_ui_manager_;

@@ -163,8 +163,8 @@ void X11Window::Initialize(PlatformWindowInitProperties properties) {
 #if defined(USE_OZONE)
   SetWmDragHandler(this, this);
 
-  drag_drop_client_ =
-      std::make_unique<XDragDropClient>(this, display(), window());
+  drag_drop_client_ = std::make_unique<XDragDropClient>(
+      this, connection()->display(), window());
 #endif
 }
 

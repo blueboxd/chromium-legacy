@@ -165,9 +165,16 @@ const KeyboardCodeKeyDownEntry kKeyboardCodeKeyDownEntries[] = {
     {VKEY_INSERT, kCtrlKey, "Copy"},
     {VKEY_INSERT, kShiftKey, "Paste"},
     {VKEY_DELETE, kShiftKey, "Cut"},
-#if !defined(OS_MACOSX)
-    // On OS X, we pipe these back to the browser, so that it can do menu item
-    // blinking.
+#if defined(OS_MACOSX)
+    {'C', kCommandKey, "Copy"},
+    {'V', kCommandKey, "Paste"},
+    {'V', kCommandKey | kShiftKey, "PasteAndMatchStyle"},
+    {'X', kCommandKey, "Cut"},
+    {'A', kCommandKey, "SelectAll"},
+    {'Z', kCommandKey, "Undo"},
+    {'Z', kCommandKey | kShiftKey, "Redo"},
+    {'Y', kCommandKey, "Redo"},
+#else
     {'C', kCtrlKey, "Copy"},
     {'V', kCtrlKey, "Paste"},
     {'V', kCtrlKey | kShiftKey, "PasteAndMatchStyle"},

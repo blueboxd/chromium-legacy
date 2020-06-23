@@ -144,26 +144,17 @@ guestMessagePipe.registerHandler(Message.SAVE_COPY, async (message) => {
   /** @type {!ChooseFileSystemEntriesOptions} */
   const options = {
     type: 'save-file',
-    accepts: [{extension, mimeTypes: [blob.type]}]
-  };
-  /** @type {!FileSystemHandle} */
-  let fileSystemHandle;
-  // chooseFileSystem is where recoverable errors happen, errors in the write
-  // process should be treated as unexpected and propagated through
-  // MessagePipe's standard exception handling.
-  try {
-    fileSystemHandle =
-        /** @type {!FileSystemHandle} */ (
-            await window.chooseFileSystemEntries(options));
-  } catch (/** @type {!DOMException} */ err) {
-    if (err.name !== 'SecurityError' && err.name !== 'AbortError') {
-      // Unknown error.
-      throw err;
-    }
-    console.log(`Aborting SAVE_COPY: ${err.message}`);
-    return err.name;
-  }
+    accepts: [{extension, mimeTypes: [blob.type]}],
 
+    // Without this, the file picker defaults to "All files" and will refuse to
+    // provide an extension automatically. See crbug/1082624#c23.
+    excludeAcceptAllOption: true,
+  };
+  // This may throw an error, but we can handle and recover from it on the
+  // unprivileged side.
+  /** @type {!FileSystemHandle} */
+  const fileSystemHandle = /** @type {!FileSystemHandle} */ (
+      await window.chooseFileSystemEntries(options));
   const {handle} = await getFileFromHandle(fileSystemHandle);
   // Note `handle` could be the same as a `FileSystemFileHandle` that exists in
   // `tokenMap`. Possibly even the `File` currently open. But that's OK. E.g.

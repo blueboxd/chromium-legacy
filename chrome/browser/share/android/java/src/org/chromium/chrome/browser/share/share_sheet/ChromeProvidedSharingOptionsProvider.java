@@ -183,8 +183,8 @@ public class ChromeProvidedSharingOptionsProvider {
                     mBottomSheetController.hideContent(mBottomSheetContent, true);
                 },
                 /*isFirstParty=*/true);
-        return new FirstPartyOption(
-                propertyModel, Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.IMAGE));
+        return new FirstPartyOption(propertyModel,
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.TEXT, ContentType.IMAGE));
     }
 
     private FirstPartyOption createCopyLinkFirstPartyOption() {
@@ -269,7 +269,8 @@ public class ChromeProvidedSharingOptionsProvider {
                 },
                 /*isFirstParty=*/true);
         return new FirstPartyOption(propertyModel,
-                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE));
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
+                        ContentType.IMAGE));
     }
 
     private FirstPartyOption createPrintingFirstPartyOption() {

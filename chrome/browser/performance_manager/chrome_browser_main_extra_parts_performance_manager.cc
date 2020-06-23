@@ -34,13 +34,13 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #include "base/allocator/buildflags.h"
 #if BUILDFLAG(USE_TCMALLOC)
-#include "chrome/browser/performance_manager/policies/dynamic_tcmalloc_policy_linux.h"
+#include "chrome/browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos.h"
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
 #endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
@@ -89,7 +89,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
                            CreatePolicyForPlatform());
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #if BUILDFLAG(USE_TCMALLOC)
   if (base::FeatureList::IsEnabled(
           performance_manager::features::kDynamicTcmallocTuning)) {
@@ -97,7 +97,7 @@ void ChromeBrowserMainExtraPartsPerformanceManager::CreatePoliciesAndDecorators(
                        performance_manager::policies::DynamicTcmallocPolicy>());
   }
 #endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
   graph->PassToGraph(FormInteractionTabHelper::CreateGraphObserver());

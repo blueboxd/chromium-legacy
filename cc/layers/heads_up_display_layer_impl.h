@@ -26,7 +26,7 @@ class ClientResourceProvider;
 }
 
 namespace cc {
-class FrameRateCounter;
+class DroppedFrameCounter;
 class LayerTreeFrameSink;
 class PaintCanvas;
 class PaintFlags;
@@ -76,24 +76,6 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   void PushPropertiesTo(LayerImpl* layer) override;
 
  private:
-  class Graph {
-   public:
-    Graph(double indicator_value, double start_upper_bound);
-
-    // Eases the upper bound, which limits what is currently visible in the
-    // graph, so that the graph always scales to either it's max or
-    // default_upper_bound.
-    double UpdateUpperBound();
-
-    double value;
-    double min;
-    double max;
-
-    double current_upper_bound;
-    const double default_upper_bound;
-    const double indicator;
-  };
-
   HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl, int id);
 
   const char* LayerTypeAsString() const override;
@@ -120,13 +102,13 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
                            const SkRect& bounds) const;
   void DrawGraphLines(PaintCanvas* canvas,
                       PaintFlags* flags,
-                      const SkRect& bounds,
-                      const Graph& graph) const;
+                      const SkRect& bounds) const;
 
-  SkRect DrawFPSDisplay(PaintCanvas* canvas,
-                        const FrameRateCounter* fps_counter,
-                        int right,
-                        int top) const;
+  SkRect DrawFrameThroughputDisplay(
+      PaintCanvas* canvas,
+      const DroppedFrameCounter* dropped_frame_counter,
+      int right,
+      int top) const;
   SkRect DrawMemoryDisplay(PaintCanvas* canvas,
                            int top,
                            int right,
@@ -154,21 +136,15 @@ class CC_EXPORT HeadsUpDisplayLayerImpl : public LayerImpl {
   sk_sp<SkTypeface> typeface_;
   std::vector<gfx::Rect> layout_shift_rects_;
 
-  float internal_contents_scale_;
+  float internal_contents_scale_ = 1.0f;
   gfx::Size internal_content_bounds_;
 
-  Graph fps_graph_;
-  Graph paint_time_graph_;
+  uint32_t throughput_value_ = 0.0f;
   MemoryHistory::Entry memory_entry_;
   int paint_rects_fade_step_ = 0;
   int layout_shift_rects_fade_step_ = 0;
   std::vector<DebugRect> paint_rects_;
   std::vector<DebugRect> layout_shift_debug_rects_;
-  base::Optional<int> current_throughput_;
-  // The worst and best throughput we have seen so far, they either both have no
-  // value, or both have value.
-  base::Optional<int> min_throughput;
-  base::Optional<int> max_throughput;
 
   base::TimeTicks time_of_last_graph_update_;
 };

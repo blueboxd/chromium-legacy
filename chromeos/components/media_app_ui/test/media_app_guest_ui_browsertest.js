@@ -20,7 +20,7 @@ GUEST_TEST('GuestCanSpawnWorkers', () => {
 
 // Test that language is set correctly on the guest iframe.
 GUEST_TEST('GuestHasLang', () => {
-  assertEquals(document.documentElement.lang, 'en');
+  assertEquals(document.documentElement.lang, 'en-US');
 });
 
 // Test can load files with CSP restrictions. We expect `error` to be called

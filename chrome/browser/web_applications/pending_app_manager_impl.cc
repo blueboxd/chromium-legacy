@@ -220,6 +220,15 @@ void PendingAppManagerImpl::StartInstallationTask(
 
   CreateWebContentsIfNecessary();
 
+  url_loader_->PrepareForLoad(
+      web_contents_.get(),
+      base::BindOnce(&PendingAppManagerImpl::OnWebContentsReady,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void PendingAppManagerImpl::OnWebContentsReady(WebAppUrlLoader::Result) {
+  // TODO(crbug.com/1098139): Handle the scenario where WebAppUrlLoader fails to
+  // load about:blank and flush WebContents states.
   url_loader_->LoadUrl(current_install_->task->install_options().url,
                        web_contents_.get(),
                        WebAppUrlLoader::UrlComparison::kSameOrigin,

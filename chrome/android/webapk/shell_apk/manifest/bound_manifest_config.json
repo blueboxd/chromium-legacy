@@ -9,6 +9,7 @@
   "start_url": "https://pwa-directory.appspot.com/",
   "display_mode": "standalone",
   "orientation": "portrait",
+  "android_orientation": "unspecified",
   "theme_color": "2147483648L",
   "background_color": "2147483648L",
   "background_color_xml": "#F8F9FA",

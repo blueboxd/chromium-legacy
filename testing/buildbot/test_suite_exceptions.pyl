@@ -90,12 +90,6 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
-  'blink_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64',  # https://crbug.com/1090068
-      'Fuchsia x64', # https://crbug.com/1090068
-    ],
-  },
   'blink_web_tests': {
     'remove_from': [
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
@@ -1269,14 +1263,6 @@
   'headless_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
-      'Fuchsia ARM64',  # https://crbug.com/757053
-      'Fuchsia x64', # https://crbug.com/757053
-    ],
-  },
-  'headless_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64',  # https://crbug.com/757053
-      'Fuchsia x64', # https://crbug.com/757053
     ],
   },
   'info_collection_tests': {
@@ -2173,11 +2159,6 @@
       'android-asan',  # https://crbug.com/962650
     ],
   },
-  'screenshot_sync_tests': {
-    'remove_from': [
-      'Fuchsia x64' # https://crbug.com/1058255
-    ],
-  },
   'services_unittests': {
     'remove_from': [
       'ToTLinuxMSan',  # https://crbug.com/831676
@@ -2597,6 +2578,7 @@
       # Too slow on this configuration, which is severely hardware
       # constrained. crbug.com/950690
       'Mac FYI Retina Debug (NVIDIA)',
+      'Fuchsia x64' # https://crbug.com/1058255
     ],
   },
   'webgl_conformance_validating_tests': {

@@ -569,6 +569,7 @@ LayoutUnit LayoutTable::LogicalHeightFromStyle() const {
        !logical_max_height_length.IsNegative() &&
        !logical_max_height_length.IsMinContent() &&
        !logical_max_height_length.IsMaxContent() &&
+       !logical_max_height_length.IsMinIntrinsic() &&
        !logical_max_height_length.IsFitContent())) {
     LayoutUnit computed_max_logical_height =
         ConvertStyleLogicalHeightToComputedHeight(logical_max_height_length);
@@ -579,6 +580,7 @@ LayoutUnit LayoutTable::LogicalHeightFromStyle() const {
   Length logical_min_height_length = StyleRef().LogicalMinHeight();
   if (logical_min_height_length.IsMinContent() ||
       logical_min_height_length.IsMaxContent() ||
+      logical_min_height_length.IsMinIntrinsic() ||
       logical_min_height_length.IsFitContent())
     logical_min_height_length = Length::Auto();
 

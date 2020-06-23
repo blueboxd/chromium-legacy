@@ -58,6 +58,12 @@ class LayoutRubyBase : public LayoutBlockFlow {
   // constructor.
   explicit LayoutRubyBase(Element*);
 
+  ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const override;
+  void AdjustInlineDirectionLineBounds(
+      unsigned expansion_opportunity_count,
+      LayoutUnit& logical_left,
+      LayoutUnit& logical_width) const override;
+
   void MoveChildren(LayoutRubyBase* to_base,
                     LayoutObject* before_child = nullptr);
   void MoveInlineChildren(LayoutRubyBase* to_base,

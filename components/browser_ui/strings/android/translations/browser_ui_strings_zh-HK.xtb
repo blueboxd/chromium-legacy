@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">已複製</translation>
 <translation id="2822354292072154809">確定要重設「<ph name="CHOSEN_OBJECT_NAME" />」的所有網站權限嗎？</translation>
 <translation id="2870560284913253234">網站</translation>
+<translation id="2874939134665556319">上一首曲目</translation>
 <translation id="2910701580606108292">網站播放受保護內容前先詢問您</translation>
 <translation id="2913331724188855103">允許網站儲存及讀取 Cookie 資料 (建議)</translation>
 <translation id="2968755619301702150">憑證檢視者</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">背景同步處理</translation>
 <translation id="3822502789641063741">要清除網站儲存空間的資料嗎？</translation>
 <translation id="385051799172605136">返回</translation>
+<translation id="3859306556332390985">向前快轉</translation>
 <translation id="3955193568934677022">允許網站播放受保護的內容 (建議)</translation>
 <translation id="3987993985790029246">複製連結</translation>
 <translation id="3991845972263764475">已下載：<ph name="BYTES_DOWNLOADED_WITH_UNITS" />，總大小：不明</translation>
 <translation id="4002066346123236978">標題</translation>
 <translation id="4008040567710660924">允許特定網站存取 Cookie。</translation>
+<translation id="4046123991198612571">下一首曲目</translation>
 <translation id="4165986682804962316">網站設定</translation>
 <translation id="4226663524361240545">裝置會在收到通知時震動</translation>
 <translation id="4242533952199664413">開啟設定</translation>
 <translation id="4259722352634471385">瀏覽網址被封鎖：<ph name="URL" /></translation>
 <translation id="4278390842282768270">已允許</translation>
+<translation id="429312253194641664">網站正在播放媒體</translation>
 <translation id="4433925000917964731">此簡易版網頁由 Google 提供</translation>
 <translation id="4434045419905280838">彈出式視窗和重新導向</translation>
 <translation id="445467742685312942">允許網站播放受保護的內容</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下掃就可以閂咗佢。</translation>
 <translation id="6782111308708962316">禁止第三方網站儲存及讀取 Cookie 資料</translation>
+<translation id="6790428901817661496">播放</translation>
 <translation id="6818926723028410516">選取項目</translation>
 <translation id="6864395892908308021">此裝置無法讀取 NFC</translation>
 <translation id="6910211073230771657">已刪除</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">有網站正在使用您的相機和麥克風</translation>
 <translation id="8380167699614421159">此網站顯示滋擾性或誤導廣告</translation>
 <translation id="8394832520002899662">輕按即可返回網站</translation>
+<translation id="8441146129660941386">向後回轉</translation>
 <translation id="8447861592752582886">撤消裝置權限</translation>
 <translation id="8463851957836045671">網站快速</translation>
 <translation id="851751545965956758">禁止網站連接裝置</translation>

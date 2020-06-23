@@ -21,6 +21,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -80,46 +81,21 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
   bool AllowCaching() override { return false; }
   bool ShouldAddContentSecurityPolicy() override { return parent_->add_csp_; }
-  std::string GetContentSecurityPolicyChildSrc() override {
-    return parent_->child_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyChildSrc());
-  }
-  std::string GetContentSecurityPolicyDefaultSrc() override {
-    return parent_->default_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyDefaultSrc());
-  }
-  std::string GetContentSecurityPolicyImgSrc() override {
-    return parent_->img_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyImgSrc());
-  }
-  std::string GetContentSecurityPolicyMediaSrc() override {
-    return parent_->media_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyMediaSrc());
-  }
-  std::string GetContentSecurityPolicyObjectSrc() override {
-    return parent_->object_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyObjectSrc());
-  }
-  std::string GetContentSecurityPolicyScriptSrc() override {
-    return parent_->script_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyScriptSrc());
-  }
-  std::string GetContentSecurityPolicyStyleSrc() override {
-    return parent_->style_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyStyleSrc());
-  }
-  std::string GetContentSecurityPolicyWorkerSrc() override {
-    return parent_->worker_src_.value_or(
-        URLDataSource::GetContentSecurityPolicyWorkerSrc());
-  }
-  std::string GetContentSecurityPolicyFrameAncestors() override {
-    std::string frame_ancestors;
-    if (parent_->frame_ancestors_.size() == 0)
-      frame_ancestors += " 'none'";
-    for (const GURL& frame_ancestor : parent_->frame_ancestors_) {
-      frame_ancestors += " " + frame_ancestor.spec();
+  std::string GetContentSecurityPolicy(
+      network::mojom::CSPDirectiveName directive) override {
+    if (parent_->csp_overrides_.contains(directive)) {
+      return parent_->csp_overrides_.at(directive);
+    } else if (directive == network::mojom::CSPDirectiveName::FrameAncestors) {
+      std::string frame_ancestors;
+      if (parent_->frame_ancestors_.size() == 0)
+        frame_ancestors += " 'none'";
+      for (const GURL& frame_ancestor : parent_->frame_ancestors_) {
+        frame_ancestors += " " + frame_ancestor.spec();
+      }
+      return "frame-ancestors" + frame_ancestors + ";";
     }
-    return "frame-ancestors" + frame_ancestors + ";";
+
+    return URLDataSource::GetContentSecurityPolicy(directive);
   }
   bool ShouldDenyXFrameOptions() override {
     return parent_->deny_xframe_options_;
@@ -218,44 +194,10 @@ void WebUIDataSourceImpl::DisableContentSecurityPolicy() {
   add_csp_ = false;
 }
 
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyChildSrc(
-    const std::string& data) {
-  child_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyDefaultSrc(
-    const std::string& data) {
-  default_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyImgSrc(
-    const std::string& data) {
-  img_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyMediaSrc(
-    const std::string& data) {
-  media_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyObjectSrc(
-    const std::string& data) {
-  object_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyScriptSrc(
-    const std::string& data) {
-  script_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyStyleSrc(
-    const std::string& data) {
-  style_src_ = data;
-}
-
-void WebUIDataSourceImpl::OverrideContentSecurityPolicyWorkerSrc(
-    const std::string& data) {
-  worker_src_ = data;
+void WebUIDataSourceImpl::OverrideContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive,
+    const std::string& value) {
+  csp_overrides_.insert_or_assign(directive, value);
 }
 
 void WebUIDataSourceImpl::AddFrameAncestor(const GURL& frame_ancestor) {

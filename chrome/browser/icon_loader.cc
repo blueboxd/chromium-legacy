@@ -40,9 +40,11 @@ IconLoader::IconLoader(const base::FilePath& file_path,
 
 IconLoader::~IconLoader() {}
 
+#if !defined(OS_WIN)
 void IconLoader::ReadGroup() {
   group_ = GroupForFilepath(file_path_);
 
   GetReadIconTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&IconLoader::ReadIcon, base::Unretained(this)));
 }
+#endif  // !defined(OS_WIN)

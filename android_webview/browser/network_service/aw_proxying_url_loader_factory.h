@@ -5,8 +5,10 @@
 #ifndef ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 #define ANDROID_WEBVIEW_BROWSER_NETWORK_SERVICE_AW_PROXYING_URL_LOADER_FACTORY_H_
 
+#include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
@@ -53,6 +55,8 @@ namespace android_webview {
 //
 class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
  public:
+  using SecurityOptions = AndroidStreamReaderURLLoader::SecurityOptions;
+
   // Create a factory that will create specialized URLLoaders for Android
   // WebView. If |intercept_only| parameter is true the loader created by
   // this factory will only execute the intercept callback
@@ -63,7 +67,8 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader_receiver,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           target_factory_remote,
-      bool intercept_only);
+      bool intercept_only,
+      base::Optional<SecurityOptions> security_options);
 
   ~AwProxyingURLLoaderFactory() override;
 
@@ -72,7 +77,8 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
       int process_id,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory> loader,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          target_factory_remote);
+          target_factory_remote,
+      base::Optional<SecurityOptions> security_options);
 
   void CreateLoaderAndStart(
       mojo::PendingReceiver<network::mojom::URLLoader> loader,
@@ -99,6 +105,8 @@ class AwProxyingURLLoaderFactory : public network::mojom::URLLoaderFactory {
   // intercept callback (shouldInterceptRequest). If that returns without
   // a response, the loader will abort loading.
   bool intercept_only_;
+
+  base::Optional<SecurityOptions> security_options_;
 
   base::WeakPtrFactory<AwProxyingURLLoaderFactory> weak_factory_{this};
 

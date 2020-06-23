@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/gfx/gfx_export.h"
 

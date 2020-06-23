@@ -3,6 +3,7 @@
 <translationbundle lang="ja">
 <translation id="1018656279737460067">キャンセルされました</translation>
 <translation id="1195447618553298278">不明なエラーです。</translation>
+<translation id="1413240736185167732">失敗 - フィルタエラー</translation>
 <translation id="1468664791493211953">クーポン</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> はこのデバイスを管理しており、アクティビティを監視できる可能性があります。</translation>
 <translation id="150962533380566081">無効な PUK です。</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">このデバイスは会社が管理しています</translation>
 <translation id="1905710495812624430">最大試行回数を超えました。</translation>
 <translation id="1930797645656624981">Chrome OS の入力方法サービス</translation>
+<translation id="1947737735496445907">印刷完了</translation>
 <translation id="1979103255016296513">パスワードの変更期限を過ぎました</translation>
 <translation id="2049639323467105390">このデバイスは <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="2338501278241028356">近くのデバイスを検出するには Bluetooth をオンにしてください</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">アプリ</translation>
 <translation id="2872961005593481000">終了</translation>
 <translation id="3008341117444806826">更新</translation>
+<translation id="3091839911843451378">失敗 - 停止中です</translation>
+<translation id="3268178239013324452">失敗 - 扉が開いています</translation>
 <translation id="3369013195428705271">印刷履歴をすべて削除してもよろしいですか？実行中の印刷ジョブは削除されません。</translation>
+<translation id="3456078764689556234"><ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" /> ページを印刷しました。</translation>
 <translation id="3515615323037921860">印刷ジョブ</translation>
+<translation id="3527036260304016759">失敗 - 不明なエラー</translation>
 <translation id="3749289110408117711">ファイル名</translation>
 <translation id="38114475217616659">履歴をすべて消去</translation>
 <translation id="3820172043799983114">無効な PIN です。</translation>
 <translation id="3838338534323494292">新しいパスワード</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />、<ph name="PRINTER_NAME" />、<ph name="CREATION_TIME" />、<ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> はこのデバイスを管理しており、閲覧したウェブページ、パスワード、メールなど、すべてのユーザー アクティビティにアクセスできます。</translation>
+<translation id="4003384961948020559">失敗 - 出力がいっぱいです</translation>
 <translation id="4034824040120875894">プリンタ</translation>
 <translation id="4227825898293920515">パスワードの有効期限はあと <ph name="TIME" />です</translation>
+<translation id="428217921675623177">90 日より前の印刷ジョブは削除されます</translation>
 <translation id="4429881212383817840">Kerberos チケットはまもなく有効期限が切れます</translation>
 <translation id="445059817448385655">古いパスワード</translation>
 <translation id="467510802200863975">パスワードが一致しません</translation>
@@ -37,24 +46,31 @@
 マイクをタップして質問してみてください。</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="5317780077021120954">保存</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />、<ph name="PRINTER_NAME" />、<ph name="CREATION_TIME" />、<ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">新しいパスワードを今すぐ選択してください</translation>
 <translation id="5457599981699367932">ゲストとしてブラウジング</translation>
 <translation id="54609108002486618">管理対象</translation>
 <translation id="5832805196449965646">ユーザーを追加</translation>
 <translation id="5895138241574237353">再起動</translation>
+<translation id="6048107060512778456">失敗 - 紙詰まりです</translation>
 <translation id="6058625436358447366">終了するには、古いパスワードと新しいパスワードを入力してください</translation>
 <translation id="6106186594183574873">終了するには、古いパスワードを入力してください</translation>
 <translation id="6146993107019042706">終了するには、新しいパスワードを入力してください</translation>
 <translation id="6517239166834772319">使い方・ヒント</translation>
+<translation id="6564646048574748301">失敗 - プリンタにアクセスできません</translation>
 <translation id="6643016212128521049">削除</translation>
 <translation id="7162487448488904999">ギャラリー</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7690294790491645610">新しいパスワードの確認入力</translation>
 <translation id="7805768142964895445">ステータス</translation>
 <translation id="808894953321890993">パスワードの変更</translation>
 <translation id="8208861521865154048">特典</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> がこのユーザーを管理しています。設定の管理とユーザー アクティビティの監視がリモートで行われることがあります。</translation>
+<translation id="871560550817059752">失敗 - インクがありません</translation>
 <translation id="8747900814994928677">変更を確認</translation>
+<translation id="8919837981463578619">失敗 - トレイがありません</translation>
+<translation id="8928727111548978589">失敗 - 用紙がありません</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />: あと <ph name="ATTEMPTS_LEFT" /> 回</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> のチケットを更新してください</translation>
 <translation id="9111102763498581341">ロック解除</translation>

@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
+#include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -242,6 +243,9 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   // unable to browse non-SSL sites for the most part (see
   // http://crbug.com/476610).
   MigrateDataReductionProxyOffProxyPrefs(profile_prefs);
+  https_image_compression_infobar_decider_ =
+      std::make_unique<HttpsImageCompressionInfoBarDecider>(profile_prefs,
+                                                            this);
 }
 
 void DataReductionProxyChromeSettings::SetIgnoreLongTermBlockListRules(
@@ -260,10 +264,8 @@ std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
 DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
     content::NavigationHandle* handle,
     const net::HttpResponseHeaders* headers) {
-  // Some unit tests don't have data_reduction_proxy_service() set.
   if (!data_reduction_proxy_service())
-    return test_data_ ? std::move(test_data_) : nullptr;
-
+    return nullptr;
   // TODO(721403): Need to fill in:
   //  - request_info_
   auto data = std::make_unique<data_reduction_proxy::DataReductionProxyData>();
@@ -283,11 +285,6 @@ DataReductionProxyChromeSettings::CreateDataFromNavigationHandle(
   if (session_key)
     data->set_session_key(session_key.value());
   return data;
-}
-
-void DataReductionProxyChromeSettings::SetDataForNextCommitForTesting(
-    std::unique_ptr<data_reduction_proxy::DataReductionProxyData> data) {
-  test_data_ = std::move(data);
 }
 
 // static

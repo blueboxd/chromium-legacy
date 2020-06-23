@@ -36,8 +36,12 @@ void GpuVSyncBeginFrameSource::OnGpuVSync(base::TimeTicks vsync_time,
     skip_next_vsync_ = true;
     vsync_interval *= 2;
   }
+  auto next_frame_time = vsync_time + vsync_interval;
+  auto deadline =
+      next_frame_time -
+      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(vsync_interval);
   auto begin_frame_args = begin_frame_args_generator_.GenerateBeginFrameArgs(
-      source_id(), vsync_time, vsync_time + vsync_interval, vsync_interval);
+      source_id(), vsync_time, deadline, next_frame_time, vsync_interval);
   ExternalBeginFrameSource::OnBeginFrame(begin_frame_args);
 }
 
@@ -58,8 +62,11 @@ BeginFrameArgs GpuVSyncBeginFrameSource::GetMissedBeginFrameArgs(
   // Don't create new args unless we've actually moved past the previous frame.
   if (!last_begin_frame_args_.IsValid() ||
       frame_time > last_begin_frame_args_.frame_time) {
+    auto next_frame_time = frame_time + interval;
+    auto deadline = next_frame_time -
+                    BeginFrameArgs::DefaultEstimatedDisplayDrawTime(interval);
     last_begin_frame_args_ = begin_frame_args_generator_.GenerateBeginFrameArgs(
-        source_id(), frame_time, frame_time + interval, interval);
+        source_id(), frame_time, deadline, next_frame_time, interval);
   }
 
   return ExternalBeginFrameSource::GetMissedBeginFrameArgs(obs);

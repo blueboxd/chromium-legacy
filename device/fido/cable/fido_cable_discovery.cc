@@ -183,6 +183,7 @@ FidoCableDiscovery::~FidoCableDiscovery() {
   for (auto advertisement : advertisements_) {
     advertisement.second->Unregister(base::DoNothing(), base::DoNothing());
   }
+  StopBluetoothDiscoverySession();
 
   if (adapter_)
     adapter_->RemoveObserver(this);
@@ -287,11 +288,6 @@ void FidoCableDiscovery::OnSetPowered() {
                                 weak_factory_.GetWeakPtr()));
 }
 
-void FidoCableDiscovery::SetDiscoverySession(
-    std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
-  discovery_session_ = std::move(discovery_session);
-}
-
 void FidoCableDiscovery::DeviceAdded(BluetoothAdapter* adapter,
                                      BluetoothDevice* device) {
   if (!IsCableDevice(device))
@@ -370,6 +366,7 @@ void FidoCableDiscovery::FidoCableDeviceTimeout(FidoCableDevice* device) {
 }
 
 void FidoCableDiscovery::StartCableDiscovery() {
+  DCHECK(!discovery_session_);
   adapter()->StartDiscoverySessionWithFilter(
       std::make_unique<BluetoothDiscoveryFilter>(
           BluetoothTransport::BLUETOOTH_TRANSPORT_LE),
@@ -382,12 +379,14 @@ void FidoCableDiscovery::StartCableDiscovery() {
 }
 
 void FidoCableDiscovery::OnStartDiscoverySession(
-    std::unique_ptr<BluetoothDiscoverySession> session) {
+    std::unique_ptr<BluetoothDiscoverySession> discovery_session) {
   FIDO_LOG(DEBUG) << "Discovery session started.";
+  discovery_session_ = std::move(discovery_session);
+
   if (has_v1_discovery_data_) {
     RecordCableV1DiscoveryEventOnce(CableV1DiscoveryEvent::kScanningStarted);
   }
-  SetDiscoverySession(std::move(session));
+
   // Advertising is delayed by 500ms to ensure that any UI has a chance to
   // appear as we don't want to start broadcasting without the user being
   // aware.
@@ -425,6 +424,15 @@ void FidoCableDiscovery::StartAdvertisement() {
   }
 }
 
+void FidoCableDiscovery::StopBluetoothDiscoverySession() {
+  FIDO_LOG(DEBUG) << "Stopping Bluetooth discovery";
+  // BluetoothDiscoverySession::Stop() is considered deprecated, deleting the
+  // instance suffices. Note that general, other parts of Chrome or other
+  // processes on the system may still perform BLE scans, so this is only a
+  // best-effort attempt.
+  discovery_session_.reset();
+}
+
 void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
   // Destructing a BluetoothAdvertisement invokes its Unregister() method, but
   // there may be references to the advertisement outside this
@@ -447,6 +455,7 @@ void FidoCableDiscovery::StopAdvertisements(base::OnceClosure callback) {
         cb.Run();
       },
       barrier_closure);
+
   for (auto advertisement : advertisements_) {
     advertisement.second->Unregister(barrier_closure, error_closure);
   }
@@ -513,6 +522,10 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
   active_handshakes_.emplace_back(std::move(cable_device),
                                   std::move(*handshake_handler));
 
+  // Stop discovery and advertisements, then establish a GATT connection and
+  // begin the handshake. On some platforms (Windows), supposedly connecting is
+  // more reliable if there is no discovery running in parallel.
+  StopBluetoothDiscoverySession();
   StopAdvertisements(
       base::BindOnce(&FidoCableDiscovery::ConductEncryptionHandshake,
                      weak_factory_.GetWeakPtr(), handshake_handler_ptr,
@@ -805,6 +818,7 @@ bool FidoCableDiscovery::MaybeStop() {
     NOTREACHED();
   }
   StopAdvertisements(base::DoNothing());
+  StopBluetoothDiscoverySession();
   return true;
 }
 

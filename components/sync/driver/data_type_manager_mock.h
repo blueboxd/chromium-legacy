@@ -23,6 +23,7 @@ class DataTypeManagerMock : public DataTypeManager {
   MOCK_METHOD1(Stop, void(ShutdownReason));
   MOCK_METHOD0(controllers, const DataTypeController::TypeMap&());
   MOCK_CONST_METHOD0(GetActiveDataTypes, ModelTypeSet());
+  MOCK_CONST_METHOD0(GetPurgedDataTypes, ModelTypeSet());
   MOCK_CONST_METHOD0(IsNigoriEnabled, bool());
   MOCK_CONST_METHOD0(state, State());
 

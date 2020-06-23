@@ -49,7 +49,6 @@
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/model/sync_error.h"
 #include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/user_share.h"
 #include "components/version_info/version_info_values.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -1382,7 +1381,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   if (!migrator_) {
     // We create the migrator at the same time.
     migrator_ = std::make_unique<BackendMigrator>(
-        debug_identifier_, GetUserShare(), data_type_manager_.get(),
+        debug_identifier_, data_type_manager_.get(),
         base::BindRepeating(&ProfileSyncService::ConfigureDataTypeManager,
                             base::Unretained(this), CONFIGURE_REASON_MIGRATION),
         base::BindRepeating(&ProfileSyncService::StartSyncingWithServer,
@@ -1481,15 +1480,6 @@ ModelTypeSet ProfileSyncService::GetModelTypesForTransportOnlyMode() const {
 #endif  // defined(OS_CHROMEOS)
 
   return allowed_types;
-}
-
-UserShare* ProfileSyncService::GetUserShare() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (engine_ && engine_->IsInitialized()) {
-    return engine_->GetUserShare();
-  }
-  NOTREACHED();
-  return nullptr;
 }
 
 SyncCycleSnapshot ProfileSyncService::GetLastCycleSnapshotForDebugging() const {

@@ -59,6 +59,13 @@ void FakeServiceConnectionImpl::LoadTextClassifier(
 void FakeServiceConnectionImpl::LoadHandwritingModel(
     mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
     mojom::MachineLearningService::LoadHandwritingModelCallback callback) {
+  NOTREACHED();
+}
+
+void FakeServiceConnectionImpl::LoadHandwritingModelWithSpec(
+    mojom::HandwritingRecognizerSpecPtr spec,
+    mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+    mojom::MachineLearningService::LoadHandwritingModelCallback callback) {
   ScheduleCall(base::BindOnce(
       &FakeServiceConnectionImpl::HandleLoadHandwritingModel,
       base::Unretained(this), std::move(receiver), std::move(callback)));

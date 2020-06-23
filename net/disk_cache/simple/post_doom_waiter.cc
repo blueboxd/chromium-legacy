@@ -14,8 +14,7 @@ namespace disk_cache {
 SimplePostDoomWaiter::SimplePostDoomWaiter() {}
 
 SimplePostDoomWaiter::SimplePostDoomWaiter(base::OnceClosure to_run_post_doom)
-    : time_queued(base::TimeTicks::Now()),
-      run_post_doom(std::move(to_run_post_doom)) {}
+    : run_post_doom(std::move(to_run_post_doom)) {}
 
 SimplePostDoomWaiter::SimplePostDoomWaiter(SimplePostDoomWaiter&& other) =
     default;
@@ -40,12 +39,7 @@ void SimplePostDoomWaiterTable::OnDoomComplete(uint64_t entry_hash) {
   to_handle_waiters.swap(it->second);
   entries_pending_doom_.erase(it);
 
-  SIMPLE_CACHE_UMA(COUNTS_1000, "NumOpsBlockedByPendingDoom", cache_type_,
-                   to_handle_waiters.size());
-
   for (SimplePostDoomWaiter& post_doom : to_handle_waiters) {
-    SIMPLE_CACHE_UMA(TIMES, "QueueLatency.PendingDoom", cache_type_,
-                     (base::TimeTicks::Now() - post_doom.time_queued));
     std::move(post_doom.run_post_doom).Run();
   }
 }

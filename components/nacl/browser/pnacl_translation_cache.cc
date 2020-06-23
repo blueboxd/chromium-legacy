@@ -265,7 +265,7 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
         }
         if (is_read_) {
           // Just a cache miss, not necessarily an error.
-          entry_ = NULL;
+          entry_ = nullptr;
           Finish(rv);
         } else {
           step_ = CREATE_ENTRY;

@@ -303,6 +303,11 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
                  uint32_t serial) {
     base::Optional<wayland::SerialTracker::EventType> event_type =
         serial_tracker_->GetEventType(serial);
+    if (event_type == base::nullopt) {
+      LOG(ERROR) << "The serial passed to StartDrag does not exist.";
+      source->Cancelled();
+      return;
+    }
     if (event_type == wayland::SerialTracker::EventType::POINTER_BUTTON_DOWN &&
         serial_tracker_->GetPointerDownSerial() == serial) {
       data_device->StartDrag(
@@ -314,8 +319,23 @@ class WaylandDataDeviceDelegate : public DataDeviceDelegate {
           source, origin, icon,
           ui::DragDropTypes::DragEventSource::DRAG_EVENT_SOURCE_TOUCH);
     } else {
+      LOG(ERROR) << "The serial passed to StartDrag does not match its "
+                    "expected types.";
       source->Cancelled();
     }
+  }
+
+  void SetSelection(DataDevice* data_device,
+                    DataSource* source,
+                    uint32_t serial) {
+    base::Optional<wayland::SerialTracker::EventType> event_type =
+        serial_tracker_->GetEventType(serial);
+    if (event_type == base::nullopt) {
+      LOG(ERROR) << "The serial passed to SetSelection does not exist.";
+      source->Cancelled();
+      return;
+    }
+    data_device->SetSelection(source);
   }
 
  private:
@@ -347,10 +367,15 @@ void data_device_start_drag(wl_client* client,
 
 void data_device_set_selection(wl_client* client,
                                wl_resource* resource,
-                               wl_resource* data_source,
+                               wl_resource* source_resource,
                                uint32_t serial) {
-  GetUserDataAs<DataDevice>(resource)->SetSelection(
-      data_source ? GetUserDataAs<DataSource>(data_source) : nullptr, serial);
+  DataDevice* data_device = GetUserDataAs<DataDevice>(resource);
+  static_cast<WaylandDataDeviceDelegate*>(data_device->get_delegate())
+      ->SetSelection(data_device,
+                     source_resource
+                         ? GetUserDataAs<DataSource>(source_resource)
+                         : nullptr,
+                     serial);
 }
 
 void data_device_release(wl_client* client, wl_resource* resource) {

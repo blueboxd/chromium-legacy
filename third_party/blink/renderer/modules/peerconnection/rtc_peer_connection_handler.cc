@@ -2085,6 +2085,19 @@ void RTCPeerConnectionHandler::CloseClientPeerConnection() {
     client_->ClosePeerConnection();
 }
 
+void RTCPeerConnectionHandler::OnThermalStateChange(
+    base::PowerObserver::DeviceThermalState thermal_state) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  if (is_closed_ || !base::FeatureList::IsEnabled(kWebRtcThermalResource))
+    return;
+  if (!thermal_resource_) {
+    thermal_resource_ = ThermalResource::Create(task_runner_);
+    native_peer_connection_->AddAdaptationResource(
+        rtc::scoped_refptr<ThermalResource>(thermal_resource_.get()));
+  }
+  thermal_resource_->OnThermalMeasurement(thermal_state);
+}
+
 void RTCPeerConnectionHandler::StartEventLog(int output_period_ms) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // TODO(eladalon): StartRtcEventLog() return value is not useful; remove it

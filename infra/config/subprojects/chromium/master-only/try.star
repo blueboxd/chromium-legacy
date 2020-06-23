@@ -637,6 +637,26 @@ try_.chromium_mac_ios_builder(
     }
 )
 
+try_.chromium_mac_ios_builder(
+    name = 'ios14-beta-simulator',
+    executable = 'recipe:chromium_trybot',
+    caches = [xcode_cache.x11e146],
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11e146'
+    }
+)
+
+try_.chromium_mac_ios_builder(
+    name = 'ios14-sdk-simulator',
+    executable = 'recipe:chromium_trybot',
+    caches = [xcode_cache.x11n700h],
+    os = os.MAC_10_15,
+    properties = {
+        'xcode_build_version': '11n700h'
+    }
+)
+
 try_.chromium_win_builder(
     name = 'win-annotator-rel',
 )

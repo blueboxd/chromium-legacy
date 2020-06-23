@@ -7,7 +7,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #include "base/allocator/buildflags.h"
 #endif
 
@@ -57,11 +57,8 @@ struct TrimOnMemoryPressureParams {
   base::TimeDelta node_trim_backoff_time;
 };
 
-#endif
-
-#if defined(OS_LINUX)
-
 #if BUILDFLAG(USE_TCMALLOC)
+
 // If enabled then tcmalloc will be tuned dynamically based on system memory
 // pressure.
 extern const base::Feature kDynamicTcmallocTuning;
@@ -74,7 +71,7 @@ extern const base::FeatureParam<int> kDynamicTuningTimeSec;
 extern const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec;
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
 // Enables freezing pages directly from PerformanceManager rather than via

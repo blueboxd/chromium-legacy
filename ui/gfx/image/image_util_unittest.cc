@@ -139,10 +139,21 @@ TEST(ImageUtilTest, ResizedImageForSearchByImage) {
   // Make sure the image large enough to let ResizedImageForSearchByImage to
   // resize the image.
   gfx::Image original_image =
-      gfx::test::CreateImage(gfx::kSearchByImageMaxImageHeight + 10,
-                             gfx::kSearchByImageMaxImageWidth + 10);
+      gfx::test::CreateImage(gfx::kSearchByImageMaxImageWidth * 2,
+                             gfx::kSearchByImageMaxImageHeight * 2);
 
   gfx::Image resized_image = gfx::ResizedImageForSearchByImage(original_image);
-  EXPECT_NE(original_image.Size(), resized_image.Size());
   EXPECT_FALSE(resized_image.IsEmpty());
+  EXPECT_EQ(resized_image.Width(), gfx::kSearchByImageMaxImageWidth);
+  EXPECT_EQ(resized_image.Height(), gfx::kSearchByImageMaxImageHeight);
+}
+
+TEST(ImageUtilTest, ResizedImageForSearchByImageShouldKeepRatio) {
+  // Make sure the image large enough to let ResizedImageForSearchByImage to
+  // resize the image.
+  gfx::Image original_image = gfx::test::CreateImage(600, 600);
+
+  gfx::Image resized_image = gfx::ResizedImageForSearchByImage(original_image);
+  EXPECT_EQ(resized_image.Width(), 400);
+  EXPECT_EQ(resized_image.Height(), 400);
 }

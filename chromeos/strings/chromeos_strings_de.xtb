@@ -3,6 +3,7 @@
 <translationbundle lang="de">
 <translation id="1018656279737460067">Abgebrochen</translation>
 <translation id="1195447618553298278">Unbekannter Fehler.</translation>
+<translation id="1413240736185167732">Fehlgeschlagen – Filter funktioniert nicht</translation>
 <translation id="1468664791493211953">Angebote</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und kann Ihre Aktivitäten möglicherweise überwachen.</translation>
 <translation id="150962533380566081">Ungültiger PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Dieses Gerät wird vom Unternehmen verwaltet</translation>
 <translation id="1905710495812624430">Die maximal zulässige Anzahl an Versuchen wurde überschritten.</translation>
 <translation id="1930797645656624981">Dienst für die Chrome OS-Eingabemethoden</translation>
+<translation id="1947737735496445907">Gedruckt</translation>
 <translation id="1979103255016296513">Passwortänderung überfällig</translation>
 <translation id="2049639323467105390">Dieses Gerät wird durch <ph name="DOMAIN" /> verwaltet.</translation>
 <translation id="2338501278241028356">Aktivieren Sie Bluetooth, damit Geräte in der Nähe gefunden werden</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="3008341117444806826">AKTUALISIEREN</translation>
+<translation id="3091839911843451378">Fehlgeschlagen – Angehalten</translation>
+<translation id="3268178239013324452">Fehlgeschlagen – Druckerklappe offen</translation>
 <translation id="3369013195428705271">Möchten Sie den gesamten Druckverlauf wirklich löschen? Ihre aktiven Druckaufträge werden nicht gelöscht.</translation>
+<translation id="3456078764689556234">Seite <ph name="PRINTED_PAGES" /> von <ph name="TOTAL_PAGES" /> wird gedruckt.</translation>
 <translation id="3515615323037921860">Druckaufträge</translation>
+<translation id="3527036260304016759">Fehlgeschlagen – Unbekannter Fehler</translation>
 <translation id="3749289110408117711">Dateiname</translation>
 <translation id="38114475217616659">Gesamten Verlauf löschen</translation>
 <translation id="3820172043799983114">Ungültige PIN.</translation>
 <translation id="3838338534323494292">Neues Passwort</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> von <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> verwaltet dieses Gerät und hat Zugriff auf alle Nutzeraktivitäten, einschließlich besuchter Webseiten, Passwörter und E-Mails.</translation>
+<translation id="4003384961948020559">Fehlgeschlagen – Ausgabefach ist voll</translation>
 <translation id="4034824040120875894">Drucker</translation>
 <translation id="4227825898293920515">Passwort läuft in <ph name="TIME" /> ab</translation>
+<translation id="428217921675623177">Druckaufträge, die älter als 90 Tage sind, werden entfernt</translation>
 <translation id="4429881212383817840">Kerberos-Ticket läuft bald ab</translation>
 <translation id="445059817448385655">Altes Passwort</translation>
 <translation id="467510802200863975">Die Passwörter stimmen nicht überein</translation>
@@ -37,24 +46,31 @@
 Tippe auf das Mikrofon und sag mir, was du wissen möchtest.</translation>
 <translation id="5222676887888702881">Abmelden</translation>
 <translation id="5317780077021120954">Speichern</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Bitte legen Sie jetzt ein neues fest</translation>
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="54609108002486618">Verwaltet</translation>
 <translation id="5832805196449965646">Person hinzufügen</translation>
 <translation id="5895138241574237353">Neu starten</translation>
+<translation id="6048107060512778456">Fehlgeschlagen – Papierstau</translation>
 <translation id="6058625436358447366">Geben Sie zum Schluss Ihr altes und Ihr neues Passwort ein</translation>
 <translation id="6106186594183574873">Geben Sie zum Schluss Ihr altes Passwort ein</translation>
 <translation id="6146993107019042706">Geben Sie zum Schluss Ihr neues Passwort ein</translation>
 <translation id="6517239166834772319">Entdecken</translation>
+<translation id="6564646048574748301">Fehlgeschlagen – Drucker nicht erreichbar</translation>
 <translation id="6643016212128521049">Löschen</translation>
 <translation id="7162487448488904999">Galerie</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7690294790491645610">Neues Passwort bestätigen</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Passwort ändern</translation>
 <translation id="8208861521865154048">Vorteile</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> verwaltet diesen Nutzer. Es werden möglicherweise per Remotezugriff Einstellungen verwaltet und Nutzeraktivitäten überwacht.</translation>
+<translation id="871560550817059752">Fehlgeschlagen – Keine Tinte</translation>
 <translation id="8747900814994928677">Änderung bestätigen</translation>
+<translation id="8919837981463578619">Fehlgeschlagen – Fach fehlt</translation>
+<translation id="8928727111548978589">Fehlgeschlagen – Kein Papier</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> verbleibende Versuche</translation>
 <translation id="910415269708673980">Aktualisieren Sie das Ticket für <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Entsperren</translation>

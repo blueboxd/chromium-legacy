@@ -52,6 +52,10 @@ bool AccessibilityWindowInfoDataWrapper::IsIgnored() const {
   return false;
 }
 
+bool AccessibilityWindowInfoDataWrapper::IsImportantInAndroid() const {
+  return true;
+}
+
 bool AccessibilityWindowInfoDataWrapper::CanBeAccessibilityFocused() const {
   // Windows are too generic to be Accessibility focused in Chrome, although
   // they can be Accessibility focused in Android by virtue of having

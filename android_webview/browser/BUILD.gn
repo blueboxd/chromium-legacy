@@ -75,8 +75,6 @@ source_set("browser") {
     "aw_pdf_exporter.h",
     "aw_permission_manager.cc",
     "aw_permission_manager.h",
-    "aw_pref_names.cc",
-    "aw_pref_names.h",
     "aw_print_manager.cc",
     "aw_print_manager.h",
     "aw_proxy_controller.cc",
@@ -96,8 +94,6 @@ source_set("browser") {
     "aw_speech_recognition_manager_delegate.h",
     "aw_ssl_host_state_delegate.cc",
     "aw_ssl_host_state_delegate.h",
-    "aw_variations_seed_bridge.cc",
-    "aw_variations_seed_bridge.h",
     "aw_variations_service_client.cc",
     "aw_variations_service_client.h",
     "aw_web_contents_delegate.cc",
@@ -186,6 +182,8 @@ source_set("browser") {
     "tracing/aw_tracing_controller.h",
     "tracing/aw_tracing_delegate.cc",
     "tracing/aw_tracing_delegate.h",
+    "variations_seed_loader.cc",
+    "variations_seed_loader.h",
   ]
 
   deps = [
@@ -195,6 +193,7 @@ source_set("browser") {
     "//android_webview/browser/lifecycle",
     "//android_webview/browser/metrics",
     "//android_webview/common",
+    "//android_webview/proto:aw_variations_seed_proto",
     "//base",
     "//components/autofill/android/provider",
     "//components/autofill/content/browser",

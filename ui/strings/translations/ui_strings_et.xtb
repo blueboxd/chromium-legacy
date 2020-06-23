@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Kalibreerimine on lõpetatud</translation>
 <translation id="252373100621549798">Tundmatu ekraan</translation>
 <translation id="2545651323591713692">Edasilükkamine</translation>
+<translation id="2570734079541893434">Seadete haldamine</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{1 h pärast}other{# h pärast}}</translation>
 <translation id="2583543531130364912">Kalibreerige puuteekraan</translation>
 <translation id="2666092431469916601">Üles</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Teisaldatud lehele <ph name="PAGE_NUMBER" />, reale <ph name="ROW_NUMBER" />, veergu <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Ära blokeeri</translation>
 <translation id="7907591526440419938">Faili avamine</translation>
+<translation id="7952747673138230804">Chrome OS näitab soovitusi uue sisu kohta, mida avastada. Saadab kvaliteedi parandamiseks statistikat ainult siis, kui olete valinud kasutusandmete jagamise. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Käsuklahv</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Rohkem kui 1 lugemata märguanne}other{Rohkem kui # lugemata märguannet}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{1 min pärast}other{# min pärast}}</translation>

@@ -10,6 +10,7 @@
 
 #include <string.h>
 
+#include "base/notreached.h"
 #include "ui/gl/gl_mock.h"
 
 namespace {
@@ -3453,6 +3454,12 @@ MockGLInterface::Mock_glObjectPtrLabelKHR(void* ptr,
   interface_->ObjectPtrLabel(ptr, length, label);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glPatchParameteri(GLenum pname,
+                                                             GLint value) {
+  MakeGlMockFunctionUnique("glPatchParameteri");
+  interface_->PatchParameteri(pname, value);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glPathCommandsCHROMIUM(GLuint path,
                                              GLsizei numCommands,
@@ -6333,6 +6340,8 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabel);
   if (strcmp(name, "glObjectPtrLabelKHR") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glObjectPtrLabelKHR);
+  if (strcmp(name, "glPatchParameteri") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glPatchParameteri);
   if (strcmp(name, "glPathCommandsCHROMIUM") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glPathCommandsCHROMIUM);
   if (strcmp(name, "glPathCommandsNV") == 0)

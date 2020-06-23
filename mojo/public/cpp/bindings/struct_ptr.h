@@ -10,7 +10,7 @@
 #include <memory>
 #include <new>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/lib/hash_util.h"

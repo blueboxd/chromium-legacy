@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1479909375538722835">Плаващо меню за достъпност</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Вкл.</translation>
 <translation id="1516740043221086139">Режимът „Не безпокойте“ е включен.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показване на настройките за известия. Известията са изключени за едно приложение}other{Показване на настройките за известия. Известията са изключени за # приложения}}</translation>
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">Асистент (зарежда се...)</translation>
 <translation id="1838895407229022812">Функцията за нощно осветление е изключена.</translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
-<translation id="1859889070386344428">Изкл.</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="1885785240814121742">Отключване с отпечатък</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">Натиснете <ph name="KEYBOARD_SHORTCUT" /> за превключване на клавиатурната подредба.</translation>
 <translation id="2501920221385095727">Оставащи клавиши</translation>
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
-<translation id="2519465031217098801">Вкл.</translation>
 <translation id="2542089167727451762">Докоснете изображението на потребителския си профил</translation>
 <translation id="255671100581129685">Google Асистент не е налице по време на публична сесия.</translation>
 <translation id="256712445991462162">лупата в прикрепен режим</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">Поставяне</translation>
 <translation id="394485226368336402">Настройки за звука</translation>
 <translation id="3962859241508114581">Предишен запис</translation>
-<translation id="3965097803111112935">Изкл.</translation>
 <translation id="397105322502079400">Изчислява се...</translation>
 <translation id="3977512764614765090">Батерията е на <ph name="PERCENTAGE" />% и се зарежда.</translation>
 <translation id="3995138139523574647">устройство с USB-C (задният десен порт)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">Открояване на точката на вмъкване в текста</translation>
 <translation id="5222676887888702881">Изход</translation>
 <translation id="523505283826916779">Настройки за достъпност</translation>
-<translation id="5250225880026334010">Изкл.</translation>
 <translation id="5260676007519551770">Работен кът 4</translation>
 <translation id="5283198616748585639">Добавяне на 1 мин</translation>
 <translation id="528468243742722775">Край</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване. Моля, въведете на него следния ключ за достъп: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Парола</translation>
 <translation id="6665545700722362599">да разрешава на уебсайтове, приложения и разширения да използват услугите за местоположение и микрофона, камерата или други функции на устройството;</translation>
-<translation id="6669268301501499730">Вкл.</translation>
 <translation id="6670153871843998651">Работен кът 3</translation>
 <translation id="6691659475504239918">Клавиш „Търсене“ + Shift + H</translation>
 <translation id="6692996468359469499">Получаване на информация, свързана с избраното от вас</translation>

@@ -33,10 +33,7 @@ Polymer({
      * example the PDF is encrypted or password protected. Note, this is
      * true regardless of whether the feature flag is enabled.
      */
-    annotationAvailable: {
-      type: Boolean,
-      value: true,
-    },
+    annotationAvailable: Boolean,
 
     /** Whether the viewer is currently in annotation mode. */
     annotationMode: {
@@ -49,7 +46,6 @@ Polymer({
     /** @type {?AnnotationTool} */
     annotationTool: {
       type: Object,
-      value: null,
       notify: true,
     },
 
@@ -77,6 +73,10 @@ Polymer({
 
     /** The title of the PDF document. */
     docTitle: String,
+
+    hasEdits: Boolean,
+
+    hasEnteredAnnotationMode: Boolean,
 
     /** The current loading progress of the PDF document (0 - 100). */
     loadProgress: {
@@ -119,12 +119,6 @@ Polymer({
 
   /** @type {?Object} */
   animation_: null,
-
-  /** @private {boolean} */
-  hasEdits_: false,
-
-  /** @private {boolean} */
-  hasAnnotations_: false,
 
   /**
    * Whether the PDF Form save feature is enabled.
@@ -188,10 +182,6 @@ Polymer({
     }
   },
 
-  setIsEditing() {
-    this.hasEdits_ = true;
-  },
-
   selectPageNumber() {
     this.$.pageselector.select();
   },
@@ -234,8 +224,8 @@ Polymer({
 
   /** @private */
   onDownloadClick_() {
-    if (!this.hasAnnotations_ &&
-        (!this.hasEdits_ || !this.pdfFormSaveEnabled_)) {
+    if (!this.hasEnteredAnnotationMode &&
+        (!this.hasEdits || !this.pdfFormSaveEnabled_)) {
       this.fire('save', SaveRequestType.ORIGINAL);
       return;
     }
@@ -256,8 +246,8 @@ Polymer({
   onDownloadEditedClick_() {
     this.fire(
         'save',
-        this.hasAnnotations_ ? SaveRequestType.ANNOTATION :
-                               SaveRequestType.EDITED);
+        this.hasEnteredAnnotationsMode ? SaveRequestType.ANNOTATION :
+                                         SaveRequestType.EDITED);
     this.$.downloadMenu.close();
   },
 
@@ -276,7 +266,6 @@ Polymer({
   toggleAnnotation() {
     this.annotationMode = !this.annotationMode;
     if (this.annotationMode) {
-      this.hasAnnotations_ = true;
       // Select pen tool when entering annotation mode.
       this.updateAnnotationTool_(/** @type {!HTMLElement} */ (this.$.pen));
     }

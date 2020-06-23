@@ -82,7 +82,6 @@
 #include "cc/trees/debug_rect_history.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/effect_node.h"
-#include "cc/trees/frame_rate_counter.h"
 #include "cc/trees/image_animation_controller.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -372,8 +371,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
                         ? std::numeric_limits<size_t>::max()
                         : settings.scheduled_raster_task_limit,
                     settings.ToTileManagerSettings()),
-      fps_counter_(
-          FrameRateCounter::Create(task_runner_provider_->HasImplThread())),
       memory_history_(MemoryHistory::Create()),
       debug_rect_history_(DebugRectHistory::Create()),
       mutator_host_(std::move(mutator_host)),
@@ -424,6 +421,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   }
 
   SetDebugState(settings.initial_debug_state);
+  compositor_frame_reporting_controller_->SetDroppedFrameCounter(
+      &dropped_frame_counter_);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -1760,7 +1759,7 @@ void LayerTreeHostImpl::ResetTreesForTesting() {
 }
 
 size_t LayerTreeHostImpl::SourceAnimationFrameNumberForTesting() const {
-  return fps_counter_->current_frame_number();
+  return *next_frame_token_;
 }
 
 void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
@@ -2450,8 +2449,6 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
                          TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                          "step", "GenerateCompositorFrame");
-  base::TimeTicks frame_time = CurrentBeginFrameArgs().frame_time;
-  fps_counter_->SaveTimeStamp(frame_time);
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
   memory_history_->SaveEntry(tile_manager_.memory_stats_from_last_assign());

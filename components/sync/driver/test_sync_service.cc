@@ -234,10 +234,6 @@ bool TestSyncService::HasObserver(const SyncServiceObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-UserShare* TestSyncService::GetUserShare() const {
-  return nullptr;
-}
-
 SyncTokenStatus TestSyncService::GetSyncTokenStatusForDebugging() const {
   SyncTokenStatus token;
 

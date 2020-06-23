@@ -57,6 +57,7 @@ class SAChildNode {
    */
   get next() {
     if (!this.next_) {
+      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NEXT_UNDEFINED,
           'Next node must be set on all SAChildNodes before navigating');
@@ -75,6 +76,7 @@ class SAChildNode {
    */
   get previous() {
     if (!this.previous_) {
+      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.PREVIOUS_UNDEFINED,
           'Previous node must be set on all SAChildNodes before navigating');
@@ -157,6 +159,7 @@ class SAChildNode {
    */
   onFocus() {
     this.isFocused_ = true;
+    FocusRingManager.setFocusedNode(this);
   }
 
   /**
@@ -240,6 +243,7 @@ class SARootNode {
     if (this.children_.length > 0) {
       return this.children_[0];
     } else {
+      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
           'Root nodes must contain children.');
@@ -251,6 +255,7 @@ class SARootNode {
     if (this.children_.length > 0) {
       return this.children_[this.children_.length - 1];
     } else {
+      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
           'Root nodes must contain children.');
@@ -282,8 +287,9 @@ class SARootNode {
     let result = true;
     for (let i = 0; i < this.children_.length; i++) {
       if (!this.children_[i]) {
-        throw SwitchAccess.error(
-            SAConstants.ErrorType.NULL_CHILD, 'Child cannot be null.');
+        console.error(SwitchAccess.error(
+            SAConstants.ErrorType.NULL_CHILD, 'Child cannot be null.'));
+        return false;
       }
       result = result && this.children_[i].equals(other.children_[i]);
     }
@@ -379,9 +385,10 @@ class SARootNode {
    */
   connectChildren_() {
     if (this.children_.length < 1) {
-      throw SwitchAccess.error(
+      console.error(SwitchAccess.error(
           SAConstants.ErrorType.NO_CHILDREN,
-          'Root node must have at least 1 interesting child.');
+          'Root node must have at least 1 interesting child.'));
+      return;
     }
 
     let previous = this.children_[this.children_.length - 1];

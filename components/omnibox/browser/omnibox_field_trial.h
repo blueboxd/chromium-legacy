@@ -436,7 +436,6 @@ int OnDeviceHeadSuggestDelaySuggestRequestMs(bool is_incognito);
 std::string OnDeviceHeadSuggestDemoteMode();
 
 // Experiment to hide the path, query, and ref in the steady state.
-bool IsHidePathQueryRefEnabled();
 bool ShouldRevealPathQueryRefOnHover();
 bool ShouldHidePathQueryRefOnInteraction();
 int RevealPathQueryRefOnHoverThresholdMs();

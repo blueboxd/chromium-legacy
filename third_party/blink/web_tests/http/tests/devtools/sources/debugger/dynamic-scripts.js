@@ -55,19 +55,11 @@
     });
     urls.sort();
 
-    var whiteList = [
+    const allowedUrls = new Set([
       'debugger-test.js', 'dynamic-script.js', 'dynamic-scripts.js', 'evalSourceURL.js', 'inspector-test.js',
       'scriptElementContentSourceURL.js'
-    ];
-    function filter(url) {
-      for (var i = 0; i < whiteList.length; ++i) {
-        if (url === whiteList[i])
-          return true;
-      }
-
-      return false;
-    }
-    urls = urls.filter(filter);
+    ]);
+    urls = urls.filter(url => allowedUrls.has(url));
 
     TestRunner.addResult('UISourceCodes:');
     var lastURL;

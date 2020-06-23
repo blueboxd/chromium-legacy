@@ -54,6 +54,7 @@
         <activity android:name="org.chromium.webapk.shell_apk.h2o.H2OOpaqueMainActivity"
                   android:theme="@style/SplashTheme"
                   android:relinquishTaskIdentity="true"
+                  android:screenOrientation="{{{android_orientation}}}"
                   android:enabled="[[#use_new_splash]]@bool/opaque_main_activity_enabled_default[[/use_new_splash]][[^use_new_splash]]false[[/use_new_splash]]">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,6 +64,7 @@
         </activity>
         <activity android:name="org.chromium.webapk.shell_apk.h2o.SplashActivity"
                   android:theme="@style/SplashTheme"
+                  android:screenOrientation="{{{android_orientation}}}"
                   android:launchMode="singleTask">
         </activity>
         <provider android:name="org.chromium.webapk.shell_apk.h2o.SplashContentProvider"

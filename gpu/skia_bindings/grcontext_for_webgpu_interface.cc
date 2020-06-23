@@ -4,6 +4,7 @@
 
 #include "gpu/skia_bindings/grcontext_for_webgpu_interface.h"
 
+#include "base/logging.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/webgpu_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"

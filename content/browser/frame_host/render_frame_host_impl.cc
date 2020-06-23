@@ -47,6 +47,7 @@
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
+#include "content/browser/devtools/protocol/audits.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/data_url_blob_reader.h"
 #include "content/browser/download/mhtml_generation_manager.h"
@@ -3498,6 +3499,16 @@ BrowserContext* RenderFrameHostImpl::GetBrowserContext() {
   return GetProcess()->GetBrowserContext();
 }
 
+// TODO(crbug.com/1091720): Would be better to do this directly in the chrome
+// layer.  See referenced bug for further details.
+void RenderFrameHostImpl::ReportHeavyAdIssue(
+    blink::mojom::HeavyAdResolutionStatus resolution,
+    blink::mojom::HeavyAdReason reason) {
+  auto issue =
+      devtools_instrumentation::GetHeavyAdIssue(this, resolution, reason);
+  devtools_instrumentation::ReportBrowserInitiatedIssue(this, issue.get());
+}
+
 StoragePartition* RenderFrameHostImpl::GetStoragePartition() {
   return BrowserContext::GetStoragePartition(GetBrowserContext(),
                                              GetSiteInstance());
@@ -6103,7 +6114,7 @@ void RenderFrameHostImpl::CommitNavigation(
       std::string partition_name;
       bool in_memory;
       GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-          browser_context, site_instance_->GetSiteInfo().site_url(), true,
+          browser_context, site_instance_->GetSiteInfo().site_url(),
           &storage_domain, &partition_name, &in_memory);
     }
     non_network_url_loader_factories_.emplace(
@@ -8113,8 +8124,26 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   accessibility_reset_count_ = 0;
   appcache_handle_ = navigation_request->TakeAppCacheHandle();
 
-  if (!is_same_document_navigation &&
-      !navigation_request->IsServedFromBackForwardCache()) {
+  bool created_new_document =
+      !is_same_document_navigation &&
+      !navigation_request->IsServedFromBackForwardCache();
+
+  if (created_new_document) {
+    // IsWaitingToCommit can be false inside DidCommitNavigationInternal only in
+    // specific circumstances listed above, and specifically for the fake
+    // initial navigations triggered by the blank window.open() and creating a
+    // blank iframe. In that case we do not want to reset the per-document
+    // states as we are not really creating a new Document and we want to
+    // preserve the states set by WebContentsCreated delegate notification
+    // (which among other things create tab helpers) or RenderFrameCreated.
+    if (!navigation_request->IsWaitingToCommit())
+      created_new_document = false;
+  }
+
+  // TODO(crbug.com/936696): Remove this after we have RenderDocument.
+  if (created_new_document) {
+    TRACE_EVENT1("content", "DidCommitProvisionalLoad_StateResetForNewDocument",
+                 "render_frame_host", this);
     if (navigation_request->IsInMainFrame()) {
       render_view_host_->ResetPerPageState();
     }
@@ -9098,6 +9127,9 @@ void RenderFrameHostImpl::SetLifecycleStateToActive() {
 }
 
 void RenderFrameHostImpl::SetLifecycleState(LifecycleState state) {
+  TRACE_EVENT2("content", "RenderFrameHostImpl::SetLifecycleState",
+               "render_frame_host", this, "state",
+               LifecycleStateToString(state));
 #if DCHECK_IS_ON()
   static const base::NoDestructor<StateTransitions<LifecycleState>>
       allowed_transitions(

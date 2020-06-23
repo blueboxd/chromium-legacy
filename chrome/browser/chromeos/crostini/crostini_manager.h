@@ -301,6 +301,11 @@ class CrostiniManager : public KeyedService,
       const base::Optional<std::string>& maybe_kernel_version)>;
   void GetTerminaVmKernelVersion(GetTerminaVmKernelVersionCallback callback);
 
+  // Wrapper for CiceroneClient::StartLxd with some extra parameter validation.
+  // |callback| is called immediately if the arguments are bad, or after LXD has
+  // been started.
+  void StartLxd(std::string vm_name, CrostiniResultCallback callback);
+
   // Checks the arguments for creating an Lxd container via
   // CiceroneClient::CreateLxdContainer. |callback| is called immediately if the
   // arguments are bad, or once the container has been created.
@@ -638,7 +643,6 @@ class CrostiniManager : public KeyedService,
   bool ShouldPromptContainerUpgrade(const ContainerId& container_id) const;
   void UpgradePromptShown(const ContainerId& container_id);
   void EnsureVmRunning(const ContainerId& key, CrostiniResultCallback callback);
-  void EnsureConciergeRunning(CrostiniResultCallback callback);
   bool IsUncleanStartup() const;
   void SetUncleanStartupForTesting(bool is_unclean_startup);
   void RemoveUncleanSshfsMounts();
@@ -720,6 +724,13 @@ class CrostiniManager : public KeyedService,
   // Callback for CrostiniClient::StopConcierge. Called after the
   // DebugDaemon service method finishes.
   void OnStopConcierge(BoolCallback callback, bool success);
+
+  // Callback for CiceroneClient::StartLxd. May indicate that LXD is still being
+  // started in which case we will wait for OnStartLxdProgress events.
+  void OnStartLxd(
+      std::string vm_name,
+      CrostiniResultCallback callback,
+      base::Optional<vm_tools::cicerone::StartLxdResponse> response);
 
   // Callback for CiceroneClient::CreateLxdContainer. May indicate the container
   // is still being created, in which case we will wait for an
@@ -889,6 +900,10 @@ class CrostiniManager : public KeyedService,
   // used if StartTerminaVm completes but we need to wait from Tremplin to
   // start.
   std::multimap<std::string, base::OnceClosure> tremplin_started_callbacks_;
+
+  // Callbacks to run after LXD is started, keyed by vm_name. Used if StartLxd
+  // completes but we need to wait for LXD to start.
+  std::map<std::string, CrostiniResultCallback> start_lxd_callbacks_;
 
   std::map<std::string, VmInfo> running_vms_;
 

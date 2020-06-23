@@ -88,7 +88,7 @@
 //third_party/catapult/devil/devil/android/constants/chrome.py
 //third_party/catapult/devil/devil/android/constants/file_system.py
 //third_party/catapult/devil/devil/android/decorators.py
-//third_party/catapult/devil/devil/android/device_blacklist.py
+//third_party/catapult/devil/devil/android/device_denylist.py
 //third_party/catapult/devil/devil/android/device_errors.py
 //third_party/catapult/devil/devil/android/device_signal.py
 //third_party/catapult/devil/devil/android/device_temp_file.py

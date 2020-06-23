@@ -12,7 +12,7 @@ export {PrinterType} from './data/destination_match.js';
 // <if expr="chromeos">
 export {ColorModeRestriction, DuplexModeRestriction, PinModeRestriction} from './data/destination_policies.js';
 export {PrinterStatus, PrinterStatusReason, PrinterStatusSeverity} from './data/printer_status_cros.js';
-export {GREEN_PRINTER_STATUS, RED_PRINTER_STATUS} from './ui/destination_select_cros.js';
+export {PrinterState} from './ui/printer_status_icon_cros.js';
 // </if>
 export {DestinationErrorType, DestinationStore} from './data/destination_store.js';
 export {PageLayoutInfo} from './data/document_info.js';

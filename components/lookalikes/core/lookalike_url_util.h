@@ -57,9 +57,14 @@ enum class LookalikeUrlMatchType {
   kSkeletonMatchTop5k = 7,
   kTargetEmbeddingForSafetyTips = 8,
 
+  // The domain name failed IDN spoof checks but didn't match a safe hostname.
+  // As a result, there is no URL to suggest to the user in the form of "Did
+  // you mean <url>?".
+  kFailedSpoofChecks = 9,
+
   // Append new items to the end of the list above; do not modify or replace
   // existing values. Comment out obsolete items.
-  kMaxValue = kTargetEmbeddingForSafetyTips,
+  kMaxValue = kFailedSpoofChecks,
 };
 
 // Used for UKM. There is only a single LookalikeUrlBlockingPageUserAction per
@@ -90,10 +95,11 @@ enum class NavigationSuggestionEvent {
   kMatchSkeletonTop500 = 8,
   kMatchSkeletonTop5k = 9,
   kMatchTargetEmbeddingForSafetyTips = 10,
+  kFailedSpoofChecks = 11,
 
   // Append new items to the end of the list above; do not modify or
   // replace existing values. Comment out obsolete items.
-  kMaxValue = kMatchTargetEmbeddingForSafetyTips,
+  kMaxValue = kFailedSpoofChecks,
 };
 
 struct DomainInfo {

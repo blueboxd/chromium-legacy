@@ -81,6 +81,12 @@ enum CSPDirectiveName {
   FormAction,
   NavigateTo,
   FrameAncestors,
+  ImgSrc,
+  MediaSrc,
+  ObjectSrc,
+  ScriptSrc,
+  StyleSrc,
+  WorkerSrc
 };
 
 struct ContentSecurityPolicy {

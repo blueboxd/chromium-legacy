@@ -5,10 +5,20 @@
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 
 #include "base/macros.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/language/core/browser/pref_names.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/network_service_instance.h"
@@ -34,7 +44,9 @@ class TestUserSessionManager : public UserSessionManager {
 
 class UserSessionManagerTest : public testing::Test {
  public:
-  UserSessionManagerTest() {
+  UserSessionManagerTest()
+      : profile_manager_(std::make_unique<TestingProfileManager>(
+            TestingBrowserProcess::GetGlobal())) {
     static_assert(
         static_cast<int>(
             UserSessionManager::PasswordConsumingService::kCount) == 2,
@@ -44,7 +56,10 @@ class UserSessionManagerTest : public testing::Test {
     user_session_manager_ = std::make_unique<TestUserSessionManager>();
   }
 
+  void SetUp() override { ASSERT_TRUE(profile_manager_->SetUp()); }
+
   ~UserSessionManagerTest() override {
+    profile_manager_->DeleteAllTestingProfiles();
     user_session_manager_.reset();
     SessionManagerClient::Shutdown();
   }
@@ -66,6 +81,28 @@ class UserSessionManagerTest : public testing::Test {
     return user_session_manager_->user_context().GetPasswordKey()->GetSecret();
   }
 
+  // Creates a dummy user with a testing profile and logs in.
+  TestingProfile* LoginTestUser() {
+    const AccountId account_id(
+        AccountId::FromUserEmailGaiaId("demo@test.com", "demo_user"));
+    FakeChromeUserManager* user_manager =
+        static_cast<FakeChromeUserManager*>(user_manager::UserManager::Get());
+    test_user_ = user_manager->AddPublicAccountUser(account_id);
+
+    auto prefs =
+        std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
+    RegisterUserProfilePrefs(prefs->registry());
+    TestingProfile* profile = profile_manager_->CreateTestingProfile(
+        "test-profile", std::move(prefs), base::ASCIIToUTF16("Test profile"),
+        1 /* avatar_id */, std::string() /* supervised_user_id */,
+        TestingProfile::TestingFactories());
+    chromeos::ProfileHelper::Get()->SetUserToProfileMappingForTesting(
+        test_user_, profile);
+
+    user_manager->LoginUser(account_id);
+    return profile;
+  }
+
   std::unique_ptr<TestUserSessionManager> user_session_manager_;
 
   // Allows UserSessionManager to request the NetworkConnectionTracker in its
@@ -74,6 +111,9 @@ class UserSessionManagerTest : public testing::Test {
 
   user_manager::ScopedUserManager scoped_user_manager_{
       std::make_unique<user_manager::FakeUserManager>()};
+
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  user_manager::User* test_user_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UserSessionManagerTest);
@@ -135,6 +175,79 @@ TEST_F(UserSessionManagerTest, PasswordConsumerService_NoSave_Save) {
       UserSessionManager::PasswordConsumingService::kKerberos, true);
   EXPECT_EQ(kFakePassword, FakeSessionManagerClient::Get()->login_password());
   EXPECT_TRUE(GetUserSessionManagerLoginPassword().empty());
+}
+
+TEST_F(UserSessionManagerTest, RespectLocale_WithProfileLocale) {
+  TestingProfile* profile = LoginTestUser();
+
+  profile->GetPrefs()->SetString(language::prefs::kApplicationLocale, "fr-CA");
+  g_browser_process->SetApplicationLocale("fr");
+
+  // Local state locale should be ignored.
+  TestingBrowserProcess::GetGlobal()->local_state()->SetString(
+      language::prefs::kApplicationLocale, "es");
+
+  user_session_manager_->RespectLocalePreference(profile, test_user_,
+                                                 base::NullCallback());
+
+  EXPECT_TRUE(profile->requested_locale().has_value());
+  EXPECT_EQ("fr-CA", profile->requested_locale().value());
+}
+
+TEST_F(UserSessionManagerTest, RespectLocale_WithoutProfileLocale) {
+  TestingProfile* profile = LoginTestUser();
+
+  g_browser_process->SetApplicationLocale("fr");
+
+  // Local state locale should be ignored.
+  TestingBrowserProcess::GetGlobal()->local_state()->SetString(
+      language::prefs::kApplicationLocale, "es");
+
+  user_session_manager_->RespectLocalePreference(profile, test_user_,
+                                                 base::NullCallback());
+
+  EXPECT_TRUE(profile->requested_locale().has_value());
+  EXPECT_EQ("fr", profile->requested_locale().value());
+}
+
+TEST_F(UserSessionManagerTest, RespectLocale_Demo_WithProfileLocale) {
+  TestingProfile* profile = LoginTestUser();
+  // Enable Demo Mode.
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+
+  profile->GetPrefs()->SetString(language::prefs::kApplicationLocale, "fr-CA");
+  g_browser_process->SetApplicationLocale("fr");
+
+  // Local state locale should be ignored.
+  TestingBrowserProcess::GetGlobal()->local_state()->SetString(
+      language::prefs::kApplicationLocale, "es");
+
+  user_session_manager_->RespectLocalePreference(profile, test_user_,
+                                                 base::NullCallback());
+
+  EXPECT_TRUE(profile->requested_locale().has_value());
+  EXPECT_EQ("fr-CA", profile->requested_locale().value());
+}
+
+TEST_F(UserSessionManagerTest, RespectLocale_Demo_WithoutProfileLocale) {
+  TestingProfile* profile = LoginTestUser();
+  // Enable Demo Mode.
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
+
+  g_browser_process->SetApplicationLocale("fr");
+
+  // Because it's Demo Mode and the profile pref local is empty, local state
+  // locale should not be ignored.
+  TestingBrowserProcess::GetGlobal()->local_state()->SetString(
+      language::prefs::kApplicationLocale, "fr-CA");
+
+  user_session_manager_->RespectLocalePreference(profile, test_user_,
+                                                 base::NullCallback());
+
+  EXPECT_TRUE(profile->requested_locale().has_value());
+  EXPECT_EQ("fr-CA", profile->requested_locale().value());
 }
 
 }  // namespace chromeos

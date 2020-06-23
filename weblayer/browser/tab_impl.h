@@ -190,6 +190,8 @@ class TabImpl : public Tab,
   void UnregisterWebMessageCallback(
       JNIEnv* env,
       const base::android::JavaParamRef<jstring>& js_object_name);
+  jboolean CanTranslate(JNIEnv* env);
+  void ShowTranslateUi(JNIEnv* env);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }

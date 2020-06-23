@@ -660,6 +660,11 @@ class CONTENT_EXPORT NavigationRequest
   // Returns the coop status information relevant to the current navigation.
   const CrossOriginOpenerPolicyStatus& coop_status() const;
 
+  // Whether the navigation was sent to be committed in a renderer by the
+  // RenderFrameHost. This can either be for the commit of a successful
+  // navigation or an error page.
+  bool IsWaitingToCommit();
+
  private:
   friend class NavigationRequestTest;
 
@@ -938,11 +943,6 @@ class CONTENT_EXPORT NavigationRequest
   // Called when the navigation is ready to be committed. This will update the
   // |state_| and inform the delegate.
   void ReadyToCommitNavigation(bool is_error);
-
-  // Whether the navigation was sent to be committed in a renderer by the
-  // RenderFrameHost. This can either be for the commit of a successful
-  // navigation or an error page.
-  bool IsWaitingToCommit();
 
   // Called if READY_TO_COMMIT -> COMMIT state transition takes an unusually
   // long time.

@@ -33,10 +33,6 @@ public class InfoBarTest {
     public InstrumentationActivityTestRule mActivityTestRule =
             new InstrumentationActivityTestRule();
 
-    // When comparing two floats for equality via Assert.assertEquals() it is necessary to provide a
-    // delta. Use a sufficiently small value to have confidence in the equality check.
-    private static final double FLOAT_EQUALITY_DELTA = 0.0001;
-
     private Tab getActiveTab() {
         return mActivityTestRule.getActivity().getBrowser().getActiveTab();
     }
@@ -103,7 +99,7 @@ public class InfoBarTest {
         addInfoBarToActiveTab();
 
         View infoBarContainerView = getInfoBarContainerView();
-        Assert.assertEquals(infoBarContainerView.getTranslationY(), 0.0, /*delta=*/0.001);
+        Assert.assertEquals(0, (int) infoBarContainerView.getTranslationY());
 
         InstrumentationActivity activity = mActivityTestRule.getActivity();
         int infoBarContainerViewHeight = infoBarContainerView.getHeight();
@@ -112,17 +108,14 @@ public class InfoBarTest {
         // Scroll down and check that infobar container view is translated in response.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, -infoBarContainerViewHeight);
-        CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertEquals(infoBarContainerView.getTranslationY(),
-                                infoBarContainerViewHeight, FLOAT_EQUALITY_DELTA));
+        CriteriaHelper.pollUiThread(()
+                                            -> Assert.assertEquals(infoBarContainerViewHeight,
+                                                    (int) infoBarContainerView.getTranslationY()));
 
         // Scroll back up and check that infobar container view is translated in response.
         EventUtils.simulateDragFromCenterOfView(
                 activity.getWindow().getDecorView(), 0, infoBarContainerViewHeight);
         CriteriaHelper.pollUiThread(
-                ()
-                        -> Assert.assertEquals(
-                                infoBarContainerView.getTranslationY(), 0.0, FLOAT_EQUALITY_DELTA));
+                () -> Assert.assertEquals(0, (int) infoBarContainerView.getTranslationY()));
     }
 }

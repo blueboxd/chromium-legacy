@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Kopiatuta</translation>
 <translation id="2822354292072154809">Ziur <ph name="CHOSEN_OBJECT_NAME" /> objektuaren webgune-baimen guztiak berrezarri nahi dituzula?</translation>
 <translation id="2870560284913253234">Webgunea</translation>
+<translation id="2874939134665556319">Aurreko pista</translation>
 <translation id="2910701580606108292">Webguneei eduki babestua erreproduzitzeko baimena eman aurretik, eskatu onespena</translation>
 <translation id="2913331724188855103">Baimendu webguneei cookieen datuak gordetzea eta irakurtzea (gomendatua)</translation>
 <translation id="2968755619301702150">Ziurtagiri-ikustailea</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Atzeko planoko sinkronizazioa</translation>
 <translation id="3822502789641063741">Webgune-datuak garbitu?</translation>
 <translation id="385051799172605136">Atzera</translation>
+<translation id="3859306556332390985">Aurreratu</translation>
 <translation id="3955193568934677022">Baimendu webguneei eduki babestua erreproduzitzea (gomendatua)</translation>
 <translation id="3987993985790029246">Kopiatu esteka</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Izena</translation>
 <translation id="4008040567710660924">Onartu webgune zehatz baten cookieak.</translation>
+<translation id="4046123991198612571">Hurrengo pista</translation>
 <translation id="4165986682804962316">Webgunearen ezarpenak</translation>
 <translation id="4226663524361240545">Gailua dardararaz dezakete jakinarazpenek</translation>
 <translation id="4242533952199664413">Ireki ezarpenak</translation>
 <translation id="4259722352634471385"><ph name="URL" /> orrira joateko aukera blokeatuta dago</translation>
 <translation id="4278390842282768270">Baimenduta</translation>
+<translation id="429312253194641664">Webgune bat multimedia-edukia erreproduzitzen ari da</translation>
 <translation id="4433925000917964731">Google-k eskainitako oinarrizko orria</translation>
 <translation id="4434045419905280838">Leiho gainerak. / Birbideratzeak</translation>
 <translation id="445467742685312942">Baimendu webguneei eduki babestua erreproduzitzea</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Eraman behera</translation>
 <translation id="6766622839693428701">Pasatu hatza behera ixteko.</translation>
 <translation id="6782111308708962316">Eragotzi hirugarrenen webguneek cookieen datuak gordetzea eta irakurtzea</translation>
+<translation id="6790428901817661496">Erreproduzitu</translation>
 <translation id="6818926723028410516">Hautatu elementuak</translation>
 <translation id="6864395892908308021">Gailu honek ezin du irakurri NFC</translation>
 <translation id="6910211073230771657">Ezabatu egin da</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Webgune bat kamera eta mikrofonoa erabiltzen ari da</translation>
 <translation id="8380167699614421159">Webgune honek iragarki oztopatzaile edo iruzurrezkoak erakusten ditu</translation>
 <translation id="8394832520002899662">Sakatu hau webgunera itzultzeko</translation>
+<translation id="8441146129660941386">Atzeratu</translation>
 <translation id="8447861592752582886">Kendu gailua atzitzeko baimena</translation>
 <translation id="8463851957836045671">Webgunea bizkorra da</translation>
 <translation id="851751545965956758">Ez utzi webguneei gailuekin konektatzen</translation>

@@ -185,8 +185,7 @@ void VideoFrameSubmitter::DidReceiveCompositorFrameAck(
 
 void VideoFrameSubmitter::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>
-        timing_details) {
+    const WTF::HashMap<uint32_t, viz::FrameTimingDetails>& timing_details) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
 
@@ -195,7 +194,7 @@ void VideoFrameSubmitter::OnBeginFrame(
   for (const auto& pair : timing_details) {
     if (viz::FrameTokenGT(pair.key, *next_frame_token_))
       continue;
-    auto& feedback = *pair.value->presentation_feedback;
+    auto& feedback = pair.value.presentation_feedback;
 #ifdef OS_LINUX
     // TODO: On Linux failure flag is unreliable, and perfectly rendered frames
     // are reported as failures all the time.

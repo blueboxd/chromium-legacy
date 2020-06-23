@@ -36,6 +36,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "net/log/net_log_util.h"
 #include "services/network/expect_ct_reporter.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 #if defined(OS_CHROMEOS)
@@ -54,7 +55,8 @@ namespace {
 content::WebUIDataSource* CreateNetInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
   source->SetDefaultResource(IDR_NET_INTERNALS_INDEX_HTML);

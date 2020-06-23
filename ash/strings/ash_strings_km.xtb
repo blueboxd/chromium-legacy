@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">ឆ្វេង</translation>
 <translation id="1479909375538722835">ម៉ឺនុយភាពងាយស្រួលអណ្ដែត</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">បើក</translation>
 <translation id="1516740043221086139">មុខងារ "​កុំ​រំខាន​" ត្រូវបាន​បើក។</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{បង្ហាញ​ការកំណត់​ការជូនដំណឹង។ ការជូនដំណឹង​ត្រូវបាន​បិទ​សម្រាប់​កម្មវិធីមួយ}other{បង្ហាញ​ការកំណត់​ការជូនដំណឹង។ ការជូនដំណឹង​ត្រូវបាន​បិទ​សម្រាប់​កម្មវិធី #}}</translation>
 <translation id="1525508553941733066">បដិសេធ</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">ជំនួយការ (កំពុង​ផ្ទុក...)</translation>
 <translation id="1838895407229022812">បានបិទពន្លឺពេលយប់។</translation>
 <translation id="1850504506766569011">Wi-Fi ត្រូវបានបិទ។</translation>
-<translation id="1859889070386344428">បិទ</translation>
 <translation id="1864454756846565995">ឧបករណ៍ USB-C (រន្ធខាងក្រោយ)</translation>
 <translation id="1882897271359938046">កំពុងឆ្លុះទៅ <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">ដោះសោដោយប្រើស្នាមម្រាមដៃ</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">ចុច <ph name="KEYBOARD_SHORTCUT" /> ដើម្បី​ប្តូរប្លង់​ក្តារ​ចុច។</translation>
 <translation id="2501920221385095727">គ្រាប់ចុចស្អិត</translation>
 <translation id="2509468283778169019">CAPS LOCK ត្រូវបានបើក</translation>
-<translation id="2519465031217098801">បើក</translation>
 <translation id="2542089167727451762">ចុច​រូបភាព​កម្រងព័ត៌មាន​របស់អ្នក</translation>
 <translation id="255671100581129685">Google ជំនួយការ​មិន​អាចប្រើ​នៅក្នុងរយៈពេល​ចូលប្រើជាសាធារណៈបានទេ។</translation>
 <translation id="256712445991462162">កម្មវិធីពង្រីកដែលបានភ្ជាប់</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">បិទភ្ជាប់</translation>
 <translation id="394485226368336402">ការ​កំណត់​សំឡេង</translation>
 <translation id="3962859241508114581">សំនៀងមុន</translation>
-<translation id="3965097803111112935">បិទ</translation>
 <translation id="397105322502079400">កំពុងគណនា...</translation>
 <translation id="3977512764614765090">ថ្ម​កំពុងសាកមានកម្រិត​​ <ph name="PERCENTAGE" />%។</translation>
 <translation id="3995138139523574647">ឧបករណ៍ USB-C (រន្ធក្រោយផ្នែកខាងស្តាំ)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">រំលេច​សញ្ញា​អត្ថបទ</translation>
 <translation id="5222676887888702881">ចាកចេញ</translation>
 <translation id="523505283826916779">ការកំណត់លទ្ធភាពប្រើប្រាស់</translation>
-<translation id="5250225880026334010">បិទ</translation>
 <translation id="5260676007519551770">តុទី 4</translation>
 <translation id="5283198616748585639">បន្ថែម 1 នាទី</translation>
 <translation id="528468243742722775">បញ្ចប់</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">ឧបករណ៍ប៊្លូធូស "<ph name="DEVICE_NAME" />" ចង់សុំការអនុញ្ញាតដើម្បីភ្ជាប់។ សូមបញ្ចូលពាក្យនៅលើឧបករណ៍នោះ៖ <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">ពាក្យសម្ងាត់</translation>
 <translation id="6665545700722362599">ផ្ដល់ការអនុញ្ញាត​ឱ្យគេហទំព័រ កម្មវិធី និងកម្មវិធីបន្ថែម​អាចប្រើសេវាកម្ម​ទីតាំង មីក្រូហ្វូន កាមេរ៉ា ឬមុខងារផ្សេងទៀត​របស់ឧបករណ៍នេះ</translation>
-<translation id="6669268301501499730">បើក</translation>
 <translation id="6670153871843998651">តុទី 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">ទទួលបានព័ត៌មានពាក់ព័ន្ធនឹងការជ្រើសរើស​របស់អ្នក</translation>

@@ -42,6 +42,7 @@ class Sample;
 namespace content {
 
 class BrowserAccessibilityManager;
+class FrameTree;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostInputEventRouter;
@@ -337,6 +338,12 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
 
   // Notify the delegate that the screen orientation has been changed.
   virtual void DidChangeScreenOrientation() {}
+
+  // Returns the FrameTree that this RenderWidgetHost is attached to. If the
+  // RenderWidgetHost is attached to a frame, then its RenderFrameHost will be
+  // in the tree. Otherwise, the RenderWidgetHost is for a popup which was
+  // opened by a frame in the FrameTree.
+  virtual FrameTree* GetFrameTree();
 
  protected:
   virtual ~RenderWidgetHostDelegate() {}

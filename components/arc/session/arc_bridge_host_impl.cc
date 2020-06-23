@@ -238,11 +238,18 @@ void ArcBridgeHostImpl::OnNetInstanceReady(
 
 void ArcBridgeHostImpl::OnNotificationsInstanceReady(
     mojo::PendingRemote<mojom::NotificationsInstance> notifications_remote) {
+  auto* host_initializer = ash::ArcNotificationsHostInitializer::Get();
+  auto* manager = host_initializer->GetArcNotificationManagerInstance();
+  if (manager) {
+    static_cast<ash::ArcNotificationManager*>(manager)->SetInstance(
+        std::move(notifications_remote));
+    return;
+  }
   // Forward notification instance to ash by injecting ArcNotificationManager.
-  auto manager = std::make_unique<ash::ArcNotificationManager>();
-  manager->SetInstance(std::move(notifications_remote));
+  auto new_manager = std::make_unique<ash::ArcNotificationManager>();
+  new_manager->SetInstance(std::move(notifications_remote));
   ash::ArcNotificationsHostInitializer::Get()
-      ->SetArcNotificationManagerInstance(std::move(manager));
+      ->SetArcNotificationManagerInstance(std::move(new_manager));
 }
 
 void ArcBridgeHostImpl::OnObbMounterInstanceReady(

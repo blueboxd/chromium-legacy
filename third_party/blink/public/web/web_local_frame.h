@@ -318,6 +318,8 @@ class WebLocalFrame : public WebFrame {
   // Sets up an isolated world by associating a |world_id| with |info|.
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < kEmbedderWorldIdLimit, high number used internally.
+  // TODO(karandeepb): This modifies the global isolated world info and hence
+  // should ideally be moved out of WebLocalFrame.
   virtual void SetIsolatedWorldInfo(int32_t world_id,
                                     const WebIsolatedWorldInfo& info) = 0;
 

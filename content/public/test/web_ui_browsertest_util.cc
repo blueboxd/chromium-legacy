@@ -24,6 +24,7 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -76,7 +77,8 @@ class TestWebUIController : public WebUIController {
         base::BindRepeating([](const std::string& path) { return true; }),
         base::BindRepeating(&GetResource));
 
-    data_source->OverrideContentSecurityPolicyChildSrc(config.child_src);
+    data_source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::ChildSrc, config.child_src);
     if (config.frame_ancestors.has_value()) {
       for (const auto& frame_ancestor : config.frame_ancestors.value()) {
         data_source->AddFrameAncestor(GURL(frame_ancestor));
@@ -109,15 +111,16 @@ void AddUntrustedDataSource(BrowserContext* browser_context,
       base::BindRepeating(&GetResource));
   if (csp.has_value()) {
     if (csp->child_src.has_value()) {
-      untrusted_data_source->OverrideContentSecurityPolicyChildSrc(
-          csp->child_src.value());
+      untrusted_data_source->OverrideContentSecurityPolicy(
+          network::mojom::CSPDirectiveName::ChildSrc, csp->child_src.value());
     }
     if (csp->script_src.has_value()) {
-      untrusted_data_source->OverrideContentSecurityPolicyScriptSrc(
-          csp->script_src.value());
+      untrusted_data_source->OverrideContentSecurityPolicy(
+          network::mojom::CSPDirectiveName::ScriptSrc, csp->script_src.value());
     }
     if (csp->default_src.has_value()) {
-      untrusted_data_source->OverrideContentSecurityPolicyDefaultSrc(
+      untrusted_data_source->OverrideContentSecurityPolicy(
+          network::mojom::CSPDirectiveName::DefaultSrc,
           csp->default_src.value());
     }
     if (csp->no_xfo)

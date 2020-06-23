@@ -4,8 +4,6 @@
 
 #include "components/sync/driver/data_type_controller.h"
 
-#include "components/sync/syncable/user_share.h"
-
 namespace syncer {
 
 DataTypeController::DataTypeController(ModelType type) : type_(type) {}

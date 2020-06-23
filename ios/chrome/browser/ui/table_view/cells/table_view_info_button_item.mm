@@ -35,7 +35,7 @@
   if ([self.iconImageName length]) {
     iconImage = [UIImage imageNamed:self.iconImageName];
   }
-  [cell setIconImage:iconImage];
+  [cell setIconImage:iconImage withTintColor:self.tintColor];
 }
 
 @end

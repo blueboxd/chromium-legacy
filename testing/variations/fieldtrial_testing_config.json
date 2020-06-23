@@ -1250,27 +1250,6 @@
             ]
         }
     ],
-    "CSSReducedFontLoadingInvalidations": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CSSReducedFontLoadingInvalidations"
-                    ]
-                }
-            ]
-        }
-    ],
     "CSSReducedFontLoadingLayoutInvalidations": [
         {
             "platforms": [
@@ -3502,6 +3481,7 @@
                     "name": "EnabledUndoableActions",
                     "params": {
                         "card_menu_tooltip_eligible": "true",
+                        "default_action_ttl_seconds": "90000",
                         "feed_ui_enabled": "true",
                         "init_feed_after_startup": "false",
                         "manage_interests_enabled": "true",
@@ -6962,28 +6942,6 @@
             "experiments": [
                 {
                     "name": "On"
-                }
-            ]
-        }
-    ],
-    "TrustTokenOriginTrial": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "TrustTokenOperationsRequiringOriginTrial": "only-issuance-requires-origin-trial"
-                    },
-                    "enable_features": [
-                        "TrustTokens"
-                    ]
                 }
             ]
         }

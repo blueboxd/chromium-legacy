@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 
-#include "base/logging.h"
 #include "base/strings/string16.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"

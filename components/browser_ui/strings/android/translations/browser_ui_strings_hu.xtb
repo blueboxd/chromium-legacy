@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Másolt</translation>
 <translation id="2822354292072154809">Biztosan visszaállítja a(z) <ph name="CHOSEN_OBJECT_NAME" /> minden webhelyengedélyét?</translation>
 <translation id="2870560284913253234">Webhely</translation>
+<translation id="2874939134665556319">Előző szám</translation>
 <translation id="2910701580606108292">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára védett tartalmak lejátszását</translation>
 <translation id="2913331724188855103">Cookie-adatok mentésének és olvasásának engedélyezése a webhelyeken (ajánlott)</translation>
 <translation id="2968755619301702150">Tanúsítványmegtekintő</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Szinkronizálás a háttérben</translation>
 <translation id="3822502789641063741">Törli a webhely tárhelyét?</translation>
 <translation id="385051799172605136">Vissza</translation>
+<translation id="3859306556332390985">Ugrás előre</translation>
 <translation id="3955193568934677022">Engedélyezi a webhelyek számára a védett tartalmak lejátszását (ajánlott)</translation>
 <translation id="3987993985790029246">Link másolása</translation>
 <translation id="3991845972263764475">? / <ph name="BYTES_DOWNLOADED_WITH_UNITS" /></translation>
 <translation id="4002066346123236978">Cím</translation>
 <translation id="4008040567710660924">Adott webhely cookie-jainak engedélyezése.</translation>
+<translation id="4046123991198612571">Következő szám</translation>
 <translation id="4165986682804962316">Webhelybeállítások</translation>
 <translation id="4226663524361240545">Az értesítések miatt rezeghet az eszköz</translation>
 <translation id="4242533952199664413">Beállítások megnyitása</translation>
 <translation id="4259722352634471385">Le van tiltva az ide vezető navigáció: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Engedélyezve</translation>
+<translation id="429312253194641664">Az egyik webhely médiatartalmat játszik le</translation>
 <translation id="4433925000917964731">Egyszerű oldal a Google-tól</translation>
 <translation id="4434045419905280838">Előugró ablakok és átirányítások</translation>
 <translation id="445467742685312942">Védett tartalmak lejátszásának engedélyezése a webhelyek számára</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Mozgatás lefelé</translation>
 <translation id="6766622839693428701">A bezáráshoz csúsztasson lefelé.</translation>
 <translation id="6782111308708962316">Megakadályozza, hogy harmadik felek webhelyei mentsék és olvassák a cookie-adatokat.</translation>
+<translation id="6790428901817661496">Játék</translation>
 <translation id="6818926723028410516">Válasszon elemeket</translation>
 <translation id="6864395892908308021">Ez az eszköz nem képes az NFC-alapú kommunikáció olvasására</translation>
 <translation id="6910211073230771657">Törölve</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Egy webhely használja az Ön kameráját és mikrofonját</translation>
 <translation id="8380167699614421159">Ez a webhely tolakodó vagy félrevezető hirdetéseket jelenít meg</translation>
 <translation id="8394832520002899662">Koppintson a webhelyre való visszatéréshez</translation>
+<translation id="8441146129660941386">Ugrás visszafelé</translation>
 <translation id="8447861592752582886">Eszközengedély visszavonása</translation>
 <translation id="8463851957836045671">A webhely gyors</translation>
 <translation id="851751545965956758">Az eszközökhöz való csatlakozás megtiltása a webhelyeknek</translation>

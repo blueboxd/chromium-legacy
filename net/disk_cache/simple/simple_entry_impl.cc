@@ -828,7 +828,7 @@ void SimpleEntryImpl::OpenEntryInternal(
 
   base::OnceClosure task = base::BindOnce(
       &SimpleSynchronousEntry::OpenEntry, cache_type_, path_, key_, entry_hash_,
-      start_time, file_tracker_, trailer_prefetch_size, results.get());
+      file_tracker_, trailer_prefetch_size, results.get());
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, result_state,
@@ -872,9 +872,9 @@ void SimpleEntryImpl::CreateEntryInternal(
       new SimpleEntryCreationResults(SimpleEntryStat(
           last_used_, last_modified_, data_size_, sparse_data_size_)));
 
-  OnceClosure task = base::BindOnce(&SimpleSynchronousEntry::CreateEntry,
-                                    cache_type_, path_, key_, entry_hash_,
-                                    start_time, file_tracker_, results.get());
+  OnceClosure task =
+      base::BindOnce(&SimpleSynchronousEntry::CreateEntry, cache_type_, path_,
+                     key_, entry_hash_, file_tracker_, results.get());
   OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, result_state,
       std::move(callback), start_time, base::Time(), std::move(results),
@@ -933,10 +933,10 @@ void SimpleEntryImpl::OpenOrCreateEntryInternal(
     }
   }
 
-  base::OnceClosure task = base::BindOnce(
-      &SimpleSynchronousEntry::OpenOrCreateEntry, cache_type_, path_, key_,
-      entry_hash_, index_state, optimistic_create, start_time, file_tracker_,
-      trailer_prefetch_size, results.get());
+  base::OnceClosure task =
+      base::BindOnce(&SimpleSynchronousEntry::OpenOrCreateEntry, cache_type_,
+                     path_, key_, entry_hash_, index_state, optimistic_create,
+                     file_tracker_, trailer_prefetch_size, results.get());
 
   base::OnceClosure reply = base::BindOnce(
       &SimpleEntryImpl::CreationOperationComplete, this, result_state,

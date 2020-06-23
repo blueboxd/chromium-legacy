@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Копирано</translation>
 <translation id="2822354292072154809">Сигурно ли сакате да ги ресетирате сите дозволи на сајтот за <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Локација</translation>
+<translation id="2874939134665556319">Претходна песна</translation>
 <translation id="2910701580606108292">Прашај пред да дозволиш сајтовите да пуштаат заштитени содржини</translation>
 <translation id="2913331724188855103">Дозволете локациите да зачувуваат и читаат податоци за колачињата (препорачано)</translation>
 <translation id="2968755619301702150">Прикажувач на сертификат</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Синхронизација во заднина</translation>
 <translation id="3822502789641063741">Испразни го просторот?</translation>
 <translation id="385051799172605136">Назад</translation>
+<translation id="3859306556332390985">Барај понапред</translation>
 <translation id="3955193568934677022">Дозволете сајтовите да пуштаат заштитени содржини (се препорачува)</translation>
 <translation id="3987993985790029246">Копирај линк</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Наслов</translation>
 <translation id="4008040567710660924">Дозволете колачиња за конкретен сајт.</translation>
+<translation id="4046123991198612571">Следна песна</translation>
 <translation id="4165986682804962316">Поставки на локација</translation>
 <translation id="4226663524361240545">Известувањата може да предизвикаат вибрации на уредот</translation>
 <translation id="4242533952199664413">Отвори ги поставките</translation>
 <translation id="4259722352634471385">Навигацијата е блокирана: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Дозволено</translation>
+<translation id="429312253194641664">Сајтот репродуцира аудиовизуелни содржини</translation>
 <translation id="4433925000917964731">Lite-страница овозможена од Google</translation>
 <translation id="4434045419905280838">Скокачки прозорци/пренасочувања</translation>
 <translation id="445467742685312942">Дозволи сајтовите да пуштаат заштитени содржини</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Премести долу</translation>
 <translation id="6766622839693428701">Повлечете надолу за да затворите.</translation>
 <translation id="6782111308708962316">Спречи ги веб-сајтовите на трети лица да зачувуваат и читаат податоци за колачињата</translation>
+<translation id="6790428901817661496">Репродуцирај</translation>
 <translation id="6818926723028410516">Изберете ставки</translation>
 <translation id="6864395892908308021">Уредов не може да чита NFC</translation>
 <translation id="6910211073230771657">Избришано</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Сајтот ги користи камерата и микрофонот</translation>
 <translation id="8380167699614421159">Сајтов прикажува нападни или лажни реклами</translation>
 <translation id="8394832520002899662">Допрете за да се вратите на сајтот</translation>
+<translation id="8441146129660941386">Барај поназад</translation>
 <translation id="8447861592752582886">Отповикај ја дозволата за пристап до уредот</translation>
 <translation id="8463851957836045671">Сајтот е брз</translation>
 <translation id="851751545965956758">Блокирај ги сајтовите од поврзување со уреди</translation>

@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Kopyalandı</translation>
 <translation id="2822354292072154809"><ph name="CHOSEN_OBJECT_NAME" /> üçün bütün sayt icazələrini sıfırlamaq istədiyinizə əminsiniz?</translation>
 <translation id="2870560284913253234">Sayt</translation>
+<translation id="2874939134665556319">Öncəki trek</translation>
 <translation id="2910701580606108292">Saytlar qorunan kontenti göstərmədən öncə icazə tələb edilsin</translation>
 <translation id="2913331724188855103">Saytlara kuki datanı saxlamağa və oxumağa imkan verir (tövsiyə olunur)</translation>
 <translation id="2968755619301702150">Sertifikat izləyici</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Arxa fon sinx</translation>
 <translation id="3822502789641063741">Sayt yaddaşı silinsin?</translation>
 <translation id="385051799172605136">Geri</translation>
+<translation id="3859306556332390985">İrəli axtarın</translation>
 <translation id="3955193568934677022">Saytlara qorunan datanı oxumağa icazə verin (tövsiyə olunur)</translation>
 <translation id="3987993985790029246">Linki kopyalayın</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Başlıq</translation>
 <translation id="4008040567710660924">Xüsusi sayt üçün kukilərə icazə verin.</translation>
+<translation id="4046123991198612571">Növbəti trek</translation>
 <translation id="4165986682804962316">Sayt ayarları</translation>
 <translation id="4226663524361240545">Bildirişlər cihazı titrədə bilər</translation>
 <translation id="4242533952199664413">Ayarları açın</translation>
 <translation id="4259722352634471385">Naviqasiya bloklandı: <ph name="URL" /></translation>
 <translation id="4278390842282768270">İcazə verilib</translation>
+<translation id="429312253194641664">Sayt media oxudur</translation>
 <translation id="4433925000917964731">Google'un dəstəklədiyi lite səhifəsi</translation>
 <translation id="4434045419905280838">Popap və yönləndirmələr</translation>
 <translation id="445467742685312942">Saytlara qorunan kontenti oxutmağa icazə verin</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Aşağı köçürün</translation>
 <translation id="6766622839693428701">Bağlamaq üçün aşağı sürüşdürün.</translation>
 <translation id="6782111308708962316">Üçüncü tərəf veb saytları tərəfindən kuki datasının yadda saxlanılması və oxunmasının qarşısını alın</translation>
+<translation id="6790428901817661496">Oxudun</translation>
 <translation id="6818926723028410516">Element seçin</translation>
 <translation id="6864395892908308021">Bu cihazda NFC dəstəklənmir</translation>
 <translation id="6910211073230771657">Silinib</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Sayt kamera və mikrofonunuzdan istifadə edir</translation>
 <translation id="8380167699614421159">Bu sayt inadçı və ya aldadıcı reklamlar göstərir</translation>
 <translation id="8394832520002899662">Sayta qayıtmaq üçün toxunun</translation>
+<translation id="8441146129660941386">Geri axtarı</translation>
 <translation id="8447861592752582886">Cihaz icazəsini ləğv edin</translation>
 <translation id="8463851957836045671">Sayt sürətlidir</translation>
 <translation id="851751545965956758">Saytların cihazlara qoşulmasını blok edin</translation>

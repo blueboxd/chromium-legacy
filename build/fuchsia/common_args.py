@@ -66,6 +66,8 @@ def AddCommonArgs(arg_parser):
                            help='Path to a Fuchsia build output directory. '
                                 'Equivalent to setting --ssh_config and '
                                 '---os-check=ignore')
+  common_args.add_argument('--runner-logs-dir',
+                           help='Directory to write test runner logs to.')
   common_args.add_argument('--system-log-file',
                            help='File to write system logs to. Specify - to '
                                 'log to stdout.')

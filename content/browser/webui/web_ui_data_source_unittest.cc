@@ -9,6 +9,7 @@
 #include "content/browser/webui/web_ui_data_source_impl.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/test/test_content_client.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -274,46 +275,67 @@ TEST_F(WebUIDataSourceTest, SetCspValues) {
 
   // Default values.
   EXPECT_EQ("child-src 'none';",
-            url_data_source->GetContentSecurityPolicyChildSrc());
-  EXPECT_EQ("", url_data_source->GetContentSecurityPolicyDefaultSrc());
-  EXPECT_EQ("", url_data_source->GetContentSecurityPolicyImgSrc());
-  EXPECT_EQ("", url_data_source->GetContentSecurityPolicyMediaSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ChildSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::DefaultSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::ImgSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::MediaSrc));
   EXPECT_EQ("object-src 'none';",
-            url_data_source->GetContentSecurityPolicyObjectSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ObjectSrc));
   EXPECT_EQ("script-src chrome://resources 'self';",
-            url_data_source->GetContentSecurityPolicyScriptSrc());
-  EXPECT_EQ("", url_data_source->GetContentSecurityPolicyStyleSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ScriptSrc));
+  EXPECT_EQ("", url_data_source->GetContentSecurityPolicy(
+                    network::mojom::CSPDirectiveName::StyleSrc));
 
   // Override each directive and test it updates the underlying URLDataSource.
-  source()->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ChildSrc, "child-src 'self';");
   EXPECT_EQ("child-src 'self';",
-            url_data_source->GetContentSecurityPolicyChildSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ChildSrc));
 
-  source()->OverrideContentSecurityPolicyDefaultSrc("default-src 'self';");
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::DefaultSrc, "default-src 'self';");
   EXPECT_EQ("default-src 'self';",
-            url_data_source->GetContentSecurityPolicyDefaultSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::DefaultSrc));
 
-  source()->OverrideContentSecurityPolicyImgSrc("img-src 'self' blob:;");
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ImgSrc, "img-src 'self' blob:;");
   EXPECT_EQ("img-src 'self' blob:;",
-            url_data_source->GetContentSecurityPolicyImgSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ImgSrc));
 
-  source()->OverrideContentSecurityPolicyMediaSrc("media-src 'self' blob:;");
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::MediaSrc, "media-src 'self' blob:;");
   EXPECT_EQ("media-src 'self' blob:;",
-            url_data_source->GetContentSecurityPolicyMediaSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::MediaSrc));
 
-  source()->OverrideContentSecurityPolicyObjectSrc("object-src 'self' data:;");
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ObjectSrc, "object-src 'self' data:;");
   EXPECT_EQ("object-src 'self' data:;",
-            url_data_source->GetContentSecurityPolicyObjectSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ObjectSrc));
 
-  source()->OverrideContentSecurityPolicyScriptSrc(
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-inline';");
   EXPECT_EQ("script-src chrome://resources 'self' 'unsafe-inline';",
-            url_data_source->GetContentSecurityPolicyScriptSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::ScriptSrc));
 
-  source()->OverrideContentSecurityPolicyStyleSrc(
+  source()->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::StyleSrc,
       "style-src 'self' 'unsafe-inline';");
   EXPECT_EQ("style-src 'self' 'unsafe-inline';",
-            url_data_source->GetContentSecurityPolicyStyleSrc());
+            url_data_source->GetContentSecurityPolicy(
+                network::mojom::CSPDirectiveName::StyleSrc));
 }
 
 }  // namespace content

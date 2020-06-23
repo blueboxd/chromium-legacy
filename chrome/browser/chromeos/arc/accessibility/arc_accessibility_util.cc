@@ -10,12 +10,6 @@
 
 namespace arc {
 
-using AXActionType = mojom::AccessibilityActionType;
-using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
-using AXIntListProperty = mojom::AccessibilityIntListProperty;
-using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
-using AXStringProperty = mojom::AccessibilityStringProperty;
-
 ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
                            AccessibilityInfoDataWrapper* source_node,
                            AccessibilityInfoDataWrapper* focused_node) {
@@ -132,62 +126,6 @@ std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type) {
       NOTREACHED();
   }
   return std::string();  // Dummy.
-}
-
-bool IsImportantInAndroid(AXNodeInfoData* node) {
-  if (!node)
-    return false;
-
-  return node->is_virtual_node ||
-         GetBooleanProperty(node, AXBooleanProperty::IMPORTANCE);
-}
-
-bool HasImportantProperty(AXNodeInfoData* node) {
-  if (!node)
-    return false;
-
-  // These properties are used to compute accessibility name in
-  // AccessibilityNodeInfoDataWrapper.
-  // TODO(hirokisato): Also check LABELED_BY.
-  if (HasNonEmptyStringProperty(node, AXStringProperty::CONTENT_DESCRIPTION) ||
-      HasNonEmptyStringProperty(node, AXStringProperty::TEXT) ||
-      HasNonEmptyStringProperty(node, AXStringProperty::PANE_TITLE) ||
-      HasNonEmptyStringProperty(node, AXStringProperty::HINT_TEXT)) {
-    return true;
-  }
-
-  // These properties are sorted in the same order of mojom file.
-  if (GetBooleanProperty(node, AXBooleanProperty::CHECKABLE) ||
-      GetBooleanProperty(node, AXBooleanProperty::FOCUSABLE) ||
-      GetBooleanProperty(node, AXBooleanProperty::SELECTED) ||
-      GetBooleanProperty(node, AXBooleanProperty::EDITABLE)) {
-    return true;
-  }
-
-  if (HasStandardAction(node, AXActionType::FOCUS) ||
-      HasStandardAction(node, AXActionType::CLEAR_FOCUS) ||
-      HasStandardAction(node, AXActionType::CLICK)) {
-    return true;
-  }
-
-  // TODO(hirokisato): Consider to check ui::IsControl(role).
-  return false;
-}
-
-bool HasStandardAction(AXNodeInfoData* node, AXActionType action) {
-  if (!node || !node->int_list_properties)
-    return false;
-
-  auto itr =
-      node->int_list_properties->find(AXIntListProperty::STANDARD_ACTION_IDS);
-  if (itr == node->int_list_properties->end())
-    return false;
-
-  for (const auto supported_action : itr->second) {
-    if (static_cast<AXActionType>(supported_action) == action)
-      return true;
-  }
-  return false;
 }
 
 }  // namespace arc

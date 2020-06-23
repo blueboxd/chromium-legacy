@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Chromium nuk mund të përdorë kamerën tënde për momentin</translation>
 <translation id="2195025571279539885">Dëshiron që Chromium të ofrojë përkthimin e faqeve në <ph name="LANGUAGE_NAME" /> nga ky sajt herën tjetër?</translation>
 <translation id="2590893390871230428">Sinkronizo të dhënat e Chromium</translation>
+<translation id="2650312721222849884">Për të parë skedat e tua nga çdo vend ku përdor Chromium, aktivizo sinkronizimin</translation>
 <translation id="2730884209570016437">Chromium nuk mund të përdorë kamerën tënde sepse ajo është në përdorim nga një aplikacion tjetër</translation>
 <translation id="2915596697727466327">Chromium përdor Face ID për të siguruar qasjen e autorizuar te fjalëkalimet e tua.</translation>
 <translation id="3256316712990552818">U kopjua te Chromium</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Aktivizo skanerin e Chromium</translation>
 <translation id="4787850887676698916">Skedat që ke hapur në Chromium në pajisjet e tjera do të shfaqen këtu.</translation>
 <translation id="4999538639245140991">Duke qenë se po del nga një llogari e menaxhuar nga <ph name="SIGNOUT_MANAGED_DOMAIN" />, të dhënat e tua të Chromium do të fshihen nga kjo pajisje. Të dhënat e tua do të mbeten në "Llogarinë tënde të Google".</translation>
+<translation id="5521125884468363740">Për të parë skedat e tua nga çdo vend ku përdor Chromium, identifikohu dhe aktivizo sinkronizimin</translation>
 <translation id="5573014823074921752">Këshillë për Chromium. Për më shumë opsione për skedat, shtyp dhe mbaj shtypur butonin "Shfaq skedat" në shiritin e veglave që ndodhet në fund ose në krye të ekranit tënd.</translation>
 <translation id="5777187867430702742">Faqe e Chromium</translation>
 <translation id="5862307444128926510">Mirë se vjen në Chromium</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Këshillë për Chromium. Disa butona ndodhen tani në fund të ekranit tënd, si p.sh. "Prapa", "Përpara" dhe "Kërko".</translation>
 <translation id="786327964234957808">Po i ndërron llogaritë e sinkronizimit nga <ph name="USER_EMAIL1" /> te <ph name="USER_EMAIL2" />. Të dhënat ekzistuese të Chromium po menaxhohen nga <ph name="DOMAIN" />. Kjo do t'i fshijë të dhënat e tua nga kjo pajisje, por të dhënat e tua do të mbeten në <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Fillo të përdorësh skanerin e Chromium</translation>
+<translation id="8013573822802650211">Për të parë skedat e tua nga çdo vend ku përdor Chromium, identifikohu në të gjitha pajisjet e tua</translation>
 <translation id="8073677936375100957">Të pastrohen të dhënat e tua të Chromium nga kjo pajisje?</translation>
 <translation id="8175055321229419309">Këshillë: <ph name="BEGIN_LINK" />Zhvendose Chromium te stacioni yt<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Përjeto një përvojë më të mirë të Google në Chromium bazuar në vendndodhjen tënde.</translation>

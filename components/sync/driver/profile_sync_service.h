@@ -60,7 +60,6 @@ class TypeDebugInfoObserver;
 struct CommitCounters;
 struct StatusCounters;
 struct UpdateCounters;
-struct UserShare;
 
 // Look at the SyncService interface for information on how to use this class.
 // You should not need to know about ProfileSyncService directly.
@@ -146,7 +145,6 @@ class ProfileSyncService : public SyncService,
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
-  UserShare* GetUserShare() const override;
   SyncTokenStatus GetSyncTokenStatusForDebugging() const override;
   bool QueryDetailedSyncStatusForDebugging(SyncStatus* result) const override;
   base::Time GetLastSyncedTimeForDebugging() const override;

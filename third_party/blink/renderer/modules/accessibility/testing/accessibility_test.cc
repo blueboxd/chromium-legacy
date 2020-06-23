@@ -32,6 +32,10 @@ AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
   return *ax_object_cache;
 }
 
+AXObject* AccessibilityTest::GetAXObject(LayoutObject* layout_object) const {
+  return GetAXObjectCache().GetOrCreate(layout_object);
+}
+
 AXObject* AccessibilityTest::GetAXObject(const Node& node) const {
   return GetAXObjectCache().GetOrCreate(&node);
 }

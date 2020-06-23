@@ -15,6 +15,9 @@
 // The filename for the leading icon. If empty, no icon will be shown.
 @property(nonatomic, copy) NSString* iconImageName;
 
+// Tint color for the icon.
+@property(nonatomic, strong) UIColor* tintColor;
+
 // The main text string.
 @property(nonatomic, copy) NSString* text;
 

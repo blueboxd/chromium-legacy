@@ -9,6 +9,7 @@
 <translation id="2199719347983604670">Chrome senkronizasyonundan veriler</translation>
 <translation id="2347208864470321755">Bu özellik açık durumdayken Chrome, diğer dillerde yazılmış sayfaları Google Çeviri'yi kullanarak çevirmeyi teklif eder. <ph name="BEGIN_LINK" />Daha fazla bilgi edinin<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Resimleri kaydetmek için Ayarlar'a dokunarak Chrome'un fotoğraflarınızı kullanmasına izin verin</translation>
+<translation id="2574249610672786438">Chrome kullandığınız her yerde sekmelerinizi görmek için tüm cihazlarınızda oturum açın.</translation>
 <translation id="2576431527583832481">Chrome daha da iyi hale geldi! Yeni bir sürüm var.</translation>
 <translation id="257708665678654955">Google Chrome'un bir dahaki sefere bu siteden <ph name="LANGUAGE_NAME" /> dilindeki sayfaları çevirmeyi önermesini ister misiniz?</translation>
 <translation id="2919738076569633423">Chrome'u kullanarak <ph name="BEGIN_LINK_TOS" />Hizmet Şartları<ph name="END_LINK_TOS" />'nı kabul etmiş sayılırsınız.</translation>
@@ -19,6 +20,7 @@
 <translation id="3196546062792660320">Chrome, hesaplarınızı web'e getirerek size zaman kazandırır. Hesapları Ayarlar'dan ekleyebilir veya kaldırabilirsiniz.</translation>
 <translation id="3282568296779691940">Chrome'da oturum aç</translation>
 <translation id="3345341804167540816">Chrome'u Her Yerde Kullanın</translation>
+<translation id="3522659714780527202">Chrome kullandığınız her yerde sekmelerinizi görmek için senkronizasyonu açın</translation>
 <translation id="384394811301901750">Google Chrome şu anda kameranızı kullanamıyor</translation>
 <translation id="3980220367029651214">Senkronizasyon hesapları arasında (<ph name="USER_EMAIL1" /> hesabından <ph name="USER_EMAIL2" /> hesabına) geçiş yapıyorsunuz. Mevcut Chrome verileriniz <ph name="DOMAIN" /> tarafından yönetiliyor. Bu işlemle verileriniz bu cihazdan silinir, ancak <ph name="USER_EMAIL1" /> hesabınızda kalmaya devam eder.</translation>
 <translation id="3988789688219830639">Google Chrome, fotoğraflarınıza veya videolarınıza erişemiyor. iOS Ayarlar &gt; Gizlilik &gt; Fotoğraflar'dan erişimi etkinleştirin.</translation>
@@ -45,6 +47,7 @@
 <translation id="7400722733683201933">Google Chrome hakkında</translation>
 <translation id="756809126120519699">Chrome verileri temizlendi</translation>
 <translation id="7626032353295482388">Chrome'a Hoş Geldiniz</translation>
+<translation id="7662994914830945754">Chrome kullandığınız her yerde sekmelerinizi görmek için oturum açın ve senkronizasyonu etkinleştirin</translation>
 <translation id="7698568245838009292">Chrome, Kameraya Erişmek İstiyor</translation>
 <translation id="8370517070665726704">Telif hakkı <ph name="YEAR" /> Google LLC. Tüm hakları saklıdır.</translation>
 <translation id="840168496893712993">Bazı eklentiler Chrome'un kilitlenmesine neden oluyor. Lütfen bunların yüklemesini kaldırmayı deneyin.</translation>

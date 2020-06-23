@@ -1239,7 +1239,6 @@
 <translation id="6240447795304464094">Google Pay 標誌</translation>
 <translation id="6241121617266208201">隱藏建議</translation>
 <translation id="624499991300733384">列印建立服務</translation>
-<translation id="6251924700383757765">私隱權政策</translation>
 <translation id="6254436959401408446">記憶體不足，因此無法開啟此網頁</translation>
 <translation id="625755898061068298">您已選擇關閉此網站的安全警告。</translation>
 <translation id="6259156558325130047">重做重新排序(&amp;R)</translation>
@@ -1526,6 +1525,7 @@
 <translation id="7485870689360869515">找不到任何數據。</translation>
 <translation id="7488762544858401571">編輯版本</translation>
 <translation id="7495290002932347110">由於您使用的網站或應用程式發生資料外洩，密碼已被洩露。Chrome 建議您檢查已儲存的密碼，並立即變更 <ph name="ORIGIN" /> 上的密碼。</translation>
+<translation id="7495528107193238112">此內容已被封鎖。如要修正問題，請聯絡網站擁有者。</translation>
 <translation id="7498234416455752244">繼續編輯</translation>
 <translation id="7503664977220660814">您剛才在欺詐網站上輸入了密碼。Chromium 建議您立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及其他您使用此密碼的網站。</translation>
 <translation id="7508255263130623398">傳回的政策裝置識別碼為空白或與目前裝置識別碼不符</translation>
@@ -1625,7 +1625,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{無}=1{1 個應用程式 (<ph name="EXAMPLE_APP_1" />)}=2{2 個應用程式 (<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />)}other{# 個應用程式 (<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />、<ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">但是您並非處於隱藏狀態。使用無痕模式時，您的僱主、互聯網服務供應商和您所瀏覽的網站仍然可以追蹤您的瀏覽行為。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />將您瀏覽的部分網頁網址、有限的系統資料以及部分網頁內容<ph name="END_WHITEPAPER_LINK" />傳送給 Google，以協助改善其他使用者的網絡安全性。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">要離開網站嗎？</translation>
 <translation id="7865448901209910068">最佳速度</translation>
 <translation id="7874263914261512992">您剛才在欺詐網站上輸入了密碼。Chrome 建議您立即檢查已儲存在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及其他您使用此密碼的網站。</translation>

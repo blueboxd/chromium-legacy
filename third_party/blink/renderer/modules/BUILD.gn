@@ -215,6 +215,8 @@ jumbo_source_set("modules_testing") {
     "peerconnection/adapters/test/mock_p2p_quic_transport.h",
     "peerconnection/adapters/test/mock_p2p_quic_transport_delegate.h",
     "peerconnection/adapters/test/mock_p2p_quic_transport_factory.h",
+    "peerconnection/testing/fake_resource_listener.cc",
+    "peerconnection/testing/fake_resource_listener.h",
     "peerconnection/testing/internals_rtc_certificate.cc",
     "peerconnection/testing/internals_rtc_certificate.h",
     "peerconnection/testing/internals_rtc_peer_connection.cc",

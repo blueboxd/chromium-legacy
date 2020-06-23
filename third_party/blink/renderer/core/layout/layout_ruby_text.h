@@ -57,6 +57,13 @@ class LayoutRubyText : public LayoutBlockFlow {
     // ruby text objects.
     return true;
   }
+
+ private:
+  ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const override;
+  void AdjustInlineDirectionLineBounds(
+      unsigned expansion_opportunity_count,
+      LayoutUnit& logical_left,
+      LayoutUnit& logical_width) const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutRubyText, IsRubyText());

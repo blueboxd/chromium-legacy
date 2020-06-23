@@ -1252,7 +1252,6 @@
 <translation id="6240447795304464094">‏شعار Google Pay</translation>
 <translation id="6241121617266208201">إخفاء الاقتراحات</translation>
 <translation id="624499991300733384">خدمة مكوّن الطباعة</translation>
-<translation id="6251924700383757765">سياسة الخصوصية</translation>
 <translation id="6254436959401408446">لا تتوفر ذاكرة كافية لفتح هذه الصفحة</translation>
 <translation id="625755898061068298">لقد اخترت إيقاف تحذيرات الأمان لهذا الموقع.</translation>
 <translation id="6259156558325130047">إعادة إ&amp;جراء الترتيب</translation>
@@ -1539,6 +1538,7 @@
 <translation id="7485870689360869515">لم يتم العثور على بيانات.</translation>
 <translation id="7488762544858401571">النسخة المُعدَّلة</translation>
 <translation id="7495290002932347110">‏تمّ الكشف عن كلمة مرورك من خلال عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه. يقترح متصفّح Chrome التحقّق من كلمات المرور المحفوظة وتغيير كلمة مرورك على <ph name="ORIGIN" /> الآن.</translation>
+<translation id="7495528107193238112">هذا المحتوى محظور. يمكنك التواصل مع مالك الموقع الإلكتروني لحلّ المشكلة.</translation>
 <translation id="7498234416455752244">متابعة التعديل</translation>
 <translation id="7503664977220660814">‏لقد أدخلت للتو كلمة المرور في موقع إلكتروني مريب. وللحفاظ على أمان بياناتك، ينصحك Chromium بالتحقّق من كلمات المرور المحفوظة للموقعين الإلكترونيين <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> وغيرهما من المواقع التي تستخدم فيها الآن كلمة المرور هذه.</translation>
 <translation id="7508255263130623398">رقم تعريف الجهاز المعروض للسياسة فارغ أو لا يتطابق مع رقم تعريف الجهاز الحالي</translation>
@@ -1638,7 +1638,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{لا تتوفَّر تطبيقات}=1{تطبيق واحد (<ph name="EXAMPLE_APP_1" />)}=2{تطبيقان (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />)}few{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}many{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}other{# تطبيقات (<ph name="EXAMPLE_APP_1" />، و<ph name="EXAMPLE_APP_2" />، و<ph name="AND_MORE" /> من التطبيقات الأخرى)}}</translation>
 <translation id="785549533363645510">ومع ذلك، أنت غير مرئي. لا يخفي الانتقال إلى وضع التخفي التصفح من صاحب العمل أو مزود خدمة الإنترنت أو المواقع التي تزورها.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">‏يمكنك المساعدة في تحسين مستوى الأمان على الإنترنت لجميع المستخدمين من خلال إرسال <ph name="BEGIN_WHITEPAPER_LINK" />عناوين URL لبعض الصفحات التي تزورها وعدد محدود من معلومات النظام وبعض أنواع محتوى الصفحات<ph name="END_WHITEPAPER_LINK" /> إلى Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">هل تريد مغادرة الموقع؟</translation>
 <translation id="7865448901209910068">أفضل سرعة</translation>
 <translation id="7874263914261512992">‏لقد أدخلت للتو كلمة المرور في موقع إلكتروني مريب. وللحفاظ على أمان بياناتك، ينصحك متصفّح Chrome بالتحقّق من كلمات المرور المحفوظة للموقعين الإلكترونيين <ph name="WEBSITE_1" /> و<ph name="WEBSITE_2" /> وغيرهما من المواقع التي تستخدم فيها الآن كلمة المرور هذه.</translation>
@@ -1867,7 +1866,7 @@
 <translation id="8932102934695377596">توقيت ساعتك متأخر عن الوقت الحالي</translation>
 <translation id="893332455753468063">إضافة اسم</translation>
 <translation id="8943282376843390568">ليموني</translation>
-<translation id="8957210676456822347">تفويض المدخل المقيد</translation>
+<translation id="8957210676456822347">تفويض المدخل المشروط الوصول إليه</translation>
 <translation id="8962950042226115166">موقع إلكتروني مريب</translation>
 <translation id="8963213021028234748"><ph name="MARKUP_1" />اقتراحات:<ph name="MARKUP_2" />التأكد من أن لديك اتصال بيانات<ph name="MARKUP_3" />إعادة تحميل صفحة الويب هذه لاحقًا<ph name="MARKUP_4" />التحقق من العنوان الذي أدخلته<ph name="MARKUP_5" /></translation>
 <translation id="8968766641738584599">حفظ البطاقة</translation>

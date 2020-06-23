@@ -27,6 +27,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -240,11 +241,13 @@ std::string ThemeSource::GetAccessControlAllowOriginForOrigin(
   return content::URLDataSource::GetAccessControlAllowOriginForOrigin(origin);
 }
 
-std::string ThemeSource::GetContentSecurityPolicyDefaultSrc() {
-  if (serve_untrusted_) {
+std::string ThemeSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::DefaultSrc &&
+      serve_untrusted_) {
     // TODO(https://crbug.com/1085327): Audit and tighten CSP.
     return std::string();
   }
 
-  return content::URLDataSource::GetContentSecurityPolicyDefaultSrc();
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }

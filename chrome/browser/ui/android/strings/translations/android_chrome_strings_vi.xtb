@@ -24,7 +24,6 @@
 <translation id="116280672541001035">Đã sử dụng</translation>
 <translation id="1171770572613082465">Xem các trang web phổ biến bằng cách nhấn vào nút "Trang web hàng đầu"</translation>
 <translation id="1173894706177603556">Đổi tên</translation>
-<translation id="1178581264944972037">Tạm dừng</translation>
 <translation id="1197267115302279827">Di chuyển dấu trang</translation>
 <translation id="1201402288615127009">Tiếp theo</translation>
 <translation id="1204037785786432551">Tải nội dung đường liên kết</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome cần có quyền truy cập vị trí để quét tìm thiết bị. Tính năng truy cập vị trí bị <ph name="BEGIN_LINK" />tắt cho thiết bị này<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Máy ảnh</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Xóa 1 mục đã chọn}other{Xóa # mục đã chọn}}</translation>
+<translation id="1641113438599504367">Duyệt web an toàn</translation>
 <translation id="164269334534774161">Bạn đang xem bản sao ngoại tuyến của trang này từ <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="1670399744444387456">Cơ bản</translation>
@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Khám phá</translation>
 <translation id="1749561566933687563">Đồng bộ hóa dấu trang của bạn</translation>
 <translation id="17513872634828108">Tab đang mở</translation>
+<translation id="1754404134430936718">Đã sao chép văn bản</translation>
 <translation id="1779089405699405702">Bộ giải mã hình ảnh</translation>
 <translation id="1782483593938241562">Ngày kết thúc <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Đã cài đặt</translation>
@@ -223,10 +224,10 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2810645512293415242">Trang đơn giản giúp lưu dữ liệu và tải nhanh hơn.</translation>
 <translation id="281504910091592009">Xem và quản lý các mật khẩu đã lưu trong <ph name="BEGIN_LINK" />Tài khoản Google<ph name="END_LINK" /> của bạn</translation>
 <translation id="2818669890320396765">Để sử dụng dấu trang trên tất cả các thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa</translation>
+<translation id="2827278682606527653">Trình đơn thẻ nguồn cấp dữ liệu mở ở nửa dưới của màn hình</translation>
 <translation id="2842985007712546952">Thư mục mẹ</translation>
 <translation id="2860954141821109167">Hãy đảm bảo bạn đã bật ứng dụng điện thoại trên thiết bị này</translation>
 <translation id="2870560284913253234">Trang web</translation>
-<translation id="2874939134665556319">Bản nhạc trước</translation>
 <translation id="2876369937070532032">Gửi URL của một số trang mà bạn truy cập cho Google khi bạn gặp rủi ro về bảo mật</translation>
 <translation id="2888126860611144412">Giới thiệu về Chrome</translation>
 <translation id="2891154217021530873">Ngừng tải trang</translation>
@@ -268,6 +269,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3181954750937456830">Duyệt web an toàn (bảo vệ bạn cũng như thiết bị của bạn khỏi các trang web nguy hiểm)</translation>
 <translation id="3205824638308738187">Sắp hoàn tất!</translation>
 <translation id="3207960819495026254">Đã đánh dấu trang</translation>
+<translation id="3208584281581115441">Kiểm tra ngay</translation>
 <translation id="3211426585530211793">Đã xóa <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Ứng dụng web</translation>
@@ -344,8 +346,8 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3810973564298564668">Quản lý</translation>
 <translation id="381841723434055211">Số điện thoại</translation>
 <translation id="3819178904835489326">Đã xóa <ph name="NUMBER_OF_DOWNLOADS" /> bản tải xuống</translation>
-<translation id="3859306556332390985">Tìm kiếm tiến</translation>
 <translation id="388596076286380598">Bạn có thể xem các bài viết, video và nội dung khác trên những trang web mình thích, ngay cả khi không có kết nối mạng hoặc kết nối yếu.</translation>
+<translation id="3892148308691398805">Sao chép văn bản</translation>
 <translation id="3894427358181296146">Thêm thư mục</translation>
 <translation id="3895926599014793903">Buộc bật thu phóng</translation>
 <translation id="3912508018559818924">Đang tìm dữ liệu thích hợp nhất từ web…</translation>
@@ -366,8 +368,6 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="3997476611815694295">Bộ nhớ không quan trọng</translation>
 <translation id="4000212216660919741">Nhà ở chế độ không kết nối Internet</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# giờ}other{# giờ}}</translation>
-<translation id="403687620286099920">Nhấn để mở mã QR</translation>
-<translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4060598801229743805">Có các tùy chọn ở gần đầu màn hình</translation>
 <translation id="4062305924942672200">Thông tin pháp lý</translation>
@@ -387,10 +387,10 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="4209895695669353772">Để nhận nội dung do Google đề xuất riêng cho bạn, hãy bật tính năng đồng bộ hóa</translation>
 <translation id="423219824432660969">Mã hóa dữ liệu đã đồng bộ hóa bằng mật khẩu Google kể từ <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Mở phần cài đặt</translation>
+<translation id="4248098802131000011">Bảo vệ mật khẩu của bạn trước việc bị rò rỉ dữ liệu và các vấn đề bảo mật khác</translation>
 <translation id="4250229828105606438">Ảnh chụp màn hình</translation>
 <translation id="4256782883801055595">Giấy phép nguồn mở</translation>
 <translation id="4269820728363426813">Sao chép địa chỉ liên kết</translation>
-<translation id="429312253194641664">Một trang web đang phát nội dung đa phương tiện</translation>
 <translation id="4298388696830689168">Các trang web liên kết</translation>
 <translation id="4307992518367153382">Cơ bản</translation>
 <translation id="4314815835985389558">Quản lý dữ liệu đồng bộ hóa</translation>
@@ -412,6 +412,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="4479972344484327217">Đang cài đặt <ph name="MODULE" /> cho Chrome…</translation>
 <translation id="4487967297491345095">Tất cả dữ liệu của ứng dụng Chrome sẽ bị xóa vĩnh viễn, bao gồm tất cả các tệp, các tùy chọn cài đặt, tài khoản, cơ sở dữ liệu, v.v.</translation>
 <translation id="4493497663118223949">Chế độ thu gọn đang bật</translation>
+<translation id="4508528996305412043">Đã mở trình đơn thẻ nguồn cấp dữ liệu</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# ngày trước}other{# ngày trước}}</translation>
 <translation id="451872707440238414">Tìm kiếm trong các dấu trang</translation>
 <translation id="4521489764227272523">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị đã đồng bộ hóa của bạn.
@@ -563,7 +564,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Tạo sự kiện trong <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ghi đè yêu cầu của trang web để chặn phóng to</translation>
-<translation id="5681394891799747640">Không thể tải mã QR xuống</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
 <translation id="5686790454216892815">Tên tệp quá dài</translation>
 <translation id="5694049548840660018">Dễ dàng quay lại trang chủ</translation>
@@ -605,6 +605,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5958275228015807058">Tìm tệp và trang của bạn trong Tệp đã tải xuống</translation>
 <translation id="5962718611393537961">Nhấn để thu gọn</translation>
 <translation id="5964805880140440652">Để chia sẻ trang này với một thiết bị khác, hãy bật tính năng đồng bộ hóa trong phần cài đặt Chrome</translation>
+<translation id="5979084224081478209">Kiểm tra mật khẩu</translation>
 <translation id="6000066717592683814">Giữ Google làm công cụ tìm kiếm mặc định</translation>
 <translation id="6005538289190791541">Mật khẩu đề xuất</translation>
 <translation id="6036057147555329831">Bộ chuyển đổi giao diện (ICU) bổ sung</translation>
@@ -706,7 +707,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="671481426037969117">Thời gian hẹn giờ của <ph name="FQDN" /> đã hết. Thời gian hẹn giờ sẽ bắt đầu lại vào ngày mai.</translation>
 <translation id="6738867403308150051">Đang tải xuống...</translation>
 <translation id="6767294960381293877">Danh sách các thiết bị mà bạn có thể chia sẻ một tab đã mở ở nửa dưới của màn hình.</translation>
-<translation id="6790428901817661496">Phát</translation>
 <translation id="6811034713472274749">Trang hiện đã sẵn sàng cho bạn xem</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Dịch</translation>
@@ -714,7 +714,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6846298663435243399">Đang tải…</translation>
 <translation id="6850409657436465440">Vẫn đang tải xuống</translation>
 <translation id="6850830437481525139">Đã đóng <ph name="TAB_COUNT" /> tab</translation>
-<translation id="685850645784703949">Tính năng Khám phá của Google đang tắt</translation>
+<translation id="685850645784703949">Tính năng Khám phá của Google – đang tắt</translation>
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu tự động điền vào biểu mẫu</translation>
 <translation id="6884306546558072722">Tiếp tục khám phá khi không có mạng</translation>
@@ -763,7 +763,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7328017930301109123">Ở Chế độ thu gọn, Chrome tải trang nhanh hơn và sử dụng ít dữ liệu hơn lên tới 60 phần trăm.</translation>
 <translation id="7333031090786104871">Vẫn đang thêm trang web trước</translation>
 <translation id="7340958967809483333">Các tùy chọn của tính năng Khám phá</translation>
-<translation id="7352651011704765696">Đã xảy ra lỗi</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
 <translation id="7359002509206457351">Truy cập vào phương thức thanh toán</translation>
@@ -802,7 +801,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7606077192958116810">Chế độ thu gọn đang bật. Quản lý chế độ này trong phần Cài đặt.</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
-<translation id="7614971007231847352">Đã tải mã QR xuống</translation>
 <translation id="7619072057915878432">Tải xuống không thành công <ph name="FILE_NAME" /> do lỗi mạng.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Nhận trợ giúp<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />quét lại<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
@@ -883,6 +881,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8200772114523450471">Tiếp tục</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
 <translation id="8218622182176210845">Quản lý tài khoản của bạn</translation>
+<translation id="8223642481677794647">Trình đơn thẻ nguồn cấp dữ liệu</translation>
 <translation id="8224471946457685718">Tải tin bài cho bạn xuống qua Wi-Fi</translation>
 <translation id="8232956427053453090">Lưu giữ dữ liệu</translation>
 <translation id="8233540874193135768">Để quét mã QR, hãy dùng một thiết bị có máy ảnh.</translation>
@@ -907,7 +906,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8427875596167638501">Tab xem trước đang mở trên nửa màn hình</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8438566539970814960">Cải thiện tính năng tìm kiếm và duyệt web</translation>
-<translation id="8441146129660941386">Tìm kiếm lùi</translation>
 <translation id="8443209985646068659">Chrome không thể cập nhật</translation>
 <translation id="8445448999790540984">Không xuất được mật khẩu</translation>
 <translation id="8461694314515752532">Mã hóa dữ liệu đã đồng bộ hóa bằng cụm mật khẩu đồng bộ hóa của riêng bạn</translation>
@@ -1007,4 +1005,5 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="981121421437150478">Ngoại tuyến</translation>
 <translation id="983192555821071799">Đóng tất cả các tab</translation>
 <translation id="987264212798334818">Chung</translation>
+<translation id="996149300115483134">Trình đơn thẻ nguồn cấp dữ liệu đang đóng</translation>
 </translationbundle>

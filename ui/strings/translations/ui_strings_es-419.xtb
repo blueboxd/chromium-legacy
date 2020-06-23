@@ -158,7 +158,7 @@
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">Expande la lista a todas las apps</translation>
 <translation id="6165508094623778733">Más información</translation>
-<translation id="6166852626429024716">Buscar en tu dispositivo, apps, configuración y la Web…</translation>
+<translation id="6166852626429024716">Buscar en el dispositivo, en su configuración y apps, y en la Web…</translation>
 <translation id="6264365405983206840">Seleccion&amp;ar todo</translation>
 <translation id="6351032674660237738">SUGERENCIAS DE APPS</translation>
 <translation id="6364916375976753737">Desplazar hacia la izquierda</translation>
@@ -233,7 +233,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> Archivo (.<ph name="SAVEAS_EXTENSION_NAME" />)</translation>
 <translation id="8649597172973390955">La biblioteca se muestra siempre</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
-<translation id="8685326675965865247">Realiza búsquedas en tu dispositivo, apps, configuración y la Web. Usa las flechas para navegar por las apps.</translation>
+<translation id="8685326675965865247">Realiza búsquedas en el dispositivo, en su configuración y apps, y en la Web. Usa las flechas para navegar por las apps.</translation>
 <translation id="8725488761726303204"><ph name="NUMBER" /> más</translation>
 <translation id="8730621377337864115">Listo</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}other{# h}}</translation>

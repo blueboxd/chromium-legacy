@@ -4416,21 +4416,18 @@ void Document::SetURL(const KURL& url) {
     }
   }
 
-  // If text fragment identifiers are enabled, we strip the fragment directive
-  // from the URL fragment.
-  // E.g. "#id:~:text=a" --> "#id"
-  if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(this)) {
-    String fragment = new_url.FragmentIdentifier();
-    wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
-    if (start_pos != kNotFound) {
-      fragment_directive_ =
-          fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
+  // Strip the fragment directive from the URL fragment. E.g. "#id:~:text=a"
+  // --> "#id". See https://github.com/WICG/scroll-to-text-fragment.
+  String fragment = new_url.FragmentIdentifier();
+  wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+  if (start_pos != kNotFound) {
+    fragment_directive_ =
+        fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
 
-      if (start_pos == 0)
-        new_url.RemoveFragmentIdentifier();
-      else
-        new_url.SetFragmentIdentifier(fragment.Substring(0, start_pos));
-    }
+    if (start_pos == 0)
+      new_url.RemoveFragmentIdentifier();
+    else
+      new_url.SetFragmentIdentifier(fragment.Substring(0, start_pos));
   }
 
   url_ = new_url;

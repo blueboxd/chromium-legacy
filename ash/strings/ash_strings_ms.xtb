@@ -44,6 +44,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1346748346194534595">Kanan</translation>
 <translation id="1351937230027495976">Runtuhkan menu</translation>
 <translation id="1383876407941801731">Carian</translation>
+<translation id="1391102559483454063">Dihidupkan</translation>
 <translation id="1419738280318246476">Buka kunci peranti untuk melaksanakan tindakan pemberitahuan</translation>
 <translation id="1420408895951708260">Togol Cahaya Malam. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Ya</translation>
@@ -52,7 +53,6 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1467432559032391204">Kiri</translation>
 <translation id="1479909375538722835">Menu kebolehaksesan terapung</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Hidupkan</translation>
 <translation id="1516740043221086139">Jangan ganggu dihidupkan.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk satu apl}other{Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan untuk # apl}}</translation>
 <translation id="1525508553941733066">KETEPIKAN</translation>
@@ -79,7 +79,6 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="1836215606488044471">Pembantu (memuat...)</translation>
 <translation id="1838895407229022812">Cahaya Malam dimatikan.</translation>
 <translation id="1850504506766569011">Wi-Fi dimatikan.</translation>
-<translation id="1859889070386344428">Mati</translation>
 <translation id="1864454756846565995">Peranti USB-C (port belakang)</translation>
 <translation id="1882897271359938046">Mencerminkan <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Buka kunci dengan cap jari</translation>
@@ -138,7 +137,6 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2484513351006226581">Tekan <ph name="KEYBOARD_SHORTCUT" /> untuk menukar atur letak papan kekunci.</translation>
 <translation id="2501920221385095727">Kekunci lekit</translation>
 <translation id="2509468283778169019">Kekunci CAPS LOCK dihidupkan</translation>
-<translation id="2519465031217098801">Hidupkan</translation>
 <translation id="2542089167727451762">Ketik imej profil anda</translation>
 <translation id="255671100581129685">Google Assistant tidak tersedia dalam sesi awam.</translation>
 <translation id="256712445991462162">penggadang yang didokkan</translation>
@@ -174,6 +172,7 @@ Berikut ialah beberapa perkara yang boleh anda cuba untuk bermula.</translation>
 <translation id="2996462380875591307">Penggadang Didok didayakan. Tekan Ctrl+Cari+D semula untuk mematikannya.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Output</translation>
+<translation id="3033545621352269033">Dihidupkan</translation>
 <translation id="3051128274746680507">Profil pengguna di bawah seliaan anda akan dialih keluar tidak lama lagi. Log masuk untuk mengetahui lebih lanjut.</translation>
 <translation id="3055162170959710888">Anda menggunakan peranti ini selama <ph name="USED_TIME" /> hari ini</translation>
 <translation id="3076778413190775903">Dulang status, masa <ph name="TIME" />,
@@ -262,7 +261,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="3943857333388298514">Tampal</translation>
 <translation id="394485226368336402">Tetapan audio</translation>
 <translation id="3962859241508114581">Lagu Sebelumnya</translation>
-<translation id="3965097803111112935">Mati</translation>
 <translation id="397105322502079400">Mengira...</translation>
 <translation id="3977512764614765090">Kuasa bateri pada tahap <ph name="PERCENTAGE" />% dan sedang dicas.</translation>
 <translation id="3995138139523574647">Peranti USB-C (port belakang sebelah kanan)</translation>
@@ -279,6 +277,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4146833061457621061">Mainkan muzik</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4195877955194704651">Mengklik butang secara automatik</translation>
+<translation id="4197790712631116042">Dimatikan</translation>
 <translation id="4215497585250573029">Tetapan VPN</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -309,6 +308,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4513946894732546136">Maklum balas</translation>
 <translation id="4527045527269911712">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> sehingga penuh</translation>
+<translation id="4560576029703263363">Dihidupkan</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Sembunyikan kata laluan</translation>
 <translation id="4570957409596482333">Butang Pilih untuk Bercakap</translation>
@@ -355,11 +355,11 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5207949376430453814">Serlahkan karet teks</translation>
 <translation id="5222676887888702881">Log keluar</translation>
 <translation id="523505283826916779">Tetapan kebolehcapaian</translation>
-<translation id="5250225880026334010">Mati</translation>
 <translation id="5260676007519551770">Meja 4</translation>
 <translation id="5283198616748585639">Tambah 1 min</translation>
 <translation id="528468243742722775">End</translation>
 <translation id="5286194356314741248">Mengimbas</translation>
+<translation id="5297704307811127955">Dimatikan</translation>
 <translation id="5302048478445481009">Bahasa</translation>
 <translation id="5313326810920013265">Tetapan Bluetooth</translation>
 <translation id="5331975486040154427">Peranti USB-C (port belakang sebelah kiri)</translation>
@@ -474,7 +474,6 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="6650933572246256093">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kekunci laluan ini pada peranti tersebut: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Kata laluan</translation>
 <translation id="6665545700722362599">Berikan kebenaran kepada tapak web, apl dan sambungan untuk menggunakan perkhidmatan lokasi, mikrofon dan kamera peranti atau ciri lain</translation>
-<translation id="6669268301501499730">Hidupkan</translation>
 <translation id="6670153871843998651">Meja 3</translation>
 <translation id="6691659475504239918">Cari+Shift+H</translation>
 <translation id="6692996468359469499">Dapatkan maklumat yang berkaitan dengan pilihan anda</translation>
@@ -606,6 +605,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, Kekuatan Isyarat <ph name="SIGNAL_STRENGTH" />, Bateri Telefon <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Tekan Enter bagi membuka kunci untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Padam</translation>
+<translation id="828708037801473432">Dimatikan</translation>
 <translation id="8297006494302853456">Lemah</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

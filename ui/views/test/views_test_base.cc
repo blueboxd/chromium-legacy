@@ -40,7 +40,7 @@ namespace {
 bool InitializeVisuals() {
 #if defined(USE_X11)
   bool has_compositing_manager = false;
-  int depth = 0;
+  uint8_t depth = 0;
   bool using_argb_visual;
 
   if (depth > 0)
@@ -50,7 +50,7 @@ bool InitializeVisuals() {
   std::unique_ptr<base::Environment> env(base::Environment::Create());
   has_compositing_manager = env->HasVar("_CHROMIUM_INSIDE_XVFB");
   ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-      has_compositing_manager, nullptr, &depth, nullptr, &using_argb_visual);
+      has_compositing_manager, nullptr, &depth, &using_argb_visual);
 
   if (using_argb_visual)
     EXPECT_EQ(32, depth);

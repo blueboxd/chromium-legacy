@@ -138,16 +138,15 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
       delegate->ToggleAlwaysTranslate();
     }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE) {
-    if (value && delegate->IsTranslatableLanguageByPrefs()) {
+    bool language_blocklisted = !delegate->IsTranslatableLanguageByPrefs();
+    if (language_blocklisted != value) {
       action_flags_ |= FLAG_NEVER_LANGUAGE;
       delegate->ToggleTranslatableLanguageByPrefs();
-      RemoveSelf();
     }
   } else if (option == TranslateUtils::OPTION_NEVER_TRANSLATE_SITE) {
-    if (value && !delegate->IsSiteBlacklisted()) {
+    if (delegate->IsSiteBlacklisted() != value) {
       action_flags_ |= FLAG_NEVER_SITE;
       delegate->ToggleSiteBlacklist();
-      RemoveSelf();
     }
   } else {
     DCHECK(false);
@@ -227,6 +226,21 @@ void TranslateCompactInfoBar::SelectButtonForTesting(ActionType action_type) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_TranslateCompactInfoBar_selectTabForTesting(env, GetJavaInfoBar(),
                                                    action_type);
+}
+
+void TranslateCompactInfoBar::ClickOverflowMenuItemForTesting(
+    OverflowMenuItemId item_id) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  switch (item_id) {
+    case OverflowMenuItemId::NEVER_TRANSLATE_LANGUAGE:
+      Java_TranslateCompactInfoBar_clickNeverTranslateLanguageMenuItemForTesting(
+          env, GetJavaInfoBar());
+      return;
+    case OverflowMenuItemId::NEVER_TRANSLATE_SITE:
+      Java_TranslateCompactInfoBar_clickNeverTranslateSiteMenuItemForTesting(
+          env, GetJavaInfoBar());
+      return;
+  }
 }
 
 }  // namespace weblayer

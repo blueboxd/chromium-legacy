@@ -137,12 +137,18 @@ export class ContentController {
 // set-annotation-undo-state: Contains information about whether undo or redo
 //     options are available.
 export class InkController extends ContentController {
-  /** @param {!Viewport} viewport */
-  constructor(viewport) {
+  /**
+   * @param {!Viewport} viewport
+   * @param {!HTMLDivElement} contentElement
+   */
+  constructor(viewport, contentElement) {
     super();
 
     /** @private {!Viewport} */
     this.viewport_ = viewport;
+
+    /** @private {!HTMLDivElement} */
+    this.contentElement_ = contentElement;
 
     /** @private {?ViewerInkHostElement} */
     this.inkHost_ = null;
@@ -206,7 +212,7 @@ export class InkController extends ContentController {
   load(filename, data) {
     if (!this.inkHost_) {
       const inkHost = document.createElement('viewer-ink-host');
-      $('content').appendChild(inkHost);
+      this.contentElement_.appendChild(inkHost);
       this.inkHost_ = /** @type {!ViewerInkHostElement} */ (inkHost);
       this.inkHost_.viewport = this.viewport_;
       inkHost.addEventListener('stroke-added', e => {

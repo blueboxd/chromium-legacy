@@ -1010,8 +1010,14 @@
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_TITLE" desc="Title for the add port dialog box.">
     Add port number
   </message>
-  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL" desc="Label for the text input of an optional label.">
-    Label (Optional)
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_LABEL" desc="Label for the text input of the port number in the add port dialog. This dialog is for when a user wants to add a new port that network traffic should be redirected by into Crostini.">
+    Port number
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_PORT_NUMBER_PLACEHOLDER" desc="Placeholder text for the port number text input in the add port dialog. This dialog is for when a user wants to add a new port that network traffic should be redirected by into Crostini.">
+    1024-65535
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL_LABEL" desc="Label for the text input of an optional label to attach to the port in the add port dialog. This dialog is for when a user wants to add a new port that network traffic should be redirected by into Crostini.">
+    Label (optional)
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TCP" desc="Label for the TCP protocol when forwarding ports. The parentheses are for formatting reasons.">
     (TCP)
@@ -1020,16 +1026,19 @@
     (UDP)
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_ERROR" desc="Description for the error when adding an invalid port.">
-    Error forwarding port
+    Port must be between 1024 and 65535
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_EXISTING" desc="Description for the error when trying to add a port that already exists.">
-    Port already exists in settings
+    Port forward already exists
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_ALL_PORTS" desc="Label for the button to deallocate all ports currently being forwarded in Crostini and clear the list of ports in the Crostini port forwarding settings page.">
     Remove all ports
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_REMOVE_PORT" desc="Label for the button to deallocate a specified port and remove it from the list of ports in the Crostini port forwarding settings page.">
     Remove port
+  </message>
+  <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ACTIVATE_PORT_ERROR" desc="The error message shown on a toast that appears when a request to activate a port for forwarding network traffic into Crostini fails.">
+    Error forwarding port
   </message>
   <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TOGGLE_PORT_ARIA_LABEL" desc="The aria label for the toggle that controls the state of a port i.e. the text that screen readers will read out for the button.">
     Activate port
@@ -2434,7 +2443,7 @@
     <ph name="REFRESH_RATE">$1<ex>60</ex></ph> Hz - interlaced
   </message>
   <message name="IDS_SETTINGS_DISPLAY_ZOOM_TITLE" desc="In Device Settings > Displays, the title for the section for changing the display's zoom.">
-    Display Size
+    Display size
   </message>
   <message name="IDS_SETTINGS_DISPLAY_ZOOM_SUBLABEL" desc="In Device Settings > Displays, the text describing the display's zoom.">
     Make items on your screen smaller or larger

@@ -344,8 +344,11 @@ class ExtensionDownloader {
       const ExtensionFetch& fetch_data,
       bool manifest_fetch_failed);
 
-  // Begins (or queues up) download of an updated extension.
-  void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data);
+  // Begins (or queues up) download of an updated extension. |info| represents
+  // additional information about the extension update from the info field in
+  // the update manifest.
+  void FetchUpdatedExtension(std::unique_ptr<ExtensionFetch> fetch_data,
+                             base::Optional<std::string> info);
 
   // Called by RequestQueue when a new extension load request is started.
   void CreateExtensionLoader();

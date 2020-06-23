@@ -499,9 +499,13 @@ inline scoped_refptr<const NGLayoutResult> NGBlockLayoutAlgorithm::Layout(
   }
 
   if (RuntimeEnabledFeatures::BlockFlowHandlesWebkitLineClampEnabled() &&
-      Style().IsDeprecatedWebkitBoxWithVerticalLineClamp() &&
-      !ignore_line_clamp_)
-    lines_until_clamp_ = Style().LineClamp();
+      Style().IsDeprecatedWebkitBoxWithVerticalLineClamp()) {
+    if (!ignore_line_clamp_)
+      lines_until_clamp_ = Style().LineClamp();
+  } else if (Style().HasLineClamp()) {
+    UseCounter::Count(Node().GetDocument(),
+                      WebFeature::kWebkitLineClampWithoutWebkitBox);
+  }
 
   LayoutUnit content_edge = BorderScrollbarPadding().block_start;
 

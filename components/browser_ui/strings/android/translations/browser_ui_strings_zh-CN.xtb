@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">已复制</translation>
 <translation id="2822354292072154809">确定要重置<ph name="CHOSEN_OBJECT_NAME" />的所有网站权限吗？</translation>
 <translation id="2870560284913253234">网站</translation>
+<translation id="2874939134665556319">上一首</translation>
 <translation id="2910701580606108292">网站需先询问并得到许可才能播放受保护内容</translation>
 <translation id="2913331724188855103">允许网站保存和读取 Cookie 数据（推荐）</translation>
 <translation id="2968755619301702150">证书查看器</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">后台同步</translation>
 <translation id="3822502789641063741">要清除网站存储数据吗？</translation>
 <translation id="385051799172605136">后退</translation>
+<translation id="3859306556332390985">前进</translation>
 <translation id="3955193568934677022">允许网站播放受保护的内容（推荐）</translation>
 <translation id="3987993985790029246">复制链接</translation>
 <translation id="3991845972263764475">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，总大小不明</translation>
 <translation id="4002066346123236978">标题</translation>
 <translation id="4008040567710660924">允许特定网站使用 Cookie。</translation>
+<translation id="4046123991198612571">下一曲</translation>
 <translation id="4165986682804962316">网站设置</translation>
 <translation id="4226663524361240545">收到通知时设备会振动</translation>
 <translation id="4242533952199664413">打开“设置”</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4278390842282768270">允许</translation>
+<translation id="429312253194641664">某个网站正在播放媒体内容</translation>
 <translation id="4433925000917964731">由 Google 提供的精简版网页</translation>
 <translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="445467742685312942">允许网站播放受保护内容。</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">下移</translation>
 <translation id="6766622839693428701">向下滑动即可关闭。</translation>
 <translation id="6782111308708962316">阻止第三方网站保存和读取 Cookie 数据</translation>
+<translation id="6790428901817661496">播放</translation>
 <translation id="6818926723028410516">选择内容</translation>
 <translation id="6864395892908308021">此设备无法读取 NFC 数据</translation>
 <translation id="6910211073230771657">已删除</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">有一个网站正在使用您的摄像头和麦克风</translation>
 <translation id="8380167699614421159">此网站会展示侵扰性或误导性广告</translation>
 <translation id="8394832520002899662">点按即可返回到网站</translation>
+<translation id="8441146129660941386">后退</translation>
 <translation id="8447861592752582886">撤消设备权限</translation>
 <translation id="8463851957836045671">网站加载速度很快</translation>
 <translation id="851751545965956758">禁止网站连接到设备</translation>

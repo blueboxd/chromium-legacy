@@ -173,6 +173,19 @@ function shouldRenderText(attributes) {
   return true;
 }
 
+/**
+ * Determines whether or not the frame should be positioned outside of
+ * its parent frame by checking whether "out-of-view" is among the list
+ * of attributes.
+ */
+function renderOutsideParentView(attributes) {
+  for (var attribute of attributes) {
+    if (attribute == "out-of-view") {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Simple recursive layout heuristic, since frames can't size themselves.
@@ -248,6 +261,13 @@ function main() {
     iframe.style.borderColor = borderColorForSite(siteAndPort);
     iframe.width = frameTree.children[i].layoutX;
     iframe.height = frameTree.children[i].layoutY;
+
+    // If needed, position the iframe.
+    if (renderOutsideParentView(frameTree.children[i].attributes)) {
+        iframe.style.position = "fixed";
+        iframe.style.top = "150%";
+        iframe.style.left = "150%";
+    }
 
     // Apply any additional attributes.
     applyIFrameOptions(iframe, frameTree.children[i].attributes);

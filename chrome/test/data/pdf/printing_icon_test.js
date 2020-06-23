@@ -7,7 +7,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 chrome.test.runTests([
   function testPrintingEnabled() {
     loadTimeData.overrideValues({printingEnabled: true});
-    const toolbar = document.body.querySelector('#toolbar');
+    const toolbar = viewer.shadowRoot.querySelector('#toolbar');
     // Trigger strings observer.
     toolbar.strings = Object.assign({}, toolbar.strings);
     const printIcon = toolbar.shadowRoot.querySelector('#print');
@@ -17,7 +17,7 @@ chrome.test.runTests([
   },
   function testPrintingDisabled() {
     loadTimeData.overrideValues({printingEnabled: false});
-    const toolbar = document.body.querySelector('#toolbar');
+    const toolbar = viewer.shadowRoot.querySelector('#toolbar');
     // Trigger strings observer.
     toolbar.strings = Object.assign({}, toolbar.strings);
     const printIcon = toolbar.shadowRoot.querySelector('#print');

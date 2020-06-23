@@ -1241,7 +1241,6 @@
 <translation id="6240447795304464094">Google Pay-ს ლოგო</translation>
 <translation id="6241121617266208201">შემოთავაზებების დამალვა</translation>
 <translation id="624499991300733384">Print Compositor Service</translation>
-<translation id="6251924700383757765">კონფიდენციალურობის პოლიტიკა</translation>
 <translation id="6254436959401408446">ამ გვერდის გასახსნელად მეხსიერება არასაკმარისია</translation>
 <translation id="625755898061068298">თქვენ ამ საიტისთვის უსაფრთხოებასთან დაკავშირებული გაფრთხილებების გათიშვა აირჩიეთ.</translation>
 <translation id="6259156558325130047">გადალაგების &amp;გამეორება</translation>
@@ -1628,7 +1627,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{არცერთი}=1{1 აპი (<ph name="EXAMPLE_APP_1" />)}=2{2 აპი (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# აპი (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">თუმცა, თქვენ უჩინარი არ ხართ. ინკოგნიტო რეჟიმით სარგებლობა არ მალავს თქვენ მიერ დათვალიერებულს თქვენი დამსაქმებლისგან, ინტერნეტ სერვისის პროვაიდერისგან თუ თქვენ მიერ მონახულებული ვებსაიტებისგან.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="7858256690562840157">შეუწყვეთ ხელი ვების უსაფრთხოების ყველასთვის გაუმჯობესებას <ph name="BEGIN_WHITEPAPER_LINK" />თქვენ მიერ მონახულებული ზოგიერთი გვერდის URL-ების, სისტემის შეზღუდული ინფორმაციისა და გვერდების გარკვეული კონტენტის<ph name="END_WHITEPAPER_LINK" /> Google-ისთვის გაგზავნით. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">გსურთ საიტიდან გასვლა?</translation>
 <translation id="7865448901209910068">საუკეთესო სიჩქარე</translation>
 <translation id="7874263914261512992">თქვენ ეს-ესაა შეიყვანეთ პაროლი შეცდომაში შემყვან საიტზე. Chrome გირჩევთ, შეამოწმოთ შენახული პაროლები <ph name="WEBSITE_1" />-ისთვის, <ph name="WEBSITE_2" />-ისა და სხვა საიტებისთვის, სადაც ამჟამად იმავე პაროლს იყენებთ.</translation>

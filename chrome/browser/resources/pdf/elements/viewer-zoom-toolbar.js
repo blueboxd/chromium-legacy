@@ -8,7 +8,9 @@ import './icons.js';
 import './viewer-zoom-button.js';
 
 import {assert} from 'chrome://resources/js/assert.m.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
 import {FittingType, TwoUpViewAction} from '../constants.js';
 
 /**
@@ -32,19 +34,25 @@ Polymer({
 
   properties: {
     /** Whether the viewer is currently in annotation mode. */
-    annotationMode: {
+    annotationMode: Boolean,
+
+    isPrintPreview: {
       type: Boolean,
       value: false,
     },
 
-    isPrintPreview: Boolean,
+    strings: {
+      type: Object,
+      observer: 'onStringsSet_',
+    },
 
-    twoUpViewEnabled: Boolean,
+    /** @private */
+    twoUpViewEnabled_: Boolean,
 
     /** @private */
     fitButtonDelay_: {
       type: Number,
-      computed: 'computeFitButtonDelay_(twoUpViewEnabled)',
+      computed: 'computeFitButtonDelay_(twoUpViewEnabled_)',
     },
 
     /** @private */
@@ -55,12 +63,11 @@ Polymer({
   },
 
   /**
-   * @param {boolean} twoUpViewEnabled Whether two-up view button is enabled.
-   * @return {number} Delay for :qthe fit button.
+   * @return {number} Delay for the fit button.
    * @private
    */
-  computeFitButtonDelay_(twoUpViewEnabled) {
-    return twoUpViewEnabled ? 150 : 100;
+  computeFitButtonDelay_() {
+    return this.twoUpViewEnabled_ ? 150 : 100;
   },
 
   listeners: {
@@ -106,20 +113,27 @@ Polymer({
 
   /**
    * Change button tooltips to match any changes to localized strings.
-   * @param {!{tooltipFitToPage: string,
-   *           tooltipFitToWidth: string,
-   *           tooltipTwoUpViewEnable: string,
-   *           tooltipTwoUpViewDisable: string,
-   *           tooltipZoomIn: string,
-   *           tooltipZoomOut: string}} strings
+   * @private
    */
-  setStrings(strings) {
+  onStringsSet_() {
+    const strings =
+        /**
+         * @type {{tooltipFitToPage: string,
+         *               tooltipFitToWidth: string,
+         *               tooltipTwoUpViewEnable: string,
+         *               tooltipTwoUpViewDisable: string,
+         *               tooltipZoomIn: string,
+         *               tooltipZoomOut: string}}
+         */
+        (this.strings);
     this.$['fit-button'].tooltips =
         [strings.tooltipFitToPage, strings.tooltipFitToWidth];
     this.$['two-up-view-button'].tooltips =
         [strings.tooltipTwoUpViewEnable, strings.tooltipTwoUpViewDisable];
     this.$['zoom-in-button'].tooltips = [strings.tooltipZoomIn];
     this.$['zoom-out-button'].tooltips = [strings.tooltipZoomOut];
+    this.twoUpViewEnabled_ =
+        loadTimeData.getBoolean('pdfTwoUpViewEnabled') && !this.isPrintPreview;
   },
 
   /** Handle clicks of the fit-button. */
@@ -175,7 +189,7 @@ Polymer({
    * @private
    */
   twoUpViewToggle_: function() {
-    assert(this.twoUpViewEnabled);
+    assert(this.twoUpViewEnabled_);
     const twoUpViewAction = this.$['two-up-view-button'].activeIndex ===
             TWO_UP_VIEW_DISABLED_STATE ?
         TwoUpViewAction.TWO_UP_VIEW_ENABLE :

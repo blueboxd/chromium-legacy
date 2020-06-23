@@ -3,6 +3,7 @@
 <translationbundle lang="th">
 <translation id="1018656279737460067">ยกเลิกแล้ว</translation>
 <translation id="1195447618553298278">ข้อผิดพลาดที่ไม่รู้จัก</translation>
+<translation id="1413240736185167732">ไม่สำเร็จ - กรองไม่สำเร็จ</translation>
 <translation id="1468664791493211953">ข้อเสนอ</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> จัดการอุปกรณ์นี้และอาจตรวจสอบกิจกรรมของคุณได้</translation>
 <translation id="150962533380566081">PUK ไม่ถูกต้อง</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">อุปกรณ์นี้ได้รับการจัดการโดยองค์กร</translation>
 <translation id="1905710495812624430">ลองทำเกินจำนวนครั้งที่กำหนดไว้แล้ว</translation>
 <translation id="1930797645656624981">บริการวิธีการป้อนข้อมูลของ Chrome OS</translation>
+<translation id="1947737735496445907">พิมพ์แล้ว</translation>
 <translation id="1979103255016296513">เลยเวลาเปลี่ยนรหัสผ่านแล้ว</translation>
 <translation id="2049639323467105390">อุปกรณ์นี้ได้รับการจัดการโดย <ph name="DOMAIN" /></translation>
 <translation id="2338501278241028356">เปิดบลูทูธเพื่อค้นหาอุปกรณ์ใกล้เคียง</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">แอป</translation>
 <translation id="2872961005593481000">ปิด</translation>
 <translation id="3008341117444806826">รีเฟรช</translation>
+<translation id="3091839911843451378">ไม่สำเร็จ - หยุดทำงาน</translation>
+<translation id="3268178239013324452">ไม่สำเร็จ - ฝาเครื่องเปิดอยู่</translation>
 <translation id="3369013195428705271">คุณแน่ใจไหมว่าต้องการล้างประวัติการพิมพ์ทั้งหมด ทั้งนี้ ระบบจะไม่ล้างงานพิมพ์ที่กำลังดำเนินอยู่</translation>
+<translation id="3456078764689556234">พิมพ์แล้ว <ph name="PRINTED_PAGES" /> จาก <ph name="TOTAL_PAGES" /> หน้า</translation>
 <translation id="3515615323037921860">งานพิมพ์</translation>
+<translation id="3527036260304016759">ไม่สำเร็จ - ข้อผิดพลาดที่ไม่รู้จัก</translation>
 <translation id="3749289110408117711">ชื่อไฟล์</translation>
 <translation id="38114475217616659">ล้างประวัติทั้งหมด</translation>
 <translation id="3820172043799983114">PIN ไม่ถูกต้อง</translation>
 <translation id="3838338534323494292">รหัสผ่านใหม่</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> จาก <ph name="TOTAL_PAGE_NUMBER" /> หน้า</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> จัดการอุปกรณ์นี้และมีสิทธิ์เข้าถึงกิจกรรมทั้งหมดของผู้ใช้ ซึ่งรวมถึงหน้าเว็บที่เข้าชม รหัสผ่าน และอีเมล</translation>
+<translation id="4003384961948020559">ไม่สำเร็จ - Output full</translation>
 <translation id="4034824040120875894">เครื่องพิมพ์</translation>
 <translation id="4227825898293920515">รหัสผ่านจะหมดอายุในอีก <ph name="TIME" /></translation>
+<translation id="428217921675623177">ระบบจะนำงานพิมพ์ที่เก่ากว่า 90 วันออก</translation>
 <translation id="4429881212383817840">ตั๋ว Kerberos กำลังจะหมดอายุ</translation>
 <translation id="445059817448385655">รหัสผ่านเดิม</translation>
 <translation id="467510802200863975">รหัสผ่านไม่ตรงกัน</translation>
@@ -37,24 +46,31 @@
 ลองแตะไมโครโฟนเพื่อถามเรื่องอะไรก็ได้</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="5317780077021120954">บันทึก</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">เลือกรหัสผ่านใหม่เลย</translation>
 <translation id="5457599981699367932">ท่องเว็บในฐานะผู้มาเยือน</translation>
 <translation id="54609108002486618">มีการจัดการ</translation>
 <translation id="5832805196449965646">เพิ่มบุคคล</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
+<translation id="6048107060512778456">ไม่สำเร็จ - กระดาษติด</translation>
 <translation id="6058625436358447366">ป้อนรหัสผ่านเดิมและรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6106186594183574873">ป้อนรหัสผ่านเดิมเพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6146993107019042706">ป้อนรหัสผ่านใหม่เพื่อเปลี่ยนรหัสผ่านให้เสร็จ</translation>
 <translation id="6517239166834772319">สำรวจ</translation>
+<translation id="6564646048574748301">ไม่สำเร็จ - เข้าถึงเครื่องพิมพ์ไม่ได้</translation>
 <translation id="6643016212128521049">ล้าง</translation>
 <translation id="7162487448488904999">แกลเลอรี</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="7690294790491645610">ยืนยันรหัสผ่านใหม่</translation>
 <translation id="7805768142964895445">สถานะ</translation>
 <translation id="808894953321890993">เปลี่ยนรหัสผ่าน</translation>
 <translation id="8208861521865154048">สิทธิประโยชน์</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> จัดการผู้ใช้รายนี้ โดยอาจจัดการการตั้งค่าและตรวจสอบกิจกรรมของผู้ใช้จากระยะไกล</translation>
+<translation id="871560550817059752">ไม่สำเร็จ - หมึกหมด</translation>
 <translation id="8747900814994928677">ยืนยันการเปลี่ยนแปลง</translation>
+<translation id="8919837981463578619">ไม่สำเร็จ - ไม่มีถาด</translation>
+<translation id="8928727111548978589">ไม่สำเร็จ - กระดาษหมด</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> ลองได้อีก <ph name="ATTEMPTS_LEFT" /> ครั้ง</translation>
 <translation id="910415269708673980">รีเฟรชตั๋วสำหรับ <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">ปลดล็อก</translation>

@@ -273,6 +273,12 @@ class ArcAppListPrefs : public KeyedService,
   // Constructs path to app icon for specific scale factor.
   base::FilePath GetIconPath(const std::string& app_id,
                              const ArcAppIconDescriptor& descriptor);
+  // Constructs path to the app foreground icon for specific scale factor.
+  base::FilePath GetForegroundIconPath(const std::string& app_id,
+                                       const ArcAppIconDescriptor& descriptor);
+  // Constructs path to the app background icon for specific scale factor.
+  base::FilePath GetBackgroundIconPath(const std::string& app_id,
+                                       const ArcAppIconDescriptor& descriptor);
   // Constructs path to default app icon for specific scale factor. This path
   // is used to resolve icon if no icon is available at |GetIconPath|.
   base::FilePath MaybeGetIconPathForDefaultApp(

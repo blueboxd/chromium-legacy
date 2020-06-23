@@ -764,7 +764,7 @@
 <translation id="1928696683969751773">Uppdateringar</translation>
 <translation id="1929186283613845153">Filen genomsöks.</translation>
 <translation id="1929546189971853037">Läsa webbhistoriken på alla enheter där du är inloggad</translation>
-<translation id="1930879306590754738">Lösenordet har raderats från den här enheten och ditt Google-kontot</translation>
+<translation id="1930879306590754738">Lösenordet har raderats från den här enheten och ditt Google-konto</translation>
 <translation id="1931152874660185993">Det finns inga installerade komponenter.</translation>
 <translation id="1932098463447129402">Inte före</translation>
 <translation id="1933809209549026293">Anslut en mus eller ett tangentbord. Om du använder en Bluetooth-enhet kontrollerar du att den är klar att kopplas.</translation>
@@ -2493,7 +2493,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4077919383365622693">All data och alla cookies som sparats av <ph name="SITE" /> raderas.</translation>
 <translation id="4079140982534148664">Använd förbättrad stavningskontroll</translation>
 <translation id="4081242589061676262">Det går inte att casta filen.</translation>
-<translation id="4083648855651348665">Om du vill fortsätta anger du Google-kontots lösenord så att lösenord som är sparade i Google-kontot blir tillgängliga på enheten.</translation>
 <translation id="4084682180776658562">Infoga bokmärke</translation>
 <translation id="4084835346725913160">Stäng <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Fråga när en webbplats försöker få åtkomst till serieportarna</translation>
@@ -2798,6 +2797,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4508765956121923607">Visa &amp;källa</translation>
 <translation id="4510479820467554003">Lista över föräldrakonton</translation>
 <translation id="4510614391273086606">Linux-filer och Linux-appar återställs till den säkerhetskopierade versionen.</translation>
+<translation id="4513946894732546136">Feedback</translation>
 <translation id="451407183922382411">Tekniken kommer från <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">Växla mellan att spela upp och pausa video</translation>
 <translation id="451515744433878153">Ta bort</translation>
@@ -3895,7 +3895,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5935656526031444304">Hantera Säker webbsökning</translation>
 <translation id="5938002010494270685">En säkerhetsuppgradering är tillgänglig</translation>
 <translation id="5939518447894949180">Återställ</translation>
-<translation id="594108735267876762">Uppdatera enheten inom <ph name="COUNT" /> dagar</translation>
 <translation id="5941153596444580863">Lägg till person …</translation>
 <translation id="5941343993301164315">Logga in på <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimera</translation>
@@ -4244,7 +4243,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6390799748543157332">Sidorna du visar i den här fliken visas inte i webbläsarhistoriken och lämnar inga andra spår, till exempel cookies, på datorn när du har stängt alla öppna gästfönster. Filer som du laddar ned kommer dock att sparas.</translation>
 <translation id="6393156038355142111">Föreslå ett starkt lösenord</translation>
 <translation id="6395423953133416962">Skicka <ph name="BEGIN_LINK1" />systeminformation<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />statistik<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">I dag är sista dagen för att uppdatera enheten</translation>
 <translation id="6396988158856674517">Blockera webbplatser från att använda enhetens rörelsesensorer</translation>
 <translation id="6398715114293939307">Ta bort Google Play Butik</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
@@ -4610,7 +4608,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6880587130513028875">Bilder är blockerade på den här sidan.</translation>
 <translation id="6882836635272038266">Standardskydd mot kända skadliga webbplatser, nedladdningar och tillägg.</translation>
 <translation id="6883319974225028188">Det gick inte att spara enhetskonfigurationen.</translation>
-<translation id="6885064901301703683">Spara en gång – använd överallt</translation>
 <translation id="6885771755599377173">Förhandsgranska systeminformation</translation>
 <translation id="6886476658664859389">NFC-säkerhetsnyckel</translation>
 <translation id="6886871292305414135">Öppna länk i ny &amp;flik</translation>
@@ -5047,6 +5044,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7427798576651127129">Ring från <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">Inga HID-enheter hittades</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Öppna alla i ett &amp;nytt fönster}=1{Öppna i ett &amp;nytt fönster}other{Öppna alla (#) i ett &amp;nytt fönster}}</translation>
+<translation id="7433957986129316853">Behåll den</translation>
 <translation id="7434509671034404296">Utvecklare</translation>
 <translation id="7434635829372401939">Synkronisera inställningar</translation>
 <translation id="7434757724413878233">Musacceleration</translation>
@@ -5938,7 +5936,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8545575359873600875">Det gick inte att verifiera lösenordet. Den som hanterar denna kontrollerade användare kan ha ändrat lösenordet nyligen. I så fall kommer det nya lösenordet att börja gälla nästa gång du loggar in. Testa med det gamla lösenordet.</translation>
 <translation id="8546186510985480118">Enheten har ont om diskutrymme</translation>
 <translation id="8546306075665861288">Cacheminne för bilder</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">Webbadress för automatisk identifiering av webbproxy</translation>
 <translation id="8546930481464505581">Anpassa pekfältet</translation>
 <translation id="8547013269961688403">Aktivera helskärmsförstorare</translation>
@@ -6526,6 +6523,7 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="983511809958454316">Den här funktionen stöds inte i VR-läget</translation>
 <translation id="984275831282074731">Betalningsmetoder</translation>
 <translation id="98515147261107953">Liggande</translation>
+<translation id="987264212798334818">Allmänt</translation>
 <translation id="987897973846887088">Det finns inga bilder</translation>
 <translation id="988978206646512040">Lösenfrasen får inte vara tom</translation>
 <translation id="992032470292211616">Tillägg, appar och teman kan skada enheten. Vill du fortsätta?</translation>

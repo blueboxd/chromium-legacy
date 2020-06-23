@@ -80,5 +80,10 @@ const char kEnableDataReductionProxySavingsPromo[] =
 const char kDataReductionProxyServerClientConfig[] =
     "data-reduction-proxy-client-config";
 
+// Override the one-time InfoBar to not needed to be shown before triggering
+// https image compression for the page load.
+const char kOverrideHttpsImageCompressionInfobar[] =
+    "override-https-image-compression-infobar";
+
 }  // namespace switches
 }  // namespace data_reduction_proxy

@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">Сол жақ</translation>
 <translation id="1479909375538722835">Қалқымалы арнайы мүмкіндіктер мәзірі</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Қосу</translation>
 <translation id="1516740043221086139">"Мазаламау" режимі қосулы.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Хабарландыру параметрлерін көрсету. Қолданбаның хабарландырулары өшірулі}other{Хабарландыру параметрлерін көрсету. # қолданбаның хабарландырулары өшірулі}}</translation>
 <translation id="1525508553941733066">ЖАБУ</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">Assistant (жүктелуде...)</translation>
 <translation id="1838895407229022812">"Түнгі жарық" функциясы өшірулі.</translation>
 <translation id="1850504506766569011">Wi-Fi өшірілді.</translation>
-<translation id="1859889070386344428">Өшірулі</translation>
 <translation id="1864454756846565995">USB-C құрылғысы (артқы ұяшық)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> арқылы экран көшірмесін көрсету</translation>
 <translation id="1885785240814121742">Құлыпты саусақ ізімен ашыңыз</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">Пернетақтаны ауыстыру үшін <ph name="KEYBOARD_SHORTCUT" /> пернелерін басыңыз.</translation>
 <translation id="2501920221385095727">Жабысқақ пернелер</translation>
 <translation id="2509468283778169019">CAPS LOCK қосулы</translation>
-<translation id="2519465031217098801">Қосулы</translation>
 <translation id="2542089167727451762">Профиль суретіңізді түртіңіз.</translation>
 <translation id="255671100581129685">Google Assistant жалпыға қолжетімді сеанста жұмыс істемейді.</translation>
 <translation id="256712445991462162">бекітілген ұлғайтқыш</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">Қою</translation>
 <translation id="394485226368336402">Аудио параметрлері</translation>
 <translation id="3962859241508114581">Алдыңғы аудиотрек</translation>
-<translation id="3965097803111112935">Өшірулі</translation>
 <translation id="397105322502079400">Есептелуде…</translation>
 <translation id="3977512764614765090">Батарея қуаты – <ph name="PERCENTAGE" />%. Зарядталып жатыр.</translation>
 <translation id="3995138139523574647">USB-C құрылғысы (оң жақ артқы порты)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">Мәтін курсорын бөлектеу</translation>
 <translation id="5222676887888702881">Шығу</translation>
 <translation id="523505283826916779">Арнайы мүмкіндіктер параметрлері</translation>
-<translation id="5250225880026334010">Өшіру</translation>
 <translation id="5260676007519551770">4-ші жұмыс үстелі</translation>
 <translation id="5283198616748585639">1 мин қосу</translation>
 <translation id="528468243742722775">Соңы</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">"<ph name="DEVICE_NAME" />" Bluetooth құрылғысы жұптасуға рұқсат сұрайды. Айтылған құрылғыда осы негізгі кілтті енгізіңіз: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Құпия сөз</translation>
 <translation id="6665545700722362599">Веб-сайттарға, қолданбаларға және кеңейтімдерге орынды анықтау қызметін, құрылғының микрофонын, камерасын немесе басқа функцияларын пайдалануға рұқсат беріңіз</translation>
-<translation id="6669268301501499730">Қосулы</translation>
 <translation id="6670153871843998651">3-ші жұмыс үстелі</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">Таңдауға қатысты ақпарат алу</translation>

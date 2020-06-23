@@ -1,0 +1,53 @@
+<style include="pdf-viewer-shared-style">
+  viewer-pdf-toolbar {
+    position: fixed;
+    width: 100%;
+    z-index: 4;
+  }
+
+  viewer-ink-host {
+    height: 100%;
+    position: absolute;
+    width: 100%;
+  }
+
+  @media(max-height: 250px) {
+    viewer-pdf-toolbar {
+      display: none;
+    }
+  }
+</style>
+
+<viewer-pdf-toolbar id="toolbar" strings="[[strings]]"
+    annotation-available="[[annotationAvailable_]]"
+    bookmarks="[[bookmarks_]]" doc-title="[[title_]]"
+    has-edits="[[hasEdits_]]"
+    has-entered-annotation-mode="[[hasEnteredAnnotationMode_]]"
+    on-save="onToolbarSave_" on-print="onPrint_"
+    on-annotation-mode-toggled="onAnnotationModeToggled_"
+    on-annotation-tool-changed="onAnnotationToolChanged_"
+    on-rotate-right="rotateClockwise" on-undo="onUndo_" on-redo="onRedo_"
+    hidden>
+</viewer-pdf-toolbar>
+
+<div id="sizer"></div>
+<viewer-password-screen id="password-screen"
+    on-password-submitted="onPasswordSubmitted_">
+</viewer-password-screen>
+
+<viewer-zoom-toolbar id="zoom-toolbar" strings="[[strings]]"
+    annotation-mode="[[annotationMode_]]"
+    on-fit-to-changed="onFitToChanged"
+    on-two-up-view-changed="onTwoUpViewChanged_"
+    on-zoom-in="onZoomIn" on-zoom-out="onZoomOut"
+    hidden>
+</viewer-zoom-toolbar>
+
+<viewer-error-screen id="error-screen"></viewer-error-screen>
+
+<if expr="chromeos">
+<viewer-form-warning id="form-warning"></viewer-form-warning>
+</if>
+
+<div id="content"></div>
+

@@ -1252,7 +1252,6 @@
 <translation id="6240447795304464094">Google Pay-ի լոգո</translation>
 <translation id="6241121617266208201">Թաքցնել հուշումները</translation>
 <translation id="624499991300733384">Տպագիր նյութերի խմբագրման ծառայություն</translation>
-<translation id="6251924700383757765">Գաղտնիության քաղաքականություն</translation>
 <translation id="6254436959401408446">Այս էջը բացելու համար բավարար տարածք չկա</translation>
 <translation id="625755898061068298">Զգուշացումներն անջատված են այս կայքի համար:</translation>
 <translation id="6259156558325130047">&amp;Վերարկել վերադասավորումը</translation>
@@ -1539,6 +1538,7 @@
 <translation id="7485870689360869515">Տվյալներ չեն գտնվել:</translation>
 <translation id="7488762544858401571">Փոփոխված</translation>
 <translation id="7495290002932347110">Ձեր գաղտնաբառը բացահայտվել է որոշակի կայքում կամ հավելվածում տեղի ունեցած տվյալների արտահոսքի հետևանքով։ Chrome-ը խորհուրդ է տալիս ստուգել պահված գաղտնաբառերի ապահովությունը և անհապաղ փոխել <ph name="ORIGIN" /> ռեսուրսում օգտագործվող գաղտնաբառը:</translation>
+<translation id="7495528107193238112">Այս բովանդակությունն արգելափակված է։ Խնդիրը վերացնելու համար դիմեք կայքի սեփականատիրոջը։</translation>
 <translation id="7498234416455752244">Շարունակել աշխատանքը</translation>
 <translation id="7503664977220660814">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Chromiume-ը խորհուրդ է տալիս ստուգել պահված գաղտնաբառերը <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> և այլ կայքերի համար, որտեղ դուք այժմ օգտագործում եք այս գաղտնաբառը։</translation>
 <translation id="7508255263130623398">Սարքի վերադարձված կանոնի ID-ն դատարկ է կամ չի համապատասխանում ընթացիկ ID-ին</translation>
@@ -1638,7 +1638,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Չկա}=1{1 հավելված (<ph name="EXAMPLE_APP_1" />)}=2{2 հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Այնուամենայնիվ, դուք անտեսանելի չեք: Ինկոգնիտո ռեժիմը չի թաքցնում ձեր դիտարկման պատմությունը ձեր գործատուից, ինտերնետային ծառայությունների մատուցողից կամ ձեր այցելած կայքերից:</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">Օգնեք բարձրացնել անվտանգության մակարդակը համացանցում՝ Google-ին ուղարկելով <ph name="BEGIN_WHITEPAPER_LINK" />ձեր այցելած որոշ էջերի URL-ներն ու դրանց բովանդակությունը և որոշակի տեղեկություններ համակարգի մասին<ph name="END_WHITEPAPER_LINK" />։ <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Փակե՞լ կայքը</translation>
 <translation id="7865448901209910068">Լավագույն արագություն</translation>
 <translation id="7874263914261512992">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Chrome-ը խորհուրդ է տալիս ստուգել պահված գաղտնաբառերը <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> և այլ կայքերի համար, որտեղ դուք այժմ օգտագործում եք այս գաղտնաբառը։</translation>

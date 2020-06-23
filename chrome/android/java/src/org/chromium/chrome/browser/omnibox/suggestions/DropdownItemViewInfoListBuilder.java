@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
@@ -198,6 +199,7 @@ class DropdownItemViewInfoListBuilder {
      * @return List of DropdownItemViewInfo representing the corresponding content of the
      *          suggestions list.
      */
+    @NonNull
     List<DropdownItemViewInfo> buildDropdownViewInfoList(AutocompleteResult autocompleteResult) {
         mHeaderProcessor.onSuggestionsReceived();
         for (int index = 0; index < mPriorityOrderedSuggestionProcessors.size(); index++) {

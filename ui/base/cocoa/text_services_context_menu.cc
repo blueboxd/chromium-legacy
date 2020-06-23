@@ -17,22 +17,6 @@
 
 namespace {
 
-enum MenuCommands {
-  // These must not overlap with the command IDs used by other menus that
-  // incorporate text services.
-  // TODO(ellyjones): This is an ugly global dependency, especially on
-  // //ui/views. What can we do about this? Can we get rid of the global
-  // implicit namespace of command IDs?
-  kSpeechMenu = 100,
-  kSpeechStartSpeaking,
-  kSpeechStopSpeaking,
-
-  kWritingDirectionMenu,
-  kWritingDirectionDefault,
-  kWritingDirectionLtr,
-  kWritingDirectionRtl,
-};
-
 // The speech channel used for speaking. This is shared to check if a speech
 // channel is currently speaking.
 SpeechChannel g_speech_channel;
@@ -41,11 +25,11 @@ SpeechChannel g_speech_channel;
 // |command_id|.
 base::i18n::TextDirection GetTextDirectionFromCommandId(int command_id) {
   switch (command_id) {
-    case kWritingDirectionDefault:
+    case ui::TextServicesContextMenu::kWritingDirectionDefault:
       return base::i18n::UNKNOWN_DIRECTION;
-    case kWritingDirectionLtr:
+    case ui::TextServicesContextMenu::kWritingDirectionLtr:
       return base::i18n::LEFT_TO_RIGHT;
-    case kWritingDirectionRtl:
+    case ui::TextServicesContextMenu::kWritingDirectionRtl:
       return base::i18n::RIGHT_TO_LEFT;
     default:
       NOTREACHED();

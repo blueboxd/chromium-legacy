@@ -813,21 +813,14 @@ std::string OmniboxFieldTrial::OnDeviceHeadSuggestDemoteMode() {
       kOnDeviceHeadSuggestDemoteMode);
 }
 
-bool OmniboxFieldTrial::IsHidePathQueryRefEnabled() {
-  return base::FeatureList::IsEnabled(
-      omnibox::kHideSteadyStateUrlPathQueryAndRef);
-}
-
 bool OmniboxFieldTrial::ShouldRevealPathQueryRefOnHover() {
-  return IsHidePathQueryRefEnabled() &&
-         base::FeatureList::IsEnabled(
-             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover);
+  return base::FeatureList::IsEnabled(
+      omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover);
 }
 
 bool OmniboxFieldTrial::ShouldHidePathQueryRefOnInteraction() {
-  return IsHidePathQueryRefEnabled() &&
-         base::FeatureList::IsEnabled(
-             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction);
+  return base::FeatureList::IsEnabled(
+      omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction);
 }
 
 int OmniboxFieldTrial::RevealPathQueryRefOnHoverThresholdMs() {

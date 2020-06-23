@@ -365,21 +365,18 @@ class DialogFooter {
     }
 
     const options = this.fileTypeSelector.querySelectorAll('option');
-    if (options.length >= 2) {
-      // There is in fact no choice, show the selector.
-      this.fileTypeSelector.hidden = false;
-      if (util.isFilesNg()) {
-        // Make sure one of the options is selected to match real <select>.
-        let selectedOption =
-            this.fileTypeSelector.querySelector('.options .selected');
-        if (!selectedOption) {
-          selectedOption =
-              this.fileTypeSelector.querySelector('.options option');
-          this.setOptionSelected(
-              /** @type {HTMLOptionElement } */ (selectedOption));
-        }
+    if (options.length > 0 && util.isFilesNg()) {
+      // Make sure one of the options is selected to match real <select>.
+      let selectedOption =
+          this.fileTypeSelector.querySelector('.options .selected');
+      if (!selectedOption) {
+        selectedOption = this.fileTypeSelector.querySelector('.options option');
+        this.setOptionSelected(
+            /** @type {HTMLOptionElement } */ (selectedOption));
       }
     }
+    // Hide the UI if there is actually no choice to be made (0 or 1 option).
+    this.fileTypeSelector.hidden = options.length < 2;
   }
 
   /**

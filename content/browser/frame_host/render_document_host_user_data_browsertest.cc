@@ -649,6 +649,228 @@ IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, SameSiteNavigation) {
   EXPECT_FALSE(data);
 }
 
+namespace {
+
+class PopupCreatedObserver : public WebContentsDelegate {
+ public:
+  using WebContentsCreatedCallback =
+      base::RepeatingCallback<void(WebContents* web_contents)>;
+
+  explicit PopupCreatedObserver(WebContentsCreatedCallback callback)
+      : callback_(std::move(callback)) {}
+
+  void AddNewContents(WebContents* source_contents,
+                      std::unique_ptr<WebContents> new_contents,
+                      const GURL& target_url,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override {
+    callback_.Run(new_contents.get());
+    web_contents_.push_back(std::move(new_contents));
+  }
+
+ private:
+  WebContentsCreatedCallback callback_;
+  std::vector<std::unique_ptr<WebContents>> web_contents_;
+};
+
+}  // namespace
+
+// This test ensures that the data created during the new WebContents
+// initialisation is not lost during the initial "navigation" triggered by the
+// window.open.
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, WindowOpen) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  int popup_data_id = -1;
+  WebContents* new_tab = nullptr;
+
+  // 1) Navigate to A.
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // 2) Register WebContentsDelegate to get notified about new popups.
+  PopupCreatedObserver observer(base::BindRepeating(
+      [](int* popup_data_id, WebContents** new_tab, WebContents* web_contents) {
+        EXPECT_EQ(*popup_data_id, -1);
+        EXPECT_FALSE(*new_tab);
+        *new_tab = web_contents;
+
+        *popup_data_id =
+            Data::GetOrCreateForCurrentDocument(web_contents->GetMainFrame())
+                ->unique_id();
+      },
+      &popup_data_id, &new_tab));
+  web_contents()->SetDelegate(&observer);
+
+  // 3) Invoke a window.open() without parameters. The delegate should capture
+  // the ownership of the new WebContents and attach Data to its main frame.
+  EXPECT_TRUE(ExecJs(top_frame_host(), "window.open()"));
+  EXPECT_TRUE(new_tab);
+  // Do not check for the success status because we haven't committed a
+  // navigation yet, which causes checks to fail.
+  WaitForLoadStopWithoutSuccessCheck(new_tab);
+
+  // 4) Expect the data to the preserved (it might have been deleted due to us
+  // having a fake initial navigation for blank window.open).
+  Data* new_tab_data = Data::GetForCurrentDocument(new_tab->GetMainFrame());
+  EXPECT_TRUE(new_tab_data);
+  EXPECT_EQ(new_tab_data->unique_id(), popup_data_id);
+
+  web_contents()->SetDelegate(nullptr);
+}
+
+namespace {
+
+class RenderFrameHostCreatedObserver : public WebContentsObserver {
+ public:
+  using OnRenderFrameHostCreatedCallback =
+      base::RepeatingCallback<void(RenderFrameHost*)>;
+
+  RenderFrameHostCreatedObserver(
+      WebContents* web_contents,
+      OnRenderFrameHostCreatedCallback on_rfh_created)
+      : WebContentsObserver(web_contents),
+        on_rfh_created_(std::move(on_rfh_created)) {}
+
+  void RenderFrameCreated(RenderFrameHost* render_frame_host) override {
+    on_rfh_created_.Run(std::move(render_frame_host));
+  }
+
+ private:
+  OnRenderFrameHostCreatedCallback on_rfh_created_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, BlankIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(
+      embedded_test_server()->GetURL("b.com", "/page_with_blank_iframe.html"));
+
+  // 0) Navigate to A to ensure that we have a live frame (see a comment in
+  // AttachOnCreatingInitialFrame).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  int starting_id = next_id + 1;
+
+  std::vector<RenderFrameHost*> created_rfhs;
+
+  // 1) Register an observer which observes all created RenderFrameHosts
+  // and attaches user data to them.
+  RenderFrameHostCreatedObserver observer(
+      web_contents(), base::BindRepeating(
+                          [](std::vector<RenderFrameHost*>* created_rfhs,
+                             RenderFrameHost* rfh) {
+                            created_rfhs->push_back(rfh);
+                            Data::GetOrCreateForCurrentDocument(rfh);
+                          },
+                          &created_rfhs));
+
+  // 2) Navigate to a page with a blank iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 3) Expect that we have two frames with valid user data.
+  // The danger here lies in the perculiar properties of the initial navigation
+  // for the blank iframes, which does not create a new document, but goes via
+  // DidCommitProvisionalLoad.
+  std::vector<int> current_ids;
+  for (RenderFrameHost* rfh : created_rfhs) {
+    if (auto* data = Data::GetForCurrentDocument(rfh)) {
+      current_ids.push_back(data->unique_id());
+    }
+  }
+
+  EXPECT_EQ(2u, created_rfhs.size());
+  EXPECT_THAT(current_ids, testing::ElementsAre(starting_id, starting_id + 1));
+}
+
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest, SrcDocIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL(
+      "b.com", "/frame_tree/page_with_srcdoc_frame.html"));
+
+  // 0) Navigate to A to ensure that we have a live frame (see a comment in
+  // AttachOnCreatingInitialFrame).
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+
+  int starting_id = next_id + 1;
+
+  std::vector<RenderFrameHost*> created_rfhs;
+
+  // 1) Register an observer which observes all created RenderFrameHosts
+  // and attaches user data to them.
+  RenderFrameHostCreatedObserver observer(
+      web_contents(), base::BindRepeating(
+                          [](std::vector<RenderFrameHost*>* created_rfhs,
+                             RenderFrameHost* rfh) {
+                            created_rfhs->push_back(rfh);
+                            Data::GetOrCreateForCurrentDocument(rfh);
+                          },
+                          &created_rfhs));
+
+  // 2) Navigate to a page with a srcdoc iframe.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+
+  // 3) Expect that we have one frame with valid user data.
+  // For the subframe, the user data was attached to the initial blank document
+  // and should have been deleted when the document was navigated to
+  // about:srcdoc.
+  std::vector<int> current_ids;
+  for (RenderFrameHost* rfh : created_rfhs) {
+    if (auto* data = Data::GetForCurrentDocument(rfh)) {
+      current_ids.push_back(data->unique_id());
+    }
+  }
+
+  EXPECT_EQ(2u, created_rfhs.size());
+  EXPECT_THAT(current_ids, testing::ElementsAre(starting_id));
+}
+
+// This test doesn't actually work at the moment and documents the current
+// behaviour rather than intended one.
+// TODO(sreejakshetty): Fix it.
+IN_PROC_BROWSER_TEST_F(RenderDocumentHostUserDataTest,
+                       AttachOnCreatingInitialFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  bool observed_frame_creation = false;
+
+  // 1) Register an observer which observes all created RenderFrameHosts
+  // and attaches user data to them.
+  RenderFrameHostCreatedObserver observer(
+      web_contents(),
+      base::BindRepeating(
+          [](bool* observed_frame_creation, RenderFrameHost* rfh) {
+            Data::GetOrCreateForCurrentDocument(rfh);
+            *observed_frame_creation = true;
+          },
+          &observed_frame_creation));
+
+  // 2) Navigate to a new page.
+  EXPECT_FALSE(shell()->web_contents()->GetMainFrame()->IsRenderFrameLive());
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // 3) Unfortunately, user data will not be there – the reason is that we
+  // actually reuse the initial RenderFrameHost, which wasn't fully initialised
+  // when we started a navigation (IsRenderFrameLive == false). It will complete
+  // its initialisation, dispatching RenderFrameCreated, but during the
+  // navigation commit we will consider the document in it to be reset later
+  // when we commit the navigation. In the short term, we should not reset RDHUD
+  // in that case. In the long term, we probably should create a new
+  // RenderFrameHost here.
+  EXPECT_TRUE(observed_frame_creation);
+  EXPECT_FALSE(
+      Data::GetForCurrentDocument(shell()->web_contents()->GetMainFrame()));
+}
+
 // Test RenderDocumentHostUserData with BackForwardCache feature enabled.
 class RenderDocumentHostUserDataWithBackForwardCacheTest
     : public RenderDocumentHostUserDataTest {

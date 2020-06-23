@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Chromium आत्ता तुमचा कॅमेरा वापरू शकत नाही</translation>
 <translation id="2195025571279539885">Chromium ने या साइटवरून पुढील वेळी <ph name="LANGUAGE_NAME" /> पेज भाषांतरित करण्याची ऑफर द्यावी असे तुम्हाला वाटते?</translation>
 <translation id="2590893390871230428">तुमचा Chromium डेटा सिंक करा</translation>
+<translation id="2650312721222849884">तुम्ही जेथून Chromium वापरत असाल तेथून तुमचे टॅब पाहण्यासाठी, सिंक सुरू करा</translation>
 <translation id="2730884209570016437">Chromium तुमचा कॅमेरा वापरू शकत नाही कारण दुसरा ॲप्स तो वापरत आहे</translation>
 <translation id="2915596697727466327">तुमच्या पासवर्डच्या परवानगी दिलेल्या ॲक्सेसची खात्री करण्यासाठी Chromium फेस आयडी वापरते.</translation>
 <translation id="3256316712990552818">Chromium वर कॉपी केले</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Chromium स्कॅनर सुरू करा</translation>
 <translation id="4787850887676698916">आपल्या अन्य डिव्हाइसवर तुम्ही Chromium मध्ये उघडलेले टॅब येथे दिसतील.</translation>
 <translation id="4999538639245140991">तुम्ही <ph name="SIGNOUT_MANAGED_DOMAIN" /> द्वारे व्यवस्थापित केलेल्या खात्यातून साइन आउट केले आहे, तुमचा Chromium डेटा या डिव्हाइसवरून हटवला जाईल. तुमचा डेटा तुमच्या Google खाते मध्ये असेल.</translation>
+<translation id="5521125884468363740">तुम्ही जेथून Chromium वापरत असाल तेथून तुमचे टॅब पाहण्यासाठी, साइन इन करा आणि सिंक सुरू करा</translation>
 <translation id="5573014823074921752">Chromium टीप. आणखी टॅब पर्यायांसाठी, तुमच्या स्क्रीनच्या तळाशी किंवा सर्वात वर असलेल्या टूलबारवरील टॅब दाखवा बटणाला स्पर्श करा आणि धरून ठेवा.</translation>
 <translation id="5777187867430702742">Chromium पेज</translation>
 <translation id="5862307444128926510">Chromium वर तुमचे स्‍वागत आहे</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Chromium टीप. काही बटणे आता तुमच्या स्क्रीनच्या तळाशी आहेत, जसे की मागे, पुढे आणि शोध.</translation>
 <translation id="786327964234957808">तुम्ही संकालित केलेली खाती <ph name="USER_EMAIL1" /> वरून <ph name="USER_EMAIL2" /> वर स्विच करीत आहात. तुमचा विद्यमान Chromium डेटा <ph name="DOMAIN" /> द्वारे व्यवस्थापित केला आहे. हे तुमचा डेटा या डिव्हाइस वरून हटवेल परंतु तुमचा डेटा <ph name="USER_EMAIL1" /> मध्ये असेल.</translation>
 <translation id="7890287942691234100">Chromium स्कॅनर वापरण्यास सुरुवात करा</translation>
+<translation id="8013573822802650211">तुम्ही जेथून Chromium वापरत असाल तेथून तुमचे टॅब पाहण्यासाठी, तुमच्या सर्व डिव्हाइसवर साइन इन करा</translation>
 <translation id="8073677936375100957">या डिव्हाइसवरून तुमचा Chromium डेटा साफ करायचा?</translation>
 <translation id="8175055321229419309">टीप: <ph name="BEGIN_LINK" />Chromium तुमच्या डॉकमध्ये हलवा<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">आपल्या स्थानावर आधारित Chromium मध्ये उत्कृष्ट Google अनुभव मिळवा.</translation>

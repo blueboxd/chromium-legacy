@@ -8,6 +8,7 @@
 #include "ash/public/cpp/system_tray_test_api.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -39,6 +40,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
@@ -92,7 +94,7 @@ policy::MinimumVersionPolicyHandler* GetMinimumVersionPolicyHandler() {
 
 class MinimumVersionPolicyTestBase : public chromeos::LoginManagerTest {
  public:
-  MinimumVersionPolicyTestBase() = default;
+  MinimumVersionPolicyTestBase();
 
   ~MinimumVersionPolicyTestBase() override = default;
 
@@ -122,11 +124,16 @@ class MinimumVersionPolicyTestBase : public chromeos::LoginManagerTest {
   void SetMinimumChromeVersionPolicy(const base::Value& value);
 
   DevicePolicyCrosTestHelper helper_;
+  base::test::ScopedFeatureList feature_list_;
   chromeos::FakeUpdateEngineClient* fake_update_engine_client_ = nullptr;
   chromeos::DeviceStateMixin device_state_{
       &mixin_host_,
       chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
+
+MinimumVersionPolicyTestBase::MinimumVersionPolicyTestBase() {
+  feature_list_.InitAndEnableFeature(chromeos::features::kMinimumChromeVersion);
+}
 
 void MinimumVersionPolicyTestBase::SetMinimumChromeVersionPolicy(
     const base::Value& value) {

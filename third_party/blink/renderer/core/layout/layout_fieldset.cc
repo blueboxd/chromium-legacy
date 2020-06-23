@@ -158,7 +158,10 @@ LayoutBox* LayoutFieldset::FindInFlowLegend(const LayoutBlock& fieldset) {
   }
   for (LayoutObject* legend = parent->FirstChild(); legend;
        legend = legend->NextSibling()) {
-    if (legend->IsRenderedLegendCandidate())
+    if (legend->IsFloatingOrOutOfFlowPositioned())
+      continue;
+
+    if (legend->IsHTMLLegendElement())
       return ToLayoutBox(legend);
   }
   return nullptr;

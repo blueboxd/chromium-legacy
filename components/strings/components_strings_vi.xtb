@@ -1252,7 +1252,6 @@ Nếu bạn từ chối, các tùy chọn cài đặt quyền riêng tư của b
 <translation id="6240447795304464094">Biểu trưng của Google Pay</translation>
 <translation id="6241121617266208201">Ẩn các nội dung đề xuất</translation>
 <translation id="624499991300733384">Dịch vụ bộ sắp xếp bản in</translation>
-<translation id="6251924700383757765">Chính sách bảo mật</translation>
 <translation id="6254436959401408446">Không đủ bộ nhớ để mở trang này</translation>
 <translation id="625755898061068298">Bạn đã chọn tắt cảnh báo bảo mật cho trang web này.</translation>
 <translation id="6259156558325130047">&amp;Làm lại sắp xếp lại</translation>
@@ -1539,6 +1538,7 @@ Thông tin chi tiết bổ sung:
 <translation id="7485870689360869515">Không tìm thấy dữ liệu.</translation>
 <translation id="7488762544858401571">Đã chỉnh sửa</translation>
 <translation id="7495290002932347110">Một sự cố rò rỉ dữ liệu xảy ra trên một trang web hoặc ứng dụng đã làm lộ mật khẩu của bạn. Bạn nên kiểm tra các mật khẩu đã lưu và đổi mật khẩu dùng trên <ph name="ORIGIN" /> ngay bây giờ.</translation>
+<translation id="7495528107193238112">Nội dung này bị chặn. Hãy liên hệ với chủ sở hữu trang web để khắc phục sự cố.</translation>
 <translation id="7498234416455752244">Tiếp tục chỉnh sửa</translation>
 <translation id="7503664977220660814">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chromium khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>
 <translation id="7508255263130623398">ID thiết bị thuộc chính sách trả lại trống hoặc không khớp với ID của thiết bị hiện tại</translation>
@@ -1638,7 +1638,6 @@ Thông tin chi tiết bổ sung:
 <translation id="7844689747373518809">{COUNT,plural, =0{Không có}=1{1 ứng dụng (<ph name="EXAMPLE_APP_1" />)}=2{2 ứng dụng (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# ứng dụng (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ không ẩn thao tác duyệt của bạn với chủ lao động, nhà cung cấp dịch vụ internet hoặc các trang web bạn truy cập.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">Giúp tăng cường khả năng bảo mật trên web cho mọi người bằng cách gửi <ph name="BEGIN_WHITEPAPER_LINK" />URL của một số trang mà bạn truy cập, thông tin hệ thống giới hạn và một số nội dung trang<ph name="END_WHITEPAPER_LINK" /> cho Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Rời khỏi trang web?</translation>
 <translation id="7865448901209910068">Tốc độ tốt nhất</translation>
 <translation id="7874263914261512992">Bạn vừa nhập mật khẩu vào một trang web lừa đảo. Chrome khuyên bạn nên kiểm tra ngay những mật khẩu bạn đã lưu cho <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> và các trang web khác mà bạn sử dụng mật khẩu này.</translation>

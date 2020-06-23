@@ -63,7 +63,7 @@ Connection::Connection() : XProto(this), display_(OpenNewXDisplay()) {
 
     setup_ = Read<Setup>(
         reinterpret_cast<const uint8_t*>(xcb_get_setup(XcbConnection())));
-    default_screen_ = &setup_.roots[DefaultScreen(display_)];
+    default_screen_ = &setup_.roots[DefaultScreenId()];
     default_root_depth_ = &*std::find_if(
         default_screen_->allowed_depths.begin(),
         default_screen_->allowed_depths.end(), [&](const Depth& depth) {
@@ -113,6 +113,13 @@ bool Connection::HasNextResponse() const {
   return !requests_.empty() &&
          CompareSequenceIds(XLastKnownRequestProcessed(display_),
                             requests_.front().sequence) >= 0;
+}
+
+int Connection::DefaultScreenId() const {
+  // This is not part of the setup data as the server has no concept of a
+  // default screen. Instead, it's part of the display name. Eg in
+  // "localhost:0.0", the screen ID is the second "0".
+  return DefaultScreen(display_);
 }
 
 bool Connection::Ready() const {

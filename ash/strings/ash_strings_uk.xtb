@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">Ліворуч</translation>
 <translation id="1479909375538722835">Плаваюче меню спеціальних можливостей</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Увімкнено</translation>
 <translation id="1516740043221086139">Режим "Не турбувати" ввімкнено.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показати налаштування сповіщень. Сповіщення вимкнено для додатка}one{Показати налаштування сповіщень. Сповіщення вимкнено для # додатка}few{Показати налаштування сповіщень. Сповіщення вимкнено для # додатків}many{Показати налаштування сповіщень. Сповіщення вимкнено для # додатків}other{Показати налаштування сповіщень. Сповіщення вимкнено для # додатка}}</translation>
 <translation id="1525508553941733066">ЗАКРИТИ</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">Асистент (завантаження…)</translation>
 <translation id="1838895407229022812">Нічний екран вимкнено.</translation>
 <translation id="1850504506766569011">Wi-Fi вимкнено.</translation>
-<translation id="1859889070386344428">Вимкнено</translation>
 <translation id="1864454756846565995">Пристрій із портом USB типу C (на задній панелі)</translation>
 <translation id="1882897271359938046">Дзеркалювання на <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Розблоковуйте відбитком пальця</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">Натисніть комбінацію клавіш <ph name="KEYBOARD_SHORTCUT" />, щоб змінити розкладку клавіатури.</translation>
 <translation id="2501920221385095727">Залипання клавіш</translation>
 <translation id="2509468283778169019">Режим CAPS LOCK увімкнено</translation>
-<translation id="2519465031217098801">Увімкнено</translation>
 <translation id="2542089167727451762">Натисніть зображення профілю</translation>
 <translation id="255671100581129685">Google Асистент недоступний у сеансі для всіх.</translation>
 <translation id="256712445991462162">закріплену лупу</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">Вставити</translation>
 <translation id="394485226368336402">Налаштування звуку</translation>
 <translation id="3962859241508114581">Попередня композиція</translation>
-<translation id="3965097803111112935">Вимкнено</translation>
 <translation id="397105322502079400">Обчислення...</translation>
 <translation id="3977512764614765090">Акумулятор заряджений на <ph name="PERCENTAGE" />% і продовжує заряджатися.</translation>
 <translation id="3995138139523574647">пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">Підсвічувати місце введення тексту</translation>
 <translation id="5222676887888702881">Вийти</translation>
 <translation id="523505283826916779">Налаштування доступності</translation>
-<translation id="5250225880026334010">Вимкнено</translation>
 <translation id="5260676007519551770">Робочий стіл 4</translation>
 <translation id="5283198616748585639">Додати 1 хв</translation>
 <translation id="528468243742722775">Завершити</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Введіть на пристрої цей ключ доступу: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Пароль</translation>
 <translation id="6665545700722362599">надавати веб-сайтам, додаткам і розширенням дозвіл використовувати служби локації, мікрофон, камеру й інші функції пристрою;</translation>
-<translation id="6669268301501499730">Увімкнено</translation>
 <translation id="6670153871843998651">Робочий стіл 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">Отримати інформацію, пов'язану з виділеним текстом</translation>

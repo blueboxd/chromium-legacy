@@ -201,7 +201,7 @@ public class ClipboardSuggestionProcessorTest {
     @CalledByNativeJavaTest
     public void clipboardSuggestion_thumbnailShouldResizeIfTooLarge() {
         int size = ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_favicon_size);
+                R.dimen.omnibox_suggestion_decoration_image_size);
 
         Bitmap largeBitmap = Bitmap.createBitmap(size * 2, size * 2, Config.ARGB_8888);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();

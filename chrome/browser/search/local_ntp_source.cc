@@ -69,6 +69,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/base/url_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -987,7 +988,7 @@ void LocalNtpSource::StartDataRequest(
         base::StrCat({kSha256, VOICE_JS_INTEGRITY});
     // TODO(dbeam): why is this needed? How does it interact with
     // URLDataSource::GetContentSecurityPolicy*() methods?
-    replacements["contentSecurityPolicy"] = GetContentSecurityPolicy();
+    replacements["contentSecurityPolicy"] = GetContentSecurityPolicyForNTP();
 
     replacements["customizeMenu"] =
         l10n_util::GetStringUTF8(IDS_NTP_CUSTOM_BG_CUSTOMIZE_NTP_LABEL);
@@ -1123,7 +1124,7 @@ bool LocalNtpSource::ShouldAddContentSecurityPolicy() {
   return false;
 }
 
-std::string LocalNtpSource::GetContentSecurityPolicy() {
+std::string LocalNtpSource::GetContentSecurityPolicyForNTP() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   GURL google_base_url = google_util::CommandLineGoogleBaseURL();
 
@@ -1144,8 +1145,9 @@ std::string LocalNtpSource::GetContentSecurityPolicy() {
       VOICE_JS_INTEGRITY,
       search_config_provider_->config_data_integrity().c_str());
 
-  return GetContentSecurityPolicyObjectSrc() +
-         GetContentSecurityPolicyStyleSrc() + GetContentSecurityPolicyImgSrc() +
+  return GetContentSecurityPolicy(network::mojom::CSPDirectiveName::ObjectSrc) +
+         GetContentSecurityPolicy(network::mojom::CSPDirectiveName::StyleSrc) +
+         GetContentSecurityPolicy(network::mojom::CSPDirectiveName::ImgSrc) +
          child_src_csp + script_src_csp;
 }
 

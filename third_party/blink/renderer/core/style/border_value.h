@@ -47,10 +47,7 @@ class BorderValue {
   friend class ComputedStyle;
 
  public:
-  BorderValue()
-      : color_(0),
-        color_is_current_color_(true),
-        style_(static_cast<unsigned>(EBorderStyle::kNone)) {
+  BorderValue() : style_(static_cast<unsigned>(EBorderStyle::kNone)) {
     SetWidth(3);
   }
 
@@ -60,13 +57,8 @@ class BorderValue {
     SetWidth(width);
   }
 
-  bool IsTransparent() const {
-    return !color_is_current_color_ && !color_.Alpha();
-  }
-
   bool operator==(const BorderValue& o) const {
-    return width_ == o.width_ && style_ == o.style_ && color_ == o.color_ &&
-           color_is_current_color_ == o.color_is_current_color_;
+    return width_ == o.width_ && style_ == o.style_ && color_ == o.color_;
   }
 
   // The default width is 3px, but if the style is none we compute a value of 0
@@ -83,15 +75,9 @@ class BorderValue {
 
   bool operator!=(const BorderValue& o) const { return !(*this == o); }
 
-  void SetColor(const StyleColor& color) {
-    color_ = color.Resolve(Color());
-    color_is_current_color_ = color.IsCurrentColor();
-  }
+  void SetColor(const StyleColor& color) { color_ = color; }
 
-  StyleColor GetColor() const {
-    return color_is_current_color_ ? StyleColor::CurrentColor()
-                                   : StyleColor(color_);
-  }
+  StyleColor GetColor() const { return color_; }
 
   float Width() const {
     return static_cast<float>(width_) / kBorderWidthDenominator;
@@ -107,11 +93,6 @@ class BorderValue {
   EBorderStyle Style() const { return static_cast<EBorderStyle>(style_); }
   void SetStyle(EBorderStyle style) { style_ = static_cast<unsigned>(style); }
 
-  bool ColorIsCurrentColor() const { return color_is_current_color_; }
-  void SetColorIsCurrentColor(bool color_is_current_color) {
-    color_is_current_color_ = static_cast<unsigned>(color_is_current_color);
-  }
-
  protected:
   static unsigned WidthToFixedPoint(float width) {
     DCHECK_GE(width, 0);
@@ -122,8 +103,7 @@ class BorderValue {
     return static_cast<unsigned>(width * kBorderWidthDenominator);
   }
 
-  Color color_;
-  unsigned color_is_current_color_ : 1;
+  StyleColor color_;
 
   unsigned width_ : 26;  // Fixed point width
   unsigned style_ : 4;   // EBorderStyle

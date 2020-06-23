@@ -76,6 +76,8 @@ const SAConstants = {
     MALFORMED_DESKTOP: 8,
     MISSING_LOCATION: 9,
     MISSING_KEYBOARD: 10,
+    ROW_TOO_SHORT: 11,
+    MISSING_BASE_NODE: 12,
   },
 
   /**

@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Chromium одоогоор таны камерыг ашиглах боломжгүй байна</translation>
 <translation id="2195025571279539885">Та дараагийн удаад Chromium-г энэ сайтаас <ph name="LANGUAGE_NAME" /> хуудсыг хөрвүүлэхийг зөвшөөрөх үү?</translation>
 <translation id="2590893390871230428">Chromium-н өгөгдлөө синк хийх</translation>
+<translation id="2650312721222849884">Та Chromium-г хаанаас ч ашигласан бай табуудаа харахын тулд синк хийхийг асаана уу</translation>
 <translation id="2730884209570016437">Таны камерыг өөр апп-д ашиглаж байгаа тул үүнийг Chromium ашиглах боломжгүй</translation>
 <translation id="2915596697727466327">Chromium таны нууц үгэнд зөвшөөрөгдсөн хандалт олгохын тулд Нүүрний ID-г ашигладаг.</translation>
 <translation id="3256316712990552818">Chromium руу хуулсан</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Chromium сканнерыг асаах</translation>
 <translation id="4787850887676698916">Таны бусад төхөөрөмжийн Chromium-д нээсэн чихтэй хуудас энд харагдана.</translation>
 <translation id="4999538639245140991">Ta <ph name="SIGNOUT_MANAGED_DOMAIN" />-н удирддаг бүртгэлээс гарч байгаа тул таны Chromium-н өгөгдлийг энэ төхөөрөмжөөс устгана. Таны өгөгдөл таны Google Бүртгэлд хэвээр үлдэнэ.</translation>
+<translation id="5521125884468363740">Та Chromium-г хаанаас ч ашигласан табуудаа харахын тулд нэвтрээд, синк хийхийг асаана уу</translation>
 <translation id="5573014823074921752">Chromium-н зөвлөгөө. Табын бусад сонголтыг харахын тулд дэлгэцийнхээ доод эсвэл дээд хэсэгт байрлах самбараас Табыг харуулах товчлуурыг удаан дарна уу.</translation>
 <translation id="5777187867430702742">Chromium-н хуудас</translation>
 <translation id="5862307444128926510">Chromium-д тавтай морил</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Chromium-н зөвлөгөө. Буцаах, Урагшлуулах болон Хайх зэрэг зарим товчлуур таны дэлгэцийн доод хэсэгт байрладаг боллоо.</translation>
 <translation id="786327964234957808">Та синк хийх бүртгэлийг <ph name="USER_EMAIL1" />-с <ph name="USER_EMAIL2" /> рүү шилжүүлж байна. Таны одоогийн Chromium-н өгөгдлийг <ph name="DOMAIN" />-с удирддаг. Энэ нь таны өгөгдлийг энэ төхөөрөмжөөс устгах хэдий ч эдгээр нь <ph name="USER_EMAIL1" />-д хэвээр үлдэнэ.</translation>
 <translation id="7890287942691234100">Chromium сканнерыг ашиглаж эхлэх</translation>
+<translation id="8013573822802650211">Та Chromium-г хаанаас ч ашигласан бай табуудаа харахын тулд бүх төхөөрөмж дээрээ нэвтэрнэ үү</translation>
 <translation id="8073677936375100957">Энэ төхөөрөмжөөс Chromium-н өгөгдлөө устгах уу?</translation>
 <translation id="8175055321229419309">Зөвлөгөө: <ph name="BEGIN_LINK" />Chromium-г апп-н мөр рүү зөөнө үү<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Өөрийн байршилд тулгуурлан Chromium-г илүү сайн ашиглаж сураарай.</translation>

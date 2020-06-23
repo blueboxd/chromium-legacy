@@ -73,6 +73,10 @@ bool ShouldTriggerSafetyTipFromLookalike(
       return kEnableLookalikeTargetEmbedding.Get();
     case LookalikeUrlMatchType::kSkeletonMatchTop5k:
       return kEnableLookalikeTopSites.Get();
+    case LookalikeUrlMatchType::kFailedSpoofChecks:
+      // For now, no safety tip is shown for domain names that fail spoof checks
+      // and don't have a suggested URL.
+      return false;
     case LookalikeUrlMatchType::kSiteEngagement:
     case LookalikeUrlMatchType::kSkeletonMatchTop500:
       // We should only ever reach these cases when the lookalike interstitial

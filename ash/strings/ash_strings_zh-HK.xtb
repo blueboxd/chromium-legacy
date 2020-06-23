@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">向左</translation>
 <translation id="1479909375538722835">浮動式無障礙選單</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">開啟</translation>
 <translation id="1516740043221086139">「請勿騷擾」模式已開啟。</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{顯示通知設定。已關閉 1 個應用程式的通知}other{顯示通知設定。已關閉 # 個應用程式的通知}}</translation>
 <translation id="1525508553941733066">關閉</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">小幫手 (正在載入…)</translation>
 <translation id="1838895407229022812">「夜燈模式」已關閉。</translation>
 <translation id="1850504506766569011">Wi-Fi 已關閉。</translation>
-<translation id="1859889070386344428">關閉</translation>
 <translation id="1864454756846565995">USB-C 裝置 (後方連接埠)</translation>
 <translation id="1882897271359938046">正在建立<ph name="DISPLAY_NAME" />鏡像</translation>
 <translation id="1885785240814121742">使用指紋解鎖</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">按下 <ph name="KEYBOARD_SHORTCUT" /> 鍵可切換鍵盤配置。</translation>
 <translation id="2501920221385095727">相黏鍵</translation>
 <translation id="2509468283778169019">大寫鍵已啟用</translation>
-<translation id="2519465031217098801">開啟</translation>
 <translation id="2542089167727451762">輕按您的個人檔案圖片</translation>
 <translation id="255671100581129685">「Google 助理」不適用於公開工作階段。</translation>
 <translation id="256712445991462162">固定的放大鏡</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">貼上</translation>
 <translation id="394485226368336402">音訊設定</translation>
 <translation id="3962859241508114581">上一首曲目</translation>
-<translation id="3965097803111112935">關閉</translation>
 <translation id="397105322502079400">計算中…</translation>
 <translation id="3977512764614765090">電量有 <ph name="PERCENTAGE" />%，宜家差緊電。</translation>
 <translation id="3995138139523574647">USB-C 裝置 (右側後方連接埠)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">突顯文字插入符號</translation>
 <translation id="5222676887888702881">登出</translation>
 <translation id="523505283826916779">協助工具設定</translation>
-<translation id="5250225880026334010">關閉</translation>
 <translation id="5260676007519551770">桌面 4</translation>
 <translation id="5283198616748585639">增加 1 分鐘</translation>
 <translation id="528468243742722775">結束</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入這個密碼金鑰：<ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">密碼</translation>
 <translation id="6665545700722362599">授予網站、應用程式和擴充程式使用定位服務，或裝置的麥克風、相機或其他功能的權限</translation>
-<translation id="6669268301501499730">開啟</translation>
 <translation id="6670153871843998651">桌面 3</translation>
 <translation id="6691659475504239918">Search+Shift+H 鍵</translation>
 <translation id="6692996468359469499">取得您選取項目相關資料</translation>

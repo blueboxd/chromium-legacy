@@ -1281,7 +1281,6 @@ LayoutRect LayoutBoxModelObject::LocalCaretRectForEmptyElement(
       alignment = kAlignRight;
       break;
     case ETextAlign::kJustify:
-    case ETextAlign::kInternalSpaceAround:
     case ETextAlign::kStart:
       if (!current_style.IsLeftToRightDirection())
         alignment = kAlignRight;

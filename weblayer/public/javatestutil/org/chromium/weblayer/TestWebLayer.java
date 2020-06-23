@@ -102,4 +102,12 @@ public final class TestWebLayer {
         return (View) ObjectWrapper.unwrap(
                 mITestWebLayer.getInfoBarContainerView(tab.getITab()), View.class);
     }
+
+    public void setIgnoreMissingKeyForTranslateManager(boolean ignore) throws RemoteException {
+        mITestWebLayer.setIgnoreMissingKeyForTranslateManager(ignore);
+    }
+
+    public void forceNetworkConnectivityState(boolean networkAvailable) throws RemoteException {
+        mITestWebLayer.forceNetworkConnectivityState(networkAvailable);
+    }
 }

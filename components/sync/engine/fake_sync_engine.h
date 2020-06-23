@@ -68,8 +68,6 @@ class FakeSyncEngine : public SyncEngine {
   void ActivateProxyDataType(ModelType type) override;
   void DeactivateProxyDataType(ModelType type) override;
 
-  UserShare* GetUserShare() const override;
-
   const SyncStatus& GetDetailedStatus() const override;
 
   void HasUnsyncedItemsForTest(

@@ -19,6 +19,8 @@
       <include name="IDR_PRINT_MANAGEMENT_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_HTML" file="print_job_entry.html" compress="gzip" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_ENTRY_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_job_entry.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_FONTS_CSS_HTML" file="print_management_fonts_css.html" compress="gzip" type="BINDATA"/>
+      <include name="IDR_PRINT_MANAGEMENT_FONTS_CSS_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management_fonts_css.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_SHARED_CSS_HTML" file="print_management_shared_css.html" compress="gzip" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_SHARED_CSS_JS" file="${root_gen_dir}/chromeos/components/print_management/resources/print_management_shared_css.js" use_base_dir="false" compress="gzip" type="BINDATA"/>
       <include name="IDR_PRINT_MANAGEMENT_PRINT_JOB_CLEAR_HISTORY_DIALOG_HTML" file="print_job_clear_history_dialog.html" compress="gzip" type="BINDATA"/>

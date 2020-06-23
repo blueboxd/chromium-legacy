@@ -92,7 +92,12 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
     _statusTextLabel.textColor = UIColor.cr_secondaryLabelColor;
     [self.contentView addSubview:_statusTextLabel];
 
-    _trailingButton = [UIButton buttonWithType:UIButtonTypeDetailDisclosure];
+    _trailingButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [_trailingButton
+        setImage:[[UIImage imageNamed:@"table_view_cell_info"]
+                     imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]
+        forState:UIControlStateNormal];
+    _trailingButton.tintColor = [UIColor colorNamed:kBlueColor];
     _trailingButton.translatesAutoresizingMaskIntoConstraints = NO;
     [_trailingButton
         setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
@@ -210,16 +215,24 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
     }
 
     AddOptionalVerticalPadding(self.contentView, textLayoutGuide,
-                               kTableViewOneLabelCellVerticalSpacing);
+                               kTableViewTwoLabelsCellVerticalSpacing);
   }
   return self;
 }
 
-- (void)setIconImage:(UIImage*)image {
-  BOOL hidden = (image == nil);
-  self.iconImageView.image = image;
+- (void)setIconImage:(UIImage*)image withTintColor:(UIColor*)color {
+  if (color) {
+    self.iconImageView.tintColor = color;
+    self.iconImageView.image =
+        [image imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  } else {
+    self.iconImageView.image = image;
+  }
+
+  BOOL hidden = !image;
   if (hidden == self.iconImageView.hidden)
     return;
+
   self.iconImageView.hidden = hidden;
   if (hidden) {
     self.iconVisibleConstraint.active = NO;
@@ -259,7 +272,7 @@ const CGFloat kCellLabelsWidthProportion = 0.2f;
   self.detailTextLabel.text = nil;
   self.statusTextLabel.text = nil;
   self.trailingButton.tag = 0;
-  [self setIconImage:nil];
+  [self setIconImage:nil withTintColor:nil];
   [_trailingButton removeTarget:nil
                          action:nil
                forControlEvents:[_trailingButton allControlEvents]];

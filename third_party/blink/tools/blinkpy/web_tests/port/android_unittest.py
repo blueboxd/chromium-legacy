@@ -48,8 +48,6 @@ sys.path.insert(0, _DEVIL_ROOT)
 from devil.android import device_utils
 from devil.android.sdk import adb_wrapper
 
-_MOCK_ROOT = os.path.join(get_chromium_src_dir(), 'third_party', 'pymock')
-sys.path.insert(0, _MOCK_ROOT)
 import mock
 
 

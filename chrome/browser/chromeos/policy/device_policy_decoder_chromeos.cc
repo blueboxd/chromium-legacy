@@ -545,6 +545,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                           policies);
     }
   }
+
+  if (policy.has_managed_guest_session_privacy_warnings()) {
+    const em::ManagedGuestSessionPrivacyWarningsProto& container(
+        policy.managed_guest_session_privacy_warnings());
+    if (container.has_enabled()) {
+      policies->Set(key::kManagedGuestSessionPrivacyWarningsEnabled,
+                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                    POLICY_SOURCE_CLOUD, base::Value(container.enabled()),
+                    nullptr);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

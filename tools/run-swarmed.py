@@ -92,22 +92,28 @@ def _Spawn(args):
   if args.device_os:
     trigger_args += ['-d', 'device_os=' + args.device_os]
 
+  runner_args = []
   if not args.no_test_flags:
     # These flags are recognized by our test runners, but do not work
     # when running custom scripts.
-    trigger_args += [
+    runner_args += [
         '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json',
         '--system-log-file=${ISOLATED_OUTDIR}/system_log'
     ]
   if args.gtest_filter:
-    trigger_args.append('--gtest_filter=' + args.gtest_filter)
+    runner_args.append('--gtest_filter=' + args.gtest_filter)
   if args.repeat:
-    trigger_args.append('--repeat=' + args.repeat)
+    runner_args.append('--repeat=' + args.repeat)
   elif args.target_os == 'fuchsia':
     filter_file = \
         'testing/buildbot/filters/fuchsia.' + args.target_name + '.filter'
     if os.path.isfile(filter_file):
-      trigger_args.append('--test-launcher-filter-file=../../' + filter_file)
+      runner_args.append('--test-launcher-filter-file=../../' + filter_file)
+
+  if runner_args:
+    trigger_args.append('--')
+    trigger_args.extend(runner_args)
+
   with open(os.devnull, 'w') as nul:
     subprocess.check_call(trigger_args, stdout=nul)
   return (index, json_file, args)

@@ -564,6 +564,40 @@ public class Tab {
         }
     }
 
+    /**
+     * Returns true if the content displayed in this tab can be translated.
+     *
+     * @since 85
+     */
+    public boolean canTranslate() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mImpl.canTranslate();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Shows the UI which allows the user to translate the content displayed in this tab.
+     *
+     * @since 85
+     */
+    public void showTranslateUi() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            mImpl.showTranslateUi();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     private static final class WebMessageCallbackClientImpl extends IWebMessageCallbackClient.Stub {
         private final WebMessageCallback mCallback;
         // Maps from id of IWebMessageReplyProxy to WebMessageReplyProxy. This is done to avoid AIDL

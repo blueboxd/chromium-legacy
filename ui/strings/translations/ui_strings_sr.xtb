@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Калибрација је довршена</translation>
 <translation id="252373100621549798">Непознати приказ</translation>
 <translation id="2545651323591713692">Одложите</translation>
+<translation id="2570734079541893434">Управљајте подешавањима</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{за 1 ч}one{за # ч}few{за # ч}other{за # ч}}</translation>
 <translation id="2583543531130364912">Калибрација додирног екрана</translation>
 <translation id="2666092431469916601">Врх</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Премештено је на <ph name="PAGE_NUMBER" />. страницу, <ph name="ROW_NUMBER" />. ред, <ph name="COLUMN_NUMBER" />. колона.</translation>
 <translation id="7879499977785298635">Не блокирај</translation>
 <translation id="7907591526440419938">Отварање датотеке</translation>
+<translation id="7952747673138230804">Chrome ОС приказује предлоге за нов садржај за истраживање. Шаље статистику да би се побољшао квалитет само ако сте одабрали да делите податке о коришћењу. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Више од 1 непрочитаног обавештења}one{Више од # непрочитаног обавештења}few{Више од # непрочитана обавештења}other{Више од # непрочитаних обавештења}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{за 1 мин}one{за # мин}few{за # мин}other{за # мин}}</translation>

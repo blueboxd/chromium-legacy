@@ -26,6 +26,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -100,7 +101,8 @@ void AddEduStrings(content::WebUIDataSource* source,
 content::WebUIDataSource* CreateWebUIDataSource() {
   content::WebUIDataSource* source =
         content::WebUIDataSource::Create(chrome::kChromeUIChromeSigninHost);
-  source->OverrideContentSecurityPolicyObjectSrc("object-src chrome:;");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
   source->UseStringsJs();
 
   source->SetDefaultResource(IDR_INLINE_LOGIN_HTML);
@@ -144,7 +146,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   webui::AddResourcePathsBulk(source, kResources);
 
 #if defined(OS_CHROMEOS)
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
   webui::SetupWebUIDataSource(
       source,

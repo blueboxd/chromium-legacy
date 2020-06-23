@@ -48,6 +48,7 @@ float FloatValueForLength(const Length& length, float maximum_value) {
       return length.NonNanCalculatedValue(LayoutUnit(maximum_value));
     case Length::kMinContent:
     case Length::kMaxContent:
+    case Length::kMinIntrinsic:
     case Length::kFitContent:
     case Length::kExtendToZoom:
     case Length::kDeviceWidth:
@@ -76,6 +77,7 @@ LayoutUnit MinimumValueForLengthInternal(const Length& length,
     case Length::kFixed:
     case Length::kMinContent:
     case Length::kMaxContent:
+    case Length::kMinIntrinsic:
     case Length::kFitContent:
     case Length::kExtendToZoom:
     case Length::kDeviceWidth:
@@ -99,6 +101,7 @@ LayoutUnit ValueForLength(const Length& length, LayoutUnit maximum_value) {
       return maximum_value;
     case Length::kMinContent:
     case Length::kMaxContent:
+    case Length::kMinIntrinsic:
     case Length::kFitContent:
     case Length::kExtendToZoom:
     case Length::kDeviceWidth:

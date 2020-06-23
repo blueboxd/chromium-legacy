@@ -44,6 +44,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1346748346194534595">Direita</translation>
 <translation id="1351937230027495976">Reduzir menu</translation>
 <translation id="1383876407941801731">Pesquisar</translation>
+<translation id="1391102559483454063">Ativado</translation>
 <translation id="1419738280318246476">Desbloqueie o dispositivo para realizar a ação de notificação.</translation>
 <translation id="1420408895951708260">Ativar/desativar Luz noturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sim</translation>
@@ -52,7 +53,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1479909375538722835">Menu de acessibilidade flutuante</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Ativado</translation>
 <translation id="1516740043221086139">O modo Não incomodar está ativado.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar definições de notificação. As notificações estão desativadas para uma aplicação}other{Mostrar definições de notificação. As notificações estão desativadas para # aplicações}}</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
@@ -79,7 +79,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="1836215606488044471">Assistente (a carregar...)</translation>
 <translation id="1838895407229022812">A Luz noturna está desativada.</translation>
 <translation id="1850504506766569011">A ligação Wi-Fi está desativada.</translation>
-<translation id="1859889070386344428">Desativado</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloquear com impressão digital</translation>
@@ -138,7 +137,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="2484513351006226581">Prima <ph name="KEYBOARD_SHORTCUT" /> para mudar o esquema do teclado.</translation>
 <translation id="2501920221385095727">Teclas aderentes</translation>
 <translation id="2509468283778169019">CAPS LOCK está ativado</translation>
-<translation id="2519465031217098801">Ativado</translation>
 <translation id="2542089167727451762">Toque na imagem do perfil.</translation>
 <translation id="255671100581129685">O Assistente Google não está disponível para sessões públicas.</translation>
 <translation id="256712445991462162">a lupa ancorada</translation>
@@ -174,6 +172,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="2996462380875591307">Lupa ancorada ativada. Prima Ctrl + Pesquisa + D novamente para a desativar.</translation>
 <translation id="3000461861112256445">Áudio mono</translation>
 <translation id="3009178788565917040">Saída</translation>
+<translation id="3033545621352269033">Ativado</translation>
 <translation id="3051128274746680507">O seu perfil de utilizador supervisionado será removido brevemente. Inicie sessão para saber mais.</translation>
 <translation id="3055162170959710888">Utilizou este dispositivo durante <ph name="USED_TIME" /> hoje.</translation>
 <translation id="3076778413190775903">Tabuleiro do estado, hora <ph name="TIME" />,
@@ -261,7 +260,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="3943857333388298514">Colar</translation>
 <translation id="394485226368336402">Definições de áudio</translation>
 <translation id="3962859241508114581">Faixa anterior</translation>
-<translation id="3965097803111112935">Desativado</translation>
 <translation id="397105322502079400">A calcular...</translation>
 <translation id="3977512764614765090">A bateria está <ph name="PERCENTAGE" />% cheia e a carregar.</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (porta traseira do lado direito)</translation>
@@ -278,6 +276,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4146833061457621061">Tocar música</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4195877955194704651">Botão de cliques automáticos</translation>
+<translation id="4197790712631116042">Desativado</translation>
 <translation id="4215497585250573029">Definições da VPN</translation>
 <translation id="4217571870635786043">Ditado</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -308,6 +307,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="4513946894732546136">Comentários</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> até estar totalmente carregada</translation>
+<translation id="4560576029703263363">Ativado</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ocultar palavra-passe</translation>
 <translation id="4570957409596482333">Botão Selecionar para falar</translation>
@@ -354,11 +354,11 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="5207949376430453814">Realçar cursor do texto</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="523505283826916779">Definições de acessibilidade</translation>
-<translation id="5250225880026334010">Desativado</translation>
 <translation id="5260676007519551770">Secretária 4</translation>
 <translation id="5283198616748585639">Adicionar 1 min</translation>
 <translation id="528468243742722775">Sair</translation>
 <translation id="5286194356314741248">A procurar</translation>
+<translation id="5297704307811127955">Desativado</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira do lado esquerdo)</translation>
@@ -473,7 +473,6 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="6650933572246256093">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar. Introduza esta chave nesse dispositivo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Palavra-passe</translation>
 <translation id="6665545700722362599">Conceda aos Websites, às aplicações e às extensões autorização para utilizar os Serviços de localização, o microfone, a câmara ou outras funcionalidades do dispositivo.</translation>
-<translation id="6669268301501499730">Ativado</translation>
 <translation id="6670153871843998651">Secretária 3</translation>
 <translation id="6691659475504239918">Pesquisa + Shift + H</translation>
 <translation id="6692996468359469499">Obtenha informações relacionadas com a sua seleção</translation>
@@ -605,6 +604,7 @@ Eis alguns exemplos do que pode experimentar para começar.</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />, bateria do telemóvel: <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Prima Enter para desbloquear para <ph name="USER_EMAIL_ADDRESS" />.</translation>
 <translation id="8261506727792406068">Eliminar</translation>
+<translation id="828708037801473432">Desativado</translation>
 <translation id="8297006494302853456">Fraca</translation>
 <translation id="8308637677604853869">Menu anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

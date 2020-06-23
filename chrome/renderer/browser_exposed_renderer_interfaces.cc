@@ -21,13 +21,13 @@
 #include "components/spellcheck/renderer/spellcheck.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #include "base/allocator/buildflags.h"
 #if BUILDFLAG(USE_TCMALLOC)
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
 #include "chrome/renderer/performance_manager/mechanisms/tcmalloc_tunables_impl.h"
 #endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 namespace {
 
@@ -62,14 +62,14 @@ void ExposeChromeRendererInterfacesToBrowser(
   binders->Add(base::BindRepeating(&BindWebRTCLoggingAgent, client),
                base::SequencedTaskRunnerHandle::Get());
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #if BUILDFLAG(USE_TCMALLOC)
   binders->Add(
       base::BindRepeating(
           &performance_manager::mechanism::TcmallocTunablesImpl::Create),
       base::SequencedTaskRunnerHandle::Get());
 #endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   binders->Add(base::BindRepeating(&BindSpellChecker, client),

@@ -133,6 +133,11 @@ void MessageCenterController::SetArcNotificationManagerInstance(
     observer.OnSetArcNotificationsInstance(arc_notification_manager_.get());
 }
 
+ArcNotificationManagerBase*
+MessageCenterController::GetArcNotificationManagerInstance() {
+  return arc_notification_manager_.get();
+}
+
 void MessageCenterController::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

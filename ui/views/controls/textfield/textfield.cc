@@ -1429,7 +1429,7 @@ bool Textfield::GetAcceleratorForCommandId(int command_id,
 void Textfield::ExecuteCommand(int command_id, int event_flags) {
   if (text_services_context_menu_ &&
       text_services_context_menu_->SupportsCommand(command_id)) {
-    text_services_context_menu_->ExecuteCommand(command_id);
+    text_services_context_menu_->ExecuteCommand(command_id, event_flags);
     return;
   }
 

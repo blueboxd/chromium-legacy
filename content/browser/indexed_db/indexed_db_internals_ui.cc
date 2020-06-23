@@ -27,6 +27,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "storage/common/database/database_identifier.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "url/origin.h"
@@ -50,7 +51,8 @@ IndexedDBInternalsUI::IndexedDBInternalsUI(WebUI* web_ui)
                                         base::Unretained(this)));
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIIndexedDBInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
   source->UseStringsJs();
   source->AddResourcePath("indexeddb_internals.js",

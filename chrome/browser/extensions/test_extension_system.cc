@@ -106,8 +106,8 @@ ServiceWorkerManager* TestExtensionSystem::service_worker_manager() {
   return nullptr;
 }
 
-SharedUserScriptMaster* TestExtensionSystem::shared_user_script_master() {
-  return NULL;
+SharedUserScriptManager* TestExtensionSystem::shared_user_script_manager() {
+  return nullptr;
 }
 
 StateStore* TestExtensionSystem::state_store() {

@@ -4,6 +4,8 @@
 
 #include "ui/views/controls/views_text_services_context_menu_base.h"
 
+#include <memory>
+
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -41,10 +43,6 @@ ViewsTextServicesContextMenuBase::ViewsTextServicesContextMenuBase(
 
 ViewsTextServicesContextMenuBase::~ViewsTextServicesContextMenuBase() = default;
 
-bool ViewsTextServicesContextMenuBase::SupportsCommand(int command_id) const {
-  return command_id == IDS_CONTENT_CONTEXT_EMOJI;
-}
-
 bool ViewsTextServicesContextMenuBase::GetAcceleratorForCommandId(
     int command_id,
     ui::Accelerator* accelerator) const {
@@ -72,17 +70,28 @@ bool ViewsTextServicesContextMenuBase::IsCommandIdChecked(
 
 bool ViewsTextServicesContextMenuBase::IsCommandIdEnabled(
     int command_id) const {
-  if (command_id == IDS_CONTENT_CONTEXT_EMOJI)
-    return true;
-
-  return false;
+  return command_id == IDS_CONTENT_CONTEXT_EMOJI;
 }
 
-void ViewsTextServicesContextMenuBase::ExecuteCommand(int command_id) {
+void ViewsTextServicesContextMenuBase::ExecuteCommand(int command_id,
+                                                      int event_flags) {
   if (command_id == IDS_CONTENT_CONTEXT_EMOJI) {
-    client()->GetWidget()->ShowEmojiPanel();
+    client_->GetWidget()->ShowEmojiPanel();
     UMA_HISTOGRAM_BOOLEAN(kViewsTextServicesContextMenuEmoji, true);
   }
 }
+
+bool ViewsTextServicesContextMenuBase::SupportsCommand(int command_id) const {
+  return command_id == IDS_CONTENT_CONTEXT_EMOJI;
+}
+
+#if !defined(OS_MACOSX)
+// static
+std::unique_ptr<ViewsTextServicesContextMenu>
+ViewsTextServicesContextMenu::Create(ui::SimpleMenuModel* menu,
+                                     Textfield* client) {
+  return std::make_unique<ViewsTextServicesContextMenuBase>(menu, client);
+}
+#endif
 
 }  // namespace views

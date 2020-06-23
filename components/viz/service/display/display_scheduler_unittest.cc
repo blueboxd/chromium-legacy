@@ -256,8 +256,8 @@ TEST_F(DisplaySchedulerTest, ResizeHasLateDeadlineUntilNewRootSurface) {
   scheduler_.BeginFrameDeadlineForTest();
 
   // Verify deadline goes back to normal after resize.
-  late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
   AdvanceTimeAndBeginFrameForTest({root_surface_id2, sid1});
+  late_deadline = now_src().NowTicks() + BeginFrameArgs::DefaultInterval();
   SurfaceDamaged(sid1);
   EXPECT_GT(late_deadline, scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   SurfaceDamaged(root_surface_id2);
@@ -734,11 +734,7 @@ TEST_F(DisplaySchedulerTest, DidSwapBuffers) {
   // Damage from previous BeginFrame should cary over, so don't damage again.
   scheduler_.DidReceiveSwapBuffersAck();
   AdvanceTimeAndBeginFrameForTest({sid2});
-  base::TimeTicks expected_deadline =
-      last_begin_frame_args_.deadline -
-      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(
-          last_begin_frame_args_.interval);
-  EXPECT_EQ(expected_deadline,
+  EXPECT_EQ(last_begin_frame_args_.deadline,
             scheduler_.DesiredBeginFrameDeadlineTimeForTest());
   // Still waiting for surface 2. Once it updates, deadline should trigger
   // immediately again.

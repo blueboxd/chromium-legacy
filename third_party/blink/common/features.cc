@@ -51,8 +51,8 @@ const base::Feature kFreezeUserAgent{"FreezeUserAgent",
 
 // When enabled, use the maximum possible bounds in compositing overlap testing
 // for fixed position elements.
-const base::Feature kMaxOverlapBoundsForFixed{
-    "MaxOverlapBoundsForFixed", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kMaxOverlapBoundsForFixed{"MaxOverlapBoundsForFixed",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable Display Locking JavaScript APIs.
 const base::Feature kDisplayLocking{"DisplayLocking",
@@ -483,7 +483,7 @@ const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kCSSReducedFontLoadingInvalidations{
-    "CSSReducedFontLoadingInvalidations", base::FEATURE_DISABLED_BY_DEFAULT};
+    "CSSReducedFontLoadingInvalidations", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kCSSReducedFontLoadingLayoutInvalidations{
     "CSSReducedFontLoadingLayoutInvalidations",
     base::FEATURE_DISABLED_BY_DEFAULT};

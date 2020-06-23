@@ -154,7 +154,8 @@ public class SplashActivity extends Activity {
         Bundle metadata = WebApkUtils.readMetaData(this);
         updateStatusBar(metadata);
 
-        int orientation = WebApkUtils.computeScreenLockOrientationFromMetaData(this, metadata);
+        int orientation =
+                WebApkUtils.computeNaturalScreenLockOrientationFromMetaData(this, metadata);
         if (orientation != ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED) {
             setRequestedOrientation(orientation);
         }

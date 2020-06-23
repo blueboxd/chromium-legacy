@@ -44,6 +44,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1346748346194534595">W prawo</translation>
 <translation id="1351937230027495976">Zwiń menu</translation>
 <translation id="1383876407941801731">Szukaj</translation>
+<translation id="1391102559483454063">Włączono</translation>
 <translation id="1419738280318246476">Odblokuj urządzenie, by zareagować na powiadomienie</translation>
 <translation id="1420408895951708260">Włącz lub wyłącz Podświetlenie nocne. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Tak</translation>
@@ -52,7 +53,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1479909375538722835">Pływające menu ułatwień dostępu</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Włączono</translation>
 <translation id="1516740043221086139">Tryb Nie przeszkadzać jest włączony.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Pokaż ustawienia powiadomień. Jedna aplikacja ma wyłączone powiadomienia.}few{Pokaż ustawienia powiadomień. # aplikacje mają wyłączone powiadomienia.}many{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}other{Pokaż ustawienia powiadomień. # aplikacji ma wyłączone powiadomienia.}}</translation>
 <translation id="1525508553941733066">ZAMKNIJ</translation>
@@ -79,7 +79,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="1836215606488044471">Asystent (ładuję…)</translation>
 <translation id="1838895407229022812">Podświetlenie nocne jest wyłączone.</translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
-<translation id="1859889070386344428">Wyłączono</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odblokuj odciskiem palca</translation>
@@ -138,7 +137,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2484513351006226581">Naciśnij <ph name="KEYBOARD_SHORTCUT" />, by przełączyć układ klawiatury.</translation>
 <translation id="2501920221385095727">Klawisze trwałe</translation>
 <translation id="2509468283778169019">CAPS LOCK jest włączony.</translation>
-<translation id="2519465031217098801">Włączono</translation>
 <translation id="2542089167727451762">Kliknij swoje zdjęcie profilowe</translation>
 <translation id="255671100581129685">Asystent Google jest niedostępny w sesji publicznej.</translation>
 <translation id="256712445991462162">Lupa zadokowana</translation>
@@ -174,6 +172,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2996462380875591307">Lupa zadokowana została włączona. Aby ją wyłączyć, naciśnij ponownie Ctrl+Search+D.</translation>
 <translation id="3000461861112256445">Dźwięk mono</translation>
 <translation id="3009178788565917040">Urządzenie wyjściowe</translation>
+<translation id="3033545621352269033">Włączono</translation>
 <translation id="3051128274746680507">Profil nadzorowanego przez Ciebie użytkownika zostanie wkrótce usunięty. Zaloguj się, by dowiedzieć się więcej.</translation>
 <translation id="3055162170959710888">Urządzenie było dziś przez Ciebie używane przez <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Zasobnik stanu, godzina <ph name="TIME" />,
@@ -261,7 +260,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="3943857333388298514">Wklej</translation>
 <translation id="394485226368336402">Ustawienia dźwięku</translation>
 <translation id="3962859241508114581">Poprzedni utwór</translation>
-<translation id="3965097803111112935">Wyłączono</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3977512764614765090">Naładowanie baterii: <ph name="PERCENTAGE" />%. Trwa ładowanie.</translation>
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
@@ -278,6 +276,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4146833061457621061">Włącz muzykę</translation>
 <translation id="4181841719683918333">Języki</translation>
 <translation id="4195877955194704651">Automatyczne klikanie przycisku</translation>
+<translation id="4197790712631116042">Wyłączono</translation>
 <translation id="4215497585250573029">Ustawienia sieci VPN</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -308,6 +307,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="4513946894732546136">Twoja opinia</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do pełnego naładowania</translation>
+<translation id="4560576029703263363">Włączono</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Ukryj hasło</translation>
 <translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
@@ -354,11 +354,11 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="5207949376430453814">Podświetlaj kursor tekstu</translation>
 <translation id="5222676887888702881">Wyloguj się</translation>
 <translation id="523505283826916779">Ustawienia ułatwień dostępu</translation>
-<translation id="5250225880026334010">Wyłączono</translation>
 <translation id="5260676007519551770">Biurko 4</translation>
 <translation id="5283198616748585639">Dodaj 1 min</translation>
 <translation id="528468243742722775">Zakończ</translation>
 <translation id="5286194356314741248">Skanowanie</translation>
+<translation id="5297704307811127955">Wyłączono</translation>
 <translation id="5302048478445481009">Język</translation>
 <translation id="5313326810920013265">Ustawienia Bluetooth</translation>
 <translation id="5331975486040154427">Urządzenie USB-C (tylny port na lewym boku)</translation>
@@ -473,7 +473,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="6650933572246256093">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować. Wpisz na nim ten klucz: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Hasło</translation>
 <translation id="6665545700722362599">przyznawać stronom internetowym, aplikacjom i rozszerzeniom dostęp do usług lokalizacyjnych, mikrofonu bądź aparatu na urządzeniu lub do innych funkcji;</translation>
-<translation id="6669268301501499730">Włączono</translation>
 <translation id="6670153871843998651">Biurko 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">Uzyskiwanie informacji związanych z zaznaczoną treścią</translation>
@@ -605,6 +604,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, bateria telefonu: <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Naciśnij Enter, by odblokować dla: <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Usuń</translation>
+<translation id="828708037801473432">Wyłączono</translation>
 <translation id="8297006494302853456">Słaby</translation>
 <translation id="8308637677604853869">Poprzednie menu</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" /> <ph name="GET_STARTED" /></translation>

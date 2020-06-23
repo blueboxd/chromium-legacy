@@ -9,7 +9,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_CHROMEOS)
 #include "base/allocator/buildflags.h"
 #endif
 
@@ -58,10 +58,6 @@ TrimOnMemoryPressureParams TrimOnMemoryPressureParams::GetParams() {
   return params;
 }
 
-#endif  // defined(OS_CHROMEOS)
-
-#if defined(OS_LINUX)
-
 #if BUILDFLAG(USE_TCMALLOC)
 // This flag will allow the browser process to adjust the tcmalloc tunables to
 // balance performance and memory utilization.
@@ -78,7 +74,7 @@ const base::FeatureParam<int> kDynamicTuningScaleInvisibleTimeSec = {
     &kDynamicTcmallocTuning, "DynamicTcmallocScaleInvisibleTimeSec", -1};
 #endif  // BUILDFLAG(USE_TCMALLOC)
 
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
 const base::Feature kPageFreezingFromPerformanceManager{

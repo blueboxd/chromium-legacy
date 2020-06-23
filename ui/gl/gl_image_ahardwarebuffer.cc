@@ -61,7 +61,10 @@ class GLImageAHardwareBuffer::ScopedHardwareBufferFenceSyncImpl
   ScopedHardwareBufferFenceSyncImpl(
       scoped_refptr<GLImageAHardwareBuffer> image,
       base::android::ScopedHardwareBufferHandle handle)
-      : ScopedHardwareBufferFenceSync(std::move(handle), base::ScopedFD()),
+      : ScopedHardwareBufferFenceSync(std::move(handle),
+                                      base::ScopedFD(),
+                                      base::ScopedFD(),
+                                      false /* is_video */),
         image_(std::move(image)) {}
   ~ScopedHardwareBufferFenceSyncImpl() override = default;
 

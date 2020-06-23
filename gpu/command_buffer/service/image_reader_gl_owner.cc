@@ -56,7 +56,9 @@ class ImageReaderGLOwner::ScopedHardwareBufferImpl
                            base::android::ScopedHardwareBufferHandle handle,
                            base::ScopedFD fence_fd)
       : base::android::ScopedHardwareBufferFenceSync(std::move(handle),
-                                                     std::move(fence_fd)),
+                                                     std::move(fence_fd),
+                                                     base::ScopedFD(),
+                                                     true /* is_video */),
         texture_owner_(std::move(texture_owner)),
         image_(image),
         task_runner_(base::ThreadTaskRunnerHandle::Get()) {

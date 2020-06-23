@@ -477,8 +477,6 @@ static CSSValueID TextAlignResolvingStartAndEnd(CSSValueID text_align,
       return CSSValueID::kCenter;
     case CSSValueID::kJustify:
       return CSSValueID::kJustify;
-    case CSSValueID::kInternalSpaceAround:
-      return CSSValueID::kInternalSpaceAround;
     case CSSValueID::kLeft:
     case CSSValueID::kWebkitLeft:
       return CSSValueID::kLeft;

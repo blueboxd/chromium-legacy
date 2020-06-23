@@ -1,15 +1,22 @@
-<style include="cr-shared-style print-management-shared">
+<style include="cr-shared-style print-management-shared print-management-fonts">
   html {
     background-color: var(--cros-default-bg-color);
   }
 
   .column-headers {
-    color: var(--google-grey-700);
+    @apply --print-management-header-font;
+    color: var(--print-management-header-text-color);
+    line-height: 20px;
     min-height: var(--cr-section-min-height);
   }
 
   .main-container {
     --cr-centered-card-max-width: 960px;
+  }
+
+  #clearAllButton {
+    @apply --print-management-button-font;
+    color: var(--print-management-button-text-color);
   }
 
   #clearAllContainer {
@@ -21,11 +28,11 @@
   }
 
   #headerContainer {
-    border-bottom: var(--cr-separator-line);
+    border-bottom: 1px solid rgba(0,0,0,0.14); /* 14% black */
     display: flex;
     justify-content: space-between;
     padding-bottom: 20px;
-    padding-top: 64px;
+    padding-top: 32px;
   }
 
   #infoIcon {
@@ -34,6 +41,13 @@
     --iron-icon-height: 13px;
     --iron-icon-width: 13px;
     margin-inline-start: 8px;
+  }
+
+  #printJobTitle {
+    @apply --print-management-title-font;
+    color: var(--print-management-title-text-color);
+    line-height: 28px;
+    margin: 0;
   }
 
   #ongoingEmptyState {
@@ -58,7 +72,7 @@
 
 <div class="main-container cr-centered-card-container">
   <div id="headerContainer">
-    <h1>[[i18n('printJobTitle')]]</h1>
+    <h1 id="printJobTitle">[[i18n('printJobTitle')]]</h1>
     <div id="clearAllContainer">
       <template is="dom-if" if="[[!deletePrintJobHistoryAllowedByPolicy_]]">
         <cr-policy-indicator id="policyIcon" indicator-type="userPolicy">

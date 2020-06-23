@@ -59,7 +59,6 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
-import org.chromium.ui.modelutil.MVCListAdapter;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -87,9 +86,9 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private final AutocompleteDelegate mDelegate;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final PropertyModel mListPropertyModel;
+    private final ModelList mSuggestionModels;
     private final List<Runnable> mDeferredNativeRunnables = new ArrayList<Runnable>();
     private final Handler mHandler;
-    private List<DropdownItemViewInfo> mViewInfoList;
     private AutocompleteResult mAutocompleteResult;
 
     private ToolbarDataProvider mDataProvider;
@@ -100,8 +99,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private AutocompleteController mAutocomplete;
     private long mUrlFocusTime;
     private boolean mEnableAdaptiveSuggestionsCount;
-    @Px
-    private int mMaximumSuggestionsListHeight;
     private boolean mEnableDeferredKeyboardPopup;
     private boolean mPendingKeyboardShowDecision;
 
@@ -139,13 +136,12 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     private long mLastActionUpTimestamp;
     private boolean mIgnoreOmniboxItemSelection = true;
-    private boolean mUseDarkColors = true;
-    private int mLayoutDirection;
 
     private WindowAndroid mWindowAndroid;
     private ActivityLifecycleDispatcher mLifecycleDispatcher;
     private ActivityTabTabObserver mTabObserver;
     private final DropdownItemViewInfoListBuilder mDropdownViewInfoListBuilder;
+    private final DropdownItemViewInfoListManager mDropdownViewInfoListManager;
 
     public AutocompleteMediator(Context context, AutocompleteDelegate delegate,
             UrlBarEditingTextStateProvider textProvider,
@@ -158,9 +154,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mAutocomplete = autocompleteController;
         mAutocomplete.setOnSuggestionsReceivedListener(this);
         mHandler = handler;
-        mViewInfoList = new ArrayList<>();
+        mSuggestionModels = mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
         mAutocompleteResult = new AutocompleteResult(null, null);
         mDropdownViewInfoListBuilder = new DropdownItemViewInfoListBuilder();
+        mDropdownViewInfoListManager = new DropdownItemViewInfoListManager(mSuggestionModels);
+
         mOverviewModeObserver = new EmptyOverviewModeObserver() {
             @Override
             public void onOverviewModeStartedShowing(boolean showToolbar) {
@@ -205,7 +203,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     @Override
     public void onStopWithNative() {
-        recordSuggestionsShown();
+        mDropdownViewInfoListManager.recordSuggestionsShown();
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
@@ -219,12 +217,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     ModelList getSuggestionModelList() {
-        return mListPropertyModel.get(SuggestionListProperties.SUGGESTION_MODELS);
-    }
-
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    List<DropdownItemViewInfo> getSuggestionViewInfoListForTest() {
-        return mViewInfoList;
+        return mSuggestionModels;
     }
 
     private Profile getCurrentProfile() {
@@ -241,28 +234,6 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         return suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_URL
                 || suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_TEXT
                 || suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE;
-    }
-
-    /**
-     * Record histograms for presented suggestions.
-     */
-    private void recordSuggestionsShown() {
-        int richEntitiesCount = 0;
-        ModelList currentModels = getSuggestionModelList();
-        for (int i = 0; i < currentModels.size(); i++) {
-            DropdownItemViewInfo info = (DropdownItemViewInfo) currentModels.get(i);
-            info.processor.recordItemPresented(info.model);
-
-            if (info.type == OmniboxSuggestionUiType.ENTITY_SUGGESTION) {
-                richEntitiesCount++;
-            }
-        }
-
-        // Note: valid range for histograms must start with (at least) 1. This does not prevent us
-        // from reporting 0 as a count though - values lower than 'min' fall in the 'underflow'
-        // bucket, while values larger than 'max' will be reported in 'overflow' bucket.
-        RecordHistogram.recordLinearCountHistogram("Omnibox.RichEntityShown", richEntitiesCount, 1,
-                OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS, OMNIBOX_HISTOGRAMS_MAX_SUGGESTIONS + 1);
     }
 
     /**
@@ -326,13 +297,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @see View#setLayoutDirection(int)
      */
     void setLayoutDirection(int layoutDirection) {
-        if (mLayoutDirection == layoutDirection) return;
-        mLayoutDirection = layoutDirection;
-        ModelList currentModels = getSuggestionModelList();
-        for (int i = 0; i < currentModels.size(); i++) {
-            PropertyModel model = currentModels.get(i).model;
-            model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
-        }
+        mDropdownViewInfoListManager.setLayoutDirection(layoutDirection);
     }
 
     /**
@@ -341,13 +306,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      * @param isIncognito Whether the UI is for incognito mode or not.
      */
     void updateVisualsForState(boolean useDarkColors, boolean isIncognito) {
-        mUseDarkColors = useDarkColors;
+        mDropdownViewInfoListManager.setUseDarkColors(useDarkColors);
         mListPropertyModel.set(SuggestionListProperties.IS_INCOGNITO, isIncognito);
-        ModelList currentModels = getSuggestionModelList();
-        for (int i = 0; i < currentModels.size(); i++) {
-            PropertyModel model = currentModels.get(i).model;
-            model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
-        }
     }
 
     /**
@@ -449,7 +409,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
                 });
             }
         } else {
-            if (mNativeInitialized) recordSuggestionsShown();
+            if (mNativeInitialized) mDropdownViewInfoListManager.recordSuggestionsShown();
 
             setSuggestionVisibilityState(SuggestionVisibilityState.DISALLOWED);
             mHasStartedNewOmniboxEditSession = false;
@@ -861,7 +821,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
      */
     private boolean shouldShowSoftKeyboard() {
         return !mEnableDeferredKeyboardPopup
-                || mViewInfoList.size() <= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW;
+                || mDropdownViewInfoListManager.getSuggestionsCount()
+                <= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW;
     }
 
     @Override
@@ -893,157 +854,23 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
         if (!mAutocompleteResult.equals(autocompleteResult)) {
             mAutocompleteResult = autocompleteResult;
-            mViewInfoList =
+            List<DropdownItemViewInfo> viewInfoList =
                     mDropdownViewInfoListBuilder.buildDropdownViewInfoList(autocompleteResult);
+            mDropdownViewInfoListManager.setSourceViewInfoList(viewInfoList);
             mDelegate.onSuggestionsChanged(inlineAutocompleteText);
-            updateSuggestionsList(mMaximumSuggestionsListHeight);
+            updateOmniboxSuggestionsVisibility();
         }
         resolvePendingKeyboardShowDecision();
     }
 
     @Override
     public void setGroupVisibility(int groupId, boolean state) {
-        if (state) {
-            insertSuggestionsForGroup(groupId);
-        } else {
-            removeSuggestionsForGroup(groupId);
-        }
-    }
-
-    /**
-     * @return True, if view info is a header for the specific group of suggestions.
-     */
-    private boolean isGroupHeaderWithId(DropdownItemViewInfo info, int groupId) {
-        return (info.type == OmniboxSuggestionUiType.HEADER && info.groupId == groupId);
-    }
-
-    /**
-     * Remove all suggestions that belong to specific group.
-     *
-     * @param groupId Group ID of suggestions that should be removed.
-     */
-    private void removeSuggestionsForGroup(int groupId) {
-        final ModelList modelList = getSuggestionModelList();
-        int index;
-        int count = 0;
-
-        for (index = modelList.size() - 1; index >= 0; index--) {
-            DropdownItemViewInfo viewInfo = (DropdownItemViewInfo) modelList.get(index);
-            if (isGroupHeaderWithId(viewInfo, groupId)) {
-                break;
-            } else if (viewInfo.groupId == groupId) {
-                count++;
-            } else if (count > 0 && viewInfo.groupId != groupId) {
-                break;
-            }
-        }
-        if (count > 0) {
-            // Skip group header when dropping items.
-            modelList.removeRange(index + 1, count);
-        }
-    }
-
-    /**
-     * Insert all suggestions that belong to specific group.
-     *
-     * @param groupId Group ID of suggestions that should be removed.
-     */
-    private void insertSuggestionsForGroup(int groupId) {
-        final ModelList offeredViewInfoList = getSuggestionModelList();
-        int insertPosition = 0;
-
-        // Search for the insert position.
-        // Iterate through all *available* view infos until we find the first element that we
-        // should insert. To determine the insertion point we skip past all *displayed* view
-        // infos that were also preceding elements that we want to insert.
-        for (; insertPosition < offeredViewInfoList.size(); insertPosition++) {
-            final DropdownItemViewInfo viewInfo =
-                    (DropdownItemViewInfo) offeredViewInfoList.get(insertPosition);
-            // Insert suggestions directly below their header.
-            if (isGroupHeaderWithId(viewInfo, groupId)) break;
-        }
-
-        // Check if reached the end of the list.
-        if (insertPosition == offeredViewInfoList.size()) return;
-
-        // insertPosition points to header - advance the index and see if we already have
-        // elements belonging to that group on the list.
-        insertPosition++;
-        if (insertPosition < offeredViewInfoList.size()
-                && ((DropdownItemViewInfo) offeredViewInfoList.get(insertPosition)).groupId
-                        == groupId) {
-            return;
-        }
-
-        // Find elements to insert.
-        int firstElementIndex = -1;
-        int count = 0;
-        for (int index = 0; index < mViewInfoList.size(); index++) {
-            final DropdownItemViewInfo viewInfo = mViewInfoList.get(index);
-            if (isGroupHeaderWithId(viewInfo, groupId)) {
-                firstElementIndex = index + 1;
-            } else if (viewInfo.groupId == groupId) {
-                count++;
-            } else if (count > 0 && viewInfo.groupId != groupId) {
-                break;
-            }
-        }
-
-        if (count != 0 && firstElementIndex != -1) {
-            offeredViewInfoList.addAll(
-                    mViewInfoList.subList(firstElementIndex, firstElementIndex + count),
-                    insertPosition);
-        }
+        mDropdownViewInfoListManager.setGroupVisibility(groupId, state);
     }
 
     @NonNull
     AutocompleteResult getAutocompleteResult() {
         return mAutocompleteResult;
-    }
-
-    /**
-     * Refresh list of presented suggestions.
-     *
-     * @param maximumListHeightPx Maximum height of the Suggestions list that guarantees 100%
-     *         content visibility.
-     */
-    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    void updateSuggestionsList(int maximumListHeightPx) {
-        if (mViewInfoList.isEmpty()) {
-            hideSuggestions();
-            return;
-        }
-
-        final List<MVCListAdapter.ListItem> newSuggestionViewInfos =
-                new ArrayList<>(mViewInfoList.size());
-        final ModelList prepopulatedSuggestions = getSuggestionModelList();
-
-        final int numSuggestionsToShow = mViewInfoList.size();
-        int totalSuggestionsHeight = 0;
-
-        for (int suggestionIndex = 0; suggestionIndex < numSuggestionsToShow; suggestionIndex++) {
-            final DropdownItemViewInfo viewInfo =
-                    (DropdownItemViewInfo) mViewInfoList.get(suggestionIndex);
-
-            totalSuggestionsHeight += viewInfo.processor.getMinimumViewHeight();
-            if (mEnableAdaptiveSuggestionsCount
-                    && suggestionIndex >= MINIMUM_NUMBER_OF_SUGGESTIONS_TO_SHOW
-                    && totalSuggestionsHeight > maximumListHeightPx) {
-                break;
-            }
-
-            viewInfo.model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
-            viewInfo.model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
-            newSuggestionViewInfos.add(viewInfo);
-        }
-
-        prepopulatedSuggestions.set(newSuggestionViewInfos);
-
-        if (mListPropertyModel.get(SuggestionListProperties.VISIBLE)
-                && newSuggestionViewInfos.size() == 0) {
-            hideSuggestions();
-        }
-        updateOmniboxSuggestionsVisibility();
     }
 
     /**
@@ -1209,8 +1036,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
 
         stopAutocomplete(true);
 
-        getSuggestionModelList().clear();
-        mViewInfoList.clear();
+        mDropdownViewInfoListManager.clear();
         mAutocompleteResult = new AutocompleteResult(null, null);
         updateOmniboxSuggestionsVisibility();
     }
@@ -1300,8 +1126,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     @Override
     public void onSuggestionDropdownHeightChanged(@Px int newHeightPx) {
         if (!mEnableAdaptiveSuggestionsCount) return;
-        mMaximumSuggestionsListHeight = newHeightPx;
-        updateSuggestionsList(mMaximumSuggestionsListHeight);
+        // TODO(crbug.com/1073169): pass the information to DropdownItemViewInfoListManager and
+        // group suggestions that are visible on screen.
     }
 
     @Override

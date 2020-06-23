@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">追加情報（省略可）</translation>
 <translation id="1017280919048282932">辞書に追加(&amp;A)</translation>
 <translation id="1018656279737460067">キャンセルされました</translation>
+<translation id="1022489261739821355"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />に保存したパスワードを表示しています</translation>
 <translation id="1023873740278604399">指紋の各部分を追加するために、指を少しずつ動かしてください。</translation>
 <translation id="1026655690966755180">ポートを追加</translation>
 <translation id="1026822031284433028">画像を読み込む</translation>
@@ -603,8 +604,8 @@
 <translation id="1743970419083351269">ダウンロード バーを閉じる</translation>
 <translation id="1744060673522309905">デバイスをドメインに追加できません。追加できるデバイスの上限数を超えていないかご確認ください。</translation>
 <translation id="1744108098763830590">バックグラウンド ページ</translation>
-<translation id="1746901632585754462">デバイスのデータを削除します</translation>
-<translation id="1748563609363301860">このパスワードを Google アカウントまたはこのデバイスのみに保存できます。</translation>
+<translation id="1746901632585754462">デバイスのデータが削除されます</translation>
+<translation id="1748563609363301860">このパスワードは、Google アカウントまたはこのデバイスのみに保存できます。</translation>
 <translation id="1750172676754093297">セキュリティ キーにフィンガープリントを保存できません</translation>
 <translation id="1751249301761991853">パーソナライズ</translation>
 <translation id="1751262127955453661">このサイトのタブをすべて閉じるまでの間、<ph name="ORIGIN" /> は「<ph name="FOLDERNAME" />」内のファイルを編集できるようになります</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">この処理を終了するには、プリンタ上で登録を確認する必要があります。今すぐ確認してください。</translation>
 <translation id="1900305421498694955">Google Play のアプリで外部ストレージ デバイスのファイルの読み取りと書き込みを行うには、ファイル システムへのフルアクセスが必要となる場合があります。デバイス上に作成されたファイルやフォルダは、外部ドライブを使用する全員に表示されます。<ph name="LINK_BEGIN" />詳細<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">すべて選択(&amp;A)</translation>
+<translation id="1901396183631570154">Chrome では、次のパスワードを Google アカウントに保存できませんでした。ただし、このデバイスに保存することは可能です。</translation>
 <translation id="1905375423839394163">Chromebook デバイス名</translation>
 <translation id="1906828677882361942">シリアルポートへのアクセスをどのサイトにも許可しない</translation>
 <translation id="1909880997794698664">このデバイスをキオスク モードに固定してもよろしいですか？</translation>
@@ -1187,6 +1189,7 @@
 <translation id="2476578072172137802">サイトの設定</translation>
 <translation id="2478176599153288112">「<ph name="EXTENSION" />」のメディアファイル権限</translation>
 <translation id="247949520305900375">音声を共有する</translation>
+<translation id="248003956660572823">パスワードは保存されていません</translation>
 <translation id="2480868415629598489">コピーして貼り付けるデータの修正</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484959914739448251">同期しているすべてのデバイスと Google アカウントから閲覧データを削除するには、<ph name="BEGIN_LINK" />パスフレーズを入力<ph name="END_LINK" />してください。</translation>
@@ -1835,7 +1838,7 @@
 <translation id="3288047731229977326">デベロッパー モードで実行される拡張機能はパソコンにダメージを与える恐れがあります。デベロッパーでない場合は、安全のため、デベロッパー モードで実行されているこれらの拡張機能を無効にしてください。</translation>
 <translation id="3289856944988573801">アップデートの有無を確認するには、イーサネットまたは Wi-Fi を使用してください。</translation>
 <translation id="3290356915286466215">保護なし</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> で ADB デバッグが無効になります。これにより、お使いのデバイスはリセットされます。再起動する前にファイルをバックアップしてください。</translation>
+<translation id="3292264722181603749"><ph name="DOMAIN" /> により ADB デバッグが無効になります。このため、お使いのデバイスはリセットされます。再起動する前にファイルをバックアップしてください。</translation>
 <translation id="3293644607209440645">このページを送信</translation>
 <translation id="32939749466444286">Linux コンテナを起動できませんでした。もう一度お試しください。</translation>
 <translation id="3294437725009624529">ゲスト</translation>
@@ -2490,7 +2493,6 @@
 <translation id="4077919383365622693"><ph name="SITE" /> により保存されたすべてのデータと Cookie が削除されます。</translation>
 <translation id="4079140982534148664">拡張スペルチェックを使用</translation>
 <translation id="4081242589061676262">ファイルをキャストできません。</translation>
-<translation id="4083648855651348665">続行するには、Google アカウントのパスワードを入力して、Google アカウントに保存したパスワードをこのデバイスでも使用できるようにしてください。</translation>
 <translation id="4084682180776658562">ブックマーク</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> を閉じる</translation>
 <translation id="4085270836953633510">サイトからシリアルポートへのアクセス許可を求められたときに確認する</translation>
@@ -2795,6 +2797,7 @@
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
 <translation id="4510479820467554003">保護者のアカウント リスト</translation>
 <translation id="4510614391273086606">Linux のファイルとアプリをバックアップした状態に復元しています。</translation>
+<translation id="4513946894732546136">フィードバック</translation>
 <translation id="451407183922382411">Powered by <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">動画の再生と一時停止を切り替え</translation>
 <translation id="451515744433878153">削除</translation>
@@ -3365,6 +3368,7 @@
 <translation id="5275352920323889391">犬</translation>
 <translation id="527605982717517565"><ph name="HOST" /> の JavaScript を常に許可する</translation>
 <translation id="5278823018825269962">ステータス ID</translation>
+<translation id="5280064835262749532"><ph name="SHARE_PATH" /> の認証情報を更新してください</translation>
 <translation id="5280174558369304332">削除対象の拡張機能:</translation>
 <translation id="5280243692621919988">すべてのウィンドウを閉じるときに Cookie とサイトデータを削除する</translation>
 <translation id="5280426389926346830">ショートカットを作成しますか？</translation>
@@ -3891,7 +3895,6 @@
 <translation id="5935656526031444304">セーフ ブラウジングを管理</translation>
 <translation id="5938002010494270685">セキュリティ アップグレードが利用可能です</translation>
 <translation id="5939518447894949180">リセット</translation>
-<translation id="594108735267876762"><ph name="COUNT" /> 日以内にデバイスを更新してください</translation>
 <translation id="5941153596444580863">ユーザーを追加...</translation>
 <translation id="5941343993301164315"><ph name="TOKEN_NAME" /> にログインしてください。</translation>
 <translation id="5941711191222866238">最小化</translation>
@@ -4240,7 +4243,6 @@
 <translation id="6390799748543157332">このウィンドウで開いたページはブラウザの履歴に記録されません。また、開いているゲスト ウィンドウをすべて閉じると、Cookie などのデータはパソコンから消去されます。ただし、ダウンロードしたファイルは保持されます。</translation>
 <translation id="6393156038355142111">安全なパスワードを自動生成</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />システム情報<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />指標データ<ph name="END_LINK2" />を送信する</translation>
-<translation id="6396179879191282798">デバイスの更新は今日が期限です</translation>
 <translation id="6396988158856674517">サイトでのモーション センサーの使用をブロックする</translation>
 <translation id="6398715114293939307">Google Play ストアを削除</translation>
 <translation id="6398765197997659313">全画面表示を終了</translation>
@@ -4606,7 +4608,6 @@
 <translation id="6880587130513028875">このページの画像はブロックされました。</translation>
 <translation id="6882836635272038266">既知の危険なウェブサイト、ダウンロード、拡張機能から標準的な方法で保護します。</translation>
 <translation id="6883319974225028188">デバイスの設定を保存できませんでした。</translation>
-<translation id="6885064901301703683">一度保存すればどこでも使用可能</translation>
 <translation id="6885771755599377173">システム情報のプレビュー</translation>
 <translation id="6886476658664859389">NFC セキュリティ キー</translation>
 <translation id="6886871292305414135">新しいタブで開く(&amp;T)</translation>
@@ -4661,6 +4662,7 @@
 <translation id="6950627417367801484">アプリを復元</translation>
 <translation id="6950943362443484797">このアプリをインストールします</translation>
 <translation id="6951153907720526401">支払いハンドラ</translation>
+<translation id="6952242901357037157"><ph name="BEGIN_LINK" />Google アカウント<ph name="END_LINK" />に保存したパスワードもここに表示できます</translation>
 <translation id="6953878494808481632">関連情報</translation>
 <translation id="6955446738988643816">ポップアップを検証</translation>
 <translation id="6955535239952325894">この設定は管理対象のブラウザでは無効です</translation>
@@ -4728,6 +4730,7 @@
 <translation id="7022562585984256452">ホームページが設定されました。</translation>
 <translation id="7025082428878635038">ジェスチャーによる新しい操作方法</translation>
 <translation id="7025190659207909717">モバイル データ サービスの管理</translation>
+<translation id="7029307918966275733">Crostini はインストールされていません。クレジットを表示するには Crostini をインストールしてください。</translation>
 <translation id="7029809446516969842">パスワード</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - シリアルポートを接続しました</translation>
 <translation id="7031962166228839643">TPM を準備しています。しばらくお待ちください（数分かかることがあります）...</translation>
@@ -5041,6 +5044,7 @@
 <translation id="7427798576651127129"><ph name="DEVICE_NAME" /> から発信</translation>
 <translation id="7431719494109538750">HID デバイスは見つかりませんでした</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{すべてを新しいウィンドウで開く(&amp;N)}=1{新しいウィンドウで開く(&amp;N)}other{すべて（# 件）を新しいウィンドウで開く(&amp;N)}}</translation>
+<translation id="7433957986129316853">そのままにする</translation>
 <translation id="7434509671034404296">開発 / 管理</translation>
 <translation id="7434635829372401939">設定の同期</translation>
 <translation id="7434757724413878233">マウス アクセラレーション</translation>
@@ -5350,7 +5354,7 @@
 <translation id="782057141565633384">動画アドレスをコピー(&amp;C)</translation>
 <translation id="7824864914877854148">エラーが発生したため、バックアップを完了できませんでした</translation>
 <translation id="782590969421016895">現在のページを使用</translation>
-<translation id="7826249772873145665">ADB デバッグを無効にしました</translation>
+<translation id="7826249772873145665">ADB デバッグが無効になりました</translation>
 <translation id="7826254698725248775">競合するデバイス識別子です。</translation>
 <translation id="7826346148677309647">Play ストアでは他にもお使いのデバイス用のアプリを探すことができます。</translation>
 <translation id="7826790948326204519"><ph name="BEGIN_H3" />デバッグ機能<ph name="END_H3" />
@@ -5690,7 +5694,7 @@
 <translation id="8226619461731305576">キュー</translation>
 <translation id="8226742006292257240">ランダムに生成され、ご使用のパソコンに割り当てられた TPM パスワードは以下のとおりです:</translation>
 <translation id="8227119283605456246">添付ファイル</translation>
-<translation id="8229943166551236192">デバイスのデータを 24 時間後に削除します</translation>
+<translation id="8229943166551236192">デバイスのデータが 24 時間後に削除されます</translation>
 <translation id="8230134520748321204"><ph name="ORIGIN" /> のパスワードを保存しますか？</translation>
 <translation id="8234795456569844941">問題解決の手がかりとして、具体的にどのような操作を行ったときにプロフィール エラーのメッセージが表示されたかをお知らせください。</translation>
 <translation id="8236917170563564587">代わりにこのタブを共有</translation>
@@ -5932,7 +5936,6 @@
 <translation id="8545575359873600875">パスワードを確認できませんでした。この監視対象ユーザーの管理者によって最近パスワードが変更された可能性があります。パスワードが変更されている場合、新しいパスワードは次回のログインから適用されます。古いパスワードでログインをお試しください。</translation>
 <translation id="8546186510985480118">デバイスの空き領域が少なくなっています</translation>
 <translation id="8546306075665861288">画像キャッシュ</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">ウェブプロキシ自動検出 URL:</translation>
 <translation id="8546930481464505581">Touch Bar をカスタマイズ</translation>
 <translation id="8547013269961688403">全画面拡大鏡を有効にする</translation>
@@ -5960,7 +5963,7 @@
 <translation id="8585480574870650651">Crostini の削除</translation>
 <translation id="8588866096426746242">プロフィール統計情報を表示</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> - VR をヘッドセットに配信しています</translation>
-<translation id="8589316013260923499"><ph name="DOMAIN" /> で ADB デバッグが無効になりました。新しいアプリケーションのサイドローディングは行えません。</translation>
+<translation id="8589316013260923499"><ph name="DOMAIN" /> により ADB デバッグが無効になりました。新しいアプリケーションのサイドローディングは行えません。</translation>
 <translation id="8590375307970699841">自動更新を設定</translation>
 <translation id="8591783563402255548">1秒</translation>
 <translation id="8592141010104017453">通知を一切表示しない</translation>
@@ -6520,6 +6523,7 @@
 <translation id="983511809958454316">この機能は VR ではサポートされていません</translation>
 <translation id="984275831282074731">お支払い方法</translation>
 <translation id="98515147261107953">横</translation>
+<translation id="987264212798334818">全般</translation>
 <translation id="987897973846887088">使用できる画像がありません</translation>
 <translation id="988978206646512040">パスフレーズは必ず指定してください</translation>
 <translation id="992032470292211616">拡張機能、アプリ、テーマはお使いのデバイスに悪影響を与える可能性があります。続行してもよろしいですか？</translation>

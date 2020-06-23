@@ -10,7 +10,6 @@
 #include <ostream>
 #include <string>
 
-#include "base/logging.h"
 #include "ui/accessibility/ax_export.h"
 
 namespace ui {

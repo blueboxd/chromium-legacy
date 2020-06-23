@@ -147,7 +147,10 @@ class QuickAnswersClientTest : public testing::Test {
 
 TEST_F(QuickAnswersClientTest, FeatureEligible) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures({chromeos::features::kQuickAnswers}, {});
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::features::kQuickAnswers,
+       chromeos::features::kQuickAnswersSubToggle},
+      {});
 
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
@@ -263,6 +266,10 @@ TEST_F(QuickAnswersClientTest, UnsupportedLocale) {
 }
 
 TEST_F(QuickAnswersClientTest, SettingToggleDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {chromeos::features::kQuickAnswersSubToggle}, {});
+
   // Verify that OnEligibilityChanged is called.
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(false)).Times(0);
   EXPECT_CALL(*mock_delegate_, OnEligibilityChanged(true)).Times(0);

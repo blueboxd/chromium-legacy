@@ -29,6 +29,7 @@
 #include "content/public/common/url_constants.h"
 #include "mojo/public/js/grit/mojo_bindings_resources.h"
 #include "mojo/public/js/grit/mojo_bindings_resources_map.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "skia/grit/skia_resources.h"
 #include "skia/grit/skia_resources_map.h"
 #include "ui/base/layout.h"
@@ -446,8 +447,13 @@ std::string SharedResourcesDataSource::GetAccessControlAllowOriginForOrigin(
   return origin;
 }
 
-std::string SharedResourcesDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return "worker-src blob: 'self';";
+std::string SharedResourcesDataSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::WorkerSrc) {
+    return "worker-src blob: 'self';";
+  }
+
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
 #if defined(OS_CHROMEOS)

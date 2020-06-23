@@ -31,6 +31,7 @@ class AccessibilityWindowInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool IsVisibleToUser() const override;
   bool IsVirtualNode() const override;
   bool IsIgnored() const override;
+  bool IsImportantInAndroid() const override;
   bool CanBeAccessibilityFocused() const override;
   bool IsAccessibilityFocusableContainer() const override;
   void PopulateAXRole(ui::AXNodeData* out_data) const override;

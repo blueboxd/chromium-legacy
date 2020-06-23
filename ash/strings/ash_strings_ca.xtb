@@ -44,6 +44,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1346748346194534595">Dreta</translation>
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1383876407941801731">Cerca</translation>
+<translation id="1391102559483454063">Activat</translation>
 <translation id="1419738280318246476">Desbloqueja el dispositiu per dur a terme l'acció que indica la notificació</translation>
 <translation id="1420408895951708260">Activa o desactiva la funció Llum nocturna. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Sí</translation>
@@ -52,7 +53,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1467432559032391204">Esquerra</translation>
 <translation id="1479909375538722835">Menú flotant d'accessibilitat</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Activat</translation>
 <translation id="1516740043221086139">El mode No molestis està activat.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a una aplicació.}other{Mostra la configuració de les notificacions. Les notificacions estan desactivades per a # aplicacions.}}</translation>
 <translation id="1525508553941733066">IGNORA</translation>
@@ -79,7 +79,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1836215606488044471">Assistent (s'està carregant...)</translation>
 <translation id="1838895407229022812">La funció Llum nocturna està desactivada.</translation>
 <translation id="1850504506766569011">La Wi-Fi està desactivada.</translation>
-<translation id="1859889070386344428">Desactivat</translation>
 <translation id="1864454756846565995">Dispositiu USB-C (port posterior)</translation>
 <translation id="1882897271359938046">S'està replicant <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloqueja amb l'empremta digital</translation>
@@ -138,7 +137,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2484513351006226581">Prem <ph name="KEYBOARD_SHORTCUT" /> per canviar el disseny del teclat.</translation>
 <translation id="2501920221385095727">Tecles permanents</translation>
 <translation id="2509468283778169019">BLOQ MAJ està activat.</translation>
-<translation id="2519465031217098801">Activat</translation>
 <translation id="2542089167727451762">Toca la teva imatge de perfil</translation>
 <translation id="255671100581129685">L'Assistent de Google no està disponible a les sessions públiques.</translation>
 <translation id="256712445991462162">la lupa acoblada</translation>
@@ -174,6 +172,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="2996462380875591307">La lupa acoblada està activada. Torna a prémer Ctrl+Cerca+D per desactivar-la.</translation>
 <translation id="3000461861112256445">Àudio mono</translation>
 <translation id="3009178788565917040">Sortida</translation>
+<translation id="3033545621352269033">Activada</translation>
 <translation id="3051128274746680507">El perfil del teu usuari supervisat se suprimirà aviat. Inicia la sessió per obtenir més informació.</translation>
 <translation id="3055162170959710888">Avui has fet servir aquest dispositiu durant <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Safata d'estat, hora <ph name="TIME" />,
@@ -261,7 +260,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3943857333388298514">Enganxa</translation>
 <translation id="394485226368336402">Configuració d'àudio</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
-<translation id="3965097803111112935">Desactivat</translation>
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3977512764614765090">La bateria s'està carregant i està a un <ph name="PERCENTAGE" />%.</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
@@ -278,6 +276,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="4146833061457621061">Reprodueix música</translation>
 <translation id="4181841719683918333">Idiomes</translation>
 <translation id="4195877955194704651">Botó Clics automàtics</translation>
+<translation id="4197790712631116042">Desactivat</translation>
 <translation id="4215497585250573029">Configuració de VPN</translation>
 <translation id="4217571870635786043">Dictat</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -308,6 +307,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="4513946894732546136">Comentaris</translation>
 <translation id="4527045527269911712">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> per completar la càrrega</translation>
+<translation id="4560576029703263363">Activat</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Oculta la contrasenya</translation>
 <translation id="4570957409596482333">Botó Escolta la selecció</translation>
@@ -354,11 +354,11 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="5207949376430453814">Ressalta la marca d'inserció de text</translation>
 <translation id="5222676887888702881">Tanca la sessió</translation>
 <translation id="523505283826916779">Configuració d'accessibilitat</translation>
-<translation id="5250225880026334010">Desactivat</translation>
 <translation id="5260676007519551770">Escriptori 4</translation>
 <translation id="5283198616748585639">Afegeix 1 minut</translation>
 <translation id="528468243742722775">Finalitza</translation>
 <translation id="5286194356314741248">S'està cercant</translation>
+<translation id="5297704307811127955">Desactivat</translation>
 <translation id="5302048478445481009">Idioma</translation>
 <translation id="5313326810920013265">Configuració del Bluetooth</translation>
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -473,7 +473,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="6650933572246256093">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu-hi aquesta contrasenya: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
 <translation id="6665545700722362599">Concedir permís als llocs web, a les aplicacions i a les extensions per utilitzar els serveis d'ubicació o el micròfon, la càmera o altres funcions del dispositiu.</translation>
-<translation id="6669268301501499730">Activat</translation>
 <translation id="6670153871843998651">Escriptori 3</translation>
 <translation id="6691659475504239918">Cerca+Maj+H</translation>
 <translation id="6692996468359469499">Obtén informació relacionada amb la teva selecció</translation>
@@ -605,6 +604,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, <ph name="SIGNAL_STRENGTH" /> d'intensitat del senyal, <ph name="BATTERY_STATUS" /> de bateria al telèfon</translation>
 <translation id="826107067893790409">Prem Retorn per desbloquejar-lo per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Suprimeix</translation>
+<translation id="828708037801473432">Desactivada</translation>
 <translation id="8297006494302853456">Feble</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

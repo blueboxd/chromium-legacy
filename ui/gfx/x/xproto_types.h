@@ -144,6 +144,10 @@ class Future : public FutureBase {
     OnResponseImpl(base::BindOnce(wrapper, std::move(callback)));
   }
 
+  void IgnoreError() {
+    OnResponse(base::BindOnce([](Response<Reply>) {}));
+  }
+
  private:
   template <typename R>
   friend Future<R> SendRequest(Connection*, std::vector<uint8_t>*);
@@ -177,6 +181,11 @@ inline void Future<void>::OnResponse(Callback callback) {
     std::move(callback).Run(Response<void>{std::move(error)});
   };
   OnResponseImpl(base::BindOnce(wrapper, std::move(callback)));
+}
+
+template <>
+inline void Future<void>::IgnoreError() {
+  OnResponse(base::BindOnce([](Response<void>) {}));
 }
 
 }  // namespace x11

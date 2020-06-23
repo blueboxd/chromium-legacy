@@ -64,4 +64,6 @@ interface ITab {
                                   in List<String> allowedOrigins,
                                   in IWebMessageCallbackClient client) = 19;
   void unregisterWebMessageCallback(in String jsObjectName) = 20;
+  boolean canTranslate() = 21;
+  void showTranslateUi() = 22;
 }

@@ -153,12 +153,12 @@ TEST_F(ShelfWidgetTest, LauncherInitiallySized) {
       screen_util::GetDisplayBoundsWithShelf(shelf_widget->GetNativeWindow())
           .width();
   const int nav_width =
-      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width();
+      shelf_widget->navigation_widget()->GetWindowBoundsInScreen().width() -
+      ShelfConfig::Get()->control_button_edge_spacing(
+          true /* is_primary_axis_edge */);
   const int hotseat_width =
       shelf_widget->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
-                          true /* is_primary_axis_edge */) +
-                      2 * ShelfConfig::Get()->app_icon_group_margin();
+  const int margins = 2 * ShelfConfig::Get()->app_icon_group_margin();
   EXPECT_EQ(status_width, total_width - nav_width - hotseat_width - margins);
 }
 
@@ -200,18 +200,20 @@ TEST_F(ShelfWidgetTest, ShelfInitiallySizedAfterLogin) {
       screen_util::GetDisplayBoundsWithShelf(shelf_widget1->GetNativeWindow())
           .width();
   const int nav_width1 =
-      shelf_widget1->navigation_widget()->GetWindowBoundsInScreen().width();
+      shelf_widget1->navigation_widget()->GetWindowBoundsInScreen().width() -
+      ShelfConfig::Get()->control_button_edge_spacing(
+          true /* is_primary_axis_edge */);
   const int hotseat_width1 =
       shelf_widget1->hotseat_widget()->GetWindowBoundsInScreen().width();
-  const int margins = ShelfConfig::Get()->control_button_edge_spacing(
-                          true /* is_primary_axis_edge */) +
-                      2 * ShelfConfig::Get()->app_icon_group_margin();
+  const int margins = 2 * ShelfConfig::Get()->app_icon_group_margin();
 
   const int total_width2 =
       screen_util::GetDisplayBoundsWithShelf(shelf_widget2->GetNativeWindow())
           .width();
   const int nav_width2 =
-      shelf_widget2->navigation_widget()->GetWindowBoundsInScreen().width();
+      shelf_widget2->navigation_widget()->GetWindowBoundsInScreen().width() -
+      ShelfConfig::Get()->control_button_edge_spacing(
+          true /* is_primary_axis_edge */);
   const int hotseat_width2 =
       shelf_widget2->hotseat_widget()->GetWindowBoundsInScreen().width();
 

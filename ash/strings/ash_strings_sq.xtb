@@ -52,7 +52,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1467432559032391204">Majtas</translation>
 <translation id="1479909375538722835">Menyja pluskuese e qasshmërisë</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Aktive</translation>
 <translation id="1516740043221086139">Modaliteti "Mos shqetëso" është aktiv.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Shfaq cilësimet e njoftimeve. Njoftimet janë joaktive për një aplikacion}other{Shfaq cilësimet e njoftimeve. Njoftimet janë joaktive për # aplikacione}}</translation>
 <translation id="1525508553941733066">ANULO</translation>
@@ -79,11 +78,10 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="1836215606488044471">Asistenti (po ngarkohet...)</translation>
 <translation id="1838895407229022812">"Drita e natës" është joaktive.</translation>
 <translation id="1850504506766569011">Wi-Fi është i çaktivizuar.</translation>
-<translation id="1859889070386344428">Joaktiv</translation>
 <translation id="1864454756846565995">Pajisja USB-C (porta prapa)</translation>
 <translation id="1882897271359938046">Po pasqyron në <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Shkyçe me gjurmën e gishtit</translation>
-<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> nuk e mbështet <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezolucioni ndryshoi në <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Kliko "Konfirmo" për të ruajtur ndryshimet. Cilësimet e mëparshme do të restaurohen për <ph name="TIMEOUT_SECONDS" />.</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> nuk e mbështet <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz). Rezolucioni ndryshoi në <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Kliko "Konfirmo" për të ruajtur ndryshimet. Cilësimet e mëparshme do të restaurohen për <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1919743966458266018">Shkurtorja për të hapur menaxherin e detyrave ka ndryshuar. Përdor <ph name="NEW_SHORTCUT" /> në vend të <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Klikimet automatike</translation>
 <translation id="1928739107511554905">Për të marrë përditësimin, përdor ekranin me prekje për ta rinisur Chromebook me tastierën e lidhur.</translation>
@@ -138,7 +136,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="2484513351006226581">Shtyp <ph name="KEYBOARD_SHORTCUT" /> për të ndryshuar planin e tastierës.</translation>
 <translation id="2501920221385095727">Tastet e përhershme</translation>
 <translation id="2509468283778169019">KYÇJA E KAPITALEVE është aktive</translation>
-<translation id="2519465031217098801">Aktiv</translation>
 <translation id="2542089167727451762">Trokit imazhin e profilit tënd</translation>
 <translation id="255671100581129685">"Asistenti i Google" nuk ofrohet në një sesion publik.</translation>
 <translation id="256712445991462162">zmadhuesi i lidhur me stacionin</translation>
@@ -261,7 +258,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="3943857333388298514">Ngjite</translation>
 <translation id="394485226368336402">Cilësimet e audios</translation>
 <translation id="3962859241508114581">Kënga e mëparshme</translation>
-<translation id="3965097803111112935">Joaktive</translation>
 <translation id="397105322502079400">Po llogarit...</translation>
 <translation id="3977512764614765090">Bateria është në <ph name="PERCENTAGE" />% dhe po karikohet.</translation>
 <translation id="3995138139523574647">Pajisja USB-C (porta e pasme, djathtas)</translation>
@@ -354,7 +350,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="5207949376430453814">Thekso kursorin e tekstit</translation>
 <translation id="5222676887888702881">Dil</translation>
 <translation id="523505283826916779">Cilësimet e qasjes</translation>
-<translation id="5250225880026334010">Joaktive</translation>
 <translation id="5260676007519551770">Tavolina e punës 4</translation>
 <translation id="5283198616748585639">Shto 1 minutë</translation>
 <translation id="528468243742722775">Fundi</translation>
@@ -473,7 +468,6 @@ Ja disa gjëra që mund të provosh për të filluar.</translation>
 <translation id="6650933572246256093">Pajisja me Bluetooth "<ph name="DEVICE_NAME" />" kërkon leje për çiftim. Fut çelësin e kalimit në atë pajisje: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Fjalëkalimi</translation>
 <translation id="6665545700722362599">Jepi leje sajteve të uebit, aplikacioneve dhe shtesave të përdorin shërbimet e vendndodhjes, mikrofonin e pajisjes, kamerën ose funksione të tjera</translation>
-<translation id="6669268301501499730">Aktive</translation>
 <translation id="6670153871843998651">Tavolina e punës 3</translation>
 <translation id="6691659475504239918">Kërko+Shift+H</translation>
 <translation id="6692996468359469499">Merr informacion në lidhje me përzgjedhjen tënde</translation>

@@ -19,6 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/url_constants.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 // A chrome-untrusted data source's name starts with chrome-untrusted://.
@@ -74,43 +75,32 @@ bool URLDataSource::ShouldAddContentSecurityPolicy() {
   return true;
 }
 
-std::string URLDataSource::GetContentSecurityPolicyChildSrc() {
-  return "child-src 'none';";
-}
-
-std::string URLDataSource::GetContentSecurityPolicyDefaultSrc() {
-  return IsChromeUntrustedDataSource(this) ? "default-src 'self';"
-                                           : std::string();
-}
-
-std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
-  return std::string();
-}
-
-std::string URLDataSource::GetContentSecurityPolicyMediaSrc() {
-  return std::string();
-}
-
-std::string URLDataSource::GetContentSecurityPolicyObjectSrc() {
-  return "object-src 'none';";
-}
-
-std::string URLDataSource::GetContentSecurityPolicyScriptSrc() {
-  // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
-  // specific pages that need it, see context http://crbug.com/525224.
-  return "script-src chrome://resources 'self';";
-}
-
-std::string URLDataSource::GetContentSecurityPolicyStyleSrc() {
-  return std::string();
-}
-
-std::string URLDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return std::string();
-}
-
-std::string URLDataSource::GetContentSecurityPolicyFrameAncestors() {
-  return "frame-ancestors 'none';";
+std::string URLDataSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  switch (directive) {
+    case network::mojom::CSPDirectiveName::ChildSrc:
+      return "child-src 'none';";
+    case network::mojom::CSPDirectiveName::DefaultSrc:
+      return IsChromeUntrustedDataSource(this) ? "default-src 'self';"
+                                               : std::string();
+    case network::mojom::CSPDirectiveName::ObjectSrc:
+      return "object-src 'none';";
+    case network::mojom::CSPDirectiveName::ScriptSrc:
+      // Note: Do not add 'unsafe-eval' here. Instead override CSP for the
+      // specific pages that need it, see context http://crbug.com/525224.
+      return "script-src chrome://resources 'self';";
+    case network::mojom::CSPDirectiveName::FrameAncestors:
+      return "frame-ancestors 'none';";
+    case network::mojom::CSPDirectiveName::FormAction:
+    case network::mojom::CSPDirectiveName::FrameSrc:
+    case network::mojom::CSPDirectiveName::ImgSrc:
+    case network::mojom::CSPDirectiveName::MediaSrc:
+    case network::mojom::CSPDirectiveName::NavigateTo:
+    case network::mojom::CSPDirectiveName::StyleSrc:
+    case network::mojom::CSPDirectiveName::WorkerSrc:
+    case network::mojom::CSPDirectiveName::Unknown:
+      return std::string();
+  }
 }
 
 bool URLDataSource::ShouldDenyXFrameOptions() {

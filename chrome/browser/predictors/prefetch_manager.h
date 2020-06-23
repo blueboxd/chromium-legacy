@@ -26,6 +26,7 @@ class SharedURLLoaderFactory;
 namespace predictors {
 
 struct PrefetchRequest;
+class PrefetchManager;
 
 struct PrefetchStats {
   explicit PrefetchStats(const GURL& url);
@@ -42,23 +43,31 @@ struct PrefetchStats {
 
 // Stores the status of all prefetches associated with a given |url|.
 struct PrefetchInfo {
-  PrefetchInfo(const GURL& url, size_t count);
+  PrefetchInfo(const GURL& url, PrefetchManager& manager);
   ~PrefetchInfo();
 
   PrefetchInfo(const PrefetchInfo&) = delete;
   PrefetchInfo& operator=(const PrefetchInfo&) = delete;
 
-  bool is_done() const { return queued_count == 0 && inflight_count == 0; }
+  // Called by PrefetchJob only.
+  void OnJobCreated();
+  void OnJobDestroyed();
+
+  bool is_done() const { return job_count == 0; }
 
   GURL url;
-  size_t queued_count = 0;
-  size_t inflight_count = 0;
+  size_t job_count = 0;
+  bool was_canceled = false;
   std::unique_ptr<PrefetchStats> stats;
+  // Owns |this|.
+  PrefetchManager* const manager;
+
+  base::WeakPtrFactory<PrefetchInfo> weak_factory{this};
 };
 
 // Stores all data need for running a prefetch to a |url|.
 struct PrefetchJob {
-  PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo* info);
+  PrefetchJob(PrefetchRequest prefetch_request, PrefetchInfo& info);
   ~PrefetchJob();
 
   PrefetchJob(const PrefetchJob&) = delete;
@@ -66,10 +75,8 @@ struct PrefetchJob {
 
   GURL url;
   net::NetworkIsolationKey network_isolation_key;
-
-  // Danger: this is a raw pointer that PrefetchJob can outlive. It must be
-  // accessed from PrefetchManager only, which owns PrefetchInfo.
-  PrefetchInfo* info;
+  // PrefetchJob can outlive PrefetchInfo.
+  base::WeakPtr<PrefetchInfo> info;
 };
 
 // PrefetchManager prefetches input lists of URLs.
@@ -95,51 +102,46 @@ class PrefetchManager {
   static const size_t kMaxInflightJobs = 3;
 
   PrefetchManager(base::WeakPtr<Delegate> delegate, Profile* profile);
-  virtual ~PrefetchManager();
+  ~PrefetchManager();
 
   PrefetchManager(const PrefetchManager&) = delete;
   PrefetchManager& operator=(const PrefetchManager&) = delete;
 
   // Starts prefetch jobs keyed by |url|.
-  virtual void Start(const GURL& url, std::vector<PrefetchRequest> requests);
+  void Start(const GURL& url, std::vector<PrefetchRequest> requests);
 
-  // TODO(falken): Add a Stop() method like PreconnectManager.
-  // virtual void Stop(const GURL& url);
+  // Stops further prefetch jobs keyed by |url|. Queued jobs will never start;
+  // started jobs will continue to completion.
+  void Stop(const GURL& url);
 
   base::WeakPtr<PrefetchManager> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
 
+  // Called by PrefetchInfo.
+  void AllPrefetchJobsForUrlFinished(PrefetchInfo& info);
+
  private:
-  using PrefetchJobMap = base::IDMap<std::unique_ptr<PrefetchJob>>;
-  using PrefetchJobId = PrefetchJobMap::KeyType;
   friend class PrefetchManagerTest;
 
-  // The total number of prefetches that have started and not yet finished,
-  // across all main frame URLs.
-  size_t inflight_jobs_count() const;
-
-  void PrefetchUrl(PrefetchInfo& info,
-                   const GURL& prefetch_url,
-                   PrefetchJobId job_id,
+  void PrefetchUrl(std::unique_ptr<PrefetchJob> job,
                    network::SharedURLLoaderFactory& factory);
-  PrefetchInfo* GetJobInfo(PrefetchJobId job_id);
-  void OnPrefetchFinished(PrefetchJobId job_id);
+  void OnPrefetchFinished(std::unique_ptr<PrefetchJob> job);
 
   void TryToLaunchPrefetchJobs();
-  void AllPrefetchJobsForUrlFinished(PrefetchInfo* info);
 
   base::WeakPtr<Delegate> delegate_;
   Profile* const profile_;
 
   // All the jobs that haven't yet started. A job is removed once it starts.
-  std::list<PrefetchJobId> queued_jobs_;
-
-  // All the jobs that haven't yet finished (including queued jobs). A job is
-  // removed once it finishes.
-  PrefetchJobMap jobs_;
+  // Inflight jobs destruct once finished.
+  std::list<std::unique_ptr<PrefetchJob>> queued_jobs_;
 
   std::map<GURL, std::unique_ptr<PrefetchInfo>> prefetch_info_;
+
+  // The total number of prefetches that have started and not yet finished,
+  // across all main frame URLs.
+  size_t inflight_jobs_count_ = 0;
 
   base::WeakPtrFactory<PrefetchManager> weak_factory_{this};
 };

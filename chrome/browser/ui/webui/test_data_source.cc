@@ -21,6 +21,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 const char kModuleQuery[] = "module=";
@@ -76,12 +77,15 @@ bool TestDataSource::AllowCaching() {
   return false;
 }
 
-std::string TestDataSource::GetContentSecurityPolicyScriptSrc() {
-  return "script-src chrome://* 'self';";
-}
+std::string TestDataSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+    return "script-src chrome://* 'self';";
+  } else if (directive == network::mojom::CSPDirectiveName::WorkerSrc) {
+    return "worker-src blob: 'self';";
+  }
 
-std::string TestDataSource::GetContentSecurityPolicyWorkerSrc() {
-  return "worker-src blob: 'self';";
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
 GURL TestDataSource::GetURLForPath(const std::string& path) {

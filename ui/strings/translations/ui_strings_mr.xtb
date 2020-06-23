@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">कॅलिब्रेशन पूर्ण झाले</translation>
 <translation id="252373100621549798">अज्ञात डिस्प्ले</translation>
 <translation id="2545651323591713692">स्नूझ करा</translation>
+<translation id="2570734079541893434">सेटिंग्ज व्यवस्थापित करा</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{१ता मध्ये}other{#ता मध्ये}}</translation>
 <translation id="2583543531130364912">तुमची टचस्क्रीन कॅलिब्रेट करा</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
@@ -153,12 +154,12 @@
 <translation id="6040143037577758943">बंद करा</translation>
 <translation id="6119846243427417423">सक्रिय करा</translation>
 <translation id="6129953537138746214">जागा</translation>
-<translation id="6134259848159370930">तुमच्या डिव्हाइस,अ‍ॅप्स, सेटिंग्ज, वेबवर शोधा.</translation>
+<translation id="6134259848159370930">तुमच्या डिव्हाइस, अ‍ॅप्स, सेटिंग्ज, वेबवर शोधा.</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="6142413573757616983"><ph name="QUANTITY" /> B/s</translation>
 <translation id="6156262341071374681">सर्व अ‍ॅप्सवर विस्तार करा</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
-<translation id="6166852626429024716">तुमच्या डिव्हाइस,अ‍ॅप्स, सेटिंग्ज, वेबवर शोधा...</translation>
+<translation id="6166852626429024716">तुमच्या डिव्हाइस, अ‍ॅप्स, सेटिंग्ज, वेबवर शोधा...</translation>
 <translation id="6264365405983206840">&amp;सर्व निवडा</translation>
 <translation id="6351032674660237738">ॲप सूचना</translation>
 <translation id="6364916375976753737">डावीकडे स्क्रोल करा</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">पेज <ph name="PAGE_NUMBER" />, पंक्ती <ph name="ROW_NUMBER" />, स्तंभ <ph name="COLUMN_NUMBER" /> वर हलवले.</translation>
 <translation id="7879499977785298635">ब्लॉक करू नका</translation>
 <translation id="7907591526440419938">फाइल उघडा</translation>
+<translation id="7952747673138230804">Chrome OS नवीन आशय एक्सप्लोर करण्यासाठी सूचना दाखवते. तुम्ही वापर डेटा शेअर करणे निवडले असेल तरच गुणवत्तेत सुधारणा करण्यासाठी आकडेवारी पाठवते. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">कमांड</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{एकापेक्षा जास्त न वाचलेली सूचना}other{# पेक्षा जास्त न वाचलेल्या सूचना}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{१मि मध्ये}other{#मि मध्ये}}</translation>

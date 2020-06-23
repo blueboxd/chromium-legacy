@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_THERMAL_RESOURCE_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_THERMAL_RESOURCE_H_
 
+#include "base/feature_list.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/single_thread_task_runner.h"
@@ -14,6 +15,8 @@
 #include "third_party/webrtc/api/adaptation/resource.h"
 
 namespace blink {
+
+MODULES_EXPORT extern const base::Feature kWebRtcThermalResource;
 
 // The ThermalResource reports kOveruse or kUnderuse every 10 seconds(*) while
 // it has a registered listener and the DeviceThermalMeasurement is known.

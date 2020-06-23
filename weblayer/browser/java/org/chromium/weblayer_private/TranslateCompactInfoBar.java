@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat;
 
 import com.google.android.material.tabs.TabLayout;
 
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -139,9 +140,13 @@ public class TranslateCompactInfoBar extends InfoBar
 
     @Override
     protected void createCompactLayoutContent(InfoBarCompactLayout parent) {
-        LinearLayout content = (LinearLayout) LayoutInflater.from(getContext())
-                                       .inflate(R.layout.weblayer_infobar_translate_compact_content,
-                                               parent, false);
+        LinearLayout content;
+        // LayoutInflater may trigger accessing the disk.
+        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
+            content = (LinearLayout) LayoutInflater.from(getContext())
+                              .inflate(R.layout.weblayer_infobar_translate_compact_content, parent,
+                                      false);
+        }
 
         // When parent tab is being switched out (view detached), dismiss all menus and snackbars.
         content.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -485,17 +490,21 @@ public class TranslateCompactInfoBar extends InfoBar
             case ACTION_OVERFLOW_NEVER_LANGUAGE:
             case ACTION_AUTO_NEVER_LANGUAGE:
                 mUserInteracted = true;
-                // After applying this option, the infobar will dismiss.
+                mOptions.toggleNeverTranslateLanguageState(
+                        !mOptions.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE));
                 TranslateCompactInfoBarJni.get().applyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateCompactInfoBar.this,
-                        TranslateOption.NEVER_TRANSLATE, true);
+                        TranslateOption.NEVER_TRANSLATE,
+                        mOptions.getTranslateState(TranslateOptions.Type.NEVER_LANGUAGE));
                 return;
             case ACTION_OVERFLOW_NEVER_SITE:
                 mUserInteracted = true;
-                // After applying this option, the infobar will dismiss.
+                mOptions.toggleNeverTranslateDomainState(
+                        !mOptions.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN));
                 TranslateCompactInfoBarJni.get().applyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateCompactInfoBar.this,
-                        TranslateOption.NEVER_TRANSLATE_SITE, true);
+                        TranslateOption.NEVER_TRANSLATE_SITE,
+                        mOptions.getTranslateState(TranslateOptions.Type.NEVER_DOMAIN));
                 return;
             default:
                 assert false : "Unsupported Menu Item Id, in handle post snackbar";
@@ -542,6 +551,18 @@ public class TranslateCompactInfoBar extends InfoBar
         } else {
             assert false;
         }
+    }
+
+    @CalledByNative
+    // Simulates a click of the overflow menu item for "never translate this language."
+    private void clickNeverTranslateLanguageMenuItemForTesting() {
+        onOverflowMenuItemClicked(TranslateMenu.ID_OVERFLOW_NEVER_LANGUAGE);
+    }
+
+    @CalledByNative
+    // Simulates a click of the overflow menu item for "never translate this site."
+    private void clickNeverTranslateSiteMenuItemForTesting() {
+        onOverflowMenuItemClicked(TranslateMenu.ID_OVERFLOW_NEVER_SITE);
     }
 
     @NativeMethods

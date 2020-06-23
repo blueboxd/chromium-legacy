@@ -97,12 +97,14 @@ void FidoDeviceAuthenticator::InitializeAuthenticatorDone(
 
 void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
-  RunTask<MakeCredentialTask>(std::move(request), std::move(callback));
+  RunTask<MakeCredentialTask, AuthenticatorMakeCredentialResponse,
+          CtapMakeCredentialRequest>(std::move(request), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
-  RunTask<GetAssertionTask>(std::move(request), std::move(callback));
+  RunTask<GetAssertionTask, AuthenticatorGetAssertionResponse,
+          CtapGetAssertionRequest>(std::move(request), std::move(callback));
 }
 
 void FidoDeviceAuthenticator::GetNextAssertion(GetAssertionCallback callback) {
@@ -147,6 +149,12 @@ void FidoDeviceAuthenticator::GetPinRetries(GetRetriesCallback callback) {
 
 void FidoDeviceAuthenticator::GetEphemeralKey(
     GetEphemeralKeyCallback callback) {
+  if (cached_ephemeral_key_.has_value()) {
+    std::move(callback).Run(CtapDeviceResponseCode::kSuccess,
+                            cached_ephemeral_key_);
+    return;
+  }
+
   DCHECK(Options());
   DCHECK(
       Options()->client_pin_availability !=
@@ -154,8 +162,24 @@ void FidoDeviceAuthenticator::GetEphemeralKey(
       Options()->supports_pin_uv_auth_token);
 
   RunOperation<pin::KeyAgreementRequest, pin::KeyAgreementResponse>(
-      pin::KeyAgreementRequest(), std::move(callback),
+      pin::KeyAgreementRequest(),
+      base::BindOnce(&FidoDeviceAuthenticator::OnHaveEphemeralKey,
+                     weak_factory_.GetWeakPtr(), std::move(callback)),
       base::BindOnce(&pin::KeyAgreementResponse::Parse));
+}
+
+void FidoDeviceAuthenticator::OnHaveEphemeralKey(
+    GetEphemeralKeyCallback callback,
+    CtapDeviceResponseCode status,
+    base::Optional<pin::KeyAgreementResponse> key) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    std::move(callback).Run(status, base::nullopt);
+  }
+  DCHECK(key.has_value());
+
+  cached_ephemeral_key_.emplace(std::move(key.value()));
+  std::move(callback).Run(CtapDeviceResponseCode::kSuccess,
+                          cached_ephemeral_key_);
 }
 
 void FidoDeviceAuthenticator::GetPINToken(
@@ -446,9 +470,9 @@ void FidoDeviceAuthenticator::OperationClearProxy(
 
 // RunTask starts a |FidoTask| and ensures that |task_| is reset when the given
 // callback is called.
-template <typename Task, typename Request, typename Response>
+template <typename Task, typename Response, typename... RequestArgs>
 void FidoDeviceAuthenticator::RunTask(
-    Request request,
+    RequestArgs&&... request_args,
     base::OnceCallback<void(CtapDeviceResponseCode, base::Optional<Response>)>
         callback) {
   DCHECK(!task_);
@@ -457,7 +481,7 @@ void FidoDeviceAuthenticator::RunTask(
       << "InitializeAuthenticator() must be called first.";
 
   task_ = std::make_unique<Task>(
-      device_.get(), std::move(request),
+      device_.get(), std::forward<RequestArgs>(request_args)...,
       base::BindOnce(
           &FidoDeviceAuthenticator::TaskClearProxy<CtapDeviceResponseCode,
                                                    base::Optional<Response>>,

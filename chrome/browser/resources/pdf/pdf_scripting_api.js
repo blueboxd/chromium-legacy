@@ -5,17 +5,20 @@
 /**
  * Turn a dictionary received from postMessage into a key event.
  * @param {Object} dict A dictionary representing the key event.
- * @return {!Event} A key event.
+ * @return {!KeyboardEvent} A key event.
  */
 export function DeserializeKeyEvent(dict) {
-  const e = document.createEvent('Event');
-  e.initEvent('keydown', true, true);
-  e.keyCode = dict.keyCode;
-  e.code = dict.code;
-  e.shiftKey = dict.shiftKey;
-  e.ctrlKey = dict.ctrlKey;
-  e.altKey = dict.altKey;
-  e.metaKey = dict.metaKey;
+  const e = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: dict.key,
+    code: dict.code,
+    keyCode: dict.keyCode,
+    shiftKey: dict.shiftKey,
+    ctrlKey: dict.ctrlKey,
+    altKey: dict.altKey,
+    metaKey: dict.metaKey,
+  });
   e.fromScriptingAPI = true;
   return e;
 }
@@ -29,6 +32,7 @@ export function SerializeKeyEvent(event) {
   return {
     keyCode: event.keyCode,
     code: event.code,
+    key: event.key,
     shiftKey: event.shiftKey,
     ctrlKey: event.ctrlKey,
     altKey: event.altKey,

@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Gekopieerd</translation>
 <translation id="2822354292072154809">Weet je zeker dat je alle siterechten voor <ph name="CHOSEN_OBJECT_NAME" /> wilt resetten?</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2874939134665556319">Vorig nummer</translation>
 <translation id="2910701580606108292">Vragen voordat sites beschermde content mogen afspelen</translation>
 <translation id="2913331724188855103">Sites toestaan cookiegegevens op te slaan en te lezen (aanbevolen)</translation>
 <translation id="2968755619301702150">Certificaatviewer</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Synchronisatie op de achtergrond</translation>
 <translation id="3822502789641063741">Site-opslag wissen?</translation>
 <translation id="385051799172605136">Vorige</translation>
+<translation id="3859306556332390985">Vooruit zoeken</translation>
 <translation id="3955193568934677022">Toestaan dat sites beschermde content afspelen (aanbevolen)</translation>
 <translation id="3987993985790029246">Link kop.</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van ?</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Cookies voor een specifieke site toestaan.</translation>
+<translation id="4046123991198612571">Volgend nummer</translation>
 <translation id="4165986682804962316">Site-instellingen</translation>
 <translation id="4226663524361240545">Het apparaat kan trillen bij meldingen</translation>
 <translation id="4242533952199664413">Instellingen openen</translation>
 <translation id="4259722352634471385">Navigatie is geblokkeerd: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Toegestaan</translation>
+<translation id="429312253194641664">Een site speelt media af</translation>
 <translation id="4433925000917964731">Lite-pagina geleverd door Google</translation>
 <translation id="4434045419905280838">Pop-ups en omleidingen</translation>
 <translation id="445467742685312942">Sites toestaan om beschermde content af te spelen</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="6766622839693428701">Veeg omlaag om te sluiten.</translation>
 <translation id="6782111308708962316">Voorkomen dat websites van derden cookiegegevens opslaan en lezen</translation>
+<translation id="6790428901817661496">Spelen</translation>
 <translation id="6818926723028410516">Items selecteren</translation>
 <translation id="6864395892908308021">Dit apparaat kan NFC niet lezen</translation>
 <translation id="6910211073230771657">Verwijderd</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Een site gebruikt de camera en microfoon</translation>
 <translation id="8380167699614421159">Deze site geeft opdringerige of misleidende advertenties weer</translation>
 <translation id="8394832520002899662">Tik hier om terug te gaan naar de site</translation>
+<translation id="8441146129660941386">Achteruit zoeken</translation>
 <translation id="8447861592752582886">Toegang tot apparaat intrekken</translation>
 <translation id="8463851957836045671">Site is snel</translation>
 <translation id="851751545965956758">Voorkomen dat sites verbinding maken met apparaten</translation>

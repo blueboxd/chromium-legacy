@@ -1690,7 +1690,8 @@ void LayoutBlock::ComputeChildPreferredLogicalWidths(
     const Length& computed_inline_size = child.StyleRef().LogicalWidth();
     if (computed_inline_size.IsMaxContent())
       min_preferred_logical_width = max_preferred_logical_width;
-    else if (computed_inline_size.IsMinContent())
+    else if (computed_inline_size.IsMinContent() ||
+             computed_inline_size.IsMinIntrinsic())
       max_preferred_logical_width = min_preferred_logical_width;
   }
 }

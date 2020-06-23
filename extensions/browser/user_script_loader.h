@@ -36,7 +36,7 @@ namespace extensions {
 // renderers of new shared memory region when new renderers appear, or when
 // script reloading completes. Script loading lives on the UI thread. Instances
 // of this class are embedded within classes with names ending in
-// UserScriptMaster. These "master" classes implement the strategy for which
+// UserScriptManager. These "manager" classes implement the strategy for which
 // scripts to load/unload on this logical unit of scripts.
 class UserScriptLoader : public content::RenderProcessHostCreationObserver {
  public:

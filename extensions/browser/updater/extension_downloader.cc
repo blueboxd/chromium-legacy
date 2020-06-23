@@ -847,8 +847,9 @@ void ExtensionDownloader::HandleManifestResults(
                 ManifestFetchData::FetchPriority::FOREGROUND);
     }
     FetchUpdatedExtension(std::make_unique<ExtensionFetch>(
-        extension_id, crx_url, update->package_hash, update->version,
-        fetch_data->request_ids()));
+                              extension_id, crx_url, update->package_hash,
+                              update->version, fetch_data->request_ids()),
+                          update->info);
   }
 
   // If the manifest response included a <daystart> element, we want to save
@@ -1070,7 +1071,8 @@ base::Optional<base::FilePath> ExtensionDownloader::GetCachedExtension(
 
 // Begins (or queues up) download of an updated extension.
 void ExtensionDownloader::FetchUpdatedExtension(
-    std::unique_ptr<ExtensionFetch> fetch_data) {
+    std::unique_ptr<ExtensionFetch> fetch_data,
+    base::Optional<std::string> info) {
   if (!fetch_data->url.is_valid()) {
     // TODO(asargent): This can sometimes be invalid. See crbug.com/130881.
     DLOG(WARNING) << "Invalid URL: '" << fetch_data->url.possibly_invalid_spec()
@@ -1078,9 +1080,12 @@ void ExtensionDownloader::FetchUpdatedExtension(
     delegate_->OnExtensionDownloadStageChanged(
         fetch_data->id, ExtensionDownloaderDelegate::Stage::FINISHED);
     if (fetch_data->url.is_empty()) {
-      NotifyExtensionsDownloadFailed(
+      // We expect to receive initialised |info| from the manifest parser in
+      // case of no updates status in the update manifest.
+      ExtensionDownloaderDelegate::FailureData data(info.value_or(""));
+      NotifyExtensionsDownloadFailedWithFailureData(
           {fetch_data->id}, fetch_data->request_ids,
-          ExtensionDownloaderDelegate::Error::CRX_FETCH_URL_EMPTY);
+          ExtensionDownloaderDelegate::Error::CRX_FETCH_URL_EMPTY, data);
     } else {
       NotifyExtensionsDownloadFailed(
           {fetch_data->id}, fetch_data->request_ids,

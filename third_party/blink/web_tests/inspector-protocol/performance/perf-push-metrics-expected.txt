@@ -29,6 +29,7 @@ title: test1
 	TaskDuration
 	TaskOtherDuration
 	ThreadTime
+	ProcessTime
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
@@ -64,6 +65,7 @@ title: test1
 	TaskDuration
 	TaskOtherDuration
 	ThreadTime
+	ProcessTime
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint
@@ -99,6 +101,7 @@ title:
 	TaskDuration
 	TaskOtherDuration
 	ThreadTime
+	ProcessTime
 	JSHeapUsedSize
 	JSHeapTotalSize
 	FirstMeaningfulPaint

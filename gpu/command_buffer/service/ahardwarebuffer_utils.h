@@ -5,6 +5,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_AHARDWAREBUFFER_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_AHARDWAREBUFFER_UTILS_H_
 
+#include "base/memory/scoped_refptr.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/gpu_gles2_export.h"
 
@@ -21,6 +22,7 @@ class Size;
 namespace gpu {
 namespace gles2 {
 class Texture;
+class TexturePassthrough;
 }  // namespace gles2
 
 // TODO(vikassoni): In future we will need to expose the set of formats and
@@ -45,7 +47,18 @@ gles2::Texture* GenGLTexture(AHardwareBuffer* buffer,
                              GLenum target,
                              const gfx::ColorSpace& color_space,
                              const gfx::Size& size,
+                             const size_t estimated_size,
                              const gfx::Rect& cleared_rect);
+
+// Generates a passthrough texture from AHB. This method must be called with a
+// current GLContext which will be used to create the Texture.
+scoped_refptr<gles2::TexturePassthrough> GenGLTexturePassthrough(
+    AHardwareBuffer* buffer,
+    GLenum target,
+    const gfx::ColorSpace& color_space,
+    const gfx::Size& size,
+    const size_t estimated_size,
+    const gfx::Rect& cleared_rect);
 
 }  // namespace gpu
 

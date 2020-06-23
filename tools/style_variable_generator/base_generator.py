@@ -47,6 +47,15 @@ class ModeVariables:
             self.variables[name] = {}
         self.variables[name][mode] = value
 
+    # Returns the value that |name| will have in |mode|. Resolves to the default
+    # mode's value if the a value for |mode| isn't specified. Always returns a
+    # value.
+    def Resolve(self, name, mode):
+        if mode in self.variables[name]:
+            return self.variables[name][mode]
+
+        return self.variables[name][self._default_mode]
+
     def keys(self):
         return self.variables.keys()
 
@@ -67,6 +76,7 @@ class BaseGenerator:
     def __init__(self):
         self.out_file_path = None
         self.in_files = []
+        self.generate_single_mode = None
 
         # The mode that colors will fallback to when not specified in a
         # non-default mode. An error will be raised if a color in any mode is
@@ -80,6 +90,7 @@ class BaseGenerator:
             VariableType.COLOR: ModeVariables(self._default_mode),
             VariableType.OPACITY: ModeVariables(self._default_mode),
         }
+
 
     def AddColor(self, name, value_obj):
         try:

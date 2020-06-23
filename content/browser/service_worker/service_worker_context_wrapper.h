@@ -75,6 +75,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       ServiceWorkerRegistry::GetUserKeysAndDataCallback;
   using GetUserDataForAllRegistrationsCallback =
       ServiceWorkerRegistry::GetUserDataForAllRegistrationsCallback;
+  using GetInstalledRegistrationOriginsCallback =
+      base::OnceCallback<void(const std::set<url::Origin>& origins)>;
   using GetStorageUsageForOriginCallback =
       ServiceWorkerRegistry::GetStorageUsageForOriginCallback;
 
@@ -306,11 +308,24 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const std::string& key_prefix,
       StatusCallback callback);
 
+  // Returns a set of origins which have at least one stored registration.
+  // The set doesn't include installing/uninstalling/uninstalled registrations.
+  // When |host_filter| is specified the set only includes origins whose host
+  // matches |host_filter|.
+  // This function can be called from any thread and the callback is called on
+  // that thread.
+  void GetInstalledRegistrationOrigins(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback);
+
   // Returns total resource size stored in the storage for |origin|.
-  // This can be called from any thread.
+  // This can be called from any thread and the callback is called on that
+  // thread.
   void GetStorageUsageForOrigin(const url::Origin& origin,
                                 GetStorageUsageForOriginCallback callback);
 
+  // Returns a list of ServiceWorkerRegistration for |origin|. The list includes
+  // stored registrations and installing (not stored yet) registrations.
   // Must be called on the core thread, and the callback is called on that
   // thread. This restriction is because the callback gets pointers to live
   // registrations, which live on the core thread.
@@ -556,6 +571,10 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       StartServiceWorkerForNavigationHintCallback callback);
   void StopAllServiceWorkersOnCoreThread(
       base::OnceClosure callback,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
+  void GetInstalledRegistrationOriginsOnCoreThread(
+      base::Optional<std::string> host_filter,
+      GetInstalledRegistrationOriginsCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_callback);
   void GetStorageUsageForOriginOnCoreThread(
       const url::Origin& origin,

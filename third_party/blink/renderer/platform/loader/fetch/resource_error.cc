@@ -110,18 +110,6 @@ ResourceError::ResourceError(const WebURLError& error)
   InitializeDescription();
 }
 
-ResourceError ResourceError::Copy() const {
-  ResourceError error_copy(error_code_, failing_url_.Copy(),
-                           cors_error_status_);
-  error_copy.extended_error_code_ = extended_error_code_;
-  error_copy.resolve_error_info_ = resolve_error_info_;
-  error_copy.has_copy_in_cache_ = has_copy_in_cache_;
-  error_copy.localized_description_ = localized_description_.IsolatedCopy();
-  error_copy.is_access_check_ = is_access_check_;
-  error_copy.trust_token_operation_error_ = trust_token_operation_error_;
-  return error_copy;
-}
-
 ResourceError::operator WebURLError() const {
   WebURLError::HasCopyInCache has_copy_in_cache =
       has_copy_in_cache_ ? WebURLError::HasCopyInCache::kTrue

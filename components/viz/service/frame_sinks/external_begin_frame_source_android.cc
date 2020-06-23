@@ -38,10 +38,13 @@ void ExternalBeginFrameSourceAndroid::OnVSync(
   base::TimeDelta vsync_period(
       base::TimeDelta::FromMicroseconds(period_micros));
   // Calculate the next frame deadline:
-  base::TimeTicks deadline = frame_time + vsync_period;
+  base::TimeTicks next_frame_time = frame_time + vsync_period;
+  base::TimeTicks deadline =
+      next_frame_time -
+      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(vsync_period);
 
   auto begin_frame_args = begin_frame_args_generator_.GenerateBeginFrameArgs(
-      source_id(), frame_time, deadline, vsync_period);
+      source_id(), frame_time, deadline, next_frame_time, vsync_period);
   OnBeginFrame(begin_frame_args);
 }
 

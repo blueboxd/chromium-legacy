@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/common/webui_url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
@@ -28,6 +29,7 @@ const security_interstitials::SecurityInterstitialPage::TypeID
 
 LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
     content::WebContents* web_contents,
+    const GURL& safe_url,
     const GURL& request_url,
     ukm::SourceId source_id,
     LookalikeUrlMatchType match_type,
@@ -38,6 +40,7 @@ LookalikeUrlBlockingPage::LookalikeUrlBlockingPage(
           web_contents,
           request_url,
           std::move(controller_client)),
+      safe_url_(safe_url),
       source_id_(source_id),
       match_type_(match_type) {
   controller()->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
@@ -85,26 +88,44 @@ void LookalikeUrlBlockingPage::PopulateInterstitialStrings(
   CHECK(load_time_data);
 
   PopulateStringsForSharedHTML(load_time_data);
-
-  const base::string16 hostname =
-      security_interstitials::common_string_util::GetFormattedHostName(
-          request_url());
   load_time_data->SetString("tabTitle",
                             l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_TITLE));
   load_time_data->SetString(
-      "heading",
-      l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_HEADING, hostname));
-  load_time_data->SetString(
-      "primaryParagraph",
-      l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH));
-  load_time_data->SetString(
-      "proceedButtonText", l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_IGNORE));
-  load_time_data->SetString(
-      "primaryButtonText",
-      l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_CONTINUE, hostname));
-  load_time_data->SetString(
       "optInLink",
       l10n_util::GetStringUTF16(IDS_SAFE_BROWSING_SCOUT_REPORTING_AGREE));
+
+  if (safe_url_.is_valid()) {
+    const base::string16 hostname =
+        security_interstitials::common_string_util::GetFormattedHostName(
+            safe_url_);
+    load_time_data->SetString(
+        "heading",
+        l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_HEADING, hostname));
+    load_time_data->SetString(
+        "primaryParagraph",
+        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH));
+    load_time_data->SetString(
+        "proceedButtonText",
+        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_IGNORE));
+    load_time_data->SetString(
+        "primaryButtonText",
+        l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_CONTINUE, hostname));
+  } else {
+    // No safe URL available to suggest. This can happen when the navigated
+    // domain fails IDN spoof checks but isn't a lookalike of a known domain.
+    // TODO: Change to actual strings.
+    load_time_data->SetString(
+        "heading", l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_TITLE));
+    load_time_data->SetString(
+        "primaryParagraph",
+        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH));
+    load_time_data->SetString(
+        "proceedButtonText",
+        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_IGNORE));
+    load_time_data->SetString(
+        "primaryButtonText",
+        l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_BACK_TO_SAFETY));
+  }
 }
 
 void LookalikeUrlBlockingPage::OnInterstitialClosing() {
@@ -132,7 +153,13 @@ void LookalikeUrlBlockingPage::CommandReceived(const std::string& command) {
       controller()->metrics_helper()->RecordUserDecision(
           MetricsHelper::DONT_PROCEED);
       ReportUkmIfNeeded(LookalikeUrlBlockingPageUserAction::kAcceptSuggestion);
-      controller()->GoBack();
+      // If the interstitial doesn't have a suggested URL (e.g. punycode
+      // interstitial), simply open the new tab page.
+      if (!safe_url_.is_valid()) {
+        controller()->OpenUrlInCurrentTab(GURL(chrome::kChromeUINewTabURL));
+      } else {
+        controller()->GoBack();
+      }
       break;
     case security_interstitials::CMD_PROCEED:
       controller()->metrics_helper()->RecordUserDecision(

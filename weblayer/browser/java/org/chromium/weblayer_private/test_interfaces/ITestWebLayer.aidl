@@ -33,10 +33,13 @@ interface ITestWebLayer {
 
   boolean canBrowserControlsScroll(in ITab tab) = 9;
 
-  // Creates and shows a test infobar in |tab|, calling |runnable| when the addition (including 
+  // Creates and shows a test infobar in |tab|, calling |runnable| when the addition (including
   // animations) is complete.
   void addInfoBar(in ITab tab, in IObjectWrapper runnable) = 10;
 
   // Gets the infobar container view associated with |tab|.
   IObjectWrapper getInfoBarContainerView(in ITab tab) = 11;
+
+  void setIgnoreMissingKeyForTranslateManager(in boolean ignore) = 12;
+  void forceNetworkConnectivityState(in boolean networkAvailable) = 13;
 }

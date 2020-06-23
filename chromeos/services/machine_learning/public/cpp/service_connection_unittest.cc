@@ -16,6 +16,7 @@
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "chromeos/services/machine_learning/public/mojom/graph_executor.mojom.h"
+#include "chromeos/services/machine_learning/public/mojom/handwriting_recognizer.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
@@ -83,11 +84,12 @@ TEST_F(ServiceConnectionTest, LoadTextClassifier) {
       base::BindOnce([](mojom::LoadModelResult result) {}));
 }
 
-// Tests that LoadHandwritingModel runs OK (no crash) in a basic Mojo
+// Tests that LoadHandwritingModelWithSpec runs OK (no crash) in a basic Mojo
 // environment.
-TEST_F(ServiceConnectionTest, LoadHandwritingModel) {
+TEST_F(ServiceConnectionTest, LoadHandwritingModelWithSpec) {
   mojo::Remote<mojom::HandwritingRecognizer> handwriting_recognizer;
-  ServiceConnection::GetInstance()->LoadHandwritingModel(
+  ServiceConnection::GetInstance()->LoadHandwritingModelWithSpec(
+      mojom::HandwritingRecognizerSpec::New("en"),
       handwriting_recognizer.BindNewPipeAndPassReceiver(),
       base::BindOnce([](mojom::LoadModelResult result) {}));
 }
@@ -315,14 +317,15 @@ TEST_F(ServiceConnectionTest,
 }
 
 // Tests the fake ML service for handwriting.
-TEST_F(ServiceConnectionTest, FakeHandWritingRecognizer) {
+TEST_F(ServiceConnectionTest, FakeHandWritingRecognizerWithSpec) {
   mojo::Remote<mojom::HandwritingRecognizer> recognizer;
   bool callback_done = false;
   FakeServiceConnectionImpl fake_service_connection;
   ServiceConnection::UseFakeServiceConnectionForTesting(
       &fake_service_connection);
 
-  ServiceConnection::GetInstance()->LoadHandwritingModel(
+  ServiceConnection::GetInstance()->LoadHandwritingModelWithSpec(
+      mojom::HandwritingRecognizerSpec::New("en"),
       recognizer.BindNewPipeAndPassReceiver(),
       base::BindOnce(
           [](bool* callback_done, mojom::LoadModelResult result) {

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/thermal_resource.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/modules/peerconnection/testing/fake_resource_listener.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_mock_scheduler.h"
 #include "third_party/webrtc/api/adaptation/resource.h"
 
@@ -13,29 +14,6 @@ namespace blink {
 namespace {
 
 const int64_t kReportIntervalMs = 10000;
-
-class FakeResourceListener : public webrtc::ResourceListener {
- public:
-  ~FakeResourceListener() override = default;
-
-  void OnResourceUsageStateMeasured(
-      rtc::scoped_refptr<webrtc::Resource> resource,
-      webrtc::ResourceUsageState usage_state) override {
-    latest_measurement_ = usage_state;
-    ++measurement_count_;
-  }
-
-  size_t measurement_count() const { return measurement_count_; }
-  webrtc::ResourceUsageState latest_measurement() const {
-    DCHECK(measurement_count_);
-    return latest_measurement_;
-  }
-
- private:
-  size_t measurement_count_ = 0u;
-  webrtc::ResourceUsageState latest_measurement_ =
-      webrtc::ResourceUsageState::kUnderuse;
-};
 
 class ThermalResourceTest : public ::testing::Test {
  public:

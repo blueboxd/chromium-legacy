@@ -73,6 +73,7 @@ void CompositorFrameReportingController::WillBeginImplFrame(
   reporter->set_tick_clock(tick_clock_);
   reporter->StartStage(StageType::kBeginImplFrameToSendBeginMainFrame,
                        begin_time);
+  reporter->SetDroppedFrameCounter(dropped_frame_counter_);
   reporters_[PipelineStage::kBeginImplFrame] = std::move(reporter);
 }
 
@@ -98,6 +99,7 @@ void CompositorFrameReportingController::WillBeginMainFrame(
         should_report_metrics_);
     reporter->set_tick_clock(tick_clock_);
     reporter->StartStage(StageType::kSendBeginMainFrameToCommit, Now());
+    reporter->SetDroppedFrameCounter(dropped_frame_counter_);
     reporters_[PipelineStage::kBeginMainFrame] = std::move(reporter);
   }
 }
@@ -204,6 +206,7 @@ void CompositorFrameReportingController::DidSubmitCompositorFrame(
     if (reporter) {
       reporter->StartStage(StageType::kEndActivateToSubmitCompositorFrame,
                            reporter->impl_frame_finish_time());
+      reporter->SetHasPartialUpdate();
       impl_reporter = std::move(reporter);
     }
   }

@@ -92,7 +92,7 @@
 </style>
 <cr-input id="dropdownInput" on-keydown="onKeyDown_"
     value="[[value.displayName]]" disabled="[[disabled]]">
-  <div id="pre-input-overlay" slot="prefix">
+  <div id="pre-input-overlay" slot="inline-prefix">
     <div id="pre-input-box">
       <iron-icon icon="[[destinationIcon]]"></iron-icon>
     </div>
@@ -109,7 +109,9 @@
           <template is="dom-repeat" items="[[itemList]]">
             <button id="[[item.key]]" class="list-item" on-click="onSelect_"
                 tabindex="-1" value="[[item.key]]">
-              <span class="dot"></span>
+              <printer-status-icon-cros background="white"
+                  state$="[[computePrinterState_(item.printerStatusReason)]]">
+              </printer-status-icon-cros>
               [[item.displayName]]
             </button>
           </template>

@@ -151,11 +151,6 @@ class SyncEngine : public ModelTypeConfigurer {
   // Turns on encryption of all present and future sync data.
   virtual void EnableEncryptEverything() = 0;
 
-  // Obtain a handle to the UserShare needed for creating transactions. Should
-  // not be called before we signal initialization is complete with
-  // OnBackendInitialized().
-  virtual UserShare* GetUserShare() const = 0;
-
   // Returns current detailed status information.
   virtual const SyncStatus& GetDetailedStatus() const = 0;
 

@@ -51,6 +51,13 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
     STATE_ACTIVE = 1 << 6,
   };
 
+  // Returns whether |event| should be handled by a ShelfAppButton if a context
+  // menu for the view is shown. Note that the context menu controller will
+  // redirect gesture events to the hotseat widget if the context menu was shown
+  // for a ShelfAppButton). The hotseat widget uses this method to determine
+  // whether such events can/should be dropped without handling.
+  static bool ShouldHandleEventFromContextMenu(const ui::GestureEvent* event);
+
   ShelfAppButton(ShelfView* shelf_view,
                  ShelfButtonDelegate* shelf_button_delegate);
   ~ShelfAppButton() override;
@@ -65,6 +72,10 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
   void AddState(State state);
   void ClearState(State state);
   int state() const { return state_; }
+
+  // Clears drag drag state that might have been set by gesture handling when a
+  // gesture ends. No-op if the drag state has already been cleared.
+  void ClearDragStateOnGestureEnd();
 
   // Returns the bounds of the icon.
   gfx::Rect GetIconBounds() const;

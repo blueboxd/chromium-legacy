@@ -108,7 +108,8 @@ const tests = [
       clientHeight: 400,
       isPrintPreview: false,
     };
-    const toolbar = document.getElementById('toolbar');
+    const toolbar = document.querySelector('pdf-viewer')
+                        .shadowRoot.querySelector('#toolbar');
     const bookmarksDropdown = toolbar.$.bookmarks;
 
     const toolbarManager =

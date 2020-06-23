@@ -11,11 +11,11 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/compiler_specific.h"
 #include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/containers/small_map.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"

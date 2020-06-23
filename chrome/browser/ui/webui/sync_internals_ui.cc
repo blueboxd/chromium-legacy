@@ -14,13 +14,15 @@
 #include "components/sync/driver/about_sync_util.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace {
 
 content::WebUIDataSource* CreateSyncInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISyncInternalsHost);
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources 'self' 'unsafe-eval';");
 
   source->UseStringsJs();
@@ -65,4 +67,3 @@ SyncInternalsUI::SyncInternalsUI(content::WebUI* web_ui)
 }
 
 SyncInternalsUI::~SyncInternalsUI() {}
-

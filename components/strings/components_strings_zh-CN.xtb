@@ -1236,7 +1236,6 @@
 <translation id="6240447795304464094">Google Pay 徽标</translation>
 <translation id="6241121617266208201">隐藏建议</translation>
 <translation id="624499991300733384">打印合成器服务</translation>
-<translation id="6251924700383757765">隐私权政策</translation>
 <translation id="6254436959401408446">内存不足，无法打开此网页</translation>
 <translation id="625755898061068298">您已选择针对此网站停用安全警告功能。</translation>
 <translation id="6259156558325130047">恢复顺序调整(&amp;R)</translation>
@@ -1523,6 +1522,7 @@
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7488762544858401571">已修改</translation>
 <translation id="7495290002932347110">某个网站或应用发生了数据泄露，导致您的密码外泄。Chrome 建议您立即检查并更改您在<ph name="ORIGIN" />上保存的密码。</translation>
+<translation id="7495528107193238112">该内容被屏蔽了。请联系网站所有者以解决此问题。</translation>
 <translation id="7498234416455752244">继续修改</translation>
 <translation id="7503664977220660814">您刚刚在一个诈骗网站中输入了密码。Chromium 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及使用此密码的其他网站检查您保存的密码。</translation>
 <translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>
@@ -1622,7 +1622,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{无}=1{1 个应用（<ph name="EXAMPLE_APP_1" />）}=2{2 个应用（<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />）}other{# 个应用（<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />、<ph name="AND_MORE" />）}}</translation>
 <translation id="785549533363645510">但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">向 Google 发送<ph name="BEGIN_WHITEPAPER_LINK" />您访问的部分网页的网址、有限的系统信息以及部分网页内容<ph name="END_WHITEPAPER_LINK" />，帮助提升所有人的在线安全。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">离开此网站？</translation>
 <translation id="7865448901209910068">最快的速度</translation>
 <translation id="7874263914261512992">您刚刚在一个诈骗网站中输入了密码。Chrome 建议您立即前往 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 以及使用此密码的其他网站检查您保存的密码。</translation>

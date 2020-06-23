@@ -1461,6 +1461,7 @@ static void GL_BINDING_CALL Mock_glObjectPtrLabel(void* ptr,
 static void GL_BINDING_CALL Mock_glObjectPtrLabelKHR(void* ptr,
                                                      GLsizei length,
                                                      const char* label);
+static void GL_BINDING_CALL Mock_glPatchParameteri(GLenum pname, GLint value);
 static void GL_BINDING_CALL Mock_glPathCommandsCHROMIUM(GLuint path,
                                                         GLsizei numCommands,
                                                         const GLubyte* commands,

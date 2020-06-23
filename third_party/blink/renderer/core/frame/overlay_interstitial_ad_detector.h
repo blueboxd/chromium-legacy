@@ -54,7 +54,7 @@ class CORE_EXPORT OverlayInterstitialAdDetector {
   void MaybeFireDetection(LocalFrame* main_frame);
 
  private:
-  void OnPopupAdDetected(LocalFrame* main_frame);
+  void OnPopupDetected(LocalFrame* main_frame, bool is_ad);
 
   bool started_detection_ = false;
   bool main_content_has_loaded_ = false;
@@ -64,6 +64,7 @@ class CORE_EXPORT OverlayInterstitialAdDetector {
   IntSize last_detection_main_frame_size_;
 
   DOMNodeId candidate_id_;
+  bool candidate_is_ad_ = false;
 
   // The following members are valid only when |candidate_| is not nullptr.
   int candidate_start_main_frame_scroll_offset_ = 0;
@@ -82,7 +83,8 @@ class CORE_EXPORT OverlayInterstitialAdDetector {
   // can skip it on its next occurrence without computing the style again.
   DOMNodeId last_unqualified_element_id_;
 
-  bool done_detection_ = false;
+  bool popup_detected_ = false;
+  bool popup_ad_detected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OverlayInterstitialAdDetector);
 };

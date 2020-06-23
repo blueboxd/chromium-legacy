@@ -31,6 +31,20 @@ int LiteVideoTargetDownlinkRTTLatencyMs();
 // requests.
 int LiteVideoKilobytesToBufferBeforeThrottle();
 
+// The maximum number of hosts maintained for each blocklist for the LiteVideo
+// optimization.
+size_t MaxUserBlocklistHosts();
+
+// The duration which a host will remain blocklisted from having media requests
+// throttled based on user opt-outs.
+base::TimeDelta UserBlocklistHostDuration();
+
+// The number of opt-out events for a host to be considered to be blocklisted.
+int UserBlocklistOptOutHistoryThreshold();
+
+// The current version of the LiteVideo user blocklist.
+int LiteVideoBlocklistVersion();
+
 }  // namespace features
 }  // namespace lite_video
 

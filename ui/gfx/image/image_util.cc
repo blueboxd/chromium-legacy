@@ -85,9 +85,15 @@ Image ResizedImageForSearchByImageSkiaRepresentation(const Image& image) {
   if (bitmap.height() * bitmap.width() > kSearchByImageMaxImageArea &&
       (bitmap.width() > kSearchByImageMaxImageWidth ||
        bitmap.height() > kSearchByImageMaxImageHeight)) {
+    double scale = std::min(
+        static_cast<double>(kSearchByImageMaxImageWidth) / bitmap.width(),
+        static_cast<double>(kSearchByImageMaxImageHeight) / bitmap.height());
+    int width = base::ClampToRange<int>(scale * bitmap.width(), 1,
+                                        kSearchByImageMaxImageWidth);
+    int height = base::ClampToRange<int>(scale * bitmap.height(), 1,
+                                         kSearchByImageMaxImageHeight);
     SkBitmap new_bitmap = skia::ImageOperations::Resize(
-        bitmap, skia::ImageOperations::RESIZE_GOOD, kSearchByImageMaxImageWidth,
-        kSearchByImageMaxImageHeight);
+        bitmap, skia::ImageOperations::RESIZE_GOOD, width, height);
     return Image(ImageSkia(ImageSkiaRep(new_bitmap, 0.0f)));
   }
 

@@ -33,6 +33,7 @@
 <translation id="1323735185997015385">Löschen</translation>
 <translation id="132683371494960526">Tippen Sie hier doppelt, um den übergeordneten Ordner zu ändern.</translation>
 <translation id="1340643665687018190">Menü schließen</translation>
+<translation id="1345319103680304157">Keine gehackten Passwörter</translation>
 <translation id="1358214951266274152">Kopierten Link aufrufen</translation>
 <translation id="1360432990279830238">Abmelden &amp; Synchronisierung deaktivieren?</translation>
 <translation id="1375321115329958930">Gespeicherte Passwörter</translation>
@@ -93,7 +94,6 @@
 <translation id="2073572773299281212">Vor <ph name="DAYS" /> Tagen aktiv</translation>
 <translation id="2074131957428911366">Sie können in den <ph name="BEGIN_LINK" />Einstellungen<ph name="END_LINK" /> auswählen, was Sie synchronisieren möchten.</translation>
 <translation id="2079545284768500474">Rückgängig machen</translation>
-<translation id="2081417079511601293">Drittanbieter-Cookies im Inkognitomodus blockiert</translation>
 <translation id="209018056901015185">Desktop-Version</translation>
 <translation id="2103075008456228677">history.google.com öffnen</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> Lesezeichen verschoben</translation>
@@ -177,6 +177,9 @@
 <translation id="298306318844797842">Zahlungsmethode hinzufügen…</translation>
 <translation id="2989805286512600854">In neuem Tab öffnen</translation>
 <translation id="3037605927509011580">Oh nein!</translation>
+<translation id="3089107351814154346">Websites können Cookies verwenden, um Ihnen das Surfen zu erleichtern; zum Beispiel, damit Sie angemeldet oder Artikel in Ihrem Einkaufswagen gespeichert bleiben.
+
+Wenn der Inkognitomodus aktiviert ist, können Websites Cookies nicht verwenden, um Ihre Browseraktivitäten auf anderen Websites zu sehen und beispielsweise zur Personalisierung von Werbung zu nutzen.</translation>
 <translation id="3112556859945124369">Markieren…</translation>
 <translation id="3131206671572504478">Alle blockiert</translation>
 <translation id="3153862085237805241">Karte speichern</translation>
@@ -191,6 +194,9 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> von <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Geöffnete Tabs</translation>
+<translation id="3273647133355801546">Websites können Cookies verwenden, um Ihnen das Surfen zu erleichtern; zum Beispiel, damit Sie angemeldet oder Artikel in Ihrem Einkaufswagen gespeichert bleiben.
+
+Websites können Cookies verwenden, um Ihre Browseraktivitäten auf anderen Websites zu sehen und beispielsweise zur Personalisierung von Werbung zu nutzen.</translation>
 <translation id="3277021493514034324">Websiteadresse kopiert</translation>
 <translation id="3290875554372353449">Konto auswählen</translation>
 <translation id="3311748811247479259">Aus</translation>
@@ -235,6 +241,7 @@
 <translation id="3789841737615482174">Installieren</translation>
 <translation id="3803696231112616155">Übersetzung für diese Seite anbieten</translation>
 <translation id="385051799172605136">Zurück</translation>
+<translation id="3892144330757387737">Hier wird Ihr Verlauf angezeigt</translation>
 <translation id="3897092660631435901">Menü</translation>
 <translation id="3915450441834151894">Websiteinformationen</translation>
 <translation id="3922310737605261887">Nach kopiertem Text suchen</translation>
@@ -257,6 +264,7 @@
 <translation id="4112644173421521737">Suche</translation>
 <translation id="4121993058175073134">Zum Senden von Exportdaten E-Mail-Konto in App "Einstellungen" konfigurieren</translation>
 <translation id="4124987746317609294">Zeitraum</translation>
+<translation id="4152011295694446843">Hier werden Ihre Lesezeichen angezeigt</translation>
 <translation id="4172051516777682613">Immer anzeigen</translation>
 <translation id="418156467088430727">Offlineversion in einem neuen Tab ansehen</translation>
 <translation id="4181841719683918333">Sprachen</translation>
@@ -278,6 +286,7 @@
 <translation id="4469418912670346607">Einrichtung fortsetzen</translation>
 <translation id="4476574785019001431">Einstellungen</translation>
 <translation id="4496373720959965247">Tabs hinzufügen und zwischen Seiten wechseln</translation>
+<translation id="4502566650163919158">Jetzt prüfen</translation>
 <translation id="4508750114462689118">Anmeldeangebot schließen</translation>
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="4536418791685807335">Melden Sie sich noch einmal an.</translation>
@@ -309,6 +318,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="4840495572919996524">Ihre Lesezeichen, Ihr Verlauf, Ihre Passwörter und andere Einstellungen werden nicht mehr mit Ihrem Google-Konto synchronisiert.</translation>
 <translation id="4854345657858711387">Passcode einrichten</translation>
 <translation id="4860895144060829044">Anrufen</translation>
+<translation id="4872323082491632254">Passwörter prüfen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4901778704868714008">Wird gespeichert...</translation>
 <translation id="4904877109095351937">Als gelesen markieren</translation>
@@ -341,6 +351,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
+<translation id="5339316356165661760">Synchronisierung aktivieren</translation>
 <translation id="5352285283572729470">Diese Einstellung wird verwaltet</translation>
 <translation id="5388358297987318779">Bild öffnen</translation>
 <translation id="5407969256130905701">Änderungen verwerfen</translation>
@@ -370,6 +381,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="5728700505257787410">Beim Anmelden in Ihrem Konto ist ein Fehler aufgetreten.</translation>
 <translation id="5737974891429562743">Die Anmeldeinformationen für das Konto sind veraltet. Aktualisieren Sie sie zur Synchronisierung.</translation>
 <translation id="5738887413654608789">Dann können Sie relevante Webseiten zu Objekten in Ihrer Umgebung entdecken.</translation>
+<translation id="5758631781033351321">Hier wird Ihre Leseliste angezeigt</translation>
 <translation id="5782227691023083829">Wird übersetzt...</translation>
 <translation id="5803566855766646066">Möchten Sie diese neue Karte wirklich verwerfen?</translation>
 <translation id="5816228676161003208">Per Spracheingabe können Sie noch schneller suchen.</translation>
@@ -400,6 +412,9 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="605721222689873409">JJ</translation>
 <translation id="6066301408025741299">Zum Abbrechen tippen</translation>
+<translation id="6096382830554887001">Websites können Cookies verwenden, um Ihnen das Surfen zu erleichtern; zum Beispiel, damit Sie angemeldet oder Artikel in Ihrem Einkaufswagen gespeichert bleiben.
+
+Websites können Cookies nicht verwenden, um Ihre Browseraktivitäten auf anderen Websites zu sehen und beispielsweise zur Personalisierung von Werbung zu nutzen.</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
 <translation id="6119050551270742952">Die aktuelle Webseite ist im Inkognitomodus</translation>
 <translation id="6122191549521593678">Online</translation>
@@ -431,6 +446,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6380866119319257197">Wenn Sie Ihre Passphrase vergessen oder diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Name auf Karte</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>
+<translation id="6410883413783534063">Öffnen Sie Tabs, um mehrere Seiten gleichzeitig zu besuchen</translation>
 <translation id="6417838470969808600">Sie haben Lesezeichen, den Verlauf, Passwörter und andere Einstellungen von <ph name="USER_EMAIL1" /> übernommen.</translation>
 <translation id="641799622251403418">Angemeldet als <ph name="EMAIL" />.
 
@@ -473,6 +489,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="6856384753476268833">Von Ihrer Organisation verwaltet.</translation>
 <translation id="6858855187367714033">Gescannt</translation>
 <translation id="6859944681507688231">Wenn Sie einen QR-Code oder eine Kreditkarte scannen möchten, aktivieren Sie zuerst in den Einstellungen die Kamera.</translation>
+<translation id="6869389390665537774">Sie können die von Ihnen besuchten Seiten ansehen oder sie aus Ihrem Verlauf löschen</translation>
 <translation id="6873263987691478642">Geteilte Ansicht</translation>
 <translation id="6888009575607455378">Möchten Sie die Änderungen wirklich verwerfen?</translation>
 <translation id="6896758677409633944">Kopieren</translation>
@@ -499,6 +516,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7133798577887235672">Voller Name</translation>
 <translation id="7136892417564438900">Kamera ist nicht verfügbar</translation>
 <translation id="7159472599653637159">Mobile Version anfordern</translation>
+<translation id="7172852049901402487">Schützen Sie Ihre Passwörter vor Sicherheitsproblemen</translation>
 <translation id="7173114856073700355">Einstellungen öffnen</translation>
 <translation id="7189598951263744875">Teilen...</translation>
 <translation id="7192050974311852563">Protokollierung starten</translation>
@@ -507,6 +525,7 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="7272437679830969316">Ihre Identität konnte nicht bestätigt werden. Das Passwort wurde nicht kopiert.</translation>
 <translation id="7291368939935408496">Passwörter werden zum Exportieren vorbereitet…</translation>
 <translation id="7293171162284876153">Aktivieren Sie "Chrome-Daten synchronisieren", um die Synchronisierung zu starten.</translation>
+<translation id="7313347584264171202">Hier werden Ihre Inkognitotabs angezeigt</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> % heruntergeladen</translation>
 <translation id="7346909386216857016">Ok</translation>
 <translation id="734758817008927353">Optionen zum Speichern von Karten</translation>
@@ -564,6 +583,7 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="8019783059653722575">Dadurch können Sie Fotos speichern und hochladen.</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8023878949384262191">Maximiert den Abschnitt</translation>
+<translation id="804427445359061970">Hier werden Ihre Tabs von anderen Geräten angezeigt</translation>
 <translation id="8059533439631660104">Abschnitt minimieren</translation>
 <translation id="806745655614357130">Daten getrennt halten</translation>
 <translation id="8073670137947914548">Download abgeschlossen</translation>
@@ -577,6 +597,9 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="8206354486702514201">Diese Einstellung wird von Ihrem Administrator erzwungen.</translation>
 <translation id="8225985093977202398">Bilder &amp; Dateien im Cache</translation>
 <translation id="8261506727792406068">Löschen</translation>
+<translation id="8262263934052349464">Websites können Cookies nicht verwenden, um Ihnen das Surfen zu erleichtern; zum Beispiel, damit Sie angemeldet oder Artikel in Ihrem Einkaufswagen gespeichert bleiben.
+
+Websites können Cookies nicht verwenden, um Ihre Browseraktivitäten auf anderen Websites zu sehen und beispielsweise zur Personalisierung von Werbung zu nutzen.</translation>
 <translation id="8281781826761538115">Standard: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Neue Suche</translation>
 <translation id="8323906514956095947">Für weitere Tab-Optionen berühren und halten</translation>
@@ -588,6 +611,7 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8458397775385147834">1 Lesezeichen gelöscht</translation>
 <translation id="8459333855531264009">Nicht sicher</translation>
+<translation id="8484911814435057959">Gehackte Passwörter</translation>
 <translation id="8487667956631253959">An</translation>
 <translation id="8487700953926739672">Offline verfügbar</translation>
 <translation id="8490978609246021741">Änderungen speichern</translation>
@@ -612,6 +636,7 @@ Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-
 <translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="8730621377337864115">Fertig</translation>
 <translation id="8741995161408053644">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden.</translation>
+<translation id="8750037785291841318">Hier werden Ihre Tabs angezeigt</translation>
 <translation id="8756969031206844760">Passwort aktualisieren?</translation>
 <translation id="8775144690796719618">Ungültige URL</translation>
 <translation id="8803639129939845298">Sicher</translation>

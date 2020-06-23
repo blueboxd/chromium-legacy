@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Copied</translation>
 <translation id="2822354292072154809">Are you sure that you want to reset all site permissions for <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2874939134665556319">Previous track</translation>
 <translation id="2910701580606108292">Ask before allowing sites to play protected content</translation>
 <translation id="2913331724188855103">Allow sites to save and read cookie data (recommended)</translation>
 <translation id="2968755619301702150">Certificate viewer</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Background sync</translation>
 <translation id="3822502789641063741">Clear site storage?</translation>
 <translation id="385051799172605136">Back</translation>
+<translation id="3859306556332390985">Seek forward</translation>
 <translation id="3955193568934677022">Allow sites to play protected content (recommended)</translation>
 <translation id="3987993985790029246">Copy link</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Title</translation>
 <translation id="4008040567710660924">Allow cookies for a specific site.</translation>
+<translation id="4046123991198612571">Next track</translation>
 <translation id="4165986682804962316">Site settings</translation>
 <translation id="4226663524361240545">Notifications may vibrate the device</translation>
 <translation id="4242533952199664413">Open settings</translation>
 <translation id="4259722352634471385">Navigation is blocked: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Allowed</translation>
+<translation id="429312253194641664">A site is playing media</translation>
 <translation id="4433925000917964731">Lite page provided by Google</translation>
 <translation id="4434045419905280838">Pop-ups and redirects</translation>
 <translation id="445467742685312942">Allow sites to play protected content</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Move down</translation>
 <translation id="6766622839693428701">Swipe down to close.</translation>
 <translation id="6782111308708962316">Prevent third-party websites from saving and reading cookie data</translation>
+<translation id="6790428901817661496">Play</translation>
 <translation id="6818926723028410516">Select items</translation>
 <translation id="6864395892908308021">This device can't read NFC</translation>
 <translation id="6910211073230771657">Deleted</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">A site is using your camera and microphone</translation>
 <translation id="8380167699614421159">This site shows intrusive or misleading ads</translation>
 <translation id="8394832520002899662">Tap to return to the site</translation>
+<translation id="8441146129660941386">Seek backward</translation>
 <translation id="8447861592752582886">Revoke device permission</translation>
 <translation id="8463851957836045671">Site is fast</translation>
 <translation id="851751545965956758">Block sites from connecting to devices</translation>

@@ -345,7 +345,7 @@ const tests = [
     chrome.test.assertEq(2, numRequests);
 
     // Set editing mode. Now, clicking download opens the menu.
-    pdfToolbar.setIsEditing();
+    pdfToolbar.hasEdits = true;
     downloadButton.click();
     chrome.test.assertTrue(actionMenu.open);
     chrome.test.assertEq(2, numRequests);

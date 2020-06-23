@@ -6,7 +6,7 @@
 # tags: [ d3d11 no-angle vulkan opengl opengles no-use-gl ]
 # tags: [ passthrough no-passthrough ]
 # tags: [ intel intel-0x3e92 intel-0x5912 intel-0xa2e
-#         amd amd-0x6613 amd-0x699f amd-0x679e
+#         amd amd-0x6613 amd-0x699f amd-0x679e amd-0x6821
 #         nvidia nvidia-0xf02 nvidia-0xfe9 nvidia-0x1cb3 nvidia-0x2184
 #         qualcomm qualcomm-adreno-(tm)-540 ]
 # tags: [ debug ]
@@ -131,6 +131,8 @@ crbug.com/912579 [ opengl win passthrough intel ] conformance2/rendering/out-of-
 # Flakily times out on driver 26.20.100.8141.
 crbug.com/1093482 [ win10 intel-0x3e92 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
 crbug.com/1093482 [ win10 intel-0x5912 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
+crbug.com/1093482 [ win10 intel-0x3e92 ] deqp/functional/gles3/shadermatrix/sub_dynamic.html [ RetryOnFailure ]
+crbug.com/1093482 [ win10 intel-0x5912 ] deqp/functional/gles3/shadermatrix/sub_dynamic.html [ RetryOnFailure ]
 
 # Intel failed issues
 crbug.com/795030 [ opengl win passthrough intel ] deqp/functional/gles3/shadercommonfunction.html [ Failure ]
@@ -440,6 +442,7 @@ crbug.com/1073538 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shadermatrix/div_dy
 crbug.com/1086194 [ mac nvidia-0xfe9 ] conformance/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
 
 # Mac AMD
+# AMD Radeon HD 8870M (1002:6821)
 # TODO(kbr): uncomment the following two exepectations after test
 # has been made more robust.
 # self.Fail('conformance/rendering/texture-switch-performance.html',
@@ -458,29 +461,31 @@ crbug.com/angleproject/3701 [ mac amd ] conformance2/textures/canvas/tex-2d-rg8-
 
 crbug.com/1044638 [ mac amd ] conformance2/rendering/framebuffer-texture-level1.html [ RetryOnFailure ]
 
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_lines.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_points.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_triangles.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_lines.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_triangles.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/position.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
-crbug.com/1027605 [ mac amd no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
+# The transformfeedback tests are specialized for two different AMD
+# GPUs because of different failure modes on each.
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_lines.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_points.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_triangles.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_lines.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_triangles.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/point_size.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/position.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ RetryOnFailure ]
+crbug.com/1027605 [ mac amd-0x6821 no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ RetryOnFailure ]
 crbug.com/751254 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_00.html [ RetryOnFailure ]
 crbug.com/636648 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_01.html [ RetryOnFailure ]
 crbug.com/644360 [ mac amd ] deqp/functional/gles3/shaderindexing/mat_02.html [ RetryOnFailure ]
@@ -645,6 +650,32 @@ crbug.com/1059760 [ mac asan ] conformance2/textures/video/* [ RetryOnFailure ]
 crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/fbocolorbuffer/tex2d_00.html [ Failure ]
 crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/fboinvalidate/format_00.html [ Failure ]
 crbug.com/1078988 [ catalina no-passthrough intel ] deqp/functional/gles3/framebufferblit/default_framebuffer_05.html [ Failure ]
+
+# Mac Pro
+# AMD Radeon HD 7800 GPU (1002:679e)
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_lines.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_points.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/array_interleaved_triangles.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_lines.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_points.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/array_separate_triangles.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_points.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_lines.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_points.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/basic_types_separate_triangles.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_centroid.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/interpolation_smooth.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/point_size.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/position.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_points.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_points.html [ Failure ]
+crbug.com/1027605 [ mac amd-0x679e no-passthrough ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
 
 ####################
 # Linux failures   #

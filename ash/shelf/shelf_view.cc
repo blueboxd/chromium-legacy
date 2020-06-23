@@ -480,6 +480,15 @@ void ShelfView::LayoutIfAppIconsOffsetUpdates() {
     LayoutToIdealBounds();
 }
 
+ShelfAppButton* ShelfView::GetShelfItemViewWithContextMenu() {
+  if (context_menu_id_.IsNull())
+    return nullptr;
+  const int item_index = model_->ItemIndexByID(context_menu_id_);
+  if (item_index < 0)
+    return nullptr;
+  return static_cast<ShelfAppButton*>(view_model_->view_at(item_index));
+}
+
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) const {
   // There are thin gaps between launcher buttons but the tooltip shouldn't hide
   // in the gaps, but the tooltip should hide if the mouse moved totally outside
@@ -1806,8 +1815,10 @@ void ShelfView::ShelfItemAdded(int model_index) {
   CalculateIdealBounds();
   view->SetBoundsRect(view_model_->ideal_bounds(model_index));
 
-  if (model_->is_current_mutation_user_triggered())
+  if (model_->is_current_mutation_user_triggered() &&
+      drag_and_drop_shelf_id_ != item.id) {
     view->ScrollViewToVisible();
+  }
 
   // The first animation moves all the views to their target position. |view|
   // is hidden, so it visually appears as though we are providing space for

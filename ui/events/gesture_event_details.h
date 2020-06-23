@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/events_base_export.h"
 #include "ui/events/types/event_type.h"

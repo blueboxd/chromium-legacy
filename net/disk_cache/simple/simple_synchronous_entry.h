@@ -190,13 +190,10 @@ class SimpleSynchronousEntry {
 
   // Opens a disk cache entry on disk. The |key| parameter is optional, if empty
   // the operation may be slower. The |entry_hash| parameter is required.
-  // |time_enqueued| is when this operation was added to the I/O thread pool,
-  //  and is provided only for histograms.
   static void OpenEntry(net::CacheType cache_type,
                         const base::FilePath& path,
                         const std::string& key,
                         uint64_t entry_hash,
-                        const base::TimeTicks& time_enqueued,
                         SimpleFileTracker* file_tracker,
                         int32_t trailer_prefetch_size,
                         SimpleEntryCreationResults* out_results);
@@ -205,7 +202,6 @@ class SimpleSynchronousEntry {
                           const base::FilePath& path,
                           const std::string& key,
                           uint64_t entry_hash,
-                          const base::TimeTicks& time_enqueued,
                           SimpleFileTracker* file_tracker,
                           SimpleEntryCreationResults* out_results);
 
@@ -215,7 +211,6 @@ class SimpleSynchronousEntry {
                                 uint64_t entry_hash,
                                 OpenEntryIndexEnum index_state,
                                 bool optimistic_create,
-                                const base::TimeTicks& time_enqueued,
                                 SimpleFileTracker* file_tracker,
                                 int32_t trailer_prefetch_size,
                                 SimpleEntryCreationResults* out_results);

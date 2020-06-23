@@ -53,10 +53,6 @@ void PreflightCache::AppendEntry(
   if (url_spec.length() >= kMaxKeyLength)
     return;
 
-  DCHECK(
-      !network_isolation_key.GetFrameOrigin().has_value() ||
-      (origin.opaque() && network_isolation_key.GetFrameOrigin()->opaque()) ||
-      network_isolation_key.GetFrameOrigin()->IsSameOriginWith(origin));
   auto key = std::make_tuple(origin, url_spec, network_isolation_key);
   const auto existing_entry = cache_.find(key);
   if (existing_entry == cache_.end()) {
@@ -80,10 +76,6 @@ bool PreflightCache::CheckIfRequestCanSkipPreflight(
     const net::HttpRequestHeaders& request_headers,
     bool is_revalidating) {
   // Check if the entry exists in the cache.
-  DCHECK(
-      !network_isolation_key.GetFrameOrigin().has_value() ||
-      (origin.opaque() && network_isolation_key.GetFrameOrigin()->opaque()) ||
-      network_isolation_key.GetFrameOrigin()->IsSameOriginWith(origin));
   auto key = std::make_tuple(origin, url.spec(), network_isolation_key);
   auto cache_entry = cache_.find(key);
   if (cache_entry == cache_.end()) {

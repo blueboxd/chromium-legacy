@@ -6,6 +6,7 @@
  * Class to handle focus rings.
  */
 class FocusRingManager {
+  /** @private */
   constructor() {
     /**
      * A map of all the focus rings.
@@ -18,95 +19,117 @@ class FocusRingManager {
      * Regex pattern to verify valid colors. Checks that the first character
      * is '#', followed by 3, 4, 6, or 8 valid hex characters, and no other
      * characters (ignoring case).
+     * @private
      */
     this.colorPattern_ = /^#([0-9A-F]{3,4}|[0-9A-F]{6}|[0-9A-F]{8})$/i;
+  }
+
+  static initialize() {
+    FocusRingManager.instance = new FocusRingManager();
   }
 
   /**
    * Sets the focus ring color.
    * @param {!string} color
    */
-  setColor(color) {
-    if (this.colorPattern_.test(color) !== true) {
-      throw SwitchAccess.error(
+  static setColor(color) {
+    const manager = FocusRingManager.instance;
+    if (!manager) {
+      return;
+    }
+
+    if (manager.colorPattern_.test(color) !== true) {
+      console.error(SwitchAccess.error(
           SAConstants.ErrorType.INVALID_COLOR,
           'Problem setting focus ring color: ' + color + ' is not' +
-              'a valid CSS color string.');
+              'a valid CSS color string.'));
+      return;
     }
-    this.rings_.forEach((ring) => ring.color = color);
+    manager.rings_.forEach((ring) => ring.color = color);
   }
 
   /**
    * Sets the primary and next focus rings based on the current primary and
    *     group nodes used for navigation.
-   * @param {!SAChildNode} primary
-   * @param {!SARootNode} group
+   * @param {!SAChildNode} node
    */
-  setFocusNodes(primary, group) {
-    if (primary instanceof BackButtonNode) {
+  static setFocusedNode(node) {
+    const manager = FocusRingManager.instance;
+    if (!manager) {
+      return;
+    }
+
+    if (node instanceof BackButtonNode) {
+      const backButton = /** @type {!BackButtonNode} */ (node);
       // The back button node handles setting its own focus, as it has special
       // requirements (a round focus ring that has no gap with the edges of the
       // view).
-      this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
+      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
-      this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
-      this.updateFocusRings_();
+      manager.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
+      manager.updateFocusRings_();
 
       // The dashed focus ring should not be shown around the menu when exiting.
       if (!MenuManager.isMenuOpen()) {
-        this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
-        this.updateFocusRings_();
+        manager.rings_.get(SAConstants.Focus.ID.NEXT).rects =
+            [backButton.group.location];
+        manager.updateFocusRings_();
       }
       return;
     }
 
-    if (!primary.location) {
+    if (!node.location) {
+      setTimeout(NavigationManager.moveToValidNode, 0);
       throw SwitchAccess.error(
           SAConstants.ErrorType.MISSING_LOCATION,
           'Cannot set focus rings if node location is undefined');
     }
 
     // If the primary node is a group, show its first child as the "next" focus.
-    if (primary.isGroup()) {
-      const firstChild = primary.asRootNode().firstChild;
+    if (node.isGroup()) {
+      const firstChild = node.asRootNode().firstChild;
 
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
-      this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
-      this.updateFocusRings_();
+      manager.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
+      manager.updateFocusRings_();
 
-      let focusRect = primary.location;
+      let focusRect = node.location;
       const childRect = firstChild ? firstChild.location : null;
       if (childRect) {
         // If the current element is not the back button, the focus rect should
         // expand to contain the child rect.
         focusRect = RectHelper.expandToFitWithPadding(
             SAConstants.Focus.GROUP_BUFFER, focusRect, childRect);
-        this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [childRect];
+        manager.rings_.get(SAConstants.Focus.ID.NEXT).rects = [childRect];
       }
-      this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [focusRect];
-      this.updateFocusRings_();
+      manager.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [focusRect];
+      manager.updateFocusRings_();
       return;
     }
 
-    this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [primary.location];
-    this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
-    this.updateFocusRings_();
+    manager.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [node.location];
+    manager.rings_.get(SAConstants.Focus.ID.NEXT).rects = [];
+    manager.updateFocusRings_();
   }
 
-  /**
-   * Clears all focus rings.
-   */
-  clearAll() {
-    this.rings_.forEach((ring) => ring.rects = []);
-    this.updateFocusRings_();
+  /** Clears all focus rings. */
+  static clearAll() {
+    const manager = FocusRingManager.instance;
+    if (!manager) {
+      return;
+    }
+
+    manager.rings_.forEach((ring) => ring.rects = []);
+    manager.updateFocusRings_();
   }
 
   /**
    * Creates the map of focus rings.
    * @return {!Map<SAConstants.Focus.ID,
    * chrome.accessibilityPrivate.FocusRingInfo>}
+   * @private
    */
   createMap_() {
     const primaryRing = {
@@ -135,6 +158,7 @@ class FocusRingManager {
   /**
    * Updates all focus rings to reflect new location, color, style, or other
    * changes.
+   * @private
    */
   updateFocusRings_() {
     const focusRings = [];

@@ -93,7 +93,6 @@
 <translation id="2073572773299281212">Activo hace <ph name="DAYS" /> días</translation>
 <translation id="2074131957428911366">En la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
-<translation id="2081417079511601293">Bloquear las cookies de terceros en el modo Incógnito</translation>
 <translation id="209018056901015185">Versión para escritorio</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> elementos movidos</translation>
@@ -438,7 +437,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="6418346271604475326">Preparando PDF</translation>
 <translation id="6426067060178468363">Permitir cookies</translation>
 <translation id="6434591244308415567">Se produjo un error. Vuelve a intentarlo más tarde.</translation>
-<translation id="6439338047467462846">Permitir todo</translation>
+<translation id="6439338047467462846">Permitir todas</translation>
 <translation id="6445051938772793705">País</translation>
 <translation id="6445981559479772097">Mensaje enviado</translation>
 <translation id="6447842834002726250">Cookies</translation>

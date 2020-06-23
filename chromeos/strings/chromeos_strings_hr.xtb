@@ -3,6 +3,7 @@
 <translationbundle lang="hr">
 <translation id="1018656279737460067">Otkazano</translation>
 <translation id="1195447618553298278">Nepoznata pogreška.</translation>
+<translation id="1413240736185167732">Nije uspjelo – filtar ne radi</translation>
 <translation id="1468664791493211953">Ponude</translation>
 <translation id="1482734542997480527">Uređajem upravlja domena <ph name="ENROLLMENT_DOMAIN" /> i ona možda može nadzirati vašu aktivnost.</translation>
 <translation id="150962533380566081">PUK nije važeći.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Ovim uređajem upravlja tvrtka</translation>
 <translation id="1905710495812624430">Premašen je maksimalan dopušteni broj pokušaja.</translation>
 <translation id="1930797645656624981">Usluga načina unosa OS-a Chrome</translation>
+<translation id="1947737735496445907">Ispisano</translation>
 <translation id="1979103255016296513">Zakašnjela promjena zaporke</translation>
 <translation id="2049639323467105390">Ovim uređajem upravlja <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Uključite Bluetooth da biste otkrili uređaje u blizini</translation>
@@ -18,15 +20,23 @@
 <translation id="2805756323405976993">Aplikacije</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="3008341117444806826">OSVJEŽI</translation>
+<translation id="3091839911843451378">Nije uspjelo – zaustavljeno</translation>
+<translation id="3268178239013324452">Nije uspjelo – vratašca su otvorena</translation>
 <translation id="3369013195428705271">Jeste li sigurni da želite izbrisati svu povijest ispisa? Zadaci ispisa u tijeku neće se izbrisati.</translation>
+<translation id="3456078764689556234">Ispisane stranice: <ph name="PRINTED_PAGES" /> od <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Zadaci ispisa</translation>
+<translation id="3527036260304016759">Nije uspjelo – nepoznata pogreška</translation>
 <translation id="3749289110408117711">Naziv datoteke</translation>
 <translation id="38114475217616659">Izbriši svu povijest</translation>
 <translation id="3820172043799983114">PIN nije važeći.</translation>
 <translation id="3838338534323494292">Nova zaporka</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> od <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451">Uređajem upravlja domena <ph name="ENROLLMENT_DOMAIN" /> i ona ima pristup svim aktivnostima korisnika, uključujući posjećene web-stranice, zaporke i e-poštu.</translation>
+<translation id="4003384961948020559">Nije uspjelo – izlaz je pun</translation>
 <translation id="4034824040120875894">Pisač</translation>
 <translation id="4227825898293920515">Zaporka istječe za <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Nema zadataka ispisa u tijeku</translation>
+<translation id="428217921675623177">Uklonit će se zadaci ispisa stariji od 90 dana</translation>
 <translation id="4429881212383817840">Kerberosov tiket uskoro istječe</translation>
 <translation id="445059817448385655">Stara zaporka</translation>
 <translation id="467510802200863975">Zaporke se ne podudaraju</translation>
@@ -37,24 +47,32 @@
 Dodirnite mikrofon da biste mi dali glasovnu naredbu.</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="5317780077021120954">Spremi</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Odmah odaberite novu</translation>
 <translation id="5457599981699367932">Pregledavaj kao gost</translation>
 <translation id="54609108002486618">Upravljani</translation>
 <translation id="5832805196449965646">Dodaj osobu</translation>
 <translation id="5895138241574237353">Ponovno pokreni</translation>
+<translation id="6048107060512778456">Nije uspjelo – zaglavljeni papir</translation>
 <translation id="6058625436358447366">Za dovršetak unesite staru i novu zaporku</translation>
 <translation id="6106186594183574873">Za dovršetak unesite staru zaporku</translation>
 <translation id="6146993107019042706">Za dovršetak unesite novu zaporku</translation>
 <translation id="6517239166834772319">Istražite</translation>
+<translation id="6564646048574748301">Nije uspjelo – pisač nije dostupan</translation>
 <translation id="6643016212128521049">Izbriši</translation>
 <translation id="7162487448488904999">Galerija</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Tom radnjom upravlja vaš administrator</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7690294790491645610">Potvrdite novu zaporku</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Promjena zaporke</translation>
 <translation id="8208861521865154048">Pogodnosti</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može daljinski upravljati postavkama i nadzirati aktivnost korisnika.</translation>
+<translation id="871560550817059752">Nije uspjelo – nema tinte</translation>
 <translation id="8747900814994928677">Potvrda promjena</translation>
+<translation id="8919837981463578619">Nije uspjelo – nema ladice</translation>
+<translation id="8928727111548978589">Nije uspjelo – nema papira</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Preostalo pokušaja: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Osvježite tiket za <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Otključaj</translation>

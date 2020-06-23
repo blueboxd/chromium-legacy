@@ -276,7 +276,7 @@ void SaveFileManager::SaveURL(SaveItemId save_item_id,
         std::string partition_name;
         bool in_memory;
         GetContentClient()->browser()->GetStoragePartitionConfigForSite(
-            context, site_instance->GetSiteURL(), true, &storage_domain,
+            context, site_instance->GetSiteURL(), &storage_domain,
             &partition_name, &in_memory);
       }
       url_loader_factory = CreateFileSystemURLLoaderFactory(

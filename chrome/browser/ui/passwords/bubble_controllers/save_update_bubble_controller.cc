@@ -272,7 +272,8 @@ void SaveUpdateBubbleController::ReportInteractions() {
   if (state_ == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
     metrics_util::LogUpdateUIDismissalReason(dismissal_reason_);
   } else if (state_ == password_manager::ui::PENDING_PASSWORD_STATE) {
-    metrics_util::LogSaveUIDismissalReason(dismissal_reason_);
+    metrics_util::LogSaveUIDismissalReason(dismissal_reason_,
+                                           /*user_state=*/base::nullopt);
   }
 
   // Update the delegate so that it can send votes to the server.

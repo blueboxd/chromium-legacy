@@ -135,14 +135,14 @@ class AutofillMetrics {
 
   enum InfoBarMetric {
     INFOBAR_SHOWN = 0,  // We showed an infobar, e.g. prompting to save credit
-                        // card info.
-    INFOBAR_ACCEPTED,   // The user explicitly accepted the infobar.
-    INFOBAR_DENIED,     // The user explicitly denied the infobar.
-    INFOBAR_IGNORED,    // The user completely ignored the infobar (logged on
-                        // tab close).
+    // card info.
+    INFOBAR_ACCEPTED,  // The user explicitly accepted the infobar.
+    INFOBAR_DENIED,    // The user explicitly denied the infobar.
+    INFOBAR_IGNORED,   // The user completely ignored the infobar (logged on
+    // tab close).
     INFOBAR_NOT_SHOWN_INVALID_LEGAL_MESSAGE,  // We didn't show the infobar
-                                              // because the provided legal
-                                              // message was invalid.
+    // because the provided legal
+    // message was invalid.
     NUM_INFO_BAR_METRICS,
   };
 
@@ -990,6 +990,13 @@ class AutofillMetrics {
     kMaxValue = LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
   };
 
+  // To record if the value in an autofilled field was edited by the user.
+  enum class AutofilledFieldUserEditingStatusMetric {
+    AUTOFILLED_FIELD_WAS_EDITED = 0,
+    AUTOFILLED_FIELD_WAS_NOT_EDITED = 1,
+    kMaxValue = AUTOFILLED_FIELD_WAS_NOT_EDITED,
+  };
+
   // Utility to log URL keyed form interaction events.
   class FormInteractionsUkmLogger {
    public:
@@ -1023,6 +1030,8 @@ class AutofillMetrics {
                               const AutofillField& field);
     void LogTextFieldDidChange(const FormStructure& form,
                                const AutofillField& field);
+    void LogEditedAutofilledFieldAtSubmission(const FormStructure& form,
+                                              const AutofillField& field);
     void LogFieldFillStatus(const FormStructure& form,
                             const AutofillField& field,
                             QualityMetricType metric_type);
@@ -1575,6 +1584,12 @@ class AutofillMetrics {
       bool is_city_missing,
       bool is_line1_missing);
 
+  // Records if an autofilled field of a specific type was edited by the user.
+  static void LogEditedAutofilledFieldAtSubmission(
+      FormInteractionsUkmLogger* form_interactions_ukm_logger,
+      const FormStructure& form,
+      const AutofillField& field);
+
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);
 
@@ -1586,6 +1601,11 @@ class AutofillMetrics {
   DISALLOW_IMPLICIT_CONSTRUCTORS(AutofillMetrics);
 };
 
-}  // namespace autofill
+#if defined(UNIT_TEST)
+int GetFieldTypeUserEditStatusMetric(
+    ServerFieldType server_type,
+    AutofillMetrics::AutofilledFieldUserEditingStatusMetric metric);
+#endif
 
+}  // namespace autofill
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_METRICS_H_

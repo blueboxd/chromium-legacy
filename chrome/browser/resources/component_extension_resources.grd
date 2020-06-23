@@ -101,9 +101,10 @@
         <include name="IDR_PDF_INDEX_HTML" file="pdf/index.html" type="BINDATA" preprocess="true" />
         <include name="IDR_PDF_INDEX_CSS" file="pdf/index.css" type="BINDATA" />
         <include name="IDR_PDF_MAIN_JS" file="pdf/main.js" type="BINDATA" preprocess="true" />
-        <include name="IDR_PDF_MAIN_UTIL_JS" file="pdf/main_util.js" type="BINDATA" />
-        <include name="IDR_PDF_PDF_VIEWER_JS" file="pdf/pdf_viewer.js" type="BINDATA" />
         <include name="IDR_PDF_PDF_VIEWER_UTILS_JS" file="pdf/pdf_viewer_utils.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_VIEWER_BASE_JS" file="pdf/pdf_viewer_base.js" type="BINDATA" />
+        <include name="IDR_PDF_PDF_VIEWER_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/pdf_viewer.js" use_base_dir="false" type="BINDATA" preprocess="true" />
+        <include name="IDR_PDF_PDF_VIEWER_SHARED_STYLE_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/pdf_viewer_shared_style.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_BOOKMARK_TYPE_JS" file="pdf/bookmark_type.js" type="BINDATA" />
         <include name="IDR_PDF_CONSTANTS_JS" file="pdf/constants.js" type="BINDATA" />
         <include name="IDR_PDF_CONTROLLER_JS" file="pdf/controller.js" type="BINDATA" />

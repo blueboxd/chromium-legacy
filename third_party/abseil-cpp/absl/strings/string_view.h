@@ -586,7 +586,7 @@ constexpr bool operator>=(string_view x, string_view y) noexcept {
 }
 
 // IO Insertion Operator
-std::ostream& operator<<(std::ostream& o, string_view piece);
+ABSL_DLL std::ostream& operator<<(std::ostream& o, string_view piece);
 
 ABSL_NAMESPACE_END
 }  // namespace absl

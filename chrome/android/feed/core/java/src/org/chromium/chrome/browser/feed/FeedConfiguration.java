@@ -38,8 +38,8 @@ public final class FeedConfiguration {
     public static final boolean CONSUME_SYNTHETIC_TOKENS_WHILE_RESTORING_DEFAULT = true;
 
     private static final String DEFAULT_ACTION_TTL_SECONDS = "default_action_ttl_seconds";
-    /** Default value for the TTL of default action (3 days). */
-    public static final long DEFAULT_ACTION_TTL_SECONDS_DEFAULT = 259200;
+    /** Default value for the TTL of default action (25hrs). */
+    public static final long DEFAULT_ACTION_TTL_SECONDS_DEFAULT = 90000;
 
     private static final String FEED_ACTION_SERVER_ENDPOINT = "feed_action_server_endpoint";
     /** Default value for the endpoint used for recording uploaded actions to the server. */

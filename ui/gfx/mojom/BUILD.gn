@@ -87,6 +87,26 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "gfx.mojom.PresentationFeedback"
+          cpp = "::gfx::PresentationFeedback"
+        },
+      ]
+      traits_headers = [ "presentation_feedback_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+    {
+      types = [
+        {
+          mojom = "gfx.mojom.SwapTimings"
+          cpp = "::gfx::SwapTimings"
+        },
+      ]
+      traits_headers = [ "swap_timings_mojom_traits.h" ]
+      traits_public_deps = [ "//ui/gfx" ]
+    },
+    {
+      types = [
+        {
           mojom = "gfx.mojom.Transform"
           cpp = "::gfx::Transform"
         },
@@ -157,16 +177,6 @@ mojom("mojom") {
     {
       types = [
         {
-          mojom = "gfx.mojom.PresentationFeedback"
-          cpp = "::gfx::PresentationFeedback"
-        },
-      ]
-      traits_headers = [ "presentation_feedback_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/gfx" ]
-    },
-    {
-      types = [
-        {
           mojom = "gfx.mojom.RRectF"
           cpp = "::gfx::RRectF"
         },
@@ -192,16 +202,6 @@ mojom("mojom") {
         },
       ]
       traits_headers = [ "swap_result_mojom_traits.h" ]
-      traits_public_deps = [ "//ui/gfx" ]
-    },
-    {
-      types = [
-        {
-          mojom = "gfx.mojom.SwapTimings"
-          cpp = "::gfx::SwapTimings"
-        },
-      ]
-      traits_headers = [ "swap_timings_mojom_traits.h" ]
       traits_public_deps = [ "//ui/gfx" ]
     },
   ]

@@ -67,25 +67,13 @@ function vectorDelta(p1, p2) {
   return {x: p2.x - p1.x, y: p2.y - p1.y};
 }
 
-/**
- * @param {!Point} coordinateInFrame
- * @return {!Point} Coordinate converted to plugin coordinates.
- */
-function frameToPluginCoordinate(coordinateInFrame) {
-  const container = $('plugin');
-  return {
-    x: coordinateInFrame.x - container.getBoundingClientRect().left,
-    y: coordinateInFrame.y - container.getBoundingClientRect().top
-  };
-}
-
 export class Viewport {
   /**
    * @param {!Window} window
    * @param {!HTMLDivElement} sizer The element which represents the size of the
    *     document in the viewport
-   * @param {!HTMLDivElement} content The element which contains the plugin in
-   *     the viewer.
+   * @param {!HTMLDivElement} content The element which is the parent of the
+   *     plugin in the viewer.
    * @param {number} scrollbarWidth The width of scrollbars on the page
    * @param {number} defaultZoom The default zoom level.
    * @param {number} topToolbarHeight The number of pixels that should initially
@@ -98,6 +86,9 @@ export class Viewport {
 
     /** @private {!HTMLDivElement} */
     this.sizer_ = sizer;
+
+    /** @private {!HTMLDivElement} */
+    this.content_ = content;
 
     /** @private {number} */
     this.scrollbarWidth_ = scrollbarWidth;
@@ -173,7 +164,7 @@ export class Viewport {
     this.tracker_ = new EventTracker();
 
     /** @private {!GestureDetector} */
-    this.gestureDetector_ = new GestureDetector(content);
+    this.gestureDetector_ = new GestureDetector(this.content_);
 
     /** @private {boolean} */
     this.sentPinchEvent_ = false;
@@ -196,6 +187,9 @@ export class Viewport {
 
     window.addEventListener('scroll', this.updateViewport_.bind(this));
     window.addEventListener('resize', this.resizeWrapper_.bind(this));
+
+    document.body.addEventListener(
+        'change-zoom', e => this.setZoom(e.detail.zoom));
   }
 
   /** @param {function():void} viewportChangedCallback */
@@ -414,6 +408,19 @@ export class Viewport {
       this.sizer_.style.height =
           zoomedDimensions.height + this.topToolbarHeight_ + 'px';
     }
+  }
+
+  /**
+   * @param {!Point} coordinateInFrame
+   * @return {!Point} Coordinate converted to plugin coordinates.
+   * @private
+   */
+  frameToPluginCoordinate_(coordinateInFrame) {
+    const container = this.content_.querySelector('#plugin');
+    return {
+      x: coordinateInFrame.x - container.getBoundingClientRect().left,
+      y: coordinateInFrame.y - container.getBoundingClientRect().top
+    };
   }
 
   /**
@@ -1311,6 +1318,25 @@ export class Viewport {
   }
 
   /**
+   * Handles a navigation request to a destination from the current controller.
+   * @param {number} page
+   * @param {number} x
+   * @param {number} y
+   * @param {number} zoom
+   */
+  handleNavigateToDestination(page, x, y, zoom) {
+    if (zoom) {
+      this.setZoom(zoom);
+    }
+
+    if (x || y) {
+      this.goToPageAndXY(page, x ? x : 0, y ? y : 0);
+    } else {
+      this.goToPage(page);
+    }
+  }
+
+  /**
    * @param {!PartialPoint} point The position to which to scroll the viewport.
    */
   scrollTo(point) {
@@ -1390,11 +1416,12 @@ export class Viewport {
           };
         } else if (this.keepContentCentered_) {
           this.oldCenterInContent_ =
-              this.frameToContent_(frameToPluginCoordinate(center));
+              this.frameToContent_(this.frameToPluginCoordinate_(center));
           this.keepContentCentered_ = false;
         }
 
-        this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(center));
+        this.setPinchZoomInternal_(
+            scaleDelta, this.frameToPluginCoordinate_(center));
         this.updateViewport_();
         this.prevScale_ = /** @type {number} */ (startScaleRatio);
       });
@@ -1416,7 +1443,8 @@ export class Viewport {
         const scaleDelta = startScaleRatio / this.prevScale_;
         this.pinchCenter_ = /** @type {!Point} */ (center);
 
-        this.setPinchZoomInternal_(scaleDelta, frameToPluginCoordinate(center));
+        this.setPinchZoomInternal_(
+            scaleDelta, this.frameToPluginCoordinate_(center));
         this.updateViewport_();
       });
 
@@ -1439,7 +1467,7 @@ export class Viewport {
       this.pinchPhase_ = Viewport.PinchPhase.PINCH_START;
       this.prevScale_ = 1;
       this.oldCenterInContent_ =
-          this.frameToContent_(frameToPluginCoordinate(e.detail.center));
+          this.frameToContent_(this.frameToPluginCoordinate_(e.detail.center));
 
       const needsScrollbars = this.documentNeedsScrollbars(this.getZoom());
       this.keepContentCentered_ = !needsScrollbars.horizontal;

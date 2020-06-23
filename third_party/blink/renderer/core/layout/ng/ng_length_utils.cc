@@ -72,7 +72,7 @@ bool BlockLengthUnresolvable(
     LengthResolvePhase phase,
     const LayoutUnit* opt_percentage_resolution_block_size_for_min_max) {
   if (length.IsAuto() || length.IsMinContent() || length.IsMaxContent() ||
-      length.IsFitContent() || length.IsNone())
+      length.IsMinIntrinsic() || length.IsFitContent() || length.IsNone())
     return true;
   if (length.IsPercentOrCalc()) {
     if (phase == LengthResolvePhase::kIntrinsic)
@@ -127,11 +127,12 @@ LayoutUnit ResolveInlineLengthInternal(
     }
     case Length::kMinContent:
     case Length::kMaxContent:
+    case Length::kMinIntrinsic:
     case Length::kFitContent: {
       DCHECK(min_max_sizes.has_value());
       LayoutUnit available_size = constraint_space.AvailableSize().inline_size;
       LayoutUnit value;
-      if (length.IsMinContent()) {
+      if (length.IsMinContent() || length.IsMinIntrinsic()) {
         value = min_max_sizes->min_size;
       } else if (length.IsMaxContent() || available_size == LayoutUnit::Max()) {
         // If the available space is infinite, fit-content resolves to
@@ -200,6 +201,7 @@ LayoutUnit ResolveBlockLengthInternal(
     case Length::kAuto:
     case Length::kMinContent:
     case Length::kMaxContent:
+    case Length::kMinIntrinsic:
     case Length::kFitContent:
 #if DCHECK_IS_ON()
       // Due to how content_size is calculated, it should always include border
@@ -965,8 +967,7 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
                                   TextDirection direction,
                                   LayoutUnit space_left) {
   bool is_ltr = IsLtr(direction);
-  if (text_align == ETextAlign::kStart || text_align == ETextAlign::kJustify ||
-      text_align == ETextAlign::kInternalSpaceAround)
+  if (text_align == ETextAlign::kStart || text_align == ETextAlign::kJustify)
     text_align = is_ltr ? ETextAlign::kLeft : ETextAlign::kRight;
   else if (text_align == ETextAlign::kEnd)
     text_align = is_ltr ? ETextAlign::kRight : ETextAlign::kLeft;

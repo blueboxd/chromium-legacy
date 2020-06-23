@@ -4,6 +4,7 @@
 
 #include "chromeos/components/media_app_ui/media_app_guest_ui.h"
 
+#include "chromeos/components/media_app_ui/media_app_ui_delegate.h"
 #include "chromeos/components/media_app_ui/url_constants.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources.h"
 #include "chromeos/grit/chromeos_media_app_bundle_resources_map.h"
@@ -11,10 +12,12 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace chromeos {
 
-content::WebUIDataSource* CreateMediaAppUntrustedDataSource() {
+content::WebUIDataSource* CreateMediaAppUntrustedDataSource(
+    MediaAppUIDelegate* delegate) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(kChromeUIMediaAppGuestURL);
   // Add resources from chromeos_media_app_resources.pak.
@@ -39,16 +42,24 @@ content::WebUIDataSource* CreateMediaAppUntrustedDataSource() {
                             kChromeosMediaAppBundleResources[i].value);
   }
 
+  delegate->PopulateLoadTimeData(source);
+  source->UseStringsJs();
+
   source->AddFrameAncestor(GURL(kChromeUIMediaAppURL));
   // By default, prevent all network access.
-  source->OverrideContentSecurityPolicyDefaultSrc("default-src blob: 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::DefaultSrc,
+      "default-src blob: 'self';");
   // Need to explicitly set |worker-src| because CSP falls back to |child-src|
   // which is none.
-  source->OverrideContentSecurityPolicyWorkerSrc("worker-src 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src 'self';");
   // Allow images to also handle data urls.
-  source->OverrideContentSecurityPolicyImgSrc("img-src blob: data: 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ImgSrc, "img-src blob: data: 'self';");
   // Allow styles to include inline styling needed for Polymer elements.
-  source->OverrideContentSecurityPolicyStyleSrc("style-src 'unsafe-inline';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::StyleSrc, "style-src 'unsafe-inline';");
   return source;
 }
 

@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/command_line.h"
-#include "base/logging.h"
 #include "ui/gl/gl_switches.h"
 
 #define GL_IMPL_WRAPPER_TYPE(name) \

@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">कॉपी किया गया</translation>
 <translation id="2822354292072154809">क्या आप वाकई <ph name="CHOSEN_OBJECT_NAME" /> की सभी साइट अनुमतियां रीसेट करना चाहते हैं?</translation>
 <translation id="2870560284913253234">साइट</translation>
+<translation id="2874939134665556319">पिछला ट्रैक</translation>
 <translation id="2910701580606108292">साइटों को सुरक्षित सामग्री चलाने की अनुमति देने से पहले पूछें</translation>
 <translation id="2913331724188855103">साइटों को कुकी डेटा सेव करने और पढ़ने की अनुमति दें (सुझाए गए)</translation>
 <translation id="2968755619301702150">प्रमाणपत्र व्यूअर</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">बैकग्राउंड सिंक</translation>
 <translation id="3822502789641063741">क्या आप साइट मेमोरी खाली करना चाहते हैं?</translation>
 <translation id="385051799172605136">वापस</translation>
+<translation id="3859306556332390985">आगे जाएं</translation>
 <translation id="3955193568934677022">साइटों को सुरक्षित सामग्री चलाने दें (हम इस सेटिंग को चालू रखने का सुझाव देते हैं)</translation>
 <translation id="3987993985790029246">लिंक की प्रति बनाएं</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">किसी खास साइट के लिए कुकी की मंज़ूरी दें.</translation>
+<translation id="4046123991198612571">अगला ट्रैक</translation>
 <translation id="4165986682804962316">साइट सेटिंग</translation>
 <translation id="4226663524361240545">नोटिफ़िकेशन से डिवाइस में कंपन हो सकता है</translation>
 <translation id="4242533952199664413">सेटिंग खोलें</translation>
 <translation id="4259722352634471385">मार्गदर्शक अवरोधित है: <ph name="URL" /></translation>
 <translation id="4278390842282768270">अनुमति है</translation>
+<translation id="429312253194641664">किसी साइट पर मीडिया चल रहा है</translation>
 <translation id="4433925000917964731">लाइट पेज Google ने मुहैया कराया है</translation>
 <translation id="4434045419905280838">पॉप-अप और रीडायरेक्ट</translation>
 <translation id="445467742685312942">साइटों को सभी सुरक्षित सामग्री चलाने दें</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">नीचे ले जाएं</translation>
 <translation id="6766622839693428701">बंद करने के लिए नीचे स्वाइप करें.</translation>
 <translation id="6782111308708962316">तृतीय पक्ष वेबसाइट को कुकी डेटा सहेजने और पढ़ने से रोकें</translation>
+<translation id="6790428901817661496">चलाएं</translation>
 <translation id="6818926723028410516">आइटम चुनें</translation>
 <translation id="6864395892908308021">इस डिवाइस के साथ NFC काम नहीं कर सकता</translation>
 <translation id="6910211073230771657">हटाया गया</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">कोई साइट आपके कैमरे और माइक्रोफ़ोन का इस्तेमाल कर रही है</translation>
 <translation id="8380167699614421159">इस साइट में तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाई देते हैं</translation>
 <translation id="8394832520002899662">साइट पर वापस जाने के लिए टैप करें</translation>
+<translation id="8441146129660941386">पीछे जाएं</translation>
 <translation id="8447861592752582886">डिवाइस अनुमति निरस्त करें</translation>
 <translation id="8463851957836045671">साइट तेज़ी से लोड होती है</translation>
 <translation id="851751545965956758">साइटों को डिवाइस से कनेक्ट होने से रोकें</translation>

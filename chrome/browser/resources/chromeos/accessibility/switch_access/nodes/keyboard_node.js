@@ -32,7 +32,10 @@ class KeyboardNode extends NodeWrapper {
 
     const node = this.automationNode;
     if (!node) {
-      throw new TypeError('Keyboard nodes must have an automation node.');
+      setTimeout(NavigationManager.moveToValidNode, 0);
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.MISSING_BASE_NODE,
+          'Keyboard nodes must have an automation node.');
     }
 
     const root = new RootNodeWrapper(node);

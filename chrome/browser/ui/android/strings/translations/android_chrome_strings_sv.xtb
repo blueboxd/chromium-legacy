@@ -24,7 +24,6 @@
 <translation id="116280672541001035">Använt</translation>
 <translation id="1171770572613082465">Visa populära webbplatser genom att trycka på Populärt</translation>
 <translation id="1173894706177603556">Ändra namn</translation>
-<translation id="1178581264944972037">Paus</translation>
 <translation id="1197267115302279827">Flytta bokmärken</translation>
 <translation id="1201402288615127009">Nästa</translation>
 <translation id="1204037785786432551">Ladda ned länk</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome behöver åtkomst till platsinformation för att kunna söka efter enheter. Platsåtkomst är <ph name="BEGIN_LINK" />inaktiverat för enheten<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Ta bort 1 markerat objekt}other{Ta bort # markerade objekt}}</translation>
+<translation id="1641113438599504367">Säker webbsökning</translation>
 <translation id="164269334534774161">Det som visas är en offlinekopia av den här sidan från <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1670399744444387456">Grunder</translation>
@@ -228,7 +228,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2842985007712546952">Överordnad mapp</translation>
 <translation id="2860954141821109167">Kontrollera att en telefonapp har aktiverats på enheten</translation>
 <translation id="2870560284913253234">Webbplats</translation>
-<translation id="2874939134665556319">Föregående spår</translation>
 <translation id="2876369937070532032">Webbadresser till vissa sidor som du besöker skickas till Google när din säkerhet är utsatt för risk.</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Avbryt inläsningen av sidan</translation>
@@ -270,6 +269,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3181954750937456830">Säker webbsökning (skyddar dig och enheten från skadliga webbplatser)</translation>
 <translation id="3205824638308738187">Nästan klart!</translation>
 <translation id="3207960819495026254">Bokmärkt</translation>
+<translation id="3208584281581115441">Kontrollera nu</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> raderades</translation>
 <translation id="321773570071367578">Om du har glömt lösenfrasen eller vill ändra inställningen <ph name="BEGIN_LINK" />återställer du synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Webbapp</translation>
@@ -346,7 +346,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3810973564298564668">Hantera</translation>
 <translation id="381841723434055211">Telefonnummer</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> nedladdningar har raderats</translation>
-<translation id="3859306556332390985">Sök framåt</translation>
 <translation id="388596076286380598">Kom åt artiklar, videor och annat innehåll från webbplatser som du gillar, även när du är offline eller har dålig anslutning.</translation>
 <translation id="3892148308691398805">Kopiera text</translation>
 <translation id="3894427358181296146">Lägg till mapp</translation>
@@ -369,8 +368,6 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="3997476611815694295">Oviktig lagring</translation>
 <translation id="4000212216660919741">Startsida offline</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# tim}other{# tim}}</translation>
-<translation id="403687620286099920">Tryck för att öppna QR-koden</translation>
-<translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Alternativ finns högt upp på skärmen</translation>
 <translation id="4062305924942672200">Juridisk information</translation>
@@ -390,10 +387,10 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="4209895695669353772">Aktivera synkronisering om du vill få förslag på anpassat innehåll från Google</translation>
 <translation id="423219824432660969">Kryptera synkroniserad data med Google-lösenordet från <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
+<translation id="4248098802131000011">Skydda dina lösenord från dataintrång och andra säkerhetsproblem</translation>
 <translation id="4250229828105606438">Skärmdump</translation>
 <translation id="4256782883801055595">Licenser för öppen källkod</translation>
 <translation id="4269820728363426813">Kopiera länkadress</translation>
-<translation id="429312253194641664">Media spelas upp på en webbplats</translation>
 <translation id="4298388696830689168">Länkade webbplatser</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4314815835985389558">Hantera synkronisering</translation>
@@ -567,7 +564,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Skapa händelse i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
-<translation id="5681394891799747640">Det går inte att ladda ned QR-kod</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5694049548840660018">Kom tillbaka till startsidan snabbt</translation>
@@ -609,6 +605,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5958275228015807058">Du hittar filerna och sidorna i Nedladdningar</translation>
 <translation id="5962718611393537961">Tryck här om du vill komprimera</translation>
 <translation id="5964805880140440652">Aktivera synkronisering i inställningarna för Chrome om du vill dela den här sidan med annan enhet</translation>
+<translation id="5979084224081478209">Kontrollera lösenorden</translation>
 <translation id="6000066717592683814">Behåll Google</translation>
 <translation id="6005538289190791541">Föreslaget lösenord</translation>
 <translation id="6036057147555329831">Extra ICU</translation>
@@ -710,7 +707,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="671481426037969117">Timern för <ph name="FQDN" /> har löpt ut. Den börjar om igen i morgon.</translation>
 <translation id="6738867403308150051">Laddar ned …</translation>
 <translation id="6767294960381293877">Listan över enheter som fliken kan delas med öppnades och tar upp halva skärmen.</translation>
-<translation id="6790428901817661496">Spela</translation>
 <translation id="6811034713472274749">Sidan är klar att öppna</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Översätt</translation>
@@ -767,7 +763,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7328017930301109123">I begränsat läge läses sidorna in snabbare och dataförbrukningen minskar med upp till 60 procent.</translation>
 <translation id="7333031090786104871">Processen pågår fortfarande för den förra webbplatsen</translation>
 <translation id="7340958967809483333">Alternativ för Förslag</translation>
-<translation id="7352651011704765696">Något gick fel</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7359002509206457351">Åtkomst till betalningsmetoder</translation>
@@ -806,7 +801,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
 <translation id="7606077192958116810">Begränsat läge har aktiverats. Hantera detta i inställningarna.</translation>
 <translation id="7612619742409846846">Inloggad i Google som</translation>
-<translation id="7614971007231847352">QR-koden har laddats ned</translation>
 <translation id="7619072057915878432">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av nätverksfel.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
@@ -912,7 +906,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8427875596167638501">Fliken Förhandsgranskning visas på halva skärmen</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
-<translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8443209985646068659">Uppdatering inte möjlig</translation>
 <translation id="8445448999790540984">Det gick inte att exportera lösenord</translation>
 <translation id="8461694314515752532">Kryptera synkroniserad data med en egen lösenfras för synkronisering</translation>

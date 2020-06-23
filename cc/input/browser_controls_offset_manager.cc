@@ -207,17 +207,20 @@ void BrowserControlsOffsetManager::OnBrowserControlsParamsChanged(
     return;
   }
 
+  // We continue to update both top and bottom controls even if one has a height
+  // of 0 so that animations work properly. So here, we should preserve the
+  // ratios even if the controls height is 0.
   float old_top_height = old_browser_controls_params_.top_controls_height;
   float new_top_ratio =
       TopControlsHeight()
           ? TopControlsShownRatio() * old_top_height / TopControlsHeight()
-          : 0.f;
+          : TopControlsShownRatio();
 
   float old_bottom_height = old_browser_controls_params_.bottom_controls_height;
   float new_bottom_ratio = BottomControlsHeight()
                                ? BottomControlsShownRatio() *
                                      old_bottom_height / BottomControlsHeight()
-                               : 0.f;
+                               : BottomControlsShownRatio();
 
   if (!animate_changes) {
     // If the min-heights changed when the controls were at the min-height, the
@@ -268,8 +271,13 @@ void BrowserControlsOffsetManager::OnBrowserControlsParamsChanged(
   bool bottom_controls_need_animation = animate_changes;
 
   float top_target_ratio;
-  // If the top controls height changed when they were fully shown.
-  if (TopControlsShownRatio() == 1.f && TopControlsHeight() != old_top_height) {
+  // We can't animate if we don't have top controls.
+  if (!TopControlsHeight()) {
+    top_controls_need_animation = false;
+
+    // If the top controls height changed when they were fully shown.
+  } else if (TopControlsShownRatio() == 1.f &&
+             TopControlsHeight() != old_top_height) {
     top_target_ratio = 1.f;  // i.e. new_height / new_height
 
     // If the top controls min-height changed when they were at the minimum
@@ -284,9 +292,13 @@ void BrowserControlsOffsetManager::OnBrowserControlsParamsChanged(
   }
 
   float bottom_target_ratio;
-  // If the bottom controls height changed when they were fully shown.
-  if (BottomControlsShownRatio() == 1.f &&
-      BottomControlsHeight() != old_bottom_height) {
+  // We can't animate if we don't have bottom controls.
+  if (!BottomControlsHeight()) {
+    bottom_controls_need_animation = false;
+
+    // If the bottom controls height changed when they were fully shown.
+  } else if (BottomControlsShownRatio() == 1.f &&
+             BottomControlsHeight() != old_bottom_height) {
     bottom_target_ratio = 1.f;  // i.e. new_height / new_height
 
     // If the bottom controls min-height changed when they were at the minimum

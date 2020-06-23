@@ -12,7 +12,7 @@ const tests = [
           defaultPageOrientation: 0,
           twoUpViewEnabled: false,
         },
-        viewer.viewport.getLayoutOptions());
+        window.viewer.viewport.getLayoutOptions());
     chrome.test.succeed();
   },
 ];

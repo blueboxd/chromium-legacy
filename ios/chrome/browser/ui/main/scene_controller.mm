@@ -376,8 +376,6 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
   if (sceneState.currentOrigin != WindowActivityRestoredOrigin) {
     if (IsMultiwindowSupported()) {
       if (@available(iOS 13, *)) {
-        // int origin =
-        //    static_cast<int>(sceneState.currentOrigin);
         base::UmaHistogramEnumeration(kMultiWindowOpenInNewWindowHistogram,
                                       sceneState.currentOrigin);
       }
@@ -751,11 +749,13 @@ const char kMultiWindowOpenInNewWindowHistogram[] =
                                                                 .viewController
                                                     browser:browser];
 
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                 (int64_t)(kDisplayPromoDelay * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{
-                     [self startSigninCoordinatorWithCompletion:nil];
-                   });
+    __weak SceneController* weakSelf = self;
+    dispatch_after(
+        dispatch_time(DISPATCH_TIME_NOW,
+                      static_cast<int64_t>(kDisplayPromoDelay * NSEC_PER_SEC)),
+        dispatch_get_main_queue(), ^{
+          [weakSelf startSigninCoordinatorWithCompletion:nil];
+        });
   }
 }
 

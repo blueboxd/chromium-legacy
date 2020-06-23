@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="1018656279737460067">रद्द झाले</translation>
 <translation id="1195447618553298278">अज्ञात एरर.</translation>
+<translation id="1413240736185167732">अयशस्वी झाले - फिल्टर अयशस्वी झाले</translation>
 <translation id="1468664791493211953">ऑफर</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> हे डिव्हाइस व्यवस्थापित करते आणि तुमची ॲक्टिव्हिटी पाहू शकेल.</translation>
 <translation id="150962533380566081">चुकीची PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">या डिव्हाइसला संस्थेेने व्यवस्थापित केेले आहे</translation>
 <translation id="1905710495812624430">कमाल अनुमती असलेले प्रयत्न ओलांडले.</translation>
 <translation id="1930797645656624981">Chrome OS इनपुट पद्धत सेवा</translation>
+<translation id="1947737735496445907">प्रिंट केले</translation>
 <translation id="1979103255016296513">पासवर्ड बदलण्याची मुदत संपली आहे</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> याद्वारे हे डिव्हाइस व्यवस्‍थापित केले जाते.</translation>
 <translation id="2338501278241028356">जवळपासचे डिव्हाइस शोधण्यासाठी ब्लूटूथ सुरू करा</translation>
@@ -18,15 +20,23 @@
 <translation id="2805756323405976993">ॲप्लिकेशन</translation>
 <translation id="2872961005593481000">बंद करा</translation>
 <translation id="3008341117444806826">रिफ्रेश करा</translation>
+<translation id="3091839911843451378">अयशस्वी झाले - थांबले आहे</translation>
+<translation id="3268178239013324452">अयशस्वी झाले - दार उघडे आहे</translation>
 <translation id="3369013195428705271">तुम्हाला तुमचा सर्व प्रिंट इतिहास नक्की साफ करायचा आहे का? तुमची सुरू असलेली प्रिंट कार्ये साफ केली जाणार नाहीत.</translation>
+<translation id="3456078764689556234"><ph name="TOTAL_PAGES" /> पैकी <ph name="PRINTED_PAGES" /> पेज प्रिंट केली.</translation>
 <translation id="3515615323037921860">प्रिंट कार्ये</translation>
+<translation id="3527036260304016759">अयशस्वी झाले - अज्ञात एरर</translation>
 <translation id="3749289110408117711">फाइल नाव</translation>
 <translation id="38114475217616659">सर्व इतिहास साफ करा</translation>
 <translation id="3820172043799983114">चुकीचे पिन.</translation>
 <translation id="3838338534323494292">नवीन पासवर्ड</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="TOTAL_PAGE_NUMBER" /> पैकी <ph name="PRINTED_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451">हे डिव्हाइस <ph name="ENROLLMENT_DOMAIN" />व्यवस्थापित करते आणि भेट दिलेली वेबपेज पासवर्ड आणि ईमेलसह सर्व वापरकर्ता ॲक्टिव्हिटीचा त्यांना ॲक्सेस आहे.</translation>
+<translation id="4003384961948020559">अयशस्वी झाले - आउटपुट भरला आहे</translation>
 <translation id="4034824040120875894">प्रिंटर</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> मध्ये पासवर्ड एक्स्पायर होईल</translation>
+<translation id="4238516577297848345">कोणतेही प्रिंट जॉब प्रगतीपथावर नाहीत</translation>
+<translation id="428217921675623177">९० दिवसांपेक्षा जुने प्रिंट जॉब काढून टाकले जातील</translation>
 <translation id="4429881212383817840">Kerberos तिकीट लवकरच एक्स्पायर होईल</translation>
 <translation id="445059817448385655">जुना पासवर्ड</translation>
 <translation id="467510802200863975">पासवर्ड जुळत नाहीत</translation>
@@ -37,24 +47,32 @@
 मला काहीही विचारण्यासाठी माइकवर टॅप करून पाहा.</translation>
 <translation id="5222676887888702881">साइन आउट करा</translation>
 <translation id="5317780077021120954">सेव्ह करा</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">आता नवीन निवडा</translation>
 <translation id="5457599981699367932">अतिथी म्हणून ब्राउझ करा</translation>
 <translation id="54609108002486618">व्यवस्‍थापित</translation>
 <translation id="5832805196449965646">व्यक्ती जोडा</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
+<translation id="6048107060512778456">अयशस्वी झाले - कागद अडकला</translation>
 <translation id="6058625436358447366">पूर्ण करण्यासाठी, तुमचे जुने आणि नवीन पासवर्ड एंटर करा</translation>
 <translation id="6106186594183574873">पूर्ण करण्यासाठी, तुमचा जुना पासवर्ड एंटर करा</translation>
 <translation id="6146993107019042706">पूर्ण करण्यासाठी, तुमचा नवीन पासवर्ड एंटर करा</translation>
 <translation id="6517239166834772319">एक्सप्लोर करा</translation>
+<translation id="6564646048574748301">अयशस्वी झाले - प्रिंटरशी कनेक्ट करता आले नाही</translation>
 <translation id="6643016212128521049">साफ करा</translation>
 <translation id="7162487448488904999">गॅलरी</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">ही कृती तुमच्या अ‍ॅडमिनिस्ट्रेटरद्वारे व्यवस्थापित केली जाते</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7690294790491645610">नवीन पासवर्ड कन्फर्म करा</translation>
 <translation id="7805768142964895445">स्थिती</translation>
 <translation id="808894953321890993">पासवर्ड बदला</translation>
 <translation id="8208861521865154048">लाभ</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> हा वापरकर्ता व्यवस्थापित करते. ते रिमोट पद्धतीने सेटिंग्ज व्यवस्थापित करू शकते आणि वापरकर्ता अ‍ॅक्टिव्हिटीचे परीक्षण करू शकते.</translation>
+<translation id="871560550817059752">अयशस्वी झाले - शाई संपली आहे</translation>
 <translation id="8747900814994928677">बदलाची खात्री करा</translation>
+<translation id="8919837981463578619">अयशस्वी झाले - ट्रे सापडला नाही</translation>
+<translation id="8928727111548978589">अयशस्वी झाले - कागद संपला आहे</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> प्रयत्न शिल्लक</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> चे तिकीट रिफ्रेश करा</translation>
 <translation id="9111102763498581341">अनलॉक करा</translation>

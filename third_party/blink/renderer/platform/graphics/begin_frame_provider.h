@@ -52,7 +52,7 @@ class PLATFORM_EXPORT BeginFrameProvider
   }
   void OnBeginFrame(
       const viz::BeginFrameArgs&,
-      WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>) final;
+      const WTF::HashMap<uint32_t, viz::FrameTimingDetails>&) final;
   void OnBeginFramePausedChanged(bool paused) final {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) final {

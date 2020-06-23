@@ -21,6 +21,8 @@ import os
 import subprocess
 import sys
 
+import ar
+
 llvm_bindir = os.path.join(
     os.path.dirname(sys.argv[0]), '..', '..', 'third_party', 'llvm-build',
     'Release+Asserts', 'bin')
@@ -100,6 +102,29 @@ def GetResourceWhitelistPDB(path):
   return resource_ids
 
 
+def GetResourceWhitelistFileList(file_list_path):
+  # Creates a list of resources given the list of linker input files.
+  # Simply grep's them for WhitelistedResource<...>.
+  with open(file_list_path) as f:
+    paths = f.read().splitlines()
+
+  paths = ar.ExpandThinArchives(paths)
+
+  resource_ids = set()
+  prefix = 'WhitelistedResource<'
+  for p in paths:
+    with open(p) as f:
+      data = f.read()
+    start_idx = 0
+    while start_idx != -1:
+      start_idx = data.find(prefix, start_idx)
+      if start_idx != -1:
+        end_idx = data.find('>', start_idx)
+        resource_ids.add(int(data[start_idx + len(prefix):end_idx]))
+        start_idx = end_idx
+  return resource_ids
+
+
 def WriteResourceWhitelist(args):
   resource_ids = set()
   for input in args.inputs:
@@ -109,6 +134,8 @@ def WriteResourceWhitelist(args):
       resource_ids = resource_ids.union(GetResourceWhitelistELF(input))
     elif magic == 'Micr':
       resource_ids = resource_ids.union(GetResourceWhitelistPDB(input))
+    elif magic == 'obj/':
+      resource_ids = resource_ids.union(GetResourceWhitelistFileList(input))
     else:
       raise Exception('unknown file format')
   if len(resource_ids) == 0:

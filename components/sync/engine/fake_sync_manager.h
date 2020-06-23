@@ -15,7 +15,6 @@
 #include "base/observer_list.h"
 #include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/sync_manager.h"
-#include "components/sync/syncable/test_user_share.h"
 #include "components/sync/test/fake_sync_encryption_handler.h"
 
 namespace base {
@@ -99,7 +98,6 @@ class FakeSyncManager : public SyncManager {
   void RemoveObserver(Observer* observer) override;
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
-  UserShare* GetUserShare() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   std::string cache_guid() override;
@@ -151,8 +149,6 @@ class FakeSyncManager : public SyncManager {
   FakeSyncEncryptionHandler fake_encryption_handler_;
 
   FakeModelTypeConnector fake_model_type_connector_;
-
-  TestUserShare test_user_share_;
 
   // Number of invalidations received since startup.
   int num_invalidations_received_;

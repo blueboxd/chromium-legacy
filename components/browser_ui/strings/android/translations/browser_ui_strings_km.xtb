@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">បានថតចម្លង</translation>
 <translation id="2822354292072154809">តើ​អ្នកប្រាកដថា​ចង់​កំណត់​ការអនុញ្ញាត​គេហទំព័រ​ទាំងអស់​ឡើងវិញ​សម្រាប់ <ph name="CHOSEN_OBJECT_NAME" /> ដែរទេ?</translation>
 <translation id="2870560284913253234">គេហទំព័រ</translation>
+<translation id="2874939134665556319">បទ​មុន</translation>
 <translation id="2910701580606108292">សួរ​មុនពេល​អនុញ្ញតឱ្យគេហទំព័រ​លេង​ខ្លឹមសារ​ដែលមាន​ការការពារ</translation>
 <translation id="2913331724188855103">អនុញ្ញាតឲ្យគេហទំព័ររក្សាទុក និងអានទិន្នន័យខុកឃី (បានណែនាំ)</translation>
 <translation id="2968755619301702150">កម្មវិធីមើលវិញ្ញាបនប័ត្រ</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">សមកាលកម្មផ្ទៃខាងក្រោយ</translation>
 <translation id="3822502789641063741">ជម្រះទំហំផ្ទុកគេហទំព័រឬ?</translation>
 <translation id="385051799172605136">ថយក្រោយ</translation>
+<translation id="3859306556332390985">ស្វែងរក​ទៅ​មុខ</translation>
 <translation id="3955193568934677022">អនុញ្ញាត​ឲ្យ​ទំព័រ​ចាក់​មាតិកា​ដែលមាន​ការ​ការពារ (ត្រូវបាន​ណែនាំ)</translation>
 <translation id="3987993985790029246">ចម្លងតំណ</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">ចំណងជើង</translation>
 <translation id="4008040567710660924">អនុញ្ញាតខូគី​សម្រាប់គេហទំព័រ​ជាក់លាក់។</translation>
+<translation id="4046123991198612571">បទ​បន្ទាប់</translation>
 <translation id="4165986682804962316">ការកំណត់គេហទំព័រ</translation>
 <translation id="4226663524361240545">ការជូនដំណឹងអាចនឹងធ្វើឲ្យឧបករណ៍ញ័រ</translation>
 <translation id="4242533952199664413">បើកការកំណត់</translation>
 <translation id="4259722352634471385">ការរុករកត្រូវបានរារាំង៖ <ph name="URL" /></translation>
 <translation id="4278390842282768270">បានអនុញ្ញាត</translation>
+<translation id="429312253194641664">គេហទំព័រ​កំពុង​ចាក់មេឌៀ</translation>
 <translation id="4433925000917964731">ទំព័រស្រាល​ដែល​ផ្ដល់​ដោយ Google</translation>
 <translation id="4434045419905280838">ផ្ទាំងផុស​ និង​ការ​បញ្ជូន​បន្ត</translation>
 <translation id="445467742685312942">អនុញ្ញាតឱ្យ​គេហទំព័រ​ចាក់ខ្លឹមសារដែលមាន​ការការពារ</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">រំកិលចុះ</translation>
 <translation id="6766622839693428701">អូស​ចុះ​ក្រោម​ដើម្បី​បិទ។</translation>
 <translation id="6782111308708962316">ទប់ស្កាត់​គេហទំព័រ​ភាគី​ទីបី​មិនឲ្យ​រក្សាទុក និង​អានទិន្នន័យ​ខូគី</translation>
+<translation id="6790428901817661496">លេង</translation>
 <translation id="6818926723028410516">ជ្រើសរើសធាតុ</translation>
 <translation id="6864395892908308021">ឧបករណ៍នេះ​មិនអាចអាន NFC បានទេ</translation>
 <translation id="6910211073230771657">បានលុប</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">គេហទំព័រមួយ​កំពុង​ប្រើប្រាស់កាមេរ៉ា និងមីក្រូហ្វូនរបស់អ្នក</translation>
 <translation id="8380167699614421159">គេហទំព័រ​នេះបង្ហាញ​ការផ្សាយពាណិជ្ជកម្ម​ដែលនាំឱ្យយល់ច្រឡំ ឬរំខាន</translation>
 <translation id="8394832520002899662">ចុចដើម្បីត្រឡប់ទៅគេហទំព័រវិញ</translation>
+<translation id="8441146129660941386">ស្វែងរក​ថយក្រោយ</translation>
 <translation id="8447861592752582886">ដកហូតសិទ្ធិអនុញ្ញាតឧបករណ៍</translation>
 <translation id="8463851957836045671">គេហទំព័រ​ដំណើរការ​លឿន</translation>
 <translation id="851751545965956758">ទប់​ស្កាត់​ទំព័រ​មិន​ឱ្យ​ភ្ជាប់​ជាមួយ​ឧបករណ៍</translation>

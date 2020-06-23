@@ -123,7 +123,7 @@ if (!is_android) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
 
-    deps = [ "//chrome/browser/resources/pdf/elements:web_components" ]
+    deps = [ "//chrome/browser/resources/pdf:web_components" ]
 
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
@@ -449,7 +449,7 @@ if (enable_print_preview) {
     ]
 
     source = "print_preview/print_preview_pdf_resources.grd"
-    deps = [ "//chrome/browser/resources/pdf/elements:web_components" ]
+    deps = [ "//chrome/browser/resources/pdf:web_components" ]
 
     defines = chrome_grit_defines
     outputs = [

@@ -19,6 +19,7 @@ extern const base::Feature kWebViewCollectNonembeddedMetrics;
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
 extern const base::Feature kWebViewExtraHeadersSameOriginOnly;
 extern const base::Feature kWebViewSniffMimeType;
+extern const base::Feature kWebViewTestFeature;
 extern const base::Feature kWebViewWideColorGamutSupport;
 
 }  // namespace features

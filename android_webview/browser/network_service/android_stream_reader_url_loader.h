@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -63,11 +64,17 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
                                        net::HttpResponseHeaders* headers) = 0;
   };
 
+  struct SecurityOptions {
+    bool disable_web_security = false;
+    bool allow_cors_to_same_scheme = false;
+  };
+
   AndroidStreamReaderURLLoader(
       const network::ResourceRequest& resource_request,
       mojo::PendingRemote<network::mojom::URLLoaderClient> client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      std::unique_ptr<ResponseDelegate> response_delegate);
+      std::unique_ptr<ResponseDelegate> response_delegate,
+      base::Optional<SecurityOptions> security_options);
   ~AndroidStreamReaderURLLoader() override;
 
   void Start();
@@ -91,6 +98,8 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
       std::unique_ptr<android_webview::InputStream> input_stream);
   void OnReaderSeekCompleted(int result);
   void HeadersComplete(int status_code, const std::string& status_text);
+  void RequestCompleteWithStatus(
+      const network::URLLoaderCompletionStatus& status);
   void RequestComplete(int status_code);
   void SendBody();
 
@@ -116,6 +125,7 @@ class AndroidStreamReaderURLLoader : public network::mojom::URLLoader {
   net::HttpByteRange byte_range_;
   network::ResourceRequest resource_request_;
   network::mojom::URLResponseHeadPtr response_head_;
+  bool reject_cors_request_;
   mojo::Remote<network::mojom::URLLoaderClient> client_;
   const net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
   std::unique_ptr<ResponseDelegate> response_delegate_;

@@ -532,8 +532,6 @@ void HTMLParserScriptRunner::RequestDeferredScript(
     ScriptLoader* script_loader) {
   PendingScript* pending_script =
       script_loader->TakePendingScript(ScriptSchedulingType::kDefer);
-  if (!pending_script)
-    return;
 
   if (!pending_script->IsReady()) {
     pending_script->StartStreamingIfPossible();
@@ -553,8 +551,6 @@ void HTMLParserScriptRunner::RequestForceDeferredScript(
     ScriptLoader* script_loader) {
   PendingScript* pending_script =
       script_loader->TakePendingScript(ScriptSchedulingType::kForceDefer);
-  if (!pending_script)
-    return;
 
   if (!pending_script->IsReady()) {
     pending_script->StartStreamingIfPossible();

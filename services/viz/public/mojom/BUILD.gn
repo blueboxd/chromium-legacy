@@ -483,6 +483,16 @@ mojom("mojom") {
     {
       types = [
         {
+          mojom = "viz.mojom.FrameTimingDetails"
+          cpp = "::viz::FrameTimingDetails"
+        },
+      ]
+      traits_headers = [ "//services/viz/public/cpp/compositing/frame_timing_details_mojom_traits.h" ]
+      traits_public_deps = [ "//components/viz/common" ]
+    },
+    {
+      types = [
+        {
           mojom = "viz.mojom.CompositorFrame"
           cpp = "::viz::CompositorFrame"
           move_only = true

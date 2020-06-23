@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Nokopēts</translation>
 <translation id="2822354292072154809">Vai tiešām vēlaties atiestatīt visas vietņu atļaujas, kas piešķirtas šim objektam: <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Vietne</translation>
+<translation id="2874939134665556319">Iepriekšējais ieraksts</translation>
 <translation id="2910701580606108292">Jautāt, pirms atļaut vietnēm atskaņot aizsargātu saturu</translation>
 <translation id="2913331724188855103">Atļaut vietnēm saglabāt un lasīt sīkfailu datus (ieteicams)</translation>
 <translation id="2968755619301702150">Sertifikātu skatītājs</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Sinhronizācija fonā</translation>
 <translation id="3822502789641063741">Vai notīrīt vietnes krātuvi?</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
+<translation id="3859306556332390985">Pārtīt uz priekšu</translation>
 <translation id="3955193568934677022">Atļaut vietnēm atskaņot aizsargātu saturu (ieteicams)</translation>
 <translation id="3987993985790029246">Saites kopēšana</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> no ?</translation>
 <translation id="4002066346123236978">Nosaukums</translation>
 <translation id="4008040567710660924">Atļaut sīkfailus konkrētai vietnei.</translation>
+<translation id="4046123991198612571">Nākamais ieraksts</translation>
 <translation id="4165986682804962316">Vietnes iestatījumi</translation>
 <translation id="4226663524361240545">Saņemot paziņojumu, ierīce var vibrēt.</translation>
 <translation id="4242533952199664413">Atvērt iestatījumus</translation>
 <translation id="4259722352634471385">Navigācija ir bloķēta: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Atļauts</translation>
+<translation id="429312253194641664">Vietne atskaņo multivides saturu</translation>
 <translation id="4433925000917964731">Vienkāršota lapa, ko nodrošina Google</translation>
 <translation id="4434045419905280838">Uznirstošie elem. un novirzīšana</translation>
 <translation id="445467742685312942">Ļaut vietnēm atskaņot aizsargātu saturu</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
 <translation id="6766622839693428701">Velciet uz leju, lai aizvērtu.</translation>
 <translation id="6782111308708962316">Neļaut trešo pušu vietnēm saglabāt un nolasīt sīkfailu datus</translation>
+<translation id="6790428901817661496">Atskaņot</translation>
 <translation id="6818926723028410516">Vienumu atlase</translation>
 <translation id="6864395892908308021">Šī ierīce nevar lasīt NFC</translation>
 <translation id="6910211073230771657">Dzēsts</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Kāda vietne izmanto jūsu kameru un mikrofonu</translation>
 <translation id="8380167699614421159">Šajā vietnē tiek rādītas traucējošas vai maldinošas reklāmas</translation>
 <translation id="8394832520002899662">Lai atgrieztos vietnē, pieskarieties šeit</translation>
+<translation id="8441146129660941386">Pārtīt atpakaļ</translation>
 <translation id="8447861592752582886">Atsaukt ierīces atļauju</translation>
 <translation id="8463851957836045671">Ātra vietnes darbība</translation>
 <translation id="851751545965956758">Neļaut vietnēm izveidot savienojumu ar ierīci</translation>

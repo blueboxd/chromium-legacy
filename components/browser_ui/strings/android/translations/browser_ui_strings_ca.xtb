@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Copiada</translation>
 <translation id="2822354292072154809">Confirmes que vols restablir tots els permisos del lloc web concedits a <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Lloc web</translation>
+<translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2910701580606108292">Pregunta abans de permetre que els llocs web reprodueixin contingut protegit</translation>
 <translation id="2913331724188855103">Permet que els llocs web desin i llegeixin les dades de les galetes (opció recomanada)</translation>
 <translation id="2968755619301702150">Lector de certificats</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Sincronització en segon pla</translation>
 <translation id="3822502789641063741">Esborrem emmagatz. lloc web?</translation>
 <translation id="385051799172605136">Enrere</translation>
+<translation id="3859306556332390985">Avança</translation>
 <translation id="3955193568934677022">Permet que els llocs web reprodueixin contingut protegit (opció recomanada)</translation>
 <translation id="3987993985790029246">Copia l'enllaç</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Títol</translation>
 <translation id="4008040567710660924">Permet les galetes d'un lloc web concret.</translation>
+<translation id="4046123991198612571">Pista següent</translation>
 <translation id="4165986682804962316">Configuració del lloc web</translation>
 <translation id="4226663524361240545">És possible que les notificacions facin vibrar el dispositiu</translation>
 <translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="4259722352634471385">S'ha bloquejat la navegació: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Permès</translation>
+<translation id="429312253194641664">Un lloc web està reproduint contingut multimèdia</translation>
 <translation id="4433925000917964731">Pàgina en mode bàsic oferida per Google</translation>
 <translation id="4434045419905280838">Finestres emergents i redireccions</translation>
 <translation id="445467742685312942">Permet que els llocs web reprodueixin contingut protegit</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Mou avall</translation>
 <translation id="6766622839693428701">Llisca cap avall per tancar el full.</translation>
 <translation id="6782111308708962316">Impedeix que els llocs web de tercers desin i llegeixin les dades de les galetes</translation>
+<translation id="6790428901817661496">Reprodueix</translation>
 <translation id="6818926723028410516">Selecciona elements</translation>
 <translation id="6864395892908308021">Aquest dispositiu no pot llegir NFC</translation>
 <translation id="6910211073230771657">Suprimit</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Un lloc web està utilitzant la càmera i el micròfon</translation>
 <translation id="8380167699614421159">Aquest lloc web mostra anuncis intrusius o enganyosos</translation>
 <translation id="8394832520002899662">Toca per tornar al lloc web</translation>
+<translation id="8441146129660941386">Retrocedeix</translation>
 <translation id="8447861592752582886">Revoca el permís d'accés al dispositiu</translation>
 <translation id="8463851957836045671">El lloc web és ràpid</translation>
 <translation id="851751545965956758">Impedeix que els llocs web es connectin a dispositius</translation>

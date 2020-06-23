@@ -3,6 +3,7 @@
 <translationbundle lang="fil">
 <translation id="1018656279737460067">Nakansela</translation>
 <translation id="1195447618553298278">Hindi kilalang error.</translation>
+<translation id="1413240736185167732">Hindi na-print - Hindi gumana ang filter</translation>
 <translation id="1468664791493211953">Mga Alok</translation>
 <translation id="1482734542997480527">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at puwedeng masubaybayan ang iyong aktibidad.</translation>
 <translation id="150962533380566081">Di-wasto ang PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Ang device na ito ay pinamamahalaan ng enterprise</translation>
 <translation id="1905710495812624430">Nalampasan na ang maximum na pinapahintulutang bilang ng pagsubok</translation>
 <translation id="1930797645656624981">Serbisyo ng Pamamaraan ng Pag-input ng Chrome OS</translation>
+<translation id="1947737735496445907">Na-print</translation>
 <translation id="1979103255016296513">Overdue na ang pagpapalit ng password</translation>
 <translation id="2049639323467105390">Pinamamahalaan ng <ph name="DOMAIN" /> ang device na ito.</translation>
 <translation id="2338501278241028356">I-on ang Bluetooth upang tuklasin ang mga kalapit na device</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Mga App</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="3008341117444806826">I-REFRESH</translation>
+<translation id="3091839911843451378">Hindi na-print - Huminto</translation>
+<translation id="3268178239013324452">Hindi na-print - Nakabukas ang takip</translation>
 <translation id="3369013195428705271">Sigurado ka bang gusto mong i-clear ang lahat ng history ng pag-print? Hindi maki-clear ang iyong mga kasalukuyang pag-print.</translation>
+<translation id="3456078764689556234">Na-print ang page <ph name="PRINTED_PAGES" /> sa <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Mga Pag-print</translation>
+<translation id="3527036260304016759">Hindi na-print - Hindi kilalang error</translation>
 <translation id="3749289110408117711">File name</translation>
 <translation id="38114475217616659">I-clear ang lahat ng history</translation>
 <translation id="3820172043799983114">Di-wasto ang PIN.</translation>
 <translation id="3838338534323494292">Bagong password</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> sa <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang device na ito at mayroon itong access sa lahat ng aktibidad ng user, kabilang ang mga webpage na binisita, mga password, at email.</translation>
+<translation id="4003384961948020559">Hindi na-print - Puno ang output</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Mag-e-expire ang password sa loob ng <ph name="TIME" /></translation>
+<translation id="428217921675623177">Aalisin ang mga pag-print na lampas na sa 90 araw</translation>
 <translation id="4429881212383817840">Mag-e-expire na ang ticket ng Kerberos</translation>
 <translation id="445059817448385655">Lumang password</translation>
 <translation id="467510802200863975">Hindi nagtutugma ang mga password</translation>
@@ -37,24 +46,31 @@
 Subukang i-tap ang mikropono para humiling sa akin ng kahit ano.</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="5317780077021120954">I-save</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Pumili ng bago ngayon</translation>
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="54609108002486618">Pinamamahalaan</translation>
 <translation id="5832805196449965646">Magdagdag ng Tao</translation>
 <translation id="5895138241574237353">I-restart</translation>
+<translation id="6048107060512778456">Hindi na-print - Naipit ang papel</translation>
 <translation id="6058625436358447366">Para tapusin, ilagay ang iyong luma at bagong password</translation>
 <translation id="6106186594183574873">Para tapusin, ilagay ang iyong lumang password</translation>
 <translation id="6146993107019042706">Para tapusin, ilagay ang bago mong password</translation>
 <translation id="6517239166834772319">Explore</translation>
+<translation id="6564646048574748301">Hindi na-print - Hindi makakonekta sa printer</translation>
 <translation id="6643016212128521049">I-clear</translation>
 <translation id="7162487448488904999">Gallery</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Kanselahin</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="7805768142964895445">Katayuan</translation>
 <translation id="808894953321890993">Palitan ang password</translation>
 <translation id="8208861521865154048">Mga Perk</translation>
 <translation id="8701136875688985581">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /> ang user na ito. Posible nitong pamahalaan ang mga setting at subaybayan ang aktibidad ng user sa remote na paraan.</translation>
+<translation id="871560550817059752">Hindi na-print - Wala nang ink</translation>
 <translation id="8747900814994928677">Kumpirmahin ang pagbabago</translation>
+<translation id="8919837981463578619">Hindi na-print - Walang tray</translation>
+<translation id="8928727111548978589">Hindi na-print - Wala nang papel</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> (na) pagsubok ang natitira</translation>
 <translation id="910415269708673980">I-refresh ang ticket para sa <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">I-unlock</translation>

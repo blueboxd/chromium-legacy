@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "mojo/core/system_impl_export.h"
 #include "mojo/public/c/system/types.h"

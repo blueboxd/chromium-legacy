@@ -463,8 +463,8 @@ bool LocalFrameView::LifecycleUpdatesActive() const {
   return !lifecycle_updates_throttled_;
 }
 
-void LocalFrameView::SetLifecycleUpdatesThrottledForTesting() {
-  lifecycle_updates_throttled_ = true;
+void LocalFrameView::SetLifecycleUpdatesThrottledForTesting(bool throttled) {
+  lifecycle_updates_throttled_ = throttled;
 }
 
 void LocalFrameView::InvalidateRect(const IntRect& rect) {
@@ -1022,6 +1022,22 @@ void LocalFrameView::DidFinishForcedLayout(DocumentUpdateReason reason) {
           static_cast<size_t>(LocalFrameUkmAggregator::kHitTestDocumentUpdate),
           forced_layout_start_time_, base::TimeTicks::Now());
     }
+  }
+}
+
+void LocalFrameView::MarkFirstEligibleToPaint() {
+  if (frame_ && frame_->GetDocument()) {
+    PaintTiming& timing = PaintTiming::From(*frame_->GetDocument());
+    timing.MarkFirstEligibleToPaint();
+    GetPaintTimingDetector().DidChangePerformanceTiming();
+  }
+}
+
+void LocalFrameView::MarkIneligibleToPaint() {
+  if (frame_ && frame_->GetDocument()) {
+    PaintTiming& timing = PaintTiming::From(*frame_->GetDocument());
+    timing.MarkIneligibleToPaint();
+    GetPaintTimingDetector().DidChangePerformanceTiming();
   }
 }
 
@@ -2819,8 +2835,11 @@ void LocalFrameView::PaintTree() {
   DCHECK(layout_view);
   paint_frame_count_++;
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
+    frame_view.MarkFirstEligibleToPaint();
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
+  ForAllThrottledLocalFrameViews(
+      [](LocalFrameView& frame_view) { frame_view.MarkIneligibleToPaint(); });
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
     if (!paint_controller_)

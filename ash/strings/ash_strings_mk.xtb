@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">Лево</translation>
 <translation id="1479909375538722835">Лебдечко мени за пристапност</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Вклучено</translation>
 <translation id="1516740043221086139">„Не вознемирувај“ е вклучено.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Прикажи ги поставките за известувања. Известувањата се исклучени за една апликација}one{Прикажи ги поставките за известувања. Известувањата се исклучени за # апликација}other{Прикажи ги поставките за известувања. Известувањата се исклучени за # апликации}}</translation>
 <translation id="1525508553941733066">ОТФРЛИ</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">„Помошник“ (се вчитува…)</translation>
 <translation id="1838895407229022812">„Ноќното светло“ е исклучено.</translation>
 <translation id="1850504506766569011">Wi-Fi е исклучено.</translation>
-<translation id="1859889070386344428">Исклучено</translation>
 <translation id="1864454756846565995">USB-Ц уред (задна порта)</translation>
 <translation id="1882897271359938046">Отсликување во <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Отклучи со отпечаток</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">Притиснете <ph name="KEYBOARD_SHORTCUT" /> за да го префрлите распоредот на тастатурата.</translation>
 <translation id="2501920221385095727">Лепливи копчиња</translation>
 <translation id="2509468283778169019">Вклучено е CAPS LOCK</translation>
-<translation id="2519465031217098801">Вклучено</translation>
 <translation id="2542089167727451762">Допрете ја сликата на профилот</translation>
 <translation id="255671100581129685">„Помошникот на Google“ не е достапен во јавна сесија.</translation>
 <translation id="256712445991462162">закотвена лупа</translation>
@@ -262,7 +259,6 @@
 <translation id="3943857333388298514">Залепи</translation>
 <translation id="394485226368336402">Поставки за аудио</translation>
 <translation id="3962859241508114581">Претходна песна</translation>
-<translation id="3965097803111112935">Исклучено</translation>
 <translation id="397105322502079400">Се пресметува…</translation>
 <translation id="3977512764614765090">Батеријата е на <ph name="PERCENTAGE" /> % и се полни.</translation>
 <translation id="3995138139523574647">USB-Ц уред (задна порта од десна страна)</translation>
@@ -355,7 +351,6 @@
 <translation id="5207949376430453814">Нагласи го каретот за текст</translation>
 <translation id="5222676887888702881">Одјави се</translation>
 <translation id="523505283826916779">Поставки за пристапност</translation>
-<translation id="5250225880026334010">Исклучено</translation>
 <translation id="5260676007519551770">Биро 4</translation>
 <translation id="5283198616748585639">Додај 1 мин.</translation>
 <translation id="528468243742722775">Крај</translation>
@@ -474,7 +469,6 @@
 <translation id="6650933572246256093">Уредот со Bluetooth „<ph name="DEVICE_NAME" />“ бара дозвола за спарување. Внесете ја пристапната шифра на уредот: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Лозинка</translation>
 <translation id="6665545700722362599">Им доделува дозволи на веб-сајтовите, апликациите и екстензиите да ги користат услугите според локација или микрофонот, камерата или другите функции на уредот</translation>
-<translation id="6669268301501499730">Вклучено</translation>
 <translation id="6670153871843998651">Биро 3</translation>
 <translation id="6691659475504239918">„Пребарување“+Shift+H</translation>
 <translation id="6692996468359469499">Добивајте информации поврзани со вашиот избор</translation>

@@ -506,6 +506,10 @@ TEST_F(NigoriSyncBridgeImplTest,
 }
 
 TEST_F(NigoriSyncBridgeImplTest, ShouldExposeBackwardCompatibleKeystoreNigori) {
+  base::test::ScopedFeatureList override_features;
+  override_features.InitAndDisableFeature(
+      switches::kSyncTriggerFullKeystoreMigration);
+
   const KeyParams kGaiaKeyParams = Pbkdf2KeyParams("gaia_key");
   const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
   EntityData entity_data;
@@ -1717,6 +1721,63 @@ TEST_F(NigoriSyncBridgeImplTest,
   EXPECT_THAT(cryptographer,
               Not(CanDecryptWith(TrustedVaultKeyParams(kTrustedVaultKey2))));
   EXPECT_THAT(cryptographer.KeyBagSizeForTesting(), Eq(size_t(1)));
+}
+
+// Tests that upon startup bridge migrates the Nigori from backward compatible
+// keystore mode to full keystore mode.
+TEST(NigoriSyncBridgeImplPersistenceTest, ShouldCompleteKeystoreMigration) {
+  // Emulate storing on disc.
+  auto storage1 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  sync_pb::NigoriLocalData nigori_local_data;
+  ON_CALL(*storage1, StoreData(_))
+      .WillByDefault(testing::SaveArg<0>(&nigori_local_data));
+
+  const FakeEncryptor kEncryptor;
+  auto bridge1 = std::make_unique<NigoriSyncBridgeImpl>(
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>(),
+      std::move(storage1), &kEncryptor,
+      base::BindRepeating(&Nigori::GenerateScryptSalt),
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
+
+  // Perform initial sync with backward compatible keystore Nigori.
+  const std::vector<uint8_t> kRawKeystoreKey = {0, 1, 2, 3, 4};
+  const KeyParams kKeystoreKeyParams = KeystoreKeyParams(kRawKeystoreKey);
+  const KeyParams kPassphraseKeyParams = Pbkdf2KeyParams("passphrase");
+  EntityData entity_data;
+  *entity_data.specifics.mutable_nigori() = BuildKeystoreNigoriSpecifics(
+      /*keybag_keys_params=*/{kKeystoreKeyParams, kPassphraseKeyParams},
+      /*keystore_decryptor_params=*/kPassphraseKeyParams,
+      /*keystore_key_params=*/kKeystoreKeyParams);
+  ASSERT_TRUE(bridge1->SetKeystoreKeys({kRawKeystoreKey}));
+  ASSERT_THAT(bridge1->MergeSyncData(std::move(entity_data)),
+              Eq(base::nullopt));
+
+  // Mimic the browser restart.
+  auto storage2 = std::make_unique<testing::NiceMock<MockNigoriStorage>>();
+  ON_CALL(*storage2, RestoreData()).WillByDefault(Return(nigori_local_data));
+
+  auto processor2 =
+      std::make_unique<testing::NiceMock<MockNigoriLocalChangeProcessor>>();
+  ON_CALL(*processor2, IsTrackingMetadata()).WillByDefault(Return(true));
+  // Upon startup bridge should issue a commit with full keystore Nigori.
+  EXPECT_CALL(*processor2, Put(HasKeystoreNigori()));
+
+  auto bridge2 = std::make_unique<NigoriSyncBridgeImpl>(
+      std::move(processor2), std::move(storage2), &kEncryptor,
+      base::BindRepeating(&Nigori::GenerateScryptSalt),
+      /*packed_explicit_passphrase_key=*/std::string(),
+      /*packed_keystore_keys=*/std::string());
+
+  // Mimic commit completion.
+  EXPECT_THAT(bridge2->ApplySyncChanges(base::nullopt), Eq(base::nullopt));
+  EXPECT_THAT(bridge2->GetData(), HasKeystoreNigori());
+
+  // Ensure that |cryptographer| corresponds to full keystore Nigori.
+  const Cryptographer& cryptographer = bridge2->GetCryptographerForTesting();
+  EXPECT_THAT(cryptographer, CanDecryptWith(kKeystoreKeyParams));
+  EXPECT_THAT(cryptographer, CanDecryptWith(kPassphraseKeyParams));
+  EXPECT_THAT(cryptographer, HasDefaultKeyDerivedFrom(kKeystoreKeyParams));
 }
 
 }  // namespace

@@ -26,9 +26,10 @@ import org.chromium.android_webview.common.variations.VariationsServiceMetricsHe
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.components.variations.LoadSeedResult;
-import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -70,6 +71,7 @@ import java.util.concurrent.TimeoutException;
  *    seed is loaded on time, variations will be initialized. finishVariationsInit() must be called
  *    before AwFeatureListCreator::SetUpFieldTrials() runs.
  */
+@JNINamespace("android_webview")
 public class VariationsSeedLoader {
     private static final String TAG = "VariationsSeedLoader";
 
@@ -189,30 +191,35 @@ public class VariationsSeedLoader {
         private long mSeedFileTime;
         private int mSeedRequestState = AppSeedRequestState.UNKNOWN;
 
-        private FutureTask<SeedInfo> mLoadTask = new FutureTask<>(() -> {
+        private boolean parseSeedFile(File seedFile) {
+            if (!VariationsSeedLoaderJni.get().parseAndSaveSeedProto(seedFile.getPath())) {
+                VariationsUtils.debugLog("Failed reading seed file \"" + seedFile + '"');
+                return false;
+            }
+            return true;
+        }
+
+        private FutureTask<Boolean> mLoadTask = new FutureTask<>(() -> {
             File newSeedFile = VariationsUtils.getNewSeedFile();
             File oldSeedFile = VariationsUtils.getSeedFile();
 
             // First check for a new seed.
-            SeedInfo seed = VariationsUtils.readSeedFile(newSeedFile);
-            if (seed != null) {
+            boolean loadedSeed = false;
+            if (parseSeedFile(newSeedFile)) {
+                loadedSeed = true;
+                mSeedFileTime = newSeedFile.lastModified();
+
                 // If a valid new seed was found, make a note to replace the old seed with
                 // the new seed. (Don't do it now, to avoid delaying FutureTask.get().)
                 mFoundNewSeed = true;
-
-                mSeedFileTime = newSeedFile.lastModified();
-            } else {
-                // If there is no new seed, check for an old seed.
-                seed = VariationsUtils.readSeedFile(oldSeedFile);
-
-                if (seed != null) {
-                    mSeedFileTime = oldSeedFile.lastModified();
-                }
+            } else if (parseSeedFile(oldSeedFile)) { // If no new seed, check for an old one.
+                loadedSeed = true;
+                mSeedFileTime = oldSeedFile.lastModified();
             }
 
             // Make a note to request a new seed if necessary. (Don't request it now, to
             // avoid delaying FutureTask.get().)
-            if (seed == null || isSeedExpired(mSeedFileTime)) {
+            if (!loadedSeed || isSeedExpired(mSeedFileTime)) {
                 mNeedNewSeed = true;
                 mSeedRequestState = AppSeedRequestState.SEED_REQUESTED;
 
@@ -225,12 +232,11 @@ public class VariationsSeedLoader {
                 mSeedRequestState = AppSeedRequestState.SEED_FRESH;
             }
 
-            // Note the date field of whatever seed was loaded, if any.
-            if (seed != null) {
-                mCurrentSeedDate = seed.date;
+            // Save the date field of whatever seed was loaded, if any.
+            if (loadedSeed) {
+                mCurrentSeedDate = VariationsSeedLoaderJni.get().getSavedSeedDate();
             }
-
-            return seed;
+            return loadedSeed;
         });
 
         @Override
@@ -256,20 +262,20 @@ public class VariationsSeedLoader {
             onBackgroundWorkFinished();
         }
 
-        public SeedInfo get(long timeout, TimeUnit unit)
+        public boolean get(long timeout, TimeUnit unit)
                 throws InterruptedException, ExecutionException, TimeoutException {
-            SeedInfo info = mLoadTask.get(timeout, unit);
+            boolean success = mLoadTask.get(timeout, unit);
             recordSeedRequestState(mSeedRequestState);
             if (mSeedFileTime != 0) {
                 long freshnessMinutes =
                         TimeUnit.MILLISECONDS.toMinutes(getCurrentTimeMillis() - mSeedFileTime);
                 recordAppSeedFreshness(freshnessMinutes);
             }
-            return info;
+            return success;
         }
 
-        public boolean isLoadedSeedFresh() {
-            return mSeedRequestState == AppSeedRequestState.SEED_FRESH;
+        public long getLoadedSeedDate() {
+            return mCurrentSeedDate;
         }
     }
 
@@ -348,30 +354,6 @@ public class VariationsSeedLoader {
         }
     }
 
-    private SeedInfo getSeedBlockingAndLog() {
-        long start = SystemClock.elapsedRealtime();
-        try {
-            try {
-                return mRunnable.get(getSeedLoadTimeoutMillis(), TimeUnit.MILLISECONDS);
-            } finally {
-                long end = SystemClock.elapsedRealtime();
-                recordSeedLoadBlockingTime(end - start);
-            }
-        } catch (TimeoutException e) {
-            recordLoadSeedResult(LoadSeedResult.LOAD_TIMED_OUT);
-        } catch (InterruptedException e) {
-            recordLoadSeedResult(LoadSeedResult.LOAD_INTERRUPTED);
-        } catch (ExecutionException e) {
-            recordLoadSeedResult(LoadSeedResult.LOAD_OTHER_FAILURE);
-        }
-        Log.e(TAG, "Failed loading variations seed. Variations disabled.");
-        return null;
-    }
-
-    private boolean isLoadedSeedFresh() {
-        return mRunnable.isLoadedSeedFresh();
-    }
-
     @VisibleForTesting // Overridden by tests to wait until all work is done.
     protected void onBackgroundWorkFinished() {}
 
@@ -426,12 +408,40 @@ public class VariationsSeedLoader {
     // Block on loading the seed with a timeout. Then if a seed was successfully loaded, initialize
     // variations.
     public void finishVariationsInit() {
-        SeedInfo seed = getSeedBlockingAndLog();
-        if (seed != null) {
-            AwVariationsSeedBridge.setSeed(seed);
-            AwVariationsSeedBridge.setLoadedSeedFresh(isLoadedSeedFresh());
-            long seedAge = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - seed.date);
-            VariationsUtils.debugLog("Loaded seed with age " + seedAge + "s");
+        long start = SystemClock.elapsedRealtime();
+        try {
+            try {
+                boolean gotSeed = mRunnable.get(getSeedLoadTimeoutMillis(), TimeUnit.MILLISECONDS);
+                // Log the seed age to help with debugging.
+                long seedDate = mRunnable.getLoadedSeedDate();
+                if (gotSeed && seedDate > 0) {
+                    long seedAge = TimeUnit.MILLISECONDS.toSeconds(new Date().getTime() - seedDate);
+                    VariationsUtils.debugLog("Loaded seed with age " + seedAge + "s");
+                }
+                return;
+            } finally {
+                long end = SystemClock.elapsedRealtime();
+                recordSeedLoadBlockingTime(end - start);
+            }
+        } catch (TimeoutException e) {
+            recordLoadSeedResult(LoadSeedResult.LOAD_TIMED_OUT);
+        } catch (InterruptedException e) {
+            recordLoadSeedResult(LoadSeedResult.LOAD_INTERRUPTED);
+        } catch (ExecutionException e) {
+            recordLoadSeedResult(LoadSeedResult.LOAD_OTHER_FAILURE);
         }
+        Log.e(TAG, "Failed loading variations seed. Variations disabled.");
+    }
+
+    @NativeMethods
+    interface Natives {
+        // Parses the AwVariationsSeed proto stored in the file with the given path, saving it in
+        // memory for later use by native code if the parsing succeeded. Returns true if the loading
+        // and parsing were successful.
+        boolean parseAndSaveSeedProto(String path);
+
+        // Returns the timestamp in millis since unix epoch that the saved seed was generated on
+        // the server. This value corresponds to the |date| field in the AwVariationsSeed proto.
+        long getSavedSeedDate();
     }
 }

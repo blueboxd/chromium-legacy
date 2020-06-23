@@ -381,6 +381,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ukm::SourceId GetPageUkmSourceId() override;
   StoragePartition* GetStoragePartition() override;
   BrowserContext* GetBrowserContext() override;
+  void ReportHeavyAdIssue(blink::mojom::HeavyAdResolutionStatus resolution,
+                          blink::mojom::HeavyAdReason reason) override;
 
   // Determines if a clipboard paste using |data| of type |data_type| is allowed
   // in this renderer frame.  The implementation delegates to

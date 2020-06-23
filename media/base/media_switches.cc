@@ -381,6 +381,10 @@ const base::Feature kGlobalMediaControlsPictureInPicture {
 #endif
 };
 
+// Enable selection of audio output device in Global Media Controls.
+const base::Feature kGlobalMediaControlsSeamlessTransfer {
+  "GlobalMediaControlsSeamlessTransfer", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
 // TODO(nisse): Delete once we have switched over to always using the

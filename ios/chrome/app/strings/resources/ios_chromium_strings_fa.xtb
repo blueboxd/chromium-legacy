@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">‏Chromium اکنون نمی‌تواند از دوربین استفاده کند</translation>
 <translation id="2195025571279539885">‏می‌خواهید دفعه دیگر Chromium پیشنهاد ترجمه صفحات <ph name="LANGUAGE_NAME" /> را از این سایت بدهد؟</translation>
 <translation id="2590893390871230428">‏همگام‌سازی داده‌های Chromium</translation>
+<translation id="2650312721222849884">‏در همه دستگاه‌هایی که در آن‌ها از Chromium استفاده می‌کنید، همگام‌سازی را روشن کنید تا بتوانید برگه‌هایتان را ببینید</translation>
 <translation id="2730884209570016437">‏Chromium نمی‌تواند از دوربین استفاده کند زیرا برنامه دیگری از آن استفاده می‌کند</translation>
 <translation id="2915596697727466327">‏Chromium برای اطمینان از دسترسی مجاز به گذرواژه‌هایتان، از «شناسه تشخیص چهره» استفاده می‌کند.</translation>
 <translation id="3256316712990552818">‏به Chromium کپی شد</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">‏روشن کردن اسکنر Chromium</translation>
 <translation id="4787850887676698916">‏برگه‌هایی که در دستگاه‌های دیگر در Chromium باز کرده‌اید، در اینجا نشان داده می‌شوند.</translation>
 <translation id="4999538639245140991">‏ازآنجایی‌که درحال خارج شدن از حسابی هستید که <ph name="SIGNOUT_MANAGED_DOMAIN" /> آن را مدیریت می‌کند، داده‌های Chromium شما از این دستگاه حذف خواهد شد. داده‌هایتان در حساب Google شما باقی می‌ماند.</translation>
+<translation id="5521125884468363740">‏در همه دستگاه‌هایی که در آن‌ها از Chromium استفاده می‌کنید، به سیستم وارد شوید و همگام‌سازی را روشن کنید تا بتوانید برگه‌هایتان را ببینید</translation>
 <translation id="5573014823074921752">‏نکته Chromium. برای دیدن گزینه‌های بیشتر برگه، دکمه «نمایش برگه‌ها» را در نوارابزار (واقع در پایین یا بالای صفحه) لمس کنید و نگه دارید.</translation>
 <translation id="5777187867430702742">‏صفحه Chromium</translation>
 <translation id="5862307444128926510">‏به Chromium خوش آمدید</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">‏نکته Chromium. بعضی از دکمه‌ها مثل Back (برگشت)، Forward (به جلو) و Search (جستجو) اکنون در پایین صفحه هستند.</translation>
 <translation id="786327964234957808">‏هم‌اکنون درحال تغییر حساب‌های همگام‌سازی از <ph name="USER_EMAIL1" /> به <ph name="USER_EMAIL2" /> هستید. داده‌های موجود Chromium شما توسط <ph name="DOMAIN" /> مدیریت می‌شوند. با این کار، داده‌هایتان از این دستگاه حذف می‌شود اما همچنان در <ph name="USER_EMAIL1" /> باقی می‌ماند.</translation>
 <translation id="7890287942691234100">‏شروع استفاده از اسکنر Chromium</translation>
+<translation id="8013573822802650211">‏در همه دستگاه‌هایی که در آن‌ها از Chromium استفاده می‌کنید، به سیستم وارد شوید تا بتوانید برگه‌هایتان را ببینید</translation>
 <translation id="8073677936375100957">‏داده‌های Chromium شما از این دستگاه پاک شود؟</translation>
 <translation id="8175055321229419309">‏نکته: <ph name="BEGIN_LINK" />Chromium را به لنگرگاهتان انتقال دهید<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏با استفاده از مکانتان در Chromium، تجربه بهتری از Google داشته باشید.</translation>

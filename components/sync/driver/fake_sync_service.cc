@@ -8,14 +8,12 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
-#include "components/sync/syncable/user_share.h"
 
 namespace syncer {
 
 // Dummy methods
 
-FakeSyncService::FakeSyncService()
-    : user_share_(std::make_unique<UserShare>()) {}
+FakeSyncService::FakeSyncService() = default;
 
 FakeSyncService::~FakeSyncService() = default;
 
@@ -97,10 +95,6 @@ base::Time FakeSyncService::GetAuthErrorTime() const {
 
 bool FakeSyncService::RequiresClientUpgrade() const {
   return false;
-}
-
-UserShare* FakeSyncService::GetUserShare() const {
-  return user_share_.get();
 }
 
 void FakeSyncService::DataTypePreconditionChanged(ModelType type) {}

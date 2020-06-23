@@ -559,7 +559,7 @@ void V4L2StatelessVideoDecoderBackend::OnChangeResolutionDone(bool success) {
                                 weak_this_));
 }
 
-void V4L2StatelessVideoDecoderBackend::OnStreamStopped() {
+void V4L2StatelessVideoDecoderBackend::OnStreamStopped(bool stop_input_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
 

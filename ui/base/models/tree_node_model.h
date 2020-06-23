@@ -11,7 +11,7 @@
 #include <memory>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"

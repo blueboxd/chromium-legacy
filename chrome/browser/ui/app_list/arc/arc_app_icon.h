@@ -17,6 +17,8 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
+struct ArcAppIconDescriptor;
+
 namespace apps {
 class ArcIconOnceLoader;
 }
@@ -52,6 +54,7 @@ class ArcAppIcon {
   enum IconType {
     kUncompressed,
     kCompressed,
+    kAdaptive,
   };
 
   ArcAppIcon(content::BrowserContext* context,
@@ -83,6 +86,18 @@ class ArcAppIcon {
   const std::map<ui::ScaleFactor, std::string>& compressed_images() const {
     DCHECK_EQ(IconType::kCompressed, icon_type_);
     return compressed_images_;
+  }
+  // Returns |foreground_image_skia_| and valid if the |icon_type_| is
+  // IconType::kAdaptive.
+  const gfx::ImageSkia& foreground_image_skia() const {
+    DCHECK_EQ(IconType::kAdaptive, icon_type_);
+    return foreground_image_skia_;
+  }
+  // Returns |background_image_skia_| and valid if the |icon_type_| is
+  // IconType::kAdaptive.
+  const gfx::ImageSkia& background_image_skia() const {
+    DCHECK_EQ(IconType::kAdaptive, icon_type_);
+    return background_image_skia_;
   }
 
   // Disables async safe decoding requests when unit tests are executed. This is
@@ -124,12 +139,36 @@ class ArcAppIcon {
   void LoadForScaleFactor(ui::ScaleFactor scale_factor);
 
   void MaybeRequestIcon(ui::ScaleFactor scale_factor);
-  static std::unique_ptr<ArcAppIcon::ReadResult> ReadOnFileThread(
+  static std::unique_ptr<ArcAppIcon::ReadResult> ReadOnBackgroundThread(
+      ArcAppIcon::IconType icon_type,
+      ui::ScaleFactor scale_factor,
+      const std::vector<base::FilePath>& paths,
+      const base::FilePath& default_app_path);
+  static std::unique_ptr<ArcAppIcon::ReadResult> ReadSingleIconFile(
       ui::ScaleFactor scale_factor,
       const base::FilePath& path,
       const base::FilePath& default_app_path);
+  static std::unique_ptr<ArcAppIcon::ReadResult> ReadAdaptiveIconFiles(
+      ui::ScaleFactor scale_factor,
+      const std::vector<base::FilePath>& paths,
+      const base::FilePath& default_app_path);
+  static std::unique_ptr<ArcAppIcon::ReadResult> ReadFile(
+      bool request_to_install,
+      ui::ScaleFactor scale_factor,
+      bool resize_allowed,
+      const base::FilePath& path);
   void OnIconRead(std::unique_ptr<ArcAppIcon::ReadResult> read_result);
-  void UpdateUncompressed(ui::ScaleFactor scale_factor, const SkBitmap& bitmap);
+  void DecodeImage(
+      const std::string& unsafe_icon_data,
+      const ArcAppIconDescriptor& descriptor,
+      bool resize_allowed,
+      gfx::ImageSkia& image_skia,
+      std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors);
+  void UpdateImageSkia(
+      ui::ScaleFactor scale_factor,
+      const SkBitmap& bitmap,
+      gfx::ImageSkia& image_skia,
+      std::map<ui::ScaleFactor, base::Time>& incomplete_scale_factors);
   void UpdateCompressed(ui::ScaleFactor scale_factor, std::string data);
   void DiscardDecodeRequest(DecodeRequest* request);
 
@@ -148,7 +187,12 @@ class ArcAppIcon {
 
   gfx::ImageSkia image_skia_;
   std::map<ui::ScaleFactor, std::string> compressed_images_;
+  gfx::ImageSkia foreground_image_skia_;
+  gfx::ImageSkia background_image_skia_;
+
   std::map<ui::ScaleFactor, base::Time> incomplete_scale_factors_;
+  std::map<ui::ScaleFactor, base::Time> foreground_incomplete_scale_factors_;
+  std::map<ui::ScaleFactor, base::Time> background_incomplete_scale_factors_;
 
   // Contains pending image decode requests.
   std::vector<std::unique_ptr<DecodeRequest>> decode_requests_;

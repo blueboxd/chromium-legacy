@@ -14,6 +14,15 @@ from common import GetHostToolPathFromPlatform
 ARM64_DOCKER_LLVM_SYMBOLIZER_PATH = os.path.join('/', 'usr', 'lib', 'llvm-3.8',
                                                  'bin', 'llvm-symbolizer')
 
+def BuildIdsPaths(package_paths):
+  """Generate build ids paths for symbolizer processes."""
+  build_ids_paths = map(
+      lambda package_path: os.path.join(
+          os.path.dirname(package_path), 'ids.txt'),
+      package_paths)
+  return build_ids_paths
+
+
 def RunSymbolizer(input_file, output_file, build_ids_files):
   """Starts a symbolizer process.
 

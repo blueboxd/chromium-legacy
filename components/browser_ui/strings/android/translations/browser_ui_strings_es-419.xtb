@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2822354292072154809">¿Confirmas que quieres restablecer todos los permisos de sitios para <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Sitio</translation>
+<translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2910701580606108292">Preguntar antes de permitir que los sitios reproduzcan contenido protegido</translation>
 <translation id="2913331724188855103">Permitir que todos los sitios guarden y lean datos de cookies (recomendado)</translation>
 <translation id="2968755619301702150">Visualizador de certificados</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Sincronización en segundo plano</translation>
 <translation id="3822502789641063741">¿Borrar el almacenamiento de sitios?</translation>
 <translation id="385051799172605136">Atrás</translation>
+<translation id="3859306556332390985">Buscar más adelante</translation>
 <translation id="3955193568934677022">Permitir que los sitios reproduzcan contenido protegido (recomendado)</translation>
 <translation id="3987993985790029246">Copiar vínculo</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Título</translation>
 <translation id="4008040567710660924">Permite las cookies para un sitio específico.</translation>
+<translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4165986682804962316">Configuración de sitios</translation>
 <translation id="4226663524361240545">Es posible que las notificaciones hagan vibrar el dispositivo</translation>
 <translation id="4242533952199664413">Abrir la configuración</translation>
 <translation id="4259722352634471385">Navegación bloqueada: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Permitido</translation>
+<translation id="429312253194641664">Un sitio está reproduciendo contenido multimedia</translation>
 <translation id="4433925000917964731">Google proporcionó la página básica</translation>
 <translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
 <translation id="445467742685312942">Permitir que los sitios reproduzcan contenido protegido</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Mover hacia abajo</translation>
 <translation id="6766622839693428701">Desliza hacia abajo para cerrar.</translation>
 <translation id="6782111308708962316">Evitar que los sitios web de terceros guarden y lean datos de cookies</translation>
+<translation id="6790428901817661496">Reproducir</translation>
 <translation id="6818926723028410516">Seleccionar elementos</translation>
 <translation id="6864395892908308021">Este dispositivo no puede leer NFC</translation>
 <translation id="6910211073230771657">Eliminado</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Un sitio está utilizando la cámara y el micrófono</translation>
 <translation id="8380167699614421159">Este sitio muestra anuncios intrusivos o engañosos</translation>
 <translation id="8394832520002899662">Presiona para volver al sitio</translation>
+<translation id="8441146129660941386">Buscar más atrás</translation>
 <translation id="8447861592752582886">Revocar permiso para el dispositivo</translation>
 <translation id="8463851957836045671">El sitio es rápido</translation>
 <translation id="851751545965956758">Impedir que los sitios se conecten a los dispositivos</translation>

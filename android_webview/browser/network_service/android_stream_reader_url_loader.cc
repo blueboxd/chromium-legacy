@@ -26,6 +26,7 @@
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace android_webview {
@@ -105,9 +106,11 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
     const network::ResourceRequest& resource_request,
     mojo::PendingRemote<network::mojom::URLLoaderClient> client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    std::unique_ptr<ResponseDelegate> response_delegate)
+    std::unique_ptr<ResponseDelegate> response_delegate,
+    base::Optional<SecurityOptions> security_options)
     : resource_request_(resource_request),
       response_head_(network::mojom::URLResponseHead::New()),
+      reject_cors_request_(false),
       client_(std::move(client)),
       traffic_annotation_(traffic_annotation),
       response_delegate_(std::move(response_delegate)),
@@ -119,6 +122,20 @@ AndroidStreamReaderURLLoader::AndroidStreamReaderURLLoader(
   client_.set_disconnect_handler(
       base::BindOnce(&AndroidStreamReaderURLLoader::RequestComplete,
                      weak_factory_.GetWeakPtr(), net::ERR_ABORTED));
+
+  bool is_request_considered_same_origin = false;
+  if (security_options) {
+    DCHECK(!security_options->allow_cors_to_same_scheme ||
+           resource_request.request_initiator);
+    is_request_considered_same_origin =
+        security_options->disable_web_security ||
+        (security_options->allow_cors_to_same_scheme &&
+         resource_request.request_initiator->IsSameOriginWith(
+             url::Origin::Create(resource_request_.url)));
+    reject_cors_request_ = true;
+  }
+  response_head_->response_type = network::cors::CalculateResponseType(
+      resource_request_.mode, is_request_considered_same_origin);
 }
 
 AndroidStreamReaderURLLoader::~AndroidStreamReaderURLLoader() {}
@@ -135,6 +152,14 @@ void AndroidStreamReaderURLLoader::ResumeReadingBodyFromNet() {}
 
 void AndroidStreamReaderURLLoader::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (reject_cors_request_ && response_head_->response_type ==
+                                  network::mojom::FetchResponseType::kCors) {
+    RequestCompleteWithStatus(
+        network::URLLoaderCompletionStatus(network::CorsErrorStatus(
+            network::mojom::CorsError::kCorsDisabledScheme)));
+    return;
+  }
 
   if (!ParseRange(resource_request_.headers)) {
     RequestComplete(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
@@ -399,15 +424,20 @@ void AndroidStreamReaderURLLoader::OnDataPipeWritable(MojoResult result) {
   ReadMore();
 }
 
-void AndroidStreamReaderURLLoader::RequestComplete(int status_code) {
+void AndroidStreamReaderURLLoader::RequestCompleteWithStatus(
+    const network::URLLoaderCompletionStatus& status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (consumer_handle_.is_valid()) {
     // We can hit this before reading any buffers under error conditions.
     SendResponseToClient();
   }
 
-  client_->OnComplete(network::URLLoaderCompletionStatus(status_code));
+  client_->OnComplete(status);
   CleanUp();
+}
+
+void AndroidStreamReaderURLLoader::RequestComplete(int status_code) {
+  RequestCompleteWithStatus(network::URLLoaderCompletionStatus(status_code));
 }
 
 void AndroidStreamReaderURLLoader::CleanUp() {

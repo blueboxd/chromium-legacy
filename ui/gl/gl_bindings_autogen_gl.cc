@@ -2173,6 +2173,11 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glObjectPtrLabelKHR"));
   }
 
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+    fn.glPatchParameteriFn = reinterpret_cast<glPatchParameteriProc>(
+        GetGLProcAddress("glPatchParameteri"));
+  }
+
   if (ext.b_GL_NV_path_rendering) {
     fn.glPathCommandsNVFn = reinterpret_cast<glPathCommandsNVProc>(
         GetGLProcAddress("glPathCommandsNV"));
@@ -5084,6 +5089,10 @@ void GLApiBase::glObjectPtrLabelFn(void* ptr,
                                    GLsizei length,
                                    const char* label) {
   driver_->fn.glObjectPtrLabelFn(ptr, length, label);
+}
+
+void GLApiBase::glPatchParameteriFn(GLenum pname, GLint value) {
+  driver_->fn.glPatchParameteriFn(pname, value);
 }
 
 void GLApiBase::glPathCommandsNVFn(GLuint path,
@@ -8807,6 +8816,11 @@ void TraceGLApi::glObjectPtrLabelFn(void* ptr,
                                     const char* label) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glObjectPtrLabel")
   gl_api_->glObjectPtrLabelFn(ptr, length, label);
+}
+
+void TraceGLApi::glPatchParameteriFn(GLenum pname, GLint value) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glPatchParameteri")
+  gl_api_->glPatchParameteriFn(pname, value);
 }
 
 void TraceGLApi::glPathCommandsNVFn(GLuint path,
@@ -13526,6 +13540,13 @@ void LogGLApi::glObjectPtrLabelFn(void* ptr,
   gl_api_->glObjectPtrLabelFn(ptr, length, label);
 }
 
+void LogGLApi::glPatchParameteriFn(GLenum pname, GLint value) {
+  GL_SERVICE_LOG("glPatchParameteri"
+                 << "(" << GLEnums::GetStringEnum(pname) << ", " << value
+                 << ")");
+  gl_api_->glPatchParameteriFn(pname, value);
+}
+
 void LogGLApi::glPathCommandsNVFn(GLuint path,
                                   GLsizei numCommands,
                                   const GLubyte* commands,
@@ -17475,6 +17496,10 @@ void NoContextGLApi::glObjectPtrLabelFn(void* ptr,
                                         GLsizei length,
                                         const char* label) {
   NoContextHelper("glObjectPtrLabel");
+}
+
+void NoContextGLApi::glPatchParameteriFn(GLenum pname, GLint value) {
+  NoContextHelper("glPatchParameteri");
 }
 
 void NoContextGLApi::glPathCommandsNVFn(GLuint path,

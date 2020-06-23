@@ -24,7 +24,6 @@
 <translation id="116280672541001035">Utilizados</translation>
 <translation id="1171770572613082465">Para descubrir sitios web populares, toca o botón Populares</translation>
 <translation id="1173894706177603556">Cambiar o nome</translation>
-<translation id="1178581264944972037">Pausar</translation>
 <translation id="1197267115302279827">Mover marcadores</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1204037785786432551">Descargar ligazón</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome necesita acceder á localización para buscar dispositivos. O acceso á localización deste dispositivo está <ph name="BEGIN_LINK" />desactivado<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Cámara</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Quitar 1 elemento seleccionado}other{Quitar # elementos seleccionados}}</translation>
+<translation id="1641113438599504367">Navegación segura</translation>
 <translation id="164269334534774161">Estás vendo unha copia sen conexión desta páxina creada o <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1670399744444387456">Opcións básicas</translation>
@@ -228,7 +228,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="2842985007712546952">Cartafol principal</translation>
 <translation id="2860954141821109167">Asegúrate de que haxa unha aplicación de teléfono activada neste dispositivo</translation>
 <translation id="2870560284913253234">Sitio</translation>
-<translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2876369937070532032">Enviar a Google os URL das páxinas que visitas cando a túa seguranza corra perigo</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
 <translation id="2891154217021530873">Detén a carga da páxina</translation>
@@ -270,6 +269,7 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3181954750937456830">Navegación segura (protección para ti e o teu dispositivo contra os sitios perigosos)</translation>
 <translation id="3205824638308738187">Xa case está!</translation>
 <translation id="3207960819495026254">Engadida a marcadores</translation>
+<translation id="3208584281581115441">Comprobar agora</translation>
 <translation id="3211426585530211793">Eliminouse <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Se esqueciches o teu contrasinal ou queres cambiar esta configuración, <ph name="BEGIN_LINK" />restablece a sincronización<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Aplicación web</translation>
@@ -346,7 +346,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3810973564298564668">Xestionar</translation>
 <translation id="381841723434055211">Números de teléfono</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> descargas eliminadas</translation>
-<translation id="3859306556332390985">Buscar cara adiante</translation>
 <translation id="388596076286380598">Accede a artigos, vídeos e outros contidos dos sitios que che gustan, aínda que esteas sen conexión ou esta sexa de mala calidade.</translation>
 <translation id="3892148308691398805">Copiar texto</translation>
 <translation id="3894427358181296146">Engadir cartafol</translation>
@@ -369,8 +368,6 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="3997476611815694295">Datos non importantes</translation>
 <translation id="4000212216660919741">Inicio sen conexión</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
-<translation id="403687620286099920">Toca para abrir o código QR</translation>
-<translation id="4046123991198612571">Pista seguinte</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opcións dispoñibles preto da parte superior da pantalla</translation>
 <translation id="4062305924942672200">Información legal</translation>
@@ -390,10 +387,10 @@ Mantén premida calquera palabra para buscala. Se queres refinar a busca, selecc
 <translation id="4209895695669353772">Para recibir contido personalizado suxerido por Google, activa a sincronización</translation>
 <translation id="423219824432660969">Encriptar os datos sincronizados co contrasinal de Google a partir do <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Abrir configuración</translation>
+<translation id="4248098802131000011">Protexe os teus contrasinais fronte a violacións da seguranza dos datos e outros problemas de seguranza</translation>
 <translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4256782883801055595">Licenzas de código aberto</translation>
 <translation id="4269820728363426813">Copiar enderezo da ligazón</translation>
-<translation id="429312253194641664">Un sitio está reproducindo contido multimedia</translation>
 <translation id="4298388696830689168">Sitios vinculados</translation>
 <translation id="4307992518367153382">Opcións básicas</translation>
 <translation id="4314815835985389558">Xestionar sincronización</translation>
@@ -567,7 +564,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crea un evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular a solicitude dun sitio web para evitar ampliar a imaxe</translation>
-<translation id="5681394891799747640">Non se puido descargar o código QR</translation>
 <translation id="5684874026226664614">Non se puido traducir esta páxina.</translation>
 <translation id="5686790454216892815">O nome do ficheiro é demasiado longo</translation>
 <translation id="5694049548840660018">Volver ao inicio facilmente</translation>
@@ -609,6 +605,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5958275228015807058">Atopa os ficheiros e as páxinas que descargaches na sección Descargas</translation>
 <translation id="5962718611393537961">Toca para contraer</translation>
 <translation id="5964805880140440652">Para compartir esta páxina con outro dispositivo, activa a sincronización na configuración de Chrome</translation>
+<translation id="5979084224081478209">Comprobar contrasinais</translation>
 <translation id="6000066717592683814">Manter Google</translation>
 <translation id="6005538289190791541">Contrasinal suxerido</translation>
 <translation id="6036057147555329831">ICU extra</translation>
@@ -710,7 +707,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="671481426037969117">O temporizador de <ph name="FQDN" /> chegou ao final. Volverá comezar mañá.</translation>
 <translation id="6738867403308150051">Descargando...</translation>
 <translation id="6767294960381293877">A lista de dispositivos cos que compartir unha pestana está aberta a media pantalla.</translation>
-<translation id="6790428901817661496">Reproducir</translation>
 <translation id="6811034713472274749">A páxina está lista para vela</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Traducir</translation>
@@ -718,7 +714,7 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="6846298663435243399">Cargando…</translation>
 <translation id="6850409657436465440">A descarga aínda está en curso</translation>
 <translation id="6850830437481525139"><ph name="TAB_COUNT" /> pestanas pechadas</translation>
-<translation id="685850645784703949">Discover, de Google: desconectado</translation>
+<translation id="685850645784703949">Discover, de Google: desactivado</translation>
 <translation id="6864459304226931083">Descargar imaxe</translation>
 <translation id="6865313869410766144">Autocompletar datos do formulario</translation>
 <translation id="6884306546558072722">Continuar explorando contido sen conexión</translation>
@@ -767,7 +763,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7328017930301109123">No modo básico, Chrome carga as páxinas máis rápido e usa un 60 por cento menos de datos.</translation>
 <translation id="7333031090786104871">Aínda se está engadindo o sitio anterior</translation>
 <translation id="7340958967809483333">Opcións de Discover</translation>
-<translation id="7352651011704765696">Produciuse un erro</translation>
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceso a métodos de pago</translation>
@@ -806,7 +801,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7605594153474022051">A sincronización non funciona</translation>
 <translation id="7606077192958116810">O modo básico está activado. Xestiónao en Configuración.</translation>
 <translation id="7612619742409846846">Iniciaches sesión en Google como</translation>
-<translation id="7614971007231847352">Descargouse o código QR</translation>
 <translation id="7619072057915878432">Produciuse un erro ao descargar <ph name="FILE_NAME" /> debido a erros na rede.</translation>
 <translation id="7624880197989616768">Podes <ph name="BEGIN_LINK1" />obter axuda<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />volver buscar<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Dámosche a benvida a Chrome</translation>
@@ -912,7 +906,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="8427875596167638501">A pestana de vista previa abriuse ata a metade</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8438566539970814960">Mellorar as buscas e a navegación</translation>
-<translation id="8441146129660941386">Buscar cara atrás</translation>
 <translation id="8443209985646068659">Non se actualiza Chrome</translation>
 <translation id="8445448999790540984">Non se puideron exportar os contrasinais</translation>
 <translation id="8461694314515752532">Encriptar os datos sincronizados coa túa propia frase de acceso de sincronización</translation>

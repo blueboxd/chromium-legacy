@@ -168,6 +168,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   DISALLOW_COPY_AND_ASSIGN(RenderFrameDevToolsAgentHost);
 };
 
+// Returns the ancestor FrameTreeNode* for which a RenderFrameDevToolsAgentHost
+// should be created (i.e. the next local root).
+FrameTreeNode* GetFrameTreeNodeAncestor(FrameTreeNode* frame_tree_node);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_RENDER_FRAME_DEVTOOLS_AGENT_HOST_H_

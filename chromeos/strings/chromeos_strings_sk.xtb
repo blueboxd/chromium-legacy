@@ -3,6 +3,7 @@
 <translationbundle lang="sk">
 <translation id="1018656279737460067">Zrušené</translation>
 <translation id="1195447618553298278">Neznáma chyba.</translation>
+<translation id="1413240736185167732">Nepodarilo sa – zlyhal filter</translation>
 <translation id="1468664791493211953">Ponuky</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> spravuje toto zariadenie a môže monitorovať vašu aktivitu.</translation>
 <translation id="150962533380566081">Neplatný kód PUK.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Toto zariadenie je spravované organizáciou</translation>
 <translation id="1905710495812624430">Maximálny počet povolených pokusov bol prekročený.</translation>
 <translation id="1930797645656624981">Služba metódy vstupu systému Chrome OS</translation>
+<translation id="1947737735496445907">Vytlačené</translation>
 <translation id="1979103255016296513">Uplynul termín zmeny hesla</translation>
 <translation id="2049639323467105390">Toto zariadenie je spravované doménou <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Ak chcete nájsť zariadenia v okolí, zapnite Bluetooth</translation>
@@ -18,15 +20,23 @@
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="3008341117444806826">OBNOVIŤ</translation>
+<translation id="3091839911843451378">Nepodarilo sa – zastavené</translation>
+<translation id="3268178239013324452">Nepodarilo sa – dvierka sú otvorené</translation>
 <translation id="3369013195428705271">Naozaj chcete vymazať celú históriu tlače? Prebiehajúce tlačové úlohy nebudú vymazané.</translation>
+<translation id="3456078764689556234">Bola vytlačená <ph name="PRINTED_PAGES" />. strana z <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Tlačové úlohy</translation>
+<translation id="3527036260304016759">Nepodarilo sa – neznáma chyba</translation>
 <translation id="3749289110408117711">Názov súboru</translation>
 <translation id="38114475217616659">Vymazať celú históriu</translation>
 <translation id="3820172043799983114">Neplatný kód PIN.</translation>
 <translation id="3838338534323494292">Nové heslo</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> z <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> spravuje toto zariadenie a má prístup k všetkým aktivitám používateľa vrátane navštívených webových stránok, hesiel a pošty.</translation>
+<translation id="4003384961948020559">Nepodarilo sa – výstup je plný</translation>
 <translation id="4034824040120875894">Tlačiareň</translation>
 <translation id="4227825898293920515">Platnosť hesla vyprší o <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Neprebiehajú žiadne tlačové úlohy</translation>
+<translation id="428217921675623177">Tlačové úlohy staršie ako 90 dní budú odstránené</translation>
 <translation id="4429881212383817840">Platnosť tiketu Kerberos čoskoro uplynie</translation>
 <translation id="445059817448385655">Staré heslo</translation>
 <translation id="467510802200863975">Heslá sa nezhodujú</translation>
@@ -37,24 +47,32 @@
 Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5222676887888702881">Odhlásiť sa</translation>
 <translation id="5317780077021120954">Uložiť</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Zvoľte si nové heslo teraz</translation>
 <translation id="5457599981699367932">Prehliadať ako hosť</translation>
 <translation id="54609108002486618">Spravovaný</translation>
 <translation id="5832805196449965646">Pridať osobu</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
+<translation id="6048107060512778456">Nepodarilo sa – zaseknutý papier</translation>
 <translation id="6058625436358447366">Ak chcete zmenu dokončiť, zadajte staré a nové heslo</translation>
 <translation id="6106186594183574873">Ak chcete zmenu dokončiť, zadajte staré heslo</translation>
 <translation id="6146993107019042706">Ak chcete zmenu dokončiť, zadajte nové heslo</translation>
 <translation id="6517239166834772319">Preskúmať</translation>
+<translation id="6564646048574748301">Nepodarilo sa – nedostupné</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="7162487448488904999">Galéria</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Túto akciu ovláda váš správca</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7690294790491645610">Potvrďte nové heslo</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="808894953321890993">Zmeniť heslo</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8701136875688985581">Tohto používateľa spravuje doména <ph name="ENROLLMENT_DOMAIN" />. Môže vzdialene spravovať nastavenia a monitorovať aktivitu používateľa.</translation>
+<translation id="871560550817059752">Nepodarilo sa – minul sa atrament</translation>
 <translation id="8747900814994928677">Potvrdenie zmeny</translation>
+<translation id="8919837981463578619">Nepodarilo sa – chýba zásobník</translation>
+<translation id="8928727111548978589">Nepodarilo sa – minul sa papier</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Počet zostávajúcich pokusov: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Obnoviť tiket pre <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Odomknúť</translation>

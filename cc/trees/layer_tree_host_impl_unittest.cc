@@ -6229,6 +6229,103 @@ TEST_P(LayerTreeHostImplBrowserControlsTest,
   host_impl_->ScrollEnd();
 }
 
+TEST_P(LayerTreeHostImplBrowserControlsTest,
+       HidingBrowserControlsExpandsClipAncestorsOfReplacedOuterScroller) {
+  SetupBrowserControlsAndScrollLayerWithVirtualViewport(
+      gfx::Size(180, 180), gfx::Size(180, 180), gfx::Size(180, 180));
+
+  LayerTreeImpl* active_tree = host_impl_->active_tree();
+  PropertyTrees* property_trees = active_tree->property_trees();
+  LayerImpl* original_outer_scroll = OuterViewportScrollLayer();
+
+  LayerImpl* parent_clip_layer = AddLayer();
+  CopyProperties(original_outer_scroll, parent_clip_layer);
+  parent_clip_layer->SetBounds(gfx::Size(160, 160));
+  CreateClipNode(parent_clip_layer);
+  LayerImpl* clip_layer = AddLayer();
+  clip_layer->SetBounds(gfx::Size(150, 150));
+  CopyProperties(parent_clip_layer, clip_layer);
+  CreateClipNode(clip_layer);
+  LayerImpl* scroll_layer =
+      AddScrollableLayer(clip_layer, gfx::Size(150, 150), gfx::Size(300, 300));
+  GetScrollNode(scroll_layer)->scrolls_outer_viewport = true;
+  ClipNode* original_outer_clip = GetClipNode(original_outer_scroll);
+  ClipNode* parent_clip = GetClipNode(parent_clip_layer);
+  ClipNode* scroll_clip = GetClipNode(clip_layer);
+
+  auto viewport_property_ids = active_tree->ViewportPropertyIdsForTesting();
+  viewport_property_ids.outer_clip = clip_layer->clip_tree_index();
+  viewport_property_ids.outer_scroll = scroll_layer->scroll_tree_index();
+  active_tree->SetViewportPropertyIds(viewport_property_ids);
+  UpdateDrawProperties(active_tree);
+
+  EXPECT_EQ(scroll_layer, OuterViewportScrollLayer());
+  EXPECT_EQ(GetScrollNode(scroll_layer),
+            active_tree->OuterViewportScrollNode());
+
+  EXPECT_EQ(1, active_tree->CurrentTopControlsShownRatio());
+  EXPECT_EQ(50, host_impl_->browser_controls_manager()->ContentTopOffset());
+  EXPECT_EQ(gfx::Vector2dF(),
+            property_trees->inner_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::Vector2dF(),
+            property_trees->outer_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::SizeF(300, 300), active_tree->ScrollableSize());
+  EXPECT_EQ(gfx::RectF(0, 0, 180, 180), original_outer_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 160, 160), parent_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 150, 150), scroll_clip->clip);
+
+  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
+            host_impl_
+                ->ScrollBegin(BeginState(gfx::Point(), gfx::Vector2dF(0, 25),
+                                         ui::ScrollInputType::kTouchscreen)
+                                  .get(),
+                              ui::ScrollInputType::kTouchscreen)
+                .thread);
+
+  // Hide the browser controls by a bit, the scrollable size should increase but
+  // the actual content bounds shouldn't.
+  host_impl_->browser_controls_manager()->ScrollBy(gfx::Vector2dF(0, 25));
+  EXPECT_EQ(0.5f, active_tree->CurrentTopControlsShownRatio());
+  EXPECT_EQ(25, host_impl_->browser_controls_manager()->ContentTopOffset());
+  EXPECT_EQ(gfx::Vector2dF(0, 25),
+            property_trees->inner_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::Vector2dF(0, 25),
+            property_trees->outer_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::SizeF(300, 300), active_tree->ScrollableSize());
+  EXPECT_EQ(gfx::RectF(0, 0, 150, 175), scroll_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 160, 175), parent_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 180, 180), original_outer_clip->clip);
+
+  // Fully hide the browser controls.
+  host_impl_->browser_controls_manager()->ScrollBy(gfx::Vector2dF(0, 25));
+  EXPECT_EQ(0, active_tree->CurrentTopControlsShownRatio());
+  EXPECT_EQ(0, host_impl_->browser_controls_manager()->ContentTopOffset());
+  EXPECT_EQ(gfx::Vector2dF(0, 50),
+            property_trees->inner_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::Vector2dF(0, 50),
+            property_trees->outer_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::SizeF(300, 300), active_tree->ScrollableSize());
+  EXPECT_EQ(gfx::RectF(0, 0, 150, 200), scroll_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 160, 200), parent_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 180, 200), original_outer_clip->clip);
+
+  // Scrolling additionally shouldn't have any effect.
+  host_impl_->browser_controls_manager()->ScrollBy(gfx::Vector2dF(0, 25));
+  EXPECT_EQ(0, active_tree->CurrentTopControlsShownRatio());
+  EXPECT_EQ(0, host_impl_->browser_controls_manager()->ContentTopOffset());
+  EXPECT_EQ(gfx::Vector2dF(0, 50),
+            property_trees->inner_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::Vector2dF(0, 50),
+            property_trees->outer_viewport_container_bounds_delta());
+  EXPECT_EQ(gfx::SizeF(300, 300), active_tree->ScrollableSize());
+  EXPECT_EQ(gfx::RectF(0, 0, 150, 200), scroll_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 160, 200), parent_clip->clip);
+  EXPECT_EQ(gfx::RectF(0, 0, 180, 200), original_outer_clip->clip);
+
+  host_impl_->browser_controls_manager()->ScrollEnd();
+  host_impl_->ScrollEnd();
+}
+
 // Ensure that moving the browser controls (i.e. omnibox/url-bar on mobile) on
 // pages with a non-1 minimum page scale factor (e.g. legacy desktop page)
 // correctly scales the clipping adjustment performed to show the newly exposed

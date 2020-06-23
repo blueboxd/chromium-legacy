@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_types.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/web_applications/components/web_app_url_loader.h"
 #include "content/public/browser/service_worker_context_observer.h"
 
 class GURL;
@@ -57,6 +58,8 @@ class PendingAppRegistrationTask : public PendingAppRegistrationTaskBase {
 
  private:
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
+
+  void OnWebContentsReady(WebAppUrlLoader::Result result);
 
   void OnRegistrationTimeout();
 

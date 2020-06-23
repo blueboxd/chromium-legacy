@@ -22,6 +22,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_filter.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync_device_info/device_info_prefs.h"
@@ -169,6 +170,7 @@ void WebViewBrowserState::RegisterPrefs(
   password_manager::PasswordManager::RegisterProfilePrefs(pref_registry);
   syncer::SyncPrefs::RegisterProfilePrefs(pref_registry);
   syncer::DeviceInfoPrefs::RegisterProfilePrefs(pref_registry);
+  safe_browsing::RegisterProfilePrefs(pref_registry);
 
   // Instantiate all factories to setup dependency graph for pref registration.
   WebViewLanguageModelManagerFactory::GetInstance();

@@ -1251,7 +1251,6 @@
 <translation id="6240447795304464094">Google Pay логотиби</translation>
 <translation id="6241121617266208201">Сунуштарды жашыруу</translation>
 <translation id="624499991300733384">Басып чыгарууну курамалоо кызматы</translation>
-<translation id="6251924700383757765">Купуялык саясаты</translation>
 <translation id="6254436959401408446">Бул баракчаны ачууга эстутум жетишсиз</translation>
 <translation id="625755898061068298">Сиз бул сайт үчүн коопсуздук эскертүүлөрү өчүрүлсүн деп тандагансыз.</translation>
 <translation id="6259156558325130047">Иреттештирүүнү &amp;кайталоо</translation>
@@ -1538,6 +1537,7 @@
 <translation id="7485870689360869515">Дайындар табылган жок.</translation>
 <translation id="7488762544858401571">Түзөтүлдү</translation>
 <translation id="7495290002932347110">Сайттагы же колдонмодогу сырсөзүңүздү кимдир-бирөө билип алды. Сакталган сырсөздөрүңүздү текшерип коюңуз же <ph name="ORIGIN" /> сайтында колдонгон сырсөзүңүздү өзгөртүңүз.</translation>
+<translation id="7495528107193238112">Бул мазмун бөгөттөлгөн. Көйгөйдү чечүү үчүн сайттын ээсине байланышыңыз.</translation>
 <translation id="7498234416455752244">Түзөтүүнү улантуу</translation>
 <translation id="7503664977220660814">Сырсөзүңүздү жаңы эле адаштыруучу сайтта киргиздиңиз. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> жана башка сайттарда колдонгон ушул жана сакталган сырсөздөрүңүздү текшерүүнү сунуштайт.</translation>
 <translation id="7508255263130623398">Кайтарылган саясат түзмөгүнүн id'си бош же учурдагы түзмөктүн id'сине дал келбейт</translation>
@@ -1637,7 +1637,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Эч бири}=1{1 колдонмо (<ph name="EXAMPLE_APP_1" />)}=2{2 колдонмо (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# колдонмо (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Ошентсе да, сиз көрүнбөй калбайсыз. Жашыруун серептөө аракеттериңизди иш берүүчүңүздөн, интернет кызматын камсыздоочудан же каралган вебсайттардан жашыра албайсыз.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />Баш баккан айрым сайттарыңыздын URL'дерин, тутум тууралуу чектелген маалыматты жана барактагы айрым мазмунду<ph name="END_WHITEPAPER_LINK" /> Google'га жөнөтүү менен Интернеттеги коопсуздукту баары үчүн күчөтүүгө жардам бериңиз. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Сайттан чыгасызбы?</translation>
 <translation id="7865448901209910068">Мыкты ылдамдык</translation>
 <translation id="7874263914261512992">Сырсөзүңүздү жаңы эле адаштыруучу сайтта киргиздиңиз. Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> жана башка сайттарда колдонгон ушул жана сакталган сырсөздөрүңүздү азыр текшерүүнү сунуштайт.</translation>

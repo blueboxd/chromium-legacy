@@ -30,7 +30,7 @@ class PendingLocalNigoriCommit {
 
   static std::unique_ptr<PendingLocalNigoriCommit> ForKeystoreInitialization();
 
-  static std::unique_ptr<PendingLocalNigoriCommit> ForKeystoreKeyRotation();
+  static std::unique_ptr<PendingLocalNigoriCommit> ForKeystoreReencryption();
 
   PendingLocalNigoriCommit() = default;
   virtual ~PendingLocalNigoriCommit() = default;

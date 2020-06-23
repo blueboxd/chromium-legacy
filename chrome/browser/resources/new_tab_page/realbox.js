@@ -315,6 +315,16 @@ class RealboxElement extends PolymerElement {
   //============================================================================
 
   /**
+   * @private
+   */
+  onHeaderFocusin_() {
+    // The header got focus. Unselect the selected match and clear the input.
+    assert(this.lastQueriedInput_ === '');
+    this.$.matches.unselect();
+    this.updateInput_({text: '', inline: ''});
+  }
+
+  /**
    * @param {!Event} e
    * @private
    */

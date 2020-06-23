@@ -3,6 +3,7 @@
 <translationbundle lang="id">
 <translation id="1018656279737460067">Dibatalkan</translation>
 <translation id="1195447618553298278">Kesalahan tak dikenal.</translation>
+<translation id="1413240736185167732">Gagal - Filter gagal</translation>
 <translation id="1468664791493211953">Penawaran</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> mengelola perangkat ini dan mungkin dapat memantau aktivitas Anda.</translation>
 <translation id="150962533380566081">PUK tidak valid.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Perangkat ini dikelola perusahaan</translation>
 <translation id="1905710495812624430">Melebihi batas percobaan maksimum yang diizinkan.</translation>
 <translation id="1930797645656624981">Layanan Metode Masukan Chrome OS</translation>
+<translation id="1947737735496445907">Tercetak</translation>
 <translation id="1979103255016296513">Perubahan sandi melewati batas waktu</translation>
 <translation id="2049639323467105390">Perangkat ini dikelola oleh <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Aktifkan Bluetooth untuk menemukan perangkat di sekitar</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="3008341117444806826">PERBARUI</translation>
+<translation id="3091839911843451378">Gagal - Berhenti</translation>
+<translation id="3268178239013324452">Gagal - Tutup terbuka</translation>
 <translation id="3369013195428705271">Yakin ingin menghapus semua histori cetak? Pekerjaan cetak yang sedang berlangsung tidak akan dihapus.</translation>
+<translation id="3456078764689556234">Mencetak halaman <ph name="PRINTED_PAGES" /> dari <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Pekerjaan Cetak</translation>
+<translation id="3527036260304016759">Gagal - Error tidak diketahui</translation>
 <translation id="3749289110408117711">Nama file</translation>
 <translation id="38114475217616659">Hapus semua histori</translation>
 <translation id="3820172043799983114">PIN tidak valid.</translation>
 <translation id="3838338534323494292">Sandi baru</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> dari <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> mengelola perangkat ini dan memiliki akses ke semua aktivitas pengguna, termasuk halaman yang dikunjungi, sandi, dan email.</translation>
+<translation id="4003384961948020559">Gagal - Baki hasil cetak penuh</translation>
 <translation id="4034824040120875894">Printer</translation>
 <translation id="4227825898293920515">Sandi kedaluwarsa dalam <ph name="TIME" /></translation>
+<translation id="428217921675623177">Tugas pencetakan yang sudah lebih dari 90 hari akan dihapus</translation>
 <translation id="4429881212383817840">Masa berlaku tiket Kerberos segera berakhir</translation>
 <translation id="445059817448385655">Sandi lama</translation>
 <translation id="467510802200863975">Sandi tidak cocok</translation>
@@ -37,24 +46,31 @@
 Ketuk mikrofon untuk bertanya apa saja.</translation>
 <translation id="5222676887888702881">Logout</translation>
 <translation id="5317780077021120954">Simpan</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Pilih satu sandi baru sekarang</translation>
 <translation id="5457599981699367932">Login sebagai Tamu</translation>
 <translation id="54609108002486618">Terkelola</translation>
 <translation id="5832805196449965646">Tambahkan Pengguna</translation>
 <translation id="5895138241574237353">Mulai Ulang</translation>
+<translation id="6048107060512778456">Gagal - Kertas macet</translation>
 <translation id="6058625436358447366">Untuk menyelesaikan, masukkan sandi yang lama dan baru</translation>
 <translation id="6106186594183574873">Untuk menyelesaikan, masukkan sandi yang lama</translation>
 <translation id="6146993107019042706">Untuk menyelesaikan, masukkan sandi yang baru</translation>
 <translation id="6517239166834772319">Jelajahi</translation>
+<translation id="6564646048574748301">Gagal - Printer tidak dapat dijangkau</translation>
 <translation id="6643016212128521049">Hapus</translation>
 <translation id="7162487448488904999">Galeri</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7690294790491645610">Konfirmasi sandi baru</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Ubah sandi</translation>
 <translation id="8208861521865154048">Keuntungan</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> mengelola pengguna ini. Domain dapat mengelola setelan dan memantau aktivitas pengguna dari jarak jauh.</translation>
+<translation id="871560550817059752">Gagal - Tinta habis</translation>
 <translation id="8747900814994928677">Konfirmasi perubahan</translation>
+<translation id="8919837981463578619">Gagal - Tidak ada baki</translation>
+<translation id="8928727111548978589">Gagal - Kertas habis</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> upaya tersisa</translation>
 <translation id="910415269708673980">Perbarui tiket untuk <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Buka kunci</translation>

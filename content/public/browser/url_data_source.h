@@ -13,6 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/template_expressions.h"
 
 class GURL;
@@ -94,34 +95,15 @@ class CONTENT_EXPORT URLDataSource {
   // is delivered through the data manager backend. Do not disable CSP on your
   // page without first contacting the chrome security team.
   virtual bool ShouldAddContentSecurityPolicy();
-  // For pre-existing code, enabling CSP with relaxed script-src attributes
-  // may be marginally better than disabling CSP outright.
-  // Do not override this method without first contacting the chrome security
-  // team.
-  // By default, "script-src chrome://resources 'self';" is added to CSP.
-  // Override to change this.
-  virtual std::string GetContentSecurityPolicyScriptSrc();
 
-  // It is OK to override the following methods to a custom CSP directive
-  // thereby slightly reducing the protection applied to the page.
-
-  // By default, "child-src 'none';" is added to CSP. Override to change this.
-  virtual std::string GetContentSecurityPolicyChildSrc();
-  // By default empty. Override to change this.
-  virtual std::string GetContentSecurityPolicyDefaultSrc();
-  // By default empty. Override to change this.
-  virtual std::string GetContentSecurityPolicyImgSrc();
-  // By default empty. Override to change this.
-  virtual std::string GetContentSecurityPolicyMediaSrc();
-  // By default, "object-src 'none';" is added to CSP. Override to change this.
-  virtual std::string GetContentSecurityPolicyObjectSrc();
-  // By default empty. Override to change this.
-  virtual std::string GetContentSecurityPolicyStyleSrc();
-  // By default empty. Override to change this.
-  virtual std::string GetContentSecurityPolicyWorkerSrc();
-  // By default, "frame ancestors: 'none'" is added to the CSP unless
-  // ShouldDenyXFrameOptions() returns false.
-  virtual std::string GetContentSecurityPolicyFrameAncestors();
+  // By default, the following CSPs are added. Override to change this.
+  //  - "child-src 'none';"
+  //  - "object-src 'none';"
+  //  - "frame ancestors: 'none'" is added to the CSP unless
+  //    ShouldDenyXFrameOptions() returns false
+  //  - "script-src chrome://resources 'self';"
+  virtual std::string GetContentSecurityPolicy(
+      network::mojom::CSPDirectiveName directive);
 
   // By default, the "X-Frame-Options: DENY" header is sent. To stop this from
   // happening, return false. It is OK to return false as needed.

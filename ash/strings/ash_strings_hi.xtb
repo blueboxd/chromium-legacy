@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">बाएं</translation>
 <translation id="1479909375538722835">फ़्लोट करने वाले सुलभता मेन्यू</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">चालू है</translation>
 <translation id="1516740043221086139">'परेशान न करें' मोड चालू है.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{सूचना सेटिंग दिखाएं. किसी एक ऐप्लिकेशन के लिए सूचनाएं बंद हैं}one{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}other{सूचना सेटिंग दिखाएं. # ऐप्लिकेशन के लिए सूचनाएं बंद हैं}}</translation>
 <translation id="1525508553941733066">ख़ारिज करें</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">Assistant (सेवा लोड हो रही है...)</translation>
 <translation id="1838895407229022812">नाइट लाइट बंद है.</translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
-<translation id="1859889070386344428">बंद है</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर स्क्रीन शेयर कर रहा है</translation>
 <translation id="1885785240814121742">फ़िंगरप्रिंट से अनलॉक करें</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">कीबोर्ड लेआउट स्विच करने के लिए <ph name="KEYBOARD_SHORTCUT" /> दबाएं.</translation>
 <translation id="2501920221385095727">स्टिकी बटन</translation>
 <translation id="2509468283778169019">CAPS LOCK चालू है</translation>
-<translation id="2519465031217098801">चालू है</translation>
 <translation id="2542089167727451762">अपनी प्रोफ़ाइल फ़ोटो पर टैप करें</translation>
 <translation id="255671100581129685">सार्वजनिक सत्र में Google Assistant उपलब्ध नहीं है.</translation>
 <translation id="256712445991462162">सामग्री को बड़ा दिखाने की डॉक की गई सुविधा</translation>
@@ -262,7 +259,6 @@
 <translation id="3943857333388298514">चिपकाएं</translation>
 <translation id="394485226368336402">ऑडियो सेटिंग</translation>
 <translation id="3962859241508114581">पिछला ट्रैक</translation>
-<translation id="3965097803111112935">बंद है</translation>
 <translation id="397105322502079400">गणना की जा रही है...</translation>
 <translation id="3977512764614765090">बैटरी <ph name="PERCENTAGE" />% बाकी है और चार्ज हो रही है.</translation>
 <translation id="3995138139523574647">USB-C डिवाइस (दायां पिछला पोर्ट)</translation>
@@ -355,7 +351,6 @@
 <translation id="5207949376430453814">लेख कैरेट हाइलाइट करें</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="523505283826916779">सुलभता सेटिंग</translation>
-<translation id="5250225880026334010">बंद है</translation>
 <translation id="5260676007519551770">डेस्क 4</translation>
 <translation id="5283198616748585639">एक मिनट जोड़ें</translation>
 <translation id="528468243742722775">खत्म</translation>
@@ -474,7 +469,6 @@
 <translation id="6650933572246256093">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है. कृपया डिवाइस पर यह पासकुंजी डालें: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">पासवर्ड</translation>
 <translation id="6665545700722362599">वेबसाइट, ऐप्लिकेशन, और एक्सटेंशन को जगह की जानकारी, डिवाइस के माइक्रोफ़ोन, कैमरा या दूसरी सुविधाओं का इस्तेमाल करने की अनुमति दें</translation>
-<translation id="6669268301501499730">चालू है</translation>
 <translation id="6670153871843998651">डेस्क 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">चुनी हुई सामग्री से जुड़ी जानकारी पाएं</translation>

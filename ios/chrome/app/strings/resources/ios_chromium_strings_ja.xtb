@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">現在 Chromium ではカメラを使用できません</translation>
 <translation id="2195025571279539885">次回から Chromium でこのサイトの <ph name="LANGUAGE_NAME" /> ページの翻訳を表示しますか？</translation>
 <translation id="2590893390871230428">Chromium のデータを同期する</translation>
+<translation id="2650312721222849884">どのデバイスからでも Chromium で同じタブにアクセスするには、同期をオンにしてください</translation>
 <translation id="2730884209570016437">カメラは別のアプリが使用中のため、Chromium では使用できません</translation>
 <translation id="2915596697727466327">Chromium では Face ID の使用により、パスワードへの認証されたアクセスのみが許可されます。</translation>
 <translation id="3256316712990552818">Chromium にコピー済み</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Chromium のスキャナをオンにしてください</translation>
 <translation id="4787850887676698916">他のデバイスの Chromium で開いているタブがここに表示されます。</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトするにあたり、Chromium データはこのデバイスから削除されます（ただし Google アカウントには残ります）。</translation>
+<translation id="5521125884468363740">どのデバイスからでも Chromium で同じタブにアクセスするには、ログインして同期をオンにしてください</translation>
 <translation id="5573014823074921752">Chromium の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を長押しします。</translation>
 <translation id="5777187867430702742">Chromium ページ</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Chromium の使い方のヒント: 戻る、進む、検索など一部のボタンは画面の下部に表示されるようになりました。</translation>
 <translation id="786327964234957808">同期アカウントを <ph name="USER_EMAIL1" /> から <ph name="USER_EMAIL2" /> に切り替えようとしています。既存の Chromium データは <ph name="DOMAIN" /> で管理されています。この操作を行うと、データはこのデバイスから削除されますが、<ph name="USER_EMAIL1" /> には残ります。</translation>
 <translation id="7890287942691234100">Chromium のスキャナの使用開始</translation>
+<translation id="8013573822802650211">どのデバイスからでも Chromium で同じタブにアクセスするには、すべてのデバイスでログインしてください</translation>
 <translation id="8073677936375100957">Chromium データをこのデバイスから削除しますか？</translation>
 <translation id="8175055321229419309">ヒント: <ph name="BEGIN_LINK" />Chromium を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
 <translation id="8252885722420466166">ユーザーの現在時に基づいて Chromium で Google を使いやすくします。</translation>

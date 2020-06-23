@@ -20,8 +20,7 @@ class AXTreeSourceArc;
 class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
  public:
   AccessibilityNodeInfoDataWrapper(AXTreeSourceArc* tree_source,
-                                   mojom::AccessibilityNodeInfoData* node,
-                                   bool is_important);
+                                   mojom::AccessibilityNodeInfoData* node);
 
   ~AccessibilityNodeInfoDataWrapper() override;
 
@@ -34,6 +33,7 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool IsVisibleToUser() const override;
   bool IsVirtualNode() const override;
   bool IsIgnored() const override;
+  bool IsImportantInAndroid() const override;
   bool CanBeAccessibilityFocused() const override;
   bool IsAccessibilityFocusableContainer() const override;
   void PopulateAXRole(ui::AXNodeData* out_data) const override;
@@ -76,14 +76,19 @@ class AccessibilityNodeInfoDataWrapper : public AccessibilityInfoDataWrapper {
   bool IsScrollableContainer() const;
   bool IsToplevelScrollItem() const;
 
-  mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
+  bool HasImportantProperty() const;
+  bool HasImportantPropertyInternal() const;
 
-  bool is_important_;
+  mojom::AccessibilityNodeInfoData* node_ptr_ = nullptr;
 
   base::Optional<ax::mojom::Role> role_;
   base::Optional<std::string> cached_name_;
   mojom::AccessibilityLiveRegionType container_live_status_ =
       mojom::AccessibilityLiveRegionType::NONE;
+
+  // This property is a cached value so that we can avoid same computation.
+  // mutable because once the value is computed it won't change.
+  mutable base::Optional<bool> has_important_property_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityNodeInfoDataWrapper);
 };

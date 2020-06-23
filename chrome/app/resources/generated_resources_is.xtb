@@ -2493,7 +2493,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4077919383365622693">Öllum gögnum og fótsporum sem <ph name="SITE" /> geymir verður eytt.</translation>
 <translation id="4079140982534148664">Nota endurbætta ritvilluleit</translation>
 <translation id="4081242589061676262">Ekki hægt að senda út skrá.</translation>
-<translation id="4083648855651348665">Til að halda áfram skaltu slá inn aðgangsorðið að Google reikningnum þínum til að gera aðgangsorð reikningsins tiltæk í þessu tæki.</translation>
 <translation id="4084682180776658562">Bókamerki</translation>
 <translation id="4084835346725913160">Loka <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Spyrja þegar vefsvæði vill fá aðgang að raðtengjum</translation>
@@ -2798,6 +2797,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="4508765956121923607">Sk&amp;oða frumkóða</translation>
 <translation id="4510479820467554003">Listi foreldrareikninga</translation>
 <translation id="4510614391273086606">Verið er að endurheimta öryggisafrit Linux-skráa og forrita.</translation>
+<translation id="4513946894732546136">Ábendingar</translation>
 <translation id="451407183922382411">Knúið af <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">Skipt á milli spilunar og hlés á myndskeiði</translation>
 <translation id="451515744433878153">Fjarlægja</translation>
@@ -3895,7 +3895,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5935656526031444304">Stjórna öruggri vefskoðun</translation>
 <translation id="5938002010494270685">Öryggisuppfærsla í boði</translation>
 <translation id="5939518447894949180">Endurstilla</translation>
-<translation id="594108735267876762">Uppfærðu tækið innan <ph name="COUNT" /> daga</translation>
 <translation id="5941153596444580863">Bæta notanda við...</translation>
 <translation id="5941343993301164315">Skráðu þig inn á <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minnka</translation>
@@ -4244,7 +4243,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6390799748543157332">Síður sem þú skoðar í þessum glugga munu ekki birtast í vafraferlinum eða skilja eftir sig önnur ummerki á tölvunni, s.s. fótspor, þegar þú lokar öllum gestagluggum. Allar skrár sem þú sækir verða þó enn til staðar.</translation>
 <translation id="6393156038355142111">Leggja til traust aðgangsorð</translation>
 <translation id="6395423953133416962">Senda <ph name="BEGIN_LINK1" />kerfisupplýsingar<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />mælingar<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">Síðasti dagur til að uppfæra tækið</translation>
 <translation id="6396988158856674517">Banna vefsvæðum að nota hreyfiskynjara</translation>
 <translation id="6398715114293939307">Fjarlægja Google Play Store</translation>
 <translation id="6398765197997659313">Hætta að nota allan skjáinn</translation>
@@ -4610,7 +4608,6 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="6880587130513028875">Myndir á þessari síðu voru útilokaðar.</translation>
 <translation id="6882836635272038266">Hefðbundin vörn gegn vefsvæðum, niðurhali og viðbótum sem vitað er að eru hættuleg.</translation>
 <translation id="6883319974225028188">Úbbs!  Kerfið gat ekki vistað stillingu tækisins.</translation>
-<translation id="6885064901301703683">Geymdu það einu sinni og notaðu það alls staðar</translation>
 <translation id="6885771755599377173">Forskoðun kerfisupplýsinga</translation>
 <translation id="6886476658664859389">NFC-öryggislykill</translation>
 <translation id="6886871292305414135">Opna &amp;tengil í nýjum flipa</translation>
@@ -5047,6 +5044,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7427798576651127129">Símtal frá <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">Engin HID-tæki fundust</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Opna allt í &amp;nýjum glugga}=1{Opna í &amp;nýjum glugga}one{Opna allt (#) í &amp;nýjum glugga}other{Opna allt (#) í &amp;nýjum glugga}}</translation>
+<translation id="7433957986129316853">Halda henni</translation>
 <translation id="7434509671034404296">Forritarar</translation>
 <translation id="7434635829372401939">Samstilla stillingar</translation>
 <translation id="7434757724413878233">Hröðun músar</translation>
@@ -5937,7 +5935,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8545575359873600875">Ekki tókst að staðfesta aðgangsorðið þitt. Stjórnandi þessa stýrða notanda kann að hafa breytt aðgangsorðinu nýlega. Ef svo er verður það notað næst þegar þú skráir þig inn. Prófaðu að nota gamla aðgangsorðið.</translation>
 <translation id="8546186510985480118">Lítið geymslupláss er eftir á tæki</translation>
 <translation id="8546306075665861288">Skyndiminni mynda</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">Vefslóð fyrir sjálfvirka uppgötvun staðgengilsþjóna</translation>
 <translation id="8546930481464505581">Sérsníða snertistiku</translation>
 <translation id="8547013269961688403">Kveikja á stækkunargleri á öllum skjánum</translation>
@@ -6525,6 +6522,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="983511809958454316">Þessi eiginleiki er ekki studdur í sýndarveruleika</translation>
 <translation id="984275831282074731">Greiðslumátar</translation>
 <translation id="98515147261107953">Langsnið</translation>
+<translation id="987264212798334818">Almennt</translation>
 <translation id="987897973846887088">Engar myndir til staðar</translation>
 <translation id="988978206646512040">Ekki er leyft að hafa autt aðgangsorð</translation>
 <translation id="992032470292211616">Viðbætur, forrit og þemu geta skaðað tækið þitt. Ertu viss um að þú viljir halda áfram?</translation>

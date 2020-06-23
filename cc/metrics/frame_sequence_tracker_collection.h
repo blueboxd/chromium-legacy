@@ -112,8 +112,6 @@ class CC_EXPORT FrameSequenceTrackerCollection {
 
   void SetUkmManager(UkmManager* manager);
 
-  base::Optional<int> CurrentUniversalThroughput();
-
   // These methods directly calls corresponding APIs in ThroughputUkmReporter,
   // please refer to the ThroughputUkmReporter for details.
   bool HasThroughputData() const;

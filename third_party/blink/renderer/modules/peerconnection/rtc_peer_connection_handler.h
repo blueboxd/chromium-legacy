@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/media_stream_track_metrics.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_receiver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_sender_impl.h"
+#include "third_party/blink/renderer/modules/peerconnection/thermal_resource.h"
 #include "third_party/blink/renderer/modules/peerconnection/transceiver_state_surfacer.h"
 #include "third_party/blink/renderer/modules/peerconnection/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -213,10 +214,8 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   virtual void CloseClientPeerConnection();
   // Invoked when a new thermal state is received from the OS.
   // Virtual for testing purposes.
-  // TODO(https://crbug.com/1094844): When ThermalResource is implemented, have
-  // it make use of this signal.
   virtual void OnThermalStateChange(
-      base::PowerObserver::DeviceThermalState thermal_state) {}
+      base::PowerObserver::DeviceThermalState thermal_state);
 
   // Start recording an event log.
   void StartEventLog(int output_period_ms);
@@ -450,6 +449,11 @@ class MODULES_EXPORT RTCPeerConnectionHandler {
   webrtc::PeerConnectionInterface::RTCConfiguration configuration_;
   bool force_encoded_audio_insertable_streams_ = false;
   bool force_encoded_video_insertable_streams_ = false;
+
+  // Resources for Adaptation.
+  // The Thermal Resource is lazily instantiated on platforms where thermal
+  // signals are supported.
+  scoped_refptr<ThermalResource> thermal_resource_ = nullptr;
 
   // Record info about the first SessionDescription from the local and
   // remote side to record UMA stats once both are set.  We only check

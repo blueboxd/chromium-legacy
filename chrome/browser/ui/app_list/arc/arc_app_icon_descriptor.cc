@@ -18,6 +18,8 @@ int GetScalePercent(ui::ScaleFactor scale_factor) {
 // Template for the icon name. First part is scale percent and second is
 // resource size in dip.
 constexpr char kIconNameTemplate[] = "icon_%dp_%d.png";
+constexpr char kForegroundIconNameTemplate[] = "foreground_icon_%dp_%d.png";
+constexpr char kBackgroundIconNameTemplate[] = "background_icon_%dp_%d.png";
 
 }  // namespace
 
@@ -36,6 +38,16 @@ int ArcAppIconDescriptor::GetSizeInPixels() const {
 std::string ArcAppIconDescriptor::GetName() const {
   return base::StringPrintf(kIconNameTemplate, GetScalePercent(scale_factor),
                             dip_size);
+}
+
+std::string ArcAppIconDescriptor::GetForegroundIconName() const {
+  return base::StringPrintf(kForegroundIconNameTemplate,
+                            GetScalePercent(scale_factor), dip_size);
+}
+
+std::string ArcAppIconDescriptor::GetBackgroundIconName() const {
+  return base::StringPrintf(kBackgroundIconNameTemplate,
+                            GetScalePercent(scale_factor), dip_size);
 }
 
 bool ArcAppIconDescriptor::operator==(const ArcAppIconDescriptor& other) const {

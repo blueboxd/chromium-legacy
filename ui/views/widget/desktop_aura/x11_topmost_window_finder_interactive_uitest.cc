@@ -18,7 +18,9 @@
 #include "ui/base/x/x11_util.h"
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/x/connection.h"
 #include "ui/gfx/x/event.h"
+#include "ui/gfx/x/shape.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 #include "ui/gfx/x/x11_path.h"
@@ -296,10 +298,14 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   skregion2.op(SkIRect::MakeXYWH(0, 10, 10, 90), SkRegion::kUnion_Op);
   skregion2.op(SkIRect::MakeXYWH(10, 0, 90, 100), SkRegion::kUnion_Op);
   x11::Window window2 = CreateAndShowXWindow(gfx::Rect(300, 100, 100, 100));
-  gfx::XScopedPtr<REGION, gfx::XObjectDeleter<REGION, int, XDestroyRegion>>
-      region2(gfx::CreateRegionFromSkRegion(skregion2));
-  XShapeCombineRegion(xdisplay(), static_cast<uint32_t>(window2), ShapeBounding,
-                      0, 0, region2.get(), false);
+  auto region2 = gfx::CreateRegionFromSkRegion(skregion2);
+  x11::Connection::Get()->shape().Rectangles({
+      .operation = x11::Shape::So::Set,
+      .destination_kind = x11::Shape::Sk::Bounding,
+      .ordering = x11::ClipOrdering::YXBanded,
+      .destination_window = window2,
+      .rectangles = *region2,
+  });
   x11::Window windows[] = {window1, window2};
   StackingClientListWaiter stack_waiter(windows, base::size(windows));
   stack_waiter.Wait();

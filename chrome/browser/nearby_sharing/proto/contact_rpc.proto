@@ -1,0 +1,63 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// Keep in sync with
+// http://google3/google/internal/location/nearby/sharing/v1/rpcs/contacts.proto
+// Messages not used in Chrome have been omitted. Last copied at cl/2228987.
+
+syntax = "proto3";
+
+package nearbyshare.proto;
+
+option optimize_for = LITE_RUNTIME;
+
+import "rpc_resources.proto";
+
+// Request to get contacts reachability and recommendation for sharing.
+message CheckContactsReachabilityRequest {
+  message ReachableContact {
+    string contact_id = 1;
+
+    repeated string phone_numbers = 2;
+
+    repeated string emails = 3;
+  }
+
+  repeated ReachableContact contacts = 1;
+}
+
+message CheckContactsReachabilityResponse {
+  message Result {
+    string contact_id = 1;
+    bool is_reachable = 2;
+    bool is_recommended = 3;
+  }
+  repeated Result results = 1;
+}
+
+// Request to list ContactRecord of a user.
+message ListContactPeopleRequest {
+  // Required. The resource name determines which contact records to list.
+  // The special prefix "users/me" lists the requester's own contacts. This
+  // is of the format "users/*/devices/*".
+  string parent = 1;
+
+  // Optional limit on the number of ContactRecord in
+  // [ListContactPeopleResponse.contact_records]. Defaults to 2000 if not set.
+  int32 page_size = 2;
+
+  // Optional pagination token, returned earlier via
+  // [ListContactPeopleResponse.next_page_token]
+  string page_token = 3;
+}
+
+// Response from a ListContactPeopleRequest.
+message ListContactPeopleResponse {
+  // The ContactRecord in this collection.
+  repeated ContactRecord contact_records = 1;
+
+  // Optional. A token to retrieve the next page of results when used in
+  // [ListContactPeopleRequest]. Empty if no page is available.
+  string next_page_token = 2;
+}

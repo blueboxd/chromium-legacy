@@ -130,7 +130,7 @@ void DedicatedWorkerHost::StartScriptLoad(
   bool in_memory;
   GetContentClient()->browser()->GetStoragePartitionConfigForSite(
       storage_partition_impl->browser_context(), site_instance->GetSiteURL(),
-      /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
+      &storage_domain, &partition_name, &in_memory);
 
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;
   if (script_url.SchemeIsBlob()) {
@@ -499,7 +499,7 @@ void DedicatedWorkerHost::UpdateSubresourceLoaderFactories() {
   bool in_memory;
   GetContentClient()->browser()->GetStoragePartitionConfigForSite(
       storage_partition_impl->browser_context(), site_instance->GetSiteURL(),
-      /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
+      &storage_domain, &partition_name, &in_memory);
 
   // Start observing Network Service crash again.
   ObserveNetworkServiceCrash(storage_partition_impl);

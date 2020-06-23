@@ -4,6 +4,8 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
+#include "base/notreached.h"
+
 #if defined(USE_X11)
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 #endif

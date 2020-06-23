@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/printing/cups_print_job_notification.h"
 
 #include "ash/public/cpp/notification_utils.h"
+#include "base/feature_list.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -20,8 +21,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
@@ -124,8 +127,12 @@ void CupsPrintJobNotification::Close(bool by_user) {
 void CupsPrintJobNotification::Click(
     const base::Optional<int>& button_index,
     const base::Optional<base::string16>& reply) {
-  if (!button_index)
+  if (!button_index) {
+    if (base::FeatureList::IsEnabled(features::kPrintJobManagementApp)) {
+      chrome::ShowPrintManagementApp(profile_);
+    }
     return;
+  }
 
   DCHECK(*button_index >= 0 &&
          static_cast<size_t>(*button_index) < button_commands_.size());

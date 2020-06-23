@@ -52,7 +52,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1479909375538722835">Nakalutang na menu ng accessibility</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Naka-on</translation>
 <translation id="1516740043221086139">Naka-on ang Huwag istorbohin.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa isang app}one{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa # app}other{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa # na app}}</translation>
 <translation id="1525508553941733066">I-DISMISS</translation>
@@ -79,7 +78,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="1836215606488044471">Assistant (naglo-load...)</translation>
 <translation id="1838895407229022812">Naka-off ang Night Light.</translation>
 <translation id="1850504506766569011">Naka-off ang Wi-Fi.</translation>
-<translation id="1859889070386344428">Naka-off</translation>
 <translation id="1864454756846565995">USB-C device (port sa rear)</translation>
 <translation id="1882897271359938046">Nagmi-mirror sa <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">I-unlock gamit ang fingerprint</translation>
@@ -138,7 +136,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="2484513351006226581">Pindutin ang <ph name="KEYBOARD_SHORTCUT" /> upang palitan ang layout ng keyboard.</translation>
 <translation id="2501920221385095727">Mga sticky key</translation>
 <translation id="2509468283778169019">Naka-on ang CAPS LOCK</translation>
-<translation id="2519465031217098801">Naka-on</translation>
 <translation id="2542089167727451762">I-tap ang iyong larawan sa profile</translation>
 <translation id="255671100581129685">Hindi available ang Google Assistant sa isang pampublikong session.</translation>
 <translation id="256712445991462162">ang naka-dock na magnifier</translation>
@@ -261,7 +258,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="3943857333388298514">Paste</translation>
 <translation id="394485226368336402">Mga setting ng audio</translation>
 <translation id="3962859241508114581">Nakaraang Track</translation>
-<translation id="3965097803111112935">Naka-off</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
 <translation id="3977512764614765090">Nasa <ph name="PERCENTAGE" />% ang baterya at nagcha-charge.</translation>
 <translation id="3995138139523574647">USB-C device (port sa kanang bahagi sa likod)</translation>
@@ -354,7 +350,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="5207949376430453814">I-highlight ang text caret</translation>
 <translation id="5222676887888702881">Mag-sign out</translation>
 <translation id="523505283826916779">Mga setting ng accessibility</translation>
-<translation id="5250225880026334010">Naka-off</translation>
 <translation id="5260676007519551770">Desk 4</translation>
 <translation id="5283198616748585639">Magdagdag ng 1 minuto</translation>
 <translation id="528468243742722775">Tapusin</translation>
@@ -473,7 +468,6 @@ Narito ang ilang bagay na puwede mong subukang simulan.</translation>
 <translation id="6650933572246256093">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares. Pakilagay ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Password</translation>
 <translation id="6665545700722362599">Nagbibigay ng pahintulot sa mga website, app, at extension na gumamit ng mga serbisyo ng lokasyon, gamitin ang mikropono, camera, o iba pang feature ng device</translation>
-<translation id="6669268301501499730">Naka-on</translation>
 <translation id="6670153871843998651">Desk 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">Kumuha ng impormasyon kaugnay ng iyong pinili</translation>

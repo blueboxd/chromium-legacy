@@ -44,11 +44,50 @@ bool LayoutRubyText::IsChildAllowed(LayoutObject* child,
 
 void LayoutRubyText::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
-  if (StyleRef().GetTextAlign() != ETextAlign::kInternalSpaceAround) {
+  if (StyleRef().GetTextAlign() !=
+      ComputedStyleInitialValues::InitialTextAlign()) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kRubyTextWithNonDefaultTextAlign);
   }
   LayoutBlockFlow::StyleDidChange(diff, old_style);
+}
+
+ETextAlign LayoutRubyText::TextAlignmentForLine(
+    bool ends_with_soft_break) const {
+  ETextAlign text_align = StyleRef().GetTextAlign();
+  // FIXME: This check is bogus since user can set the initial value.
+  if (text_align != ComputedStyleInitialValues::InitialTextAlign())
+    return LayoutBlockFlow::TextAlignmentForLine(ends_with_soft_break);
+
+  // The default behavior is to allow ruby text to expand if it is shorter than
+  // the ruby base.
+  return ETextAlign::kJustify;
+}
+
+void LayoutRubyText::AdjustInlineDirectionLineBounds(
+    unsigned expansion_opportunity_count,
+    LayoutUnit& logical_left,
+    LayoutUnit& logical_width) const {
+  ETextAlign text_align = StyleRef().GetTextAlign();
+  // FIXME: This check is bogus since user can set the initial value.
+  if (text_align != ComputedStyleInitialValues::InitialTextAlign()) {
+    return LayoutBlockFlow::AdjustInlineDirectionLineBounds(
+        expansion_opportunity_count, logical_left, logical_width);
+  }
+
+  int max_preferred_logical_width = PreferredLogicalWidths().max_size.ToInt();
+  if (max_preferred_logical_width >= logical_width)
+    return;
+
+  // Inset the ruby text by half the inter-ideograph expansion amount, but no
+  // more than a full-width ruby character on each side.
+  LayoutUnit inset = (logical_width - max_preferred_logical_width) /
+                     (expansion_opportunity_count + 1);
+  if (expansion_opportunity_count)
+    inset = std::min(LayoutUnit(2 * StyleRef().FontSize()), inset);
+
+  logical_left += inset / 2;
+  logical_width -= inset;
 }
 
 }  // namespace blink

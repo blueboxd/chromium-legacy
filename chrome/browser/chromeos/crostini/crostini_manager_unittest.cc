@@ -1862,6 +1862,14 @@ TEST_F(CrostiniManagerTest, FileSystemCorruptionSignal) {
                                       CorruptionStates::OTHER_CORRUPTION, 1);
 }
 
+TEST_F(CrostiniManagerTest, StartLxdSuccess) {
+  crostini_manager()->StartLxd(
+      kVmName, base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),
+                              CrostiniResult::SUCCESS));
+
+  run_loop()->Run();
+}
+
 class CrostiniManagerAnsibleInfraTest : public CrostiniManagerTest {
  public:
   void SetUp() override {

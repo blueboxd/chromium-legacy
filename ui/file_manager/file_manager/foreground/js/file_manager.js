@@ -1233,7 +1233,7 @@ class FileManager extends cr.EventTarget {
     toast(
         pluginVmShareCount, 'FOLDER_SHARED_WITH_PLUGIN_VM',
         'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL', 'MANAGE_TOAST_BUTTON_LABEL',
-        'pluginVm/sharedPaths',
+        'app-management/pluginVm/sharedPaths',
         CommandHandler.MenuCommandsForUMA
             .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
   }

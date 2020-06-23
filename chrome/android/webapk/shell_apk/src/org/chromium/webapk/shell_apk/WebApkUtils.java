@@ -274,43 +274,27 @@ public class WebApkUtils {
     }
 
     /** Computes the screen lock orientation from the passed-in metadata and the display size.  */
-    public static int computeScreenLockOrientationFromMetaData(Context context, Bundle metadata) {
+    public static int computeNaturalScreenLockOrientationFromMetaData(
+            Context context, Bundle metadata) {
         String orientation = metadata.getString(WebApkMetaDataKeys.ORIENTATION);
-        if (orientation == null) {
-            return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
-        } else if (orientation.equals("portrait-primary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-        } else if (orientation.equals("portrait-secondary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
-        } else if (orientation.equals("landscape-primary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-        } else if (orientation.equals("landscape-secondary")) {
-            return ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
-        } else if (orientation.equals("portrait")) {
-            return ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
-        } else if (orientation.equals("landscape")) {
-            return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
-        } else if (orientation.equals("any")) {
-            return ActivityInfo.SCREEN_ORIENTATION_FULL_SENSOR;
-        } else if (orientation.equals("natural")) {
-            WindowManager windowManager =
-                    (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
-            Display display = windowManager.getDefaultDisplay();
-            int rotation = display.getRotation();
-            if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
-                if (display.getHeight() >= display.getWidth()) {
-                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                }
-                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-            } else {
-                if (display.getHeight() < display.getWidth()) {
-                    return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
-                }
-                return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
-            }
-        } else {
+        if (orientation == null || !orientation.equals("natural")) {
             return ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
         }
+
+        WindowManager windowManager =
+                (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        int rotation = display.getRotation();
+        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+            if (display.getHeight() >= display.getWidth()) {
+                return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+            }
+            return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+        }
+        if (display.getHeight() < display.getWidth()) {
+            return ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+        }
+        return ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
     }
 
     /** Grants the host browser permission to the shared files if any. */

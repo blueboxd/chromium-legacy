@@ -75,9 +75,10 @@ class V4L2VideoDecoderBackend {
   // Backend can overload this method if it needs to do specific work when
   // the device task is called.
   virtual void OnServiceDeviceTask(bool event) {}
-  // Called whenever the V4L2 stream is stopped (|Streamoff| called on both
-  // |V4L2Queue|s).
-  virtual void OnStreamStopped() = 0;
+  // Called whenever the V4L2 stream is stopped (|Streamoff| called on either
+  // the CAPTURE queue alone or on both queues). |input_queue_stopped| is
+  // true if the input queue has been requested to stop.
+  virtual void OnStreamStopped(bool input_queue_stopped) = 0;
   // Called when the resolution has been decided, in case the backend needs
   // to do something specific beyond applying these parameters to the CAPTURE
   // queue.

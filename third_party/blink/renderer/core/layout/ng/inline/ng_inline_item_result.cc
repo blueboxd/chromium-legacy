@@ -33,20 +33,34 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
   const LayoutBox* box = node.GetLayoutBox();
   line_style_ = box->Style(use_first_line_style_);
   needs_accurate_end_position_ = ComputeNeedsAccurateEndPosition();
+  is_ruby_base_ = box->IsRubyBase();
+  is_ruby_text_ = box->IsRubyText();
+}
+
+ETextAlign NGLineInfo::GetTextAlign(bool is_last_line) const {
+  // See LayoutRubyBase::TextAlignmentForLine().
+  if (is_ruby_base_)
+    return ETextAlign::kJustify;
+
+  // See LayoutRubyText::TextAlignmentForLine().
+  if (is_ruby_text_ && LineStyle().GetTextAlign() ==
+                           ComputedStyleInitialValues::InitialTextAlign())
+    return ETextAlign::kJustify;
+
+  return LineStyle().GetTextAlign(is_last_line);
 }
 
 bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
   // Some 'text-align' values need accurate end position. At this point, we
   // don't know if this is the last line or not, and thus we don't know whether
   // 'text-align' is used or 'text-align-last' is used.
-  switch (LineStyle().GetTextAlign()) {
+  switch (GetTextAlign()) {
     case ETextAlign::kStart:
       break;
     case ETextAlign::kEnd:
     case ETextAlign::kCenter:
     case ETextAlign::kWebkitCenter:
     case ETextAlign::kJustify:
-    case ETextAlign::kInternalSpaceAround:
       return true;
     case ETextAlign::kLeft:
     case ETextAlign::kWebkitLeft:
@@ -59,14 +73,22 @@ bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
         return true;
       break;
   }
-  switch (LineStyle().TextAlignLast()) {
+  ETextAlignLast align_last = LineStyle().TextAlignLast();
+  if (is_ruby_base_) {
+    // See LayoutRubyBase::TextAlignmentForLine().
+    align_last = ETextAlignLast::kJustify;
+  } else if (is_ruby_text_ &&
+             align_last == ComputedStyleInitialValues::InitialTextAlignLast()) {
+    // See LayoutRubyText::TextAlignmentForLine().
+    align_last = ETextAlignLast::kJustify;
+  }
+  switch (align_last) {
     case ETextAlignLast::kStart:
     case ETextAlignLast::kAuto:
       return false;
     case ETextAlignLast::kEnd:
     case ETextAlignLast::kCenter:
     case ETextAlignLast::kJustify:
-    case ETextAlignLast::kInternalSpaceAround:
       return true;
     case ETextAlignLast::kLeft:
       if (IsRtl(BaseDirection()))
@@ -116,7 +138,6 @@ bool NGLineInfo::ShouldHangTrailingSpaces() const {
   switch (text_align_) {
     case ETextAlign::kStart:
     case ETextAlign::kJustify:
-    case ETextAlign::kInternalSpaceAround:
       return true;
     case ETextAlign::kEnd:
     case ETextAlign::kCenter:
@@ -133,12 +154,11 @@ bool NGLineInfo::ShouldHangTrailingSpaces() const {
 }
 
 void NGLineInfo::UpdateTextAlign() {
-  text_align_ = LineStyle().GetTextAlign(IsLastLine());
+  text_align_ = GetTextAlign(IsLastLine());
 
   if (HasTrailingSpaces() && ShouldHangTrailingSpaces()) {
     hang_width_ = ComputeTrailingSpaceWidth(&end_offset_for_justify_);
-  } else if (text_align_ == ETextAlign::kJustify ||
-             text_align_ == ETextAlign::kInternalSpaceAround) {
+  } else if (text_align_ == ETextAlign::kJustify) {
     end_offset_for_justify_ = InflowEndOffset();
   }
 }

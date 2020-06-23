@@ -1276,10 +1276,10 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideFromModel) {
 class OmniboxViewViewsNoPathHidingTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsNoPathHidingTest()
-      : OmniboxViewViewsTest({},
-                             {
-                                 omnibox::kHideSteadyStateUrlPathQueryAndRef,
-                             }) {}
+      : OmniboxViewViewsTest(
+            {},
+            {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}) {}
 
   OmniboxViewViewsNoPathHidingTest(const OmniboxViewViewsNoPathHidingTest&) =
       delete;
@@ -1304,8 +1304,7 @@ class OmniboxViewViewsRevealOnHoverTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsRevealOnHoverTest()
       : OmniboxViewViewsTest(
-            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-             omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
+            {omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
             {}) {}
 
   OmniboxViewViewsRevealOnHoverTest(const OmniboxViewViewsRevealOnHoverTest&) =
@@ -1383,8 +1382,7 @@ class OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest
  public:
   OmniboxViewViewsHideOnInteractionAndRevealOnHoverTest()
       : OmniboxViewViewsTest(
-            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
+            {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction,
              omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover},
             {}) {}
 
@@ -1463,8 +1461,7 @@ class OmniboxViewViewsHideOnInteractionTest : public OmniboxViewViewsTest {
  public:
   OmniboxViewViewsHideOnInteractionTest()
       : OmniboxViewViewsTest(
-            {omnibox::kHideSteadyStateUrlPathQueryAndRef,
-             omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
+            {omnibox::kHideSteadyStateUrlPathQueryAndRefOnInteraction},
             {}) {}
 
   OmniboxViewViewsHideOnInteractionTest(
@@ -1540,13 +1537,11 @@ class OmniboxViewViewsRevealOnHoverAndMaybeHideOnInteractionTest
             GetParam()
                 ? std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
-                       omnibox::kHideSteadyStateUrlPathQueryAndRef,
                        omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover,
                        omnibox::
                            kHideSteadyStateUrlPathQueryAndRefOnInteraction})
                 : std::vector<base::Feature>(
                       {omnibox::kOmniboxContextMenuShowFullUrls,
-                       omnibox::kHideSteadyStateUrlPathQueryAndRef,
                        omnibox::kRevealSteadyStateUrlPathQueryAndRefOnHover}),
             {}) {}
 

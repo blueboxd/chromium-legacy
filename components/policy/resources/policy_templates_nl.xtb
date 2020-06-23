@@ -53,6 +53,13 @@
       Als dit beleid wordt ingesteld op 0, ontvangen gebruikers van tevoren geen melding. Ze ontvangen pas een melding zodra het wachtwoord is verlopen.
 
       Als dit beleid is ingesteld, kan de gebruiker het niet wijzigen of overschrijven.</translation>
+<translation id="105369313766849861">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_FRAME_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_FRAME_NAME" /> de opgegeven directory.
+
+      Ga naar https://support.google.com/chrome/a?p=Supported_directory_variables voor een lijst met variabelen die je kunt gebruiken.
+
+      Als je deze instelling niet instelt, wordt de standaard profieldirectory gebruikt</translation>
 <translation id="1062011392452772310">Externe bevestiging van apparaat inschakelen</translation>
 <translation id="1062407476771304334">Vervangen</translation>
 <translation id="1073983258515362346">Informatie rapporteren over de schermverlichting van een apparaat.
@@ -323,6 +330,9 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="159946228300522107">Als je het beleid instelt op 'True', maximaliseert Chrome het eerst weergegeven venster tijdens de eerste uitvoering.
 
       Als je het beleid instelt op 'False' of niet instelt, kan Chrome het eerste venster mogelijk maximaliseren, afhankelijk van de schermgrootte.</translation>
+<translation id="1606917441621112087">Als je het beleid instelt op True, wordt de interne pdf-viewer uitgeschakeld in <ph name="PRODUCT_NAME" />, worden pdf-bestanden als downloads behandeld en kunnen gebruikers pdf's openen met de standaard-app.
+
+      Als je het beleid instelt op False of niet instelt, worden pdf-bestanden geopend, tenzij gebruikers de pdf-plug-in uitschakelen.</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
 <translation id="1615221548356595305">Toestaan dat HTTP/2-verbindingen voor deze hosts kunnen worden samengevoegd, zelfs als client certificates worden gebruikt</translation>
 <translation id="1615855314789673708">Biedt een wilco DTC-configuratie (controller voor diagnostische gegevens en telemetrie).
@@ -687,6 +697,7 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="2145735238144543545">Vereiste clientcertificaten</translation>
 <translation id="214901426630414675">Afdrukken in duplexmodus beperken</translation>
 <translation id="2149330464730004005">Afdrukken in kleur inschakelen</translation>
+<translation id="2149957154942061013">Alleen intern</translation>
 <translation id="2151831603578119302">Snelkoppelingen voor toegankelijkheidsfuncties inschakelen</translation>
 <translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
 <translation id="2156755242840687300">Ingeschakelde externe afdrukservers</translation>
@@ -756,6 +767,15 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
       Als je het beleid instelt op 'False' of niet instelt, wordt het venster geopend.
 
       Onthoud dat het browservenster mogelijk niet wordt geopend vanwege andere beleidsregels of markeringen in de opdrachtregel.</translation>
+<translation id="2215471798823435557">Als je dit beleid instelt, kun je opgeven welke varianten mogen worden toegepast op een zakelijk beheerd <ph name="PRODUCT_OS_NAME" />-apparaat.
+
+      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_OS_NAME" /> aan te bieden zonder een nieuwe versie te publiceren. Hiervoor worden reeds bestaande functies selectief in- of uitgeschakeld. Ga voor meer informatie naar https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework.
+
+      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op <ph name="PRODUCT_OS_NAME" />.
+
+      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_OS_NAME" />.
+
+      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten op de browser worden toegepast op het inlogscherm. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_OS_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="2223582957891074498">Als je het beleid instelt op 'True', kunnen er geen screenshots worden gemaakt via sneltoetsen of extensie-API's. Als je het beleid instelt op 'False', zijn screenshots toegestaan.</translation>
 <translation id="2223598546285729819">Standaardinstelling voor meldingen</translation>
 <translation id="2231817271680715693">Browsegeschiedenis importeren uit standaardbrowser bij eerste uitvoering</translation>
@@ -857,6 +877,15 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 
       Dit beleid kan alleen worden ingesteld via de Google Beheerdersconsole.</translation>
 <translation id="2386362615870139244">Schermactiveringsvergrendeling toestaan</translation>
+<translation id="2399987589969059485">Als je dit beleid instelt, kun je opgeven welke varianten mogen worden toegepast in <ph name="PRODUCT_NAME" />.
+
+      Varianten vormen een manier om aanpassingen in <ph name="PRODUCT_NAME" /> aan te bieden zonder een nieuwe versie van de browser te publiceren. Hiervoor worden al bestaande functies selectief in- of uitgeschakeld. Ga voor meer informatie naar https://support.google.com/chrome/a?p=Manage_the_Chrome_variations_framework.
+
+      Als je <ph name="VARIATIONS_ENABLED_OPTION_NAME" /> (waarde 0) instelt of het beleid niet instelt, mogen alle varianten worden toegepast op de browser.
+
+      Als je <ph name="CRITICAL_VARIATIONS_ONLY_OPTION_NAME" /> (waarde 1) instelt, mogen alleen varianten die worden beschouwd als essentiële beveiligings- of stabiliteitsoplossingen, worden toegepast op <ph name="PRODUCT_NAME" />.
+
+      Als je <ph name="VARIATIONS_DISABLED_OPTION_NAME" /> (waarde 2) instelt, mag geen van de varianten worden toegepast op de browser. Deze modus kan er potentieel voor zorgen dat <ph name="PRODUCT_NAME" />-ontwikkelaars essentiële beveiligingsoplossingen niet tijdig kunnen leveren en wordt dus niet aanbevolen.</translation>
 <translation id="2406820201690307634">Hiermee kun je een lijst met URL-patronen opgeven van sites waarop geen afbeeldingen mogen worden weergegeven.
 
           Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Deze vind je in het beleid 'DefaultImagesSetting' (als dit is ingesteld) of in de persoonlijke configuratie van de gebruiker.
@@ -1059,6 +1088,9 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 <translation id="2548572254685798999">Gegevens over Safe Browsing rapporteren</translation>
 <translation id="2550593661567988768">Alleen enkelzijdig afdrukken</translation>
 <translation id="2551520365302988324">Gebruikersuploads verzenden om te laten scannen</translation>
+<translation id="2552318891854145040">Als je het beleid instelt, wordt er een lijst met bookmarks ingesteld, waarbij elke bookmark een woordenboek is met de sleutels '<ph name="NAME" />' en '<ph name="URL_LABEL" />'. Deze sleutels bevatten de naam en target van de bookmark. Beheerders kunnen een submap instellen door een bookmark zonder de sleutel '<ph name="URL_LABEL" />', maar met de aanvullende sleutel '<ph name="CHILDREN" />' te definiëren. Deze sleutel bevat ook een lijst met bookmarks, waarvan sommige ook mappen kunnen zijn. Chrome vult onvolledige URL's aan alsof ze via de adresbalk zijn opgegeven. Zo wordt '<ph name="GOOGLE_COM" />' aangevuld tot '<ph name="HTTPS_GOOGLE_COM" />'.
+
+      Gebruikers kunnen de mappen waarin de bookmarks zijn geplaatst niet wijzigen (maar ze kunnen deze wel verbergen via de bookmarkbalk). De standaard mapnaam voor beheerde bookmarks is 'Beheerde bookmarks' maar je kunt deze naam wijzigen door een nieuw subwoordenboek aan het beleid toe te voegen met één sleutel met de naam '<ph name="TOPLEVEL_NAME" />' en met de gewenste map als waarde. Beheerde bookmarks worden niet gesynchroniseerd met het gebruikersaccount en kunnen niet worden gewijzigd via extensies.</translation>
 <translation id="2552966063069741410">Tijdzone</translation>
 <translation id="2562339630163277285">Hiermee kun je de URL opgeven van de zoekmachine die wordt gebruikt om instantresultaten te leveren. De URL moet de tekenreeks <ph name="SEARCH_TERM_MARKER" /> bevatten. Deze tekenreeks wordt op het moment van de zoekopdracht vervangen door de tekst die de gebruiker tot op dat moment heeft getypt.
 
@@ -1567,6 +1599,13 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
           Het waarschuwingsbericht wordt alleen weergegeven als de inactieve actie 'uitloggen' of 'afsluiten' is.</translation>
 <translation id="3373381043600809954"><ph name="PRODUCT_NAME" /> inschakelen</translation>
+<translation id="3374587000313305002">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt voor het opslaan van gebruikersgegevens.
+
+      Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> deze directory, ongeacht of de gebruiker de markering '--user-data-dir' heeft opgegeven. Als je gegevensverlies of andere onverwachte fouten wilt voorkomen, moet je dit beleid niet instellen op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
+
+      Ga naar https://support.google.com/chrome/a?p=Supported_directory_variables voor een lijst met variabelen die je kunt gebruiken.
+
+      Als dit beleid niet wordt ingesteld, wordt het standaard profielpad gebruikt. De gebruiker kan dit overschrijven met de opdrachtregelmarkering '--user-data-dir'.</translation>
 <translation id="3378482432905539452">Dit beleid is beëindigd. Gebruik het beleid <ph name="DEFAULT_PLUGINS_SETTING_POLICY_NAME" /> om de beschikbaarheid van de Flash-plug-in te beheren en het beleid <ph name="ALWAYS_OPEN_PDF_EXTERNALLY_POLICY_NAME" /> om aan te geven of de geïntegreerde pdf-viewer moet worden gebruikt om pdf-bestanden te openen.
 
       Specificeert een lijst met plug-ins die de gebruiker kan in- of uitschakelen in <ph name="PRODUCT_NAME" />.
@@ -1701,6 +1740,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="3528000905991875314">Alternatieve foutpagina's inschakelen</translation>
 <translation id="3531084733660068324">Instellingen voor ouderlijk toezicht</translation>
 <translation id="3534882636155369445">Grote bestanden niet blokkeren</translation>
+<translation id="3539103206548425861">Als je dit beleid instelt, worden video's met audiocontent automatisch (zonder toestemming van de gebruiker) afgespeeld in <ph name="PRODUCT_NAME" />. Als het beleid <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> is ingesteld op True, heeft dit beleid geen effect. Als <ph name="AUTOPLAY_ALLOWED_POLICY_NAME" /> is ingesteld op False, kunnen URL-patronen die in dit beleid zijn ingesteld nog steeds worden afgespeeld. Als je dit beleid wijzigt terwijl <ph name="PRODUCT_NAME" /> wordt uitgevoerd, wordt het alleen toegepast op nieuw geopende tabbladen.
+
+      Ga naar https://cloud.google.com/docs/chrome-enterprise/policies/url-patterns voor gedetailleerde informatie over geldige URL-patronen.</translation>
 <translation id="3540935459049973317">Tijdslimieten per app</translation>
 <translation id="3547954654003013442">Proxyinstellingen</translation>
 <translation id="3550122827225052130">Dit beleid is beëindigd en wordt verwijderd in <ph name="PRODUCT_OS_NAME" />-versie 85. Gebruik in plaats daarvan <ph name="SCREEN_LOCK_DELAYS_POLICY_NAME" />.
@@ -1911,6 +1953,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
           Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
           Als dit beleid niet is ingesteld, is de functie voor markeren via toetsenbordfocus in eerste instantie uitgeschakeld. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
+<translation id="3870300103958000506">Advertenties zijn op alle sites toegestaan als je <ph name="ADS_SETTINGS_FOR_INTRUSIVE_ADS_SITES_POLICY_NAME" /> instelt op 1 of niet instelt, tenzij <ph name="SAFE_BROWSING_ENABLED_POLICY_NAME" /> is ingesteld op False.
+
+      Als je het beleid instelt op 2, worden advertenties geblokkeerd op alle sites met opdringerige advertenties.</translation>
 <translation id="3877517141460819966">Geïntegreerde modus voor authenticatie met twee factoren</translation>
 <translation id="3879196885908353077">Downloads controleren op schendingen van de beveiligingsregels voor gevoelige gegevens</translation>
 <translation id="3879208481373875102">Lijst met afgedwongen geïnstalleerde web-apps instellen</translation>
@@ -2021,6 +2066,9 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Wanneer dit beleid is ingesteld op 'true', probeert Chrome bepaalde URL's te openen in een andere browser (zoals Internet Explorer). Deze functie is geconfigureerd volgens de beleidsregels in de groep <ph name="LEGACY_BROWSER_SUPPORT_POLICY_GROUP" />.
 
       Deze functie dient als vervanging van de extensie <ph name="LEGACY_BROWSER_SUPPORT_EXTENSION_NAME" />. De configuratie van de extensie wordt overgezet naar deze functie, maar het wordt sterk geadviseerd om in plaats daarvan het Chrome-beleid te gebruiken. Dit zorgt in de toekomst voor betere compatibiliteit.</translation>
+<translation id="398884292557092447">Als je het beleid instelt op True of niet instelt, krijgen gebruikers de controle over 'Automatisch aanvullen' voor creditcards in de UI.
+
+      Als je het beleid instelt op False, worden er nooit creditcardgegevens voorgesteld of ingevuld door 'Automatisch aanvullen'. Ook worden er geen aanvullende creditcardgegevens opgeslagen die gebruikers opgeven als ze internetten.</translation>
 <translation id="3993187551086357615">Uploads en downloads uitstellen totdat het scanresultaat bekend is</translation>
 <translation id="3997519162482760140">URL's die toegang krijgen tot apparaten voor het vastleggen van video op SAML-inlogpagina's</translation>
 <translation id="4001275826058808087">IT-beheerders voor zakelijke apparaten kunnen deze markering gebruiken om te bepalen of gebruikers aanbiedingen kunnen inwisselen via registratie van Chrome OS.
@@ -2672,6 +2720,10 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als je deze instelling inschakelt, worden de waarden van de beleidsregels voor het machineplatform, de machinecloud en het gebruikersplatform samengevoegd tot één lijst. Bovendien worden ze als één geheel gebruikt in plaats van alleen de waarden van de bron met de hoogste prioriteit te gebruiken.
 
       Als je deze instelling uitschakelt of niet instelt, worden alleen lijstitems uit de bron met de hoogste prioriteit meegenomen. Alle andere bronnen worden wel als conflicten weergegeven, maar worden genegeerd.</translation>
+<translation id="513798533865657610">Met de functie voor het automatisch indienen van pincodes kun je wijzigen hoe pincodes worden ingevoerd in Chrome OS.
+          Met deze functie wordt een speciale UI weergegeven die gebruikers duidelijk laat zien hoeveel tekens er voor hun pincode zijn vereist in plaats van de weergave van hetzelfde tekstveld dat voor het invoeren van wachtwoorden wordt gebruikt. Hierdoor wordt de lengte van de pincode van de gebruiker buiten de versleutelde gegevens van die gebruiker opgeslagen.
+
+          Als dit beleid is ingesteld op False, krijgen gebruikers niet de optie om deze functie in te schakelen op de pagina Instellingen.</translation>
 <translation id="5141670636904227950">Het standaardtype van vergrootglas instellen dat op het inlogscherm is ingeschakeld</translation>
 <translation id="5142301680741828703">De volgende URL-patronen altijd verwerken in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="514870861066611127">Met dit beleid wordt bepaald of er informatie moet worden gerapporteerd die kan worden gebruikt om gebruikers te identificeren, zoals de OS-inloggegevens, de inloggegevens voor het <ph name="PRODUCT_NAME" />-profiel, de profielnaam voor <ph name="PRODUCT_NAME" />, het profielpad voor <ph name="PRODUCT_NAME" /> en het uitvoerbare pad voor <ph name="PRODUCT_NAME" />.
@@ -2847,6 +2899,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5306186200045823863">De verouderde PKI-infrastructuur van Symantec Corporation vertrouwen</translation>
 <translation id="5307432759655324440">Beschikbaarheid van incognitomodus</translation>
 <translation id="5311275381462687162">Instelling voor standaardgedrag voor verouderde cookies van <ph name="ATTRIBUTE_SAMESITE_NAME" /></translation>
+<translation id="5317709812972860884">Verschillende functies voor het schermtoetsenbord in- of uitschakelen</translation>
 <translation id="5318185076587284965">Het gebruik van relayservers door de host voor externe toegang inschakelen</translation>
 <translation id="5323128137188992869">Toestaan dat content wordt gecast naar het apparaat via <ph name="PRODUCT_NAME" />.
 
@@ -2867,6 +2920,13 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Als dit beleid niet is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> de standaard maximale versie.
 
       Dit beleid kan ook worden ingesteld op een van de volgende waarden: 'tls1.2' of 'tls1.3'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen hogere SSL-/TLS-versies dan de opgegeven versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
+<translation id="5329197480513353778">Schakel verschillende functies voor het schermtoetsenbord in of uit. Dit beleid wordt alleen van kracht als het beleid 'VirtualKeyboardEnabled' policy is ingeschakeld.
+
+      Als één functie in dit beleid is ingesteld op True, wordt het beleid ingeschakeld voor het schermtoetsenbord.
+
+      Als één functie in dit beleid is ingesteld op False of niet wordt ingesteld, wordt het beleid uitgeschakeld voor het schermtoetsenbord.
+
+      OPMERKING: Dit beleid wordt alleen ondersteund in de PWA-kioskmodus.</translation>
 <translation id="5330684698007383292"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
 <translation id="5331081760098249172">
       Als je het beleid instelt op True, kan <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken verzamelen van Google-services (zoals Hangouts Meet) en deze logboeken uploaden naar Google. Deze logboeken bevatten diagnostische informatie voor het oplossen van problemen met audio- of videovergaderingen in <ph name="PRODUCT_NAME" />. Deze informatie betreft bijvoorbeeld het tijdstip en de grootte van RTP-pakketten, feedback over overbelasting van het netwerk en metadata over de duur en kwaliteit van audio- en videoframes. Deze logboeken bevatten geen audio- of videocontent van de vergadering. Google kan deze logboeken aan de hand van de sessie-ID koppelen aan andere logboeken die door de Google-service zelf zijn verzameld. Het doel hiervan is dat fouten makkelijker kunnen worden opgespoord.
@@ -2979,6 +3039,11 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 
       Als dit beleid niet wordt ingesteld, worden indirecte cookies ingeschakeld maar kan dit door de gebruiker worden gewijzigd.</translation>
 <translation id="5442026853063570579">Met dit beleid wordt ook de toegang tot de ontwikkelaarsopties van Android beheerd. Als je dit beleid instelt op 'DeveloperToolsDisallowed' (waarde 2), hebben gebruikers geen toegang tot ontwikkelaarsopties. Als je dit beleid instelt op een andere waarde of niet instelt, hebben gebruikers toegang tot ontwikkelaarsopties door zeven keer op het buildnummer te tikken in de app Instellingen van Android.</translation>
+<translation id="5445719321399313760">Als je het beleid instelt op True of niet instelt, toont <ph name="PRODUCT_NAME" /> gebruikers productinformatie als content op een volledig tabblad.
+
+      Als je het beleid instelt op False, kan <ph name="PRODUCT_NAME" /> geen productinformatie op een volledig tabblad weergeven.
+
+      Deze instelling bepaalt de presentatie van de welkomstpagina's waar gebruikers kunnen inloggen op <ph name="PRODUCT_NAME" />, <ph name="PRODUCT_NAME" /> kunnen instellen als standaardbrowser van de gebruiker of anderszins kunnen worden geïnformeerd over productfuncties.</translation>
 <translation id="5447306928176905178">Het rapporteren van geheugengegevens (JS-heapgrootte) aan de pagina inschakelen (verouderd)</translation>
 <translation id="5457065417344056871">De gastmodus inschakelen in browser</translation>
 <translation id="5457924070961220141">Hiermee kun je de standaard HTML-renderer configureren wanneer <ph name="PRODUCT_FRAME_NAME" /> is geïnstalleerd.
@@ -4008,6 +4073,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           De schaalfactor moet 100% of meer zijn.</translation>
 <translation id="7086720321892395256">Beheert het gebruikers- en apparaatbeleid voor het privacyscherm.</translation>
+<translation id="7091842872805965910">Schakel de functie voor het automatisch indienen van pincodes in op het vergrendel- en inlogscherm.</translation>
 <translation id="7093294902558672021">Rapporteer de ventilatorgegevens van een apparaat.
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de gegevens niet gerapporteerd.
@@ -4766,6 +4832,9 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
           Als dit beleid is ingesteld op 'false', voorkomt videoactiviteit niet dat de gebruiker als inactief wordt beschouwd.</translation>
 <translation id="8274603902181597201">De eCryptfs-hoofdmap van de gebruiker wissen en beginnen met een nieuwe hoofdmap die is versleuteld met ext4</translation>
 <translation id="8285435910062771358">Vergrootglas van volledig scherm ingeschakeld</translation>
+<translation id="8286955010912199104">Als je het beleid instelt op True, kunnen pagina's pop-ups weergeven terwijl het laden van de pagina's ongedaan wordt gemaakt.
+
+      Als je het beleid instelt op False niet instelt, kunnen pagina's geen pop-ups weergeven terwijl het laden van de pagina's ongedaan wordt gemaakt.</translation>
 <translation id="8288199156259560552">Google-locatieservice voor Android inschakelen</translation>
 <translation id="8290875622178450531">De toegankelijkheidsfunctie voor dicteren inschakelen.
 
@@ -4794,6 +4863,9 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 <translation id="829641334878002866">Hiermee kun je de periode in milliseconden instellen tussen de eerste melding dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een update in behandeling uit te voeren en het einde van de periode zoals vermeld in het <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-beleid.
 
       Als dit beleid niet is ingesteld, wordt de standaardperiode van 259.200.000 milliseconden (drie dagen) gebruikt voor <ph name="PRODUCT_OS_NAME" />-apparaten.</translation>
+<translation id="829703642501504476">Als je het beleid instelt op True, gebruikt <ph name="PRODUCT_NAME" /> alternatieve foutpagina's die zijn ingebouwd (zoals 'Pagina niet gevonden'). Als je het beleid instelt op False, gebruikt <ph name="PRODUCT_NAME" /> nooit alternatieve foutpagina's.
+
+      Als je het beleid instelt, kunnen gebruikers het niet wijzigen. Als je het beleid niet instelt, is het ingeschakeld maar kunnen gebruikers deze instelling wijzigen.</translation>
 <translation id="8300455783946254851">Als deze instelling is ingesteld op 'True', wordt synchronisatie met Google Drive uitgeschakeld in de app Bestanden van <ph name="PRODUCT_OS_NAME" /> bij gebruik van een mobiele verbinding. In dat geval worden gegevens alleen gesynchroniseerd met Google Drive bij verbinding via wifi of ethernet.
 
           Als deze instelling niet is ingesteld of is ingesteld op 'False', kunnen gebruikers bestanden overzetten naar Google Drive via mobiele verbindingen.</translation>
@@ -4855,6 +4927,7 @@ De aanbevolen manier om beleidsregels te configureren op Windows, is via GPO, ma
 
           Als dit beleid niet wordt ingesteld, wordt de geavanceerde batterijoplaadmodus uitgeschakeld en kan deze niet worden ingeschakeld door de gebruiker.</translation>
 <translation id="838870586332499308">Dataroaming inschakelen</translation>
+<translation id="8393850527597048037">Alleen platform</translation>
 <translation id="8395749934754392549">Beheert instellingen voor de Android-container (ARC) en Android-apps.</translation>
 <translation id="8396145449084377015">Met dit beleid wordt bepaald of regels uit het SiteList-beleid van Internet Explorer worden geladen.
 
@@ -5057,6 +5130,11 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als dit beleid niet is ingesteld, wordt BlockPlugins gebruikt en kan de gebruiker deze instelling handmatig wijzigen.</translation>
 <translation id="8703488928438047864">Boardstatus rapporteren</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
+<translation id="8708284670795912158">Als je het beleid instelt op True, wordt media automatisch afgespeeld door <ph name="PRODUCT_NAME" />. Als je het beleid instelt op False, wordt media niet automatisch afgespeeld door <ph name="PRODUCT_NAME" />.
+
+       Standaard wordt media niet automatisch afgespeeld door <ph name="PRODUCT_NAME" />. Voor bepaalde URL-patronen kun je het beleid <ph name="AUTOPLAY_WHITELIST_POLICY_NAME" /> gebruiken om deze instellingen te wijzigen.
+
+      Als je dit beleid wijzigt terwijl <ph name="PRODUCT_NAME" /> wordt uitgevoerd, wordt het alleen toegepast op nieuw geopende tabbladen.</translation>
 <translation id="8711086062295757690">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren.
 
           Dit beleid is optioneel. Als je dit niet instelt, wordt de zoekfunctie voor de provider door geen enkel zoekwoord geactiveerd.
@@ -5275,6 +5353,19 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="8977192934280677167">Toegang toestaan tot standaard zoekprovider in contextmenu</translation>
 <translation id="8992176907758534924">Niet toestaan dat sites afbeeldingen weergeven</translation>
 <translation id="9010080992450148617">Het sturen van downloads naar Google voor uitgebreide scans inschakelen voor gebruikers die zijn ingeschreven voor 'Geavanceerde beveiliging'</translation>
+<translation id="90110062113213245">Als je het beleid instelt, kun je een lijst met URL-patronen opgeven van sites waarvoor Chrome automatisch een clientcertificaat kan selecteren. De waarde is een matrix van JSON-woordenboeken met tekenreeksen, elk met de indeling <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_EXAMPLE" />, waarbij <ph name="URL_PATTERN_PLACEHOLDER" /> een patroon voor het instellen van content is. <ph name="FILTER_PLACEHOLDER" /> beperkt de clientcertificaten waaruit de browser automatisch kan kiezen. Onafhankelijk van het filter worden alleen certificaten geselecteerd die overeenkomen met het certificaatverzoek van de server.
+
+      Als <ph name="FILTER_PLACEHOLDER" /> bijvoorbeeld het volgende heeft:
+
+      * <ph name="AUTO_SELECT_CERTIFICATE_FOR_URLS_FILTER_EXAMPLE" />: er worden alleen clientcertificaten geselecteerd die zijn uitgegeven door een certificaat met de CommonName <ph name="ISSUER_CN_PLACEHOLDER" />.
+
+      * de secties <ph name="ISSUER_STRING_VALUE" /> en <ph name="SUBJECT_STRING_VALUE" />: er worden alleen overeenkomende clientcertificaten geselecteerd.
+
+      * ('O'): een certificaat moet minimaal één organisatie hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd. * ('OU'): een certificaat moet minimaal één organisatie-eenheid hebben die overeenkomt met de opgegeven waarde om te worden geselecteerd.
+
+      * <ph name="EMPTY_DICTIONARY" />: de selectie van clientcertificaten wordt niet verder beperkt.
+
+      Als je het beleid niet instelt, worden clientcertificaten voor geen enkele site automatisch geselecteerd.</translation>
 <translation id="9013875414788074110">Tijdens het inloggen kan <ph name="PRODUCT_OS_NAME" /> de verificatie uitvoeren met behulp van een server (online) of door gebruik te maken van een wachtwoord in het cachegeheugen (offline).
 
       Wanneer voor dit beleid de waarde -1 is ingesteld, kan de gebruiker zich offline oneindig verifiëren. Wanneer er een andere waarde voor dit beleid is opgegeven, wordt hiermee aangegeven na hoeveel tijd sinds de meest recente online verificatie de gebruiker opnieuw een online verificatie moet uitvoeren.

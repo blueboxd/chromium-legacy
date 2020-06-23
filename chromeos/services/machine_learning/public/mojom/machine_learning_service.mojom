@@ -7,9 +7,12 @@
 // NOTE: This mojom exists in two places and must be kept in sync:
 //       Chromium:  //chromeos/services/machine_learning/public/mojom/
 //       Chrome OS: src/platform2/ml/mojom/
+//       Note: Other repos downstream of Chromium might also use this mojom.
 // Example: A backwards-compatible mojom change (and corresponding
 // implementation change) can be made in Chrome OS first, then replicated to the
-// client (Chromium) later.
+// clients (Chromium, other downstream repos) later.
+// Use //chromeos/services/machine_learning/public/mojom/roll_mojom.sh to help
+// replicate Chrome OS-side changes over to Chromium.
 
 module chromeos.machine_learning.mojom;
 
@@ -26,6 +29,7 @@ enum LoadModelResult {
   MODEL_SPEC_ERROR = 1,
   LOAD_MODEL_ERROR = 2,
   FEATURE_NOT_SUPPORTED_ERROR = 3,
+  LANGUAGE_NOT_SUPPORTED_ERROR = 4,
 };
 
 // Top-level interface between Chromium and the ML Service daemon.
@@ -44,5 +48,9 @@ interface MachineLearningService {
       => (LoadModelResult result);
   // Create and initialize a handwriting recognizer.
   LoadHandwritingModel(pending_receiver<HandwritingRecognizer> receiver)
+      => (LoadModelResult result);
+  // Create and initialize a handwriting recognizer with given |spec|.
+  LoadHandwritingModelWithSpec(HandwritingRecognizerSpec spec,
+                               pending_receiver<HandwritingRecognizer> receiver)
       => (LoadModelResult result);
 };

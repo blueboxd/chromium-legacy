@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Gekopieer</translation>
 <translation id="2822354292072154809">Is jy seker jy wil alle werftoestemmings vir <ph name="CHOSEN_OBJECT_NAME" /> terugstel?</translation>
 <translation id="2870560284913253234">Werf</translation>
+<translation id="2874939134665556319">Vorige snit</translation>
 <translation id="2910701580606108292">Vra voordat werwe toegelaat word om beskermde inhoud te speel</translation>
 <translation id="2913331724188855103">Laat werwe toe om webkoekiedata te stoor en te lees (aanbeveel)</translation>
 <translation id="2968755619301702150">Sertifikaatbekyker</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Agtergrondsinkronisering</translation>
 <translation id="3822502789641063741">Vee werfberging uit?</translation>
 <translation id="385051799172605136">Terug</translation>
+<translation id="3859306556332390985">Soek vorentoe</translation>
 <translation id="3955193568934677022">Laat werwe toe om beskermde inhoud te speel (aanbeveel)</translation>
 <translation id="3987993985790029246">Kopieer skakel</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> van ?</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Laat webkoekies vir 'n spesifieke werf toe.</translation>
+<translation id="4046123991198612571">Volgende snit</translation>
 <translation id="4165986682804962316">Werfinstellings</translation>
 <translation id="4226663524361240545">Kennisgewings kan die toestel laat vibreer</translation>
 <translation id="4242533952199664413">Maak instellings oop</translation>
 <translation id="4259722352634471385">Navigasie is geblokkeer: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Toegelaat</translation>
+<translation id="429312253194641664">'n Werf speel tans media</translation>
 <translation id="4433925000917964731">Ligte bladsy deur Google verskaf</translation>
 <translation id="4434045419905280838">Opspringers en herleidings</translation>
 <translation id="445467742685312942">Laat werwe toe om beskermde inhoud te speel</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Skuif af</translation>
 <translation id="6766622839693428701">Swiep ondertoe om toe te maak</translation>
 <translation id="6782111308708962316">Keer derdeparty-webwerwe om webkoekiedata te stoor en te lees</translation>
+<translation id="6790428901817661496">Speel</translation>
 <translation id="6818926723028410516">Kies items</translation>
 <translation id="6864395892908308021">Hierdie toestel kan nie NFC lees nie</translation>
 <translation id="6910211073230771657">Uitgevee</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">'n Werf gebruik tans jou kamera en mikrofoon</translation>
 <translation id="8380167699614421159">Hierdie werf wys indringerige of misleidende advertensies</translation>
 <translation id="8394832520002899662">Tik om na werf terug te keer</translation>
+<translation id="8441146129660941386">Soek agtertoe</translation>
 <translation id="8447861592752582886">Herroep toesteltoestemming</translation>
 <translation id="8463851957836045671">Werf is vinnig</translation>
 <translation id="851751545965956758">Keer dat werwe aan toestelle koppel</translation>

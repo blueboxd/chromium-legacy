@@ -43,6 +43,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/base/filename_util.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/resource/resource_handle.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -397,8 +398,13 @@ class MockWebUIDataSource : public content::URLDataSource {
   // Append 'unsave-eval' to the default script-src CSP policy, since it is
   // needed by some tests using chrome://dummyurl (because they depend on
   // Mock4JS, see crbug.com/844820).
-  std::string GetContentSecurityPolicyScriptSrc() override {
-    return "script-src chrome://resources 'self' 'unsafe-eval';";
+  std::string GetContentSecurityPolicy(
+      const network::mojom::CSPDirectiveName directive) override {
+    if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+      return "script-src chrome://resources 'self' 'unsafe-eval';";
+    }
+
+    return content::URLDataSource::GetContentSecurityPolicy(directive);
   }
 
   DISALLOW_COPY_AND_ASSIGN(MockWebUIDataSource);

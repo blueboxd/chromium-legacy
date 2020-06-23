@@ -2,10 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 chrome.test.runTests([
   function testTwoUpViewFeatureDisabled() {
-    const toolbar = document.body.querySelector('#zoom-toolbar');
-    toolbar.twoUpViewEnabled = false;
+    const toolbar = viewer.shadowRoot.querySelector('#zoom-toolbar');
+    loadTimeData.overrideValues({'pdfTwoUpViewEnabled': false});
+    toolbar.strings = Object.assign({}, toolbar.strings);
 
     const twoUpButton = toolbar.shadowRoot.querySelector('#two-up-view-button');
     chrome.test.assertTrue(!!twoUpButton);
@@ -20,8 +23,9 @@ chrome.test.runTests([
 
 
   function testTwoUpViewFeatureEnabled() {
-    const toolbar = document.body.querySelector('#zoom-toolbar');
-    toolbar.twoUpViewEnabled = true;
+    const toolbar = viewer.shadowRoot.querySelector('#zoom-toolbar');
+    loadTimeData.overrideValues({'pdfTwoUpViewEnabled': true});
+    toolbar.strings = Object.assign({}, toolbar.strings);
 
     const twoUpButton = toolbar.shadowRoot.querySelector('#two-up-view-button');
     chrome.test.assertTrue(!!twoUpButton);

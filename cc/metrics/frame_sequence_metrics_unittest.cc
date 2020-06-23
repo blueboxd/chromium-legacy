@@ -54,8 +54,7 @@ TEST(FrameSequenceMetricsTest, ComputeUniversalThroughputAtDestruction) {
   metric->aggregated_throughput().frames_produced = 150u;
 
   metric = nullptr;
-  DCHECK(reporter.current_universal_throughput().has_value());
-  EXPECT_EQ(reporter.current_universal_throughput().value(), 88);
+  EXPECT_EQ(reporter.TakeLastAggregatedPercent(), 12);
 }
 
 // Test that ThroughputUkmReporter::ReportThroughputUkm isn't called for the

@@ -143,13 +143,13 @@ class KeystoreInitializer : public PendingLocalNigoriCommit {
   DISALLOW_COPY_AND_ASSIGN(KeystoreInitializer);
 };
 
-class KeystoreKeyRotator : public PendingLocalNigoriCommit {
+class KeystoreReencryptor : public PendingLocalNigoriCommit {
  public:
-  KeystoreKeyRotator() = default;
-  ~KeystoreKeyRotator() override = default;
+  KeystoreReencryptor() = default;
+  ~KeystoreReencryptor() override = default;
 
   bool TryApply(NigoriState* state) const override {
-    if (!state->NeedsKeystoreKeyRotation()) {
+    if (!state->NeedsKeystoreReencryption()) {
       return false;
     }
     // TODO(crbug.com/922900): ensure that |cryptographer| contains all
@@ -170,7 +170,7 @@ class KeystoreKeyRotator : public PendingLocalNigoriCommit {
   void OnFailure(SyncEncryptionHandler::Observer* observer) override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(KeystoreKeyRotator);
+  DISALLOW_COPY_AND_ASSIGN(KeystoreReencryptor);
 };
 
 }  // namespace
@@ -209,8 +209,8 @@ PendingLocalNigoriCommit::ForKeystoreInitialization() {
 
 // static
 std::unique_ptr<PendingLocalNigoriCommit>
-PendingLocalNigoriCommit::ForKeystoreKeyRotation() {
-  return std::make_unique<KeystoreKeyRotator>();
+PendingLocalNigoriCommit::ForKeystoreReencryption() {
+  return std::make_unique<KeystoreReencryptor>();
 }
 
 }  // namespace syncer

@@ -22,32 +22,45 @@ MachineLearningInternalsUI::MachineLearningInternalsUI(
   content::WebUIDataSource* const source = content::WebUIDataSource::Create(
       chrome::kChromeUIMachineLearningInternalsHost);
 
-  source->AddResourcePath(
-      "chromeos/services/machine_learning/public/mojom/tensor.mojom-lite.js",
-      IDR_MACHINE_LEARNING_INTERNALS_TENSOR_MOJO_JS);
-  source->AddResourcePath(
-      "chromeos/services/machine_learning/public/mojom/model.mojom-lite.js",
-      IDR_MACHINE_LEARNING_INTERNALS_MODEL_MOJO_JS);
-  source->AddResourcePath(
-      "chromeos/services/machine_learning/public/mojom/"
-      "graph_executor.mojom-lite.js",
-      IDR_MACHINE_LEARNING_INTERNALS_GRAPH_EXECUTOR_MOJO_JS);
-  source->AddResourcePath(
-      "chromeos/services/machine_learning/public/"
-      "mojom/machine_learning_service.mojom-lite.js",
-      IDR_MACHINE_LEARNING_INTERNALS_MACHINE_LEARNING_SERVICE_MOJO_JS);
-  source->AddResourcePath(
-      "chrome/browser/ui/webui/chromeos/machine_learning/"
-      "machine_learning_internals_page_handler.mojom-lite.js",
-      IDR_MACHINE_LEARNING_INTERNALS_PAGE_HANDLER_MOJO_JS);
-  source->AddResourcePath("machine_learning_internals.js",
-                          IDR_MACHINE_LEARNING_INTERNALS_JS);
-  source->AddResourcePath("machine_learning_internals_utils.js",
-                          IDR_MACHINE_LEARNING_INTERNALS_UTILS_JS);
-  source->AddResourcePath("test_model_tab.js",
-                          IDR_MACHINE_LEARNING_INTERNALS_TEST_MODEL_TAB_JS);
-  source->SetDefaultResource(IDR_MACHINE_LEARNING_INTERNALS_HTML);
+  const std::map<int, std::string> resource_paths = {
+      {IDR_MACHINE_LEARNING_INTERNALS_GRAPH_EXECUTOR_MOJO_JS,
+       "chromeos/services/machine_learning/public/mojom/"
+       "graph_executor.mojom-lite.js"},
 
+      {IDR_MACHINE_LEARNING_INTERNALS_HANDWRITING_RECOGNIZER_MOJO_JS,
+       "chromeos/services/machine_learning/public/mojom/"
+       "handwriting_recognizer.mojom-lite.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_JS, "machine_learning_internals.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_MACHINE_LEARNING_SERVICE_MOJO_JS,
+       "chromeos/services/machine_learning/public/mojom/"
+       "machine_learning_service.mojom-lite.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_MODEL_MOJO_JS,
+       "chromeos/services/machine_learning/public/mojom/model.mojom-lite.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_PAGE_HANDLER_MOJO_JS,
+       "chrome/browser/ui/webui/chromeos/machine_learning/"
+       "machine_learning_internals_page_handler.mojom-lite.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_TENSOR_MOJO_JS,
+       "chromeos/services/machine_learning/public/mojom/tensor.mojom-lite.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_TEST_MODEL_TAB_JS, "test_model_tab.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_TIME_MOJO_JS,
+       "mojo/public/mojom/base/time.mojom-lite.js"},
+
+      {IDR_MACHINE_LEARNING_INTERNALS_UTILS_JS,
+       "machine_learning_internals_utils.js"},
+  };
+
+  for (const auto& path : resource_paths) {
+    source->AddResourcePath(path.second, path.first);
+  }
+
+  source->SetDefaultResource(IDR_MACHINE_LEARNING_INTERNALS_HTML);
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 }
 

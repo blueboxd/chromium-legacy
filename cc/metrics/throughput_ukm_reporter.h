@@ -38,10 +38,6 @@ class CC_EXPORT ThroughputUkmReporter {
 
   void ComputeUniversalThroughput(FrameSequenceMetrics* metrics);
 
-  base::Optional<int> current_universal_throughput() {
-    return current_universal_throughput_;
-  }
-
   // Once the kUniversal tracker reported its throughput to UMA, this returns
   // true. In this case, the |last_aggregated_percent_| and |last_impl_percent_|
   // must have value.
@@ -83,10 +79,6 @@ class CC_EXPORT ThroughputUkmReporter {
   base::Optional<int> last_aggregated_percent_;
   base::Optional<int> last_main_percent_;
   base::Optional<int> last_impl_percent_;
-
-  // Use by the throughput meter.
-  // TODO(xidachen): move this into a separate class such as ThroughputMeter.
-  base::Optional<int> current_universal_throughput_;
 };
 
 }  // namespace cc

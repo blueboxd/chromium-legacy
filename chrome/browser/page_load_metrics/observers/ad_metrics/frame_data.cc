@@ -22,6 +22,9 @@
 
 namespace {
 
+using OriginStatus = FrameData::OriginStatus;
+using OriginStatusWithThrottling = FrameData::OriginStatusWithThrottling;
+
 // A frame with area less than kMinimumVisibleFrameArea is not considered
 // visible.
 const int kMinimumVisibleFrameArea = 25;
@@ -286,6 +289,47 @@ void FrameData::RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const {
         timing_->paint_timing->first_contentful_paint->InMilliseconds());
   }
   builder.Record(ukm_recorder->Get());
+}
+
+FrameData::OriginStatusWithThrottling
+FrameData::GetCreativeOriginStatusWithThrottling() const {
+  bool is_throttled = !first_eligible_to_paint().has_value();
+
+  switch (creative_origin_status()) {
+    case OriginStatus::kUnknown:
+      return is_throttled ? OriginStatusWithThrottling::kUnknownAndThrottled
+                          : OriginStatusWithThrottling::kUnknownAndUnthrottled;
+    case OriginStatus::kSame:
+      DCHECK(!is_throttled);
+      return OriginStatusWithThrottling::kSameAndUnthrottled;
+    case OriginStatus::kCross:
+      DCHECK(!is_throttled);
+      return OriginStatusWithThrottling::kCrossAndUnthrottled;
+    // We expect the above values to cover all cases.
+    default:
+      NOTREACHED();
+      return OriginStatusWithThrottling::kUnknownAndUnthrottled;
+  }
+}
+
+void FrameData::SetFirstEligibleToPaint(
+    base::Optional<base::TimeDelta> time_stamp) {
+  if (time_stamp.has_value()) {
+    // If the ad frame tree hasn't already received an earlier paint
+    // eligibility stamp, mark it as eligible to paint. Since multiple frames
+    // may report timestamps, we keep the earliest reported stamp.
+    // Note that this timestamp (or lack tereof) is best-effort.
+    if (!first_eligible_to_paint_.has_value() ||
+        first_eligible_to_paint_.value() > time_stamp.value())
+      first_eligible_to_paint_ = time_stamp;
+  } else if (!FirstContentfulPaint().has_value()) {
+    // If a frame in this ad frame tree has already painted, there is no
+    // further need to update paint eligibility. But if nothing has
+    // painted and a null value is passed into the setter, that means the
+    // frame is now render-throttled and we should reset the paint-eligiblity
+    // value.
+    first_eligible_to_paint_.reset();
+  }
 }
 
 void FrameData::UpdateFrameVisibility() {

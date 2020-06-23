@@ -4636,14 +4636,6 @@
     An error occurred during uninstallation. Please uninstall through the Terminal.
   </message>
 
-  <!-- Crostini Repository Search -->
-  <message name="IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_TITLE_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder title text for surfaced Crostini Repository Search results in the app launcher">
-    Install <ph name="LINUX_APP_NAME">$1<ex>GIMP</ex></ph>
-  </message>
-  <message name="IDS_CROSTINI_REPOSITORY_SEARCH_RESULT_DETAILS_PLACEHOLDER_TEXT" translateable="false" desc="Placeholder description details for surfaced Crostini Repository Search results in the app launcher">
-    Linux Application
-  </message>
-
   <!-- Crostini export and import notification -->
   <message name="IDS_CROSTINI_NOTIFICATION_OPERATION_STARTING" desc="Message to display in a notification when the operation is starting and we don't yet have an estimate for how long it will take">
     Starting...

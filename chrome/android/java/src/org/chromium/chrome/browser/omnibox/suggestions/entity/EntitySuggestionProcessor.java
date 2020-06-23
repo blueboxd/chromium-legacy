@@ -40,7 +40,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     private static final String TAG = "EntitySP";
     private final SuggestionHost mSuggestionHost;
     private final Map<GURL, List<PropertyModel>> mPendingImageRequests;
-    private final int mEntityImageSizePx;
     private final Supplier<ImageFetcher> mImageFetcherSupplier;
     // Threshold for low RAM devices. We won't be showing entity suggestion images
     // on devices that have less RAM than this to avoid bloat and reduce user-visible
@@ -68,8 +67,6 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
         super(context, suggestionHost);
         mSuggestionHost = suggestionHost;
         mPendingImageRequests = new HashMap<>();
-        mEntityImageSizePx = context.getResources().getDimensionPixelSize(
-                R.dimen.omnibox_suggestion_entity_icon_size);
         mImageFetcherSupplier = imageFetcherSupplier;
     }
 
@@ -118,8 +115,8 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
         mPendingImageRequests.put(url, models);
 
         ImageFetcher.Params params = ImageFetcher.Params.create(url.getSpec(),
-                ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME, mEntityImageSizePx,
-                mEntityImageSizePx);
+                ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME, getDecorationImageSize(),
+                getDecorationImageSize());
         imageFetcher.fetchImage(
                 params, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();

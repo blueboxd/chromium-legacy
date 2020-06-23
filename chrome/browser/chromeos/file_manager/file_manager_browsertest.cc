@@ -253,8 +253,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .DontMountVolumes(),
         TestCase("fileDisplayWithoutVolumesThenMountDrive").DontMountVolumes(),
         TestCase("fileDisplayWithoutDrive").DontMountVolumes(),
-        // Test is failing (crbug.com/1097013)
-        // TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
+        TestCase("fileDisplayWithoutDriveThenDisable").DontMountVolumes(),
         TestCase("fileDisplayMountWithFakeItemSelected"),
         TestCase("fileDisplayUnmountDriveWithSharedWithMeSelected"),
         TestCase("fileDisplayUnmountRemovableRoot"),
@@ -778,6 +777,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("saveFileDialogDriveOfflinePinned").WithBrowser().Offline(),
         TestCase("openFileDialogDefaultFilter").WithBrowser(),
         TestCase("saveFileDialogDefaultFilter").WithBrowser(),
+        TestCase("saveFileDialogSingleFilterNoAcceptAll").WithBrowser(),
+        TestCase("saveFileDialogExtensionNotAddedWithNoFilter").WithBrowser(),
+        TestCase("saveFileDialogExtensionAddedWithJpegFilter").WithBrowser(),
+        TestCase("saveFileDialogExtensionNotAddedWhenProvided").WithBrowser(),
         TestCase("openFileDialogFileListShowContextMenu").WithBrowser(),
         TestCase("openFileDialogSelectAllDisabled").WithBrowser(),
         TestCase("openMultiFileDialogSelectAllEnabled").WithBrowser()));

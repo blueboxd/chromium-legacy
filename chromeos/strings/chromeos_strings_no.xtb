@@ -32,7 +32,7 @@
 <translation id="3838338534323494292">Nytt passord</translation>
 <translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> av <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne enheten og har tilgang til all brukeraktivitet, blant annet nettsteder som besøkes, passord og e-post.</translation>
-<translation id="4003384961948020559">Mislykket – utskriftsområdet er fullt</translation>
+<translation id="4003384961948020559">Mislykket – utskriftsmottaket er fullt</translation>
 <translation id="4034824040120875894">Skriver</translation>
 <translation id="4227825898293920515">Passordet utløper om <ph name="TIME" /></translation>
 <translation id="428217921675623177">Utskriftsjobber som er eldre enn 90 dager, blir fjernet</translation>

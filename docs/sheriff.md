@@ -302,7 +302,10 @@ If yes:
 * Find the relevant Slack thread or start a new one
 * Investigate the bug and see what needs to happen - ping the owner, see if the
   priority & assignment are right, or try fixing it yourself. Check if it still
-  needs to be in the queue!
+  needs to be in the queue! If it doesn't need to be in the queue, remove the
+  `Sheriff-Chromium` label. Do this when
+  * the test has been disabled or marked flaky
+  * the problem is no longer impacting any of the builders
 
 ### 5. All's well?
 

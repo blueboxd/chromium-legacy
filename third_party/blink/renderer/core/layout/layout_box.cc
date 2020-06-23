@@ -626,8 +626,7 @@ void LayoutBox::UpdateFromStyle() {
   LayoutBoxModelObject::UpdateFromStyle();
 
   const ComputedStyle& style_to_use = StyleRef();
-  SetFloating(style_to_use.IsFloating() && !IsOutOfFlowPositioned() &&
-              !style_to_use.IsFlexOrGridItem());
+  SetFloating(!IsOutOfFlowPositioned() && style_to_use.IsFloating());
   SetHasTransformRelatedProperty(style_to_use.HasTransformRelatedProperty());
   SetHasReflection(style_to_use.BoxReflect());
   // LayoutTable and LayoutTableCell will overwrite this flag if needed.
@@ -995,6 +994,7 @@ LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
   const Length& logical_max_height = StyleRef().LogicalMaxHeight();
   if (!logical_max_height.IsNone() && !logical_max_height.IsMinContent() &&
       !logical_max_height.IsMaxContent() &&
+      !logical_max_height.IsMinIntrinsic() &&
       !logical_max_height.IsFitContent()) {
     LayoutUnit max_h = ComputeLogicalHeightUsing(kMaxSize, logical_max_height,
                                                  intrinsic_content_height);
@@ -1003,7 +1003,7 @@ LayoutUnit LayoutBox::ConstrainLogicalHeightByMinMax(
   }
   Length logical_min_height = StyleRef().LogicalMinHeight();
   if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
-      logical_min_height.IsFitContent())
+      logical_min_height.IsMinIntrinsic() || logical_min_height.IsFitContent())
     logical_min_height = Length::Auto();
   return std::max(logical_height,
                   ComputeLogicalHeightUsing(kMinSize, logical_min_height,
@@ -3500,7 +3500,8 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalWidthUsing(
 
   MinMaxSizes sizes = IntrinsicLogicalWidths();
 
-  if (logical_width_length.IsMinContent())
+  if (logical_width_length.IsMinContent() ||
+      logical_width_length.IsMinIntrinsic())
     return sizes.min_size;
 
   if (logical_width_length.IsMaxContent())
@@ -4015,6 +4016,7 @@ LayoutUnit LayoutBox::ComputeIntrinsicLogicalContentHeightUsing(
   // If that happens, this code will have to change.
   if (logical_height_length.IsMinContent() ||
       logical_height_length.IsMaxContent() ||
+      logical_height_length.IsMinIntrinsic() ||
       logical_height_length.IsFitContent()) {
     if (IsAtomicInlineLevel() && !IsFlexibleBoxIncludingNG() && !IsLayoutGrid())
       return IntrinsicSize().Height();
@@ -4258,7 +4260,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
     case Length::kFixed:
       return AdjustContentBoxLogicalWidthForBoxSizing(logical_width.Value());
     case Length::kMinContent:
-    case Length::kMaxContent: {
+    case Length::kMaxContent:
+    case Length::kMinIntrinsic: {
       // MinContent/MaxContent don't need the availableLogicalWidth argument.
       LayoutUnit available_logical_width;
       return ComputeIntrinsicLogicalWidthUsing(logical_width,
@@ -4320,7 +4323,7 @@ bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   // Note that the values 'min-content', 'max-content' and 'fit-content' should
   // behave as the initial value if specified in the block direction.
   if (logical_height.IsMinContent() || logical_height.IsMaxContent() ||
-      logical_height.IsFitContent())
+      logical_height.IsMinIntrinsic() || logical_height.IsFitContent())
     return true;
 
   Length initial_logical_height =
@@ -5317,6 +5320,7 @@ void LayoutBox::ComputePositionedLogicalHeight(
   const Length& logical_max_height = style_to_use.LogicalMaxHeight();
   if (!logical_max_height.IsNone() && !logical_max_height.IsMinContent() &&
       !logical_max_height.IsMaxContent() &&
+      !logical_max_height.IsMinIntrinsic() &&
       !logical_max_height.IsFitContent()) {
     LogicalExtentComputedValues max_values;
 
@@ -5336,7 +5340,7 @@ void LayoutBox::ComputePositionedLogicalHeight(
   // Calculate constraint equation values for 'min-height' case.
   Length logical_min_height = style_to_use.LogicalMinHeight();
   if (logical_min_height.IsMinContent() || logical_min_height.IsMaxContent() ||
-      logical_min_height.IsFitContent())
+      logical_min_height.IsMinIntrinsic() || logical_min_height.IsFitContent())
     logical_min_height = Length::Auto();
   if (!logical_min_height.IsZero() || logical_min_height.IsFillAvailable()) {
     LogicalExtentComputedValues min_values;

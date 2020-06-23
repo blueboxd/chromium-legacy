@@ -5907,21 +5907,32 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
       // The UNSIGNED_INT_10F_11F_11F_REV type pack/unpack isn't implemented.
       type = GL_FLOAT;
     }
+    WebGLImageConversion::DataFormat data_format;
+    if (is_pixel_data_rgba) {
+      data_format = WebGLImageConversion::DataFormat::kDataFormatRGBA8;
+    } else {
+      switch (pixmap.colorType()) {
+        case SkColorType::kBGRA_8888_SkColorType:
+          data_format = WebGLImageConversion::DataFormat::kDataFormatBGRA8;
+          break;
+        case SkColorType::kRGBA_F16_SkColorType:
+          // Used in ImageBitmap's ApplyColorSpaceConversion.
+          data_format = WebGLImageConversion::DataFormat::kDataFormatRGBA16F;
+          break;
+        default:
+          // Can not handle this ImageBitmap's format.
+          SynthesizeGLError(GL_INVALID_VALUE, func_name,
+                            "unsupported color type / space in ImageBitmap");
+          return;
+      }
+    }
     // In the case of ImageBitmap, we do not need to apply flipY or
     // premultiplyAlpha.
-    bool is_pixel_data_bgra =
-        pixmap.colorType() == SkColorType::kBGRA_8888_SkColorType;
-    if ((is_pixel_data_bgra &&
-         !WebGLImageConversion::ExtractImageData(
-             pixel_data_ptr, WebGLImageConversion::DataFormat::kDataFormatBGRA8,
-             bitmap->Size(), source_sub_rect, depth, unpack_image_height,
-             format, type, false, false, data)) ||
-        (is_pixel_data_rgba &&
-         !WebGLImageConversion::ExtractImageData(
-             pixel_data_ptr, WebGLImageConversion::DataFormat::kDataFormatRGBA8,
-             bitmap->Size(), source_sub_rect, depth, unpack_image_height,
-             format, type, false, false, data))) {
-      SynthesizeGLError(GL_INVALID_VALUE, func_name, "bad image data");
+    if (!WebGLImageConversion::ExtractImageData(
+            pixel_data_ptr, data_format, bitmap->Size(), source_sub_rect, depth,
+            unpack_image_height, format, type, false, false, data)) {
+      SynthesizeGLError(GL_INVALID_VALUE, func_name,
+                        "error extracting data from ImageBitmap");
       return;
     }
   }

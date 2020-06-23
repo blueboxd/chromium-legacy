@@ -13,6 +13,9 @@ import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
+import {PrinterStatusReason} from '../data/printer_status_cros.js';
+
+import {PrinterState} from './printer_status_icon_cros.js';
 
 Polymer({
   is: 'print-preview-destination-dropdown-cros',
@@ -250,5 +253,21 @@ Polymer({
     const dropdown = this.$$('iron-dropdown');
     return Array.from(dropdown.getElementsByClassName('list-item'))
         .filter(item => !item.hidden);
+  },
+
+  /**
+   * @param {?PrinterStatusReason} printerStatusReason
+   * @return {number}
+   * @private
+   */
+  computePrinterState_(printerStatusReason) {
+    if (!printerStatusReason ||
+        printerStatusReason === PrinterStatusReason.UNKNOWN_REASON) {
+      return PrinterState.UNKNOWN;
+    }
+    if (printerStatusReason === PrinterStatusReason.NO_ERROR) {
+      return PrinterState.GOOD;
+    }
+    return PrinterState.ERROR;
   },
 });

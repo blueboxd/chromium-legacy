@@ -55,18 +55,14 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
  public:
   static XVisualManager* GetInstance();
 
-  // Picks the best argb or opaque visual given |want_argb_visual|.  If the
-  // default visual is returned, |colormap| is set to CopyFromParent.
+  // Picks the best argb or opaque visual given |want_argb_visual|.
   void ChooseVisualForWindow(bool want_argb_visual,
-                             Visual** visual,
-                             int* depth,
-                             Colormap* colormap,
+                             x11::VisualId* visual_id,
+                             uint8_t* depth,
                              bool* visual_has_alpha);
 
-  bool GetVisualInfo(VisualID visual_id,
-                     Visual** visual,
-                     int* depth,
-                     Colormap* colormap,
+  bool GetVisualInfo(x11::VisualId visual_id,
+                     uint8_t* depth,
                      bool* visual_has_alpha);
 
   // Called by GpuDataManagerImplPrivate when GPUInfo becomes available.  It is
@@ -74,8 +70,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
   // because we don't want to load GL in the browser process.  Returns false iff
   // |default_visual_id| or |transparent_visual_id| are invalid.
   bool OnGPUInfoChanged(bool software_rendering,
-                        VisualID default_visual_id,
-                        VisualID transparent_visual_id);
+                        x11::VisualId default_visual_id,
+                        x11::VisualId transparent_visual_id);
 
   // Are all of the system requirements met for using transparent visuals?
   bool ArgbVisualAvailable() const;
@@ -87,40 +83,34 @@ class COMPONENT_EXPORT(UI_BASE_X) XVisualManager {
 
   class XVisualData {
    public:
-    explicit XVisualData(XVisualInfo visual_info);
+    XVisualData(uint8_t depth, const x11::VisualType* info);
     ~XVisualData();
 
-    Colormap GetColormap();
-
-    const XVisualInfo visual_info;
-
-   private:
-    Colormap colormap_;
+    uint8_t depth = 0;
+    const x11::VisualType* info = nullptr;
   };
 
   XVisualManager();
 
-  bool GetVisualInfoImpl(VisualID visual_id,
-                         Visual** visual,
-                         int* depth,
-                         Colormap* colormap,
+  bool GetVisualInfoImpl(x11::VisualId visual_id,
+                         uint8_t* depth,
                          bool* visual_has_alpha);
 
   mutable base::Lock lock_;
 
-  std::unordered_map<VisualID, std::unique_ptr<XVisualData>> visuals_;
+  std::unordered_map<x11::VisualId, std::unique_ptr<XVisualData>> visuals_;
 
-  XDisplay* display_;
+  x11::Connection* const connection_;
 
-  VisualID default_visual_id_;
+  x11::VisualId default_visual_id_{};
 
   // The system visual is usually the same as the default visual, but
   // may not be in general.
-  VisualID system_visual_id_;
-  VisualID transparent_visual_id_;
+  x11::VisualId system_visual_id_{};
+  x11::VisualId transparent_visual_id_{};
 
-  bool using_software_rendering_;
-  bool have_gpu_argb_visual_;
+  bool using_software_rendering_ = false;
+  bool have_gpu_argb_visual_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(XVisualManager);
 };

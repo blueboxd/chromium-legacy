@@ -13,6 +13,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace chromeos {
 namespace {
@@ -54,7 +55,8 @@ SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
   // We need a CSP override to use the chrome-untrusted:// scheme in the host.
   std::string csp =
       std::string("frame-src ") + kChromeUIUntrustedSampleSystemWebAppURL + ";";
-  trusted_source->OverrideContentSecurityPolicyChildSrc(csp);
+  trusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ChildSrc, csp);
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, trusted_source.release());
   content::WebUIDataSource::Add(browser_context,

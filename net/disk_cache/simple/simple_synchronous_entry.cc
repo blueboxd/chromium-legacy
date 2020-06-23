@@ -327,13 +327,10 @@ void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
     const std::string& key,
     const uint64_t entry_hash,
-    const base::TimeTicks& time_enqueued,
     SimpleFileTracker* file_tracker,
     int32_t trailer_prefetch_size,
     SimpleEntryCreationResults* out_results) {
   base::TimeTicks start_sync_open_entry = base::TimeTicks::Now();
-  SIMPLE_CACHE_UMA(TIMES, "QueueLatency.OpenEntry", cache_type,
-                   (start_sync_open_entry - time_enqueued));
 
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(
       cache_type, path, key, entry_hash, file_tracker, trailer_prefetch_size);
@@ -360,13 +357,10 @@ void SimpleSynchronousEntry::CreateEntry(
     const FilePath& path,
     const std::string& key,
     const uint64_t entry_hash,
-    const base::TimeTicks& time_enqueued,
     SimpleFileTracker* file_tracker,
     SimpleEntryCreationResults* out_results) {
   DCHECK_EQ(entry_hash, GetEntryHashKey(key));
   base::TimeTicks start_sync_create_entry = base::TimeTicks::Now();
-  SIMPLE_CACHE_UMA(TIMES, "QueueLatency.CreateEntry", cache_type,
-                   (start_sync_create_entry - time_enqueued));
 
   SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(
       cache_type, path, key, entry_hash, file_tracker, -1);
@@ -393,13 +387,10 @@ void SimpleSynchronousEntry::OpenOrCreateEntry(
     const uint64_t entry_hash,
     OpenEntryIndexEnum index_state,
     bool optimistic_create,
-    const base::TimeTicks& time_enqueued,
     SimpleFileTracker* file_tracker,
     int32_t trailer_prefetch_size,
     SimpleEntryCreationResults* out_results) {
   base::TimeTicks start = base::TimeTicks::Now();
-  SIMPLE_CACHE_UMA(TIMES, "QueueLatency.OpenOrCreateEntry", cache_type,
-                   (start - time_enqueued));
   if (index_state == INDEX_MISS) {
     // Try to just create.
     auto sync_entry = base::WrapUnique(
@@ -420,8 +411,8 @@ void SimpleSynchronousEntry::OpenOrCreateEntry(
           // In this case, ::OpenOrCreateEntry already returned claiming it made
           // a new entry. Try extra-hard to make that the actual case.
           sync_entry->Doom();
-          CreateEntry(cache_type, path, key, entry_hash, time_enqueued,
-                      file_tracker, out_results);
+          CreateEntry(cache_type, path, key, entry_hash, file_tracker,
+                      out_results);
           return;
         }
         // Otherwise can just try opening.
@@ -434,12 +425,11 @@ void SimpleSynchronousEntry::OpenOrCreateEntry(
   }
 
   // Try open, then if that fails create.
-  OpenEntry(cache_type, path, key, entry_hash, time_enqueued, file_tracker,
+  OpenEntry(cache_type, path, key, entry_hash, file_tracker,
             trailer_prefetch_size, out_results);
   if (out_results->sync_entry)
     return;
-  CreateEntry(cache_type, path, key, entry_hash, time_enqueued, file_tracker,
-              out_results);
+  CreateEntry(cache_type, path, key, entry_hash, file_tracker, out_results);
 }
 
 // static

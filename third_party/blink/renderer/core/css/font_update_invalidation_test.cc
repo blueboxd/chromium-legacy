@@ -138,4 +138,46 @@ TEST_F(FontUpdateInvalidationTest,
   main_resource.Finish();
 }
 
+// https://crbug.com/1092411
+TEST_F(FontUpdateInvalidationTest, LayoutInvalidationOnModalDialog) {
+  SimRequest main_resource("https://example.com", "text/html");
+  SimRequest font_resource("https://example.com/Ahem.woff2", "font/woff2");
+
+  LoadURL("https://example.com");
+  main_resource.Write(R"HTML(
+    <!doctype html>
+    <style>
+      @font-face {
+        font-family: custom-font;
+        src: url(https://example.com/Ahem.woff2) format("woff2");
+      }
+      #target {
+        font: 25px/1 custom-font, monospace;
+      }
+    </style>
+    <dialog><span id=target>0123456789</span></dialog>
+    <script>document.querySelector('dialog').showModal();</script>
+  )HTML");
+
+  // First render the page without the custom font
+  Compositor().BeginFrame();
+
+  Element* target = GetDocument().getElementById("target");
+  EXPECT_GT(250, target->OffsetWidth());
+
+  // Then load the font and invalidate layout
+  font_resource.Complete(ReadAhemWoff2());
+  GetDocument().GetStyleEngine().InvalidateStyleAndLayoutForFontUpdates();
+
+  // <dialog> descendants should be invalidated
+  EXPECT_EQ(kNoStyleChange, target->GetStyleChangeType());
+  EXPECT_TRUE(target->GetLayoutObject()->NeedsLayout());
+
+  // <dialog> descendants should be re-rendered with the custom font
+  Compositor().BeginFrame();
+  EXPECT_EQ(250, target->OffsetWidth());
+
+  main_resource.Finish();
+}
+
 }  // namespace blink

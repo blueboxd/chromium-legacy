@@ -91,9 +91,9 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
-  drag_drop_client_ = new DesktopDragDropClientAuraX11(window(), cursor_manager,
-                                                       GetXWindow()->display(),
-                                                       GetXWindow()->window());
+  drag_drop_client_ = new DesktopDragDropClientAuraX11(
+      window(), cursor_manager, GetXWindow()->connection()->display(),
+      GetXWindow()->window());
   drag_drop_client_->Init();
   return base::WrapUnique(drag_drop_client_);
 }

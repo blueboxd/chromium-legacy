@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Imemaliza kurekebisha usahihi</translation>
 <translation id="252373100621549798">Onyesho Lisilojulikana</translation>
 <translation id="2545651323591713692">Ahirisha</translation>
+<translation id="2570734079541893434">Dhibiti mipangilio</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{saa 1}other{saa #}}</translation>
 <translation id="2583543531130364912">Rekebisha usahihi wa skrini yako ya kugusa</translation>
 <translation id="2666092431469916601">Ya Juu</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Imehamishiwa kwenye Ukurasa wa <ph name="PAGE_NUMBER" />, safu mlalo ya <ph name="ROW_NUMBER" />, safu wima ya <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Usizuie</translation>
 <translation id="7907591526440419938">Fungua Faili</translation>
+<translation id="7952747673138230804">Mfumo wa Uendeshaji wa Chrome huonyesha mapendekezo ya maudhui mapya ya kugundua. Hutuma takwimu za kuimarisha ubora iwapo tu umechagua kushiriki data ya matumizi. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Amri</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{Hujasoma zaidi ya arifa 1}other{Hujasoma zaidi ya arifa #}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{dak 1}other{dak #}}</translation>

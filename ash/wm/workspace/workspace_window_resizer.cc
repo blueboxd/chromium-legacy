@@ -89,6 +89,19 @@ constexpr char kTabDraggingInClamshellModeMaxLatencyHistogram[] =
     "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.MaxLatency."
     "ClamshellMode";
 
+// Name of smoothness histograms of the cross fade animation that happens when
+// dragging a maximized window to maximize or unmaximize. Note that for drag
+// maximize, this only applies when the window's pre drag state is maximized.
+// For dragging from normal state to maximize, we use the regular cross fade
+// histogram as its not expected to perform differently. These are measured
+// separately from the regular cross fade animation because they have a shorter
+// duration and in the case of drag unmaximize, the window bounds are changing
+// while animating.
+constexpr char kDragUnmaximizeSmoothness[] =
+    "Ash.Window.AnimationSmoothness.CrossFade.DragUnmaximize";
+constexpr char kDragMaximizeSmoothness[] =
+    "Ash.Window.AnimationSmoothness.CrossFade.DragMaximize";
+
 // Duration of the cross fade animation used when dragging to unmaximize or
 // dragging to snap maximize.
 constexpr base::TimeDelta kCrossFadeDuration =
@@ -352,9 +365,15 @@ WorkspaceWindowResizer::SnapType GetSnapType(
   return WorkspaceWindowResizer::SnapType::kNone;
 }
 
-void CrossFadeAnimation(aura::Window* window, const gfx::Rect& target_bounds) {
-  CrossFadeAnimationAnimateNewLayerOnly(window, target_bounds,
-                                        kCrossFadeDuration, gfx::Tween::LINEAR);
+// If |maximize| is true, this is an animation to maximized bounds and an
+// animation from maximized bounds otherwise. This is used to determine which
+// metric to record.
+void CrossFadeAnimation(aura::Window* window,
+                        const gfx::Rect& target_bounds,
+                        bool maximize) {
+  CrossFadeAnimationAnimateNewLayerOnly(
+      window, target_bounds, kCrossFadeDuration, gfx::Tween::LINEAR,
+      maximize ? kDragMaximizeSmoothness : kDragUnmaximizeSmoothness);
 }
 
 }  // namespace
@@ -541,7 +560,8 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
           // restored (i.e. update the caption buttons and height of the browser
           // frame).
           window_state()->window()->SetProperty(kFrameRestoreLookKey, true);
-          CrossFadeAnimation(window_state()->window(), bounds);
+          CrossFadeAnimation(window_state()->window(), bounds,
+                             /*maximize=*/false);
         }
       }
       RestackWindows();
@@ -641,7 +661,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
         if (window_state()->IsMaximized()) {
           aura::Window* window = window_state()->window();
           CrossFadeAnimation(
-              window, screen_util::GetMaximizedWindowBoundsInParent(window));
+              window, screen_util::GetMaximizedWindowBoundsInParent(window),
+              /*maximize=*/true);
         }
         break;
       default:

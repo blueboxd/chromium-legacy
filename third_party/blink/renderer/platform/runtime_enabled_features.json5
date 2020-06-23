@@ -525,7 +525,7 @@
       // Perform partial style invalidation on web font loading.
       // See https://crbug.com/441925 and https://bit.ly/35JjPmq for details.
       name: "CSSReducedFontLoadingInvalidations",
-      status: "test",
+      status: "stable",
       implied_by: ["CSSReducedFontLoadingLayoutInvalidations"],
     },
     {

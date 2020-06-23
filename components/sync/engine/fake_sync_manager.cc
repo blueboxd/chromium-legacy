@@ -18,7 +18,6 @@
 #include "components/sync/engine/engine_components_factory.h"
 #include "components/sync/engine/fake_model_type_connector.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
-#include "components/sync/syncable/directory.h"
 
 class GURL;
 
@@ -79,12 +78,6 @@ void FakeSyncManager::Init(InitArgs* args) {
   sync_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   PurgePartiallySyncedTypes();
 
-  test_user_share_.SetUp();
-  UserShare* share = test_user_share_.user_share();
-  for (ModelType type : initial_sync_ended_types_) {
-    TestUserShare::CreateRoot(type, share);
-  }
-
   for (auto& observer : observers_) {
     observer.OnInitializationComplete(WeakHandle<JsBackend>(),
                                       WeakHandle<DataTypeDebugInfoListener>(),
@@ -117,11 +110,6 @@ void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge,
                                          ModelTypeSet to_journal,
                                          ModelTypeSet to_unapply) {
   // Simulate cleaning up disabled types.
-  // TODO(sync): consider only cleaning those types that were recently disabled,
-  // if this isn't the first cleanup, which more accurately reflects the
-  // behavior of the real cleanup logic.
-  GetUserShare()->directory->PurgeEntriesWithTypeIn(to_purge, to_journal,
-                                                    to_unapply);
   purged_types_.PutAll(to_purge);
   unapplied_types_.PutAll(to_unapply);
   // Types from |to_unapply| should retain their server data and progress
@@ -157,15 +145,6 @@ void FakeSyncManager::ConfigureSyncer(ConfigureReason reason,
   DVLOG(1) << "Faking configuration. Downloading: "
            << ModelTypeSetToString(success_types);
 
-  // Update our fake directory by clearing and fake-downloading as necessary.
-  UserShare* share = GetUserShare();
-  for (ModelType type : success_types) {
-    // We must be careful to not create the same root node twice.
-    if (!initial_sync_ended_types_.Has(type)) {
-      TestUserShare::CreateRoot(type, share);
-    }
-  }
-
   // Now simulate the actual configuration for those types that successfully
   // download + apply.
   progress_marker_types_.PutAll(success_types);
@@ -189,11 +168,6 @@ void FakeSyncManager::SaveChanges() {
 
 void FakeSyncManager::ShutdownOnSyncThread() {
   DCHECK(sync_task_runner_->RunsTasksInCurrentSequence());
-  test_user_share_.TearDown();
-}
-
-UserShare* FakeSyncManager::GetUserShare() {
-  return test_user_share_.user_share();
 }
 
 ModelTypeConnector* FakeSyncManager::GetModelTypeConnector() {
@@ -206,12 +180,11 @@ FakeSyncManager::GetModelTypeConnectorProxy() {
 }
 
 std::string FakeSyncManager::cache_guid() {
-  return test_user_share_.user_share()->directory->cache_guid();
+  return "fake_cache_guid";
 }
 
 std::string FakeSyncManager::birthday() {
-  NOTIMPLEMENTED();
-  return std::string();
+  return "fake_birthday";
 }
 
 std::string FakeSyncManager::bag_of_chips() {

@@ -278,12 +278,12 @@ bool AwContentBrowserClient::get_check_cleartext_permitted() {
 
 AwContentBrowserClient::AwContentBrowserClient(
     AwFeatureListCreator* aw_feature_list_creator)
-    : aw_feature_list_creator_(aw_feature_list_creator) {
+    : sniff_file_urls_(AwSettings::GetAllowSniffingFileUrls()),
+      aw_feature_list_creator_(aw_feature_list_creator) {
   // |aw_feature_list_creator| should not be null. The AwBrowserContext will
   // take the PrefService owned by the creator as the Local State instead
   // of loading the JSON file from disk.
   DCHECK(aw_feature_list_creator_);
-  sniff_file_urls_ = AwSettings::GetAllowSniffingFileUrls();
 }
 
 AwContentBrowserClient::~AwContentBrowserClient() {}
@@ -834,11 +834,13 @@ bool AwContentBrowserClient::HandleExternalProtocol(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>* out_factory) {
   mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver =
       out_factory->InitWithNewPipeAndPassReceiver();
+  // We don't need to care for |security_options| as the factories constructed
+  // below are used only for navigation.
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     // Manages its own lifetime.
     new android_webview::AwProxyingURLLoaderFactory(
         0 /* process_id */, std::move(receiver), mojo::NullRemote(),
-        true /* intercept_only */);
+        true /* intercept_only */, base::nullopt /* security_options */);
   } else {
     content::GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
@@ -848,7 +850,8 @@ bool AwContentBrowserClient::HandleExternalProtocol(
               // Manages its own lifetime.
               new android_webview::AwProxyingURLLoaderFactory(
                   0 /* process_id */, std::move(receiver), mojo::NullRemote(),
-                  true /* intercept_only */);
+                  true /* intercept_only */,
+                  base::nullopt /* security_options */);
             },
             std::move(receiver)));
   }
@@ -937,10 +940,44 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
       type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
-  content::GetIOThreadTaskRunner({})->PostTask(
-      FROM_HERE, base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
-                                process_id, std::move(proxied_receiver),
-                                std::move(target_factory_remote)));
+  if (frame) {
+    auto security_options =
+        base::make_optional<AwProxyingURLLoaderFactory::SecurityOptions>();
+    security_options->disable_web_security =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableWebSecurity);
+    const auto& preferences =
+        frame->GetRenderViewHost()->GetWebkitPreferences();
+    // See also //android_webview/docs/cors-and-webview-api.md to understand how
+    // each settings affect CORS behaviors on file:// and content://.
+    if (request_initiator.scheme() == url::kFileScheme) {
+      security_options->disable_web_security |=
+          preferences.allow_universal_access_from_file_urls;
+      // Usual file:// to file:// requests are mapped to kNoCors if the setting
+      // is set to true. Howover, file:///android_{asset|res}/ still uses kCors
+      // and needs to permit it in the |security_options|.
+      security_options->allow_cors_to_same_scheme =
+          preferences.allow_file_access_from_file_urls;
+    } else if (request_initiator.scheme() == url::kContentScheme) {
+      security_options->allow_cors_to_same_scheme =
+          preferences.allow_file_access_from_file_urls ||
+          preferences.allow_universal_access_from_file_urls;
+    }
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy, process_id,
+                       std::move(proxied_receiver),
+                       std::move(target_factory_remote), security_options));
+  } else {
+    // A service worker and worker subresources set nullptr to |frame|, and
+    // work without seeing the AllowUniversalAccessFromFileURLs setting. So,
+    // we don't pass a valid |security_options| here.
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+                                  process_id, std::move(proxied_receiver),
+                                  std::move(target_factory_remote),
+                                  base::nullopt /* security_options */));
+  }
   return true;
 }
 

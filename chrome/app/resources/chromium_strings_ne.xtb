@@ -123,7 +123,7 @@
 <translation id="5862307444128926510">Chromium मा स्वागतम्</translation>
 <translation id="5895138241574237353">पुन: शुरू गर्नुहोस्</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - नेटवर्क साइन इन</translation>
-<translation id="5987687638152509985">सिंक सुरु गर्न Chromium लाई अद्यावधिक गर्नुहोस्</translation>
+<translation id="5987687638152509985">सिंक सुरु गर्न Chromium लाई अपडेट गर्नुहोस्</translation>
 <translation id="6013050204643758987">Chromium OS पनि <ph name="BEGIN_LINK_LINUX_OSS" />Linux (बिटा संस्करण)<ph name="END_LINK_LINUX_OSS" /> जस्तै अतिरिक्त <ph name="BEGIN_LINK_CROS_OSS" />खुला स्रोतको सफ्टवेयर<ph name="END_LINK_CROS_OSS" /> प्रयोग गरी निर्माण गरिएको हो।</translation>
 <translation id="6039377483953237732">Chromium OS को संस्करण</translation>
 <translation id="6055895534982063517">क्रोमियमको नयाँ संस्करण उपलब्ध छ, र यो अहिलेसम्मकै द्रुत छ।</translation>
@@ -157,7 +157,7 @@
 <translation id="6717134281241384636">तपाईंको प्रोफाइललाई प्रयोग गर्न सकिँदैन किनभने यो Chromium एउटा नयाँ संस्करणबाट ल्याइएको हो।
 
 केही सुविधाहरू अनुपलब्ध हुन सक्छन्। कृपया एउटा भिन्न प्रोफाइल डाइरेक्टरी निर्दिष्ट गर्नुहोस् वा Chromium को कुनै अझ नया सँस्करण प्रयोग गर्नुहोस्।</translation>
-<translation id="6734080038664603509">&amp;Chromium अद्यावधिक गर्नुहोस्</translation>
+<translation id="6734080038664603509">&amp;Chromium अपडेट गर्नुहोस्</translation>
 <translation id="6734291798041940871">तपाईँको कम्प्युटरमा पहिले नै सबै प्रयोगकर्ताहरूका लागि Chromium को स्थापना गरिएको छ।</translation>
 <translation id="6774082503108938489">तपाईंका अभिभावकले Chromium का हकमा "साइट, एप तथा एक्सटेन्सनसम्बन्धी अनुमति" निष्क्रिय पार्नुभएको छ। तपाईंसँग यो <ph name="EXTENSION_TYPE_PARAMETER" /> सक्षम पार्ने अनुमति छैन।</translation>
 <translation id="6847869444787758381">तपाईंको पासवर्ड ह्याक भएको खण्डमा Chromium ले तपाईंलाई त्यसको जानकारी दिन्छ</translation>
@@ -167,8 +167,8 @@
 <translation id="6964305034639999644">लिंकलाई Chromium को इन्कोग्निटो विन्डोमा खोल्नुहोस्</translation>
 <translation id="6990124437352146030">Chromium लाई यो साइटका लागि तपाईंको माइक्रोफोनमाथि पहुँच राख्ने अनुमति चाहिन्छ</translation>
 <translation id="701244094609242530">Chromium ले तपाईंका एक्स्टेन्सनहरूको जाँच गर्न सकेन। पछि फेरि प्रयास गर्नुहोस्।</translation>
-<translation id="705851970750939768">Chromium अद्यावधिक गर्नुहोस्</translation>
-<translation id="7066436765290594559">क्रोमियम ओएसले तपाईंको डाटा सिंक गर्न सकेन। कृपया आफ्नो सिंक पासफ्रेज अद्यावधिक गर्नुहोस्।</translation>
+<translation id="705851970750939768">Chromium अपडेट गर्नुहोस्</translation>
+<translation id="7066436765290594559">क्रोमियम ओएसले तपाईंको डाटा सिंक गर्न सकेन। कृपया आफ्नो सिंक पासफ्रेज अपडेट गर्नुहोस्।</translation>
 <translation id="7067091210845072982">कुनै छविमा उपयोगी विवरण नभएका खण्डमा Chromium ले तपाईंलाई एउटा विवरण उपलब्ध गराउने प्रयास गर्ने छ। विवरणहरू सिर्जना गर्न छविहरू Google मा पठाइन्छ।</translation>
 <translation id="7196312274710523067">Chromium सुरु गर्न सकिएन। फेरि प्रयास गर्नुहोस्।</translation>
 <translation id="7197677400338048821">Chromium तपाईंका पासवर्डहरू जाँच्न सक्दैन। २४ घन्टापछि फेरि प्रयास गर्नुहोस्।</translation>

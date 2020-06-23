@@ -15,6 +15,7 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/url_constants.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 
 namespace chromeos {
 namespace {
@@ -30,11 +31,12 @@ content::WebUIDataSource* CreateUntrustedTelemetryExtensionDataSource() {
   untrusted_source->AddFrameAncestor(GURL(kChromeUITelemetryExtensionURL));
 
   // TODO(https://crbug.com/1085330): tighten CSP.
-  untrusted_source->OverrideContentSecurityPolicyDefaultSrc(std::string());
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::DefaultSrc, std::string());
 
   // Allow chrome-untrusted:// to load Web Worker scripts.
-  untrusted_source->OverrideContentSecurityPolicyWorkerSrc(
-      "worker-src 'self';");
+  untrusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src 'self';");
 
   return untrusted_source;
 }
@@ -68,7 +70,8 @@ TelemetryExtensionUI::TelemetryExtensionUI(content::WebUI* web_ui)
   // We need a CSP override to use the chrome-untrusted:// scheme in the host.
   std::string csp =
       std::string("frame-src ") + kChromeUIUntrustedTelemetryExtensionURL + ";";
-  trusted_source->OverrideContentSecurityPolicyChildSrc(csp);
+  trusted_source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ChildSrc, csp);
   auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
   content::WebUIDataSource::Add(browser_context, trusted_source.release());
   content::WebUIDataSource::Add(browser_context,

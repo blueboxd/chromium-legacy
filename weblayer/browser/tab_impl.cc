@@ -32,6 +32,7 @@
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/sessions/content/session_tab_helper.h"
+#include "components/translate/core/browser/translate_manager.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/webrtc/media_stream_devices_controller.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -766,6 +767,17 @@ void TabImpl::UnregisterWebMessageCallback(
   base::string16 name;
   base::android::ConvertJavaStringToUTF16(env, js_object_name, &name);
   RemoveWebMessageHostFactory(name);
+}
+
+jboolean TabImpl::CanTranslate(JNIEnv* env) {
+  return TranslateClientImpl::FromWebContents(web_contents())
+      ->GetTranslateManager()
+      ->CanManuallyTranslate();
+}
+
+void TabImpl::ShowTranslateUi(JNIEnv* env) {
+  TranslateClientImpl::FromWebContents(web_contents())
+      ->ManualTranslateWhenReady();
 }
 #endif  // OS_ANDROID
 

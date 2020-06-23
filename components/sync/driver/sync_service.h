@@ -33,7 +33,6 @@ struct SyncTokenStatus;
 class SyncUserSettings;
 class TypeDebugInfoObserver;
 struct SyncStatus;
-struct UserShare;
 
 // UIs that need to prevent Sync startup should hold an instance of this class
 // until the user has finished modifying sync settings. This is not an inner
@@ -391,16 +390,6 @@ class SyncService : public KeyedService {
 
   // Returns true if |observer| has already been added as an observer.
   virtual bool HasObserver(const SyncServiceObserver* observer) const = 0;
-
-  //////////////////////////////////////////////////////////////////////////////
-  // ACCESS TO INNER OBJECTS
-  //////////////////////////////////////////////////////////////////////////////
-
-  // TODO(akalin): This is called mostly by ModelAssociators and
-  // tests.  Figure out how to pass the handle to the ModelAssociators
-  // directly, figure out how to expose this to tests, and remove this
-  // function.
-  virtual UserShare* GetUserShare() const = 0;
 
   //////////////////////////////////////////////////////////////////////////////
   // DETAILED STATE FOR DEBUG UI

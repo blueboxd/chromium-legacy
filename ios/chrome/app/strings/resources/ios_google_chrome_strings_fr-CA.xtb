@@ -9,6 +9,7 @@
 <translation id="2199719347983604670">Données provenant de la synchronisation Google Chrome</translation>
 <translation id="2347208864470321755">Lorsque cette fonction est activée, Google Chrome vous propose de traduire les pages écrites dans d'autres langues à l'aide de Google Traduction. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Pour enregistrer des images, touchez Paramètres et autorisez Chrome à utiliser vos photos</translation>
+<translation id="2574249610672786438">Pour voir vos onglets partout où vous utilisez Chrome, connectez-vous sur tous vos appareils</translation>
 <translation id="2576431527583832481">Une nouvelle version améliorée de Google Chrome est maintenant offerte.</translation>
 <translation id="257708665678654955">Souhaitez-vous que Google Chrome vous propose de traduire les pages de ce site rédigées en <ph name="LANGUAGE_NAME" /> lors de votre prochaine visite?</translation>
 <translation id="2919738076569633423">En utilisant Chrome, vous acceptez les <ph name="BEGIN_LINK_TOS" />conditions d'utilisation<ph name="END_LINK_TOS" />.</translation>
@@ -19,6 +20,7 @@
 <translation id="3196546062792660320">Chrome vous fait gagner du temps en mettant vos comptes sur le Web. Vous pouvez ajouter ou supprimer des comptes dans Paramètres.</translation>
 <translation id="3282568296779691940">Connexion à Chrome</translation>
 <translation id="3345341804167540816">Utiliser Chrome sur toutes les plateformes</translation>
+<translation id="3522659714780527202">Pour voir vos onglets partout où vous utilisez Chrome, activez la synchronisation</translation>
 <translation id="384394811301901750">Google Chrome ne peut pas utiliser votre appareil photo pour le moment</translation>
 <translation id="3980220367029651214">Vous changez de compte synchronisé pour passer de <ph name="USER_EMAIL1" /> à <ph name="USER_EMAIL2" />. Vos données Google Chrome actuelles sont gérées par <ph name="DOMAIN" />. Cette opération entraînera la suppression de vos données sur cet appareil, mais elles resteront dans le compte <ph name="USER_EMAIL1" />.</translation>
 <translation id="3988789688219830639">Google Chrome n'a pas accès à vos photos ou vidéos. Activez l'accès dans Réglages iOS &gt; Confidentialité &gt; Photos.</translation>
@@ -45,6 +47,7 @@
 <translation id="7400722733683201933">À propos de Google Chrome</translation>
 <translation id="756809126120519699">Données de Chrome effacées</translation>
 <translation id="7626032353295482388">Bienvenue dans Google Chrome</translation>
+<translation id="7662994914830945754">Pour voir vos onglets partout où vous utilisez Chrome, connectez-vous et activez la synchronisation</translation>
 <translation id="7698568245838009292">Chrome souhaite accéder à l'appareil photo</translation>
 <translation id="8370517070665726704">© <ph name="YEAR" /> Google LLC. Tous droits réservés.</translation>
 <translation id="840168496893712993">Certains modules complémentaires provoquent le plantage de Chrome. Veuillez essayer de les désinstaller.</translation>

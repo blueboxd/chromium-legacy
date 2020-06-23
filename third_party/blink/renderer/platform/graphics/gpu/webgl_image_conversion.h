@@ -194,12 +194,14 @@ class PLATFORM_EXPORT WebGLImageConversion final {
                                         unsigned* padding_in_bytes,
                                         unsigned* skip_size_in_bytes);
 
-  // Check if the format is one of the formats from the ImageData or DOM
-  // elements. The format from ImageData is always RGBA8. The formats from DOM
-  // elements vary with Graphics ports, but can only be RGBA8 or BGRA8.
-  static ALWAYS_INLINE bool SrcFormatComeFromDOMElementOrImageData(
+  // Check if the format is one of the formats from ImageData DOM elements, or
+  // ImageBitmap. The format from ImageData is always RGBA8. The formats from
+  // DOM elements vary with Graphics ports, but can only be RGBA8 or BGRA8.
+  // ImageBitmap can use RGBA16F when colorspace conversion is performed.
+  static ALWAYS_INLINE bool SrcFormatComesFromDOMElementOrImageData(
       DataFormat src_format) {
-    return src_format == kDataFormatBGRA8 || src_format == kDataFormatRGBA8;
+    return src_format == kDataFormatBGRA8 || src_format == kDataFormatRGBA8 ||
+           src_format == kDataFormatRGBA16F;
   }
 
   // The input can be either format or internalformat.

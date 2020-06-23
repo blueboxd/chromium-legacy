@@ -19,7 +19,9 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/check.h"
 #include "base/i18n/rtl.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
+#include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -106,10 +108,12 @@ class CrossFadeObserver : public aura::WindowObserver,
   // Observes |window| for destruction, but does not take ownership.
   // Takes ownership of |layer_owner| and its child layers.
   CrossFadeObserver(aura::Window* window,
-                    std::unique_ptr<ui::LayerTreeOwner> layer_owner)
+                    std::unique_ptr<ui::LayerTreeOwner> layer_owner,
+                    base::Optional<std::string> histogram_name)
       : window_(window),
         layer_(window->layer()),
-        layer_owner_(std::move(layer_owner)) {
+        layer_owner_(std::move(layer_owner)),
+        histogram_name_(histogram_name) {
     window_->AddObserver(this);
   }
   CrossFadeObserver(const CrossFadeObserver&) = delete;
@@ -146,8 +150,14 @@ class CrossFadeObserver : public aura::WindowObserver,
     if (reported_)
       return;
 
-    UMA_HISTOGRAM_PERCENTAGE(kCrossFadeSmoothness, value);
     reported_ = true;
+    if (histogram_name_) {
+      LOG(ERROR) << "hi";
+      DCHECK(!histogram_name_->empty());
+      base::UmaHistogramPercentage(*histogram_name_, value);
+    } else {
+      UMA_HISTOGRAM_PERCENTAGE(kCrossFadeSmoothness, value);
+    }
   }
 
  protected:
@@ -170,6 +180,10 @@ class CrossFadeObserver : public aura::WindowObserver,
   ui::Layer* layer_;
 
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
+
+  // Optional histogram name to record for animation smoothness. If null, use
+  // |kCrossFadeSmoothness|.
+  base::Optional<std::string> histogram_name_;
 };
 
 // A version of CrossFadeObserver which updates its transform to match the
@@ -181,8 +195,9 @@ class CrossFadeUpdateTransformObserver
  public:
   CrossFadeUpdateTransformObserver(
       aura::Window* window,
-      std::unique_ptr<ui::LayerTreeOwner> layer_owner)
-      : CrossFadeObserver(window, std::move(layer_owner)) {
+      std::unique_ptr<ui::LayerTreeOwner> layer_owner,
+      base::Optional<std::string> histogram_name)
+      : CrossFadeObserver(window, std::move(layer_owner), histogram_name) {
     compositor_ = window->layer()->GetCompositor();
     compositor_->AddAnimationObserver(this);
   }
@@ -245,7 +260,8 @@ void CrossFadeAnimationInternal(
     std::unique_ptr<ui::LayerTreeOwner> old_layer_owner,
     bool animate_old_layer_transform,
     base::Optional<base::TimeDelta> duration,
-    base::Optional<gfx::Tween::Type> tween_type) {
+    base::Optional<gfx::Tween::Type> tween_type,
+    base::Optional<std::string> histogram_name) {
   ui::Layer* old_layer = old_layer_owner->root();
   ui::Layer* new_layer = window->layer();
 
@@ -339,9 +355,10 @@ void CrossFadeAnimationInternal(
     // aborted, we can delete the old layer.
     CrossFadeObserver* observer =
         animate_old_layer_transform
-            ? new CrossFadeObserver(window, std::move(old_layer_owner))
-            : new CrossFadeUpdateTransformObserver(window,
-                                                   std::move(old_layer_owner));
+            ? new CrossFadeObserver(window, std::move(old_layer_owner),
+                                    histogram_name)
+            : new CrossFadeUpdateTransformObserver(
+                  window, std::move(old_layer_owner), histogram_name);
 
     // Animate the new layer to the identity transform, so the window goes to
     // its newly set bounds.
@@ -585,18 +602,21 @@ void CrossFadeAnimation(aura::Window* window,
                         std::unique_ptr<ui::LayerTreeOwner> old_layer_owner) {
   CrossFadeAnimationInternal(
       window, std::move(old_layer_owner), /*animate_old_layer=*/true,
-      /*duration=*/base::nullopt, /*tween_type=*/base::nullopt);
+      /*duration=*/base::nullopt, /*tween_type=*/base::nullopt,
+      /*histogram_name=*/base::nullopt);
 }
 
 void CrossFadeAnimationAnimateNewLayerOnly(aura::Window* window,
                                            const gfx::Rect& target_bounds,
                                            base::TimeDelta duration,
-                                           gfx::Tween::Type tween_type) {
+                                           gfx::Tween::Type tween_type,
+                                           const std::string& histogram_name) {
   std::unique_ptr<ui::LayerTreeOwner> old_layer_owner =
       ::wm::RecreateLayers(window);
   window->SetBounds(target_bounds);
   CrossFadeAnimationInternal(window, std::move(old_layer_owner),
-                             /*animate_old_layer=*/false, duration, tween_type);
+                             /*animate_old_layer=*/false, duration, tween_type,
+                             histogram_name);
 }
 
 bool AnimateOnChildWindowVisibilityChanged(aura::Window* window, bool visible) {

@@ -48,5 +48,24 @@ int LiteVideoKilobytesToBufferBeforeThrottle() {
       ::features::kLiteVideo, "kilobyte_to_buffer_before_throttle", 500);
 }
 
+size_t MaxUserBlocklistHosts() {
+  return GetFieldTrialParamByFeatureAsInt(::features::kLiteVideo,
+                                          "max_user_blocklist_hosts", 50);
+}
+
+base::TimeDelta UserBlocklistHostDuration() {
+  return base::TimeDelta::FromDays(GetFieldTrialParamByFeatureAsInt(
+      ::features::kLiteVideo, "user_blocklist_host_duration_in_days", 1));
+}
+
+int UserBlocklistOptOutHistoryThreshold() {
+  return GetFieldTrialParamByFeatureAsInt(
+      ::features::kLiteVideo, "user_blocklist_opt_out_history_threshold", 5);
+}
+
+int LiteVideoBlocklistVersion() {
+  return GetFieldTrialParamByFeatureAsInt(::features::kLiteVideo, "version", 0);
+}
+
 }  // namespace features
 }  // namespace lite_video

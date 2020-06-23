@@ -1246,7 +1246,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6240447795304464094">Logo e Google Pay</translation>
 <translation id="6241121617266208201">Fshih sugjerimet</translation>
 <translation id="624499991300733384">Shërbimi i krijuesit të printimit</translation>
-<translation id="6251924700383757765">Politika e privatësisë</translation>
 <translation id="6254436959401408446">Nuk ka memorie të mjaftueshme për të hapur këtë faqe</translation>
 <translation id="625755898061068298">Ke zgjedhur që të çaktivizosh paralajmërimet e sigurisë për këtë sajt.</translation>
 <translation id="6259156558325130047">&amp;Ribëj riporosinë</translation>
@@ -1533,6 +1532,7 @@ Detaje shtesë:
 <translation id="7485870689360869515">Nuk u gjetën të dhëna.</translation>
 <translation id="7488762544858401571">I modifikuar</translation>
 <translation id="7495290002932347110">Një nxjerrje e paautorizuar të dhënash në një sajt apo në një prej aplikacioneve të tua e ka ekspozuar fjalëkalimin tënd. Chrome rekomandon që t’i kontrollosh menjëherë fjalëkalimet e tua të ruajtura si dhe ta ndryshosh fjalëkalimin tënd në <ph name="ORIGIN" />.</translation>
+<translation id="7495528107193238112">Kjo përmbajtje është bllokuar. Kontakto me zotëruesin e sajtit për të rregulluar problemin.</translation>
 <translation id="7498234416455752244">Vazhdo redaktimin</translation>
 <translation id="7503664977220660814">Sapo e fute fjalëkalimin tënd në një sajt mashtrues. Chromium të rekomandon t'i kontrollosh fjalëkalimet e tua të ruajtura për <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe sajte të tjera ku e përdor këtë fjalëkalim tani.</translation>
 <translation id="7508255263130623398">ID-ja e kthyer e pajisjes së politikës është bosh ose nuk përputhet me ID-në e pajisjes aktuale</translation>
@@ -1632,7 +1632,6 @@ Detaje shtesë:
 <translation id="7844689747373518809">{COUNT,plural, =0{Asnjë}=1{1 aplikacion (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikacione (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# aplikacione (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Sidoqoftë, ti nuk je i padukshëm. Kalimi në modalitetin "e fshehtë" nuk e fsheh shfletimin tënd nga punëdhënësi yt, ofruesi i shërbimit të internetit apo sajtet e uebit që viziton.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157">Ndihmo për përmirësimin e sigurisë në ueb për të gjithë duke dërguar <ph name="BEGIN_WHITEPAPER_LINK" />URL-të e disa faqeve që viziton, informacione të kufizuara të sistemit, si dhe disa përmbajtje të faqeve<ph name="END_WHITEPAPER_LINK" /> te Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Dëshiron të largohesh nga sajti?</translation>
 <translation id="7865448901209910068">Shpejtësia më e mirë</translation>
 <translation id="7874263914261512992">Sapo e fute fjalëkalimin tënd në një sajt mashtrues. Chrome të rekomandon të kontrollosh fjalëkalimet e tua të ruajtura për <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dhe sajte të tjera ku e përdor këtë fjalëkalim tani.</translation>

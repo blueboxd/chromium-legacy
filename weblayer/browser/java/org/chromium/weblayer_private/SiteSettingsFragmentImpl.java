@@ -16,6 +16,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 import android.view.Window;
 
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentController;
 import androidx.fragment.app.FragmentHostCallback;
@@ -81,6 +82,12 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
         private PassthroughFragmentActivity(SiteSettingsFragmentImpl fragmentImpl) {
             mFragmentImpl = fragmentImpl;
             attachBaseContext(mFragmentImpl.getWebLayerContext());
+            // This class doesn't extend AppCompatActivity, so some appcompat functionality doesn't
+            // get initialized, which leads to some appcompat widgets (like switches) rendering
+            // incorrectly. There are some resource issues with having this class extend
+            // AppCompatActivity, but until we sort those out, creating an AppCompatDelegate will
+            // perform the necessary initialization.
+            AppCompatDelegate.create(this, null);
         }
 
         @Override

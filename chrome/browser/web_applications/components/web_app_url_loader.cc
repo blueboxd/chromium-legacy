@@ -176,4 +176,10 @@ void WebAppUrlLoader::LoadUrl(const GURL& url,
           std::move(callback), std::move(loader_task)));
 }
 
+void WebAppUrlLoader::PrepareForLoad(content::WebContents* web_contents,
+                                     ResultCallback callback) {
+  LoadUrl(GURL(url::kAboutBlankURL), web_contents, UrlComparison::kExact,
+          std::move(callback));
+}
+
 }  // namespace web_app

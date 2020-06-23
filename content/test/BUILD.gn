@@ -658,6 +658,9 @@ group("telemetry_gpu_integration_test_support") {
 
     # For power
     "//media/test/data/bear-1280x720.mp4",
+
+    # For Skia Gold pixel test functionality.
+    "//testing/skia_gold_common/",
   ]
 
   data_deps = [
@@ -930,6 +933,7 @@ test("content_browsertests") {
     "../browser/data_decoder_browsertest.cc",
     "../browser/database_browsertest.cc",
     "../browser/device_sensors/device_sensor_browsertest.cc",
+    "../browser/devtools/devtools_issue_storage_browsertest.cc",
     "../browser/devtools/devtools_video_consumer_browsertest.cc",
     "../browser/devtools/protocol/devtools_protocol_browsertest.cc",
     "../browser/devtools/protocol/devtools_protocol_test_support.cc",
@@ -1258,7 +1262,7 @@ test("content_browsertests") {
     "//third_party/mesa_headers",
     "//third_party/re2",
     "//third_party/zlib",
-    "//ui/accessibility",
+    "//ui/accessibility:ax_base",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/base:test_support",
     "//ui/base/clipboard",

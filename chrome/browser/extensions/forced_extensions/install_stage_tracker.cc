@@ -68,6 +68,10 @@ std::string InstallStageTracker::GetFormattedInstallationData(
     str << "; manifest_invalid_error: "
         << static_cast<int>(data.manifest_invalid_error.value());
   }
+  if (data.no_updates_info) {
+    str << "; no_update_info: "
+        << static_cast<int>(data.no_updates_info.value());
+  }
 
   return str.str();
 }
@@ -87,6 +91,24 @@ InstallStageTracker::~InstallStageTracker() = default;
 InstallStageTracker* InstallStageTracker::Get(
     content::BrowserContext* context) {
   return InstallStageTrackerFactory::GetForBrowserContext(context);
+}
+
+void InstallStageTracker::ReportInfoOnNoUpdatesFailure(
+    const ExtensionId& id,
+    const std::string& info) {
+  InstallationData& data = installation_data_map_[id];
+
+  // Map the no updates info to NoUpdatesInfo enum.
+  if (info.empty())
+    data.no_updates_info = NoUpdatesInfo::kEmpty;
+  else if (info == "rate limit")
+    data.no_updates_info = NoUpdatesInfo::kRateLimit;
+  else if (info == "disabled by client")
+    data.no_updates_info = NoUpdatesInfo::kDisabledByClient;
+  else if (info == "bandwidth limit")
+    data.no_updates_info = NoUpdatesInfo::kBandwidthLimit;
+  else
+    data.no_updates_info = NoUpdatesInfo::kUnknown;
 }
 
 void InstallStageTracker::ReportManifestInvalidFailure(

@@ -1797,6 +1797,14 @@ body:not(.files-ng) .downloads-warning .warning-message {
   margin-inline-end: 40px;
 }
 
+body.files-ng .warning-message .link-wrapper {
+  display: inline;
+}
+
+body.files-ng .warning-message .link-wrapper > a {
+  display: inline-block;
+}
+
 body:not(.files-ng) .downloads-warning[hidden] {
   display: flex !important;  /* Overrides [hidden] for animation. */
   height: 0;

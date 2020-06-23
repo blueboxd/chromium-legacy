@@ -228,6 +228,12 @@ const char kEnableStylusTools[] = "settings.enable_stylus_tools";
 const char kLaunchPaletteOnEjectEvent[] =
     "settings.launch_palette_on_eject_event";
 
+// Boolean pref indicating whether the privacy warning of the managed-guest
+// session on both; the login screen and inside the auto-launched session,
+// should be displayed or not.
+const char kManagedGuestSessionPrivacyWarningsEnabled[] =
+    "managed_session.privacy_warning_enabled";
+
 // A string pref storing the type of lock screen notification mode.
 // "show" -> show notifications on the lock screen
 // "hide" -> hide notifications at all on the lock screen (default)

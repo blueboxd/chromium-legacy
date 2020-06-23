@@ -3,6 +3,7 @@
 <translationbundle lang="ru">
 <translation id="1018656279737460067">Отменено</translation>
 <translation id="1195447618553298278">Неизвестная ошибка.</translation>
+<translation id="1413240736185167732">Сбой: ошибка в работе фильтра</translation>
 <translation id="1468664791493211953">Предложения</translation>
 <translation id="1482734542997480527">Это управляемое устройство. Администратор домена <ph name="ENROLLMENT_DOMAIN" /> может отслеживать ваши действия.</translation>
 <translation id="150962533380566081">Неверный PUK-код.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Это корпоративное устройство</translation>
 <translation id="1905710495812624430">Превышено максимально допустимое число попыток.</translation>
 <translation id="1930797645656624981">Выбор способа ввода в Chrome OS</translation>
+<translation id="1947737735496445907">Напечатано</translation>
 <translation id="1979103255016296513">Истек срок изменения пароля</translation>
 <translation id="2049639323467105390">Это устройство находится в домене <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Включите Bluetooth, чтобы найти устройства</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Сервисы</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
 <translation id="3008341117444806826">ОБНОВИТЬ</translation>
+<translation id="3091839911843451378">Сбой: остановка работы</translation>
+<translation id="3268178239013324452">Сбой: крышка открыта</translation>
 <translation id="3369013195428705271">Очистить историю печати? Текущие задания печати не будут удалены.</translation>
+<translation id="3456078764689556234">Напечатано страниц: <ph name="PRINTED_PAGES" /> из <ph name="TOTAL_PAGES" />.</translation>
 <translation id="3515615323037921860">Задания печати</translation>
+<translation id="3527036260304016759">Сбой: неизвестная ошибка</translation>
 <translation id="3749289110408117711">Название файла</translation>
 <translation id="38114475217616659">Очистить всю историю</translation>
 <translation id="3820172043799983114">Неверный PIN-код.</translation>
 <translation id="3838338534323494292">Новый пароль</translation>
+<translation id="3953601359945991637">Файл "<ph name="DOCUMENT_TITLE" />", принтер "<ph name="PRINTER_NAME" />", дата – <ph name="CREATION_TIME" />, напечатано страниц: <ph name="PRINTED_PAGE_NUMBER" /> из <ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451">Это управляемое устройство. Администратору домена <ph name="ENROLLMENT_DOMAIN" /> доступна информация обо всех действиях пользователя, в том числе о посещенных сайтах, используемом адресе электронной почты и введенных паролях.</translation>
+<translation id="4003384961948020559">Сбой: выходной лоток заполнен</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Срок действия пароля истекает через <ph name="TIME" /></translation>
+<translation id="428217921675623177">Задания печати удаляются после хранения в течение 90 дней</translation>
 <translation id="4429881212383817840">Срок действия билета Kerberos истекает</translation>
 <translation id="445059817448385655">Старый пароль</translation>
 <translation id="467510802200863975">Пароли не совпадают.</translation>
@@ -37,24 +46,31 @@
 Попробуйте озвучить запрос, нажав на значок микрофона.</translation>
 <translation id="5222676887888702881">Выйти</translation>
 <translation id="5317780077021120954">Сохранить</translation>
+<translation id="5326394068492324457">Файл "<ph name="DOCUMENT_TITLE" />", принтер "<ph name="PRINTER_NAME" />", дата – <ph name="CREATION_TIME" />, состояние: "<ph name="COMPLETION_STATUS" />"</translation>
 <translation id="5332948983412042822">Смените пароль как можно скорее.</translation>
 <translation id="5457599981699367932">Войти в гостевой режим</translation>
 <translation id="54609108002486618">Автоматическое управление</translation>
 <translation id="5832805196449965646">Добавить пользователя</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
+<translation id="6048107060512778456">Сбой: застряла бумага</translation>
 <translation id="6058625436358447366">Для завершения введите старый и новый пароли.</translation>
 <translation id="6106186594183574873">Для завершения введите старый пароль.</translation>
 <translation id="6146993107019042706">Чтобы завершить процедуру, введите новый пароль.</translation>
 <translation id="6517239166834772319">Возможности</translation>
+<translation id="6564646048574748301">Сбой: принтер недоступен</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="7162487448488904999">Галерея</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7690294790491645610">Введите новый пароль ещё раз</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="808894953321890993">Сменить пароль</translation>
 <translation id="8208861521865154048">Преимущества</translation>
 <translation id="8701136875688985581">Этот аккаунт находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, из которого можно отслеживать действия пользователя и удаленно изменять настройки.</translation>
+<translation id="871560550817059752">Сбой: закончились чернила</translation>
 <translation id="8747900814994928677">Подтверждение изменений</translation>
+<translation id="8919837981463578619">Сбой: нет лотка для бумаги</translation>
+<translation id="8928727111548978589">Сбой: закончилась бумага</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Осталось попыток: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Обновите билет для аккаунта <ph name="PRINCIPAL_NAME" />.</translation>
 <translation id="9111102763498581341">Разблокировать</translation>

@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Kopierat</translation>
 <translation id="2822354292072154809">Vill du återställa alla webbplatsbehörigheter för <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Webbplats</translation>
+<translation id="2874939134665556319">Föregående spår</translation>
 <translation id="2910701580606108292">Fråga innan webbplatser tillåts att spela upp skyddat innehåll</translation>
 <translation id="2913331724188855103">Tillåt att webbplatser sparar och läser cookiedata (rekommenderas)</translation>
 <translation id="2968755619301702150">Certifikatvisare</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Synkronisera i bakgrunden</translation>
 <translation id="3822502789641063741">Rensa webbplatslagring?</translation>
 <translation id="385051799172605136">Bakåt</translation>
+<translation id="3859306556332390985">Sök framåt</translation>
 <translation id="3955193568934677022">Tillåt att skyddat innehåll spelas upp på webbplatser (rekommenderas)</translation>
 <translation id="3987993985790029246">Kopiera länk</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/?</translation>
 <translation id="4002066346123236978">Titel</translation>
 <translation id="4008040567710660924">Tillåt cookies för en enskild webbplats.</translation>
+<translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4165986682804962316">Platsinställningar</translation>
 <translation id="4226663524361240545">Aviseringar kan göra att enheten vibrerar</translation>
 <translation id="4242533952199664413">Öppna Inställningar</translation>
 <translation id="4259722352634471385">Webbadressen har blockerats: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Tillåts</translation>
+<translation id="429312253194641664">Media spelas upp på en webbplats</translation>
 <translation id="4433925000917964731">Lite-sida tillhandahållen av Google</translation>
 <translation id="4434045419905280838">Popup och omdirigeringar</translation>
 <translation id="445467742685312942">Tillåt att webbplatser spelar upp skyddat innehåll</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Flytta ned</translation>
 <translation id="6766622839693428701">Svep nedåt när du vill stänga.</translation>
 <translation id="6782111308708962316">Hindra att webbplatser från tredje part sparar och läser cookiedata</translation>
+<translation id="6790428901817661496">Spela</translation>
 <translation id="6818926723028410516">Välj objekt</translation>
 <translation id="6864395892908308021">Enheten kan inte läsa NFC</translation>
 <translation id="6910211073230771657">Borttagen</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">En webbplats använder kameran och mikrofonen</translation>
 <translation id="8380167699614421159">Påträngande eller vilseledande annonser visas på den här webbplatsen</translation>
 <translation id="8394832520002899662">Återgå till webbplatsen genom att trycka här</translation>
+<translation id="8441146129660941386">Sök bakåt</translation>
 <translation id="8447861592752582886">Återkalla enhetsbehörighet</translation>
 <translation id="8463851957836045671">Webbplatsen är snabb</translation>
 <translation id="851751545965956758">Förhindra att webbplatser ansluter till enheter</translation>

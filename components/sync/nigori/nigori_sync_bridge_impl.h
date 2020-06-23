@@ -147,8 +147,9 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // just won't be updated.
   void MaybeNotifyBootstrapTokenUpdated() const;
 
-  // Queues keystore rotation if current state assume it should happen.
-  void MaybeTriggerKeystoreKeyRotation();
+  // Queues keystore rotation or full keystore migration if current state
+  // assumes it should happen.
+  void MaybeTriggerKeystoreReencryption();
 
   // Prior to USS keystore keys were stored in preferences. To avoid redundant
   // requests to the server and make USS implementation more robust against

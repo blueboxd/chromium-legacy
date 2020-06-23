@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">تم النسخ</translation>
 <translation id="2822354292072154809">هل تريد فعلاً إعادة ضبط جميع أذونات الموقع الإلكتروني للكائن <ph name="CHOSEN_OBJECT_NAME" />؟</translation>
 <translation id="2870560284913253234">الموقع</translation>
+<translation id="2874939134665556319">المقطع الصوتي السابق</translation>
 <translation id="2910701580606108292">السؤال قبل السماح للمواقع الإلكترونية بتشغيل المحتوى المحمي</translation>
 <translation id="2913331724188855103">السماح للمواقع الإلكترونية بحفظ بيانات ملفات تعريف الارتباط وقراءتها (موصى به)</translation>
 <translation id="2968755619301702150">عارض الشهادات</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">المزامنة في الخلفية</translation>
 <translation id="3822502789641063741">هل تريد محو مساحة تخزين المواقع؟</translation>
 <translation id="385051799172605136">الرجوع إلى الوراء</translation>
+<translation id="3859306556332390985">الانتقال للأمام</translation>
 <translation id="3955193568934677022">السماح للمواقع الإلكترونية بتشغيل المحتوى المحمي (مُستحسَن)</translation>
 <translation id="3987993985790029246">نسخ الرابط</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">العنوان</translation>
 <translation id="4008040567710660924">السماح لموقع إلكتروني معيّن بتشغيل ملفات تعريف الارتباط</translation>
+<translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4165986682804962316">إعدادات المواقع الإلكترونية</translation>
 <translation id="4226663524361240545">يمكن أن تؤدي الإشعارات إلى اهتزاز الجهاز</translation>
 <translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="4259722352634471385">التنقل محظور: <ph name="URL" /></translation>
 <translation id="4278390842282768270">منح الإذن</translation>
+<translation id="429312253194641664">تفعيل موقع إلكتروني للوسائط</translation>
 <translation id="4433925000917964731">‏نسخة خفيفة تقدِّمها Google</translation>
 <translation id="4434045419905280838">النوافذ المنبثقة وإعادة التوجيه</translation>
 <translation id="445467742685312942">السماح للمواقع الإلكترونية بتشغيل المحتوى المَحمي</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">الانتقال إلى الأسفل</translation>
 <translation id="6766622839693428701">يمكنك التمرير السريع للأسفل للإغلاق.</translation>
 <translation id="6782111308708962316">منع المواقع الإلكترونية التابعة لجهات خارجية من حفظ بيانات ملفات تعريف الارتباط وقراءتها</translation>
+<translation id="6790428901817661496">التشغيل</translation>
 <translation id="6818926723028410516">اختيار عناصر</translation>
 <translation id="6864395892908308021">‏يتعذّر على هذا الجهاز قراءة NFC.</translation>
 <translation id="6910211073230771657">تم الحذف</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">هناك موقع إلكتروني يستخدم الميكروفون والكاميرا.</translation>
 <translation id="8380167699614421159">يعرض هذا الموقع الإلكتروني إعلانات مضلِّلة أو غير مرغوب فيها</translation>
 <translation id="8394832520002899662">يُرجى النقر للرجوع إلى الموقع الإلكتروني.</translation>
+<translation id="8441146129660941386">الرجوع للوراء</translation>
 <translation id="8447861592752582886">إبطال إذن الجهاز</translation>
 <translation id="8463851957836045671">الموقع الإلكتروني سريع</translation>
 <translation id="851751545965956758">حظر المواقع الإلكترونية من الاتصال بأجهزة</translation>

@@ -262,12 +262,6 @@ base::Optional<int> FrameSequenceTrackerCollection::TakeLastMainPercent() {
   return throughput_ukm_reporter_->TakeLastMainPercent();
 }
 
-base::Optional<int>
-FrameSequenceTrackerCollection::CurrentUniversalThroughput() {
-  DCHECK(throughput_ukm_reporter_);
-  return throughput_ukm_reporter_->current_universal_throughput();
-}
-
 void FrameSequenceTrackerCollection::ComputeUniversalThroughputForTesting() {
   DCHECK(throughput_ukm_reporter_);
   const auto type = FrameSequenceTrackerType::kUniversal;

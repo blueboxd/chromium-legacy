@@ -42,27 +42,14 @@ const base::Feature kHideSteadyStateUrlTrivialSubdomains{
     "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature used to hide the path, query and ref from steady state URLs
-// displayed in the toolbar. It is restored during editing.
-const base::Feature kHideSteadyStateUrlPathQueryAndRef {
-  "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef",
-#if defined(OS_IOS)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-
 // Feature used to reveal the path, query and ref from steady state URLs
-// on hover. Only has any effect when
-// OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef is enabled.
+// on hover.
 const base::Feature kRevealSteadyStateUrlPathQueryAndRefOnHover{
     "OmniboxUIExperimentRevealSteadyStateUrlPathQueryAndRefOnHover",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature used to hide the path, query and ref from steady state URLs
-// on interaction with the page. Only has any effect when
-// OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRef is enabled.
+// on interaction with the page.
 const base::Feature kHideSteadyStateUrlPathQueryAndRefOnInteraction{
     "OmniboxUIExperimentHideSteadyStateUrlPathQueryAndRefOnInteraction",
     base::FEATURE_DISABLED_BY_DEFAULT};

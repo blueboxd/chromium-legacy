@@ -148,10 +148,15 @@ function setupEvents() {
     });
   }
   if (lookalike) {
+    // Lookalike interstitials with a suggested URL have a link in the title:
+    // "Did you mean <link>example.com</link>?". Handle those clicks. Lookalike
+    // interstitails without a suggested URL don't have this link.
     const dontProceedLink = 'dont-proceed-link';
-    $(dontProceedLink).addEventListener('click', function(event) {
-      sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
-    });
+    if ($(dontProceedLink)) {
+      $(dontProceedLink).addEventListener('click', function(event) {
+        sendCommand(SecurityInterstitialCommandId.CMD_DONT_PROCEED);
+      });
+    }
   }
 
   if (overridable) {

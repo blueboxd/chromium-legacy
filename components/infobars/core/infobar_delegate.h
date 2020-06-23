@@ -167,6 +167,7 @@ class InfoBarDelegate {
     SYNC_ERROR_INFOBAR_DELEGATE_ANDROID = 97,
     MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 98,
     CONDITIONAL_TAB_STRIP_INFOBAR_ANDROID = 99,
+    LITE_MODE_HTTPS_IMAGE_COMPRESSION_INFOBAR_ANDROID = 100,
   };
 
   // Describes navigation events, used to decide whether infobars should be

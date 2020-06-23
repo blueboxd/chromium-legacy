@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "cc/paint/paint_recorder.h"
 #include "ui/compositor/compositor_export.h"

@@ -5,7 +5,9 @@ include_rules = [
     "+base/sampling_heap_profiler/poisson_allocation_sampler.h",
     "+base/sampling_heap_profiler/sampling_heap_profiler.h",
     # for base::GetUniqueIdForProcess
+    "+base/process/process.h",
     "+base/process/process_handle.h",
+    "+base/process/process_metrics.h",
     "+cc/trees/transform_node.h",
     "+third_party/inspector_protocol/crdtp",
     "+third_party/icu/source/common/unicode/locid.h",

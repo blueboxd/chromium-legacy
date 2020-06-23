@@ -25,11 +25,11 @@ void GetPlatformExtraDisplayAttribs(EGLenum platform_type,
   // ANGLE_NULL doesn't use the visual, and may run without X11 where we can't
   // get it anyway.
   if (platform_type != EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE) {
-    Visual* visual;
-    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-        true, &visual, nullptr, nullptr, nullptr);
+    x11::VisualId visual_id;
+    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(true, &visual_id,
+                                                             nullptr, nullptr);
     attributes->push_back(EGL_X11_VISUAL_ID_ANGLE);
-    attributes->push_back(static_cast<EGLAttrib>(XVisualIDFromVisual(visual)));
+    attributes->push_back(static_cast<EGLAttrib>(visual_id));
   }
 }
 
@@ -38,8 +38,10 @@ void ChoosePlatformCustomAlphaAndBufferSize(EGLint* alpha_size,
   // If we're using ANGLE_NULL, we may not have a display, in which case we
   // can't use XVisualManager.
   if (gl::GLSurfaceEGL::GetNativeDisplay() != EGL_DEFAULT_DISPLAY) {
-    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(
-        true, nullptr, buffer_size, nullptr, nullptr);
+    uint8_t depth;
+    ui::XVisualManager::GetInstance()->ChooseVisualForWindow(true, nullptr,
+                                                             &depth, nullptr);
+    *buffer_size = depth;
     *alpha_size = *buffer_size == 32 ? 8 : 0;
   }
 }

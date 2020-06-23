@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/upgrade_detector/build_state.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state_handler.h"
@@ -185,7 +186,8 @@ void MinimumVersionPolicyHandler::OnPolicyChanged() {
           base::BindOnce(&MinimumVersionPolicyHandler::OnPolicyChanged,
                          weak_factory_.GetWeakPtr()));
   if (status != chromeos::CrosSettingsProvider::TRUSTED ||
-      !IsPolicyApplicable())
+      !IsPolicyApplicable() ||
+      !chromeos::features::IsMinimumChromeVersionEnabled())
     return;
 
   const base::ListValue* entries;

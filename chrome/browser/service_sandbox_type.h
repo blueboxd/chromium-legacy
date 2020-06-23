@@ -34,6 +34,21 @@ content::GetServiceSandboxType<chrome::mojom::RemovableStorageWriter>() {
 #endif  // !defined(OS_WIN)
 }
 
+// chrome::mojom::UtilReadIcon
+#if defined(OS_WIN)
+namespace chrome {
+namespace mojom {
+class UtilReadIcon;
+}
+}  // namespace chrome
+
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<chrome::mojom::UtilReadIcon>() {
+  return content::SandboxType::kIconReader;
+}
+#endif  // defined(OS_WIN)
+
 // chrome::mojom::UtilWin
 #if defined(OS_WIN)
 namespace chrome {

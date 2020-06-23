@@ -2488,7 +2488,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4077919383365622693">Alle data og informasjonskapsler som er lagret for <ph name="SITE" />, slettes.</translation>
 <translation id="4079140982534148664">Bruk forbedret stavekontroll</translation>
 <translation id="4081242589061676262">Kan ikke caste filen.</translation>
-<translation id="4083648855651348665">For å fortsette, skriv inn passordet for Google-kontoen. Da blir passord fra Google-kontoen tilgjengelige på denne enheten.</translation>
 <translation id="4084682180776658562">Legg til bokmerke</translation>
 <translation id="4084835346725913160">Lukk <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Spør når et nettsted vil ha tilgang til serielle porter</translation>
@@ -2793,6 +2792,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4508765956121923607">Vis &amp;kilde</translation>
 <translation id="4510479820467554003">Liste over foreldrekontoer</translation>
 <translation id="4510614391273086606">Linux-filer og -apper gjenopprettes til den sikkerhetskopierte tilstanden.</translation>
+<translation id="4513946894732546136">Google Feedback</translation>
 <translation id="451407183922382411">Levert av <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">Spill av videoen eller sett den på pause</translation>
 <translation id="451515744433878153">Fjern</translation>
@@ -3890,7 +3890,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5935656526031444304">Administrer Safe Browsing</translation>
 <translation id="5938002010494270685">En sikkerhetsoppgradering er tilgjengelig</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
-<translation id="594108735267876762">Oppdater enheten innen <ph name="COUNT" /> dager</translation>
 <translation id="5941153596444580863">Legg til person …</translation>
 <translation id="5941343993301164315">Logg på <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimer</translation>
@@ -4239,7 +4238,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6390799748543157332">Sider du åpner i dette vinduet, vises ikke i nettloggen og de etterlater ingen andre spor (f.eks. informasjonskapsler) på datamaskinen etter at du har lukket alle åpne gjestevinduer. Filer du laster ned, blir imidlertid lagret.</translation>
 <translation id="6393156038355142111">Foreslå et sterkt passord</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />systeminformasjon<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />-målinger<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">Siste dag for oppdatering av enheten</translation>
 <translation id="6396988158856674517">Blokkér nettsteder fra å bruke bevegelsessensorer</translation>
 <translation id="6398715114293939307">Fjern Google Play-butikken</translation>
 <translation id="6398765197997659313">Avslutt fullskjerm</translation>
@@ -4605,7 +4603,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6880587130513028875">Bilder er blokkert på siden.</translation>
 <translation id="6882836635272038266">Standardbeskyttelse mot nettsteder, nedlastinger og utvidelser som anses som farlige.</translation>
 <translation id="6883319974225028188">Beklager. Systemet kunne ikke lagre enhetskonfigurasjonen.</translation>
-<translation id="6885064901301703683">Lagre én gang – bruk overalt</translation>
 <translation id="6885771755599377173">Forhåndsvisning av systeminformasjon</translation>
 <translation id="6886476658664859389">NFC-sikkerhetsnøkkel</translation>
 <translation id="6886871292305414135">Åpne linken i en ny &amp;fane</translation>
@@ -5042,6 +5039,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7427798576651127129">Ring fra <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">Fant ingen HID-enheter</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Åpne alle i &amp;nye vinduer}=1{Åpne i et &amp;nytt vindu}other{Åpne alle (#) i &amp;nye vinduer}}</translation>
+<translation id="7433957986129316853">Nei</translation>
 <translation id="7434509671034404296">Utvikler</translation>
 <translation id="7434635829372401939">Synkroniser innstillingene dine</translation>
 <translation id="7434757724413878233">Museakselerasjon</translation>
@@ -5933,7 +5931,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8545575359873600875">Beklager, men vi fikk ikke bekreftet passordet ditt. Administratoren for den administrerte brukeren kan ha endret passordet nå nylig. Hvis dette er tilfelle, blir det nye passordet gjeldende fra neste gang du logger på. Prøv å bruke det gamle passordet.</translation>
 <translation id="8546186510985480118">Det er lite plass på enheten</translation>
 <translation id="8546306075665861288">Bildebuffer</translation>
-<translation id="8546541260734613940">[*.]eteksempel.no</translation>
 <translation id="854655314928502177">Nettadresse for automatisk oppdagelse av proxy-tjener</translation>
 <translation id="8546930481464505581">Tilpass Touch Bar</translation>
 <translation id="8547013269961688403">Aktivér lupen for hele skjermen</translation>
@@ -6521,6 +6518,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="983511809958454316">Denne funksjonen støttes ikke i VR</translation>
 <translation id="984275831282074731">Betalingsmåter</translation>
 <translation id="98515147261107953">Liggende</translation>
+<translation id="987264212798334818">Generelt</translation>
 <translation id="987897973846887088">Ingen bilder er tilgjengelige</translation>
 <translation id="988978206646512040">Tomme passordfraser er ikke tillatt</translation>
 <translation id="992032470292211616">Utvidelser, apper og temaer kan skade enheten din. Er du sikker på at du vil fortsette?</translation>

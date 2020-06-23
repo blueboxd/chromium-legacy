@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">Дополнителни информации (изборно)</translation>
 <translation id="1017280919048282932">&amp;Додај во речник</translation>
 <translation id="1018656279737460067">Откажано</translation>
+<translation id="1022489261739821355">Се прикажуваат лозинки од <ph name="BEGIN_LINK" />сметката на Google<ph name="END_LINK" /></translation>
 <translation id="1023873740278604399">Поместете го прстот малку за да ги додадете сите различни делови од отпечатокот.</translation>
 <translation id="1026655690966755180">Додајте порта</translation>
 <translation id="1026822031284433028">Вчитај слика</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">Мора да ја потврдите регистрацијата на вашиот печатач за да го завршите овој процес - проверете сега.</translation>
 <translation id="1900305421498694955">Апликациите од Google Play може да бараат целосен пристап до системот на датотеки за да читаат и да запишуваат датотеки на надворешни уреди за складирање. Датотеките и папките создадени на уредот се видливи за сите што го користат надворешниот диск. <ph name="LINK_BEGIN" />Дознајте повеќе<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Избери ги &amp;сите</translation>
+<translation id="1901396183631570154">Chrome не можеше да ги зачува лозинкиве во сметката на Google. Сѐ уште може да ги зачувате на уредов.</translation>
 <translation id="1905375423839394163">Име на уредот Chromebook</translation>
 <translation id="1906828677882361942">Не дозволувај ниту еден сајт да пристапува до сериските порти</translation>
 <translation id="1909880997794698664">Дали сигурно сакате да го зачувате уредот во режим на киоск?</translation>
@@ -1187,6 +1189,7 @@
 <translation id="2476578072172137802">Поставки на локација</translation>
 <translation id="2478176599153288112">Дозволи на медиумски датотеки за „<ph name="EXTENSION" />“</translation>
 <translation id="247949520305900375">Сподели го аудиото</translation>
+<translation id="248003956660572823">Лозинките не се зачувани</translation>
 <translation id="2480868415629598489">Измена на податоците што ги копирате</translation>
 <translation id="2482878487686419369">Известувања</translation>
 <translation id="2484959914739448251">За да ги избришете податоците од прелистувањето од сите ваши синхронизирани уреди и од сметката на Google, <ph name="BEGIN_LINK" />внесете ја лозинката<ph name="END_LINK" />.</translation>
@@ -2490,7 +2493,6 @@
 <translation id="4077919383365622693">Сите податоци и колачиња складирани од <ph name="SITE" /> ќе се избришат.</translation>
 <translation id="4079140982534148664">Користи подобрена проверка на правопис</translation>
 <translation id="4081242589061676262">Не може да се емитува датотеката.</translation>
-<translation id="4083648855651348665">За да продолжите, внесете ја лозинката за сметката на Google за да овозможите лозинките од вашата сметка на Google да бидат достапни на уредов.</translation>
 <translation id="4084682180776658562">Обележувач</translation>
 <translation id="4084835346725913160">Затвори <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Прашај кога некој сајт сака да пристапи до сериските порти</translation>
@@ -2795,6 +2797,7 @@
 <translation id="4508765956121923607">Прикажи и&amp;звор</translation>
 <translation id="4510479820467554003">Список со сметки на родители</translation>
 <translation id="4510614391273086606">Датотеките и апликациите на Linux се враќаат од бекапот.</translation>
+<translation id="4513946894732546136">Повратни информации</translation>
 <translation id="451407183922382411">Овозможено од <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">Копче за пуштање или паузирање видео</translation>
 <translation id="451515744433878153">Отстрани</translation>
@@ -3365,6 +3368,7 @@
 <translation id="5275352920323889391">Куче</translation>
 <translation id="527605982717517565">Секогаш дозволи JavaScript на <ph name="HOST" /></translation>
 <translation id="5278823018825269962">ID на статусот</translation>
+<translation id="5280064835262749532">Ажурирајте ги акредитивите за <ph name="SHARE_PATH" /></translation>
 <translation id="5280174558369304332">Екстензии за отстранување:</translation>
 <translation id="5280243692621919988">Бриши ги колачињата и податоците за сајтовите при затворање на сите прозорци</translation>
 <translation id="5280426389926346830">Дали да се создаде кратенка?</translation>
@@ -3891,7 +3895,6 @@
 <translation id="5935656526031444304">Управувајте со „Безбедното прелистување“</translation>
 <translation id="5938002010494270685">Достапна е надградба за безбедност</translation>
 <translation id="5939518447894949180">Ресетирај</translation>
-<translation id="594108735267876762">Ажурирајте го уредот во рок од <ph name="COUNT" /> дена</translation>
 <translation id="5941153596444580863">Додај лице...</translation>
 <translation id="5941343993301164315">Најавете се на <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Минимизирај</translation>
@@ -4240,7 +4243,6 @@
 <translation id="6390799748543157332">Страниците што ги гледате во прозорецов нема да се појават во историјата на прелистувачот и нема да остават никакви траги, како на пр., колачиња, во компјутерот откако ќе ги затворите сите отворени прозорци на Гостинот. Сепак, ќе се зачуваат сите датотеки што ќе ги преземете.</translation>
 <translation id="6393156038355142111">Предложи силна лозинка</translation>
 <translation id="6395423953133416962">Испрати <ph name="BEGIN_LINK1" />информации за системот<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />метриката<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">Последен ден за ажурирање на уредот</translation>
 <translation id="6396988158856674517">Блокирајте го користењето на сензорите за движење за сајтовите</translation>
 <translation id="6398715114293939307">Отстранете ја Google Play Store</translation>
 <translation id="6398765197997659313">Излези од цел екран</translation>
@@ -4606,7 +4608,6 @@
 <translation id="6880587130513028875">Сликите на страницата се блокирани.</translation>
 <translation id="6882836635272038266">Стандардна заштита од веб-сајтови, преземања и екстензии за коишто се знае дека се опасни.</translation>
 <translation id="6883319974225028188">Системот не успеа да ја зачува конфигурацијата на уредот.</translation>
-<translation id="6885064901301703683">Складирајте еднаш, користете насекаде</translation>
 <translation id="6885771755599377173">Преглед на информациите за системот</translation>
 <translation id="6886476658664859389">NFC-безбедносен клуч</translation>
 <translation id="6886871292305414135">Отвори ја врската во нова &amp;картичка</translation>
@@ -4661,6 +4662,7 @@
 <translation id="6950627417367801484">Врати ги апликациите</translation>
 <translation id="6950943362443484797">Ќе ја инсталираме апликацијата за вас</translation>
 <translation id="6951153907720526401">Ракувачи со плаќања</translation>
+<translation id="6952242901357037157">Тука може да се прикажуваат и лозинките од <ph name="BEGIN_LINK" />сметката на Google<ph name="END_LINK" /></translation>
 <translation id="6953878494808481632">Поврзани информации</translation>
 <translation id="6955446738988643816">Провери појавен прозорец</translation>
 <translation id="6955535239952325894">Поставкава е оневозможена на управувани прелистувачи</translation>
@@ -4728,6 +4730,7 @@
 <translation id="7022562585984256452">Вашата почетна страница е поставена.</translation>
 <translation id="7025082428878635038">Претставуваме нов начин на движење</translation>
 <translation id="7025190659207909717">Управување со услуги од мобилни податоци</translation>
+<translation id="7029307918966275733">Нема инсталирано Crostini. Инсталирајте Crostini за да ги прегледате благодарностите.</translation>
 <translation id="7029809446516969842">Лозинки</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Поврзана е сериска порта</translation>
 <translation id="7031962166228839643">Се подготвува ТПМ, почекајте (ова може да потрае неколку минути)…</translation>
@@ -5041,6 +5044,7 @@
 <translation id="7427798576651127129">Јавете се од <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">Не се најдени HID-уреди</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Отвори ги сите во &amp;нов прозорец}=1{Отвори во &amp;нов прозорец}one{Отвори ги сите (#) во &amp;нов прозорец}other{Отвори ги сите (#) во &amp;нов прозорец}}</translation>
+<translation id="7433957986129316853">Задржи</translation>
 <translation id="7434509671034404296">Програмер</translation>
 <translation id="7434635829372401939">Синхронизирајте ги поставките</translation>
 <translation id="7434757724413878233">Забрзување на глувчето</translation>
@@ -5934,7 +5938,6 @@
 <translation id="8545575359873600875">Извинете, вашата лозинка не може да се провери. Управникот на овој надгледуван корисник можеби ја сменил лозинката неодамна. Доколку е тоа така, новата лозинка ќе се примени следниот пат кога ќе се пријавите. Обидете се да ја користите вашата стара лозинка.</translation>
 <translation id="8546186510985480118">Уредот нема доволно простор</translation>
 <translation id="8546306075665861288">Кеш на слика</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">Автоматско откривање линк на прокси на веб:</translation>
 <translation id="8546930481464505581">Приспособи ја лентата на допир</translation>
 <translation id="8547013269961688403">Овозможи лупа за цел екран</translation>
@@ -6522,6 +6525,7 @@
 <translation id="983511809958454316">Функцијава не е поддржана во VR</translation>
 <translation id="984275831282074731">Начини на плаќање</translation>
 <translation id="98515147261107953">Пејзаж</translation>
+<translation id="987264212798334818">Општо</translation>
 <translation id="987897973846887088">Нема слики на располагање</translation>
 <translation id="988978206646512040">Не е дозволена празна лозинка</translation>
 <translation id="992032470292211616">Наставки, апликации и теми може да му наштетат на вашиот уред. Дали сте сигурни дека сакате да продолжите?</translation>

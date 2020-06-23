@@ -94,7 +94,6 @@
 <translation id="2073572773299281212">Ativo há <ph name="DAYS" /> dias</translation>
 <translation id="2074131957428911366">Pode escolher o que pretende sincronizar nas <ph name="BEGIN_LINK" />definições<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Anular</translation>
-<translation id="2081417079511601293">Bloquear terceiros na Navegação anónima</translation>
 <translation id="209018056901015185">Pedir site para computador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
@@ -342,6 +341,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5150492518600715772">Enviar para o dispositivo</translation>
 <translation id="5181140330217080051">A transferir</translation>
 <translation id="5186185447130319458">Privado</translation>
+<translation id="5188482106078495165">A sua definição de cookies aplica-se a todos os separadores. Para aplicar uma nova definição a um separador aberto, atualize o separador.</translation>
 <translation id="5190835502935405962">Barra de marcadores</translation>
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5228579091201413441">Ativar a sincronização</translation>
@@ -379,6 +379,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="567881659373499783">Versão <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5706552126692816153">Ativo há 1 dia</translation>
 <translation id="5711039611392265845">Para obter mais definições relacionadas com privacidade, segurança e recolha de dados, consulte <ph name="BEGIN_LINK" />Sincronização e serviços Google<ph name="END_LINK" />.</translation>
+<translation id="5724941645893276623">Para navegar na Web em privado, adicione um novo separador.</translation>
 <translation id="5728700505257787410">Lamentamos, mas houve um problema ao iniciar sessão na sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de início de sessão na conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>
 <translation id="5738887413654608789">Isto permite descobrir páginas Web relevantes com base no ambiente à sua volta.</translation>
@@ -465,7 +466,9 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens eliminados</translation>
 <translation id="651505212789431520">Pretende cancelar a sincronização? Pode ativar a sincronização em qualquer altura nas Definições.</translation>
 <translation id="6561262006871132942">Aumentar zoom</translation>
+<translation id="6585618849026997638">Pode regressar a uma página importante para si ao adicionar um marcador.</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
+<translation id="6624219055418309072">Bloquear na Navegação anónima</translation>
 <translation id="6628106477656132239">Data de validade inválida</translation>
 <translation id="6638511529934826365">Aplicar zoom no texto…</translation>
 <translation id="6642362222295953972">Mudar para um separador existente</translation>
@@ -509,6 +512,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7006788746334555276">Definições de Conteúdo</translation>
 <translation id="7015203776128479407">A configuração da sincronização inicial não foi concluída. A sincronização está desativada.</translation>
 <translation id="7029809446516969842">Palavras-passe</translation>
+<translation id="7030675613184250187">Pode guardar páginas na sua lista de leitura para as encontrar novamente ou para as ler offline.</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceitar e mudar de contas</translation>
 <translation id="7099761977003084116">Separadores recentes</translation>

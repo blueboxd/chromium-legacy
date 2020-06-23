@@ -216,6 +216,37 @@ public class HomepagePromoTest {
                         METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
     }
 
+    @Test
+    @SmallTest
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O, message = "crbug.com/1097179")
+    public void testSetUp_SuppressingSignInPromo() {
+        Mockito.doReturn(true).when(mMockVariationManager).isSuppressingSignInPromo();
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+
+        Assert.assertTrue("Homepage Promo should match creation criteria.",
+                HomepagePromoUtils.shouldCreatePromo(null));
+
+        View homepagePromo = mActivityTestRule.getActivity().findViewById(R.id.homepage_promo);
+        Assert.assertNotNull("Homepage promo should be added to NTP.", homepagePromo);
+        Assert.assertEquals(
+                "Homepage promo should be visible.", View.VISIBLE, homepagePromo.getVisibility());
+
+        Assert.assertEquals("Promo created should be recorded once.", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.CREATED));
+
+        // Dismiss the HomepagePromo in shared preference, then load another NTP page.
+        HomepagePromoUtils.setPromoDismissedInSharedPreference(true);
+        mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
+
+        Assert.assertNotNull("SignInPromo should be displayed on the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.signin_promo_view_container));
+        Assert.assertFalse("Homepage Promo should not match creation criteria.",
+                HomepagePromoUtils.shouldCreatePromo(null));
+        Assert.assertNull("Homepage promo should not show on the screen.",
+                mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+    }
+
     /**
      * Clicking on dismiss button should hide the promo.
      */

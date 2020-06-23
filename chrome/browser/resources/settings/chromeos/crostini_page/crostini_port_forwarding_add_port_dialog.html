@@ -11,11 +11,6 @@
 <dom-module id="settings-crostini-add-port-dialog">
   <template>
     <style include="settings-shared md-select">
-      #errorText {
-        color: var(--settings-error-color);
-        float: left;
-      }
-
       #portNumberInput {
         padding-inline-end: 20px;
         width: 376px;
@@ -53,8 +48,14 @@
       <div slot="body">
         <div class="input-container">
           <cr-input id="portNumberInput"
-              label="$i18n{crostiniPortForwardingListPortNumber}"
-              aria-disabled="false">
+              label="$i18n{crostiniPortForwardingAddPortDialogPortNumberLabel}"
+              aria-disabled="false"
+              placeholder="$i18n{crostiniPortForwardingAddPortDialogPortNumberPlaceholder}"
+              error-message="[[portState_]]"
+              type="number"
+              min="1024"
+              max="65535"
+              on-blur="onBlur_">
           </cr-input>
           <div>
             <div id="label" class="cr-form-field-label placeholder-label"
@@ -76,16 +77,13 @@
         </div>
         <div slot="body">
           <cr-input id="portLabelInput"
-              label="$i18n{crostiniPortForwardingAddPortDialogLabel}"
+              label="$i18n{crostiniPortForwardingAddPortDialogLabelLabel}"
               aria-disabled="false"
               maxlength="50">
           </cr-input>
         </div>
       </div>
       <div slot="body" class="custom-body">
-        <span id="errorText">
-          [[portState_]]
-        </span>
         <div slot="button-container" class="custom-button-container">
           <cr-button id="cancel" class="cancel-button"
               on-click="onCancelTap_">$i18n{cancel}</cr-button>

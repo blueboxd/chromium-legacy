@@ -282,13 +282,10 @@ class CORE_EXPORT StyleMiscData : public RefCounted<StyleMiscData> {
 
   Length baseline_shift_value;
 
-  Color flood_color;
-  Color lighting_color;
+  StyleColor flood_color;
+  StyleColor lighting_color;
 
   float flood_opacity;
-
-  bool flood_color_is_current_color;
-  bool lighting_color_is_current_color;
 
  private:
   StyleMiscData();

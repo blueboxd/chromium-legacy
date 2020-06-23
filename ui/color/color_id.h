@@ -5,7 +5,7 @@
 #ifndef UI_COLOR_COLOR_ID_H_
 #define UI_COLOR_COLOR_ID_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 

@@ -7,8 +7,8 @@
 
 #include <map>
 
+#include "base/check.h"
 #include "base/containers/flat_map.h"
-#include "base/logging.h"
 #include "base/optional.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"

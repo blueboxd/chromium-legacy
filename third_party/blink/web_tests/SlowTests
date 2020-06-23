@@ -539,3 +539,6 @@ crbug.com/1043669 [ Mac ] inspector-protocol/emulation/set-vision-deficiency.js 
 crbug.com/1092121 fast/css/large-list-of-rules-crash.html [ Slow ]
 
 crbug.com/1042205 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Slow ]
+
+# Slow is the intended behavior
+crbug.com/1048136 http/tests/subresource_filter/overlay-popup-non-ad-followed-by-ad.html [ Slow ]

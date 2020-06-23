@@ -275,8 +275,10 @@ class RealboxDropdownElement extends PolymerElement {
    * @private
    */
   onHeaderFocusin_() {
-    // The header got focus. Unselect the selected match, if any.
-    this.unselect();
+    this.dispatchEvent(new CustomEvent('header-focusin', {
+      bubbles: true,
+      composed: true,
+    }));
   }
 
   /**

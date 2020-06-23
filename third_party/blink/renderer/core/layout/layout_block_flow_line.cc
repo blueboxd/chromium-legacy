@@ -363,6 +363,11 @@ RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
   return LastRootBox();
 }
 
+ETextAlign LayoutBlockFlow::TextAlignmentForLine(
+    bool ends_with_soft_break) const {
+  return StyleRef().GetTextAlign(!ends_with_soft_break);
+}
+
 static bool TextAlignmentNeedsTrailingSpace(ETextAlign text_align,
                                             const ComputedStyle& style) {
   switch (text_align) {
@@ -374,7 +379,6 @@ static bool TextAlignmentNeedsTrailingSpace(ETextAlign text_align,
     case ETextAlign::kCenter:
     case ETextAlign::kWebkitCenter:
     case ETextAlign::kJustify:
-    case ETextAlign::kInternalSpaceAround:
       return style.CollapseWhiteSpace();
     case ETextAlign::kStart:
       return style.CollapseWhiteSpace() && !style.IsLeftToRightDirection();
@@ -687,30 +691,9 @@ void LayoutBlockFlow::UpdateLogicalWidthForAlignment(
           StyleRef().IsLeftToRightDirection(), trailing_space_run, logical_left,
           total_logical_width, available_logical_width);
       break;
-
-    case ETextAlign::kInternalSpaceAround: {
-      int max_preferred_logical_width =
-          PreferredLogicalWidths().max_size.ToInt();
-      if (max_preferred_logical_width < available_logical_width) {
-        unsigned capped_count =
-            static_cast<unsigned>(LayoutUnit::Max().Floor());
-        capped_count = std::min(expansion_opportunity_count, capped_count);
-
-        // Inset the line by half the inter-ideograph expansion amount.
-        LayoutUnit inset =
-            (available_logical_width - max_preferred_logical_width) /
-            (capped_count + 1);
-        // For <rt>,  inset it by no more than a full-width ruby character on
-        // each side.
-        if (IsRubyText() && capped_count > 0)
-          inset = std::min(LayoutUnit(2 * StyleRef().FontSize()), inset);
-
-        logical_left += inset / 2;
-        available_logical_width -= inset;
-      }
-      FALLTHROUGH;
-    }
     case ETextAlign::kJustify:
+      AdjustInlineDirectionLineBounds(expansion_opportunity_count, logical_left,
+                                      available_logical_width);
       if (expansion_opportunity_count) {
         if (trailing_space_run) {
           total_logical_width -= trailing_space_run->box_->LogicalWidth();
@@ -838,9 +821,8 @@ BidiRun* LayoutBlockFlow::ComputeInlineDirectionPositionsForSegment(
     }
     if (r->line_layout_item_.IsText()) {
       LineLayoutText rt(r->line_layout_item_);
-      if ((text_align == ETextAlign::kJustify ||
-           text_align == ETextAlign::kInternalSpaceAround) &&
-          r != trailing_space_run && text_justify != TextJustify::kNone) {
+      if (text_align == ETextAlign::kJustify && r != trailing_space_run &&
+          text_justify != TextJustify::kNone) {
         if (!is_after_expansion)
           ToInlineTextBox(r->box_)->SetCanHaveLeadingExpansion(true);
         expansions.AddRunWithExpansions(*r, is_after_expansion, text_justify);
@@ -1184,9 +1166,9 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
             BidiStatus(direction, IsOverride(style_to_use.GetUnicodeBidi())));
       }
 
-      ETextAlign text_align = StyleRef().GetTextAlign(
-          end_of_line.AtEnd() ||
-          layout_state.GetLineInfo().PreviousLineBrokeCleanly());
+      ETextAlign text_align = TextAlignmentForLine(
+          !end_of_line.AtEnd() &&
+          !layout_state.GetLineInfo().PreviousLineBrokeCleanly());
       layout_state.GetLineInfo().SetTextAlign(text_align);
       resolver.SetNeedsTrailingSpace(
           TextAlignmentNeedsTrailingSpace(text_align, style_to_use));

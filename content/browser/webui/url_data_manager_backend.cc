@@ -43,6 +43,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/i18n_source_stream.h"
 #include "url/url_util.h"
@@ -164,20 +165,30 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
   // response headers.
   if (source->ShouldAddContentSecurityPolicy()) {
     std::string csp_header;
-    csp_header.append(source->GetContentSecurityPolicyChildSrc());
-    csp_header.append(source->GetContentSecurityPolicyDefaultSrc());
-    csp_header.append(source->GetContentSecurityPolicyImgSrc());
-    csp_header.append(source->GetContentSecurityPolicyMediaSrc());
-    csp_header.append(source->GetContentSecurityPolicyObjectSrc());
-    csp_header.append(source->GetContentSecurityPolicyScriptSrc());
-    csp_header.append(source->GetContentSecurityPolicyStyleSrc());
-    csp_header.append(source->GetContentSecurityPolicyWorkerSrc());
+
+    const network::mojom::CSPDirectiveName kAllDirectives[] = {
+        network::mojom::CSPDirectiveName::ChildSrc,
+        network::mojom::CSPDirectiveName::DefaultSrc,
+        network::mojom::CSPDirectiveName::ImgSrc,
+        network::mojom::CSPDirectiveName::MediaSrc,
+        network::mojom::CSPDirectiveName::ObjectSrc,
+        network::mojom::CSPDirectiveName::ScriptSrc,
+        network::mojom::CSPDirectiveName::StyleSrc,
+        network::mojom::CSPDirectiveName::WorkerSrc};
+
+    for (auto& directive : kAllDirectives) {
+      csp_header.append(source->GetContentSecurityPolicy(directive));
+    }
+
     // TODO(crbug.com/1051745): Both CSP frame ancestors and XFO headers may be
     // added to the response but frame ancestors would take precedence. In the
     // future, XFO will be removed so when that happens remove the check and
     // always add frame ancestors.
-    if (source->ShouldDenyXFrameOptions())
-      csp_header.append(source->GetContentSecurityPolicyFrameAncestors());
+    if (source->ShouldDenyXFrameOptions()) {
+      csp_header.append(source->GetContentSecurityPolicy(
+          network::mojom::CSPDirectiveName::FrameAncestors));
+    }
+
     headers->SetHeader(kChromeURLContentSecurityPolicyHeaderName, csp_header);
   }
 

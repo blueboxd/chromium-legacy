@@ -735,14 +735,13 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kFixed;
     case CSSPropertyID::kTextAlign:
       return (value_id >= CSSValueID::kWebkitAuto &&
-              value_id <= CSSValueID::kInternalSpaceAround) ||
+              value_id <= CSSValueID::kInternalCenter) ||
              value_id == CSSValueID::kStart || value_id == CSSValueID::kEnd;
     case CSSPropertyID::kTextAlignLast:
       return (value_id >= CSSValueID::kLeft &&
               value_id <= CSSValueID::kJustify) ||
              value_id == CSSValueID::kStart || value_id == CSSValueID::kEnd ||
-             value_id == CSSValueID::kAuto ||
-             value_id == CSSValueID::kInternalSpaceAround;
+             value_id == CSSValueID::kAuto;
     case CSSPropertyID::kTextAnchor:
       return value_id == CSSValueID::kStart ||
              value_id == CSSValueID::kMiddle || value_id == CSSValueID::kEnd;

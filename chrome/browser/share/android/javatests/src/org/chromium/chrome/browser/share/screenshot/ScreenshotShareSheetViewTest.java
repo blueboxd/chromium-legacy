@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.share.screenshot;
 
 import android.support.test.annotation.UiThreadTest;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -95,6 +96,42 @@ public class ScreenshotShareSheetViewTest extends DummyUiActivityTestCase {
         closeButton.performClick();
         Assert.assertTrue(mCloseClicked.get());
         mCloseClicked.set(false);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testClickDeleteToClose() {
+        View deleteButton = mScreenshotView.findViewById(R.id.delete);
+
+        Assert.assertFalse(mCloseClicked.get());
+        deleteButton.performClick();
+        Assert.assertTrue(mCloseClicked.get());
+        mCloseClicked.set(false);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testShare() {
+        View shareButton = mScreenshotView.findViewById(R.id.share);
+
+        Assert.assertFalse(mShareClicked.get());
+        shareButton.performClick();
+        Assert.assertTrue(mShareClicked.get());
+        mShareClicked.set(false);
+    }
+
+    @Test
+    @MediumTest
+    @UiThreadTest
+    public void testSave() {
+        View saveButton = mScreenshotView.findViewById(R.id.save);
+
+        Assert.assertFalse(mSaveClicked.get());
+        saveButton.performClick();
+        Assert.assertTrue(mSaveClicked.get());
+        mSaveClicked.set(false);
     }
 
     @Override

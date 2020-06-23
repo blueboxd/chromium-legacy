@@ -524,6 +524,30 @@ TEST_F(AXTreeSourceArcTest, AccessibleNameComputationFromDescendants) {
   data = GetSerializedNode(child2->id);
   ASSERT_TRUE(data.IsIgnored());
 
+  // Don't compute name from descendants for scrollable, e.g. ScrollView.
+  SetProperty(root, AXBooleanProperty::SCROLLABLE, true);
+
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedNode(root->id);
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+
+  SetProperty(root, AXBooleanProperty::SCROLLABLE, false);
+
+  // Don't compute name from descendants for virtual views, e.g. WebView.
+  root->is_virtual_node = true;
+  child1->is_virtual_node = true;
+  child2->is_virtual_node = true;
+
+  CallNotifyAccessibilityEvent(event.get());
+  data = GetSerializedNode(root->id);
+  ASSERT_FALSE(
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name));
+
+  root->is_virtual_node = false;
+  child1->is_virtual_node = false;
+  child2->is_virtual_node = false;
+
   // If one child is clickable, do not use clickable child.
   SetProperty(child1, AXBooleanProperty::CLICKABLE, true);
 
@@ -1400,6 +1424,8 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
 
   // |node2| is ignored by default because
   // AXBooleanProperty::IMPORTANCE has a default false value.
+
+  SetScreenReaderMode(true);
 
   CallNotifyAccessibilityEvent(event.get());
   EXPECT_EQ(1, GetDispatchedEventCount(ax::mojom::Event::kFocus));

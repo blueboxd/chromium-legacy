@@ -66,8 +66,6 @@ class MockSyncService : public SyncService {
   MOCK_METHOD1(RemoveObserver, void(SyncServiceObserver* observer));
   MOCK_CONST_METHOD1(HasObserver, bool(const SyncServiceObserver* observer));
 
-  MOCK_CONST_METHOD0(GetUserShare, UserShare*());
-
   MOCK_CONST_METHOD0(GetSyncTokenStatusForDebugging, SyncTokenStatus());
   MOCK_CONST_METHOD1(QueryDetailedSyncStatusForDebugging,
                      bool(SyncStatus* result));

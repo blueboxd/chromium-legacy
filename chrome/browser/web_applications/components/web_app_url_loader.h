@@ -44,6 +44,24 @@ class WebAppUrlLoader {
   WebAppUrlLoader();
   virtual ~WebAppUrlLoader();
 
+  // Navigates |web_contents| to about:blank to prepare for the next LoadUrl()
+  // call.
+  //
+  // We've observed some races when using LoadUrl() on previously navigated
+  // WebContents. Sometimes events from the last navigation are triggered after
+  // we start the new navigation, causing us to incorrectly run the callback
+  // with a redirect error.
+  //
+  // Clients of LoadUrl() should always call PrepareForLoad() before calling
+  // LoadUrl(). PrepareForLoad() will start a new navigation to about:blank and
+  // ignore all navigation events until we've successfully navigated to
+  // about:blank or timed out.
+  //
+  // Clients should check |callback| result and handle failure scenarios
+  // appropriately.
+  virtual void PrepareForLoad(content::WebContents* web_contents,
+                              ResultCallback callback);
+
   // Navigates |web_contents| to |url|, compares the resolved URL with
   // |url_comparison|, and runs callback with the result code.
   virtual void LoadUrl(const GURL& url,

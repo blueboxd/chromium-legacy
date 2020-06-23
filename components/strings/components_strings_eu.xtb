@@ -81,6 +81,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Saiatu cookieak garbituta<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Egiaztatu DNS ezarpen seguruak</translation>
 <translation id="1307966114820526988">Eginbide zaharkituak</translation>
+<translation id="1310581832770023220">Segurua ez den konexio baten bidez bidaliko dira inprimakiko datuak</translation>
 <translation id="131405271941274527"><ph name="URL" /> webguneak informazioa bidali eta jaso nahi du telefonoarekin NFC bidezko gailu bat ukituz gero</translation>
 <translation id="1314509827145471431">Koadernatu eskuinetik</translation>
 <translation id="1320233736580025032">Prc1 (gutun-azala)</translation>
@@ -1235,7 +1236,6 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="6240447795304464094">Google Pay-ren logotipoa</translation>
 <translation id="6241121617266208201">Ezkutatu iradokizunak</translation>
 <translation id="624499991300733384">Inprimatze-konposizioaren zerbitzua</translation>
-<translation id="6251924700383757765">Pribatutasun-gidalerroak</translation>
 <translation id="6254436959401408446">Ez dago fitxategia irekitzeko behar adina memoria</translation>
 <translation id="625755898061068298">Webgune honetako segurtasun-abisuak desgaitzea aukeratu duzu.</translation>
 <translation id="6259156558325130047">&amp;Berregin berrantolatzea</translation>
@@ -1431,6 +1431,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="7138472120740807366">Entrega-metodoa</translation>
 <translation id="7139724024395191329">Arabiar Emirerri Batuak</translation>
 <translation id="714064300541049402">2. aldeko irudia X ardatzaren arabera aldatuta</translation>
+<translation id="7147693119324090759">Bidali, hala ere</translation>
 <translation id="7152423860607593928">Number-14 (gutun-azala)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" /> eta beste <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>
 <translation id="7153618581592392745">Izpilikua</translation>
@@ -1507,6 +1508,7 @@ Xehetasun gehiago:
 <translation id="7416351320495623771">Kudeatu pasahitzak…</translation>
 <translation id="7419106976560586862">Profilaren bide-izena</translation>
 <translation id="7437289804838430631">Gehitu harremanetarako informazioa</translation>
+<translation id="743897106051685947">Jatorrizkoa</translation>
 <translation id="7438976808740265764">2020ko abendutik aurrera, Flash Player produktuak bateragarri izateari utziko dio.</translation>
 <translation id="7440140511386898319">Arakatu konexiorik gabe</translation>
 <translation id="7441627299479586546">Gidalerroen subjektu okerra</translation>
@@ -1518,7 +1520,9 @@ Xehetasun gehiago:
 <translation id="7473891865547856676">Ez, eskerrik asko</translation>
 <translation id="7481312909269577407">Aurrera</translation>
 <translation id="7485870689360869515">Ez da daturik aurkitu</translation>
+<translation id="7488762544858401571">Editatua</translation>
 <translation id="7495290002932347110">Erabiltzen duzun webgune edo aplikazio batean datuen isilpekotasuna urratu denez, zure pasahitza atzitzeko aukera izan dute. Gordetako pasahitzak seguru daudela egiaztatzea eta <ph name="ORIGIN" /> webguneko pasahitza berehala aldatzea gomendatzen du Chrome-k.</translation>
+<translation id="7495528107193238112">Eduki hori blokeatuta dago. Jarri harremanetan webgunearen arduradunarekin arazoa konpontzeko.</translation>
 <translation id="7498234416455752244">Jarraitu editatzen</translation>
 <translation id="7503664977220660814">Webgune engainagarri batean idatzi duzu pasahitza. <ph name="WEBSITE_1" /> eta <ph name="WEBSITE_2" /> webguneetarako eta pasahitz hori erabili duzun beste webgune batzuetarako gordetako pasahitzak egiaztatzea gomendatzen dizu Chromium-ek.</translation>
 <translation id="7508255263130623398">Itzuli den gidalerroaren gailu IDa hutsik dago edo ez dator bat gailuaren IDarekin</translation>
@@ -1601,6 +1605,7 @@ Xehetasun gehiago:
 <translation id="7770259615151589601">Designated-Long</translation>
 <translation id="7773005668374414287">Ordena berean, ahoz gora</translation>
 <translation id="777702478322588152">Administrazio-eremua</translation>
+<translation id="7791011319128895129">Kaleratzeke</translation>
 <translation id="7791196057686275387">Bildu</translation>
 <translation id="7791543448312431591">Gehitu</translation>
 <translation id="7798389633136518089">Gidalerroari ez ikusi egin zaio ez duelako hodeiko iturri batek ezarri.</translation>
@@ -1617,7 +1622,6 @@ Xehetasun gehiago:
 <translation id="7844689747373518809">{COUNT,plural, =0{Bat ere ez}=1{1 aplikazio (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikazio (<ph name="EXAMPLE_APP_1" /> eta <ph name="EXAMPLE_APP_2" />)}other{# aplikazio (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> eta<ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Hala ere, ez zara ikusgaitz izango. Ezkutuko moduan egoteak ez du esan nahi zure enpresak, Interneteko zerbitzu-hornitzaileak edota bisitatzen dituzun orriek arakatzen dituzun edukiak ikusi ezingo dituztenik.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
-<translation id="7858256690562840157">Sareko segurtasuna hobetzen laguntzeko, bidali <ph name="BEGIN_WHITEPAPER_LINK" />ireki dituzun orrietako batzuen URLak, sistemari buruzko informazio mugatua eta orrietako edukiaren zati bat<ph name="END_WHITEPAPER_LINK" /> Google-ri. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Webgunetik irten nahi duzu?</translation>
 <translation id="7865448901209910068">Abiadurarik onena</translation>
 <translation id="7874263914261512992">Webgune engainagarri batean idatzi duzu pasahitza. <ph name="WEBSITE_1" /> eta <ph name="WEBSITE_2" /> webguneetarako eta pasahitz hori erabili duzun beste webgune batzuetarako gordetako pasahitzak egiaztatzea gomendatzen dizu Chrome-k.</translation>
@@ -1737,6 +1741,7 @@ Xehetasun gehiago:
 <translation id="8355270400102541638">Gailuko hutsegitearen testuingurua:</translation>
 <translation id="8363502534493474904">Hegaldi modua desaktibatu.</translation>
 <translation id="8364627913115013041">Ez da ezarri.</translation>
+<translation id="8367477997601443248">Inprimakia ez da segurua</translation>
 <translation id="8368476060205742148">Google Play-ren zerbitzuak</translation>
 <translation id="8371889962595521444">Erroko ziurtagiri pertsonalizatuak</translation>
 <translation id="8380941800586852976">Arriskutsua</translation>
@@ -1819,6 +1824,7 @@ Xehetasun gehiago:
 <translation id="8805819170075074995">"<ph name="LANGUAGE_ID" />" zerrenda-sarrera: sarrerari ez ikusi egin zaio, SpellcheckLanguage gidalerroan ere agertzen delako.</translation>
 <translation id="8807160976559152894">Moztu orri bakoitzaren amaieran</translation>
 <translation id="8820817407110198400">Laster-markak</translation>
+<translation id="8831512686168463822">Segurua ez den konexio baten bidez bidaliko da inprimakia; ondorioz, baliteke zure informazioa (adibidez, pasahitzak, mezuak edo kreditu-txartelak) ikusgai geratzea webgune horretara bidaltzean.</translation>
 <translation id="883848425547221593">Beste laster-markak</translation>
 <translation id="884264119367021077">Bidaltzeko helbidea</translation>
 <translation id="884923133447025588">Ez da baliogabetze-mekanismorik aurkitu.</translation>

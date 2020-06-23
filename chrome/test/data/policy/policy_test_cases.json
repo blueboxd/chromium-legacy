@@ -3726,6 +3726,20 @@
     ]
   },
 
+  "ManagedGuestSessionPrivacyWarningsEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "ManagedGuestSessionPrivacyWarningsEnabled": false
+        },
+        "prefs": {
+          "managed_session.privacy_warning_enabled": { "local_state": true }
+        }
+      }
+    ]
+  },
+
   "FloatingAccessibilityMenuEnabled": {
     "os": ["chromeos"],
     "pref_mappings": [

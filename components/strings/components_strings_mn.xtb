@@ -1104,7 +1104,7 @@
 <translation id="5580958916614886209">Хүчингүй болох сарыг шалгаад дахин оролдоно уу</translation>
 <translation id="5586446728396275693">Хадгалсан хаяг байхгүй</translation>
 <translation id="5595485650161345191">Хаягийг засах</translation>
-<translation id="5598944008576757369">Төлбөрийн төрөл сонгох</translation>
+<translation id="5598944008576757369">Төлбөрийн хэрэгсэл сонгох</translation>
 <translation id="560412284261940334">Удирдлагын зүгээс зөвшөөрөл олгоогүй байна</translation>
 <translation id="5605670050355397069">Тайлан</translation>
 <translation id="5607240918979444548">Архитектур-C</translation>
@@ -1252,7 +1252,6 @@
 <translation id="6240447795304464094">Google Pay-н лого</translation>
 <translation id="6241121617266208201">Зөвлөмжийг нуух</translation>
 <translation id="624499991300733384">Хэвлэлийг нэгтгэгч үйлчилгээ</translation>
-<translation id="6251924700383757765">Аюулгүй байдлын бодлого</translation>
 <translation id="6254436959401408446">Энэ хуудсыг нээхэд санах ойн багтаамж хүрэлцэхгүй байна</translation>
 <translation id="625755898061068298">Та энэ сайтын аюулгүй байдлын сануулгыг идэвхгүй болгосон байна.</translation>
 <translation id="6259156558325130047">&amp; Дахин эрэмбэлэх үйлдлийг дахин хийх</translation>
@@ -1539,6 +1538,7 @@
 <translation id="7485870689360869515">Мэдээлэл байхгүй байна.</translation>
 <translation id="7488762544858401571">Зассан</translation>
 <translation id="7495290002932347110">Сайт эсвэл аппын өгөгдлийн зөрчлийн улмаас таны нууц үгийг задруулсан байна. Хадгалсан нууц үгээ шалгаж, <ph name="ORIGIN" /> дээрх нууц үгээ одоо өөрчлөхийг Chrome зөвлөж байна.</translation>
+<translation id="7495528107193238112">Энэ контентыг блоклосон байна. Асуудлыг шийдвэрлэхийн тулд сайтын өмчлөгчтэй холбогдоно уу.</translation>
 <translation id="7498234416455752244">Үргэлжлүүлэн засах</translation>
 <translation id="7503664977220660814">Та дөнгөж сая сэжигтэй сайтад нууц үгээ орууллаа. Таны энэ нууц үгийг ашигладаг <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> болон бусад сайтын хувьд хадгалсан нууц үгсээ одоо шалгахыг Chromium зөвлөж байна.</translation>
 <translation id="7508255263130623398">Буцаасан удирдамжийн төхөөрөмжийн id хоосон, эсвэл одоогийн төхөөрөмжийн id-тай тохирохгүй байна</translation>
@@ -1638,7 +1638,6 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Байхгүй}=1{1 апп (<ph name="EXAMPLE_APP_1" />)}=2{2 апп (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# апп (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Та харагдаж байгаа. Нууц горимд шилжсэн ч таны хийж буй хайлтыг таны ажил олгогч, интернэтийн үйлчилгээ үзүүлэгч болон зочилсон вэбсайтаас нуух боломжгүй.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
-<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />Зарим зочилдог хуудасныхаа URL, системийн хязгаарлагдмал мэдээлэл болон зарим хуудасны контентыг<ph name="END_WHITEPAPER_LINK" /> Google-д илгээж, хүн бүрд вэбийн аюулгүй байдлыг сайжруулахад тусална уу. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Сайтыг орхих уу?</translation>
 <translation id="7865448901209910068">Хамгийн оновчтой хурд</translation>
 <translation id="7874263914261512992">Та дөнгөж сая сэжигтэй сайтад нууц үгээ орууллаа. Таны энэ нууц үгийг ашигладаг <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> болон бусад сайтын хувьд хадгалсан нууц үгсээ одоо шалгахыг Chrome зөвлөж байна.</translation>
@@ -1697,9 +1696,9 @@
 <translation id="8094917007353911263">Таны ашиглаж буй сүлжээ таныг <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />-д нэвтрэхийг шаардах магадлалтай.</translation>
 <translation id="809898108652741896">A6</translation>
 <translation id="8100588592594801589">Хүчингүй картыг устгалаа</translation>
-<translation id="8103161714697287722">Төлбөрийн төрөл</translation>
+<translation id="8103161714697287722">Төлбөрийн хэрэгсэл</translation>
 <translation id="8105368624971345109">Унтраах</translation>
-<translation id="8118489163946903409">Төлбөрийн арга</translation>
+<translation id="8118489163946903409">Төлбөрийн хэрэгсэл</translation>
 <translation id="8127301229239896662">"<ph name="SOFTWARE_NAME" />"-г таны компьютер эсвэл сүлжээнд зөв суулгаагүй байна. Энэ асуудлыг шийдвэрлэхийн тулд админтайгаа холбогдоно уу.</translation>
 <translation id="8128526133099929547">Та дөнгөж сая сэжигтэй сайтад нууц үгээ орууллаа. Таны энэ нууц үгийг ашигладаг <ph name="WEBSITE_1" /> болон бусад сайт руу очиж, түүнийг одоо өөрчлөхийг Chrome зөвлөж байна.</translation>
 <translation id="8131740175452115882">Батлах</translation>

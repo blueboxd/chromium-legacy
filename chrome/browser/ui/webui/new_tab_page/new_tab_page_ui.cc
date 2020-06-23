@@ -30,6 +30,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -208,12 +209,14 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   // TODO(crbug.com/1076506): remove when changing to iframed OneGoogleBar.
   // Needs to happen after |webui::SetupWebUIDataSource()| since also overrides
   // script-src.
-  source->OverrideContentSecurityPolicyScriptSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self' 'unsafe-inline' "
       "https:;");
   // Allow embedding of iframes from the One Google Bar and
   // chrome-untrusted://new-tab-page for other external content and resources.
-  source->OverrideContentSecurityPolicyChildSrc(
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ChildSrc,
       base::StringPrintf("child-src https: %s %s;",
                          google_util::CommandLineGoogleBaseURL().spec().c_str(),
                          chrome::kChromeUIUntrustedNewTabPageUrl));

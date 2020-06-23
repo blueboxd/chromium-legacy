@@ -1,0 +1,21 @@
+<style include="pdf-viewer-shared-style">
+  viewer-page-indicator {
+    opacity: 0;
+    visibility: hidden;
+    z-index: 2;
+  }
+</style>
+
+<div id="sizer"></div>
+
+<viewer-zoom-toolbar id="zoom-toolbar" strings="[[strings]]"
+    on-fit-to-changed="onFitToChanged" is-print-preview
+    on-zoom-in="onZoomIn" on-zoom-out="onZoomOut"
+    hidden>
+</viewer-zoom-toolbar>
+
+<viewer-error-screen id="error-screen"></viewer-error-screen>
+
+<viewer-page-indicator id="page-indicator"></viewer-page-indicator>
+
+<div id="content"></div>

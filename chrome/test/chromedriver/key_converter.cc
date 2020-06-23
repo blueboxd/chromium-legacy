@@ -23,10 +23,10 @@ struct ModifierMaskAndKeyCode {
 };
 
 const ModifierMaskAndKeyCode kModifiers[] = {
-  { kShiftKeyModifierMask, ui::VKEY_SHIFT },
-  { kControlKeyModifierMask, ui::VKEY_CONTROL },
-  { kAltKeyModifierMask, ui::VKEY_MENU }
-};
+    {kShiftKeyModifierMask, ui::VKEY_SHIFT},
+    {kControlKeyModifierMask, ui::VKEY_CONTROL},
+    {kAltKeyModifierMask, ui::VKEY_MENU},
+    {kMetaKeyModifierMask, ui::VKEY_COMMAND}};
 
 // Ordered list of all the key codes corresponding to special WebDriver keys.
 // These keys are "special" in the sense that their code points are defined by
@@ -579,8 +579,9 @@ Status ConvertKeysToKeyEvents(const base::string16& client_keys,
     }
 
     // Create the key events.
-    bool necessary_modifiers[3];
-    for (int i = 0; i < 3; ++i) {
+    int number_modifiers = base::size(kModifiers);
+    bool necessary_modifiers[number_modifiers];
+    for (int i = 0; i < number_modifiers; ++i) {
       necessary_modifiers[i] =
           all_modifiers & kModifiers[i].mask &&
           !(sticky_modifiers & kModifiers[i].mask);

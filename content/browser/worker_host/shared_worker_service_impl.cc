@@ -191,7 +191,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   bool in_memory;
   GetContentClient()->browser()->GetStoragePartitionConfigForSite(
       storage_partition_->browser_context(), site_instance->GetSiteURL(),
-      /*can_be_default=*/true, &storage_domain, &partition_name, &in_memory);
+      &storage_domain, &partition_name, &in_memory);
 
   SharedWorkerInstance instance(
       info->url, info->options->type, info->options->credentials,

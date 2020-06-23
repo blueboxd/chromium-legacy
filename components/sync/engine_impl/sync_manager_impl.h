@@ -38,6 +38,7 @@ class Cryptographer;
 class ModelTypeRegistry;
 class SyncCycleContext;
 class TypeDebugInfoObserver;
+struct UserShare;
 
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
@@ -89,7 +90,6 @@ class SyncManagerImpl
   void RemoveObserver(SyncManager::Observer* observer) override;
   void SaveChanges() override;
   void ShutdownOnSyncThread() override;
-  UserShare* GetUserShare() override;
   ModelTypeConnector* GetModelTypeConnector() override;
   std::unique_ptr<ModelTypeConnector> GetModelTypeConnectorProxy() override;
   std::string cache_guid() override;
@@ -171,6 +171,8 @@ class SyncManagerImpl
   // NudgeHandler implementation.
   void NudgeForInitialDownload(ModelType type) override;
   void NudgeForCommit(ModelType type) override;
+
+  UserShare* GetUserShare();
 
  protected:
   // Helper functions.  Virtual for testing.

@@ -470,6 +470,7 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
         ClampDelta(perf.FirstImagePaint(), start);
   }
   if (perf.FirstContentfulPaint() > 0.0) {
+    DCHECK(perf.FirstEligibleToPaint() > 0);
     timing->paint_timing->first_contentful_paint =
         ClampDelta(perf.FirstContentfulPaint(), start);
     monotonic_timing.first_contentful_paint =
@@ -524,6 +525,15 @@ MetricsRenderFrameObserver::Timing MetricsRenderFrameObserver::GetTiming()
         ClampDelta(perf.ExperimentalLargestTextPaint(), start);
     timing->paint_timing->experimental_largest_contentful_paint
         ->largest_text_paint_size = perf.ExperimentalLargestTextPaintSize();
+  }
+  // It is possible for a frame to switch from eligible for painting to
+  // ineligible for it prior to the first paint. If this occurs, we need to
+  // propagate the null value.
+  if (perf.FirstEligibleToPaint() > 0) {
+    timing->paint_timing->first_eligible_to_paint =
+        ClampDelta(perf.FirstEligibleToPaint(), start);
+  } else {
+    timing->paint_timing->first_eligible_to_paint.reset();
   }
   if (perf.FirstInputOrScrollNotifiedTimestamp() > 0) {
     timing->paint_timing->first_input_or_scroll_notified_timestamp =

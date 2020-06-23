@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">Yderligere oplysninger (valgfrit)</translation>
 <translation id="1017280919048282932">&amp;Tilføj til ordbog</translation>
 <translation id="1018656279737460067">Annulleret</translation>
+<translation id="1022489261739821355">Viser adgangskoder fra din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /></translation>
 <translation id="1023873740278604399">Bevæg fingeren let for at tilføje forskellige dele af dit fingeraftryk.</translation>
 <translation id="1026655690966755180">Tilføj port</translation>
 <translation id="1026822031284433028">Indlæs billede</translation>
@@ -603,7 +604,7 @@
 <translation id="1743970419083351269">Luk downloadlinje</translation>
 <translation id="1744060673522309905">Enheden kunne ikke knyttes til domænet. Sørg for, at du ikke har overskredet antallet af enheder, du kan tilføje.</translation>
 <translation id="1744108098763830590">baggrundsside</translation>
-<translation id="1746901632585754462">Enhedsdata slettes</translation>
+<translation id="1746901632585754462">Enhedsdata vil blive slettet</translation>
 <translation id="1748563609363301860">Du kan gemme denne adgangskode på din Google-konto eller kun på denne enhed</translation>
 <translation id="1750172676754093297">Din sikkerhedsnøgle kan ikke gemme fingeraftryk</translation>
 <translation id="1751249301761991853">Personlig</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">Du skal bekræfte registreringen af din printer, før du kan afslutte denne proces – kontrollér det nu.</translation>
 <translation id="1900305421498694955">Apps fra Google Play skal muligvis have fuld adgang til filsystemet for at læse og skrive filer på eksterne lagerenheder. De filer og mapper, som oprettes på enheden, er synlige for alle, der bruger det eksterne drev. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">Vælg &amp;alle</translation>
+<translation id="1901396183631570154">Chrome kunne ikke gemme disse adgangskoder på din Google-konto. Du kan stadig gemme dem på denne enhed.</translation>
 <translation id="1905375423839394163">Navn på Chromebook-enhed</translation>
 <translation id="1906828677882361942">Tillad ikke, at websites kan få adgang til serieporte</translation>
 <translation id="1909880997794698664">Er du sikker på, at du vil beholde denne enhed permanent i kiosktilstand?</translation>
@@ -1187,6 +1189,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2476578072172137802">Indstillinger for websites</translation>
 <translation id="2478176599153288112">Mediefiltilladelser for "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Del lyd</translation>
+<translation id="248003956660572823">Adgangskoderne blev ikke gemt</translation>
 <translation id="2480868415629598489">Redigere data, du kopierer og indsætter</translation>
 <translation id="2482878487686419369">Notifikationer</translation>
 <translation id="2484959914739448251"><ph name="BEGIN_LINK" />Angiv din adgangssætning<ph name="END_LINK" /> for at rydde browserdata fra alle dine synkroniserede enheder og din Google-konto.</translation>
@@ -2490,7 +2493,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4077919383365622693">Alle data og cookies, der gemmes af <ph name="SITE" />, ryddes.</translation>
 <translation id="4079140982534148664">Brug forbedret stavekontrol</translation>
 <translation id="4081242589061676262">Filen kunne ikke castes.</translation>
-<translation id="4083648855651348665">Hvis du vil fortsætte, skal du angive adgangskoden til din Google-konto. Denne handling gør adgangskoder fra din Google-konto tilgængelige på denne enhed.</translation>
 <translation id="4084682180776658562">Bogmærke</translation>
 <translation id="4084835346725913160">Luk <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Spørg, når et website vil have adgang til serieporte</translation>
@@ -2795,6 +2797,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
 <translation id="4510479820467554003">Liste over forældrekonti</translation>
 <translation id="4510614391273086606">Linux-filer og -apps gendannes til den tilstand, de sidst blev sikkerhedskopieret fra.</translation>
+<translation id="4513946894732546136">Feedback</translation>
 <translation id="451407183922382411">Leveret af <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">Afspil eller sæt video på pause</translation>
 <translation id="451515744433878153">Fjern</translation>
@@ -3365,6 +3368,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5275352920323889391">Hund</translation>
 <translation id="527605982717517565">Tillad altid JavaScript på <ph name="HOST" /></translation>
 <translation id="5278823018825269962">Status-id</translation>
+<translation id="5280064835262749532">Opdater loginoplysninger for <ph name="SHARE_PATH" /></translation>
 <translation id="5280174558369304332">Udvidelser, der skal fjernes:</translation>
 <translation id="5280243692621919988">Ryd cookies og websitedata, når du lukker alle vinduer</translation>
 <translation id="5280426389926346830">Vil du oprette en genvej?</translation>
@@ -3891,7 +3895,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5935656526031444304">Administrer Beskyttet browsing</translation>
 <translation id="5938002010494270685">Der er en tilgængelig sikkerhedsopgradering</translation>
 <translation id="5939518447894949180">Nulstil</translation>
-<translation id="594108735267876762">Genstart enheden inden for <ph name="COUNT" /> dage</translation>
 <translation id="5941153596444580863">Tilføj person...</translation>
 <translation id="5941343993301164315">Log ind på <ph name="TOKEN_NAME" />.</translation>
 <translation id="5941711191222866238">Minimer</translation>
@@ -4241,7 +4244,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6390799748543157332">De sider, du ser i dette vindue, vises ikke i browserhistorikken, og de efterlader ikke andre spor som f.eks. cookies på computeren, når du lukker alle åbne vinduer i gæstesessionen. Alle de filer, du downloader, vil dog blive gemt.</translation>
 <translation id="6393156038355142111">Foreslå en stærk adgangskode</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />systemoplysninger<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />metrics<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">Sidste dag til at opdatere enheden</translation>
 <translation id="6396988158856674517">Bloker brug af bevægelsessensorer på websites</translation>
 <translation id="6398715114293939307">Fjern Google Play Butik</translation>
 <translation id="6398765197997659313">Afslut fuld skærm</translation>
@@ -4607,7 +4609,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6880587130513028875">Billeder blev blokeret på denne side.</translation>
 <translation id="6882836635272038266">Standardbeskyttelse mod websites, downloads og udvidelser, som er registreret som skadelige.</translation>
 <translation id="6883319974225028188">Ups! Systemet kunne ikke gemme enhedskonfigurationen.</translation>
-<translation id="6885064901301703683">Gem den én gang for at bruge den overalt</translation>
 <translation id="6885771755599377173">Forhåndsvisning af systemoplysninger</translation>
 <translation id="6886476658664859389">NFC-sikkerhedsnøgle</translation>
 <translation id="6886871292305414135">Åbn link i ny &amp;fane</translation>
@@ -4662,6 +4663,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6950627417367801484">Gendan apps</translation>
 <translation id="6950943362443484797">Vi installerer denne app til dig</translation>
 <translation id="6951153907720526401">Betalingshandlere</translation>
+<translation id="6952242901357037157">Du kan også vise adgangskoder fra din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /> her</translation>
 <translation id="6953878494808481632">Relaterede oplysninger</translation>
 <translation id="6955446738988643816">Undersøg pop op-vindue</translation>
 <translation id="6955535239952325894">Denne indstilling er deaktiveret i administrerede browsere</translation>
@@ -4729,6 +4731,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7022562585984256452">Din startside er blevet konfigureret.</translation>
 <translation id="7025082428878635038">En ny måde at navigere på ved hjælp af bevægelser</translation>
 <translation id="7025190659207909717">Administration af mobildatatjeneste</translation>
+<translation id="7029307918966275733">Crostini er ikke installeret. Installer Crostini for at se kreditter.</translation>
 <translation id="7029809446516969842">Adgangskoder</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – tilsluttet en serieport</translation>
 <translation id="7031962166228839643">TPM forberedes. Vent lidt (dette kan tage et par minutter)...</translation>
@@ -5042,6 +5045,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7427798576651127129">Ring fra <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">Der blev ikke fundet nogen HID-enheder</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{Åbn alle i &amp;nyt vindue}=1{Åbn i &amp;nyt vindue}one{Åbn (#) i &amp;nyt vindue}other{Åbn alle (#) i &amp;nyt vindue}}</translation>
+<translation id="7433957986129316853">Behold den</translation>
 <translation id="7434509671034404296">Udvikler</translation>
 <translation id="7434635829372401939">Synkroniser dine indstillinger</translation>
 <translation id="7434757724413878233">Acceleration af mus</translation>
@@ -5932,7 +5936,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8545575359873600875">Din adgangskode kunne desværre ikke bekræftes. Administratoren for denne administrerede bruger kan have ændret adgangskoden for nylig. Hvis det er tilfældet, gælder den nye adgangskode, næste gang du logger på. Prøv at bruge din gamle adgangskode.</translation>
 <translation id="8546186510985480118">Der er næsten ikke mere plads på enheden</translation>
 <translation id="8546306075665861288">Billedcache</translation>
-<translation id="8546541260734613940">[*.]eksempel.dk</translation>
 <translation id="854655314928502177">Webadresse for automatisk registrering af webproxy:</translation>
 <translation id="8546930481464505581">Tilpas Touch Bar</translation>
 <translation id="8547013269961688403">Aktivér forstørrelse af fuld skærm</translation>
@@ -5960,7 +5963,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8585480574870650651">Fjern Crostini</translation>
 <translation id="8588866096426746242">Vis profilstatistik</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> – VR viser til headset</translation>
-<translation id="8589316013260923499"><ph name="DOMAIN" /> har deaktiveret ADB-fejlretning. Der kan ikke sideindlæses nye apps.</translation>
+<translation id="8589316013260923499"><ph name="DOMAIN" /> har deaktiveret ADB-fejlretning. Ingen nye apps kan sideindlæses.</translation>
 <translation id="8590375307970699841">Konfigurer automatiske opdateringer</translation>
 <translation id="8591783563402255548">1 sekund</translation>
 <translation id="8592141010104017453">Vis slet ingen notifikationer</translation>
@@ -6521,6 +6524,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="983511809958454316">Denne funktion understøttes ikke i VR</translation>
 <translation id="984275831282074731">Betalingsmetoder</translation>
 <translation id="98515147261107953">Liggende</translation>
+<translation id="987264212798334818">Generelt</translation>
 <translation id="987897973846887088">Der er ingen tilgængelige billeder</translation>
 <translation id="988978206646512040">Tomme adgangssætninger er ikke tilladt</translation>
 <translation id="992032470292211616">Udvidelser, apps og temaer kan skade din enhed. Er du sikker på, at du vil fortsætte?</translation>

@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">ข้อมูลเพิ่มเติม (ไม่บังคับ)</translation>
 <translation id="1017280919048282932">&amp;เพิ่มลงในพจนานุกรม</translation>
 <translation id="1018656279737460067">ยกเลิกแล้ว</translation>
+<translation id="1022489261739821355">กำลังแสดงรหัสผ่านจาก<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /></translation>
 <translation id="1023873740278604399">ขยับนิ้วเล็กน้อยเพื่อจับภาพส่วนต่างๆ ของลายนิ้วมือเพิ่มเติม</translation>
 <translation id="1026655690966755180">เพิ่มพอร์ต</translation>
 <translation id="1026822031284433028">โหลดภาพ</translation>
@@ -604,7 +605,7 @@
 <translation id="1744060673522309905">นำอุปกรณ์เข้าร่วมโดเมนไม่ได้ ตรวจสอบว่าคุณไม่ได้เพิ่มอุปกรณ์เกินจำนวนจำกัด</translation>
 <translation id="1744108098763830590">หน้าพื้นหลัง</translation>
 <translation id="1746901632585754462">ระบบจะลบข้อมูลอุปกรณ์</translation>
-<translation id="1748563609363301860">คุณบันทึกรหัสผ่านนี้ได้ในบัญชี Google หรือในอุปกรณ์นี้</translation>
+<translation id="1748563609363301860">คุณบันทึกรหัสผ่านนี้ได้ในบัญชี Google หรือเฉพาะในอุปกรณ์นี้</translation>
 <translation id="1750172676754093297">คีย์ความปลอดภัยบันทึกลายนิ้วมือไม่ได้</translation>
 <translation id="1751249301761991853">ส่วนบุคคล</translation>
 <translation id="1751262127955453661"><ph name="ORIGIN" /> จะยังแก้ไขไฟล์ใน <ph name="FOLDERNAME" /> ได้อยู่จนกว่าคุณจะปิดทุกแท็บของเว็บไซต์นี้</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">คุณต้องยืนยันการลงทะเบียนเครื่องพิมพ์ของคุณเพื่อให้ขั้นตอนนี้เสร็จสิ้น ตรวจสอบเลย</translation>
 <translation id="1900305421498694955">แอปจาก Google Play อาจต้องมีสิทธิ์เข้าถึงระบบไฟล์โดยสมบูรณ์เพื่ออ่านและเขียนไฟล์ในอุปกรณ์เก็บข้อมูลภายนอก ไฟล์และโฟลเดอร์ที่สร้างขึ้นในอุปกรณ์จะแสดงแก่ทุกคนที่ใช้ไดรฟ์ภายนอก <ph name="LINK_BEGIN" />ดูข้อมูลเพิ่มเติม<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">เลือก&amp;ทั้งหมด</translation>
+<translation id="1901396183631570154">Chrome บันทึกรหัสผ่านเหล่านี้ในบัญชี Google ไม่ได้ แต่คุณยังบันทึกไว้ในอุปกรณ์นี้ได้อยู่</translation>
 <translation id="1905375423839394163">ชื่ออุปกรณ์ Chromebook</translation>
 <translation id="1906828677882361942">ไม่อนุญาตให้เว็บไซต์ใดๆ เข้าถึงพอร์ตอนุกรม</translation>
 <translation id="1909880997794698664">คุณต้องการเก็บอุปกรณ์นี้ไว้ในโหมดคีออสก์อย่างถาวรหรือไม่</translation>
@@ -1187,6 +1189,7 @@
 <translation id="2476578072172137802">การตั้งค่าเว็บไซต์</translation>
 <translation id="2478176599153288112">สิทธิ์ไฟล์สื่อสำหรับ "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">แชร์เสียง</translation>
+<translation id="248003956660572823">ไม่ได้บันทึกรหัสผ่าน</translation>
 <translation id="2480868415629598489">แก้ไขข้อมูลที่คุณคัดลอกและวาง</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2484959914739448251"><ph name="BEGIN_LINK" />ป้อนรหัสผ่าน<ph name="END_LINK" />เพื่อล้างข้อมูลการท่องเว็บในอุปกรณ์ทุกเครื่องที่ซิงค์และบัญชี Google</translation>
@@ -2490,7 +2493,6 @@
 <translation id="4077919383365622693">ระบบจะล้างข้อมูลและคุกกี้ทั้งหมดที่ <ph name="SITE" /> จัดเก็บไว้</translation>
 <translation id="4079140982534148664">ใช้ฟีเจอร์ตรวจตัวสะกดที่ได้รับการปรับปรุง</translation>
 <translation id="4081242589061676262">ไม่สามารถแคสต์ไฟล์</translation>
-<translation id="4083648855651348665">ดำเนินการต่อด้วยการป้อนรหัสผ่านบัญชี Google เพื่อทำให้รหัสผ่านจากบัญชี Google พร้อมใช้งานในอุปกรณ์นี้</translation>
 <translation id="4084682180776658562">บุ๊กมาร์ก</translation>
 <translation id="4084835346725913160">ปิด <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">ถามเมื่อเว็บไซต์ต้องการเข้าถึงพอร์ตอนุกรม</translation>
@@ -2795,6 +2797,7 @@
 <translation id="4508765956121923607">ดู&amp;ต้นฉบับ</translation>
 <translation id="4510479820467554003">รายการบัญชีผู้ปกครอง</translation>
 <translation id="4510614391273086606">ระบบกำลังคืนค่าไฟล์และแอป Linux เป็นสถานะข้อมูลสำรอง</translation>
+<translation id="4513946894732546136">ข้อเสนอแนะ</translation>
 <translation id="451407183922382411">ขับเคลื่อนโดย <ph name="COMPANY_NAME" /></translation>
 <translation id="4514610446763173167">สลับปุ่มควบคุมวิดีโอเพื่อเล่นหรือหยุดชั่วคราว</translation>
 <translation id="451515744433878153">นำออก</translation>
@@ -3365,6 +3368,7 @@
 <translation id="5275352920323889391">สุนัข</translation>
 <translation id="527605982717517565">อนุญาตให้เรียกใช้ JavaScript บน <ph name="HOST" /> เสมอ</translation>
 <translation id="5278823018825269962">รหัสสถานะ</translation>
+<translation id="5280064835262749532">อัปเดตข้อมูลเข้าสู่ระบบสำหรับ <ph name="SHARE_PATH" /></translation>
 <translation id="5280174558369304332">ส่วนขยายที่จะนำออก</translation>
 <translation id="5280243692621919988">ล้างคุกกี้และข้อมูลเว็บไซต์เมื่อคุณปิดหน้าต่างทั้งหมด</translation>
 <translation id="5280426389926346830">สร้างทางลัดไหม</translation>
@@ -3891,7 +3895,6 @@
 <translation id="5935656526031444304">จัดการ Google Safe Browsing</translation>
 <translation id="5938002010494270685">การอัปเกรดความปลอดภัยพร้อมใช้งานแล้ว</translation>
 <translation id="5939518447894949180">รีเซ็ต</translation>
-<translation id="594108735267876762">อัปเดตอุปกรณ์ภายใน <ph name="COUNT" /> วัน</translation>
 <translation id="5941153596444580863">เพิ่มบุคคล...</translation>
 <translation id="5941343993301164315">โปรดลงชื่อเข้าใช้ <ph name="TOKEN_NAME" /></translation>
 <translation id="5941711191222866238">ย่อ</translation>
@@ -4240,7 +4243,6 @@
 <translation id="6390799748543157332">หน้าที่คุณดูในหน้าต่างนี้จะไม่ปรากฏในประวัติเบราว์เซอร์และจะไม่ทิ้งร่องรอยอื่นๆ เช่น คุกกี้ ไว้ในคอมพิวเตอร์หลังจากที่คุณปิดหน้าต่างผู้เยี่ยมชมที่เปิดไว้ทั้งหมด อย่างไรก็ตาม ไฟล์ที่คุณดาวน์โหลดจะได้รับการเก็บรักษาไว้</translation>
 <translation id="6393156038355142111">แนะนำรหัสผ่านที่รัดกุม</translation>
 <translation id="6395423953133416962">ส่ง<ph name="BEGIN_LINK1" />ข้อมูลระบบ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />เมตริก<ph name="END_LINK2" /></translation>
-<translation id="6396179879191282798">วันสุดท้ายของการอัปเดตอุปกรณ์</translation>
 <translation id="6396988158856674517">บล็อกเว็บไซต์ไม่ให้เข้าถึงเซ็นเซอร์ตรวจจับความเคลื่อนไหว</translation>
 <translation id="6398715114293939307">นำ Google Play Store ออก</translation>
 <translation id="6398765197997659313">ออกจากการแสดงแบบเต็มหน้าจอ</translation>
@@ -4606,7 +4608,6 @@
 <translation id="6880587130513028875">หน้าเว็บนี้บล็อกการแสดงภาพ</translation>
 <translation id="6882836635272038266">การปกป้องแบบมาตรฐานจากเว็บไซต์ การดาวน์โหลด และส่วนขยายที่ทราบแล้วว่าเป็นอันตราย</translation>
 <translation id="6883319974225028188">อ๊ะ! ระบบไม่สามารถบันทึกการกำหนดค่าอุปกรณ์</translation>
-<translation id="6885064901301703683">จัดเก็บเพียงครั้งเดียวและใช้งานได้ทุกที่</translation>
 <translation id="6885771755599377173">ดูตัวอย่างข้อมูลระบบ</translation>
 <translation id="6886476658664859389">คีย์ความปลอดภัย NFC</translation>
 <translation id="6886871292305414135">เปิดลิงก์ในแ&amp;ท็บใหม่</translation>
@@ -4661,6 +4662,7 @@
 <translation id="6950627417367801484">คืนค่าแอป</translation>
 <translation id="6950943362443484797">เราจะติดตั้งแอปนั้นให้คุณ</translation>
 <translation id="6951153907720526401">เครื่องจัดการการชำระเงิน</translation>
+<translation id="6952242901357037157">คุณแสดงรหัสผ่านจาก<ph name="BEGIN_LINK" />บัญชี Google<ph name="END_LINK" /> ที่นี่ได้เช่นกัน</translation>
 <translation id="6953878494808481632">ข้อมูลที่เกี่ยวข้อง</translation>
 <translation id="6955446738988643816">ตรวจสอบป๊อปอัป</translation>
 <translation id="6955535239952325894">การตั้งค่านี้ปิดใช้อยู่ในเบราว์เซอร์ที่มีการจัดการ</translation>
@@ -4728,6 +4730,7 @@
 <translation id="7022562585984256452">ตั้งค่าหน้าแรกของคุณแล้ว</translation>
 <translation id="7025082428878635038">ขอแนะนำวิธีใหม่ในการไปยังส่วนต่างๆ ด้วยท่าทางสัมผัส</translation>
 <translation id="7025190659207909717">การจัดการบริการดาต้าบนมือถือ</translation>
+<translation id="7029307918966275733">ไม่ได้ติดตั้ง Crostini โปรดติดตั้ง Crostini เพื่อดูเครดิต</translation>
 <translation id="7029809446516969842">รหัสผ่าน</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - เชื่อมต่อพอร์ตอนุกรมอยู่</translation>
 <translation id="7031962166228839643">TPM กำลังได้รับการจัดเตรียม โปรดรอสักครู่ (การดำเนินการนี้อาจใช้เวลาสองถึงสามนาที)...</translation>
@@ -5041,6 +5044,7 @@
 <translation id="7427798576651127129">โทรจาก <ph name="DEVICE_NAME" /></translation>
 <translation id="7431719494109538750">ไม่พบอุปกรณ์ HID</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{เปิดทั้งหมดใน&amp;หน้าต่างใหม่}=1{เปิดใน&amp;หน้าต่างใหม่}other{เปิดทั้งหมด (#) ใน&amp;หน้าต่างใหม่}}</translation>
+<translation id="7433957986129316853">เก็บไว้</translation>
 <translation id="7434509671034404296">นักพัฒนา</translation>
 <translation id="7434635829372401939">ซิงค์การตั้งค่า</translation>
 <translation id="7434757724413878233">การเร่งความเร็วเมาส์</translation>
@@ -5932,7 +5936,6 @@
 <translation id="8545575359873600875">ขออภัย ไม่สามารถยืนยันรหัสผ่านของคุณ ผู้จัดการของผู้ใช้ภายใต้การดูแลรายนี้อาจเปลี่ยนรหัสผ่านเมื่อเร็วๆ นี้ หากเป็นเช่นนั้น จะมีการใช้รหัสผ่านใหม่เมื่อคุณลงชื่อเข้าใช้ครั้งถัดไป ลองใช้รหัสผ่านเก่าของคุณ</translation>
 <translation id="8546186510985480118">อุปกรณ์มีพื้นที่เหลือน้อย</translation>
 <translation id="8546306075665861288">แคชของภาพ</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">URL การค้นพบเว็บพร็อกซีโดยอัตโนมัติ:</translation>
 <translation id="8546930481464505581">ปรับแต่ง Touch Bar</translation>
 <translation id="8547013269961688403">เปิดใช้แว่นขยายทั้งหน้าจอ</translation>
@@ -6520,6 +6523,7 @@
 <translation id="983511809958454316">ฟีเจอร์นี้ใช้ไม่ได้ใน VR</translation>
 <translation id="984275831282074731">วิธีการชำระเงิน</translation>
 <translation id="98515147261107953">แนวนอน</translation>
+<translation id="987264212798334818">ทั่วไป</translation>
 <translation id="987897973846887088">ไม่มีรูปภาพที่พร้อมใช้งาน</translation>
 <translation id="988978206646512040">ต้องระบุรหัสผ่าน</translation>
 <translation id="992032470292211616">ส่วนขยาย แอป และธีมอาจเป็นอันตรายต่ออุปกรณ์ของคุณ คุณแน่ใจไหมว่าต้องการดำเนินการต่อ</translation>

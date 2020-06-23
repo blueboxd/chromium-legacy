@@ -460,28 +460,26 @@ void Scheduler::BeginImplFrameWithDeadline(const viz::BeginFrameArgs& args) {
   adjusted_args.deadline -= compositor_timing_history_->DrawDurationEstimate();
   adjusted_args.deadline -= kDeadlineFudgeFactor;
 
-  // TODO(khushalsagar): We need to consider the deadline fudge factor here to
-  // match the deadline used in BeginImplFrameDeadlineMode::REGULAR mode
-  // (used in the case where the impl thread needs to redraw). In the case where
-  // main_frame_to_active is fast, we should consider using
-  // BeginImplFrameDeadlineMode::LATE instead to avoid putting the main
-  // thread in high latency mode. See crbug.com/753146.
-  base::TimeDelta bmf_to_activate_threshold =
-      adjusted_args.interval -
-      compositor_timing_history_->DrawDurationEstimate() - kDeadlineFudgeFactor;
+  // TODO(khushalsagar): We need to match the deadline used in
+  // BeginImplFrameDeadlineMode::REGULAR mode (used in the case where the impl
+  // thread needs to redraw). In the case where main_frame_to_active is fast, we
+  // should consider using BeginImplFrameDeadlineMode::LATE instead to avoid
+  // putting the main thread in high latency mode. See crbug.com/753146.
+  const base::TimeDelta bmf_to_activate_threshold =
+      adjusted_args.deadline - adjusted_args.frame_time;
 
   // An estimate of time from starting the main frame on the main thread to when
   // the resulting pending tree is activated. Note that this excludes the
   // durations where progress is blocked due to back pressure in the pipeline
   // (ready to commit to commit, ready to activate to activate, etc.)
-  base::TimeDelta bmf_start_to_activate =
+  const base::TimeDelta bmf_start_to_activate =
       compositor_timing_history_
           ->BeginMainFrameStartToReadyToCommitDurationEstimate() +
       compositor_timing_history_->CommitDurationEstimate() +
       compositor_timing_history_->CommitToReadyToActivateDurationEstimate() +
       compositor_timing_history_->ActivateDurationEstimate();
 
-  base::TimeDelta bmf_to_activate_estimate_critical =
+  const base::TimeDelta bmf_to_activate_estimate_critical =
       bmf_start_to_activate +
       compositor_timing_history_->BeginMainFrameQueueDurationCriticalEstimate();
   state_machine_.SetCriticalBeginMainFrameToActivateIsFast(

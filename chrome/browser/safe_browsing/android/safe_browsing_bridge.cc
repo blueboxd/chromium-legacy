@@ -4,8 +4,8 @@
 
 #include "base/android/jni_string.h"
 #include "base/files/file_path.h"
-#include "chrome/android/chrome_jni_headers/SafeBrowsingBridge_jni.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/safe_browsing/android/jni_headers/SafeBrowsingBridge_jni.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/file_type_policies.h"

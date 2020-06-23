@@ -21,6 +21,7 @@
 <translation id="1016566241875885511">অতিরিক্ত তথ্য (ঐচ্ছিক)</translation>
 <translation id="1017280919048282932">অভিধানে &amp;যুক্ত করুন</translation>
 <translation id="1018656279737460067">বাতিল হয়েছে</translation>
+<translation id="1022489261739821355">আপনার <ph name="BEGIN_LINK" />Google অ্যাকাউন্ট<ph name="END_LINK" />-এ স্টোর করা পাসওয়ার্ড দেখানো হচ্ছে</translation>
 <translation id="1023873740278604399">আঙ্গুলের ছাপের বিভিন্ন অংশ যোগ করতে আপনার আঙ্গুল সামান্য সরান।</translation>
 <translation id="1026655690966755180">পোর্ট যোগ করুন</translation>
 <translation id="1026822031284433028">ছবি লোড করুন</translation>
@@ -739,6 +740,7 @@
 <translation id="1895934970388272448">এই প্রক্রিয়াটি সম্পূর্ণ করতে আপনাকে অবশ্যই আপনার প্রিন্টারের রেজিস্ট্রেশন নিশ্চিত করতে হবে - এটিকে এখনি পরীক্ষা করুন৷</translation>
 <translation id="1900305421498694955">এক্সটার্নাল স্টোরেজ ডিভাইসে ফাইল পড়তে এবং সেভ করতে Google Play থেকে ডাউনলোড করা অ্যাপের সম্পূর্ণ ফাইল সিস্টেমে অ্যাক্সেসের প্রয়োজন হতে পারে। ডিভাইসে তৈরি করা ফাইল এবং ফোল্ডার এক্সটার্নাল ড্রাইভ ব্যবহারকারীরা দেখতে পারবেন। <ph name="LINK_BEGIN" />আরও জানুন<ph name="LINK_END" /></translation>
 <translation id="1901303067676059328">&amp;সকল বেছে নিন</translation>
+<translation id="1901396183631570154">আপনার Google অ্যাকাউন্টে Chrome এই পাসওয়ার্ডগুলি সেভ করতে পারেনি। যদিও আপনি এখনও এগুলিকে এই ডিভাইসে সেভ করে রাখতে পারেন।</translation>
 <translation id="1905375423839394163">Chromebook ডিভাইসের নাম</translation>
 <translation id="1906828677882361942">কোনও সাইটকে সিরিয়াল পোর্ট অ্যাক্সেস করার অনুমতি দেবেন না</translation>
 <translation id="1909880997794698664">আপনি কি এই ডিভাইসটিকে কিয়স্ক মোডে স্থায়ীভাবে রাখার বিষয়ে নিশ্চিত?</translation>
@@ -1186,6 +1188,7 @@
 <translation id="2476578072172137802">সাইটের সেটিংস</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" এর জন্য মিডিয়া-ফাইলের অনুমতি</translation>
 <translation id="247949520305900375">অডিও ভাগ করুন</translation>
+<translation id="248003956660572823">পাসওয়ার্ড সেভ করা হয়নি</translation>
 <translation id="2480868415629598489">আপনি যে ডেটা কপি করে আটকান তা সংশোধন করুন</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2484959914739448251">আপনার সিঙ্ক করা সমস্ত ডিভাইস এবং Google অ্যাকাউন্ট থেকে ব্রাউজিং ডেটা খালি করার জন্য <ph name="BEGIN_LINK" />আপনার পাসফ্রেজ লিখুন<ph name="END_LINK" />।</translation>
@@ -1834,7 +1837,7 @@
 <translation id="3288047731229977326">ডেভেলপার মোডে চলমান এক্সটেনশনগুলি আপনার কম্পিউটারের ক্ষতি করতে পারে৷ যদি আপনি একজন ডেভেলপার না হন, তবে সুরক্ষিত থাকার জন্য আপনার এই এক্সটেনশনগুলিকে ডেভেলপার মোডে চালানো বন্ধ করা উচিৎ৷</translation>
 <translation id="3289856944988573801">আপডেটগুলি পরীক্ষা করার জন্য, অনুগ্রহ করে Ethernet বা ওয়াই-ফাই ব্যবহার করুন৷</translation>
 <translation id="3290356915286466215">সুরক্ষিত নেই</translation>
-<translation id="3292264722181603749"><ph name="DOMAIN" /> ADB ডিবাগ করা বন্ধ করে দিচ্ছে, যেটি আপনার ডিভাইস রিসেট করবে। রিস্টার্ট হওয়ার আগে আপনার ফাইলের ব্যাক-আপ নিন।</translation>
+<translation id="3292264722181603749"><ph name="DOMAIN" /> ADB ডিবাগিং বন্ধ করে দিচ্ছে, যেটি আপনার ডিভাইস রিসেট করবে। রিস্টার্ট হওয়ার আগে আপনার ফাইলের ব্যাক-আপ নিন।</translation>
 <translation id="3293644607209440645">এই পৃষ্ঠা পাঠিয়ে দিন</translation>
 <translation id="32939749466444286">Linux কন্টেনারটি শুরু হয়নি। আবার চেষ্টা করুন।</translation>
 <translation id="3294437725009624529">অতিথি</translation>
@@ -2488,7 +2491,6 @@
 <translation id="4077919383365622693"><ph name="SITE" /> ওয়েবসাইটের মাধ্যমে স্টোর করা সব ডেটা এবং কুকি মুছে ফেলা হবে।</translation>
 <translation id="4079140982534148664">উন্নত বানান পরীক্ষা ব্যবহার করুন</translation>
 <translation id="4081242589061676262">ফাইলটি কাস্ট করতে অক্ষম।</translation>
-<translation id="4083648855651348665">চালিয়ে যেতে, আপনার Google অ্যাকাউন্টের পাসওয়ার্ড লিখুন যাতে এই ডিভাইসে আপনার Google অ্যাকাউন্টে সেই পাসওয়ার্ড উপলভ্য থাকে।</translation>
 <translation id="4084682180776658562">বুকমার্ক</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> বন্ধ করুন</translation>
 <translation id="4085270836953633510">কোনও সাইট সিরিয়াল পোর্ট অ্যাক্সেস করতে চাইলে আমাকে জিজ্ঞাসা করুন</translation>
@@ -2793,6 +2795,7 @@
 <translation id="4508765956121923607">উ&amp;ৎস দেখুন</translation>
 <translation id="4510479820467554003">অভিভাবকীয় অ্যাকাউন্টের তালিকা</translation>
 <translation id="4510614391273086606">Linux ফাইল ও অ্যাপগুলিকে, ব্যাক-আপ করার সমকালীন অবস্থায় ফিরিয়ে নিয়ে যাওয়া হচ্ছে।</translation>
+<translation id="4513946894732546136">প্রতিক্রিয়া</translation>
 <translation id="451407183922382411"><ph name="COMPANY_NAME" /> এর দ্বারা চালিত</translation>
 <translation id="4514610446763173167">ভিডিও চালাতে বা থামানোর জন্য টগল করুন</translation>
 <translation id="451515744433878153">সরান</translation>
@@ -3363,6 +3366,7 @@
 <translation id="5275352920323889391">কুকুর</translation>
 <translation id="527605982717517565">সর্বদা <ph name="HOST" />-এ জাভাস্ক্রিপ্ট মঞ্জুর করুন</translation>
 <translation id="5278823018825269962">স্ট্যাটাস আইডি</translation>
+<translation id="5280064835262749532"><ph name="SHARE_PATH" />-এর ক্রেডেনশিয়াল আপডেট করুন</translation>
 <translation id="5280174558369304332">এক্সটেনশনটি সরিয়ে দেওয়া হবে:</translation>
 <translation id="5280243692621919988">আপনি উইন্ডো বন্ধ করে দিলে কুকি এবং সাইটের ডেটা মুছে দেয়</translation>
 <translation id="5280426389926346830">শর্টকাট তৈরি করবেন?</translation>
@@ -3890,7 +3894,6 @@
 <translation id="5935656526031444304">Safe Browsing ম্যানেজ করুন</translation>
 <translation id="5938002010494270685">নিরাপত্তার আপগ্রেড উপলভ্য</translation>
 <translation id="5939518447894949180">রিসেট করুন</translation>
-<translation id="594108735267876762"><ph name="COUNT" /> দিনের মধ্যে ডিভাইস আপডেট করুন</translation>
 <translation id="5941153596444580863">ব্যক্তিকে যোগ করুন...</translation>
 <translation id="5941343993301164315">অনুগ্রহ করে <ph name="TOKEN_NAME" />-এ সাইন-ইন করুন৷</translation>
 <translation id="5941711191222866238">ছোট করুন</translation>
@@ -4240,7 +4243,6 @@
 <translation id="6390799748543157332">এই উইন্ডোতে আপনি যে পৃষ্ঠাগুলি দেখেন তা ব্রাউজারের ইতিহাসে থাকবে না এবং আপনি খুলে রাখা সব গেস্ট উইন্ডো বন্ধ করার পরে এগুলি কম্পিউটারটিতে কুকিজের মতো অন্যান্য ট্রেসও রেখে যাবে না৷ যদিও আপনার ডাউনলোড করা যেকোনো ফাইল সংরক্ষিত হবে৷</translation>
 <translation id="6393156038355142111">শক্তিশালী পাসওয়ার্ড সাজেস্ট করুন</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />সিস্টেমের তথ্য<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />মেট্রিক্স<ph name="END_LINK2" /> পাঠান</translation>
-<translation id="6396179879191282798">ডিভাইস আপডেট করার শেষ দিন</translation>
 <translation id="6396988158856674517">মোশন সেন্সর ব্যবহার করা থেকে সাইটকে ব্লক করুন</translation>
 <translation id="6398715114293939307">Google Play স্টোর সরান</translation>
 <translation id="6398765197997659313">পূর্ণ স্ক্রীণ বন্ধ করুন</translation>
@@ -4606,7 +4608,6 @@
 <translation id="6880587130513028875">এই পৃষ্ঠাতে ছবিগুলি ব্লক করা হয়েছে৷</translation>
 <translation id="6882836635272038266">ঝুঁকিপূর্ণ হিসেবে চিহ্নিত ওয়েবসাইট, ডাউনলোড এবং এক্সটেনশনের জন্য স্ট্যান্ডার্ড নিরাপত্তা।</translation>
 <translation id="6883319974225028188">ওহো! সিস্টেম ডিভাইস কনফিগারেশন সংরক্ষণ করতে ব্যর্থ হয়েছে।</translation>
-<translation id="6885064901301703683">একবার স্টোর করে সব জায়গায় ব্যবহার করুন</translation>
 <translation id="6885771755599377173">সিস্টেম তথ্যের প্রিভিউ</translation>
 <translation id="6886476658664859389">NFC নিরাপত্তা কী</translation>
 <translation id="6886871292305414135">নতুন ট্যাবে লিঙ্ক খুলুন</translation>
@@ -4661,6 +4662,7 @@
 <translation id="6950627417367801484">অ্যাপ রিস্টোর করুন</translation>
 <translation id="6950943362443484797">আপনার জন্য সেই অ্যাপটি আমরা ইনস্টল করে দেব</translation>
 <translation id="6951153907720526401">পেমেন্ট হ্যান্ডলার</translation>
+<translation id="6952242901357037157">তাছাড়া আপনি এখানে নিজের <ph name="BEGIN_LINK" />Google অ্যাকাউন্ট<ph name="END_LINK" /> থেকে পাসওয়ার্ড স্টোর করে রাখতে পারেন</translation>
 <translation id="6953878494808481632">সম্পর্কিত তথ্য</translation>
 <translation id="6955446738988643816">পপআপ সংবীক্ষণ</translation>
 <translation id="6955535239952325894">ম্যানেজ করা ব্রাউজারে এই সেটিং কাজ করে না</translation>
@@ -4728,6 +4730,7 @@
 <translation id="7022562585984256452">আপনার হোম পৃষ্ঠা সেট করা হয়েছে৷</translation>
 <translation id="7025082428878635038">জেসচার সহ নেভিগেট করতে নতুন পদ্ধতি শুরু করা হচ্ছে</translation>
 <translation id="7025190659207909717">মোবাইল ডেটা পরিষেবা পরিচালন</translation>
+<translation id="7029307918966275733">Crostini ইনস্টল করা হয়নি। ক্রেডিট দেখার জন্য Crostini ইনস্টল করুন।</translation>
 <translation id="7029809446516969842">পাসওয়ার্ড</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - সিরিয়াল পোর্ট কানেক্ট করা হয়েছে</translation>
 <translation id="7031962166228839643">TPM প্রস্তুত করা হচ্ছে, দয়া করে অপেক্ষা করুন (এটি কয়েক মিনিট সময় নিতে পারে)...</translation>
@@ -5041,6 +5044,7 @@
 <translation id="7427798576651127129"><ph name="DEVICE_NAME" /> থেকে কল করুন</translation>
 <translation id="7431719494109538750">কোনও HID ডিভাইস খুঁজে পাওয়া যায়নি</translation>
 <translation id="7433692219247014412">{COUNT,plural, =0{সবগুলি &amp;নতুন উইন্ডোতে খুলুন}=1{&amp;নতুন উইন্ডোতে খুলুন}one{সবগুলি (#টি) &amp;নতুন উইন্ডোতে খুলুন}other{সবগুলি (#টি) &amp;নতুন উইন্ডোতে খুলুন}}</translation>
+<translation id="7433957986129316853">এটি রাখতে চাই</translation>
 <translation id="7434509671034404296">ডেভেলপার</translation>
 <translation id="7434635829372401939">আপনার সেটিংস সিঙ্ক করুন</translation>
 <translation id="7434757724413878233">মাউস অ্যাক্সিলারেশন</translation>
@@ -5930,7 +5934,6 @@
 <translation id="8545575359873600875">দুঃখিত, আপনার পাসওয়ার্ড যাচাই করা যায়নি। এই তত্ত্বাবধানে থাকা ব্যবহারকারীর ম্যানেজার সম্প্রতি পাসওয়ার্ড পরিবর্তন করে থাকতে পারেন। যদি তাই হয়, তাহলে পরবর্তীকালে যখন আপনি সাইন-ইন করবেন তখন নতুন পাসওয়ার্ড দিতে হবে। আপনার পুরোনো পাসওয়ার্ড দিয়ে চেষ্টা করে দেখুন।</translation>
 <translation id="8546186510985480118">ডিভাইসে জায়গা কম আছে</translation>
 <translation id="8546306075665861288">ছবি ক্যাশে</translation>
-<translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">ওয়েব প্রক্সি অটো আবিষ্কার URL:</translation>
 <translation id="8546930481464505581">টাচ বার কাস্টমাইজ করুন</translation>
 <translation id="8547013269961688403">ফুলস্ক্রিন ম্যাগনিফায়ার চালু করুন</translation>
@@ -5958,7 +5961,7 @@
 <translation id="8585480574870650651">Crostini মুছুন</translation>
 <translation id="8588866096426746242">প্রোফাইল পরিসংখ্যান দেখান</translation>
 <translation id="8588868914509452556"><ph name="WINDOW_TITLE" /> - হেডসেটে ভিআর (VR) কন্টেন্ট দেখানো হচ্ছে</translation>
-<translation id="8589316013260923499"><ph name="DOMAIN" /> ADB ডিবাগ করা বন্ধ করে দিয়েছে। কোনও নতুন অ্যাপ্লিকেশন সাইডলোড করা যাবে না।</translation>
+<translation id="8589316013260923499"><ph name="DOMAIN" /> ADB ডিবাগিং বন্ধ করে দিয়েছে। কোনও নতুন অ্যাপ্লিকেশন সাইডলোড করা যাবে না।</translation>
 <translation id="8590375307970699841">স্বয়ংক্রিয় আপডেটগুলো সেটআপ করুন</translation>
 <translation id="8591783563402255548">১ সেকেন্ড</translation>
 <translation id="8592141010104017453">কোনও বিজ্ঞপ্তি দেখতে চাই না</translation>
@@ -6518,6 +6521,7 @@
 <translation id="983511809958454316">এই বৈশিষ্ট্য VR এ সমর্থিত নয়</translation>
 <translation id="984275831282074731">পেমেন্ট পদ্ধতি</translation>
 <translation id="98515147261107953">ল্যান্ডস্কেপ</translation>
+<translation id="987264212798334818">সাধারণ</translation>
 <translation id="987897973846887088">কোনও ছবি নেই</translation>
 <translation id="988978206646512040">পাসফ্রেজ ফাঁকা রাখা চলবে না</translation>
 <translation id="992032470292211616">এক্সটেনশান, অ্যাপ্লিকেশান এবং থিমগুলি আপনার  ডিভাইসের ক্ষতি করতে পারে৷ আপনি কি অবিরত রাখতে চাওয়ার ব্যাপারে নিশ্চিত?</translation>

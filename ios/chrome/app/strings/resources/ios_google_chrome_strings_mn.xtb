@@ -9,6 +9,7 @@
 <translation id="2199719347983604670">Chrome синкийн өгөгдөл</translation>
 <translation id="2347208864470321755">Энэ горим асаалттай байгаа үед Google нь Chrome Translate-ыг ашиглан бусад хэл дээр бичигдсэн хуудсуудыг орчуулахыг санал болгоно. <ph name="BEGIN_LINK" />Илүү ихийг мэдэж аваарай<ph name="END_LINK" /></translation>
 <translation id="2441696206556358796">Зураг хадгалахын тулд Тохиргоо хэсгийг товшин Chrome-д таны зургийг хэрэглэхийг зөвшөөрнө үү.</translation>
+<translation id="2574249610672786438">Chrome-г хаанаас ч ашигласан бай табуудаа харахын тулд бүх төхөөрөмж дээрээ нэвтэрнэ үү</translation>
 <translation id="2576431527583832481">Chrome-ийн шинэ хувилбар саяхан гарлаа.</translation>
 <translation id="257708665678654955">Та Google Chrome-г дараагийн удаа энэ сайтаас <ph name="LANGUAGE_NAME" /> хуудсыг орчуулахыг зөвшөөрөх үү?</translation>
 <translation id="2919738076569633423">Chrome-г ашигласнаар та <ph name="BEGIN_LINK_TOS" />Үйлчилгээний нөхцөлийг<ph name="END_LINK_TOS" /> зөвшөөрч байна.</translation>
@@ -19,6 +20,7 @@
 <translation id="3196546062792660320">Chrome таны бүртгэлийг вэбэд оруулснаар таны цагийг хэмнэдэг. Та Тохиргоо хэсэгт бүртгэл нэмэх, эсвэл устгах боломжтой.</translation>
 <translation id="3282568296779691940">Chrome руу нэвтрэх</translation>
 <translation id="3345341804167540816">Chrome-г хүссэн газраа ашиглаарай</translation>
+<translation id="3522659714780527202">Та Chrome-г хаанаас ч ашигласан бай табуудаа харахын тулд синк хийхийг асаана уу</translation>
 <translation id="384394811301901750">Google Chrome таны камерыг одоогоор ашиглах боломжгүй</translation>
 <translation id="3980220367029651214">Та синк хийх бүртгэлийг <ph name="USER_EMAIL1" />-с <ph name="USER_EMAIL2" /> рүү шилжүүлж байна. Таны одоогийн Chrome-н өгөгдлийг <ph name="DOMAIN" />-с удирддаг. Энэ нь таны өгөгдлийг төхөөрөмжөөс устгах хэдий ч таны өгөгдөл <ph name="USER_EMAIL1" />-д хадгалагдсан хэвээр байна.</translation>
 <translation id="3988789688219830639">Google Chrome-д таны зураг, видеонд нэвтрэх зөвшөөрөл байхгүй байна. Та iOS Тохиргоо &gt; Нууцлал &gt; Зураг хэсэгт хандалтыг идэвхжүүлээрэй.</translation>
@@ -46,6 +48,7 @@
 <translation id="7400722733683201933">Google Chrome-ийн тухай</translation>
 <translation id="756809126120519699">Chrome-н өгөгдлийг устгасан</translation>
 <translation id="7626032353295482388">Chrome-д тавтай морил</translation>
+<translation id="7662994914830945754">Та Chrome-г хаанаас ч ашигласан бай табуудаа харахын тулд нэвтрээд, синк хийхийг асаана уу</translation>
 <translation id="7698568245838009292">Chrome камерт хандах хүсэлтэй байна</translation>
 <translation id="8370517070665726704">Зохиогчийн эрх <ph name="YEAR" /> Google ХХК. Бүх эрх хуулиар хамгаалагдсан.</translation>
 <translation id="840168496893712993">Зарим нэмэлт програмууд нь Chrome-ыг эвдрэхэд хүргэдэг. Тэднийг устгах гээд оролдоод үзнэ үү.</translation>

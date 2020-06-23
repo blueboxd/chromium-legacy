@@ -47,6 +47,20 @@ void RecordShouldSendBeginFrame(SendBeginFrameResult result) {
       "Compositing.CompositorFrameSinkSupport.ShouldSendBeginFrame", result);
 }
 
+void AdjustPresentationFeedback(gfx::PresentationFeedback* feedback,
+                                base::TimeTicks swap_start) {
+  // Swap start to end breakdown is always reported if ready timestamp is
+  // available. The other timestamps are adjusted to assume 0 delay in those
+  // stages if the breakdown is not available.
+  if (feedback->ready_timestamp.is_null())
+    return;
+
+  feedback->available_timestamp =
+      std::max(feedback->available_timestamp, swap_start);
+  feedback->latch_timestamp =
+      std::max(feedback->latch_timestamp, feedback->ready_timestamp);
+}
+
 }  // namespace
 
 CompositorFrameSinkSupport::CompositorFrameSinkSupport(
@@ -624,6 +638,8 @@ void CompositorFrameSinkSupport::DidPresentCompositorFrame(
   details.draw_start_timestamp = draw_start_timestamp;
   details.swap_timings = swap_timings;
   details.presentation_feedback = feedback;
+  AdjustPresentationFeedback(&details.presentation_feedback,
+                             swap_timings.swap_start);
   pending_received_frame_times_.erase(received_frame_timestamp);
 
   // We should only ever get one PresentationFeedback per frame_token.

@@ -751,7 +751,8 @@ bool FlexLayoutAlgorithm::ShouldApplyMinSizeAutoForChild(
       IsHorizontalFlow() != child.StyleRef().IsHorizontalWritingMode();
   bool intrinsic_in_childs_block_axis =
       main_axis_is_childs_block_axis &&
-      (min.IsMinContent() || min.IsMaxContent() || min.IsFitContent());
+      (min.IsMinContent() || min.IsMaxContent() || min.IsMinIntrinsic() ||
+       min.IsFitContent());
   if (!min.IsAuto() && !intrinsic_in_childs_block_axis)
     return false;
 

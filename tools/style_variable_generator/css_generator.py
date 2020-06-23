@@ -15,12 +15,26 @@ class CSSStyleGenerator(BaseGenerator):
                                   self.GetParameters())
 
     def GetParameters(self):
-        def BuildColorsForMode(mode):
+        def BuildColorsForMode(mode, resolve_missing=False):
+            '''Builds a name to Color dictionary for |mode|.
+            If |resolve_missing| is true, colors that aren't specified in |mode|
+            will be resolved to their default mode value.'''
             colors = collections.OrderedDict()
             for name, mode_values in self.model[VariableType.COLOR].items():
-                if mode in mode_values:
-                    colors[name] = mode_values[mode]
+                if resolve_missing:
+                    colors[name] = self.model[VariableType.COLOR].Resolve(
+                        name, mode)
+                else:
+                    if mode in mode_values:
+                        colors[name] = mode_values[mode]
             return colors
+
+        if self.generate_single_mode:
+            return {
+                'light_colors':
+                BuildColorsForMode(self.generate_single_mode,
+                                   resolve_missing=True)
+            }
 
         return {
             'light_colors': BuildColorsForMode(Modes.LIGHT),

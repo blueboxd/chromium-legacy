@@ -19,13 +19,11 @@ namespace disk_cache {
 
 struct SimplePostDoomWaiter {
   SimplePostDoomWaiter();
-  // Also initializes |time_queued|.
   explicit SimplePostDoomWaiter(base::OnceClosure to_run_post_doom);
   explicit SimplePostDoomWaiter(SimplePostDoomWaiter&& other);
   ~SimplePostDoomWaiter();
   SimplePostDoomWaiter& operator=(SimplePostDoomWaiter&& other);
 
-  base::TimeTicks time_queued;
   base::OnceClosure run_post_doom;
 };
 

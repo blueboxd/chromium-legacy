@@ -460,9 +460,13 @@ bool V4L2StatefulVideoDecoderBackend::CompleteFlush() {
   return true;
 }
 
-void V4L2StatefulVideoDecoderBackend::OnStreamStopped() {
+void V4L2StatefulVideoDecoderBackend::OnStreamStopped(bool stop_input_queue) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOGF(3);
+
+  // If we are resetting, also reset the splitter.
+  if (stop_input_queue)
+    frame_splitter_->Reset();
 }
 
 void V4L2StatefulVideoDecoderBackend::ChangeResolution() {

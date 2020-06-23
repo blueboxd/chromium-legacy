@@ -850,6 +850,8 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     }
   }
 
+  virtual ETextAlign TextAlignmentForLine(bool ends_with_soft_break) const;
+
  private:
   LayoutUnit CollapsedMarginBefore() const final {
     return MaxPositiveMarginBefore() - MaxNegativeMarginBefore();

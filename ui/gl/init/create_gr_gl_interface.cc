@@ -426,6 +426,7 @@ sk_sp<GrGLInterface> CreateGrGLInterface(
   // functions->fMultiDrawArraysIndirect = gl->glMultiDrawArraysIndirectFn;
   // functions->fMultiDrawElementsIndirect = gl->glMultiDrawElementsIndirectFn;
 
+  functions->fPatchParameteri = gl->glPatchParameteriFn;
   functions->fPixelStorei = gl->glPixelStoreiFn;
   functions->fPolygonMode = gl->glPolygonModeFn;
   functions->fProgramBinary = gl->glProgramBinaryFn;

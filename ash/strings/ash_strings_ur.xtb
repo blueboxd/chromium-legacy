@@ -44,6 +44,7 @@
 <translation id="1346748346194534595">دائیں</translation>
 <translation id="1351937230027495976">مینو کو سکیڑیں</translation>
 <translation id="1383876407941801731">تلاش کریں</translation>
+<translation id="1391102559483454063">آن</translation>
 <translation id="1419738280318246476">اطلاع کی کارروائی کرنے کیلئے آلے کو غیر مقفل کریں</translation>
 <translation id="1420408895951708260">نائٹ لائٹ ٹوگل کریں۔ <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">ہاں</translation>
@@ -52,7 +53,6 @@
 <translation id="1467432559032391204">بائیں</translation>
 <translation id="1479909375538722835">فلوٹنگ ایکسیسبیلٹی مینو</translation>
 <translation id="1484102317210609525">‎<ph name="DEVICE_NAME" /> (HDMI/DP)‎</translation>
-<translation id="1508507608940204251">آن</translation>
 <translation id="1516740043221086139">'ڈسٹرب نہ کریں' آن ہے۔</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{اطلاع کی ترتیبات دکھائیں۔ اطلاعات ایک ایپ کے لیے آف ہیں}other{اطلاع کی ترتیبات دکھائیں۔ اطلاعات # ایپس کے لیے آف ہیں}}</translation>
 <translation id="1525508553941733066">برخاست کریں</translation>
@@ -79,11 +79,10 @@
 <translation id="1836215606488044471">اسسٹنٹ (لوڈ ہو رہا ہے...)</translation>
 <translation id="1838895407229022812">نائٹ لائٹ آف ہے۔</translation>
 <translation id="1850504506766569011">‏Wi-Fi آف ہے۔</translation>
-<translation id="1859889070386344428">آف</translation>
 <translation id="1864454756846565995">‏USB-C آلہ (پیچھے کا پورٹ)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> میں معکوس سازی</translation>
 <translation id="1885785240814121742">فنگر پرنٹ کی مدد سے غیر مقفل کریں</translation>
-<translation id="1888656773939766144">‏<ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />(Hz<ph name="SPECIFIED_REFRESH_RATE" />) کو سپورٹ نہیں کرتا ہے۔ ریزولیوشن کو تبدیل کر کے <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />) کر دیا گیا۔ تبدیلیاں باقی رکھنے کے لیے تصدیق کریں پر کلک کریں۔ گزشتہ ترتیبات کو <ph name="TIMEOUT_SECONDS" /> میں بحال کر دیا جائے گا۔</translation>
+<translation id="1888656773939766144">‏‫<ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />(Hz<ph name="SPECIFIED_REFRESH_RATE" />) کو سپورٹ نہیں کرتا ہے۔ ریزولیوشن کو تبدیل کر کے <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />) کر دیا گیا۔ تبدیلیاں باقی رکھنے کے لیے تصدیق کریں پر کلک کریں۔ گزشتہ ترتیبات کو <ph name="TIMEOUT_SECONDS" /> میں بحال کر دیا جائے گا۔</translation>
 <translation id="1919743966458266018">ٹاسک مینیجر کھولنے کے شارٹ کٹ کو تبدیل کر دیا گیا ہے۔ براہ کرم <ph name="OLD_SHORTCUT" /> کی بجائے <ph name="NEW_SHORTCUT" /> استعمال کریں۔</translation>
 <translation id="1923539912171292317">خودکار کلکس</translation>
 <translation id="1928739107511554905">‏اپ ڈیٹ حاصل کرنے کیلئے، ٹچ اسکرین استعمال کر کے منسلک شدہ کی بورڈ سے اپنا Chromebook دوبارہ شروع کریں۔</translation>
@@ -138,7 +137,6 @@
 <translation id="2484513351006226581">کی بورڈ کا لے آؤٹ سوئچ کرنے کے لیے <ph name="KEYBOARD_SHORTCUT" /> دبائیں۔</translation>
 <translation id="2501920221385095727">اسٹکی کلیدیں</translation>
 <translation id="2509468283778169019">‏CAPS LOCK آن ہے</translation>
-<translation id="2519465031217098801">آن</translation>
 <translation id="2542089167727451762">اپنے پروفائل کی تصویر پر تھپتھپائیں</translation>
 <translation id="255671100581129685">‏Google اسسٹنٹ عوامی سیشن میں دستیاب نہیں ہے۔</translation>
 <translation id="256712445991462162">ڈاک کردہ میگنیفائر</translation>
@@ -174,6 +172,7 @@
 <translation id="2996462380875591307">‏ڈاک کردہ میگنیفائر فعال ہے۔ اسے ٹوگل کر کے بند کرنے کیلئے Ctrl+Search+D کو دوبارہ دبائیں۔</translation>
 <translation id="3000461861112256445">مونو آڈیو</translation>
 <translation id="3009178788565917040">آؤٹ پٹ</translation>
+<translation id="3033545621352269033">آن</translation>
 <translation id="3051128274746680507">آپ کے تحفظ یافتہ صارف کے پروفائل کو جلد ہی ہٹا دیا جائے گا۔ مزید جاننے کیلئے سائن ان کریں۔</translation>
 <translation id="3055162170959710888">آپ نے اس آلہ کو آج <ph name="USED_TIME" /> تک استعمال کیا ہے</translation>
 <translation id="3076778413190775903">صورتحال کی ٹرے، وقت <ph name="TIME" />،
@@ -261,7 +260,6 @@
 <translation id="3943857333388298514">پیسٹ کریں</translation>
 <translation id="394485226368336402">آڈیو کی ترتیبات</translation>
 <translation id="3962859241508114581">پچھلا ٹریک</translation>
-<translation id="3965097803111112935">آف</translation>
 <translation id="397105322502079400">حساب لگایا جا رہا ہے…</translation>
 <translation id="3977512764614765090">‏بیٹری ‎<ph name="PERCENTAGE" />%‎ ہے اور چارج ہو رہی ہے۔</translation>
 <translation id="3995138139523574647">‏USB-C آلہ (دائیں طرف کا پچھلا پورٹ)</translation>
@@ -278,6 +276,7 @@
 <translation id="4146833061457621061">موسیقی چلائیں</translation>
 <translation id="4181841719683918333">زبانیں</translation>
 <translation id="4195877955194704651">خودکار کلکس بٹن</translation>
+<translation id="4197790712631116042">آف</translation>
 <translation id="4215497585250573029">‏VPN کی ترتیبات</translation>
 <translation id="4217571870635786043">املاء</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -308,6 +307,7 @@
 <translation id="4513946894732546136">تاثرات</translation>
 <translation id="4527045527269911712">بلوٹوتھ آلہ "<ph name="DEVICE_NAME" />" جوڑا بنانے کی اجازت چاہتا ہے۔</translation>
 <translation id="453661520163887813">مکمل ہونے میں <ph name="TIME" /> باقی</translation>
+<translation id="4560576029703263363">آن</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">پاس ورڈ چھپائیں</translation>
 <translation id="4570957409596482333">سننے کیلئے منتخب کریں بٹن</translation>
@@ -354,11 +354,11 @@
 <translation id="5207949376430453814">متن کیرٹ کو نمایاں کریں</translation>
 <translation id="5222676887888702881">سائن آؤٹ</translation>
 <translation id="523505283826916779">ایکسیسبیلٹی کی ترتیبات</translation>
-<translation id="5250225880026334010">آف</translation>
 <translation id="5260676007519551770">ڈیسک 4</translation>
 <translation id="5283198616748585639">1 منٹ شامل کریں</translation>
 <translation id="528468243742722775">اختتام</translation>
 <translation id="5286194356314741248">اسکین کی جا رہی ہیں</translation>
+<translation id="5297704307811127955">آف</translation>
 <translation id="5302048478445481009">زبان</translation>
 <translation id="5313326810920013265">بلوٹوتھ کی ترتیبات</translation>
 <translation id="5331975486040154427">‏USB-C آلہ (بائیں طرف کا پچھلا پورٹ)</translation>
@@ -473,7 +473,6 @@
 <translation id="6650933572246256093">بلوٹوتھ آلہ "<ph name="DEVICE_NAME" />" جوڑا بنانے کی اجازت چاہتا ہے۔ براہ کرم اس پاس کلید کو اس آلہ پر درج کریں: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">پاس ورڈ</translation>
 <translation id="6665545700722362599">ویب سائٹس، ایپس اور ایکسٹینشنز کو مقام کی سروسز، آلہ کے مائیکروفون، کیمرا یا دیگر خصوصیات کے استعمال کی اجازت دیں</translation>
-<translation id="6669268301501499730">آن</translation>
 <translation id="6670153871843998651">ڈیسک 3</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">اپنے انتخاب سے متعلق معلومات حاصل کریں</translation>
@@ -605,6 +604,7 @@
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />، سگنل کی مضبوطی <ph name="SIGNAL_STRENGTH" />، فون کی بیٹری <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">‏<ph name="USER_EMAIL_ADDRESS" /> کی خاطر غیر مقفل کرنے کے لیے Enter دبائیں</translation>
 <translation id="8261506727792406068">حذف کریں</translation>
+<translation id="828708037801473432">آف</translation>
 <translation id="8297006494302853456">کمزور</translation>
 <translation id="8308637677604853869">پچھلا مینو</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

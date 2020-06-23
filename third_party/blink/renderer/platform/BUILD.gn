@@ -1584,7 +1584,7 @@ jumbo_component("platform") {
     "//skia",
     "//skia:skcms",
     "//third_party:freetype_harfbuzz",
-    "//third_party/abseil-cpp/absl/types:optional",
+    "//third_party/abseil-cpp:absl",
     "//third_party/blink/public:image_resources",
     "//third_party/blink/public/common",
     "//third_party/blink/public/mojom:embedded_frame_sink_mojo_bindings_blink",

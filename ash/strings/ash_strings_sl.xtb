@@ -44,6 +44,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1346748346194534595">V desno</translation>
 <translation id="1351937230027495976">Strni meni</translation>
 <translation id="1383876407941801731">Išči</translation>
+<translation id="1391102559483454063">Vklopljeno</translation>
 <translation id="1419738280318246476">Odklenite napravo zaradi izvedbe dejanja v obvestilu</translation>
 <translation id="1420408895951708260">Preklop Nočne svetlobe. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Da</translation>
@@ -52,7 +53,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1467432559032391204">V levo</translation>
 <translation id="1479909375538722835">Plavajoč meni s funkcijami za ljudi s posebnimi potrebami</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Vklopljeno</translation>
 <translation id="1516740043221086139">Način »ne moti« je vklopljen.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Prikaz nastavitev obvestil. Obvestila so izklopljena za eno aplikacijo.}one{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikacijo.}two{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikaciji.}few{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikacije.}other{Prikaz nastavitev obvestil. Obvestila so izklopljena za # aplikacij.}}</translation>
 <translation id="1525508553941733066">OPUSTI</translation>
@@ -79,7 +79,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="1836215606488044471">Pomočnik (nalaganje ...)</translation>
 <translation id="1838895407229022812">Nočna svetloba je izklopljena.</translation>
 <translation id="1850504506766569011">Wi-Fi je izklopljen.</translation>
-<translation id="1859889070386344428">Izklopljeno</translation>
 <translation id="1864454756846565995">Naprava USB-C (vrata zadaj)</translation>
 <translation id="1882897271359938046">Zrcaljenje na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Odklepanje s prstnim odtisom</translation>
@@ -138,7 +137,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2484513351006226581">Pritisnite <ph name="KEYBOARD_SHORTCUT" />, če želite preklopiti postavitev tipkovnice</translation>
 <translation id="2501920221385095727">Zaklepanje tipk</translation>
 <translation id="2509468283778169019">Tipka CAPS LOCK je vklopljena</translation>
-<translation id="2519465031217098801">Vklopljeno</translation>
 <translation id="2542089167727451762">Dotaknite se slike profila</translation>
 <translation id="255671100581129685">Pomočnik Google ni na voljo v javni seji.</translation>
 <translation id="256712445991462162">zasidrana lupa</translation>
@@ -174,6 +172,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="2996462380875591307">Zasidrana lupa je omogočena. Če jo želite izklopiti, znova pritisnite Ctrl + tipko za iskanje + D.</translation>
 <translation id="3000461861112256445">Mono zvok</translation>
 <translation id="3009178788565917040">Izhod</translation>
+<translation id="3033545621352269033">Vklopljeno</translation>
 <translation id="3051128274746680507">Profil nadzorovanega uporabnika bo kmalu odstranjen. Če želite izvedeti več, se prijavite.</translation>
 <translation id="3055162170959710888">To napravo si danes uporabljal <ph name="USED_TIME" /></translation>
 <translation id="3076778413190775903">Vrstica stanja, čas <ph name="TIME" />,
@@ -261,7 +260,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="3943857333388298514">Prilepi</translation>
 <translation id="394485226368336402">Nastavitve zvoka</translation>
 <translation id="3962859241508114581">Prejšnja skladba</translation>
-<translation id="3965097803111112935">Izklopljeno</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
 <translation id="3977512764614765090">Akumulator je <ph name="PERCENTAGE" />-% napolnjen in se polni.</translation>
 <translation id="3995138139523574647">Naprava USB-C (vrata desno zadaj)</translation>
@@ -278,6 +276,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4146833061457621061">Predvajaj glasbo</translation>
 <translation id="4181841719683918333">Jeziki</translation>
 <translation id="4195877955194704651">Gumb za samodejne klike</translation>
+<translation id="4197790712631116042">Izklopljeno</translation>
 <translation id="4215497585250573029">Nastavitve VPN-ja</translation>
 <translation id="4217571870635786043">Narek</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -308,6 +307,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="4513946894732546136">Povratne informacije</translation>
 <translation id="4527045527269911712">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi dovoljenje za seznanjanje.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do napolnjenosti</translation>
+<translation id="4560576029703263363">Vklopljeno</translation>
 <translation id="4561267230861221837">UMTS</translation>
 <translation id="4565377596337484307">Skrij geslo</translation>
 <translation id="4570957409596482333">Gumb za »Izberite in poslušajte«</translation>
@@ -354,11 +354,11 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="5207949376430453814">Označitev kazalke v besedilu</translation>
 <translation id="5222676887888702881">Odjava</translation>
 <translation id="523505283826916779">Nastavitve funkcij za ljudi s posebnimi potrebami</translation>
-<translation id="5250225880026334010">Izklopljeno</translation>
 <translation id="5260676007519551770">Namizje 4</translation>
 <translation id="5283198616748585639">Dodaj 1 min</translation>
 <translation id="528468243742722775">Konec</translation>
 <translation id="5286194356314741248">Pregledovanje</translation>
+<translation id="5297704307811127955">Izklopljeno</translation>
 <translation id="5302048478445481009">Jezik</translation>
 <translation id="5313326810920013265">Nastavitve za Bluetooth</translation>
 <translation id="5331975486040154427">Naprava USB-C (vrata levo zadaj)</translation>
@@ -473,7 +473,6 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="6650933572246256093">Naprava Bluetooth »<ph name="DEVICE_NAME" />« želi vaše dovoljenje za seznanjanje. V napravi vnesite to geslo: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Geslo</translation>
 <translation id="6665545700722362599">omogočanje spletnim mestom, aplikacijam in razširitvam dovoljenja za uporabo lokacijskih storitev, mikrofona, fotoaparata ali drugih funkcij naprave;</translation>
-<translation id="6669268301501499730">Vklopljeno</translation>
 <translation id="6670153871843998651">Namizje 3</translation>
 <translation id="6691659475504239918">Tipka za iskanje + Shift + H</translation>
 <translation id="6692996468359469499">Prejemanje podatkov, povezanih z izborom</translation>
@@ -605,6 +604,7 @@ Tu je nekaj stvari, ki jih lahko poskusite za začetek.</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, moč signala je <ph name="SIGNAL_STRENGTH" />, stanje baterije telefona je <ph name="BATTERY_STATUS" /></translation>
 <translation id="826107067893790409">Pritisnite Enter, če želite odkleniti za uporabnika <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Izbriši</translation>
+<translation id="828708037801473432">Izklopljeno</translation>
 <translation id="8297006494302853456">Šibek</translation>
 <translation id="8308637677604853869">Prejšnji meni</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>

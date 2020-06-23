@@ -8,6 +8,7 @@
 
 #include "base/android/jni_android.h"
 #include "chrome/android/chrome_jni_headers/PreviewsAndroidBridge_jni.h"
+#include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
 #include "components/previews/content/previews_user_data.h"
 #include "components/previews/core/previews_experiments.h"
@@ -17,6 +18,20 @@ static jlong JNI_PreviewsAndroidBridge_Init(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   return reinterpret_cast<intptr_t>(new PreviewsAndroidBridge(env, obj));
+}
+
+// static
+void PreviewsAndroidBridge::CreateHttpsImageCompressionInfoBar(
+    content::WebContents* web_contents) {
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+  DCHECK(tab_android);
+
+  base::android::ScopedJavaLocalRef<jobject> j_tab_android =
+      tab_android->GetJavaObject();
+  DCHECK(!j_tab_android.is_null());
+
+  Java_PreviewsAndroidBridge_createHttpsImageCompressionInfoBar(
+      base::android::AttachCurrentThread(), j_tab_android);
 }
 
 PreviewsAndroidBridge::PreviewsAndroidBridge(

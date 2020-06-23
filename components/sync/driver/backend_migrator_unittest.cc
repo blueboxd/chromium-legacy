@@ -12,9 +12,6 @@
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/syncable/directory.h"
-#include "components/sync/syncable/test_user_share.h"
-#include "components/sync/syncable/write_transaction.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,35 +29,26 @@ class SyncBackendMigratorTest : public testing::Test {
   ~SyncBackendMigratorTest() override {}
 
   void SetUp() override {
-    test_user_share_.SetUp();
     Mock::VerifyAndClear(manager());
     preferred_types_.Put(BOOKMARKS);
     preferred_types_.Put(PREFERENCES);
     preferred_types_.Put(AUTOFILL);
 
     migrator_ = std::make_unique<BackendMigrator>(
-        "Profile0", test_user_share_.user_share(), manager(),
-        reconfigure_callback()->Get(), migration_done_callback()->Get());
+        "Profile0", manager(), reconfigure_callback()->Get(),
+        migration_done_callback()->Get());
     SetUnsyncedTypes(ModelTypeSet());
   }
 
   void TearDown() override {
     migrator_.reset();
-    test_user_share_.TearDown();
   }
 
   // Marks all types in |unsynced_types| as unsynced  and all other
   // types as synced.
   void SetUnsyncedTypes(ModelTypeSet unsynced_types) {
-    WriteTransaction trans(FROM_HERE, test_user_share_.user_share());
-    for (int i = FIRST_REAL_MODEL_TYPE; i < ModelType::NUM_ENTRIES; ++i) {
-      ModelType type = ModelTypeFromInt(i);
-      sync_pb::DataTypeProgressMarker progress_marker;
-      if (!unsynced_types.Has(type)) {
-        progress_marker.set_token("dummy");
-      }
-      trans.GetDirectory()->SetDownloadProgress(type, progress_marker);
-    }
+    ON_CALL(manager_, GetPurgedDataTypes())
+        .WillByDefault(Return(unsynced_types));
   }
 
   void SendConfigureDone(DataTypeManager::ConfigureStatus status,
@@ -92,7 +80,6 @@ class SyncBackendMigratorTest : public testing::Test {
   NiceMock<DataTypeManagerMock> manager_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> reconfigure_callback_;
   NiceMock<base::MockCallback<base::RepeatingClosure>> migration_done_callback_;
-  TestUserShare test_user_share_;
   std::unique_ptr<BackendMigrator> migrator_;
 };
 

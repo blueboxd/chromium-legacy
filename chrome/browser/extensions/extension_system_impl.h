@@ -54,7 +54,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   RuntimeData* runtime_data() override;            // shared
   ManagementPolicy* management_policy() override;  // shared
   ServiceWorkerManager* service_worker_manager() override;  // shared
-  SharedUserScriptMaster* shared_user_script_master() override;  // shared
+  SharedUserScriptManager* shared_user_script_manager() override;  // shared
   StateStore* state_store() override;                              // shared
   StateStore* rules_store() override;                              // shared
   scoped_refptr<ValueStoreFactory> store_factory() override;       // shared
@@ -113,7 +113,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     RuntimeData* runtime_data();
     ManagementPolicy* management_policy();
     ServiceWorkerManager* service_worker_manager();
-    SharedUserScriptMaster* shared_user_script_master();
+    SharedUserScriptManager* shared_user_script_manager();
     InfoMap* info_map();
     QuotaService* quota_service();
     AppSorting* app_sorting();
@@ -135,7 +135,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     std::unique_ptr<ServiceWorkerManager> service_worker_manager_;
     // Shared memory region manager for scripts statically declared in extension
     // manifests. This region is shared between all extensions.
-    std::unique_ptr<SharedUserScriptMaster> shared_user_script_master_;
+    std::unique_ptr<SharedUserScriptManager> shared_user_script_manager_;
     std::unique_ptr<RuntimeData> runtime_data_;
     // ExtensionService depends on StateStore, Blacklist and RuntimeData.
     std::unique_ptr<ExtensionService> extension_service_;

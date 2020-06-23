@@ -37,10 +37,12 @@ Usually you need a policy when
         sure you get the version and feature flags (such as dynamic_refresh and
         supported_on) right.
     -   Here are the most used attributes. Please note that, all attributes
-        below other than `supported_on` and `default_for_enterprise_users` do
-        not change the code behavior.
-        -   `supported_on`: It controls the platform and Chrome milestone the
-            policy supports.
+        below other than `supported_on`, `future_on' and
+        `default_for_enterprise_users` do not change the code behavior.
+        -   `supported_on` and `future_on`: They control the platforms that the
+            policy supports. `supported_on` is used for released platforms with
+            milestone range while `future_on` is used for unreleased platforms.
+            See **Launch a policy** below for more information.
         -   `default_for_enterprise_users`: Its value is applied as a mandatory
             policy for managed users on Chrome OS unless a different setting is
             explicitly set.
@@ -51,9 +53,6 @@ Usually you need a policy when
         -   `can_be_recommended`: It tells the admin whether they can mark the
             policy as recommended and allow the user to override it in the UI,
             using a command line switch or an extension.
-        -   `future`: It hides the policy from auto-generated templates and
-            documentation. It's used when your policy needs multiple milestone
-            development.
     - The complete list of attributes and their expected values can be found in
       the
       [policy_templates.json](https://cs.chromium.org/chromium/src/components/policy/resources/policy_templates.json).
@@ -152,6 +151,33 @@ Usually you need a policy when
 10. If your policy has interactions with other policies, make sure to document,
     test and cover these by automated tests.
 
+## Launch a policy
+1.  When adding a new policy, put the platforms it will be supported in the
+    `future_on` list.
+    - The policy is hidden from any auto-generated template or documentation on
+      those platforms.
+    - The policy will also be unavailable on Beta and Stable channel unless it's
+      enabled specifically by
+      [EnableExperimentalPolicies](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnableExperimentalPolicies)
+      policy.
+2.  Implement the policy, get launch approval if necessary.
+3.  If the policy needs to be tested with small set of users first, keep the
+    platforms in the `future_on` list and running the tester program with the
+    [EnableExperimentalPolicies](https://cloud.google.com/docs/chrome-enterprise/policies/?policy=EnableExperimentalPolicies)
+    policy.
+4.  Move the launched platforms from `future_on` to `supported_on` and set the
+    'since_version' of those platforms to the milestone for which the launch
+    approval was granted.
+5.  If the 'since_version' is set to a earlier milestone, you need to merge
+    back all necessary commits.
+
+**Do not use finch to control policy launch process.**
+
+Policies are inherently switches that admins will turn on if they need. Getting
+inconsistent behavior based on factors outside of their control only causes
+confusion and is source for support requests. Use the step 3 above if the policy
+needs external testers before being officially announced.
+
 ## Examples
 
 Here is an example based on the instructions above. It's a good, simple place to
@@ -221,6 +247,7 @@ The presubmit checks perform the following verifications:
             before a new stable release has rolled out. Normally such a change
             should eventually be merged into the stable branch before the
             release.
+    3. `supported_on` list is empty.
 
 2.  If the policy is considered **unreleased**, all changes to it are allowed.
 
@@ -261,6 +288,15 @@ The presubmit checks perform the following verifications:
         1.  Dictionary policies can have some of their "required" fields removed
             in order to be less restrictive.
 
+4.  A policy is **partially released**  if both `supported_on` and
+    `future_on` list are not empty.
+
+5.  The **partially released** policy is considered as a **released** policy
+    and only the `future_on` list can be modified freely. However, any
+    platform in the `supported_on` list cannot be moved back to the `future_on`
+    list.
+
+
 ## Cloud Policy
 
 **For Googlers only**: The Cloud Policy will be maintained by the Admin console
@@ -292,4 +328,7 @@ than regular consumer behavior.
 
 ### Additional Notes
 
-1. policy_templates.json is actually a Python dictionary even though the file name contains *json*.
+1. policy_templates.json is actually a Python dictionary even though the file
+   name contains *json*.
+2. The `future_on` flag can disable policy on Beta of Stable channel only if the
+   policy value is copied to `PrefService` in Step 3 of **Adding a new policy**.

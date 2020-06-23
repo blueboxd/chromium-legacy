@@ -498,7 +498,7 @@ NigoriSyncBridgeImpl::NigoriSyncBridgeImpl(
   }
 
   // Keystore key rotation might be not performed, but required.
-  MaybeTriggerKeystoreKeyRotation();
+  MaybeTriggerKeystoreReencryption();
 }
 
 NigoriSyncBridgeImpl::~NigoriSyncBridgeImpl() {
@@ -738,7 +738,7 @@ bool NigoriSyncBridgeImpl::SetKeystoreKeys(
     broadcasting_observer_->OnCryptographerStateChanged(
         state_.cryptographer.get(), state_.pending_keys.has_value());
   }
-  MaybeTriggerKeystoreKeyRotation();
+  MaybeTriggerKeystoreReencryption();
   // Note: we don't need to persist keystore keys here, because we will receive
   // Nigori node right after this method and persist all the data during
   // UpdateLocalState().
@@ -1199,9 +1199,10 @@ sync_pb::NigoriLocalData NigoriSyncBridgeImpl::SerializeAsNigoriLocalData()
   return output;
 }
 
-void NigoriSyncBridgeImpl::MaybeTriggerKeystoreKeyRotation() {
-  if (state_.NeedsKeystoreKeyRotation()) {
-    QueuePendingLocalCommit(PendingLocalNigoriCommit::ForKeystoreKeyRotation());
+void NigoriSyncBridgeImpl::MaybeTriggerKeystoreReencryption() {
+  if (state_.NeedsKeystoreReencryption()) {
+    QueuePendingLocalCommit(
+        PendingLocalNigoriCommit::ForKeystoreReencryption());
   }
 }
 

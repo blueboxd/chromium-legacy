@@ -288,7 +288,9 @@ void PaginationModel::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 void PaginationModel::AnimationEnded(const gfx::Animation* animation) {
-  NotifyTransitionEnded();
+  // Do not notify transition end for the reverting animation.
+  if (!IsRevertingCurrentTransition())
+    NotifyTransitionEnded();
 
   // Save |pending_selected_page_| because SelectPage resets it.
   int next_target = pending_selected_page_;

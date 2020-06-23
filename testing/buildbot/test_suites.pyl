@@ -1280,6 +1280,12 @@
       'trace_test': {
         'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
       },
+      'webgl_conformance': {
+        'isolate_name': 'fuchsia_telemetry_gpu_integration_test',
+        'swarming': {
+          'shards': 2,
+        },
+      }
     },
 
     'fuchsia_gtests': {

@@ -255,6 +255,8 @@ void LoadingPredictor::MaybeRemovePreconnect(const GURL& url) {
   DCHECK(!shutdown_);
   if (preconnect_manager_)
     preconnect_manager_->Stop(url);
+  if (prefetch_manager_)
+    prefetch_manager_->Stop(url);
 }
 
 void LoadingPredictor::HandleOmniboxHint(const GURL& url, bool preconnectable) {

@@ -886,6 +886,7 @@ if (!is_android) {
       "../browser/heavy_ad_intervention/heavy_ad_helper_browsertest.cc",
       "../browser/history/history_browsertest.cc",
       "../browser/history/redirect_browsertest.cc",
+      "../browser/icon_loader_browsertest.cc",
       "../browser/idle/idle_browsertest.cc",
       "../browser/iframe_browsertest.cc",
       "../browser/image_fetcher/image_fetcher_impl_browsertest.cc",
@@ -1166,7 +1167,6 @@ if (!is_android) {
       "../browser/ssl/ssl_client_certificate_selector_test.cc",
       "../browser/ssl/ssl_client_certificate_selector_test.h",
       "../browser/ssl/stateful_ssl_host_state_delegate_test.cc",
-      "../browser/ssl/typed_navigation_timing_throttle_browsertest.cc",
       "../browser/storage/durable_storage_browsertest.cc",
       "../browser/storage_access_api/api_browsertest.cc",
       "../browser/subresource_filter/ad_tagging_browsertest.cc",
@@ -3180,7 +3180,9 @@ test("unit_tests") {
     "../browser/internal_auth_unittest.cc",
     "../browser/language/language_model_manager_factory_unittest.cc",
     "../browser/language/url_language_histogram_factory_unittest.cc",
+    "../browser/lite_video/lite_video_decider_unittest.cc",
     "../browser/lite_video/lite_video_hint_cache_unittest.cc",
+    "../browser/lite_video/lite_video_user_blocklist_unittest.cc",
     "../browser/logging_chrome_unittest.cc",
     "../browser/mac/exception_processor_unittest.mm",
     "../browser/mac/keystone_glue_unittest.mm",
@@ -3287,7 +3289,7 @@ test("unit_tests") {
     "../browser/performance_manager/metrics/memory_pressure_metrics_unittest.cc",
     "../browser/performance_manager/observers/isolation_context_metrics_unittest.cc",
     "../browser/performance_manager/observers/metrics_collector_unittest.cc",
-    "../browser/performance_manager/policies/dynamic_tcmalloc_policy_linux_unittest.cc",
+    "../browser/performance_manager/policies/dynamic_tcmalloc_policy_chromeos_unittest.cc",
     "../browser/performance_manager/policies/high_pmf_memory_pressure_policy_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_chromeos_unittest.cc",
     "../browser/performance_manager/policies/working_set_trimmer_policy_unittest.cc",
@@ -3384,6 +3386,7 @@ test("unit_tests") {
     "../browser/resource_coordinator/tab_load_tracker_unittest.cc",
     "../browser/resources_util_unittest.cc",
     "../browser/search/contextual_search_policy_handler_android_unittest.cc",
+    "../browser/subresource_redirect/https_image_compression_infobar_decider_unittest.cc",
     "../browser/tab/state/tab_state_db_factory_unittest.cc",
     "../browser/tab/state/tab_state_db_unittest.cc",
 
@@ -3449,7 +3452,6 @@ test("unit_tests") {
     "../browser/ssl/security_state_tab_helper_unittest.cc",
     "../browser/ssl/ssl_config_service_manager_pref_unittest.cc",
     "../browser/ssl/tls_deprecation_config_unittest.cc",
-    "../browser/ssl/typed_navigation_timing_throttle_unittest.cc",
     "../browser/status_icons/status_icon_menu_model_unittest.cc",
     "../browser/status_icons/status_icon_unittest.cc",
     "../browser/status_icons/status_tray_unittest.cc",
@@ -3604,6 +3606,7 @@ test("unit_tests") {
       "../browser/media/feeds/media_feeds_converter_unittest.cc",
       "../browser/media/feeds/media_feeds_fetcher_unittest.cc",
       "../browser/media/feeds/media_feeds_service_unittest.cc",
+      "../browser/nearby_sharing/client/nearby_share_api_call_flow_impl_unittest.cc",
       "../browser/nearby_sharing/fake_nearby_connections_manager.cc",
       "../browser/nearby_sharing/fake_nearby_connections_manager.h",
       "../browser/nearby_sharing/fast_initiation_manager_unittest.cc",
@@ -3917,6 +3920,7 @@ test("unit_tests") {
       "../browser/omnibox/suggestions/cached_zero_suggestions_manager_unittest.cc",
       "../browser/omnibox/suggestions/clipboard/clipboard_suggestion_processor_unittest.cc",
       "../browser/omnibox/suggestions/dropdown_item_view_info_list_builder_unittest.cc",
+      "../browser/omnibox/suggestions/dropdown_item_view_info_list_manager_unittest.cc",
       "../browser/omnibox/suggestions/editurl/edit_url_suggestions_unittest.cc",
       "../browser/omnibox/suggestions/entity/entity_suggestions_processor_unittest.cc",
       "../browser/omnibox/suggestions/tiles/tile_suggestion_processor_unittest.cc",
@@ -6802,6 +6806,9 @@ if (!is_fuchsia && !is_android) {
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
       "//testing/scripts/run_telemetry_as_googletest.py",
+      
+      # For Skia Gold code, which has some GPU-specific unittests.
+      "//testing/skia_gold_common/",
     ]
   }
 }

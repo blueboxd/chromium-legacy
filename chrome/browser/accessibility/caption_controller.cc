@@ -53,15 +53,6 @@ void CaptionController::RegisterProfilePrefs(
   registry->RegisterFilePathPref(prefs::kSODAPath, base::FilePath());
 }
 
-// static
-void CaptionController::InitOffTheRecordPrefs(Profile* off_the_record_profile) {
-  DCHECK(off_the_record_profile->IsOffTheRecord());
-  off_the_record_profile->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
-                                                 false);
-  off_the_record_profile->GetPrefs()->SetFilePath(prefs::kSODAPath,
-                                                  base::FilePath());
-}
-
 void CaptionController::Init() {
   // Hidden behind a feature flag.
   if (!base::FeatureList::IsEnabled(media::kLiveCaption))
@@ -147,17 +138,22 @@ void CaptionController::UpdateAccessibilityCaptionHistograms() {
 }
 
 void CaptionController::OnBrowserAdded(Browser* browser) {
-  if (browser->profile() != profile_)
+  if (browser->profile() != profile_ &&
+      browser->profile()->GetOriginalProfile() != profile_) {
     return;
+  }
 
+  DCHECK(!caption_bubble_controllers_.count(browser));
   caption_bubble_controllers_[browser] =
       CaptionBubbleController::Create(browser);
   caption_bubble_controllers_[browser]->UpdateCaptionStyle(caption_style_);
 }
 
 void CaptionController::OnBrowserRemoved(Browser* browser) {
-  if (browser->profile() != profile_)
+  if (browser->profile() != profile_ &&
+      browser->profile()->GetOriginalProfile() != profile_) {
     return;
+  }
 
   DCHECK(caption_bubble_controllers_.count(browser));
   caption_bubble_controllers_.erase(browser);

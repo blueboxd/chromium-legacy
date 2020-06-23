@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Disalin</translation>
 <translation id="2822354292072154809">Adakah anda pasti mahu menetapkan semula semua kebenaran tapak untuk <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Tapak</translation>
+<translation id="2874939134665556319">Lagu sebelumnya</translation>
 <translation id="2910701580606108292">Tanya sebelum membenarkan tapak memainkan kandungan yang dilindungi</translation>
 <translation id="2913331724188855103">Benarkan tapak untuk menyimpan dan membaca data kuki (disyorkan)</translation>
 <translation id="2968755619301702150">Pemapar sijil</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Penyegerakan latar belakang</translation>
 <translation id="3822502789641063741">Hapuskan storan tapak?</translation>
 <translation id="385051799172605136">Kembali</translation>
+<translation id="3859306556332390985">Cari ke hadapan</translation>
 <translation id="3955193568934677022">Benarkan tapak untuk memainkan kandungan yang dilindungi (disyorkan)</translation>
 <translation id="3987993985790029246">Salin pautan</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">Tajuk</translation>
 <translation id="4008040567710660924">Benarkan kuki untuk tapak tertentu.</translation>
+<translation id="4046123991198612571">Lagu seterusnya</translation>
 <translation id="4165986682804962316">Tetapan tapak</translation>
 <translation id="4226663524361240545">Pemberitahuan boleh menggetarkan peranti</translation>
 <translation id="4242533952199664413">Buka tetapan</translation>
 <translation id="4259722352634471385">Navigasi disekat: <ph name="URL" /></translation>
 <translation id="4278390842282768270">Dibenarkan</translation>
+<translation id="429312253194641664">Tapak sedang memainkan media</translation>
 <translation id="4433925000917964731">Halaman Lite disediakan oleh Google</translation>
 <translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="445467742685312942">Benarkan tapak memainkan kandungan yang dilindungi</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Alihkan ke bawah</translation>
 <translation id="6766622839693428701">Leret ke bawah untuk tutup.</translation>
 <translation id="6782111308708962316">Halang tapak web pihak ketiga daripada menyimpan dan membaca data kuki</translation>
+<translation id="6790428901817661496">Mainkan</translation>
 <translation id="6818926723028410516">Pilih item</translation>
 <translation id="6864395892908308021">Peranti ini tidak dapat membaca NFC</translation>
 <translation id="6910211073230771657">Dipadamkan</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Suatu tapak sedang menggunakan kamera dan mikrofon anda</translation>
 <translation id="8380167699614421159">Tapak ini menyiarkan iklan yang mengganggu atau mengelirukan</translation>
 <translation id="8394832520002899662">Ketik untuk kembali ke tapak</translation>
+<translation id="8441146129660941386">Cari ke belakang</translation>
 <translation id="8447861592752582886">Batalkan kebenaran peranti</translation>
 <translation id="8463851957836045671">Tapak laju</translation>
 <translation id="851751545965956758">Sekat tapak daripada menyambung ke peranti</translation>

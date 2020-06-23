@@ -2730,6 +2730,11 @@
     "expiry_milestone": 90
   },
   {
+    "name": "global-media-controls-seamless-transfer",
+    "owners": [ "noahrose@google.com", "steimel", "media-dev" ],
+    "expiry_milestone": 93
+  },
+  {
     "name": "google-password-manager",
     "owners": [ "ioanap", "jdoerrie" ],
     "expiry_milestone": 87
@@ -2896,7 +2901,7 @@
   {
     "name": "interest-feed-content-suggestions",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org" ],
-    "expiry_milestone": 90
+    "expiry_milestone": 84
   },
   {
     "name": "interest-feed-feedback",
@@ -3454,11 +3459,6 @@
     "name": "omnibox-ui-cues-for-search-history-matches",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 78
-  },
-  {
-    "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref",
-    "owners": [ "tommycli", "estark", "carlosil", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 89
   },
   {
     "name": "omnibox-ui-hide-steady-state-url-path-query-and-ref-on-interaction",

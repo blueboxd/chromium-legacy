@@ -52,7 +52,6 @@
 <translation id="1467432559032391204">වම</translation>
 <translation id="1479909375538722835">පාවෙන ප්‍රවේශ්‍යතා මෙනුව</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">ක්‍රියාත්මකයි</translation>
 <translation id="1516740043221086139">'බාධා නොකරන්න' සක්‍රීයයි.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{දැනුම් දීම් සැකසීම් පෙන්වන්න. යෙදුමක් සඳහා දැනුම්දීම් ක්‍රියාවිරහිතයි}one{දැනුම් දීම් සැකසීම් පෙන්වන්න. යෙදුම් # ක් සඳහා දැනුම්දීම් ක්‍රියාවිරහිතයි}other{දැනුම් දීම් සැකසීම් පෙන්වන්න. යෙදුම් # ක් සඳහා දැනුම්දීම් ක්‍රියාවිරහිතයි}}</translation>
 <translation id="1525508553941733066">ඉවත් කරන්න</translation>
@@ -79,7 +78,6 @@
 <translation id="1836215606488044471">සහායක (පූරණය වේ...)</translation>
 <translation id="1838895407229022812">රාත්‍රී ආලෝකය අක්‍රියයි.</translation>
 <translation id="1850504506766569011">Wi-Fi අක්‍රීය කර ඇත.</translation>
-<translation id="1859889070386344428">අක්‍රිය</translation>
 <translation id="1864454756846565995">USB-C උපාංගය (පසුපස තොට)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> වෙත කැඩපත් කරයි</translation>
 <translation id="1885785240814121742">ඇඟිලි සලකුණින් අගුළු හරින්න</translation>
@@ -138,7 +136,6 @@
 <translation id="2484513351006226581">යතුරු පුවරු පිරිසැලසුම මාරු කිරීමට <ph name="KEYBOARD_SHORTCUT" /> ඔබන්න.</translation>
 <translation id="2501920221385095727">ඇලෙන යතුරු</translation>
 <translation id="2509468283778169019">කැප්ස් ලොක් සක්‍රීයයි</translation>
-<translation id="2519465031217098801">ක්‍රියාත්මකයි</translation>
 <translation id="2542089167727451762">ඔබේ පැතිකඩ රූපයට තට්ටු කරන්න</translation>
 <translation id="255671100581129685">ප්‍රසිද්ධ සැසියකදී Google සහකරු නොලැබේ.</translation>
 <translation id="256712445991462162">ඩොක් කළ විශාලකය</translation>
@@ -261,7 +258,6 @@
 <translation id="3943857333388298514">අලවන්න</translation>
 <translation id="394485226368336402">ශ්‍රව්‍ය සැකසීම්</translation>
 <translation id="3962859241508114581">පෙර ඛණ්ඩය</translation>
-<translation id="3965097803111112935">අක්‍රිය</translation>
 <translation id="397105322502079400">ගණනය කරමින්...</translation>
 <translation id="3977512764614765090">බැටරිය <ph name="PERCENTAGE" />% කි, ආරෝපණ කෙරේ.</translation>
 <translation id="3995138139523574647">USB-C උපාංගය (දකුණුපස පසු තොට)</translation>
@@ -354,7 +350,6 @@
 <translation id="5207949376430453814">පෙළ කාකපාදය උද්දීපනය කරන්න</translation>
 <translation id="5222676887888702881">පිටවීම</translation>
 <translation id="523505283826916779">ප්‍රවේශ්‍යතා පසුතල</translation>
-<translation id="5250225880026334010">අක්‍රිය</translation>
 <translation id="5260676007519551770">4 වෙනි මේසය</translation>
 <translation id="5283198616748585639">1 විනාඩියක් එක් කරන්න</translation>
 <translation id="528468243742722775">අවසන් කරන්න</translation>
@@ -473,7 +468,6 @@
 <translation id="6650933572246256093">යුගලගත වීමට  "<ph name="DEVICE_NAME" />" අවසර ඉල්ලා සිටිනු ඇත. උපකරණයේ මෙම රහස් යතුර ඇතුළු කරන්න: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">මුරපදය</translation>
 <translation id="6665545700722362599">වෙබ් අඩවිවලට, යෙදුම්වලට සහ දිගුවලට ස්ථාන සේවා, උපාංගයේ මයික්‍රොෆෝනය, කැමරාව හෝ වෙනත් විශේෂාංග භාවිතා කිරීමට අවසරය දෙන්න</translation>
-<translation id="6669268301501499730">ක්‍රියාත්මකයි</translation>
 <translation id="6670153871843998651">3 වෙනි මේසය</translation>
 <translation id="6691659475504239918">Search+Shift+H</translation>
 <translation id="6692996468359469499">ඔබේ තේරීමට අදාළ තොරතුරු ලබා ගන්න</translation>

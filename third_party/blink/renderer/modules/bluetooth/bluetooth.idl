@@ -10,7 +10,7 @@
     SecureContext
 ] interface Bluetooth : EventTarget {
     [CallWith=ScriptState, RaisesException] Promise<boolean> getAvailability();
-    [RuntimeEnabled=WebBluetoothGetDevices, CallWith=ScriptState, RaisesException] Promise<sequence<BluetoothDevice>> getDevices();
+    [RuntimeEnabled=WebBluetoothGetDevices, CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothGetDevices] Promise<sequence<BluetoothDevice>> getDevices();
     [CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestDevice] Promise<BluetoothDevice> requestDevice (optional RequestDeviceOptions options = {});
 
     // https://webbluetoothcg.github.io/web-bluetooth/scanning.html#scanning

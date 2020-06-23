@@ -902,14 +902,8 @@
   <message name="IDS_OS_SETTINGS_TAG_PRINTING_ALT2" desc="Text for search result item which, when clicked, navigates the user to printer settings for CUPS printers (a.k.a. those that can use the Unix protocol). Alternate phrase for: 'Printers', 'Printing'">
     CUPS
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer. Alternate phrase for: 'Install printer', 'Setup printer'">
+  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer.">
     Add printer
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER_ALT1" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer. Alternate phrase for: 'Add printer', 'Setup printer'">
-    Install printer
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_PRINTING_ADD_PRINTER_ALT2" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to add a printer. Alternate phrase for: 'Add printer', 'Install printer'">
-    Setup printer
   </message>
   <message name="IDS_OS_SETTINGS_TAG_PRINTING_SAVED_PRINTERS" desc="Text for search result item which, when clicked, navigates the user to printer settings, with the option to edit saved printers.">
     Saved printers

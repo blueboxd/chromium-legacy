@@ -18,11 +18,11 @@
     Array.from(categories).sort().forEach(category => TestRunner.addResult('Has category: ' + category));
 
     TestRunner.addResult('');
-    var whitelist = [
+    const expectedCommands = [
       'Panel: Show Console', 'Drawer: Show Console', 'Appearance: Switch to dark theme',
       'Global: Auto-open DevTools for popups'
     ];
-    whitelist.forEach(item => {
+    expectedCommands.forEach(item => {
       if (!commands.has(item))
         TestRunner.addResult(item + ' is MISSING');
     });

@@ -52,7 +52,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1467432559032391204">Rangsælis</translation>
 <translation id="1479909375538722835">Fljótandi aðgengisvalmynd</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Kveikt</translation>
 <translation id="1516740043221086139">Kveikt er á „Ónáðið ekki“.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Sýna tilkynningastillingar. Slökkt er á tilkynningum fyrir forrit}one{Sýna tilkynningastillingar. Slökkt er á tilkynningum fyrir # forrit}other{Sýna tilkynningastillingar. Slökkt er á tilkynningum fyrir # forrit}}</translation>
 <translation id="1525508553941733066">LOKA</translation>
@@ -79,7 +78,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="1836215606488044471">Aðstoðarmaður (hleður...)</translation>
 <translation id="1838895407229022812">Slökkt er á næturljósi.</translation>
 <translation id="1850504506766569011">Slökkt er á Wi-Fi.</translation>
-<translation id="1859889070386344428">Slökkt</translation>
 <translation id="1864454756846565995">USB-C-tæki (tengi að aftan)</translation>
 <translation id="1882897271359938046">Speglar á <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Opna með fingrafari</translation>
@@ -138,7 +136,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="2484513351006226581">Ýttu á <ph name="KEYBOARD_SHORTCUT" /> til að skipta um lyklaskipan.</translation>
 <translation id="2501920221385095727">Festilyklar</translation>
 <translation id="2509468283778169019">Hástafalás er á</translation>
-<translation id="2519465031217098801">Kveikt</translation>
 <translation id="2542089167727451762">Ýttu á prófílmyndina þína</translation>
 <translation id="255671100581129685">Google hjálparinn er ekki í boði í opinberri lotu.</translation>
 <translation id="256712445991462162">stækkunargler í föstum glugga</translation>
@@ -261,7 +258,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="3943857333388298514">Líma</translation>
 <translation id="394485226368336402">Hljóðstillingar</translation>
 <translation id="3962859241508114581">Fyrra lag</translation>
-<translation id="3965097803111112935">Slökkt</translation>
 <translation id="397105322502079400">Reiknar...</translation>
 <translation id="3977512764614765090">Rafhlaða í <ph name="PERCENTAGE" />% og í hleðslu.</translation>
 <translation id="3995138139523574647">USB-C tæki (tengi hægra megin að aftan)</translation>
@@ -354,7 +350,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="5207949376430453814">Auðkenna textainnskotsmerki</translation>
 <translation id="5222676887888702881">Skrá út</translation>
 <translation id="523505283826916779">Aðgengisstillingar</translation>
-<translation id="5250225880026334010">Slökkt</translation>
 <translation id="5260676007519551770">Skrifborð 4</translation>
 <translation id="5283198616748585639">Bæta 1 mín. við</translation>
 <translation id="528468243742722775">Ljúka</translation>
@@ -473,7 +468,6 @@ Hér eru nokkrir hlutir sem þú getur prófað til að byrja með.</translation
 <translation id="6650933572246256093">Bluetooth-tækið „<ph name="DEVICE_NAME" />“ óskar eftir heimild til pörunar. Sláðu þennan aðgangslykil inn í því tæki: <ph name="PASSKEY" /></translation>
 <translation id="6657585470893396449">Aðgangsorð</translation>
 <translation id="6665545700722362599">Veitt vefsvæðum, forritum og viðbótum heimild til að nota staðsetningarþjónustu, hljóðnema, myndavél eða aðra eiginleika tækisins</translation>
-<translation id="6669268301501499730">Kveikt</translation>
 <translation id="6670153871843998651">Skrifborð 3</translation>
 <translation id="6691659475504239918">Leitarhnappur+Shift+H</translation>
 <translation id="6692996468359469499">Fá upplýsingar í tengslum við val þitt</translation>

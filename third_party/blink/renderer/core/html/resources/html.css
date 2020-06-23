@@ -1090,7 +1090,7 @@ rt {
 ruby > rt {
     display: block;
     font-size: 50%;
-    text-align: -internal-space-around;
+    text-align: start;
 }
 
 rp {

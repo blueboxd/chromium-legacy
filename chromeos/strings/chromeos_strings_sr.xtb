@@ -35,6 +35,7 @@
 <translation id="4003384961948020559">Није успело – излаз је пун</translation>
 <translation id="4034824040120875894">Штампач</translation>
 <translation id="4227825898293920515">Лозинка истиче за <ph name="TIME" /></translation>
+<translation id="4238516577297848345">Ниједан задатак штампања није у току</translation>
 <translation id="428217921675623177">Задаци штампања старији од 90 дана се уклањају</translation>
 <translation id="4429881212383817840">Kerberos тикет ускоро истиче</translation>
 <translation id="445059817448385655">Стара лозинка</translation>
@@ -61,6 +62,7 @@
 <translation id="6643016212128521049">Обриши</translation>
 <translation id="7162487448488904999">Галерија</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7561454561030345039">Овим подешавањем управља администратор</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7690294790491645610">Потврдите нову лозинку</translation>
 <translation id="7805768142964895445">Статус</translation>

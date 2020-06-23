@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/memory/free_deleter.h"
-#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -45,12 +44,12 @@ void AssignResult(PrintingContext::Result* out, PrintingContext::Result in) {
 // static
 std::unique_ptr<PrintingContext> PrintingContext::Create(Delegate* delegate) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  return base::WrapUnique(new PrintingContextSystemDialogWin(delegate));
+  return std::make_unique<PrintingContextSystemDialogWin>(delegate);
 #else
   // The code in printing/ is still built when the GN |enable_basic_printing|
   // variable is set to false. Just return PrintingContextWin as a dummy
   // context.
-  return base::WrapUnique(new PrintingContextWin(delegate));
+  return std::make_unique<PrintingContextWin>(delegate);
 #endif
 }
 

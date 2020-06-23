@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">Calibration is completed</translation>
 <translation id="252373100621549798">Unknown Display</translation>
 <translation id="2545651323591713692">Snooze</translation>
+<translation id="2570734079541893434">Manage settings</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{in 1 h}other{in # h}}</translation>
 <translation id="2583543531130364912">Calibrate your touchscreen</translation>
 <translation id="2666092431469916601">Top</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">Moved to page <ph name="PAGE_NUMBER" />, row <ph name="ROW_NUMBER" />, column <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="7879499977785298635">Don't block</translation>
 <translation id="7907591526440419938">Open File</translation>
+<translation id="7952747673138230804">Chrome OS shows suggestions for new content to explore. Sends statistics to improve quality only if you’ve chosen to share usage data. <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">Command</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{More than 1 unread notification}other{More than # unread notifications}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{in 1 m}other{in # m}}</translation>

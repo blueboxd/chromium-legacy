@@ -33,6 +33,7 @@
 <translation id="1323735185997015385">Excluir</translation>
 <translation id="132683371494960526">Toque duas vezes para alterar a pasta pai.</translation>
 <translation id="1340643665687018190">Fechar menu</translation>
+<translation id="1345319103680304157">Nenhuma senha comprometida</translation>
 <translation id="1358214951266274152">Visitar o link que você copiou</translation>
 <translation id="1360432990279830238">Sair e desativar a sincronização?</translation>
 <translation id="1375321115329958930">Senhas salvas</translation>
@@ -93,7 +94,6 @@
 <translation id="2073572773299281212">Ativado há <ph name="DAYS" /> dias</translation>
 <translation id="2074131957428911366">Nas <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="2079545284768500474">Desfazer</translation>
-<translation id="2081417079511601293">Bloquear de terceiros na navegação anônima</translation>
 <translation id="209018056901015185">Versão para computador</translation>
 <translation id="2103075008456228677">Abrir history.google.com</translation>
 <translation id="2116625576999540962"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens movidos</translation>
@@ -177,6 +177,9 @@
 <translation id="298306318844797842">Adicionar forma de pagamento…</translation>
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
+<translation id="3089107351814154346">Os sites podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras.
+
+Na navegação anônima, os sites não podem usar cookies para ver suas atividades de navegação em sites diferentes, por exemplo, para personalizar anúncios.</translation>
 <translation id="3112556859945124369">Marcar...</translation>
 <translation id="3131206671572504478">Bloquear tudo</translation>
 <translation id="3153862085237805241">Salvar cartão</translation>
@@ -191,6 +194,9 @@
 <translation id="3244271242291266297">MM</translation>
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Guias abertas</translation>
+<translation id="3273647133355801546">Os sites podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras.
+
+Eles também podem usar cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
 <translation id="3277021493514034324">Endereço do site copiado</translation>
 <translation id="3290875554372353449">Escolher uma conta</translation>
 <translation id="3311748811247479259">Desativada</translation>
@@ -235,6 +241,7 @@
 <translation id="3789841737615482174">Instalar</translation>
 <translation id="3803696231112616155">Oferecer a opção de traduzir esse site</translation>
 <translation id="385051799172605136">Voltar</translation>
+<translation id="3892144330757387737">Você verá seu histórico aqui</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3915450441834151894">Informações do site</translation>
 <translation id="3922310737605261887">Pesquisar texto copiado</translation>
@@ -257,6 +264,7 @@
 <translation id="4112644173421521737">Pesquisar</translation>
 <translation id="4121993058175073134">Para enviar dados de exportação líquida, configure sua conta de e-mail no aplicativo "Configurações".</translation>
 <translation id="4124987746317609294">Período</translation>
+<translation id="4152011295694446843">Você verá seus favoritos aqui</translation>
 <translation id="4172051516777682613">Sempre mostrar</translation>
 <translation id="418156467088430727">Ver versão off-line em uma nova guia</translation>
 <translation id="4181841719683918333">Idiomas</translation>
@@ -278,6 +286,7 @@
 <translation id="4469418912670346607">Continuar a configuração</translation>
 <translation id="4476574785019001431">Configurações</translation>
 <translation id="4496373720959965247">Adicionar guias e alternar entre páginas</translation>
+<translation id="4502566650163919158">Verificar agora</translation>
 <translation id="4508750114462689118">Fechar promoção de login</translation>
 <translation id="4526249700380860531">Ver e gerenciar as senhas salvas em <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Tente fazer login novamente.</translation>
@@ -309,6 +318,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="4840495572919996524">Seus favoritos, histórico, senhas e outras configurações não serão mais sincronizados com sua Conta do Google.</translation>
 <translation id="4854345657858711387">Defina uma senha</translation>
 <translation id="4860895144060829044">Ligar</translation>
+<translation id="4872323082491632254">Verificar senhas</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4901778704868714008">Salvar…</translation>
 <translation id="4904877109095351937">Marcar como lidas</translation>
@@ -341,6 +351,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Salvar</translation>
 <translation id="5327248766486351172">Nome</translation>
+<translation id="5339316356165661760">Ativar a sincronização</translation>
 <translation id="5352285283572729470">Esta configuração é gerenciada</translation>
 <translation id="5388358297987318779">Abrir imagem</translation>
 <translation id="5407969256130905701">Descartar alterações</translation>
@@ -370,6 +381,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5728700505257787410">Houve um problema durante o login em sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de login da conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>
 <translation id="5738887413654608789">Isso permite que você descubra páginas da Web relevantes com base nos seus arredores.</translation>
+<translation id="5758631781033351321">Você encontrará sua lista de leituras aqui</translation>
 <translation id="5782227691023083829">Traduzindo...</translation>
 <translation id="5803566855766646066">Tem certeza de que você quer descartar este novo card?</translation>
 <translation id="5816228676161003208">Isso permite que você pesquise mais rapidamente usando sua voz.</translation>
@@ -400,6 +412,9 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6042308850641462728">Mais</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
+<translation id="6096382830554887001">Os sites podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras.
+
+No entanto, eles não podem usar cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
 <translation id="6108923351542677676">Configuração em andamento...</translation>
 <translation id="6119050551270742952">Esta pág. está no modo anônimo</translation>
 <translation id="6122191549521593678">On-line</translation>
@@ -431,6 +446,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="6380866119319257197">Se você esquecer a senha longa ou quiser alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronizar</translation>
+<translation id="6410883413783534063">Abra guias para acessar páginas diferentes ao mesmo tempo</translation>
 <translation id="6417838470969808600">Você tem favoritos, histórico, senhas e outras configurações da conta <ph name="USER_EMAIL1" />.</translation>
 <translation id="641799622251403418">Conectado como <ph name="EMAIL" />.
 
@@ -446,7 +462,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6476800141292307438">Tradução da página para <ph name="LANGUAGE" />. Opções disponíveis na parte inferior da tela.</translation>
 <translation id="648164694371393720">Erro de autenticação</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens excluídos</translation>
-<translation id="651505212789431520">Cancelar sincronização? É possível ativar a sincronização a qualquer momento nas configurações.</translation>
+<translation id="651505212789431520">Cancelar sincronização? É possível ativar esse recurso a qualquer momento nas configurações.</translation>
 <translation id="6561262006871132942">Aumentar zoom</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
 <translation id="6628106477656132239">Data de validade inválida</translation>
@@ -473,6 +489,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="6856384753476268833">Gerenciado pela sua organização.</translation>
 <translation id="6858855187367714033">Lido</translation>
 <translation id="6859944681507688231">Para ler um código QR ou cartão de crédito, ative a câmera nas configurações.</translation>
+<translation id="6869389390665537774">Você pode ver as páginas visitadas ou apagá-las do histórico</translation>
 <translation id="6873263987691478642">Visualização dividida</translation>
 <translation id="6888009575607455378">Tem certeza de que quer descartar suas alterações?</translation>
 <translation id="6896758677409633944">Copiar</translation>
@@ -499,6 +516,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmera não está disponível</translation>
 <translation id="7159472599653637159">Solicitar um site móvel</translation>
+<translation id="7172852049901402487">Manter suas senhas protegidas contra problemas de segurança</translation>
 <translation id="7173114856073700355">Abrir "Configurações"</translation>
 <translation id="7189598951263744875">Compartilhar...</translation>
 <translation id="7192050974311852563">Iniciar registro</translation>
@@ -507,6 +525,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7272437679830969316">Não é possível verificar sua identidade. Senha não copiada.</translation>
 <translation id="7291368939935408496">Preparando senhas…</translation>
 <translation id="7293171162284876153">Para iniciar a sincronização, ative a opção "Sincronizar seus dados do Chrome".</translation>
+<translation id="7313347584264171202">Você verá suas guias anônimas aqui</translation>
 <translation id="7336264872878993241"><ph name="PERCENT" /> por cento baixados</translation>
 <translation id="7346909386216857016">Ok, entendi.</translation>
 <translation id="734758817008927353">Opções para salvar card</translation>
@@ -564,6 +583,7 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="8019783059653722575">Isso permite que você salve fotos e faça upload delas.</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8023878949384262191">Expande a seção.</translation>
+<translation id="804427445359061970">Você encontrará as guias de outros dispositivos aqui</translation>
 <translation id="8059533439631660104">Recolhe a seção.</translation>
 <translation id="806745655614357130">Manter meus dados separados</translation>
 <translation id="8073670137947914548">Download concluído</translation>
@@ -577,6 +597,9 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="8206354486702514201">Esta configuração é aplicada por seu administrador.</translation>
 <translation id="8225985093977202398">Imagens e arquivos armazenados em cache</translation>
 <translation id="8261506727792406068">Excluir</translation>
+<translation id="8262263934052349464">Os sites não podem usar cookies para melhorar sua experiência de navegação, como manter sua conta conectada ou se lembrar dos itens em um carrinho de compras.
+
+Eles também não podem usar cookies para ver sua atividade de navegação em diferentes sites, por exemplo, para personalizar anúncios.</translation>
 <translation id="8281781826761538115">Padrão: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Nova pesquisa</translation>
 <translation id="8323906514956095947">Toque no botão e mantenha-o pressionado para ver mais opções da guia</translation>
@@ -588,6 +611,7 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8458397775385147834">1 item excluído</translation>
 <translation id="8459333855531264009">Não seguro</translation>
+<translation id="8484911814435057959">Senhas comprometidas</translation>
 <translation id="8487667956631253959">Ativada</translation>
 <translation id="8487700953926739672">Disponível off-line</translation>
 <translation id="8490978609246021741">Salvar alterações</translation>
@@ -612,6 +636,7 @@ Como a conta é gerenciada por <ph name="HOSTED_DOMAIN" />, seus dados do Chrome
 <translation id="8725066075913043281">Tentar novamente</translation>
 <translation id="8730621377337864115">Concluído</translation>
 <translation id="8741995161408053644">Sua Conta do Google pode ter outras formas de histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
+<translation id="8750037785291841318">Você verá suas guias aqui</translation>
 <translation id="8756969031206844760">Atualizar senha?</translation>
 <translation id="8775144690796719618">URL inválido</translation>
 <translation id="8803639129939845298">Seguro</translation>

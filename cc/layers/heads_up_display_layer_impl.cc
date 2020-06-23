@@ -20,6 +20,7 @@
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/metrics/dropped_frame_counter.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
@@ -28,7 +29,6 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/scoped_gpu_raster.h"
 #include "cc/resources/memory_history.h"
-#include "cc/trees/frame_rate_counter.h"
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -89,27 +89,9 @@ class DummyImageProvider : public ImageProvider {
 
 }  // namespace
 
-HeadsUpDisplayLayerImpl::Graph::Graph(double indicator_value,
-                                      double start_upper_bound)
-    : value(0.0),
-      min(0.0),
-      max(0.0),
-      current_upper_bound(start_upper_bound),
-      default_upper_bound(start_upper_bound),
-      indicator(indicator_value) {}
-
-double HeadsUpDisplayLayerImpl::Graph::UpdateUpperBound() {
-  double target_upper_bound = std::max(max, default_upper_bound);
-  current_upper_bound += (target_upper_bound - current_upper_bound) * 0.5;
-  return current_upper_bound;
-}
-
 HeadsUpDisplayLayerImpl::HeadsUpDisplayLayerImpl(LayerTreeImpl* tree_impl,
                                                  int id)
-    : LayerImpl(tree_impl, id),
-      internal_contents_scale_(1.f),
-      fps_graph_(60.0, 80.0),
-      paint_time_graph_(16.0, 48.0) {}
+    : LayerImpl(tree_impl, id) {}
 
 HeadsUpDisplayLayerImpl::~HeadsUpDisplayLayerImpl() {
   ReleaseResources();
@@ -551,18 +533,8 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
     time_of_last_graph_update_ = now;
 
     if (debug_state.show_fps_counter) {
-      FrameRateCounter* fps_counter = layer_tree_impl()->frame_rate_counter();
-      fps_graph_.value = fps_counter->GetAverageFPS();
-      fps_counter->GetMinAndMaxFPS(&fps_graph_.min, &fps_graph_.max);
-      current_throughput_ = layer_tree_impl()->current_universal_throughput();
-      if (current_throughput_.has_value()) {
-        if (!max_throughput.has_value() ||
-            current_throughput_.value() > max_throughput.value())
-          max_throughput = current_throughput_;
-        if (!min_throughput.has_value() ||
-            current_throughput_.value() < min_throughput.value())
-          min_throughput = current_throughput_;
-      }
+      throughput_value_ =
+          layer_tree_impl()->dropped_frame_counter()->GetAverageThroughput();
     }
 
     if (debug_state.ShowMemoryStats()) {
@@ -573,9 +545,6 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
         memory_entry_ = MemoryHistory::Entry();
     }
   }
-
-  fps_graph_.UpdateUpperBound();
-  paint_time_graph_.UpdateUpperBound();
 }
 
 void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
@@ -598,8 +567,8 @@ void HeadsUpDisplayLayerImpl::DrawHudContents(PaintCanvas* canvas) {
     return;
   }
 
-  SkRect area =
-      DrawFPSDisplay(canvas, layer_tree_impl()->frame_rate_counter(), 0, 0);
+  SkRect area = DrawFrameThroughputDisplay(
+      canvas, layer_tree_impl()->dropped_frame_counter(), 0, 0);
   area = DrawGpuRasterizationStatus(canvas, 0, area.bottom(),
                                     std::max<SkScalar>(area.width(), 150));
 
@@ -653,30 +622,18 @@ void HeadsUpDisplayLayerImpl::DrawGraphBackground(PaintCanvas* canvas,
 
 void HeadsUpDisplayLayerImpl::DrawGraphLines(PaintCanvas* canvas,
                                              PaintFlags* flags,
-                                             const SkRect& bounds,
-                                             const Graph& graph) const {
+                                             const SkRect& bounds) const {
   // Draw top and bottom line.
   flags->setColor(DebugColors::HUDSeparatorLineColor());
   canvas->drawLine(bounds.left(), bounds.top() - 1, bounds.right(),
                    bounds.top() - 1, *flags);
   canvas->drawLine(bounds.left(), bounds.bottom(), bounds.right(),
                    bounds.bottom(), *flags);
-
-  // Draw indicator line (additive blend mode to increase contrast when drawn on
-  // top of graph).
-  flags->setColor(DebugColors::HUDIndicatorLineColor());
-  flags->setBlendMode(SkBlendMode::kPlus);
-  const double indicator_top =
-      bounds.height() * (1.0 - graph.indicator / graph.current_upper_bound) -
-      1.0;
-  canvas->drawLine(bounds.left(), bounds.top() + indicator_top, bounds.right(),
-                   bounds.top() + indicator_top, *flags);
-  flags->setBlendMode(SkBlendMode::kSrcOver);
 }
 
-SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
+SkRect HeadsUpDisplayLayerImpl::DrawFrameThroughputDisplay(
     PaintCanvas* canvas,
-    const FrameRateCounter* fps_counter,
+    const DroppedFrameCounter* dropped_frame_counter,
     int right,
     int top) const {
   const int kPadding = 4;
@@ -686,39 +643,35 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   const int kFontHeight = 12;
 
   const int kGraphWidth =
-      base::saturated_cast<int>(fps_counter->time_stamp_history_size()) - 2;
+      base::saturated_cast<int>(dropped_frame_counter->frame_history_size());
   const int kGraphHeight = 40;
 
-  const int kHistogramWidth = 37;
-
-  int width = kGraphWidth + kHistogramWidth + 4 * kPadding;
-  int height =
-      2 * kTitleFontHeight + 2 * kFontHeight + kGraphHeight + 10 * kPadding + 2;
+  int width = kGraphWidth + 4 * kPadding;
+  int height = kTitleFontHeight + kFontHeight + kGraphHeight + 6 * kPadding + 2;
   int left = 0;
   SkRect area = SkRect::MakeXYWH(left, top, width, height);
 
   PaintFlags flags;
   DrawGraphBackground(canvas, &flags, area);
 
-  SkRect title_bounds = SkRect::MakeXYWH(
-      left + kPadding, top + kPadding, kGraphWidth + kHistogramWidth + kGap + 2,
-      kTitleFontHeight);
+  SkRect title_bounds =
+      SkRect::MakeXYWH(left + kPadding, top + kPadding, kGraphWidth + kGap + 2,
+                       kTitleFontHeight);
   SkRect text_bounds =
       SkRect::MakeXYWH(left + kPadding, title_bounds.bottom() + 2 * kPadding,
-                       kGraphWidth + kHistogramWidth + kGap + 2, kFontHeight);
+                       kGraphWidth + kGap + 2, kFontHeight);
   SkRect graph_bounds =
       SkRect::MakeXYWH(left + kPadding, text_bounds.bottom() + 2 * kPadding,
                        kGraphWidth, kGraphHeight);
-  SkRect histogram_bounds =
-      SkRect::MakeXYWH(graph_bounds.right() + kGap, graph_bounds.top(),
-                       kHistogramWidth, kGraphHeight);
 
   // Draw the fps meter.
-  const std::string title("Frame Rate");
-  const std::string value_text =
-      base::StringPrintf("%5.1f fps", fps_graph_.value);
-  const std::string min_max_text =
-      base::StringPrintf("%.0f-%.0f", fps_graph_.min, fps_graph_.max);
+  const std::string title("Frames");
+  const std::string value_text = base::StringPrintf("%d %%", throughput_value_);
+  const std::string dropped_frames_text =
+      base::StringPrintf("%zu (%zu m) dropped of %zu",
+                         dropped_frame_counter->total_compositor_dropped(),
+                         dropped_frame_counter->total_main_dropped(),
+                         dropped_frame_counter->total_frames());
 
   VLOG(1) << value_text;
 
@@ -729,105 +682,40 @@ SkRect HeadsUpDisplayLayerImpl::DrawFPSDisplay(
   flags.setColor(DebugColors::FPSDisplayTextAndGraphColor());
   DrawText(canvas, flags, value_text, TextAlign::kLeft, kFontHeight,
            text_bounds.left(), text_bounds.bottom());
-  DrawText(canvas, flags, min_max_text, TextAlign::kRight, kFontHeight,
+  DrawText(canvas, flags, dropped_frames_text, TextAlign::kRight, kFontHeight,
            text_bounds.right(), text_bounds.bottom());
 
-  DrawGraphLines(canvas, &flags, graph_bounds, fps_graph_);
+  DrawGraphLines(canvas, &flags, graph_bounds);
 
-  // Draw the throughput meter.
-  int current_top = histogram_bounds.bottom() + kPadding;
-  const std::string throughput_title("Throughput");
-  const std::string throughput_value_text =
-      current_throughput_.has_value()
-          ? base::StringPrintf("%d %%", current_throughput_.value())
-          : base::StringPrintf("n/a");
-
-  VLOG(1) << throughput_value_text;
-
-  flags.setColor(DebugColors::HUDTitleColor());
-  DrawText(canvas, flags, throughput_title, TextAlign::kLeft, kTitleFontHeight,
-           title_bounds.left(), title_bounds.bottom() + current_top);
-
-  flags.setColor(DebugColors::FPSDisplayTextAndGraphColor());
-  DrawText(canvas, flags, throughput_value_text, TextAlign::kLeft, kFontHeight,
-           text_bounds.left(), text_bounds.bottom() + current_top);
-  if (min_throughput.has_value()) {
-    const std::string throughput_min_max_text = base::StringPrintf(
-        "%d-%d", min_throughput.value(), max_throughput.value());
-    DrawText(canvas, flags, throughput_min_max_text, TextAlign::kRight,
-             kFontHeight, text_bounds.right(),
-             text_bounds.bottom() + current_top);
-  }
-
-  // Collect fps graph and histogram data.
-  SkPath path;
-
-  const int kHistogramSize = 20;
-  double histogram[kHistogramSize] = {1.0};
-  double max_bucket_value = 1.0;
-
-  for (FrameRateCounter::RingBufferType::Iterator it = --fps_counter->end(); it;
-       --it) {
-    base::TimeDelta delta = fps_counter->RecentFrameInterval(it.index() + 1);
-
-    // Skip this particular instantaneous frame rate if it is not likely to have
-    // been valid.
-    if (!fps_counter->IsBadFrameInterval(delta)) {
-      double fps = 1.0 / delta.InSecondsF();
-
-      // Clamp the FPS to the range we want to plot visually.
-      double p = fps / fps_graph_.current_upper_bound;
-      if (p > 1.0)
-        p = 1.0;
-
-      // Plot this data point.
-      SkPoint cur =
-          SkPoint::Make(graph_bounds.left() + it.index(),
-                        graph_bounds.bottom() - p * graph_bounds.height());
-      if (path.isEmpty())
-        path.moveTo(cur);
-      else
-        path.lineTo(cur);
-
-      // Use the fps value to find the right bucket in the histogram.
-      int bucket_index = floor(p * (kHistogramSize - 1));
-
-      // Add the delta time to take the time spent at that fps rate into
-      // account.
-      histogram[bucket_index] += delta.InSecondsF();
-      max_bucket_value = std::max(histogram[bucket_index], max_bucket_value);
-    }
-  }
-
-  // Draw FPS histogram.
-  flags.setColor(DebugColors::HUDSeparatorLineColor());
-  canvas->drawLine(histogram_bounds.left() - 1, histogram_bounds.top() - 1,
-                   histogram_bounds.left() - 1, histogram_bounds.bottom() + 1,
-                   flags);
-  canvas->drawLine(histogram_bounds.right() + 1, histogram_bounds.top() - 1,
-                   histogram_bounds.right() + 1, histogram_bounds.bottom() + 1,
-                   flags);
-
-  flags.setColor(DebugColors::FPSDisplayTextAndGraphColor());
-  const double bar_height = histogram_bounds.height() / kHistogramSize;
-
-  for (int i = kHistogramSize - 1; i >= 0; --i) {
-    if (histogram[i] > 0) {
-      double bar_width =
-          histogram[i] / max_bucket_value * histogram_bounds.width();
-      canvas->drawRect(
-          SkRect::MakeXYWH(histogram_bounds.left(),
-                           histogram_bounds.bottom() - (i + 1) * bar_height,
-                           bar_width, 1),
-          flags);
-    }
+  // Collect the frames graph data.
+  SkPath good_path;
+  SkPath dropped_path;
+  SkPath partial_path;
+  for (auto it = --dropped_frame_counter->end(); it; --it) {
+    const auto state = **it;
+    int x = graph_bounds.left() + it.index();
+    SkPath& path = state == DroppedFrameCounter::kFrameStateDropped
+                       ? dropped_path
+                       : state == DroppedFrameCounter::kFrameStateComplete
+                             ? good_path
+                             : partial_path;
+    path.moveTo(x, graph_bounds.top());
+    path.lineTo(x, graph_bounds.bottom());
   }
 
   // Draw FPS graph.
   flags.setAntiAlias(true);
   flags.setStyle(PaintFlags::kStroke_Style);
   flags.setStrokeWidth(1);
-  canvas->drawPath(path, flags);
+
+  flags.setColor(SkColorSetA(SK_ColorGREEN, 128));
+  canvas->drawPath(good_path, flags);
+
+  flags.setColor(SkColorSetA(SK_ColorRED, 128));
+  canvas->drawPath(dropped_path, flags);
+
+  flags.setColor(SkColorSetA(SK_ColorYELLOW, 255));
+  canvas->drawPath(partial_path, flags);
 
   return area;
 }

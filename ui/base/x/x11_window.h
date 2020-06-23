@@ -8,6 +8,7 @@
 #include <array>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
@@ -20,8 +21,11 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/x/event.h"
+#include "ui/gfx/x/sync.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
+#include "ui/gfx/x/xfixes.h"
+#include "ui/gfx/x/xproto.h"
 
 class SkPath;
 
@@ -164,12 +168,14 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool has_alpha() const { return visual_has_alpha_; }
   base::Optional<int> workspace() const { return workspace_; }
 
-  XDisplay* display() const { return xdisplay_; }
+  x11::Connection* connection() const { return connection_; }
   x11::Window window() const { return xwindow_; }
   x11::Window root_window() const { return x_root_window_; }
-  ::Region shape() const { return window_shape_.get(); }
-  XID update_counter() const { return update_counter_; }
-  XID extended_update_counter() const { return extended_update_counter_; }
+  std::vector<x11::Rectangle>* shape() const { return window_shape_.get(); }
+  x11::Sync::Counter update_counter() const { return update_counter_; }
+  x11::Sync::Counter extended_update_counter() const {
+    return extended_update_counter_;
+  }
   ::Cursor last_cursor() const { return last_cursor_; }
 
  protected:
@@ -179,14 +185,16 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
  private:
   // Called on an XFocusInEvent, XFocusOutEvent, XIFocusInEvent, or an
   // XIFocusOutEvent.
-  void OnFocusEvent(bool focus_in, int mode, int detail);
+  void OnFocusEvent(bool focus_in,
+                    x11::NotifyMode mode,
+                    x11::NotifyDetail detail);
 
   // Called on an XEnterWindowEvent, XLeaveWindowEvent, XIEnterEvent, or an
   // XILeaveEvent.
   void OnCrossingEvent(bool enter,
                        bool focus_in_window_or_ancestor,
-                       int mode,
-                       int detail);
+                       x11::NotifyMode mode,
+                       x11::NotifyDetail detail);
 
   // Called when |xwindow_|'s _NET_WM_STATE property is updated.
   void OnWMStateUpdated();
@@ -194,7 +202,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   // Called when |xwindow_|'s _NET_FRAME_EXTENTS property is updated.
   void OnFrameExtentsUpdated();
 
-  void OnConfigureEvent(x11::Event* xev);
+  void OnConfigureEvent(const x11::ConfigureNotifyEvent& event);
 
   void OnWorkspaceUpdated();
 
@@ -224,7 +232,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void UnconfineCursor();
 
-  void UpdateWindowRegion(XRegion* xregion);
+  void UpdateWindowRegion(std::unique_ptr<std::vector<x11::Rectangle>> region);
 
   void NotifyBoundsChanged(const gfx::Rect& new_bounds_in_px);
 
@@ -250,7 +258,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
                                        SkPath* window_mask) = 0;
 
   // The display and the native X window hosting the root window.
-  XDisplay* xdisplay_ = nullptr;
+  x11::Connection* const connection_;
   x11::Window xwindow_ = x11::Window::None;
   x11::Window x_root_window_ = x11::Window::None;
 
@@ -277,7 +285,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   // The bounds of |xwindow_|.
   gfx::Rect bounds_in_pixels_;
 
-  VisualID visual_id_ = 0;
+  x11::VisualId visual_id_{};
 
   // Whether we used an ARGB visual for our window.
   bool visual_has_alpha_ = false;
@@ -326,8 +334,8 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   // Used for synchronizing between |xwindow_| and desktop compositor during
   // resizing.
-  XID update_counter_ = x11::None;
-  XID extended_update_counter_ = x11::None;
+  x11::Sync::Counter update_counter_{};
+  x11::Sync::Counter extended_update_counter_{};
 
   // Whenever the bounds are set, we keep the previous set of bounds around so
   // we can have a better chance of getting the real
@@ -354,8 +362,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   gfx::Size max_size_in_pixels_;
 
   // The window shape if the window is non-rectangular.
-  gfx::XScopedPtr<XRegion, gfx::XObjectDeleter<XRegion, int, XDestroyRegion>>
-      window_shape_;
+  std::unique_ptr<std::vector<x11::Rectangle>> window_shape_;
 
   // Whether |window_shape_| was set via SetShape().
   bool custom_window_shape_ = false;
@@ -378,7 +385,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   // Keep track of barriers to confine cursor.
   bool has_pointer_barriers_ = false;
-  std::array<XID, 4> pointer_barriers_;
+  std::array<x11::XFixes::Barrier, 4> pointer_barriers_;
 
   ::Cursor last_cursor_ = x11::None;
 };

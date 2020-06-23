@@ -64,6 +64,7 @@
 <translation id="2522350507219695259">क्यालिब्रेसन सम्पन्न गरियो</translation>
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
 <translation id="2545651323591713692">स्नुज गर्नुहोस्</translation>
+<translation id="2570734079541893434">सेटिङ व्यवस्थापन गर्नुहोस्</translation>
 <translation id="2573731672208488250">{HOURS,plural, =1{१ घन्टामा}other{#घन्टामा}}</translation>
 <translation id="2583543531130364912">आफ्नो टचस्क्रिनलाई क्यालिब्रेट गर्नुहोस्</translation>
 <translation id="2666092431469916601">शीर्ष</translation>
@@ -207,6 +208,7 @@
 <translation id="7848989271541991537">पृष्ठ <ph name="PAGE_NUMBER" />, पङ्क्ति <ph name="ROW_NUMBER" />, स्तम्भ <ph name="COLUMN_NUMBER" /> मा सारियो।</translation>
 <translation id="7879499977785298635">रोक नलगाउनुहोस्</translation>
 <translation id="7907591526440419938">फाइल खोल्नुहोस्</translation>
+<translation id="7952747673138230804">Chrome OS ले अन्वेषण गर्नु पर्ने नयाँ सामग्रीसम्बन्धी सुझावहरू देखाउँछ। तपाईंले प्रयोगसम्बन्धी डेटा सेयर गर्ने निर्णय गर्नुभएको छ भने मात्र सामग्री सिफारिस गर्ने सुविधाको गुणस्तर सुधार्ने प्रयोजनका लागि तथ्याङ्क पठाउँछ। <ph name="MANAGE_SETTINGS" /></translation>
 <translation id="7969046989155602842">आदेश</translation>
 <translation id="8074552109918343525">{MAX_UNREAD_NOTIFICATIONS,plural, =1{१ भन्दा बढी नपढिएका सूचना}other{# भन्दा बढी नपढिएका सूचनाहरू}}</translation>
 <translation id="8086866675552927481">{MINUTES,plural, =1{१ मिनेटमा}other{# मिनेटमा}}</translation>
@@ -233,7 +235,7 @@
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE" /> फाइल (। <ph name="SAVEAS_EXTENSION_NAME" /> )</translation>
 <translation id="8649597172973390955">सेल्फ सधैँ देखिने छ</translation>
 <translation id="8677655579646609597"><ph name="QUANTITY" /> KB/s</translation>
-<translation id="8685326675965865247">आफ्नो यन्त्र, एप, सेटिङ र वेबमा खोज्नुहोस्। आफ्ना एपहरू नेभिगेट गर्न तीर कुञ्जीहरू प्रयोग गर्नुहोस्।</translation>
+<translation id="8685326675965865247">आफ्नो यन्त्र, एप, सेटिङ र वेबमा खोज्नुहोस्। आफ्ना एपहरूमा नेभिगेट गर्न तीर कुञ्जीहरू प्रयोग गर्नुहोस्।</translation>
 <translation id="8725488761726303204">+<ph name="NUMBER" /> थप</translation>
 <translation id="8730621377337864115">गरियो</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{१ घन्टा}other{# घन्टा}}</translation>

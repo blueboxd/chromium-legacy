@@ -34,11 +34,8 @@ using AXStringProperty = mojom::AccessibilityStringProperty;
 
 AccessibilityNodeInfoDataWrapper::AccessibilityNodeInfoDataWrapper(
     AXTreeSourceArc* tree_source,
-    AXNodeInfoData* node,
-    bool is_important)
-    : AccessibilityInfoDataWrapper(tree_source),
-      node_ptr_(node),
-      is_important_(is_important) {}
+    AXNodeInfoData* node)
+    : AccessibilityInfoDataWrapper(tree_source), node_ptr_(node) {}
 
 AccessibilityNodeInfoDataWrapper::~AccessibilityNodeInfoDataWrapper() = default;
 
@@ -74,11 +71,9 @@ bool AccessibilityNodeInfoDataWrapper::IsVirtualNode() const {
 
 bool AccessibilityNodeInfoDataWrapper::IsIgnored() const {
   if (!tree_source_->IsScreenReaderMode())
-    return !is_important_;
+    return !IsImportantInAndroid();
 
-  // Most conditions are precomputed in AXTreeSourceArc::BuildImportanceTable().
-  // TODO(hirokisato): migrate importance computation here.
-  if (!is_important_)
+  if (!IsImportantInAndroid() || !HasImportantProperty())
     return true;
 
   if (IsAccessibilityFocusableContainer())
@@ -88,6 +83,10 @@ bool AccessibilityNodeInfoDataWrapper::IsIgnored() const {
     return false;  // A layout container with a11y importance.
 
   return !HasAccessibilityFocusableText();
+}
+
+bool AccessibilityNodeInfoDataWrapper::IsImportantInAndroid() const {
+  return IsVirtualNode() || GetProperty(AXBooleanProperty::IMPORTANCE);
 }
 
 bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
@@ -102,7 +101,12 @@ bool AccessibilityNodeInfoDataWrapper::CanBeAccessibilityFocused() const {
 
 bool AccessibilityNodeInfoDataWrapper::IsAccessibilityFocusableContainer()
     const {
-  if (!is_important_)
+  if (IsVirtualNode()) {
+    return GetProperty(AXBooleanProperty::SCREEN_READER_FOCUSABLE) ||
+           GetProperty(AXBooleanProperty::FOCUSABLE);
+  }
+
+  if (!IsImportantInAndroid() || (IsScrollableContainer() && !HasText()))
     return false;
 
   return GetProperty(AXBooleanProperty::SCREEN_READER_FOCUSABLE) ||
@@ -584,7 +588,19 @@ bool AccessibilityNodeInfoDataWrapper::GetProperty(
 
 bool AccessibilityNodeInfoDataWrapper::HasStandardAction(
     AXActionType action) const {
-  return arc::HasStandardAction(node_ptr_, action);
+  if (!node_ptr_->int_list_properties)
+    return false;
+
+  auto itr = node_ptr_->int_list_properties->find(
+      AXIntListProperty::STANDARD_ACTION_IDS);
+  if (itr == node_ptr_->int_list_properties->end())
+    return false;
+
+  for (const auto supported_action : itr->second) {
+    if (static_cast<AXActionType>(supported_action) == action)
+      return true;
+  }
+  return false;
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(
@@ -622,7 +638,10 @@ bool AccessibilityNodeInfoDataWrapper::HasText() const {
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasAccessibilityFocusableText() const {
-  if (!is_important_ || !HasText())
+  if (IsVirtualNode())
+    return HasText();
+
+  if (!IsImportantInAndroid() || !HasText())
     return false;
 
   // If any ancestor has a focusable property, the text is used by that node.
@@ -649,7 +668,7 @@ void AccessibilityNodeInfoDataWrapper::ComputeNameFromContents(
 
 void AccessibilityNodeInfoDataWrapper::ComputeNameFromContentsInternal(
     std::vector<std::string>* names) const {
-  if (IsAccessibilityFocusableContainer())
+  if (IsVirtualNode() || IsAccessibilityFocusableContainer())
     return;
 
   // Take the name from either content description or text. It's not clear
@@ -698,6 +717,56 @@ bool AccessibilityNodeInfoDataWrapper::IsToplevelScrollItem() const {
 
   return static_cast<AccessibilityNodeInfoDataWrapper*>(parent)
       ->IsScrollableContainer();
+}
+
+bool AccessibilityNodeInfoDataWrapper::HasImportantProperty() const {
+  if (!has_important_property_cache_.has_value())
+    has_important_property_cache_ = HasImportantPropertyInternal();
+
+  return *has_important_property_cache_;
+}
+
+bool AccessibilityNodeInfoDataWrapper::HasImportantPropertyInternal() const {
+  if (HasNonEmptyStringProperty(node_ptr_,
+                                AXStringProperty::CONTENT_DESCRIPTION) ||
+      HasNonEmptyStringProperty(node_ptr_, AXStringProperty::TEXT) ||
+      HasNonEmptyStringProperty(node_ptr_, AXStringProperty::PANE_TITLE) ||
+      HasNonEmptyStringProperty(node_ptr_, AXStringProperty::HINT_TEXT) ||
+      cached_name_.has_value()) {
+    return true;
+  }
+
+  // These properties are sorted in the same order of mojom file.
+  if (GetProperty(AXBooleanProperty::CHECKABLE) ||
+      GetProperty(AXBooleanProperty::FOCUSABLE) ||
+      GetProperty(AXBooleanProperty::SELECTED) ||
+      GetProperty(AXBooleanProperty::CLICKABLE) ||
+      GetProperty(AXBooleanProperty::EDITABLE)) {
+    return true;
+  }
+
+  if (HasStandardAction(AXActionType::FOCUS) ||
+      HasStandardAction(AXActionType::CLEAR_FOCUS) ||
+      HasStandardAction(AXActionType::CLICK)) {
+    return true;
+  }
+
+  ui::AXNodeData data;
+  PopulateAXRole(&data);
+  if (ui::IsControl(data.role))
+    return true;
+
+  // Check if any ancestor has an important property.
+  std::vector<AccessibilityInfoDataWrapper*> children;
+  GetChildren(&children);
+  for (AccessibilityInfoDataWrapper* child : children) {
+    if (static_cast<AccessibilityNodeInfoDataWrapper*>(child)
+            ->HasImportantProperty()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace arc

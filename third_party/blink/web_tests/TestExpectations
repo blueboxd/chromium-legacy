@@ -188,7 +188,6 @@ crbug.com/974652 [ Debug ] fast/canvas/OffscreenCanvas-copyImage.html [ Pass Fai
 crbug.com/1011060 virtual/gpu/fast/canvas/bug382588.html [ Pass Failure ]
 crbug.com/1011060 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure Crash ]
 
-crbug.com/974666 [ Mac10.13 ] http/tests/misc/object-embedding-svg-delayed-size-negotiation-2.htm [ Pass Failure ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform-2.html [ Pass Crash ]
 crbug.com/974720 [ Mac10.13 ] virtual/text-antialias/firstline/capitalize-transform.html [ Pass Crash ]
 
@@ -883,7 +882,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/flowthread-with-floa
 
 crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-nested.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos-with-overflow.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/external/wpt/css/css-break/block-end-aligned-abspos.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-000.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-001.html [ Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/external/wpt/css/css-break/break-between-avoid-003.html [ Pass ]
@@ -990,7 +988,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-relpos-re
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-child-layer-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/composited-with-overflow-in-next-column.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/doubly-nested-with-top-padding-crossing-row-boundaries.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fast/multicol/dynamic/bottom-aligned-abspos-change-column-height.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/change-second-row-height.html [ Failure ]
 crbug.com/1066617 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-after-spanner-before-content.html [ Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/insert-spanner-into-stf-constrained-width.html [ Failure ]
@@ -1118,8 +1115,6 @@ crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/relayout-abspos.html
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/remove-unbreakable-block-in-line-float.html [ Failure ]
 crbug.com/829028 virtual/layout_ng_block_frag/fragmentation/scrolling-contents-scroll.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fragmentation/unbreakable-tall-float-before-line.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/widows-change-width-abspos-percent-width.html [ Failure ]
-crbug.com/1079031 virtual/layout_ng_block_frag/fragmentation/widows-change-width-abspos-right-aligned.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/printing/fixed-positioned-child-repeats-even-when-html-and-body-are-zero-height.html [ Crash Pass ]
 crbug.com/591099 virtual/layout_ng_block_frag/printing/fixed-positioned-child-shouldnt-print.html [ Crash Pass ]
 crbug.com/829028 virtual/layout_ng_block_frag/printing/frameset.html [ Failure ]
@@ -1200,6 +1195,7 @@ crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/css-contain/contain-size-multicol-001.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-002.html [ Crash Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/contain/contain-size-multicol-003.html [ Failure ]
+crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-flexbox.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-grid.html [ Crash Pass ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-multicol.html [ Failure ]
 crbug.com/875235 virtual/layout_ng_fieldset/external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-percentage-block-size.html [ Failure ]
@@ -1663,7 +1659,7 @@ crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/selec
 crbug.com/123456 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/select/popup-with-display-none-optgroup.html [ Skip ]
 
 crbug.com/1056027 [ Fuchsia ] virtual/text-antialias/small-caps-aat.html [ Failure Pass Timeout ]
-crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Failure Pass ]
+crbug.com/1057339 [ Fuchsia ] virtual/text-antialias/international/rtl-mark.html [ Failure Pass Crash ]
 
 # `hyphens: auto` not supported on Win/Linux/ChromeOS
 crbug.com/652964 [ Linux ] virtual/text-antialias/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
@@ -6660,7 +6656,6 @@ crbug.com/1066716 http/tests/cache/zero-length-xhr.html [ Pass Timeout ]
 crbug.com/1067533 [ Mac10.10 ] external/wpt/shape-detection/idlharness.https.any.sharedworker.html [ Pass Failure ]
 
 # Temporarily disabled for landing changes to DevTools frontend
-crbug.com/1066595 http/tests/devtools/tracing/timeline-network/timeline-network-resource.js [ Pass Failure ]
 crbug.com/1066579 http/tests/devtools/har-importer.js [ Pass Failure ]
 
 # Flaky test, happens only on Mac 10.13.
@@ -6810,7 +6805,6 @@ crbug.com/1091829 [ Mac ] fast/scrolling/scroll-non-composited-scroller.html [ P
 crbug.com/1091829 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scroll-non-composited-scroller.html [ Pass Failure ]
 crbug.com/1091250 [ Win10 ] virtual/cors/http/tests/misc/resource-timing-sizes-multipart.html [ Pass Failure ]
 crbug.com/1091948 [ Linux ] external/wpt/html/canvas/element/manual/fill-and-stroke-styles/canvas_colorsandstyles_createlineargradient_001.htm [ Pass Timeout ]
-crbug.com/1092091 [ Mac ] virtual/dark-color-scheme/datetimelocal-picker/datetimelocal-open.html [ Pass Failure ]
 
 # Sheriff 2020-06-06
 crbug.com/1091843 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Pass Failure ]
@@ -6872,3 +6866,10 @@ crbug.com/1093497 http/tests/history/client-redirect-after-push-state.html [ Pas
 
 crbug.com/1097094 external/wpt/window-segments/getWindowSegments-iframes.tentative.sub.html [ Pass Timeout ]
 crbug.com/1097810 [ Mac10.13 Debug ] external/wpt/editing/other/white-spaces-after-execCommand-delete.tentative.html [ Pass Timeout ]
+
+crbug.com/1098067 [ Fuchsia ] external/wpt/shadow-dom/Element-interface-shadowRoot-attribute.html [ Pass Crash ]
+crbug.com/1098067 [ Fuchsia ] external/wpt/shadow-dom/untriaged/shadow-trees/upper-boundary-encapsulation/dom-tree-accessors-002.html [ Pass Crash ]
+crbug.com/1098067 [ Fuchsia ] virtual/text-antialias/bidi-isolate-nextlinebreak-failure.html [ Pass Crash ]
+
+# Sheriff 2020-06-23
+crbug.com/1098136 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure ]

@@ -1003,6 +1003,33 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Autofill.EditedAutofilledFieldAtSubmission">
+  <owner>koerber@google.com</owner>
+  <owner>battre@google.com</owner>
+  <summary>
+    Records when a user edits a value that was filled by autofill.
+  </summary>
+  <metric name="FieldSignature">
+    <summary>
+      The signature of the field. This is the hash identifier used to denote
+      this field for query and voting purposes. See
+      components/autofill/core/common/signatures_util.cc for more details.
+    </summary>
+  </metric>
+  <metric name="FormSignature">
+    <summary>
+      The signature of the form. This is the hash identifier used to denote this
+      form for query and voting purposes. See
+      components/autofill/core/common/signatures_util.cc for more details.
+    </summary>
+  </metric>
+  <metric name="OverallType" enum="AutofillServerFieldType">
+    <summary>
+      Field's overall |ServerFieldType|. See: autofill::ServerFieldType
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.FieldFillStatus">
   <owner>rogerm@chromium.org</owner>
   <summary>

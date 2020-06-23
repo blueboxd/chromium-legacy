@@ -14,6 +14,7 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/public_account_warning_dialog.h"
 #include "ash/login/ui/views_utils.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -22,6 +23,8 @@
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -32,7 +35,6 @@
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-
 namespace ash {
 
 namespace {
@@ -307,8 +309,12 @@ class RightPaneView : public NonAccessibleView,
         kSpacingBetweenLabelsDp));
     AddChildView(labels_view_);
 
-    monitoring_warning_view_ = new MonitoringWarningView();
-    labels_view_->AddChildView(monitoring_warning_view_);
+    const bool enable_warning = Shell::Get()->local_state()->GetBoolean(
+        prefs::kManagedGuestSessionPrivacyWarningsEnabled);
+    if (enable_warning) {
+      monitoring_warning_view_ = new MonitoringWarningView();
+      labels_view_->AddChildView(monitoring_warning_view_);
+    }
 
     const base::string16 link = l10n_util::GetStringUTF16(IDS_ASH_LEARN_MORE);
     size_t offset;
@@ -486,7 +492,8 @@ class RightPaneView : public NonAccessibleView,
   void UpdateForUser(const LoginUserInfo& user) {
     DCHECK_EQ(user.basic_user_info.type,
               user_manager::USER_TYPE_PUBLIC_ACCOUNT);
-    monitoring_warning_view_->UpdateForUser(user);
+    if (monitoring_warning_view_)
+      monitoring_warning_view_->UpdateForUser(user);
     current_user_ = user;
     if (!language_changed_by_user_)
       selected_language_item_.value = user.public_account_info->default_locale;
@@ -510,10 +517,11 @@ class RightPaneView : public NonAccessibleView,
   }
 
   void SetShowFullManagementDisclosure(bool show_full_management_disclosure) {
-    monitoring_warning_view_->SetWarningType(
-        show_full_management_disclosure
-            ? MonitoringWarningView::WarningType::kFullWarning
-            : MonitoringWarningView::WarningType::kSoftWarning);
+    if (monitoring_warning_view_)
+      monitoring_warning_view_->SetWarningType(
+          show_full_management_disclosure
+              ? MonitoringWarningView::WarningType::kFullWarning
+              : MonitoringWarningView::WarningType::kSoftWarning);
   }
 
   void OnLanguageSelected(LoginMenuView::Item item) {
@@ -715,16 +723,21 @@ LoginExpandedPublicAccountView::TestApi::selected_keyboard_item() {
 
 views::ImageView*
 LoginExpandedPublicAccountView::TestApi::monitoring_warning_icon() {
-  return view_->right_pane_->monitoring_warning_view_->image_;
+  if (view_->right_pane_->monitoring_warning_view_)
+    return view_->right_pane_->monitoring_warning_view_->image_;
+  return nullptr;
 }
 
 views::Label*
 LoginExpandedPublicAccountView::TestApi::monitoring_warning_label() {
-  return view_->right_pane_->monitoring_warning_view_->label_;
+  if (view_->right_pane_->monitoring_warning_view_)
+    return view_->right_pane_->monitoring_warning_view_->label_;
+  return nullptr;
 }
 
 void LoginExpandedPublicAccountView::TestApi::ResetUserForTest() {
-  view_->right_pane_->monitoring_warning_view_->enterprise_domain_.reset();
+  if (view_->right_pane_->monitoring_warning_view_)
+    view_->right_pane_->monitoring_warning_view_->enterprise_domain_.reset();
 }
 
 bool LoginExpandedPublicAccountView::TestApi::SelectLanguage(
@@ -812,6 +825,13 @@ LoginExpandedPublicAccountView::LoginExpandedPublicAccountView(
 }
 
 LoginExpandedPublicAccountView::~LoginExpandedPublicAccountView() = default;
+
+// static
+void LoginExpandedPublicAccountView::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(
+      prefs::kManagedGuestSessionPrivacyWarningsEnabled, true);
+}
 
 void LoginExpandedPublicAccountView::ProcessPressedEvent(
     const ui::LocatedEvent* event) {

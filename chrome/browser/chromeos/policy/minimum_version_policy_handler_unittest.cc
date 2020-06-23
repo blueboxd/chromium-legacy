@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/notifications/system_notification_helper.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
@@ -105,6 +107,7 @@ class MinimumVersionPolicyHandlerTest
  private:
   bool user_managed_ = true;
   ScopedTestingLocalState local_state_;
+  base::test::ScopedFeatureList feature_list_;
   chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
   std::unique_ptr<NotificationDisplayServiceTester> notification_service_;
   chromeos::ScopedStubInstallAttributes scoped_stub_install_attributes_;
@@ -114,7 +117,9 @@ class MinimumVersionPolicyHandlerTest
 };
 
 MinimumVersionPolicyHandlerTest::MinimumVersionPolicyHandlerTest()
-    : local_state_(TestingBrowserProcess::GetGlobal()) {}
+    : local_state_(TestingBrowserProcess::GetGlobal()) {
+  feature_list_.InitAndEnableFeature(chromeos::features::kMinimumChromeVersion);
+}
 
 void MinimumVersionPolicyHandlerTest::SetUp() {
   auto fake_update_engine_client =

@@ -1188,14 +1188,13 @@ TEST_F(ScrollableShelfViewWithAppScalingTest,
   EXPECT_EQ(HotseatDensity::kSemiDense,
             hotseat_widget->target_hotseat_density());
 
-  // Unpin an app icon. Verify that app scaling is still on.
+  // Unpin an app icon. Verify that hotseat density updates.
   ShelfModel* shelf_model = ShelfModel::Get();
   shelf_model->RemoveItemAt(shelf_model->ItemIndexByID(shelf_id));
   test_api_->RunMessageLoopUntilAnimationsDone();
-  EXPECT_EQ(HotseatDensity::kSemiDense,
-            hotseat_widget->target_hotseat_density());
+  EXPECT_EQ(HotseatDensity::kNormal, hotseat_widget->target_hotseat_density());
 
-  // Exit overview mode. Verify that app scaling is off now.
+  // Exit overview mode. Verify the hotseat density.
   {
     OverviewAnimationWaiter waiter;
     Shell::Get()->overview_controller()->EndOverview();

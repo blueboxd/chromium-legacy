@@ -29,6 +29,7 @@
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/input/scrollbar_controller.h"
 #include "cc/layers/layer_collections.h"
+#include "cc/metrics/dropped_frame_counter.h"
 #include "cc/metrics/event_metrics.h"
 #include "cc/metrics/events_metrics_manager.h"
 #include "cc/metrics/frame_sequence_tracker_collection.h"
@@ -83,7 +84,6 @@ class BrowserControlsOffsetManager;
 class CompositorFrameReportingController;
 class DebugRectHistory;
 class EvictionTilePriorityQueue;
-class FrameRateCounter;
 class ImageAnimationController;
 class LCDTextMetricsReporter;
 class LayerImpl;
@@ -655,9 +655,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   const gfx::Transform& DrawTransform() const;
 
   std::unique_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
-  FrameRateCounter* fps_counter() { return fps_counter_.get(); }
-  base::Optional<int> current_universal_throughput() {
-    return frame_trackers_.CurrentUniversalThroughput();
+  DroppedFrameCounter* dropped_frame_counter() {
+    return &dropped_frame_counter_;
   }
   MemoryHistory* memory_history() { return memory_history_.get(); }
   DebugRectHistory* debug_rect_history() { return debug_rect_history_.get(); }
@@ -1258,7 +1257,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
 
   std::unique_ptr<PageScaleAnimation> page_scale_animation_;
 
-  std::unique_ptr<FrameRateCounter> fps_counter_;
+  DroppedFrameCounter dropped_frame_counter_;
   std::unique_ptr<MemoryHistory> memory_history_;
   std::unique_ptr<DebugRectHistory> debug_rect_history_;
 

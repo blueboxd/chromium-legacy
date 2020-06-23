@@ -1832,14 +1832,11 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderLeftEquals(const ComputedStyle& o) const {
     return BorderLeftWidthInternal() == o.BorderLeftWidthInternal() &&
            BorderLeftStyle() == o.BorderLeftStyle() &&
-           BorderLeftColor() == o.BorderLeftColor() &&
-           BorderLeftColorIsCurrentColor() == o.BorderLeftColorIsCurrentColor();
+           BorderLeftColor() == o.BorderLeftColor();
   }
   bool BorderLeftEquals(const BorderValue& o) const {
     return BorderLeftWidthInternal().ToFloat() == o.Width() &&
-           BorderLeftStyle() == o.Style() &&
-           BorderLeftColor() == o.GetColor() &&
-           BorderLeftColorIsCurrentColor() == o.ColorIsCurrentColor();
+           BorderLeftStyle() == o.Style() && BorderLeftColor() == o.GetColor();
   }
 
   bool BorderLeftVisuallyEqual(const ComputedStyle& o) const {
@@ -1855,15 +1852,12 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderRightEquals(const ComputedStyle& o) const {
     return BorderRightWidthInternal() == o.BorderRightWidthInternal() &&
            BorderRightStyle() == o.BorderRightStyle() &&
-           BorderRightColor() == o.BorderRightColor() &&
-           BorderRightColorIsCurrentColor() ==
-               o.BorderRightColorIsCurrentColor();
+           BorderRightColor() == o.BorderRightColor();
   }
   bool BorderRightEquals(const BorderValue& o) const {
     return BorderRightWidthInternal().ToFloat() == o.Width() &&
            BorderRightStyle() == o.Style() &&
-           BorderRightColor() == o.GetColor() &&
-           BorderRightColorIsCurrentColor() == o.ColorIsCurrentColor();
+           BorderRightColor() == o.GetColor();
   }
 
   bool BorderRightVisuallyEqual(const ComputedStyle& o) const {
@@ -1889,13 +1883,11 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderTopEquals(const ComputedStyle& o) const {
     return BorderTopWidthInternal() == o.BorderTopWidthInternal() &&
            BorderTopStyle() == o.BorderTopStyle() &&
-           BorderTopColor() == o.BorderTopColor() &&
-           BorderTopColorIsCurrentColor() == o.BorderTopColorIsCurrentColor();
+           BorderTopColor() == o.BorderTopColor();
   }
   bool BorderTopEquals(const BorderValue& o) const {
     return BorderTopWidthInternal().ToFloat() == o.Width() &&
-           BorderTopStyle() == o.Style() && BorderTopColor() == o.GetColor() &&
-           BorderTopColorIsCurrentColor() == o.ColorIsCurrentColor();
+           BorderTopStyle() == o.Style() && BorderTopColor() == o.GetColor();
   }
 
   bool BorderBottomVisuallyEqual(const ComputedStyle& o) const {
@@ -1911,15 +1903,12 @@ class ComputedStyle : public ComputedStyleBase,
   bool BorderBottomEquals(const ComputedStyle& o) const {
     return BorderBottomWidthInternal() == o.BorderBottomWidthInternal() &&
            BorderBottomStyle() == o.BorderBottomStyle() &&
-           BorderBottomColor() == o.BorderBottomColor() &&
-           BorderBottomColorIsCurrentColor() ==
-               o.BorderBottomColorIsCurrentColor();
+           BorderBottomColor() == o.BorderBottomColor();
   }
   bool BorderBottomEquals(const BorderValue& o) const {
     return BorderBottomWidthInternal().ToFloat() == o.Width() &&
            BorderBottomStyle() == o.Style() &&
-           BorderBottomColor() == o.GetColor() &&
-           BorderBottomColorIsCurrentColor() == o.ColorIsCurrentColor();
+           BorderBottomColor() == o.GetColor();
   }
 
   bool BorderEquals(const ComputedStyle& o) const {

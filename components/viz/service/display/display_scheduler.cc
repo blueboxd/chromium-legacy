@@ -176,8 +176,6 @@ bool DisplayScheduler::OnBeginFrame(const BeginFrameArgs& args) {
 
   // Schedule the deadline.
   current_begin_frame_args_ = save_args;
-  current_begin_frame_args_.deadline -=
-      BeginFrameArgs::DefaultEstimatedDisplayDrawTime(save_args.interval);
   inside_begin_frame_deadline_interval_ = true;
   UpdateHasPendingSurfaces();
   ScheduleBeginFrameDeadline();

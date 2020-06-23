@@ -4,7 +4,9 @@
 
 package org.chromium.chrome.browser.previews;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.url.URI;
 
@@ -72,6 +74,11 @@ public final class PreviewsAndroidBridge {
     public String getPreviewsType(WebContents webContents) {
         return PreviewsAndroidBridgeJni.get().getPreviewsType(
                 mNativePreviewsAndroidBridge, PreviewsAndroidBridge.this, webContents);
+    }
+
+    @CalledByNative
+    private static void createHttpsImageCompressionInfoBar(final Tab tab) {
+        HttpsImageCompressionUtils.createInfoBar(tab);
     }
 
     @NativeMethods

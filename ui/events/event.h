@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"

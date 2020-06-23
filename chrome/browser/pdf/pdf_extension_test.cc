@@ -281,17 +281,7 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
         web_contents, base::BindRepeating(&GetGuestCallback, &guest_contents)));
     ASSERT_TRUE(guest_contents);
     ASSERT_TRUE(content::ExecuteScript(
-        guest_contents,
-        "var oldSendScriptingMessage = "
-        "    PDFViewer.prototype.sendScriptingMessage_;"
-        "PDFViewer.prototype.sendScriptingMessage_ = function(message) {"
-        "  try {"
-        "    oldSendScriptingMessage.bind(this)(message);"
-        "  } finally {"
-        "    if (message.type == 'getSelectedTextReply')"
-        "      this.parentWindow_.postMessage('flush', '*');"
-        "  }"
-        "}"));
+        guest_contents, "viewer.overrideSendScriptingMessageForTest();"));
 
     // Add an event listener for flush messages and request the selected text.
     // If we get a flush message without receiving getSelectedText we know that
@@ -2635,20 +2625,21 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabInAndOutOfPDFPlugin) {
   ASSERT_TRUE(guest_contents);
 
   // Set focus on last toolbar element (zoom-out-button).
-  ASSERT_TRUE(content::ExecuteScript(guest_contents,
-                                     R"(document.getElementById('zoom-toolbar')
-                                            .$['zoom-out-button']
-                                            .$$('cr-icon-button')
-                                            .focus();)"));
+  ASSERT_TRUE(
+      content::ExecuteScript(guest_contents,
+                             R"(viewer.shadowRoot.querySelector('#zoom-toolbar')
+         .$['zoom-out-button']
+         .$$('cr-icon-button')
+         .focus();)"));
 
   // The script will ensure we return the the focused element on focus.
   const char kScript[] = R"(
-    const plugin = document.getElementById('plugin');
+    const plugin = viewer.shadowRoot.querySelector('#plugin');
     plugin.addEventListener('focus', () => {
       window.domAutomationController.send('plugin');
     });
 
-    const button = document.getElementById('zoom-toolbar')
+    const button = viewer.shadowRoot.querySelector('#zoom-toolbar')
                    .$['zoom-out-button']
                    .$$('cr-icon-button');
     button.addEventListener('focus', () => {

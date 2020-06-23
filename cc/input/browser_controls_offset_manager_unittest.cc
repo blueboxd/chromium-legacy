@@ -1087,5 +1087,61 @@ TEST(BrowserControlsOffsetManagerTest, ScrollWithMinHeightSetForBothControls) {
   manager->ScrollEnd();
 }
 
+TEST(BrowserControlsOffsetManagerTest, ChangingBottomHeightFromZeroAnimates) {
+  MockBrowserControlsOffsetManagerClient client(100, 0.5f, 0.5f);
+  client.SetBrowserControlsParams({100, 30, 0, 0, false, false});
+  BrowserControlsOffsetManager* manager = client.manager();
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+
+  // Set the bottom controls height to 100 with animation.
+  client.SetBrowserControlsParams({100, 30, 100, 0, true, false});
+  EXPECT_TRUE(manager->HasAnimation());
+  // The bottom controls should be hidden in the beginning.
+  EXPECT_FLOAT_EQ(0.f, manager->ContentBottomOffset());
+  EXPECT_FLOAT_EQ(0.f, client.CurrentBottomControlsShownRatio());
+
+  base::TimeTicks time = base::TimeTicks::Now();
+
+  // First animate will establish the animaion.
+  float previous_ratio = manager->BottomControlsShownRatio();
+  manager->Animate(time);
+  EXPECT_EQ(manager->BottomControlsShownRatio(), previous_ratio);
+
+  while (manager->HasAnimation()) {
+    previous_ratio = manager->BottomControlsShownRatio();
+    time = base::TimeDelta::FromMicroseconds(100) + time;
+    manager->Animate(time);
+    EXPECT_GT(manager->BottomControlsShownRatio(), previous_ratio);
+  }
+
+  // Now the bottom controls should be fully shown.
+  EXPECT_FLOAT_EQ(100.f, manager->ContentBottomOffset());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+}
+
+TEST(BrowserControlsOffsetManagerTest,
+     ChangingControlsHeightToZeroWithAnimationIsNoop) {
+  MockBrowserControlsOffsetManagerClient client(100, 0.5f, 0.5f);
+  client.SetBrowserControlsParams({100, 20, 80, 10, false, false});
+  BrowserControlsOffsetManager* manager = client.manager();
+  EXPECT_FLOAT_EQ(1.f, client.CurrentTopControlsShownRatio());
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+
+  // Set the bottom controls height to 0 with animation.
+  client.SetBrowserControlsParams({100, 20, 0, 0, true, false});
+
+  // There shouldn't be an animation because we can't animate controls with 0
+  // height.
+  EXPECT_FALSE(manager->HasAnimation());
+  // Also, the bottom controls ratio should stay the same.
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+
+  // Increase the top controls height with animation.
+  client.SetBrowserControlsParams({120, 20, 0, 0, true, false});
+  // This shouldn't override the bottom controls shown ratio.
+  EXPECT_FLOAT_EQ(1.f, client.CurrentBottomControlsShownRatio());
+}
+
 }  // namespace
 }  // namespace cc

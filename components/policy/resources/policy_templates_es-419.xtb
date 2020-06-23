@@ -597,18 +597,18 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 
       Ten en cuenta que, si la plataforma es compatible con las notificaciones de política, el retraso de actualización se establecerá en 24 horas (se ignoran todos los valores predeterminados y el valor de esta política), ya que se espera que las notificaciones de política fuercen una actualización de forma automática cada vez que la política cambie. Esto hace que las actualizaciones frecuentes no sean necesarias.</translation>
 <translation id="2024476116966025075">Configurar el nombre de dominio requerido para los clientes de acceso remoto</translation>
-<translation id="2024821084720338323">Si se habilita, la función de <ph name="PRODUCT_NAME" /> limitará y fusionará de forma drástica los cronómetros de JavaScript de las pestañas en segundo plano; estos no funcionarán más de uno por minuto después de que una página haya estado en segundo plano durante 5 minutos o más.
+<translation id="2024821084720338323">Si se habilita, la función de <ph name="PRODUCT_NAME" /> limitará y fusionará de forma drástica los cronómetros de JavaScript de las pestañas en segundo plano; estos no funcionarán más de una vez por minuto después de que una página haya estado en segundo plano durante 5 minutos o más.
 
-          Esta es una función que cumple con los estándares de la Web, pero es posible que haya
-          fallos en algunos sitios web que provoquen demoras de hasta un minuto
+          Esta función cumple con los estándares web, pero es posible que genere
+          fallos en algunos sitios web debido a que provoca demoras de hasta un minuto
           en ciertas acciones. Sin embargo, cuando se habilita, se obtienen ahorros significativos
           de CPU y batería. Para obtener más información, consulta https://bit.ly/30b1XR4.
 
-          Si habilitas esta política, se habilitará la función de manera forzosa;
-          los usuarios no podrán anularla.
+          Si habilitas esta política, se habilitará la función de manera forzosa
+          y los usuarios no podrán anularla.
 
-          Si inhabilitas esta política, se inhabilitará la función de manera forzosa;
-          los usuarios no podrán anularla.
+          Si inhabilitas esta política, se inhabilitará la función de manera forzosa
+          y los usuarios no podrán anularla.
 
           Si no la estableces, la función estará controlada por su propia
           lógica interna; en este caso, los usuarios podrán configurarla.
@@ -787,7 +787,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si se establece esta política, los usuarios no pueden cambiarla ni anularla, pero pueden habilitar/inhabilitar un teclado en pantalla de accesibilidad que tiene su precedente en el teclado virtual que controla esta política. Consulta la política |VirtualKeyboardEnabled| para controlar la accesibilidad del teclado en pantalla.
 
       Si esta política no se establece, el teclado virtual en pantalla está inhabilitado inicialmente, pero el usuario puede habilitarlo en cualquier momento. Las reglas heurísticas también se pueden utilizar para decidir si mostrar el teclado o no.</translation>
-<translation id="2289265947759479962">Esta política controla el envío de los datos sobre la versión, como la arquitectura, la plataforma y la versión del SO, y la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
+<translation id="2289265947759479962">Esta política controla el envío de los datos sobre la versión, como la arquitectura, la plataforma y la versión del SO, así como la versión de <ph name="PRODUCT_NAME" /> y el canal de <ph name="PRODUCT_NAME" />.
 
       Si no estableces la política <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> o la inhabilitas, se ignorará.
 
@@ -2356,7 +2356,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
       Si no se establece, los usuarios administrados por empresas no podrán usar la configuración predeterminada, pero los usuarios no administrados sí podrán usarla.</translation>
 <translation id="4555850956567117258">Habilita la atestación remota para el usuario.</translation>
 <translation id="4557134566541205630">URL de la página Nueva pestaña del proveedor de búsqueda predeterminado</translation>
-<translation id="4562165737444703281">Permite que los usuarios [habiliten/configuren] la redirección de puertos de Crostini</translation>
+<translation id="4562165737444703281">Permite que los usuarios habiliten o configuren la redirección de puertos de Crostini</translation>
 <translation id="4567137030726189378">Permitir el uso de las Herramientas para desarrolladores</translation>
 <translation id="4567818663772614440">Esta política controla los informes en la nube de <ph name="PRODUCT_NAME" />, que suben información sobre el funcionamiento del navegador a la consola del Administrador de Google.
 
@@ -3118,7 +3118,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 
           Si inhabilitas esta política o no la estableces, estará disponible el elemento del menú contextual destinado a tu proveedor de búsqueda predeterminado.
 
-          Se aplica el valor de la política solo cuando habilitas la política <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />; de lo contrario, no se aplicará.</translation>
+          Solo se aplica el valor de la política cuando habilitas <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" />, y no se aplica en caso contrario.</translation>
 <translation id="5697306356229823047">Informa sobre los usuarios de dispositivos.</translation>
 <translation id="5699487516670033016">Especifica la duración (en horas) de los datos de autenticación almacenados en caché. La caché se utiliza para acelerar el acceso. Contiene datos generales (p. ej., el nombre del grupo de trabajo) sobre dominios afiliados, p. ej., dominios que sean de confianza para el dominio de la máquina. No se almacenan en caché datos específicos del usuario ni de dominios no afiliados. Para borrar la caché, reinicia el dispositivo.
 
@@ -3314,7 +3314,7 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
        Valores admitidos: • 0 = Desactivada • 1 = Activada • 2 = Lupa fijada activada
 
           Nota: Si se especifica <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" />, anulará esta política.</translation>
-<translation id="6015281292796053435">Esta política controla el envío de datos de la Navegación segura, lo que incluye la cantidad de advertencias de la Navegación segura y las veces que se hace clic en ellas.
+<translation id="6015281292796053435">Esta política controla el envío de datos de la Navegación segura, lo que incluye la cantidad de advertencias generadas por esta función y las veces que se hace clic en ellas.
 
       Si no estableces la política <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> o la inhabilitas, se ignorará.
 
@@ -4602,12 +4602,12 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si se habilita o no se establece ningún valor, los usuarios podrán controlar "Autocompletar". De esta manera, podrán configurar los perfiles de la función y activarla o desactivarla cuando lo deseen.</translation>
 <translation id="8044493735196713914">Modo de notificación de inicio de dispositivo</translation>
-<translation id="8049769137921877885">Esta política controla el envío de los datos sobre la política y su tiempo de recuperación.
+<translation id="8049769137921877885">Esta política controla el envío de los datos sobre la política y su hora de recuperación.
 
       Si no estableces la política <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> o la inhabilitas, se ignorará.
 
-      Si no la estableces o la estableces como verdadera, se recopilarán los datos sobre la política y su tiempo de recuperación.
-      Si la estableces como falsa, no se recopilarán los datos sobre la política y su tiempo de recuperación.
+      Si no la estableces o la estableces como verdadera, se recopilarán los datos sobre la política y su hora de recuperación.
+      Si la estableces como falsa, no se recopilarán los datos sobre la política y su hora de recuperación.
 
       Esta política solo será válida si la máquina está inscrita en <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> para <ph name="PRODUCT_NAME" />.
       Esta política siempre será válida para <ph name="PRODUCT_OS_NAME" />.</translation>

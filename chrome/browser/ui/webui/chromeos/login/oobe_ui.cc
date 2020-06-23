@@ -104,6 +104,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -195,7 +196,8 @@ void AddAssistantScreensResources(content::WebUIDataSource* source) {
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
   source->AddResourcePath("voice_match_already_setup_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ALREADY_SETUP_ANIMATION);
-  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 
 void AddGestureNavigationResources(content::WebUIDataSource* source) {
@@ -205,13 +207,15 @@ void AddGestureNavigationResources(content::WebUIDataSource* source) {
                           IDR_GESTURE_NAVIGATION_GO_BACK_ANIMATION);
   source->AddResourcePath("gesture_hotseat_overview.json",
                           IDR_GESTURE_NAVIGATION_HOTSEAT_OVERVIEW_ANIMATION);
-  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 
 void AddMarketingOptInResources(content::WebUIDataSource* source) {
   source->AddResourcePath("all_set.json",
                           IDR_MARKETING_OPT_IN_ALL_SET_ANIMATION);
-  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::WorkerSrc, "worker-src blob: 'self';");
 }
 
 void AddFingerprintResources(content::WebUIDataSource* source) {
@@ -241,7 +245,9 @@ void AddFingerprintResources(content::WebUIDataSource* source) {
     // lottie animations, this update has to be performed manually. As the usage
     // increases, set this as the default so manual override is no longer
     // required.
-    source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+    source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::WorkerSrc,
+        "worker-src blob: 'self';");
   } else {
     source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
   }
@@ -330,8 +336,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddDebuggerResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
-  source->OverrideContentSecurityPolicyObjectSrc(
-      "object-src chrome:;");
+  source->OverrideContentSecurityPolicy(
+      network::mojom::CSPDirectiveName::ObjectSrc, "object-src chrome:;");
 
   // Only add a filter when runing as test.
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||

@@ -11,8 +11,8 @@
 #include <limits>
 #include <new>
 
+#include "base/check.h"
 #include "base/component_export.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "mojo/public/c/system/macros.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"

@@ -9,6 +9,7 @@
   "start_url": "https://www.google.com/maps/@37.7890183,-122.3915063,15z?force=pwa",
   "display_mode": "standalone",
   "orientation": "portrait",
+  "android_orientation": "unspecified",
   "theme_color": "2147483648L",
   "background_color": "2147483648L",
   "background_color_xml": "#F8F9FA",

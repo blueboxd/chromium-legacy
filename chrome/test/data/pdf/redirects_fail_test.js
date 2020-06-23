@@ -32,8 +32,8 @@ function parseUrl(url) {
 const tests = [
   // Test that if the plugin is loaded with a URL that redirects it fails.
   function redirectsFail() {
-    const url = parseUrl(viewer.originalUrl_);
-    const redirectUrl = url.origin + '/server-redirect?' + viewer.originalUrl_;
+    const url = parseUrl(viewer.originalUrl);
+    const redirectUrl = url.origin + '/server-redirect?' + viewer.originalUrl;
     createPluginForUrl(redirectUrl, redirectUrl, '', function(progress) {
       if (progress === -1) {
         chrome.test.succeed();
@@ -46,8 +46,8 @@ const tests = [
   // Test that if the plugin is loaded with a URL that doesn't redirect but
   // subsequent requests do redirect, it fails.
   function partialRedirectsFail() {
-    const url = parseUrl(viewer.originalUrl_);
-    const redirectUrl = url.origin + '/server-redirect?' + viewer.originalUrl_;
+    const url = parseUrl(viewer.originalUrl);
+    const redirectUrl = url.origin + '/server-redirect?' + viewer.originalUrl;
     // Set the headers manually so that the first request is made using a URL
     // that doesn't redirect and subsequent requests are made using a URL that
     // does.
@@ -55,7 +55,7 @@ const tests = [
         'Content-Length: 101688487\n' +
         'Content-Type: application/pdf\n';
     createPluginForUrl(
-        viewer.originalUrl_, redirectUrl, headers, function(progress) {
+        viewer.originalUrl, redirectUrl, headers, function(progress) {
           if (progress === -1) {
             chrome.test.succeed();
           } else {
@@ -68,7 +68,7 @@ const tests = [
   // succeeds.
   function noRedirectsSucceed() {
     createPluginForUrl(
-        viewer.originalUrl_, viewer.originalUrl_, '', function(progress) {
+        viewer.originalUrl, viewer.originalUrl, '', function(progress) {
           if (progress === 100) {
             chrome.test.succeed();
           }

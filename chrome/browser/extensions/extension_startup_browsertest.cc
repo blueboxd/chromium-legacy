@@ -37,7 +37,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
-#include "extensions/browser/shared_user_script_master.h"
+#include "extensions/browser/shared_user_script_manager.h"
 #include "extensions/browser/user_script_loader.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
@@ -154,12 +154,12 @@ class ExtensionStartupTestBase : public InProcessBrowserTest {
     content::WindowedNotificationObserver user_scripts_observer(
         extensions::NOTIFICATION_USER_SCRIPTS_UPDATED,
         content::NotificationService::AllSources());
-    extensions::SharedUserScriptMaster* master =
+    extensions::SharedUserScriptManager* manager =
         extensions::ExtensionSystem::Get(browser()->profile())
-            ->shared_user_script_master();
-    if (!master->script_loader()->initial_load_complete())
+            ->shared_user_script_manager();
+    if (!manager->script_loader()->initial_load_complete())
       user_scripts_observer.Wait();
-    ASSERT_TRUE(master->script_loader()->initial_load_complete());
+    ASSERT_TRUE(manager->script_loader()->initial_load_complete());
   }
 
   void TestInjection(bool expect_css, bool expect_script) {

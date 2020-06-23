@@ -132,9 +132,23 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
     PendingPresentationCallback(PendingPresentationCallback&& other);
     PendingPresentationCallback& operator=(PendingPresentationCallback&& other);
 
+    base::TimeTicks available_time;
+    base::TimeTicks ready_time;
     base::TimeTicks latch_time;
+
     base::ScopedFD present_fence;
     PresentationCallback callback;
+  };
+
+  struct PrimaryPlaneFences {
+    PrimaryPlaneFences();
+    ~PrimaryPlaneFences();
+
+    PrimaryPlaneFences(PrimaryPlaneFences&& other);
+    PrimaryPlaneFences& operator=(PrimaryPlaneFences&& other);
+
+    base::ScopedFD available_fence;
+    base::ScopedFD ready_fence;
   };
 
   void CommitPendingTransaction(const gfx::Rect& damage_rect,
@@ -147,6 +161,7 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
       SwapCompletionCallback completion_callback,
       PresentationCallback presentation_callback,
       ResourceRefs released_resources,
+      base::Optional<PrimaryPlaneFences> primary_plane_fences,
       SurfaceControl::TransactionStats transaction_stats);
 
   void CheckPendingPresentationCallbacks();
@@ -169,6 +184,10 @@ class GL_EXPORT GLSurfaceEGLSurfaceControl : public GLSurfaceEGL {
   // pending transaction has a ref but they have not been applied and
   // transferred to the framework.
   ResourceRefs pending_frame_resources_;
+
+  // The fences associated with the primary plane (renderer by the display
+  // compositor) for the pending frame.
+  base::Optional<PrimaryPlaneFences> primary_plane_fences_;
 
   // Transactions waiting to be applied once the previous transaction is acked.
   std::queue<SurfaceControl::Transaction> pending_transaction_queue_;

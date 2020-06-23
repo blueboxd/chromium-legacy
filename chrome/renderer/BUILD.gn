@@ -407,7 +407,7 @@ static_library("renderer") {
     ]
   }
 
-  if (is_linux) {
+  if (is_chromeos) {
     sources += [
       "performance_manager/mechanisms/tcmalloc_tunables_impl.cc",
       "performance_manager/mechanisms/tcmalloc_tunables_impl.h",

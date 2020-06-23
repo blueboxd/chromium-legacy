@@ -52,7 +52,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1479909375538722835">Menú de accesibilidad flotante</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
-<translation id="1508507608940204251">Sí</translation>
 <translation id="1516740043221086139">No interrumpir está activado.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Mostrar la configuración de las notificaciones: Están desactivadas para una app}other{Mostrar la configuración de las notificaciones: Están desactivadas para # apps}}</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
@@ -79,11 +78,10 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="1836215606488044471">Asistente (cargando…)</translation>
 <translation id="1838895407229022812">La luz nocturna está apagada.</translation>
 <translation id="1850504506766569011">Wi-Fi desactivada</translation>
-<translation id="1859889070386344428">No</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (puerto trasero)</translation>
 <translation id="1882897271359938046">Duplicando en <ph name="DISPLAY_NAME" /></translation>
 <translation id="1885785240814121742">Desbloquear con huella digital</translation>
-<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> no admite el valor de resolución <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz), por lo que se cambió a <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Para mantener este cambio, haz clic en Confirmar. En <ph name="TIMEOUT_SECONDS" />, se restablecerá la configuración anterior.</translation>
+<translation id="1888656773939766144"><ph name="DISPLAY_NAME" /> no admite el valor de resolución <ph name="SPECIFIED_RESOLUTION" /> (<ph name="SPECIFIED_REFRESH_RATE" /> Hz), por lo que se cambió a <ph name="FALLBACK_RESOLUTION" /> (<ph name="FALLBACK_REFRESH_RATE" />). Para mantener este cambio, haz clic en Confirmar. En <ph name="TIMEOUT_SECONDS" /> se restablecerá la configuración anterior.</translation>
 <translation id="1919743966458266018">Se modificó el acceso directo para abrir el administrador de tareas. Utiliza <ph name="NEW_SHORTCUT" /> en vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clics automáticos</translation>
 <translation id="1928739107511554905">Para obtener la actualización, usa la pantalla táctil para reiniciar tu Chromebook con el teclado conectado.</translation>
@@ -138,7 +136,6 @@ Estas son algunas de las cosas que puedes probar para comenzar.</translation>
 <translation id="2484513351006226581">Presiona <ph name="KEYBOARD_SHORTCUT" /> para cambiar de diseño de teclado.</translation>
 <translation id="2501920221385095727">Teclas especiales</translation>
 <translation id="2509468283778169019">BLOQ MAYÚS está activado.</translation>
-<translation id="2519465031217098801">Sí</translation>
 <translation id="2542089167727451762">Presiona tu imagen de perfil</translation>
 <translation id="255671100581129685">El Asistente de Google no está disponible en una sesión pública.</translation>
 <translation id="256712445991462162">la lupa con vista acoplada</translation>
@@ -262,7 +259,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="3943857333388298514">Pegar</translation>
 <translation id="394485226368336402">Configuración de audio</translation>
 <translation id="3962859241508114581">Pista anterior</translation>
-<translation id="3965097803111112935">No</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3977512764614765090">Nivel de la batería: <ph name="PERCENTAGE" />% y cargando</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
@@ -355,7 +351,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5207949376430453814">Destacar el símbolo de intercalación de texto</translation>
 <translation id="5222676887888702881">Salir</translation>
 <translation id="523505283826916779">Configuración de accesibilidad</translation>
-<translation id="5250225880026334010">No</translation>
 <translation id="5260676007519551770">Escritorio 4</translation>
 <translation id="5283198616748585639">Agregar 1 min</translation>
 <translation id="528468243742722775">Finalizar</translation>
@@ -474,7 +469,6 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6650933572246256093">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa la siguiente clave de contraseña en el dispositivo: <ph name="PASSKEY" />.</translation>
 <translation id="6657585470893396449">Contraseña</translation>
 <translation id="6665545700722362599">Otorga permiso a sitios web, apps y extensiones para usar los servicios de ubicación, el micrófono y la cámara del dispositivo, y otras funciones</translation>
-<translation id="6669268301501499730">Sí</translation>
 <translation id="6670153871843998651">Escritorio 3</translation>
 <translation id="6691659475504239918">Buscar+mayúscula+H</translation>
 <translation id="6692996468359469499">Obtén información relacionada con tu selección</translation>

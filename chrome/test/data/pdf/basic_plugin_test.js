@@ -16,11 +16,12 @@ const tests = [
     chrome.test.assertTrue(viewer.viewport.getZoom() <= 1);
 
     viewer.viewport.setZoom(1);
-    const sizer = document.getElementById('sizer');
+    const sizer = viewer.shadowRoot.querySelector('#sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
     chrome.test.assertEq(
         1066 + viewer.viewport.topToolbarHeight_, sizer.offsetHeight);
     chrome.test.succeed();
+    console.log('done page size');
   },
 
   function testGetSelectedText() {
@@ -29,6 +30,7 @@ const tests = [
     client.getSelectedText(chrome.test.callbackPass(function(selectedText) {
       chrome.test.assertEq('this is some text\nsome more text', selectedText);
     }));
+    console.log('done select');
   },
 
   /**
@@ -37,25 +39,9 @@ const tests = [
   function testHasCorrectTitle() {
     chrome.test.assertEq('test.pdf', document.title);
 
+    console.log('done title');
     chrome.test.succeed();
   },
-
-  /**
-   * Test that the escape key gets propogated to the outer frame (via the
-   * PDFScriptingAPI) in print preview.
-   */
-  function testEscKeyPropogationInPrintPreview() {
-    viewer.isPrintPreview_ = true;
-    scriptingAPI.setKeyEventCallback(chrome.test.callbackPass(function(e) {
-      chrome.test.assertEq(27, e.keyCode);
-      chrome.test.assertEq('Escape', e.code);
-    }));
-    const e = document.createEvent('Event');
-    e.initEvent('keydown');
-    e.keyCode = 27;
-    e.code = 'Escape';
-    document.dispatchEvent(e);
-  }
 ];
 
 const scriptingAPI = new PDFScriptingAPI(window, window);

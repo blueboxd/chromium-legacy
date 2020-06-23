@@ -24,7 +24,6 @@
 <translation id="116280672541001035">TË PËRDORURA</translation>
 <translation id="1171770572613082465">Shiko sajte uebi të mirënjohura duke trokitur te butoni "Sajtet kryesore"</translation>
 <translation id="1173894706177603556">Riemërto</translation>
-<translation id="1178581264944972037">Pauzë</translation>
 <translation id="1197267115302279827">Zhvendos faqeshënuesit</translation>
 <translation id="1201402288615127009">Tjetra</translation>
 <translation id="1204037785786432551">Lidhja e shkarkimit</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome ka nevojë për qasjen te vendndodhja për të skanuar për pajisje. Qasja te vendndodhja është <ph name="BEGIN_LINK" />e çaktivizuar për këtë pajisje<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Hiq 1 artikull të zgjedhur}other{Hiq # artikuj të zgjedhur}}</translation>
+<translation id="1641113438599504367">Shfletimi i sigurt</translation>
 <translation id="164269334534774161">Po shikon një kopje jashtë linje të kësaj faqeje nga <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historiku</translation>
 <translation id="1670399744444387456">Themeloret</translation>
@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Eksploro</translation>
 <translation id="1749561566933687563">Sinkronizo faqeshënuesit e tu</translation>
 <translation id="17513872634828108">Hap skedat</translation>
+<translation id="1754404134430936718">Teksti u kopjua</translation>
 <translation id="1779089405699405702">Dekoduesi i imazheve</translation>
 <translation id="1782483593938241562">Data e mbarimit <ph name="DATE" /></translation>
 <translation id="1791662854739702043">I instaluar</translation>
@@ -223,10 +224,10 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="2810645512293415242">Faqe e thjeshtuar për të ruajtur të dhënat dhe për të ngarkuar më shpejt.</translation>
 <translation id="281504910091592009">Shfaq dhe menaxho fjalëkalimet e ruajtura në <ph name="BEGIN_LINK" />llogarinë tënde të Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Për të marrë faqeshënuesit në të gjitha pajisjet e tua, identifikohu dhe aktivizo sinkronizimin</translation>
+<translation id="2827278682606527653">Menyja e kartave të furnizimit në gjysmë lartësi</translation>
 <translation id="2842985007712546952">Dosja mëmë</translation>
 <translation id="2860954141821109167">Sigurohu që një aplikacion i telefonit të jetë i aktivizuar në këtë pajisje</translation>
 <translation id="2870560284913253234">Sajti</translation>
-<translation id="2874939134665556319">Kënga e mëparshme</translation>
 <translation id="2876369937070532032">Dërgon URL-të e disa faqeve që viziton te Google, kur siguria jote është në rrezik</translation>
 <translation id="2888126860611144412">Rreth Chrome</translation>
 <translation id="2891154217021530873">Ndalo ngarkimin e faqes</translation>
@@ -268,6 +269,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3181954750937456830">"Shfletimi i sigurt" (të mbron ty dhe pajisjen tënde nga sajtet e rrezikshme)</translation>
 <translation id="3205824638308738187">Pothuajse mbaroi!</translation>
 <translation id="3207960819495026254">Regjistruar në faqeshënues</translation>
+<translation id="3208584281581115441">Kontrollo tani</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> u fshi</translation>
 <translation id="321773570071367578">Nëse e ke harruar frazën e kalimit apo dëshiron të ndryshosh këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizimin<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Aplikacioni i uebit</translation>
@@ -344,8 +346,8 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3810973564298564668">Menaxho</translation>
 <translation id="381841723434055211">Numrat e telefonit</translation>
 <translation id="3819178904835489326">U fshinë <ph name="NUMBER_OF_DOWNLOADS" /> shkarkime</translation>
-<translation id="3859306556332390985">Kërko përpara</translation>
 <translation id="388596076286380598">Merr artikuj, video dhe përmbajtje të tjera nga sajtet që të pëlqejnë, edhe nëse je jashtë linje ose lidhja jote është e dobët.</translation>
+<translation id="3892148308691398805">Kopjo tekstin</translation>
 <translation id="3894427358181296146">Shto dosje</translation>
 <translation id="3895926599014793903">Aktivizo me detyrim zmadhimin</translation>
 <translation id="3912508018559818924">Po gjen më të mirën nga uebi…</translation>
@@ -366,8 +368,6 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="3997476611815694295">Hapësirë ruajtëse e parëndësishme</translation>
 <translation id="4000212216660919741">Shtëpia jashtë linje</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# orë}other{# orë}}</translation>
-<translation id="403687620286099920">Trokit për të hapur kodin QR</translation>
-<translation id="4046123991198612571">Kënga tjetër</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opsionet janë të disponueshme pranë kreut të ekranit</translation>
 <translation id="4062305924942672200">Informacioni ligjor</translation>
@@ -387,10 +387,10 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="4209895695669353772">Për të marrë përmbajtje të personalizuar të sugjeruar nga Google, aktivizo sinkronizimin</translation>
 <translation id="423219824432660969">Enkripto të dhënat e sinkronizuara me fjalëkalimin e Google që nga data <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Hap cilësimet</translation>
+<translation id="4248098802131000011">Mbaji fjalëkalimet e tua të sigurta nga nxjerrjet e paautorizuara të të dhënave dhe problemeve të tjera të sigurisë</translation>
 <translation id="4250229828105606438">Pamje e ekranit</translation>
 <translation id="4256782883801055595">Licencat me burim të hapur</translation>
 <translation id="4269820728363426813">Kopjo adresën e lidhjes</translation>
-<translation id="429312253194641664">Një sajt po luan media</translation>
 <translation id="4298388696830689168">Sajtet e lidhura</translation>
 <translation id="4307992518367153382">Bazat</translation>
 <translation id="4314815835985389558">Menaxho sinkronizimin</translation>
@@ -412,6 +412,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="4479972344484327217">Po instalohet <ph name="MODULE" /> për Chrome…</translation>
 <translation id="4487967297491345095">Të gjitha të dhënat e aplikacionit të Chrome do të fshihen përgjithmonë. Kjo përfshin të gjithë skedarët, cilësimet, llogaritë, bazat e të dhënave etj.</translation>
 <translation id="4493497663118223949">"Modaliteti i lehtë" është aktiv</translation>
+<translation id="4508528996305412043">Menyja e kartave të furnizimit është hapur</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# ditë më parë}other{# ditë më parë}}</translation>
 <translation id="451872707440238414">Kërko te faqeshënuesit</translation>
 <translation id="4521489764227272523">Të dhënat e zgjedhura janë hequr nga Chrome dhe nga pajisjet e sinkronizuara.
@@ -563,7 +564,6 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5659593005791499971">Mail-i</translation>
 <translation id="5665379678064389456">Krijo ngjarje në <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zëvendësoje kërkesën e një sajti uebi për të parandaluar zmadhimin</translation>
-<translation id="5681394891799747640">Kodi QR nuk mund të shkarkohet</translation>
 <translation id="5684874026226664614">Mos! Kjo faqe nuk mund të përkthehej.</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
@@ -605,6 +605,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5958275228015807058">Gjej skedarët dhe faqet e tua te "Shkarkimet"</translation>
 <translation id="5962718611393537961">Trokit për të palosur</translation>
 <translation id="5964805880140440652">Për ta ndarë këtë faqe në një pajisje tjetër, aktivizo sinkronizimin në cilësimet e Chrome</translation>
+<translation id="5979084224081478209">Kontrollo fjalëkalimet</translation>
 <translation id="6000066717592683814">Mbaj Google</translation>
 <translation id="6005538289190791541">Fjalëkalimi i sugjeruar</translation>
 <translation id="6036057147555329831">Moduli shtesë ICU</translation>
@@ -706,7 +707,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="671481426037969117">Kohëmatësi <ph name="FQDN" /> përfundoi. Do të fillojë përsëri nesër.</translation>
 <translation id="6738867403308150051">Po shkarkon...</translation>
 <translation id="6767294960381293877">Lista e pajisjeve për të ndarë një skedë e hapur në gjysmë lartësi.</translation>
-<translation id="6790428901817661496">Luaj</translation>
 <translation id="6811034713472274749">Faqja është gati për ta shikuar</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Përkthe</translation>
@@ -763,7 +763,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7328017930301109123">Në "Modalitetin e lehtë", Chrome i ngarkon faqet më shpejt dhe përdor deri në 60 përqind më pak të dhëna.</translation>
 <translation id="7333031090786104871">Ende po shtohet sajti i mëparshëm</translation>
 <translation id="7340958967809483333">Opsionet për "Zbulo"</translation>
-<translation id="7352651011704765696">Diçka shkoi keq</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Ndaj 1 artikull të zgjedhur}other{Ndaj # artikuj të zgjedhur}}</translation>
 <translation id="7359002509206457351">Qasu te mënyrat e pagesës</translation>
@@ -802,7 +801,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7605594153474022051">Sinkronizimi nuk po funksionon.</translation>
 <translation id="7606077192958116810">"Modaliteti i lehtë" është aktiv. Menaxhoje te "Cilësimet".</translation>
 <translation id="7612619742409846846">U identifikove te Google si</translation>
-<translation id="7614971007231847352">Kodi QR u shkarkua</translation>
 <translation id="7619072057915878432">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të problemeve të rrjetit.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Kërko ndihmë<ph name="END_LINK1" /> ose <ph name="BEGIN_LINK2" />skano sërish<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Mirë se vjen në Chrome</translation>
@@ -883,6 +881,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8200772114523450471">Vazhdo</translation>
 <translation id="8209050860603202033">Hape imazhin</translation>
 <translation id="8218622182176210845">Menaxho llogarinë tënde</translation>
+<translation id="8223642481677794647">Menyja e kartave të furnizimit</translation>
 <translation id="8224471946457685718">Shkarko artikujt për ty në Wi-Fi</translation>
 <translation id="8232956427053453090">Mbaj të dhënat</translation>
 <translation id="8233540874193135768">Për të skanuar një kod QR, përdor një pajisje me kamerë.</translation>
@@ -907,7 +906,6 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="8427875596167638501">Skeda e shikimit paraprak është gjysmë e hapur</translation>
 <translation id="8428213095426709021">Cilësimet</translation>
 <translation id="8438566539970814960">Përmirëson kërkimet dhe shfletimin</translation>
-<translation id="8441146129660941386">Kërko prapa</translation>
 <translation id="8443209985646068659">Chrome s'mund të përditësohet</translation>
 <translation id="8445448999790540984">Fjalëkalimet nuk mund të eksportohen</translation>
 <translation id="8461694314515752532">Enkripto të dhënat e sinkronizuara me frazën tënde të kalimit për sinkronizimin</translation>
@@ -1007,4 +1005,5 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="981121421437150478">Jashtë linje</translation>
 <translation id="983192555821071799">Mbyll të gjitha skedat</translation>
 <translation id="987264212798334818">Të përgjithshme</translation>
+<translation id="996149300115483134">Menyja e kartave të furnizimit është mbyllur</translation>
 </translationbundle>

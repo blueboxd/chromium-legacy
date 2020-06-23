@@ -50,9 +50,6 @@ from blinkpy.web_tests.models.typ_types import ResultType
 from blinkpy.web_tests.port import test
 from blinkpy.web_tests.views.printing import Printer
 
-_MOCK_ROOT = os.path.join(path_finder.get_chromium_src_dir(), 'third_party',
-                          'pymock')
-sys.path.insert(0, _MOCK_ROOT)
 import mock  # pylint: disable=wrong-import-position
 
 

@@ -21,6 +21,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -41,6 +42,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/mock_peer_connection_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/mock_rtc_peer_connection_handler_client.h"
 #include "third_party/blink/renderer/modules/peerconnection/peer_connection_tracker.h"
+#include "third_party/blink/renderer/modules/peerconnection/testing/fake_resource_listener.h"
 #include "third_party/blink/renderer/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/renderer/platform/mediastream/media_constraints.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_audio_source.h"
@@ -1295,6 +1297,42 @@ TEST_F(RTCPeerConnectionHandlerTest, CheckInsertableStreamsConfig) {
                 force_encoded_video_insertable_streams);
     }
   }
+}
+
+TEST_F(RTCPeerConnectionHandlerTest, ThermalResourceIsDisabledByDefault) {
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+  pc_handler_->OnThermalStateChange(
+      base::PowerObserver::DeviceThermalState::kCritical);
+  // A ThermalResource is not created despite the thermal signal.
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+}
+
+TEST_F(RTCPeerConnectionHandlerTest,
+       ThermalStateChangeTriggersThermalResourceIfEnabled) {
+  // Overwrite base::Feature kWebRtcThermalResource's default to ENABLED.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(kWebRtcThermalResource);
+
+  EXPECT_TRUE(mock_peer_connection_->adaptation_resources().IsEmpty());
+  // ThermalResource is created and injected on the fly.
+  pc_handler_->OnThermalStateChange(
+      base::PowerObserver::DeviceThermalState::kCritical);
+  auto resources = mock_peer_connection_->adaptation_resources();
+  ASSERT_EQ(1u, resources.size());
+  auto thermal_resource = resources[0];
+  EXPECT_EQ("ThermalResource", thermal_resource->Name());
+  // The initial kOveruse is observed.
+  FakeResourceListener resource_listener;
+  thermal_resource->SetResourceListener(&resource_listener);
+  EXPECT_EQ(1u, resource_listener.measurement_count());
+  EXPECT_EQ(webrtc::ResourceUsageState::kOveruse,
+            resource_listener.latest_measurement());
+  // ThermalResource responds to new measurements.
+  pc_handler_->OnThermalStateChange(
+      base::PowerObserver::DeviceThermalState::kNominal);
+  EXPECT_EQ(2u, resource_listener.measurement_count());
+  EXPECT_EQ(webrtc::ResourceUsageState::kUnderuse,
+            resource_listener.latest_measurement());
 }
 
 }  // namespace blink

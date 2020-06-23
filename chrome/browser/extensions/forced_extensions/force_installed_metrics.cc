@@ -282,11 +282,18 @@ void ForceInstalledMetrics::ReportMetrics() {
           SandboxedUnpackerFailureReason::NUM_FAILURE_REASONS);
     }
     if (failure_reason ==
-            InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY &&
-        installation.update_check_status) {
+        InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY) {
+      if (installation.update_check_status) {
+        base::UmaHistogramEnumeration(
+            "Extensions.ForceInstalledFailureUpdateCheckStatus",
+            installation.update_check_status.value());
+      }
+
+      DCHECK(installation.no_updates_info);
       base::UmaHistogramEnumeration(
-          "Extensions.ForceInstalledFailureUpdateCheckStatus",
-          installation.update_check_status.value());
+          "Extensions."
+          "ForceInstalledFailureNoUpdatesInfo",
+          installation.no_updates_info.value());
     }
     if (installation.manifest_invalid_error) {
       DCHECK_EQ(failure_reason,

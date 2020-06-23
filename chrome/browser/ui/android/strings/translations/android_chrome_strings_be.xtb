@@ -24,7 +24,6 @@
 <translation id="116280672541001035">Выкарыстана</translation>
 <translation id="1171770572613082465">Праглядайце папулярныя вэб-сайты, націснуўшы кнопку "Топ сайтаў"</translation>
 <translation id="1173894706177603556">Перайменаваць</translation>
-<translation id="1178581264944972037">Прыпыніць</translation>
 <translation id="1197267115302279827">Перамясціць закладкі</translation>
 <translation id="1201402288615127009">Далей</translation>
 <translation id="1204037785786432551">Спампаваць па спасылцы</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Для пошуку прылад Chrome патрабуе доступу да месцазнаходжання. Доступ да месцазнаходжання <ph name="BEGIN_LINK" />для гэтай прылады выключаны<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Выдаліць 1 выбраны элемент}one{Выдаліць # выбраны элемент}few{Выдаліць # выбраныя элементы}many{Выдаліць # выбраных элементаў}other{Выдаліць # выбранага элемента}}</translation>
+<translation id="1641113438599504367">Бяспечны прагляд</translation>
 <translation id="164269334534774161">Вы праглядаеце пазасеткавую копію гэтай старонкі ад <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Гісторыя</translation>
 <translation id="1670399744444387456">Базавы</translation>
@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Агляд</translation>
 <translation id="1749561566933687563">Сінхранізуйце закладкі</translation>
 <translation id="17513872634828108">Адкрытыя ўкладкі</translation>
+<translation id="1754404134430936718">Тэкст скапіраваны</translation>
 <translation id="1779089405699405702">Дэкодар відарысаў</translation>
 <translation id="1782483593938241562">Дата заканчэння: <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Усталявана</translation>
@@ -223,10 +224,10 @@
 <translation id="2810645512293415242">Спрошчаны выгляд старонкі (для эканоміі даных і хутчэйшай загрузкі).</translation>
 <translation id="281504910091592009">Праглядайце захаваныя паролі і кіруйце імі праз <ph name="BEGIN_LINK" />Уліковы запіс Google<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Каб перанесці закладкі на ўсе прылады, увайдзіце ва ўліковы запіс і ўключыце сінхранізацыю</translation>
+<translation id="2827278682606527653">Меню карткі стужкі адкрыта на палову вышыні</translation>
 <translation id="2842985007712546952">Бацькоўская папка</translation>
 <translation id="2860954141821109167">Праверце, ці ўключана на гэтай прыладзе праграма для тэлефона</translation>
 <translation id="2870560284913253234">Сайт</translation>
-<translation id="2874939134665556319">Папярэдні трэк</translation>
 <translation id="2876369937070532032">Адпраўляе URL-адрасы некаторых наведаных вамі старонак у Google, калі ваша бяспека пад пагрозай</translation>
 <translation id="2888126860611144412">Пра браўзер Chrome</translation>
 <translation id="2891154217021530873">Спыніць загрузку старонкі</translation>
@@ -268,6 +269,7 @@
 <translation id="3181954750937456830">Бяспечны прагляд (абараняе вас і прыладу ад небяспечных сайтаў)</translation>
 <translation id="3205824638308738187">Амаль гатова!</translation>
 <translation id="3207960819495026254">Дададзена ў закладкі</translation>
+<translation id="3208584281581115441">Праверыць</translation>
 <translation id="3211426585530211793">Выдалена: <ph name="ITEM_TITLE" /></translation>
 <translation id="321773570071367578">Калі вы забылі фразу-пароль або хочаце змяніць гэту наладу, <ph name="BEGIN_LINK" />скіньце сінхранізацыю<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Вэб-праграма</translation>
@@ -344,8 +346,8 @@
 <translation id="3810973564298564668">Кіраваць</translation>
 <translation id="381841723434055211">Нумары тэлефонаў</translation>
 <translation id="3819178904835489326">Выдалена спамповак: <ph name="NUMBER_OF_DOWNLOADS" /></translation>
-<translation id="3859306556332390985">Перайсці ўперад</translation>
 <translation id="388596076286380598">Чытайце артыкулы, глядзіце відэа і іншае змесціва на любімых сайтах, нават калі вы не падключаны да інтэрнэту або якасць падключэння дрэнная.</translation>
+<translation id="3892148308691398805">Скапіраваць тэкст</translation>
 <translation id="3894427358181296146">Дадаць папку</translation>
 <translation id="3895926599014793903">Прымусовае ўключэнне павелічэння</translation>
 <translation id="3912508018559818924">Пошук найлепшага ў інтэрнэце…</translation>
@@ -366,8 +368,6 @@
 <translation id="3997476611815694295">Другараднае сховішча</translation>
 <translation id="4000212216660919741">Пазасеткавы рэжым</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# гадз}one{# гадз}few{# гадз}many{# гадз}other{# гадз}}</translation>
-<translation id="403687620286099920">Націсніце, каб адкрыць QR-код</translation>
-<translation id="4046123991198612571">Наступны трэк</translation>
 <translation id="4056223980640387499">Сепія</translation>
 <translation id="4060598801229743805">Параметры даступныя ўверсе экрана</translation>
 <translation id="4062305924942672200">Юрыдычная інфармацыя</translation>
@@ -387,10 +387,10 @@
 <translation id="4209895695669353772">Каб атрымліваць прапановы персаналізаванага змесціва ад Google, уключыце сінхранізацыю</translation>
 <translation id="423219824432660969">Зашыфраваць сінхранізаваныя даныя з дапамогай пароля да ўліковага запісу Google па стане на <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Адкрыць налады</translation>
+<translation id="4248098802131000011">Захоўвайце паролі ў бяспечным месцы, каб прадухіліць іх раскрыццё ў выпадку ўцечкі даных або іншых праблем з бяспекай</translation>
 <translation id="4250229828105606438">Здымак экрана</translation>
 <translation id="4256782883801055595">Ліцэнзіі на ПЗ з адкрытым зыходным кодам</translation>
 <translation id="4269820728363426813">Капіраваць спасылку</translation>
-<translation id="429312253194641664">Сайт прайграе мультымедыя</translation>
 <translation id="4298388696830689168">Звязаныя сайты</translation>
 <translation id="4307992518367153382">Асноўнае</translation>
 <translation id="4314815835985389558">Кіраванне сінхранізацыяй</translation>
@@ -412,6 +412,7 @@
 <translation id="4479972344484327217">Усталёўваецца <ph name="MODULE" /> для Chrome…</translation>
 <translation id="4487967297491345095">Усе даныя праграмы Chrome будуць назаўсёды выдалены. Гэта датычыцца ўсіх файлаў, налад, уліковых запісаў, баз даных і г. д.</translation>
 <translation id="4493497663118223949">Лёгкі рэжым уключаны</translation>
+<translation id="4508528996305412043">Меню карткі стужкі адкрыта</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{# дзень таму}one{# дзень таму}few{# дні таму}many{# дзён таму}other{# дня таму}}</translation>
 <translation id="451872707440238414">Пошук закладак</translation>
 <translation id="4521489764227272523">Выбраныя даныя выдалены з Chrome і сінхранізаваных прылад.
@@ -563,7 +564,6 @@
 <translation id="5659593005791499971">Адрас электроннай пошты</translation>
 <translation id="5665379678064389456">Стварыце падзею ў праграме <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Перавызначаць запыт вэб-сайта на прадухіленне павелічэння маштабу</translation>
-<translation id="5681394891799747640">Не ўдалося спампаваць QR-код</translation>
 <translation id="5684874026226664614">Памылка. Не ўдалося перакласці гэту старонку.</translation>
 <translation id="5686790454216892815">Назва файла занадта доўгая</translation>
 <translation id="5694049548840660018">Вяртацца на галоўную старонку проста</translation>
@@ -605,6 +605,7 @@
 <translation id="5958275228015807058">Знайсці файлы і старонкі можна ў раздзеле "Спампоўкі"</translation>
 <translation id="5962718611393537961">Каб згарнуць, націсніце тут</translation>
 <translation id="5964805880140440652">Каб абагуліць гэту старонку і мець да яе доступ з іншай прылады, уключыце сінхранізацыю ў наладах Chrome</translation>
+<translation id="5979084224081478209">Праверыць паролі</translation>
 <translation id="6000066717592683814">Пакінуць Google</translation>
 <translation id="6005538289190791541">Прапанаваны пароль</translation>
 <translation id="6036057147555329831">Дадатковы модуль ICU</translation>
@@ -698,7 +699,7 @@
 <translation id="6671495933530132209">Скапіраваць відарыс</translation>
 <translation id="6676840375528380067">Выдаліць даныя Chrome з гэтай прылады?</translation>
 <translation id="6689172468748959065">Фота профілю</translation>
-<translation id="6691888250440401212">1. Выберыце <ph name="APP_NAME" />.\n2. Націсніце "Зрабіць стандартным".</translation>
+<translation id="6691888250440401212">1. Выберыце <ph name="APP_NAME" />.\n2. Націсніце "Зрабіць стандартнай праграмай".</translation>
 <translation id="6697492270171225480">Паказваць прапановы падобных старонак, калі старонку не ўдаецца знайсці</translation>
 <translation id="6698801883190606802">Кіраванне сінхранізаванымі данымі</translation>
 <translation id="6699370405921460408">Серверы Google будуць аптымізаваць старонкі, якія вы наведваеце.</translation>
@@ -706,7 +707,6 @@
 <translation id="671481426037969117">Спрацаваў таймер праграмы "<ph name="FQDN" />". Заўтра ён зноў будзе запушчаны.</translation>
 <translation id="6738867403308150051">Ідзе спампоўка…</translation>
 <translation id="6767294960381293877">Спіс прылад, з якімі можна абагуліць укладку, разгорнуты на палову экрана.</translation>
-<translation id="6790428901817661496">Прайграць</translation>
 <translation id="6811034713472274749">Старонка гатовая да прагляду</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Перакласці</translation>
@@ -763,7 +763,6 @@
 <translation id="7328017930301109123">У спрошчаным рэжыме Chrome загружае старонкі хутчэй і зніжае выкарыстанне трафіка максімум на 60 працэнтаў.</translation>
 <translation id="7333031090786104871">Ідзе дадаванне папярэдняга сайта</translation>
 <translation id="7340958967809483333">Параметры рэкамендацый</translation>
-<translation id="7352651011704765696">Нешта пайшло не так</translation>
 <translation id="7352939065658542140">ВІДЭА</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Абагуліць 1 выбраны элемент}one{Абагуліць # выбраны элемент}few{Абагуліць # выбраныя элементы}many{Абагуліць # выбраных элементаў}other{Абагуліць # выбранага элемента}}</translation>
 <translation id="7359002509206457351">Доступ да спосабаў аплаты</translation>
@@ -802,7 +801,6 @@
 <translation id="7605594153474022051">Сінхранізацыя не працуе</translation>
 <translation id="7606077192958116810">Лёгкі рэжым уключаны. Кіраваць ім можна ў Наладах.</translation>
 <translation id="7612619742409846846">Уваход у Google выкананы ад імя</translation>
-<translation id="7614971007231847352">QR-код спампаваны</translation>
 <translation id="7619072057915878432">Не ўдалося спампаваць файл "<ph name="FILE_NAME" />" з-за збояў сеткі.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Атрымайце даведку<ph name="END_LINK1" /> або <ph name="BEGIN_LINK2" />паўтарыце пошук<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Вас вітае Chrome</translation>
@@ -883,6 +881,7 @@
 <translation id="8200772114523450471">Узнавіць</translation>
 <translation id="8209050860603202033">Адкрыць відарыс</translation>
 <translation id="8218622182176210845">Кіраваць уліковым запісам</translation>
+<translation id="8223642481677794647">Меню карткі стужкі</translation>
 <translation id="8224471946457685718">Спампоўваць артыкулы для вас пры падключэнні па Wi-Fi</translation>
 <translation id="8232956427053453090">Захаваць даныя</translation>
 <translation id="8233540874193135768">Каб сканіраваць QR-код, выкарыстайце прыладу з камерай.</translation>
@@ -907,7 +906,6 @@
 <translation id="8427875596167638501">Укладка перадпрагляду адкрыта напалову</translation>
 <translation id="8428213095426709021">Налады</translation>
 <translation id="8438566539970814960">Паскорыць пошук і прагляд</translation>
-<translation id="8441146129660941386">Перайсці назад</translation>
 <translation id="8443209985646068659">Немагчыма абнавіць Chrome</translation>
 <translation id="8445448999790540984">Не ўдалося экспартаваць паролі</translation>
 <translation id="8461694314515752532">Зашыфраваць сінхранізаваныя даныя з дапамогай фразы-пароля.</translation>
@@ -1007,4 +1005,5 @@
 <translation id="981121421437150478">Па-за сеткай</translation>
 <translation id="983192555821071799">Закрыць усе ўкладкі</translation>
 <translation id="987264212798334818">Агульныя</translation>
+<translation id="996149300115483134">Меню карткі стужкі закрыта</translation>
 </translationbundle>

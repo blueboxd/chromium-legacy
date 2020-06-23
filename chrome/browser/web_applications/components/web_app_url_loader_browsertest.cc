@@ -258,4 +258,76 @@ IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest, NetworkError) {
       LoadUrlAndWait(UrlComparison::kIgnoreQueryParamsAndRef, "/close-socket"));
 }
 
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest,
+                       PrepareForLoad_AfterNavigationComplete) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  // Load a URL, and wait for its completion.
+  LoadUrlAndWait(UrlComparison::kExact, "/title1.html");
+
+  // Prepare for next load.
+  base::RunLoop run_loop;
+  loader.PrepareForLoad(web_contents(),
+                        base::BindLambdaForTesting([&](Result result) {
+                          EXPECT_EQ(Result::kUrlLoaded, result);
+                          run_loop.Quit();
+                        }));
+  run_loop.Run();
+
+  // Load the next URL.
+  LoadUrlAndWait(UrlComparison::kExact, "/title2.html");
+}
+
+namespace {
+class WebContentsLoadingObserver : public content::WebContentsObserver {
+ public:
+  explicit WebContentsLoadingObserver(content::WebContents* contents)
+      : WebContentsObserver(contents) {}
+  WebContentsLoadingObserver(const WebContentsLoadingObserver&) = delete;
+  WebContentsLoadingObserver& operator=(const WebContentsLoadingObserver&) =
+      delete;
+  ~WebContentsLoadingObserver() override = default;
+
+  void Wait() { run_loop_.Run(); }
+
+  // content::WebContentsObserver:
+  void DidStartLoading() override { run_loop_.Quit(); }
+
+ private:
+  base::RunLoop run_loop_;
+};
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(WebAppUrlLoaderTest,
+                       PrepareForLoad_BeforeNavigationComplete) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebAppUrlLoader loader;
+
+  // Load a URL that takes a long time to load. Use /hung-after-headers here
+  // because it starts the HTTP response, but never returns a HTML document.
+  // We intentionally don't wait for load completion.
+  {
+    WebContentsLoadingObserver observer(web_contents());
+    loader.LoadUrl(embedded_test_server()->GetURL("/hung-after-headers"),
+                   web_contents(), UrlComparison::kExact, base::DoNothing());
+    observer.Wait();
+  }
+
+  // Prepare for next load.
+  {
+    EXPECT_TRUE(web_contents()->IsLoading());
+    base::RunLoop run_loop;
+    loader.PrepareForLoad(web_contents(),
+                          base::BindLambdaForTesting([&](Result result) {
+                            EXPECT_EQ(Result::kUrlLoaded, result);
+                            run_loop.Quit();
+                          }));
+    run_loop.Run();
+  }
+
+  // Load the next URL.
+  LoadUrlAndWait(UrlComparison::kExact, "/title2.html");
+}
+
 }  // namespace web_app

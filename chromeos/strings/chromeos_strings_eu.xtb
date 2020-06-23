@@ -3,6 +3,7 @@
 <translationbundle lang="eu">
 <translation id="1018656279737460067">Bertan behera utzi da</translation>
 <translation id="1195447618553298278">Errore ezezaguna.</translation>
+<translation id="1413240736185167732">Hutsegitea - Iragazkiak huts egin du</translation>
 <translation id="1468664791493211953">Eskaintzak</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailu hau, eta baliteke zure jardueren jarraipena egin ahal izatea.</translation>
 <translation id="150962533380566081">PUK kodeak ez du balio.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Enpresak kudeatzen du gailu hau</translation>
 <translation id="1905710495812624430">Saiakera-muga gainditu da.</translation>
 <translation id="1930797645656624981">Chrome OS sistemako idazketa-metodoaren zerbitzua</translation>
+<translation id="1947737735496445907">Inprimatuta</translation>
 <translation id="1979103255016296513">Pasahitza iraungita dago eta aldatu egin behar da</translation>
 <translation id="2049639323467105390"><ph name="DOMAIN" /> domeinuak kudeatzen du gailu hau.</translation>
 <translation id="2338501278241028356">Inguruko gailuak ikusteko, aktibatu Bluetooth-a</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Aplikazioak</translation>
 <translation id="2872961005593481000">Itzali</translation>
 <translation id="3008341117444806826">FRESKATU</translation>
+<translation id="3091839911843451378">Hutsegitea - Gelditu egin da</translation>
+<translation id="3268178239013324452">Hutsegitea - Atea irekita dago</translation>
 <translation id="3369013195428705271">Ziur inprimatze-historia guztia garbitu nahi duzula? Ez dira garbituko abian dauden inprimatze-lanak.</translation>
+<translation id="3456078764689556234"><ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" /> orria inprimatu da.</translation>
 <translation id="3515615323037921860">Inprimatze-lanak</translation>
+<translation id="3527036260304016759">Hutsegitea - Errore ezezaguna</translation>
 <translation id="3749289110408117711">Fitxategiaren izena</translation>
 <translation id="38114475217616659">Garbitu historia guztia</translation>
 <translation id="3820172043799983114">PIN kodeak ez du balio.</translation>
 <translation id="3838338534323494292">Pasahitz berria</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" /> (<ph name="CREATION_TIME" />) - <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /> orri</translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du gailu hau, eta erabiltzaileen jarduera guztiak atzi ditzake; besteak beste, bisitatutako webguneak, erabilitako pasahitzak eta posta elektronikoa.</translation>
+<translation id="4003384961948020559">Hutsegitea - Irteera-erretilua beteta dago</translation>
 <translation id="4034824040120875894">Inprimagailua</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> barru iraungiko da pasahitza</translation>
+<translation id="428217921675623177">90 egun baino gehiagoko inprimaketak kendu egingo dira</translation>
 <translation id="4429881212383817840">Laster iraungiko da Kerberos-eko zerbitzu-eskaera</translation>
 <translation id="445059817448385655">Pasahitz zaharra</translation>
 <translation id="467510802200863975">Pasahitzak ez datoz bat</translation>
@@ -37,24 +46,31 @@
 Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="5222676887888702881">Amaitu saioa</translation>
 <translation id="5317780077021120954">Gorde</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" /> eta <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Aukeratu beste bat</translation>
 <translation id="5457599981699367932">Arakatu gonbidatu gisa</translation>
 <translation id="54609108002486618">Kudeatua</translation>
 <translation id="5832805196449965646">Gehitu pertsona bat</translation>
 <translation id="5895138241574237353">Berrabiarazi</translation>
+<translation id="6048107060512778456">Hutsegitea - Papera trabatuta da</translation>
 <translation id="6058625436358447366">Amaitzeko, idatzi pasahitz zaharra eta berria</translation>
 <translation id="6106186594183574873">Amaitzeko, idatzi pasahitz zaharra</translation>
 <translation id="6146993107019042706">Amaitzeko, idatzi pasahitz berria</translation>
 <translation id="6517239166834772319">Arakatu</translation>
+<translation id="6564646048574748301">Hutsegitea - Inprimagailua ez da aurkitu</translation>
 <translation id="6643016212128521049">Garbitu</translation>
 <translation id="7162487448488904999">Galeria</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="7690294790491645610">Berretsi pasahitz berria</translation>
 <translation id="7805768142964895445">Egoera</translation>
 <translation id="808894953321890993">Aldatu pasahitza</translation>
 <translation id="8208861521865154048">Abantailak</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du erabiltzaile hau. Ezarpenak kudeatu eta erabiltzailearen jarduerak gainbegira ditzake urrunetik.</translation>
+<translation id="871560550817059752">Hutsegitea - Ez dago tintarik</translation>
 <translation id="8747900814994928677">Berretsi aldaketa</translation>
+<translation id="8919837981463578619">Hutsegitea - Erretilua falta da</translation>
+<translation id="8928727111548978589">Hutsegitea - Ez dago paperik</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> saiakera gelditzen dira</translation>
 <translation id="910415269708673980">Freskatu <ph name="PRINCIPAL_NAME" /> erabiltzailearen zerbitzu-eskaera</translation>
 <translation id="9111102763498581341">Desblokeatu</translation>

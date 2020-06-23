@@ -15,6 +15,7 @@
 <translation id="2178608107313874732">Chromium не може да ја користи камерата сега</translation>
 <translation id="2195025571279539885">Дали сакате Chromium следниот пат да ви понуди да преведува страници од <ph name="LANGUAGE_NAME" /> од овој сајт?</translation>
 <translation id="2590893390871230428">Синхронизирајте ги податоците од Chromium</translation>
+<translation id="2650312721222849884">За да ги гледате картичките секаде каде што користите Chromium, вклучете синхронизација</translation>
 <translation id="2730884209570016437">Chromium не може да ја користи камерата затоа што друга апликација ја користи во моментов</translation>
 <translation id="2915596697727466327">Chromium користи Face ID за да обезбеди овластен пристап до вашите лозинки.</translation>
 <translation id="3256316712990552818">Копирано на Chromium</translation>
@@ -23,6 +24,7 @@
 <translation id="4681781466797808448">Вклучете го скенерот на Chromium</translation>
 <translation id="4787850887676698916">Картичките што сте ги отвориле во Chromium на другите уреди ќе се појават тука.</translation>
 <translation id="4999538639245140991">Бидејќи се одјавувате од сметка управувана од <ph name="SIGNOUT_MANAGED_DOMAIN" />, вашите податоци на Chromium ќе се избришат од уредов. Податоците ќе останат на сметката на Google.</translation>
+<translation id="5521125884468363740">За да ги гледате картичките секаде каде што користите Chromium, најавете се и вклучете синхронизација</translation>
 <translation id="5573014823074921752">Совет за Chromium: за повеќе опции за картичките, допрете го и задржете го копчето „Прикажи ги картичките“ во алатникот, што се наоѓа најдолу или најгоре на екранот.</translation>
 <translation id="5777187867430702742">Страница на Chromium</translation>
 <translation id="5862307444128926510">Добре дојдовте во Chromium</translation>
@@ -41,6 +43,7 @@
 <translation id="7746854981345936341">Совет за Chromium: некои копчиња отсега се наоѓаат најдолу на екранот, како што се „Назад“, „Напред“ и „Пребарај“.</translation>
 <translation id="786327964234957808">Ги заменувате сметките за синхронизација од <ph name="USER_EMAIL1" /> на <ph name="USER_EMAIL2" />. Вашите постоечки податоци на Chromium се управувани од <ph name="DOMAIN" />. Ова ќе ги избрише податоците од уредов, но тие ќе останат на <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Започнете со користење на скенерот на Chromium</translation>
+<translation id="8013573822802650211">За да ги гледате картичките секаде каде што користите Chromium, најавете се на сите ваши уреди</translation>
 <translation id="8073677936375100957">Да се избришат податоците на Chromium од уредов?</translation>
 <translation id="8175055321229419309">Совет: <ph name="BEGIN_LINK" />преместете го Chromium во приклучокот<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Добијте подобро искуство на Google со Chromium според вашата локација.</translation>

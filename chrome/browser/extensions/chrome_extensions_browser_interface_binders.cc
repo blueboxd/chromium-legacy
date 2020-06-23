@@ -65,7 +65,10 @@ void BindHandwritingRecognizer(
     mojo::PendingReceiver<
         chromeos::machine_learning::mojom::HandwritingRecognizer> receiver) {
   chromeos::machine_learning::ServiceConnection::GetInstance()
-      ->LoadHandwritingModel(std::move(receiver), base::DoNothing());
+      ->LoadHandwritingModelWithSpec(
+          chromeos::machine_learning::mojom::HandwritingRecognizerSpec::New(
+              "en"),
+          std::move(receiver), base::DoNothing());
 }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 

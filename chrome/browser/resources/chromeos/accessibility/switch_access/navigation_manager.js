@@ -21,9 +21,6 @@ class NavigationManager {
     /** @private {!FocusHistory} */
     this.history_ = new FocusHistory();
 
-    /** @private {!FocusRingManager} */
-    this.focusRingManager_ = new FocusRingManager();
-
     /**
      * Callback for testing use only.
      * @private {?function()}
@@ -199,13 +196,6 @@ class NavigationManager {
     navigator.restoreFromHistory_();
   }
 
-  /** Updates the focus ring locations in response to an automation event. */
-  static refreshFocusRings() {
-    const navigator = NavigationManager.instance;
-    navigator.focusRingManager_.setFocusNodes(
-        navigator.node_, navigator.group_);
-  }
-
   // =============== Getter Methods ==============
 
   /**
@@ -359,7 +349,6 @@ class NavigationManager {
     this.node_.onUnfocus();
     this.node_ = node;
     this.node_.onFocus();
-    this.focusRingManager_.setFocusNodes(this.node_, this.group_);
     AutoScanManager.restartIfRunning();
   }
 }

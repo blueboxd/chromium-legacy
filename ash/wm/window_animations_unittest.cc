@@ -484,7 +484,7 @@ TEST_F(CrossFadeAnimateNewLayerOnlyTest, CrossFadeAnimateNewLayerOnly) {
   const gfx::Rect target_bounds(40, 40, 400, 400);
   CrossFadeAnimationAnimateNewLayerOnly(window.get(), target_bounds,
                                         base::TimeDelta::FromMilliseconds(200),
-                                        gfx::Tween::LINEAR);
+                                        gfx::Tween::LINEAR, "dummy");
 
   // Window's layer has been replaced.
   EXPECT_NE(old_layer, window->layer());

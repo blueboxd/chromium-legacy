@@ -98,7 +98,7 @@ void BeginFrameProvider::RequestBeginFrame() {
 
 void BeginFrameProvider::OnBeginFrame(
     const viz::BeginFrameArgs& args,
-    WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>) {
+    const WTF::HashMap<uint32_t, viz::FrameTimingDetails>&) {
   TRACE_EVENT_WITH_FLOW0("blink", "BeginFrameProvider::OnBeginFrame",
                          TRACE_ID_GLOBAL(args.trace_id),
                          TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);

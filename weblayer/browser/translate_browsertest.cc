@@ -23,6 +23,7 @@
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
 #include "components/infobars/core/infobar_manager.h"  // nogncheck
+#include "components/translate/core/browser/translate_download_manager.h"
 #include "weblayer/browser/infobar_android.h"
 #include "weblayer/browser/infobar_service.h"
 #include "weblayer/browser/translate_compact_infobar.h"
@@ -167,6 +168,8 @@ class TranslateBrowserTest : public WebLayerBrowserTest {
     GetTranslateClient(shell())
         ->GetTranslateManager()
         ->SetIgnoreMissingKeyForTesting(true);
+
+    GetTranslateClient(shell())->GetTranslatePrefs()->ResetToDefaults();
   }
 
   void TearDownOnMainThread() override {
@@ -546,5 +549,227 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, TranslationViaInfoBar) {
   infobar_service->RemoveObserver(&infobar_observer);
 }
 #endif
+
+#if defined(OS_ANDROID)
+// Test that the translation infobar stays present when the "never translate
+// language" item is clicked. Note that this behavior is intentionally different
+// from that of Chrome, where the infobar is removed in this case and a snackbar
+// is shown. As WebLayer has no snackbars, the UX decision was to simply leave
+// the infobar open to allow the user to revert the decision if desired.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
+                       TranslateInfoBarNeverTranslateLanguage) {
+  auto* web_contents = static_cast<TabImpl*>(shell()->tab())->web_contents();
+  auto* infobar_service = InfoBarService::FromWebContents(web_contents);
+
+  SetTranslateScript(kTestValidScript);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  TestInfoBarManagerObserver infobar_observer;
+  infobar_service->AddObserver(&infobar_observer);
+
+  base::RunLoop run_loop;
+  infobar_observer.set_on_infobar_added_callback(run_loop.QuitClosure());
+
+  // Navigate to a page in French and wait for the infobar to be added.
+  EXPECT_EQ(0u, infobar_service->infobar_count());
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  run_loop.Run();
+
+  auto* infobar =
+      static_cast<TranslateCompactInfoBar*>(infobar_service->infobar_at(0));
+  infobar->ClickOverflowMenuItemForTesting(
+      TranslateCompactInfoBar::OverflowMenuItemId::NEVER_TRANSLATE_LANGUAGE);
+
+  // The translate infobar should still be present.
+  EXPECT_EQ(1u, infobar_service->infobar_count());
+
+  // However, the infobar should not be shown on a new navigation to a page in
+  // French.
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page2.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  // NOTE: There is no notification to wait for for the event of the infobar not
+  // showing. However, in practice the infobar is added synchronously, so if it
+  // were to be shown, this check would fail.
+  EXPECT_EQ(0u, infobar_service->infobar_count());
+
+  // The infobar *should* be shown on a navigation to this site if the page's
+  // language is detected as something other than French.
+  base::RunLoop run_loop2;
+  infobar_observer.set_on_infobar_added_callback(run_loop2.QuitClosure());
+
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/german_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("de", translate_client->GetLanguageState().original_language());
+
+  run_loop2.Run();
+
+  EXPECT_EQ(1u, infobar_service->infobar_count());
+
+  infobar_service->RemoveObserver(&infobar_observer);
+}
+
+// Test that the translation infobar stays present when the "never translate
+// site" item is clicked. Note that this behavior is intentionally different
+// from that of Chrome, where the infobar is removed in this case and a snackbar
+// is shown. As WebLayer has no snackbars, the UX decision was to simply leave
+// the infobar open to allow the user to revert the decision if desired.
+IN_PROC_BROWSER_TEST_F(TranslateBrowserTest,
+                       TranslateInfoBarNeverTranslateSite) {
+  auto* web_contents = static_cast<TabImpl*>(shell()->tab())->web_contents();
+  auto* infobar_service = InfoBarService::FromWebContents(web_contents);
+
+  SetTranslateScript(kTestValidScript);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  TestInfoBarManagerObserver infobar_observer;
+  infobar_service->AddObserver(&infobar_observer);
+
+  base::RunLoop run_loop;
+  infobar_observer.set_on_infobar_added_callback(run_loop.QuitClosure());
+
+  // Navigate to a page in French and wait for the infobar to be added.
+  EXPECT_EQ(0u, infobar_service->infobar_count());
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  run_loop.Run();
+
+  auto* infobar =
+      static_cast<TranslateCompactInfoBar*>(infobar_service->infobar_at(0));
+  infobar->ClickOverflowMenuItemForTesting(
+      TranslateCompactInfoBar::OverflowMenuItemId::NEVER_TRANSLATE_SITE);
+
+  // The translate infobar should still be present.
+  EXPECT_EQ(1u, infobar_service->infobar_count());
+
+  // However, the infobar should not be shown on a new navigation to this site,
+  // independent of the detected language.
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page2.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  // NOTE: There is no notification to wait for for the event of the infobar not
+  // showing. However, in practice the infobar is added synchronously, so if it
+  // were to be shown, this check would fail.
+  EXPECT_EQ(0u, infobar_service->infobar_count());
+
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/german_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("de", translate_client->GetLanguageState().original_language());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
+
+  infobar_service->RemoveObserver(&infobar_observer);
+}
+
+// Parameterized to run tests on the "never translate language" and "never
+// translate site" menu items.
+class NeverTranslateMenuItemTranslateBrowserTest
+    : public TranslateBrowserTest,
+      public testing::WithParamInterface<
+          TranslateCompactInfoBar::OverflowMenuItemId> {};
+
+// Test that clicking and unclicking a never translate item ends up being a
+// no-op.
+IN_PROC_BROWSER_TEST_P(NeverTranslateMenuItemTranslateBrowserTest,
+                       TranslateInfoBarToggleAndToggleBackNeverTranslateItem) {
+  auto* web_contents = static_cast<TabImpl*>(shell()->tab())->web_contents();
+  auto* infobar_service = InfoBarService::FromWebContents(web_contents);
+
+  SetTranslateScript(kTestValidScript);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  TestInfoBarManagerObserver infobar_observer;
+  infobar_service->AddObserver(&infobar_observer);
+
+  // Navigate to a page in French, wait for the infobar to be added, and click
+  // twice on the given overflow menu item.
+  {
+    base::RunLoop run_loop;
+    infobar_observer.set_on_infobar_added_callback(run_loop.QuitClosure());
+
+    EXPECT_EQ(0u, infobar_service->infobar_count());
+    NavigateAndWaitForCompletion(
+        GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+    WaitUntilLanguageDetermined(shell());
+    EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+    run_loop.Run();
+
+    auto* infobar =
+        static_cast<TranslateCompactInfoBar*>(infobar_service->infobar_at(0));
+    infobar->ClickOverflowMenuItemForTesting(GetParam());
+
+    // The translate infobar should still be present.
+    EXPECT_EQ(1u, infobar_service->infobar_count());
+
+    infobar->ClickOverflowMenuItemForTesting(GetParam());
+  }
+
+  // The infobar should be shown on a new navigation to a page in the same
+  // language.
+  {
+    base::RunLoop run_loop;
+    infobar_observer.set_on_infobar_added_callback(run_loop.QuitClosure());
+
+    NavigateAndWaitForCompletion(
+        GURL(embedded_test_server()->GetURL("/french_page2.html")), shell());
+    WaitUntilLanguageDetermined(shell());
+    EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+    run_loop.Run();
+  }
+
+  // The infobar should be shown on a new navigation to a page in a different
+  // language in the same site.
+  {
+    base::RunLoop run_loop;
+    infobar_observer.set_on_infobar_added_callback(run_loop.QuitClosure());
+
+    NavigateAndWaitForCompletion(
+        GURL(embedded_test_server()->GetURL("/german_page.html")), shell());
+    WaitUntilLanguageDetermined(shell());
+    EXPECT_EQ("de", translate_client->GetLanguageState().original_language());
+
+    run_loop.Run();
+  }
+
+  infobar_service->RemoveObserver(&infobar_observer);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    NeverTranslateMenuItemTranslateBrowserTest,
+    ::testing::Values(
+        TranslateCompactInfoBar::OverflowMenuItemId::NEVER_TRANSLATE_LANGUAGE,
+        TranslateCompactInfoBar::OverflowMenuItemId::NEVER_TRANSLATE_SITE));
+
+#endif  // #if defined(OS_ANDROID)
 
 }  // namespace weblayer

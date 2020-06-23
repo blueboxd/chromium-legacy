@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">Copié</translation>
 <translation id="2822354292072154809">Voulez-vous vraiment réinitialiser toutes les autorisations du site pour <ph name="CHOSEN_OBJECT_NAME" /> ?</translation>
 <translation id="2870560284913253234">Site</translation>
+<translation id="2874939134665556319">Piste précédente</translation>
 <translation id="2910701580606108292">Demander avant d'autoriser les sites à lire les contenus protégés</translation>
 <translation id="2913331724188855103">Autoriser les sites à enregistrer et à lire les données des cookies (recommandé)</translation>
 <translation id="2968755619301702150">Lecteur de certificat</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">Synchronisation en arrière-plan</translation>
 <translation id="3822502789641063741">Suppr. données de site ?</translation>
 <translation id="385051799172605136">Retour</translation>
+<translation id="3859306556332390985">Avance rapide</translation>
 <translation id="3955193568934677022">Autoriser les sites à lire les contenus protégés (recommandé)</translation>
 <translation id="3987993985790029246">Copier lien</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" />/ ?</translation>
 <translation id="4002066346123236978">Titre</translation>
 <translation id="4008040567710660924">Autorisez les cookies pour un site spécifique.</translation>
+<translation id="4046123991198612571">Piste suivante</translation>
 <translation id="4165986682804962316">Paramètres de site</translation>
 <translation id="4226663524361240545">L'appareil vibrera en cas de notifications.</translation>
 <translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="4259722352634471385">La navigation sur <ph name="URL" /> est bloquée.</translation>
 <translation id="4278390842282768270">Autorisé</translation>
+<translation id="429312253194641664">Un site est en train de lire un contenu multimédia</translation>
 <translation id="4433925000917964731">Page simplifiée fournie par Google</translation>
 <translation id="4434045419905280838">Pop-up et redirections</translation>
 <translation id="445467742685312942">Autoriser les sites à lire les contenus protégés</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">Descendre</translation>
 <translation id="6766622839693428701">Balayez l'écran vers le bas pour fermer la feuille.</translation>
 <translation id="6782111308708962316">Empêcher les sites Web tiers d'enregistrer et de lire les données des cookies</translation>
+<translation id="6790428901817661496">Lire</translation>
 <translation id="6818926723028410516">Sélectionner des éléments</translation>
 <translation id="6864395892908308021">Lecture NFC impossible sur cet appareil</translation>
 <translation id="6910211073230771657">Supprimé</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">Un site utilise votre appareil photo et votre micro</translation>
 <translation id="8380167699614421159">Ce site affiche des annonces intrusives ou trompeuses</translation>
 <translation id="8394832520002899662">Appuyez pour revenir au site</translation>
+<translation id="8441146129660941386">Retour rapide</translation>
 <translation id="8447861592752582886">Révoquer l'autorisation d'accès à l'appareil</translation>
 <translation id="8463851957836045671">Le site est rapide</translation>
 <translation id="851751545965956758">Interdire à tous les sites de se connecter à des appareils</translation>

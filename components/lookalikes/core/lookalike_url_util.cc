@@ -668,6 +668,9 @@ void RecordUMAFromMatchType(LookalikeUrlMatchType match_type) {
       RecordEvent(
           NavigationSuggestionEvent::kMatchTargetEmbeddingForSafetyTips);
       break;
+    case LookalikeUrlMatchType::kFailedSpoofChecks:
+      RecordEvent(NavigationSuggestionEvent::kFailedSpoofChecks);
+      break;
     case LookalikeUrlMatchType::kNone:
       break;
   }

@@ -3,6 +3,7 @@
 <translationbundle lang="kk">
 <translation id="1018656279737460067">Бас тартылды</translation>
 <translation id="1195447618553298278">Белгісіз қате.</translation>
+<translation id="1413240736185167732">Сәтсіз: сүзгі қатесі шықты</translation>
 <translation id="1468664791493211953">Ұсыныстар</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> құрылғыңызды басқарады және әрекетіңізді де бақылауы мүмкін.</translation>
 <translation id="150962533380566081">PUK коды жарамсыз.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Бұл құрылғыны ұйым басқарады</translation>
 <translation id="1905710495812624430">Максималды рұқсат етілетін әрекеттер шегінен асып кетті.</translation>
 <translation id="1930797645656624981">Chrome OS енгізу әдісі қызметі</translation>
+<translation id="1947737735496445907">Басып шығарылған</translation>
 <translation id="1979103255016296513">Құпия сөзді өзгертуге берілген мерзім аяқталды</translation>
 <translation id="2049639323467105390">Бұл құрылғыны <ph name="DOMAIN" /> басқарады.</translation>
 <translation id="2338501278241028356">Маңайдағы құрылғыларды табу үшін Bluetooth функциясын қосыңыз</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Қолданбалар</translation>
 <translation id="2872961005593481000">Өшіру</translation>
 <translation id="3008341117444806826">ЖАҢАРТУ</translation>
+<translation id="3091839911843451378">Сәтсіз: тоқтатылды</translation>
+<translation id="3268178239013324452">Сәтсіз: есігі ашық</translation>
 <translation id="3369013195428705271">Басып шығару тарихын шынымен толығымен тазалағыңыз келе ме? Қазір орындалып жатқан басып шығару жұмысының деректері сақталады.</translation>
+<translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> бет (жалпы саны: <ph name="TOTAL_PAGES" />) басып шығарылды.</translation>
 <translation id="3515615323037921860">Баспа жұмыстары</translation>
+<translation id="3527036260304016759">Сәтсіз: белгісіз қате шықты</translation>
 <translation id="3749289110408117711">Файл атауы</translation>
 <translation id="38114475217616659">Тарихты толығымен тазалау</translation>
 <translation id="3820172043799983114">PIN коды жарамсыз.</translation>
 <translation id="3838338534323494292">Жаңа құпия сөз</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> осы құрылғыны басқарады және пайдаланушының барлық әрекетін (мысалы, кірген веб-сайттары, құпия сөздері және электрондық поштасы) көре алады.</translation>
+<translation id="4003384961948020559">Сәтсіз: шығыс науа толып кеткен</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4227825898293920515">Құпия сөздің мерзімі <ph name="TIME" /> өткен соң аяқталады.</translation>
+<translation id="428217921675623177">90 күннен аса уақыт бұрын орындалған баспа жұмыстары өшіріледі.</translation>
 <translation id="4429881212383817840">Kerberos билетінің жарамдылық мерзімі жақында аяқталады</translation>
 <translation id="445059817448385655">Ескі құпия сөз</translation>
 <translation id="467510802200863975">Құпия сөздер сәйкес келмейді.</translation>
@@ -36,24 +45,31 @@
 <translation id="5212543919916444558">Экранда мен көмектесе алатын ештеңе жоқ. Микрофон белгішесін түртіп, маған сұрақ қойыңыз.</translation>
 <translation id="5222676887888702881">Шығу</translation>
 <translation id="5317780077021120954">Сақтау</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Жаңа құпия сөз енгізіңіз.</translation>
 <translation id="5457599981699367932">Қонақ ретінде шолу</translation>
 <translation id="54609108002486618">Басқарылады</translation>
 <translation id="5832805196449965646">Адам қосу</translation>
 <translation id="5895138241574237353">Қайта іске қосу</translation>
+<translation id="6048107060512778456">Сәтсіз: қағаз кептеліп қалды</translation>
 <translation id="6058625436358447366">Аяқтау үшін ескі және жаңа құпия сөздерді енгізіңіз.</translation>
 <translation id="6106186594183574873">Аяқтау үшін ескі құпия сөзді енгізіңіз.</translation>
 <translation id="6146993107019042706">Аяқтау үшін жаңа құпия сөзді енгізіңіз.</translation>
 <translation id="6517239166834772319">Шолу</translation>
+<translation id="6564646048574748301">Сәтсіз: принтер қолжетімді емес</translation>
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="7162487448488904999">Галерея</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Бас тарту</translation>
 <translation id="7690294790491645610">Жаңа құпия сөзді қайталаңыз</translation>
 <translation id="7805768142964895445">Күйі</translation>
 <translation id="808894953321890993">Кұпия сөзді өзгерту</translation>
 <translation id="8208861521865154048">Бонустар</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> пайдаланушыны басқарады. Сонымен қатар қашықтан параметрлерді басқарады және пайдаланушының әрекетін қадағалайды.</translation>
+<translation id="871560550817059752">Сәтсіз: сия бітіп қалды</translation>
 <translation id="8747900814994928677">Өзгерісті растау</translation>
+<translation id="8919837981463578619">Сәтсіз: науа жоқ</translation>
+<translation id="8928727111548978589">Сәтсіз: қағаз бітіп қалды</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Қалған әрекеттер саны: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> үшін билетті жаңарту</translation>
 <translation id="9111102763498581341">Құлпын ашу</translation>

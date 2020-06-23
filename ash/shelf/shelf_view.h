@@ -265,6 +265,10 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   // bounds.
   void LayoutIfAppIconsOffsetUpdates();
 
+  // Returns the app button whose context menu is shown. Returns nullptr if no
+  // app buttons have a context menu showing.
+  ShelfAppButton* GetShelfItemViewWithContextMenu();
+
   // Return the view model for test purposes.
   const views::ViewModel* view_model_for_test() const {
     return view_model_.get();

@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/extension_system.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -137,18 +138,21 @@ bool AppLauncherPageUI::HTMLSource::AllowCaching() {
   return false;
 }
 
-std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyScriptSrc() {
-  // 'unsafe-inline' is added to script-src.
-  return "script-src chrome://resources 'self' 'unsafe-eval' 'unsafe-inline';";
-}
+std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+    // 'unsafe-inline' is added to script-src.
+    return "script-src chrome://resources 'self' 'unsafe-eval' "
+           "'unsafe-inline';";
+  } else if (directive == network::mojom::CSPDirectiveName::StyleSrc) {
+    return "style-src 'self' chrome://resources chrome://theme "
+           "'unsafe-inline';";
+  } else if (directive == network::mojom::CSPDirectiveName::ImgSrc) {
+    return "img-src chrome://extension-icon chrome://app-icon chrome://theme "
+           "chrome://resources data:;";
+  }
 
-std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyStyleSrc() {
-  return "style-src 'self' chrome://resources chrome://theme 'unsafe-inline';";
-}
-
-std::string AppLauncherPageUI::HTMLSource::GetContentSecurityPolicyImgSrc() {
-  return "img-src chrome://extension-icon chrome://app-icon chrome://theme "
-         "chrome://resources data:;";
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
 AppLauncherPageUI::HTMLSource::~HTMLSource() = default;

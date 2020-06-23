@@ -205,6 +205,18 @@ WebString ConvertToPublic(
       return "navigate-to";
     case CSPDirectiveName::FrameAncestors:
       return "frame-ancestors";
+    case CSPDirectiveName::ImgSrc:
+      return "img-src";
+    case CSPDirectiveName::MediaSrc:
+      return "media-src";
+    case CSPDirectiveName::ObjectSrc:
+      return "object-src";
+    case CSPDirectiveName::ScriptSrc:
+      return "script-src";
+    case CSPDirectiveName::StyleSrc:
+      return "style-src";
+    case CSPDirectiveName::WorkerSrc:
+      return "worker-src";
     case CSPDirectiveName::Unknown:
       NOTREACHED();
       return "";

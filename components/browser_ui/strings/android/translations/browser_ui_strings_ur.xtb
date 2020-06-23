@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">کاپی کیا</translation>
 <translation id="2822354292072154809">کیا آپ واقعی <ph name="CHOSEN_OBJECT_NAME" /> کے لیے سائٹ کی سبھی اجازتوں کو دوبارہ ترتیب دینا چاہتے ہیں؟</translation>
 <translation id="2870560284913253234">سائٹ</translation>
+<translation id="2874939134665556319">پچھلا ٹریک</translation>
 <translation id="2910701580606108292">سائٹس کو محفوظ مواد چلانے کی اجازت دینے سے پہلے پوچھیں</translation>
 <translation id="2913331724188855103">سائٹس کو کوکی ڈیٹا کو محفوظ کرنے اور پڑھنے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="2968755619301702150">سرٹیفیکیٹ ناظر</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">پس منظر کی مطابقت پذیری</translation>
 <translation id="3822502789641063741">سائٹ کا اسٹوریج صاف کریں؟</translation>
 <translation id="385051799172605136">پیچھے</translation>
+<translation id="3859306556332390985">آگے لے جائیں</translation>
 <translation id="3955193568934677022">سائٹس کو محفوظ کردہ مواد چلانے کی اجازت دیں (تجویز کردہ)</translation>
 <translation id="3987993985790029246">لنک کاپی کریں</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">عنوان</translation>
 <translation id="4008040567710660924">مخصوص سائٹ کے لیے کوکیز کی اجازت دیں۔</translation>
+<translation id="4046123991198612571">اگلا ٹریک</translation>
 <translation id="4165986682804962316">سائٹ کی ترتیبات</translation>
 <translation id="4226663524361240545">اطلاعات آلہ کو وائبریٹ کر سکتی ہیں</translation>
 <translation id="4242533952199664413">ترتیبات کھولیں</translation>
 <translation id="4259722352634471385">نیویگیشن مسدود ہے: <ph name="URL" /></translation>
 <translation id="4278390842282768270">اجازت یافتہ</translation>
+<translation id="429312253194641664">سائٹ پر میڈیا چل رہا ہے</translation>
 <translation id="4433925000917964731">‏Google کی طرف سے فراہم کردہ لائٹ صفحہ</translation>
 <translation id="4434045419905280838">پوپ اپس اور ری ڈائریکٹس</translation>
 <translation id="445467742685312942">سائٹس کو محفوظ مواد چلانے کی اجازت دیں</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">نیچے منتقل کریں</translation>
 <translation id="6766622839693428701">بند کرنے کے لئے نیچے سوائپ کریں۔</translation>
 <translation id="6782111308708962316">فریق ثالث ویب سائٹس کو کوکی ڈیٹا محفوظ کرنے اور پڑھنے سے روکیں</translation>
+<translation id="6790428901817661496">چلائیں</translation>
 <translation id="6818926723028410516">آئٹمز منتخب کریں</translation>
 <translation id="6864395892908308021">‏یہ آلہ NFC کو نہیں پڑھ سکتا</translation>
 <translation id="6910211073230771657">حذف کردہ</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">ایک سائٹ آپ کا کیمرا اور مائیکروفون استعمال کر رہی ہے</translation>
 <translation id="8380167699614421159">یہ سائٹ دخل انداز یا گمراہ کن اشتہارات دکھاتی ہے</translation>
 <translation id="8394832520002899662">سائٹ پر واپس جانے کے لیے تھپتھپائیں</translation>
+<translation id="8441146129660941386">پیچھے لے جائیں</translation>
 <translation id="8447861592752582886">آلہ کی اجازت کالعدم کریں</translation>
 <translation id="8463851957836045671">سائٹ تیز ہے</translation>
 <translation id="851751545965956758">سائٹس کو آلات سے منسلک ہونے سے مسدود کریں</translation>

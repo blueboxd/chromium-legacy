@@ -83,7 +83,6 @@ class PythonChecker(object):
             finder.path_from_chromium_base('build', 'android'),
             finder.path_from_chromium_base('third_party'),  # for jinja2
             finder.path_from_chromium_base('third_party', 'catapult', 'devil'),
-            finder.path_from_chromium_base('third_party', 'pymock'),
             finder.path_from_chromium_base('tools'),
         ])
         return executive.run_command([

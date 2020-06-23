@@ -30,7 +30,6 @@
 #include "components/sync/engine/sync_engine_host.h"
 #include "components/sync/engine/sync_manager_factory.h"
 #include "components/sync/engine/sync_string_conversions.h"
-#include "components/sync/syncable/base_transaction.h"
 
 namespace syncer {
 
@@ -211,10 +210,6 @@ void SyncEngineImpl::ActivateProxyDataType(ModelType type) {
 
 void SyncEngineImpl::DeactivateProxyDataType(ModelType type) {
   model_type_connector_->DisconnectProxyType(type);
-}
-
-UserShare* SyncEngineImpl::GetUserShare() const {
-  return backend_->sync_manager()->GetUserShare();
 }
 
 const SyncEngineImpl::Status& SyncEngineImpl::GetDetailedStatus() const {

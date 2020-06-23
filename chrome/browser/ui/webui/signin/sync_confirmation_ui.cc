@@ -21,6 +21,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/resources/grit/webui_resources.h"
@@ -44,7 +45,8 @@ SyncConfirmationUI::SyncConfirmationUI(content::WebUI* web_ui)
   if (is_sync_allowed) {
     source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
     source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
-    source->OverrideContentSecurityPolicyScriptSrc(
+    source->OverrideContentSecurityPolicy(
+        network::mojom::CSPDirectiveName::ScriptSrc,
         "script-src chrome://resources chrome://test 'self';");
 
     source->SetDefaultResource(IDR_SYNC_CONFIRMATION_HTML);

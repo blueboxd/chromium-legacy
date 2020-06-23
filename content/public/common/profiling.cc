@@ -91,7 +91,7 @@ class ProfilingThreadControl {
       return;
     thread_->Stop();
     delete thread_;
-    thread_ = NULL;
+    thread_ = nullptr;
   }
 
  private:

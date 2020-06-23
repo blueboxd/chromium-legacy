@@ -1180,6 +1180,7 @@ typedef void(GL_BINDING_CALL* glObjectLabelProc)(GLenum identifier,
 typedef void(GL_BINDING_CALL* glObjectPtrLabelProc)(void* ptr,
                                                     GLsizei length,
                                                     const char* label);
+typedef void(GL_BINDING_CALL* glPatchParameteriProc)(GLenum pname, GLint value);
 typedef void(GL_BINDING_CALL* glPathCommandsNVProc)(GLuint path,
                                                     GLsizei numCommands,
                                                     const GLubyte* commands,
@@ -2374,6 +2375,7 @@ struct ProcsGL {
       glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn;
   glObjectLabelProc glObjectLabelFn;
   glObjectPtrLabelProc glObjectPtrLabelFn;
+  glPatchParameteriProc glPatchParameteriFn;
   glPathCommandsNVProc glPathCommandsNVFn;
   glPathParameterfNVProc glPathParameterfNVFn;
   glPathParameteriNVProc glPathParameteriNVFn;
@@ -3593,6 +3595,7 @@ class GL_EXPORT GLApi {
   virtual void glObjectPtrLabelFn(void* ptr,
                                   GLsizei length,
                                   const char* label) = 0;
+  virtual void glPatchParameteriFn(GLenum pname, GLint value) = 0;
   virtual void glPathCommandsNVFn(GLuint path,
                                   GLsizei numCommands,
                                   const GLubyte* commands,
@@ -4766,6 +4769,7 @@ class GL_EXPORT GLApi {
       ->glMultiDrawElementsInstancedBaseVertexBaseInstanceANGLEFn
 #define glObjectLabel ::gl::g_current_gl_context->glObjectLabelFn
 #define glObjectPtrLabel ::gl::g_current_gl_context->glObjectPtrLabelFn
+#define glPatchParameteri ::gl::g_current_gl_context->glPatchParameteriFn
 #define glPathCommandsNV ::gl::g_current_gl_context->glPathCommandsNVFn
 #define glPathParameterfNV ::gl::g_current_gl_context->glPathParameterfNVFn
 #define glPathParameteriNV ::gl::g_current_gl_context->glPathParameteriNVFn

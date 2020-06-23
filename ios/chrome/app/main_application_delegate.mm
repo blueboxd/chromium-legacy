@@ -138,6 +138,11 @@
              selector:@selector(sceneDidEnterBackground:)
                  name:UISceneDidEnterBackgroundNotification
                object:nil];
+      [[NSNotificationCenter defaultCenter]
+          addObserver:self
+             selector:@selector(sceneWillEnterForeground:)
+                 name:UISceneWillEnterForegroundNotification
+               object:nil];
     }
   }
 
@@ -250,12 +255,25 @@
 - (void)sceneDidEnterBackground:(NSNotification*)notification {
   DCHECK(IsSceneStartupSupported());
   if (@available(iOS 13, *)) {
-    // When the first scene enters foreground, update the app state.
+    // When the last scene enters background, update the app state.
     if (self.foregroundSceneCount == 0) {
       [_appState applicationDidEnterBackground:UIApplication.sharedApplication
                                   memoryHelper:_memoryHelper
                        incognitoContentVisible:self.sceneController
                                                    .incognitoContentVisible];
+    }
+  }
+}
+
+- (void)sceneWillEnterForeground:(NSNotification*)notification {
+  DCHECK(IsSceneStartupSupported());
+  if (@available(iOS 13, *)) {
+    // When the first scene will enter foreground, update the app state.
+    if (self.foregroundSceneCount == 0) {
+      [_appState applicationWillEnterForeground:UIApplication.sharedApplication
+                                metricsMediator:_metricsMediator
+                                   memoryHelper:_memoryHelper
+                                      tabOpener:_tabOpener];
     }
   }
 }

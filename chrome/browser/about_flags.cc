@@ -633,73 +633,6 @@ const FeatureEntry::Choice kSchedulerConfigurationChoices[] = {
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
-const FeatureEntry::FeatureParam
-    kInterestFeedLargerImagesFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "true"},
-        {"snippets_enabled", "false"},
-        {"undoable_actions_enabled", "false"},
-        {"manage_interests_enabled", "false"},
-        {"card_menu_tooltip_eligible", "false"}};
-const FeatureEntry::FeatureParam
-    kInterestFeedSnippetsFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "false"},
-        {"snippets_enabled", "true"},
-        {"undoable_actions_enabled", "false"},
-        {"manage_interests_enabled", "false"},
-        {"card_menu_tooltip_eligible", "false"}};
-const FeatureEntry::FeatureParam
-    kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "true"},
-        {"snippets_enabled", "true"},
-        {"undoable_actions_enabled", "false"},
-        {"manage_interests_enabled", "false"},
-        {"card_menu_tooltip_eligible", "false"}};
-const FeatureEntry::FeatureParam
-    kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "true"},
-        {"snippets_enabled", "false"},
-        {"undoable_actions_enabled", "true"},
-        {"manage_interests_enabled", "true"},
-        {"card_menu_tooltip_eligible", "true"}};
-const FeatureEntry::FeatureParam
-    kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant[] = {
-        {"feed_ui_enabled", "false"},
-        {"snippets_enabled", "true"},
-        {"undoable_actions_enabled", "true"},
-        {"manage_interests_enabled", "true"},
-        {"card_menu_tooltip_eligible", "true"}};
-const FeatureEntry::FeatureParam
-    kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant
-        [] = {{"feed_ui_enabled", "true"},
-              {"snippets_enabled", "true"},
-              {"undoable_actions_enabled", "true"},
-              {"manage_interests_enabled", "true"},
-              {"card_menu_tooltip_eligible", "true"}};
-const FeatureEntry::FeatureVariation kInterestFeedFeatureVariations[] = {
-    {"(larger images)", kInterestFeedLargerImagesFeatureVariationConstant,
-     base::size(kInterestFeedLargerImagesFeatureVariationConstant), nullptr},
-    {"(snippets)", kInterestFeedSnippetsFeatureVariationConstant,
-     base::size(kInterestFeedSnippetsFeatureVariationConstant), nullptr},
-    {"(larger images and snippets)",
-     kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant,
-     base::size(kInterestFeedLargeImagesAndSnippetsFeatureVariationConstant),
-     nullptr},
-    {"(larger images w/ undoable actions)",
-     kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant,
-     base::size(
-         kInterestFeedLargerImagesWithUndoableActionsFeatureVariationConstant),
-     nullptr},
-    {"(snippets w/ undoable actions)",
-     kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant,
-     base::size(
-         kInterestFeedSnippetsWithUndoableActionsFeatureVariationConstant),
-     nullptr},
-    {"(larger images and snippets w/ undoable actions)",
-     kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant,
-     base::size(
-         kInterestFeedLargeImagesAndSnippetsWithUndoableActionsFeatureVariationConstant),
-     nullptr}};
-
 const FeatureEntry::FeatureParam kCompactSuggestions_SemicompactVariant[] = {
     {"omnibox_compact_suggestions_variant", "semi-compact"}};
 
@@ -1538,6 +1471,8 @@ const FeatureEntry::FeatureParam kHomepagePromoCardCompact[] = {
     {"promo-card-variation", "Compact"}};
 const FeatureEntry::FeatureParam kHomepagePromoCardSlim[] = {
     {"promo-card-variation", "Slim"}};
+const FeatureEntry::FeatureParam kHomepagePromoCardSupressing[] = {
+    {"suppressing_sign_in_promo", "SuppressingSignInPromo"}};
 
 const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
     {"Large", kHomepagePromoCardLarge, base::size(kHomepagePromoCardLarge),
@@ -1545,7 +1480,9 @@ const FeatureEntry::FeatureVariation kHomepagePromoCardVariations[] = {
     {"Compact", kHomepagePromoCardCompact,
      base::size(kHomepagePromoCardCompact), nullptr},
     {"Slim", kHomepagePromoCardSlim, base::size(kHomepagePromoCardSlim),
-     nullptr}};
+     nullptr},
+    {"Compact_SuppressingSignInPromo", kHomepagePromoCardSupressing,
+     base::size(kHomepagePromoCardSupressing), nullptr}};
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
@@ -2680,14 +2617,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPluginVmShowMicrophonePermissionsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(
          chromeos::features::kPluginVmShowMicrophonePermissions)},
-#endif  // OS_CHROMEOS
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)
     {"dynamic-tcmalloc-tuning", flag_descriptions::kDynamicTcmallocName,
-     flag_descriptions::kDynamicTcmallocDescription, kOsCrOS | kOsLinux,
+     flag_descriptions::kDynamicTcmallocDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(performance_manager::features::kDynamicTcmallocTuning)},
 #endif  // BUILDFLAG(USE_TCMALLOC)
-#endif  // OS_CHROMEOS || OS_LINUX
+#endif  // OS_CHROMEOS
 #if defined(OS_ANDROID)
     {"enable-credit-card-assist", flag_descriptions::kCreditCardAssistName,
      flag_descriptions::kCreditCardAssistDescription, kOsAndroid,
@@ -3048,12 +2983,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPostQuantumCECPQ2Description, kOsAll,
      FEATURE_VALUE_TYPE(net::features::kPostQuantumCECPQ2)},
 #if defined(OS_ANDROID)
-    {"interest-feed-content-suggestions",
-     flag_descriptions::kInterestFeedContentSuggestionsName,
-     flag_descriptions::kInterestFeedContentSuggestionsDescription, kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(feed::kInterestFeedContentSuggestions,
-                                    kInterestFeedFeatureVariations,
-                                    "InterestFeedContentSuggestions")},
     {"interest-feed-feedback", flag_descriptions::kInterestFeedFeedbackName,
      flag_descriptions::kInterestFeedFeedbackDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(feed::kInterestFeedFeedback)},
@@ -3617,11 +3546,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::
          kOmniboxUIHideSteadyStateUrlTrivialSubdomainsDescription,
      kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlTrivialSubdomains)},
-
-    {"omnibox-ui-hide-steady-state-url-path-query-and-ref",
-     flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefName,
-     flag_descriptions::kOmniboxUIHideSteadyStateUrlPathQueryAndRefDescription,
-     kOsAll, FEATURE_VALUE_TYPE(omnibox::kHideSteadyStateUrlPathQueryAndRef)},
 
     {"omnibox-ui-reveal-steady-state-url-path-query-and-ref-on-hover",
      flag_descriptions::
@@ -5070,6 +4994,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kGlobalMediaControlsPictureInPictureDescription,
      kOsWin | kOsMac | kOsLinux | kOsCrOS,
      FEATURE_VALUE_TYPE(media::kGlobalMediaControlsPictureInPicture)},
+
+    {"global-media-controls-seamless-transfer",
+     flag_descriptions::kGlobalMediaControlsSeamlessTransferName,
+     flag_descriptions::kGlobalMediaControlsSeamlessTransferDescription,
+     kOsWin | kOsMac | kOsLinux,
+     FEATURE_VALUE_TYPE(media::kGlobalMediaControlsSeamlessTransfer)},
 #endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_SPELLCHECK) && defined(OS_WIN)

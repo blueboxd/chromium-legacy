@@ -28,7 +28,7 @@ CASE 1, original layer tree:
     {
       "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
       "position": [0, 200],
-      "bounds": [200, 300]
+      "bounds": [200, 1100]
     },
     {
       "name": "ContentsLayer for Vertical Scrollbar Layer",
@@ -58,10 +58,6 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "invalidations": [
-        [0, 500, 200, 100],
-        [0, 100, 200, 100]
-      ],
       "transform": 1
     },
     {
@@ -72,23 +68,17 @@ CASE 2, scrolling y to 80, new layers will be squashed, so things repaint:
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
-      "position": [0, 200],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-b' class='overlapping lime'",
+      "position": [0, 100],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF",
-      "invalidations": [
-        [0, 0, 200, 100]
-      ],
+      "backgroundColor": "#00FF00",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
-      "position": [0, 300],
-      "bounds": [200, 300],
-      "invalidations": [
-        [0, 0, 200, 300]
-      ],
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
+      "position": [0, 200],
+      "bounds": [200, 1100],
       "transform": 1
     },
     {
@@ -138,17 +128,17 @@ CASE 3, scrolling y to 120, no repaints expected:
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan'",
-      "position": [0, 200],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-b' class='overlapping lime'",
+      "position": [0, 100],
       "bounds": [200, 100],
       "contentsOpaque": true,
-      "backgroundColor": "#00FFFF",
+      "backgroundColor": "#00FF00",
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime')",
-      "position": [0, 300],
-      "bounds": [200, 300],
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
+      "position": [0, 200],
+      "bounds": [200, 1100],
       "transform": 1
     },
     {
@@ -188,10 +178,6 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "bounds": [785, 1400],
       "contentsOpaque": true,
       "backgroundColor": "#FFFFFF",
-      "invalidations": [
-        [0, 600, 200, 100],
-        [0, 200, 200, 100]
-      ],
       "transform": 1
     },
     {
@@ -202,23 +188,17 @@ CASE 4, scrolling y to 170 new layers will be squashed, so things repaint:
       "transform": 2
     },
     {
-      "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-d' class='overlapping lime'",
-      "position": [0, 300],
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='paragraph-b' class='overlapping lime'",
+      "position": [0, 100],
       "bounds": [200, 100],
       "contentsOpaque": true,
       "backgroundColor": "#00FF00",
-      "invalidations": [
-        [0, 0, 200, 100]
-      ],
       "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-e' class='overlapping cyan')",
-      "position": [0, 400],
-      "bounds": [200, 300],
-      "invalidations": [
-        [0, 0, 200, 300]
-      ],
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (relative positioned) DIV id='paragraph-c' class='overlapping cyan')",
+      "position": [0, 200],
+      "bounds": [200, 1100],
       "transform": 1
     },
     {

@@ -228,6 +228,10 @@ class Banners extends cr.EventTarget {
 
       links = util.createChild(body, 'drive-welcome-links');
 
+      // Hide link if it's trimmed by line-clamp so it does not get focus
+      // and break ellipsis render.
+      this.hideOverflowedElement(links, body);
+
       const buttonGroup = util.createChild(wrapper, 'button-group', 'div');
 
       close = util.createChild(
@@ -676,6 +680,17 @@ class Banners extends cr.EventTarget {
         message.innerHTML =
             util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING_FILESNG'));
         util.setClampLine(message, '2');
+
+        // Wrap a div around link.
+        const link = message.querySelector('a');
+        const linkWrapper = this.document_.createElement('div');
+        linkWrapper.className = 'link-wrapper';
+        message.appendChild(linkWrapper);
+        linkWrapper.appendChild(link);
+
+        // Hide the link if it's trimmed by line-clamp so it does not get focus
+        // and break ellipsis render.
+        this.hideOverflowedElement(linkWrapper, message);
       } else {
         message.innerHTML =
             util.htmlUnescape(str('DOWNLOADS_DIRECTORY_WARNING'));
@@ -806,5 +821,22 @@ class Banners extends cr.EventTarget {
         connection.reason ==
             chrome.fileManagerPrivate.DriveOfflineReason.NOT_READY;
     this.authFailedBanner_.hidden = !showDriveNotReachedMessage;
+  }
+
+  /**
+   * Hides element if it has overflowed its container after resizing.
+   *
+   * @param {!Element} element The element to hide.
+   * @param {!Element} container The container to observe overflow.
+   */
+  hideOverflowedElement(element, container) {
+    const observer = new ResizeObserver(() => {
+      if (util.hasOverflow(container)) {
+        element.style.visibility = 'hidden';
+      } else {
+        element.style.visibility = 'visible';
+      }
+    });
+    observer.observe(container);
   }
 }

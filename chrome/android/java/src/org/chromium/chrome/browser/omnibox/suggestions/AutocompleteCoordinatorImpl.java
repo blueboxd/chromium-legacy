@@ -74,16 +74,18 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
         Context context = parent.getContext();
 
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
-        MVCListAdapter.ModelList listItems = new MVCListAdapter.ModelList();
+        ModelList listItems = new ModelList();
+
+        listModel.set(SuggestionListProperties.EMBEDDER, dropdownEmbedder);
+        listModel.set(SuggestionListProperties.VISIBLE, false);
+        listModel.set(SuggestionListProperties.SUGGESTION_MODELS, listItems);
+
         mQueryTileCoordinator = new OmniboxQueryTileCoordinator(context, this::onTileSelected);
         mMediator = new AutocompleteMediator(context, delegate, urlBarEditingTextProvider,
                 new AutocompleteController(), listModel, new Handler());
         mMediator.initDefaultProcessors(mQueryTileCoordinator::setTiles);
 
-        listModel.set(SuggestionListProperties.EMBEDDER, dropdownEmbedder);
-        listModel.set(SuggestionListProperties.VISIBLE, false);
         listModel.set(SuggestionListProperties.OBSERVER, mMediator);
-        listModel.set(SuggestionListProperties.SUGGESTION_MODELS, listItems);
 
         ViewProvider<SuggestionListViewHolder> viewProvider =
                 createViewProvider(context, listItems);

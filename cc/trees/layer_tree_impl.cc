@@ -10,7 +10,9 @@
 #include <algorithm>
 #include <iterator>
 #include <limits>
+#include <memory>
 #include <set>
+#include <utility>
 
 #include "base/containers/adapters.h"
 #include "base/debug/crash_logging.h"
@@ -441,6 +443,13 @@ void LayerTreeImpl::UpdateViewportContainerSizes() {
         OuterViewportScrollNode()->container_bounds.height() +
         scaled_bounds_delta.y();
     outer_clip_node->clip.set_height(adjusted_container_height);
+
+    // Expand all clips between the outer viewport and the inner viewport.
+    auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
+    while (outer_ancestor && outer_ancestor->id != ClipTree::kRootNodeId) {
+      outer_ancestor->clip.Union(outer_clip_node->clip);
+      outer_ancestor = property_trees->clip_tree.parent(outer_ancestor);
+    }
   }
 
   anchor.ResetViewportToAnchoredPosition();
@@ -1614,12 +1623,8 @@ ImageAnimationController* LayerTreeImpl::image_animation_controller() const {
   return host_impl_->image_animation_controller();
 }
 
-FrameRateCounter* LayerTreeImpl::frame_rate_counter() const {
-  return host_impl_->fps_counter();
-}
-
-base::Optional<int> LayerTreeImpl::current_universal_throughput() {
-  return host_impl_->current_universal_throughput();
+DroppedFrameCounter* LayerTreeImpl::dropped_frame_counter() const {
+  return host_impl_->dropped_frame_counter();
 }
 
 MemoryHistory* LayerTreeImpl::memory_history() const {

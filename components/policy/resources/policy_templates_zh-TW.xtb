@@ -571,9 +571,9 @@
 
       請注意，如果平台支援政策通知，由於政策通知通常會在政策變更時自動強制更新 (不需更高的更新頻率)，所以更新延遲時間會設為 24 小時 (忽略所有預設值和這項政策的值)。</translation>
 <translation id="2024476116966025075">設定遠端存取用戶端的網域名稱 (必要)</translation>
-<translation id="2024821084720338323">如果啟用 <ph name="PRODUCT_NAME" /> 功能導致背景分頁中的 JavaScript 計時器過度節流與合併，當頁面處於背景狀態 5 分鐘後，每分鐘請勿執行超過一次。
+<translation id="2024821084720338323"><ph name="PRODUCT_NAME" /> 功能啟用時，背景分頁中的 JavaScript 計時器將密集節流與合併，如果頁面處於背景狀態 5 分鐘以上，則每分鐘不會執行超過一次。
 
-          這項功能符合網路標準，但可能會導致特定動作發生延遲 (最多延遲一分鐘)，造成某些網站的功能無法正常運作。不過，啟用這項功能可大幅節約 CPU 用量和耗電量。詳情請參閱 https://bit.ly/30b1XR4。
+          這項功能符合網路標準，但可能會導致特定動作延遲長達一分鐘，造成某些網站的功能無法正常運作。不過，啟用這項功能可大幅節約 CPU 用量和耗電量。詳情請參閱 https://bit.ly/30b1XR4。
 
           如果將這項政策設為啟用，系統會強制啟用這項功能，且使用者無法覆寫這項設定。
 
@@ -581,7 +581,7 @@
 
           如果不設定這項政策，這項功能會由其本身的內部邏輯控管，使用者可手動設定這個內部邏輯。
 
-          請注意，系統會根據轉譯器程序套用這項政策，且轉譯器程序啟動時會使用這項政策最新的設定值。必須全部重新啟動，以確保所有載入的分頁可收到一致的政策設定。系統可以使用這項政策的不同設定值來執行不同的程序。
+          請注意，這項政策會分別套用至各個轉譯器程序，且轉譯器程序啟動時會使用這項政策最新的設定值。系統必須徹底重新啟動，以確保所有載入的分頁可收到一致的政策設定。即使不同程序採用不同的政策設定值，也不影響正常運作。
           </translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="203096360153626918">這項政策對 Android 應用程式沒有影響。即使將這項政策設為 <ph name="FALSE" />，Android 應用程式仍可進入全螢幕模式。</translation>
@@ -630,7 +630,7 @@
 
       如果不設定 <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 政策或設為停用，系統會忽略這些政策。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這些政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這些政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這些政策會一律生效。</translation>
 <translation id="2134437727173969994">允許鎖定畫面</translation>
 <translation id="2137064848866899664">如果設定這項政策，每次重新啟動時，
@@ -765,7 +765,7 @@
       如果不設定這項政策或設為 True，系統會收集版本資訊。
       如果將這項政策設為 False，系統不會收集版本資訊。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="2292084646366244343"><ph name="PRODUCT_NAME" /> 可以透過 Google 網路服務來解決拼字錯誤。如果你啟用這項設定，系統就會一律使用這項服務；如果你停用這項設定，則系統將絕不使用這項服務。
 
@@ -1196,14 +1196,14 @@
 <translation id="2813281962735757923">這項政策可控管針對 <ph name="PRODUCT_OS_NAME" /> 裝置封鎖自動檢查更新的時間範圍。將這項政策設為非空白的時間間隔清單時：在指定的時間間隔內，裝置將無法自動檢查更新。如果裝置需要復原至先前的版本，或是目前的 <ph name="PRODUCT_OS_NAME" /> 版本低於最低需求，則不受這項政策影響，以免發生潛在的安全性問題。此外，這項政策不會封鎖由使用者或系統管理員要求的更新檢查。若不設定這項政策，或政策中不包含時間間隔時：這項政策將不會封鎖任何自動更新檢查，但自動更新檢查仍可能遭到其他政策封鎖。只有在設為自動啟動資訊站的 Chrome 裝置上，這項功能才會啟用。其他裝置將不會受到這項政策限制。</translation>
 <translation id="2823870601012066791"><ph name="PRODUCT_OS_NAME" />用戶端的 Windows 登錄檔位置：</translation>
 <translation id="2824715612115726353">啟用無痕模式</translation>
-<translation id="2829975392104323514">這項政策可控管系統是否要回報能用於辨識電腦的資訊，例如電腦名稱和網路位址。
+<translation id="2829975392104323514">這項政策可控管系統是否要回報能用於辨識裝置的資訊，例如裝置名稱和網路位址。
 
       如果不設定 <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> 政策或設為停用，系統會忽略這項政策。
 
-      如果不設定這項政策或設為 True，系統會收集可用於辨識電腦的資訊。
-      如果將這項政策設為 False，系統不會收集可用於辨識電腦的資訊。
+      如果不設定這項政策或設為 True，系統會收集可用於辨識裝置的資訊。
+      如果將這項政策設為 False，系統不會收集可用於辨識裝置的資訊。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。</translation>
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。</translation>
 <translation id="2836621397261130126">控管是否要按照 KDC 政策的核准結果來決定 <ph name="KERBEROS" /> 票證的委派設定。
 
           如果這項政策的設定為 True，HTTP 驗證會遵循 KDC 政策的核准結果。只有在 KDC 為服務票證設定 <ph name="OK_AS_DELEGATE" /> 時，Chrome 才會委派憑證。詳情請見 https://tools.ietf.org/html/rfc5896.html。服務也必須符合「AuthNegotiateDelegateWhitelist」政策。
@@ -1880,7 +1880,7 @@
 
       當使用者嘗試安裝並未透過 <ph name="EXTENSION_INSTALL_WHITELIST" /> 或 <ph name="EXTENSION_SETTINGS" /> 加入許可清單的擴充功能時，系統會建立擴充功能安裝要求。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="3895557476567727016">設定 <ph name="PRODUCT_NAME" /> 下載檔案時所使用的預設目錄。
 
@@ -2304,14 +2304,14 @@
       如未設定這項政策，在預設情況下，系統會為受企業管理的使用者停用這項政策，而未受管理的使用者則預設為啟用這項政策。</translation>
 <translation id="4555850956567117258">為使用者啟用遠端認證機制</translation>
 <translation id="4557134566541205630">預設搜尋引擎新分頁網址</translation>
-<translation id="4562165737444703281">允許使用者 &lt;啟用/設定&gt; Crostini 通訊埠轉送</translation>
+<translation id="4562165737444703281">允許使用者啟用/設定 Crostini 通訊埠轉送</translation>
 <translation id="4567137030726189378">允許使用開發人員工具</translation>
 <translation id="4567818663772614440">這項政策可控管 <ph name="PRODUCT_NAME" /> 雲端報告功能，該功能會將瀏覽器運作資訊上傳至 Google 管理控制台。
 
       如果不設定這項政策或設為 False，系統不會收集或上傳資料。
       如果將這項政策設為 True，系統會收集資料並上傳至 Google 管理控制台。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="4578265298946081589">不要在使用者登出時重新啟動。</translation>
 <translation id="4578912515887794133">如果啟用這項設定，遠端存取主機會比對與主機相關聯的本機使用者名稱，以及註冊為主機擁有者的 Google 帳戶名稱 (例如，如果 Google 帳戶「johndoe@example.com」是主機的擁有者，則帳戶名稱為「johndoe」)。如果主機擁有者的名稱與主機相關聯的本機使用者名稱不同，系統將不會啟動遠端存取主機。RemoteAccessHostMatchUsername 政策應搭配 RemoteAccessHostDomain 政策使用，以強制將主機擁有者的 Google 帳戶與特定網域 (例如「example.com」) 建立關聯。
@@ -2612,7 +2612,7 @@
       如果不設定這項政策或設為 True，系統會收集可用於辨識使用者身分的資訊。
       如果將這項政策設為 False，系統不會收集可用於辨識使用者身分的資訊。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="5148753489738115745">允許你指定 <ph name="PRODUCT_FRAME_NAME" /> 啟動 <ph name="PRODUCT_NAME" /> 時使用的其他參數。
 
@@ -2816,11 +2816,11 @@
       如果設定這項政策，使用者將無法變更。如果未設定，系統會先停用螢幕小鍵盤，但使用者隨時可以啟用。</translation>
 <translation id="537786648513450280">控管裝置是否可使用來源不受信任的 Android 應用程式</translation>
 <translation id="5378985487213287085">允許你設定是否要讓網站顯示桌面通知。你可以將網站預設為允許或禁止顯示桌面通知，也可以設為每次網站要顯示桌面通知時再詢問使用者。如果未設定這項政策，系統會使用「AskNotifications」，但使用者可以變更這項設定。</translation>
-<translation id="5379858577608862519">指定是否允許將通訊埠轉送至 Crostini 容器。
+<translation id="5379858577608862519">指定是否允許透過通訊埠轉送功能將流量轉送至 Crostini 容器。
 
-      如果將這項政策設為 True 或不予設定，使用者可設定將通訊埠轉送至 CrostiniIf 容器。
+      如果將這項政策設為 True 或不予設定，使用者可設定通訊埠轉送規則，將流量轉送至 Crostini 容器。
 
-      如果將這項政策設為 False，系統會停用將通訊埠轉送至 Crostini 容器的功能。</translation>
+      如果將這項政策設為 False，系統會停用將流量轉送至 Crostini 容器的通訊埠轉送功能。</translation>
 <translation id="538108065117008131">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型。</translation>
 <translation id="538768040137709073">啟用剪貼簿共用功能，讓使用者處於登入狀態且啟用同步功能時，在 Chrome 桌面和 Android 裝置之間傳送文字。
 
@@ -3065,11 +3065,11 @@
 <translation id="5679540979548648200">禁止這部裝置的使用者採用 ADB 側載。如果之前已啟用側載，則強制執行裝置 Powerwash</translation>
 <translation id="5689430183304951538">預設列印頁面大小</translation>
 <translation id="5693469654327063861">允許資料遷移</translation>
-<translation id="5695209488612697377">在內容選單上啟用預設搜尋引擎。
+<translation id="5695209488612697377">允許透過內容選單使用預設搜尋引擎。
 
-          如果將這項政策設為停用，將無法使用需要搭配預設搜尋引擎的搜尋內容選單項目。
+          如果將這項政策設為停用，內容選單上將不會出現搭配預設搜尋引擎的搜尋項目。
 
-          如果將這項政策設為啟用或不予設定，將可使用預設搜尋引擎的內容選單項目。
+          如果將這項政策設為啟用或不予設定，內容選單上將出現預設搜尋引擎項目。
 
           這項政策的值只有在 <ph name="DEFAULT_SEARCH_PROVIDER_ENABLED_POLICY_NAME" /> 政策啟用時才適用，在其他情況下一概不適用。</translation>
 <translation id="5697306356229823047">回報裝置使用者</translation>
@@ -3158,14 +3158,14 @@
       網址 (例如 https://example.com/some/path) 只會比對為 U2F appID，網域 (例如 example.com) 則只會比對為 WebAuthn RP ID。因此，如要同時涵蓋指定網站的 U2F API 和 WebAuthn API，必須一併列出 appID 網址和網域。</translation>
 <translation id="5836064773277134605">限制遠端存取主機所使用的 UDP 通訊埠範圍</translation>
 <translation id="585270638818921943">禁止使用者使用來源不受信任的 Android 應用程式</translation>
-<translation id="5854749508571554984">只有在裝置的生命週期已結束，且不符合透過 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策設定的 <ph name="PRODUCT_NAME" /> 最低版本限制時，這項政策才會生效。
+<translation id="5854749508571554984">只有在裝置已終止服務，且不符合透過 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策設定的 <ph name="PRODUCT_NAME" /> 最低版本限制時，這項政策才會生效。
 
       將這項政策設為非空白的字串時：
-      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間已過，系統會在禁止任何使用者登入裝置時，於登入畫面上顯示這則訊息。
+      如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間已過，且系統已禁止任何使用者登入裝置，登入畫面上即會顯示這則訊息。
       如果 <ph name="MINIMUM_CHROME_VERSION_ENFORCED_POLICY_NAME" /> 政策中提及的警告時間還沒到，系統會在使用者登入後，於「設定」頁面中顯示這則訊息。
 
-      如果不設定這項政策或設為空白，系統會在以上兩種情況中，向使用者顯示預設的生命週期訊息。
-      生命週期訊息必須是不包含任何格式設定的純文字，而且不可做任何標記。 </translation>
+      如果不設定這項政策或設為空白，系統會在以上兩種情況中，向使用者顯示預設的服務終止訊息。
+      服務終止訊息必須是不包含任何格式設定的純文字，而且不可做任何標記。 </translation>
 <translation id="5855010364142818361">這項政策可控管從 Internet Explorer 切換至 Chrome 時使用的指令列參數。
 
       如果 Internet Explorer 未安裝「舊版瀏覽器支援」增益集，這項政策將不會生效。
@@ -3269,7 +3269,7 @@
       如果不設定這項政策或設為 True，系統會收集安全瀏覽資料。
       如果將這項政策設為 False，系統不會收集安全瀏覽資料。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="6017568866726630990">顯示系統列印對話方塊 (而不是列印預覽)。
 
@@ -3855,7 +3855,7 @@
       如果將這項政策設為 <ph name="BR_UNDER_USER_CONTROL" />，系統會提示使用者使用備份與還原功能。如果使用者啟用這項功能，系統會將 Android 應用程式資料上傳至 Android 備份伺服器，並在使用者重新安裝相容的應用程式時還原資料。
 
       完成初始設定後，使用者可以啟用或停用備份與還原功能。</translation>
-<translation id="6993687707842131236">設定 MinimumChromeVersionEnforced 政策的生命週期訊息</translation>
+<translation id="6993687707842131236">設定 MinimumChromeVersionEnforced 政策的服務終止訊息</translation>
 <translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
 
       如果選取 [已停用]，系統就不會提供雙重驗證功能。
@@ -4531,7 +4531,7 @@
       如果不設定這項政策或設為 True，系統會收集政策資料和擷取政策的時間。
       如果將這項政策設為 False，系統不會收集政策資料和擷取政策的時間。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="8050080920415773384">原生列印</translation>
 <translation id="8053580360728293758">覆寫預設列印色彩模式。如果設定的模式不適用，系統會忽略這項政策。</translation>
@@ -4971,7 +4971,7 @@
       如果不設定這項政策或設為 True，系統會收集擴充功能和外掛程式資料。
       如果將這項政策設為 False，系統不會收集擴充功能和外掛程式資料。
 
-      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊電腦的情況下，這項政策才會生效。
+      如果是 <ph name="PRODUCT_NAME" />，只有在已透過 <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN" /> 註冊裝置的情況下，這項政策才會生效。
       如果是 <ph name="PRODUCT_OS_NAME" />，這項政策會一律生效。</translation>
 <translation id="8749370016497832113">在 <ph name="PRODUCT_NAME" /> 中啟用刪除瀏覽器記錄和下載記錄，並防止使用者變更這項設定。
 
@@ -5142,7 +5142,7 @@
 <translation id="8970205333161758602">隱藏停止支援 <ph name="PRODUCT_FRAME_NAME" />的提示</translation>
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>
-<translation id="8977192934280677167">允許存取預設搜尋引擎的內容選單搜尋項目</translation>
+<translation id="8977192934280677167">允許透過內容選單使用預設搜尋引擎</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
 <translation id="9010080992450148617">加入進階保護計畫的使用者可以將下載內容傳送至 Google 進行深度掃描</translation>
 <translation id="9013875414788074110">在登入時，<ph name="PRODUCT_OS_NAME" />可以透過伺服器進行線上驗證，或使用快取密碼進行離線驗證。

@@ -924,6 +924,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;
   bool IsShowingContextMenuOnPage() const override;
   void DidChangeScreenOrientation() override;
+  // The following function is already listed under RenderViewHostDelegate
+  // overrides:
+  // FrameTree* GetFrameTree() override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

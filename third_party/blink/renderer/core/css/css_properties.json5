@@ -3549,7 +3549,7 @@
       field_template: "keyword",
       keywords: [
         "left", "right", "center", "justify", "-webkit-left", "-webkit-right",
-        "-webkit-center", "start", "end", "-internal-space-around"
+        "-webkit-center", "start", "end"
       ],
       typedom_types: ["Keyword"],
       default_value: "start",
@@ -3562,8 +3562,7 @@
       inherited: true,
       field_group: "*",
       field_template: "keyword",
-      keywords: ["auto", "start", "end", "left", "right", "center", "justify",
-                 "-internal-space-around"],
+      keywords: ["auto", "start", "end", "left", "right", "center", "justify"],
       default_value: "auto",
       typedom_types: ["Keyword"]
     },

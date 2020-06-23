@@ -10,6 +10,7 @@
 #include "base/android/build_info.h"
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/strings/strcat.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -37,6 +38,19 @@ gfx::Size GetBufferSize(const AHardwareBuffer* buffer) {
 std::string BuildSurfaceName(const char* suffix) {
   return base::StrCat(
       {base::android::BuildInfo::GetInstance()->package_name(), "/", suffix});
+}
+
+base::TimeTicks GetSignalTime(const base::ScopedFD& fence) {
+  if (!fence.is_valid())
+    return base::TimeTicks();
+
+  base::TimeTicks signal_time;
+  auto status = GLFenceAndroidNativeFenceSync::GetStatusChangeTimeForFence(
+      fence.get(), &signal_time);
+  if (status != GLFenceAndroidNativeFenceSync::kSignaled)
+    return base::TimeTicks();
+
+  return signal_time;
 }
 
 }  // namespace
@@ -233,7 +247,9 @@ void GLSurfaceEGLSurfaceControl::CommitPendingTransaction(
   SurfaceControl::Transaction::OnCompleteCb callback = base::BindOnce(
       &GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread,
       weak_factory_.GetWeakPtr(), std::move(completion_callback),
-      std::move(present_callback), std::move(resources_to_release));
+      std::move(present_callback), std::move(resources_to_release),
+      std::move(primary_plane_fences_));
+  primary_plane_fences_.reset();
   pending_transaction_->SetOnCompleteCb(std::move(callback), gpu_task_runner_);
 
   // Cache only those surfaces which were used in this transaction. The surfaces
@@ -300,9 +316,19 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
   AHardwareBuffer* hardware_buffer = nullptr;
   base::ScopedFD fence_fd;
   auto scoped_hardware_buffer = image->GetAHardwareBuffer();
+  bool is_primary_plane = false;
   if (scoped_hardware_buffer) {
     hardware_buffer = scoped_hardware_buffer->buffer();
     fence_fd = scoped_hardware_buffer->TakeFence();
+
+    // We currently only promote the display compositor's buffer or a video
+    // buffer to an overlay. So if this buffer is not for video then it implies
+    // its the primary plane.
+    is_primary_plane = !scoped_hardware_buffer->is_video();
+    DCHECK(!is_primary_plane || !primary_plane_fences_);
+    primary_plane_fences_.emplace();
+    primary_plane_fences_->available_fence =
+        scoped_hardware_buffer->TakeAvailableFence();
 
     auto* a_surface = surface_state.surface->surface();
     DCHECK_EQ(pending_frame_resources_.count(a_surface), 0u);
@@ -323,6 +349,11 @@ bool GLSurfaceEGLSurfaceControl::ScheduleOverlayPlane(
       DCHECK(!fence_handle.is_null());
       fence_fd = MergeFDs(std::move(fence_fd),
                           base::ScopedFD(fence_handle.native_fd.fd));
+    }
+
+    if (is_primary_plane) {
+      primary_plane_fences_->ready_fence =
+          base::ScopedFD(HANDLE_EINTR(dup(fence_fd.get())));
     }
 
     pending_transaction_->SetBuffer(*surface_state.surface,
@@ -412,6 +443,7 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
     SwapCompletionCallback completion_callback,
     PresentationCallback presentation_callback,
     ResourceRefs released_resources,
+    base::Optional<PrimaryPlaneFences> primary_plane_fences,
     SurfaceControl::TransactionStats transaction_stats) {
   TRACE_EVENT0("gpu",
                "GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread");
@@ -453,6 +485,11 @@ void GLSurfaceEGLSurfaceControl::OnTransactionAckOnGpuThread(
       .Run(gfx::SwapCompletionResult(gfx::SwapResult::SWAP_ACK));
 
   PendingPresentationCallback pending_cb;
+  if (primary_plane_fences) {
+    pending_cb.available_time =
+        GetSignalTime(primary_plane_fences->available_fence);
+    pending_cb.ready_time = GetSignalTime(primary_plane_fences->ready_fence);
+  }
   pending_cb.latch_time = transaction_stats.latch_time;
   pending_cb.present_fence = std::move(transaction_stats.present_fence);
   pending_cb.callback = std::move(presentation_callback);
@@ -497,6 +534,10 @@ void GLSurfaceEGLSurfaceControl::CheckPendingPresentationCallbacks() {
         "presentation_feedback",
         TRACE_EVENT_SCOPE_THREAD);
     gfx::PresentationFeedback feedback(signal_time, base::TimeDelta(), flags);
+    feedback.available_timestamp = pending_cb.available_time;
+    feedback.ready_timestamp = pending_cb.ready_time;
+    feedback.latch_timestamp = pending_cb.latch_time;
+
     std::move(pending_cb.callback).Run(feedback);
     pending_presentation_callback_queue_.pop();
   }
@@ -592,5 +633,13 @@ GLSurfaceEGLSurfaceControl::PendingPresentationCallback::
 GLSurfaceEGLSurfaceControl::PendingPresentationCallback&
 GLSurfaceEGLSurfaceControl::PendingPresentationCallback::operator=(
     PendingPresentationCallback&& other) = default;
+
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::PrimaryPlaneFences() = default;
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::~PrimaryPlaneFences() = default;
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::PrimaryPlaneFences(
+    PrimaryPlaneFences&& other) = default;
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences&
+GLSurfaceEGLSurfaceControl::PrimaryPlaneFences::operator=(
+    PrimaryPlaneFences&& other) = default;
 
 }  // namespace gl

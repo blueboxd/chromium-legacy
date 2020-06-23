@@ -318,6 +318,41 @@ IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest, ShouldRotateKeystoreKey) {
                   .Wait());
 }
 
+// Performs initial sync with backward compatible keystore Nigori.
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
+                       PRE_ShouldCompleteKeystoreMigrationAfterRestart) {
+  const std::vector<std::vector<uint8_t>>& keystore_keys =
+      GetFakeServer()->GetKeystoreKeys();
+  ASSERT_THAT(keystore_keys, SizeIs(1));
+  const KeyParamsForTesting kKeystoreKeyParams =
+      Pbkdf2KeyParamsForTesting(keystore_keys.back());
+  const KeyParamsForTesting kDefaultKeyParams = {
+      syncer::KeyDerivationParams::CreateForPbkdf2(), "password"};
+  SetNigoriInFakeServer(
+      BuildKeystoreNigoriSpecifics(
+          /*keybag_keys_params=*/{kDefaultKeyParams, kKeystoreKeyParams},
+          /*keystore_decryptor_params*/ {kDefaultKeyParams},
+          /*keystore_key_params=*/kKeystoreKeyParams),
+      GetFakeServer());
+
+  ASSERT_TRUE(SetupSync());
+  const std::string expected_key_bag_key_name =
+      ComputeKeyName(kKeystoreKeyParams);
+}
+
+// After browser restart the client should commit full keystore Nigori (e.g. it
+// should use keystore key as encryption key).
+IN_PROC_BROWSER_TEST_F(SingleClientNigoriSyncTest,
+                       ShouldCompleteKeystoreMigrationAfterRestart) {
+  ASSERT_TRUE(SetupClients());
+  const std::string expected_key_bag_key_name =
+      ComputeKeyName(Pbkdf2KeyParamsForTesting(
+          /*raw_key=*/GetFakeServer()->GetKeystoreKeys().back()));
+  EXPECT_TRUE(ServerNigoriKeyNameChecker(expected_key_bag_key_name,
+                                         GetSyncService(0), GetFakeServer())
+                  .Wait());
+}
+
 // Tests that client can decrypt |pending_keys| with implicit passphrase in
 // backward-compatible keystore mode, when |keystore_decryptor_token| is
 // non-decryptable (corrupted). Additionally verifies that there is no

@@ -6,6 +6,7 @@
 #define ANDROID_WEBVIEW_BROWSER_AW_FEATURE_LIST_CREATOR_H_
 
 #include <memory>
+#include <utility>
 
 #include "android_webview/browser/aw_browser_policy_connector.h"
 #include "android_webview/browser/aw_field_trials.h"
@@ -44,7 +45,11 @@ class AwFeatureListCreator {
     return std::move(browser_policy_connector_);
   }
 
+  static void DisableSignatureVerificationForTesting();
+
  private:
+  std::unique_ptr<PrefService> CreatePrefService();
+
   // Sets up the field trials and related initialization.
   void SetUpFieldTrials();
 

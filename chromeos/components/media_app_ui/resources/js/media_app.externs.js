@@ -105,6 +105,11 @@ mediaApp.AbstractFileList.prototype.loadNext = function() {};
  * @return {!Promise<undefined>}
  */
 mediaApp.AbstractFileList.prototype.loadPrev = function() {};
+/**
+ * @param {function(!mediaApp.AbstractFileList): void} observer invoked when the
+ *     size or contents of the file list changes.
+ */
+mediaApp.AbstractFileList.prototype.addObserver = function(observer) {};
 
 /**
  * The delegate which exposes open source privileged WebUi functions to
@@ -124,9 +129,7 @@ mediaApp.ClientApiDelegate.prototype.openFeedbackDialog = function() {};
  * Saves a copy of `file` in a custom location with a custom
  * name which the user is prompted for via a native save file dialog.
  * @param {!mediaApp.AbstractFile} file
- * @return {!Promise<?string>} Promise which resolves when the request has been
- *     acknowledged. If the dialog could not be opened the promise resolves with
- *     an error message. Otherwise, with null after writing is complete.
+ * @return {!Promise<undefined>}
  */
 mediaApp.ClientApiDelegate.prototype.saveCopy = function(file) {};
 

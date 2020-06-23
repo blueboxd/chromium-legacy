@@ -6,6 +6,7 @@ import argparse
 import sys
 from css_generator import CSSStyleGenerator
 from views_generator import ViewsStyleGenerator
+from base_generator import Modes
 
 
 def main():
@@ -17,6 +18,9 @@ def main():
         choices=['CSS', 'Views'],
         required=True,
         help='type of file to generate')
+    parser.add_argument('--generate-single-mode',
+                        choices=Modes.ALL,
+                        help='generates output for a single mode')
     parser.add_argument('--out-file', help='file to write output to')
     parser.add_argument('targets', nargs='+', help='source json5 color files')
 
@@ -31,6 +35,7 @@ def main():
     for t in args.targets:
         style_generator.AddJSONFileToModel(t)
 
+    style_generator.generate_single_mode = args.generate_single_mode
     style_generator.out_file_path = args.out_file
 
     if args.out_file:

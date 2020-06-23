@@ -139,7 +139,10 @@ class GroupNode extends SAChildNode {
         i++;
       }
       if (children.length <= 1) {
-        throw new Error('Cannot group row with only one element.');
+        setTimeout(NavigationManager.moveToValidNode, 0);
+        throw SwitchAccess.error(
+            SAConstants.ErrorType.ROW_TOO_SHORT,
+            'Cannot group row with only one element.');
       }
 
       result.push(new GroupNode(children));

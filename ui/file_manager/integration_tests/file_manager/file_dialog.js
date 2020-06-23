@@ -100,6 +100,22 @@ async function openFileDialogClickOkButton(
 }
 
 /**
+ * Clicks the OK button in the provided dialog, expecting the provided `name` to
+ * be passed into the `OnFilesImpl()` observer in the C++ test harness.
+ *
+ * @param {string} appId App window Id.
+ * @param {string} name The (single) filename passed to the EXPECT_CALL when
+ *     verifying the mocked OnFilesOpenedImpl().
+ * @param {string} openType Type of the dialog ('open' or 'saveAs').
+ */
+async function clickOkButtonExpectName(appId, name, openType) {
+  await sendTestMessage({name: 'expectFileTask', fileNames: [name], openType});
+
+  const okButton = '.button-panel button.ok:enabled';
+  await remoteCall.waitAndClickElement(appId, okButton);
+}
+
+/**
  * Adds the basic file entry sets then opens the save file dialog on the volume.
  * Once file |name| is shown, select it and click the Ok button, again clicking
  * Ok in the confirmation dialog.
@@ -111,12 +127,7 @@ async function openFileDialogClickOkButton(
 async function saveFileDialogClickOkButton(volume, name) {
   const caller = getCaller();
 
-  await sendTestMessage(
-      {name: 'expectFileTask', fileNames: [name], openType: 'saveAs'});
-
   const closer = async (appId) => {
-    const okButton = '.button-panel button.ok:enabled';
-
     await remoteCall.callRemoteTestUtil('selectFile', appId, [name]);
     await repeatUntil(async () => {
       const element =
@@ -126,9 +137,7 @@ async function saveFileDialogClickOkButton(volume, name) {
       }
     });
 
-    await remoteCall.waitForElement(appId, okButton);
-    const event = [okButton, 'click'];
-    await remoteCall.callRemoteTestUtil('fakeEvent', appId, event);
+    await clickOkButtonExpectName(appId, name, 'saveAs');
 
     const confirmOkButton = '.files-confirm-dialog .cr-dialog-ok';
     await remoteCall.waitForElement(appId, confirmOkButton);
@@ -463,6 +472,85 @@ testcase.saveFileDialogDefaultFilter = async () => {
       await remoteCall.waitForElement(dialog, '.file-type option:checked');
   chrome.test.assertEq('0', selectedFilter.value);
   chrome.test.assertEq('All files', selectedFilter.text);
+};
+
+/**
+ * Tests that filtering works with { acceptsAllTypes: false } and a single
+ * filter. Regression test for https://crbug.com/1097448.
+ */
+testcase.saveFileDialogSingleFilterNoAcceptAll = async () => {
+  const params = {
+    type: 'saveFile',
+    accepts: [{extensions: ['jpg']}],
+    acceptsAllTypes: false,
+  };
+  chrome.fileSystem.chooseEntry(params, (entry) => {});
+  const dialog = await remoteCall.waitForWindow('dialog#');
+
+  // Check: 'JPEG image' should be selected.
+  const selectedFilter =
+      await remoteCall.waitForElement(dialog, '.file-type option:checked');
+  chrome.test.assertEq('1', selectedFilter.value);
+  chrome.test.assertEq('JPEG image', selectedFilter.text);
+};
+
+/**
+ * Opens a "Save As" dialog and clicks OK. Helper for the
+ * saveFileDialogExtension* tests.
+ *
+ * @param {!Object} extraParams Extra options to pass to chooseEntry().
+ * @param {string} expectName Name for the 'expectFileTask' mock expectation.
+ * @return {!Promise<string>} The name of the entry from chooseEntry().
+ */
+async function showSaveAndConfirmExpecting(extraParams, expectName) {
+  const params = {
+    type: 'saveFile',
+    accepts: [{extensions: ['jpg']}],
+  };
+  const result = new Promise(resolve => {
+    chrome.fileSystem.chooseEntry(Object.assign(params, extraParams), resolve);
+  });
+  const dialog = await remoteCall.waitForWindow('dialog#');
+
+  // Ensure the input field is ready.
+  await remoteCall.waitForElement(dialog, '#filename-input-textbox');
+
+  await clickOkButtonExpectName(dialog, expectName, 'saveAs');
+  return (await result).name;
+}
+
+/**
+ * Tests that a file extension is not automatically added upon confirmation
+ * whilst the "All Files" filter is selected on the "Save As" dialog. Note the
+ * saveFileDialogDefaultFilter test above verifies that 'All Files' is actually
+ * the default in this setup.
+ */
+testcase.saveFileDialogExtensionNotAddedWithNoFilter = async () => {
+  // Note these tests use the suggestedName field as a robust way to simulate a
+  // user typing into the input field.
+  const extraParams = {acceptsAllTypes: true, suggestedName: 'test'};
+  const name = await showSaveAndConfirmExpecting(extraParams, 'test');
+  chrome.test.assertEq('test', name);
+};
+
+/**
+ * With no "All Files" option, the JPEG filter should be applied by default, and
+ * a ".jpg" extension automatically added on confirm.
+ */
+testcase.saveFileDialogExtensionAddedWithJpegFilter = async () => {
+  const extraParams = {acceptsAllTypes: false, suggestedName: 'test'};
+  const name = await showSaveAndConfirmExpecting(extraParams, 'test.jpg');
+  chrome.test.assertEq('test.jpg', name);
+};
+
+/**
+ * An extension should only be added if the user didn't provide one, even if it
+ * doesn't match the current filter for JPEG files (i.e. /\.(jpg)$/i).
+ */
+testcase.saveFileDialogExtensionNotAddedWhenProvided = async () => {
+  const extraParams = {acceptsAllTypes: false, suggestedName: 'foo.png'};
+  const name = await showSaveAndConfirmExpecting(extraParams, 'foo.png');
+  chrome.test.assertEq('foo.png', name);
 };
 
 /**

@@ -74,8 +74,10 @@
 #include "third_party/blink/renderer/core/layout/layout_text_control.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/list_marker.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
+#include "third_party/blink/renderer/core/layout/ng/list/layout_ng_list_item.h"
 #include "third_party/blink/renderer/core/loader/progress_tracker.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -260,9 +262,18 @@ Node* AXLayoutObject::GetNodeOrContainingBlockNode() const {
   if (IsDetached())
     return nullptr;
 
+  // For legacy layout, or editable list marker when disabling EditingNG.
   if (layout_object_->IsListMarker()) {
     // Return the originating list item node.
     return layout_object_->GetNode()->parentNode();
+  }
+
+  // For LayoutNG list marker.
+  // Note: When EditingNG is disabled, editable list items are laid out legacy
+  // layout even if LayoutNG enabled.
+  if (auto* list_marker = ListMarker::Get(layout_object_)) {
+    // Return the originating list item node.
+    return list_marker->ListItem(*layout_object_)->GetNode();
   }
 
   if (layout_object_->IsAnonymous()) {

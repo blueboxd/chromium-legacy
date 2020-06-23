@@ -7,7 +7,9 @@
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_item.h"
 #include "content/browser/devtools/browser_devtools_agent_host.h"
+#include "content/browser/devtools/devtools_issue_storage.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
+#include "content/browser/devtools/protocol/audits.h"
 #include "content/browser/devtools/protocol/audits_handler.h"
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/emulation_handler.h"
@@ -90,6 +92,35 @@ FrameTreeNode* GetFtnForNetworkRequest(int process_id, int routing_id) {
   }
   return FrameTreeNode::GloballyFindByID(
       RenderFrameHost::GetFrameTreeNodeIdForRoutingId(process_id, routing_id));
+}
+
+std::unique_ptr<protocol::Audits::HeavyAdIssueDetails> GetHeavyAdIssueHelper(
+    RenderFrameHostImpl* frame,
+    blink::mojom::HeavyAdResolutionStatus resolution,
+    blink::mojom::HeavyAdReason reason) {
+  protocol::String status =
+      (resolution == blink::mojom::HeavyAdResolutionStatus::kHeavyAdBlocked)
+          ? protocol::Audits::HeavyAdResolutionStatusEnum::HeavyAdBlocked
+          : protocol::Audits::HeavyAdResolutionStatusEnum::HeavyAdWarning;
+  protocol::String reason_string;
+  switch (reason) {
+    case blink::mojom::HeavyAdReason::kNetworkTotalLimit:
+      reason_string = protocol::Audits::HeavyAdReasonEnum::NetworkTotalLimit;
+      break;
+    case blink::mojom::HeavyAdReason::kCpuTotalLimit:
+      reason_string = protocol::Audits::HeavyAdReasonEnum::CpuTotalLimit;
+      break;
+    case blink::mojom::HeavyAdReason::kCpuPeakLimit:
+      reason_string = protocol::Audits::HeavyAdReasonEnum::CpuPeakLimit;
+      break;
+  }
+  return protocol::Audits::HeavyAdIssueDetails::Create()
+      .SetReason(reason_string)
+      .SetResolution(status)
+      .SetFrame(protocol::Audits::AffectedFrame::Create()
+                    .SetFrameId(frame->GetDevToolsFrameToken().ToString())
+                    .Build())
+      .Build();
 }
 
 }  // namespace
@@ -799,13 +830,42 @@ void ReportSameSiteCookieIssue(
           std::move(details)));
 }
 
+namespace {
+
+void AddIssueToIssueStorage(
+    RenderFrameHost* frame,
+    std::unique_ptr<protocol::Audits::InspectorIssue> issue) {
+  WebContents* web_contents = WebContents::FromRenderFrameHost(frame);
+  DevToolsIssueStorage* issue_storage =
+      DevToolsIssueStorage::GetOrCreateForWebContents(web_contents);
+
+  issue_storage->AddInspectorIssue(frame->GetFrameTreeNodeId(),
+                                   std::move(issue));
+}
+
+}  // namespace
+
 void ReportBrowserInitiatedIssue(RenderFrameHostImpl* frame,
                                  protocol::Audits::InspectorIssue* issue) {
   FrameTreeNode* ftn = frame->frame_tree_node();
   if (!ftn)
     return;
 
+  AddIssueToIssueStorage(frame, issue->clone());
   DispatchToAgents(ftn, &protocol::AuditsHandler::OnIssueAdded, issue);
+}
+
+std::unique_ptr<protocol::Audits::InspectorIssue> GetHeavyAdIssue(
+    RenderFrameHostImpl* frame,
+    blink::mojom::HeavyAdResolutionStatus resolution,
+    blink::mojom::HeavyAdReason reason) {
+  auto issue_details = protocol::Audits::InspectorIssueDetails::Create();
+  issue_details.SetHeavyAdIssueDetails(
+      GetHeavyAdIssueHelper(frame, resolution, reason));
+  return protocol::Audits::InspectorIssue::Create()
+      .SetCode(protocol::Audits::InspectorIssueCodeEnum::HeavyAdIssue)
+      .SetDetails(issue_details.Build())
+      .Build();
 }
 
 void OnQuicTransportHandshakeFailed(

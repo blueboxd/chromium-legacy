@@ -1084,7 +1084,10 @@ void FormStructure::RetrieveFromCache(
         bool is_credit_card_field =
             AutofillType(cached_field->second->Type().GetStorableType())
                 .group() == CREDIT_CARD;
-        if (should_keep_cached_value && is_credit_card_field) {
+        if (should_keep_cached_value &&
+            (is_credit_card_field ||
+             base::FeatureList::IsEnabled(
+                 features::kAutofillKeepInitialFormValuesInCache))) {
           field->value = cached_field->second->value;
           value_from_dynamic_change_form_ = true;
         } else if (field->value == cached_field->second->value) {
@@ -1172,6 +1175,15 @@ void FormStructure::LogQualityMetrics(
       did_autofill_some_possible_fields = true;
     else if (!field->only_fill_when_focused())
       did_autofill_all_possible_fields = false;
+
+    // If the form was submitted, record if field types have been filled and
+    // subsequently edited by the user.
+    if (observed_submission) {
+      if (field->is_autofilled || field->previously_autofilled()) {
+        AutofillMetrics::LogEditedAutofilledFieldAtSubmission(
+            form_interactions_ukm_logger, *this, *field);
+      }
+    }
   }
 
   AutofillMetrics::LogNumberOfEditedAutofilledFields(

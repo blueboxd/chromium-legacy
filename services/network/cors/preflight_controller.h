@@ -67,7 +67,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       bool tainted,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory,
-      int32_t process_id);
+      int32_t process_id,
+      const net::IsolationInfo& isolation_info);
 
   const base::flat_set<std::string>& extra_safelisted_header_names() const {
     return extra_safelisted_header_names_;

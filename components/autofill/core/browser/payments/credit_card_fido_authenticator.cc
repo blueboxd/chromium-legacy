@@ -75,6 +75,9 @@ void CreditCardFIDOAuthenticator::Authenticate(
   requester_ = requester;
   form_parsed_timestamp_ = form_parsed_timestamp;
 
+  // Cancel any previous pending WebAuthn requests.
+  authenticator()->Cancel();
+
   if (card_ && IsValidRequestOptions(request_options.Clone())) {
     current_flow_ = AUTHENTICATION_FLOW;
     GetAssertion(ParseRequestOptions(std::move(request_options)));
@@ -85,6 +88,9 @@ void CreditCardFIDOAuthenticator::Authenticate(
 
 void CreditCardFIDOAuthenticator::Register(std::string card_authorization_token,
                                            base::Value creation_options) {
+  // Cancel any previous pending WebAuthn requests.
+  authenticator()->Cancel();
+
   // If |creation_options| is set, then must enroll a new credential. Otherwise
   // directly send request to payments for opting in.
   card_authorization_token_ = card_authorization_token;
@@ -105,6 +111,10 @@ void CreditCardFIDOAuthenticator::Authorize(
     base::Value request_options) {
   requester_ = requester;
   card_authorization_token_ = card_authorization_token;
+
+  // Cancel any previous pending WebAuthn requests.
+  authenticator()->Cancel();
+
   if (IsValidRequestOptions(request_options)) {
     // If user is already opted-in, then a new card is trying to be
     // authorized. Otherwise, a user with a credential on file is trying to
@@ -116,6 +126,9 @@ void CreditCardFIDOAuthenticator::Authorize(
 }
 
 void CreditCardFIDOAuthenticator::OptOut() {
+  // Cancel any previous pending WebAuthn requests.
+  authenticator()->Cancel();
+
   current_flow_ = OPT_OUT_FLOW;
   card_authorization_token_ = std::string();
   OptChange();
@@ -181,6 +194,8 @@ UserOptInIntention CreditCardFIDOAuthenticator::GetUserOptInIntention(
 }
 
 void CreditCardFIDOAuthenticator::CancelVerification() {
+  authenticator()->Cancel();
+
   current_flow_ = NONE_FLOW;
   // Full card request may not exist when this function is called. The full card
   // request is created in OnDidGetAssertion() but the flow can be cancelled
@@ -193,6 +208,10 @@ void CreditCardFIDOAuthenticator::CancelVerification() {
 void CreditCardFIDOAuthenticator::OnWebauthnOfferDialogRequested(
     std::string card_authorization_token) {
   card_authorization_token_ = card_authorization_token;
+
+  // Cancel any previous pending WebAuthn requests.
+  authenticator()->Cancel();
+
   AutofillMetrics::LogWebauthnOptInPromoShown(
       /*is_checkout_flow=*/!card_authorization_token_.empty());
 
@@ -733,6 +752,7 @@ void CreditCardFIDOAuthenticator::LogWebauthnResult(
       return;
   }
 
+  // TODO(crbug.com/949269): Add metrics for revoked pending WebAuthn requests.
   AutofillMetrics::WebauthnResultMetric metric;
   switch (status) {
     case AuthenticatorStatus::SUCCESS:

@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/values.h"
@@ -45,15 +46,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
                             handle_request_callback) override;
   void DisableReplaceExistingSource() override;
   void DisableContentSecurityPolicy() override;
-  void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyDefaultSrc(
-      const std::string& data) override;
-  void OverrideContentSecurityPolicyImgSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyMediaSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyStyleSrc(const std::string& data) override;
-  void OverrideContentSecurityPolicyWorkerSrc(const std::string& data) override;
+  void OverrideContentSecurityPolicy(network::mojom::CSPDirectiveName directive,
+                                     const std::string& value) override;
   void DisableDenyXFrameOptions() override;
   void EnableReplaceI18nInJS() override;
   std::string GetSource() override;
@@ -117,14 +111,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl : public URLDataSourceImpl,
 
   bool add_csp_ = true;
 
-  base::Optional<std::string> child_src_;
-  base::Optional<std::string> default_src_;
-  base::Optional<std::string> img_src_;
-  base::Optional<std::string> media_src_;
-  base::Optional<std::string> object_src_;
-  base::Optional<std::string> script_src_;
-  base::Optional<std::string> style_src_;
-  base::Optional<std::string> worker_src_;
+  base::flat_map<network::mojom::CSPDirectiveName, std::string> csp_overrides_;
   bool deny_xframe_options_ = true;
   bool add_load_time_data_defaults_ = true;
   bool replace_existing_source_ = true;

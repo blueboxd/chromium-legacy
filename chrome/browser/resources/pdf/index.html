@@ -7,22 +7,8 @@
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
-
-<viewer-pdf-toolbar id="toolbar" hidden></viewer-pdf-toolbar>
-
-<div id="sizer"></div>
-<viewer-password-screen id="password-screen"></viewer-password-screen>
-
-<viewer-zoom-toolbar id="zoom-toolbar" hidden></viewer-zoom-toolbar>
-
-<viewer-error-screen id="error-screen"></viewer-error-screen>
-
-<if expr="chromeos">
-<viewer-form-warning id="form-warning"></viewer-form-warning>
-</if>
-
-<div id="content"></div>
-
+<pdf-viewer id="viewer"></pdf-viewer>
 </body>
 <script type="module" src="main.js"></script>
+<script type="module" src="pdf_viewer.js"></script>
 </html>

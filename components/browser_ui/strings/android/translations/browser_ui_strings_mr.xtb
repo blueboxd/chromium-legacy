@@ -61,6 +61,7 @@
 <translation id="2704606927547763573">कॉपी केले</translation>
 <translation id="2822354292072154809">तुम्हाला नक्की <ph name="CHOSEN_OBJECT_NAME" /> साठी सर्व साइट परवानग्या रीसेट करायच्या आहेत का?</translation>
 <translation id="2870560284913253234">साइट</translation>
+<translation id="2874939134665556319">मागील ट्रॅक</translation>
 <translation id="2910701580606108292">सायटींना संरक्षित आशय प्ले करू देण्याआधी विचारा</translation>
 <translation id="2913331724188855103">कुकी डेटा सेव्ह करणे आणि वाचण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="2968755619301702150">सर्टिफिकेट दर्शक</translation>
@@ -84,16 +85,19 @@
 <translation id="3744111561329211289">पार्श्वभूमी संकालन</translation>
 <translation id="3822502789641063741">साइट स्टोरेज साफ करायचे?</translation>
 <translation id="385051799172605136">मागील</translation>
+<translation id="3859306556332390985">पुढे शोधा</translation>
 <translation id="3955193568934677022">संरक्षित आशय प्ले करण्यासाठी साइटना अनुमती द्या (शिफारस केलेले)</translation>
 <translation id="3987993985790029246">लिंक कॉपी करा</translation>
 <translation id="3991845972263764475"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / ?</translation>
 <translation id="4002066346123236978">शीर्षक</translation>
 <translation id="4008040567710660924">विशिष्ट साइटसाठी कुकीना अनुमती द्या.</translation>
+<translation id="4046123991198612571">पुढील ट्रॅक</translation>
 <translation id="4165986682804962316">साइट सेटिंग्ज</translation>
 <translation id="4226663524361240545">सूचनांमुळे डिव्हाइसचे कंपन होऊ शकते</translation>
 <translation id="4242533952199664413">सेटिंग्ज उघडा</translation>
 <translation id="4259722352634471385">नेव्हिगेशन अवरोधित केले आहे: <ph name="URL" /></translation>
 <translation id="4278390842282768270">अनुमत</translation>
+<translation id="429312253194641664">साइट मीडिया प्ले करत आहे</translation>
 <translation id="4433925000917964731">Google द्वारे पुरवलेले लाइट पेज</translation>
 <translation id="4434045419905280838">पॉप-अप आणि रीडिरेक्ट</translation>
 <translation id="445467742685312942">साइटना संरक्षित आशय प्ले करू द्या</translation>
@@ -167,6 +171,7 @@
 <translation id="6746124502594467657">खाली हलवा</translation>
 <translation id="6766622839693428701">बंद करण्यासाठी खाली स्वाइप करा.</translation>
 <translation id="6782111308708962316">तृतीय-पक्ष वेबसाइटना कुकी डेटा सेव्ह करण्यास आणि वाचण्यास प्रतिबंधित करा</translation>
+<translation id="6790428901817661496">प्ले करा</translation>
 <translation id="6818926723028410516">आयटम निवडा</translation>
 <translation id="6864395892908308021">हे डिव्हाइस NFC रीड करू शकत नाही</translation>
 <translation id="6910211073230771657">हटवला</translation>
@@ -219,6 +224,7 @@
 <translation id="83792324527827022">साइट तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे</translation>
 <translation id="8380167699614421159">ही साइट अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवते</translation>
 <translation id="8394832520002899662">साइटवर परत जाण्यासाठी टॅप करा</translation>
+<translation id="8441146129660941386">मागे शोधा</translation>
 <translation id="8447861592752582886">डिव्हाइस परवानगी रद्द करा</translation>
 <translation id="8463851957836045671">साइट जलद आहे</translation>
 <translation id="851751545965956758">डिव्हाइसेसशी कनेक्ट करण्यापासून साइटना ब्लॉक करा</translation>

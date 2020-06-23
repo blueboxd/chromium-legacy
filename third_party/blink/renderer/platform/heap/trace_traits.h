@@ -49,7 +49,7 @@ struct AdjustPointerTrait<T, true> {
 
   static TraceDescriptor GetTraceDescriptor(const void* self) {
     // Tracing an object, and more specifically GetTraceDescriptor for an
-    // object, implies having a reference whichmeans the object is at least in
+    // object, implies having a reference which means the object is at least in
     // construction. Therefore it is guaranteed that the ObjectStartBitmap was
     // already updated to include the object, and its HeapObjectHeader was
     // already created.

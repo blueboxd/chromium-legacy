@@ -3,6 +3,7 @@
 <translationbundle lang="hi">
 <translation id="1018656279737460067">रद्द</translation>
 <translation id="1195447618553298278">अज्ञात गड़बड़ी.</translation>
+<translation id="1413240736185167732">प्रिंट नहीं हो पाया - फ़िल्टर में कोई गड़बड़ी हुई</translation>
 <translation id="1468664791493211953">ऑफ़र</translation>
 <translation id="1482734542997480527">इस डिवाइस को <ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है और आपकी गतिविधि पर नज़र रख सकता है.</translation>
 <translation id="150962533380566081">गलत पीयूके.</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">यह डिवाइस एंटरप्राइज़ द्वारा प्रबंधित है</translation>
 <translation id="1905710495812624430">अधिकतम स्वीकार्य प्रयासों की सीमा पार हो गई है.</translation>
 <translation id="1930797645656624981">Chrome OS के इनपुट के तरीके की सेवा</translation>
+<translation id="1947737735496445907">प्रिंट किया गया</translation>
 <translation id="1979103255016296513">पासवर्ड बदलने का समय निकल चुका है</translation>
 <translation id="2049639323467105390">यह डिवाइस <ph name="DOMAIN" /> द्वारा प्रबंधित है.</translation>
 <translation id="2338501278241028356">आस-पास के डिवाइस खोजने के लिए ब्लूटूथ चालू करें</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">ऐप्स</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
 <translation id="3008341117444806826">रीफ़्रेश करें</translation>
+<translation id="3091839911843451378">प्रिंट नहीं हो पाया - प्रिंटर बंद हो गया</translation>
+<translation id="3268178239013324452">प्रिंट नहीं हो पाया - प्रिंटर का दरवाज़ा खुला है</translation>
 <translation id="3369013195428705271">क्या आप वाकई अपना पूरा प्रिंट इतिहास मिटाना चाहते हैं? प्रिंट का जो काम अभी चल रहा है उसकी जानकारी (प्रिंट जॉब) नहीं मिटाई जाएगी.</translation>
+<translation id="3456078764689556234"><ph name="TOTAL_PAGES" /> में से <ph name="PRINTED_PAGES" /> पेज प्रिंट किए गए.</translation>
 <translation id="3515615323037921860">प्रिंट जॉब</translation>
+<translation id="3527036260304016759">प्रिंट नहीं हो पाया - अज्ञात गड़बड़ी</translation>
 <translation id="3749289110408117711">फ़ाइल नाम</translation>
 <translation id="38114475217616659">सारा इतिहास मिटाएं</translation>
 <translation id="3820172043799983114">गलत पिन</translation>
 <translation id="3838338534323494292">नया पासवर्ड</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="TOTAL_PAGE_NUMBER" /> में से <ph name="PRINTED_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> इस डिवाइस को प्रबंधित करता है. इसके पास उपयोगकर्ता की सभी गतिविधियों का ऐक्सेस है. इन गतिविधियों में उपयोगकर्ता के किसी वेबपेज पर जाने, उसके पासवर्ड, और ईमेल की जानकारी शामिल होती है.</translation>
+<translation id="4003384961948020559">प्रिंट नहीं हो पाया - प्रिंटर आउटपुट फ़ुल है</translation>
 <translation id="4034824040120875894">प्रिंटर</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> में पासवर्ड की समयसीमा खत्म हो जाएगी</translation>
+<translation id="428217921675623177">90 दिन पहले प्रिंट की गई चीज़ों की जानकारी हटा दी जाएगी</translation>
 <translation id="4429881212383817840">Kerberos टिकट की समयसीमा जल्द ही खत्म होने वाली है</translation>
 <translation id="445059817448385655">पुराना पासवर्ड</translation>
 <translation id="467510802200863975">पासवर्ड मेल नहीं खाते</translation>
@@ -37,24 +46,31 @@
 मुझे कुछ पूछने के लिए माइक टैप करके देखें.</translation>
 <translation id="5222676887888702881">साइन आउट करें</translation>
 <translation id="5317780077021120954">सेव करें</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">कोई नया पासवर्ड चुनें</translation>
 <translation id="5457599981699367932">मेहमान के रूप में ब्राउज़ करें</translation>
 <translation id="54609108002486618">प्रबंधित</translation>
 <translation id="5832805196449965646">व्‍यक्ति जोड़ें</translation>
 <translation id="5895138241574237353">फिर से प्रारंभ करें</translation>
+<translation id="6048107060512778456">प्रिंट नहीं हो पाया - काग़ज़ फ़ंसा है</translation>
 <translation id="6058625436358447366">पूरा करने के लिए, पुराना और नया पासवर्ड डालें</translation>
 <translation id="6106186594183574873">पूरा करने के लिए, पुराना पासवर्ड डालें</translation>
 <translation id="6146993107019042706">खत्म करने के लिए, नया पासवर्ड डालें</translation>
 <translation id="6517239166834772319">एक्सप्लोर करें</translation>
+<translation id="6564646048574748301">प्रिंट नहीं हो पाया - प्रिंटर से कनेक्ट नहीं हो पा रहा है</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="7162487448488904999">गैलरी</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
 <translation id="7690294790491645610">नए पासवर्ड की पुष्टि करें</translation>
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="808894953321890993">पासवर्ड बदलें</translation>
 <translation id="8208861521865154048">फ़ायदे</translation>
 <translation id="8701136875688985581">इस उपयोगकर्ता को <ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है. यह दूर से सेटिंग प्रबंधित कर सकता है. साथ ही, उपयोगकर्ता गतिविधि की निगरानी कर सकता है.</translation>
+<translation id="871560550817059752">प्रिंट नहीं हो पाया - स्याही खत्म हो गई</translation>
 <translation id="8747900814994928677">बदलाव की पुष्टि करें</translation>
+<translation id="8919837981463578619">प्रिंट नहीं हो पाया - ट्रे मौजूद नहीं है</translation>
+<translation id="8928727111548978589">प्रिंट नहीं हो पाया - काग़ज़ खत्म हो गया</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> बार और कोशिश कर सकते हैं</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> के लिए टिकट रीफ़्रेश करें</translation>
 <translation id="9111102763498581341">अनलॉक करें</translation>

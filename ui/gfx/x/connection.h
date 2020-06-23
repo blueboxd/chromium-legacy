@@ -46,10 +46,13 @@ class COMPONENT_EXPORT(X11) Connection : public XProto,
 
   const Setup& setup() const { return setup_; }
   const Screen& default_screen() const { return *default_screen_; }
+  x11::Window default_root() const { return default_screen().root; }
   const Depth& default_root_depth() const { return *default_root_depth_; }
   const VisualType& default_root_visual() const {
     return *default_root_visual_;
   }
+
+  int DefaultScreenId() const;
 
   template <typename T>
   T GenerateId() {

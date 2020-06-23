@@ -160,6 +160,7 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kThirdPartyCacheStorage,
           WebFeature::kThirdPartyLocalStorage,
           WebFeature::kThirdPartySessionStorage,
+          WebFeature::kOverlayPopup,
           WebFeature::kOverlayPopupAd,
           WebFeature::kTrustTokenXhr,
           WebFeature::kTrustTokenFetch,

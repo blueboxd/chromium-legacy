@@ -1668,3 +1668,14 @@ util.setClampLine = (element, lines) => {
 
   return element;
 };
+
+/**
+ * Returns true if the element's content has overflowed.
+ *
+ * @param {!Element} element The element to check.
+ * @returns {boolean}
+ */
+util.hasOverflow = (element) => {
+  return element.clientWidth < element.scrollWidth ||
+      element.clientHeight < element.scrollHeight;
+};

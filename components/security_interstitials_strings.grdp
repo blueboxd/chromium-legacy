@@ -64,7 +64,7 @@
     Applications that can cause this error include antivirus, firewall, and web-filtering or proxy software.
   </message>
 
-  <!-- Lookalike URL warning -->
+  <!-- Lookalike URL warning with a suggested hostname -->
   <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
     Safety warning
   </message>
@@ -77,9 +77,16 @@
   <message name="IDS_LOOKALIKE_URL_CONTINUE" desc="Button text. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This button dismisses the interstitial and navigates to the suggested (safe) URL.">
     Go to <ph name="DOMAIN">$1<ex>example.com</ex></ph>
   </message>
+
   <message name="IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL.">
     The site you just tried to visit looks fake. Attackers sometimes mimic sites by making small, hard-to-see changes to the URL.
   </message>
+
+  <!-- Lookalike URL without a suggested hostname -->
+  <message name="IDS_LOOKALIKE_URL_BACK_TO_SAFETY" desc="The text for the button that takes the user back to the new tab page.">
+    Back to safety
+  </message>
+
 
   <!-- Clock errors -->
   <message name="IDS_CLOCK_ERROR_TITLE" desc="Tab title. Context: the browser can't load a page because the device's clock is wrong.">
@@ -508,7 +515,7 @@
   <message name="IDS_LEGACY_TLS_EXPLANATION" desc="Part of an extended description hidden behind an 'Advanced' button on an error page. A user visits a website that uses an obsolete version of TLS and they are shown this error. Page title and additional description of the error are shown above.">
     The connection used to load this site used TLS 1.0 or TLS 1.1, which are deprecated and will be disabled in the future. Once disabled, users will be prevented from loading this site. The server should enable TLS 1.2 or later.
   </message>
-  
+
   <!-- Insecure form submission interstitial-->
   <message name="IDS_INSECURE_FORM_TITLE" desc="Tab Title for insecure form submission warning">
     Insecure Form

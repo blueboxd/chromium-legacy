@@ -64,6 +64,13 @@ struct WebPreferences;
 // An interface and utility for driving tests of RenderFrameHost.
 class RenderFrameHostTester {
  public:
+  enum class HeavyAdIssueType {
+    kNetworkTotal,
+    kCpuTotal,
+    kCpuPeak,
+    kAll,
+  };
+
   // Retrieves the RenderFrameHostTester that drives the specified
   // RenderFrameHost. The RenderFrameHost must have been created while
   // RenderFrameHost testing was enabled; use a
@@ -115,6 +122,9 @@ class RenderFrameHostTester {
   // Gets all the console messages requested via
   // RenderFrameHost::AddMessageToConsole in this frame.
   virtual const std::vector<std::string>& GetConsoleMessages() = 0;
+
+  // Get a count of the total number of heavy ad issues reported.
+  virtual int GetHeavyAdIssueCount(HeavyAdIssueType type) = 0;
 };
 
 // An interface and utility for driving tests of RenderViewHost.

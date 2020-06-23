@@ -24,7 +24,6 @@
 <translation id="116280672541001035">Brugt</translation>
 <translation id="1171770572613082465">Se populære websites ved at trykke på knappen "Topwebsites"</translation>
 <translation id="1173894706177603556">Omdøb</translation>
-<translation id="1178581264944972037">Pause</translation>
 <translation id="1197267115302279827">Flyt bogmærker</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1204037785786432551">Download link</translation>
@@ -80,6 +79,7 @@
 <translation id="1612196535745283361">Chrome skal have placeringsadgang for at kunne scanne efter enheder. Placeringsadgang er <ph name="BEGIN_LINK" />slået fra på denne enhed<ph name="END_LINK" />.</translation>
 <translation id="1620510694547887537">Kamera</translation>
 <translation id="1628019612362412531">{NUM_SELECTED,plural, =1{Fjern 1 valgt element}one{Fjern # valgt element}other{Fjern # valgte elementer}}</translation>
+<translation id="1641113438599504367">Beskyttet browsing</translation>
 <translation id="164269334534774161">Du ser en offlinekopi af denne side fra <ph name="CREATION_TIME" /></translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1670399744444387456">Grundlæggende</translation>
@@ -90,6 +90,7 @@
 <translation id="1736419249208073774">Mere</translation>
 <translation id="1749561566933687563">Synkroniser dine bogmærker</translation>
 <translation id="17513872634828108">Åbne faner</translation>
+<translation id="1754404134430936718">Teksten blev kopieret</translation>
 <translation id="1779089405699405702">Værktøj til afkodning af billeder</translation>
 <translation id="1782483593938241562">Slutdato <ph name="DATE" /></translation>
 <translation id="1791662854739702043">Installeret</translation>
@@ -223,10 +224,10 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="2810645512293415242">Forenklet side, der sparer data og indlæses hurtigere.</translation>
 <translation id="281504910091592009">Se og administrer gemte adgangskoder på din <ph name="BEGIN_LINK" />Google-konto<ph name="END_LINK" /></translation>
 <translation id="2818669890320396765">Log ind, og aktivér synkronisering for at få vist dine bogmærker på alle dine enheder</translation>
+<translation id="2827278682606527653">Feedkortmenu i halv højde</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2860954141821109167">Sørg for, at opkaldsappen er aktiveret på denne enhed</translation>
 <translation id="2870560284913253234">Website</translation>
-<translation id="2874939134665556319">Forrige nummer</translation>
 <translation id="2876369937070532032">Sender webadresser på nogle sider, som du besøger, til Google, når din sikkerhed er truet</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
 <translation id="2891154217021530873">Stop sideindlæsning</translation>
@@ -268,6 +269,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3181954750937456830">Beskyttet browsing (beskytter dig og din enhed mod farlige websites)</translation>
 <translation id="3205824638308738187">Du er næsten færdig.</translation>
 <translation id="3207960819495026254">Gemt som bogmærke</translation>
+<translation id="3208584281581115441">Tjek nu</translation>
 <translation id="3211426585530211793"><ph name="ITEM_TITLE" /> blev slettet</translation>
 <translation id="321773570071367578">Hvis du har glemt din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
 <translation id="3232754137068452469">Webapp</translation>
@@ -344,8 +346,8 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3810973564298564668">Valgmuligheder</translation>
 <translation id="381841723434055211">Telefonnumre</translation>
 <translation id="3819178904835489326"><ph name="NUMBER_OF_DOWNLOADS" /> downloads blev slettet</translation>
-<translation id="3859306556332390985">Spol fremad</translation>
 <translation id="388596076286380598">Få adgang til artikler, videoer og andet indhold fra de websites, du kan lide, selvom du er offline eller har en dårlig forbindelse.</translation>
+<translation id="3892148308691398805">Kopiér tekst</translation>
 <translation id="3894427358181296146">Tilføj mappe</translation>
 <translation id="3895926599014793903">Tving aktivering af zoom</translation>
 <translation id="3912508018559818924">Finder det bedste fra nettet…</translation>
@@ -366,8 +368,6 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="3997476611815694295">Lagerplads, der ikke er vigtig</translation>
 <translation id="4000212216660919741">Hjemmet er offline</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# t.}one{# t.}other{# t.}}</translation>
-<translation id="403687620286099920">Tryk for at åbne QR-koden</translation>
-<translation id="4046123991198612571">Næste nummer</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Du finder de tilgængelige valgmuligheder øverst på skærmen</translation>
 <translation id="4062305924942672200">Juridiske oplysninger</translation>
@@ -387,10 +387,10 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="4209895695669353772">Aktivér synkronisering for at hente brugertilpasset indhold, som er foreslået af Google</translation>
 <translation id="423219824432660969">Kryptér synkroniserede data med Google-adgangskoden fra <ph name="TIME" /></translation>
 <translation id="4242533952199664413">Åbn Indstillinger</translation>
+<translation id="4248098802131000011">Beskyt dine adgangskoder mod brud på datasikkerheden og andre sikkerhedsproblemer</translation>
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
-<translation id="429312253194641664">Et website afspiller medier</translation>
 <translation id="4298388696830689168">Tilknyttede websites</translation>
 <translation id="4307992518367153382">Grundlæggende valgmuligheder</translation>
 <translation id="4314815835985389558">Administrer synkronisering</translation>
@@ -412,6 +412,7 @@ Tryk og hold på et ord for at søge. Du kan tilpasse din søgning ved at vælge
 <translation id="4479972344484327217">Installerer <ph name="MODULE" /> til Chrome…</translation>
 <translation id="4487967297491345095">Alle Chromes appdata slettes permanent. Dette omfatter alle filer, indstillinger, konti, databaser osv.</translation>
 <translation id="4493497663118223949">Lite-tilstand er aktiveret</translation>
+<translation id="4508528996305412043">Feedkortmenuen er åbnet</translation>
 <translation id="4513387527876475750">{DAYS,plural, =1{For 1 dag siden}one{For # dag siden}other{For # dage siden}}</translation>
 <translation id="451872707440238414">Søg i dine bogmærker</translation>
 <translation id="4521489764227272523">De valgte data er fjernet fra Chrome og synkroniserede enheder.
@@ -563,7 +564,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5659593005791499971">Mail</translation>
 <translation id="5665379678064389456">Opret begivenhed i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Tilsidesæt en anmodning fra et website om at undgå at zoome ind</translation>
-<translation id="5681394891799747640">QR-koden kunne ikke downloades</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
 <translation id="5686790454216892815">Filnavnet er for langt</translation>
 <translation id="5694049548840660018">Vend nemt tilbage til startsiden</translation>
@@ -605,6 +605,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5958275228015807058">Find dine filer og sider i Downloads</translation>
 <translation id="5962718611393537961">Tryk for at skjule</translation>
 <translation id="5964805880140440652">Hvis du vil dele denne side med en anden enhed, skal du aktivere synkronisering i indstillingerne for Chrome</translation>
+<translation id="5979084224081478209">Tjek adgangskoder</translation>
 <translation id="6000066717592683814">Behold Google</translation>
 <translation id="6005538289190791541">Foreslået adgangskode</translation>
 <translation id="6036057147555329831">Ekstra ICU</translation>
@@ -706,7 +707,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="671481426037969117">Din timer for <ph name="FQDN" /> udløb. Den starter igen i morgen.</translation>
 <translation id="6738867403308150051">Downloader…</translation>
 <translation id="6767294960381293877">Åben liste i halv højde over enheder, der skal deles en fane med.</translation>
-<translation id="6790428901817661496">Afspil</translation>
 <translation id="6811034713472274749">Siden kan nu ses</translation>
 <translation id="6820686453637990663">CVC</translation>
 <translation id="6831043979455480757">Oversæt</translation>
@@ -763,7 +763,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7328017930301109123">Chrome indlæser sider hurtigere og bruger op til 60 procent mindre data i Lite-tilstand.</translation>
 <translation id="7333031090786104871">Det forrige website er stadig ved at blive tilføjet</translation>
 <translation id="7340958967809483333">Indstillinger for Discover</translation>
-<translation id="7352651011704765696">Der opstod en fejl</translation>
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}one{Del # valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7359002509206457351">Adgang til betalingsmetoder</translation>
@@ -802,7 +801,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7605594153474022051">Synkronisering fungerer ikke</translation>
 <translation id="7606077192958116810">Lite-tilstand er aktiveret. Administrer tilstanden i Indstillinger.</translation>
 <translation id="7612619742409846846">Du er logget ind på Google som</translation>
-<translation id="7614971007231847352">QR-koden blev downloadet</translation>
 <translation id="7619072057915878432">Download af <ph name="FILE_NAME" /> mislykkedes på grund af netværksfejl.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjælp<ph name="END_LINK1" />, eller <ph name="BEGIN_LINK2" />scan igen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Velkommen til Chrome</translation>
@@ -883,6 +881,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8200772114523450471">Genoptag</translation>
 <translation id="8209050860603202033">Åbn billede</translation>
 <translation id="8218622182176210845">Administrer din konto</translation>
+<translation id="8223642481677794647">Feedkortmenu</translation>
 <translation id="8224471946457685718">Download artikler til dig via Wi-Fi</translation>
 <translation id="8232956427053453090">Behold data</translation>
 <translation id="8233540874193135768">For at scanne en QR-kode skal du bruge en enhed med et kamera.</translation>
@@ -907,7 +906,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="8427875596167638501">Fanen forhåndsvisning er åbnet halvt</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8438566539970814960">Gør søgninger og browsing endnu bedre</translation>
-<translation id="8441146129660941386">Spol tilbage</translation>
 <translation id="8443209985646068659">Chrome kan ikke opdateres</translation>
 <translation id="8445448999790540984">Der kan ikke eksporteres adgangskoder</translation>
 <translation id="8461694314515752532">Kryptér synkroniserede data med din egen adgangssætning til synkronisering</translation>
@@ -1007,4 +1005,5 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="981121421437150478">Offline</translation>
 <translation id="983192555821071799">Luk alle faner</translation>
 <translation id="987264212798334818">Generelt</translation>
+<translation id="996149300115483134">Feedkortmenuen er lukket</translation>
 </translationbundle>

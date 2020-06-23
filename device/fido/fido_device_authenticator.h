@@ -127,6 +127,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                               base::Optional<pin::KeyAgreementResponse>)>;
   void InitializeAuthenticatorDone(base::OnceClosure callback);
   void GetEphemeralKey(GetEphemeralKeyCallback callback);
+  void OnHaveEphemeralKey(GetEphemeralKeyCallback callback,
+                          CtapDeviceResponseCode status,
+                          base::Optional<pin::KeyAgreementResponse> key);
   void OnHaveEphemeralKeyForGetPINToken(
       std::string pin,
       uint8_t permissions,
@@ -156,8 +159,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   template <typename... Args>
   void OperationClearProxy(base::OnceCallback<void(Args...)> callback,
                            Args... args);
-  template <typename Task, typename Request, typename Response>
-  void RunTask(Request request,
+  template <typename Task, typename Response, typename... RequestArgs>
+  void RunTask(RequestArgs&&... request_args,
                base::OnceCallback<void(CtapDeviceResponseCode,
                                        base::Optional<Response>)> callback);
   template <typename Request, typename Response>
@@ -182,6 +185,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   base::Optional<AuthenticatorSupportedOptions> options_;
   std::unique_ptr<FidoTask> task_;
   std::unique_ptr<GenericDeviceOperation> operation_;
+  base::Optional<pin::KeyAgreementResponse> cached_ephemeral_key_;
   base::WeakPtrFactory<FidoDeviceAuthenticator> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoDeviceAuthenticator);

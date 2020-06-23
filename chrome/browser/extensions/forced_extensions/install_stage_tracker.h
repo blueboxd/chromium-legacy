@@ -208,6 +208,25 @@ class InstallStageTracker : public KeyedService {
     kMaxValue = kErrorUnsupportedProtocol,
   };
 
+  // Info field in the update manifest returned by the server when no update is
+  // available. Enum used for UMA. Do NOT reorder or remove entries. Don't
+  // forget to update enums.xml (name: ExtensionNoUpdatesInfo) when adding new
+  // entries.
+  enum class NoUpdatesInfo {
+    // Update server returns some unknown value.
+    kUnknown = 0,
+    // Update server returns empty info.
+    kEmpty = 1,
+    // Popular no update reasons are marked as "rate limit", "disabled by
+    // client" and "bandwidth limit".
+    kRateLimit = 2,
+    kDisabledByClient = 3,
+    kBandwidthLimit = 4,
+    // Magic constant used by the histogram macros.
+    // Always update it to the max value.
+    kMaxValue = kBandwidthLimit,
+  };
+
   // Contains information about extension installation: failure reason, if any
   // reported, specific details in case of CRX install error, current
   // installation stage if known.
@@ -241,6 +260,9 @@ class InstallStageTracker : public KeyedService {
     // occurred while parsing the manifest and errors occurred due to the
     // internal details of the parsed manifest.
     base::Optional<ManifestInvalidError> manifest_invalid_error;
+    // Info field in the update manifest returned by the server when no update
+    // is available.
+    base::Optional<NoUpdatesInfo> no_updates_info;
   };
 
   class Observer : public base::CheckedObserver {
@@ -273,6 +295,9 @@ class InstallStageTracker : public KeyedService {
 
   // Convenience function to get the InstallStageTracker for a BrowserContext.
   static InstallStageTracker* Get(content::BrowserContext* context);
+
+  void ReportInfoOnNoUpdatesFailure(const ExtensionId& id,
+                                    const std::string& info);
 
   // Reports detailed error type when extension fails to install with failure
   // reason MANIFEST_INVALID. See InstallationData::manifest_invalid_error

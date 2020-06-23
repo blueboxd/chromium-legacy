@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/reputation/safety_tips_config.h"
 #include "chrome/common/chrome_features.h"
+#include "components/lookalikes/core/features.h"
 #include "components/lookalikes/core/lookalike_url_util.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/ukm/content/source_url_recorder.h"
@@ -221,7 +222,7 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::ShowInterstitial(
       web_contents, url, safe_url);
 
   std::unique_ptr<LookalikeUrlBlockingPage> blocking_page(
-      new LookalikeUrlBlockingPage(web_contents, safe_url, source_id,
+      new LookalikeUrlBlockingPage(web_contents, safe_url, url, source_id,
                                    match_type, std::move(controller)));
 
   base::Optional<std::string> error_page_contents =
@@ -273,6 +274,14 @@ void LookalikeUrlNavigationThrottle::PerformChecksDeferred(
   CancelDeferredNavigation(result);
 }
 
+bool ShouldBlockBySpoofCheckResult(
+    url_formatter::IDNSpoofChecker::Result spoof_check_result) {
+  // Here, only a subset of spoof checks that cause an IDN to fallback to
+  // punycode are configured to show an interstitial.
+  return spoof_check_result ==
+         url_formatter::IDNSpoofChecker::Result::kUnsafeMiddleDot;
+}
+
 ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
     const GURL& url,
     const DomainInfo& navigated_domain,
@@ -303,51 +312,60 @@ ThrottleCheckResult LookalikeUrlNavigationThrottle::PerformChecks(
   auto* config = GetSafetyTipsRemoteConfigProto();
   const LookalikeTargetAllowlistChecker in_target_allowlist =
       base::BindRepeating(&IsTargetUrlAllowlistedBySafetyTipsComponent, config);
-  if (!GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
-                         &matched_domain, &match_type)) {
+  if (GetMatchingDomain(navigated_domain, engaged_sites, in_target_allowlist,
+                        &matched_domain, &match_type)) {
+    DCHECK(!matched_domain.empty());
+
+    RecordUMAFromMatchType(match_type);
+
+    if (check_safe_redirect &&
+        IsSafeRedirect(matched_domain,
+                       navigation_handle()->GetRedirectChain())) {
+      return content::NavigationThrottle::PROCEED;
+    }
+
+    if (ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
+      // matched_domain can be a top domain or an engaged domain. Simply use its
+      // eTLD+1 as the suggested domain.
+      // 1. If matched_domain is a top domain: Top domain list already contains
+      // eTLD+1s only so this works well.
+      // 2. If matched_domain is an engaged domain and is not an eTLD+1, don't
+      // suggest it. Otherwise, navigating to googlé.com and having engaged with
+      // docs.google.com would suggest docs.google.com.
+      //
+      // When the navigated and matched domains are not eTLD+1s (e.g.
+      // docs.googlé.com and docs.google.com), this will suggest google.com
+      // instead of docs.google.com. This is less than ideal, but has two
+      // benefits:
+      // - Simpler code
+      // - Fewer suggestions to non-existent domains. E.g. When the navigated
+      // domain is nonexistent.googlé.com and the matched domain is
+      // docs.google.com, we will suggest google.com instead of
+      // nonexistent.google.com.
+      const std::string suggested_domain = GetETLDPlusOne(matched_domain);
+      DCHECK(!suggested_domain.empty());
+      // Drop everything but the parts of the origin.
+      GURL::Replacements replace_host;
+      replace_host.SetHostStr(suggested_domain);
+      const GURL suggested_url =
+          url.ReplaceComponents(replace_host).GetWithEmptyPath();
+      return ShowInterstitial(suggested_url, url, source_id, match_type);
+    }
+    // Interstitial normally records UKM, but still record when it's not shown.
+    LookalikeUrlBlockingPage::RecordUkmEvent(
+        source_id, match_type,
+        LookalikeUrlBlockingPageUserAction::kInterstitialNotShown);
     return content::NavigationThrottle::PROCEED;
   }
-  DCHECK(!matched_domain.empty());
 
-  RecordUMAFromMatchType(match_type);
-
-  if (check_safe_redirect &&
-      IsSafeRedirect(matched_domain, navigation_handle()->GetRedirectChain())) {
-    return content::NavigationThrottle::PROCEED;
+  if (base::FeatureList::IsEnabled(
+          lookalikes::features::kLookalikeInterstitialForPunycode) &&
+      ShouldBlockBySpoofCheckResult(
+          navigated_domain.idn_result.spoof_check_result)) {
+    match_type = LookalikeUrlMatchType::kFailedSpoofChecks;
+    RecordUMAFromMatchType(match_type);
+    return ShowInterstitial(GURL(), url, source_id, match_type);
   }
-
-  if (ShouldBlockLookalikeUrlNavigation(match_type, navigated_domain)) {
-    // matched_domain can be a top domain or an engaged domain. Simply use its
-    // eTLD+1 as the suggested domain.
-    // 1. If matched_domain is a top domain: Top domain list already contains
-    // eTLD+1s only so this works well.
-    // 2. If matched_domain is an engaged domain and is not an eTLD+1, don't
-    // suggest it. Otherwise, navigating to googlé.com and having engaged with
-    // docs.google.com would suggest docs.google.com.
-    //
-    // When the navigated and matched domains are not eTLD+1s (e.g.
-    // docs.googlé.com and docs.google.com), this will suggest google.com
-    // instead of docs.google.com. This is less than ideal, but has two
-    // benefits:
-    // - Simpler code
-    // - Fewer suggestions to non-existent domains. E.g. When the navigated
-    // domain is nonexistent.googlé.com and the matched domain is
-    // docs.google.com, we will suggest google.com instead of
-    // nonexistent.google.com.
-    const std::string suggested_domain = GetETLDPlusOne(matched_domain);
-    DCHECK(!suggested_domain.empty());
-    // Drop everything but the parts of the origin.
-    GURL::Replacements replace_host;
-    replace_host.SetHostStr(suggested_domain);
-    const GURL suggested_url =
-        url.ReplaceComponents(replace_host).GetWithEmptyPath();
-    return ShowInterstitial(suggested_url, url, source_id, match_type);
-  }
-
-  // Interstitial normally records UKM, but still record when it's not shown.
-  LookalikeUrlBlockingPage::RecordUkmEvent(
-      source_id, match_type,
-      LookalikeUrlBlockingPageUserAction::kInterstitialNotShown);
 
   return content::NavigationThrottle::PROCEED;
 }

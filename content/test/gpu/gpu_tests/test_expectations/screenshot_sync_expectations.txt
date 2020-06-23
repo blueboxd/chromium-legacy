@@ -1,4 +1,4 @@
-# tags: [ linux mac win android ]
+# tags: [ linux mac win android fuchsia ]
 # tags: [ debug ]
 # tags: [ amd amd-0x6613 intel intel-0x3e92 ]
 # tags: [ android-nexus-5x ]
@@ -22,3 +22,6 @@ crbug.com/1006045 [ android android-nexus-5x skia-renderer ] ScreenshotSync_GPUR
 crbug.com/1006045 [ android android-nexus-5x skia-renderer ] ScreenshotSync_GPURasterWithDivs [ Failure ]
 crbug.com/1006045 [ android android-nexus-5x skia-renderer ] ScreenshotSync_SWRasterWithCanvas [ Failure ]
 crbug.com/1006045 [ android android-nexus-5x skia-renderer ] ScreenshotSync_SWRasterWithDivs [ Failure ]
+
+# Fuchsia
+crbug.com/1097962 [ fuchsia ] ScreenshotSync_SWRasterWithCanvas [ RetryOnFailure ]

@@ -12,6 +12,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/subresource_redirect/https_image_compression_infobar_decider.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -74,8 +75,11 @@ void RetryForHistogramUntilCountReached(base::HistogramTester* histogram_tester,
 class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
  public:
   explicit SubresourceRedirectBrowserTest(
-      bool enable_subresource_server_redirect = true)
+      bool enable_subresource_server_redirect = true,
+      bool override_https_image_compression_infobar = true)
       : enable_subresource_server_redirect_(enable_subresource_server_redirect),
+        override_https_image_compression_infobar_(
+            override_https_image_compression_infobar),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         compression_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
@@ -125,6 +129,10 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
     command_line->AppendSwitch("enable-spdy-proxy-auth");
     command_line->AppendSwitch("optimization-guide-disable-installer");
     command_line->AppendSwitch("purge_hint_cache_store");
+    if (override_https_image_compression_infobar_) {
+      // Disable infobar shown check to actually compress the pages.
+      command_line->AppendSwitch("override-https-image-compression-infobar");
+    }
   }
 
   void EnableDataSaver(bool enabled) {
@@ -354,6 +362,10 @@ class SubresourceRedirectBrowserTest : public InProcessBrowserTest {
 
   bool enable_subresource_server_redirect_ = false;
 
+  // Image compression is allowed only after the infobar has been shown. This
+  // bool overrides it and disabled the image compression infobar check.
+  bool override_https_image_compression_infobar_ = true;
+
   GURL compression_url_;
   GURL http_url_;
   GURL https_url_;
@@ -380,6 +392,23 @@ class RedirectDisabledSubresourceRedirectBrowserTest
  public:
   RedirectDisabledSubresourceRedirectBrowserTest()
       : SubresourceRedirectBrowserTest(false) {}
+};
+
+class InfoBarEnabledSubresourceRedirectBrowserTest
+    : public SubresourceRedirectBrowserTest {
+ public:
+  InfoBarEnabledSubresourceRedirectBrowserTest()
+      : SubresourceRedirectBrowserTest(true, false) {}
+
+  // Verifies whether the infobar needs to be shown for the next navigation or
+  // not.
+  void VerifyNeedToShowInfoBarState(bool expected_need_to_show_infobar) {
+    EXPECT_EQ(expected_need_to_show_infobar,
+              DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                  browser()->profile())
+                  ->https_image_compression_infobar_decider()
+                  ->NeedToShowInfoBar());
+  }
 };
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -469,6 +498,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 
   histogram_tester()->ExpectTotalCount(
       "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.ImageCompressionNotificationInfoBar", 0);
 
   EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
 
@@ -495,6 +526,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerInIncognito) {
 
   histogram_tester()->ExpectTotalCount(
       "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.ImageCompressionNotificationInfoBar", 0);
 
   EXPECT_TRUE(RunScriptExtractBool(
       "checkImage()",
@@ -978,6 +1011,131 @@ IN_PROC_BROWSER_TEST_F(RedirectDisabledSubresourceRedirectBrowserTest,
   EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
             https_url().port());
 
+  VerifyCompressibleImageUkm(1);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarEnabledSubresourceRedirectBrowserTest,
+                       InfoBarNotShownWhenDataSaverOff) {
+  EnableDataSaver(false);
+  CreateUkmRecorder();
+  ui_test_utils::NavigateToURL(
+      browser(), HttpsURLWithPath("/load_image/image_delayed_load.html"));
+
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  VerifyNeedToShowInfoBarState(true);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  // No coverage metrics recorded.
+  VerifyCompressibleImageUkm(0);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+  VerifyNeedToShowInfoBarState(true);
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarEnabledSubresourceRedirectBrowserTest,
+                       InfoBarNotShownInIncognito) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  auto* incognito_browser = CreateIncognitoBrowser();
+  ui_test_utils::NavigateToURL(
+      incognito_browser,
+      HttpsURLWithPath("/load_image/image_delayed_load.html"));
+
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  VerifyNeedToShowInfoBarState(true);
+
+  EXPECT_TRUE(RunScriptExtractBool(
+      "checkImage()",
+      incognito_browser->tab_strip_model()->GetActiveWebContents()));
+
+  EXPECT_EQ(
+      GURL(RunScriptExtractString(
+               "imageSrc()",
+               incognito_browser->tab_strip_model()->GetActiveWebContents()))
+          .port(),
+      https_url().port());
+
+  // No coverage metrics recorded.
+  VerifyCompressibleImageUkm(0);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+  VerifyNeedToShowInfoBarState(true);
+}
+
+// This test verifies that the image compression is enabled only after the
+// infobar has been shown.
+IN_PROC_BROWSER_TEST_F(
+    InfoBarEnabledSubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(ImagesCompressedAfterInfoBarShown)) {
+  EnableDataSaver(true);
+  CreateUkmRecorder();
+  VerifyNeedToShowInfoBarState(true);
+
+  // The first navigation will not enable image compression but show the
+  // infobar.
+  GURL url = HttpsURLWithPath("/load_image/image_delayed_load.html");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.CompressionAttempt.ServerResponded", 0);
+  histogram_tester()->ExpectTotalCount(
+      "SubresourceRedirect.DidCompress.CompressionPercent", 0);
+  // InfoBar had been shown.
+  VerifyNeedToShowInfoBarState(false);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+
+  EXPECT_EQ(GURL(RunScriptExtractString("imageSrc()")).port(),
+            https_url().port());
+
+  // No coverage metrics will be recorded as well.
+  VerifyCompressibleImageUkm(0);
+  VerifyIneligibleImageHintsUnavailableUkm(0);
+  VerifyIneligibleMissingInImageHintsUkm(0);
+  VerifyIneligibleOtherImageUkm(0);
+
+  // The second navigation will enable image compression, and infobar should not
+  // be shown.
+  url = HttpsURLWithPath("/load_image/image_delayed_load.html?second");
+  SetUpPublicImageURLPaths(url, {"/load_image/image.png"});
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  RetryForHistogramUntilCountReached(
+      histogram_tester(), "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      2);
+
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode", net::HTTP_OK, 1);
+  histogram_tester()->ExpectBucketCount(
+      "SubresourceRedirect.CompressionAttempt.ResponseCode",
+      net::HTTP_TEMPORARY_REDIRECT, 1);
+  VerifyNeedToShowInfoBarState(false);
+
+  EXPECT_TRUE(RunScriptExtractBool("checkImage()"));
+  EXPECT_EQ(request_url().port(), compression_url().port());
   VerifyCompressibleImageUkm(1);
   VerifyIneligibleImageHintsUnavailableUkm(0);
   VerifyIneligibleMissingInImageHintsUkm(0);

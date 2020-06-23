@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env vpython
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -13,8 +13,6 @@ import subprocess
 import sys
 import unittest
 
-sys.path.append(
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'pymock'))
 sys.path.append(
     os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..'))
 

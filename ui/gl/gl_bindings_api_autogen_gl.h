@@ -1002,6 +1002,7 @@ void glObjectLabelFn(GLenum identifier,
                      GLsizei length,
                      const char* label) override;
 void glObjectPtrLabelFn(void* ptr, GLsizei length, const char* label) override;
+void glPatchParameteriFn(GLenum pname, GLint value) override;
 void glPathCommandsNVFn(GLuint path,
                         GLsizei numCommands,
                         const GLubyte* commands,

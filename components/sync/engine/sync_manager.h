@@ -343,9 +343,6 @@ class SyncManager {
   // Issue a final SaveChanges, and close sqlite handles.
   virtual void ShutdownOnSyncThread() = 0;
 
-  // May be called from any thread.
-  virtual UserShare* GetUserShare() = 0;
-
   // Returns non-owning pointer to ModelTypeConnector. In contrast with
   // ModelTypeConnectorProxy all calls are executed synchronously, thus the
   // pointer should be used on sync thread.

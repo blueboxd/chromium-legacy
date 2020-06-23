@@ -25,16 +25,16 @@
     width: var(--status-badge-radius);
   }
 
-  :host-context([status='green']) #status-badge {
+  :host-context([state='0']) #status-badge {
     background-color: var(--google-green-700);
   }
 
-  :host-context([status='grey']) #status-badge {
-    background-color: var(--google-grey-500);
+  :host-context([state='1']) #status-badge {
+    background-color: var(--google-red-600);
   }
 
-  :host-context([status='red']) #status-badge {
-    background-color: var(--google-red-600);
+  :host-context([state='2']) #status-badge {
+    background-color: var(--google-grey-500);
   }
 
   :host-context([dir='rtl']) #status-badge {

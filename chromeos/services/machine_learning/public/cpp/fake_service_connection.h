@@ -63,6 +63,12 @@ class FakeServiceConnectionImpl : public ServiceConnection,
       mojom::MachineLearningService::LoadHandwritingModelCallback
           result_callback) override;
 
+  void LoadHandwritingModelWithSpec(
+      mojom::HandwritingRecognizerSpecPtr spec,
+      mojo::PendingReceiver<mojom::HandwritingRecognizer> receiver,
+      mojom::MachineLearningService::LoadHandwritingModelCallback
+          result_callback) override;
+
   // mojom::Model:
   void CreateGraphExecutor(
       mojo::PendingReceiver<mojom::GraphExecutor> receiver,

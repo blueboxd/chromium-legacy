@@ -1391,8 +1391,11 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
   if (tab->detached())
     return false;
 
+  // Collapsed tabs disappear once they've reached their minimum size. This is
+  // different than very small non-collapsed tabs, because in that case the tab
+  // (and its favicon) must still be visible.
   if (tab->group() && controller()->IsGroupCollapsed(*tab->group()) &&
-      tab->bounds().IsEmpty()) {
+      tab->bounds().width() <= tab->tab_style()->GetMinimumInactiveWidth()) {
     return false;
   }
 

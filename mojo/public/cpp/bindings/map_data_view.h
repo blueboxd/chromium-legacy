@@ -5,7 +5,7 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_MAP_DATA_VIEW_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_MAP_DATA_VIEW_H_
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "mojo/public/cpp/bindings/array_data_view.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 #include "mojo/public/cpp/bindings/lib/map_data_internal.h"

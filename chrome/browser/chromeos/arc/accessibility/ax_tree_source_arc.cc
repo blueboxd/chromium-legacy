@@ -14,8 +14,6 @@
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/geometry_util.h"
-#include "chrome/browser/ui/aura/accessibility/automation_manager_aura.h"
-#include "components/exo/wm_helper.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
 #include "extensions/common/extension_messages.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -30,10 +28,8 @@ using AXEventType = mojom::AccessibilityEventType;
 using AXIntProperty = mojom::AccessibilityIntProperty;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
-using AXNodeInfoDataPtr = mojom::AccessibilityNodeInfoDataPtr;
 using AXStringProperty = mojom::AccessibilityStringProperty;
 using AXWindowInfoData = mojom::AccessibilityWindowInfoData;
-using AXWindowInfoDataPtr = mojom::AccessibilityWindowInfoDataPtr;
 using AXWindowIntListProperty = mojom::AccessibilityWindowIntListProperty;
 
 namespace {
@@ -68,12 +64,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
   is_notification_ = event_data->notification_key.has_value();
   is_input_method_window_ = event_data->is_input_method_window;
 
-  // The following loops perform caching to prepare for AXTreeSerializer.
-  // First, we cache the windows.
-  // Next, we cache the nodes. To compute importance table, we want a mapping
-  // from node id to an index in event_data->node_data is needed to avoid O(N^2)
-  // computation, iterate it twice.
-  // Finally, we cache each node's computed bounds, based on its descendants.
+  // Prepare the wrapper objects of mojom data from Android.
   CHECK(event_data->window_data);
   root_id_ = event_data->window_data->at(0)->window_id;
   for (size_t i = 0; i < event_data->window_data->size(); ++i) {
@@ -96,11 +87,12 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
     }
   }
 
-  // Mapping from node id to index in event_data->node_data.
-  std::map<int32_t, int32_t> node_data_index_map;
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     int32_t node_id = event_data->node_data[i]->id;
-    node_data_index_map[node_id] = i;
+    AXNodeInfoData* node = event_data->node_data[i].get();
+    tree_map_[node_id] =
+        std::make_unique<AccessibilityNodeInfoDataWrapper>(this, node);
+
     std::vector<int32_t> children;
     if (GetProperty(event_data->node_data[i].get()->int_list_properties,
                     AXIntListProperty::CHILD_NODE_IDS, &children)) {
@@ -108,15 +100,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
         parent_map_[child] = node_id;
     }
   }
-  std::vector<bool> is_important(event_data->node_data.size());
-  BuildImportanceTable(event_data, node_data_index_map, &is_important);
-  for (int i = event_data->node_data.size() - 1; i >= 0; --i) {
-    int32_t id = event_data->node_data[i]->id;
-    AXNodeInfoData* node = event_data->node_data[i].get();
-    tree_map_[id] = std::make_unique<AccessibilityNodeInfoDataWrapper>(
-        this, node, is_important[i]);
-  }
 
+  // Compute each node's bounds, based on its descendants.
   // Assuming |nodeData| is in pre-order, compute cached bounds in post-order to
   // avoid an O(n^2) amount of work as the computed bounds uses descendant
   // bounds.
@@ -224,8 +209,7 @@ bool AXTreeSourceArc::IsRootOfNodeTree(int32_t id) const {
 AccessibilityInfoDataWrapper* AXTreeSourceArc::GetFirstImportantAncestor(
     AccessibilityInfoDataWrapper* info_data) const {
   AccessibilityInfoDataWrapper* parent = GetParent(info_data);
-  while (parent && parent->IsNode() &&
-         !IsImportantInAndroid(parent->GetNode())) {
+  while (parent && parent->IsNode() && !parent->IsImportantInAndroid()) {
     parent = GetParent(parent);
   }
   return parent;
@@ -308,58 +292,6 @@ void AXTreeSourceArc::ComputeEnclosingBoundsInternal(
   for (AccessibilityInfoDataWrapper* child : children)
     ComputeEnclosingBoundsInternal(child, computed_bounds);
   return;
-}
-
-void AXTreeSourceArc::BuildImportanceTable(
-    AXEventData* event_data,
-    const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-    std::vector<bool>* out_values) const {
-  // TODO(hirokisato): move this logic into AccessibilityNodeInfoDataWrapper.
-  DCHECK(out_values);
-  DCHECK(out_values->size() == event_data->node_data.size());
-
-  // First, compute whether each node has important properties in its subtree.
-  for (size_t i = 0; i < event_data->window_data->size(); ++i) {
-    auto itr = node_id_to_nodes_index.find(
-        event_data->window_data->at(i)->root_node_id);
-    if (itr == node_id_to_nodes_index.end())
-      continue;
-
-    int32_t root_node_index = itr->second;
-    BuildHasImportantProperty(root_node_index, event_data->node_data,
-                              node_id_to_nodes_index, out_values);
-  }
-
-  // Second, node is important in Chrome if it's important in Android and has
-  // any important property.
-  for (size_t i = 0; i < event_data->node_data.size(); ++i)
-    out_values->at(i) = out_values->at(i) &
-                        IsImportantInAndroid(event_data->node_data[i].get());
-}
-
-bool AXTreeSourceArc::BuildHasImportantProperty(
-    int32_t nodes_index,
-    const std::vector<AXNodeInfoDataPtr>& nodes,
-    const std::map<int32_t, int32_t>& node_id_to_nodes_index,
-    std::vector<bool>* has_important_prop_cache) const {
-  DCHECK(has_important_prop_cache);
-  AXNodeInfoData* node = nodes[nodes_index].get();
-
-  bool has_important_prop = HasImportantProperty(node) ||
-                            cached_names_.find(node->id) != cached_names_.end();
-
-  std::vector<int32_t> children;
-  if (GetProperty(node->int_list_properties, AXIntListProperty::CHILD_NODE_IDS,
-                  &children)) {
-    for (const int32_t child : children) {
-      has_important_prop |= BuildHasImportantProperty(
-          node_id_to_nodes_index.at(child), nodes, node_id_to_nodes_index,
-          has_important_prop_cache);
-    }
-  }
-
-  has_important_prop_cache->at(nodes_index) = has_important_prop;
-  return has_important_prop;
 }
 
 AccessibilityInfoDataWrapper* AXTreeSourceArc::FindFirstFocusableNode(
@@ -485,12 +417,7 @@ bool AXTreeSourceArc::UpdateAndroidFocusedId(const AXEventData& event_data) {
                                       : nullptr;
 
   // Ensure that the focused node correctly gets focus.
-  while (focused_node) {
-    bool focusable_node = focused_node->IsNode() &&
-                          !IsImportantInAndroid(focused_node->GetNode());
-    bool root_window = focused_node->GetId() == root_id_;
-    if (!focusable_node && !root_window)
-      break;
+  while (focused_node && !focused_node->IsImportantInAndroid()) {
     AccessibilityInfoDataWrapper* parent = GetParent(focused_node);
     if (parent) {
       android_focused_id_ = parent->GetId();

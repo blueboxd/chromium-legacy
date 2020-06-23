@@ -55,6 +55,15 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // contentful paint hasn't been recorded yet.
   void MarkFirstImagePaint();
 
+  // MarkFirstEligibleToPaint records the first time that the frame is not
+  // throttled and so is eligible to paint. A null value indicates throttling.
+  void MarkFirstEligibleToPaint();
+
+  // MarkIneligibleToPaint resets the paint eligibility timestamp to null.
+  // A null value indicates throttling. This call is ignored if a first
+  // contentful paint has already been recorded.
+  void MarkIneligibleToPaint();
+
   void SetFirstMeaningfulPaintCandidate(base::TimeTicks timestamp);
   void SetFirstMeaningfulPaint(
       base::TimeTicks swap_stamp,
@@ -90,6 +99,12 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
 
   // FirstImagePaint returns the first time that image content was painted.
   base::TimeTicks FirstImagePaint() const { return first_image_paint_swap_; }
+
+  // FirstEligibleToPaint returns the first time that the frame is not
+  // throttled and is eligible to paint. A null value indicates throttling.
+  base::TimeTicks FirstEligibleToPaint() const {
+    return first_eligible_to_paint_;
+  }
 
   // FirstMeaningfulPaint returns the first time that page's primary content
   // was painted.
@@ -174,6 +189,7 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   base::TimeTicks first_contentful_paint_swap_;
   base::TimeTicks first_meaningful_paint_swap_;
   base::TimeTicks first_meaningful_paint_candidate_;
+  base::TimeTicks first_eligible_to_paint_;
 
   base::TimeTicks last_portal_activated_swap_;
 

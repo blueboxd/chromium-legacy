@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -276,6 +277,14 @@ bool NGOutOfFlowLayoutPart::SweepLegacyCandidates(
   return true;
 }
 
+// Retrieve the stored ContainingBlockInfo needed for placing positioned nodes.
+// When fragmenting, the ContainingBlockInfo is not stored ahead of time and
+// must be generated on demand. The reason being that during fragmentation, we
+// wait to place positioned nodes until they've reached the fragmentation
+// context root. In such cases, we cannot use |default_containing_block_| since
+// the fragmentation root is not the containing block of the positioned nodes.
+// Rather, we must generate their ContainingBlockInfo based on the provided
+// |containing_block_fragment|.
 const NGOutOfFlowLayoutPart::ContainingBlockInfo&
 NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     const NGLogicalOutOfFlowPositionedNode& candidate,
@@ -286,6 +295,8 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
     return it->value;
   }
   if (containing_block_fragment) {
+    DCHECK(container_builder_->IsBlockFragmentationContextRoot());
+
     const LayoutObject* containing_block =
         containing_block_fragment->GetLayoutObject();
     DCHECK(containing_block);
@@ -294,8 +305,20 @@ NGOutOfFlowLayoutPart::GetContainingBlockInfo(
       return it->value;
 
     const ComputedStyle& style = containing_block->StyleRef();
-    ContainingBlockInfo containing_block_info = default_containing_block_;
-    containing_block_info.direction = style.Direction();
+    LogicalSize size = containing_block_fragment->Size().ConvertToLogical(
+        style.GetWritingMode());
+    const NGPhysicalBoxFragment* fragment =
+        To<NGPhysicalBoxFragment>(containing_block_fragment);
+
+    // TODO(1079031): This should eventually include scrollbar and border.
+    NGBoxStrut border = fragment->Borders().ConvertToLogical(
+        style.GetWritingMode(), style.Direction());
+    LogicalSize content_size = ShrinkLogicalSize(size, border);
+    LogicalOffset container_offset =
+        LogicalOffset(border.inline_start, border.block_start);
+
+    ContainingBlockInfo containing_block_info{style.Direction(), content_size,
+                                              content_size, container_offset};
 
     return containing_blocks_map_
         .insert(containing_block, containing_block_info)

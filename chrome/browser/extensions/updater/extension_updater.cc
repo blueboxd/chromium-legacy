@@ -449,6 +449,9 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
           id, InstallStageTracker::FailureReason::CRX_FETCH_FAILED, data);
       break;
     case Error::CRX_FETCH_URL_EMPTY:
+      DCHECK(data.additional_info);
+      install_stage_tracker->ReportInfoOnNoUpdatesFailure(
+          id, data.additional_info.value());
       install_stage_tracker->ReportFailure(
           id, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
       break;

@@ -82,7 +82,7 @@
 namespace blink {
 
 struct SameSizeAsBorderValue {
-  RGBA32 color_;
+  StyleColor color_;
   unsigned bitfield_;
 };
 
@@ -1615,8 +1615,6 @@ ETextAlign ComputedStyle::GetTextAlign(bool is_last_line) const {
       return ETextAlign::kCenter;
     case ETextAlignLast::kJustify:
       return ETextAlign::kJustify;
-    case ETextAlignLast::kInternalSpaceAround:
-      return ETextAlign::kInternalSpaceAround;
     case ETextAlignLast::kAuto:
       ETextAlign text_align = GetTextAlign();
       if (text_align == ETextAlign::kJustify)

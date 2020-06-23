@@ -3,6 +3,7 @@
 <translationbundle lang="fi">
 <translation id="1018656279737460067">Peruutettu</translation>
 <translation id="1195447618553298278">Tuntematon virhe.</translation>
+<translation id="1413240736185167732">Epäonnistui – Suodatin epäkunnossa</translation>
 <translation id="1468664791493211953">Tarjoukset</translation>
 <translation id="1482734542997480527"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää tätä laitetta ja voi ehkä seurata toimintaasi.</translation>
 <translation id="150962533380566081">Virheellinen PUK-koodi</translation>
@@ -11,6 +12,7 @@
 <translation id="1734367976349034509">Tämä laite on yrityksen hallinnoima.</translation>
 <translation id="1905710495812624430">Yritysten enimmäismäärä ylitettiin.</translation>
 <translation id="1930797645656624981">Chrome-käyttöjärjestelmän syöttöpalvelu</translation>
+<translation id="1947737735496445907">Tulostettu</translation>
 <translation id="1979103255016296513">Salasanan vaihto myöhässä</translation>
 <translation id="2049639323467105390">Tätä laitetta hallinnoi <ph name="DOMAIN" />.</translation>
 <translation id="2338501278241028356">Löydä lähellä olevat laitteet ottamalla ensin Bluetooth käyttöön.</translation>
@@ -18,15 +20,22 @@
 <translation id="2805756323405976993">Sovellukset</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="3008341117444806826">PÄIVITÄ</translation>
+<translation id="3091839911843451378">Epäonnistui – Pysäytetty</translation>
+<translation id="3268178239013324452">Epäonnistui – Luukku auki</translation>
 <translation id="3369013195428705271">Haluatko varmasti poistaa tulostushistorian? Käynnissä olevia tulostustöitä ei poisteta.</translation>
+<translation id="3456078764689556234">Tulostettu <ph name="PRINTED_PAGES" />/<ph name="TOTAL_PAGES" /> sivua.</translation>
 <translation id="3515615323037921860">Tulostustyöt</translation>
+<translation id="3527036260304016759">Epäonnistui – Tuntematon virhe</translation>
 <translation id="3749289110408117711">Tiedostonimi</translation>
 <translation id="38114475217616659">Tyhjennä koko historia</translation>
 <translation id="3820172043799983114">Virheellinen PIN-koodi</translation>
 <translation id="3838338534323494292">Uusi salasana</translation>
+<translation id="3953601359945991637"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />/<ph name="TOTAL_PAGE_NUMBER" /></translation>
 <translation id="4003259559679196451"><ph name="ENROLLMENT_DOMAIN" /> ylläpitää tätä laitetta ja pääsee näkemään kaiken käyttäjätoiminnan, kuten avatut verkkosivustot, salasanat ja sähköpostit.</translation>
+<translation id="4003384961948020559">Epäonnistui – Syöte täynnä</translation>
 <translation id="4034824040120875894">Tulostin</translation>
 <translation id="4227825898293920515">Salasana vanhenee: <ph name="TIME" /></translation>
+<translation id="428217921675623177">Yli 90 päivää vanhat tulostustyöt poistetaan</translation>
 <translation id="4429881212383817840">Kerberos-tukipyyntö vanhenee pian</translation>
 <translation id="445059817448385655">Vanha salasana</translation>
 <translation id="467510802200863975">Salasanat eivät täsmää</translation>
@@ -37,24 +46,31 @@
 Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="5222676887888702881">Kirjaudu ulos</translation>
 <translation id="5317780077021120954">Tallenna</translation>
+<translation id="5326394068492324457"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="COMPLETION_STATUS" /></translation>
 <translation id="5332948983412042822">Valitse uusi nyt</translation>
 <translation id="5457599981699367932">Selaa vierailijana</translation>
 <translation id="54609108002486618">Ylläpidetty</translation>
 <translation id="5832805196449965646">Lisää henkilö</translation>
 <translation id="5895138241574237353">Käynnistä uudelleen</translation>
+<translation id="6048107060512778456">Epäonnistui – Paperitukos</translation>
 <translation id="6058625436358447366">Lisää lopuksi vanha ja uusi salasana</translation>
 <translation id="6106186594183574873">Lisää lopuksi vanha salasana</translation>
 <translation id="6146993107019042706">Lisää lopuksi uusi salasana</translation>
 <translation id="6517239166834772319">Explore</translation>
+<translation id="6564646048574748301">Epäonnistui – Ei yhteyttä tulostimeen</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="7162487448488904999">Galleria</translation>
+<translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7690294790491645610">Vahvista uusi salasana</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="808894953321890993">Vaihda salasana</translation>
 <translation id="8208861521865154048">Edut</translation>
 <translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> on tämän käyttäjän ylläpitäjä. Se voi muuttaa asetuksia ja seurata käyttäjän toimia etänä.</translation>
+<translation id="871560550817059752">Epäonnistui – Muste loppu</translation>
 <translation id="8747900814994928677">Vahvista muutos</translation>
+<translation id="8919837981463578619">Epäonnistui – Lokero puuttuu</translation>
+<translation id="8928727111548978589">Epäonnistui – Paperi loppu</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> yritystä jäljellä</translation>
 <translation id="910415269708673980">Päivitä tukipyyntö: <ph name="PRINCIPAL_NAME" /></translation>
 <translation id="9111102763498581341">Poista lukitus</translation>

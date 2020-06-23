@@ -96,34 +96,27 @@
 #     e.g. the name of the caption of ProxyServerDisabled:
 #       IDS_POLICY_ENUM_PROXYSERVERDISABLED_CAPTION
 #
-# Products and versions:
-#   Each policy has the list of products and version numbers where it is
-#   supported under the key 'supported_on'. Each item of this list has the
-#   form of 'product:since_version-until_version', which means that support
-#   for the policy in 'product' was introduced in 'since_version' and removed
-#   after 'until_version'. Product names may contain a suffix specifying a
-#   platform name, e.g.: 'chrome.win' is read as 'Chrome on Windows'. Version
-#   numbers can be any string that does not contain ':' or '-' characters.
+#   Each policy has the list of platforms where it is supported under the key
+#   'supported_on' or 'future_on'. The 'supported_on' lists all released
+#   platforms while the 'future_on' is used to enumerate platforms where the
+#   feature is not yet ready for use in production environments. Any unreleased
+#   platforms is hidden from policy templates and documentation. The policy
+#   defination in the source code is generated for platforms in both lists.
 #
-#   Currently supported product names:
-#       'chrome_frame', 'chrome_os', 'android', 'webview_android', 'ios',
-#       'chrome.win', 'chrome.win7', 'chrome.linux', 'chrome.mac', 'chrome.*'
-#     For example if 'chrome.*:5-10' is specified for a policy, then it should
-#     be read as:
-#       'chrome.linux:5-10', 'chrome.mac:5-10', 'chrome.win:5-10'
+#   The format of the 'supported_on' is '<platform>:<since_version>-<until_version>'.
+#   It means the policy is officially released on the |platform| from
+#   |since_version| and is removed after |until_version|. |until_version|
+#   is optional.
 #
-#   The product name also affects in which templates the policy is included:
-#     chrome.*, chrome.win, chrome_frame -> ADM, ADMX, ADML, doc
-#     chrome.*, chrome.linux -> JSON, doc
-#     chrome.*, chrome.mac, ios -> plist, plist_strings, doc
-#     everything else -> doc
+#   The format of the 'futured_on' list entries is '<platform>'.
+#   There is no version range attached to it and the policy is available in the
+#   Dev and Canary channel only unless it's listed in the
+#   EnableExperimentalPolicies policy.
 #
-#   The default list of policies supported by Chrome is also generated based
-#   on the product names:
-#     chrome.* -> Chrome policy definition list
-#     chrome_os -> Chrome policy definition list, when building OS_CHROMEOS
-#
-#   Note: chrome_frame is deprecated.
+#   Currently supported platforms:
+#       'chrome.win', 'chrome.win7', 'chrome.mac', 'chrome.linux', 'chrome.*'
+#       'chrome_os', 'android', 'webview_android', 'ios', 'chrome_frame'
+#   Note that 'chrome_frame' has been deprecated.
 #
 # Annotations:
 #   Additional information is specified under keys 'features' and
@@ -158,12 +151,8 @@
 #   that a policy can reference, in bytes. This annotation is compulsory for
 #   policies of type 'external'. It is ignored for all other policy types.
 #
-#   The 'future' key is used to indicate that a policy isn't yet ready for
-#   usage. It defaults to False, and currently affects the generated policy
-#   templates and documentation. The policy definition list that Chrome sees
-#   will include policies marked with 'future'. If a WIP policy isn't meant to
-#   be seen by the policy providers either, the 'supported_on' key should be set
-#   to an empty list.
+#   The 'future' key has been deprecated, please use 'future_on' instead for
+#   unreleased policies.
 #
 # Schemas:
 #   All policies have a key 'schema' which describes the schema of the policy.
@@ -9313,6 +9302,30 @@
       If this policy is set to True, the privacy warning notification will be closed after some seconds.
 
       If the policy is set to False or not set, the privacy warning notification will be pinned until the user dismisses it.''',
+    },
+    {
+      'name': 'ManagedGuestSessionPrivacyWarningsEnabled',
+      'owners': ['file: //components/policy/resources/OWNERS', 'ayaelattar@chromium.org'],
+      'device_only': True,
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os: 84-' ],
+      'features': {
+        'can_be_recommended': False,
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': False,
+      'id': 723,
+      'caption': '''Reduce Managed-guest session auto-launch notifications''',
+      'tags': [],
+      'desc': ''' Controls the privacy warning of the managed-guest session on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>.
+
+      If this policy is set to False, the privacy warnings on the login screen and the auto-launch notification inside the managed-guest session will get deactivated.
+
+      This policy should not be used for devices used by the general public.
+
+      If the policy is set to True or not set, the privacy warning notification in the auto-launched managed-guest session will be pinned until the user dismisses it.''',
     },
     {
       'name': 'BackgroundModeEnabled',
@@ -21963,6 +21976,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'RequiredClientCertificateForDevice': 'required_client_certificate_for_device.required_client_certificate_for_device',
     'DeviceCrostiniArcAdbSideloadingAllowed': 'device_crostini_arc_adb_sideloading_allowed.mode',
     'MinimumChromeVersionEolMessage' : 'minimum_chrome_version_eol_message.value',
+    'ManagedGuestSessionPrivacyWarningsEnabled' : 'managed_guest_session_privacy_warnings.enabled',
   },
   'policy_atomic_group_definitions': [
     {
@@ -22428,6 +22442,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 722,
+  'highest_id_currently_used': 723,
   'highest_atomic_group_id_currently_used': 38
 }

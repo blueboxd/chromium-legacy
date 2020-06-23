@@ -4,6 +4,7 @@
 
 #include "ui/base/x/x11_error_handler.h"
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

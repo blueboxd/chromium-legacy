@@ -30,6 +30,7 @@
 #include "chrome/grit/new_tab_page_resources.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/url_util.h"
+#include "services/network/public/mojom/content_security_policy.mojom.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 #include "url/url_util.h"
@@ -84,17 +85,21 @@ UntrustedSource::UntrustedSource(Profile* profile)
 
 UntrustedSource::~UntrustedSource() = default;
 
-std::string UntrustedSource::GetContentSecurityPolicyScriptSrc() {
-  return "script-src 'self' 'unsafe-inline' https:;";
-}
+std::string UntrustedSource::GetContentSecurityPolicy(
+    network::mojom::CSPDirectiveName directive) {
+  if (directive == network::mojom::CSPDirectiveName::ScriptSrc) {
+    return "script-src 'self' 'unsafe-inline' https:;";
+  } else if (directive == network::mojom::CSPDirectiveName::ChildSrc) {
+    return "child-src https:;";
+  } else if (directive == network::mojom::CSPDirectiveName::DefaultSrc) {
+    // TODO(https://crbug.com/1085325): Audit and tighten CSP.
+    return std::string();
+  } else if (directive == network::mojom::CSPDirectiveName::FrameAncestors) {
+    return base::StringPrintf("frame-ancestors %s",
+                              chrome::kChromeUINewTabPageURL);
+  }
 
-std::string UntrustedSource::GetContentSecurityPolicyChildSrc() {
-  return "child-src https:;";
-}
-
-std::string UntrustedSource::GetContentSecurityPolicyDefaultSrc() {
-  // TODO(https://crbug.com/1085325): Audit and tighten CSP.
-  return std::string();
+  return content::URLDataSource::GetContentSecurityPolicy(directive);
 }
 
 std::string UntrustedSource::GetSource() {
@@ -215,11 +220,6 @@ std::string UntrustedSource::GetMimeType(const std::string& path) {
 
 bool UntrustedSource::AllowCaching() {
   return false;
-}
-
-std::string UntrustedSource::GetContentSecurityPolicyFrameAncestors() {
-  return base::StringPrintf("frame-ancestors %s",
-                            chrome::kChromeUINewTabPageURL);
 }
 
 bool UntrustedSource::ShouldReplaceExistingSource() {

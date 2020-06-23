@@ -12,6 +12,7 @@
 #include "base/notreached.h"
 #include "base/optional.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/webrtc/api/dtls_transport_interface.h"
 #include "third_party/webrtc/api/peer_connection_interface.h"
 #include "third_party/webrtc/api/sctp_transport_interface.h"
@@ -359,6 +360,15 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
   static const char kDummyOffer[];
   static const char kDummyAnswer[];
 
+  void AddAdaptationResource(
+      rtc::scoped_refptr<webrtc::Resource> resource) override {
+    adaptation_resources_.push_back(resource);
+  }
+
+  Vector<rtc::scoped_refptr<webrtc::Resource>> adaptation_resources() const {
+    return adaptation_resources_;
+  }
+
  protected:
   ~MockPeerConnectionImpl() override;
 
@@ -385,6 +395,7 @@ class MockPeerConnectionImpl : public webrtc::DummyPeerConnection {
   webrtc::RTCErrorType setconfiguration_error_type_ =
       webrtc::RTCErrorType::NONE;
   rtc::scoped_refptr<webrtc::RTCStatsReport> stats_report_;
+  Vector<rtc::scoped_refptr<webrtc::Resource>> adaptation_resources_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPeerConnectionImpl);
 };

@@ -19,9 +19,9 @@ namespace content {
 
 class FrameTreeNode;
 
-class SitePerProcessBrowserTest : public ContentBrowserTest {
+class SitePerProcessBrowserTestBase : public ContentBrowserTest {
  public:
-  SitePerProcessBrowserTest();
+  SitePerProcessBrowserTestBase();
 
  protected:
   std::string DepictFrameTree(FrameTreeNode* node);
@@ -35,6 +35,18 @@ class SitePerProcessBrowserTest : public ContentBrowserTest {
 
  private:
   FrameTreeVisualizer visualizer_;
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(SitePerProcessBrowserTestBase);
+};
+
+class SitePerProcessBrowserTest
+    : public SitePerProcessBrowserTestBase,
+      public ::testing::WithParamInterface<std::string> {
+ public:
+  SitePerProcessBrowserTest();
+
+ private:
   base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessBrowserTest);

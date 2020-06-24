@@ -280,6 +280,34 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   }
 }
 
+TEST_P(ParameterizedLayoutInlineTest, HitTestCulledInlinePreWrap) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      html, body { margin: 0; }
+      body {
+        width: 250px;
+      }
+      span {
+        white-space: pre-wrap;
+        font: 30px serif;
+      }
+    </style>
+    <div id="container">
+      <span id="span">The quick brown fox jumps over the lazy dog.</span>
+    </div>
+  )HTML");
+  HitTestRequest hit_request(HitTestRequest::kReadOnly);
+  PhysicalOffset hit_location(100, 15);
+  HitTestLocation location(hit_location);
+  HitTestResult hit_result(hit_request, location);
+  LayoutObject* container = GetLayoutObjectByElementId("container");
+  container->HitTestAllPhases(hit_result, location, PhysicalOffset());
+
+  Element* span = GetElementById("span");
+  Node* text_node = span->firstChild();
+  EXPECT_EQ(hit_result.InnerNode(), text_node);
+}
+
 TEST_P(ParameterizedLayoutInlineTest, VisualRectInDocument) {
   LoadAhem();
   SetBodyInnerHTML(R"HTML(

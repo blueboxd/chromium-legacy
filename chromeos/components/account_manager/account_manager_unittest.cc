@@ -13,7 +13,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
@@ -56,17 +55,18 @@ bool IsAccountKeyPresent(const std::vector<AccountManager::Account>& accounts,
 class AccountManagerSpy : public AccountManager {
  public:
   AccountManagerSpy() = default;
+  AccountManagerSpy(const AccountManagerSpy&) = delete;
+  AccountManagerSpy& operator=(const AccountManagerSpy&) = delete;
   ~AccountManagerSpy() override = default;
 
   MOCK_METHOD(void, RevokeGaiaTokenOnServer, (const std::string&));
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerSpy);
 };
 
 class AccountManagerTest : public testing::Test {
  public:
   AccountManagerTest() = default;
+  AccountManagerTest(const AccountManagerTest&) = delete;
+  AccountManagerTest& operator=(const AccountManagerTest&) = delete;
   ~AccountManagerTest() override = default;
 
  protected:
@@ -185,13 +185,13 @@ class AccountManagerTest : public testing::Test {
   TestingPrefServiceSimple pref_service_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<AccountManagerSpy> account_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerTest);
 };
 
 class AccountManagerObserver : public AccountManager::Observer {
  public:
   AccountManagerObserver() = default;
+  AccountManagerObserver(const AccountManagerObserver&) = delete;
+  AccountManagerObserver& operator=(const AccountManagerObserver&) = delete;
   ~AccountManagerObserver() override = default;
 
   void OnTokenUpserted(const AccountManager::Account& account) override {
@@ -254,8 +254,6 @@ class AccountManagerObserver : public AccountManager::Observer {
   AccountManager::AccountKey last_removed_account_key_;
   std::string last_removed_account_email_;
   std::set<AccountManager::AccountKey> accounts_;
-
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerObserver);
 };
 
 TEST(AccountManagerKeyTest, TestValidity) {

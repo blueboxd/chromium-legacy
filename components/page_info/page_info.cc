@@ -1138,38 +1138,52 @@ PageInfo::GetTabSpecificContentSettings() const {
 }
 
 bool PageInfo::HasContentSettingChangedViaPageInfo(ContentSettingsType type) {
-  return GetTabSpecificContentSettings()->HasContentSettingChangedViaPageInfo(
-      type);
+  auto* settings = GetTabSpecificContentSettings();
+  if (!settings)
+    return false;
+
+  return settings->HasContentSettingChangedViaPageInfo(type);
 }
 
 void PageInfo::ContentSettingChangedViaPageInfo(ContentSettingsType type) {
-  GetTabSpecificContentSettings()->ContentSettingChangedViaPageInfo(type);
-}
+  auto* settings = GetTabSpecificContentSettings();
+  if (!settings)
+    return;
 
-const browsing_data::LocalSharedObjectsContainer& PageInfo::GetAllowedObjects(
-    const GURL& site_url) {
-  return GetTabSpecificContentSettings()->allowed_local_shared_objects();
-}
-
-const browsing_data::LocalSharedObjectsContainer& PageInfo::GetBlockedObjects(
-    const GURL& site_url) {
-  return GetTabSpecificContentSettings()->blocked_local_shared_objects();
+  return settings->ContentSettingChangedViaPageInfo(type);
 }
 
 int PageInfo::GetFirstPartyAllowedCookiesCount(const GURL& site_url) {
-  return GetAllowedObjects(site_url).GetObjectCountForDomain(site_url);
+  auto* settings = GetTabSpecificContentSettings();
+  if (!settings)
+    return 0;
+  return settings->allowed_local_shared_objects().GetObjectCountForDomain(
+      site_url);
 }
 
 int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {
-  return GetBlockedObjects(site_url).GetObjectCountForDomain(site_url);
+  auto* settings = GetTabSpecificContentSettings();
+  if (!settings)
+    return 0;
+
+  return settings->blocked_local_shared_objects().GetObjectCountForDomain(
+      site_url);
 }
 
 int PageInfo::GetThirdPartyAllowedCookiesCount(const GURL& site_url) {
-  return GetAllowedObjects(site_url).GetObjectCount() -
+  auto* settings = GetTabSpecificContentSettings();
+  if (!settings)
+    return 0;
+
+  return settings->allowed_local_shared_objects().GetObjectCount() -
          GetFirstPartyAllowedCookiesCount(site_url);
 }
 
 int PageInfo::GetThirdPartyBlockedCookiesCount(const GURL& site_url) {
-  return GetBlockedObjects(site_url).GetObjectCount() -
+  auto* settings = GetTabSpecificContentSettings();
+  if (!settings)
+    return 0;
+
+  return settings->blocked_local_shared_objects().GetObjectCount() -
          GetFirstPartyBlockedCookiesCount(site_url);
 }

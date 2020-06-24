@@ -9,7 +9,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/memory/ptr_util.h"
 #include "components/performance_manager/graph/node_attached_data.h"
 

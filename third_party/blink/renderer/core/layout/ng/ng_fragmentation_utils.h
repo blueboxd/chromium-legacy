@@ -70,8 +70,11 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
 // start of the current block formatting context. Note that if the start of the
 // current block formatting context is in a previous fragmentainer, the size of
 // the current fragmentainer is returned instead.
+// In the case of initial column balancing, the size is unknown, in which case
+// kIndefiniteSize is returned.
 inline LayoutUnit FragmentainerSpaceAtBfcStart(const NGConstraintSpace& space) {
-  DCHECK(space.HasKnownFragmentainerBlockSize());
+  if (!space.HasKnownFragmentainerBlockSize())
+    return kIndefiniteSize;
   return space.FragmentainerBlockSize() - space.FragmentainerOffsetAtBfc();
 }
 
@@ -120,16 +123,18 @@ bool IsNodeFullyGrown(NGBlockNode,
                       const NGBoxStrut& border_padding,
                       LayoutUnit inline_size);
 
-// Write fragmentation information to the fragment builder after layout.
-// |fragments_total_block_size| is the calculated block-size of the child,
-// including the accumulated block-size of all previous fragments generated for
-// this node - as if they were all stitched together.
+// Update and write fragmentation information to the fragment builder after
+// layout. This will update the block-size stored in the builder. When
+// calculating the block-size, a layout algorithm will include the accumulated
+// block-size of all fragments generated for this node - as if they were all
+// stitched together as one tall fragment. This is the most convenient thing to
+// do, since any block-size specified in CSS applies to the entire box,
+// regardless of fragmentation. This function will update the block-size to the
+// actual fragment size, by examining possible breakpoints, if necessary.
 void FinishFragmentation(NGBlockNode node,
                          const NGConstraintSpace&,
                          const NGBlockBreakToken* previous_break_token,
                          const NGBoxStrut& border_padding,
-                         LayoutUnit fragments_total_block_size,
-                         LayoutUnit intrinsic_block_size,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder*);
 

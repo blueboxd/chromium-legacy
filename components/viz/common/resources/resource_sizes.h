@@ -9,7 +9,7 @@
 
 #include <limits>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
 #include "cc/base/math_util.h"

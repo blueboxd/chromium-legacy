@@ -2192,6 +2192,7 @@ if (!is_android) {
         "../browser/chromeos/login/challenge_response_auth_keys_loader_browsertest.cc",
         "../browser/chromeos/login/configuration_based_oobe_browsertest.cc",
         "../browser/chromeos/login/crash_restore_browsertest.cc",
+        "../browser/chromeos/login/debug_overlay_browsertest.cc",
         "../browser/chromeos/login/demo_mode/demo_app_launcher_browsertest.cc",
         "../browser/chromeos/login/demo_mode/demo_session_browsertest.cc",
         "../browser/chromeos/login/demo_mode/demo_setup_browsertest.cc",

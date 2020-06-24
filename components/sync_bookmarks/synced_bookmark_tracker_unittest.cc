@@ -442,6 +442,39 @@ TEST(SyncedBookmarkTrackerTest,
               Eq(kId1));
 }
 
+TEST(SyncedBookmarkTrackerTest, ShouldUndeleteTombstone) {
+  std::unique_ptr<SyncedBookmarkTracker> tracker =
+      SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
+
+  const std::string kSyncId = "SYNC_ID";
+  const int64_t kId = 1;
+  const int64_t kServerVersion = 1000;
+  const base::Time kModificationTime(base::Time::Now() -
+                                     base::TimeDelta::FromSeconds(1));
+  const sync_pb::UniquePosition unique_position;
+  const sync_pb::EntitySpecifics specifics =
+      GenerateSpecifics(/*title=*/std::string(), /*url=*/std::string());
+  bookmarks::BookmarkNode node(kId, base::GenerateGUID(), GURL());
+  const SyncedBookmarkTracker::Entity* entity =
+      tracker->Add(&node, kSyncId, kServerVersion, kModificationTime,
+                   unique_position, specifics);
+
+  ASSERT_THAT(tracker->TrackedUncommittedTombstonesCountForDebugging(), Eq(0U));
+
+  // Delete the bookmark, leading to a pending deletion (local tombstone).
+  tracker->MarkDeleted(tracker->GetEntityForSyncId(kSyncId));
+  ASSERT_THAT(entity->bookmark_node(), IsNull());
+  ASSERT_TRUE(entity->metadata()->is_deleted());
+  ASSERT_THAT(tracker->TrackedUncommittedTombstonesCountForDebugging(), Eq(1U));
+
+  // Undelete it.
+  tracker->UndeleteTombstoneForBookmarkNode(entity, &node);
+
+  EXPECT_THAT(entity->bookmark_node(), NotNull());
+  EXPECT_FALSE(entity->metadata()->is_deleted());
+  EXPECT_THAT(tracker->TrackedUncommittedTombstonesCountForDebugging(), Eq(0U));
+}
+
 TEST(SyncedBookmarkTrackerTest,
      ShouldOrderParentUpdatesBeforeChildUpdatesAndDeletionsComeLast) {
   const size_t kMaxEntries = 1000;

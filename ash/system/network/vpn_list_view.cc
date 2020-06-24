@@ -105,9 +105,12 @@ bool IsVpnConfigAllowed() {
 // A list entry that represents a VPN provider.
 class VPNListProviderEntry : public views::ButtonListener, public views::View {
  public:
+  // Currently the |enabled| flag will be always true for VPN providers other
+  // than the built-in VPNs.
   VPNListProviderEntry(const VpnProviderPtr& vpn_provider,
                        bool top_item,
                        const std::string& name,
+                       bool enabled,
                        int button_accessible_name_id)
       : vpn_provider_(vpn_provider->Clone()) {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
@@ -117,22 +120,35 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
                       TrayPopupUtils::CreateMainImageView());
     AddChildView(tri_view);
 
+    // Add the VPN label.
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
     style.SetupLabel(label);
     label->SetText(base::ASCIIToUTF16(name));
     tri_view->AddView(TriView::Container::CENTER, label);
 
+    // Add the VPN policy indicator if using this |vpn_provider| is disabled.
+    if (!enabled) {
+      views::ImageView* policy_indicator_icon = GetPolicyIndicatorIcon();
+      tri_view->AddView(TriView::Container::END, policy_indicator_icon);
+    }
+
+    // Add the VPN add button.
     const SkColor image_color = AshColorProvider::Get()->GetContentLayerColor(
         AshColorProvider::ContentLayerType::kButtonIconColorProminent,
         AshColorProvider::AshColorMode::kDark);
-    const gfx::ImageSkia icon =
+
+    const gfx::ImageSkia enabled_icon =
         gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon, image_color);
-    SystemMenuButton* add_vpn_button =
-        new SystemMenuButton(this, icon, icon, button_accessible_name_id);
+    const gfx::ImageSkia disabled_icon =
+        gfx::CreateVectorIcon(kSystemMenuAddConnectionIcon,
+                              AshColorProvider::GetDisabledColor(image_color));
+
+    SystemMenuButton* add_vpn_button = new SystemMenuButton(
+        this, enabled_icon, disabled_icon, button_accessible_name_id);
     add_vpn_button->SetInkDropColor(
         UnifiedSystemTrayView::GetBackgroundColor());
-    add_vpn_button->SetEnabled(true);
+    add_vpn_button->SetEnabled(enabled);
     tri_view->AddView(TriView::Container::END, add_vpn_button);
   }
 
@@ -162,6 +178,20 @@ class VPNListProviderEntry : public views::ButtonListener, public views::View {
   }
 
  private:
+  views::ImageView* GetPolicyIndicatorIcon() {
+    views::ImageView* policy_indicator_icon =
+        TrayPopupUtils::CreateMainImageView();
+    policy_indicator_icon->SetImage(gfx::CreateVectorIcon(
+        kSystemMenuBusinessIcon,
+        AshColorProvider::Get()->GetContentLayerColor(
+            AshColorProvider::ContentLayerType::kIconColorPrimary,
+            AshColorProvider::AshColorMode::kDark)));
+    policy_indicator_icon->SetAccessibleName(l10n_util::GetStringFUTF16(
+        IDS_ASH_ACCESSIBILITY_FEATURE_MANAGED,
+        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_VPN_BUILT_IN_PROVIDER)));
+    return policy_indicator_icon;
+  }
+
   VpnProviderPtr vpn_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(VPNListProviderEntry);
@@ -413,17 +443,26 @@ void VPNListView::AddProviderAndNetworks(VpnProviderPtr vpn_provider,
 
   // Add a list entry for the VPN provider.
   views::View* provider_view = nullptr;
-  provider_view = new VPNListProviderEntry(vpn_provider, list_empty_, vpn_name,
-                                           IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
+
+  // Note: Currently only built-in VPNs can be disabled by policy.
+  bool vpn_enabled =
+      vpn_provider->type != VpnType::kOpenVPN || model()->IsBuiltinVpnEnabled();
+
+  provider_view =
+      new VPNListProviderEntry(vpn_provider, list_empty_, vpn_name, vpn_enabled,
+                               IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
   scroll_content()->AddChildView(provider_view);
   const VpnProvider* vpn_providerp = vpn_provider.get();
   provider_view_map_[provider_view] = std::move(vpn_provider);
   list_empty_ = false;
-  // Add the networks belonging to this provider, in the priority order returned
-  // by shill.
-  for (const auto& network : networks) {
-    if (VpnProviderMatchesNetwork(vpn_providerp, network.get()))
-      AddNetwork(network.get());
+
+  if (vpn_enabled) {
+    // Add the networks belonging to this provider, in the priority order
+    // returned by shill.
+    for (const auto& network : networks) {
+      if (VpnProviderMatchesNetwork(vpn_providerp, network.get()))
+        AddNetwork(network.get());
+    }
   }
 }
 

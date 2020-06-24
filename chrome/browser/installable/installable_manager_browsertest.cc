@@ -330,12 +330,12 @@ class InstallableManagerOfflineCapabilityBrowserTest
           || is_service_worker_offline_supported_;
     }
 
-    // Assume that the name of HTML files using service worker with offline
-    // support includes "_offline_support" suffix.
+    // Assume that the name of HTML files using a service worker with an empty
+    // fetch event handler includes "_empty_fetch_handler" suffix.
     const std::string GetPath(std::string base) {
       if (is_service_worker_offline_supported_)
-        return base + "_offline_support.html";
-      return base + ".html";
+        return base + ".html";
+      return base + "_empty_fetch_handler.html";
     }
 
   private:
@@ -1190,12 +1190,13 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
   if (IsServiceWorkerOfflineSupported()) {
     EXPECT_TRUE(content::ExecuteScript(
         web_contents,
-        "navigator.serviceWorker.register('service_worker_offline_support.js');"
+        "navigator.serviceWorker.register('service_worker.js');"
     ));
   } else {
     EXPECT_TRUE(content::ExecuteScript(
         web_contents,
-        "navigator.serviceWorker.register('service_worker.js');"));
+        "navigator.serviceWorker.register("
+          "'service_worker_empty_fetch_handler.js');"));
   }
   tester_run_loop.Run();
 
@@ -1331,12 +1332,12 @@ IN_PROC_BROWSER_TEST_P(InstallableManagerOfflineCapabilityBrowserTest,
     if (IsServiceWorkerOfflineSupported()) {
       EXPECT_TRUE(content::ExecuteScript(
           web_contents,
-          "navigator.serviceWorker.register("
-              "'service_worker_offline_support.js');"));
+          "navigator.serviceWorker.register('service_worker.js');"));
     } else {
       EXPECT_TRUE(content::ExecuteScript(
           web_contents,
-          "navigator.serviceWorker.register('service_worker.js');"));
+          "navigator.serviceWorker.register("
+            "'service_worker_empty_fetch_handler.js');"));
     }
     tester_run_loop.Run();
 

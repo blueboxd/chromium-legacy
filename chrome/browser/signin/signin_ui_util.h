@@ -11,6 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
+#include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -118,6 +119,12 @@ void RecordProfileMenuViewShown(Profile* profile);
 
 // Called when a button/link in the profile menu was clicked.
 void RecordProfileMenuClick(Profile* profile);
+
+// Records the result of a re-auth challenge to finish a transaction (like
+// unlocking the account store for passwords).
+void RecordTransactionalReauthResult(
+    signin_metrics::ReauthAccessPoint access_point,
+    signin::ReauthResult result);
 
 }  // namespace signin_ui_util
 

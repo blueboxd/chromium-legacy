@@ -191,11 +191,13 @@ warns admins of the implications of mis-using this policy for Chrome OS.
 * **DisableNetworkTypes**
     * (optional) - **array of string**
     * Allowed values are:
-        * Cellular
-        * Ethernet
-        * WiFi
-        * Tether
+        * *Cellular*
+        * *Ethernet*
+        * *WiFi*
+        * *Tether*
+        * *VPN*
     * List of strings containing disabled network interfaces.
+    * Adding *VPN* to the list will only disable Chrome OS built-in VPN.
 
 ## Network Configuration
 

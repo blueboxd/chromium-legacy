@@ -335,6 +335,51 @@ TEST_F(DisplayLockContextTest,
   EXPECT_GT(GetDocument().scrollingElement()->scrollTop(), 1000);
 }
 
+TEST_F(DisplayLockContextTest, FindInPageContinuesAfterRelock) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    .spacer {
+      height: 10000px;
+    }
+    #container {
+      width: 100px;
+      height: 100px;
+    }
+    .auto { content-visibility: auto }
+    </style>
+    <body><div class=spacer></div><div id="container" class=auto>testing</div></body>
+  )HTML");
+
+  const String search_text = "testing";
+  DisplayLockTestFindInPageClient client;
+  client.SetFrame(LocalMainFrame());
+
+  // Finds on a normal element.
+  Find(search_text, client);
+  EXPECT_EQ(1, client.Count());
+
+  auto* container = GetDocument().getElementById("container");
+  // container->classList().Add("auto");
+  GetDocument().scrollingElement()->setScrollTop(0);
+
+  UpdateAllLifecyclePhasesForTest();
+  UpdateAllLifecyclePhasesForTest();
+
+  EXPECT_TRUE(container->GetDisplayLockContext()->IsLocked());
+
+  // Clears selections since we're going to use the same query next time.
+  GetFindInPage()->StopFinding(
+      mojom::StopFindAction::kStopFindActionKeepSelection);
+
+  UpdateAllLifecyclePhasesForTest();
+
+  // This should not crash.
+  Find(search_text, client, false);
+
+  EXPECT_EQ(1, client.Count());
+}
+
 TEST_F(DisplayLockContextTest,
        ActivatableLockedElementTickmarksAreAtLockedRoots) {
   ResizeAndFocus();

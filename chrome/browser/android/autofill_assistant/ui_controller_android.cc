@@ -242,6 +242,23 @@ base::Optional<bool> GetPreviousFormSelectionResult(
   return input_result.selection().selected(selection_index);
 }
 
+bool ShouldAllowSoftKeyboardForState(AutofillAssistantState state) {
+  switch (state) {
+    case AutofillAssistantState::STARTING:
+    case AutofillAssistantState::RUNNING:
+      return false;
+
+    case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
+    case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::BROWSE:
+    case AutofillAssistantState::MODAL_DIALOG:
+    case AutofillAssistantState::STOPPED:
+    case AutofillAssistantState::TRACKING:
+    case AutofillAssistantState::INACTIVE:
+      return true;
+  }
+}
+
 }  // namespace
 
 // static
@@ -388,6 +405,7 @@ void UiControllerAndroid::SetupForState() {
 
   UpdateActions(ui_delegate_->GetUserActions());
   AutofillAssistantState state = ui_delegate_->GetState();
+  AllowShowingSoftKeyboard(ShouldAllowSoftKeyboardForState(state));
   bool should_prompt_action_expand_sheet =
       ui_delegate_->ShouldPromptActionExpandSheet();
   switch (state) {
@@ -508,6 +526,11 @@ void UiControllerAndroid::OnOverlayColorsChanged(
   Java_AssistantOverlayModel_setHighlightBorderColor(
       env, overlay_model,
       ui_controller_android_utils::GetJavaColor(env, colors.highlight_border));
+}
+
+void UiControllerAndroid::AllowShowingSoftKeyboard(bool enabled) {
+  Java_AssistantModel_setAllowSoftKeyboard(AttachCurrentThread(), GetModel(),
+                                           enabled);
 }
 
 void UiControllerAndroid::ShowContentAndExpandBottomSheet() {

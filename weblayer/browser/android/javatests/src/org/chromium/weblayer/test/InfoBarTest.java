@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Browser;
@@ -63,6 +64,26 @@ public class InfoBarTest {
             }
         });
         helper.waitForFirst();
+    }
+
+    private void setAccessibilityEnabled(boolean value) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                getTestWebLayer().setAccessibilityEnabled(value);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private boolean canInfoBarContainerScroll() throws Exception {
+        return TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                return getTestWebLayer().canInfoBarContainerScroll(getActiveTab());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Before
@@ -154,5 +175,23 @@ public class InfoBarTest {
 
         mActivityTestRule.navigateAndWait("about:blank");
         Assert.assertEquals(infoBarContainerView.getVisibility(), View.VISIBLE);
+    }
+
+    // Tests that infobar container is blocked from scrolling when accessibility is enabled.
+    @Test
+    @SmallTest
+    public void testAccessibility() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.getActivity();
+
+        // Turn on accessibility, which should disable the infobar container from scrolling. This
+        // polls as setAccessibilityEnabled() is async.
+        setAccessibilityEnabled(true);
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(false, () -> canInfoBarContainerScroll()));
+
+        // Turn accessibility off and verify that the infobar container can scroll.
+        setAccessibilityEnabled(false);
+        CriteriaHelper.pollInstrumentationThread(
+                Criteria.equals(true, () -> canInfoBarContainerScroll()));
     }
 }

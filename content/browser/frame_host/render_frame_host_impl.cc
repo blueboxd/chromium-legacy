@@ -1769,6 +1769,7 @@ void RenderFrameHostImpl::OnAssociatedInterfaceRequest(
 
 void RenderFrameHostImpl::AccessibilityPerformAction(
     const ui::AXActionData& action_data) {
+  // Don't perform any Accessibility action on an inactive frame.
   if (IsInactiveAndDisallowReactivation() || !render_accessibility_)
     return;
 
@@ -1783,11 +1784,6 @@ void RenderFrameHostImpl::AccessibilityPerformAction(
 }
 
 bool RenderFrameHostImpl::AccessibilityViewHasFocus() {
-  // TODO(sreejakshetty): Clean up the checks which aren't necessary when
-  // reading the properties of per-page objects.
-  if (lifecycle_state_ != LifecycleState::kActive)
-    return false;
-
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->HasFocus();
@@ -1805,11 +1801,6 @@ void RenderFrameHostImpl::AccessibilityViewSetFocus() {
 }
 
 gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() {
-  // TODO(sreejakshetty): Clean up the checks which aren't necessary when
-  // reading the properties of per-page objects.
-  if (lifecycle_state_ != LifecycleState::kActive)
-    return gfx::Rect();
-
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return view->GetViewBounds();
@@ -1817,11 +1808,6 @@ gfx::Rect RenderFrameHostImpl::AccessibilityGetViewBounds() {
 }
 
 float RenderFrameHostImpl::AccessibilityGetDeviceScaleFactor() {
-  // TODO(sreejakshetty): Clean up the checks which aren't necessary when
-  // reading the properties of per-page objects.
-  if (lifecycle_state_ != LifecycleState::kActive)
-    return 1.0f;
-
   RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
   if (view)
     return GetScaleFactorForView(view);
@@ -1917,10 +1903,6 @@ void RenderFrameHostImpl::AccessibilityHitTest(
 }
 
 bool RenderFrameHostImpl::AccessibilityIsMainFrame() {
-  // TODO(sreejakshetty): Clean up checks which aren't necessary when reading
-  // the properties of per-page objects.
-  if (lifecycle_state_ != LifecycleState::kActive)
-    return false;
   return is_main_frame();
 }
 

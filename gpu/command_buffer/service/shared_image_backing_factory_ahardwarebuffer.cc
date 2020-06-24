@@ -645,11 +645,9 @@ SharedImageBackingAHB::ProduceSkia(
   // Check whether we are in Vulkan mode OR GL mode and accordingly create
   // Skia representation.
   if (context_state->GrContextIsVulkan()) {
-    auto* device_queue = context_state->vk_context_provider()->GetDeviceQueue();
-    gfx::GpuMemoryBufferHandle gmb_handle(GetAhbHandle());
-    auto vulkan_image = VulkanImage::CreateFromGpuMemoryBufferHandle(
-        device_queue, std::move(gmb_handle), size(), ToVkFormat(format()),
-        0 /* usage */);
+    auto vulkan_image = CreateVkImageFromAhbHandle(
+        GetAhbHandle(), context_state.get(), size(), format());
+
     if (!vulkan_image)
       return nullptr;
 

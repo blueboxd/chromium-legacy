@@ -102,6 +102,39 @@ cr.define('cr.ui.login.debug', function() {
       // Device without mouse/keyboard.
       id: 'hid-detection',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'searching',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('searching');
+            screen.setMouseState('usb');
+            screen.setPinDialogVisible(false);
+          },
+        },
+        {
+          id: 'connected',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('connected');
+            screen.setMouseState('paired');
+            screen.setPinDialogVisible(false);
+          },
+        },
+        {
+          id: 'pairing-pin',
+          trigger: (screen) => {
+            screen.setKeyboardDeviceName('Some Keyboard');
+            screen.setPointingDeviceName('Some Mouse');
+            screen.setKeyboardState('pairing');
+            screen.setMouseState('pairing');
+            screen.setPinDialogVisible(true);
+            screen.setNumKeysEnteredPinCode(1);
+          },
+        },
+      ],
     },
     {
       // Welcome screen.
@@ -109,11 +142,77 @@ cr.define('cr.ui.login.debug', function() {
       kind: ScreenKind.NORMAL,
       data: {
         isDeveloperMode: true,
-      }
+      },
+      states: [
+        {
+          id: 'default',
+          trigger: (screen) => {
+            screen.closeTimezoneSection_();
+          },
+        },
+        {
+          id: 'acessibility',
+          trigger: (screen) => {
+            screen.onWelcomeAccessibilityButtonClicked_();
+          },
+        },
+        {
+          id: 'languages',
+          trigger: (screen) => {
+            screen.onWelcomeSelectLanguageButtonClicked_();
+          },
+        },
+        {
+          // Available on Chromebox for meetings.
+          id: 'timezone',
+          trigger: (screen) => {
+            screen.onWelcomeTimezoneButtonClicked_();
+          },
+        },
+        {
+          // Advanced options, shown by long press on "Welcome!" title.
+          id: 'adv-options',
+          trigger: (screen) => {
+            screen.onWelcomeLaunchAdvancedOptions_();
+          },
+        },
+      ],
     },
     {
       id: 'debugging',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          id: 'remove-protection',
+          trigger: (screen) => {
+            screen.updateState(1);
+          },
+        },
+        {
+          id: 'setup',
+          trigger: (screen) => {
+            screen.updateState(2);
+          },
+        },
+        {
+          id: 'wait',
+          trigger: (screen) => {
+            screen.updateState(3);
+          },
+        },
+        {
+          id: 'done',
+          trigger: (screen) => {
+            screen.updateState(4);
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.updateState(-1);
+          },
+        },
+      ],
     },
     {
       id: 'demo-preferences',
@@ -127,11 +226,35 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'eula',
       kind: ScreenKind.NORMAL,
+      // TODO: Current logic triggers switching screens in focus(), making
+      // it impossible to trigger  installation settings dialog.
+      skipScreenshots: true,
     },
     {
       id: 'demo-setup',
       kind: ScreenKind.OTHER,
       suffix: 'demo',
+      states: [
+        {
+          id: 'progress',
+          trigger: (screen) => {
+            screen.setCurrentSetupStep('enrollment');
+          },
+        },
+        {
+          id: 'done',
+          trigger: (screen) => {
+            screen.setCurrentSetupStep('complete');
+            screen.onSetupSucceeded();
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.onSetupFailed('Some error message', true);
+          },
+        },
+      ],
     },
     {
       id: 'oobe-update',
@@ -149,7 +272,7 @@ cr.define('cr.ui.login.debug', function() {
             screen.setRequiresPermissionForCellular(true);
           },
         },
-      ]
+      ],
     },
     {
       id: 'auto-enrollment-check',
@@ -185,12 +308,58 @@ cr.define('cr.ui.login.debug', function() {
             });
           },
         },
-      ]
+      ],
     },
     {
       id: 'enterprise-enrollment',
       kind: ScreenKind.NORMAL,
       suffix: 'E',
+      states: [
+        {
+          id: 'signin',
+          trigger: (screen) => {
+            screen.showStep('signin');
+          },
+        },
+        {
+          id: 'working',
+          trigger: (screen) => {
+            screen.showStep('working');
+          },
+        },
+        {
+          id: 'attributes',
+          trigger: (screen) => {
+            screen.showStep('attribute-prompt');
+          },
+        },
+        {
+          id: 'success',
+          trigger: (screen) => {
+            screen.showStep('success');
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.showError('Some error message', true);
+          },
+        },
+        {
+          id: 'ad-join-encrypted',
+          trigger: (screen) => {
+            screen.setAdJoinParams('machineName', 'userName', 0, true);
+            screen.showStep('ad-join');
+          },
+        },
+        {
+          id: 'ad-join',
+          trigger: (screen) => {
+            screen.setAdJoinParams('machineName', 'userName', 0, false);
+            screen.showStep('ad-join');
+          },
+        },
+      ],
     },
     {
       id: 'packaged-license',
@@ -212,12 +381,74 @@ cr.define('cr.ui.login.debug', function() {
             screen.allowOfflineLogin(true);
           }
         },
-      ]
+      ],
     },
     {
       id: 'update-required',
       kind: ScreenKind.OTHER,
       suffix: 'E',
+      states: [
+        {
+          id: 'initial',
+          trigger: (screen) => {
+            screen.setUIState(0);
+            screen.setEnterpriseAndDeviceName('example.com', 'Chromebook');
+          },
+        },
+        {
+          id: 'need-permission',
+          trigger: (screen) => {
+            screen.setUIState(2);
+          },
+        },
+        {
+          id: 'checking-for-update',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setUpdateProgressUnavailable(true);
+            screen.setEstimatedTimeLeftVisible(false);
+            screen.setUpdateProgressValue(0);
+            screen.setUpdateProgressMessage('Checking for update');
+          },
+        },
+        {
+          id: 'in-progress',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setUpdateProgressUnavailable(false);
+            screen.setEstimatedTimeLeftVisible(true);
+            screen.setEstimatedTimeLeft(114);
+            screen.setUpdateProgressValue(33);
+            screen.setUpdateProgressMessage('33 percent done');
+          },
+        },
+        {
+          id: 'completed-reboot',
+          trigger: (screen) => {
+            screen.setUIState(3);
+          },
+        },
+        {
+          id: 'eol',
+          trigger: (screen) => {
+            screen.setUIState(5);
+            screen.setEolMessage(
+                'Message from admin: please return device somewhere.');
+          },
+        },
+        {
+          id: 'no-network',
+          trigger: (screen) => {
+            screen.setUIState(6);
+          },
+        },
+        {
+          id: 'error',
+          trigger: (screen) => {
+            screen.setUIState(4);
+          },
+        },
+      ],
     },
     {
       id: 'autolaunch',
@@ -235,7 +466,7 @@ cr.define('cr.ui.login.debug', function() {
           iconURL: 'chrome://theme/IDR_LOGO_GOOGLE_COLOR_90',
         },
         shortcutEnabled: true,
-      }
+      },
     },
     {
       id: 'wrong-hwid',
@@ -248,8 +479,40 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'reset',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          id: 'restart-required',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(0);
+          },
+        },
+        {
+          id: 'revert-promise',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(1);
+          },
+        },
+        {
+          id: 'powerwash-proposal',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(2);
+          },
+        },
+        {
+          id: 'powerwash-rollback',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setScreenState(2);
+            screen.setIsRollbackAvailable(true);
+            screen.setIsRollbackRequested(true);
+            screen.setIsTpmFirmwareUpdateAvailable(true);
+          },
+        },
+      ],
     },
-
     {
       // Shown instead of sign-in screen, triggered from Crostini.
       id: 'adb-sideloading',
@@ -276,7 +539,7 @@ cr.define('cr.ui.login.debug', function() {
             screen.loadAuthExtension({
               screenMode: 1,  // Offline
             });
-          }
+          },
         },
         {
           // kAccountsPrefLoginScreenDomainAutoComplete value is set
@@ -286,7 +549,7 @@ cr.define('cr.ui.login.debug', function() {
               screenMode: 1,  // Offline
               emailDomain: 'somedomain.com',
             });
-          }
+          },
         },
         {
           // Device is enterprise-managed.
@@ -296,7 +559,7 @@ cr.define('cr.ui.login.debug', function() {
               screenMode: 1,  // Offline
               enterpriseDisplayDomain: 'example.com',
             });
-          }
+          },
         },
         {
           // Retry after incorrect password attempt, user name is already known.
@@ -306,7 +569,7 @@ cr.define('cr.ui.login.debug', function() {
               screenMode: 1,  // Offline
               email: 'someone@example.com',
             });
-          }
+          },
         },
         {
           id: 'whitelist-customer',
@@ -314,9 +577,9 @@ cr.define('cr.ui.login.debug', function() {
             screen.showWhitelistCheckFailedError(true, {
               enterpriseManaged: false,
             });
-          }
+          },
         },
-      ]
+      ],
     },
     {
       id: 'tpm-error-message',
@@ -327,6 +590,17 @@ cr.define('cr.ui.login.debug', function() {
       id: 'fatal-error',
       kind: ScreenKind.ERROR,
       suffix: 'SAML',
+      states: [
+        {
+          id: 'default',
+          trigger: (screen) => {
+            screen.show(
+                'Sign-in failed because your password could not be ' +
+                    'verified. Please contact your administrator or try again.',
+                'Try again');
+          },
+        },
+      ],
     },
     {
       // GAIA password changed.
@@ -344,7 +618,7 @@ cr.define('cr.ui.login.debug', function() {
             screen.onBeforeShow({
               email: 'someone@example.com',
             });
-          }
+          },
         },
         {
           // Has error
@@ -354,7 +628,7 @@ cr.define('cr.ui.login.debug', function() {
               email: 'someone@example.com',
               showError: true,
             });
-          }
+          },
         },
       ],
     },
@@ -394,13 +668,58 @@ cr.define('cr.ui.login.debug', function() {
             screen.showErrorBubble(
                 1,  // Login attempts
                 errorElement);
-          }
+          },
         },
       ],
     },
     {
       id: 'encryption-migration',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          id: 'ready',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setBatteryState(100, true, true);
+            screen.setNecessaryBatteryPercent(40);
+          },
+        },
+        {
+          id: 'ready-low-battery',
+          trigger: (screen) => {
+            screen.setUIState(1);
+            screen.setBatteryState(11, false, false);
+            screen.setNecessaryBatteryPercent(40);
+          },
+        },
+        {
+          id: 'migrating',
+          trigger: (screen) => {
+            screen.setUIState(2);
+            screen.setMigrationProgress(0.37);
+          },
+        },
+        {
+          id: 'migration-failed',
+          trigger: (screen) => {
+            screen.setUIState(2);
+          },
+        },
+        {
+          id: 'not-enough-space',
+          trigger: (screen) => {
+            screen.setUIState(3);
+            screen.setAvailableSpaceInString('1 GB');
+            screen.setNecessarySpaceInString('2 GB');
+          },
+        },
+        {
+          id: 'migrating-minimal',
+          trigger: (screen) => {
+            screen.setUIState(5);
+          },
+        },
+      ],
     },
     {
       id: 'saml-confirm-password',
@@ -417,7 +736,7 @@ cr.define('cr.ui.login.debug', function() {
                 false,  // manualPasswordInput
                 0,      // attempt count
                 () => {});
-          }
+          },
         },
         {
           // Password was scraped
@@ -428,7 +747,7 @@ cr.define('cr.ui.login.debug', function() {
                 false,  // manualPasswordInput
                 1,      // attempt count
                 () => {});
-          }
+          },
         },
         {
           // No password was scraped
@@ -439,13 +758,27 @@ cr.define('cr.ui.login.debug', function() {
                 true,  // manualPasswordInput
                 0,     // attempt count
                 () => {});
-          }
+          },
         },
       ],
     },
     {
       id: 'supervision-transition',
       kind: ScreenKind.OTHER,
+      states: [
+        {
+          id: 'adding',
+          data: {
+            isRemovingSupervision: false,
+          },
+        },
+        {
+          id: 'removing',
+          data: {
+            isRemovingSupervision: true,
+          },
+        },
+      ],
     },
     {
       id: 'terms-of-service',
@@ -454,6 +787,21 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'sync-consent',
       kind: ScreenKind.NORMAL,
+      states: [
+        {
+          id: 'no-split',
+          trigger: (screen) => {
+            $('sync-consent-impl')
+                .showScreen_('splitSettingsSyncConsentDialog');
+          },
+        },
+        {
+          id: 'split',
+          trigger: (screen) => {
+            $('sync-consent-impl').showScreen_('syncConsentOverviewDialog');
+          },
+        },
+      ],
     },
     {
       id: 'fingerprint-setup',
@@ -466,27 +814,27 @@ cr.define('cr.ui.login.debug', function() {
           trigger: (screen) => {
             screen.onEnrollScanDone(0 /* success */, false, 0);
             screen.onEnrollScanDone(0 /* success */, false, 0);
-          }
+          },
         },
         {
           id: 'error-immobile',
           trigger: (screen) => {
             screen.onEnrollScanDone(0 /* success */, false, 0);
             screen.onEnrollScanDone(6, false, 30);
-          }
+          },
         },
         {
           id: 'progress-60',
           trigger: (screen) => {
             screen.onEnrollScanDone(0 /* success */, false, 0);
             screen.onEnrollScanDone(0 /* success */, false, 60);
-          }
+          },
         },
         {
           id: 'progress-100',
           trigger: (screen) => {
             screen.onEnrollScanDone(0 /* success */, true, 100);
-          }
+          },
         },
       ],
     },
@@ -504,15 +852,15 @@ cr.define('cr.ui.login.debug', function() {
           id: 'loading',
           trigger: (screen) => {
             screen.showLoadingScreenForTesting();
-          }
+          },
         },
         {
           id: 'us-terms-loaded',
           trigger: (screen) => {
             screen.reloadPlayStoreToS();
-          }
-        }
-      ]
+          },
+        },
+      ],
     },
     {
       id: 'recommend-apps',
@@ -536,7 +884,7 @@ cr.define('cr.ui.login.debug', function() {
                 package_name: 'test2.app',
               },
             ]);
-          }
+          },
         },
         {
           id: '21-apps',
@@ -552,7 +900,7 @@ cr.define('cr.ui.login.debug', function() {
               });
             }
             screen.loadAppList(apps);
-          }
+          },
         },
       ],
     },
@@ -609,13 +957,14 @@ cr.define('cr.ui.login.debug', function() {
   }
 
   class ToolPanel {
-    constructor(parent, title) {
+    constructor(parent, title, id) {
       this.titleDiv =
           /** @type {!HTMLElement} */ (document.createElement('h2'));
       this.titleDiv.textContent = title;
 
       let panel = /** @type {!HTMLElement} */ (document.createElement('div'));
       panel.className = 'debug-tool-panel';
+      panel.id = id;
 
       parent.appendChild(this.titleDiv);
       parent.appendChild(panel);
@@ -843,7 +1192,8 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createLanguagePanel(parent) {
-      let langPanel = new ToolPanel(this.debuggerOverlay_, 'Language');
+      let langPanel = new ToolPanel(
+          this.debuggerOverlay_, 'Language', 'DebuggerPanelLanguage');
       const LANGUAGES = [
         ['English', 'en-US'],
         ['German', 'de'],
@@ -861,7 +1211,8 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createToolsPanel(parent) {
-      let panel = new ToolPanel(this.debuggerOverlay_, 'Tools');
+      let panel =
+          new ToolPanel(this.debuggerOverlay_, 'Tools', 'DebuggerPanelTools');
       new DebugButton(
           panel.content, 'Capture screenshot', this.makeScreenshot.bind(this));
       new DebugButton(
@@ -873,14 +1224,16 @@ cr.define('cr.ui.login.debug', function() {
     }
 
     createScreensPanel(parent) {
-      let panel = new ToolPanel(this.debuggerOverlay_, 'Screens');
+      let panel = new ToolPanel(
+          this.debuggerOverlay_, 'Screens', 'DebuggerPanelScreens');
       // List of screens will be created later, as not all screens
       // might be registered at this point.
       this.screensPanel = panel;
     }
 
     createStatesPanel(parent) {
-      let panel = new ToolPanel(this.debuggerOverlay_, 'Screen States');
+      let panel = new ToolPanel(
+          this.debuggerOverlay_, 'Screen States', 'DebuggerPanelStates');
       // List of states is rebuilt every time to reflect current screen.
       this.statesPanel = panel;
     }
@@ -1042,6 +1395,7 @@ cr.define('cr.ui.login.debug', function() {
         // Create UI Debugger button
         let button =
             /** @type {!HTMLElement} */ (document.createElement('div'));
+        button.id = 'invokeDebuggerButton';
         button.className = 'debugger-button';
         button.textContent = 'Debug';
         button.addEventListener('click', this.toggleDebugUI.bind(this));
@@ -1052,6 +1406,7 @@ cr.define('cr.ui.login.debug', function() {
         // Create base debugger panel.
         let overlay =
             /** @type {!HTMLElement} */ (document.createElement('div'));
+        overlay.id = 'debuggerOverlay';
         overlay.className = 'debugger-overlay';
         overlay.setAttribute('hidden', true);
         this.debuggerOverlay_ = overlay;

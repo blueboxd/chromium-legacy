@@ -366,7 +366,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerGeometryFromFragmentTree(
   // This function has detailed knowledge of inline fragment tree structure,
   // and will break if this changes.
   DCHECK_GE(InlineSize(), LayoutUnit());
-  DCHECK_GE(BlockSize(), LayoutUnit());
+  DCHECK_GE(FragmentBlockSize(), LayoutUnit());
 #if DCHECK_IS_ON()
   // Make sure all entries are continuation root.
   for (const auto& entry : *inline_containing_block_map)
@@ -422,7 +422,7 @@ void NGBoxFragmentBuilder::ComputeInlineContainerGeometry(
   // This function requires that we have the final size of the fragment set
   // upon the builder.
   DCHECK_GE(InlineSize(), LayoutUnit());
-  DCHECK_GE(BlockSize(), LayoutUnit());
+  DCHECK_GE(FragmentBlockSize(), LayoutUnit());
 
 #if DCHECK_IS_ON()
   // Make sure all entries are a continuation root.
@@ -479,7 +479,7 @@ void NGBoxFragmentBuilder::SetLastBaselineToBlockEndMarginEdgeIfNeeded() {
   // When overflow is present (within an atomic-inline baseline context) we
   // should always use the block-end margin edge as the baseline.
   NGBoxStrut margins = ComputeMarginsForSelf(*ConstraintSpace(), Style());
-  SetLastBaseline(BlockSize() + margins.block_end);
+  SetLastBaseline(FragmentBlockSize() + margins.block_end);
 }
 
 #if DCHECK_IS_ON()

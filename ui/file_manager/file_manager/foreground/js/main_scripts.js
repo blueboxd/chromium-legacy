@@ -90,6 +90,7 @@
 // <include src="constants.js">
 // <include src="web_store_utils.js">
 // <include src="ui/multi_menu.js">
+// <include src="ui/multi_menu_button.js">
 // <include src="ui/combobutton.js">
 // <include src="ui/commandbutton.js">
 // <include src="ui/file_manager_dialog_base.js">

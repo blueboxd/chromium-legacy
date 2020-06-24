@@ -125,6 +125,11 @@ bool HitTestCulledInlineAncestors(
     const HitTestLocation& hit_test_location,
     const PhysicalOffset fallback_accumulated_offset) {
   DCHECK(current != limit && current->IsDescendantOf(limit));
+
+  // Check ancestors only when |current| is the first fragment in this line.
+  if (previous_sibling && current == previous_sibling.GetLayoutObject())
+    return false;
+
   for (LayoutObject* parent = current->Parent(); parent && parent != limit;
        current = parent, parent = parent->Parent()) {
     // |culled_parent| is a culled inline element to be hit tested, since it's

@@ -146,6 +146,7 @@ class ManagePasswordsUIController
   void SaveUnsyncedCredentialsInProfileStore() override;
   void DiscardUnsyncedCredentials() override;
   void MovePasswordToAccountStore() override;
+  void BlockMovingPasswordToAccountStore() override;
   void ChooseCredential(
       const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) override;

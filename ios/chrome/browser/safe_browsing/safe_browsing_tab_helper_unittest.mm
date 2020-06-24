@@ -10,6 +10,9 @@
 #include "components/safe_browsing/core/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
+#import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/prerender/fake_prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
@@ -35,7 +38,8 @@ class SafeBrowsingTabHelperTest
     : public testing::TestWithParam<SafeBrowsingDecisionTiming> {
  protected:
   SafeBrowsingTabHelperTest()
-      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP) {
+      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
+        browser_state_(TestChromeBrowserState::Builder().Build()) {
     feature_list_.InitAndEnableFeature(
         safe_browsing::kSafeBrowsingAvailableOnIOS);
     SafeBrowsingTabHelper::CreateForWebState(&web_state_);
@@ -45,6 +49,12 @@ class SafeBrowsingTabHelperTest
         std::make_unique<web::TestNavigationManager>();
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
+    web_state_.SetBrowserState(browser_state_.get());
+    PrerenderServiceFactory::GetInstance()->SetTestingFactory(
+        browser_state_.get(),
+        base::BindRepeating(
+            &SafeBrowsingTabHelperTest::CreateFakePrerenderService,
+            base::Unretained(this)));
   }
 
   // Whether Safe Browsing decisions arrive before calls to
@@ -114,8 +124,21 @@ class SafeBrowsingTabHelperTest
     web_state_.OnNavigationRedirected(&context);
   }
 
+  // Function used to supply a fake PrerenderService that regards |web_state_|
+  // as prerendered.
+  std::unique_ptr<KeyedService> CreateFakePrerenderService(
+      web::BrowserState* context) {
+    std::unique_ptr<FakePrerenderService> service =
+        std::make_unique<FakePrerenderService>();
+    if (is_web_state_for_prerender_)
+      service->set_prerender_web_state(&web_state_);
+    return service;
+  }
+
   web::WebTaskEnvironment task_environment_;
+  std::unique_ptr<ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
+  bool is_web_state_for_prerender_ = false;
   web::TestNavigationManager* navigation_manager_ = nullptr;
   base::test::ScopedFeatureList feature_list_;
 };
@@ -690,6 +713,132 @@ TEST_P(SafeBrowsingTabHelperTest, InterruptedUnsafeRedirectChain) {
   web::WebStatePolicyDecider::PolicyDecision response_decision =
       ShouldAllowResponseUrl(url3);
   EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+}
+
+// Tests that prerendering is cancelled when the URL being prerendered is
+// unsafe.
+TEST_P(SafeBrowsingTabHelperTest, UnsafeMainFrameRequestCancelsPrerendering) {
+  is_web_state_for_prerender_ = true;
+  GURL unsafe_url("http://" + FakeSafeBrowsingService::kUnsafeHost);
+
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state_.GetBrowserState()));
+  prerender_service->StartPrerender(unsafe_url, web::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK,
+                                    /*immediately=*/true);
+
+  EXPECT_TRUE(ShouldAllowRequestUrl(unsafe_url).ShouldAllowNavigation());
+  EXPECT_TRUE(prerender_service->HasPrerenderForUrl(unsafe_url));
+
+  // When |unsafe_url| is determined to be unsafe, the prerender should be
+  // cancelled.
+  if (SafeBrowsingDecisionArrivesBeforeResponse()) {
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(prerender_service->HasPrerenderForUrl(unsafe_url));
+  } else {
+    web::WebStatePolicyDecider::PolicyDecision response_decision =
+        ShouldAllowResponseUrl(unsafe_url);
+    EXPECT_TRUE(response_decision.ShouldCancelNavigation());
+    EXPECT_FALSE(prerender_service->HasPrerenderForUrl(unsafe_url));
+  }
+}
+
+// Tests that prerendering is cancelled when the URL being prerendered loads
+// an unsafe subframe.
+TEST_P(SafeBrowsingTabHelperTest, UnsafeSubframeRequestCancelsPrerendering) {
+  is_web_state_for_prerender_ = true;
+  GURL unsafe_url("http://" + FakeSafeBrowsingService::kUnsafeHost);
+  web::NavigationItem* main_frame_item = SimulateSafeMainFrameLoad();
+
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state_.GetBrowserState()));
+  prerender_service->StartPrerender(main_frame_item->GetURL(), web::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK,
+                                    /*immediately=*/true);
+
+  EXPECT_TRUE(ShouldAllowRequestUrl(unsafe_url, /*for_main_frame=*/false)
+                  .ShouldAllowNavigation());
+
+  // The tab helper expects that the sub frame's UnsafeResource is stored in the
+  // container before the URL check completes.
+  security_interstitials::UnsafeResource resource;
+  resource.url = unsafe_url;
+  resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+  resource.resource_type = safe_browsing::ResourceType::kSubFrame;
+  resource.web_state_getter = web_state_.CreateDefaultGetter();
+  SafeBrowsingUrlAllowList::FromWebState(&web_state_)
+      ->AddPendingUnsafeNavigationDecision(unsafe_url, resource.threat_type);
+  SafeBrowsingUnsafeResourceContainer::FromWebState(&web_state_)
+      ->StoreUnsafeResource(resource);
+
+  // When |unsafe_url| is determined to be unsafe, the prerender should be
+  // cancelled.
+  if (SafeBrowsingDecisionArrivesBeforeResponse()) {
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(
+        prerender_service->HasPrerenderForUrl(main_frame_item->GetURL()));
+  } else {
+    web::WebStatePolicyDecider::PolicyDecision response_decision =
+        ShouldAllowResponseUrl(unsafe_url, /*for_main_frame=*/false);
+    EXPECT_TRUE(response_decision.ShouldCancelNavigation());
+    EXPECT_FALSE(
+        prerender_service->HasPrerenderForUrl(main_frame_item->GetURL()));
+  }
+}
+
+// Tests that prerendering is not cancelled when the URL being prerendered is
+// safe.
+TEST_P(SafeBrowsingTabHelperTest,
+       SafeMainFrameRequestDoesNotCancelPrerendering) {
+  is_web_state_for_prerender_ = true;
+  GURL safe_url("http://chromium.test");
+
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state_.GetBrowserState()));
+  prerender_service->StartPrerender(safe_url, web::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK,
+                                    /*immediately=*/true);
+
+  EXPECT_TRUE(ShouldAllowRequestUrl(safe_url).ShouldAllowNavigation());
+  EXPECT_TRUE(prerender_service->HasPrerenderForUrl(safe_url));
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  web::WebStatePolicyDecider::PolicyDecision response_decision =
+      ShouldAllowResponseUrl(safe_url);
+  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+  EXPECT_TRUE(prerender_service->HasPrerenderForUrl(safe_url));
+}
+
+// Tests that prerendering is not cancelled when the page being prerendered
+// loads an unsafe subframe.
+TEST_P(SafeBrowsingTabHelperTest,
+       SafeSubframeRequestDoesNotCancelPrerendering) {
+  is_web_state_for_prerender_ = true;
+  GURL safe_url("http://chromium.test");
+  web::NavigationItem* main_frame_item = SimulateSafeMainFrameLoad();
+
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state_.GetBrowserState()));
+  prerender_service->StartPrerender(main_frame_item->GetURL(), web::Referrer(),
+                                    ui::PAGE_TRANSITION_LINK,
+                                    /*immediately=*/true);
+
+  EXPECT_TRUE(ShouldAllowRequestUrl(safe_url, /*for_main_frame=*/false)
+                  .ShouldAllowNavigation());
+
+  if (SafeBrowsingDecisionArrivesBeforeResponse())
+    base::RunLoop().RunUntilIdle();
+
+  web::WebStatePolicyDecider::PolicyDecision response_decision =
+      ShouldAllowResponseUrl(safe_url, /*for_main_frame=*/false);
+  EXPECT_TRUE(response_decision.ShouldAllowNavigation());
+  EXPECT_TRUE(prerender_service->HasPrerenderForUrl(main_frame_item->GetURL()));
 }
 
 INSTANTIATE_TEST_SUITE_P(

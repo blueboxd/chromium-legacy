@@ -20,6 +20,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
+import org.chromium.ui.util.AccessibilityUtil;
 
 import java.util.ArrayList;
 
@@ -33,7 +34,19 @@ import java.util.ArrayList;
 public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Container {
     private static final String TAG = "InfoBarContainer";
 
-    // TODO(crbug.com/1025620): Port over //chrome's listening to AccessibilityUtil if/as needed.
+    // Number of instances that have not been destroyed.
+    private static int sInstanceCount;
+
+    // InfoBarContainer's handling of accessibility is a global toggle, and thus a static observer
+    // suffices. However, observing accessibility events has the wrinkle that all accessibility
+    // observers are removed when there are no more Browsers and are not re-added if a new Browser
+    // is subsequently created. To handle this wrinkle, |sAccessibilityObserver| is added as an
+    // observer whenever the number of non-destroyed InfoBarContainers becomes non-zero and removed
+    // whenever that number flips to zero.
+    private static final AccessibilityUtil.Observer sAccessibilityObserver;
+    static {
+        sAccessibilityObserver = (enabled) -> setIsAllowedToAutoHide(!enabled);
+    }
 
     /**
      * A listener for the InfoBar animations.
@@ -166,6 +179,10 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
     private @Nullable InfoBarContainerView mInfoBarContainerView;
 
     InfoBarContainer(TabImpl tab) {
+        if (++sInstanceCount == 1) {
+            WebLayerAccessibilityUtil.get().addObserver(sAccessibilityObserver);
+        }
+
         mTab = tab;
         mTab.getWebContents().addObserver(mWebContentsObserver);
 
@@ -304,6 +321,11 @@ public class InfoBarContainer implements KeyboardVisibilityListener, InfoBar.Con
 
     public void destroy() {
         mTab.getWebContents().removeObserver(mWebContentsObserver);
+
+        if (--sInstanceCount == 0) {
+            WebLayerAccessibilityUtil.get().removeObserver(sAccessibilityObserver);
+        }
+
         if (mInfoBarContainerView != null) destroyContainerView();
         if (mNativeInfoBarContainer != 0) {
             InfoBarContainerJni.get().destroy(mNativeInfoBarContainer, InfoBarContainer.this);

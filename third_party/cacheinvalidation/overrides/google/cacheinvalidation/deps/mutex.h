@@ -6,7 +6,6 @@
 #define GOOGLE_CACHEINVALIDATION_DEPS_MUTEX_H_
 
 #include "base/macros.h"
-#include "base/logging.h"
 #include "base/synchronization/lock.h"
 
 namespace invalidation {

@@ -79,6 +79,15 @@ Polymer({
       value: false,
     },
 
+    /**
+     * False if VPN is disabled by policy.
+     * @private {boolean}
+     */
+    vpnIsEnabled_: {
+      type: Boolean,
+      value: false,
+    },
+
     /** @private {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
     globalPolicy_: Object,
 
@@ -373,6 +382,11 @@ Polymer({
       this.managedNetworkAvailable = managedNetworkAvailable;
     }
 
+    const vpn = this.deviceStates[mojom.NetworkType.kVPN];
+    this.vpnIsEnabled_ = !!vpn &&
+        vpn.deviceState ===
+            chromeos.networkConfig.mojom.DeviceStateType.kEnabled;
+
     if (this.detailType_ && !this.deviceStates[this.detailType_]) {
       // If the device type associated with the current network has been
       // removed (e.g., due to unplugging a Cellular dongle), the details page,
@@ -408,9 +422,11 @@ Polymer({
 
   /** @private */
   onAddVPNTap_() {
-    this.showConfig_(
-        true /* configAndConnect */,
-        chromeos.networkConfig.mojom.NetworkType.kVPN);
+    if (this.vpnIsEnabled_) {
+      this.showConfig_(
+          true /* configAndConnect */,
+          chromeos.networkConfig.mojom.NetworkType.kVPN);
+    }
   },
 
   /**

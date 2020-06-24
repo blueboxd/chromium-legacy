@@ -61,6 +61,7 @@ class ASH_EXPORT VpnList : public TrayNetworkStateObserver {
   void RemoveObserver(Observer* observer);
 
   // TrayNetworkStateObserver
+  void ActiveNetworkStateChanged() override;
   void VpnProvidersChanged() override;
 
   void SetVpnProvidersForTest(std::vector<VpnProviderPtr> providers);
@@ -74,6 +75,10 @@ class ASH_EXPORT VpnList : public TrayNetworkStateObserver {
 
   // Adds the built-in OpenVPN/L2TP provider to |extension_vpn_providers_|.
   void AddBuiltInProvider();
+
+  // Called when either ActiveNetworkStateChanged() or VpnProvidersChanged() is
+  // called.
+  void Update();
 
   TrayNetworkStateModel* model_;
 

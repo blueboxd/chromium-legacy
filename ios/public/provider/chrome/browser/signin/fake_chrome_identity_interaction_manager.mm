@@ -24,6 +24,7 @@
 @interface FakeChromeIdentityInteractionManager () {
   SigninCompletionCallback _completionCallback;
   UIViewController* _viewController;
+  BOOL _isCanceling;
 }
 
 @end
@@ -97,6 +98,33 @@
 
 @synthesize fakeIdentity = _fakeIdentity;
 
+- (BOOL)isCanceling {
+  return _isCanceling;
+}
+
+- (void)addAccountWithCompletion:(SigninCompletionCallback)completion {
+  _completionCallback = completion;
+  _viewController =
+      [[FakeAddAccountViewController alloc] initWithInteractionManager:self];
+  [self.delegate interactionManager:self
+              presentViewController:_viewController
+                           animated:YES
+                         completion:nil];
+}
+
+- (void)reauthenticateUserWithID:(NSString*)userID
+                           email:(NSString*)userEmail
+                      completion:(SigninCompletionCallback)completion {
+  [self addAccountWithCompletion:completion];
+}
+
+- (void)cancelAndDismissAnimated:(BOOL)animated {
+  _isCanceling = YES;
+  [self dismissAndRunCompletionCallbackWithError:[self canceledError]
+                                        animated:animated];
+  _isCanceling = NO;
+}
+
 - (void)addAccountWithPresentingViewController:(UIViewController*)viewController
                                     completion:
                                         (SigninCompletionCallback)completion {
@@ -142,15 +170,15 @@
 
 - (void)dismissAndRunCompletionCallbackWithError:(NSError*)error
                                         animated:(BOOL)animated {
-  ProceduralBlock dismissCompletion = ^{
+  if (!_viewController) {
     [self runCompletionCallbackWithError:error];
-  };
-  if (_viewController) {
-    [_viewController dismissViewControllerAnimated:animated
-                                        completion:dismissCompletion];
-  } else {
-    dismissCompletion();
+    return;
   }
+  [self.delegate interactionManager:self
+      dismissViewControllerAnimated:animated
+                         completion:^{
+                           [self runCompletionCallbackWithError:error];
+                         }];
 }
 
 - (void)runCompletionCallbackWithError:(NSError*)error {

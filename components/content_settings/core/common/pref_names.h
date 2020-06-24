@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PREF_NAMES_H_
 #define COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_PREF_NAMES_H_
 
-#include "base/logging.h"
 
 namespace prefs {
 

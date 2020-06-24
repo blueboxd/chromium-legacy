@@ -77,16 +77,6 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   // Overrides autofill_assistant::EventHandler::Observer.
   void OnEvent(const EventHandler::EventKey& key) override;
 
-  // Adds |model_identifier| to the list of model identifiers belonging to
-  // |radio_group|.
-  void AddRadioButtonToGroup(const std::string& radio_group,
-                             const std::string& model_identifier);
-
-  // Ensures that only |selected_model_identifier| is set to true in
-  // |radio_group|.
-  void UpdateRadioButtonGroup(const std::string& radio_group,
-                              const std::string& selected_model_identifier);
-
   // Runs all callbacks triggered by model value changes. This is useful to
   // properly initialize a UI after inflation, since all UI state should be
   // bound to the model.
@@ -121,15 +111,13 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
   EventHandler* event_handler_ = nullptr;
   UserModel* user_model_ = nullptr;
   BasicInteractions* basic_interactions_ = nullptr;
-  ViewHandlerAndroid* view_handler_;
+  ViewHandlerAndroid* view_handler_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jcontext_ = nullptr;
   base::android::ScopedJavaGlobalRef<jobject> jdelegate_ = nullptr;
   bool is_listening_ = false;
 
-  // TODO(b/154811503): move radio_groups_ and nested_ui_controllers_ to
+  // TODO(b/154811503): move nested_ui_controllers_ to
   // generic_ui_controller_android.
-  // Maps radiogroup identifiers to the list of corresponding model identifiers.
-  std::map<std::string, std::vector<std::string>> radio_groups_;
   // Maps nested-ui identifiers to their instances.
   std::map<std::string, std::unique_ptr<GenericUiControllerAndroid>>
       nested_ui_controllers_;

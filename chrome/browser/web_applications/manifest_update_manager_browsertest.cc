@@ -802,7 +802,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
       "display": "standalone",
       "icons": [
         {
-          "src": "/web_apps/basic-192.png",
+          "src": "/web_apps/basic-192.png?ignore",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -818,7 +818,7 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
       [this](content::URLLoaderInterceptor::RequestParams* params)
           -> bool /*intercepted*/ {
         if (params->url_request.url ==
-            http_server_.GetURL("/web_apps/basic-192.png")) {
+            http_server_.GetURL("/web_apps/basic-192.png?ignore")) {
           content::URLLoaderInterceptor::WriteResponse(
               "chrome/test/data/web_apps/blue-192.png", params->client.get());
           return true;
@@ -854,12 +854,12 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
       "display": "standalone",
       "icons": [
         {
-          "src": "/web_apps/basic-48.png",
+          "src": "/web_apps/basic-48.png?ignore",
           "sizes": "48x48",
           "type": "image/png"
         },
         {
-          "src": "/web_apps/basic-192.png",
+          "src": "/web_apps/basic-192.png?ignore",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -876,13 +876,13 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
       [this](content::URLLoaderInterceptor::RequestParams* params)
           -> bool /*intercepted*/ {
         if (params->url_request.url ==
-            http_server_.GetURL("/web_apps/basic-48.png")) {
+            http_server_.GetURL("/web_apps/basic-48.png?ignore")) {
           content::URLLoaderInterceptor::WriteResponse("malformed response", "",
                                                        params->client.get());
           return true;
         }
         if (params->url_request.url ==
-            http_server_.GetURL("/web_apps/basic-192.png")) {
+            http_server_.GetURL("/web_apps/basic-192.png?ignore")) {
           content::URLLoaderInterceptor::WriteResponse(
               "chrome/test/data/web_apps/blue-192.png", params->client.get());
           return true;

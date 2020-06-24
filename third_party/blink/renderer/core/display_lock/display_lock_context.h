@@ -348,6 +348,9 @@ class CORE_EXPORT DisplayLockContext final
   // Lock has been requested.
   bool is_locked_ = false;
 
+  // If true, clear selection render affecting state bit on the next lifecycle.
+  bool has_deferred_selection_clear_ = false;
+
   enum class RenderAffectingState : int {
     kLockRequested,
     kIntersectsViewport,

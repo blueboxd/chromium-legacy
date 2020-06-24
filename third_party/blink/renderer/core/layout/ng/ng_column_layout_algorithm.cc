@@ -162,18 +162,16 @@ scoped_refptr<const NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
     block_size = border_box_size.block_size - previously_consumed_block_size;
   }
 
-  if (is_constrained_by_outer_fragmentation_context_) {
+  container_builder_.SetFragmentsTotalBlockSize(previously_consumed_block_size +
+                                                block_size);
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+
+  if (ConstraintSpace().HasBlockFragmentation()) {
     // In addition to establishing one, we're nested inside another
     // fragmentation context.
-    LayoutUnit all_fragments_block_size =
-        previously_consumed_block_size + block_size;
     FinishFragmentation(
         Node(), ConstraintSpace(), BreakToken(), BorderPadding(),
-        all_fragments_block_size, intrinsic_block_size_,
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
-  } else {
-    container_builder_.SetBlockSize(block_size);
-    container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
   }
 
   NGOutOfFlowLayoutPart(

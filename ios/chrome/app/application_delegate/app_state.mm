@@ -559,6 +559,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 #pragma mark - Internal methods.
 
 - (void)startSafeMode {
+  if (!IsSceneStartupSupported()) {
+    self.mainSceneState.activationLevel = SceneActivationLevelForegroundActive;
+  }
   DCHECK(self.foregroundActiveScene);
   SafeModeCoordinator* safeModeCoordinator = [[SafeModeCoordinator alloc]
       initWithWindow:self.foregroundActiveScene.window];

@@ -10,7 +10,7 @@
 #include <numeric>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 
 namespace zucchini {

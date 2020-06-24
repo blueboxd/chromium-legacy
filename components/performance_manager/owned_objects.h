@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "base/check_op.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/logging.h"
 #include "base/stl_util.h"
 
 namespace performance_manager {

@@ -7,8 +7,8 @@
 
 #include <type_traits>
 
+#include "base/check_op.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 
 namespace performance_manager {
 

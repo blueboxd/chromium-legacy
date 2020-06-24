@@ -208,7 +208,7 @@ function testSelectHostMenuItem() {
  */
 function testSelectHostMenuItemAndCallShowSubMenu() {
   testSelectHostMenuItem();
-  menubutton.showSubMenu();
+  menubutton.menu.showSubMenu();
   assertFalse(subMenu.hasAttribute('hidden'));
 }
 
@@ -244,8 +244,8 @@ function testShrinkWindowSizesSubMenu() {
   sendKeyDown('#test-menu-button', 'ArrowLeft');
   // Call the internal hide method, then re-show it
   // to force the resizing behavior.
-  menubutton.hideSubMenu_();
-  menubutton.showSubMenu();
+  menubutton.menu.hideSubMenu_();
+  menubutton.menu.showSubMenu();
   const shrunkPosition = subMenu.getBoundingClientRect();
   assertTrue(shrunkPosition.bottom < window.innerHeight);
 }
@@ -266,8 +266,8 @@ function testGrowWindowSizesSubMenu() {
   sendKeyDown('#test-menu-button', 'ArrowLeft');
   // Call the internal hide method, then re-show it
   // to force the resizing behavior.
-  menubutton.hideSubMenu_();
-  menubutton.showSubMenu();
+  menubutton.menu.hideSubMenu_();
+  menubutton.menu.showSubMenu();
   const grownPosition = subMenu.getBoundingClientRect();
   // Test that the height of the sub-menu is the same as
   // the height at the start of this test (before we

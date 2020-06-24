@@ -97,6 +97,8 @@
       this.domain = '';
       this.email_ = '';
       this.fullEmail_ = '';
+      this.$.emailInput.isInvalid = false;
+      this.$.passwordInput.isInvalid = false;
     },
 
     onForgotPasswordClicked_() {

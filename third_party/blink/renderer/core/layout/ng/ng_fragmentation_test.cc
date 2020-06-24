@@ -140,7 +140,7 @@ TEST_F(NGFragmentationTest, MultipleFragmentsNestedMulticol) {
   SetBodyInnerHTML(R"HTML(
     <div id="container">
       <div id="outer_multicol" style="columns:3; column-fill:auto; height:100px; width:620px; column-gap:10px;">
-        <div id="inner_multicol" style="columns:2;">
+        <div id="inner_multicol" style="columns:2; column-fill:auto;">
           <div id="child1" style="width:11px; height:350px;"></div>
           <div id="child2" style="width:22px; height:350px;"></div>
         </div>

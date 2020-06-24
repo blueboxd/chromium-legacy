@@ -1,7 +1,7 @@
 // NOTE(vakh): The process.h file needs to be included first because "rar.hpp"
 // defines certain macros that cause symbol redefinition errors
 #if defined(UNRAR_NO_EXCEPTIONS)
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/process/process.h"
 #endif  // defined(UNRAR_NO_EXCEPTIONS)
 

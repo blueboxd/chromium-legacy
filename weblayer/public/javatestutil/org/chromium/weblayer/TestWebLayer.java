@@ -110,4 +110,8 @@ public final class TestWebLayer {
     public void forceNetworkConnectivityState(boolean networkAvailable) throws RemoteException {
         mITestWebLayer.forceNetworkConnectivityState(networkAvailable);
     }
+
+    public boolean canInfoBarContainerScroll(Tab tab) throws RemoteException {
+        return mITestWebLayer.canInfoBarContainerScroll(tab.getITab());
+    }
 }

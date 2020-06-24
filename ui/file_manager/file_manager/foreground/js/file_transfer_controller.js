@@ -194,7 +194,6 @@ class FileTransferController {
     chrome.fileManagerPrivate.enableExternalFileScheme();
   }
 
-
   /**
    * @param {!cr.ui.List} list Items in the list will be draggable.
    * @private
@@ -870,10 +869,12 @@ class FileTransferController {
    */
   onDragEnterFileList_(list, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
+
     this.lastEnteredTarget_ = event.target;
     let item = list.getListItemAncestor(
         /** @type {HTMLElement} */ (event.target));
     item = item && list.isItem(item) ? item : null;
+
     if (item === this.dropTarget_) {
       return;
     }
@@ -893,6 +894,7 @@ class FileTransferController {
    */
   onDragEnterTree_(tree, event) {
     event.preventDefault();  // Required to prevent the cursor flicker.
+
     this.lastEnteredTarget_ = event.target;
     let item = event.target;
     while (item && !(item instanceof cr.ui.TreeItem)) {
@@ -993,6 +995,10 @@ class FileTransferController {
       return;
     }
 
+    // Set classes assuming domElement won't accept this drop.
+    domElement.classList.remove('accepts');
+    domElement.classList.add('denies');
+
     // Disallow dropping a folder on itself.
     assert(destinationEntry.isDirectory);
     const entries = this.selectionHandler_.selection.entries;
@@ -1002,8 +1008,12 @@ class FileTransferController {
       }
     }
 
-    // Add accept class if the domElement can accept the drag.
-    domElement.classList.add('accepts');
+    // Add accept class if the domElement can accept this drop.
+    if (this.canPasteOrDrop_(clipboardData, destinationEntry)) {
+      domElement.classList.remove('denies');
+      domElement.classList.add('accepts');
+    }
+
     this.destinationEntry_ = destinationEntry;
 
     // Change directory immediately for crostini, otherwise start timer.
@@ -1040,12 +1050,14 @@ class FileTransferController {
    * @private
    */
   clearDropTarget_() {
-    if (this.dropTarget_ && this.dropTarget_.classList.contains('accepts')) {
-      this.dropTarget_.classList.remove('accepts');
+    if (this.dropTarget_) {
+      this.dropTarget_.classList.remove('accepts', 'denies');
     }
+
     this.dropTarget_ = null;
     this.destinationEntry_ = null;
-    if (this.navigateTimer_ !== undefined) {
+
+    if (this.navigateTimer_) {
       clearTimeout(this.navigateTimer_);
       this.navigateTimer_ = 0;
     }

@@ -11,7 +11,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 
 // Collection of simple utilities used in for low-level computation.
 

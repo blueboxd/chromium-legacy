@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/android/scoped_java_ref.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 
 namespace payments {

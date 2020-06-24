@@ -12,7 +12,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/zucchini/buffer_sink.h"

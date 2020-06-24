@@ -30,7 +30,7 @@ enum class UADefinedVariable {
   // virtual keyboard rectangle by its top, right, bottom, and left insets
   // from the edge of the viewport.
   // Explainers:
-  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/VirtualKeyboardAPI/explainer.md
+  // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/VirtualKeyboardAPI/explainer.md
   kKeyboardInsetTop,
   kKeyboardInsetLeft,
   kKeyboardInsetBottom,

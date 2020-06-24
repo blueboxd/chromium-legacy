@@ -4,6 +4,8 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
+#include <vector>
+
 #include "base/strings/string_util.h"
 #include "chromeos/components/sync_wifi/network_eligibility_checker.h"
 #include "chromeos/login/login_state/login_state.h"
@@ -18,6 +20,7 @@
 #include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_translation_tables.h"
+#include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config_mojom_traits.h"
@@ -26,6 +29,7 @@
 #include "components/user_manager/user_manager.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 using user_manager::UserManager;
 
@@ -247,6 +251,24 @@ const std::string& GetVpnProviderName(
       return provider->provider_name;
   }
   return base::EmptyString();
+}
+
+mojom::DeviceStatePropertiesPtr GetVpnState() {
+  auto result = mojom::DeviceStateProperties::New();
+  result->type = mojom::NetworkType::kVPN;
+
+  bool vpn_disabled = false;
+  if (NetworkHandler::IsInitialized()) {
+    std::vector<std::string> prohibited_technologies =
+        NetworkHandler::Get()
+            ->prohibited_technologies_handler()
+            ->GetCurrentlyProhibitedTechnologies();
+    vpn_disabled = base::Contains(prohibited_technologies, shill::kTypeVPN);
+  }
+
+  result->device_state = vpn_disabled ? mojom::DeviceStateType::kProhibited
+                                      : mojom::DeviceStateType::kEnabled;
+  return result;
 }
 
 mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
@@ -1825,6 +1847,12 @@ void CrosNetworkConfig::GetDeviceStateList(
     if (mojo_device)
       result.emplace_back(std::move(mojo_device));
   }
+
+  // Handle VPN state separately because VPN is not considered a device by shill
+  // and thus will not be included in the |devices| list returned by network
+  // state handler. In the UI code, it is treated as a "device" for consistency.
+  result.emplace_back(GetVpnState());
+
   std::move(callback).Run(std::move(result));
 }
 

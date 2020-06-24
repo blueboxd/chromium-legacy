@@ -95,16 +95,14 @@ scoped_refptr<const NGLayoutResult> NGFieldsetLayoutAlgorithm::Layout() {
   // fragmentainer, and we should avoid that.
   LayoutUnit all_fragments_block_size = border_box_size_.block_size;
 
+  container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
+  container_builder_.SetFragmentsTotalBlockSize(all_fragments_block_size);
   container_builder_.SetIsFieldsetContainer();
-  if (ConstraintSpace().HasKnownFragmentainerBlockSize()) {
+
+  if (ConstraintSpace().HasBlockFragmentation()) {
     FinishFragmentation(
         Node(), ConstraintSpace(), BreakToken(), BorderPadding(),
-        all_fragments_block_size, intrinsic_block_size_,
         FragmentainerSpaceAtBfcStart(ConstraintSpace()), &container_builder_);
-  } else {
-    LayoutUnit block_size = all_fragments_block_size - consumed_block_size_;
-    container_builder_.SetIntrinsicBlockSize(intrinsic_block_size_);
-    container_builder_.SetBlockSize(block_size);
   }
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), borders_,

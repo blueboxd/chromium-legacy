@@ -837,3 +837,16 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, TestIsSameOrParent) {
   EXPECT_FALSE(incognito_profile->IsSameOrParent(otr_profile));
   EXPECT_FALSE(otr_profile->IsSameOrParent(incognito_profile));
 }
+
+// Tests if browser creation using non primary OTRs is blocked.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
+                       TestCreatingBrowserUsingNonPrimaryOffTheRecordProfile) {
+  Profile::OTRProfileID otr_profile_id("profile::otr");
+  Profile* otr_profile =
+      browser()->profile()->GetOffTheRecordProfile(otr_profile_id);
+
+  EXPECT_EQ(nullptr, Browser::Create(Browser::CreateParams(
+                         otr_profile, /* user_gesture = */ true)));
+  EXPECT_EQ(nullptr, Browser::Create(Browser::CreateParams(
+                         otr_profile, /* user_gesture = */ false)));
+}

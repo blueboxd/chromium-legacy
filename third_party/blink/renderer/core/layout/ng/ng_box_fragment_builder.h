@@ -92,6 +92,52 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     return *initial_fragment_geometry_;
   }
 
+  // Use the block-size setters/getters further down instead of the inherited
+  // ones.
+  LayoutUnit BlockSize() const = delete;
+  void SetBlockSize(LayoutUnit block_size) = delete;
+
+  // Set the total border-box block-size of all the fragments to be generated
+  // from this node (as if we stitched them together). Layout algorithms are
+  // expected to pass this value, and at the end of layout (if block
+  // fragmentation is needed), the fragmentation machinery will be invoked to
+  // adjust the block-size to the correct size, ensuring that we break at the
+  // best location.
+  void SetFragmentsTotalBlockSize(LayoutUnit block_size) {
+#if DCHECK_IS_ON()
+    // Note that we just store the block-size in a shared field. We have a flag
+    // for debugging, to assert that we know what we're doing when attempting to
+    // access the data.
+    block_size_is_for_all_fragments_ = true;
+#endif
+    size_.block_size = block_size;
+  }
+  LayoutUnit FragmentsTotalBlockSize() const {
+#if DCHECK_IS_ON()
+    if (has_block_fragmentation_)
+      DCHECK(block_size_is_for_all_fragments_);
+#endif
+    return size_.block_size;
+  }
+
+  // Set the final block-size of this fragment.
+  void SetFragmentBlockSize(LayoutUnit block_size) {
+#if DCHECK_IS_ON()
+    // Note that we just store the block-size in a shared field. We have a flag
+    // for debugging, to assert that we know what we're doing when attempting to
+    // access the data.
+    block_size_is_for_all_fragments_ = false;
+#endif
+    size_.block_size = block_size;
+  }
+  LayoutUnit FragmentBlockSize() const {
+#if DCHECK_IS_ON()
+    if (has_block_fragmentation_)
+      DCHECK(!block_size_is_for_all_fragments_);
+#endif
+    return size_.block_size;
+  }
+
   void SetOverflowBlockSize(LayoutUnit overflow_block_size) {
     overflow_block_size_ = overflow_block_size;
   }
@@ -461,6 +507,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   base::Optional<int> lines_until_clamp_;
 
   std::unique_ptr<NGMathMLPaintInfo> mathml_paint_info_;
+
+#if DCHECK_IS_ON()
+  // Describes what size_.block_size represents; either the size of a single
+  // fragment (false), or the size of all fragments for a node (true).
+  bool block_size_is_for_all_fragments_ = false;
+#endif
 
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;

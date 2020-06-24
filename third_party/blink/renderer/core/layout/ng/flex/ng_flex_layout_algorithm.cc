@@ -924,7 +924,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
       border_box_size_.inline_size);
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
-  container_builder_.SetBlockSize(block_size);
+  container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   GiveLinesAndItemsFinalPositionAndSize();
 
@@ -981,8 +981,8 @@ void NGFlexLayoutAlgorithm::GiveLinesAndItemsFinalPositionAndSize() {
 
   LayoutUnit final_content_main_size =
       container_builder_.InlineSize() - BorderScrollbarPadding().InlineSum();
-  LayoutUnit final_content_cross_size =
-      container_builder_.BlockSize() - BorderScrollbarPadding().BlockSum();
+  LayoutUnit final_content_cross_size = container_builder_.FragmentBlockSize() -
+                                        BorderScrollbarPadding().BlockSum();
   if (is_column_)
     std::swap(final_content_main_size, final_content_cross_size);
 

@@ -10,7 +10,6 @@
 #include <unordered_map>
 
 #include "base/component_export.h"
-#include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "chromeos/components/account_manager/account_manager.h"
 
@@ -28,6 +27,8 @@ namespace chromeos {
 class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManagerFactory {
  public:
   AccountManagerFactory();
+  AccountManagerFactory(const AccountManagerFactory&) = delete;
+  AccountManagerFactory& operator=(const AccountManagerFactory&) = delete;
   ~AccountManagerFactory();
 
   // Returns the |AccountManager| corresponding to the given |profile_path|.
@@ -40,8 +41,6 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManagerFactory {
       account_managers_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-
-  DISALLOW_COPY_AND_ASSIGN(AccountManagerFactory);
 };
 
 }  // namespace chromeos

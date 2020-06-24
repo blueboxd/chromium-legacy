@@ -18,12 +18,15 @@ void FakePrerenderService::SetDelegate(id<PreloadControllerDelegate> delegate) {
 void FakePrerenderService::StartPrerender(const GURL& url,
                                           const web::Referrer& referrer,
                                           ui::PageTransition transition,
-                                          bool immediately) {}
+                                          bool immediately) {
+  preload_url_ = url;
+}
 
 bool FakePrerenderService::MaybeLoadPrerenderedURL(
     const GURL& url,
     ui::PageTransition transition,
     Browser* browser) {
+  preload_url_ = GURL();
   return false;
 }
 
@@ -31,10 +34,12 @@ bool FakePrerenderService::IsLoadingPrerender() {
   return false;
 }
 
-void FakePrerenderService::CancelPrerender() {}
+void FakePrerenderService::CancelPrerender() {
+  preload_url_ = GURL();
+}
 
 bool FakePrerenderService::HasPrerenderForUrl(const GURL& url) {
-  return false;
+  return preload_url_ == url;
 }
 
 bool FakePrerenderService::IsWebStatePrerendered(web::WebState* web_state) {

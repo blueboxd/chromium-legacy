@@ -10,7 +10,6 @@
 
 #include "base/callback.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/services/storage/indexed_db/scopes/scope_lock.h"

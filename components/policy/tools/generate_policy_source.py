@@ -1032,7 +1032,7 @@ def _WritePolicyConstantSource(policies, policy_atomic_groups, target_platform,
 #include <climits>
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/stl_util.h"  // base::size()
 #include "build/branding_buildflags.h"
 #include "components/policy/core/common/policy_types.h"

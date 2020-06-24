@@ -6,7 +6,6 @@
 #include <cstdint>
 #include <random>
 
-#include "base/logging.h"
 #include "base/stl_util.h"
 #include "testing/libfuzzer/fuzzers/color_space_data.h"
 #include "third_party/qcms/src/qcms.h"

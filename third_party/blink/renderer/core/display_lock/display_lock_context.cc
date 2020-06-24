@@ -804,6 +804,11 @@ void DisplayLockContext::WillStartLifecycleUpdate(const LocalFrameView& view) {
   // visible.
   if (needs_deferred_not_intersecting_signal_)
     NotifyIsNotIntersectingViewport();
+
+  if (has_deferred_selection_clear_) {
+    NotifySubtreeLostSelection();
+    DCHECK(!has_deferred_selection_clear_);
+  }
 }
 
 void DisplayLockContext::NotifyWillDisconnect() {
@@ -974,6 +979,22 @@ void DisplayLockContext::DetermineIfSubtreeHasSelection() {
 
 void DisplayLockContext::SetRenderAffectingState(RenderAffectingState state,
                                                  bool new_flag) {
+  // If we have forced activatable locks, it is possible that we're within
+  // find-in-page. We cannot lock an object while doing this, since it may
+  // invalidate layout and in turn prevent find-in-page from properly finding
+  // text (and DCHECK). Since layout is clean for this lock (we're unlocked),
+  // defer selection clearing to the next lifecycle.
+  if (state == RenderAffectingState::kSubtreeHasSelection) {
+    if (!new_flag && document_->GetDisplayLockDocumentState()
+                         .ActivatableDisplayLocksForced()) {
+      has_deferred_selection_clear_ = true;
+      ScheduleAnimation();
+      return;
+    } else {
+      has_deferred_selection_clear_ = false;
+    }
+  }
+
   render_affecting_state_[static_cast<int>(state)] = new_flag;
   NotifyRenderAffectingStateChanged();
 }

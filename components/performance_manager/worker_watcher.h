@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"

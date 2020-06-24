@@ -14,6 +14,7 @@
 #include "chrome/browser/signin/reauth_result.h"
 #include "chrome/browser/signin/reauth_tab_helper.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -165,6 +166,7 @@ void SigninReauthViewController::CompleteReauth(signin::ReauthResult result) {
     raw_reauth_web_contents_ = nullptr;
   }
 
+  signin_ui_util::RecordTransactionalReauthResult(access_point_, result);
   if (reauth_callback_)
     std::move(reauth_callback_).Run(result);
 

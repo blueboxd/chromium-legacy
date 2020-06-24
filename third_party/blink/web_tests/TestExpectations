@@ -3635,7 +3635,6 @@ crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-008.tentative.html 
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-009.tentative.html [ Failure ]
 crbug.com/1031667 external/wpt/css/css-pseudo/marker-content-011.tentative.html [ Failure ]
 crbug.com/457718 external/wpt/css/css-pseudo/marker-font-variant-numeric-normal.html [ Failure ]
-crbug.com/457718 external/wpt/css/css-pseudo/marker-list-style-position.html [ Failure ]
 
 # iframe tests time out if the request is blocked as mixed content.
 crbug.com/1001374 external/wpt/upgrade-insecure-requests/gen/iframe-blank-inherit.meta/unset/iframe-tag.https.html [ Timeout ]
@@ -6860,3 +6859,9 @@ crbug.com/1098067 [ Fuchsia ] virtual/text-antialias/bidi-isolate-nextlinebreak-
 crbug.com/1098136 [ Linux ] virtual/android/fullscreen/video-fixed-background.html [ Failure ]
 crbug.com/1025944 [ Linux ] external/wpt/pointerevents/pointerlock/pointerevent_pointermove_on_chorded_mouse_button_when_locked.html [ Pass Failure ]
 crbug.com/1098371 [ Linux ] virtual/threaded-no-composited-antialiasing/animations/custom-properties/registered-neutral-keyframe.html [ Pass Crash Failure ]
+
+# Sheriff 2020-06-24
+crbug.com/1098676 [ Win ] http/tests/devtools/console-xhr-logging.js [ Pass Failure ]
+crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Pass Timeout ]
+crbug.com/867532 [ Linux ] http/tests/workers/worker-usecounter.html [ Pass Timeout ]
+crbug.com/867532 [ Linux ] virtual/omt-worker-fetch/http/tests/workers/worker-usecounter.html [ Pass Timeout ]

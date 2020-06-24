@@ -164,7 +164,7 @@ const DeviceStateProperties* TrayNetworkStateModel::GetDevice(
   return iter->second.get();
 }
 
-DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
+DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) const {
   const DeviceStateProperties* device = GetDevice(type);
   return device ? device->device_state : DeviceStateType::kUnavailable;
 }
@@ -172,6 +172,12 @@ DeviceStateType TrayNetworkStateModel::GetDeviceState(NetworkType type) {
 void TrayNetworkStateModel::SetNetworkTypeEnabledState(NetworkType type,
                                                        bool enabled) {
   impl_->SetNetworkTypeEnabledState(type, enabled);
+}
+
+bool TrayNetworkStateModel::IsBuiltinVpnEnabled() const {
+  return TrayNetworkStateModel::GetDeviceState(
+             chromeos::network_config::mojom::NetworkType::kVPN) ==
+         chromeos::network_config::mojom::DeviceStateType::kEnabled;
 }
 
 chromeos::network_config::mojom::CrosNetworkConfig*

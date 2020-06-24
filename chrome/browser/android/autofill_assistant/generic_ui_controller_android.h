@@ -18,6 +18,7 @@ namespace autofill_assistant {
 class InteractionHandlerAndroid;
 class BasicInteractions;
 class EventHandler;
+class RadioButtonController;
 class UserModel;
 class ViewHandlerAndroid;
 
@@ -42,13 +43,15 @@ class GenericUiControllerAndroid {
   GenericUiControllerAndroid(
       base::android::ScopedJavaGlobalRef<jobject> jroot_view,
       std::unique_ptr<ViewHandlerAndroid> view_handler,
-      std::unique_ptr<InteractionHandlerAndroid> interaction_handler);
+      std::unique_ptr<InteractionHandlerAndroid> interaction_handler,
+      std::unique_ptr<RadioButtonController> radio_button_controller);
   ~GenericUiControllerAndroid();
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> jroot_view_;
   std::unique_ptr<ViewHandlerAndroid> view_handler_;
   std::unique_ptr<InteractionHandlerAndroid> interaction_handler_;
+  std::unique_ptr<RadioButtonController> radio_button_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(GenericUiControllerAndroid);
 };

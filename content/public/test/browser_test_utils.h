@@ -103,6 +103,7 @@ class FrameTreeNode;
 class NavigationHandle;
 class NavigationRequest;
 class RenderFrameMetadataProviderImpl;
+class RenderFrameProxyHost;
 class RenderWidgetHost;
 class RenderWidgetHostView;
 class ScopedAllowRendererCrashes;
@@ -1869,6 +1870,38 @@ class DidStartNavigationObserver : public WebContentsObserver {
   NavigationHandle* navigation_handle_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DidStartNavigationObserver);
+};
+
+// Tracks the creation of RenderFrameProxyHosts that have
+// CrossProcessFrameConnectors, and records the initial (post-construction)
+// device scale factor in the CrossProcessFrameConnector.
+class ProxyDSFObserver {
+ public:
+  ProxyDSFObserver();
+  ~ProxyDSFObserver();
+
+  // Waits until a single RenderFrameProxyHost with a CrossProcessFrameConnector
+  // has been created. If a creation occurs before this function is called, it
+  // returns immediately.
+  void WaitForOneProxyHostCreation();
+
+  size_t num_creations() { return proxy_host_created_dsf_.size(); }
+
+  float get_proxy_host_dsf(unsigned index) {
+    return proxy_host_created_dsf_[index];
+  }
+
+ private:
+  void OnCreation(RenderFrameProxyHost* rfph);
+
+  // Make this a vector, just in case we encounter multiple creations prior to
+  // calling WaitForOneProxyHostCreation(). That way we can confirm we're
+  // getting the device scale factor we expect.
+  // Note: We can modify the vector to collect a void* id for each
+  // RenderFrameProxyHost if we want to expand to cases where multiple creations
+  // must be observed.
+  std::vector<float> proxy_host_created_dsf_;
+  std::unique_ptr<base::RunLoop> runner_;
 };
 
 }  // namespace content

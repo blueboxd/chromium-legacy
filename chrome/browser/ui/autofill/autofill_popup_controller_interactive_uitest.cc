@@ -133,13 +133,14 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest, ResetSelectedLine) {
       base::ASCIIToUTF16("suggestion1"), base::ASCIIToUTF16("suggestion2"),
       base::ASCIIToUTF16("suggestion3"), base::ASCIIToUTF16("suggestion4")};
   client->UpdateAutofillPopupDataListValues(rows, rows);
+  int original_suggestions_count = controller->GetLineCount();
   controller->SetSelectedLine(3);
 
   // Replace the list with the smaller one.
   rows = {base::ASCIIToUTF16("suggestion1")};
   client->UpdateAutofillPopupDataListValues(rows, rows);
   // Make sure that previously selected line #3 doesn't exist.
-  ASSERT_LT(controller->GetLineCount(), 4);
+  ASSERT_LT(controller->GetLineCount(), original_suggestions_count);
   // Selecting a new line should not crash.
   controller->SetSelectedLine(0);
 }

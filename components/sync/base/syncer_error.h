@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/logging.h"
 
 namespace syncer {
 

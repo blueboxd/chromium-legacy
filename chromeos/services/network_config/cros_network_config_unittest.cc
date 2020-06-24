@@ -601,7 +601,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {
 
 TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
   std::vector<mojom::DeviceStatePropertiesPtr> devices = GetDeviceStateList();
-  ASSERT_EQ(3u, devices.size());
+  ASSERT_EQ(4u, devices.size());
   EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
   EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
 
@@ -627,12 +627,16 @@ TEST_F(CrosNetworkConfigTest, GetDeviceStateList) {
   EXPECT_EQ(shill::kSIMLockPin, cellular->sim_lock_status->lock_type);
   EXPECT_EQ(3, cellular->sim_lock_status->retries_left);
 
+  mojom::DeviceStateProperties* vpn = devices[3].get();
+  EXPECT_EQ(mojom::NetworkType::kVPN, vpn->type);
+  EXPECT_EQ(mojom::DeviceStateType::kEnabled, vpn->device_state);
+
   // Disable WiFi
   helper().network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   devices = GetDeviceStateList();
-  ASSERT_EQ(3u, devices.size());
+  ASSERT_EQ(4u, devices.size());
   EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
   EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
 }
@@ -899,7 +903,7 @@ TEST_F(CrosNetworkConfigTest, ForgetNetwork) {
 
 TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
   std::vector<mojom::DeviceStatePropertiesPtr> devices = GetDeviceStateList();
-  ASSERT_EQ(3u, devices.size());
+  ASSERT_EQ(4u, devices.size());
   EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
   EXPECT_EQ(mojom::DeviceStateType::kEnabled, devices[0]->device_state);
 
@@ -914,7 +918,7 @@ TEST_F(CrosNetworkConfigTest, SetNetworkTypeEnabledState) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(succeeded);
   devices = GetDeviceStateList();
-  ASSERT_EQ(3u, devices.size());
+  ASSERT_EQ(4u, devices.size());
   EXPECT_EQ(mojom::NetworkType::kWiFi, devices[0]->type);
   EXPECT_EQ(mojom::DeviceStateType::kDisabled, devices[0]->device_state);
 }

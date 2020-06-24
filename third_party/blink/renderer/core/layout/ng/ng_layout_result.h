@@ -163,8 +163,18 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return HasRareData() ? rare_data_->end_margin_strut : NGMarginStrut();
   }
 
+  // Get the intrinsic block-size of the fragment (i.e. the block-size the
+  // fragment would get if no block-size constraints were applied). This is not
+  // supported (and should not be needed [1]) if the node got split into
+  // multiple fragments.
+  //
+  // [1] If a node gets block-fragmented, it means that it has possibly been
+  // constrained and/or stretched by something extrinsic (i.e. the
+  // fragmentainer), so the value returned here wouldn't be useful.
   const LayoutUnit IntrinsicBlockSize() const {
-    DCHECK(physical_fragment_->IsBox());
+#if DCHECK_IS_ON()
+    AssertSoleBoxFragment();
+#endif
     return intrinsic_block_size_;
   }
 
@@ -402,6 +412,10 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
 
   bool HasRareData() const { return bitfields_.has_rare_data; }
   RareData* EnsureRareData();
+
+#if DCHECK_IS_ON()
+  void AssertSoleBoxFragment() const;
+#endif
 
   struct Bitfields {
     DISALLOW_NEW();

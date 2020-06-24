@@ -111,6 +111,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * False if VPN is disabled by policy.
+     * @private {boolean}
+     */
+    vpnIsEnabled_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /** settings.RouteOriginBehavior override */
@@ -201,6 +210,12 @@ Polymer({
   /** @private */
   deviceStateChanged_() {
     if (this.deviceState !== undefined) {
+      // Set |vpnIsEnabled_| to be used for VPN special cases.
+      if (this.deviceState.type === mojom.NetworkType.kVPN) {
+        this.vpnIsEnabled_ = this.deviceState.deviceState ===
+            chromeos.networkConfig.mojom.DeviceStateType.kEnabled;
+      }
+
       // A scan has completed if the spinner was active (i.e., scanning was
       // active) and the device is no longer scanning.
       this.hasCompletedScanSinceLastEnabled_ = this.showSpinner &&
@@ -336,7 +351,7 @@ Polymer({
             if (!OncMojo.connectionStateIsConnected(state.connectionState)) {
               break;
             }
-            // Otherwise Arc VPNs are treated the same as Extension VPNs.
+          // Otherwise Arc VPNs are treated the same as Extension VPNs.
           case mojom.VpnType.kExtension:
             const providerId = state.typeState.vpn.providerId;
             thirdPartyVpns[providerId] = thirdPartyVpns[providerId] || [];
@@ -401,13 +416,18 @@ Polymer({
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @return {boolean} Whether or not the device state is enabled.
+   * @return {boolean} True if the device is enabled or if it is a VPN.
+   *     Note: This function will always return true for VPN because VPNs can be
+   *     disabled by policy only for built-in VPNs (OpenVPN & L2TP). So even
+   *     when VPNs are disabled by policy; the VPN network summary item should
+   *     still be visible and actionable to show details for other VPN
+   *     providers.
    * @private
    */
   deviceIsEnabled_(deviceState) {
     return !!deviceState &&
-        deviceState.deviceState ==
-        chromeos.networkConfig.mojom.DeviceStateType.kEnabled;
+        (deviceState.type == mojom.NetworkType.kVPN ||
+         deviceState.deviceState == mojom.DeviceStateType.kEnabled);
   },
 
   /**
@@ -684,7 +704,21 @@ Polymer({
    * @private
    */
   shouldShowNetworkList_(networkStateList) {
+    if (!!this.deviceState &&
+        this.deviceState.type === mojom.NetworkType.kVPN) {
+      return this.shouldShowVpnList_(networkStateList);
+    }
     return networkStateList.length > 0;
+  },
+
+  /**
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
+   * @return {boolean} True if native VPN is not disabled by policy and there
+   *     are more than one VPN network configured.
+   * @private
+   */
+  shouldShowVpnList_(networkStateList) {
+    return this.vpnIsEnabled_ && networkStateList.length > 0;
   },
 
   /**

@@ -8,6 +8,8 @@ import android.app.Activity;
 import android.widget.TextView;
 
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.ui.KeyboardVisibilityDelegate.KeyboardVisibilityListener;
 import org.chromium.ui.base.ActivityKeyboardVisibilityDelegate;
 
@@ -20,7 +22,9 @@ class AssistantKeyboardCoordinator {
     private final CompositorViewHolder mCompositorViewHolder;
     private final KeyboardVisibilityListener mKeyboardVisibilityListener =
             this::onKeyboardVisibilityChanged;
+    private boolean mAllowShowingSoftKeyboard = true;
     private Delegate mDelegate;
+    private final BottomSheetController mBottomSheetController;
 
     interface Delegate {
         void onKeyboardVisibilityChanged(boolean visible);
@@ -28,11 +32,13 @@ class AssistantKeyboardCoordinator {
 
     AssistantKeyboardCoordinator(Activity activity,
             ActivityKeyboardVisibilityDelegate keyboardVisibilityDelegate,
-            CompositorViewHolder compositorViewHolder, AssistantModel model, Delegate delegate) {
+            CompositorViewHolder compositorViewHolder, AssistantModel model, Delegate delegate,
+            BottomSheetController controller) {
         mActivity = activity;
         mKeyboardDelegate = keyboardVisibilityDelegate;
         mCompositorViewHolder = compositorViewHolder;
         mDelegate = delegate;
+        mBottomSheetController = controller;
 
         model.addObserver((source, propertyKey) -> {
             if (AssistantModel.VISIBLE == propertyKey) {
@@ -41,6 +47,8 @@ class AssistantKeyboardCoordinator {
                 } else {
                     enableListenForKeyboardVisibility(false);
                 }
+            } else if (AssistantModel.ALLOW_SOFT_KEYBOARD == propertyKey) {
+                allowShowingSoftKeyboard(model.get(AssistantModel.ALLOW_SOFT_KEYBOARD));
             }
         });
     }
@@ -48,6 +56,11 @@ class AssistantKeyboardCoordinator {
     /** Returns whether the keyboard is currently shown. */
     boolean isKeyboardShown() {
         return mKeyboardDelegate.isKeyboardShowing(mActivity, mCompositorViewHolder);
+    }
+
+    /** Returns whether the BottomSheet is currently shown. */
+    private boolean isBottomSheetShown() {
+        return mBottomSheetController.getSheetState() != SheetState.HIDDEN;
     }
 
     /** Hides the keyboard. */
@@ -62,9 +75,7 @@ class AssistantKeyboardCoordinator {
         }
     }
 
-    /**
-     * Start or stop listening for keyboard visibility changes.
-     */
+    /** Start or stop listening for keyboard visibility changes. */
     private void enableListenForKeyboardVisibility(boolean enabled) {
         if (enabled) {
             mKeyboardDelegate.addKeyboardVisibilityListener(mKeyboardVisibilityListener);
@@ -73,7 +84,19 @@ class AssistantKeyboardCoordinator {
         }
     }
 
+    /** Set soft keyboard allowed state. */
+    private void allowShowingSoftKeyboard(boolean allowed) {
+        mAllowShowingSoftKeyboard = allowed;
+        if (!allowed && isBottomSheetShown()) {
+            hideKeyboard();
+        }
+    }
+
+    /** If the keyboard shows up and is not allowed, hide it. */
     private void onKeyboardVisibilityChanged(boolean isShowing) {
         mDelegate.onKeyboardVisibilityChanged(isShowing);
+        if (isShowing && !mAllowShowingSoftKeyboard && isBottomSheetShown()) {
+            hideKeyboard();
+        }
     }
 }

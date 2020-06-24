@@ -4,7 +4,6 @@
 
 #include "components/policy/core/common/schema_map.h"
 
-#include "base/logging.h"
 #include "base/values.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_map.h"

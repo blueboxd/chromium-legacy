@@ -123,18 +123,6 @@ void BuildCommitItem(const syncable::Entry& meta_entry,
     sync_entry->set_parent_id_string(SyncableIdToProto(new_parent_id));
   }
 
-  // If our parent has changed, send up the old one so the server
-  // can correctly deal with multiple parents.
-  // TODO(nick): With the server keeping track of the primary sync parent,
-  // it should not be necessary to provide the old_parent_id: the version
-  // number should suffice.
-  Id server_parent_id = meta_entry.GetServerParentId();
-  if (new_parent_id != server_parent_id && !server_parent_id.IsNull() &&
-      0 != meta_entry.GetBaseVersion() &&
-      syncable::CHANGES_VERSION != meta_entry.GetBaseVersion()) {
-    sync_entry->set_old_parent_id(SyncableIdToProto(server_parent_id));
-  }
-
   int64_t version = meta_entry.GetBaseVersion();
   if (syncable::CHANGES_VERSION == version || 0 == version) {
     // Undeletions are only supported for items that have a client tag.
@@ -296,8 +284,7 @@ void UpdateServerFieldsAfterCommit(
   // get the post-commit ID of the parent indicated by
   // committed_entry.parent_id_string(). That should be inferrable from the
   // information we have, but it's a bit convoluted to pull it out directly.
-  // Getting this right is important: SERVER_PARENT_ID gets fed back into
-  // old_parent_id during the next commit.
+  // Getting this right is important.
   local_entry->PutServerParentId(local_entry->GetParentId());
   local_entry->PutServerNonUniqueName(
       GetResultingPostCommitName(committed_entry, entry_response));

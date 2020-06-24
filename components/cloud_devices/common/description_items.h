@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"

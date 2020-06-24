@@ -45,9 +45,8 @@ class DocumentStyleSheetCollection final
  public:
   explicit DocumentStyleSheetCollection(TreeScope&);
 
-  void UpdateActiveStyleSheets(StyleEngine& master_engine);
-  void CollectStyleSheets(StyleEngine& master_engine,
-                          DocumentStyleSheetCollector&);
+  void UpdateActiveStyleSheets(StyleEngine&);
+  void CollectStyleSheets(StyleEngine&, DocumentStyleSheetCollector&);
   void CollectViewportRules(ViewportStyleResolver&);
 
   void Trace(Visitor* visitor) const override {
@@ -55,7 +54,7 @@ class DocumentStyleSheetCollection final
   }
 
  private:
-  void CollectStyleSheetsFromCandidates(StyleEngine& master_engine,
+  void CollectStyleSheetsFromCandidates(StyleEngine&,
                                         DocumentStyleSheetCollector&);
   DISALLOW_COPY_AND_ASSIGN(DocumentStyleSheetCollection);
 };

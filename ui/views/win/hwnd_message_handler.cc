@@ -1993,12 +1993,27 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
     return -1;
   }
 
+  // |HandlePointerEventTypePenClient| assumes all pen events happen on the
+  // client area, so WM_NCPOINTER messages sent to it would eventually be
+  // dropped and the native frame wouldn't be able to respond to pens.
+  // |HandlePointerEventTypeTouchOrNonClient| handles non-client area messages
+  // properly. Since we don't need to distinguish between pens and fingers in
+  // non-client area, route the messages to that method.
+  if (pointer_type == PT_PEN &&
+      (message == WM_NCPOINTERDOWN ||
+       message == WM_NCPOINTERUP ||
+       message == WM_NCPOINTERUPDATE)) {
+    pointer_type = PT_TOUCH;
+  }
+
   switch (pointer_type) {
     case PT_PEN:
-      return HandlePointerEventTypePen(message, w_param, l_param);
+      return HandlePointerEventTypePenClient(message, w_param, l_param);
     case PT_TOUCH:
-      if (pointer_events_for_touch_)
-        return HandlePointerEventTypeTouch(message, w_param, l_param);
+      if (pointer_events_for_touch_) {
+        return HandlePointerEventTypeTouchOrNonClient(
+            message, w_param, l_param);
+      }
       FALLTHROUGH;
     default:
       break;
@@ -3102,9 +3117,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   return 0;
 }
 
-LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
-                                                        WPARAM w_param,
-                                                        LPARAM l_param) {
+LRESULT HWNDMessageHandler::HandlePointerEventTypeTouchOrNonClient(
+    UINT message, WPARAM w_param, LPARAM l_param) {
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   using GetPointerTouchInfoFn = BOOL(WINAPI*)(UINT32, POINTER_TOUCH_INFO*);
   POINTER_TOUCH_INFO pointer_touch_info;
@@ -3212,9 +3226,9 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   return 0;
 }
 
-LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
-                                                      WPARAM w_param,
-                                                      LPARAM l_param) {
+LRESULT HWNDMessageHandler::HandlePointerEventTypePenClient(UINT message,
+                                                            WPARAM w_param,
+                                                            LPARAM l_param) {
   UINT32 pointer_id = GET_POINTERID_WPARAM(w_param);
   using GetPointerPenInfoFn = BOOL(WINAPI*)(UINT32, POINTER_PEN_INFO*);
   POINTER_PEN_INFO pointer_pen_info;

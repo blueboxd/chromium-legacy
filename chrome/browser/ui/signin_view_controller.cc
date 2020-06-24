@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/reauth_result.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/signin_reauth_view_controller.h"
@@ -232,6 +233,8 @@ SigninViewController::ShowReauthPrompt(
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
 
   if (account_id != primary_account_id) {
+    signin_ui_util::RecordTransactionalReauthResult(
+        access_point, signin::ReauthResult::kAccountNotSignedIn);
     std::move(wrapped_reauth_callback)
         .Run(signin::ReauthResult::kAccountNotSignedIn);
     return abort_handle;

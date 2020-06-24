@@ -88,6 +88,9 @@ MoveToAccountStoreBubbleView::MoveToAccountStoreBubbleView(
   SetAcceptCallback(
       base::BindOnce(&MoveToAccountStoreBubbleController::AcceptMove,
                      base::Unretained(&controller_)));
+  SetCancelCallback(
+      base::BindOnce(&MoveToAccountStoreBubbleController::RejectMove,
+                     base::Unretained(&controller_)));
 }
 
 MoveToAccountStoreBubbleView::~MoveToAccountStoreBubbleView() = default;

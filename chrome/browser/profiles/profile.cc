@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -107,10 +108,19 @@ class ChromeVariationsClient : public variations::VariationsClient {
   content::BrowserContext* browser_context_;
 };
 
+const char kDevToolsOTRProfileIDPrefix[] = "Devtools::BrowserContext";
 }  // namespace
 
 Profile::OTRProfileID::OTRProfileID(const std::string& profile_id)
     : profile_id_(profile_id) {}
+
+bool Profile::OTRProfileID::AllowsBrowserWindows() const {
+  // Non-Primary OTR profiles are not supposed to create Browser windows.
+  // DevTools::BrowserContext is an exception to this ban.
+  return *this == PrimaryID() ||
+         base::StartsWith(profile_id_, kDevToolsOTRProfileIDPrefix,
+                          base::CompareCase::SENSITIVE);
+}
 
 // static
 const Profile::OTRProfileID Profile::OTRProfileID::PrimaryID() {
@@ -125,6 +135,11 @@ Profile::OTRProfileID Profile::OTRProfileID::CreateUnique(
     const std::string& profile_id_prefix) {
   return OTRProfileID(base::StringPrintf("%s-%i", profile_id_prefix.c_str(),
                                          first_unused_index_++));
+}
+
+// static
+Profile::OTRProfileID Profile::OTRProfileID::CreateUniqueForDevTools() {
+  return CreateUnique(kDevToolsOTRProfileIDPrefix);
 }
 
 const std::string& Profile::OTRProfileID::ToString() const {

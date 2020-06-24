@@ -164,8 +164,7 @@ void ChooseImportOrKeepDataSepareteDialog(id<GREYMatcher> choiceButtonMatcher) {
 
 // Tests that signing out of a managed account from the Settings works
 // correctly.
-// TODO(crbug.com/1097994): Re-enable the test.
-- (void)DISABLED_testSignInDisconnectFromChromeManaged {
+- (void)testSignInDisconnectFromChromeManaged {
   FakeChromeIdentity* fakeIdentity = [SigninEarlGreyUtils fakeManagedIdentity];
 
   // Sign-in with a managed account.

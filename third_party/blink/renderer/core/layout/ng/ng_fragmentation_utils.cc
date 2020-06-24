@@ -228,17 +228,30 @@ void FinishFragmentation(NGBlockNode node,
                          const NGConstraintSpace& space,
                          const NGBlockBreakToken* previous_break_token,
                          const NGBoxStrut& border_padding,
-                         LayoutUnit fragments_total_block_size,
-                         LayoutUnit intrinsic_block_size,
                          LayoutUnit space_left,
                          NGBoxFragmentBuilder* builder) {
   LayoutUnit previously_consumed_block_size;
   if (previous_break_token && !previous_break_token->IsBreakBefore())
     previously_consumed_block_size = previous_break_token->ConsumedBlockSize();
 
-  LayoutUnit block_size =
+  LayoutUnit fragments_total_block_size = builder->FragmentsTotalBlockSize();
+  LayoutUnit wanted_block_size =
       fragments_total_block_size - previously_consumed_block_size;
-  DCHECK_GE(block_size, LayoutUnit());
+  DCHECK_GE(wanted_block_size, LayoutUnit());
+
+  LayoutUnit final_block_size = wanted_block_size;
+  if (space_left != kIndefiniteSize)
+    final_block_size = std::min(final_block_size, space_left);
+  builder->SetConsumedBlockSize(previously_consumed_block_size +
+                                final_block_size);
+  builder->SetFragmentBlockSize(final_block_size);
+
+  if (space_left == kIndefiniteSize) {
+    // We don't know how space is available (initial column balancing pass), so
+    // we won't break.
+    builder->SetIsAtBlockEnd();
+    return;
+  }
 
   if (builder->HasChildBreakInside()) {
     // We broke before or inside one of our children. Even if we fit within the
@@ -246,11 +259,7 @@ void FinishFragmentation(NGBlockNode node,
     // in a parallel flow, we still need to prepare a break token for this node,
     // so that we can resume layout of its broken or unstarted children in the
     // next fragmentainer.
-    builder->SetConsumedBlockSize(std::min(space_left, block_size) +
-                                  previously_consumed_block_size);
-    builder->SetBlockSize(std::min(space_left, block_size));
-    builder->SetIntrinsicBlockSize(space_left);
-
+    //
     // If we're at the end of the node, we need to mark the outgoing break token
     // as such. This is a way for the parent algorithm to determine whether we
     // need to insert a break there, or whether we may continue with any sibling
@@ -265,13 +274,11 @@ void FinishFragmentation(NGBlockNode node,
       builder->SetIsAtBlockEnd();
       // We entered layout already at the end of the block (but with overflowing
       // children). So we should take up no more space on our own.
-      DCHECK_EQ(block_size, LayoutUnit());
-    } else if (block_size <= space_left) {
-      // We have room for the calculated block-size in the current fragmentainer
-      // (and we're not a building the fragmentainer itself; those never reach
-      // the end, until we're past all content, in-flow or not), but we need to
-      // figure out whether this node is going to produce more non-zero
-      // block-size fragments or not.
+      DCHECK_EQ(wanted_block_size, LayoutUnit());
+    } else if (wanted_block_size <= space_left) {
+      // We have room for the calculated block-size in the current
+      // fragmentainer, but we need to figure out whether this node is going to
+      // produce more non-zero block-size fragments or not.
       //
       // If the block-size is constrained / fixed (in which case
       // IsNodeFullyGrown() will return true now), we know that we're at the
@@ -294,10 +301,9 @@ void FinishFragmentation(NGBlockNode node,
     return;
   }
 
-  if (block_size > space_left) {
+  if (wanted_block_size > space_left) {
     // No child inside broke, but we need a break inside this block anyway, due
     // to its size.
-    builder->SetConsumedBlockSize(space_left + previously_consumed_block_size);
     builder->SetDidBreakSelf();
     NGBreakAppeal break_appeal = kBreakAppealPerfect;
     if (!previously_consumed_block_size) {
@@ -312,18 +318,13 @@ void FinishFragmentation(NGBlockNode node,
         break_appeal = kBreakAppealLastResort;
     }
     builder->SetBreakAppeal(break_appeal);
-    builder->SetBlockSize(space_left);
-    builder->SetIntrinsicBlockSize(space_left);
     if (space.BlockFragmentationType() == kFragmentColumn &&
         !space.IsInitialColumnBalancingPass())
-      builder->PropagateSpaceShortage(block_size - space_left);
+      builder->PropagateSpaceShortage(wanted_block_size - space_left);
     return;
   }
 
   // The end of the block fits in the current fragmentainer.
-  builder->SetConsumedBlockSize(previously_consumed_block_size + block_size);
-  builder->SetBlockSize(block_size);
-  builder->SetIntrinsicBlockSize(intrinsic_block_size);
   builder->SetIsAtBlockEnd();
 }
 

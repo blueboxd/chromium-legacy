@@ -1028,8 +1028,9 @@ bool Validator::ValidateGlobalNetworkConfiguration(
   // Ensure the list contains only legitimate network type identifiers.
   const std::vector<const char*> valid_network_type_values = {
       ::onc::network_config::kCellular, ::onc::network_config::kEthernet,
-      ::onc::network_config::kWiFi, ::onc::network_config::kWimaxDeprecated,
-      ::onc::network_config::kTether};
+      ::onc::network_config::kTether,   ::onc::network_config::kWiFi,
+      ::onc::network_config::kVPN,      ::onc::network_config::kWimaxDeprecated,
+  };
   if (!ListFieldContainsValidValues(
           *result, ::onc::global_network_config::kDisableNetworkTypes,
           valid_network_type_values)) {

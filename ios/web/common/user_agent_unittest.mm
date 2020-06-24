@@ -37,8 +37,12 @@ using UserAgentTest = PlatformTest;
 
 // Tests conversions between UserAgentType values and their descriptions
 TEST_F(UserAgentTest, UserAgentTypeDescription) {
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(features::kUseDefaultUserAgentInWebClient);
+
   const std::string kMobileDescription("MOBILE");
   const std::string kDesktopDescription("DESKTOP");
+  const std::string kAutomaticDescription("AUTOMATIC");
   const std::string kNoneDescription("NONE");
   const std::string kInvalidDescription(
       "not returned by GetUserAgentTypeDescription()");
@@ -46,11 +50,15 @@ TEST_F(UserAgentTest, UserAgentTypeDescription) {
             GetUserAgentTypeDescription(UserAgentType::MOBILE));
   EXPECT_EQ(kDesktopDescription,
             GetUserAgentTypeDescription(UserAgentType::DESKTOP));
+  EXPECT_EQ(kAutomaticDescription,
+            GetUserAgentTypeDescription(UserAgentType::AUTOMATIC));
   EXPECT_EQ(kNoneDescription, GetUserAgentTypeDescription(UserAgentType::NONE));
   EXPECT_EQ(UserAgentType::MOBILE,
             GetUserAgentTypeWithDescription(kMobileDescription));
   EXPECT_EQ(UserAgentType::DESKTOP,
             GetUserAgentTypeWithDescription(kDesktopDescription));
+  EXPECT_EQ(UserAgentType::AUTOMATIC,
+            GetUserAgentTypeWithDescription(kAutomaticDescription));
   EXPECT_EQ(UserAgentType::NONE,
             GetUserAgentTypeWithDescription(kNoneDescription));
   EXPECT_EQ(UserAgentType::NONE,

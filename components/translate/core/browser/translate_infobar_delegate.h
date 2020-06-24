@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/feature_list.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -126,6 +125,8 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   bool is_error() const {
     return step_ == translate::TRANSLATE_STEP_TRANSLATE_ERROR;
   }
+
+  void OnErrorShown(TranslateErrors::Type error_type);
 
   // Return true if the translation was triggered by a menu entry instead of
   // via an infobar/bubble or preference.

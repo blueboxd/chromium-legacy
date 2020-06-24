@@ -308,13 +308,15 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     @CalledByNative
-    private void onPageTranslated(int errorType) {
+    private boolean onPageTranslated(int errorType) {
+        boolean errorUIShown = false;
         incrementAndRecordTranslationsPerPageCount();
         if (mTabLayout != null) {
             mTabLayout.hideProgressBar();
             if (errorType != 0) {
                 Toast.makeText(getContext(), R.string.translate_infobar_error, Toast.LENGTH_SHORT)
                         .show();
+                errorUIShown = true;
                 // Disable OnTabSelectedListener then revert selection.
                 mTabLayout.removeOnTabSelectedListener(this);
                 mTabLayout.getTabAt(SOURCE_TAB_INDEX).select();
@@ -322,6 +324,7 @@ public class TranslateCompactInfoBar extends InfoBar
                 mTabLayout.addOnTabSelectedListener(this);
             }
         }
+        return errorUIShown;
     }
 
     @CalledByNative

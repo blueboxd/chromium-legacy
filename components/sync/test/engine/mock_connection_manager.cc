@@ -426,7 +426,6 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateFromLastCommit() {
     sync_pb::SyncEntity* ent = GetUpdateResponse()->add_entries();
     ent->CopyFrom(last_sent_commit().entries(0));
     ent->clear_insert_after_item_id();
-    ent->clear_old_parent_id();
     ent->set_version(last_commit_response().entryresponse(0).version());
     ent->set_id_string(last_commit_response().entryresponse(0).id_string());
 

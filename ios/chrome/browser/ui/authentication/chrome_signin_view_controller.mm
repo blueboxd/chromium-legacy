@@ -130,6 +130,7 @@ enum AuthenticationState {
 }  // namespace
 
 @interface ChromeSigninViewController () <
+    ChromeIdentityInteractionManagerDelegate,
     ChromeIdentityServiceObserver,
     MDCActivityIndicatorDelegate,
     UIAdaptivePresentationControllerDelegate,
@@ -568,7 +569,7 @@ enum AuthenticationState {
   _interactionManager =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateChromeIdentityInteractionManager(self.browserState);
+          ->CreateChromeIdentityInteractionManager(self.browserState, self);
   __weak ChromeSigninViewController* weakSelf = self;
   SigninCompletionCallback completion =
       ^(ChromeIdentity* identity, NSError* error) {

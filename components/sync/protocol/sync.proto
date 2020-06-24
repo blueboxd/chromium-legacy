@@ -194,11 +194,8 @@ message SyncEntity {
   // Present in both GetUpdatesResponse and CommitMessage.
   optional string parent_id_string = 2;
 
-  // old_parent_id is only set in commits and indicates the old server
-  // parent(s) to remove. When omitted, the old parent is the same as
-  // the new.
-  // Present only in CommitMessage.
-  optional string old_parent_id = 3;
+  reserved 3;
+  reserved "old_parent_id";
 
   // The version of this item -- a monotonically increasing value that is
   // maintained by for each item.  If zero in a CommitMessage, the server

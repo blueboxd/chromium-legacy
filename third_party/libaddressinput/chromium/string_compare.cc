@@ -6,8 +6,8 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "base/lazy_instance.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
 

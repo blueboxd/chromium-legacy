@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/bits.h"
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 

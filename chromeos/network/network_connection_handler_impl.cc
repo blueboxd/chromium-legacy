@@ -20,10 +20,13 @@
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_event_log.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/network/network_type_pattern.h"
 #include "chromeos/network/network_util.h"
+#include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/shill_property_util.h"
 #include "dbus/object_path.h"
 #include "net/cert/x509_certificate.h"
@@ -135,6 +138,17 @@ std::string GetDefaultUserProfilePath(const NetworkState* network) {
       NetworkHandler::Get()->network_profile_handler()->GetDefaultUserProfile();
   return profile ? profile->path
                  : NetworkProfileHandler::GetSharedProfilePath();
+}
+
+bool IsVpnProhibited() {
+  if (!NetworkHandler::IsInitialized())
+    return false;
+
+  std::vector<std::string> prohibited_technologies =
+      NetworkHandler::Get()
+          ->prohibited_technologies_handler()
+          ->GetCurrentlyProhibitedTechnologies();
+  return base::Contains(prohibited_technologies, shill::kTypeVPN);
 }
 
 }  // namespace
@@ -293,6 +307,13 @@ void NetworkConnectionHandlerImpl::ConnectToNetwork(
         InvokeConnectErrorCallback(service_path, error_callback,
                                    kErrorTetherAttemptWithNoDelegate);
       }
+      return;
+    }
+
+    if (NetworkTypePattern::VPN().MatchesType(network->type()) &&
+        IsVpnProhibited()) {
+      InvokeConnectErrorCallback(service_path, error_callback,
+                                 kErrorBlockedByPolicy);
       return;
     }
   }

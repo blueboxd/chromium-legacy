@@ -116,6 +116,9 @@ class Profile : public content::BrowserContext {
     // Creates a unique OTR profile id with the given profile id prefix.
     static OTRProfileID CreateUnique(const std::string& profile_id_prefix);
 
+    // Creates a unique OTR profile id to be used for DevTools browser contexts.
+    static OTRProfileID CreateUniqueForDevTools();
+
     bool operator==(const OTRProfileID& other) const {
       return profile_id_ == other.profile_id_;
     }
@@ -127,6 +130,8 @@ class Profile : public content::BrowserContext {
     bool operator<(const OTRProfileID& other) const {
       return profile_id_ < other.profile_id_;
     }
+
+    bool AllowsBrowserWindows() const;
 
 #if defined(OS_ANDROID)
     // Constructs a Java OTRProfileID from the provided C++ OTRProfileID

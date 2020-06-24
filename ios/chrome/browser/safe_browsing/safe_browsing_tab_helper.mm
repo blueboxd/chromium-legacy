@@ -15,6 +15,9 @@
 #include "components/safe_browsing/core/features.h"
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #include "ios/chrome/browser/application_context.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/prerender/prerender_service.h"
+#import "ios/chrome/browser/prerender/prerender_service_factory.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
@@ -358,13 +361,23 @@ void SafeBrowsingTabHelper::PolicyDecider::OnMainFrameUrlQueryDecided(
   // an overall decision for the redirect chain can be computed, invoke this
   // URL's callback with the overall decision.
   auto& response_callback = pending_main_frame_query_->response_callback;
-  if (response_callback.is_null())
-    return;
-  base::Optional<web::WebStatePolicyDecider::PolicyDecision> overall_decision =
-      MainFrameRedirectChainDecision();
-  if (overall_decision) {
-    std::move(response_callback).Run(*overall_decision);
-    pending_main_frame_redirect_chain_.clear();
+  if (!response_callback.is_null()) {
+    base::Optional<web::WebStatePolicyDecider::PolicyDecision>
+        overall_decision = MainFrameRedirectChainDecision();
+    if (overall_decision) {
+      std::move(response_callback).Run(*overall_decision);
+      pending_main_frame_redirect_chain_.clear();
+    }
+  }
+
+  // When a prendered page is unsafe, cancel the prerender.
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState()));
+  if (prerender_service &&
+      prerender_service->IsWebStatePrerendered(web_state()) &&
+      decision.ShouldCancelNavigation()) {
+    prerender_service->CancelPrerender();
   }
 }
 
@@ -401,6 +414,17 @@ void SafeBrowsingTabHelper::PolicyDecider::OnSubFrameUrlQueryDecided(
     std::move(response_callback).Run(decision);
   }
   sub_frame_query.response_callbacks.clear();
+
+  // When a subframe in a prerendered page is unsafe, cancel the prerender.
+  PrerenderService* prerender_service =
+      PrerenderServiceFactory::GetForBrowserState(
+          ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState()));
+  if (prerender_service &&
+      prerender_service->IsWebStatePrerendered(web_state()) &&
+      decision.ShouldCancelNavigation()) {
+    prerender_service->CancelPrerender();
+    return;
+  }
 
   // Error pages are only shown for cancelled main frame navigations, so
   // executing the sub frame response callbacks with the decision will not

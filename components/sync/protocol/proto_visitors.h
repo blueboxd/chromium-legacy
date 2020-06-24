@@ -816,7 +816,6 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
 VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(id_string);
   VISIT(parent_id_string);
-  VISIT(old_parent_id);
   VISIT(version);
   VISIT(mtime);
   VISIT(ctime);

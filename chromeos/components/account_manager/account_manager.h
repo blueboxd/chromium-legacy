@@ -16,7 +16,6 @@
 #include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
-#include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
@@ -93,6 +92,8 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   class Observer {
    public:
     Observer();
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
     virtual ~Observer();
 
     // Called when the token for |account| is updated/inserted.
@@ -110,13 +111,12 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
     // |AccountManager::CreateAccessTokenFetcher|), must clear their cache entry
     // for this |account| on receiving this callback.
     virtual void OnAccountRemoved(const Account& account) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
   // Note: |Initialize| MUST be called at least once on this object.
   AccountManager();
+  AccountManager(const AccountManager&) = delete;
+  AccountManager& operator=(const AccountManager&) = delete;
   virtual ~AccountManager();
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
@@ -400,7 +400,6 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<AccountManager> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
 
 // For logging.

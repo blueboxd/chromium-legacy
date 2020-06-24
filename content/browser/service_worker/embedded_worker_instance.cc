@@ -773,10 +773,6 @@ class EmbeddedWorkerInstance::StartTask {
                             instance_->embedded_worker_id()),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "StartSituation",
         ServiceWorkerMetrics::StartSituationToString(start_situation));
-    if (is_installed_) {
-      ServiceWorkerMetrics::RecordProcessCreated(
-          start_situation == ServiceWorkerMetrics::StartSituation::NEW_PROCESS);
-    }
 
     if (started_during_browser_startup_)
       start_situation = ServiceWorkerMetrics::StartSituation::DURING_STARTUP;

@@ -15,6 +15,7 @@
 #include "components/autofill_assistant/browser/generic_ui.pb.h"
 
 namespace autofill_assistant {
+class RadioButtonController;
 class ViewHandlerAndroid;
 
 namespace android_interactions {
@@ -99,6 +100,11 @@ void ClearViewContainer(const std::string& view_identifier,
 bool AttachViewToParent(base::android::ScopedJavaGlobalRef<jobject> jview,
                         const std::string& parent_view_identifier,
                         ViewHandlerAndroid* view_handler);
+
+void UpdateRadioButtonGroup(
+    base::WeakPtr<RadioButtonController> radio_button_controller,
+    const std::string& radio_group,
+    const std::string& model_identifier);
 
 }  // namespace android_interactions
 }  // namespace autofill_assistant

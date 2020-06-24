@@ -94,7 +94,9 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
         &GaiaTokenRevocationRequest::Start, weak_factory_.GetWeakPtr());
     delay_network_call_runner.Run(std::move(start_revoke_token));
   }
-
+  GaiaTokenRevocationRequest(const GaiaTokenRevocationRequest&) = delete;
+  GaiaTokenRevocationRequest& operator=(const GaiaTokenRevocationRequest&) =
+      delete;
   ~GaiaTokenRevocationRequest() override = default;
 
   // GaiaAuthConsumer overrides.
@@ -125,7 +127,6 @@ class AccountManager::GaiaTokenRevocationRequest : public GaiaAuthConsumer {
   std::string refresh_token_;
 
   base::WeakPtrFactory<GaiaTokenRevocationRequest> weak_factory_{this};
-  DISALLOW_COPY_AND_ASSIGN(GaiaTokenRevocationRequest);
 };
 
 bool AccountManager::AccountKey::IsValid() const {

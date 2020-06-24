@@ -223,22 +223,6 @@ void InteractionHandlerAndroid::OnEvent(const EventHandler::EventKey& key) {
   }
 }
 
-void InteractionHandlerAndroid::AddRadioButtonToGroup(
-    const std::string& radio_group,
-    const std::string& model_identifier) {
-  radio_groups_[radio_group].emplace_back(model_identifier);
-}
-
-void InteractionHandlerAndroid::UpdateRadioButtonGroup(
-    const std::string& radio_group,
-    const std::string& selected_model_identifier) {
-  if (radio_groups_.find(radio_group) == radio_groups_.end()) {
-    return;
-  }
-  basic_interactions_->UpdateRadioButtonGroup(radio_groups_[radio_group],
-                                              selected_model_identifier);
-}
-
 base::Optional<InteractionHandlerAndroid::InteractionCallback>
 InteractionHandlerAndroid::CreateInteractionCallbackFromProto(
     const CallbackProto& proto) {

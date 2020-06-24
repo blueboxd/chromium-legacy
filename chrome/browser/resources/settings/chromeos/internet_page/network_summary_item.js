@@ -160,7 +160,23 @@ Polymer({
     return (activeNetworkState !== undefined &&
             OncMojo.connectionStateIsConnected(
                 activeNetworkState.connectionState)) ||
-        this.isPolicySource(activeNetworkState.source);
+        this.isPolicySource(activeNetworkState.source) ||
+        this.isProhibitedVpn_();
+  },
+
+  /**
+   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
+   * @return {!CrPolicyIndicatorType} Device policy indicator for VPN when
+   *     disabled by policy and an indicator corresponding to the source of the
+   *     active network state otherwise.
+   * @private
+   */
+  getPolicyIndicatorType_(activeNetworkState) {
+    if (this.isProhibitedVpn_()) {
+      return this.getIndicatorTypeForSource(
+          chromeos.networkConfig.mojom.OncSource.kDevicePolicy);
+    }
+    return this.getIndicatorTypeForSource(activeNetworkState.source);
   },
 
   /**
@@ -196,12 +212,17 @@ Polymer({
 
   /**
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
-   * @return {boolean} Whether or not the device state is enabled.
+   * @return {boolean} True if the device is enabled or if it is a VPN. Note:
+   *     This function will always return true for VPNs because VPNs can be
+   *     disabled by policy only for built-in VPNs (OpenVPN & L2TP), but always
+   *     enabled for other VPN providers. To know whether built-in VPNs are
+   *     disabled, use builtInVpnProhibited_() instead.
    * @private
    */
   deviceIsEnabled_(deviceState) {
     return !!deviceState &&
-        deviceState.deviceState == mojom.DeviceStateType.kEnabled;
+        (deviceState.type == mojom.NetworkType.kVPN ||
+         deviceState.deviceState == mojom.DeviceStateType.kEnabled);
   },
 
   /**
@@ -262,13 +283,75 @@ Polymer({
   },
 
   /**
-   * @param {!OncMojo.NetworkStateProperties} activeNetworkState
+   * @return {boolean} True if VPNs are disabled by policy and the current
+   *     device is VPN.
+   * @private
+   */
+  isProhibitedVpn_() {
+    return !!this.deviceState &&
+        this.deviceState.type === mojom.NetworkType.kVPN &&
+        this.builtInVpnProhibited_(this.deviceState);
+  },
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.VpnType} vpnType
+   * @return {boolean}
+   * @private
+   */
+  isBuiltInVpnType_(vpnType) {
+    return vpnType === chromeos.networkConfig.mojom.VpnType.kL2TPIPsec ||
+        vpnType === chromeos.networkConfig.mojom.VpnType.kOpenVPN;
+  },
+
+  /**
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
+   * @return {boolean} True if at least one non-native VPN is configured.
+   * @private
+   */
+  hasNonBuiltInVpn_(networkStateList) {
+    const nonBuiltInVpnIndex = networkStateList.findIndex((networkState) => {
+      return !this.isBuiltInVpnType_(networkState.typeState.vpn.type);
+    });
+    return nonBuiltInVpnIndex !== -1;
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @return {boolean} True if the built-in VPNs are disabled by policy.
+   * @private
+   */
+  builtInVpnProhibited_(deviceState) {
+    return !!deviceState &&
+        deviceState.deviceState ===
+        chromeos.networkConfig.mojom.DeviceStateType.kProhibited;
+  },
+
+  /**
+   * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
+   * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
+   * @return {boolean} True if there is any configured VPN for a non-disabled
+   *     VPN provider. Note: Only built-in VPN providers can be disabled by
+   *     policy at the moment.
+   * @private
+   */
+  anyVpnExists_(deviceState, networkStateList) {
+    return this.hasNonBuiltInVpn_(networkStateList) ||
+        (!this.builtInVpnProhibited_(deviceState) &&
+         networkStateList.length > 0);
+  },
+
+  /**
+   * @param {!OncMojo.NetworkStateProperties|undefined} activeNetworkState
    * @param {!OncMojo.DeviceStateProperties|undefined} deviceState
    * @param {!Array<!OncMojo.NetworkStateProperties>} networkStateList
    * @return {boolean}
    * @private
    */
   showDetailsIsVisible_(activeNetworkState, deviceState, networkStateList) {
+    if (!!deviceState && deviceState.type == mojom.NetworkType.kVPN) {
+      return this.anyVpnExists_(deviceState, networkStateList);
+    }
+
     return this.deviceIsEnabled_(deviceState) &&
         (!!activeNetworkState.guid || networkStateList.length > 0);
   },
@@ -290,11 +373,13 @@ Polymer({
       // available, even if there are currently no associated networks.
       return true;
     }
+
+    if (type === mojom.NetworkType.kVPN) {
+      return this.anyVpnExists_(deviceState, networkStateList);
+    }
+
     let minlen;
-    if (type == mojom.NetworkType.kVPN) {
-      // VPN subpage provides provider info so show if there are any networks.
-      minlen = 1;
-    } else if (type == mojom.NetworkType.kWiFi) {
+    if (type == mojom.NetworkType.kWiFi) {
       // WiFi subpage includes 'Known Networks' so always show, even if the
       // technology is still enabling / scanning, or none are visible.
       minlen = 0;
@@ -306,6 +391,10 @@ Polymer({
   },
 
   /**
+   * This handles clicking the network summary item row. Clicking this row can
+   * lead to toggling device enablement or showing the corresponding networks
+   * list or showing details about a network or doing nothing based on the
+   * device and networks states.
    * @param {!Event} event The enable button event.
    * @private
    */
@@ -318,10 +407,14 @@ Polymer({
     } else if (this.shouldShowSubpage_(
                    this.deviceState, this.networkStateList)) {
       this.fire('show-networks', this.deviceState.type);
-    } else if (this.activeNetworkState.guid) {
-      this.fire('show-detail', this.activeNetworkState);
-    } else if (this.networkStateList.length > 0) {
-      this.fire('show-detail', this.networkStateList[0]);
+    } else if (this.showDetailsIsVisible_(
+                   this.activeNetworkState, this.deviceState,
+                   this.networkStateList)) {
+      if (this.activeNetworkState.guid) {
+        this.fire('show-detail', this.activeNetworkState);
+      } else if (this.networkStateList.length > 0) {
+        this.fire('show-detail', this.networkStateList[0]);
+      }
     }
     event.stopPropagation();
   },
@@ -346,8 +439,8 @@ Polymer({
     // Item is actionable if tapping should show either networks subpage or the
     // network details page.
     return this.shouldShowSubpage_(this.deviceState, this.networkStateList) ||
-        !!(this.activeNetworkState && this.activeNetworkState.guid) ||
-        this.networkStateList.length > 0;
+        this.showDetailsIsVisible_(
+            activeNetworkState, deviceState, networkStateList);
   },
 
   /**

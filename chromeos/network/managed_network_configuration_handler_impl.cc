@@ -598,7 +598,7 @@ void ManagedNetworkConfigurationHandlerImpl::SetPolicy(
           ::onc::global_network_config::kDisableNetworkTypes,
           &prohibited_list) &&
       prohibited_technologies_handler_) {
-    // Prohibited technologies are only allowed in user policy.
+    // Prohibited technologies are only allowed in device policy.
     DCHECK_EQ(::onc::ONC_SOURCE_DEVICE_POLICY, onc_source);
 
     prohibited_technologies_handler_->SetProhibitedTechnologies(

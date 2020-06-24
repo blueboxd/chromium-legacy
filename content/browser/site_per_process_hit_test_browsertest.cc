@@ -685,26 +685,26 @@ bool IsScreenTooSmallForPopup(const ScreenInfo& screen_info) {
 
 }  // namespace
 
-class SitePerProcessHitTestBrowserTest : public SitePerProcessBrowserTest {
+class SitePerProcessHitTestBrowserTest : public SitePerProcessBrowserTestBase {
  public:
   SitePerProcessHitTestBrowserTest() {}
 
 #if defined(USE_AURA)
   void PreRunTestOnMainThread() override {
-    SitePerProcessBrowserTest::PreRunTestOnMainThread();
+    SitePerProcessBrowserTestBase::PreRunTestOnMainThread();
     // Disable system mouse events, which can interfere with tests.
     shell()->window()->GetHost()->AddEventRewriter(&event_rewriter_);
   }
 
   void PostRunTestOnMainThread() override {
     shell()->window()->GetHost()->RemoveEventRewriter(&event_rewriter_);
-    SitePerProcessBrowserTest::PostRunTestOnMainThread();
+    SitePerProcessBrowserTestBase::PostRunTestOnMainThread();
   }
 #endif
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
   }
 
@@ -764,7 +764,7 @@ class SitePerProcessUserActivationHitTestBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     ui::PlatformEventSource::SetIgnoreNativePlatformEvents(true);
     feature_list_.InitAndEnableFeature(
         features::kBrowserVerifiedUserActivationMouse);

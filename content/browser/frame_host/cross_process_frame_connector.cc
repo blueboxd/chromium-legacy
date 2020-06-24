@@ -48,12 +48,13 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
     RenderFrameProxyHost* frame_proxy_in_parent_renderer)
     : FrameConnectorDelegate(IsUseZoomForDSFEnabled()),
       frame_proxy_in_parent_renderer_(frame_proxy_in_parent_renderer) {
-  // At this point, SetView() has not been called and so the associated RenderWidgetHost doesn't
-  // have a view yet. That means calling GetScreenInfo() on the associated RenderWidgetHost will
-  // just default to the primary display, which may not be appropriate. So instead we call
-  // GetScreenInfo() on the root RenderWidgetHost, which will be guaranteed to be on the correct
-  // display. All subsequent updates to |screen_info_| ultimately come from the root, so it makes
-  // sense to do it here as well.
+  // At this point, SetView() has not been called and so the associated
+  // RenderWidgetHost doesn't have a view yet. That means calling
+  // GetScreenInfo() on the associated RenderWidgetHost will just default to the
+  // primary display, which may not be appropriate. So instead we call
+  // GetScreenInfo() on the root RenderWidgetHost, which will be guaranteed to
+  // be on the correct display. All subsequent updates to |screen_info_|
+  // ultimately come from the root, so it makes sense to do it here as well.
   RootRenderFrameHost(current_child_frame_host())
       ->GetRenderWidgetHost()
       ->GetScreenInfo(&screen_info_);

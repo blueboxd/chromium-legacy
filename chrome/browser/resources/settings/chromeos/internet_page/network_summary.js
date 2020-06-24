@@ -205,13 +205,6 @@ Polymer({
 
     this.defaultNetwork = firstConnectedNetwork;
 
-    // Create a VPN entry in deviceStates if there are any VPN networks.
-    if (newNetworkStateLists[mojom.NetworkType.kVPN].length > 0) {
-      newDeviceStates[mojom.NetworkType.kVPN] = {
-        type: mojom.NetworkType.kVPN,
-        deviceState: chromeos.networkConfig.mojom.DeviceStateType.kEnabled,
-      };
-    }
 
     // Push the active networks onto newActiveNetworkStates in order based on
     // device priority, creating an empty state for devices with no networks.
@@ -221,6 +214,14 @@ Polymer({
       const device = newDeviceStates[type];
       if (!device) {
         continue;  // The technology for this device type is unavailable.
+      }
+
+      // A VPN device state will always exist in |deviceStateList| even if there
+      // is no active VPN. This check is to add the VPN network summary item
+      // only if there is at least one active VPN.
+      if (device.type === mojom.NetworkType.kVPN &&
+          !activeNetworkStatesByType.has(device.type)) {
+        continue;
       }
 
       // If both 'Tether' and 'Cellular' technologies exist, merge the network

@@ -9,7 +9,6 @@
 #include <cstring>
 
 #include "base/check_op.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/notreached.h"
 #include "base/optional.h"

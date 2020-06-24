@@ -11,7 +11,7 @@
 #include <hb-subset.h>
 // clang-format on
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/stl_util.h"
 #include "third_party/harfbuzz-ng/utils/hb_scoped.h"
 

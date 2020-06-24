@@ -44,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ElementAreaProto;
@@ -485,9 +486,14 @@ public class AutofillAssistantChromeTabIntegrationTest {
 
         waitUntilViewMatchesCondition(withText("Prompt"), isCompletelyDisplayed());
 
-        // Clicking location bar hides UI.
+        // Clicking location bar hides UI and shows the keyboard.
         onView(withId(org.chromium.chrome.R.id.url_bar)).perform(click());
         waitUntilViewAssertionTrue(withText("Prompt"), doesNotExist(), 3000L);
+
+        ChromeTabbedActivity activity = mTestRule.getActivity();
+        assertThat(activity.getWindowAndroid().getKeyboardDelegate().isKeyboardShowing(
+                           activity, activity.getCompositorViewHolder()),
+                is(true));
 
         // Closing keyboard brings it back.
         Espresso.pressBack();

@@ -42,9 +42,13 @@ void NGFragmentItemsBuilder::SetCurrentLine(
 #if DCHECK_IS_ON()
   current_line_fragment_ = &line;
 #endif
-  DCHECK(!current_line_);
   DCHECK(current_line);
+  DCHECK(!current_line_);  // Check |AddLine| runs after |SetCurrentLine|.
   current_line_ = current_line;
+}
+
+void NGFragmentItemsBuilder::ClearCurrentLineForTesting() {
+  current_line_ = nullptr;
 }
 
 void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,

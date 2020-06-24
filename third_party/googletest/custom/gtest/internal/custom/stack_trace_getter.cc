@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <iterator>
 
-#include "base/logging.h"
+#include "base/check.h"
 
 std::string StackTraceGetter::CurrentStackTrace(int max_depth, int skip_count) {
   DCHECK(stack_trace_upon_leaving_gtest_)

@@ -21,6 +21,9 @@ class MoveToAccountStoreBubbleController : public PasswordBubbleControllerBase {
   // Called by the view when the user clicks the confirmation button.
   void AcceptMove();
 
+  // Called by the view when the user clicks the "No, thanks" button.
+  void RejectMove();
+
   // Returns either a large site icon or a fallback icon.
   gfx::Image GetProfileIcon();
 

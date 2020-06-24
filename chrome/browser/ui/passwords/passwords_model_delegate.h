@@ -121,6 +121,10 @@ class PasswordsModelDelegate {
   // used credential to their account store.
   virtual void MovePasswordToAccountStore() = 0;
 
+  // Called from the dialog controller when a user rejects moving the recently
+  // used credential to their account store.
+  virtual void BlockMovingPasswordToAccountStore() = 0;
+
   // Called from the dialog controller when the user chooses a credential.
   // Controller can be destroyed inside the method.
   virtual void ChooseCredential(

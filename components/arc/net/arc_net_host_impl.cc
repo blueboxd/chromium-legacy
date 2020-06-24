@@ -135,41 +135,32 @@ arc::mojom::NetworkType TranslateNetworkType(const std::string& type) {
   return arc::mojom::NetworkType::ETHERNET;
 }
 
-// Parse a shill IPConfig dictionary and appends the resulting mojo
-// IPConfiguration object to the given |ip_configs| vector, only if the
-// IPConfig dictionary contains an address and a gateway property.
-// TODO(b/143258259) Stop setting IPConfiguration objects once ARC has
-// migrated to the new IP configuration fields introduced in Change-Id
-// I08dfd5daa9ba2946a847e555bb94a01da3866eb9.
+// Parses a shill IPConfig dictionary and adds the relevant fields to
+// the given |network| NetworkConfiguration object.
 void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
                         const base::Value* shill_ipconfig) {
   if (!shill_ipconfig || !shill_ipconfig->is_dict())
     return;
 
-  auto ip_config = arc::mojom::IPConfiguration::New();
-  if (const auto* address_property =
-          shill_ipconfig->FindStringPath(shill::kAddressProperty)) {
-    ip_config->ip_address = *address_property;
-  }
-
-  if (ip_config->ip_address.empty())
-    return;
-
-  if (const auto* gateway_property =
-          shill_ipconfig->FindStringPath(shill::kGatewayProperty)) {
-    ip_config->gateway = *gateway_property;
-  }
-
-  if (ip_config->gateway.empty())
-    return;
-
-  ip_config->routing_prefix =
+  // Only set the IP address and gateway if both are defined and non empty.
+  const auto* address = shill_ipconfig->FindStringPath(shill::kAddressProperty);
+  const auto* gateway = shill_ipconfig->FindStringPath(shill::kGatewayProperty);
+  const int prefixlen =
       shill_ipconfig->FindIntPath(shill::kPrefixlenProperty).value_or(0);
+  if (address && !address->empty() && gateway && !gateway->empty()) {
+    if (prefixlen < 64) {
+      network->host_ipv4_prefix_length = prefixlen;
+      network->host_ipv4_address = *address;
+      network->host_ipv4_gateway = *gateway;
+    } else {
+      network->host_ipv6_prefix_length = prefixlen;
+      network->host_ipv6_global_addresses->push_back(*address);
+      network->host_ipv6_gateway = *gateway;
+    }
+  }
 
-  ip_config->type = (ip_config->routing_prefix < 64)
-                        ? arc::mojom::IPAddressType::IPV4
-                        : arc::mojom::IPAddressType::IPV6;
-
+  // If the user has overridden DNS with the "Google nameservers" UI options,
+  // the kStaticIPConfigProperty object will be empty except for DNS addresses.
   if (const auto* dns_list =
           shill_ipconfig->FindListKey(shill::kNameServersProperty)) {
     for (const auto& dns_value : dns_list->GetList()) {
@@ -182,27 +173,7 @@ void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
       if (dns == "0.0.0.0")
         continue;
 
-      ip_config->name_servers.push_back(dns);
       network->host_dns_addresses->push_back(dns);
-    }
-  }
-
-  switch (ip_config->type) {
-    case arc::mojom::IPAddressType::IPV4: {
-      network->host_ipv4_prefix_length = ip_config->routing_prefix;
-      network->host_ipv4_address = ip_config->ip_address;
-      network->host_ipv4_gateway = ip_config->gateway;
-      break;
-    }
-    case arc::mojom::IPAddressType::IPV6: {
-      network->host_ipv6_prefix_length = ip_config->routing_prefix;
-      network->host_ipv6_global_addresses->push_back(ip_config->ip_address);
-      network->host_ipv6_gateway = ip_config->gateway;
-      break;
-    }
-    default: {
-      NOTREACHED() << "No IPAddressType defined";
-      break;
     }
   }
 
@@ -217,8 +188,6 @@ void AddIpConfiguration(arc::mojom::NetworkConfiguration* network,
   const int mtu = shill_ipconfig->FindIntPath(shill::kMtuProperty).value_or(0);
   if (mtu > 0)
     network->host_mtu = mtu;
-
-  network->ip_configs->push_back(std::move(ip_config));
 }
 
 arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
@@ -226,7 +195,6 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
     const base::Value* shill_dict) {
   auto mojo = arc::mojom::NetworkConfiguration::New();
   // Initialize optional array fields to avoid null guards both here and in ARC.
-  mojo->ip_configs = std::vector<arc::mojom::IPConfigurationPtr>();
   mojo->host_ipv6_global_addresses = std::vector<std::string>();
   mojo->host_search_domains = std::vector<std::string>();
   mojo->host_dns_addresses = std::vector<std::string>();
@@ -264,11 +232,7 @@ arc::mojom::NetworkConfigurationPtr TranslateNetworkProperties(
 
   if (shill_dict) {
     for (const auto* property :
-         {shill::kIPConfigProperty, shill::kStaticIPConfigProperty,
-          shill::kSavedIPConfigProperty}) {
-      if (!mojo->ip_configs->empty())
-        break;
-
+         {shill::kStaticIPConfigProperty, shill::kSavedIPConfigProperty}) {
       AddIpConfiguration(mojo.get(), shill_dict->FindKey(property));
     }
   }

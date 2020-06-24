@@ -118,13 +118,13 @@ NGSimplifiedLayoutAlgorithm::NGSimplifiedLayoutAlgorithm(
   // Only block-flow is allowed to change its block-size during "simplified"
   // layout, all other layout types must remain the same size.
   if (is_block_flow) {
-    container_builder_.SetBlockSize(new_block_size);
+    container_builder_.SetFragmentBlockSize(new_block_size);
   } else {
     LayoutUnit old_block_size =
         NGFragment(writing_direction_.GetWritingMode(), physical_fragment)
             .BlockSize();
     DCHECK_EQ(old_block_size, new_block_size);
-    container_builder_.SetBlockSize(old_block_size);
+    container_builder_.SetFragmentBlockSize(old_block_size);
   }
 
   // We need the previous physical container size to calculate the position of

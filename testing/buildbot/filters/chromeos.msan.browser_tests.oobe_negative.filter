@@ -12,6 +12,8 @@
 -AutoEnrollmentWithStatistics.*
 -BlockingLoginTest.*
 -ChallengeResponseAuthKeysLoaderBrowserTest.*
+-DebugOverlayTest.*
+-DebugOverlayOnLoginTest.*
 -DemoSessionActiveDirectoryDeviceTest.*
 -DemoSessionConsumerDeviceTest.*
 -DemoSessionDemoDeviceModeTest.*

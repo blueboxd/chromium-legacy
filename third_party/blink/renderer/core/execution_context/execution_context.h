@@ -362,7 +362,7 @@ class CORE_EXPORT ExecutionContext : public Supplementable<ExecutionContext>,
 
   v8::Isolate* const isolate_;
 
-  Member<Agent> agent_;
+  const Member<Agent> agent_;
 
   bool DispatchErrorEventInternal(ErrorEvent*, SanitizeScriptErrors);
 

@@ -102,7 +102,7 @@ const CrPolicyNetworkBehaviorMojo = {
   /**
    * @param {!chromeos.networkConfig.mojom.OncSource} source
    * @return {!CrPolicyIndicatorType}
-   * @private
+   * @protected
    */
   getIndicatorTypeForSource(source) {
     if (source === chromeos.networkConfig.mojom.OncSource.kDevicePolicy) {

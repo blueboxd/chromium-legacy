@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "components/cloud_devices/common/description_items.h"
 

@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -44,6 +45,10 @@ const base::TimeDelta kReauthDialogTimeout = base::TimeDelta::FromSeconds(30);
 const char kReauthDonePath[] = "/embedded/xreauth/chrome?done";
 const char kReauthPath[] = "/embedded/xreauth/chrome";
 const char kChallengePath[] = "/challenge";
+constexpr char kTransactionalReauthResultToFillPasswordHistogram[] =
+    "Signin.TransactionalReauthResult.ToFillPassword";
+constexpr char kTransactionalReauthResultHistogram[] =
+    "Signin.TransactionalReauthResult";
 
 std::unique_ptr<net::test_server::BasicHttpResponse> CreateRedirectResponse(
     const GURL& redirect_url) {
@@ -353,4 +358,23 @@ IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest, CloseSAMLTab) {
   tab_strip_model->CloseWebContentsAt(tab_strip_model->active_index(),
                                       TabStripModel::CLOSE_USER_GESTURE);
   EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kDismissedByUser);
+}
+
+// Tests verifying that reauth results are recorded.
+IN_PROC_BROWSER_TEST_F(SigninReauthViewControllerBrowserTest,
+                       RecordsReauthResultsMetrics) {
+  base::HistogramTester histograms;
+
+  ShowReauthPrompt();
+  RedirectGaiaChallengeTo(https_server()->GetURL(kReauthDonePath));
+  ASSERT_TRUE(login_ui_test_utils::ConfirmReauthConfirmationDialog(
+      browser(), kReauthDialogTimeout));
+  EXPECT_EQ(WaitForReauthResult(), signin::ReauthResult::kSuccess);
+
+  histograms.ExpectUniqueSample(
+      kTransactionalReauthResultToFillPasswordHistogram,
+      signin::ReauthResult::kSuccess, 1);
+  histograms.ExpectTotalCount(kTransactionalReauthResultToFillPasswordHistogram,
+                              1);
+  histograms.ExpectTotalCount(kTransactionalReauthResultHistogram, 1);
 }

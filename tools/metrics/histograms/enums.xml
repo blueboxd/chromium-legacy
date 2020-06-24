@@ -23624,6 +23624,25 @@ Called by update_extension_histograms.py.-->
   <int value="2" label="OVERFLOWED"/>
 </enum>
 
+<enum name="ExtensionInProgressRequestState">
+  <int value="0" label="In progress"/>
+  <int value="1" label="In progress, but the final response has arrived"/>
+  <int value="2" label="Invalid, this must not be recorded"/>
+  <int value="3" label="The request is taken over by another request"/>
+  <int value="4" label="Rejected by a network error"/>
+  <int value="5" label="Rejected by a network error after receiving response"/>
+  <int value="6" label="Detached from the client"/>
+  <int value="7" label="Detached from the client after receiving response"/>
+  <int value="8" label="Rejected by onBeforeRequest()"/>
+  <int value="9" label="Rejected by onBeforeSendHeaders()"/>
+  <int value="10" label="Rejected by onHeadersReceived for the final response"/>
+  <int value="11"
+      label="Rejected by onHeadersReceived for a redirect response"/>
+  <int value="12" label="Rejected by onHeadersReceived for HTTP 401"/>
+  <int value="13" label="Rejected by onAuthRequired()"/>
+  <int value="14" label="The request is completed"/>
+</enum>
+
 <enum name="ExtensionInstallationCrxInstallError">
   <int value="0" label="NONE"/>
   <int value="1" label="CONVERT_USER_SCRIPT_TO_EXTENSION_FAILED"/>
@@ -63365,6 +63384,14 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="4" label="Typed URL with unknown reason"/>
   <int value="5"
       label="Signin primary account with force-sign-in policy enabled"/>
+</enum>
+
+<enum name="SigninReauthResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Account not signed in"/>
+  <int value="2" label="User dismissed Reauth"/>
+  <int value="3" label="Reauth page failed to load"/>
+  <int value="4" label="Reauth was cancelled"/>
 </enum>
 
 <enum name="SigninReauthStates">

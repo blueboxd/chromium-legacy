@@ -47,6 +47,10 @@ void MoveToAccountStoreBubbleController::AcceptMove() {
   return delegate_->AuthenticateUserForAccountStoreOptInAndMovePassword();
 }
 
+void MoveToAccountStoreBubbleController::RejectMove() {
+  return delegate_->BlockMovingPasswordToAccountStore();
+}
+
 gfx::Image MoveToAccountStoreBubbleController::GetProfileIcon() {
   if (!GetProfile())
     return gfx::Image();

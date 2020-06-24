@@ -109,7 +109,7 @@ CSSFontSelector* CreateCSSFontSelectorFor(Document& document) {
 
 StyleEngine::StyleEngine(Document& document)
     : document_(&document),
-      is_master_(!document.IsHTMLImport()),
+      is_html_import_(document.IsHTMLImport()),
       document_style_sheet_collection_(
           MakeGarbageCollected<DocumentStyleSheetCollection>(document)) {
   if (document.GetFrame()) {
@@ -120,7 +120,7 @@ StyleEngine::StyleEngine(Document& document)
   }
   if (document.IsInMainFrame())
     viewport_resolver_ = MakeGarbageCollected<ViewportStyleResolver>(document);
-  if (IsMaster())
+  if (!IsHTMLImport())
     global_rule_set_ = MakeGarbageCollected<CSSGlobalRuleSet>();
   if (auto* settings = GetDocument().GetSettings()) {
     if (!settings->GetForceDarkModeEnabled())
@@ -133,8 +133,8 @@ StyleEngine::StyleEngine(Document& document)
 
 StyleEngine::~StyleEngine() = default;
 
-inline Document* StyleEngine::Master() {
-  if (IsMaster())
+inline Document* StyleEngine::HTMLImportRootDocument() {
+  if (!IsHTMLImport())
     return document_;
   HTMLImportsController* import = GetDocument().ImportsController();
   // Document::ImportsController() can return null while executing its
@@ -173,10 +173,10 @@ TreeScopeStyleSheetCollection* StyleEngine::StyleSheetCollectionFor(
 
 const HeapVector<Member<StyleSheet>>& StyleEngine::StyleSheetsForStyleSheetList(
     TreeScope& tree_scope) {
-  DCHECK(Master());
+  DCHECK(HTMLImportRootDocument());
   TreeScopeStyleSheetCollection& collection =
       EnsureStyleSheetCollectionFor(tree_scope);
-  if (Master()->IsActive())
+  if (HTMLImportRootDocument()->IsActive())
     collection.UpdateStyleSheetList();
   return collection.StyleSheetsForStyleSheetList();
 }
@@ -277,7 +277,7 @@ void StyleEngine::RemovePendingSheet(Node& style_sheet_candidate_node,
 
 void StyleEngine::SetNeedsActiveStyleUpdate(TreeScope& tree_scope) {
   DCHECK(tree_scope.RootNode().isConnected());
-  if (GetDocument().IsActive() || !IsMaster())
+  if (GetDocument().IsActive() || IsHTMLImport())
     MarkTreeScopeDirty(tree_scope);
 }
 
@@ -432,7 +432,7 @@ void StyleEngine::MediaQueriesChangedInScope(TreeScope& tree_scope) {
 }
 
 void StyleEngine::WatchedSelectorsChanged() {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   global_rule_set_->InitWatchedSelectorsRuleSet(GetDocument());
   // TODO(futhark@chromium.org): Should be able to use RuleSetInvalidation here.
@@ -504,15 +504,15 @@ void StyleEngine::MediaQueryAffectingValueChanged(MediaValueChange change) {
 }
 
 void StyleEngine::UpdateActiveStyleSheetsInImport(
-    StyleEngine& master_engine,
+    StyleEngine& root_engine,
     DocumentStyleSheetCollector& parent_collector) {
   DCHECK(RuntimeEnabledFeatures::HTMLImportsEnabled(
       GetDocument().GetExecutionContext()));
-  DCHECK(!IsMaster());
+  DCHECK(IsHTMLImport());
   HeapVector<Member<StyleSheet>> sheets_for_list;
   ImportedDocumentStyleSheetCollector subcollector(parent_collector,
                                                    sheets_for_list);
-  GetDocumentStyleSheetCollection().CollectStyleSheets(master_engine,
+  GetDocumentStyleSheetCollection().CollectStyleSheets(root_engine,
                                                        subcollector);
   GetDocumentStyleSheetCollection().SwapSheetsForSheetList(sheets_for_list);
 
@@ -554,7 +554,7 @@ void StyleEngine::UpdateActiveStyleSheets() {
   if (!NeedsActiveStyleSheetUpdate())
     return;
 
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(!GetDocument().InStyleRecalc());
   DCHECK(GetDocument().IsActive());
 
@@ -686,7 +686,7 @@ void StyleEngine::CreateResolver() {
 
 void StyleEngine::ClearResolvers() {
   DCHECK(!GetDocument().InStyleRecalc());
-  DCHECK(IsMaster() || !resolver_);
+  DCHECK(!IsHTMLImport() || !resolver_);
 
   GetDocument().ClearScopedStyleResolver();
   for (TreeScope* tree_scope : active_tree_scopes_)
@@ -1381,7 +1381,7 @@ void StyleEngine::SetHttpDefaultStyle(const String& content) {
 }
 
 void StyleEngine::EnsureUAStyleForXrOverlay() {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   if (CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForXrOverlay()) {
     global_rule_set_->MarkDirty();
@@ -1390,7 +1390,7 @@ void StyleEngine::EnsureUAStyleForXrOverlay() {
 }
 
 void StyleEngine::EnsureUAStyleForFullscreen() {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   if (global_rule_set_->HasFullscreenUAStyle())
     return;
@@ -1400,7 +1400,7 @@ void StyleEngine::EnsureUAStyleForFullscreen() {
 }
 
 void StyleEngine::EnsureUAStyleForElement(const Element& element) {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   if (CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetsForElement(
           element)) {
@@ -1410,7 +1410,7 @@ void StyleEngine::EnsureUAStyleForElement(const Element& element) {
 }
 
 void StyleEngine::EnsureUAStyleForPseudoElement(PseudoId pseudo_id) {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   if (CSSDefaultStyleSheets::Instance()
           .EnsureDefaultStyleSheetsForPseudoElement(pseudo_id)) {
@@ -1420,7 +1420,7 @@ void StyleEngine::EnsureUAStyleForPseudoElement(PseudoId pseudo_id) {
 }
 
 bool StyleEngine::HasRulesForId(const AtomicString& id) const {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   return global_rule_set_->GetRuleFeatureSet().HasSelectorForId(id);
 }
@@ -1546,7 +1546,7 @@ void StyleEngine::InvalidateInitialData() {
 void StyleEngine::ApplyUserRuleSetChanges(
     const ActiveStyleSheetVector& old_style_sheets,
     const ActiveStyleSheetVector& new_style_sheets) {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   HeapHashSet<Member<RuleSet>> changed_rule_sets;
 
@@ -1613,7 +1613,7 @@ void StyleEngine::ApplyRuleSetChanges(
     TreeScope& tree_scope,
     const ActiveStyleSheetVector& old_style_sheets,
     const ActiveStyleSheetVector& new_style_sheets) {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   HeapHashSet<Member<RuleSet>> changed_rule_sets;
 
@@ -1736,7 +1736,7 @@ const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
 }
 
 bool StyleEngine::MediaQueryAffectedByViewportChange() {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   return EnsureMediaQueryEvaluator().DidResultsChange(
       global_rule_set_->GetRuleFeatureSet()
@@ -1744,7 +1744,7 @@ bool StyleEngine::MediaQueryAffectedByViewportChange() {
 }
 
 bool StyleEngine::MediaQueryAffectedByDeviceChange() {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   DCHECK(global_rule_set_);
   return EnsureMediaQueryEvaluator().DidResultsChange(
       global_rule_set_->GetRuleFeatureSet().DeviceDependentMediaQueryResults());
@@ -2054,7 +2054,7 @@ void StyleEngine::ViewportDefiningElementDidChange() {
 
 void StyleEngine::UpdateStyleInvalidationRoot(ContainerNode* ancestor,
                                               Node* dirty_node) {
-  DCHECK(IsMaster());
+  DCHECK(!IsHTMLImport());
   if (GetDocument().IsActive()) {
     if (in_dom_removal_) {
       ancestor = nullptr;

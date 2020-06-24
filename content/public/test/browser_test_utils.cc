@@ -39,6 +39,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/input/synthetic_touchscreen_pinch_gesture.h"
 #include "content/browser/renderer_host/render_frame_metadata_provider_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -3589,6 +3590,33 @@ void DidStartNavigationObserver::DidStartNavigation(NavigationHandle* handle) {
 void DidStartNavigationObserver::DidFinishNavigation(NavigationHandle* handle) {
   if (navigation_handle_ == handle)
     navigation_handle_ = nullptr;
+}
+
+ProxyDSFObserver::ProxyDSFObserver() {
+  RenderFrameProxyHost::SetCreatedCallbackForTesting(base::BindRepeating(
+      &ProxyDSFObserver::OnCreation, base::Unretained(this)));
+}
+
+ProxyDSFObserver::~ProxyDSFObserver() {
+  RenderFrameProxyHost::SetCreatedCallbackForTesting(
+      RenderFrameProxyHost::CreatedCallback());
+}
+
+void ProxyDSFObserver::WaitForOneProxyHostCreation() {
+  if (!proxy_host_created_dsf_.empty())
+    return;
+  runner_ = std::make_unique<base::RunLoop>();
+  runner_->Run();
+}
+
+void ProxyDSFObserver::OnCreation(RenderFrameProxyHost* rfph) {
+  // Not all RenderFrameProxyHosts will be created with a
+  // CrossProcessFrameConnector. We're only interested in the ones that do.
+  if (auto* cpfc = rfph->cross_process_frame_connector()) {
+    proxy_host_created_dsf_.push_back(cpfc->screen_info().device_scale_factor);
+  }
+  if (runner_)
+    runner_->Quit();
 }
 
 }  // namespace content

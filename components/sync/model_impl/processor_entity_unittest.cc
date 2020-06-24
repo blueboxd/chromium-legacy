@@ -447,6 +447,57 @@ TEST_F(ProcessorEntityTest, LocalDeletion) {
   EXPECT_FALSE(entity->HasCommitData());
 }
 
+// Test a local deletion followed by an undeletion (creation).
+TEST_F(ProcessorEntityTest, LocalUndeletion) {
+  std::unique_ptr<ProcessorEntity> entity = CreateSynced();
+  const std::string specifics_hash = entity->metadata().specifics_hash();
+
+  entity->Delete();
+  ASSERT_TRUE(entity->metadata().is_deleted());
+  ASSERT_TRUE(entity->IsUnsynced());
+  ASSERT_EQ(1, entity->metadata().sequence_number());
+
+  // Undelete the entity with different specifics.
+  entity->MakeLocalChange(GenerateEntityData(kHash, kName, kValue2));
+
+  const std::string specifics_hash_v1 = entity->metadata().specifics_hash();
+  ASSERT_NE(specifics_hash_v1, specifics_hash);
+
+  EXPECT_FALSE(entity->metadata().is_deleted());
+  EXPECT_EQ(2, entity->metadata().sequence_number());
+  EXPECT_EQ(0, entity->metadata().acked_sequence_number());
+  EXPECT_EQ(1, entity->metadata().server_version());
+
+  EXPECT_TRUE(entity->IsUnsynced());
+  EXPECT_TRUE(entity->RequiresCommitRequest());
+  EXPECT_FALSE(entity->RequiresCommitData());
+  EXPECT_FALSE(entity->CanClearMetadata());
+  EXPECT_TRUE(entity->HasCommitData());
+
+  // Make a commit.
+  CommitRequestData request;
+  entity->InitializeCommitRequestData(&request);
+
+  EXPECT_EQ(kId, request.entity->id);
+  EXPECT_FALSE(entity->RequiresCommitRequest());
+
+  // Ack the commit.
+  entity->ReceiveCommitResponse(GenerateAckData(request, kId, 2), false,
+                                kUnspecifiedModelTypeForUma);
+
+  EXPECT_EQ(2, entity->metadata().sequence_number());
+  EXPECT_EQ(2, entity->metadata().acked_sequence_number());
+  EXPECT_EQ(2, entity->metadata().server_version());
+  EXPECT_EQ(specifics_hash_v1, entity->metadata().specifics_hash());
+  EXPECT_EQ("", entity->metadata().base_specifics_hash());
+
+  EXPECT_FALSE(entity->IsUnsynced());
+  EXPECT_FALSE(entity->RequiresCommitRequest());
+  EXPECT_FALSE(entity->RequiresCommitData());
+  EXPECT_FALSE(entity->CanClearMetadata());
+  EXPECT_FALSE(entity->HasCommitData());
+}
+
 // Test that hashes and sequence numbers are handled correctly for the "commit
 // commit, ack ack" case.
 TEST_F(ProcessorEntityTest, LocalChangesInterleaved) {

@@ -543,13 +543,17 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                    LPARAM l_param,
                                    bool track_mouse);
 
-  LRESULT HandlePointerEventTypeTouch(UINT message,
-                                      WPARAM w_param,
-                                      LPARAM l_param);
+  // We handle 2 kinds of WM_POINTER events: PT_TOUCH and PT_PEN. This helper
+  // handles client area events of PT_TOUCH, and non-client area events of both
+  // kinds.
+  LRESULT HandlePointerEventTypeTouchOrNonClient(UINT message,
+                                                 WPARAM w_param,
+                                                 LPARAM l_param);
 
-  LRESULT HandlePointerEventTypePen(UINT message,
-                                    WPARAM w_param,
-                                    LPARAM l_param);
+  // Helper to handle client area events of PT_PEN.
+  LRESULT HandlePointerEventTypePenClient(UINT message,
+                                          WPARAM w_param,
+                                          LPARAM l_param);
 
   // Returns true if the mouse message passed in is an OS synthesized mouse
   // message.

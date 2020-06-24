@@ -41,6 +41,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/render_document_feature.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -66,7 +67,7 @@ void UnloadPrint(const ToRenderFrameHost& target, const char* message) {
 
 // Tests that there are no crashes if a subframe is detached in its unload
 // handler. See https://crbug.com/590054.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DetachInUnloadHandler) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, DetachInUnloadHandler) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -114,7 +115,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DetachInUnloadHandler) {
 
 // Tests that trying to navigate in the unload handler doesn't crash the
 // browser.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -172,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
 // RemoteFrameView from OOPIF's owner element in the parent process. This test
 // uses OOPIF visibility to make sure RemoteFrameView exists after beforeunload
 // is handled.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CanceledBeforeUnloadShouldNotClearRemoteFrameView) {
   GURL a_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -239,7 +240,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that after a main frame with an OOPIF is navigated cross-site, the
 // unload handler in the OOPIF sees correct main frame origin, namely the old
 // and not the new origin.  See https://crbug.com/825283.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ParentOriginDoesNotChangeInUnloadHandler) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -289,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // OnUnload, the FrameHostMsg_Unload_ACK is received prior to the process
 // starting to shut down, ensuring that any related unload work also happens
 // before shutdown. See https://crbug.com/867274 and https://crbug.com/794625.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        UnloadACKArrivesPriorToProcessShutdownRequest) {
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
@@ -317,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // This is a regression test for https://crbug.com/891423 in which tabs showing
 // beforeunload dialogs stalled navigation and triggered the "hung process"
 // dialog.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NoCommitTimeoutWithBeforeUnloadDialog) {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -390,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #else
 #define MAYBE_UnloadHandlerSubframes UnloadHandlerSubframes
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_UnloadHandlerSubframes) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(b),c(a(c))),d)"));
@@ -462,7 +463,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Check that unload handlers in iframe don't prevents the main frame to be
 // deleted after a timeout.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SlowUnloadHandlerInIframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SlowUnloadHandlerInIframe) {
   GURL initial_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL next_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
@@ -486,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SlowUnloadHandlerInIframe) {
 
 // Navigate from A(B(A(B)) to C. Check the unload handler are executed, executed
 // in the right order and the processes for A and B are removed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, Unload_ABAB) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, Unload_ABAB) {
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
       content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
@@ -550,7 +551,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, Unload_ABAB) {
 //|   B   |  B    |  B  E |
 //|   |   |   \   |   \   |
 //|   C   | C  D  | C  D  |
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   std::string onunload_script = "window.onunload = function(){}";
   GURL url_abc(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
@@ -634,7 +635,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
 // navigation. This tests what happens if only A2 has an unload handler.
 // If B1 receives FrameHostMsg_OnDetach before A2, it should not destroy itself
 // and its children, but rather wait for A2.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, PartialUnloadHandler) {
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
       content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
 
@@ -743,7 +744,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
 // [1]   [3] 5            12    |
 //           |             \    |
 //          [6]            [14] |
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        PendingDeletionCheckCompletedOnSubtree) {
   web_contents()->GetController().GetBackForwardCache().DisableForTesting(
       content::BackForwardCache::TEST_USES_UNLOAD_EVENT);
@@ -816,7 +817,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // When an iframe is detached, check that unload handlers execute in all of its
 // child frames. Start from A(B(C)) and delete B from A.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DetachedIframeUnloadHandlerABC) {
   GURL initial_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
@@ -859,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // When an iframe is detached, check that unload handlers execute in all of its
 // child frames. Start from A(B1(C(B2))) and delete B1 from A.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DetachedIframeUnloadHandlerABCB) {
   GURL initial_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(b)))"));
@@ -906,7 +907,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // When an iframe is detached, check that unload handlers execute in all of its
 // child frames. Start from A1(A2(B)), delete A2 from itself.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DetachedIframeUnloadHandlerAAB) {
   GURL initial_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a(b))"));
@@ -947,7 +948,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that running layout from an unload handler inside teardown of the
 // RenderWidget (inside WidgetMsg_Close) can succeed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RendererInitiatedWindowCloseWithUnload) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/empty.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1001,7 +1002,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // 3. a2 navigates same process.
 // 4. When the new document is loaded, a message is sent to c4 to check it
 //    cannot see b3 anymore, even if b3 is still unloading.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     IsDetachedSubframeObservableDuringUnloadHandlerSameProcess) {
   GURL page_url(embedded_test_server()->GetURL(
@@ -1094,7 +1095,7 @@ IN_PROC_BROWSER_TEST_F(
 //
 // Note: This test is the same as the above, except it uses a cross-process
 // navigation at step 3.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     IsDetachedSubframeObservableDuringUnloadHandlerCrossProcess) {
   GURL page_url(embedded_test_server()->GetURL(
@@ -1181,7 +1182,7 @@ IN_PROC_BROWSER_TEST_F(
 // 1. Start from A1(B2,C3)
 // 2. B2 is the "focused frame", is deleted and starts unloading.
 // 3. C3 commits a new navigation before B2 has completed its unload.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FocusedFrameUnload) {
   // 1) Start from A1(B2,C3)
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL(
@@ -1222,7 +1223,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusedFrameUnload) {
 }
 
 // Test the unload timeout is effective.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadTimeout) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, UnloadTimeout) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1242,7 +1243,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadTimeout) {
 }
 
 // Test that an unloading child can PostMessage its cross-process parent.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        UnloadPostMessageToParentCrossProcess) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -1270,7 +1271,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test that an unloading child can PostMessage its same-process parent.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        UnloadPostMessageToParentSameProcess) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -1301,7 +1302,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // 2. Navigate A1 to A3, same-process.
 // 3. A1 requests the browser to detach B1, but this message is dropped.
 // 4. The browser must be resilient and detach B1 when A3 commits.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SameProcessNavigationResilientToDetachDropped) {
   GURL A1_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -1321,7 +1322,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // After a same-origin iframe navigation, check that gradchild iframe are
 // properly deleted and their unload handler executed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NestedSubframeWithUnloadHandler) {
   GURL main_url = embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b,c))");
@@ -1408,7 +1409,7 @@ class SitePerProcessSSLBrowserTest : public SitePerProcessBrowserTest {
 //
 // This test is similar to UnloadHandlersArePowerfulGrandChild, but with a
 // different frame hierarchy.
-IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessSSLBrowserTest,
                        UnloadHandlersArePowerful) {
   // Navigate to a page hosting a cross-origin frame.
   GURL url =
@@ -1499,7 +1500,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
 //
 // This test is similar to UnloadHandlersArePowerful, but with a different frame
 // hierarchy.
-IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessSSLBrowserTest,
                        UnloadHandlersArePowerfulGrandChild) {
   // Navigate to a page hosting a cross-origin frame.
   GURL url = https_server()->GetURL("a.com",
@@ -1579,4 +1580,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessSSLBrowserTest,
   }
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessSSLBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace content

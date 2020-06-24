@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
 #include "base/compiler_specific.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/account_id/account_id.h"

@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/logging.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/service_worker_context.h"

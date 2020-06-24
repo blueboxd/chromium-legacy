@@ -48,7 +48,7 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(
 }
 
 void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
-    StyleEngine& master_engine,
+    StyleEngine& engine,
     DocumentStyleSheetCollector& collector) {
   CHECK(ThreadState::Current()->IsOnThreadHeap(this));
   for (Node* n : style_sheet_candidate_nodes_) {
@@ -64,7 +64,7 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
         continue;
       collector.WillVisit(document);
 
-      document->GetStyleEngine().UpdateActiveStyleSheetsInImport(master_engine,
+      document->GetStyleEngine().UpdateActiveStyleSheetsInImport(engine,
                                                                  collector);
       continue;
     }
@@ -83,7 +83,7 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
 
     CSSStyleSheet* css_sheet = To<CSSStyleSheet>(sheet);
     collector.AppendActiveStyleSheet(
-        std::make_pair(css_sheet, master_engine.RuleSetForSheet(*css_sheet)));
+        std::make_pair(css_sheet, engine.RuleSetForSheet(*css_sheet)));
   }
   if (!GetTreeScope().HasAdoptedStyleSheets())
     return;
@@ -96,12 +96,12 @@ void DocumentStyleSheetCollection::CollectStyleSheetsFromCandidates(
     DCHECK_EQ(GetDocument(), sheet->AssociatedDocument());
     collector.AppendSheetForList(sheet);
     collector.AppendActiveStyleSheet(
-        std::make_pair(sheet, master_engine.RuleSetForSheet(*sheet)));
+        std::make_pair(sheet, engine.RuleSetForSheet(*sheet)));
   }
 }
 
 void DocumentStyleSheetCollection::CollectStyleSheets(
-    StyleEngine& master_engine,
+    StyleEngine& engine,
     DocumentStyleSheetCollector& collector) {
   for (auto& sheet :
        GetDocument().GetStyleEngine().InjectedAuthorStyleSheets()) {
@@ -109,7 +109,7 @@ void DocumentStyleSheetCollection::CollectStyleSheets(
         sheet.second,
         GetDocument().GetStyleEngine().RuleSetForSheet(*sheet.second)));
   }
-  CollectStyleSheetsFromCandidates(master_engine, collector);
+  CollectStyleSheetsFromCandidates(engine, collector);
   if (CSSStyleSheet* inspector_sheet =
           GetDocument().GetStyleEngine().InspectorStyleSheet()) {
     collector.AppendActiveStyleSheet(std::make_pair(
@@ -119,11 +119,11 @@ void DocumentStyleSheetCollection::CollectStyleSheets(
 }
 
 void DocumentStyleSheetCollection::UpdateActiveStyleSheets(
-    StyleEngine& master_engine) {
+    StyleEngine& engine) {
   // StyleSheetCollection is GarbageCollected<>, allocate it on the heap.
   auto* collection = MakeGarbageCollected<StyleSheetCollection>();
   ActiveDocumentStyleSheetCollector collector(*collection);
-  CollectStyleSheets(master_engine, collector);
+  CollectStyleSheets(engine, collector);
   ApplyActiveStyleSheetChanges(*collection);
 }
 

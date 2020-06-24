@@ -12,16 +12,19 @@
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/task_environment.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_cert_loader.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_observer.h"
+#include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "chromeos/network/prohibited_technologies_handler.h"
 #include "components/onc/onc_constants.h"
 #include "crypto/scoped_nss_types.h"
 #include "crypto/scoped_test_nss_db.h"
@@ -32,6 +35,7 @@
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
 
@@ -589,6 +593,35 @@ TEST_F(NetworkConnectionHandlerImplTest, ConnectToTetherNetwork_Failure) {
   EXPECT_TRUE(network_connection_observer()->GetRequested(kTetherGuid));
   EXPECT_EQ(NetworkConnectionHandler::kErrorConnectFailed,
             network_connection_observer()->GetResult(kTetherGuid));
+}
+
+TEST_F(NetworkConnectionHandlerImplTest,
+       ConnectToVpnNetworkWhenProhibited_Failure) {
+  // This test tests a code that accesses NetworkHandler::Get() directly (when
+  // checking if VPN is disabled by policy when attempting to connect to a VPN
+  // network), so NetworkStateTestHelper can not be used here. That's because
+  // NetworkStateTestHelper initializes a NetworkStateHandler for testing, but
+  // NetworkHandler::Initialize() constructs its own NetworkStateHandler
+  // instance and NetworkHandler::Get() uses it.
+  NetworkHandler::Initialize();
+  NetworkHandler::Get()
+      ->prohibited_technologies_handler()
+      ->AddGloballyProhibitedTechnology(shill::kTypeVPN);
+
+  const std::string kVpnGuid = "vpn_guid";
+  const std::string kShillJsonStringTemplate =
+      R"({"GUID": "$1", "Type": "vpn", "State": "idle",
+            "Provider": {"Type": "l2tpipsec", "Host": "host"}})";
+
+  const std::string shill_json_string =
+      base::ReplaceStringPlaceholders(kShillJsonStringTemplate, {kVpnGuid},
+                                      /*offsets=*/nullptr);
+  const std::string vpn_service_path = ConfigureService(shill_json_string);
+  ASSERT_FALSE(vpn_service_path.empty());
+
+  Connect(/*service_path=*/vpn_service_path);
+  EXPECT_EQ(NetworkConnectionHandler::kErrorBlockedByPolicy,
+            GetResultAndReset());
 }
 
 TEST_F(NetworkConnectionHandlerImplTest,

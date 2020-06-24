@@ -17,6 +17,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 
 namespace content {
@@ -65,7 +66,7 @@ class TestClient: public DevToolsAgentHostClient {
 #else
 #define MAYBE_CrossSiteIframeAgentHost CrossSiteIframeAgentHost
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessDevToolsBrowserTest,
                        MAYBE_CrossSiteIframeAgentHost) {
   DevToolsAgentHost::List list;
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
@@ -139,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
   parent_host = nullptr;
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -177,8 +178,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest, AgentHostForFrames) {
   EXPECT_NE(child_frame_agent->GetId(), page_agent->GetId());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsBrowserTest,
-    AgentHostForPageEqualsOneForMainFrame) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessDevToolsBrowserTest,
+                       AgentHostForPageEqualsOneForMainFrame) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -230,7 +231,7 @@ class SitePerProcessDownloadDevToolsBrowserTest
   base::ScopedTempDir downloads_directory_;
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessDownloadDevToolsBrowserTest,
                        NotCommittedNavigationDoesNotBlockAgent) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
@@ -258,5 +259,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDownloadDevToolsBrowserTest,
   client.WaitForReply();
   ASSERT_TRUE(agent->DetachClient(&client));
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessDevToolsBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessDownloadDevToolsBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 
 }  // namespace content

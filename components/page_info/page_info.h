@@ -260,8 +260,8 @@ class PageInfo : public content::WebContentsObserver {
   // Exposed for testing.
   static std::vector<ContentSettingsType> GetAllPermissionsForTesting();
 
-  // Creates if necessary, and returns TabSpecificContentSettings
-  // for the observed WebContents.
+  // Returns TabSpecificContentSettings for the observed WebContents if present,
+  // nullptr otherwise.
   content_settings::TabSpecificContentSettings* GetTabSpecificContentSettings()
       const;
 
@@ -271,13 +271,6 @@ class PageInfo : public content::WebContentsObserver {
   // Notifies the delegate that the content setting of type |type| has changed
   // via Page Info UI.
   void ContentSettingChangedViaPageInfo(ContentSettingsType type);
-
-  // Get allowed and blocked shared objects like cookies, local storage, etc for
-  // |site_url|.
-  const browsing_data::LocalSharedObjectsContainer& GetAllowedObjects(
-      const GURL& site_url);
-  const browsing_data::LocalSharedObjectsContainer& GetBlockedObjects(
-      const GURL& site_url);
 
   // Get counts of allowed and blocked cookies.
   int GetFirstPartyAllowedCookiesCount(const GURL& site_url);

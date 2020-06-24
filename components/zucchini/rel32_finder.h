@@ -9,7 +9,6 @@
 
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "components/zucchini/buffer_view.h"

@@ -11,8 +11,8 @@
 #include <cstddef>
 #include <string>
 
+#include "base/check_op.h"
 #include "base/json/string_escape.h"
-#include "base/logging.h"
 
 namespace mojo {
 template <typename DataViewType, typename T>

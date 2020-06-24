@@ -92,7 +92,8 @@ enum IPAddressType {
   IPV6,
 };
 
-// Layer 3 and proxy configuration information for an IP network.
+// Deprecated. Individual fields added to NetworkConfiguration in version 13 of
+// this file should be used instead.
 struct IPConfiguration {
 
   // Literal representation of the IP address of the ARC gateway.
@@ -190,8 +191,9 @@ struct NetworkConfiguration {
   // A string token that uniquely identifies this network service.
   string guid;
 
-  // IP configuration for the network service inside ARC.
-  array<IPConfiguration>? ip_configs;
+  // Deprecated. Individual fields added to NetworkConfiguration in version 13
+  // of this file should be used instead.
+  array<IPConfiguration>? deprecated_ip_configs;
 
   // Deprecated field unused from ARC P and later.
   string? deprecated_mac_address;

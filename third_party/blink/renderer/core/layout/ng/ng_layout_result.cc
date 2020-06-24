@@ -312,4 +312,12 @@ void NGLayoutResult::CheckSameForSimplifiedLayout(
 }
 #endif
 
+#if DCHECK_IS_ON()
+void NGLayoutResult::AssertSoleBoxFragment() const {
+  DCHECK(physical_fragment_->IsBox());
+  DCHECK(To<NGPhysicalBoxFragment>(PhysicalFragment()).IsFirstForNode());
+  DCHECK(!physical_fragment_->BreakToken());
+}
+#endif
+
 }  // namespace blink

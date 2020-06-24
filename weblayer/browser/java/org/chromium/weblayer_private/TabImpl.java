@@ -887,6 +887,11 @@ public final class TabImpl extends ITab.Stub implements LoginPrompt.Observer {
         return (mBrowser.getActiveTab() == this) ? mBrowser.getViewController() : null;
     }
 
+    @VisibleForTesting
+    public boolean canInfoBarContainerScrollForTesting() {
+        return mInfoBarContainer.getContainerViewForTesting().isAllowedToAutoHide();
+    }
+
     @NativeMethods
     interface Natives {
         TabImpl fromWebContents(WebContents webContents);

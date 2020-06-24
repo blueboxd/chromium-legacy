@@ -48,6 +48,7 @@ js_type_check("closure_compile_module") {
     ":list_container",
     ":location_line",
     ":multi_menu",
+    ":multi_menu_button",
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
@@ -138,6 +139,7 @@ js_library("combobutton") {
   deps = [
     ":files_menu",
     ":multi_menu",
+    ":multi_menu_button",
     "//ui/file_manager/file_manager/foreground/elements:files_toggle_ripple",
   ]
   externs_list = [ "//ui/file_manager/externs/paper_elements.js" ]
@@ -277,6 +279,7 @@ js_library("file_manager_ui") {
     ":list_container",
     ":location_line",
     ":multi_menu",
+    ":multi_menu_button",
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
@@ -435,6 +438,16 @@ js_library("multi_menu") {
   deps = [
     "//ui/webui/resources/js:event_tracker",
     "//ui/webui/resources/js/cr/ui:menu",
+    "//ui/webui/resources/js/cr/ui:menu_item",
+    "//ui/webui/resources/js/cr/ui:position_util",
+  ]
+  externs_list = [ "$externs_path/pending.js" ]
+}
+
+js_library("multi_menu_button") {
+  deps = [
+    "//ui/webui/resources/js:event_tracker",
+    "//ui/webui/resources/js/cr/ui:menu",
     "//ui/webui/resources/js/cr/ui:menu_button",
     "//ui/webui/resources/js/cr/ui:menu_item",
     "//ui/webui/resources/js/cr/ui:position_util",
@@ -445,6 +458,7 @@ js_library("multi_menu") {
 js_unittest("multi_menu_unittest") {
   deps = [
     ":multi_menu",
+    ":multi_menu_button",
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:webui_resource_test",

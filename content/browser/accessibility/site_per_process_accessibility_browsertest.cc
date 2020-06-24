@@ -29,6 +29,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "content/test/render_document_feature.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
@@ -41,6 +42,13 @@
 #else
 #define MAYBE_SitePerProcessAccessibilityBrowserTest \
   SitePerProcessAccessibilityBrowserTest
+#endif
+// "All/DISABLED_SitePerProcessAccessibilityBrowserTest" does not work. We need
+// "DISABLED_All/...". TODO(https://crbug.com/1096416) delete when fixed.
+#if defined(OS_ANDROID)
+#define MAYBE_All DISABLED_All
+#else
+#define MAYBE_All All
 #endif
 
 namespace content {
@@ -70,7 +78,7 @@ class MAYBE_SitePerProcessAccessibilityBrowserTest
   }
 };
 
-IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                        CrossSiteIframeAccessibility) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
@@ -138,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
 }
 
 // TODO(aboxhall): Flaky test, discuss with dmazzoni
-IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                        DISABLED_TwoCrossSiteNavigations) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
@@ -168,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
 
 // Ensure that enabling accessibility and doing a remote-to-local main frame
 // navigation doesn't crash.  See https://crbug.com/762824.
-IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
+IN_PROC_BROWSER_TEST_P(MAYBE_SitePerProcessAccessibilityBrowserTest,
                        RemoteToLocalMainFrameNavigation) {
   // Enable full accessibility for all current and future WebContents.
   BrowserAccessibilityState::GetInstance()->EnableAccessibility();
@@ -192,4 +200,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_SitePerProcessAccessibilityBrowserTest,
                                                 "Title Of Awesomeness");
 }
 
+INSTANTIATE_TEST_SUITE_P(MAYBE_All,
+                         MAYBE_SitePerProcessAccessibilityBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
 }  // namespace content

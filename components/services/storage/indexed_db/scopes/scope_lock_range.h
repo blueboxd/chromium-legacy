@@ -8,7 +8,6 @@
 #include <iosfwd>
 #include <vector>
 
-#include "base/logging.h"
 #include "third_party/leveldatabase/src/include/leveldb/comparator.h"
 #include "third_party/leveldatabase/src/include/leveldb/slice.h"
 

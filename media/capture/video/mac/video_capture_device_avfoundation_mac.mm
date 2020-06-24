@@ -24,10 +24,6 @@
 #include "services/video_capture/public/uma/video_capture_service_event.h"
 #include "ui/gfx/geometry/size.h"
 
-// Prefer MJPEG if frame width or height is larger than this.
-static const int kMjpegWidthThreshold = 640;
-static const int kMjpegHeightThreshold = 480;
-
 namespace {
 
 enum MacBookVersions {
@@ -351,16 +347,9 @@ void ExtractBaseAddressAndLength(char** base_address,
   _frameRate = frameRate;
 
   FourCharCode best_fourcc = kCMPixelFormat_422YpCbCr8;
-  const bool prefer_mjpeg =
-      width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
   for (AVCaptureDeviceFormat* format in [_captureDevice formats]) {
     const FourCharCode fourcc =
         CMFormatDescriptionGetMediaSubType([format formatDescription]);
-    if (prefer_mjpeg && fourcc == kCMVideoCodecType_JPEG_OpenDML) {
-      best_fourcc = fourcc;
-      break;
-    }
-
     // Compare according to Chromium preference.
     if (media::VideoCaptureFormat::ComparePixelFormatPreference(
             FourCCToChromiumPixelFormat(fourcc),

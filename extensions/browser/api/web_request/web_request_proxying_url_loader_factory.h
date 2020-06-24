@@ -106,15 +106,41 @@ class WebRequestProxyingURLLoaderFactory
                            OnHeadersReceivedCallback callback) override;
 
    private:
+    // The state of an InprogressRequest. This is reported via UMA and UKM
+    // at the end of the request, so do not change enum values.
+    enum State {
+      kInProgress = 0,
+      kInProgressWithFinalResponseReceived,
+      kInvalid,  // This is an invalid state and must not be recorded.
+      kRedirectFollowedByAnotherInProgressRequest,
+      kRejectedByNetworkError,
+      kRejectedByNetworkErrorAfterReceivingFinalResponse,
+      kDetachedFromClient,
+      kDetachedFromClientAfterReceivingResponse,
+      kRejectedByOnBeforeRequest,
+      kRejectedByOnBeforeSendHeaders,
+      kRejectedByOnHeadersReceivedForFinalResponse,
+      kRejectedByOnHeadersReceivedForRedirect,
+      kRejectedByOnHeadersReceivedForAuth,
+      kRejectedByOnAuthRequired,
+      kCompleted,
+      kMaxValue = kCompleted,
+    };
     // These two methods combined form the implementation of Restart().
     void UpdateRequestInfo();
     void RestartInternal();
 
-    void ContinueToBeforeSendHeaders(int error_code);
-    void ContinueToSendHeaders(const std::set<std::string>& removed_headers,
+    void ContinueToBeforeSendHeaders(State state_on_error, int error_code);
+    void ContinueToBeforeSendHeadersWithOk();
+    void ContinueToSendHeaders(State state_on_error,
+                               const std::set<std::string>& removed_headers,
                                const std::set<std::string>& set_headers,
                                int error_code);
-    void ContinueToStartRequest(int error_code);
+    void ContinueToSendHeadersWithOk(
+        const std::set<std::string>& removed_headers,
+        const std::set<std::string>& set_headers);
+    void ContinueToStartRequest(State state_on_error, int error_code);
+    void ContinueToStartRequestWithOk();
     void ContinueToHandleOverrideHeaders(int error_code);
     void ContinueToResponseStarted(int error_code);
     void ContinueAuthRequest(const net::AuthChallengeInfo& auth_info,
@@ -127,7 +153,10 @@ class WebRequestProxyingURLLoaderFactory
                                   int error_code);
     void HandleResponseOrRedirectHeaders(
         net::CompletionOnceCallback continuation);
-    void OnRequestError(const network::URLLoaderCompletionStatus& status);
+    void OnRequestError(const network::URLLoaderCompletionStatus& status,
+                        State state);
+    void OnNetworkError(const network::URLLoaderCompletionStatus& status);
+    void OnClientDisconnected();
     void OnLoaderDisconnected(uint32_t custom_reason,
                               const std::string& description);
     bool IsRedirectSafe(const GURL& from_url,
@@ -196,6 +225,7 @@ class WebRequestProxyingURLLoaderFactory
       DISALLOW_COPY_AND_ASSIGN(FollowRedirectParams);
     };
     std::unique_ptr<FollowRedirectParams> pending_follow_redirect_params_;
+    State state_ = State::kInProgress;
 
     base::WeakPtrFactory<InProgressRequest> weak_factory_{this};
 

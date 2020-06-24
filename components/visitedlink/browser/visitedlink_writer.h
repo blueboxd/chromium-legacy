@@ -32,7 +32,7 @@
 #endif
 
 #if defined(UNIT_TEST) || defined(PERF_TEST) || !defined(NDEBUG)
-#include "base/logging.h"
+#include "base/check_op.h"
 #endif
 
 class GURL;

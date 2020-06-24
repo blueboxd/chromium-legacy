@@ -78,7 +78,7 @@ bool Animation::ParseShorthand(
     const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
     HeapVector<CSSPropertyValue, 256>& properties) const {
-  const StylePropertyShorthand shorthand = animationShorthandForParsing();
+  const StylePropertyShorthand shorthand = animationShorthand();
   const unsigned longhand_count = shorthand.length();
 
   HeapVector<Member<CSSValueList>, css_parsing_utils::kMaxNumAnimationLonghands>

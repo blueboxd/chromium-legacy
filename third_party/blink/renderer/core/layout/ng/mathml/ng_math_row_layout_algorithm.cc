@@ -122,7 +122,7 @@ scoped_refptr<const NGLayoutResult> NGMathRowLayoutAlgorithm::Layout() {
       ConstraintSpace(), Style(), BorderPadding(),
       max_row_size.block_size + BorderScrollbarPadding().BlockSum(),
       border_box_size.inline_size);
-  container_builder_.SetBlockSize(block_size);
+  container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(
       Node(), ConstraintSpace(),

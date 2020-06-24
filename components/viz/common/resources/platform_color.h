@@ -5,8 +5,8 @@
 #ifndef COMPONENTS_VIZ_COMMON_RESOURCES_PLATFORM_COLOR_H_
 #define COMPONENTS_VIZ_COMMON_RESOURCES_PLATFORM_COLOR_H_
 
-#include "base/logging.h"
 #include "base/macros.h"
+#include "base/notreached.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "third_party/skia/include/core/SkTypes.h"

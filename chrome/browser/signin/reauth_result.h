@@ -8,6 +8,9 @@
 namespace signin {
 
 // Indicates the result of the Gaia Reauth flow.
+// Needs to be kept in sync with "SigninReauthResult" in enums.xml.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
 enum class ReauthResult {
   // The user was successfully re-authenticated.
   kSuccess = 0,
@@ -23,6 +26,8 @@ enum class ReauthResult {
 
   // A caller canceled the reauth flow.
   kCancelled = 4,
+
+  kMaxValue = kCancelled,
 };
 
 }  // namespace signin

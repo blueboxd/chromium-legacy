@@ -109,6 +109,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "content/test/did_commit_navigation_interceptor.h"
+#include "content/test/render_document_feature.h"
 #include "ipc/constants.mojom.h"
 #include "ipc/ipc_security_test_util.h"
 #include "media/base/media_switches.h"
@@ -638,10 +639,10 @@ class UpdateViewportIntersectionMessageFilter
 }  // namespace
 
 //
-// SitePerProcessBrowserTest
+// SitePerProcessBrowserTestBase
 //
 
-SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
+SitePerProcessBrowserTestBase::SitePerProcessBrowserTestBase() {
 #if !defined(OS_ANDROID)
   // TODO(bokan): Needed for scrollability check in
   // FrameOwnerPropertiesPropagationScrolling. crbug.com/662196.
@@ -649,11 +650,12 @@ SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
 #endif
 }
 
-std::string SitePerProcessBrowserTest::DepictFrameTree(FrameTreeNode* node) {
+std::string SitePerProcessBrowserTestBase::DepictFrameTree(
+    FrameTreeNode* node) {
   return visualizer_.DepictFrameTree(node);
 }
 
-void SitePerProcessBrowserTest::SetUpCommandLine(
+void SitePerProcessBrowserTestBase::SetUpCommandLine(
     base::CommandLine* command_line) {
   ContentBrowserTest::SetUpCommandLine(command_line);
   IsolateAllSitesForTesting(command_line);
@@ -661,10 +663,18 @@ void SitePerProcessBrowserTest::SetUpCommandLine(
   command_line->AppendSwitch(switches::kValidateInputEventStream);
 }
 
-void SitePerProcessBrowserTest::SetUpOnMainThread() {
+void SitePerProcessBrowserTestBase::SetUpOnMainThread() {
   host_resolver()->AddRule("*", "127.0.0.1");
   SetupCrossSiteRedirector(embedded_test_server());
   ASSERT_TRUE(embedded_test_server()->Start());
+}
+
+//
+// SitePerProcessBrowserTest
+//
+
+SitePerProcessBrowserTest::SitePerProcessBrowserTest() {
+  InitAndEnableRenderDocumentFeature(&feature_list_, GetParam());
 }
 
 //
@@ -679,7 +689,7 @@ class SitePerProcessHighDPIBrowserTest : public SitePerProcessBrowserTest {
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kForceDeviceScaleFactor,
         base::StringPrintf("%f", kDeviceScaleFactor));
@@ -695,7 +705,7 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 };
@@ -703,13 +713,13 @@ class SitePerProcessIgnoreCertErrorsBrowserTest
 // SitePerProcessFeaturePolicyBrowserTest
 
 class SitePerProcessFeaturePolicyBrowserTest
-    : public SitePerProcessBrowserTest {
+    : public SitePerProcessBrowserTestBase {
  public:
   SitePerProcessFeaturePolicyBrowserTest() = default;
 
   // Enable tests for parameterized features.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "ExperimentalProductivityFeatures");
   }
@@ -722,7 +732,7 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
   SitePerProcessAutoplayBrowserTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kDocumentUserActivationRequiredPolicy);
@@ -751,12 +761,12 @@ class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
   }
 };
 
-class SitePerProcesScrollAnchorTest : public SitePerProcessBrowserTest {
+class SitePerProcessScrollAnchorTest : public SitePerProcessBrowserTest {
  public:
-  SitePerProcesScrollAnchorTest() = default;
+  SitePerProcessScrollAnchorTest() = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
                                     "ScrollAnchorSerialization");
   }
@@ -771,7 +781,7 @@ class SitePerProcessEmbedderCSPEnforcementBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     // TODO(amalika): Remove this switch when the EmbedderCSPEnforcement becomes
     // stable
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -882,7 +892,7 @@ class SitePerProcessProgrammaticScrollTest : public SitePerProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(SitePerProcessProgrammaticScrollTest);
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIBrowserTest,
                        SubframeLoadsWithCorrectDeviceScaleFactor) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -909,7 +919,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
 }
 
 #if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeUpdateToCorrectDeviceScaleFactor) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -1083,7 +1093,7 @@ class OutgoingTextAutosizerPageInfoIPCWatcher {
 
 // Make sure that when a relevant feature of the main frame changes, e.g. the
 // frame width, that the browser is notified.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
   WebPreferences prefs =
       web_contents()->GetRenderViewHost()->GetWebkitPreferences();
   prefs.text_autosizing_enabled = true;
@@ -1177,7 +1187,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TextAutosizerPageInfo) {
 
 // Ensure that navigating subframes in --site-per-process mode works and the
 // correct documents are committed.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1309,7 +1319,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframe) {
 
 // Ensure that title updates affect the correct NavigationEntry after a new
 // subframe navigation with an out-of-process iframe.  https://crbug.com/616609.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
   // Start at an initial page.
   GURL initial_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), initial_url));
@@ -1346,7 +1356,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TitleAfterCrossSiteIframe) {
 
 // Test that the physical backing size and view bounds for a scaled out-of-
 // process iframe are set and updated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CompositorViewportPixelSizeTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_scaled_frame.html"));
@@ -1398,7 +1408,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify an OOPIF resize handler doesn't fire immediately after load without
 // the frame having been resized. See https://crbug.com/826457.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NoResizeAfterIframeLoad) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NoResizeAfterIframeLoad) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1424,7 +1434,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NoResizeAfterIframeLoad) {
 // Test that the view bounds for an out-of-process iframe are set and updated
 // correctly, including accounting for local frame offsets in the parent and
 // scroll positions.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1498,7 +1508,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ViewBoundsInNestedFrameTest) {
 // This test verifies that scroll bubbling from an OOPIF properly forwards
 // GestureFlingStart events from the child frame to the parent frame. This
 // test times out on failure.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        GestureFlingStartEventsBubble) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -1567,7 +1577,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that scrolling a nested out-of-process iframe bubbles unused scroll
 // delta to a parent frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
   GURL main_url(embedded_test_server()->GetURL(
@@ -1796,7 +1806,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollBubblingFromOOPIFTest) {
 
 // Tests that scrolling with the keyboard will bubble unused scroll to the
 // OOPIF's parent.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        KeyboardScrollBubblingFromOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_iframe_in_scrollable_div.html"));
@@ -1866,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test that fling on an out-of-process iframe progresses properly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TouchscreenGestureFlingStart) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -1913,7 +1923,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test that fling on an out-of-process iframe progresses properly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TouchpadGestureFlingStart) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2012,7 +2022,7 @@ class ScrollObserver : public RenderWidgetHost::InputEventObserver {
 #define MAYBE_ScrollBubblingFromNestedOOPIFTest \
   ScrollBubblingFromNestedOOPIFTest
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_ScrollBubblingFromNestedOOPIFTest) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
@@ -2095,7 +2105,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that scrolling bubbles from an oopif if its source body has
 // "overflow:hidden" style.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ScrollBubblingFromOOPIFWithBodyOverflowHidden) {
   GURL url_domain_a(embedded_test_server()->GetURL(
       "a.com", "/scrollable_page_with_iframe.html"));
@@ -2149,7 +2159,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Ensure that the scrollability of a local subframe in an OOPIF is considered
 // when acknowledging GestureScrollBegin events sent to OOPIFs.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
   ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
       0);
 
@@ -2226,7 +2236,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScrollLocalSubframeInOOPIF) {
 // measurements are for two identical pages where one page does not have any
 // OOPIFs while the other has some nested OOPIFs.
 // TODO(crbug.com/827431): This test is flaking on all platforms.
-IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessProgrammaticScrollTest,
                        DISABLED_ScrollElementIntoView) {
   const GURL url_a(
       embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
@@ -2336,7 +2346,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 #define MAYBE_ScrollFocusedEditableElementIntoView \
   ScrollFocusedEditableElementIntoView
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessProgrammaticScrollTest,
                        MAYBE_ScrollFocusedEditableElementIntoView) {
   GURL url_a(embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
   GURL url_b(embedded_test_server()->GetURL("b.com", kIframeOutOfViewHTML));
@@ -2427,7 +2437,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
       final_visual_viewport_oopif.Intersects(input_bounds_after_scroll_oopif));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessProgrammaticScrollTest,
                        ScrollClippedFocusedEditableElementIntoView) {
   GURL url_a(embedded_test_server()->GetURL("a.com", kIframeClippedHTML));
   GURL child_url_b(embedded_test_server()->GetURL("b.com", kInputBoxHTML));
@@ -2497,7 +2507,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessProgrammaticScrollTest,
                        ScrolledOutOfView) {
   GURL main_frame(
       embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
@@ -2531,7 +2541,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 // a A(B(A1())) structure, if and A1 and A2 shared the same
 // SmoothScrollSequencer, then this test would time out or at best be flaky with
 // random time outs. See https://crbug.com/865446 for more context.
-IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessProgrammaticScrollTest,
                        SmoothScrollInNestedSameProcessOOPIF) {
   GURL main_frame(
       embedded_test_server()->GetURL("a.com", kIframeOutOfViewHTML));
@@ -2564,7 +2574,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessProgrammaticScrollTest,
 
 // Tests OOPIF rendering by checking that the RWH of the iframe generates
 // OnSwapCompositorFrame message.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CompositorFrameSwapped) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CompositorFrameSwapped) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(baz)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2588,7 +2598,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CompositorFrameSwapped) {
 }
 
 // Ensure that OOPIFs are deleted after navigating to a new main frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2644,7 +2654,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CleanupCrossSiteIframe) {
   EXPECT_FALSE(RenderViewHost::FromID(subframe_process_id, subframe_rvh_id));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigateRemoteFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2722,7 +2732,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteFrame) {
             child->current_frame_host()->GetSiteInstance());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateRemoteFrameToBlankAndDataURLs) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a))"));
@@ -2870,7 +2880,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 //
 // Note that due to http://crbug.com/450681, node2 cannot be re-navigated to
 // site B and stays in not rendered state.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateRemoteFrameToKilledProcess) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/cross_site_iframe_factory.html?foo.com(bar.com, foo.com)"));
@@ -2904,7 +2914,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // This test ensures that WebContentsImpl::FocusOwningWebContents does not crash
 // the browser if the currently focused frame's renderer has disappeared.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RemoveFocusFromKilledFrame) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, RemoveFocusFromKilledFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/cross_site_iframe_factory.html?foo.com(bar.com)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -2952,7 +2962,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RemoveFocusFromKilledFrame) {
 //
 // Note that due to http://crbug.com/450681, node2 cannot be re-navigated to
 // site B and stays in not rendered state.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateRemoteFrameToKilledProcessWithSubtree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(bar(baz), a)"));
@@ -3038,7 +3048,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that the renderer process doesn't crash when the main frame navigates
 // a remote child to a page that results in a network error.
 // See https://crbug.com/558016.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3092,7 +3102,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateRemoteAfterError) {
 // See https://crbug.com/560511.
 // TODO(creis): Make the net error page show in the correct process as well,
 // per https://crbug.com/588314.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProcessTransferAfterError) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3194,7 +3204,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessTransferAfterError) {
 // After the last step, the test sends a postMessage from node 3 to node 4,
 // verifying that a proxy for node 4 has been recreated in process B.  This
 // verifies the fix for https://crbug.com/478892.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigatingToKilledProcessRestoresAllProxies) {
   // Navigate to a page with three frames: one cross-site and two same-site.
   GURL main_url(embedded_test_server()->GetURL(
@@ -3257,7 +3267,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // The test kills process B (node 2), creates a child frame of node 4 in
 // process A, and then checks that process B isn't resurrected to create a
 // proxy for the new child frame.  See https://crbug.com/476846.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CreateChildFrameAfterKillingProcess) {
   // Navigate to a page with three frames: one cross-site and two same-site.
   GURL main_url(embedded_test_server()->GetURL(
@@ -3334,7 +3344,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // process A is live (step 4), the parent proxy in A is not live (which was
 // incorrectly assumed previously).  This is because step 4 does not resurrect
 // proxies for popups opened before the crash.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CreateChildFrameAfterKillingOpener) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3417,7 +3427,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // node1 is the root.
 // Initially, both node1.proxy_hosts_ and node3.proxy_hosts_ contain C.
 // After we kill B, make sure proxies for C are cleared.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        KillingRendererClearsDescendantProxies) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_two_frames_nested.html"));
@@ -3489,7 +3499,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Crash a subframe and ensures its children are cleared from the FrameTree.
 // See http://crbug.com/338508.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrashSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3548,7 +3558,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrashSubframe) {
 // subframe should create proxies for it (https://crbug.com/423587).  This test
 // checks that if A embeds B and later adds a new subframe A2, A2 gets a proxy
 // in B's process.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "b.com", "/frame_tree/page_with_one_frame.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3585,7 +3595,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateProxiesForNewFrames) {
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectOnce) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -3704,7 +3714,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // TODO(nasko): Disable this test until out-of-process iframes is ready and the
 // security checks are back in place.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_CrossSiteIframeRedirectTwice) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -3786,7 +3796,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that when navigating a frame cross-process RenderFrameProxyHosts are
 // created in the FrameTree skipping the subtree of the navigating frame (but
 // not the navigating frame itself).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a(a,a(a)))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3916,7 +3926,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProxyCreationSkipsSubtree) {
 #define MAYBE_FrameOwnerPropertiesPropagationScrolling \
   FrameOwnerPropertiesPropagationScrolling
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_FrameOwnerPropertiesPropagationScrolling) {
 #if defined(OS_MACOSX)
   ui::test::ScopedPreferredScrollerStyle scroller_style_override(false);
@@ -3978,7 +3988,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify that "marginwidth" and "marginheight" properties on frame elements
 // propagate to child frames correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        FrameOwnerPropertiesPropagationMargin) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_owner_properties_margin.html"));
@@ -4037,7 +4047,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify that "csp" property on frame elements propagates to child frames
 // correctly. See  https://crbug.com/647588
-IN_PROC_BROWSER_TEST_F(SitePerProcessEmbedderCSPEnforcementBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessEmbedderCSPEnforcementBrowserTest,
                        FrameOwnerPropertiesPropagationCSP) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_owner_properties_csp.html"));
@@ -4097,7 +4107,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessEmbedderCSPEnforcementBrowserTest,
 }
 
 // Verify origin replication with an A-embed-B-embed-C-embed-A hierarchy.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, OriginReplication) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(a),b), a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4152,7 +4162,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginReplication) {
 // Test that HasReceivedUserGesture and HasReceivedUserGestureBeforeNavigation
 // are propagated correctly across origins.
 // Flaky. https://crbug.com/1014175
-IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessAutoplayBrowserTest,
                        DISABLED_PropagateUserGestureFlag) {
   GURL main_url(embedded_test_server()->GetURL(
       "example.com", "/media/autoplay/autoplay-enabled.html"));
@@ -4208,7 +4218,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAutoplayBrowserTest,
   EXPECT_FALSE(AutoplayAllowed(shell(), false));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcesScrollAnchorTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessScrollAnchorTest,
                        RemoteToLocalScrollAnchorRestore) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/page_with_samesite_iframe.html"));
@@ -4232,7 +4242,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcesScrollAnchorTest,
 }
 
 // Check that iframe sandbox flags are replicated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsReplication) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SandboxFlagsReplication) {
   GURL main_url(embedded_test_server()->GetURL("/sandboxed_frames.html"));
   const url::Origin main_origin = url::Origin::Create(main_url);
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4292,7 +4302,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsReplication) {
 }
 
 // Check that dynamic updates to iframe sandbox flags are propagated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4406,7 +4416,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
 }
 
 // Check that dynamic updates to iframe sandbox flags are propagated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DynamicSandboxFlagsRemoteToLocal) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
@@ -4467,7 +4477,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Check that dynamic updates to iframe sandbox flags are propagated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DynamicSandboxFlagsRendererInitiatedNavigation) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
@@ -4544,7 +4554,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // flags and origin for its (remote) parent.  This wasn't addressed when
 // https://crbug.com/423587 was fixed.
 // TODO(alexmos): Re-enable when https://crbug.com/610893 is fixed.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     DISABLED_ProxiesForNewChildFramesHaveCorrectReplicationState) {
   GURL main_url(
@@ -4613,7 +4623,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Verify that a child frame can retrieve the name property set by its parent.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, WindowNameReplication) {
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/2-4.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -4640,7 +4650,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, WindowNameReplication) {
 
 // Verify that dynamic updates to a frame's window.name propagate to the
 // frame's proxies, so that the latest frame names can be used in navigations.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, DynamicWindowName) {
   GURL main_url(embedded_test_server()->GetURL("/frame_tree/2-4.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -4696,7 +4706,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicWindowName) {
 
 // Verify that when a frame is navigated to a new origin, the origin update
 // propagates to the frame's proxies.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4745,7 +4755,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OriginUpdatesReachProxies) {
 
 // Ensure that navigating subframes in --site-per-process mode properly fires
 // the DidStopLoading event on WebContentsObserver.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -4777,7 +4787,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteDidStopLoading) {
 
 // Ensure that the renderer does not crash when navigating a frame that has a
 // sibling RemoteFrame.  See https://crbug.com/426953.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateWithSiblingRemoteFrame) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
@@ -4811,7 +4821,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that the renderer does not crash when a local frame with a remote
 // parent frame is swapped from local to remote, then back to local again.
 // See https://crbug.com/585654.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateSiblingsToSameProcess) {
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_two_frames.html"));
@@ -4850,7 +4860,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify that load events for iframe elements work when the child frame is
 // out-of-process.  In such cases, the load event is forwarded from the child
 // frame to the parent frame via the browser process.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, LoadEventForwarding) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, LoadEventForwarding) {
   // Load a page with a cross-site frame.  The parent page has an onload
   // handler in the iframe element that appends "LOADED" to the document title.
   {
@@ -4880,7 +4890,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, LoadEventForwarding) {
 }
 
 // Check that postMessage can be routed between cross-site iframes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SubframePostMessage) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_post_message_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -4924,7 +4934,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframePostMessage) {
 
 // Check that postMessage can be sent from a subframe on a cross-process opener
 // tab, and that its event.source points to a valid proxy.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        PostMessageWithSubframeOnOpenerChain) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_post_message_frames.html"));
@@ -5031,7 +5041,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Check that parent.frames[num] references correct sibling frames when the
 // parent is remote.  See https://crbug.com/478792.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, IndexedFrameAccess) {
   // Start on a page with three same-site subframes.
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/frame_tree/top.html"));
@@ -5086,7 +5096,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, IndexedFrameAccess) {
   EXPECT_EQ(1, GetReceivedMessages(child2));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, RFPHDestruction) {
   GURL main_url(embedded_test_server()->GetURL("/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -5158,7 +5168,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, RFPHDestruction) {
       DepictFrameTree(root));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5214,7 +5224,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenPopupWithRemoteParent) {
 // Test that cross-process popups can't be navigated to disallowed URLs by
 // their opener.  This ensures that proper URL validation is performed when
 // RenderFrameProxyHosts are navigated.  See https://crbug.com/595339.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
@@ -5251,7 +5261,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigatePopupToIllegalURL) {
 
 // Verify that named frames are discoverable from their opener's ancestors.
 // See https://crbug.com/511474.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DiscoverNamedFrameFromAncestorOfOpener) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
@@ -5302,7 +5312,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // still be discoverable from its opener's ancestors.  Also, instead of using
 // an opener's ancestor, this test uses a popup with same origin as that
 // ancestor. See https://crbug.com/511474.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DiscoverFrameAfterSettingWindowName) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/site_per_process_main.html"));
@@ -5361,7 +5371,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 //
 // The sites are carefully set up so that both opener updates are cross-process
 // but still allowed by Blink's navigation checks.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UpdateSubframeOpener) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, UpdateSubframeOpener) {
   GURL main_url = embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/page_with_two_frames.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5415,7 +5425,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UpdateSubframeOpener) {
 // SiteInstance will get a proxy for the opener of subframe's parent.  I.e.,
 // accessing parent.opener from the subframe should still work after a
 // cross-process navigation.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigatingSubframePreservesOpenerInParent) {
   GURL main_url = embedded_test_server()->GetURL("a.com", "/post_message.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5453,7 +5463,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Check that if a subframe has an opener, that opener is preserved when the
 // subframe navigates cross-site.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateSubframeWithOpener) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigateSubframeWithOpener) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/page_with_two_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5499,7 +5509,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateSubframeWithOpener) {
 // Similar to NavigateSubframeWithOpener, but this test verifies the subframe
 // opener plumbing for mojom::Renderer::CreateFrameProxy(), whereas
 // NavigateSubframeWithOpener targets mojom::Renderer::CreateFrame().
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NewRenderFrameProxyPreservesOpener) {
   GURL main_url(
       embedded_test_server()->GetURL("foo.com", "/post_message.html"));
@@ -5568,7 +5578,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #define MAYBE_RenderViewHostIsNotReusedAfterDelayedUnloadACK \
   RenderViewHostIsNotReusedAfterDelayedUnloadACK
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_RenderViewHostIsNotReusedAfterDelayedUnloadACK) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), a_url));
@@ -5638,7 +5648,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test for https://crbug.com/591478, where navigating to a cross-site page with
 // a subframe on the old site caused a crash while trying to reuse the old
 // RenderViewHost.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ReusePendingDeleteRenderViewHostForSubframe) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5669,7 +5679,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // loses focus and fires blur events.  Starting on a page with a cross-site
 // subframe, simulate mouse clicks to switch focus from root frame to subframe
 // and then back to root frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossProcessFocusChangeFiresBlurEvents) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/page_with_input_field.html"));
@@ -5730,7 +5740,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // document.activeElement correctly returns the corresponding <iframe> element.
 // The test sets up an A-embed-B-embed-C page and shifts focus A->B->A->C,
 // checking document.activeElement after each change.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, DocumentActiveElement) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5799,7 +5809,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DocumentActiveElement) {
 }
 
 // Check that window.focus works for cross-process subframes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SubframeWindowFocus) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5910,7 +5920,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SubframeWindowFocus) {
 // Check that when a subframe has focus, and another subframe navigates
 // cross-site to a new renderer process, this doesn't reset the focused frame
 // to the main frame.  See https://crbug.com/802156.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeFocusNotLostWhenAnotherFrameNavigatesCrossSite) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
@@ -5955,7 +5965,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that we are using the correct RenderFrameProxy when navigating an
 // opener window.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, OpenerSetLocation) {
   // Navigate the main window.
   GURL main_url(embedded_test_server()->GetURL("/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -5977,7 +5987,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, OpenerSetLocation) {
 // remote-to-local navigation on a child frame and immediately removes the same
 // child frame.  This test exercises the path where the detach happens before
 // the provisional local frame is created.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateProxyAndDetachBeforeProvisionalFrameCreation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
@@ -6008,7 +6018,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // remote-to-local navigation, and the parent frame removes that child frame
 // after the provisional local frame is created and starts to navigate, but
 // before it commits.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateProxyAndDetachBeforeCommit) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
@@ -6043,7 +6053,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Similar to NavigateProxyAndDetachBeforeCommit, but uses a synchronous
 // navigation to about:blank and the parent removes the child frame in a load
 // event handler for the subframe.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateAboutBlankAndDetach) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, NavigateAboutBlankAndDetach) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/remove_frame_on_load.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6073,7 +6083,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateAboutBlankAndDetach) {
 // that IPC arrives after the detach, the new frame's parent (a proxy) won't be
 // available, and this shouldn't cause RenderFrameProxy::CreateFrameProxy to
 // crash.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RaceBetweenCreateChildFrameAndDetachParentProxy) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -6123,7 +6133,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // if a pending cross-process navigation is cancelled. The test works by trying
 // to create a new RenderFrame with the same routing id. If there is an
 // entry with the same routing ID, a CHECK is hit and the process crashes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframePendingAndBackToSameSiteInstance) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -6198,7 +6208,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // when a remote parent detaches a child frame. The test works by trying
 // to create a new RenderFrame with the same routing id. If there is an
 // entry with the same routing ID, a CHECK is hit and the process crashes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6294,7 +6304,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
 // As an example, the expected set of immediate local roots for the root node A0
 // should be {B1, B2, C2, D2, C5}. Note that the order is compatible with that
 // of a BFS traversal from root node A0.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FindImmediateLocalRoots) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FindImmediateLocalRoots) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com",
       "/cross_site_iframe_factory.html?a(a(b(d),a(d)),b(b(c,c)),a(a(c),c))"));
@@ -6339,7 +6349,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FindImmediateLocalRoots) {
 // This test verifies that changing the CSS visibility of a cross-origin
 // <iframe> is forwarded to its corresponding RenderWidgetHost and all other
 // RenderWidgetHosts corresponding to the nested cross-origin frame.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CSSVisibilityChanged) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CSSVisibilityChanged) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(b(c(d(d(a))))))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6409,7 +6419,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CSSVisibilityChanged) {
 // This test verifies that hiding an OOPIF in CSS will stop generating
 // compositor frames for the OOPIF and any nested OOPIFs inside it. This holds
 // even when the whole page is shown.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        HiddenOOPIFWillNotGenerateCompositorFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_two_frames.html"));
@@ -6525,7 +6535,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // This test verifies that navigating a hidden OOPIF to cross-origin will not
 // lead to creating compositor frames for the new OOPIF renderer.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -6596,7 +6606,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Verify that sandbox flags inheritance works across multiple levels of
 // frames.  See https://crbug.com/576845.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6650,7 +6660,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
 // a child frame, update its sandbox flags but don't navigate the frame, and
 // ensure that a new cross-site grandchild frame doesn't inherit the new flags
 // (which shouldn't have taken effect).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SandboxFlagsNotInheritedBeforeNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -6702,7 +6712,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify that popups opened from sandboxed frames inherit sandbox flags from
 // their opener, and that they keep these inherited flags after being navigated
 // cross-site.  See https://crbug.com/483584.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NewPopupInheritsSandboxFlagsFromOpener) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -6811,7 +6821,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify that popups opened from frames sandboxed with the
 // "allow-popups-to-escape-sandbox" directive do *not* inherit sandbox flags
 // from their opener.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        OpenUnsandboxedPopupFromSandboxedFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -6878,7 +6888,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #else
 #define MAYBE_PassiveMixedContentInIframe PassiveMixedContentInIframe
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
                        MAYBE_PassiveMixedContentInIframe) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -6916,7 +6926,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 // Tests that, when a parent frame is set to strictly block mixed
 // content via Content Security Policy, child OOPIFs cannot display
 // mixed content.
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
                        PassiveMixedContentInIframeWithStrictBlocking) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -6960,7 +6970,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 
 // Tests that, when a parent frame is set to upgrade insecure requests
 // via Content Security Policy, child OOPIFs will upgrade as well.
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
                        PassiveMixedContentInIframeWithUpgrade) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -7006,7 +7016,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 // ignores cert errors so that an HTTPS iframe can be loaded from a site
 // other than localhost (the EmbeddedTestServer serves a certificate
 // that is valid for localhost).
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
                        ActiveMixedContentInIframe) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -7031,7 +7041,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 // loads an image with certificate errors, the browser should be
 // notified about the subresource with certificate errors and downgrade
 // the UI appropriately.
-IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessIgnoreCertErrorsBrowserTest,
                        SubresourceWithCertificateErrors) {
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   https_server.ServeFilesFromSourceDirectory(GetTestDataFilePath());
@@ -7058,7 +7068,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessIgnoreCertErrorsBrowserTest,
 }
 
 // Test setting a cross-origin iframe to display: none.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -7086,7 +7096,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossSiteIframeDisplayNone) {
 
 // Test that a cross-origin iframe can be blocked by X-Frame-Options and CSP
 // frame-ancestors.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossSiteIframeBlockedByXFrameOptionsOrCSP) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -7164,7 +7174,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
 // In this version of a test, CSP comes from HTTP headers.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossSiteIframeBlockedByParentCSPFromHeaders) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/frame-src-self-and-b.html"));
@@ -7223,7 +7233,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test that a cross-origin frame's navigation can be blocked by CSP frame-src.
 // In this version of a test, CSP comes from a <meta> element added after the
 // page has already loaded.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossSiteIframeBlockedByParentCSPFromMeta) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -7291,7 +7301,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // In this version of a test, CSP is inherited by srcdoc iframe from a parent
 // that declared CSP via HTTP headers.  Cross-origin frame navigating to a
 // blocked location is a child of the srcdoc iframe.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossSiteIframeBlockedByCSPInheritedBySrcDocParent) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/frame-src-self-and-b.html"));
@@ -7364,7 +7374,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       srcdoc_frame->current_replication_state().accumulated_csp_headers.size());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScreenCoordinates) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ScreenCoordinates) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -7385,7 +7395,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ScreenCoordinates) {
 
 // Tests that the state of the RenderViewHost is properly reset when the main
 // frame is navigated to the same SiteInstance as one of its child frames.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateMainFrameToChildSite) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -7440,7 +7450,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // closing the RenderView), because this tried to access the subframe's
 // WebFrameWidget (from RenderFrameImpl::didChangeSelection), which had already
 // been cleared by the former.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CloseSubframeWidgetAndViewOnProcessExit) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -7486,7 +7496,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // This is used for browser features such as download request limiting and
 // launching multiple external protocol handlers, which can block repeated
 // actions from a page when a user is not interacting with the page.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        UserInteractionForChildFrameTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -7511,7 +7521,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensures that navigating to data: URLs present in session history will
 // correctly commit the navigation in the same process as the one used for the
 // original navigation. See https://crbug.com/606996.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateSubframeToDataUrlInSessionHistory) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
@@ -7561,7 +7571,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // SiteInstance relationships are not preserved on restore, until
 // https://crbug.com/14987 is fixed).  This is better than restoring into the
 // parent process, per https://crbug.com/863069.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeDataUrlsAfterRestore) {
   // We must use a page that has iframes in the HTML here, unlike
   // cross_site_iframe_factory.html which loads them dynamically.  In the latter
@@ -7668,7 +7678,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Similar to SubframeDataUrlsAfterRestore. Ensures that about:blank frames
 // are not put into their parent process after restore if their initiator origin
 // is different from the parent.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeBlankUrlsAfterRestore) {
   // We must use a page that has iframes in the HTML here, unlike
   // cross_site_iframe_factory.html which loads them dynamically.  In the latter
@@ -7812,7 +7822,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Similar to SubframeBlankUrlsAfterRestore, but ensures that about:srcdoc ends
 // up in its parent's process after restore, since that's where its content
 // comes from.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeSrcdocUrlAfterRestore) {
   // Load a page that uses iframe srcdoc.
   GURL main_url(embedded_test_server()->GetURL(
@@ -7873,7 +7883,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensures that navigating to about:blank URLs present in session history will
 // correctly commit the navigation in the same process as the one used for
 // the original navigation.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateSubframeToAboutBlankInSessionHistory) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,b)"));
@@ -8012,7 +8022,7 @@ class ShowCreatedWindowInterceptor
 // CreateNewWindow calls arrived before the ShowCreatedWindow calls, resulting
 // in the two pending windows colliding in the pending WebContents map, which
 // used to be keyed only by routing_id.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoSubframesCreatePopupsSimultaneously) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
@@ -8086,7 +8096,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // a FrameHostMsg_ShowPopup to ask the browser to build and display the actual
 // popup using native controls.
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoSubframesCreatePopupMenuWidgetsSimultaneously) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c)"));
@@ -8158,7 +8168,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test for https://crbug.com/615575. It ensures that file chooser triggered
 // by a document in an out-of-process subframe works properly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FileChooserInSubframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FileChooserInSubframe) {
   EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)")));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
@@ -8187,7 +8197,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FileChooserInSubframe) {
 }
 
 // Tests that an out-of-process iframe receives the visibilitychange event.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChange) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, VisibilityChange) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8223,7 +8233,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChange) {
 // is not live was hitting a CHECK in CreateRenderView due to having neither a
 // main frame routing ID nor a proxy routing ID.  See https://crbug.com/627400
 // for more details.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        PendingRFHIsCanceledWhenItsProcessDies) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8281,7 +8291,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // that try to reuse it.  See https://crbug.com/627893 for more details.
 // Similar to the test above for https://crbug.com/627400, except the popup is
 // navigated after pending RFH's process is killed, rather than the main tab.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RenderViewHostKeepsSwappedOutStateIfPendingRFHDies) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8332,8 +8342,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that a crashed subframe can be successfully navigated to the site it
 // was on before crashing.  See https://crbug.com/634368.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigateCrashedSubframeToSameSite) {
+  // TODO(https://crbug.com/1064944): Enable this when the fix is submitted.
+  if (CreateNewHostForSameSiteSubframe())
+    return;
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8394,7 +8407,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // processes in a FrameTree.  This allows each renderer to see correct values
 // for history.length, and to check the offset validity properly for
 // navigations initiated via history.go(). See https:/crbug.com/501116.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SessionHistoryReplication) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SessionHistoryReplication) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8478,7 +8491,7 @@ class DispatchLoadInterceptor
 
 // Test that the renderer isn't killed when a frame generates a load event just
 // after becoming pending deletion.  See https://crbug.com/636513.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        LoadEventForwardingWhilePendingDeletion) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -8531,7 +8544,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(ExecuteScript(popup_shell->web_contents(), "true"));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RFHTransfersWhilePendingDeletion) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -8580,7 +8593,7 @@ class NavigationHandleWatcher : public WebContentsObserver {
 
 // Verifies that the SiteInstance of a NavigationHandle correctly identifies the
 // RenderFrameHost that started the navigation (and not the destination RFH).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigationHandleSiteInstance) {
   // Navigate to a page with a cross-site iframe.
   GURL main_url(embedded_test_server()->GetURL(
@@ -8602,7 +8615,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // the RenderViewHost isn't reused in an improper state later.  Previously this
 // led to a crash in CreateRenderView when recreating the RenderView due to a
 // stale main frame routing ID.  See https://crbug.com/627400.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ReuseNonLiveRenderViewHostAfterCancelPending) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -8649,7 +8662,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // same site as the canceled RFH doesn't lead to a renderer crash.  The steps
 // here are similar to ReuseNonLiveRenderViewHostAfterCancelPending, but don't
 // involve crashing the renderer. See https://crbug.com/651980.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RecreateMainFrameAfterCancelPending) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -8683,7 +8696,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Check that when a pending RFH is canceled and a proxy needs to be created in
 // its place, the proxy is properly initialized on the renderer side.  See
 // https://crbug.com/653746.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CommunicateWithProxyAfterCancelPending) {
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL b_url(embedded_test_server()->GetURL("b.com", "/title2.html"));
@@ -9033,7 +9046,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 // Ensure that an iframe that navigates cross-site doesn't use the same process
 // as its parent. Then when its parent navigates it via the "srcdoc" attribute,
 // it must reuse its parent's process.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        IframeSrcdocAfterCrossSiteNavigation) {
   GURL parent_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -9070,7 +9083,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify that a remote-to-local navigation in a crashed subframe works.  See
 // https://crbug.com/487872.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RemoteToLocalNavigationInCrashedSubframe) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -9111,7 +9124,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that trying to open a context menu in the old RFH after commiting a
 // navigation doesn't crash the browser. https://crbug.com/677266.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ContextMenuAfterCrossProcessNavigation) {
   // Navigate to a.com.
   EXPECT_TRUE(NavigateToURL(
@@ -9141,7 +9154,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test iframe container policy is replicated properly to the browser.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ContainerPolicy) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ContainerPolicy) {
   GURL url(embedded_test_server()->GetURL("/allowed_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -9159,7 +9172,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ContainerPolicy) {
 }
 
 // Test dynamic updates to iframe "allow" attribute are propagated correctly.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ContainerPolicyDynamic) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ContainerPolicyDynamic) {
   GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
   GURL nav_url(
       embedded_test_server()->GetURL("b.com", "/feature-policy2.html"));
@@ -9196,7 +9209,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ContainerPolicyDynamic) {
 // the fullscreen feature. Since there are no HTTP header policies involved,
 // this verifies the presence of the container policy in the iframe.
 // https://crbug.com/703703
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ContainerPolicyCrossOriginNavigation) {
   WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
@@ -9230,7 +9243,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that dynamic updates to iframe sandbox attribute correctly set the
 // replicated container policy.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ContainerPolicySandboxDynamic) {
   GURL main_url(embedded_test_server()->GetURL("/allowed_frames.html"));
   GURL nav_url(
@@ -9440,7 +9453,7 @@ class RequestDelayingSitePerProcessBrowserTest
 //
 // If the logic is not correct, these tests will time out, as the n + 1st
 // request will never start.
-IN_PROC_BROWSER_TEST_F(RequestDelayingSitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(RequestDelayingSitePerProcessBrowserTest,
                        DelayableSubframeRequestsOneFrame) {
   std::string path = "/mock-video.mp4";
   SetDelayedRequestsForPath(path, 2);
@@ -9456,7 +9469,7 @@ IN_PROC_BROWSER_TEST_F(RequestDelayingSitePerProcessBrowserTest,
   EXPECT_TRUE(result);
 }
 
-IN_PROC_BROWSER_TEST_F(RequestDelayingSitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(RequestDelayingSitePerProcessBrowserTest,
                        DelayableSubframeRequestsTwoFrames) {
   std::string path0 = "/mock-video0.mp4";
   std::string path1 = "/mock-video1.mp4";
@@ -9582,7 +9595,7 @@ class SitePerProcessAndroidImeTest : public SitePerProcessBrowserTest {
 
 // This test verifies that committing text will be applied on the focused
 // RenderWidgetHost.
-IN_PROC_BROWSER_TEST_F(SitePerProcessAndroidImeTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessAndroidImeTest,
                        CommitTextForFocusedWidget) {
   LoadPage();
   TextSelectionObserver selection_observer(
@@ -9599,7 +9612,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessAndroidImeTest,
 // Test that an OOPIF at b.com can navigate to a cross-site a.com URL that
 // transfers back to b.com.  See https://crbug.com/681077#c10 and
 // https://crbug.com/660407.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeTransfersToCurrentRFH) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -9631,7 +9644,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             root->child_at(0)->current_frame_host()->GetSiteInstance());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        FrameSwapPreservesUniqueName) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -9675,7 +9688,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that POST body is not lost when it targets a OOPIF.
 // See https://crbug.com/710937.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, PostTargetSubFrame) {
   // Navigate to a page with an OOPIF.
   GURL main_url(
       embedded_test_server()->GetURL("/frame_tree/page_with_one_frame.html"));
@@ -9731,7 +9744,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PostTargetSubFrame) {
 
 // Tests that POST method and body is not lost when an OOPIF submits a form
 // that targets the main frame.  See https://crbug.com/806215.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        PostTargetsMainFrameFromOOPIF) {
   // Navigate to a page with an OOPIF.
   GURL main_url(
@@ -9799,7 +9812,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify that a remote-to-local main frame navigation doesn't overwrite
 // the previous history entry.  See https://crbug.com/725716.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     DISABLED_CrossProcessMainFrameNavigationDoesNotOverwriteHistory) {
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
@@ -9836,7 +9849,7 @@ IN_PROC_BROWSER_TEST_F(
 
 // Tests that when a frame contains a modal <dialog> element, out-of-process
 // iframe children cannot take focus, because they are inert.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
   // This uses a(b,b) instead of a(b) to preserve the b.com process even when
   // the first subframe is navigated away from it.
   GURL main_url(embedded_test_server()->GetURL(
@@ -9932,7 +9945,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CrossProcessInertSubframe) {
 // Check that main frames for the same site rendering in unrelated tabs start
 // sharing processes that are already dedicated to that site when over process
 // limit. See https://crbug.com/513036.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MainFrameProcessReuseWhenOverLimit) {
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
@@ -9966,7 +9979,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Check that subframes for the same site rendering in unrelated tabs start
 // sharing processes that are already dedicated to that site when over process
 // limit. See https://crbug.com/513036.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeProcessReuseWhenOverLimit) {
   // Set the process limit to 1.
   RenderProcessHost::SetMaxRendererProcessCount(1);
@@ -10038,7 +10051,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // creating a RenderFrame, which makes such navigations follow the provisional
 // frame (remote-to-local navigation) paths, where such a scenario is no longer
 // possible.  See https://crbug.com/756790.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoCrossSitePendingNavigationsAndMainFrameWins) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
@@ -10116,7 +10129,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Similar to TwoCrossSitePendingNavigationsAndMainFrameWins, but checks the
 // case where the subframe navigation commits before the main frame.  See
 // https://crbug.com/756790.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoCrossSitePendingNavigationsAndSubframeWins) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,a)"));
@@ -10254,7 +10267,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Similar to TwoCrossSitePendingNavigations* tests above, but checks the case
 // where the current window and its opener navigate simultaneously.
 // See https://crbug.com/756790.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoCrossSitePendingNavigationsWithOpener) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -10339,7 +10352,7 @@ class MockEventHandlerAndroid : public ui::EventHandlerAndroid {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SpeculativeRenderFrameHostDoesNotReceiveInput) {
   GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url1));
@@ -10391,7 +10404,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(mock_handler_speculative.did_receive_event());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, TestChildProcessImportance) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, TestChildProcessImportance) {
   web_contents()->SetMainFrameImportance(ChildProcessImportance::MODERATE);
 
   // Construct root page with one child in different domain.
@@ -10549,7 +10562,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
         selection_controller_client_(nullptr) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     IsolateAllSitesForTesting(command_line);
   }
 
@@ -10751,7 +10764,7 @@ class TouchSelectionControllerClientAndroidSiteIsolationTest
   std::unique_ptr<base::RunLoop> gesture_run_loop_;
 };
 
-IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAndroidSiteIsolationTest,
                        BasicSelectionIsolatedIframe) {
   // Load test URL with cross-process child.
   SetupTest();
@@ -10834,7 +10847,7 @@ IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
 #else
 #define MAYBE_SelectionThenPinchInOOPIF SelectionThenPinchInOOPIF
 #endif
-IN_PROC_BROWSER_TEST_F(TouchSelectionControllerClientAndroidSiteIsolationTest,
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAndroidSiteIsolationTest,
                        MAYBE_SelectionThenPinchInOOPIF) {
   // Load test URL with cross-process child.
   SetupTest();
@@ -10942,7 +10955,7 @@ class TouchEventObserver : public RenderWidgetHost::InputEventObserver {
 //
 // This test is disabled due to flakiness on all platforms, but especially on
 // Android.  See https://crbug.com/945025.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_TouchEventAckQueueOrdering) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -11065,7 +11078,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // This test verifies that the main-frame's page scale factor propagates to
 // the compositor layertrees in each of the child processes.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        PageScaleFactorPropagatesToOOPIFs) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d)"));
@@ -11168,7 +11181,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verify that sandbox flags specified by a CSP header are properly inherited by
 // child frames, but are removed when the frame navigates.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ActiveSandboxFlagsMaintainedAcrossNavigation) {
   GURL main_url(
       embedded_test_server()->GetURL("a.com", "/sandbox_main_frame_csp.html"));
@@ -11253,7 +11266,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test that after an RFH is unloaded, its old sandbox flags remain active.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ActiveSandboxFlagsRetainedAfterUnload) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/sandboxed_main_frame_script.html"));
@@ -11322,7 +11335,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // The test checks sandbox flags for the proxy added in step 2, by checking
 // whether the grandchild frames navigated to in step 3 and 4 see the correct
 // sandbox flags.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ActiveSandboxFlagsCorrectInProxies) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/cross_site_iframe_factory.html?foo(bar)"));
@@ -11435,7 +11448,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 //            B    B    A    B                             A'   B
 //
 // (B* has CSP-set sandbox flags)
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ActiveSandboxFlagsCorrectAfterUpdate) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/cross_site_iframe_factory.html?foo(bar)"));
@@ -11509,7 +11522,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // also has CSP-set sandbox flags, that the flags are cleared in the browser
 // and renderers (including proxies) after navigation to a page without CSP-set
 // flags.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ActiveSandboxFlagsCorrectWhenCleared) {
   GURL main_url(
       embedded_test_server()->GetURL("foo.com", "/sandboxed_frames_csp.html"));
@@ -11592,7 +11605,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Check that a subframe that requires a dedicated process will attempt to
 // reuse an existing process for the same site, even across BrowsingInstances.
 // This helps consolidate processes when running under --site-per-process.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeReusesExistingProcess) {
   GURL foo_url(
       embedded_test_server()->GetURL("foo.com", "/page_with_iframe.html"));
@@ -11674,7 +11687,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // across BrowsingInstances, a browser-initiated navigation in that subframe's
 // tab doesn't unnecessarily share the reused process.  See
 // https://crbug.com/803367.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NoProcessSharingAfterSubframeReusesExistingProcess) {
   GURL foo_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), foo_url));
@@ -11798,7 +11811,7 @@ class CommitMessageOrderReverser : public DidCommitNavigationInterceptor {
 #else
 #define MAYBE_OOPIFDetachDuringAnimation OOPIFDetachDuringAnimation
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_OOPIFDetachDuringAnimation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/frame-detached-in-animationstart-event.html"));
@@ -11829,7 +11842,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that a cross-process iframe asked to navigate to the same URL will
 // successfully commit the navigation.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        IFrameSameDocumentNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/cross_site_iframe_factory.html?foo(bar)"));
@@ -11870,7 +11883,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Verifies the the renderer has the size of the frame after commit.
 // https://crbug/804046, https://crbug.com/801091
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -11897,7 +11910,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SizeAvailableAfterCommit) {
 // Test that a late FrameHostMsg_Unload_ACK won't incorrectly mark
 // RenderViewHost as inactive if it's already been reused and switched to active
 // by another navigation.  See https://crbug.com/823567.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RenderViewHostStaysActiveWithLateUnloadACK) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
@@ -11956,7 +11969,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Check that when A opens a new window with B which embeds an A subframe, the
 // subframe is visible and generates paint events.  See
 // https://crbug.com/638375.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SubframeVisibleAfterRenderViewBecomesSwappedOut) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -11986,7 +11999,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     frame_counter.WaitForAnyFrameSubmission();
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthSimple) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FrameDepthSimple) {
   // Five nodes, from depth 0 to 4.
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c(d(e))))"));
@@ -12003,7 +12016,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthSimple) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FrameDepthTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a,b(a))"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -12044,7 +12057,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FrameDepthTest) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   GURL popup_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
@@ -12100,7 +12113,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityFrameDepthTest) {
 }
 
 // Flaky on multiple platforms (crbug.com/1094562).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_FrameViewportIntersectionTestSimple) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c),d,e(f))"));
@@ -12146,7 +12159,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(CheckIntersectsViewport(false, root->child_at(2)->child_at(0)));
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        FrameViewportOffsetTestSimple) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
@@ -12206,7 +12219,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_NEAR(expected.y(), actual.y(), 2.0);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        FrameViewportIntersectionTestAggregate) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b,c,a,b)"));
@@ -12239,7 +12252,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // loop iteration, those IPCs are processed, and their side effects are
 // observed by the target frame before it receives the forwarded postMessage.
 // See https://crbug.com/828529.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossProcessPostMessageWaitsForCurrentScriptToFinish) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -12271,7 +12284,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that if a cross-process postMessage is scheduled, and then the target
 // frame is detached before the postMessage is forwarded, the source frame's
 // renderer does not crash.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CrossProcessPostMessageAndDetachTarget) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -12297,7 +12310,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that the last committed URL is preserved on an RFH even after the RFH
 // goes into the pending deletion state.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        LastCommittedURLRetainedAfterUnload) {
   // Navigate to a.com.
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -12338,7 +12351,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #else
 #define MAYBE_ScaledIframeRasterSize ScaledIframeRasterSize
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_ScaledIframeRasterSize) {
   GURL http_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_scaled_large_frame.html"));
@@ -12408,7 +12421,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #else
 #define MAYBE_ScaledNestedIframeRasterSize ScaledNestedIframeRasterSize
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        MAYBE_ScaledNestedIframeRasterSize) {
   GURL http_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_scaled_large_frames_nested.html"));
@@ -12505,7 +12518,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Verify that OOPIF select element popup menu coordinates account for scroll
 // offset in containers embedding frame.
 // TODO(crbug.com/859552): Reenable this.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        DISABLED_PopupMenuInTallIframeTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_tall_positioned_frame.html"));
@@ -12566,7 +12579,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // which exists only on the root frame. i.e. the gesture manager knows we're in
 // a scroll gesture when it's happening in a cross-process child frame. This is
 // important in cases like hiding the text selection popup during a scroll.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        GestureManagerListensToChildFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -12664,7 +12677,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test to verify that viewport intersection is propagated to nested OOPIFs
 // even when a parent OOPIF has been throttled.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NestedFrameViewportIntersectionUpdated) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
@@ -12714,7 +12727,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test to verify that the main frame document intersection
 // is propagated to out of process iframes by scrolling a nested iframe
 // in and out of intersecting with the main frame document.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NestedFrameMainFrameDocumentIntersectionUpdated) {
   GURL main_url(embedded_test_server()->GetURL(
       "foo.com", "/frame_tree/scrollable_page_with_positioned_frame.html"));
@@ -12805,7 +12818,7 @@ class ClosePageBeforeCommitHelper : public DidCommitNavigationInterceptor {
 // Verify that when a tab is closed just before a commit IPC arrives for a
 // subframe in the tab, a subsequent resource timing IPC from the subframe RFH
 // won't generate a renderer kill.  See https://crbug.com/805705.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CloseTabBeforeSubframeCommits) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -12963,7 +12976,7 @@ class EnableForceZoomContentClient : public TestContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(EnableForceZoomContentClient);
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
                        ForceEnableZoomPropagatesToChild) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -13012,7 +13025,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
 
 // Flaky on every platform, failing most of the time on Android.
 // See https://crbug.com/945734
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
                        DISABLED_EffectiveTouchActionPropagatesAcrossFrames) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -13175,7 +13188,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_EQ(expected_touch_action, allowed_touch_action.value());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTouchActionTest,
                        EffectiveTouchActionPropagatesWhenChildFrameNavigates) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -13253,7 +13266,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTouchActionTest,
     EXPECT_EQ(expected_touch_action, allowed_touch_action.value());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ChildFrameCrashMetrics_KilledWhileVisible) {
   // Set-up a frame tree that helps verify what the metrics tracks:
   // 1) frames (12 frames are affected if B process gets killed) or
@@ -13288,7 +13301,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       CrossProcessFrameConnector::CrashVisibility::kCrashedWhileVisible, 9);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ChildFrameCrashMetrics_KilledMainFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a(b(b,c)))"));
@@ -13308,7 +13321,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 // Test is flaky (crbug.com/1097060)
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     DISABLED_ChildFrameCrashMetrics_KilledWhileHiddenThenShown) {
   // Set-up a frame tree that helps verify what the metrics tracks:
@@ -13361,7 +13374,7 @@ IN_PROC_BROWSER_TEST_F(
       CrossProcessFrameConnector::ShownAfterCrashingReason::kTabWasShown, 10);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ChildFrameCrashMetrics_NeverShown) {
   // Set-up a frame tree that helps verify what the metrics tracks:
   // 1) frames (12 frames are affected if B process gets killed) or
@@ -13393,7 +13406,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       CrossProcessFrameConnector::CrashVisibility::kNeverVisibleAfterCrash, 10);
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ChildFrameCrashMetrics_ScrolledIntoView) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -13465,7 +13478,7 @@ class SitePerProcessBrowserTestWithoutSadFrameTabReload
   base::test::ScopedFeatureList feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTestWithoutSadFrameTabReload,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithoutSadFrameTabReload,
                        ChildFrameCrashMetrics_ScrolledIntoViewAfterTabIsShown) {
   // Start on a page that has a single iframe, which is positioned out of
   // view, and navigate that iframe cross-site.
@@ -13562,7 +13575,7 @@ class SitePerProcessBrowserTestWithSadFrameTabReload
 #define MAYBE_ReloadHiddenTabWithCrashedSubframe \
   ReloadHiddenTabWithCrashedSubframe
 #endif
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTestWithSadFrameTabReload,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTestWithSadFrameTabReload,
                        MAYBE_ReloadHiddenTabWithCrashedSubframe) {
   auto crash_process = [](FrameTreeNode* ftn) {
     RenderProcessHost* process = ftn->current_frame_host()->GetProcess();
@@ -13684,7 +13697,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTestWithSadFrameTabReload,
 // size.  In particular, ensure that the postMessage won't get reordered with
 // the second resize, which might be throttled if the first resize is still in
 // progress. See https://crbug.com/828529.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ResizeAndCrossProcessPostMessagePreserveOrder) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -13729,7 +13742,7 @@ class SitePerProcessAndProcessPerSiteBrowserTest
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kProcessPerSite);
   }
 
@@ -13740,7 +13753,7 @@ class SitePerProcessAndProcessPerSiteBrowserTest
 // Verify that when --site-per-process is combined with --process-per-site, a
 // cross-site, browser-initiated navigation with a generated page transition
 // does not stay in the old SiteInstance.  See https://crbug.com/825411.
-IN_PROC_BROWSER_TEST_F(SitePerProcessAndProcessPerSiteBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessAndProcessPerSiteBrowserTest,
                        GeneratedTransitionsSwapProcesses) {
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
@@ -13801,7 +13814,7 @@ class SameDocumentCommitObserver : public WebContentsObserver {
 
 // Ensure that a same-document navigation does not cancel an ongoing
 // cross-process navigation.  See https://crbug.com/825677.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ReplaceStateDoesNotCancelCrossSiteNavigation) {
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -13850,7 +13863,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test that a pending frame policy, such as an updated sandbox attribute, does
 // not take effect after a same-document navigation.  See
 // https://crbug.com/849311.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SameDocumentNavigationDoesNotCommitPendingFramePolicy) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -13907,7 +13920,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that when two cross-site frames have subframes with unique origins,
 // and those subframes create blob URLs and navigate to them, the blob URLs end
 // up in different processes. See https://crbug.com/863623.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TwoBlobURLsWithNullOriginDontShareProcess) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/navigation_controller/page_with_data_iframe.html"));
@@ -13957,7 +13970,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Ensure that when a process is about to be destroyed after the last active
 // frame in it goes away, an attempt to reuse a proxy in that process doesn't
 // result in a crash.  See https://crbug.com/794625.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        RenderFrameProxyNotRecreatedDuringProcessShutdown) {
   GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -14031,7 +14044,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_TRUE(b_process_observer.did_exit_normally());
 }
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CommitTimeoutForHungRenderer) {
   // Navigate first tab to a.com.
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -14076,7 +14089,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // the hung renderer dialog used to undesirably show up for background tabs
 // (typically during session restore when many navigations would be happening in
 // backgrounded processes).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NoCommitTimeoutForInvisibleWebContents) {
   // Navigate first tab to a.com.
   GURL a_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -14126,7 +14139,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Tests that an inner WebContents will reattach to its outer WebContents after
 // a navigation that causes a process swap.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessSwapOnInnerContents) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, ProcessSwapOnInnerContents) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -14173,7 +14186,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ProcessSwapOnInnerContents) {
 // inner WebContents.  This setup isn't currently supported in Chrome
 // (requiring issue 614463), but it can happen in embedders.  See
 // https://crbug.com/1026056.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusInnerContentsFromOOPIF) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, FocusInnerContentsFromOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(a)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -14217,7 +14230,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, FocusInnerContentsFromOOPIF) {
 // Check that a web frame can't navigate a remote subframe to a file: URL.  The
 // frame should stay at the old URL, and the navigation attempt should produce
 // a console error message.  See https://crbug.com/894399.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        FileURLBlockedWithConsoleErrorInRemoteFrameNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14257,7 +14270,7 @@ void EnableDoubleTapZoomInRenderView(FrameTreeNode* node) {
 
 }  // namespace
 
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        TouchscreenAnimateDoubleTapZoomInOOPIF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14343,7 +14356,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 #endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
 
 class CrossProcessNavigationObjectElementTest
-    : public SitePerProcessBrowserTest,
+    : public SitePerProcessBrowserTestBase,
       public testing::WithParamInterface<
           std::tuple<std::string, std::string, std::string>> {};
 
@@ -14458,7 +14471,7 @@ class ScrollingIntegrationTest : public SitePerProcessBrowserTest {
 // Tests basic scrolling after navigating to a new origin works. Guards against
 // bugs like https://crbug.com/899234 which are caused by invalid
 // initialization due to the cross-origin provisional frame swap.
-IN_PROC_BROWSER_TEST_F(ScrollingIntegrationTest,
+IN_PROC_BROWSER_TEST_P(ScrollingIntegrationTest,
                        ScrollAfterCrossOriginNavigation) {
   // Navigate to the a.com domain first.
   GURL url_domain_a(
@@ -14505,7 +14518,7 @@ IN_PROC_BROWSER_TEST_F(ScrollingIntegrationTest,
 #if !defined(OS_ANDROID)
 // This test verifies that after occluding a WebContents the RAF inside a
 // cross-process child frame is throttled.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        OccludedRenderWidgetThrottlesRAF) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14551,7 +14564,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // Test that a renderer locked to origin A will be terminated if it tries to
 // commit a navigation to origin B.  See also https://crbug.com/770239.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        CommittedOriginIncompatibleWithOriginLock) {
   GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
@@ -14632,7 +14645,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // This test verifies that plugin elements containing cross-process-frames do
 // not become unresponsive during style changes. (see https://crbug.com/781880).
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        PluginElementResponsiveInCrossProcessNavigations) {
   GURL main_frame_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   ASSERT_TRUE(NavigateToURL(shell(), main_frame_url));
@@ -14686,7 +14699,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // 1) Initial state: A(B).
 // 2) Navigation from B to C. The server is slow to respond.
 // 3) Deletion of B.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigationCommitInIframePendingDeletionAB) {
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14743,7 +14756,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // 1) Initial state: A(B(C)).
 // 2) Navigation from C to D. The server is slow to respond.
 // 3) Deletion of B.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        NavigationCommitInIframePendingDeletionABC) {
   GURL url_a(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b(c))"));
@@ -14803,7 +14816,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // A same document commit from the renderer process is received while the
 // RenderFrameHost is pending deletion.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SameDocumentCommitWhilePendingDeletion) {
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14833,7 +14846,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // An history navigation from the renderer process is received while the
 // RenderFrameHost is pending deletion.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        HistoryNavigationWhilePendingDeletion) {
   GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14879,7 +14892,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // One frame navigates using window.open while it is pending deletion. The two
 // frames lives in different processes.
 // See https://crbug.com/932087.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        OpenUrlToRemoteFramePendingDeletion) {
   GURL url_ab(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -14912,7 +14925,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // that the scroll-delta matches the distance between TouchStart/End as seen
 // by the oopif, i.e. the oopif content 'sticks' to the finger during scrolling.
 // The relation is not exact, but should be close.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ScrollOopifInPinchZoomedPage) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
@@ -15070,7 +15083,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // a renderer-initiated navigation would lead to the navigation being canceled.
 // This behavior change has been introduced with PerNavigationMojoInterface and
 // is documented here https://crbug.com/988368.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        ProcessDiesBeforeCrossSiteNavigationCompletes) {
   GURL first_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
   EXPECT_TRUE(NavigateToURL(shell(), first_url));
@@ -15265,7 +15278,7 @@ enum class InnerWebContentsAttachChildFrameOriginType {
 };
 
 class InnerWebContentsAttachTest
-    : public SitePerProcessBrowserTest,
+    : public SitePerProcessBrowserTestBase,
       public testing::WithParamInterface<
           std::tuple<InnerWebContentsAttachChildFrameOriginType,
                      bool /* original frame has beforeunload handlers */,
@@ -15413,7 +15426,7 @@ INSTANTIATE_TEST_SUITE_P(
 // 1. Navigate to A1(B2).
 // 2. B2 navigates itself to B3 = about:blank. Process B is used.
 // 3. A1 makes B3 to navigate to A4 = about:blank. Process A is used.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest,
                        SameAndCrossProcessIframeAboutBlankNavigation) {
   // 1. Navigate to A1(B2).
   GURL a1_url(embedded_test_server()->GetURL(
@@ -15455,7 +15468,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Set up the frame tree to be A(B1(C1),B2(C2)). Send IPC's with different
 // ViewportIntersection information to B1 and B2, and then check that the
 // information they propagate to C1 and C2 is different.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MainFrameScrollOffset) {
+IN_PROC_BROWSER_TEST_P(SitePerProcessBrowserTest, MainFrameScrollOffset) {
   GURL a_url = embedded_test_server()->GetURL(
       "a.com", "/frame_tree/scrollable_page_with_two_frames.html");
   GURL b_url = embedded_test_server()->GetURL(
@@ -15586,14 +15599,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MainFrameScrollOffset) {
 }
 
 class SitePerProcessCompositorViewportBrowserTest
-    : public SitePerProcessBrowserTest,
+    : public SitePerProcessBrowserTestBase,
       public testing::WithParamInterface<double> {
  public:
   SitePerProcessCompositorViewportBrowserTest() {}
 
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
+    SitePerProcessBrowserTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kForceDeviceScaleFactor,
                                     base::StringPrintf("%f", GetParam()));
   }
@@ -15671,7 +15684,7 @@ INSTANTIATE_TEST_SUITE_P(SitePerProcess,
 // Check that initial navigations to renderer debug URLs mark the renderer
 // process as used, so that future navigations to sites that require a
 // dedicated process do not reuse that process.
-IN_PROC_BROWSER_TEST_F(
+IN_PROC_BROWSER_TEST_P(
     SitePerProcessBrowserTest,
     ProcessNotReusedAfterInitialNavigationToRendererDebugURL) {
   // Load a javascript URL, which is a renderer debug URL.  This navigation
@@ -15693,4 +15706,53 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_NE(js_process, web_contents()->GetMainFrame()->GetProcess());
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         RequestDelayingSitePerProcessBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         ScrollingIntegrationTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+#if defined(OS_ANDROID)
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessAndroidImeTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+#endif  // OS_ANDROID
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessAndProcessPerSiteBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessAutoplayBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessBrowserTestWithoutSadFrameTabReload,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessBrowserTestWithSadFrameTabReload,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessBrowserTouchActionTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessEmbedderCSPEnforcementBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessHighDPIBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessIgnoreCertErrorsBrowserTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessProgrammaticScrollTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+INSTANTIATE_TEST_SUITE_P(All,
+                         SitePerProcessScrollAnchorTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+#if defined(OS_ANDROID)
+INSTANTIATE_TEST_SUITE_P(All,
+                         TouchSelectionControllerClientAndroidSiteIsolationTest,
+                         testing::ValuesIn(RenderDocumentFeatureLevelValues()));
+#endif  // OS_ANDROID
 }  // namespace content

@@ -7,6 +7,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
+#include "chromeos/services/network_config/public/mojom/network_types.mojom-shared.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,12 +36,12 @@ namespace network_health {
 
 class NetworkHealthTest : public ::testing::Test {
  public:
-  NetworkHealthTest() {
-    // Wait until CrosNetworkConfigTestHelper is fully setup.
-    task_environment_.RunUntilIdle();
-  }
+  NetworkHealthTest() = default;
 
   void SetUp() override {
+    // Wait until CrosNetworkConfigTestHelper is fully setup.
+    task_environment_.RunUntilIdle();
+
     // Remove the default WiFi device created by network_state_helper.
     cros_network_config_test_helper_.network_state_helper().ClearDevices();
     cros_network_config_test_helper_.network_state_helper()
@@ -49,31 +50,62 @@ class NetworkHealthTest : public ::testing::Test {
     task_environment_.RunUntilIdle();
   }
 
+ protected:
   void CreateDefaultWifiDevice() {
     // Reset the network_state_helper to include the default wifi device.
     cros_network_config_test_helper_.network_state_helper()
         .ResetDevicesAndServices();
     task_environment_.RunUntilIdle();
 
-    // Check that the default wifi device created by CrosNetworkConfigTestHelper
-    // exists.
     const auto& initial_network_health_state =
         network_health_.GetNetworkHealthState();
-    ASSERT_EQ(initial_network_health_state->networks.size(), std::size_t(1));
-    ASSERT_EQ(initial_network_health_state->networks[0]->type,
-              network_config::mojom::NetworkType::kWiFi);
-    ASSERT_EQ(initial_network_health_state->networks[0]->state,
-              network_health::mojom::NetworkState::kNotConnected);
+
+    ASSERT_EQ(std::size_t(2), initial_network_health_state->networks.size());
+
+    // Check that VPN device state is always reported even if no VPNs exist.
+    ASSERT_EQ(network_config::mojom::NetworkType::kVPN,
+              initial_network_health_state->networks[0]->type);
+    ASSERT_EQ(network_health::mojom::NetworkState::kNotConnected,
+              initial_network_health_state->networks[0]->state);
+
+    // Check that the default wifi device created by CrosNetworkConfigTestHelper
+    // exists.
+    ASSERT_EQ(network_config::mojom::NetworkType::kWiFi,
+              initial_network_health_state->networks[1]->type);
+    ASSERT_EQ(network_health::mojom::NetworkState::kNotConnected,
+              initial_network_health_state->networks[1]->state);
   }
 
-  void ValidateState(network_health::mojom::NetworkState expected_state) {
-    task_environment_.RunUntilIdle();
+  mojom::NetworkPtr GetNetworkHealthStateByType(
+      network_config::mojom::NetworkType type) {
     const auto& network_health_state = network_health_.GetNetworkHealthState();
-    ASSERT_EQ(network_health_state->networks.size(), std::size_t(1));
-    EXPECT_EQ(network_health_state->networks[0]->state, expected_state);
+    for (auto& network : network_health_state->networks) {
+      if (network->type == type) {
+        return std::move(network);
+      }
+    }
+    return nullptr;
   }
 
- protected:
+  void ValidateNetworkState(
+      network_config::mojom::NetworkType type,
+      network_health::mojom::NetworkState expected_state) {
+    task_environment_.RunUntilIdle();
+
+    const auto network_health_state = GetNetworkHealthStateByType(type);
+    ASSERT_TRUE(network_health_state);
+    ASSERT_EQ(expected_state, network_health_state->state);
+  }
+
+  void ValidateNetworkName(network_config::mojom::NetworkType type,
+                           std::string expected_name) {
+    task_environment_.RunUntilIdle();
+
+    const auto network_health_state = GetNetworkHealthStateByType(type);
+    ASSERT_TRUE(network_health_state);
+    ASSERT_EQ(expected_name, network_health_state->name);
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   network_config::CrosNetworkConfigTestHelper cros_network_config_test_helper_;
   NetworkHealth network_health_;
@@ -92,7 +124,8 @@ TEST_F(NetworkHealthTest, NetworkStateUninitialized) {
       .manager_test()
       ->SetTechnologyInitializing(shill::kTypeWifi, true);
 
-  ValidateState(network_health::mojom::NetworkState::kUninitialized);
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kUninitialized);
 }
 
 TEST_F(NetworkHealthTest, NetworkStateDisabled) {
@@ -102,7 +135,9 @@ TEST_F(NetworkHealthTest, NetworkStateDisabled) {
   cros_network_config_test_helper_.network_state_helper()
       .device_test()
       ->AddDevice(kWifiDevicePath, shill::kTypeWifi, kWifiName);
-  ValidateState(network_health::mojom::NetworkState::kDisabled);
+
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kDisabled);
 }
 
 TEST_F(NetworkHealthTest, NetworkStateProhibited) {
@@ -115,7 +150,9 @@ TEST_F(NetworkHealthTest, NetworkStateProhibited) {
   cros_network_config_test_helper_.network_state_helper()
       .manager_test()
       ->SetTechnologyProhibited(shill::kTypeWifi, true);
-  ValidateState(network_health::mojom::NetworkState::kProhibited);
+
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kProhibited);
 }
 
 TEST_F(NetworkHealthTest, NetworkStateNotConnected) {
@@ -125,7 +162,9 @@ TEST_F(NetworkHealthTest, NetworkStateNotConnected) {
   cros_network_config_test_helper_.network_state_helper()
       .device_test()
       ->AddDevice(kWifiDevicePath, shill::kTypeWifi, kWifiName);
-  ValidateState(network_health::mojom::NetworkState::kNotConnected);
+
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kNotConnected);
 }
 
 TEST_F(NetworkHealthTest, NetworkStateConnecting) {
@@ -134,7 +173,9 @@ TEST_F(NetworkHealthTest, NetworkStateConnecting) {
       .service_test()
       ->AddService(kWifiDevicePath, kWifiGuid, kWifiServiceName,
                    shill::kTypeWifi, shill::kStateAssociation, true);
-  ValidateState(network_health::mojom::NetworkState::kConnecting);
+
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kConnecting);
 }
 
 TEST_F(NetworkHealthTest, NetworkStatePortal) {
@@ -143,7 +184,9 @@ TEST_F(NetworkHealthTest, NetworkStatePortal) {
       .service_test()
       ->AddService(kWifiDevicePath, kWifiGuid, kWifiServiceName,
                    shill::kTypeWifi, shill::kStatePortal, true);
-  ValidateState(network_health::mojom::NetworkState::kPortal);
+
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kPortal);
 }
 
 TEST_F(NetworkHealthTest, NetworkStateConnected) {
@@ -152,7 +195,9 @@ TEST_F(NetworkHealthTest, NetworkStateConnected) {
       .service_test()
       ->AddService(kWifiDevicePath, kWifiGuid, kWifiServiceName,
                    shill::kTypeWifi, shill::kStateReady, true);
-  ValidateState(network_health::mojom::NetworkState::kConnected);
+
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kConnected);
 }
 
 TEST_F(NetworkHealthTest, OneWifiNetworkConnected) {
@@ -161,15 +206,11 @@ TEST_F(NetworkHealthTest, OneWifiNetworkConnected) {
       .service_test()
       ->AddService(kWifiDevicePath, kWifiGuid, kWifiServiceName,
                    shill::kTypeWifi, shill::kStateOnline, true);
-  task_environment_.RunUntilIdle();
 
-  const auto& network_health_state = network_health_.GetNetworkHealthState();
-  ASSERT_EQ(network_health_state->networks.size(), std::size_t(1));
-  EXPECT_EQ(network_health_state->networks[0]->name, kWifiServiceName);
-  EXPECT_EQ(network_health_state->networks[0]->type,
-            network_config::mojom::NetworkType::kWiFi);
-  EXPECT_EQ(network_health_state->networks[0]->state,
-            network_health::mojom::NetworkState::kOnline);
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kOnline);
+  ValidateNetworkName(network_config::mojom::NetworkType::kWiFi,
+                      kWifiServiceName);
 }
 
 TEST_F(NetworkHealthTest, MultiWifiNetwork) {
@@ -184,16 +225,8 @@ TEST_F(NetworkHealthTest, MultiWifiNetwork) {
                      shill::kStateIdle, true);
   }
 
-  task_environment_.RunUntilIdle();
-
-  // Check that there is only a single network created for WiFi and is not
-  // connected.
-  const auto& network_health_state = network_health_.GetNetworkHealthState();
-  ASSERT_EQ(network_health_state->networks.size(), std::size_t(1));
-  EXPECT_EQ(network_health_state->networks[0]->type,
-            network_config::mojom::NetworkType::kWiFi);
-  EXPECT_EQ(network_health_state->networks[0]->state,
-            network_health::mojom::NetworkState::kNotConnected);
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kNotConnected);
 }
 
 TEST_F(NetworkHealthTest, MultiWifiNetworkConnected) {
@@ -214,17 +247,8 @@ TEST_F(NetworkHealthTest, MultiWifiNetworkConnected) {
                      shill::kStateOffline, true);
   }
 
-  task_environment_.RunUntilIdle();
-
-  // Check that there is only a single network created for WiFi and is
-  // connected.
-  const auto& network_health_state = network_health_.GetNetworkHealthState();
-  ASSERT_EQ(network_health_state->networks.size(), std::size_t(1));
-  EXPECT_EQ(network_health_state->networks[0]->type,
-            network_config::mojom::NetworkType::kWiFi);
-  EXPECT_EQ(network_health_state->networks[0]->state,
-            network_health::mojom::NetworkState::kOnline);
-  EXPECT_EQ(network_health_state->networks[0]->name, kWifiServiceName);
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kOnline);
 }
 
 TEST_F(NetworkHealthTest, CreateActiveEthernet) {
@@ -241,21 +265,12 @@ TEST_F(NetworkHealthTest, CreateActiveEthernet) {
   // Wait until the network and service have been created and configured.
   task_environment_.RunUntilIdle();
 
-  const auto& network_health_state = network_health_.GetNetworkHealthState();
-
-  ASSERT_EQ(network_health_state->networks.size(), std::size_t(2));
-  // The first network should be the Ethernet device because it is active.
-  EXPECT_EQ(network_health_state->networks[0]->name, kEthServiceName);
-  EXPECT_EQ(network_health_state->networks[0]->type,
-            network_config::mojom::NetworkType::kEthernet);
-  EXPECT_EQ(network_health_state->networks[0]->state,
-            network_health::mojom::NetworkState::kOnline);
-
-  // The second network should be the default unconnected WiFi device.
-  EXPECT_EQ(network_health_state->networks[1]->type,
-            network_config::mojom::NetworkType::kWiFi);
-  EXPECT_EQ(network_health_state->networks[1]->state,
-            mojom::NetworkState::kNotConnected);
+  ValidateNetworkState(network_config::mojom::NetworkType::kEthernet,
+                       network_health::mojom::NetworkState::kOnline);
+  ValidateNetworkName(network_config::mojom::NetworkType::kEthernet,
+                      kEthServiceName);
+  ValidateNetworkState(network_config::mojom::NetworkType::kWiFi,
+                       network_health::mojom::NetworkState::kNotConnected);
 }
 
 }  // namespace network_health

@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/logging.h"
+#include "base/check_op.h"
 #include "base/macros.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"

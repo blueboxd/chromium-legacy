@@ -224,8 +224,6 @@ class ServiceWorkerMetrics {
   static void RecordFetchEventStatus(bool is_main_resource,
                                      blink::ServiceWorkerStatusCode status);
 
-  static void RecordProcessCreated(bool is_new_process);
-
   CONTENT_EXPORT static void RecordStartWorkerTiming(const StartTimes& times,
                                                      StartSituation situation);
   static void RecordStartWorkerTimingClockConsistency(

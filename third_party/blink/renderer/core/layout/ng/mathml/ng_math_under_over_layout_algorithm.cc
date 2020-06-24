@@ -242,7 +242,7 @@ scoped_refptr<const NGLayoutResult> NGMathUnderOverLayoutAlgorithm::Layout() {
                                   block_offset, border_box_size.inline_size);
 
   container_builder_.SetIntrinsicBlockSize(block_offset);
-  container_builder_.SetBlockSize(block_size);
+  container_builder_.SetFragmentsTotalBlockSize(block_size);
 
   NGOutOfFlowLayoutPart(Node(), ConstraintSpace(), container_builder_.Borders(),
                         &container_builder_)

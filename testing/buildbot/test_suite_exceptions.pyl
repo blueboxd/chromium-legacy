@@ -2159,6 +2159,11 @@
       'android-asan',  # https://crbug.com/962650
     ],
   },
+  'screenshot_sync_tests': {
+    'remove_from': [
+      'Fuchsia x64' # https://crbug.com/1058255
+    ],
+  },
   'services_unittests': {
     'remove_from': [
       'ToTLinuxMSan',  # https://crbug.com/831676

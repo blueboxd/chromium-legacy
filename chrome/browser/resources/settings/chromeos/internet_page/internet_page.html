@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
@@ -64,13 +65,23 @@
                       aria-labelledby="add-wifi-label"></cr-icon-button>
                 </div>
               </template>
-              <div actionable class="list-item" on-click="onAddVPNTap_">
+              <div actionable$="[[vpnIsEnabled_]]" class="list-item"
+                  on-click="onAddVPNTap_">
                 <div class="start settings-box-text"
                     id="add-vpn-label" aria-hidden="true">
                   $i18n{internetAddVPN}
                 </div>
+                <template is="dom-if" if="[[!vpnIsEnabled_]]">
+                  <cr-policy-indicator
+                      icon-aria-label="$i18n{networkVpnBuiltin}"
+                      indicator-type="devicePolicy"
+                      on-click="doNothing_">
+                  </cr-policy-indicator>
+                </template>
                 <cr-icon-button class="icon-add-circle"
-                    aria-labelledby="add-vpn-label"></cr-icon-button>
+                    aria-labelledby="add-vpn-label"
+                    disabled="[[!vpnIsEnabled_]]">
+                </cr-icon-button>
               </div>
               <template is="dom-repeat" items="[[vpnProviders_]]">
                 <div actionable class="list-item"

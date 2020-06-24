@@ -321,11 +321,7 @@ void WorkerThread::DidProcessTask(const base::PendingTask& pending_task) {
 
   // TODO(tzik): Move this to WorkerThreadScheduler::OnTaskCompleted(), so that
   // metrics for microtasks are counted as a part of the preceding task.
-  // TODO(nhiroki): Replace this null check with DCHECK(agent) after making
-  // WorkletGlobalScope take a proper Agent.
-  if (Agent* agent = GlobalScope()->GetAgent()) {
-    agent->event_loop()->PerformMicrotaskCheckpoint();
-  }
+  GlobalScope()->GetAgent()->event_loop()->PerformMicrotaskCheckpoint();
 
   // Microtask::PerformCheckpoint() runs microtasks and its completion hooks for
   // the default microtask queue. The default queue may contain the microtasks

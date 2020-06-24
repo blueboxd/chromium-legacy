@@ -106,7 +106,8 @@ public class InfoBarContainerView extends SwipableOverlayView {
 
     // SwipableOverlayView implementation.
     @Override
-    protected boolean isAllowedToAutoHide() {
+    @VisibleForTesting
+    public boolean isAllowedToAutoHide() {
         return sIsAllowedToAutoHide;
     }
 

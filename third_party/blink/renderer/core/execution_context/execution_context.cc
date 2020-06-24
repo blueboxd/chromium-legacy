@@ -64,7 +64,9 @@ ExecutionContext::ExecutionContext(v8::Isolate* isolate, Agent* agent)
       is_context_destroyed_(false),
       csp_delegate_(MakeGarbageCollected<ExecutionContextCSPDelegate>(*this)),
       window_interaction_tokens_(0),
-      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {}
+      referrer_policy_(network::mojom::ReferrerPolicy::kDefault) {
+  DCHECK(agent_);
+}
 
 ExecutionContext::~ExecutionContext() = default;
 

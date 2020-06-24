@@ -441,7 +441,8 @@ TEST_F(StorageTest, WriteAndRepeatedlyImmediateUploadWithConfirmations) {
   WriteStringOrDie(IMMEDIATE, more_blobs[2]);
 }
 
-TEST_F(StorageTest, WriteAndRepeatedlyUploadMultipleQueues) {
+// TODO(crbug.com/1098359): Flaky.
+TEST_F(StorageTest, DISABLED_WriteAndRepeatedlyUploadMultipleQueues) {
   CreateStorageTestOrDie(BuildStorageOptions());
 
   // Upload is initiated asynchronously, so it may happen after the next

@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 
 namespace optimization_guide {

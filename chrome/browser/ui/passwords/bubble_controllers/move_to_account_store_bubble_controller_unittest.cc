@@ -82,6 +82,11 @@ TEST_F(MoveToAccountStoreBubbleControllerTest, AuthenticateMoveIfOptedOut) {
   controller()->AcceptMove();
 }
 
+TEST_F(MoveToAccountStoreBubbleControllerTest, RejectMove) {
+  EXPECT_CALL(*delegate(), BlockMovingPasswordToAccountStore);
+  controller()->RejectMove();
+}
+
 TEST_F(MoveToAccountStoreBubbleControllerTest, ProvidesTitle) {
   PasswordBubbleControllerBase* controller_ptr = controller();
   EXPECT_EQ(controller_ptr->GetTitle(),

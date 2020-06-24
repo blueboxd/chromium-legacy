@@ -14,6 +14,12 @@
 
 // This is a subset of the cros_healthd probe service interface which is
 // located in src/platform2/diagnostics/mojo/cros_healthd_probe.mojom.
+//
+// What is different:
+//   1) Introduced DoubleValue and Int64Value structs since numeric primitives
+//      are not nullable in Mojo.
+//   2) Make all fields in BatteryInfo optional in case we want to filter them
+//      out later.
 
 module chromeos.health.mojom;
 
@@ -60,6 +66,20 @@ struct ProbeError {
   string msg;
 };
 
+// Optional double field. Since primitives numeric types cannot be optional,
+// wrap double in a struct that can be nulled.
+struct DoubleValue {
+  // The value of the double.
+  double value;
+};
+
+// Optional int64 field. Since primitives numeric types cannot be optional,
+// wrap int64 in a struct that can be nulled.
+struct Int64Value {
+  // The value of the int64.
+  int64 value;
+};
+
 // Optional uint64 field. Since primitives numeric types cannot be optional,
 // wrap uint64 in a struct that can be nulled.
 struct UInt64Value {
@@ -70,29 +90,29 @@ struct UInt64Value {
 // Information related to the main battery.
 struct BatteryInfo {
   // Cycle count.
-  int64 cycle_count;
+  Int64Value? cycle_count;
   // Current battery voltage (V)
-  double voltage_now;
+  DoubleValue? voltage_now;
   // Manufacturer of the battery
-  string vendor;
+  string? vendor;
   // Serial number of the battery
-  string serial_number;
+  string? serial_number;
   // Design capacity (Ah)
-  double charge_full_design;
+  DoubleValue? charge_full_design;
   // Full capacity (Ah)
-  double charge_full;
+  DoubleValue? charge_full;
   // Desired minimum output voltage (V)
-  double voltage_min_design;
+  DoubleValue? voltage_min_design;
   // Model name.
-  string model_name;
+  string? model_name;
   // Current battery charge (Ah)
-  double charge_now;
+  DoubleValue? charge_now;
   // Current battery current (A)
-  double current_now;
+  DoubleValue? current_now;
   // Technology of the battery
-  string technology;
+  string? technology;
   // Status of the battery
-  string status;
+  string? status;
 
   // The fields below are optionally included if the main battery is a Smart
   // Battery as defined in http://sbs-forum.org/specs/sbdat110.pdf.

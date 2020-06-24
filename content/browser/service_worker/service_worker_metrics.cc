@@ -438,11 +438,6 @@ void ServiceWorkerMetrics::RecordFetchEventStatus(
   }
 }
 
-void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
-  UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.ProcessCreated",
-                        is_new_process);
-}
-
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
                                                    StartSituation situation) {
   if (!ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {

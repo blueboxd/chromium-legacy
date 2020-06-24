@@ -42,4 +42,6 @@ interface ITestWebLayer {
 
   void setIgnoreMissingKeyForTranslateManager(in boolean ignore) = 12;
   void forceNetworkConnectivityState(in boolean networkAvailable) = 13;
+
+  boolean canInfoBarContainerScroll(in ITab tab) = 14;
 }

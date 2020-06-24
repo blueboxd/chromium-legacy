@@ -7,8 +7,8 @@
 #include <map>
 #include <memory>
 
+#include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"

@@ -44,7 +44,7 @@ class ShadowTreeStyleSheetCollection final
     : public TreeScopeStyleSheetCollection {
  public:
   explicit ShadowTreeStyleSheetCollection(ShadowRoot&);
-  void UpdateActiveStyleSheets(StyleEngine& master_engine);
+  void UpdateActiveStyleSheets(StyleEngine&);
   bool IsShadowTreeStyleSheetCollection() const final { return true; }
 
   void Trace(Visitor* visitor) const override {
@@ -52,7 +52,7 @@ class ShadowTreeStyleSheetCollection final
   }
 
  private:
-  void CollectStyleSheets(StyleEngine& master_engine, StyleSheetCollection&);
+  void CollectStyleSheets(StyleEngine&, StyleSheetCollection&);
   DISALLOW_COPY_AND_ASSIGN(ShadowTreeStyleSheetCollection);
 };
 

@@ -418,4 +418,35 @@ void RecordProfileMenuClick(Profile* profile) {
   }
 }
 
+void RecordTransactionalReauthResult(
+    signin_metrics::ReauthAccessPoint access_point,
+    signin::ReauthResult result) {
+  base::UmaHistogramEnumeration("Signin.TransactionalReauthResult", result);
+  switch (access_point) {
+    case signin_metrics::ReauthAccessPoint::kAutofillDropdown:
+      base::UmaHistogramEnumeration(
+          "Signin.TransactionalReauthResult.ToFillPassword", result);
+      break;
+    case signin_metrics::ReauthAccessPoint::kPasswordSaveBubble:
+      base::UmaHistogramEnumeration(
+          "Signin.TransactionalReauthResult.ToSaveOrUpdatePassword", result);
+      break;
+    case signin_metrics::ReauthAccessPoint::kPasswordSettings:
+      base::UmaHistogramEnumeration(
+          "Signin.TransactionalReauthResult.ToManageInSettings", result);
+      break;
+    case signin_metrics::ReauthAccessPoint::kGeneratePasswordDropdown:
+    case signin_metrics::ReauthAccessPoint::kGeneratePasswordContextMenu:
+      base::UmaHistogramEnumeration(
+          "Signin.TransactionalReauthResult.ToGeneratePassword", result);
+      break;
+    case signin_metrics::ReauthAccessPoint::kPasswordMoveBubble:
+      base::UmaHistogramEnumeration(
+          "Signin.TransactionalReauthResult.ToMovePassword", result);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 }  // namespace signin_ui_util

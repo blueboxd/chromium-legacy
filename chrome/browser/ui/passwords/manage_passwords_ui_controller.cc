@@ -545,6 +545,16 @@ void ManagePasswordsUIController::MovePasswordToAccountStore() {
   UpdateBubbleAndIconVisibility();
 }
 
+void ManagePasswordsUIController::BlockMovingPasswordToAccountStore() {
+  DCHECK_EQ(GetState(),
+            password_manager::ui::CAN_MOVE_PASSWORD_TO_ACCOUNT_STATE)
+      << GetState();
+  passwords_data_.form_manager()->BlockMovingCredentialsToAccountStore();
+  ClearPopUpFlagForBubble();
+  passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+  UpdateBubbleAndIconVisibility();
+}
+
 void ManagePasswordsUIController::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {

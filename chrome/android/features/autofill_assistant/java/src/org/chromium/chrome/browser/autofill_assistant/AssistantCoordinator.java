@@ -50,7 +50,8 @@ class AssistantCoordinator {
                 tabObscuringHandler, bottomSheetDelegate);
         mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity,
                 activity.getWindowAndroid().getKeyboardDelegate(),
-                activity.getCompositorViewHolder(), mModel, keyboardCoordinatorDelegate);
+                activity.getCompositorViewHolder(), mModel, keyboardCoordinatorDelegate,
+                controller);
 
         mModel.setVisible(true);
     }

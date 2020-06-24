@@ -67,10 +67,9 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAccount = kItemTypeEnumZero,
   ItemTypeAddAccount,
-  // Provides experimental and production sign out items. In the experimental
-  // item, this type is used only for non-managed accounts.
+  // Provides sign out items used only for non-managed accounts.
   ItemTypeSignOut,
-  // Experimental sign out item that clears Chrome data. Used for both managed
+  // Sign out item that clears Chrome data. Used for both managed
   // and non-managed accounts.
   ItemTypeSignOutAndClearData,
   ItemTypeHeader,
@@ -241,11 +240,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierSignOut];
   // Adds a signout option if the account is not managed.
   if (![self authService]->IsAuthenticatedIdentityManaged()) {
-    [model addItem:[self experimentalSignOutItem]
+    [model addItem:[self signOutItem]
         toSectionWithIdentifier:SectionIdentifierSignOut];
   }
   // Adds a signout and clear data option.
-  [model addItem:[self experimentalSignOutAndClearDataItem]
+  [model addItem:[self signOutAndClearDataItem]
       toSectionWithIdentifier:SectionIdentifierSignOut];
 
   // Adds a footer with signout explanation depending on the type of
@@ -312,16 +311,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (TableViewItem*)signOutItem {
-  TableViewDetailTextItem* item =
-      [[TableViewDetailTextItem alloc] initWithType:ItemTypeSignOut];
-  item.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC);
-  item.accessibilityTraits |= UIAccessibilityTraitButton;
-  item.accessibilityIdentifier = kSettingsAccountsTableViewSignoutCellId;
-  return item;
-}
-
-- (TableViewItem*)experimentalSignOutItem {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeSignOut];
   item.text =
@@ -332,7 +321,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return item;
 }
 
-- (TableViewItem*)experimentalSignOutAndClearDataItem {
+- (TableViewItem*)signOutAndClearDataItem {
   TableViewTextItem* item =
       [[TableViewTextItem alloc] initWithType:ItemTypeSignOutAndClearData];
   item.text = l10n_util::GetNSString(

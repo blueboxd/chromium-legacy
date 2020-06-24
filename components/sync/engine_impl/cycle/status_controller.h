@@ -8,7 +8,6 @@
 #include <map>
 #include <vector>
 
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/sync/engine/cycle/model_neutral_state.h"

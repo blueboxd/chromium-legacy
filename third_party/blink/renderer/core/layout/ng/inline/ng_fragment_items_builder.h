@@ -62,6 +62,7 @@ class CORE_EXPORT NGFragmentItemsBuilder {
                       NGLogicalLineItems* current_line);
   void AddLine(const NGPhysicalLineBoxFragment& line,
                const LogicalOffset& offset);
+  void ClearCurrentLineForTesting();
 
   // Add a list marker to the current line.
   void AddListMarker(const NGPhysicalBoxFragment& marker_fragment,

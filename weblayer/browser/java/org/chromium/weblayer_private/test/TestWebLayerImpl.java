@@ -157,4 +157,9 @@ public final class TestWebLayerImpl extends ITestWebLayer.Stub {
                 long tabImpl, int top, int bottom, Runnable runnable);
         void setIgnoreMissingKeyForTranslateManager(boolean ignore);
     }
+
+    @Override
+    public boolean canInfoBarContainerScroll(ITab tab) {
+        return ((TabImpl) tab).canInfoBarContainerScrollForTesting();
+    }
 }

@@ -23,7 +23,9 @@
 using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
-@interface AddAccountSigninCoordinator () <AddAccountSigninManagerDelegate>
+@interface AddAccountSigninCoordinator () <
+    AddAccountSigninManagerDelegate,
+    ChromeIdentityInteractionManagerDelegate>
 
 // Coordinator to display modal alerts to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
@@ -110,7 +112,7 @@ using signin_metrics::PromoAction;
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
           ->CreateChromeIdentityInteractionManager(
-              self.browser->GetBrowserState());
+              self.browser->GetBrowserState(), self);
 
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(
@@ -132,6 +134,25 @@ using signin_metrics::PromoAction;
   DCHECK(!self.identityInteractionManager);
   DCHECK(!self.alertCoordinator);
   DCHECK(!self.userSigninCoordinator);
+}
+
+#pragma mark - ChromeIdentityInteractionManagerDelegate
+
+- (void)interactionManager:(ChromeIdentityInteractionManager*)interactionManager
+    dismissViewControllerAnimated:(BOOL)animated
+                       completion:(ProceduralBlock)completion {
+  [self.baseViewController.presentedViewController
+      dismissViewControllerAnimated:animated
+                         completion:completion];
+}
+
+- (void)interactionManager:(ChromeIdentityInteractionManager*)interactionManager
+     presentViewController:(UIViewController*)viewController
+                  animated:(BOOL)animated
+                completion:(ProceduralBlock)completion {
+  [self.baseViewController presentViewController:viewController
+                                        animated:animated
+                                      completion:completion];
 }
 
 #pragma mark - AddAccountSigninManagerDelegate

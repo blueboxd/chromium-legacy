@@ -64,10 +64,9 @@
 
         <template is="dom-if" if="[[showPolicyIndicator_(activeNetworkState)]]">
           <cr-policy-indicator
-            icon-aria-label="[[getTitleText_(activeNetworkState)]]"
-            indicator-type="[[getIndicatorTypeForSource(
-                                activeNetworkState.source)]]"
-            on-click="doNothing_">
+              icon-aria-label="[[getTitleText_(activeNetworkState)]]"
+              indicator-type="[[getPolicyIndicatorType_(activeNetworkState)]]"
+              on-click="doNothing_">
           </cr-policy-indicator>
         </template>
 

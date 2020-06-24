@@ -162,6 +162,10 @@ void TranslateInfoBarDelegate::UpdateTargetLanguage(
   ui_delegate_.UpdateTargetLanguage(language_code);
 }
 
+void TranslateInfoBarDelegate::OnErrorShown(TranslateErrors::Type error_type) {
+  ui_delegate_.OnErrorShown(error_type);
+}
+
 void TranslateInfoBarDelegate::Translate() {
   ui_delegate_.Translate();
 }

@@ -71,6 +71,8 @@ UserAgentType GetUserAgentTypeWithDescription(const std::string& description) {
     return UserAgentType::MOBILE;
   if (description == std::string(kUserAgentTypeDesktopDescription))
     return UserAgentType::DESKTOP;
+  if (description == std::string(kUserAgentTypeAutomaticDescription))
+    return UserAgentType::AUTOMATIC;
   return UserAgentType::NONE;
 }
 

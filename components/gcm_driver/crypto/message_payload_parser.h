@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "base/logging.h"
+#include "base/check.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"

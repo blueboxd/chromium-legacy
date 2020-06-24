@@ -34,7 +34,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) ProhibitedTechnologiesHandler
   void SetProhibitedTechnologies(const base::ListValue* prohibited_list);
   // Functions for updating the list of technologies that are prohibited
   // everywhere, including login screen
-  void AddGloballyProhibitedTechnology(const std::string& prohibited_list);
+  void AddGloballyProhibitedTechnology(const std::string& technology);
   void RemoveGloballyProhibitedTechnology(const std::string& technology);
   // Returns the currently active list of prohibited
   // technologies(session-dependent and globally-prohibited ones)

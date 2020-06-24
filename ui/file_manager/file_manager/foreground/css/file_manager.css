@@ -323,6 +323,14 @@ html.pointer-active #directory-tree :not(:active) {
   cursor: default;
 }
 
+html.drag-drop-active #directory-tree .tree-item.denies > .tree-row > .file-row {
+  background-color: var(--google-red-50);
+}
+
+html.drag-drop-active #directory-tree .tree-item.accepts > .tree-row > .file-row {
+  background-color: var(--google-grey-100);
+}
+
 html.focus-outline-visible #directory-tree:focus .tree-row[selected] > .file-row {
   border: 1px solid var(--google-blue-600);
 }

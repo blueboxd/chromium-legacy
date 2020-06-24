@@ -951,16 +951,35 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   NGBoxFragment fragment(constraint_space.GetWritingMode(),
                          constraint_space.Direction(), physical_fragment);
   LogicalSize fragment_logical_size = fragment.Size();
-  // For each fragment we process, we'll accumulate the logical height and
-  // logical intrinsic content box height. We reset it at the first fragment,
-  // and accumulate at each method call for fragments belonging to the same
-  // layout object. Logical width will only be set at the first fragment and is
-  // expected to remain the same throughout all subsequent fragments, since
-  // legacy layout doesn't support non-uniform fragmentainer widths.
-  LayoutUnit intrinsic_content_logical_height;
+  NGBoxStrut borders = fragment.Borders();
+  NGBoxStrut scrollbars = ComputeScrollbars(constraint_space, *this);
+  NGBoxStrut padding = fragment.Padding();
+  NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
+  bool is_last_fragment = !physical_fragment.BreakToken();
+
+  // For each fragment we process, we'll accumulate the logical height. We reset
+  // it at the first fragment, and accumulate at each method call for fragments
+  // belonging to the same layout object. Logical width will only be set at the
+  // first fragment and is expected to remain the same throughout all subsequent
+  // fragments, since legacy layout doesn't support non-uniform fragmentainer
+  // widths.
   if (LIKELY(physical_fragment.IsFirstForNode())) {
     box_->SetSize(LayoutSize(physical_fragment.Size().width,
                              physical_fragment.Size().height));
+    // If this is a fragment from a node that didn't break into multiple
+    // fragments, write back the intrinsic size. We skip this if the node has
+    // fragmented, since intrinsic block-size is rather meaningless in that
+    // case, because the block-size may have been affected by something on the
+    // outside (i.e. the fragmentainer).
+    //
+    // If we had a fixed block size, our children will have sized themselves
+    // relative to the fixed size, which would make our intrinsic size incorrect
+    // (too big). So skip the write-back in that case, too.
+    if (LIKELY(is_last_fragment && !constraint_space.IsFixedBlockSize())) {
+      box_->SetIntrinsicContentLogicalHeight(
+          layout_result.IntrinsicBlockSize() -
+          border_scrollbar_padding.BlockSum());
+    }
   } else {
     DCHECK_EQ(box_->LogicalWidth(), fragment_logical_size.inline_size)
         << "Variable fragment inline size not supported";
@@ -968,24 +987,6 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     if (previous_break_token)
       logical_height += previous_break_token->ConsumedBlockSize();
     box_->SetLogicalHeight(logical_height);
-    intrinsic_content_logical_height = box_->IntrinsicContentLogicalHeight();
-  }
-
-  intrinsic_content_logical_height += layout_result.IntrinsicBlockSize();
-
-  NGBoxStrut borders = fragment.Borders();
-  NGBoxStrut scrollbars = ComputeScrollbars(constraint_space, *this);
-  NGBoxStrut padding = fragment.Padding();
-  NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
-  bool is_last_fragment = !physical_fragment.BreakToken();
-
-  if (LIKELY(is_last_fragment))
-    intrinsic_content_logical_height -= border_scrollbar_padding.BlockSum();
-  if (!constraint_space.IsFixedBlockSize()) {
-    // If we had a fixed block size, our children will have sized themselves
-    // relative to the fixed size, which would make our intrinsic size
-    // incorrect (too big).
-    box_->SetIntrinsicContentLogicalHeight(intrinsic_content_logical_height);
   }
 
   // TODO(mstensho): This should always be done by the parent algorithm, since
